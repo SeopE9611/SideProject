@@ -16,6 +16,10 @@ export type CartItem = {
   id: string;
   name: string;
   price: number;
+  regularPrice?: number;
+  salePrice?: number;
+  discountRate?: number;
+  discountAmount?: number;
   quantity: number;
   image?: string; // 이미지는 선택적 속성
   stock?: number; // 재고 정보

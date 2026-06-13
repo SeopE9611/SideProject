@@ -194,6 +194,7 @@ function CheckoutPointsAutoAdjust({
 function FinalPaymentConfirmCard({
   orderItemsCount,
   subtotal,
+  regularSubtotal,
   shippingFee,
   serviceFee,
   baseServiceFee,
@@ -210,6 +211,7 @@ function FinalPaymentConfirmCard({
 }: {
   orderItemsCount: number;
   subtotal: number;
+  regularSubtotal: number;
   shippingFee: number;
   serviceFee: number;
   baseServiceFee: number;
@@ -243,6 +245,24 @@ function FinalPaymentConfirmCard({
       </div>
       <CardContent className="space-y-5 p-5 bp-sm:p-6">
         <div className="space-y-3 text-sm">
+          {regularSubtotal > subtotal && (
+            <>
+              <div className="flex items-center justify-between gap-3 py-1">
+                <span className="min-w-0 break-words text-foreground/80">
+                  상품 정가 합계
+                </span>
+                <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
+                  {regularSubtotal.toLocaleString()}원
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3 py-1 text-primary">
+                <span className="min-w-0 break-words">상품 할인</span>
+                <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
+                  -{(regularSubtotal - subtotal).toLocaleString()}원
+                </span>
+              </div>
+            </>
+          )}
           <div className="flex items-center justify-between gap-3 py-1">
             <span className="min-w-0 break-words text-foreground/80">
               상품 판매가 합계 ({orderItemsCount}개)
@@ -661,6 +681,15 @@ export default function CheckoutPage() {
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
+  const regularSubtotal = orderItems.reduce((sum, item) => {
+    const regularPrice =
+      typeof item.regularPrice === "number" &&
+      Number.isFinite(item.regularPrice) &&
+      item.regularPrice > item.price
+        ? item.regularPrice
+        : item.price;
+    return sum + regularPrice * item.quantity;
+  }, 0);
 
   const [deliveryMethod, setDeliveryMethod] = useState<"택배수령" | "방문수령">(
     "택배수령",
@@ -1758,7 +1787,10 @@ export default function CheckoutPage() {
                           <div className="rounded-lg border border-border/50 bg-card/70 px-3 py-2 bp-sm:min-w-[160px] bp-sm:text-right">
                             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 bp-sm:justify-end">
                               <span className="text-xs font-medium text-muted-foreground">
-                                판매가
+                                {typeof item.regularPrice === "number" &&
+                                item.regularPrice > item.price
+                                  ? "할인가"
+                                  : "판매가"}
                               </span>
                               <div className="whitespace-nowrap text-lg font-bold tabular-nums text-foreground bp-sm:text-xl">
                                 {item.price.toLocaleString()}
@@ -1767,6 +1799,29 @@ export default function CheckoutPage() {
                                 </span>
                               </div>
                             </div>
+                            {typeof item.regularPrice === "number" &&
+                              Number.isFinite(item.regularPrice) &&
+                              item.regularPrice > item.price && (
+                                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
+                                  <span className="text-muted-foreground line-through tabular-nums">
+                                    정가 {item.regularPrice.toLocaleString()}원
+                                  </span>
+                                  <span className="font-medium text-primary tabular-nums">
+                                    {item.discountRate ??
+                                      Math.round(
+                                        ((item.regularPrice - item.price) /
+                                          item.regularPrice) *
+                                          100,
+                                      )}
+                                    % OFF ·{" "}
+                                    {(
+                                      item.discountAmount ??
+                                      item.regularPrice - item.price
+                                    ).toLocaleString()}
+                                    원 할인
+                                  </span>
+                                </div>
+                              )}
                             <p className="mt-1 text-xs text-muted-foreground">
                               단가{" "}
                               <span className="tabular-nums">
@@ -2647,6 +2702,7 @@ export default function CheckoutPage() {
                   <FinalPaymentConfirmCard
                     orderItemsCount={orderItems.length}
                     subtotal={subtotal}
+                    regularSubtotal={regularSubtotal}
                     shippingFee={shippingFee}
                     serviceFee={finalServiceFee}
                     baseServiceFee={baseServiceFee}

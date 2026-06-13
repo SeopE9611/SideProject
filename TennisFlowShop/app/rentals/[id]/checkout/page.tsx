@@ -3,7 +3,10 @@ import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import RentalsCheckoutClient from "@/app/rentals/[id]/checkout/_components/RentalsCheckoutClient";
 import { verifyAccessToken } from "@/lib/auth.utils";
-import { getEffectiveProductPrice } from "@/lib/product-pricing";
+import {
+  getEffectiveProductPrice,
+  getProductPriceDisplayMeta,
+} from "@/lib/product-pricing";
 import { cookies } from "next/headers";
 import LoginGate from "@/components/system/LoginGate";
 
@@ -58,6 +61,9 @@ async function getInitialForRacket(
         id: string;
         name: string;
         price: number;
+        regularPrice?: number;
+        discountRate?: number;
+        discountAmount?: number;
         mountingFee: number; // 상품별 교체비(장착비)
         image: string | null;
       } = undefined;
@@ -85,6 +91,7 @@ async function getInitialForRacket(
         id: stringId,
         name: (p as any).name ?? "",
         price: getEffectiveProductPrice(p),
+        ...getProductPriceDisplayMeta(p),
         mountingFee: Number((p as any).mountingFee ?? 0),
         image: img,
       };

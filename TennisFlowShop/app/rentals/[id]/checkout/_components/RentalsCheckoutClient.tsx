@@ -154,6 +154,9 @@ type Initial = {
     id: string;
     name: string;
     price: number;
+    regularPrice?: number;
+    discountRate?: number;
+    discountAmount?: number;
     mountingFee: number; // 상품별 교체비(장착비)
     image: string | null;
   };
@@ -965,8 +968,26 @@ export default function RentalsCheckoutClient({
                         ) : null}
                         <div className="mt-2 grid gap-1 text-sm text-foreground/80 bp-sm:grid-cols-2">
                           <span>
-                            스트링 구매가: {selectedString.price.toLocaleString()}원
+                            스트링{" "}
+                            {selectedString.regularPrice &&
+                            selectedString.regularPrice > selectedString.price
+                              ? "할인가"
+                              : "구매가"}
+                            : {selectedString.price.toLocaleString()}원
                           </span>
+                          {selectedString.regularPrice &&
+                            selectedString.regularPrice >
+                              selectedString.price && (
+                              <span className="tabular-nums text-primary">
+                                정가{" "}
+                                <span className="line-through">
+                                  {selectedString.regularPrice.toLocaleString()}원
+                                </span>{" "}
+                                · {selectedString.discountRate}% OFF ·{" "}
+                                {selectedString.discountAmount?.toLocaleString()}
+                                원 할인
+                              </span>
+                            )}
                           <span>
                             교체서비스 장착비: {selectedString.mountingFee.toLocaleString()}원
                           </span>

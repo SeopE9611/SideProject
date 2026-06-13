@@ -1,5 +1,7 @@
 "use client";
 
+import { getProductPriceDisplayMeta } from "@/lib/product-pricing";
+
 import { useWishlist } from "@/app/features/wishlist/useWishlist";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
@@ -363,6 +365,7 @@ const ProductCard = React.memo(
         id: String(product._id),
         name: product.name,
         price: displayPrice,
+        ...getProductPriceDisplayMeta(product),
         quantity: 1,
         image,
         stock: stockForItem,
@@ -385,6 +388,7 @@ const ProductCard = React.memo(
         id: String(product._id),
         name: product.name,
         price: displayPrice,
+        ...getProductPriceDisplayMeta(product),
         quantity: 1,
         image,
         stock: stockForItem,
