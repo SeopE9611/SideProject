@@ -1817,7 +1817,7 @@ export default function OperationsClient() {
                     setPage(1);
                   }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full min-w-0 text-left">
                     <SelectValue placeholder="종류(전체)" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1838,7 +1838,7 @@ export default function OperationsClient() {
                     setPage(1);
                   }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full min-w-0 text-left">
                     <SelectValue placeholder="운영 흐름(전체)" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1859,7 +1859,7 @@ export default function OperationsClient() {
                     <SelectItem value="8">패키지 구매</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="w-full text-[11px] text-muted-foreground">
+                <p className="w-full text-[11px] leading-relaxed text-muted-foreground bp-sm:col-span-2 bp-md:col-span-3 bp-lg:col-span-5">
                   레거시 유형은 기존 데이터 확인용이며 신규 접수 흐름은 현재 운영하지 않습니다.
                 </p>
 
@@ -1870,7 +1870,7 @@ export default function OperationsClient() {
                     setPage(1);
                   }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full min-w-0 text-left">
                     <SelectValue placeholder="연결(전체)" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1888,7 +1888,7 @@ export default function OperationsClient() {
                     setPage(1);
                   }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full min-w-0 text-left">
                     <SelectValue placeholder="문제 유형 필터" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1913,7 +1913,7 @@ export default function OperationsClient() {
                   value={warnSort}
                   onValueChange={(v: any) => setWarnSort(v)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full min-w-0 text-left">
                     <SelectValue placeholder="우선순위 정렬" />
                   </SelectTrigger>
                   <SelectContent>
