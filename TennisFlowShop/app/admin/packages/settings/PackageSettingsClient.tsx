@@ -664,7 +664,7 @@ export default function PackageSettingsClient() {
                               <p className="text-sm font-semibold text-foreground">기본 판매 정보</p>
                               <p className="mt-1 text-xs text-muted-foreground">고객에게 표시될 패키지명, 이용 횟수, 판매 가격, 유효기간을 설정합니다.</p>
 
-                              <div className="mt-4 grid grid-cols-2 gap-4">
+                              <div className="mt-4 grid gap-4 sm:grid-cols-2">
                                 <div>
                                   <Label htmlFor={`name-${pkg.id}`}>패키지명</Label>
                                   <Input
@@ -697,7 +697,7 @@ export default function PackageSettingsClient() {
 
                               <p className="mt-3 text-xs text-muted-foreground">할인율과 절감액은 정가와 판매 가격을 기준으로 자동 계산되며, 할인율은 소수점 첫째 자리까지 표시됩니다.</p>
 
-                              <div className="mt-4 grid grid-cols-2 gap-4">
+                              <div className="mt-4 grid gap-4 sm:grid-cols-2">
                                 <div>
                                   <Label htmlFor={`price-${pkg.id}`}>판매 가격 (원)</Label>
                                   <Input
