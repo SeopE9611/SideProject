@@ -1105,7 +1105,7 @@ export default function ActivityFeed() {
                                 >
                                   {confirmingApplicationId === appId
                                     ? "처리 중..."
-                                    : "교체확정"}
+                                    : "교체서비스 확정"}
                                 </DropdownMenuItem>
                               )}
                             </DropdownMenuContent>
@@ -1543,8 +1543,8 @@ export default function ActivityFeed() {
                                         <DropdownMenuItem asChild>
                                           <Link href={appDetailHref}>
                                             {g.kind === "order"
-                                              ? "이용 상세 보기"
-                                              : "교체서비스 보기"}
+                                              ? "교체서비스 상세 보기"
+                                              : "교체서비스 상세 보기"}
                                           </Link>
                                         </DropdownMenuItem>
                                       ) : null}
@@ -1594,7 +1594,7 @@ export default function ActivityFeed() {
                                         >
                                           {confirmingApplicationId === appId
                                             ? "처리 중..."
-                                            : "교체확정"}
+                                            : "교체서비스 확정"}
                                         </DropdownMenuItem>
                                       ) : null}
                                     </DropdownMenuContent>

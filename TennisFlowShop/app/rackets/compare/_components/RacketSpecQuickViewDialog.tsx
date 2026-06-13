@@ -429,7 +429,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                     )}
                   >
                     <Link href={`/rackets/${racket.id}/select-string`}>
-                      구매하기
+                      스트링 선택 후 구매
                     </Link>
                   </Button>
                 </div>

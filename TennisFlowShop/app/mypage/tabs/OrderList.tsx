@@ -372,8 +372,8 @@ export default function OrderList() {
           : detailHref;
 
         const primaryDetailLabel = hasLinkedApplication
-          ? "이용 상세 보기"
-          : "상세 보기";
+          ? "교체서비스 상세 보기"
+          : "주문 상세 보기";
 
         const showConfirm = order.status !== "취소" && order.status !== "환불";
 

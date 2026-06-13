@@ -390,7 +390,7 @@ export default function ApplicationsClient() {
     if (confirmingId) return;
 
     const ok = confirm(
-      "교체확정을 진행할까요?\n\n확정 후에는 포인트가 지급되며, 되돌릴 수 없습니다.",
+      "교체서비스 확정을 진행할까요?\n\n확정 후에는 포인트가 지급되며, 되돌릴 수 없습니다.",
     );
     if (!ok) return;
 
@@ -411,17 +411,19 @@ export default function ApplicationsClient() {
         showErrorToast(
           data?.message ||
             data?.error ||
-            "교체확정 처리 중 오류가 발생했습니다.",
+            "교체서비스 확정 처리 중 오류가 발생했습니다.",
         );
         return;
       }
 
       if (data?.already) {
-        showSuccessToast(data?.message || "이미 교체확정된 신청입니다.");
+        showSuccessToast(data?.message || "이미 교체서비스 확정된 신청입니다.");
       } else {
         const earned = Number(data?.earnedPoints ?? 0);
         showSuccessToast(
-          earned > 0 ? `교체확정 완료 (+${earned}P 적립)` : "교체확정 완료",
+          earned > 0
+            ? `교체서비스 확정 완료 (+${earned}P 적립)`
+            : "교체서비스 확정 완료",
         );
       }
 
@@ -442,7 +444,7 @@ export default function ApplicationsClient() {
       );
     } catch (e) {
       console.error(e);
-      showErrorToast("교체확정 처리 중 오류가 발생했습니다.");
+      showErrorToast("교체서비스 확정 처리 중 오류가 발생했습니다.");
     } finally {
       setConfirmingId(null);
     }
@@ -887,7 +889,7 @@ export default function ApplicationsClient() {
                         onClick={() => router.push(detailHref)}
                         className="bg-transparent"
                       >
-                        이용 상세 보기
+                        교체서비스 상세 보기
                         <ArrowRight className="ml-1 h-3 w-3" />
                       </Button>
                     ) : null}
@@ -972,8 +974,8 @@ export default function ApplicationsClient() {
                                   confirmingId === app.id
                                     ? "확정 중…"
                                     : isUserConfirmed
-                                      ? "교체확정 완료"
-                                      : "교체확정";
+                                      ? "교체서비스 확정 완료"
+                                      : "교체서비스 확정";
 
                                 return (
                                   <Button
@@ -997,9 +999,9 @@ export default function ApplicationsClient() {
                               const isUserConfirmed = Boolean(userConfirmedAt);
 
                               if (confirmingId === app.id)
-                                return <p>교체확정 처리 중입니다.</p>;
+                                return <p>교체서비스 확정 처리 중입니다.</p>;
                               if (isUserConfirmed)
-                                return <p>이미 교체확정된 신청입니다.</p>;
+                                return <p>이미 교체서비스 확정된 신청입니다.</p>;
                               if (isCancelRequested)
                                 return (
                                   <p>
@@ -1009,11 +1011,11 @@ export default function ApplicationsClient() {
                               if (app.status !== "교체완료")
                                 return (
                                   <p>
-                                    교체완료 상태에서만 교체확정이 가능합니다.
+                                    교체완료 상태에서만 교체서비스 확정이 가능합니다.
                                   </p>
                                 );
 
-                              return <p>교체확정 시 포인트가 지급됩니다.</p>;
+                              return <p>교체서비스 확정 시 포인트가 지급됩니다.</p>;
                             })()}
                           </TooltipContent>
                         </Tooltip>
