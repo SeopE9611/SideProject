@@ -32,6 +32,7 @@ export default function ActivityOrderReviewCTA({
   );
 
   if (!completed) return null;
+  if (data?.reason === "serviceLinkedOrder") return null;
 
   // 로딩 중 placeholder(버튼 자리를 유지해 UX 안정)
   if (isLoading) {

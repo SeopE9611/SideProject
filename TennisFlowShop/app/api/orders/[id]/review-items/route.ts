@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { racketBrandLabel } from "@/lib/constants";
+import { isOrderServiceReviewOnly } from "@/lib/reviews/review-policy";
 
 export async function GET(
   _req: Request,
@@ -51,6 +52,18 @@ export async function GET(
     return NextResponse.json(
       { ok: false, error: "orderNotFound" },
       { status: 404 },
+    );
+  }
+
+  if (await isOrderServiceReviewOnly(db, order)) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "serviceLinkedOrder",
+        reason: "serviceLinkedOrder",
+        message: "교체서비스가 연결된 주문은 서비스 리뷰만 작성할 수 있습니다.",
+      },
+      { status: 403, headers: { "Cache-Control": "no-store" } },
     );
   }
 

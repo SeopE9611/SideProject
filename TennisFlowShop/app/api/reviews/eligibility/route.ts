@@ -3,6 +3,10 @@ import { cookies } from "next/headers";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
+import {
+  isOrderServiceReviewOnly,
+  isStringingReviewBlockedStatus,
+} from "@/lib/reviews/review-policy";
 
 const isOrderReviewConfirmed = (order: any) =>
   Boolean(order?.userConfirmedAt) || String(order?.status ?? "") === "구매확정";
@@ -86,6 +90,12 @@ export async function GET(req: Request) {
           { status: 400, headers: { "Cache-Control": "no-store" } },
         );
       }
+      if (await isOrderServiceReviewOnly(db, order)) {
+        return NextResponse.json(
+          { eligible: false, reason: "serviceLinkedOrder" },
+          { headers: { "Cache-Control": "no-store" } },
+        );
+      }
 
       // 해당 (user, product, order)로 이미 작성했는지
       const already = await db.collection("reviews").findOne({
@@ -111,13 +121,18 @@ export async function GET(req: Request) {
       .collection("orders")
       .find({
         userId,
-        "items.productId": productIdObj,
+        "items.productId": { $in: [productIdObj, productId] },
         $or: [
           { userConfirmedAt: { $exists: true, $ne: null } },
           { status: "구매확정" },
         ],
       })
-      .project({ _id: 1, createdAt: 1 })
+      .project({
+        _id: 1,
+        createdAt: 1,
+        stringingApplicationId: 1,
+        shippingInfo: 1,
+      })
       .sort({ createdAt: -1 })
       .toArray();
 
@@ -142,10 +157,24 @@ export async function GET(req: Request) {
     const reviewedSet = new Set(reviewed.map((r) => String(r.orderId)));
 
     // 아직 리뷰 안 쓴 최신 주문 pick
-    const candidate = myOrders.find((o) => !reviewedSet.has(String(o._id)));
+    const orderEligibility = await Promise.all(
+      myOrders.map(async (order) => ({
+        order,
+        serviceOnly: await isOrderServiceReviewOnly(db, order),
+      })),
+    );
+    const candidate = orderEligibility.find(
+      ({ order, serviceOnly }) =>
+        !serviceOnly && !reviewedSet.has(String(order._id)),
+    )?.order;
     if (!candidate)
       return NextResponse.json(
-        { eligible: false, reason: "already" },
+        {
+          eligible: false,
+          reason: orderEligibility.every(({ serviceOnly }) => serviceOnly)
+            ? "serviceLinkedOrder"
+            : "already",
+        },
         { headers: { "Cache-Control": "no-store" } },
       );
 
@@ -176,6 +205,12 @@ export async function GET(req: Request) {
     if (!isOrderReviewConfirmed(order)) {
       return NextResponse.json(
         { eligible: false, reason: "notConfirmed" },
+        { headers: { "Cache-Control": "no-store" } },
+      );
+    }
+    if (await isOrderServiceReviewOnly(db, order)) {
+      return NextResponse.json(
+        { eligible: false, reason: "serviceLinkedOrder" },
         { headers: { "Cache-Control": "no-store" } },
       );
     }
@@ -250,6 +285,13 @@ export async function GET(req: Request) {
         );
       }
 
+      if (isStringingReviewBlockedStatus(app.status)) {
+        return NextResponse.json(
+          { eligible: false, reason: "invalidStatus" },
+          { headers: { "Cache-Control": "no-store" } },
+        );
+      }
+
       // 중복 작성 방지
       const already = await db.collection("reviews").findOne({
         userId,
@@ -274,7 +316,7 @@ export async function GET(req: Request) {
     const myApps = await col
       .find(
         { userId, userConfirmedAt: { $exists: true, $ne: null } },
-        { projection: { _id: 1, createdAt: 1, desiredDateTime: 1 } },
+        { projection: { _id: 1, createdAt: 1, desiredDateTime: 1, status: 1 } },
       )
       .sort({ createdAt: -1 })
       .toArray();
@@ -300,7 +342,11 @@ export async function GET(req: Request) {
     const reviewedSet = new Set(
       reviewed.map((r) => String(r.serviceApplicationId)),
     );
-    const candidate = myApps.find((a) => !reviewedSet.has(String(a._id)));
+    const candidate = myApps.find(
+      (a) =>
+        !isStringingReviewBlockedStatus(a.status) &&
+        !reviewedSet.has(String(a._id)),
+    );
 
     if (!candidate) {
       return NextResponse.json(

@@ -7,6 +7,7 @@ import {
   normalizeMypageTodoStatus,
 } from "@/lib/mypage/activity-todo";
 import clientPromise from "@/lib/mongodb";
+import { isOrderLinkedToStringing } from "@/lib/reviews/review-policy";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -423,6 +424,7 @@ export async function GET(req: Request) {
             total: 1,
             items: 1,
             shippingInfo: 1,
+            stringingApplicationId: 1,
             cancelRequest: 1,
           },
         },
@@ -720,23 +722,26 @@ export async function GET(req: Request) {
     const first = items[0] ?? null;
     const status = normalizeMypageTodoStatus(o?.status);
     const isConfirmed = Boolean(o?.userConfirmedAt) || status === "구매확정";
+    const linkedApps = appByOrderId.get(orderId) ?? [];
+    const serviceLinkedOrder = isOrderLinkedToStringing(o, linkedApps);
     const reviewTargetProductIds = orderReviewProductIdsById.get(orderId) ?? [];
     const reviewedProductIds =
       reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
     const reviewPendingProductIds = reviewTargetProductIds.filter(
       (productId) => !reviewedProductIds.has(productId),
     );
-    const reviewPendingCount = isConfirmed ? reviewPendingProductIds.length : 0;
+    const reviewPendingCount =
+      isConfirmed && !serviceLinkedOrder ? reviewPendingProductIds.length : 0;
     const hasPendingReview = reviewPendingCount > 0;
     const reviewAllDone =
       isConfirmed &&
+      !serviceLinkedOrder &&
       reviewTargetProductIds.length > 0 &&
       reviewPendingCount === 0;
     const reviewNextTargetProductId = hasPendingReview
       ? (reviewPendingProductIds[0] ?? null)
       : null;
 
-    const linkedApps = appByOrderId.get(orderId) ?? [];
     const linked = pickPrimaryLinkedApplication(linkedApps);
     const hasRacketItem = items.some(
       (item: any) => item?.kind === "racket" || item?.kind === "used_racket",

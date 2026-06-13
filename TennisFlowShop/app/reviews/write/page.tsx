@@ -70,6 +70,7 @@ type EligState =
   | "ok"
   | "notPurchased"
   | "already"
+  | "serviceLinkedOrder"
   | "unauthorized"
   | "invalid"
   | "error";
@@ -368,7 +369,13 @@ export default function ReviewWritePage() {
           setState(d.reason ?? "invalid");
           if (!toastLocked.current) {
             toastLocked.current = true;
-            showErrorToast("잘못된 접근입니다.");
+            if (d.reason === "serviceLinkedOrder") {
+              showInfoToast(
+                "교체서비스가 연결된 주문은 서비스 리뷰만 작성할 수 있습니다.",
+              );
+            } else {
+              showErrorToast("잘못된 접근입니다.");
+            }
           }
         }
       } catch {
@@ -414,7 +421,7 @@ export default function ReviewWritePage() {
       const qs =
         mode === "product"
           ? `productId=${encodeURIComponent(resolvedProductId!)}${resolvedOrderId ? `&orderId=${encodeURIComponent(resolvedOrderId)}` : ""}`
-          : `service=stringing`;
+          : `service=stringing${applicationIdParam ? `&applicationId=${encodeURIComponent(applicationIdParam)}` : ""}`;
       try {
         const r = await fetch(`/api/reviews/eligibility?${qs}`, {
           credentials: "include",
@@ -462,6 +469,7 @@ export default function ReviewWritePage() {
     resolvedProductId,
     resolvedOrderId,
     orderIdParam,
+    applicationIdParam,
     allowGuestCheckout,
     authChecked,
     blockedByLoginGate,
@@ -682,15 +690,17 @@ export default function ReviewWritePage() {
       ? "검증 중…"
       : state === "already"
         ? "이미 작성한 대상입니다"
-        : state === "notPurchased"
-          ? "아직 후기를 작성할 수 없어요"
-          : state === "unauthorized"
-            ? "로그인이 필요합니다"
-            : state === "invalid"
-              ? "작성할 후기를 찾을 수 없어요"
-              : state === "error"
-                ? "오류"
-                : null;
+        : state === "serviceLinkedOrder"
+          ? "서비스 리뷰만 작성할 수 있어요"
+          : state === "notPurchased"
+            ? "아직 후기를 작성할 수 없어요"
+            : state === "unauthorized"
+              ? "로그인이 필요합니다"
+              : state === "invalid"
+                ? "작성할 후기를 찾을 수 없어요"
+                : state === "error"
+                  ? "오류"
+                  : null;
 
   // 주문 아이템 + 현재 상품 메타 로드
   useEffect(() => {
@@ -890,6 +900,16 @@ export default function ReviewWritePage() {
         setState("notPurchased");
         showInfoToast("구매/이용 이력이 있어야 리뷰를 작성할 수 있어요.");
         return;
+      }
+      if (r.status === 403) {
+        const data = await r.json().catch(() => null);
+        if (data?.message === "serviceLinkedOrder") {
+          setState("serviceLinkedOrder");
+          showInfoToast(
+            "교체서비스가 연결된 주문은 서비스 리뷰만 작성할 수 있습니다.",
+          );
+          return;
+        }
       }
       showErrorToast("리뷰 등록에 실패했습니다.");
     } catch {
@@ -1320,7 +1340,8 @@ export default function ReviewWritePage() {
                 </div>
 
                 {/* 안내문 */}
-                {state !== "ok" && mode !== "invalid" && (
+                {state !== "ok" &&
+                  (mode !== "invalid" || state === "serviceLinkedOrder") && (
                   <div className="rounded-lg bg-muted border border-border p-4">
                     <div className="text-sm text-primary">
                       {state === "notPurchased" && (
@@ -1344,6 +1365,12 @@ export default function ReviewWritePage() {
                         <div>
                           이미 후기를 남긴 항목입니다. 해당 주문 또는 서비스에
                           대한 후기가 이미 등록되어 있어요.
+                        </div>
+                      )}
+                      {state === "serviceLinkedOrder" && (
+                        <div>
+                          교체서비스가 연결된 주문은 상품 리뷰를 작성할 수 없어요.
+                          연결된 교체서비스 이용확정 후 서비스 리뷰를 작성해 주세요.
                         </div>
                       )}
                     </div>
@@ -1388,7 +1415,7 @@ export default function ReviewWritePage() {
                 </div>
 
                 {/* invalid 진입 시 CTA */}
-                {mode === "invalid" && (
+                {mode === "invalid" && state !== "serviceLinkedOrder" && (
                   <div className="text-center py-6 text-sm text-foreground">
                     <div className="font-medium text-foreground mb-2">
                       작성할 후기를 찾을 수 없어요

@@ -3,6 +3,10 @@ import { racketBrandLabel } from "@/lib/constants";
 import { getDb } from "@/lib/mongodb";
 import { REVIEW_REWARD_POINTS } from "@/lib/points.policy";
 import { grantPoints } from "@/lib/points.service";
+import {
+  isOrderServiceReviewOnly,
+  isStringingReviewBlockedStatus,
+} from "@/lib/reviews/review-policy";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -150,28 +154,27 @@ export async function POST(req: Request) {
     }
     const productIdObj = new ObjectId(productIdStr);
 
-    // 구매 이력 검증: orderId가 넘어오면 해당 주문에 그 상품이 포함되어야 함
-    let bought: any;
-    if (orderIdObj) {
-      bought = await db.collection("orders").findOne(
-        {
-          _id: orderIdObj,
-          userId,
-          "items.productId": { $in: [productIdStr, productIdObj] },
-        },
-        { projection: { _id: 1 } },
-      );
-    } else {
-      // orderId가 없으면 기존 로직(해당 상품을 구매한 주문이 하나라도 있으면 OK)
-      bought = await db
-        .collection("orders")
-        .findOne(
-          { userId, "items.productId": { $in: [productIdStr, productIdObj] } },
-          { projection: { _id: 1 } },
-        );
+    if (!orderIdObj) {
+      return NextResponse.json({ message: "orderId required" }, { status: 400 });
     }
+
+    // 구매 이력 검증: orderId가 넘어오면 해당 주문에 그 상품이 포함되어야 함
+    const bought = await db.collection("orders").findOne({
+      _id: orderIdObj,
+      userId,
+      "items.productId": { $in: [productIdStr, productIdObj] },
+    });
     if (!bought)
       return NextResponse.json({ message: "notPurchased" }, { status: 403 });
+    if (await isOrderServiceReviewOnly(db, bought)) {
+      return NextResponse.json(
+        { message: "serviceLinkedOrder" },
+        { status: 403 },
+      );
+    }
+    if (!bought.userConfirmedAt && String(bought.status ?? "") !== "구매확정") {
+      return NextResponse.json({ message: "notConfirmed" }, { status: 403 });
+    }
 
     // 중복 작성 방지 (주문 단위): 같은 주문 + 같은 상품 + 같은 유저
     const productCandidates = [productIdObj, productIdStr];
@@ -255,9 +258,18 @@ export async function POST(req: Request) {
     // 소유권 검증
     const app = await db
       .collection("stringing_applications")
-      .findOne({ _id: appIdObj }, { projection: { userId: 1, orderId: 1 } });
+      .findOne(
+        { _id: appIdObj },
+        { projection: { userId: 1, orderId: 1, userConfirmedAt: 1, status: 1 } },
+      );
     if (!app || String(app.userId) !== String(userId)) {
       return NextResponse.json({ message: "forbidden" }, { status: 403 });
+    }
+    if (!app.userConfirmedAt) {
+      return NextResponse.json({ message: "notConfirmed" }, { status: 403 });
+    }
+    if (isStringingReviewBlockedStatus(app.status)) {
+      return NextResponse.json({ message: "invalidStatus" }, { status: 403 });
     }
 
     // 신청서 단위 중복 작성 방지
