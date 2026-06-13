@@ -760,7 +760,7 @@ export default function FilterableProductList({
                 }}
                 className="h-9 shrink-0 whitespace-nowrap px-3 border-border hover:bg-primary/10 dark:hover:bg-primary/20"
                 aria-expanded={showFilters}
-                aria-label="필터 열기"
+                aria-label={showFilters ? "필터 닫기" : "필터 열기"}
               >
                 <Filter className="w-4 h-4 mr-2" />
                 필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
