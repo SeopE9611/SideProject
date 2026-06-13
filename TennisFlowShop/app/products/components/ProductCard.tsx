@@ -98,16 +98,15 @@ function PerformanceSummary({
             key={feature.key}
             className={cn(
               "flex min-w-0 items-baseline justify-between gap-1 border-b border-border/40 pb-1",
-              entries.length % 2 === 1 &&
-                index === entries.length - 1 &&
-                "col-span-2",
-              index >= entries.length - 2 && "border-b-0 pb-0",
+              index >= entries.length - (entries.length % 2 === 0 ? 2 : 1) &&
+                "border-b-0 pb-0",
             )}
           >
             <span className="text-muted-foreground">{feature.label}</span>
             <strong className="tabular-nums text-foreground">{feature.value}</strong>
           </div>
         ))}
+        {entries.length % 2 === 1 && <div aria-hidden="true" />}
       </div>
     </section>
   );

@@ -712,12 +712,20 @@ export default function FilterableProductList({
 
   return (
     <>
-      <Sheet open={showFilters && isMobileViewport} onOpenChange={handleSheetOpenChange}>
+      <Sheet open={showFilters} onOpenChange={handleSheetOpenChange}>
         <SheetContent
-          side="bottom"
-          className="max-h-[85dvh] rounded-t-2xl p-0 overflow-y-auto"
+          side={isMobileViewport ? "bottom" : "left"}
+          className={
+            isMobileViewport
+              ? "max-h-[85dvh] rounded-t-2xl p-0 overflow-y-auto"
+              : "h-dvh w-[min(420px,calc(100vw-24px))] max-w-none overflow-y-auto p-0"
+          }
         >
-          <FilterPanel {...mobileFilterPanelProps} />
+          <FilterPanel
+            {...(isMobileViewport
+              ? mobileFilterPanelProps
+              : desktopFilterPanelProps)}
+          />
         </SheetContent>
       </Sheet>
 
@@ -725,7 +733,7 @@ export default function FilterableProductList({
         {/* 상품 목록 */}
         <div className="min-w-0">
           <div className="mb-6 bp-md:mb-8 space-y-3">
-            <div className="flex items-center justify-between">
+            <div>
               <div
                 className="text-base bp-sm:text-lg font-semibold text-foreground tabular-nums"
                 aria-live="polite"
@@ -750,27 +758,7 @@ export default function FilterableProductList({
                   </span>
                 ) : null}
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (showFilters) cancelFiltersSheet();
-                  else openFiltersSheet();
-                }}
-                className="h-9 shrink-0 whitespace-nowrap px-3 border-border hover:bg-primary/10 dark:hover:bg-primary/20"
-                aria-expanded={showFilters}
-                aria-label={showFilters ? "필터 닫기" : "필터 열기"}
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
-              </Button>
             </div>
-            {showFilters && !isMobileViewport && (
-              <div className="rounded-xl border border-border bg-card/50">
-                <FilterPanel {...desktopFilterPanelProps} />
-              </div>
-            )}
             {activeFiltersCount > 0 && (
               <div className="rounded-lg border border-border bg-card p-3">
                 <div className="mb-2 flex items-center justify-between gap-2">
@@ -927,7 +915,23 @@ export default function FilterableProductList({
               </div>
             )}
 
-            <div className="flex items-center justify-end gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (showFilters) cancelFiltersSheet();
+                  else openFiltersSheet();
+                }}
+                className="h-9 shrink-0 whitespace-nowrap border-border px-3 hover:bg-primary/10 dark:hover:bg-primary/20"
+                aria-expanded={showFilters}
+                aria-label={showFilters ? "필터 닫기" : "필터 열기"}
+              >
+                <Filter className="mr-2 h-4 w-4" />
+                필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
+              </Button>
+              <div className="ml-auto flex min-w-0 items-center gap-3">
               {/* 뷰 모드 토글 */}
               {!isMobileViewport && (
                 <div className="flex shrink-0 items-center border border-border rounded-lg p-1 bg-card">
@@ -968,6 +972,7 @@ export default function FilterableProductList({
                   <SelectItem value="price-high">가격 높은순</SelectItem>
                 </SelectContent>
               </Select>
+              </div>
             </div>
           </div>
 
