@@ -924,35 +924,29 @@ export default function CartPageClient() {
                                 <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">
                                   {formatKRW(item.price)}원
                                 </span>
-                                {hasDiscount && (
-                                  <span className="whitespace-nowrap text-xs text-muted-foreground line-through tabular-nums">
-                                    정가 {formatKRW(item.regularPrice!)}원
-                                  </span>
-                                )}
                               </div>
                               {hasDiscount && (
-                                <p className="mt-0.5 text-xs font-medium text-primary tabular-nums">
-                                  {item.discountRate ??
-                                    Math.round(
-                                      ((item.regularPrice! - item.price) /
-                                        item.regularPrice!) *
-                                        100,
-                                    )}
-                                  % OFF ·{" "}
-                                  {formatKRW(
-                                    item.discountAmount ??
-                                      item.regularPrice! - item.price,
-                                  )}
-                                  원 할인
-                                </p>
+                                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs tabular-nums">
+                                  <span className="text-muted-foreground">
+                                    정가{" "}
+                                    <span className="line-through">
+                                      {formatKRW(item.regularPrice!)}원
+                                    </span>
+                                  </span>
+                                  <Badge
+                                    variant="destructive"
+                                    className="text-[10px]"
+                                  >
+                                    {item.discountRate ??
+                                      Math.round(
+                                        ((item.regularPrice! - item.price) /
+                                          item.regularPrice!) *
+                                          100,
+                                      )}
+                                    % OFF
+                                  </Badge>
+                                </div>
                               )}
-                              <p className="mt-0.5 text-xs text-muted-foreground">
-                                단가{" "}
-                                <span className="whitespace-nowrap tabular-nums">
-                                  {formatKRW(item.price)}원
-                                </span>{" "}
-                                × {item.quantity}개
-                              </p>
                               {item.selectedGauge && (
                                 <div className="mt-1 whitespace-nowrap text-xs text-muted-foreground">
                                   게이지: {formatGaugeLabel(item.selectedGauge)}

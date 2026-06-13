@@ -1803,32 +1803,26 @@ export default function CheckoutPage() {
                               Number.isFinite(item.regularPrice) &&
                               item.regularPrice > item.price && (
                                 <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
-                                  <span className="text-muted-foreground line-through tabular-nums">
-                                    정가 {item.regularPrice.toLocaleString()}원
+                                  <span className="text-muted-foreground tabular-nums">
+                                    정가{" "}
+                                    <span className="line-through">
+                                      {item.regularPrice.toLocaleString()}원
+                                    </span>
                                   </span>
-                                  <span className="font-medium text-primary tabular-nums">
+                                  <Badge
+                                    variant="destructive"
+                                    className="text-[10px] tabular-nums"
+                                  >
                                     {item.discountRate ??
                                       Math.round(
                                         ((item.regularPrice - item.price) /
                                           item.regularPrice) *
                                           100,
                                       )}
-                                    % OFF ·{" "}
-                                    {(
-                                      item.discountAmount ??
-                                      item.regularPrice - item.price
-                                    ).toLocaleString()}
-                                    원 할인
-                                  </span>
+                                    % OFF
+                                  </Badge>
                                 </div>
                               )}
-                            <p className="mt-1 text-xs text-muted-foreground">
-                              단가{" "}
-                              <span className="tabular-nums">
-                                {item.price.toLocaleString()}원
-                              </span>{" "}
-                              × {item.quantity}개
-                            </p>
                           </div>
                         </div>
                       ))}

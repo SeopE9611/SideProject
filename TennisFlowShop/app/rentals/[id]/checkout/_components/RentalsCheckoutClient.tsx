@@ -978,15 +978,18 @@ export default function RentalsCheckoutClient({
                           {selectedString.regularPrice &&
                             selectedString.regularPrice >
                               selectedString.price && (
-                              <span className="tabular-nums text-primary">
+                              <span className="tabular-nums text-muted-foreground">
                                 정가{" "}
                                 <span className="line-through">
                                   {selectedString.regularPrice.toLocaleString()}원
-                                </span>{" "}
-                                · {selectedString.discountRate}% OFF ·{" "}
-                                {selectedString.discountAmount?.toLocaleString()}
-                                원 할인
+                                </span>
                               </span>
+                              <Badge
+                                variant="destructive"
+                                className="w-fit text-[10px] tabular-nums"
+                              >
+                                {selectedString.discountRate}% OFF
+                              </Badge>
                             )}
                           <span>
                             교체서비스 장착비: {selectedString.mountingFee.toLocaleString()}원
