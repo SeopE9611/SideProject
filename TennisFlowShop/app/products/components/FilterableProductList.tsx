@@ -501,25 +501,6 @@ export default function FilterableProductList({
     [openFiltersSheet, cancelFiltersSheet],
   );
 
-  // 뷰포트가 bp-lg(>=1200)로 커지면 Sheet는 자동으로 닫기(취소)
-  useEffect(() => {
-    if (!showFilters) return;
-
-    const mql = window.matchMedia("(min-width: 1200px)");
-    const onChange = (e: MediaQueryListEvent) => {
-      if (e.matches) cancelFiltersSheet();
-    };
-
-    // 이미 lg 이상이면 즉시 닫기
-    if (mql.matches) {
-      cancelFiltersSheet();
-      return;
-    }
-
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
-  }, [showFilters, cancelFiltersSheet]);
-
   // active filter 개수 계산
   const priceChanged =
     priceRange[0] > DEFAULT_MIN_PRICE || priceRange[1] < DEFAULT_MAX_PRICE;

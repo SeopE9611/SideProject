@@ -77,8 +77,7 @@ function getFeatureEntries(features?: Record<string, number>) {
     const value = normalizeFeatureScoreTo100(rawValue);
     return { key, label: keyMap[key], value };
   })
-    .filter((item) => item.value > 0)
-    .slice(0, 3);
+    .filter((item) => item.value > 0);
 }
 
 // shadcn Button의 hover:bg-accent / hover:text-accent-foreground 간섭을 피하기 위해
