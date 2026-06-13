@@ -669,9 +669,10 @@ export default function RacketDetailClient({
                         스트링 선택 후 구매하거나 대여 일정을 선택할 수 있어요.
                       </p>
                     </div>
-                    <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-2">
                       <Button
-                        className="flex-1 min-w-0 h-12"
+                        wrap="responsive"
+                        className="h-12 w-full min-w-0"
                         onClick={() =>
                           router.push(`/rackets/${racketId}/select-string`)
                         }

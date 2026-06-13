@@ -227,7 +227,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
             </div>
 
             {/* 액션 버튼 */}
-            <div className="mt-auto grid grid-cols-1 gap-2 bp-xl:grid-cols-2">
+            <div className="mt-auto grid grid-cols-1 gap-2">
               <RacketSpecQuickViewDialog
                 racket={compareItem}
                 trigger={
@@ -295,7 +295,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                   size="sm"
                   preventCardNav={true}
                   full={false}
-                  className="h-10 w-full min-w-0 whitespace-nowrap rounded-lg px-2 text-xs bp-sm:text-sm bp-lg:h-9 bp-lg:min-w-[7.5rem] bp-lg:w-auto bp-lg:flex-none"
+                  className="w-full min-w-0 rounded-lg px-2 text-xs bp-sm:text-sm"
                 />
               ) : (
                 <Button
