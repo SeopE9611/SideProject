@@ -6,7 +6,11 @@ import SelectStringLayout from "@/app/components/select-string/SelectStringLayou
 import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import { useCartStore } from "@/app/store/cartStore";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { getEffectiveProductPrice } from "@/lib/product-pricing";
+import {
+  buildPriceDisplayMeta,
+  getEffectiveProductPrice,
+  getProductPriceDisplayMeta,
+} from "@/lib/product-pricing";
 import {
   normalizeGaugeRows,
   normalizeColorRows,
@@ -149,6 +153,7 @@ export default function RacketSelectStringClient({
         id: racket.id,
         name: racket.name,
         price: displayPrice,
+        ...buildPriceDisplayMeta(racket.regularPrice, displayPrice),
         quantity: qty,
         image: racket.image,
         kind: "racket",
@@ -160,6 +165,7 @@ export default function RacketSelectStringClient({
         id: racket.id,
         name: racket.name,
         price: displayPrice,
+        ...buildPriceDisplayMeta(racket.regularPrice, displayPrice),
         quantity: qty,
         image: racket.image,
         kind: "racket",
@@ -217,6 +223,7 @@ export default function RacketSelectStringClient({
         id: newStringId,
         name: selectedString?.name ?? "스트링",
         price: getEffectiveProductPrice(selectedString),
+        ...getProductPriceDisplayMeta(selectedString),
         quantity: qty,
         image: selectedStringImage,
         kind: "product",
@@ -393,6 +400,7 @@ export default function RacketSelectStringClient({
         id: racket.id,
         name: racket.name,
         price: displayPrice,
+        ...buildPriceDisplayMeta(racket.regularPrice, displayPrice),
         quantity: finalQty,
         image: racket.image,
         kind: "racket",
@@ -402,6 +410,7 @@ export default function RacketSelectStringClient({
         id: String(p._id),
         name: p.name,
         price: getEffectiveProductPrice(p),
+        ...getProductPriceDisplayMeta(p),
         quantity: finalQty,
         image: selectedStringImage,
         kind: "product",

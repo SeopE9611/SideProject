@@ -4,6 +4,7 @@ import ProductFeatureRadarChart from "@/app/products/components/ProductFeatureRa
 import type { User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { type CartItem, useCartStore } from "@/app/store/cartStore";
+import { getProductPriceDisplayMeta } from "@/lib/product-pricing";
 import HorizontalProducts, {
   type HItem,
 } from "@/components/HorizontalProducts";
@@ -1009,6 +1010,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       id: product._id.toString(),
       name: product.name,
       price: displayPrice,
+      ...getProductPriceDisplayMeta(product),
       quantity,
       image:
         selectedColorRow?.image?.trim() ||
@@ -1092,6 +1094,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       id: product._id.toString(),
       name: product.name,
       price: displayPrice,
+      ...getProductPriceDisplayMeta(product),
       quantity,
       image:
         selectedColorRow?.image?.trim() ||
@@ -1136,6 +1139,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       id: product._id.toString(),
       name: product.name,
       price: displayPrice, // 여기서는 "자재 가격"만
+      ...getProductPriceDisplayMeta(product),
       quantity,
       image:
         selectedColorRow?.image?.trim() ||
