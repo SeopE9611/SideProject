@@ -239,9 +239,6 @@ export function StringCard({
                 <Badge variant="destructive" className="text-[10px]">
                   {discountRate}% OFF
                 </Badge>
-                <span className="font-medium text-destructive">
-                  {discountAmount.toLocaleString()}원 할인
-                </span>
               </div>
             </div>
           ) : (

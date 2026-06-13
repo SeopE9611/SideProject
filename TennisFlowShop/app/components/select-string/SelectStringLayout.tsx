@@ -362,10 +362,6 @@ export default function SelectStringLayout({
                         {racket.discountRate}% OFF
                       </Badge>
                     )}
-                    <span className="font-medium text-destructive">
-                      {(racket.regularPrice - racket.price).toLocaleString()}원
-                      할인
-                    </span>
                   </div>
                 )}
               </div>
