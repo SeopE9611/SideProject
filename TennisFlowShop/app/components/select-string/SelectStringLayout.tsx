@@ -340,19 +340,33 @@ export default function SelectStringLayout({
               </p>
             )}
             {flowType === "purchase" && racket.price != null && (
-              <div className="mt-1.5 flex items-baseline gap-2">
-                <span className="tabular-nums text-base font-bold text-foreground">
-                  {racket.price.toLocaleString()}원
-                </span>
-                {racket.regularPrice && racket.regularPrice > racket.price && (
-                  <span className="text-xs text-muted-foreground line-through">
-                    {racket.regularPrice.toLocaleString()}원
+              <div className="mt-2 space-y-1 tabular-nums">
+                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {racket.regularPrice && racket.regularPrice > racket.price
+                      ? "할인가"
+                      : "판매가"}
                   </span>
-                )}
-                {racket.discountRate && racket.discountRate > 0 && (
-                  <Badge variant="destructive" className="text-[10px]">
-                    {racket.discountRate}% OFF
-                  </Badge>
+                  <span className="text-base font-bold text-foreground">
+                    {racket.price.toLocaleString()}원
+                  </span>
+                </div>
+                {racket.regularPrice && racket.regularPrice > racket.price && (
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                    <span className="text-muted-foreground">정가</span>
+                    <span className="text-muted-foreground line-through">
+                      {racket.regularPrice.toLocaleString()}원
+                    </span>
+                    {racket.discountRate && racket.discountRate > 0 && (
+                      <Badge variant="destructive" className="text-[10px]">
+                        {racket.discountRate}% OFF
+                      </Badge>
+                    )}
+                    <span className="font-medium text-destructive">
+                      {(racket.regularPrice - racket.price).toLocaleString()}원
+                      할인
+                    </span>
+                  </div>
                 )}
               </div>
             )}
