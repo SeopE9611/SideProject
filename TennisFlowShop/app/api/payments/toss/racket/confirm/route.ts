@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server";
+import {
+  ENABLE_RACKET_STANDALONE_ORDER,
+  RACKET_STANDALONE_ORDER_DISABLED_RESPONSE,
+} from "@/lib/orders/racket-standalone-policy";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { confirmTossPayment } from "@/lib/payments/toss/server";
@@ -6,6 +10,11 @@ import { tossPaymentSessions } from "@/lib/payments/toss/session";
 import { createOrder } from "@/app/features/orders/api/handlers";
 
 export async function POST(req: Request) {
+  if (!ENABLE_RACKET_STANDALONE_ORDER) {
+    return NextResponse.json(RACKET_STANDALONE_ORDER_DISABLED_RESPONSE, {
+      status: 410,
+    });
+  }
   try {
     const body = await req.json();
     const paymentKey = String(body?.paymentKey ?? "").trim();

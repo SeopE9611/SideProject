@@ -7,6 +7,10 @@ import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import {
+  ENABLE_RACKET_STANDALONE_ORDER,
+  RACKET_STANDALONE_ORDER_DISABLED_RESPONSE,
+} from "@/lib/orders/racket-standalone-policy";
 
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: unknown) => String(v ?? "").replace(/\D/g, "");
@@ -25,6 +29,11 @@ export const runtime = "nodejs";
 export const preferredRegion = ["icn1", "hnd1"];
 
 export async function POST(req: Request) {
+  if (!ENABLE_RACKET_STANDALONE_ORDER) {
+    return NextResponse.json(RACKET_STANDALONE_ORDER_DISABLED_RESPONSE, {
+      status: 410,
+    });
+  }
   try {
     if (!isNicePaymentsEnabled()) {
       return NextResponse.json(

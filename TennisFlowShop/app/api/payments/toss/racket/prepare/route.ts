@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server";
+import {
+  ENABLE_RACKET_STANDALONE_ORDER,
+  RACKET_STANDALONE_ORDER_DISABLED_RESPONSE,
+} from "@/lib/orders/racket-standalone-policy";
 import { cookies } from "next/headers";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
@@ -18,6 +22,11 @@ const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: unknown) => String(v ?? "").replace(/\D/g, "");
 
 export async function POST(req: Request) {
+  if (!ENABLE_RACKET_STANDALONE_ORDER) {
+    return NextResponse.json(RACKET_STANDALONE_ORDER_DISABLED_RESPONSE, {
+      status: 410,
+    });
+  }
   try {
     if (!isTossPaymentsEnabled()) {
       return NextResponse.json(

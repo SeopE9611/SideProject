@@ -15,7 +15,7 @@ export default function RacketTossSuccessPage() {
     const racketId = sp.get("racketId") || "";
 
     if (!paymentKey || !orderId || !Number.isFinite(amount)) {
-      const fallbackPath = racketId ? `/rackets/${encodeURIComponent(racketId)}/purchase?recovery=1` : "/rackets";
+      const fallbackPath = racketId ? `/rackets/${encodeURIComponent(racketId)}/select-string` : "/rackets";
       router.replace(`/rackets/toss/fail?code=INVALID_QUERY&message=잘못된 결제 결과입니다.&fallback=${encodeURIComponent(fallbackPath)}`);
       return;
     }
@@ -30,14 +30,14 @@ export default function RacketTossSuccessPage() {
         if (!res.ok || !json?.mongoOrderId) {
           const nextCode = String(json?.code || "CONFIRM_FAILED");
           const nextMessage = encodeURIComponent(json?.error || "카드/간편결제 승인에 실패했습니다.");
-          const fallbackPath = racketId ? `/rackets/${encodeURIComponent(racketId)}/purchase?recovery=1` : "/rackets";
+          const fallbackPath = racketId ? `/rackets/${encodeURIComponent(racketId)}/select-string` : "/rackets";
           router.replace(`/rackets/toss/fail?code=${encodeURIComponent(nextCode)}&message=${nextMessage}&fallback=${encodeURIComponent(fallbackPath)}`);
           return;
         }
         router.replace(`/racket-orders/${encodeURIComponent(json.mongoOrderId)}/select-string`);
       })
       .catch((error: any) => {
-        const fallbackPath = racketId ? `/rackets/${encodeURIComponent(racketId)}/purchase?recovery=1` : "/rackets";
+        const fallbackPath = racketId ? `/rackets/${encodeURIComponent(racketId)}/select-string` : "/rackets";
         router.replace(`/rackets/toss/fail?code=CONFIRM_FAILED&message=${encodeURIComponent(error?.message || "카드/간편결제 승인에 실패했습니다.")}&fallback=${encodeURIComponent(fallbackPath)}`);
       });
   }, [router, sp]);
