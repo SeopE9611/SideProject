@@ -304,13 +304,14 @@ export default async function ServicesPage() {
                   방식으로 접수할 수 있습니다.
                 </p>
                 <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-                  <Button asChild className="whitespace-nowrap">
+                  <Button asChild wrap="responsive" className="w-full sm:w-auto">
                     <Link href="#service-start">신청 방식 선택하기</Link>
                   </Button>
                   <Button
                     variant="outline"
                     asChild
-                    className="whitespace-nowrap"
+                    wrap="responsive"
+                    className="w-full sm:w-auto"
                   >
                     <Link href="#pricing">가격 안내 보기</Link>
                   </Button>
@@ -427,7 +428,7 @@ export default async function ServicesPage() {
                         className="group flex h-full min-w-0 flex-col rounded-xl border border-border bg-card p-4 transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                       >
                         <span className="flex min-w-0 items-center justify-between gap-3 text-sm font-semibold text-foreground">
-                          <span className="min-w-0 truncate">{link.label}</span>
+                          <span className="min-w-0 break-keep">{link.label}</span>
                           <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
                         </span>
                         <span className="mt-2 break-words text-sm leading-relaxed text-muted-foreground">
@@ -558,7 +559,7 @@ export default async function ServicesPage() {
                         <Badge
                           key={idx}
                           variant="secondary"
-                          className="max-w-[9rem] shrink-0 truncate whitespace-nowrap text-xs"
+                          className="max-w-full whitespace-normal break-keep text-xs"
                         >
                           {example}
                         </Badge>
@@ -773,7 +774,8 @@ export default async function ServicesPage() {
             <Button
               size="lg"
               variant="default"
-              className="whitespace-nowrap shadow-sm hover:shadow-md transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+              wrap="responsive"
+              className="w-full shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:shadow-md sm:w-auto"
               asChild
             >
               <Link href="/reviews">
