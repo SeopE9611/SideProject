@@ -1761,7 +1761,7 @@ export default function CheckoutPage() {
                                 판매가
                               </span>
                               <div className="whitespace-nowrap text-lg font-bold tabular-nums text-foreground bp-sm:text-xl">
-                                {(item.price * item.quantity).toLocaleString()}
+                                {item.price.toLocaleString()}
                                 <span className="ml-0.5 text-sm font-medium text-muted-foreground">
                                   원
                                 </span>
