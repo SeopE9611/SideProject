@@ -1486,7 +1486,7 @@ export default function StringingApplicationDetailClient({
               {!isAdmin && data.orderId ? (
                 <div className="mb-4 flex flex-col gap-2 rounded-xl border border-primary/20 bg-primary/10 p-3 text-sm text-foreground dark:bg-primary/15 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                   <span>
-                    이 교체서비스는 주문 상세에서 함께 확인할 수 있어요.
+                    이 교체서비스는 연결된 주문의 구매확정과 함께 처리됩니다.
                   </span>
                   <Button
                     asChild

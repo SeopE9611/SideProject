@@ -870,6 +870,14 @@ export default function ApplicationsClient() {
                     </div>
                   ) : null}
 
+                  {isStringService && isLinkedApplication ? (
+                    <p className="text-sm text-muted-foreground">
+                      {hasOrderLink
+                        ? "이 교체서비스는 연결된 주문의 구매확정과 함께 처리됩니다."
+                        : "이 교체서비스는 연결된 대여의 이용확정과 함께 처리됩니다."}
+                    </p>
+                  ) : null}
+
                   <div className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3 md:pt-4 [&_button]:whitespace-nowrap">
                     {isStringService ? (
                       <Button
