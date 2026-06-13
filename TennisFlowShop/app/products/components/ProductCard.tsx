@@ -76,7 +76,9 @@ function getFeatureEntries(features?: Record<string, number>) {
     const rawValue = Number(features?.[key] ?? 0);
     const value = normalizeFeatureScoreTo100(rawValue);
     return { key, label: keyMap[key], value };
-  }).filter((item) => item.value > 0);
+  })
+    .filter((item) => item.value > 0)
+    .slice(0, 3);
 }
 
 // shadcn Button의 hover:bg-accent / hover:text-accent-foreground 간섭을 피하기 위해
@@ -175,7 +177,7 @@ const productCardSurfaceClass =
 const productImageWrapClass =
   "relative w-full overflow-hidden rounded-t-2xl bg-secondary/40 aspect-[5/4] bp-md:aspect-square";
 const productMetaPillClass =
-  "flex items-center justify-between rounded-xl border border-border/60 bg-secondary/50 px-2 py-1.5";
+  "flex items-center justify-between rounded-lg border border-border/50 bg-secondary/35 px-2 py-1";
 
 type Props = {
   product: Product;
@@ -244,8 +246,8 @@ const ProductCard = React.memo(
     ];
 
     const soldOutOverlay = isSoldOut ? (
-      <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-background/45 backdrop-blur-sm">
-        <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+      <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-background/35">
+        <div className="absolute inset-0 flex items-center justify-center bg-background/40">
           <Badge variant="secondary" className="text-sm font-semibold">
             품절
           </Badge>
@@ -393,6 +395,33 @@ const ProductCard = React.memo(
                   ))}
                 </div>
               )}
+              <div className="absolute right-3 top-3 z-20">
+                <WishButton
+                  inWish={inWish}
+                  disabled={isWishUnknown}
+                  onToggle={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    try {
+                      await toggle(product._id);
+                      showSuccessToast(
+                        inWish
+                          ? "위시리스트에서 제거했습니다."
+                          : "위시리스트에 추가했습니다.",
+                      );
+                    } catch (e: any) {
+                      if (e?.message === "unauthorized") {
+                        router.push(
+                          `/login?next=${encodeURIComponent(detailHref)}`,
+                        );
+                      } else {
+                        showErrorToast("처리 중 오류가 발생했습니다.");
+                      }
+                    }
+                  }}
+                  size="sm"
+                />
+              </div>
             </div>
             <div className="min-w-0 flex-1 p-4 bp-md:p-5">
               <div className="flex flex-col gap-3 mb-3">
@@ -450,7 +479,7 @@ const ProductCard = React.memo(
                 </div>
               )}
 
-              <div className="grid grid-cols-[minmax(0,1fr)_40px] gap-2 max-w-md">
+              <div className="grid max-w-md grid-cols-1 gap-2">
                 <Button
                   asChild
                   variant="default"
@@ -461,7 +490,7 @@ const ProductCard = React.memo(
                   <Link href={detailHref}>
                     <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1.5" />
                     <span className="min-w-0 break-keep">
-                      {isApplyFlow ? "이 스트링 선택" : "교체서비스와 함께 선택"}
+                      {isApplyFlow ? "이 스트링 선택" : "교체서비스 선택"}
                     </span>
                   </Link>
                 </Button>
@@ -479,30 +508,6 @@ const ProductCard = React.memo(
                   </Button>
                 )}
 
-                <WishButton
-                  inWish={inWish}
-                  disabled={isWishUnknown}
-                  onToggle={async (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    try {
-                      await toggle(product._id);
-                      showSuccessToast(
-                        inWish
-                          ? "위시리스트에서 제거했습니다."
-                          : "위시리스트에 추가했습니다.",
-                      );
-                    } catch (e: any) {
-                      if (e?.message === "unauthorized") {
-                        router.push(
-                          `/login?next=${encodeURIComponent(detailHref)}`,
-                        );
-                      } else {
-                        showErrorToast("처리 중 오류가 발생했습니다.");
-                      }
-                    }
-                  }}
-                />
               </div>
               {shouldShowStandaloneServiceBadge && (
                 <Badge
@@ -555,6 +560,27 @@ const ProductCard = React.memo(
               ))}
             </div>
           )}
+          <div className="absolute right-3 top-3 z-20">
+            <WishButton
+              inWish={inWish}
+              disabled={isWishUnknown}
+              onToggle={async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                  await toggle(product._id);
+                  showSuccessToast(
+                    inWish
+                      ? "위시리스트에서 제거했습니다."
+                      : "위시리스트에 추가했습니다.",
+                  );
+                } catch {
+                  showErrorToast("처리 중 오류가 발생했습니다.");
+                }
+              }}
+              size="sm"
+            />
+          </div>
         </div>
 
         {/* 카드 콘텐츠 */}
@@ -586,17 +612,11 @@ const ProductCard = React.memo(
             </div>
 
             {featureEntries.length > 0 && (
-              <div className="mb-3 grid grid-cols-2 gap-1.5 text-[11px] sm:text-xs">
-                {featureEntries.map((feature, index) => (
+              <div className="mb-3 flex flex-wrap gap-1.5 text-[11px] sm:text-xs">
+                {featureEntries.map((feature) => (
                   <div
                     key={feature.key}
-                    className={cn(
-                      productMetaPillClass,
-                      "min-w-0 px-2 py-1.5",
-                      featureEntries.length % 2 === 1 &&
-                        index === featureEntries.length - 1 &&
-                        "col-span-2",
-                    )}
+                    className={cn(productMetaPillClass, "min-w-[88px] flex-1")}
                   >
                     <div className="flex min-w-0 items-center justify-between gap-1">
                       <span className="shrink-0 whitespace-nowrap text-muted-foreground font-medium">
@@ -618,7 +638,7 @@ const ProductCard = React.memo(
         </CardContent>
 
         <CardFooter className="mt-auto grid grid-cols-1 gap-2 p-3 pt-3 bp-sm:p-4">
-          <div className="grid grid-cols-[minmax(0,1fr)_40px] gap-2">
+          <div className="grid grid-cols-1 gap-2">
             <Button
               asChild
               type="button"
@@ -629,31 +649,10 @@ const ProductCard = React.memo(
               <Link href={detailHref}>
                 <Eye className="h-4 w-4 mr-1.5" />
                 <span className="min-w-0 break-keep">
-                  {isApplyFlow ? "이 스트링 선택" : "교체서비스와 함께 선택"}
+                  {isApplyFlow ? "이 스트링 선택" : "교체서비스 선택"}
                 </span>
               </Link>
             </Button>
-            <div className="flex justify-end">
-              <WishButton
-                inWish={inWish}
-                disabled={isWishUnknown}
-                onToggle={async (e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  try {
-                    await toggle(product._id);
-                    showSuccessToast(
-                      inWish
-                        ? "위시리스트에서 제거했습니다."
-                        : "위시리스트에 추가했습니다.",
-                    );
-                  } catch {
-                    showErrorToast("처리 중 오류가 발생했습니다.");
-                  }
-                }}
-                size="md"
-              />
-            </div>
           </div>
 
           {ENABLE_STRING_STANDALONE_ORDER && (
