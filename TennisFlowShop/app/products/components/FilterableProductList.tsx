@@ -740,7 +740,7 @@ export default function FilterableProductList({
         </SheetContent>
       </Sheet>
 
-      <div className="grid grid-cols-1 gap-6 bp-xl:gap-8 bp-lg:grid-cols-[300px_minmax(0,1fr)] bp-xl:grid-cols-[320px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-[240px_minmax(0,1fr)] bp-xl:grid-cols-[260px_minmax(0,1fr)] bp-xl:gap-7">
         {/* 필터 사이드바 */}
         <div className={cn("hidden bp-lg:block", "space-y-4 md:space-y-6")}>
           <div className="sticky top-20 self-start">
@@ -999,7 +999,7 @@ export default function FilterableProductList({
                 className={cn(
                   "grid gap-4 bp-md:gap-6",
                   viewMode === "grid"
-                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-2 bp-2xl:grid-cols-3 bp-3xl:grid-cols-4"
+                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-2xl:grid-cols-3 bp-3xl:grid-cols-4"
                     : "grid-cols-1",
                 )}
               >
@@ -1055,7 +1055,7 @@ export default function FilterableProductList({
                   "grid gap-4 bp-md:gap-6 transition-opacity",
                   isBackgroundRefreshing && "opacity-70",
                   viewMode === "grid"
-                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-lg:grid-cols-2 bp-2xl:grid-cols-3 bp-3xl:grid-cols-4"
+                    ? "grid-cols-1 bp-sm:grid-cols-2 bp-2xl:grid-cols-3 bp-3xl:grid-cols-4"
                     : "grid-cols-1",
                 )}
               >
@@ -1097,7 +1097,7 @@ export default function FilterableProductList({
 
               {/* 추가 로딩 표시 */}
               {isFetchingMore && (
-                <div className="mt-4 grid grid-cols-1 gap-4 bp-md:gap-6 bp-sm:grid-cols-2 bp-lg:grid-cols-2 bp-2xl:grid-cols-3 bp-3xl:grid-cols-4">
+                <div className="mt-4 grid grid-cols-1 gap-4 bp-md:gap-6 bp-sm:grid-cols-2 bp-2xl:grid-cols-3 bp-3xl:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, index) => (
                     <div
                       key={`products-fetching-skeleton-${index}`}

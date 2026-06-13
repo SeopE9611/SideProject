@@ -146,7 +146,7 @@ export const FilterPanel = React.memo(function FilterPanel({
   return (
     <div
       className={cn(
-        "rounded-lg bp-sm:rounded-xl border border-border bg-card p-4 bp-sm:p-6 shadow-sm",
+        "rounded-lg bp-sm:rounded-xl border border-border/70 bg-card p-4 bp-lg:p-4 bp-xl:p-5 shadow-sm",
         "bp-lg:max-h-[calc(100vh-116px)] bp-lg:overflow-y-auto bp-lg:overscroll-contain bp-lg:pr-3 bp-lg:[scrollbar-gutter:stable] bp-lg:[scrollbar-width:thin] bp-lg:[scrollbar-color:hsl(var(--muted-foreground)/0.15)_transparent] bp-lg:[&::-webkit-scrollbar]:w-1 bp-lg:[&::-webkit-scrollbar-track]:bg-transparent bp-lg:[&::-webkit-scrollbar-thumb]:rounded-full bp-lg:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 bp-lg:hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30",
       )}
     >
@@ -178,9 +178,9 @@ export const FilterPanel = React.memo(function FilterPanel({
             exit={{ opacity: 0, y: -5 }}
             transition={{ duration: 0.15 }}
           >
-            <div className="flex items-center justify-between mb-2 bp-sm:mb-3">
+            <div className="mb-2 flex items-center justify-between">
               <div className="flex gap-2 items-center">
-                <h2 className="break-keep text-lg font-bold leading-tight text-foreground bp-sm:text-xl">
+                <h2 className="break-keep text-lg font-bold leading-tight text-foreground">
                   필터
                 </h2>
                 {onClose && (
@@ -210,7 +210,7 @@ export const FilterPanel = React.memo(function FilterPanel({
               </div>
             </div>
 
-            <p className="mb-3 bp-sm:mb-4 text-xs text-muted-foreground leading-relaxed break-keep">
+            <p className="mb-3 text-xs leading-relaxed text-muted-foreground break-keep">
               {onClose
                 ? "선택 후 하단의 필터 적용을 누르면 결과에 반영됩니다."
                 : "조건을 선택하면 목록에 바로 반영됩니다."}
@@ -221,7 +221,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                 e.preventDefault();
                 onSearchSubmit();
               }}
-              className="mb-4 bp-sm:mb-6 flex gap-2"
+              className="mb-4 flex gap-2"
             >
               <div className="relative flex-1">
                 <Search className="absolute left-2.5 bp-sm:left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -260,10 +260,10 @@ export const FilterPanel = React.memo(function FilterPanel({
               </Button>
             </form>
 
-            <div className="mb-4 bp-sm:mb-6">
+            <div className="mb-4">
               <Label
                 htmlFor="brand"
-                className="mb-2 bp-sm:mb-3 block font-medium text-sm"
+                className="mb-1.5 block text-sm font-medium"
               >
                 브랜드
               </Label>
@@ -287,7 +287,7 @@ export const FilterPanel = React.memo(function FilterPanel({
               </Select>
             </div>
 
-            <div className="space-y-1.5 mb-4 bp-sm:mb-6">
+            <div className="mb-4 space-y-1.5">
               <Label className="text-sm">재질</Label>
               <Select
                 value={selectedMaterial ?? "all"}
@@ -309,11 +309,11 @@ export const FilterPanel = React.memo(function FilterPanel({
               </Select>
             </div>
 
-            <div className="mb-4 space-y-2 bp-sm:mb-6">
+            <div className="mb-4 space-y-2">
               <Label className="text-sm font-medium text-foreground">
                 혜택
               </Label>
-              <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2">
                 <Button
                   type="button"
                   variant={exposureFilter.length === 0 ? "default" : "outline"}
@@ -350,8 +350,8 @@ export const FilterPanel = React.memo(function FilterPanel({
               </div>
             </div>
 
-            <div className="space-y-3 bp-sm:space-y-4">
-              <h3 className="font-medium text-base bp-sm:text-lg">성능</h3>
+            <div className="space-y-3">
+              <h3 className="text-base font-medium">성능</h3>
               <p className="text-xs text-muted-foreground leading-relaxed break-keep">
                 성능 점수는 도깨비테니스 내부 기준입니다. 100점에 가까울수록
                 해당 성향이 강합니다.
@@ -383,8 +383,8 @@ export const FilterPanel = React.memo(function FilterPanel({
                 ),
               )}
             </div>
-            <div className="mt-4 bp-sm:mt-6 space-y-2">
-              <h3 className="font-medium text-base bp-sm:text-lg">가격대</h3>
+            <div className="mt-4 space-y-2">
+              <h3 className="text-base font-medium">가격대</h3>
               <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-3">
                 {PRICE_PRESETS.map((preset) => {
                   const isActive =
