@@ -1342,7 +1342,8 @@ export default function OrderDetailClient({
         <div id="reviews-cta" className="mt-4">
           {serviceLinkedOrder ? (
             <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
-              교체서비스가 연결된 주문은 서비스 리뷰만 작성할 수 있습니다.
+              이 이용 건은 교체서비스 이용 경험에 대한 서비스 리뷰를 작성할
+              수 있습니다.
             </div>
           ) : allReviewed ? (
             <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/10 p-4 shadow-sm dark:bg-primary/20 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-6">
