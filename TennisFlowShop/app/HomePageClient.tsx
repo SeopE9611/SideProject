@@ -736,7 +736,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </div>
               <div>
                 <p className="mb-1 text-xs font-semibold text-primary">
-                  가장 많이 찾는 시작
+                  빠른 신청
                 </p>
                 <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">
                   보유 장비로 교체서비스 신청
@@ -765,7 +765,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </div>
               <div>
                 <h3 className="text-base bp-sm:text-lg font-semibold break-keep text-foreground">
-                  새{"\u00A0"}스트링 선택 후 교체 신청
+                  새{"\u00A0"}스트링으로 교체서비스 신청
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-foreground/80">
                   스트링을 새로 선택하고 교체서비스까지 한{"\u00A0"}번에

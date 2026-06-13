@@ -124,10 +124,10 @@ function amountMeaningText(item: OpItem) {
 }
 
 const PAGE_COPY = {
-  title: "오늘 처리함",
+  title: "운영 업무",
   description:
     "결제 확인, 취소 요청, 배송 누락, 교체서비스 작업 등 오늘 처리해야 할 운영 업무를 한곳에서 확인합니다.",
-  dailyTodoTitle: "오늘 해야 할 일",
+  dailyTodoTitle: "오늘 처리",
   dailyTodoLabels: {
     urgent: "긴급",
     caution: "확인 필요",
@@ -1371,7 +1371,7 @@ export default function OperationsClient() {
 
         <Section className="mt-5">
           <SectionHeader
-            title="오늘 바로 처리할 업무"
+            title="오늘 처리"
             description="건수가 있는 항목부터 열어 처리하면 됩니다."
             aside={
               <p className="max-w-full break-words text-sm leading-relaxed text-muted-foreground sm:max-w-[360px] sm:text-right">
@@ -1700,7 +1700,7 @@ export default function OperationsClient() {
             <div>
               <CardTitle>고급 필터</CardTitle>
               <CardDescription className="mt-1 text-xs">
-                고급 필터는 특정 고객, 문서 ID, 시나리오, 문제 유형을 직접 좁힐
+                고급 필터는 특정 고객, 문서 ID, 운영 흐름, 문제 유형을 직접 좁힐
                 때 사용합니다. 일반 처리는 위의 업무 큐를 먼저 사용하세요.
               </CardDescription>
               {error && !shouldShowGlobalError && (
@@ -1839,10 +1839,10 @@ export default function OperationsClient() {
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="시나리오(전체)" />
+                    <SelectValue placeholder="운영 흐름(전체)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">시나리오(전체)</SelectItem>
+                    <SelectItem value="all">운영 흐름(전체)</SelectItem>
                     <SelectItem value="1">레거시 · 스트링 단품 구매</SelectItem>
                     <SelectItem value="2">
                       스트링 구매 + 교체서비스 신청(통합)
@@ -1859,6 +1859,9 @@ export default function OperationsClient() {
                     <SelectItem value="8">패키지 구매</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="w-full text-[11px] text-muted-foreground">
+                  레거시 유형은 기존 데이터 확인용이며 신규 접수 흐름은 현재 운영하지 않습니다.
+                </p>
 
                 <Select
                   value={integrated}
@@ -1952,7 +1955,7 @@ export default function OperationsClient() {
                   <AlertTriangle className="h-3.5 w-3.5 text-warning" />
                   <span>
                     상태 배지는 목록에 보이는 <strong>주의 / 확인 필요</strong>
-                    만 사용합니다. 시나리오는 각 행 텍스트를 직접 확인하세요.
+                    만 사용합니다. 운영 흐름은 각 행 텍스트를 직접 확인하세요.
                   </span>
                 </div>
               </div>
@@ -2136,7 +2139,7 @@ export default function OperationsClient() {
                         처리 상태
                       </TableHead>
                       <TableHead className={cn(thClasses, "w-[42%]")}>
-                        대상 · 시나리오 · 처리
+                        대상 · 운영 흐름 · 처리
                       </TableHead>
                       <TableHead
                         className={cn(thClasses, "w-[18%] text-right")}

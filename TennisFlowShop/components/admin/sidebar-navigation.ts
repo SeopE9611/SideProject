@@ -55,7 +55,7 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
     label: "오늘 업무",
     items: [
       {
-        title: "오늘 처리함",
+        title: "운영 업무",
         href: "/admin/operations",
         icon: Inbox,
         key: "operations",

@@ -218,7 +218,7 @@ export default async function ServicesPage() {
 
   const serviceStartOptions = [
     {
-      badge: "추천",
+      badge: "빠른 신청",
       icon: <Grid2X2 className="h-7 w-7" />,
       title: "새 스트링으로 교체서비스 신청",
       description:

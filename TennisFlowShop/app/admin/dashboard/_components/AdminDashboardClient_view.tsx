@@ -489,17 +489,17 @@ export default function AdminDashboardClient() {
       <section className="space-y-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold tracking-normal">오늘 처리해야 할 일</h2>
-            <p className="text-sm text-muted-foreground">보고 지표보다 먼저 확인해야 하는 운영 업무입니다.</p>
+            <h2 className="text-2xl font-semibold tracking-normal">운영 업무</h2>
+            <p className="text-sm text-muted-foreground">긴급, 오늘 처리, 확인 필요 순서로 먼저 확인하세요.</p>
           </div>
           <Button asChild variant="outline" className="w-fit shrink-0 whitespace-nowrap bg-transparent">
-            <Link href="/admin/operations">오늘 처리함 열기</Link>
+            <Link href="/admin/operations">전체 운영 업무 보기</Link>
           </Button>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Card className="border-warning/40 bg-warning/5">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">긴급 알림</CardTitle>
+              <CardTitle className="text-base">긴급</CardTitle>
               <CardDescription>취소·장기 결제대기·연체</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
