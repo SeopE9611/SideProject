@@ -13,6 +13,10 @@ import {
 } from "@/lib/payments/toss/session";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
+import {
+  ENABLE_RACKET_STANDALONE_ORDER,
+  RACKET_STANDALONE_ORDER_DISABLED_RESPONSE,
+} from "@/lib/orders/racket-standalone-policy";
 
 export const runtime = "nodejs";
 export const preferredRegion = ["icn1", "hnd1"];
@@ -139,7 +143,7 @@ async function handleNiceRacketReturn(req: Request) {
     }
 
     const fallbackPath = session.racketPayload?.racketId
-      ? `/rackets/${encodeURIComponent(session.racketPayload.racketId)}/purchase?recovery=1`
+      ? `/rackets/${encodeURIComponent(session.racketPayload.racketId)}/select-string`
       : "/rackets";
 
     if (session.provider !== "nicepay" || session.flowType !== "racket_order") {
@@ -594,9 +598,19 @@ async function handleNiceRacketReturn(req: Request) {
 }
 
 export async function GET(req: Request) {
+  if (!ENABLE_RACKET_STANDALONE_ORDER) {
+    return NextResponse.json(RACKET_STANDALONE_ORDER_DISABLED_RESPONSE, {
+      status: 410,
+    });
+  }
   return handleNiceRacketReturn(req);
 }
 
 export async function POST(req: Request) {
+  if (!ENABLE_RACKET_STANDALONE_ORDER) {
+    return NextResponse.json(RACKET_STANDALONE_ORDER_DISABLED_RESPONSE, {
+      status: 410,
+    });
+  }
   return handleNiceRacketReturn(req);
 }

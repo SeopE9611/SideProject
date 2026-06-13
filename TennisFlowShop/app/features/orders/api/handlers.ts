@@ -12,6 +12,7 @@ import { verifyAccessToken } from "@/lib/auth.utils";
 import { getShippingBadge } from "@/lib/badge-style";
 import clientPromise from "@/lib/mongodb";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
+import { ENABLE_RACKET_STANDALONE_ORDER } from "@/lib/orders/racket-standalone-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { findOneActivePassForUser } from "@/lib/passes.service";
 import { deductPoints } from "@/lib/points.service";
@@ -1056,6 +1057,28 @@ export async function createOrder(
             };
           }),
         );
+
+        if (!ENABLE_RACKET_STANDALONE_ORDER) {
+          const hasRacketItem = itemsWithSnapshot.some(
+            (it) => it.kind === "racket",
+          );
+          const hasMountableStringItem = itemsWithSnapshot.some(
+            (it) =>
+              it.kind === "product" && (it as any).isMountableString === true,
+          );
+          if (
+            hasRacketItem &&
+            (!hasMountableStringItem ||
+              shippingInfo?.withStringService !== true)
+          ) {
+            throw new HttpError(400, {
+              error: "RACKET_STANDALONE_ORDER_DISABLED",
+              reason: "RACKET_SERVICE_REQUIRED",
+              message:
+                "라켓 단품구매는 현재 운영하지 않습니다. 스트링 선택 후 교체서비스 포함 주문으로 진행해주세요.",
+            });
+          }
+        }
 
         if (!ENABLE_STRING_STANDALONE_ORDER) {
           const isMountableStringOnlyOrder =
