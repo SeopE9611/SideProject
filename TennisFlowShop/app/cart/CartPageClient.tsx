@@ -154,6 +154,20 @@ export default function CartPageClient() {
     () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [cartItems],
   );
+  const regularSubtotal = useMemo(
+    () =>
+      cartItems.reduce((sum, item) => {
+        const regularPrice =
+          typeof item.regularPrice === "number" &&
+          Number.isFinite(item.regularPrice) &&
+          item.regularPrice > item.price
+            ? item.regularPrice
+            : item.price;
+        return sum + regularPrice * item.quantity;
+      }, 0),
+    [cartItems],
+  );
+  const productDiscount = regularSubtotal - subtotal;
 
   const productIds = useMemo(
     () =>
@@ -832,6 +846,10 @@ export default function CartPageClient() {
                     const canDec = item.quantity > 1;
                     const maxStock = getMaxStock(item.stock);
                     const canInc = item.quantity < maxStock;
+                    const hasDiscount =
+                      typeof item.regularPrice === "number" &&
+                      Number.isFinite(item.regularPrice) &&
+                      item.regularPrice > item.price;
 
                     const isBundleRacket =
                       isBundleLocked &&
@@ -899,12 +917,42 @@ export default function CartPageClient() {
                               >
                                 {item.name}
                               </Link>
-                              <div className="mt-0.5 whitespace-nowrap text-sm text-muted-foreground">
-                                개당{" "}
-                                <span className="tabular-nums font-medium text-foreground">
+                              <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-sm">
+                                <span className="text-muted-foreground">
+                                  {hasDiscount ? "할인가" : "판매가"}
+                                </span>
+                                <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">
                                   {formatKRW(item.price)}원
                                 </span>
+                                {hasDiscount && (
+                                  <span className="whitespace-nowrap text-xs text-muted-foreground line-through tabular-nums">
+                                    정가 {formatKRW(item.regularPrice!)}원
+                                  </span>
+                                )}
                               </div>
+                              {hasDiscount && (
+                                <p className="mt-0.5 text-xs font-medium text-primary tabular-nums">
+                                  {item.discountRate ??
+                                    Math.round(
+                                      ((item.regularPrice! - item.price) /
+                                        item.regularPrice!) *
+                                        100,
+                                    )}
+                                  % OFF ·{" "}
+                                  {formatKRW(
+                                    item.discountAmount ??
+                                      item.regularPrice! - item.price,
+                                  )}
+                                  원 할인
+                                </p>
+                              )}
+                              <p className="mt-0.5 text-xs text-muted-foreground">
+                                단가{" "}
+                                <span className="whitespace-nowrap tabular-nums">
+                                  {formatKRW(item.price)}원
+                                </span>{" "}
+                                × {item.quantity}개
+                              </p>
                               {item.selectedGauge && (
                                 <div className="mt-1 whitespace-nowrap text-xs text-muted-foreground">
                                   게이지: {formatGaugeLabel(item.selectedGauge)}
@@ -1221,14 +1269,34 @@ export default function CartPageClient() {
                       <div className="rounded-2xl bg-card/20 p-2 shadow-lg">
                         <Package className="h-5 w-5" />
                       </div>
-                      최종 주문 요약
+                      예상 주문 요약
                     </CardTitle>
                   </div>
                   <CardContent className="space-y-5 bp-sm:space-y-6 p-4 bp-sm:p-6">
                     <div className="space-y-4">
+                      {productDiscount > 0 && (
+                        <>
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="min-w-0 break-words text-muted-foreground">
+                              상품 정가 합계
+                            </span>
+                            <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
+                              {formatKRW(regularSubtotal)}원
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between gap-3 text-primary">
+                            <span className="min-w-0 break-words">
+                              상품 할인
+                            </span>
+                            <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
+                              -{formatKRW(productDiscount)}원
+                            </span>
+                          </div>
+                        </>
+                      )}
                       <div className="flex items-center justify-between gap-3">
                         <span className="min-w-0 break-words text-muted-foreground">
-                          상품 금액
+                          상품 판매가 합계
                         </span>
                         <span className="shrink-0 whitespace-nowrap text-right text-lg font-semibold tabular-nums">
                           {formatKRW(subtotal)}원
@@ -1257,7 +1325,7 @@ export default function CartPageClient() {
                       <Separator className="opacity-40" />
                       <div className="flex items-center justify-between gap-3 text-xl font-bold">
                         <span className="min-w-0 break-words">
-                          총 결제 금액
+                          예상 결제금액
                         </span>
                         {!isShippingFeeReady ? (
                           <Skeleton className="h-7 w-28 rounded-md" />
@@ -1460,7 +1528,7 @@ export default function CartPageClient() {
             <SiteContainer variant="full" className="max-w-screen-sm py-3">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
-                  총 결제 금액
+                  예상 결제금액
                 </span>
                 {!isShippingFeeReady ? (
                   <Skeleton className="h-6 w-24 rounded-md" />
