@@ -2016,8 +2016,8 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                   <CardContent className="p-5 bp-sm:p-6">
-                    <div className="mx-auto w-full max-w-5xl space-y-6">
-                      <div className="grid grid-cols-1 gap-x-5 gap-y-4 md:grid-cols-2">
+                    <div className="w-full space-y-5">
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div className="space-y-2">
                           <Label
                             htmlFor="recipient-name"
@@ -2109,8 +2109,8 @@ export default function CheckoutPage() {
                       </div>
 
                       {needsShippingAddress && (
-                        <div className="grid grid-cols-1 gap-x-5 gap-y-4 border-t border-border/60 pt-6 md:grid-cols-2">
-                          <div className="space-y-2 md:col-span-2">
+                        <div className="space-y-4 border-t border-border/60 pt-5">
+                          <div className="space-y-2">
                             <Label
                               htmlFor="address-postal"
                               className="flex items-center gap-2 text-sm"
@@ -2119,14 +2119,14 @@ export default function CheckoutPage() {
                               우편번호
                             </Label>
 
-                            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 bp-sm:max-w-md">
+                            <div className="flex items-end gap-2">
                               <Input
                                 id="address-postal"
                                 readOnly
                                 value={postalCode}
                                 placeholder="우편번호"
                                 className={cn(
-                                  "h-11 min-w-0 cursor-not-allowed border-2 bg-muted bp-sm:max-w-[180px]",
+                                  "h-11 min-w-0 flex-1 cursor-not-allowed border-2 bg-muted bp-sm:max-w-[180px]",
                                   showPostalCodeError &&
                                     "border-destructive/30",
                                 )}
@@ -2155,7 +2155,7 @@ export default function CheckoutPage() {
                             </div>
                           </div>
 
-                          <div className="space-y-2 md:col-span-2">
+                          <div className="space-y-2">
                             <Label htmlFor="address-main">기본 주소</Label>
                             <Input
                               id="address-main"
@@ -2169,7 +2169,7 @@ export default function CheckoutPage() {
                             />
                           </div>
 
-                          <div className="space-y-2 md:col-span-2">
+                          <div className="space-y-2">
                             <Label htmlFor="address-detail">상세 주소</Label>
                             <Input
                               id="address-detail"
@@ -2192,7 +2192,7 @@ export default function CheckoutPage() {
                             </div>
                           </div>
 
-                          <div className="space-y-2 md:col-span-2">
+                          <div className="space-y-2">
                             <Label
                               htmlFor="delivery-request"
                               className="flex items-center gap-2 text-sm"
@@ -2211,7 +2211,7 @@ export default function CheckoutPage() {
                             />
                           </div>
 
-                          <div className="rounded-lg border border-border bg-muted p-3 md:col-span-2">
+                          <div className="rounded-lg border border-border bg-muted p-3">
                             <div className="flex items-center space-x-2">
                               <Checkbox
                                 id="save-address"
