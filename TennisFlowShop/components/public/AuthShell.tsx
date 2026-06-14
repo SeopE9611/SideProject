@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -17,16 +17,22 @@ export function AuthShell({
   footer,
   className,
 }: AuthShellProps) {
+  const titleId = useId();
+
   return (
-    <main
+    <section
+      aria-labelledby={titleId}
       className={cn(
         "flex min-h-[calc(100vh-8rem)] items-center justify-center bg-background px-4 py-8 sm:px-6",
         className,
       )}
     >
-      <section className="w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-sm sm:p-8">
+      <div className="w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-sm sm:p-8">
         <header className="mb-6 space-y-2 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          <h1
+            id={titleId}
+            className="text-2xl font-semibold tracking-tight text-foreground"
+          >
             {title}
           </h1>
           {description && (
@@ -39,7 +45,7 @@ export function AuthShell({
             {footer}
           </footer>
         )}
-      </section>
-    </main>
+      </div>
+    </section>
   );
 }

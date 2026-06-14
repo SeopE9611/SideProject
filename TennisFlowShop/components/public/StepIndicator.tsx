@@ -18,13 +18,15 @@ export function StepIndicator({
   className,
 }: StepIndicatorProps) {
   const currentIndex = steps.findIndex((step) => step.id === currentStep);
+  const safeCurrentIndex = currentIndex >= 0 ? currentIndex : 0;
+  const safeCurrentStepId = steps[safeCurrentIndex]?.id;
 
   return (
     <nav aria-label="진행 단계" className={cn("overflow-x-auto", className)}>
       <ol className="flex min-w-max gap-2">
         {steps.map((step, index) => {
-          const isCurrent = step.id === currentStep;
-          const isComplete = currentIndex >= 0 && index < currentIndex;
+          const isCurrent = step.id === safeCurrentStepId;
+          const isComplete = index < safeCurrentIndex;
 
           return (
             <li
