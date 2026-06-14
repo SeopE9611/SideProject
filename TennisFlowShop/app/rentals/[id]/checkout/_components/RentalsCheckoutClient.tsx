@@ -978,6 +978,7 @@ export default function RentalsCheckoutClient({
                           {selectedString.regularPrice &&
                             selectedString.regularPrice >
                               selectedString.price && (
+                              <>
                               <span className="tabular-nums text-muted-foreground">
                                 정가{" "}
                                 <span className="line-through">
@@ -990,6 +991,7 @@ export default function RentalsCheckoutClient({
                               >
                                 {selectedString.discountRate}% OFF
                               </Badge>
+                              </>
                             )}
                           <span>
                             교체서비스 장착비: {selectedString.mountingFee.toLocaleString()}원
