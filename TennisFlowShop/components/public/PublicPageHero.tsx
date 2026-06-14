@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import SiteContainer from "@/components/layout/SiteContainer";
 import { cn } from "@/lib/utils";
 
 type PublicPageHeroProps = {
@@ -26,13 +27,13 @@ export function PublicPageHero({
   return (
     <header
       className={cn(
-        "border-b border-border bg-muted/30 px-4 py-10 sm:px-6 sm:py-14",
+        "border-b border-border bg-muted/30 py-10 bp-sm:py-14",
         className,
       )}
     >
-      <div
+      <SiteContainer
         className={cn(
-          "mx-auto flex max-w-6xl flex-col gap-6",
+          "flex flex-col gap-6",
           centered && "items-center text-center",
         )}
       >
@@ -40,11 +41,11 @@ export function PublicPageHero({
           {eyebrow && (
             <div className="text-sm font-medium text-primary">{eyebrow}</div>
           )}
-          <h1 className="text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+          <h1 className="text-balance text-3xl font-semibold tracking-tight text-foreground bp-sm:text-4xl">
             {title}
           </h1>
           {description && (
-            <div className="max-w-2xl text-pretty text-base text-muted-foreground sm:text-lg">
+            <div className="max-w-2xl text-pretty text-base text-muted-foreground bp-sm:text-lg">
               {description}
             </div>
           )}
@@ -52,15 +53,15 @@ export function PublicPageHero({
         {actions && (
           <div
             className={cn(
-              "flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap",
-              centered && "sm:justify-center",
+              "flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap",
+              centered && "bp-sm:justify-center",
             )}
           >
             {actions}
           </div>
         )}
         {children}
-      </div>
+      </SiteContainer>
     </header>
   );
 }

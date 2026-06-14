@@ -8,6 +8,7 @@ type ResultStateProps = {
   description?: ReactNode;
   actions?: ReactNode;
   children?: ReactNode;
+  icon?: ReactNode;
   className?: string;
 };
 
@@ -31,6 +32,7 @@ export function ResultState({
   description,
   actions,
   children,
+  icon,
   className,
 }: ResultStateProps) {
   return (
@@ -47,7 +49,7 @@ export function ResultState({
         )}
         aria-hidden="true"
       >
-        {statusLabels[status]}
+        {icon ?? statusLabels[status]}
       </div>
       <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
         {title}
