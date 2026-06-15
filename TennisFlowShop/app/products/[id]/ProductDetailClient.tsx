@@ -1827,17 +1827,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
           </Card>
         </div>
 
-        <Card className="mt-10 sm:mt-12 border border-border/60 shadow-lg bg-card rounded-3xl overflow-hidden">
+        <Card className="mt-10 min-w-0 overflow-hidden rounded-2xl border border-border bg-card shadow-sm sm:mt-12 sm:rounded-3xl">
           <CardContent className="p-0">
             <Tabs
               value={activeTab}
               onValueChange={(v) => updateTabInUrl(v as any)}
               className="w-full"
             >
-              <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 h-auto gap-1 sm:gap-1.5 bg-muted/30 rounded-none p-1 sm:p-1.5 border-b border-border/60">
+              <TabsList className="grid h-auto w-full grid-cols-2 gap-1 border-b border-border bg-muted/30 p-1 sm:gap-1.5 sm:p-1.5 md:grid-cols-4">
                 <TabsTrigger
                   value="description"
-                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium whitespace-normal break-keep leading-tight rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                  className="h-12 min-w-0 rounded-xl px-2 text-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-base md:h-16 md:text-lg"
                 >
                   <FileText className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">상품 설명</span>
@@ -1845,7 +1845,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </TabsTrigger>
                 <TabsTrigger
                   value="specifications"
-                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium whitespace-normal break-keep leading-tight rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                  className="h-12 min-w-0 rounded-xl px-2 text-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-base md:h-16 md:text-lg"
                 >
                   <Settings className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">상세 스펙</span>
@@ -1853,7 +1853,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </TabsTrigger>
                 <TabsTrigger
                   value="reviews"
-                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium whitespace-normal break-keep leading-tight rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                  className="h-12 min-w-0 rounded-xl px-2 text-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-base md:h-16 md:text-lg"
                 >
                   <Star className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">리뷰</span>
@@ -1864,7 +1864,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </TabsTrigger>
                 <TabsTrigger
                   value="qna"
-                  className="min-w-0 h-12 sm:h-14 md:h-16 px-3 text-sm sm:text-base md:text-lg font-medium whitespace-normal break-keep leading-tight rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                  className="h-12 min-w-0 rounded-xl px-2 text-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-base md:h-16 md:text-lg"
                 >
                   <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">문의</span>
@@ -1875,9 +1875,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="description" className="p-4 bp-md:p-8">
+              <TabsContent value="description" className="p-4 sm:p-6 bp-md:p-8">
                 <div className="prose max-w-none">
-                  <div className="flex items-center gap-3 mb-5 sm:mb-6">
+                  <div className="flex min-w-0 items-center gap-3 mb-5 sm:mb-6">
                     <div className="w-10 sm:w-12 h-10 sm:h-12 border border-border/60 bg-secondary text-foreground rounded-lg flex items-center justify-center">
                       <FileText className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
@@ -1885,8 +1885,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       상품 설명
                     </h3>
                   </div>
-                  <div className="bg-muted/30 p-4 sm:p-6 rounded-lg">
-                    <p className="text-muted-foreground leading-relaxed text-base sm:text-lg whitespace-pre-line break-words">
+                  <div className="rounded-xl border border-border bg-muted/30 p-4 sm:rounded-2xl sm:p-6">
+                    <p className="whitespace-pre-line break-words text-sm leading-relaxed text-muted-foreground sm:text-base">
                       {product.description ||
                         "이 제품은 최고급 소재로 제작된 프리미엄 테니스 스트링입니다. 뛰어난 반발력과 내구성을 자랑하며, 모든 레벨의 플레이어에게 적합합니다. 전문적인 장착 서비스와 함께 최상의 테니스 경험을 제공합니다."}
                     </p>
@@ -1894,9 +1894,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </div>
               </TabsContent>
 
-              <TabsContent value="specifications" className="p-4 bp-md:p-8">
+              <TabsContent value="specifications" className="p-4 sm:p-6 bp-md:p-8">
                 <div className="space-y-4 sm:space-y-6">
-                  <div className="flex items-center gap-3 mb-5 sm:mb-6">
+                  <div className="flex min-w-0 items-center gap-3 mb-5 sm:mb-6">
                     <div className="w-10 sm:w-12 h-10 sm:h-12 border border-border/60 bg-secondary text-foreground rounded-lg flex items-center justify-center">
                       <Settings className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
@@ -1916,9 +1916,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         return (
                           <div
                             key={key}
-                            className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border"
+                            className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4"
                           >
-                            <div className="flex min-w-0 items-center justify-between gap-3">
+                            <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                               <span className="font-semibold text-foreground text-sm sm:text-base">
                                 {key}
                               </span>
@@ -1931,7 +1931,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       })}
                   </div>
                   {product?.material === "hybrid" && hybridSpec && (
-                    <Card className="mt-4 sm:mt-6 border-0 shadow-none bg-transparent">
+                    <Card className="mt-4 sm:mt-6 border-0 bg-transparent shadow-none">
                       <CardContent className="p-0">
                         {/* 상세 스펙 그리드(파란 그라데이션 카드)와 톤 통일 */}
                         <div className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
@@ -1946,7 +1946,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                             {/* 메인 */}
-                            <div className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border">
+                            <div className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
                               <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">
                                 메인(Mains)
                               </div>
@@ -1960,7 +1960,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             </div>
 
                             {/* 크로스 */}
-                            <div className="bg-muted/30 p-3 sm:p-4 rounded-lg border border-border">
+                            <div className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
                               <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">
                                 크로스(Crosses)
                               </div>
@@ -1980,9 +1980,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </div>
               </TabsContent>
 
-              <TabsContent value="reviews" className="p-4 bp-md:p-8">
+              <TabsContent value="reviews" className="p-4 sm:p-6 bp-md:p-8">
                 <div className="space-y-4 sm:space-y-6">
-                  <div className="flex min-w-0 items-center justify-between gap-3">
+                  <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                     <div className="flex items-center gap-2 sm:gap-3">
                       <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 rounded-lg flex items-center justify-center">
                         <Star className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
@@ -2008,9 +2008,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       mergedReviews.map((review: any, index: number) => (
                         <Card
                           key={index}
-                          className="border-0 shadow-lg bg-muted/30"
+                          className="rounded-xl border border-border bg-card shadow-none sm:rounded-2xl"
                         >
-                          <CardContent className="p-4 sm:p-6 relative">
+                          <CardContent className="relative p-4 sm:p-6">
                             {busyReviewId === String(review._id) && (
                               <div className="absolute inset-0 bg-card/70 dark:bg-background/40 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -2018,13 +2018,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               </div>
                             )}
 
-                            <div className="flex items-start justify-between mb-3 sm:mb-4">
-                              <div className="flex items-center gap-3">
+                            <div className="mb-3 flex min-w-0 flex-wrap items-start justify-between gap-3 sm:mb-4">
+                              <div className="flex min-w-0 items-center gap-3">
                                 <div className="w-10 h-10 bg-secondary border border-border/60 rounded-full flex items-center justify-center text-foreground font-bold text-lg shadow-sm">
                                   {review.user?.charAt(0) || "U"}
                                 </div>
-                                <div>
-                                  <div className="font-bold text-foreground text-sm sm:text-base">
+                                <div className="min-w-0">
+                                  <div className="break-words font-bold text-foreground text-sm sm:text-base">
                                     {review.status === "hidden"
                                       ? review.ownedByMe
                                         ? `${review.user ?? "내 리뷰"} (비공개)`
@@ -2274,8 +2274,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                               return (
                                 <div className="space-y-3 sm:space-y-4">
-                                  <div className="bg-card dark:bg-muted/50 p-3 sm:p-4 rounded-lg border border-border">
-                                    <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
+                                  <div className="rounded-xl border border-border bg-muted/30 p-3 sm:p-4">
+                                    <p className="break-keep break-words text-sm leading-relaxed text-muted-foreground sm:text-base">
                                       {review.content}
                                     </p>
                                   </div>
@@ -2292,7 +2292,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                               onClick={() =>
                                                 openViewer(review.photos, i)
                                               }
-                                              className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 border-border hover:border-border dark:hover:border-border transition-colors shadow-md shrink-0"
+                                              className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-border transition-colors hover:border-foreground/40 sm:h-20 sm:w-20"
                                               aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
                                             >
                                               <Image
@@ -2318,9 +2318,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         </Card>
                       ))
                     ) : (
-                      <div className="text-center py-8 sm:py-16">
-                        <div className="w-16 sm:w-20 h-16 sm:h-20 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
-                          <Star className="h-8 w-8 sm:h-10 sm:w-10 text-foreground" />
+                      <div className="rounded-xl border border-border bg-muted/30 px-4 py-10 text-center sm:rounded-2xl sm:px-6 sm:py-14">
+                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card sm:mb-5 sm:h-14 sm:w-14">
+                          <Star className="h-6 w-6 text-foreground sm:h-7 sm:w-7" />
                         </div>
                         <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">
                           아직 리뷰가 없습니다
@@ -2341,8 +2341,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </div>
               </TabsContent>
 
-              <TabsContent value="qna" className="p-4 bp-md:p-8">
-                <div className="flex items-center justify-between mb-5 sm:mb-6">
+              <TabsContent value="qna" className="p-4 sm:p-6 bp-md:p-8">
+                <div className="mb-5 flex min-w-0 flex-wrap items-center justify-between gap-3 sm:mb-6">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 text-foreground rounded-lg flex items-center justify-center">
                       <MessageSquare className="h-4 w-4 sm:h-6 sm:w-6" />
@@ -2378,9 +2378,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 {!qnaLoading && !qnaError && (
                   <>
                     {qnas.length === 0 ? (
-                      <div className="text-center py-8 sm:py-16">
-                        <div className="w-16 sm:w-20 h-16 sm:h-20 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg">
-                          <MessageSquare className="h-8 w-8 sm:h-10 sm:w-10 text-foreground" />
+                      <div className="rounded-xl border border-border bg-muted/30 px-4 py-10 text-center sm:rounded-2xl sm:px-6 sm:py-14">
+                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card sm:mb-5 sm:h-14 sm:w-14">
+                          <MessageSquare className="h-6 w-6 text-foreground sm:h-7 sm:w-7" />
                         </div>
                         <h4 className="text-lg sm:text-xl font-bold text-foreground mb-2">
                           아직 문의가 없습니다
@@ -2404,9 +2404,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       <div className="space-y-3 sm:space-y-4">
                         {qnas.map((q: any) => (
                           <Link key={q._id} href={`/board/qna/${q._id}`}>
-                            <Card className="hover:shadow-md transition-[background-color,color,border-color,box-shadow,opacity] duration-200 border-border">
+                            <Card className="rounded-xl border-border shadow-none transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-muted/30 hover:shadow-sm sm:rounded-2xl">
                               <CardContent className="p-4 sm:p-5">
-                                <div className="flex items-start justify-between">
+                                <div className="flex min-w-0 items-start justify-between">
                                   <div className="flex-1 min-w-0">
                                     <div className="space-y-1 min-w-0">
                                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
@@ -2438,10 +2438,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                           {q.answer ? "답변 완료" : "답변 대기"}
                                         </Badge>
                                       </div>
-                                      <div className="line-clamp-2 break-keep font-semibold text-foreground hover:text-foreground text-sm sm:text-base">
+                                      <div className="line-clamp-2 min-w-0 break-keep break-words text-sm font-semibold leading-relaxed text-foreground hover:text-foreground sm:text-base">
                                         {q.title}
                                       </div>
-                                      <div className="flex items-center gap-3 sm:gap-4 text-sm text-foreground/75">
+                                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground sm:gap-x-4">
                                         <span>{q.authorName ?? "익명"}</span>
                                         <span>{fmtDate(q.createdAt)}</span>
                                       </div>
@@ -2474,12 +2474,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
           />
         )}
 
-        <div ref={relatedSectionRef} className="mt-8 sm:mt-12">
-          <Card className="rounded-3xl border border-border/60 bg-card shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg sm:text-xl">관련 상품</CardTitle>
+        <div ref={relatedSectionRef} className="mt-8 space-y-6 sm:mt-12 sm:space-y-8">
+          <Card className="rounded-2xl border border-border bg-card shadow-sm sm:rounded-3xl">
+            <CardHeader className="p-5 pb-3 sm:p-6 sm:pb-4">
+              <CardTitle className="break-keep text-lg font-semibold leading-snug sm:text-xl">관련 상품</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
               <HorizontalProducts
                 title="관련 상품"
                 items={relatedFiltered.map(
