@@ -32,6 +32,11 @@ const RentDialog = dynamic(
 const fetcher = (url: string) =>
   fetch(url, { credentials: "include" }).then((r) => r.json());
 
+const racketCardSurfaceClass =
+  "overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md";
+const racketImageWrapClass =
+  "relative block w-full aspect-[4/3] overflow-hidden bg-muted/30";
+
 type RacketItem = {
   id: string;
   brand: string;
@@ -377,11 +382,14 @@ const RacketCard = React.memo(
 
     if (viewMode === "list") {
       return (
-        <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md">
+        <Card className={racketCardSurfaceClass}>
           <div className="flex flex-col bp-md:flex-row">
             <Link
               href={`/rackets/${racket.id}`}
-              className="relative block w-full aspect-[4/3] overflow-hidden bg-muted/30 bp-md:w-[240px] bp-md:aspect-square bp-xl:w-[280px]"
+              className={cn(
+                racketImageWrapClass,
+                "shrink-0 bp-md:w-[240px] bp-md:aspect-square bp-xl:w-[280px]",
+              )}
               aria-label={`${displayBrandLabel} ${racket.model} 상세 보기`}
             >
               {(racket.marketing?.isFeatured || racket.marketing?.isNew) &&
@@ -398,7 +406,7 @@ const RacketCard = React.memo(
               />
             </Link>
 
-            <div className="flex min-w-0 flex-1 flex-col p-4 bp-sm:p-5 bp-md:p-6">
+            <div className="flex min-w-0 flex-1 flex-col p-4 bp-sm:p-5 bp-md:p-6 bp-lg:py-7">
               <div className="min-w-0">
                 <div
                   className="mb-1.5 max-w-full truncate text-sm font-medium text-muted-foreground bp-sm:text-base"
@@ -424,7 +432,7 @@ const RacketCard = React.memo(
               </div>
             </div>
 
-            <div className="flex shrink-0 flex-col justify-between border-t border-border/60 p-4 bp-md:w-[280px] bp-lg:w-[300px] bp-md:border-l bp-md:border-t-0 bp-md:p-5">
+            <div className="flex shrink-0 flex-col justify-between gap-5 border-t border-border/60 p-4 bp-md:w-[280px] bp-lg:w-[300px] bp-md:border-l bp-md:border-t-0 bp-md:p-5">
               <div>{priceBlock("right")}</div>
               <div className="mt-4 space-y-2">
                 {actionButtons({ compact: true, stackOnNarrow: true })}
@@ -451,12 +459,17 @@ const RacketCard = React.memo(
 
     // grid view
     return (
-      <Card className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md">
+      <Card
+        className={cn(
+          racketCardSurfaceClass,
+          "group relative flex h-full flex-col",
+        )}
+      >
         <div className="absolute left-0 right-0 top-0 h-1 bg-muted/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
         <Link
           href={`/rackets/${racket.id}`}
-          className="relative block w-full aspect-[4/3] overflow-hidden bg-muted/30"
+          className={racketImageWrapClass}
           aria-label={`${displayBrandLabel} ${racket.model} 상세 보기`}
         >
           {(racket.marketing?.isFeatured || racket.marketing?.isNew) &&
@@ -472,7 +485,7 @@ const RacketCard = React.memo(
             className="object-contain object-center p-2 transition-transform duration-300 group-hover:scale-105"
           />
         </Link>
-        <CardContent className="flex flex-1 flex-col p-3 bp-sm:p-6">
+        <CardContent className="flex flex-1 flex-col p-4 bp-sm:p-6">
           <div
             className="mb-2 max-w-full truncate text-xs font-medium text-muted-foreground bp-sm:text-base"
             title={displayBrandLabel}
@@ -497,7 +510,7 @@ const RacketCard = React.memo(
           </div>
         </CardContent>
 
-        <CardFooter className="mt-auto p-3 pt-0 bp-sm:p-6 bp-sm:pt-0">
+        <CardFooter className="mt-auto border-t border-border/50 p-4 bp-sm:p-6">
           <div className="w-full">
             <div>{priceBlock()}</div>
 
