@@ -6,6 +6,9 @@ import HorizontalProducts, {
   type HItem,
 } from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
+import { InteractiveCard } from "@/components/public/InteractiveCard";
+import { PublicSurface } from "@/components/public/PublicSurface";
+import { SectionHeader } from "@/components/public/SectionHeader";
 import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
 import { Button } from "@/components/ui/button";
 import {
@@ -196,7 +199,6 @@ const surfaceCardInteractiveClass =
   "rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg";
 const surfaceIconWrapClass =
   "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md";
-const surfacePanelClass = "rounded-3xl border border-border bg-card shadow-sm";
 const processStepSurfaceClass =
   "group flex flex-col items-center rounded-2xl border border-border/60 bg-background p-4 text-center shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-md";
 const brandRailClass =
@@ -706,24 +708,17 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       {/* 목적 선택 */}
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
-          <div className="mb-8 bp-sm:mb-10 text-center">
-            <p className="mb-2 text-sm font-semibold text-primary">
-              처음 오셨다면 여기서 시작하세요
-            </p>
-            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-md:text-3xl">
-              무엇을 도와드릴까요?
-            </h2>
-            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">
-              원하는 목적을 고르면 바로 이동할 수 있어요.
-            </p>
-          </div>
+          <SectionHeader
+            eyebrow="처음 오셨다면 여기서 시작하세요"
+            title="무엇을 도와드릴까요?"
+            description="원하는 목적을 고르면 바로 이동할 수 있어요."
+            align="center"
+            className="mb-8 bp-sm:mb-10"
+          />
           <div className="grid gap-4 bp-sm:gap-5 bp-md:gap-6 grid-cols-1 bp-md:grid-cols-2 bp-xl:grid-cols-3">
-            <Link
+            <InteractiveCard
               href="/services/apply"
-              className={cn(
-                "group relative flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7 border-primary/40 bg-primary/5",
-                surfaceCardInteractiveClass,
-              )}
+              className="group relative flex h-full flex-col gap-4 border-primary/40 bg-primary/5 bp-sm:p-6 bp-md:p-7"
             >
               <BadgeCheck className="absolute right-5 top-5 h-5 w-5 text-primary" />
               <div
@@ -746,14 +741,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   선택하세요.
                 </p>
               </div>
-            </Link>
+            </InteractiveCard>
 
-            <Link
+            <InteractiveCard
               href="/products?from=apply"
-              className={cn(
-                "group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7",
-                surfaceCardInteractiveClass,
-              )}
+              className="group flex h-full flex-col gap-4 bp-sm:p-6 bp-md:p-7"
             >
               <div
                 className={cn(
@@ -772,14 +764,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   진행합니다.
                 </p>
               </div>
-            </Link>
+            </InteractiveCard>
 
-            <Link
+            <InteractiveCard
               href="/rackets?from=apply"
-              className={cn(
-                "group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7",
-                surfaceCardInteractiveClass,
-              )}
+              className="group flex h-full flex-col gap-4 bp-sm:p-6 bp-md:p-7"
             >
               <div
                 className={cn(
@@ -798,14 +787,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   함께 진행합니다.
                 </p>
               </div>
-            </Link>
+            </InteractiveCard>
 
-            <Link
+            <InteractiveCard
               href="/academy"
-              className={cn(
-                "group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7",
-                surfaceCardInteractiveClass,
-              )}
+              className="group flex h-full flex-col gap-4 bp-sm:p-6 bp-md:p-7"
             >
               <div
                 className={cn(
@@ -823,14 +809,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   아카데미 클래스와 레슨 안내를 확인하세요.
                 </p>
               </div>
-            </Link>
+            </InteractiveCard>
 
-            <Link
+            <InteractiveCard
               href="/academy"
-              className={cn(
-                "group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7",
-                surfaceCardInteractiveClass,
-              )}
+              className="group flex h-full flex-col gap-4 bp-sm:p-6 bp-md:p-7"
             >
               <div
                 className={cn(
@@ -852,14 +835,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   </p>
                 </div>
               </div>
-            </Link>
+            </InteractiveCard>
 
-            <Link
+            <InteractiveCard
               href="/rackets/finder"
-              className={cn(
-                "group flex h-full flex-col gap-4 p-5 bp-sm:p-6 bp-md:p-7",
-                surfaceCardInteractiveClass,
-              )}
+              className="group flex h-full flex-col gap-4 bp-sm:p-6 bp-md:p-7"
             >
               <div
                 className={cn(
@@ -879,7 +859,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   </p>
                 </div>
               </div>
-            </Link>
+            </InteractiveCard>
           </div>
         </SiteContainer>
       </section>
@@ -887,15 +867,13 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       {/* 서비스 플로우 */}
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
-          <div className={cn("p-6 bp-sm:p-8 bp-md:p-10", surfacePanelClass)}>
-            <div className="mb-8 bp-sm:mb-10 text-center">
-              <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-md:text-3xl">
-                스트링 교체 프로세스
-              </h2>
-              <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">
-                처음 방문해도 쉽게 이해할 수 있어요
-              </p>
-            </div>
+          <PublicSurface padding="lg" className="bp-md:p-10">
+            <SectionHeader
+              title="스트링 교체 프로세스"
+              description="처음 방문해도 쉽게 이해할 수 있어요"
+              align="center"
+              className="mb-8 bp-sm:mb-10"
+            />
             <div className="mb-8 bp-sm:mb-10 grid gap-6 bp-sm:gap-8 grid-cols-2 bp-lg:grid-cols-4">
               <div className={processStepSurfaceClass}>
                 <div className="relative mb-3 bp-sm:mb-4">
@@ -997,7 +975,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 </Link>
               </Button>
             </div>
-          </div>
+          </PublicSurface>
         </SiteContainer>
       </section>
 
