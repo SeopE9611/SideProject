@@ -992,14 +992,12 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         className="py-10 bp-sm:py-12 bp-md:py-16"
       >
         <SiteContainer>
-          <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-md:text-3xl">
-              소식 & 커뮤니티
-            </h2>
-            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">
-              공지사항과 중고 거래 최신 소식을 확인하세요
-            </p>
-          </div>
+          <SectionHeader
+            title="소식 & 커뮤니티"
+            description="공지사항과 중고 거래 최신 소식을 확인하세요"
+            align="center"
+            className="mb-8 bp-sm:mb-10"
+          />
           <div className="grid gap-5 bp-sm:gap-6 bp-xl:grid-cols-2">
             {shouldLoadCommunity ? (
               <>
@@ -1010,8 +1008,16 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </>
             ) : (
               <>
-                <div className="h-[300px] animate-pulse rounded-2xl border border-border/60 bg-card shadow-sm" />
-                <div className="h-[300px] animate-pulse rounded-2xl border border-border/60 bg-card shadow-sm" />
+                <PublicSurface
+                  variant="muted"
+                  padding="none"
+                  className="h-[300px] animate-pulse border-border/60"
+                />
+                <PublicSurface
+                  variant="muted"
+                  padding="none"
+                  className="h-[300px] animate-pulse border-border/60"
+                />
               </>
             )}
           </div>
@@ -1033,7 +1039,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           <PublicSurface
             variant="muted"
             padding="sm"
-            className="mb-8 bp-sm:mb-10"
+            className="mb-8 border-border/60 bg-muted/20 bp-sm:mb-10"
           >
             <div className="flex justify-center">
               <div ref={stringBrandRailRef} className={brandRailClass}>
@@ -1127,7 +1133,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           <PublicSurface
             variant="muted"
             padding="sm"
-            className="mb-8 bp-sm:mb-10"
+            className="mb-8 border-border/60 bg-muted/20 bp-sm:mb-10"
           >
             <div className="flex justify-center">
               <div ref={racketBrandRailRef} className={brandRailClass}>
