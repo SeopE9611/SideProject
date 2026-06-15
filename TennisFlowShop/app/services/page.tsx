@@ -1,5 +1,9 @@
 import { getStringingPricingView } from "@/app/services/_lib/stringingPricingView";
-import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { InteractiveCard } from "@/components/public/InteractiveCard";
+import { PublicPageHero } from "@/components/public/PublicPageHero";
+import { PublicSurface } from "@/components/public/PublicSurface";
+import { SectionHeader } from "@/components/public/SectionHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -282,71 +286,43 @@ export default async function ServicesPage() {
   ];
   return (
     <div className="flex flex-col">
-      {/* Hero 섹션 */}
-      <section className="relative overflow-hidden py-12 bp-md:py-16 bp-lg:py-20">
-        <div className="absolute inset-0 bg-muted">
-          <HeroCourtBackdrop className="h-full w-full text-muted-foreground opacity-[0.10] dark:opacity-[0.12]" />
-          <div className="absolute inset-0 bg-background/40"></div>
-        </div>
-
-        <div className="absolute top-16 left-8 hidden h-24 w-24 rounded-full bg-secondary/30 bp-md:block"></div>
-        <div className="absolute bottom-14 right-8 h-16 w-16 rounded-full bg-muted dark:bg-muted/80"></div>
-
-        <div className="container relative z-10">
-          <div className="mx-auto max-w-4xl">
-            <Card className="border border-border bg-card/95 shadow-md backdrop-blur-[1px]">
-              <CardContent className="p-5 text-center bp-sm:p-6 bp-md:p-8">
-                <h1 className="text-2xl font-bold leading-tight text-foreground bp-md:text-3xl bp-lg:text-4xl">
-                  스트링 교체 서비스를 더 쉽게
-                </h1>
-                <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-                  스트링 구매, 라켓 구매·대여, 보유 장비 신청까지 상황에 맞는
-                  방식으로 접수할 수 있습니다.
-                </p>
-                <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-                  <Button asChild wrap="responsive" className="w-full sm:w-auto">
-                    <Link href="#service-start">신청 방식 선택하기</Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    asChild
-                    wrap="responsive"
-                    className="w-full sm:w-auto"
-                  >
-                    <Link href="#pricing">가격 안내 보기</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+      <PublicPageHero
+        align="center"
+        eyebrow="스트링 교체 서비스"
+        title="스트링 교체 서비스를 더 쉽게"
+        description="스트링 구매, 라켓 구매·대여, 보유 장비 신청까지 상황에 맞는 방식으로 접수할 수 있습니다."
+        actions={
+          <>
+            <Button asChild wrap="responsive">
+              <Link href="#service-start">신청 방식 선택하기</Link>
+            </Button>
+            <Button variant="outline" asChild wrap="responsive">
+              <Link href="#pricing">가격 안내 보기</Link>
+            </Button>
+          </>
+        }
+      />
 
       <section
         className="scroll-mt-24 py-8 bp-md:scroll-mt-28 bp-md:py-12"
         id="service-start"
       >
-        <div className="container">
+        <SiteContainer>
           <div className="mx-auto max-w-7xl">
-            <div className="mb-6 text-center bp-md:mb-8">
-              <p className="text-sm font-semibold text-muted-foreground">
-                신청 방식 먼저 선택하기
-              </p>
-              <h2 className="mt-1 break-keep text-2xl font-bold leading-tight text-foreground sm:text-3xl">
-                어떤 방식으로 시작할까요?
-              </h2>
-              <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                현재 상황에 맞는 시작 지점을 고르면 구매·대여·보유 장비 흐름에
-                맞춰 신청이 이어집니다.
-              </p>
-            </div>
+            <SectionHeader
+              align="center"
+              className="mb-6 bp-md:mb-8"
+              eyebrow="신청 방식 먼저 선택하기"
+              title="어떤 방식으로 시작할까요?"
+              description="현재 상황에 맞는 시작 지점을 고르면 구매·대여·보유 장비 흐름에 맞춰 신청이 이어집니다."
+            />
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {serviceStartOptions.map((item) => (
-                <Link
+                <InteractiveCard
                   key={item.title}
                   href={item.href}
-                  className={`group relative flex h-full min-w-0 flex-col rounded-2xl border p-4 text-left shadow-sm transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background bp-sm:p-5 ${item.featured ? "border-primary/40 bg-primary/5" : "border-border bg-card"}`}
+                  className={`group relative flex h-full min-w-0 flex-col text-left ${item.featured ? "border-primary/40 bg-primary/5" : ""}`}
                 >
                   <div className="mb-4 flex min-w-0 items-start justify-between gap-3">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-background text-foreground transition-colors group-hover:bg-muted bp-sm:h-14 bp-sm:w-14">
@@ -384,12 +360,11 @@ export default async function ServicesPage() {
                       </span>
                     </div>
                   </div>
-                </Link>
+                </InteractiveCard>
               ))}
             </div>
 
-            <Card className="mt-5 border-border bg-muted/30 shadow-sm bp-md:mt-7">
-              <CardContent className="p-4 bp-md:p-6">
+            <PublicSurface variant="muted" className="mt-5 bp-md:mt-7">
                 <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
                   <div className="space-y-3">
                     <Badge variant="secondary">도움이 필요할 때</Badge>
@@ -422,10 +397,10 @@ export default async function ServicesPage() {
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     {serviceHelpLinks.map((link) => (
-                      <Link
+                      <InteractiveCard
                         key={link.label}
                         href={link.href}
-                        className="group flex h-full min-w-0 flex-col rounded-xl border border-border bg-card p-4 transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                        className="group flex h-full min-w-0 flex-col p-4"
                       >
                         <span className="flex min-w-0 items-center justify-between gap-3 text-sm font-semibold text-foreground">
                           <span className="min-w-0 break-keep">{link.label}</span>
@@ -434,14 +409,13 @@ export default async function ServicesPage() {
                         <span className="mt-2 break-words text-sm leading-relaxed text-muted-foreground">
                           {link.helper}
                         </span>
-                      </Link>
+                      </InteractiveCard>
                     ))}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+            </PublicSurface>
           </div>
-        </div>
+        </SiteContainer>
       </section>
 
       {/* 서비스 소개 섹션 */}
@@ -450,21 +424,13 @@ export default async function ServicesPage() {
         id="string-types"
       >
         <div className="container">
-          <div className="text-center mb-10 md:mb-16">
-            <Badge variant="info" className="mb-4">
-              <Star className="w-4 h-4 mr-2" />
-              프리미엄 스트링 컬렉션
-            </Badge>
-            <h2 className="mb-4 break-keep text-2xl font-bold leading-tight text-foreground bp-md:mb-6 bp-md:text-3xl bp-lg:text-4xl">
-              스트링 종류 안내
-            </h2>
-            <p className="mx-auto max-w-3xl text-sm leading-relaxed text-muted-foreground bp-md:text-base bp-lg:text-lg">
-              플레이 스타일과 경기력 향상을 위한 다양한 특성의 스트링을
-              제공합니다.
-              <br />
-              자신에게 맞는 최적의 스트링을 선택해보세요.
-            </p>
-          </div>
+          <SectionHeader
+            align="center"
+            className="mb-10 md:mb-16"
+            eyebrow="프리미엄 스트링 컬렉션"
+            title="스트링 종류 안내"
+            description="플레이 스타일과 경기력 향상을 위한 다양한 특성의 스트링을 제공합니다. 자신에게 맞는 최적의 스트링을 선택해보세요."
+          />
 
           <div className="grid grid-cols-1 gap-4 bp-md:grid-cols-2 bp-md:gap-6 bp-lg:grid-cols-3 bp-lg:gap-8">
             {stringTypes.map((type) => (
@@ -575,32 +541,24 @@ export default async function ServicesPage() {
 
       {/* 가격 안내 섹션 */}
       <section
-        className="relative overflow-hidden bg-background py-12 scroll-mt-24 bp-md:scroll-mt-28 bp-md:py-16 bp-lg:py-20"
+        className="bg-background py-12 scroll-mt-24 bp-md:scroll-mt-28 bp-md:py-16 bp-lg:py-20"
         id="pricing"
       >
-        <HeroCourtBackdrop className="h-full w-full text-muted-foreground opacity-[0.10] dark:opacity-[0.12]" />
-
-        <div className="container relative z-10">
-          <div className="text-center mb-16">
-            <Badge variant="neutral" className="mb-4">
-              <Award className="w-4 h-4 mr-2" />
-              투명한 가격 정책
-            </Badge>
-            <h2 className="mb-4 break-keep text-2xl font-bold leading-tight text-foreground bp-md:mb-6 bp-md:text-3xl bp-lg:text-4xl">
-              가격 안내
-            </h2>
-            <p className="mx-auto max-w-3xl text-sm leading-relaxed text-muted-foreground bp-md:text-base bp-lg:text-lg">
-              합리적 가격으로 최고의 스트링 서비스를 제공합니다.
-              <br />
-              다양한 옵션 중 필요한 서비스를 선택하세요.
-            </p>
-          </div>
+        <div className="container">
+          <SectionHeader
+            align="center"
+            className="mb-10 md:mb-16"
+            eyebrow="투명한 가격 정책"
+            title="가격 안내"
+            description="합리적인 가격으로 필요한 스트링 서비스를 선택할 수 있습니다."
+          />
 
           <div className="grid grid-cols-1 bp-md:grid-cols-2 bp-lg:grid-cols-3 gap-6 mb-16">
             {pricingInfo.map((item) => (
-              <Card
+              <PublicSurface
                 key={item.service}
-                className={`relative overflow-hidden border border-border shadow-sm hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200 ${item.popular ? "bg-card text-foreground ring-1 ring-border/60" : "bg-card"}`}
+                variant="elevated"
+                className={`relative flex h-full flex-col overflow-hidden text-center ${item.popular ? "border-primary/40 bg-primary/5" : ""}`}
               >
                 {item.popular && (
                   <div className="absolute top-0 right-0 bg-secondary text-foreground px-3 py-1 text-xs font-semibold rounded-bl-lg">
@@ -608,17 +566,17 @@ export default async function ServicesPage() {
                   </div>
                 )}
 
-                <CardHeader className="text-center pb-4">
+                <div className="flex flex-1 flex-col items-center">
                   <div
                     className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-sm ${item.popular ? "bg-secondary text-muted-foreground" : "bg-secondary text-muted-foreground"}`}
                   >
                     {item.icon}
                   </div>
-                  <CardTitle
+                  <h3
                     className={`break-keep text-lg font-bold leading-snug ${item.popular ? "text-foreground" : ""}`}
                   >
                     {item.service}
-                  </CardTitle>
+                  </h3>
                   <div
                     className={`whitespace-nowrap tabular-nums text-2xl font-bold bp-sm:text-3xl ${item.popular ? "text-foreground" : "text-foreground"}`}
                   >
@@ -629,14 +587,11 @@ export default async function ServicesPage() {
                   >
                     소요시간: {item.duration}
                   </div>
-                </CardHeader>
-
-                <CardContent>
-                  <p className="text-center text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
                     {item.description}
                   </p>
-                </CardContent>
-              </Card>
+                </div>
+              </PublicSurface>
             ))}
           </div>
 
@@ -674,15 +629,16 @@ export default async function ServicesPage() {
           </div>
 
           {/* 추가 서비스 */}
-          <div className="rounded-2xl bg-card p-4 bp-md:p-8">
+          <PublicSurface padding="lg">
             <h3 className="mb-5 text-center text-xl font-bold text-foreground bp-md:mb-6 bp-md:text-2xl">
               추가 서비스
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {additionalServices.map((service) => (
-                <div
+                <PublicSurface
                   key={service.title}
-                  className="border border-border rounded-xl p-4 md:p-6"
+                  padding="sm"
+                  className="h-full"
                 >
                   <div className="mb-4 flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                     <div className="flex items-center">
@@ -702,30 +658,23 @@ export default async function ServicesPage() {
                   <p className="text-sm text-muted-foreground">
                     {service.description}
                   </p>
-                </div>
+                </PublicSurface>
               ))}
             </div>
-          </div>
+          </PublicSurface>
         </div>
       </section>
 
       {/* 장착 과정 섹션 */}
       <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-background">
         <div className="container">
-          <div className="text-center mb-10 md:mb-16">
-            <Badge variant="info" className="mb-4">
-              <Shield className="w-4 h-4 mr-2" />
-              전문적인 프로세스
-            </Badge>
-            <h2 className="mb-4 break-keep text-2xl font-bold leading-tight text-foreground bp-md:mb-6 bp-md:text-3xl bp-lg:text-4xl">
-              스트링 장착 과정
-            </h2>
-            <p className="mx-auto max-w-3xl text-sm leading-relaxed text-muted-foreground bp-md:text-base bp-lg:text-lg">
-              도깨비테니스는 세심한 과정을 통해
-              <br />
-              최고 품질의 스트링 장착 서비스를 제공합니다.
-            </p>
-          </div>
+          <SectionHeader
+            align="center"
+            className="mb-10 md:mb-16"
+            eyebrow="전문적인 프로세스"
+            title="스트링 장착 과정"
+            description="도깨비테니스는 세심한 과정을 통해 최고 품질의 스트링 장착 서비스를 제공합니다."
+          />
 
           <div className="grid grid-cols-1 gap-4 bp-md:grid-cols-2 bp-md:gap-6 bp-lg:grid-cols-4 bp-lg:gap-8">
             {processSteps.map((step) => (
@@ -734,8 +683,7 @@ export default async function ServicesPage() {
                   <div className="hidden bp-lg:block absolute top-16 left-full w-full h-0.5 bg-border/70 dark:bg-border/80 transform translate-x-4 z-0"></div>
                 )}
 
-                <Card className="relative z-10 text-center border border-border shadow-sm hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200 bg-card">
-                  <CardContent className="p-4 bp-md:p-8">
+                <PublicSurface className="relative z-10 h-full text-center">
                     <div className="relative mb-6">
                       <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-muted-foreground mx-auto shadow-sm transition-shadow duration-300 group-hover:shadow-md">
                         {step.icon}
@@ -750,8 +698,7 @@ export default async function ServicesPage() {
                     <p className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">
                       {step.description}
                     </p>
-                  </CardContent>
-                </Card>
+                </PublicSurface>
               </div>
             ))}
           </div>
@@ -761,14 +708,12 @@ export default async function ServicesPage() {
       {/* 고객 후기 섹션 */}
       <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-muted/40">
         <div className="container">
-          <div className="text-center mb-10">
-            <h2 className="mb-4 break-keep text-2xl font-bold leading-tight text-foreground bp-md:mb-6 bp-md:text-3xl bp-lg:text-4xl">
-              고객 후기
-            </h2>
-            <p className="mx-auto max-w-3xl text-sm leading-relaxed text-muted-foreground bp-md:text-base bp-lg:text-lg">
-              도깨비테니스 스트링 서비스를 경험한 후기를 확인해보세요
-            </p>
-          </div>
+          <SectionHeader
+            align="center"
+            className="mb-10"
+            title="고객 후기"
+            description="도깨비테니스 스트링 서비스를 경험한 후기를 확인해보세요."
+          />
 
           <div className="text-center">
             <Button
