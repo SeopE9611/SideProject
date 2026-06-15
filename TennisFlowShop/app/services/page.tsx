@@ -365,54 +365,54 @@ export default async function ServicesPage() {
             </div>
 
             <PublicSurface variant="muted" className="mt-5 bp-md:mt-7">
-                <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-                  <div className="space-y-3">
-                    <Badge variant="secondary">도움이 필요할 때</Badge>
-                    <div className="space-y-2">
-                      <h3 className="break-keep text-lg font-bold text-foreground bp-sm:text-xl">
-                        잘 모르겠다면 상담과 안내를 먼저 확인하세요
-                      </h3>
-                      <p className="text-sm leading-relaxed text-muted-foreground">
-                        추천 도우미, 가격 안내, FAQ, 전화 상담을 한{"\u00A0"}
-                        곳에 모았습니다. 테니스 스트링 쇼핑은 첫 번째 신청
-                        카드에서 바로 이어갈 수 있어요.
-                      </p>
-                    </div>
-                    <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-                      {serviceNoticeChips.map((notice) => (
-                        <div
-                          key={notice.title}
-                          className="rounded-xl border border-border bg-card p-3"
-                        >
-                          <p className="text-sm font-semibold text-foreground">
-                            {notice.title}
-                          </p>
-                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                            {notice.description}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
+              <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+                <div className="space-y-3">
+                  <Badge variant="secondary">도움이 필요할 때</Badge>
+                  <div className="space-y-2">
+                    <h3 className="break-keep text-lg font-bold text-foreground bp-sm:text-xl">
+                      잘 모르겠다면 상담과 안내를 먼저 확인하세요
+                    </h3>
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      추천 도우미, 가격 안내, FAQ, 전화 상담을 한{"\u00A0"}
+                      곳에 모았습니다. 테니스 스트링 쇼핑은 첫 번째 신청
+                      카드에서 바로 이어갈 수 있어요.
+                    </p>
                   </div>
-
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {serviceHelpLinks.map((link) => (
-                      <InteractiveCard
-                        key={link.label}
-                        href={link.href}
-                        className="group flex h-full min-w-0 flex-col p-4"
+                  <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                    {serviceNoticeChips.map((notice) => (
+                      <div
+                        key={notice.title}
+                        className="rounded-xl border border-border bg-card p-3"
                       >
-                        <span className="flex min-w-0 items-center justify-between gap-3 text-sm font-semibold text-foreground">
-                          <span className="min-w-0 break-keep">{link.label}</span>
-                          <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
-                        </span>
-                        <span className="mt-2 break-words text-sm leading-relaxed text-muted-foreground">
-                          {link.helper}
-                        </span>
-                      </InteractiveCard>
+                        <p className="text-sm font-semibold text-foreground">
+                          {notice.title}
+                        </p>
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                          {notice.description}
+                        </p>
+                      </div>
                     ))}
                   </div>
                 </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {serviceHelpLinks.map((link) => (
+                    <InteractiveCard
+                      key={link.label}
+                      href={link.href}
+                      className="group flex h-full min-w-0 flex-col p-4"
+                    >
+                      <span className="flex min-w-0 items-center justify-between gap-3 text-sm font-semibold text-foreground">
+                        <span className="min-w-0 break-keep">{link.label}</span>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+                      </span>
+                      <span className="mt-2 break-words text-sm leading-relaxed text-muted-foreground">
+                        {link.helper}
+                      </span>
+                    </InteractiveCard>
+                  ))}
+                </div>
+              </div>
             </PublicSurface>
           </div>
         </SiteContainer>
@@ -423,7 +423,7 @@ export default async function ServicesPage() {
         className="py-12 bp-md:py-16 bp-lg:py-20 bg-muted/40"
         id="string-types"
       >
-        <div className="container">
+        <SiteContainer>
           <SectionHeader
             align="center"
             className="mb-10 md:mb-16"
@@ -454,7 +454,7 @@ export default async function ServicesPage() {
 
                 <CardContent className="space-y-4 md:space-y-6">
                   {/* 성능 차트 */}
-                  <div className="bg-muted/50 dark:bg-card rounded-xl p-4">
+                  <PublicSurface variant="muted" padding="sm">
                     <h4 className="font-semibold mb-3 text-center">
                       성능 특성
                     </h4>
@@ -483,7 +483,7 @@ export default async function ServicesPage() {
                         </div>
                       ))}
                     </div>
-                  </div>
+                  </PublicSurface>
 
                   {/* 주요 특징 */}
                   <div>
@@ -518,7 +518,7 @@ export default async function ServicesPage() {
                   </div>
 
                   {/* 대표 제품 */}
-                  <div className="bg-muted rounded-xl border border-border p-4 text-foreground">
+                  <PublicSurface variant="muted" padding="sm">
                     <h4 className="font-semibold mb-3">대표 제품</h4>
                     <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                       {type.examples.map((example, idx) => (
@@ -531,12 +531,12 @@ export default async function ServicesPage() {
                         </Badge>
                       ))}
                     </div>
-                  </div>
+                  </PublicSurface>
                 </CardContent>
               </Card>
             ))}
           </div>
-        </div>
+        </SiteContainer>
       </section>
 
       {/* 가격 안내 섹션 */}
@@ -544,7 +544,7 @@ export default async function ServicesPage() {
         className="bg-background py-12 scroll-mt-24 bp-md:scroll-mt-28 bp-md:py-16 bp-lg:py-20"
         id="pricing"
       >
-        <div className="container">
+        <SiteContainer>
           <SectionHeader
             align="center"
             className="mb-10 md:mb-16"
@@ -568,22 +568,22 @@ export default async function ServicesPage() {
 
                 <div className="flex flex-1 flex-col items-center">
                   <div
-                    className={`mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-sm ${item.popular ? "bg-secondary text-muted-foreground" : "bg-secondary text-muted-foreground"}`}
+                    className="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-sm bg-secondary text-muted-foreground"
                   >
                     {item.icon}
                   </div>
                   <h3
-                    className={`break-keep text-lg font-bold leading-snug ${item.popular ? "text-foreground" : ""}`}
+                    className="break-keep text-lg font-bold leading-snug text-foreground"
                   >
                     {item.service}
                   </h3>
                   <div
-                    className={`whitespace-nowrap tabular-nums text-2xl font-bold bp-sm:text-3xl ${item.popular ? "text-foreground" : "text-foreground"}`}
+                    className="whitespace-nowrap tabular-nums text-2xl font-bold bp-sm:text-3xl text-foreground"
                   >
                     {item.priceLabel}
                   </div>
                   <div
-                    className={`text-sm ${item.popular ? "text-muted-foreground" : "text-muted-foreground"}`}
+                    className="text-sm text-muted-foreground"
                   >
                     소요시간: {item.duration}
                   </div>
@@ -597,26 +597,22 @@ export default async function ServicesPage() {
 
           <div className="mb-10 grid grid-cols-1 md:grid-cols-2 gap-4">
             {primarySummaries.map((cat) => (
-              <Card key={cat.key} className="bg-card">
-                <CardHeader className="pb-2">
-                  <CardTitle className="break-keep text-base leading-tight">
-                    {cat.label}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="break-words text-sm leading-relaxed text-muted-foreground">
+              <PublicSurface key={cat.key} padding="sm">
+                <h3 className="mb-2 break-keep text-base font-semibold leading-tight">
+                  {cat.label}
+                </h3>
+                <p className="break-words text-sm leading-relaxed text-muted-foreground">
                   {cat.count === 0
                     ? "등록된 상품 데이터 없음"
                     : `상품가 ${formatPriceRange(cat.minPrice, cat.maxPrice)} / 장착비 ${formatPriceRange(cat.minMountingFee, cat.maxMountingFee)}`}
-                </CardContent>
-              </Card>
+                </p>
+              </PublicSurface>
             ))}
-            <Card className="bg-card border-dashed md:col-span-2">
-              <CardHeader className="pb-2">
-                <CardTitle className="break-keep text-base leading-tight">
-                  하이브리드 조합 안내
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground space-y-1">
+            <PublicSurface padding="sm" className="border-dashed md:col-span-2">
+              <h3 className="mb-2 break-keep text-base font-semibold leading-tight">
+                하이브리드 조합 안내
+              </h3>
+              <div className="space-y-1 text-sm text-muted-foreground">
                 <p>
                   하이브리드는 단일 재질이 아닌 조합 방식으로, 단일 재질
                   가격대와 분리해 안내합니다.
@@ -624,8 +620,8 @@ export default async function ServicesPage() {
                 <p className="whitespace-nowrap tabular-nums">
                   등록된 하이브리드 상품: {hybridGuide.count.toLocaleString()}개
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+            </PublicSurface>
           </div>
 
           {/* 추가 서비스 */}
@@ -662,12 +658,12 @@ export default async function ServicesPage() {
               ))}
             </div>
           </PublicSurface>
-        </div>
+        </SiteContainer>
       </section>
 
       {/* 장착 과정 섹션 */}
       <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-background">
-        <div className="container">
+        <SiteContainer>
           <SectionHeader
             align="center"
             className="mb-10 md:mb-16"
@@ -684,30 +680,30 @@ export default async function ServicesPage() {
                 )}
 
                 <PublicSurface className="relative z-10 h-full text-center">
-                    <div className="relative mb-6">
-                      <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-muted-foreground mx-auto shadow-sm transition-shadow duration-300 group-hover:shadow-md">
-                        {step.icon}
-                      </div>
-                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-foreground text-sm font-bold shadow-sm">
-                        {step.step}
-                      </div>
+                  <div className="relative mb-6">
+                    <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center text-muted-foreground mx-auto shadow-sm transition-shadow duration-300 group-hover:shadow-md">
+                      {step.icon}
                     </div>
-                    <h3 className="mb-3 text-lg font-bold bp-md:mb-4 bp-md:text-xl">
-                      {step.title}
-                    </h3>
-                    <p className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">
-                      {step.description}
-                    </p>
+                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-foreground text-sm font-bold shadow-sm">
+                      {step.step}
+                    </div>
+                  </div>
+                  <h3 className="mb-3 text-lg font-bold bp-md:mb-4 bp-md:text-xl">
+                    {step.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">
+                    {step.description}
+                  </p>
                 </PublicSurface>
               </div>
             ))}
           </div>
-        </div>
+        </SiteContainer>
       </section>
 
       {/* 고객 후기 섹션 */}
       <section className="py-12 bp-md:py-16 bp-lg:py-20 bg-muted/40">
-        <div className="container">
+        <SiteContainer>
           <SectionHeader
             align="center"
             className="mb-10"
@@ -729,7 +725,7 @@ export default async function ServicesPage() {
               </Link>
             </Button>
           </div>
-        </div>
+        </SiteContainer>
       </section>
     </div>
   );
