@@ -95,9 +95,21 @@ export default async function ProductsPage({
               <StepIndicator
                 currentStep="string"
                 steps={[
-                  { id: "string", label: "스트링 선택" },
-                  { id: "checkout", label: "결제/수령 방식 입력" },
-                  { id: "complete", label: "장착 접수 완료" },
+                  {
+                    id: "string",
+                    label: "스트링 선택",
+                    description: "장착할 상품 고르기",
+                  },
+                  {
+                    id: "checkout",
+                    label: "결제/수령 방식 입력",
+                    description: "장착 요청사항 작성",
+                  },
+                  {
+                    id: "complete",
+                    label: "장착 접수 완료",
+                    description: "결제와 함께 신청 접수",
+                  },
                 ]}
               />
 
