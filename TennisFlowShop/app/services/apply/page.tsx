@@ -12,6 +12,9 @@ import OrderPrefillBadge from "@/app/services/apply/_components/OrderPrefillBadg
 import ProgressSteps from "@/app/services/apply/_components/ProgressSteps";
 import ApplyStepFooter from "@/app/services/apply/_components/steps/ApplyStepFooter";
 import { useReservedSlots } from "@/app/services/apply/_hooks/useReservedSlots";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicSurface } from "@/components/public/PublicSurface";
+import { SectionHeader } from "@/components/public/SectionHeader";
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1479,12 +1482,14 @@ export default function StringServiceApplyPage() {
         <ApplyHero />
 
         {/* Main Content */}
-        <div className="px-3 bp-sm:px-4 bp-md:px-6 bp-lg:px-6 mx-auto bp-lg:max-w-[1200px] bp-xl:max-w-7xl py-6 bp-sm:py-8 bp-lg:py-10">
+        <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-lg:py-10">
           {/* Section Header */}
-          <div className="mx-auto mb-6 max-w-3xl text-center bp-sm:mb-8">
-            <h2 className="mt-3 text-xl font-semibold text-foreground break-keep bp-sm:text-2xl">신청 방식을 선택해 주세요</h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground break-keep bp-sm:text-base">필요한 방식을 선택하면 다음 단계로 이동합니다. 지금은 신청 경로만 확정하는 단계입니다.</p>
-          </div>
+          <SectionHeader
+            title="신청 방식을 선택해 주세요"
+            description="필요한 방식을 선택하면 다음 단계로 이동합니다. 지금은 신청 경로만 확정하는 단계입니다."
+            align="center"
+            className="mx-auto mb-6 max-w-3xl break-keep bp-sm:mb-8"
+          />
 
           {/* Option Cards */}
           <div className="grid grid-cols-1 gap-4 bp-md:grid-cols-2 bp-sm:gap-5 max-w-4xl mx-auto">
@@ -1514,7 +1519,7 @@ export default function StringServiceApplyPage() {
                 key={item.title}
                 type="button"
                 onClick={() => safePush(item.href)}
-                className={`group flex h-full flex-col rounded-2xl border bg-card p-4 text-left shadow-sm transition-[border-color,background-color,box-shadow] duration-200 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${index === 0 ? "border-primary/40 bg-primary/5" : "border-border"}`}
+                className={`group flex h-full min-w-0 flex-col rounded-2xl border bg-card p-4 text-left shadow-sm transition-[border-color,background-color,box-shadow] duration-200 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${index === 0 ? "border-primary/40 bg-primary/5" : "border-border"}`}
               >
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <span className="text-xs font-semibold text-muted-foreground">{item.stepLabel}</span>
@@ -1525,7 +1530,7 @@ export default function StringServiceApplyPage() {
                 <div className="mb-4 flex items-start gap-3">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-foreground transition-colors group-hover:bg-muted">{item.icon}</div>
                   <div className="min-w-0">
-                    <h3 className="text-base font-semibold leading-snug text-foreground break-keep">{item.title}</h3>
+                    <h3 className="break-keep text-base font-semibold leading-snug text-foreground">{item.title}</h3>
                     <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">{item.target}</p>
                   </div>
                 </div>
@@ -1534,9 +1539,9 @@ export default function StringServiceApplyPage() {
                   <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">{item.steps}</p>
                 </div>
                 <div className="mt-auto pt-4">
-                  <span className="inline-flex w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
-                    <span>{item.cta}</span>
-                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <span className="inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-center text-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
+                    <span className="break-keep whitespace-normal">{item.cta}</span>
+                    <svg className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                     </svg>
                   </span>
@@ -1546,8 +1551,8 @@ export default function StringServiceApplyPage() {
           </div>
 
           <div className="mt-6 bp-sm:mt-8 grid grid-cols-1 bp-lg:grid-cols-2 gap-4 bp-sm:gap-5 max-w-6xl mx-auto">
-            <Card className="border-border bg-muted/30">
-              <CardContent className="flex h-full flex-col gap-4 p-4 bp-sm:p-5">
+            <PublicSurface variant="muted" padding="none">
+              <div className="flex h-full flex-col gap-4 p-4 bp-sm:p-5">
                 <div className="space-y-1.5">
                   <p className="text-sm font-semibold text-foreground break-keep">이미 구매하거나 대여한 내역이 있나요?</p>
                   <p className="text-sm text-muted-foreground leading-relaxed break-keep">마이페이지 주문/대여 내역에서 신청 가능한 항목을 선택해 교체서비스를 이어서 신청할 수 있습니다.</p>
@@ -1560,22 +1565,22 @@ export default function StringServiceApplyPage() {
                     대여 내역 보기
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </PublicSurface>
 
-            <Card className="border-border bg-muted/30">
-              <CardContent className="flex h-full flex-col gap-4 p-4 bp-sm:p-5 bp-md:flex-row bp-md:items-center bp-md:justify-between">
+            <PublicSurface variant="muted" padding="none">
+              <div className="flex h-full flex-col gap-4 p-4 bp-sm:p-5 bp-md:flex-row bp-md:items-center bp-md:justify-between">
                 <div className="space-y-1.5">
                   <p className="text-sm font-semibold text-foreground break-keep">어떤 스트링을 골라야 할지 고민된다면</p>
                   <p className="text-sm text-muted-foreground leading-relaxed break-keep">스트링 선택이 어렵다면 플레이 성향에 맞는 추천을 먼저 확인해보세요.</p>
                 </div>
-                <Button asChild className="shrink-0">
+                <Button asChild className="shrink-0 whitespace-normal break-keep text-center">
                   <Link href="/products/recommend">스트링 추천받기</Link>
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </PublicSurface>
           </div>
-        </div>
+        </SiteContainer>
       </div>
     );
 
@@ -1585,7 +1590,7 @@ export default function StringServiceApplyPage() {
       <ApplyHero />
 
       {/* Main */}
-      <div className="container mx-auto px-4 py-6 bp-sm:py-8">
+      <SiteContainer variant="wide" className="py-6 bp-sm:py-8">
         <div className="mx-auto max-w-7xl">
           {/* Progress Steps: 폼 폭(800px)에 맞춰 중앙 정렬 */}
           <div ref={stepsRef} className="mb-4 bp-sm:mb-5">
@@ -1692,7 +1697,7 @@ export default function StringServiceApplyPage() {
             />
           </div>
         </div>
-      </div>
+      </SiteContainer>
     </div>
   );
 }
