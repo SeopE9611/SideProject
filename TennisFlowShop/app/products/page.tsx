@@ -37,14 +37,9 @@ export default async function ProductsPage({
         title="테니스 스트링"
         description="플레이 스타일에 맞는 스트링을 고르고, 교체서비스까지 이어서 신청하세요."
         actions={
-          <>
-            <Button asChild wrap="responsive">
-              <Link href="/products/recommend">스트링 추천받기</Link>
-            </Button>
-            <Button asChild variant="outline" wrap="responsive">
-              <Link href="#product-list">상품 목록 보기</Link>
-            </Button>
-          </>
+          <Button asChild variant="outline" wrap="responsive">
+            <Link href="#product-list">상품 목록 보기</Link>
+          </Button>
         }
       />
 
@@ -102,12 +97,12 @@ export default async function ProductsPage({
                   },
                   {
                     id: "checkout",
-                    label: "결제/수령 방식 입력",
-                    description: "장착 요청사항 작성",
+                    label: "결제/수령 입력",
+                    description: "요청사항 작성",
                   },
                   {
                     id: "complete",
-                    label: "장착 접수 완료",
+                    label: "접수 완료",
                     description: "결제와 함께 신청 접수",
                   },
                 ]}
