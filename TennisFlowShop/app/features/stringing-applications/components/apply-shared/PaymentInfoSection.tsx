@@ -3,6 +3,7 @@
 import type React from "react";
 
 import { CreditCard, Ticket } from "lucide-react";
+import { SectionHeader } from "@/components/public/SectionHeader";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -38,26 +39,23 @@ export default function PaymentInfoSection({
 
   return (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary mb-4">
-          <CreditCard className="h-8 w-8 text-foreground" />
-        </div>
-        <h2 className="text-2xl font-bold mb-2">결제 정보</h2>
-        <p className="text-muted-foreground">
-          패키지와 결제수단을 확인해주세요
-        </p>
-      </div>
+      <SectionHeader
+        align="center"
+        title="결제 정보"
+        description="패키지와 결제수단을 확인해주세요"
+        className="mb-8"
+      />
 
       {/* 패키지 자동 적용 안내/옵트아웃 */}
       {packagePreview?.has ? (
         <div
           className={
             packageInsufficient
-              ? "mt-6 rounded-2xl border border-destructive/30 bg-destructive/10 p-5 dark:border-destructive/40 dark:bg-destructive/15"
-              : "mt-6 rounded-2xl border border-border bg-muted/40 p-5 dark:bg-muted/30"
+              ? "rounded-2xl border border-destructive/30 bg-destructive/10 p-4 sm:p-5 dark:border-destructive/40 dark:bg-destructive/15"
+              : "rounded-2xl border border-border bg-muted/40 p-4 sm:p-5 dark:bg-muted/30"
           }
         >
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-3 sm:gap-4">
             <div
               className={
                 packageInsufficient
@@ -68,7 +66,7 @@ export default function PaymentInfoSection({
               <Ticket className="h-5 w-5" />
             </div>
 
-            <div className="flex-1">
+            <div className="min-w-0 flex-1">
               {/* 헤더: 제목 + 상태 배지 */}
               <div className="flex flex-wrap items-center gap-2">
                 <h3
@@ -124,7 +122,7 @@ export default function PaymentInfoSection({
               )}
 
               {/* 숫자 요약 뱃지들 */}
-              <div className="mt-3 flex flex-wrap gap-2 text-xs">
+              <div className="mt-3 flex flex-wrap gap-2 text-xs tabular-nums">
                 <Badge variant="info">필요 {requiredPassCount}회</Badge>
                 <Badge variant="info">잔여 {packagePreview.remaining}회</Badge>
                 {packagePreview.expiresAt && (
@@ -171,7 +169,7 @@ export default function PaymentInfoSection({
               })()}
 
               {/* 옵트아웃 체크박스 */}
-              <div className="mt-4 inline-flex items-center gap-2">
+              <div className="mt-4 flex items-center gap-2">
                 <Checkbox
                   id="package-optout"
                   checked={!!formData.packageOptOut}
@@ -199,16 +197,16 @@ export default function PaymentInfoSection({
         </div>
       ) : (
         /* 패키지 없음 카드 다크모드 적용 */
-        <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="rounded-2xl border border-border bg-muted/40 p-4 sm:p-5">
           <div className="flex items-start gap-3">
             <div className="h-10 w-10 shrink-0 rounded-full bg-muted dark:bg-card grid place-content-center text-muted-foreground">
               <Ticket className="h-5 w-5" />
             </div>
-            <div>
-              <div className="font-medium dark:text-foreground">
+            <div className="min-w-0">
+              <div className="font-medium text-foreground">
                 패키지가 없거나 잔여 횟수가 없습니다.
               </div>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 패키지를 보유하면 교체비가 무료입니다. (배송/추가옵션비 제외)
               </p>
             </div>
@@ -220,7 +218,13 @@ export default function PaymentInfoSection({
         <div className="space-y-6">
           <div className="space-y-3">
             <Label className="text-sm font-medium">결제수단</Label>
-            <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-border p-4">
+            <label
+              className={`flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border p-4 transition-colors hover:bg-muted/50 focus-within:ring-2 focus-within:ring-ring ${
+                formData.paymentMethod === "bank_transfer"
+                  ? "border-primary/40 bg-primary/5"
+                  : "border-border bg-card"
+              }`}
+            >
               <input
                 type="radio"
                 name="paymentMethod"
@@ -233,7 +237,13 @@ export default function PaymentInfoSection({
               <span className="font-medium">무통장입금</span>
             </label>
             {allowCardPayment && nicePaymentsEnabled && (
-              <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-border p-4">
+              <label
+                className={`flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border p-4 transition-colors hover:bg-muted/50 focus-within:ring-2 focus-within:ring-ring ${
+                  formData.paymentMethod === "nicepay"
+                    ? "border-primary/40 bg-primary/5"
+                    : "border-border bg-card"
+                }`}
+              >
                 <input
                   type="radio"
                   name="paymentMethod"
@@ -261,7 +271,7 @@ export default function PaymentInfoSection({
                   onChange={(e) =>
                     setFormData({ ...formData, shippingBank: e.target.value })
                   }
-                  className="w-full border border-border px-3 py-2 rounded-md bg-card dark:text-foreground focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200"
+                  className="w-full rounded-md border border-border bg-card px-3 py-2 text-foreground transition-colors focus:border-transparent focus:ring-2 focus:ring-ring"
                 >
                   <option value="" disabled hidden>
                     입금하실 은행을 선택해주세요.
@@ -272,13 +282,13 @@ export default function PaymentInfoSection({
 
               {formData.shippingBank &&
               (bankLabelMap as any)[formData.shippingBank] ? (
-                <div className="bg-muted/40 dark:bg-muted/30 border border-border rounded-lg p-6">
-                  <h3 className="font-semibold text-primary mb-4 flex items-center">
-                    <CreditCard className="h-5 w-5 mr-2" />
+                <div className="rounded-xl border border-border bg-muted/40 p-4 sm:p-5">
+                  <h3 className="mb-4 flex items-center font-semibold text-primary">
+                    <CreditCard className="mr-2 h-5 w-5 shrink-0" />
                     계좌 정보
                   </h3>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-card rounded-lg border dark:border-border">
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card p-3">
                       <span className="text-sm text-muted-foreground">
                         은행
                       </span>
@@ -286,15 +296,15 @@ export default function PaymentInfoSection({
                         {(bankLabelMap as any)[formData.shippingBank].label}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-card rounded-lg border dark:border-border">
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card p-3">
                       <span className="text-sm text-muted-foreground">
                         계좌번호
                       </span>
-                      <span className="font-mono font-medium text-foreground">
+                      <span className="break-all font-mono font-medium tabular-nums text-foreground">
                         {(bankLabelMap as any)[formData.shippingBank].account}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-card rounded-lg border dark:border-border">
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card p-3">
                       <span className="text-sm text-muted-foreground">
                         예금주
                       </span>
@@ -319,7 +329,7 @@ export default function PaymentInfoSection({
                   value={formData.shippingDepositor}
                   onChange={handleInputChange}
                   placeholder="입금자명을 입력하세요"
-                  className="focus:ring-2 focus:ring-ring transition-all duration-200"
+                  className="bg-card transition-colors focus-visible:ring-ring"
                 />
               </div>
             </div>

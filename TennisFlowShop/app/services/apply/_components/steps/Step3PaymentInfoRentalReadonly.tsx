@@ -7,7 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CreditCard, ReceiptText } from "lucide-react";
+import { SectionHeader } from "@/components/public/SectionHeader";
+import { ReceiptText } from "lucide-react";
 
 type Props = {
   won: (n: number) => string;
@@ -35,17 +36,17 @@ export default function Step3PaymentInfoRentalReadonly({
 }: Props) {
   return (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary mb-4">
-          <CreditCard className="h-8 w-8 text-foreground" />
-        </div>
-        <h2 className="text-2xl font-bold mb-2">결제 정보</h2>
-      </div>
+      <SectionHeader
+        align="center"
+        title="결제 정보"
+        description="대여 결제 내역을 확인해주세요"
+        className="mb-8"
+      />
 
-      <Card className="border border-border">
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <ReceiptText className="h-4 w-4" />
+      <Card className="rounded-2xl border border-border">
+        <CardHeader className="space-y-2 p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ReceiptText className="h-4 w-4 shrink-0" />
             대여 결제 요약
           </CardTitle>
           <CardDescription className="text-sm">
@@ -55,26 +56,26 @@ export default function Step3PaymentInfoRentalReadonly({
             {/* {rentalId ? <span className="ml-1 text-xs text-muted-foreground">(rentalId: {rentalId})</span> : null} */}
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-sm space-y-2">
-          <div className="flex items-center justify-between">
+        <CardContent className="space-y-3 p-4 pt-0 text-sm sm:p-6 sm:pt-0">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-muted-foreground">보증금</span>
             <span className="font-medium tabular-nums">{won(deposit)}</span>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-muted-foreground">대여료</span>
             <span className="font-medium tabular-nums">{won(fee)}</span>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-muted-foreground">스트링 상품</span>
             <span className="font-medium tabular-nums">{won(stringPrice)}</span>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-muted-foreground">교체 서비스</span>
             <span className="font-medium tabular-nums">
               {won(stringingFee)}
             </span>
           </div>
-          <div className="pt-2 border-t flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3">
             <span className="font-semibold">합계</span>
             <span className="font-semibold tabular-nums">{won(total)}</span>
           </div>
