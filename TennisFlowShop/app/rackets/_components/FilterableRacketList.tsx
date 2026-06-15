@@ -73,6 +73,9 @@ const RACKETS_PAGE_SIZE = 12;
 
 const brands = RACKET_BRANDS.map(({ value, label }) => ({ value, label }));
 
+const activeFilterChipClass =
+  "inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-border bg-muted px-2 py-1 text-xs";
+
 const parsePriceParam = (value: string | null): number | null => {
   if (!value) return null;
   const parsed = Number(value);
@@ -607,9 +610,9 @@ export default function FilterableRacketList({
         <div className="min-w-0">
           <div className="mb-6 space-y-3 bp-md:mb-8">
             <div className="space-y-3">
-              <div>
+              <div className="rounded-lg border border-border bg-card px-3 py-2.5">
                 <div
-                  className="text-base font-semibold tabular-nums text-foreground bp-sm:text-lg"
+                  className="min-w-0 break-keep text-sm font-semibold tabular-nums text-foreground bp-sm:text-base"
                   aria-live="polite"
                 >
                   {racketCountPrefix}{" "}
@@ -634,7 +637,7 @@ export default function FilterableRacketList({
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-3 bp-md:justify-between">
                 <Button
                   type="button"
                   variant="outline"
@@ -643,58 +646,60 @@ export default function FilterableRacketList({
                     if (showFilters) cancelFiltersSheet();
                     else openFiltersSheet();
                   }}
-                  className="h-9 whitespace-nowrap border-border px-3 hover:bg-secondary"
+                  className="h-9 shrink-0 whitespace-nowrap border-border px-3 hover:bg-secondary"
                   aria-expanded={showFilters}
                   aria-label={showFilters ? "필터 닫기" : "필터 열기"}
                 >
                   <Filter className="mr-2 h-4 w-4" />
                   필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
                 </Button>
-                <div className="ml-auto flex min-w-0 items-center gap-2 bp-sm:gap-3">
-                <Select value={sortOption} onValueChange={setSortOption}>
-                  <SelectTrigger className="h-9 w-full min-w-0 rounded-lg border-2 bg-card text-sm focus:border-border bp-sm:w-[180px] dark:focus:border-border">
-                    <SelectValue placeholder="정렬" />
-                  </SelectTrigger>
-                  <SelectContent className="dark:border-border dark:bg-card">
-                    <SelectItem value="latest">최신순</SelectItem>
-                    <SelectItem value="sales-desc">구매 많은순</SelectItem>
-                    <SelectItem value="reviews-desc">리뷰 많은순</SelectItem>
-                    <SelectItem value="price-low">가격 낮은순</SelectItem>
-                    <SelectItem value="price-high">가격 높은순</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                {!isFilterSheetViewport && (
-                  <div className="flex shrink-0 items-center rounded-lg border border-border bg-card p-1">
-                    <Button
-                      type="button"
-                      variant={
-                        effectiveViewMode === "grid" ? "default" : "ghost"
-                      }
-                      size="sm"
-                      onClick={() => setViewMode("grid")}
-                      className="h-8 w-9 p-0"
-                      aria-label="그리드 보기"
-                      aria-pressed={effectiveViewMode === "grid"}
-                    >
-                      <Grid3X3 className="h-4 w-4" />
-                    </Button>
-
-                    <Button
-                      type="button"
-                      variant={
-                        effectiveViewMode === "list" ? "default" : "ghost"
-                      }
-                      size="sm"
-                      onClick={() => setViewMode("list")}
-                      className="h-8 w-9 p-0"
-                      aria-label="리스트 보기"
-                      aria-pressed={effectiveViewMode === "list"}
-                    >
-                      <List className="h-4 w-4" />
-                    </Button>
+                <div className="ml-auto flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2 bp-sm:gap-3">
+                  <div className="min-w-[150px] flex-1 bp-sm:max-w-[180px]">
+                    <Select value={sortOption} onValueChange={setSortOption}>
+                      <SelectTrigger className="h-9 w-full min-w-0 rounded-lg border-2 bg-card text-sm focus:border-border dark:focus:border-border">
+                        <SelectValue placeholder="정렬" />
+                      </SelectTrigger>
+                      <SelectContent className="dark:border-border dark:bg-card">
+                        <SelectItem value="latest">최신순</SelectItem>
+                        <SelectItem value="sales-desc">구매 많은순</SelectItem>
+                        <SelectItem value="reviews-desc">리뷰 많은순</SelectItem>
+                        <SelectItem value="price-low">가격 낮은순</SelectItem>
+                        <SelectItem value="price-high">가격 높은순</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                )}
+
+                  {!isFilterSheetViewport && (
+                    <div className="flex shrink-0 items-center rounded-lg border border-border bg-card p-1">
+                      <Button
+                        type="button"
+                        variant={
+                          effectiveViewMode === "grid" ? "default" : "ghost"
+                        }
+                        size="sm"
+                        onClick={() => setViewMode("grid")}
+                        className="h-8 w-9 p-0"
+                        aria-label="그리드 보기"
+                        aria-pressed={effectiveViewMode === "grid"}
+                      >
+                        <Grid3X3 className="h-4 w-4" />
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant={
+                          effectiveViewMode === "list" ? "default" : "ghost"
+                        }
+                        size="sm"
+                        onClick={() => setViewMode("list")}
+                        className="h-8 w-9 p-0"
+                        aria-label="리스트 보기"
+                        aria-pressed={effectiveViewMode === "list"}
+                      >
+                        <List className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -703,22 +708,22 @@ export default function FilterableRacketList({
               <div className="rounded-lg border border-border bg-card p-3">
                 <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                   {submittedQuery && (
-                    <span className="inline-flex shrink-0 items-center rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                    <span className={activeFilterChipClass}>
                       검색어 “{submittedQuery}”
                     </span>
                   )}
                   {selectedBrand && (
-                    <span className="inline-flex shrink-0 items-center rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                    <span className={activeFilterChipClass}>
                       브랜드 {racketBrandLabel(selectedBrand)}
                     </span>
                   )}
                   {selectedCondition && (
-                    <span className="inline-flex shrink-0 items-center rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                    <span className={activeFilterChipClass}>
                       상태 {selectedCondition}
                     </span>
                   )}
                   {priceChanged && (
-                    <span className="inline-flex shrink-0 items-center rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                    <span className={activeFilterChipClass}>
                       가격{" "}
                       {priceMin !== null
                         ? `${priceMin.toLocaleString()}원`
@@ -730,12 +735,12 @@ export default function FilterableRacketList({
                     </span>
                   )}
                   {exposureLabel && (
-                    <span className="inline-flex shrink-0 items-center rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                    <span className={activeFilterChipClass}>
                       {exposureLabel}
                     </span>
                   )}
                   {rentOnly && (
-                    <span className="inline-flex shrink-0 items-center rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                    <span className={activeFilterChipClass}>
                       대여 가능
                     </span>
                   )}
