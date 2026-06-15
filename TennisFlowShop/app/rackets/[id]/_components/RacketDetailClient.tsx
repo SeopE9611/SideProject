@@ -463,25 +463,25 @@ export default function RacketDetailClient({
 
   return (
     <div className="min-h-full bg-background pb-24 bp-md:pb-10">
-      <div className="relative bg-muted/20 text-foreground py-5 sm:py-6 border-b border-border/60">
+      <div className="relative border-b border-border/60 bg-card/70 py-4 text-foreground sm:py-5">
         <SiteContainer variant="wide" className="relative">
           <div className="flex min-w-0 items-center justify-between gap-3">
             <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-sm sm:gap-2.5 sm:text-base">
               <Link
                 href="/"
-                className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+                className="shrink-0 whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground"
               >
                 홈
               </Link>
               <span className="shrink-0 text-muted-foreground/60">/</span>
               <Link
                 href="/rackets"
-                className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+                className="shrink-0 whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground"
               >
                 중고 라켓
               </Link>
               <span className="shrink-0 text-muted-foreground/60">/</span>
-              <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+              <span className="min-w-0 flex-1 truncate break-keep font-medium text-foreground">
                 {racketBrandLabel(racket.brand)} {racket.model}
               </span>
             </div>
@@ -516,15 +516,15 @@ export default function RacketDetailClient({
       <SiteContainer variant="wide" className="py-8 pb-12 md:pb-16">
         <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-5">
           {/* 상품 이미지 */}
-          <div className="lg:col-span-3 space-y-4">
-            <Card className="overflow-hidden border border-border bg-card shadow-sm">
+          <div className="space-y-4 lg:col-span-3">
+            <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm">
               <div className="relative aspect-square">
                 {images.length > 0 ? (
                   <Image
                     src={images[selectedImageIndex] || "/placeholder.svg"}
                     alt={`${racketBrandLabel(racket.brand)} ${racket.model}`}
                     fill
-                    className="object-cover transition-transform duration-300 hover:scale-105"
+                    className="object-cover transition-transform duration-300 hover:scale-[1.02]"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
@@ -536,7 +536,7 @@ export default function RacketDetailClient({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 rounded-xl border border-border/60 bg-card/90 text-foreground shadow-sm hover:bg-card"
                       onClick={prevImage}
                     >
                       <ChevronLeft className="h-4 w-4" />
@@ -544,7 +544,7 @@ export default function RacketDetailClient({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 text-foreground border border-border shadow-sm hover:bg-background dark:bg-background/30 dark:hover:bg-background/40"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl border border-border/60 bg-card/90 text-foreground shadow-sm hover:bg-card"
                       onClick={nextImage}
                     >
                       <ChevronRight className="h-4 w-4" />
@@ -578,11 +578,11 @@ export default function RacketDetailClient({
             </Card>
 
             {images.length > 1 && (
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 sm:gap-3">
                 {images.slice(0, 5).map((image: string, index: number) => (
                   <Card
                     key={index}
-                    className={`overflow-hidden cursor-pointer transition-all duration-200 ${selectedImageIndex === index ? "ring-2 ring-ring shadow-lg" : "hover:shadow-md"}`}
+                    className={`cursor-pointer overflow-hidden rounded-xl border border-border/60 transition-[border-color,box-shadow] duration-200 ${selectedImageIndex === index ? "ring-2 ring-ring ring-offset-2 ring-offset-background" : "hover:border-border"}`}
                     onClick={() => setSelectedImageIndex(index)}
                   >
                     <div className="aspect-square relative">
@@ -600,19 +600,19 @@ export default function RacketDetailClient({
           </div>
 
           {/* 상품 정보 */}
-          <div className="lg:col-span-2 space-y-4">
-            <Card className="border border-border bg-card shadow-sm">
-              <CardContent className="p-4 md:p-6">
-                <div className="space-y-4">
+          <div className="space-y-4 lg:col-span-2">
+            <Card className="rounded-2xl border border-border/60 bg-card shadow-sm">
+              <CardContent className="p-4 sm:p-5 md:p-6">
+                <div className="space-y-5">
                   {/* 브랜드와 제품명 */}
-                  <div>
-                    <Badge variant="outline" className="mb-2">
+                  <div className="min-w-0">
+                    <Badge variant="outline" className="mb-2.5">
                       {racketBrandLabel(racket.brand)}
                     </Badge>
-                    <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
+                    <h1 className="min-w-0 break-words text-2xl font-bold leading-tight text-foreground lg:text-3xl">
                       {racket.model}
                     </h1>
-                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <div className="mt-3 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5">
                       <div className="flex items-center gap-0.5">
                         {[...Array(5)].map((_, i) => (
                           <Star
@@ -628,8 +628,8 @@ export default function RacketDetailClient({
                   </div>
 
                   {/* 가격 정보 */}
-                  <div className="space-y-2">
-                    <div className="flex items-baseline gap-3 flex-wrap">
+                  <div className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-3.5 sm:p-4">
+                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
                       {hasSalePrice ? (
                         <>
                           <span className="whitespace-nowrap tabular-nums text-3xl sm:text-4xl font-bold text-foreground tracking-normal">
@@ -641,7 +641,7 @@ export default function RacketDetailClient({
                           <span className="whitespace-nowrap tabular-nums text-lg sm:text-xl text-muted-foreground/60 line-through">
                             {racket.price?.toLocaleString()}원
                           </span>
-                          <span className="shrink-0 whitespace-nowrap text-sm font-semibold text-destructive bg-destructive/10 px-2.5 py-1 rounded-lg">
+                          <span className="shrink-0 whitespace-nowrap rounded-lg bg-destructive/10 px-2.5 py-1 text-sm font-semibold text-destructive">
                             {discountRate}% OFF
                           </span>
                         </>
@@ -654,25 +654,28 @@ export default function RacketDetailClient({
                         </span>
                       )}
                     </div>
-                    <div className="text-xs text-muted-foreground bg-muted border border-border rounded-lg p-3">
+                    <div className="rounded-lg border border-border/60 bg-card/70 p-3 text-xs leading-relaxed text-muted-foreground">
                       * 중고 상품 특성상 단순 변심 환불이 제한될 수 있어요.
                     </div>
                   </div>
 
                   {/* CTA 영역 */}
-                  <div ref={rentSectionRef} className="space-y-3 pt-4 border-t">
-                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+                  <div
+                    ref={rentSectionRef}
+                    className="space-y-3.5 border-t border-border/60 pt-5"
+                  >
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5 sm:p-4">
                       <h2 className="text-base font-bold text-foreground">
                         이 라켓으로 무엇을 할까요?
                       </h2>
-                      <p className="mt-1 text-sm text-muted-foreground">
+                      <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
                         스트링 선택 후 구매하거나 대여 일정을 선택할 수 있어요.
                       </p>
                     </div>
-                    <div className="grid grid-cols-1 gap-2">
+                    <div className="grid grid-cols-1 gap-2.5">
                       <Button
                         wrap="responsive"
-                        className="h-12 w-full min-w-0"
+                        className="min-h-12 w-full min-w-0 whitespace-normal break-keep px-3"
                         onClick={() =>
                           router.push(`/rackets/${racketId}/select-string`)
                         }
@@ -692,7 +695,7 @@ export default function RacketDetailClient({
                       {racket?.rental?.enabled ? (
                         soldOut ? (
                           <Button
-                            className="flex-1 bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground"
+                            className="min-h-12 w-full min-w-0 whitespace-normal break-keep bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground"
                             disabled
                             title="현재 대여 가능 수량이 없습니다."
                           >
@@ -713,7 +716,7 @@ export default function RacketDetailClient({
                         )
                       ) : (
                         <Button
-                          className="flex-1 bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground"
+                          className="min-h-12 w-full min-w-0 whitespace-normal break-keep bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground"
                           disabled
                         >
                           <Calendar className="mr-2 h-4 w-4" />
@@ -722,10 +725,10 @@ export default function RacketDetailClient({
                       )}
                     </div>
                     {/* 비교 버튼(상세에서도 비교 담기/이동 가능) */}
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       <Button
                         variant="outline"
-                        className={`h-11 px-2 text-sm ${isCompared ? "bg-secondary border-border text-foreground hover:bg-secondary/80" : "bg-card border-border text-foreground"}`}
+                        className={`min-h-11 min-w-0 whitespace-normal break-keep px-2 text-sm ${isCompared ? "bg-secondary border-border text-foreground hover:bg-secondary/80" : "bg-card border-border text-foreground"}`}
                         onClick={toggleCompare}
                         disabled={!racketId}
                         title={
@@ -742,7 +745,7 @@ export default function RacketDetailClient({
 
                       <Button
                         variant="outline"
-                        className="h-11 px-2 text-sm"
+                        className="min-h-11 min-w-0 whitespace-normal break-keep px-2 text-sm"
                         onClick={() => router.push("/rackets/compare")}
                         disabled={compareCount < 2}
                         title={
@@ -757,7 +760,7 @@ export default function RacketDetailClient({
 
                     {racket?.rental?.enabled === false &&
                       racket?.rental?.disabledReason && (
-                        <div className="mt-3 text-sm text-foreground border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 rounded-lg p-3">
+                        <div className="mt-3 break-keep rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-foreground dark:bg-destructive/15">
                           대여 불가 사유: {racket.rental.disabledReason}
                         </div>
                       )}
