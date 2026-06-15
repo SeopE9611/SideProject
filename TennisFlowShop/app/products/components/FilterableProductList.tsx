@@ -61,6 +61,11 @@ const DEFAULT_PRICE_RANGE: [number, number] = [
   DEFAULT_MAX_PRICE,
 ];
 
+const activeFilterChipClass =
+  "inline-flex max-w-[220px] shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-border bg-muted px-2.5 py-1 text-xs text-foreground";
+const activeFilterRemoveButtonClass =
+  "shrink-0 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
 /**
  * 필터 가능한 상품 리스트 (infinite scroll 포함)
  */
@@ -733,9 +738,9 @@ export default function FilterableProductList({
         {/* 상품 목록 */}
         <div className="min-w-0">
           <div className="mb-6 bp-md:mb-8 space-y-3">
-            <div>
+            <div className="rounded-lg border border-border bg-muted/40 px-3 py-2.5 bp-sm:px-4">
               <div
-                className="text-base bp-sm:text-lg font-semibold text-foreground tabular-nums"
+                className="flex min-h-6 flex-wrap items-center gap-x-1 text-base font-semibold tabular-nums text-foreground bp-sm:text-lg"
                 aria-live="polite"
               >
                 {productCountPrefix}{" "}
@@ -748,19 +753,19 @@ export default function FilterableProductList({
                 {isCountLoading ? (
                   <Skeleton className="inline-block h-5 w-10 align-middle" />
                 ) : (
-                  <span className="ml-2 text-sm text-muted-foreground">
+                  <span className="ml-1 text-sm font-normal text-muted-foreground">
                     (표시중 {loadedCount}개)
                   </span>
                 )}
                 {isBackgroundRefreshing ? (
-                  <span className="ml-2 text-xs font-medium text-muted-foreground">
+                  <span className="ml-1 text-xs font-medium text-muted-foreground">
                     조회 중...
                   </span>
                 ) : null}
               </div>
             </div>
             {activeFiltersCount > 0 && (
-              <div className="rounded-lg border border-border bg-card p-3">
+              <div className="rounded-lg border border-border bg-card p-3 bp-sm:p-4">
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <p className="text-sm font-medium text-foreground">
                     적용 중인 조건
@@ -777,7 +782,7 @@ export default function FilterableProductList({
                 </div>
                 <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                   {submittedQuery && (
-                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                    <span className={activeFilterChipClass}>
                       {`검색어 "${submittedQuery}"`}
                       <button
                         type="button"
@@ -788,124 +793,124 @@ export default function FilterableProductList({
                           setSubmittedQuery("");
                           resetInfinite();
                         }}
-                        className="text-muted-foreground hover:text-foreground"
+                        className={activeFilterRemoveButtonClass}
                       >
                         ×
                       </button>
                     </span>
                   )}
                   {selectedBrand && (
-                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                    <span className={activeFilterChipClass}>
                       브랜드 {brandLabelMap[selectedBrand] ?? selectedBrand}
                       <button
                         type="button"
                         aria-label="브랜드 필터 해제"
                         onClick={() => setSelectedBrand(null)}
-                        className="text-muted-foreground hover:text-foreground"
+                        className={activeFilterRemoveButtonClass}
                       >
                         ×
                       </button>
                     </span>
                   )}
                   {selectedMaterial && (
-                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                    <span className={activeFilterChipClass}>
                       재질 {stringMaterialLabel(selectedMaterial)}
                       <button
                         type="button"
                         aria-label="재질 필터 해제"
                         onClick={() => setSelectedMaterial(null)}
-                        className="text-muted-foreground hover:text-foreground"
+                        className={activeFilterRemoveButtonClass}
                       >
                         ×
                       </button>
                     </span>
                   )}
                   {selectedBounce !== null && (
-                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                    <span className={activeFilterChipClass}>
                       반발력 {getScoreLabel(selectedBounce)}
                       <button
                         type="button"
                         aria-label="반발력 필터 해제"
                         onClick={() => setSelectedBounce(null)}
-                        className="text-muted-foreground hover:text-foreground"
+                        className={activeFilterRemoveButtonClass}
                       >
                         ×
                       </button>
                     </span>
                   )}
                   {selectedControl !== null && (
-                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                    <span className={activeFilterChipClass}>
                       컨트롤 {getScoreLabel(selectedControl)}
                       <button
                         type="button"
                         aria-label="컨트롤 필터 해제"
                         onClick={() => setSelectedControl(null)}
-                        className="text-muted-foreground hover:text-foreground"
+                        className={activeFilterRemoveButtonClass}
                       >
                         ×
                       </button>
                     </span>
                   )}
                   {selectedSpin !== null && (
-                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                    <span className={activeFilterChipClass}>
                       스핀 {getScoreLabel(selectedSpin)}
                       <button
                         type="button"
                         aria-label="스핀 필터 해제"
                         onClick={() => setSelectedSpin(null)}
-                        className="text-muted-foreground hover:text-foreground"
+                        className={activeFilterRemoveButtonClass}
                       >
                         ×
                       </button>
                     </span>
                   )}
                   {selectedDurability !== null && (
-                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                    <span className={activeFilterChipClass}>
                       내구성 {getScoreLabel(selectedDurability)}
                       <button
                         type="button"
                         aria-label="내구성 필터 해제"
                         onClick={() => setSelectedDurability(null)}
-                        className="text-muted-foreground hover:text-foreground"
+                        className={activeFilterRemoveButtonClass}
                       >
                         ×
                       </button>
                     </span>
                   )}
                   {selectedComfort !== null && (
-                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                    <span className={activeFilterChipClass}>
                       편안함 {getScoreLabel(selectedComfort)}
                       <button
                         type="button"
                         aria-label="편안함 필터 해제"
                         onClick={() => setSelectedComfort(null)}
-                        className="text-muted-foreground hover:text-foreground"
+                        className={activeFilterRemoveButtonClass}
                       >
                         ×
                       </button>
                     </span>
                   )}
                   {exposureLabel && (
-                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                    <span className={activeFilterChipClass}>
                       {exposureLabel}
                       <button
                         type="button"
                         aria-label="혜택 필터 해제"
                         onClick={() => setExposureFilter([])}
-                        className="text-muted-foreground hover:text-foreground"
+                        className={activeFilterRemoveButtonClass}
                       >
                         ×
                       </button>
                     </span>
                   )}
                   {priceChanged && (
-                    <span className="inline-flex max-w-[220px] shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 py-1 text-xs whitespace-nowrap">
+                    <span className={activeFilterChipClass}>
                       {getPriceChipLabel(priceRange)}
                       <button
                         type="button"
                         aria-label="가격 필터 해제"
                         onClick={() => setPriceRange(DEFAULT_PRICE_RANGE)}
-                        className="text-muted-foreground hover:text-foreground"
+                        className={activeFilterRemoveButtonClass}
                       >
                         ×
                       </button>
@@ -915,7 +920,7 @@ export default function FilterableProductList({
               </div>
             )}
 
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-3">
               <Button
                 type="button"
                 variant="outline"
@@ -924,54 +929,54 @@ export default function FilterableProductList({
                   if (showFilters) cancelFiltersSheet();
                   else openFiltersSheet();
                 }}
-                className="h-9 shrink-0 whitespace-nowrap border-border px-3 hover:bg-primary/10 dark:hover:bg-primary/20"
+                className="h-9 min-w-[88px] shrink-0 whitespace-nowrap border-border px-3 hover:bg-primary/10 dark:hover:bg-primary/20"
                 aria-expanded={showFilters}
                 aria-label={showFilters ? "필터 닫기" : "필터 열기"}
               >
                 <Filter className="mr-2 h-4 w-4" />
                 필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
               </Button>
-              <div className="ml-auto flex min-w-0 items-center gap-3">
-              {/* 뷰 모드 토글 */}
-              {!isMobileViewport && (
-                <div className="flex shrink-0 items-center border border-border rounded-lg p-1 bg-card">
-                  <Button
-                    type="button"
-                    variant={viewMode === "grid" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setViewMode("grid")}
-                    className="h-8 w-9 p-0"
-                    aria-label="그리드 보기"
-                    aria-pressed={viewMode === "grid"}
-                  >
-                    <Grid3X3 className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={viewMode === "list" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setViewMode("list")}
-                    className="h-8 w-9 p-0"
-                    aria-label="리스트 보기"
-                    aria-pressed={viewMode === "list"}
-                  >
-                    <List className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
+              <div className="ml-auto flex min-w-[160px] flex-1 items-center justify-end gap-3 bp-sm:flex-initial">
+                {/* 뷰 모드 토글 */}
+                {!isMobileViewport && (
+                  <div className="flex shrink-0 items-center rounded-lg border border-border bg-card p-1">
+                    <Button
+                      type="button"
+                      variant={viewMode === "grid" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setViewMode("grid")}
+                      className="h-8 w-9 p-0"
+                      aria-label="그리드 보기"
+                      aria-pressed={viewMode === "grid"}
+                    >
+                      <Grid3X3 className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={viewMode === "list" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setViewMode("list")}
+                      className="h-8 w-9 p-0"
+                      aria-label="리스트 보기"
+                      aria-pressed={viewMode === "list"}
+                    >
+                      <List className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
 
-              {/* 정렬 */}
-              <Select value={sortOption} onValueChange={setSortOption}>
-                <SelectTrigger className="h-9 w-full min-w-0 rounded-lg border-2 bg-card text-sm focus:border-border bp-sm:w-[180px] dark:focus:border-border">
-                  <SelectValue placeholder="정렬" />
-                </SelectTrigger>
-                <SelectContent className="dark:bg-card dark:border-border">
-                  <SelectItem value="latest">최신순</SelectItem>
-                  <SelectItem value="reviews-desc">리뷰 많은순</SelectItem>
-                  <SelectItem value="price-low">가격 낮은순</SelectItem>
-                  <SelectItem value="price-high">가격 높은순</SelectItem>
-                </SelectContent>
-              </Select>
+                {/* 정렬 */}
+                <Select value={sortOption} onValueChange={setSortOption}>
+                  <SelectTrigger className="h-9 min-w-[160px] flex-1 rounded-lg border-border bg-background text-sm focus:border-border bp-sm:w-[180px] bp-sm:flex-none dark:focus:border-border">
+                    <SelectValue placeholder="정렬" />
+                  </SelectTrigger>
+                  <SelectContent className="border-border dark:bg-card">
+                    <SelectItem value="latest">최신순</SelectItem>
+                    <SelectItem value="reviews-desc">리뷰 많은순</SelectItem>
+                    <SelectItem value="price-low">가격 낮은순</SelectItem>
+                    <SelectItem value="price-high">가격 높은순</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
