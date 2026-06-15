@@ -203,6 +203,13 @@ const processStepSurfaceClass =
   "group flex flex-col items-center rounded-2xl border border-border/60 bg-background p-4 text-center shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-md";
 const brandRailClass =
   "relative flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-color:hsl(var(--muted-foreground)/0.15)_transparent] [scrollbar-width:thin] bp-sm:gap-2.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30";
+const getBrandTabClass = (isActive: boolean) =>
+  cn(
+    "shrink-0 whitespace-nowrap rounded-xl border px-5 py-2.5 text-sm font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 bp-sm:px-6 bp-sm:py-3 bp-sm:text-base bp-md:px-7",
+    isActive
+      ? "border-primary/40 bg-primary/10 text-primary shadow-sm dark:border-primary/40 dark:bg-primary/15 dark:text-primary"
+      : "border-border/60 bg-card text-foreground hover:border-border hover:shadow-md",
+  );
 
 type HomePageClientProps = {
   initialHomeData?: HomePreviewData | null;
@@ -1017,20 +1024,22 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         className="py-12 bp-sm:py-14 bp-md:py-20"
       >
         <SiteContainer>
-          <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-sm:text-3xl bp-md:text-4xl">
-              스트링
-            </h2>
-            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">
-              프로가 선택하는 테니스 스트링
-            </p>
-          </div>
-          <div className="mb-8 bp-sm:mb-10">
+          <SectionHeader
+            title="스트링"
+            description="프로가 선택하는 테니스 스트링"
+            align="center"
+            className="mb-8 bp-sm:mb-10"
+          />
+          <PublicSurface
+            variant="muted"
+            padding="sm"
+            className="mb-8 bp-sm:mb-10"
+          >
             <div className="flex justify-center">
               <div ref={stringBrandRailRef} className={brandRailClass}>
                 <button
                   onClick={() => setActiveStringBrand("all")}
-                  className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeStringBrand === "all" ? "border border-primary/40 bg-primary/10 text-primary shadow-sm dark:border-primary/40 dark:bg-primary/15 dark:text-primary" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
+                  className={getBrandTabClass(activeStringBrand === "all")}
                 >
                   전체
                 </button>
@@ -1040,7 +1049,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     onClick={() =>
                       setActiveStringBrand(b.value as StringBrandKey)
                     }
-                    className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeStringBrand === b.value ? "border border-primary/40 bg-primary/10 text-primary shadow-sm dark:border-primary/40 dark:bg-primary/15 dark:text-primary" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
+                    className={getBrandTabClass(activeStringBrand === b.value)}
                   >
                     {b.label}
                   </button>
@@ -1050,7 +1059,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             <p className="mt-2 text-center text-xs bp-sm:text-sm text-muted-foreground">
               좌우 스와이프하거나 마우스 휠로 더 많은 브랜드를 볼 수 있어요.
             </p>
-          </div>
+          </PublicSurface>
 
           <HorizontalProducts
             title="스트링"
@@ -1109,20 +1118,22 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         className="py-12 bp-sm:py-14 bp-md:py-20"
       >
         <SiteContainer>
-          <div className="mb-8 bp-sm:mb-10 text-center">
-            <h2 className="font-brand-bold text-2xl font-bold text-foreground tracking-normal bp-sm:text-3xl bp-md:text-4xl">
-              중고 라켓
-            </h2>
-            <p className="mt-2 bp-sm:mt-3 text-sm bp-sm:text-base text-muted-foreground">
-              도깨비테니스에서 관리하는 라켓을 활용해보세요
-            </p>
-          </div>
-          <div className="mb-8 bp-sm:mb-10">
+          <SectionHeader
+            title="중고 라켓"
+            description="도깨비테니스에서 관리하는 라켓을 활용해보세요"
+            align="center"
+            className="mb-8 bp-sm:mb-10"
+          />
+          <PublicSurface
+            variant="muted"
+            padding="sm"
+            className="mb-8 bp-sm:mb-10"
+          >
             <div className="flex justify-center">
               <div ref={racketBrandRailRef} className={brandRailClass}>
                 <button
                   onClick={() => setActiveBrand("all")}
-                  className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeBrand === "all" ? "border border-primary/40 bg-primary/10 text-primary shadow-sm dark:border-primary/40 dark:bg-primary/15 dark:text-primary" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
+                  className={getBrandTabClass(activeBrand === "all")}
                 >
                   전체
                 </button>
@@ -1130,7 +1141,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <button
                     key={b.value}
                     onClick={() => setActiveBrand(b.value as BrandKey)}
-                    className={`shrink-0 px-5 bp-sm:px-6 bp-md:px-7 py-2.5 bp-sm:py-3 rounded-xl text-sm bp-sm:text-base font-semibold transition-[background-color,color,border-color,box-shadow,opacity] duration-300 whitespace-nowrap ${activeBrand === b.value ? "border border-primary/40 bg-primary/10 text-primary shadow-sm dark:border-primary/40 dark:bg-primary/15 dark:text-primary" : "bg-card border border-border/60 text-foreground hover:border-border hover:shadow-md"}`}
+                    className={getBrandTabClass(activeBrand === b.value)}
                   >
                     {b.label}
                   </button>
@@ -1140,7 +1151,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             <p className="mt-2 text-center text-xs bp-sm:text-sm text-muted-foreground">
               좌우 스와이프하거나 마우스 휠로 더 많은 브랜드를 볼 수 있어요.
             </p>
-          </div>
+          </PublicSurface>
           <HorizontalProducts
             title="중고 라켓"
             subtitle={
