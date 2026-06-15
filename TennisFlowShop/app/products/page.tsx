@@ -1,8 +1,9 @@
 import FilterableProductList from "@/app/products/components/FilterableProductList";
 import SiteContainer from "@/components/layout/SiteContainer";
-import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
+import { PublicPageHero } from "@/components/public/PublicPageHero";
+import { PublicSurface } from "@/components/public/PublicSurface";
+import { StepIndicator } from "@/components/public/StepIndicator";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 
 import type { Metadata } from "next";
@@ -31,93 +32,101 @@ export default async function ProductsPage({
 
   return (
     <div className="min-h-full bg-muted/30">
-      <div className="relative overflow-hidden bg-muted/30 py-10 bp-sm:py-12 bp-md:py-24">
-        <div className="absolute inset-0 bg-overlay/10 dark:bg-overlay/30" />
-        <HeroCourtBackdrop className="hidden bp-md:block h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
-
-        <SiteContainer variant="wide" className="relative">
-          <div className="text-center text-foreground">
-            <h1 className="font-bold text-3xl bp-sm:text-4xl bp-md:text-4xl bp-lg:text-5xl mb-3 bp-sm:mb-4 bp-md:mb-6 text-foreground leading-tight">
-              테니스 스트링
-            </h1>
-            <p className="text-base bp-sm:text-lg bp-md:text-2xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
-              도깨비테니스 스트링으로 플레이를 한 단계 업그레이드하세요
-            </p>
-          </div>
-        </SiteContainer>
-      </div>
+      <PublicPageHero
+        align="center"
+        title="테니스 스트링"
+        description="플레이 스타일에 맞는 스트링을 고르고, 교체서비스까지 이어서 신청하세요."
+        actions={
+          <>
+            <Button asChild wrap="responsive">
+              <Link href="/products/recommend">스트링 추천받기</Link>
+            </Button>
+            <Button asChild variant="outline" wrap="responsive">
+              <Link href="#product-list">상품 목록 보기</Link>
+            </Button>
+          </>
+        }
+      />
 
       <SiteContainer
         variant="wide"
         className="py-6 bp-sm:py-8 bp-md:py-12 bp-lg:max-w-[1600px] bp-xl:max-w-[1680px]"
       >
-        <Card className="mb-4 border-border bg-muted/30 bp-sm:mb-6">
-          <CardContent className="flex flex-col gap-4 p-4 sm:p-5 md:flex-row md:items-center md:justify-between">
-            <div className="min-w-0 space-y-1">
-              <p className="text-balance text-sm font-semibold text-foreground">
-                어떤 스트링이 맞을지 모르겠나요?
-              </p>
-              <p className="break-words text-sm leading-relaxed text-muted-foreground">
-                간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을
-                확인할 수 있어요.
-              </p>
-            </div>
-            <Button
-              asChild
-              className="w-full shrink-0 whitespace-nowrap md:w-auto"
-            >
-              <Link href="/products/recommend">스트링 추천받기</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <PublicSurface
+          variant="muted"
+          padding="sm"
+          className="mb-4 flex flex-col gap-4 bp-sm:mb-6 md:flex-row md:items-center md:justify-between"
+        >
+          <div className="min-w-0 space-y-1">
+            <p className="text-balance text-sm font-semibold text-foreground">
+              어떤 스트링이 맞을지 모르겠나요?
+            </p>
+            <p className="break-words text-sm leading-relaxed text-muted-foreground">
+              간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을
+              확인할 수 있어요.
+            </p>
+          </div>
+          <Button
+            asChild
+            wrap="responsive"
+            className="w-full shrink-0 md:w-auto"
+          >
+            <Link href="/products/recommend">스트링 추천받기</Link>
+          </Button>
+        </PublicSurface>
 
         {from === "apply" && (
-          <div className="mb-4 bp-sm:mb-6 rounded-xl border border-border bg-card p-4 bp-sm:p-5 shadow-sm">
-            <div className="flex items-start justify-between gap-3 flex-wrap">
-              <div className="min-w-0">
+          <PublicSurface className="mb-4 bp-sm:mb-6">
+            <div className="flex flex-col gap-5">
+              <div className="min-w-0 space-y-2">
                 <p className="text-sm bp-sm:text-base font-semibold text-foreground">
                   1단계: 장착할 스트링을 선택해주세요
                 </p>
-                <p className="mt-1 text-xs bp-sm:text-sm text-muted-foreground leading-relaxed">
+                <p className="text-xs leading-relaxed text-muted-foreground bp-sm:text-sm">
                   선택 후 결제 화면에서 수령 방식과 장착 요청사항을 입력합니다.
                   결제와 함께 교체서비스 신청이 접수됩니다.
                 </p>
-                <div className="mt-3 grid gap-2 text-xs text-muted-foreground bp-sm:grid-cols-3">
-                  <span className="rounded-lg border border-border bg-background px-3 py-2">
-                    1. 스트링 선택
-                  </span>
-                  <span className="rounded-lg border border-border bg-background px-3 py-2">
-                    2. 결제/수령 방식 입력
-                  </span>
-                  <span className="rounded-lg border border-border bg-background px-3 py-2">
-                    3. 장착 접수 완료
-                  </span>
-                </div>
-                <p className="mt-2 text-xs bp-sm:text-sm text-muted-foreground">
+                <p className="text-xs text-muted-foreground bp-sm:text-sm">
                   현재 스트링 단품 구매는 운영하지 않으며, 스트링 교체 신청과
                   함께 이용할 수 있습니다.
                 </p>
               </div>
 
-              <div className="flex w-full bp-sm:w-auto gap-2">
+              <StepIndicator
+                currentStep="string"
+                steps={[
+                  { id: "string", label: "스트링 선택" },
+                  { id: "checkout", label: "결제/수령 방식 입력" },
+                  { id: "complete", label: "장착 접수 완료" },
+                ]}
+              />
+
+              <div className="flex w-full flex-col gap-2 bp-sm:flex-row bp-sm:justify-end">
                 <Button
                   asChild
                   variant="outline"
-                  className="flex-1 bp-sm:flex-none"
+                  wrap="responsive"
+                  className="w-full bp-sm:w-auto"
                 >
                   <Link href="/services/apply">신청 방식 다시 선택</Link>
                 </Button>
-                <Button asChild className="flex-1 bp-sm:flex-none">
+                <Button
+                  asChild
+                  wrap="responsive"
+                  className="w-full bp-sm:w-auto"
+                >
                   <Link href="/services/pricing">가격표 보기</Link>
                 </Button>
               </div>
             </div>
-          </div>
+          </PublicSurface>
         )}
-        <FilterableProductList
-          initialBrand={initialBrand}
-          initialMaterial={initialMaterial}
-        />
+        <div id="product-list" className="scroll-mt-24 bp-md:scroll-mt-28">
+          <FilterableProductList
+            initialBrand={initialBrand}
+            initialMaterial={initialMaterial}
+          />
+        </div>
       </SiteContainer>
     </div>
   );
