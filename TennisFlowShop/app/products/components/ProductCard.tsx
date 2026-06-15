@@ -90,7 +90,7 @@ function PerformanceSummary({
   if (entries.length === 0) return null;
 
   return (
-    <section className="mb-3 rounded-lg border border-border/50 bg-muted/20 px-2.5 py-2">
+    <section className="rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5">
       <p className="mb-1.5 text-[10px] font-semibold tracking-wide text-muted-foreground">
         성능 요약
       </p>
@@ -148,7 +148,7 @@ function WishButton({
       }
       className={cn(
         dim,
-        "flex-shrink-0 rounded-md border shadow-md",
+        "flex-shrink-0 rounded-md border shadow-sm",
         "transition-colors duration-200",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         disabled && "cursor-not-allowed opacity-60",
@@ -206,11 +206,9 @@ function RatingStars({
 }
 
 const productCardSurfaceClass =
-  "group h-full overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md flex flex-col";
+  "group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md";
 const productImageWrapClass =
   "relative w-full overflow-hidden rounded-t-2xl bg-secondary/40 aspect-[5/4] bp-md:aspect-square";
-const productMetaPillClass =
-  "flex items-center justify-between rounded-lg border border-border/50 bg-secondary/35 px-2 py-1";
 
 type Props = {
   product: Product;
@@ -403,8 +401,8 @@ const ProductCard = React.memo(
         <Card className={cn(productCardSurfaceClass, "relative")}>
           {/* 리스트뷰: 배경 장식 SVG 제거 */}
 
-          <div className="flex flex-col bp-md:flex-row relative z-10">
-            <div className="relative w-full bp-md:w-[280px] bp-xl:w-[320px] aspect-[4/3] flex-shrink-0 overflow-hidden bg-secondary/30">
+          <div className="relative z-10 flex h-full flex-col bp-md:flex-row">
+            <div className="relative aspect-[4/3] w-full flex-shrink-0 overflow-hidden bg-secondary/30 bp-md:w-[280px] bp-xl:w-[320px]">
               <Image
                 src={
                   (product.images?.[0] as string) ||
@@ -458,11 +456,11 @@ const ProductCard = React.memo(
                 />
               </div>
             </div>
-            <div className="min-w-0 flex-1 p-4 bp-md:p-5">
-              <div className="flex flex-col gap-3 mb-3">
+            <div className="flex min-w-0 flex-1 flex-col p-4 bp-md:p-5">
+              <div className="mb-4 flex flex-col gap-3">
                 <div className="min-w-0 flex-1">
                   <div
-                    className="mb-1 max-w-full truncate text-sm font-medium text-foreground/80"
+                    className="mb-1 max-w-full truncate text-xs font-medium text-muted-foreground sm:text-sm"
                     title={brandLabel}
                   >
                     {brandLabel}
@@ -473,12 +471,12 @@ const ProductCard = React.memo(
                   >
                     {product.name}
                   </h3>
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2">
                     <RatingStars
                       avg={ratingAvg}
                       starClassName="w-3 h-3 sm:w-4 sm:h-4"
                     />
-                    <span className="text-sm text-foreground/80">
+                    <span className="text-xs text-muted-foreground sm:text-sm">
                       ({ratingCount})
                     </span>
                   </div>
@@ -486,9 +484,11 @@ const ProductCard = React.memo(
                 {priceBlock("left")}
               </div>
 
-              <PerformanceSummary entries={featureEntries} />
+              <div className="mb-4">
+                <PerformanceSummary entries={featureEntries} />
+              </div>
 
-              <div className="grid max-w-md grid-cols-1 gap-2">
+              <div className="mt-auto grid max-w-md grid-cols-1 gap-2">
                 <Button
                   asChild
                   variant="default"
@@ -516,7 +516,6 @@ const ProductCard = React.memo(
                     레거시 단품 구매
                   </Button>
                 )}
-
               </div>
               {shouldShowStandaloneServiceBadge && (
                 <Badge
@@ -593,7 +592,7 @@ const ProductCard = React.memo(
         </div>
 
         {/* 카드 콘텐츠 */}
-        <CardContent className="flex flex-1 flex-col p-4 sm:p-5">
+        <CardContent className="flex flex-1 flex-col p-4 pb-3 sm:p-5 sm:pb-4">
           <Link
             href={detailHref}
             className="flex min-w-0 flex-1 flex-col rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -613,14 +612,16 @@ const ProductCard = React.memo(
               </CardTitle>
             </div>
 
-            <div className="flex items-center gap-1.5 mb-2.5">
+            <div className="mb-3 flex items-center gap-1.5">
               <RatingStars avg={ratingAvg} starClassName="w-3 h-3" />
               <span className="text-xs text-muted-foreground">
                 ({ratingCount})
               </span>
             </div>
 
-            <PerformanceSummary entries={featureEntries} />
+            <div className="mb-4">
+              <PerformanceSummary entries={featureEntries} />
+            </div>
 
             <div className="mt-auto flex justify-end pt-4">
               {priceBlock("right")}
@@ -628,7 +629,7 @@ const ProductCard = React.memo(
           </Link>
         </CardContent>
 
-        <CardFooter className="mt-auto grid grid-cols-1 gap-2 p-3 pt-3 bp-sm:p-4">
+        <CardFooter className="mt-auto grid grid-cols-1 gap-2 border-t border-border/50 p-3 bp-sm:p-4">
           <div className="grid grid-cols-1 gap-2">
             <Button
               asChild
