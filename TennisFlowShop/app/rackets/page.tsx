@@ -1,6 +1,7 @@
 import FilterableRacketList from "@/app/rackets/_components/FilterableRacketList";
 import SiteContainer from "@/components/layout/SiteContainer";
-import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
+import { PublicPageHero } from "@/components/public/PublicPageHero";
+import { PublicSurface } from "@/components/public/PublicSurface";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import Link from "next/link";
@@ -45,39 +46,26 @@ export default async function RacketsPage({
 
   return (
     <div className="min-h-full bg-muted/30">
-      <div className="relative overflow-hidden bg-muted/30 py-10 bp-sm:py-12 bp-md:py-24">
-        <div className="absolute inset-0 bg-overlay/20" />
-        <HeroCourtBackdrop className="hidden bp-md:block h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
-
-        <SiteContainer variant="wide" className="relative">
-          <div className="text-center text-foreground">
-            <h1 className="text-3xl bp-sm:text-4xl bp-md:text-4xl bp-lg:text-5xl font-bold mb-3 bp-sm:mb-4 bp-md:mb-6 text-foreground leading-tight">
-              중고 라켓 구매·대여
-            </h1>
-            <p className="text-base bp-sm:text-lg bp-md:text-xl mb-5 bp-sm:mb-6 bp-md:mb-8 text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
-              검수된 중고 라켓 구매·대여와 스트링 교체를 동시에 신청하세요.
-            </p>
-            <div className="mt-2 flex items-center justify-center">
-              <Button asChild size="lg" variant="secondary">
-                <Link href={finderHref} aria-label="라켓 검색로 이동">
-                  <Search className="mr-2 h-5 w-5" />
-                  스펙으로 찾기 (라켓 검색)
-                </Link>
-              </Button>
-            </div>
-            <p className="mt-2 text-sm text-muted-foreground">
-              무게·밸런스 등 상세 스펙으로 바로 찾아보세요
-            </p>
-          </div>
-        </SiteContainer>
-      </div>
+      <PublicPageHero
+        align="center"
+        title="중고 라켓 구매·대여"
+        description="검수된 중고 라켓을 구매·대여하고 스트링 교체까지 한 번에 신청하세요."
+        actions={
+          <Button asChild size="lg" variant="secondary" wrap="responsive">
+            <Link href={finderHref} aria-label="라켓 검색으로 이동">
+              <Search />
+              스펙으로 라켓 찾기
+            </Link>
+          </Button>
+        }
+      />
 
       <SiteContainer
         variant="wide"
         className="py-6 bp-sm:py-8 bp-md:py-12 bp-lg:max-w-[1600px] bp-xl:max-w-[1680px]"
       >
         {from === "apply" && (
-          <div className="mb-4 rounded-xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
+          <PublicSurface variant="elevated" padding="sm" className="mb-4">
             <div className="flex flex-col gap-3 bp-md:flex-row bp-md:items-center bp-md:justify-between">
               <div className="min-w-0">
                 <p className="break-keep text-sm font-semibold text-foreground bp-sm:text-base">
@@ -93,7 +81,8 @@ export default async function RacketsPage({
                 asChild
                 size="sm"
                 variant="outline"
-                className="h-9 w-full whitespace-nowrap border-border bg-card text-foreground bp-sm:w-auto"
+                wrap="responsive"
+                className="w-full bp-sm:w-auto"
               >
                 <Link
                   href="/services/apply"
@@ -104,12 +93,14 @@ export default async function RacketsPage({
                 </Link>
               </Button>
             </div>
-          </div>
+          </PublicSurface>
         )}
-        <FilterableRacketList
-          initialBrand={initialBrand}
-          initialCondition={initialCondition}
-        />
+        <div id="racket-list">
+          <FilterableRacketList
+            initialBrand={initialBrand}
+            initialCondition={initialCondition}
+          />
+        </div>
       </SiteContainer>
     </div>
   );
