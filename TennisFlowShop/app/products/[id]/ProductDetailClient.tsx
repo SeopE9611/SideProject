@@ -1273,7 +1273,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   return (
     <div className="min-h-full bg-background pb-24 bp-md:pb-10">
       {/* Hero Section with Breadcrumb */}
-      <div className="relative bg-muted/20 text-foreground py-5 sm:py-6 border-b border-border/60">
+      <div className="relative border-b border-border/60 bg-card/70 py-4 text-foreground sm:py-5">
         <SiteContainer variant="wide" className="relative">
           <div className="flex min-w-0 items-center justify-between gap-3">
             <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-sm sm:gap-2.5 sm:text-base">
@@ -1323,7 +1323,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10">
         <div className="grid grid-cols-1 gap-6 sm:gap-8 bp-lg:grid-cols-5">
           <div className="bp-lg:col-span-3 space-y-4 sm:space-y-5">
-            <Card className="overflow-hidden border border-border/60 shadow-lg bg-card rounded-3xl">
+            <Card className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm">
               <div className="relative aspect-square bg-muted/20">
                 <Image
                   src={
@@ -1333,14 +1333,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   }
                   alt={product.name}
                   fill
-                  className="object-contain p-4 transition-transform duration-500 hover:scale-105"
+                  className="object-contain p-4 transition-transform duration-300 hover:scale-[1.02]"
                 />
                 {images.length > 1 && (
                   <>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-12 sm:w-12 bg-card/90 text-foreground border border-border/60 shadow-lg hover:bg-card hover:shadow-md rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                      className="absolute left-3 top-1/2 h-10 w-10 -translate-y-1/2 rounded-xl border border-border/60 bg-card/90 text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-card sm:h-11 sm:w-11"
                       onClick={prevImage}
                     >
                       <ChevronLeft className="h-5 w-5" />
@@ -1348,7 +1348,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 sm:h-12 sm:w-12 bg-card/90 text-foreground border border-border/60 shadow-lg hover:bg-card hover:shadow-md rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200"
+                      className="absolute right-3 top-1/2 h-10 w-10 -translate-y-1/2 rounded-xl border border-border/60 bg-card/90 text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-card sm:h-11 sm:w-11"
                       onClick={nextImage}
                     >
                       <ChevronRight className="h-5 w-5" />
@@ -1377,7 +1377,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 {images.map((image: string, index: number) => (
                   <Card
                     key={index}
-                    className={`overflow-hidden cursor-pointer transition-all duration-300 rounded-xl border ${selectedImageIndex === index ? "ring-2 ring-foreground border-foreground shadow-lg scale-[1.02]" : "border-border/60 hover:border-border hover:shadow-md"}`}
+                    className={`cursor-pointer overflow-hidden rounded-xl border transition-[border-color,box-shadow] duration-200 ${selectedImageIndex === index ? "border-foreground ring-2 ring-ring/30" : "border-border/60 hover:border-border"}`}
                     onClick={() => setSelectedImageIndex(index)}
                   >
                     <div className="aspect-square relative bg-muted/20">
@@ -1406,7 +1406,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <span className="inline-block max-w-full truncate text-sm sm:text-base text-muted-foreground font-medium mb-2">
                       {productBrandLabel}
                     </span>
-                    <h1 className="text-balance break-words text-xl font-bold leading-tight tracking-normal text-foreground sm:text-2xl bp-lg:text-3xl">
+                    <h1 className="min-w-0 text-balance break-keep text-xl font-bold leading-tight tracking-normal text-foreground sm:text-2xl bp-lg:text-3xl">
                       {product.name}
                     </h1>
                     <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -1458,7 +1458,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                   <div className="space-y-4 sm:space-y-5 pt-5 sm:pt-6 border-t border-border/60">
                     {visibleColorRows.length > 0 && (
-                      <div className="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3">
+                      <div className={cn("space-y-3 p-3.5", detailSurfaceSubtleInnerClass)}>
                         <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
                           <span className="text-sm font-semibold text-foreground">
                             색상 선택
@@ -1472,7 +1472,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             </span>
                           )}
                         </div>
-                        <div className="flex gap-2 overflow-x-auto pb-1">
+                        <div className="flex snap-x gap-2 overflow-x-auto pb-1">
                           {visibleColorRows.map((row) => {
                             const label = getColorLabel(row);
                             const soldOut = hasVariantInventories
@@ -1500,7 +1500,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 disabled={soldOut}
                                 onClick={() => setSelectedColor(row.value)}
                                 className={cn(
-                                  "relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg border bg-background text-xs text-foreground transition",
+                                  "relative flex h-16 w-16 shrink-0 snap-start items-center justify-center overflow-hidden rounded-lg border bg-background text-xs text-foreground transition",
                                   isSelected
                                     ? "border-foreground"
                                     : "border-border/60",
@@ -1537,7 +1537,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         </div>
                       </div>
                     )}
-                    <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3">
+                    <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3">
                       <span className="whitespace-nowrap text-sm font-semibold text-foreground">
                         수량 선택
                       </span>
@@ -1591,12 +1591,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       product.inventory.stock > 0 && (
                         <div
                           className={cn(
-                            "flex items-center gap-2.5 p-3 sm:p-3.5",
+                            "flex items-start gap-2.5 p-3 sm:p-3.5",
                             detailSurfaceSubtleInnerClass,
                           )}
                         >
                           <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <span className="text-sm sm:text-base text-muted-foreground">
+                          <span className="break-keep text-sm leading-relaxed text-muted-foreground sm:text-base">
                             현재 남은 수량이{" "}
                             <span className="font-semibold text-foreground">
                               {product.inventory.stock}개
@@ -1607,7 +1607,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       )}
 
                     {isStringProduct && gaugeRows.length > 0 && (
-                      <div className="space-y-2 rounded-xl border border-border/60 bg-muted/30 p-3">
+                      <div className={cn("space-y-3 p-3.5", detailSurfaceSubtleInnerClass)}>
                         <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
                           <span className="text-sm font-semibold text-foreground">
                             게이지 선택
@@ -1622,7 +1622,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           value={selectedGauge}
                           onValueChange={setSelectedGauge}
                         >
-                          <SelectTrigger className="w-full min-w-0 bg-background">
+                          <SelectTrigger className="h-11 w-full min-w-0 bg-background">
                             <SelectValue placeholder="게이지를 선택하세요" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1708,7 +1708,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                   : "secondary"
                               }
                               size="tall"
-                              className="min-h-12 w-full gap-2 whitespace-nowrap sm:min-h-14"
+                              className="min-h-12 w-full gap-2 whitespace-normal break-keep sm:min-h-14"
                               disabled={
                                 loading ||
                                 quantity > effectiveStock ||
@@ -1728,7 +1728,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <Button
                               variant="outline"
                               size="lg"
-                              className="h-auto min-h-12 w-full whitespace-nowrap text-sm sm:text-base"
+                              className="h-auto min-h-12 w-full whitespace-normal break-keep text-sm sm:text-base"
                               onClick={handleAddToCart}
                               disabled={
                                 loading ||
@@ -1755,7 +1755,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         </div>
 
         <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-5 sm:gap-6 mt-8 sm:mt-10">
-          <Card className="rounded-3xl border border-border bg-card shadow-sm">
+          <Card className="min-w-0 rounded-3xl border border-border bg-card shadow-sm">
             <CardHeader className="pb-4 sm:pb-5 p-5 sm:p-6">
               <CardTitle className="flex items-center gap-2.5 break-keep text-lg font-semibold leading-snug text-foreground sm:text-xl">
                 <Target className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -1769,7 +1769,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </h4>
                 <div className="space-y-2 sm:space-y-2.5">
                   {selectedPlayerTypes.length > 0 && (
-                    <div className="flex flex-col items-start gap-2 rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm sm:flex-row sm:items-start sm:gap-3 sm:text-base">
+                    <div className={cn("flex flex-col items-start gap-2 p-3 text-sm sm:flex-row sm:items-start sm:gap-3 sm:text-base", detailSurfaceInfoItemClass)}>
                       <div className="flex shrink-0 items-center gap-3">
                         <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-muted-foreground/70"></div>
                         <span className="shrink-0 whitespace-nowrap break-keep text-muted-foreground">
@@ -1782,7 +1782,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     </div>
                   )}
                   {selectedPlayStyles.length > 0 && (
-                    <div className="flex flex-col items-start gap-2 rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm sm:flex-row sm:items-start sm:gap-3 sm:text-base">
+                    <div className={cn("flex flex-col items-start gap-2 p-3 text-sm sm:flex-row sm:items-start sm:gap-3 sm:text-base", detailSurfaceInfoItemClass)}>
                       <div className="flex shrink-0 items-center gap-3">
                         <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-muted-foreground/70"></div>
                         <span className="shrink-0 whitespace-nowrap break-keep text-muted-foreground">
@@ -1802,11 +1802,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   추가 특성
                 </h4>
                 {additionalFeaturesText ? (
-                  <p className="whitespace-pre-line break-keep break-words rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+                  <p className={cn("whitespace-pre-line break-keep break-words p-3 text-sm leading-relaxed text-muted-foreground sm:text-base", detailSurfaceSubtleInnerClass)}>
                     {additionalFeaturesText}
                   </p>
                 ) : (
-                  <p className="rounded-xl border border-border/60 bg-secondary/40 p-3 text-sm italic text-muted-foreground sm:text-base">
+                  <p className={cn("p-3 text-sm italic text-muted-foreground sm:text-base", detailSurfaceSubtleInnerClass)}>
                     추가 특성 정보가 없습니다.
                   </p>
                 )}
@@ -1814,7 +1814,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             </CardContent>
           </Card>
 
-          <Card className="rounded-3xl border border-border bg-card shadow-sm">
+          <Card className="min-w-0 rounded-3xl border border-border bg-card shadow-sm">
             <CardHeader className="pb-4 sm:pb-5 p-5 sm:p-6">
               <CardTitle className="flex items-center gap-2.5 break-keep text-lg font-semibold leading-snug text-foreground sm:text-xl">
                 <Activity className="h-5 w-5 sm:h-6 sm:w-6" />
