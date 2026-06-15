@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ClipboardList, DollarSign, Ticket, Zap } from "lucide-react";
+import { DollarSign, Ticket, Zap } from "lucide-react";
 import React from "react";
 
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
@@ -21,6 +21,7 @@ import StringCheckboxes from "@/app/services/_components/StringCheckboxes";
 import TimeSlotSelector from "@/app/services/_components/TimeSlotSelector";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { SectionHeader } from "@/components/public/SectionHeader";
 
 export type MountingInfoSectionProps = {
   formData: any;
@@ -323,15 +324,12 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
 
   return (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-secondary text-foreground mb-4">
-          <ClipboardList className="h-8 w-8" />
-        </div>
-        <h2 className="text-2xl font-bold mb-2">라켓·스트링 정보</h2>
-        <p className="text-muted-foreground">
-          장착할 라켓과 스트링 정보를 입력해주세요
-        </p>
-      </div>
+      <SectionHeader
+        align="center"
+        title="라켓·스트링 정보"
+        description="장착할 라켓과 스트링 정보를 입력해주세요"
+        className="mb-8 break-keep [&_div]:leading-relaxed"
+      />
 
       <div className="space-y-6">
         {/* <div className="space-y-2">
@@ -347,10 +345,10 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
               스트링 종류 <span className="text-destructive">*</span>
             </Label>
             <div className="mt-2 space-y-2">
-              <div className="rounded-lg border border-warning/30 bg-warning/10 p-4 dark:bg-warning/15">
-                <div className="flex items-start space-x-3">
+              <div className="rounded-xl border border-warning/30 bg-warning/10 p-4 dark:bg-warning/15">
+                <div className="flex min-w-0 items-start gap-3">
                   <Zap className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-foreground">
+                  <div className="min-w-0 space-y-1 text-sm leading-relaxed text-foreground break-keep">
                     <p className="font-medium mb-1 text-warning">
                       ⚠️ 중요 안내
                     </p>
@@ -375,8 +373,8 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         )}
 
                         {rentalSelectStringHref && (
-                          <div className="mt-2">
-                            <Button asChild variant="outline" size="sm">
+                          <div className="mt-3">
+                            <Button asChild variant="outline" size="sm" className="whitespace-nowrap">
                               <Link href={rentalSelectStringHref}>
                                 스트링 변경하기
                               </Link>
@@ -426,7 +424,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
           {(isLockedNonOrder || isRentalNonOrder) &&
             lockedStringId &&
             lockedStringId !== "custom" && (
-              <div className="mb-4 rounded-lg border border-border bg-muted/70 p-3">
+              <div className="mb-4 rounded-xl border border-border bg-muted/50 p-4">
                 {isLoadingPdpProduct ? (
                   <div className="space-y-2">
                     <Skeleton className="h-4 w-40" />
@@ -434,9 +432,9 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 flex-wrap items-center gap-3 sm:flex-nowrap">
                       {pdpProduct?.image && (
-                        <div className="relative h-16 w-16 overflow-hidden rounded-md bg-card shadow-sm">
+                        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-card">
                           <img
                             src={pdpProduct.image}
                             alt={pdpProduct.name}
@@ -445,9 +443,9 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         </div>
                       )}
 
-                      <div className="flex flex-col">
+                      <div className="min-w-0 flex-1 flex flex-col">
                         {/* 상단 라벨 + 포함/미포함 배지(대여 비-주문에서만) */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="text-xs font-semibold text-primary">
                             {rentalId
                               ? "대여 신청에서 선택한 스트링"
@@ -466,11 +464,11 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                           )}
                         </div>
 
-                        <span className="text-sm font-medium text-foreground">
+                        <span className="text-sm font-medium leading-relaxed text-foreground break-words">
                           {pdpProduct?.name ??
                             "선택한 스트링으로 신청 중입니다."}
                         </span>
-                        <span className="mt-1 text-xs text-muted-foreground">
+                        <span className="mt-1 text-xs leading-relaxed text-muted-foreground break-keep">
                           {rentalId
                             ? "대여 신청 시 선택한 스트링 기준으로 진행됩니다."
                             : "이 신청서는 위 스트링을 기준으로 장착 서비스가 진행됩니다."}
@@ -481,7 +479,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     {/* (대여) 체크 해제 상태를 “체감”으로 확실히 보이게: 경고 + 즉시 복구 CTA */}
                     {isRentalNonOrder && !isLockedIdSelected && (
                       <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/15 p-3 text-xs text-destructive dark:bg-destructive/20">
-                        <div className="flex items-start justify-between gap-3">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
                           <div className="leading-relaxed">
                             <p className="font-medium">
                               현재 이 스트링이 체크 해제되어 신청서에 포함되지
@@ -497,7 +495,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                             type="button"
                             variant="outline"
                             size="sm"
-                            className="h-8 shrink-0 px-3 text-xs"
+                            className="h-8 shrink-0 px-3 text-xs whitespace-nowrap"
                             onClick={() =>
                               handleStringTypesChange(
                                 Array.from(
@@ -521,7 +519,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
 
           {/* 주문 기반 진입 시 안내 문구 */}
           {orderId && typeof orderRemainingSlots === "number" && (
-            <div className="mb-3 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground dark:border-border dark:bg-card/40 dark:text-foreground">
+            <div className="mb-3 rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm text-foreground dark:border-border dark:bg-card/40 dark:text-foreground">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <span className="font-medium">
                   이 주문에서 남은 교체 가능 횟수
@@ -554,7 +552,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
             </div>
           )}
           {orderId && (
-            <p className="mb-2 text-xs text-muted-foreground">
+            <p className="mb-2 text-xs leading-relaxed text-muted-foreground break-keep">
               이번 신청서는 <span className="font-semibold">보유 라켓</span>도
               포함해 <span className="font-semibold">여러{"\u00A0"}자루</span>를
               한{"\u00A0"}번에 접수할 수 있습니다. 아래에서 사용할 스트링을
@@ -620,17 +618,17 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
             </div>
           )}
 
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
             <h3 className="font-semibold text-foreground mb-4 flex items-center">
               <DollarSign className="h-5 w-5 mr-2 text-primary" />
               예상 장착 비용
             </h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border bg-muted/70 dark:border-border">
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/50 p-3 dark:border-border">
                 <span className="text-sm text-muted-foreground">
                   기본 장착비
                 </span>
-                <span className="font-semibold text-foreground">
+                <span className="font-semibold tabular-nums text-foreground">
                   {formData.stringTypes.includes("custom")
                     ? "12,000원"
                     : order && lineCount > 0
@@ -657,7 +655,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         return (
                           <div
                             key={id}
-                            className="flex items-center justify-between gap-2"
+                            className="flex min-w-0 flex-wrap items-center justify-between gap-2"
                           >
                             <span className="truncate">• 직접 입력 스트링</span>
                             <div className="flex items-center gap-1">
@@ -720,7 +718,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                       return (
                         <div
                           key={id}
-                          className="flex items-center justify-between gap-2"
+                          className="flex min-w-0 flex-wrap items-center justify-between gap-2"
                         >
                           <span className="truncate">
                             • {item.name}{" "}
@@ -728,7 +726,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                               (구매 {orderQty}개 중)
                             </span>
                           </span>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <Label htmlFor={`useQty-${id}`} className="sr-only">
                               사용할 개수
                             </Label>
@@ -839,7 +837,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         return (
                           <div
                             key={id}
-                            className="flex items-center justify-between gap-2"
+                            className="flex min-w-0 flex-wrap items-center justify-between gap-2"
                           >
                             <span className="truncate">
                               • {name}{" "}
@@ -929,16 +927,16 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
               className={
                 packagePreview?.has
                   ? canApplyPackage
-                    ? "rounded-xl border border-border bg-muted dark:border-border dark:bg-muted px-4 py-3"
-                    : "rounded-xl border border-border bg-muted/80 dark:border-border dark:bg-muted px-4 py-3"
-                  : "rounded-xl border border-border bg-background/80 dark:border-border dark:bg-muted px-4 py-3"
+                    ? "rounded-xl border border-border bg-muted/50 px-4 py-4"
+                    : "rounded-xl border border-border bg-muted/40 px-4 py-4"
+                  : "rounded-xl border border-border bg-card px-4 py-4"
               }
             >
               <div className="flex items-start gap-3">
                 <div className="mt-0.5">
                   <Ticket className="h-4 w-4 text-foreground" />
                 </div>
-                <div className="flex-1 text-[12px] leading-relaxed">
+                <div className="min-w-0 flex-1 text-[12px] leading-relaxed break-keep">
                   <div className="mb-1 flex flex-wrap items-center gap-2">
                     <span className="text-base font-semibold tracking-normal text-foreground">
                       패키지 사용 가능 여부
@@ -1028,7 +1026,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
         )}
         {/* 라켓/라인 세부 입력 (선택 사항) */}
         {lineCount > 0 && (
-          <Card className="border-none bg-muted/40 dark:bg-muted/30 shadow-sm">
+          <Card className="border border-border bg-card shadow-none">
             <CardHeader className="pb-4 space-y-1">
               <CardTitle className="text-base font-semibold text-foreground">
                 라켓별 세부 장착 정보
@@ -1041,9 +1039,9 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-xl border border-border bg-background/70 dark:border-border dark:bg-card/30 p-4">
+              <div className="rounded-xl border border-border bg-muted/30 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="min-w-[220px]">
+                  <div className="min-w-0 sm:min-w-[220px]">
                     <p className="text-sm font-semibold text-foreground">
                       일괄 입력
                     </p>
@@ -1052,12 +1050,12 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-8 px-3 text-xs"
+                      className="h-8 w-full px-3 text-xs whitespace-nowrap sm:w-auto"
                       onClick={applyFirstLineTensionToAll}
                       disabled={lineCount < 2}
                     >
@@ -1066,7 +1064,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     <Button
                       type="button"
                       size="sm"
-                      className="h-8 px-3 text-xs"
+                      className="h-8 w-full px-3 text-xs whitespace-nowrap sm:w-auto"
                       onClick={() => applyBulkToAllLines()}
                       disabled={lineCount < 1}
                     >
@@ -1120,11 +1118,11 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
               {linesForSubmit.map((line, index) => (
                 <div
                   key={line.id ?? index}
-                  className="group relative rounded-xl bg-card/50 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
+                  className="group relative overflow-hidden rounded-xl border border-border bg-card"
                 >
                   {/* 헤더 영역: 라켓 N, 스트링 이름 */}
-                  <div className="flex items-center justify-between gap-3 px-4 py-3 bg-muted/40 dark:bg-muted/30 border-b border-border/50">
-                    <div className="flex items-center gap-2.5">
+                  <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-b border-border bg-muted/30 px-4 py-3">
+                    <div className="flex min-w-0 items-center gap-2.5">
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary shadow-sm">
                         <span className="text-sm font-bold text-primary">
                           {index + 1}
@@ -1242,7 +1240,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 formData.preferredTime &&
                 visitSlotCountUi > 0 &&
                 visitDurationMinutesUi && (
-                  <div className="mt-3 text-xs md:text-[13px] text-foreground bg-background/80 dark:bg-card/40 border border-border rounded-lg px-3 py-2">
+                  <div className="mt-3 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs leading-relaxed text-foreground md:text-[13px]">
                     <p className="font-medium">
                       이번 방문 예상 소요 시간:{" "}
                       {visitTimeRange
