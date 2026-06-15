@@ -197,6 +197,8 @@ const PROMO_BANNERS: PromoBanner[] = (() => {
 
 const surfaceCardInteractiveClass =
   "rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg";
+const promoBannerClass =
+  "group relative block h-24 overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:h-28 bp-md:h-32 bp-lg:h-36";
 const surfaceIconWrapClass =
   "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md";
 const processStepSurfaceClass =
@@ -640,12 +642,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         {PROMO_BANNERS.length > 0 && (
           <section className="mt-4 bp-sm:mt-5 bp-md:mt-6">
             <div className="mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0">
-              <div className="grid grid-cols-2 bp-xxs:grid-cols-1 bp-md-only:grid-cols-4 bp-lg:grid-cols-4 gap-3 bp-sm:gap-4">
+              <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-sm:gap-4 bp-md:grid-cols-4">
                 {PROMO_BANNERS.map((b) => {
                   const title = (b.label ?? "").split("\n")[0] || "광고 문의";
-
-                  const baseClass =
-                    "group relative block h-24 overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:h-28 bp-md:h-32 bp-lg:h-36";
 
                   const inner = (
                     <>
@@ -679,7 +678,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                       <Link
                         key={b.key}
                         href={b.href}
-                        className={baseClass}
+                        className={promoBannerClass}
                         aria-label={title}
                       >
                         {inner}
@@ -692,7 +691,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                       <a
                         key={b.key}
                         href={b.href}
-                        className={baseClass}
+                        className={promoBannerClass}
                         aria-label={title}
                       >
                         {inner}
@@ -701,7 +700,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   }
 
                   return (
-                    <div key={b.key} className={baseClass} aria-label={title}>
+                    <div
+                      key={b.key}
+                      className={promoBannerClass}
+                      aria-label={title}
+                    >
                       {inner}
                     </div>
                   );
