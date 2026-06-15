@@ -630,7 +630,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 </span>
                 <span className="font-semibold tabular-nums text-foreground">
                   {formData.stringTypes.includes("custom")
-                    ? "12,000원"
+                    ? price.toLocaleString("ko-KR") + "원"
                     : order && lineCount > 0
                       ? price.toLocaleString("ko-KR") + "원"
                       : (
