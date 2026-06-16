@@ -345,14 +345,13 @@ const getFlowNextActionText = (
 ): string | null => {
   if (opts?.todoPrimaryReason) {
     const todoMessageMap: Record<string, string> = {
-      "구매확정 필요": "상품을 받으셨다��� 구매확정을 진행해주세요.",
+      "구매확정 필요": "상품을 받으셨다면 구매확정을 진행해주세요.",
       "이용확정 필요": "반납 내용을 확인하고 이용확정을 진행해주세요.",
       "운송장 등록 필요": "운송장 정보를 등록해주세요.",
-      "교체서비스 확정 필요": "작업 내용을 확인하고 교체서비스 확정을 진행해주���요.",
+      "교체서비스 확정 필요": "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.",
       "후기를 남길 수 있어요": "구매확정된 상품은 후기를 작성할 수 있어요.",
       "상품 후기 작성 가능": "구매확정된 상품은 후기를 작성할 수 있어요.",
-      "상품+교체서비스 후기 가능":
-        "이용확정된 교체서비스 후기를 작성할 수 있어요.",
+      "상품+교체서비스 후기 가능": "이용확정된 교체서비스 후기를 작성할 수 있어요.",
       "교체서비스 신청 필요": "교체서비스 신청을 이어서 진행해주세요.",
     };
     return todoMessageMap[opts.todoPrimaryReason] ?? null;
@@ -734,20 +733,14 @@ export default function TransactionFlowList() {
       {/* Enhanced Filter Tabs */}
       <OrdersScopeTabs activeScope={scope} />
       {scope === "todo" ? (
-        <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 ring-1 ring-primary/10 dark:bg-primary/10 bp-sm:p-4">
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 rounded-full bg-background/70 p-1.5 text-primary ring-1 ring-primary/15">
-              <Sparkles className="h-4 w-4" />
-            </div>
-            <div className="min-w-0 space-y-1">
-              <p className="text-sm font-semibold text-foreground">해야 할 일만 모아봤어요</p>
-              <p className="text-xs leading-relaxed text-foreground/75">구매확정, 운송장 등록, 교체확정, 후기 작성처럼 지금 바로 처리할 수 있는 항목입니다.</p>
-              <p className="text-xs leading-relaxed text-muted-foreground">각 항목 아래 버튼으로 바로 처리할 수 있습니다.</p>
-            </div>
+        <div className="rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5 dark:bg-primary/10">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 shrink-0 text-primary" />
+            <p className="break-keep text-xs font-medium text-foreground">지금 처리할 수 있는 구매확정, 운송장, 후기 작성 항목만 모았습니다.</p>
           </div>
         </div>
       ) : null}
-      <p className="text-xs text-foreground/75">연결된 주문/대여와 교체서비스는 하나의 확정으로 처리됩니다.</p>
+      <p className="break-keep text-xs text-muted-foreground">주문·대여와 연결된 교체서비스를 함께 확인할 수 있습니다.</p>
       {items.length === 0 ? (
         <Card className="border-0 bg-card">
           <CardContent className="p-8 text-center">
@@ -765,7 +758,7 @@ export default function TransactionFlowList() {
           </CardContent>
         </Card>
       ) : (
-        <div className="divide-y divide-border/70 border-y border-border/70">
+        <div className="space-y-3 md:divide-y md:divide-border/70 md:space-y-0 md:border-y md:border-border/70">
           {items.map((g) => {
             const orderId = g.order?.id ?? (g.kind === "order" ? g.detailTarget.id : undefined);
             const rentalId = g.rental?.id ?? (g.kind === "rental" ? g.detailTarget.id : undefined);
@@ -836,20 +829,30 @@ export default function TransactionFlowList() {
                   : getApplicationCollectionLabel(displayApplication);
 
             return (
-              <div key={g.key} className="flex flex-col items-start gap-4 py-5 transition-colors hover:bg-muted/30 md:flex-row md:flex-wrap">
-                {/* 왼쪽: 주문 일자 / 타입 */}
-                <div className="flex w-full shrink-0 items-center gap-2 md:w-32 md:flex-col md:items-start md:gap-1">
+              <div
+                key={g.key}
+                className="grid gap-3 rounded-2xl border border-border bg-card px-4 py-4 shadow-sm transition-colors hover:bg-muted/30 md:rounded-none md:border-0 md:bg-transparent md:px-1 md:shadow-none bp-sm:px-4 md:grid-cols-[112px_minmax(0,1fr)_auto] md:items-start md:gap-4"
+              >
+                <div className="flex min-w-0 items-start justify-between gap-3 md:hidden">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground">{displayUserStatusLabel}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {formatDate(displayDateValue)} · {displayMetaLabel}
+                    </p>
+                  </div>
+                </div>
+                <div className="hidden min-w-0 md:block">
                   <span className="text-xs tabular-nums text-muted-foreground">{formatDate(displayDateValue)}</span>
-                  <span className="text-xs font-medium text-muted-foreground/80">{displayMetaLabel}</span>
+                  <span className="mt-1 block text-xs font-medium text-muted-foreground/70">{displayMetaLabel}</span>
                 </div>
 
                 {/* 중간: 메인 정보 */}
-                <div className="flex min-w-0 flex-1 flex-col gap-2">
+                <div className="flex min-w-0 flex-col gap-1.5">
                   <Link href={detailHref} className="inline-flex max-w-full items-start gap-1.5">
                     <FlowIcon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                    <span className="line-clamp-2 break-keep text-base font-semibold text-foreground transition-colors hover:text-primary">{displayTitle}</span>
+                    <span className="line-clamp-2 break-keep text-sm font-semibold text-foreground transition-colors hover:text-primary bp-sm:text-base">{displayTitle}</span>
                   </Link>
-                  <p className="break-keep text-sm tabular-nums text-muted-foreground">
+                  <p className="break-keep text-xs tabular-nums text-muted-foreground bp-sm:text-sm">
                     {heroSummary}
                     {heroSubSummary ? ` · ${heroSubSummary}` : ""}
                     {standaloneApplicationIdMeta}
@@ -867,7 +870,11 @@ export default function TransactionFlowList() {
                           {g.flowLabel}
                         </Badge>
                       ) : null}
-                      {showLinkedStatusBadge ? <Badge variant="secondary">{getLinkedApplicationStatusSummary(linkedApps)}</Badge> : null}
+                      {showLinkedStatusBadge ? (
+                        <Badge variant="secondary" className="hidden shrink-0 whitespace-nowrap bp-sm:inline-flex">
+                          {getLinkedApplicationStatusSummary(linkedApps)}
+                        </Badge>
+                      ) : null}
                       {isCancelRequested ? (
                         <Badge variant={getWorkflowMetaBadgeSpec("cancel_requested").variant} className="gap-1">
                           <AlertCircle className="h-3 w-3" />
@@ -878,12 +885,12 @@ export default function TransactionFlowList() {
                   ) : null}
 
                   {todoPrimaryReason && nextActionText ? (
-                    <p className="pt-0.5 text-xs leading-relaxed">
+                    <p className="line-clamp-2 break-keep text-xs leading-relaxed bp-sm:line-clamp-none">
                       <span className="font-semibold text-primary">{todoPrimaryReason}</span>
                       <span className="text-muted-foreground"> · {nextActionText}</span>
                     </p>
                   ) : nextActionText ? (
-                    <p className="pt-0.5 text-xs leading-relaxed text-muted-foreground">{nextActionText}</p>
+                    <p className="line-clamp-2 break-keep text-xs leading-relaxed text-muted-foreground bp-sm:line-clamp-none">{nextActionText}</p>
                   ) : null}
                 </div>
 
@@ -1157,19 +1164,14 @@ export default function TransactionFlowList() {
                   return (
                     <>
                       {/* 오른쪽 컬럼: 상태 배지 + 액션 버튼 */}
-                      <div className="flex w-full shrink-0 flex-col items-start gap-2.5 md:w-auto md:items-end">
-                        <div className="flex flex-wrap items-center gap-1.5 md:justify-end">
+                      <div className="flex w-full shrink-0 flex-col items-start gap-2 md:w-[150px] md:items-end">
+                        <div className="hidden flex-wrap items-center gap-1.5 md:flex md:justify-end">
                           <Badge variant={displayStatusBadgeSpec.variant} className="shrink-0 whitespace-nowrap">
                             {displayUserStatusLabel}
                           </Badge>
-                          {todoPrimaryReason ? (
-                            <Badge variant={getWorkflowMetaBadgeSpec("action_required").variant} className="shrink-0 whitespace-nowrap">
-                              {todoPrimaryReason}
-                            </Badge>
-                          ) : null}
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-2 md:flex-col md:items-end [&_a]:h-9 [&_a]:justify-center [&_button]:h-9 [&_button]:whitespace-nowrap">
+                        <div className="grid w-full grid-cols-2 gap-1.5 md:flex md:flex-col md:items-end [&_a]:h-8 [&_a]:w-full [&_a]:justify-center [&_a]:px-3 [&_a]:text-xs [&_button]:h-8 [&_button]:w-full [&_button]:whitespace-nowrap [&_button]:px-3 [&_button]:text-xs md:[&_a]:w-auto md:[&_button]:w-auto">
                           {inlineActions.map((action) => (
                             <Fragment key={action.key}>{action.node}</Fragment>
                           ))}
@@ -1178,25 +1180,24 @@ export default function TransactionFlowList() {
                             <button
                               type="button"
                               className={`
-        group relative flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium
-        transition-[box-shadow,border-color,background-color,color,opacity] duration-200 ease-out
-        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-1
-  ${isSecondaryOpen ? "border-border bg-secondary text-foreground shadow-sm" : "border-border bg-background text-muted-foreground hover:bg-card hover:text-foreground"}
-      `}
+    group relative flex h-8 items-center gap-1.5 rounded-lg border px-3 text-xs font-medium
+    transition-colors duration-150
+    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1
+    ${isSecondaryOpen ? "border-border bg-secondary text-foreground shadow-sm" : "border-border bg-background text-muted-foreground hover:bg-card hover:text-foreground"}
+  `}
                               onClick={() => setExpandedSecondaryKey((prev) => (prev === g.key ? null : g.key))}
                             >
-                              <Sparkles className={`h-3.5 w-3.5 transition-[box-shadow,border-color,background-color,color,opacity] duration-200 ${isSecondaryOpen ? "text-primary" : "text-muted-foreground/70 group-hover:text-primary/70"}`} />
-                              <span>{isSecondaryOpen ? "보조 작업 닫기" : "보조 작업"}</span>
+                              <span>{isSecondaryOpen ? "닫기" : "더보기"}</span>
                               <span
                                 className={`
-        flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold
-        transition-colors duration-200
-        ${isSecondaryOpen ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground group-hover:bg-secondary group-hover:text-foreground"}
-      `}
+    flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold
+    transition-colors duration-150
+    ${isSecondaryOpen ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground group-hover:bg-secondary group-hover:text-foreground"}
+  `}
                               >
                                 {secondaryActions.length}
                               </span>
-                              {isSecondaryOpen ? <ChevronUp className="h-3.5 w-3.5 transition-transform duration-200" /> : <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-y-0.5" />}
+                              {isSecondaryOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                             </button>
                           ) : null}
                         </div>
@@ -1204,7 +1205,7 @@ export default function TransactionFlowList() {
 
                       {/* 펼침 패널: 메인 행 아래 전체 너비로 분리되어 펼쳐짐 */}
                       {secondaryActions.length > 0 && isSecondaryOpen ? (
-                        <div className="flex w-full basis-full flex-wrap justify-start gap-2 rounded-lg border border-dashed border-border/50 bg-muted/20 p-3 animate-in fade-in duration-200 md:justify-end [&_a]:h-9 [&_a]:justify-center [&_button]:h-9 [&_button]:whitespace-nowrap">
+                        <div className="col-span-full grid w-full grid-cols-2 gap-1.5 rounded-lg border border-border/60 bg-muted/20 px-3 py-2 animate-in fade-in duration-200 md:flex md:flex-wrap md:justify-end [&_a]:h-8 [&_a]:w-full [&_a]:justify-center [&_a]:px-3 [&_a]:text-xs [&_button]:h-8 [&_button]:w-full [&_button]:whitespace-nowrap [&_button]:px-3 [&_button]:text-xs md:[&_a]:w-auto md:[&_button]:w-auto">
                           {secondaryActions.map((action) => (
                             <Fragment key={action.key}>{action.node}</Fragment>
                           ))}
