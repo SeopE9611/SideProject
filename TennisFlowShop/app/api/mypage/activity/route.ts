@@ -7,7 +7,10 @@ import {
   normalizeMypageTodoStatus,
 } from "@/lib/mypage/activity-todo";
 import clientPromise from "@/lib/mongodb";
-import { isOrderLinkedToStringing } from "@/lib/reviews/review-policy";
+import {
+  isOrderLinkedToStringing,
+  isStringingReviewBlockedStatus,
+} from "@/lib/reviews/review-policy";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -173,6 +176,7 @@ type ActivityApplicationSummary = {
   packageApplied?: boolean;
   paymentStatus?: string | null;
   paymentProvider?: string | null;
+  serviceReviewPending?: boolean;
 };
 
 export type ActivityGroup = {
@@ -622,6 +626,50 @@ export async function GET(req: Request) {
     ]),
   );
 
+
+  const serviceReviewCandidateIds = [...linkedApps, ...standaloneApps]
+    .filter((app: any) => {
+      const userConfirmedAt = app?.userConfirmedAt;
+      return (
+        Boolean(userConfirmedAt) && !isStringingReviewBlockedStatus(app?.status)
+      );
+    })
+    .map((app: any) => String(app._id))
+    .filter((id) => ObjectId.isValid(id));
+  const serviceReviewCandidateSet = new Set(serviceReviewCandidateIds);
+  const reviewedServiceApplicationIds = new Set<string>();
+
+  if (serviceReviewCandidateIds.length > 0) {
+    const serviceReviews = await db
+      .collection("reviews")
+      .find(
+        {
+          userId,
+          service: "stringing",
+          serviceApplicationId: {
+            $in: serviceReviewCandidateIds.flatMap((id) => [
+              new ObjectId(id),
+              id,
+            ]),
+          },
+          isDeleted: { $ne: true },
+        },
+        { projection: { serviceApplicationId: 1 } },
+      )
+      .toArray();
+
+    for (const review of serviceReviews as any[]) {
+      reviewedServiceApplicationIds.add(String(review.serviceApplicationId));
+    }
+  }
+
+  const hasPendingServiceReview = (applicationId?: string | null) =>
+    Boolean(
+      applicationId &&
+        serviceReviewCandidateSet.has(applicationId) &&
+        !reviewedServiceApplicationIds.has(applicationId),
+    );
+
   for (const doc of linkedApps as any[]) {
     const details = doc.stringDetails ?? {};
     const shipping = doc.shippingInfo ?? {};
@@ -690,6 +738,7 @@ export async function GET(req: Request) {
       packageApplied: paymentContext.packageApplied,
       paymentStatus: paymentContext.paymentStatus,
       paymentProvider: paymentContext.paymentProvider,
+      serviceReviewPending: hasPendingServiceReview(String(doc._id)),
     };
 
     if (doc.orderId) {
@@ -965,6 +1014,7 @@ export async function GET(req: Request) {
         packageApplied: paymentContext.packageApplied,
         paymentStatus: paymentContext.paymentStatus,
         paymentProvider: paymentContext.paymentProvider,
+        serviceReviewPending: hasPendingServiceReview(String(doc._id)),
       },
     });
   }

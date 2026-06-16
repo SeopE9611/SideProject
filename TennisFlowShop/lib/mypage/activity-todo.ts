@@ -3,6 +3,7 @@ export type ActivityTodoApplicationLike = {
   hasTracking?: boolean | null;
   needsInboundTracking?: boolean | null;
   userConfirmedAt?: string | null;
+  serviceReviewPending?: boolean | null;
 };
 
 export function normalizeMypageTodoStatus(status?: string | null): string {
@@ -44,8 +45,16 @@ export function isApplicationTodoActionable(
 
   return Boolean(
     (app.needsInboundTracking && !app.hasTracking) ||
-    (status === "교체완료" && !app.userConfirmedAt),
+    (status === "교체완료" && !app.userConfirmedAt) ||
+    app.serviceReviewPending,
   );
+}
+
+export function isApplicationServiceReviewTodoPending(
+  app?: ActivityTodoApplicationLike | null,
+): boolean {
+  if (!app || isTerminalCanceledTodoStatus(app.status)) return false;
+  return Boolean(app.serviceReviewPending);
 }
 
 function isApplicationTrackingTodoActionable(
@@ -69,14 +78,17 @@ export function isOrderTodoActionable(params: {
   const isConfirmed = Boolean(params.userConfirmedAt) || status === "구매확정";
   const hasPendingReview = (params.reviewPendingCount ?? 0) > 0;
   const hasActionableLinkedApplication = (params.linkedApplications ?? []).some(
-    (app) => isApplicationTrackingTodoActionable(app),
+    (app) =>
+      isApplicationTrackingTodoActionable(app) ||
+      isApplicationServiceReviewTodoPending(app),
   );
 
   return Boolean(
     status === "배송완료" ||
     hasActionableLinkedApplication ||
     (isConfirmed && hasPendingReview) ||
-    isApplicationTrackingTodoActionable(params.primaryApplication),
+    isApplicationTrackingTodoActionable(params.primaryApplication) ||
+    isApplicationServiceReviewTodoPending(params.primaryApplication),
   );
 }
 
@@ -92,12 +104,15 @@ export function isRentalTodoActionable(params: {
   if (isTerminalCanceledTodoStatus(status)) return false;
 
   const hasActionableLinkedApplication = (params.linkedApplications ?? []).some(
-    (app) => isApplicationTrackingTodoActionable(app),
+    (app) =>
+      isApplicationTrackingTodoActionable(app) ||
+      isApplicationServiceReviewTodoPending(app),
   );
   return Boolean(
     (status === "반납완료" && !params.userConfirmedAt) ||
     hasActionableLinkedApplication ||
     isApplicationTrackingTodoActionable(params.primaryApplication) ||
+    isApplicationServiceReviewTodoPending(params.primaryApplication) ||
     (!params.stringingApplicationId && params.withStringService),
   );
 }
