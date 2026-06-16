@@ -873,14 +873,14 @@ export default function OrderDetailClient({
     <main className="w-full">
       <SiteContainer
         variant="wide"
-        className="px-0 py-4 bp-sm:px-4 bp-sm:py-6 space-y-5 bp-sm:space-y-8 bp-md:px-6 bp-lg:px-0"
+        className="space-y-5 px-0 py-4 bp-sm:space-y-8 bp-sm:px-4 bp-sm:py-6 bp-md:px-6 bp-lg:px-0"
       >
-        <div className="bg-muted/30 rounded-2xl border border-border p-4 shadow-lg bp-sm:p-5 bp-lg:p-8">
+        <div className="rounded-2xl border border-border bg-muted/30 p-4 shadow-sm bp-sm:p-5 bp-lg:p-8">
           {/* 헤더: 제목과 액션 버튼 */}
           <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between bp-lg:gap-6">
             {/* 제목 섹션 */}
-            <div className="flex items-center space-x-4 min-w-0 flex-1">
-              <div className="bg-card rounded-full p-3 shadow-md shrink-0">
+            <div className="flex min-w-0 flex-1 items-center gap-4">
+              <div className="shrink-0 rounded-full border border-border bg-card p-3 shadow-sm">
                 <ShoppingCart className="h-8 w-8 text-primary" />
               </div>
               <div className="min-w-0">
@@ -901,12 +901,12 @@ export default function OrderDetailClient({
             </div>
 
             {/* 액션 버튼 섹션 */}
-            <div className="grid w-full grid-cols-1 gap-2 shrink-0 bp-sm:grid-cols-2 bp-lg:flex bp-lg:w-auto bp-lg:flex-wrap bp-lg:justify-end">
+            <div className="grid w-full shrink-0 grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-lg:flex bp-lg:w-auto bp-lg:flex-wrap bp-lg:justify-end">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => router.push(backUrl ?? "/mypage?tab=orders")}
-                className="w-full whitespace-nowrap bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20 bp-lg:w-auto"
+                className="w-full whitespace-nowrap border-border bg-card hover:border-primary/30 bp-lg:w-auto"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 <span className="bp-sm:hidden">목록</span>
@@ -945,31 +945,31 @@ export default function OrderDetailClient({
           {/* 주문 상태 및 요약 섹션 */}
           <div className="mt-5 bp-sm:mt-8">
             <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-sm:gap-4 bp-lg:grid-cols-3 bp-lg:gap-6">
-              <div className="bg-card/70 rounded-xl p-3 backdrop-blur-sm bp-sm:p-4">
+              <div className="rounded-xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
                     주문일시
                   </span>
                 </div>
-                <p className="whitespace-nowrap text-base font-semibold tabular-nums text-foreground bp-sm:text-lg">
+                <p className="break-keep text-base font-semibold tabular-nums text-foreground bp-sm:text-lg">
                   {formatDate(orderDetail.date)}
                 </p>
               </div>
 
-              <div className="bg-card/70 rounded-xl p-3 backdrop-blur-sm bp-sm:p-4">
+              <div className="rounded-xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
                     총 결제금액
                   </span>
                 </div>
-                <p className="whitespace-nowrap text-base font-semibold tabular-nums text-foreground bp-sm:text-lg">
+                <p className="break-keep text-base font-semibold tabular-nums text-foreground bp-sm:text-lg">
                   {formatCurrency(orderDetail.total)}
                 </p>
               </div>
 
-              <div className="bg-card/70 rounded-xl p-3 backdrop-blur-sm bp-sm:p-4">
+              <div className="rounded-xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <Truck className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">
@@ -1017,7 +1017,7 @@ export default function OrderDetailClient({
         {(orderDetail.shippingInfo?.withStringService ||
           hasLinkedStringingApps) && (
           <section id="stringing-service" className="scroll-mt-24 space-y-4">
-            <Card className="rounded-xl border border-border bg-card shadow-md">
+            <Card className="rounded-2xl border border-border bg-card shadow-sm">
               <CardHeader className="border-b border-border/60 bg-muted/30 rounded-t-xl">
                 <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                   <div>
@@ -1071,7 +1071,7 @@ export default function OrderDetailClient({
                     return (
                       <div
                         key={app.id}
-                        className="rounded-xl border border-border bg-muted/20 p-4 shadow-sm"
+                        className="rounded-2xl border border-border bg-muted/30 p-4 shadow-sm"
                       >
                         <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                           <div className="min-w-0 space-y-2">
@@ -1129,7 +1129,7 @@ export default function OrderDetailClient({
                               asChild
                               size="sm"
                               variant={appHasTracking ? "outline" : "default"}
-                              className="shrink-0"
+                              className="w-full shrink-0 bp-sm:w-auto"
                             >
                               <Link href={appShippingHref}>
                                 {appHasTracking ? "운송장 수정" : "운송장 등록"}
@@ -1248,7 +1248,7 @@ export default function OrderDetailClient({
                                 asChild
                                 size="sm"
                                 variant="outline"
-                                className="h-8"
+                                className="h-8 w-full bp-sm:w-auto"
                               >
                                 <Link href={appShippingHref}>
                                   {appHasTracking
@@ -1294,7 +1294,7 @@ export default function OrderDetailClient({
                         <div className="mt-3 text-right">
                           <Link
                             href={getApplicationHref(app.id)}
-                            className="text-xs text-muted-foreground underline-offset-4 hover:underline"
+                            className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                           >
                             기존 신청서 보기
                           </Link>
@@ -1502,7 +1502,7 @@ export default function OrderDetailClient({
             )}
           </Card>
 
-          <Card className="rounded-xl border border-border bg-card shadow-md">
+          <Card className="rounded-2xl border border-border bg-card shadow-sm">
             <CardHeader className="border-b border-border/60 bg-muted/30 rounded-t-xl">
               <CardTitle>주문 진행 타임라인</CardTitle>
               <CardDescription>
@@ -1726,7 +1726,7 @@ export default function OrderDetailClient({
                         asChild
                         size="sm"
                         variant="outline"
-                        className="h-8"
+                        className="h-8 w-full bp-sm:w-auto"
                       >
                         <Link href={inboundShippingHref ?? "#"}>
                           {hasSelfShipTracking

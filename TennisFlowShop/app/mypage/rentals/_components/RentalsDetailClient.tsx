@@ -482,16 +482,20 @@ export default function RentalsDetailClient({
       : null;
   return (
     <main className="space-y-6 md:space-y-8">
-      <div className="bg-muted/30 rounded-2xl p-6 md:p-8 border border-border/30 shadow-lg">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-          <div className="flex items-center space-x-4 mb-4 sm:mb-0">
-            <div className="bg-card dark:bg-muted rounded-full p-3 shadow-md">
+      <div className="rounded-2xl border border-border bg-muted/30 p-4 shadow-sm bp-sm:p-6 md:p-8">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="mb-0 flex min-w-0 items-center gap-4">
+            <div className="shrink-0 rounded-full border border-border bg-card p-3 shadow-sm">
               <Briefcase className="h-8 w-8 text-primary" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">대여 상세</h1>
+            <div className="min-w-0">
+              <h1 className="break-keep text-2xl font-bold text-foreground">
+                대여 상세
+              </h1>
               <div className="flex flex-wrap items-center gap-2 mt-1">
-                <p className="text-muted-foreground">대여번호: {data.id}</p>
+                <p className="min-w-0 break-all text-muted-foreground">
+                  대여번호: {data.id}
+                </p>
 
                 {data.stringingApplicationId ? (
                   <Badge variant="info">신청서 연결됨</Badge>
@@ -502,10 +506,10 @@ export default function RentalsDetailClient({
             </div>
           </div>
 
-          <div className="sm:ml-auto flex flex-wrap items-center gap-2 sm:justify-end">
+          <div className="grid w-full grid-cols-1 gap-2 sm:ml-auto sm:grid-cols-2 lg:flex lg:w-auto lg:flex-wrap lg:justify-end">
             {/* 교체 서비스 CTA */}
             {applicationHref ? (
-              <Button asChild className="gap-2">
+              <Button asChild className="w-full gap-2 lg:w-auto">
                 <Link href={applicationHref}>
                   <Wrench className="h-4 w-4" />
                   교체서비스 상세 보기
@@ -528,7 +532,7 @@ export default function RentalsDetailClient({
                 variant="outline"
                 size="sm"
                 asChild
-                className="bg-card border-border hover:bg-secondary hover:text-foreground"
+                className="w-full border-border bg-card hover:border-primary/30 lg:w-auto"
               >
                 <Link href={returnShippingHref}>
                   <Truck className="h-4 w-4 mr-2" />
@@ -545,7 +549,7 @@ export default function RentalsDetailClient({
                 variant="destructive"
                 size="sm"
                 onClick={() => setCancelDialogOpen(true)}
-                className="gap-2"
+                className="w-full gap-2 lg:w-auto"
               >
                 <XCircle className="mr-2 h-4 w-4" />
                 대여 취소 요청
@@ -561,7 +565,7 @@ export default function RentalsDetailClient({
               variant="outline"
               size="sm"
               asChild
-              className="bg-card border-border hover:bg-secondary hover:text-foreground"
+              className="w-full border-border bg-card hover:border-primary/30 lg:w-auto"
             >
               <Link href={backUrl}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -595,7 +599,7 @@ export default function RentalsDetailClient({
           />
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
           <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
             <div className="flex items-center space-x-2 mb-2">
               <Package className="h-4 w-4 text-muted-foreground" />
@@ -603,7 +607,7 @@ export default function RentalsDetailClient({
                 라켓 정보
               </span>
             </div>
-            <p className="text-lg font-semibold text-foreground">
+            <p className="break-words text-lg font-semibold text-foreground">
               {racketBrandLabel(data.brand)} {data.model}
             </p>
           </div>
@@ -615,7 +619,7 @@ export default function RentalsDetailClient({
                 대여 기간
               </span>
             </div>
-            <p className="text-lg font-semibold text-foreground">
+            <p className="break-words text-lg font-semibold text-foreground">
               {data.days}일
             </p>
           </div>
@@ -652,7 +656,7 @@ export default function RentalsDetailClient({
               size="sm"
               onClick={handleWithdrawCancelRequest}
               disabled={withdrawing}
-              className="ml-4 whitespace-nowrap"
+              className="mt-3 w-full whitespace-nowrap sm:ml-4 sm:mt-0 sm:w-auto"
             >
               {withdrawing ? "철회 중…" : "취소 요청 철회"}
             </Button>
@@ -681,14 +685,14 @@ export default function RentalsDetailClient({
       )}
 
       {withStringService && (
-        <Card className="border border-border shadow-sm bg-card overflow-hidden">
-          <CardHeader className="bg-muted/30 border-b">
+        <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <CardHeader className="border-b border-border bg-muted/30">
             <CardTitle className="flex items-center space-x-2">
               <Wrench className="h-5 w-5 text-primary" />
               <span>연결된 교체서비스</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-6 space-y-2 text-sm">
+          <CardContent className="space-y-2 p-4 text-sm bp-sm:p-6">
             {data.applicationSummary ? (
               <>
                 <p>
@@ -742,7 +746,11 @@ export default function RentalsDetailClient({
             )}
             {applicationHref && (
               <div className="pt-2">
-                <Button asChild variant="outline" className="gap-2">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full gap-2 lg:w-auto"
+                >
                   <Link href={applicationHref}>
                     <Wrench className="h-4 w-4" />
                     교체서비스 상세 보기
@@ -755,8 +763,8 @@ export default function RentalsDetailClient({
       )}
 
       <div className="grid gap-6 md:gap-8 lg:grid-cols-2">
-        <Card className="border border-border shadow-sm bg-card overflow-hidden">
-          <CardHeader className="bg-muted/30 border-b">
+        <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <CardHeader className="border-b border-border bg-muted/30">
             <CardTitle className="flex items-center space-x-2">
               <Package className="h-5 w-5 text-primary" />
               <span>대여 정보</span>
@@ -834,8 +842,8 @@ export default function RentalsDetailClient({
           </CardContent>
         </Card>
 
-        <Card className="border border-border shadow-sm bg-card overflow-hidden">
-          <CardHeader className="bg-muted/30 border-b">
+        <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <CardHeader className="border-b border-border bg-muted/30">
             <CardTitle className="flex items-center space-x-2">
               <CreditCard className="h-5 w-5 text-primary" />
               <span>결제 정보</span>
@@ -876,8 +884,8 @@ export default function RentalsDetailClient({
           </CardContent>
         </Card>
 
-        <Card className="border border-border shadow-sm bg-card overflow-hidden">
-          <CardHeader className="bg-muted/30 border-b">
+        <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <CardHeader className="border-b border-border bg-muted/30">
             <CardTitle className="flex items-center space-x-2">
               <Truck className="h-5 w-5 text-primary" />
               <span>수령/반납 안내</span>
@@ -912,8 +920,8 @@ export default function RentalsDetailClient({
         </Card>
       </div>
 
-      <Card className="border border-border shadow-sm bg-card overflow-hidden">
-        <CardHeader className="bg-muted/30 border-b">
+      <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+        <CardHeader className="border-b border-border bg-muted/30">
           <CardTitle className="flex items-center space-x-2">
             <Calendar className="h-5 w-5 text-primary" />
             <span>대여 타임라인</span>
