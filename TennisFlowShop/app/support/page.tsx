@@ -2,6 +2,9 @@
 
 import SupportFaqSearch from "@/app/support/_components/SupportFaqSearch";
 import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero } from "@/components/public/PublicPageHero";
+import { PublicSurface } from "@/components/public/PublicSurface";
+import { SectionHeader } from "@/components/public/SectionHeader";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,7 +43,6 @@ import {
   Pin,
   Search,
   ShoppingBag,
-  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -170,8 +172,8 @@ function QuickActionCard({
     <Link
       href={href}
       className={cn(
-        "group relative flex flex-col gap-3 rounded-xl border p-5 transition-all duration-200",
-        "hover:shadow-md hover:-translate-y-0.5",
+        "group relative flex min-w-0 flex-col gap-3 rounded-xl border p-5 transition-all duration-200",
+        "hover:-translate-y-0.5 hover:shadow-md",
         variant === "primary"
           ? "border-primary/20 bg-primary/5 hover:border-primary/30 hover:bg-primary/10"
           : "border-border bg-card hover:border-border/80",
@@ -187,11 +189,13 @@ function QuickActionCard({
       >
         <Icon className="h-5 w-5" />
       </div>
-      <div className="space-y-1">
-        <h3 className="font-semibold text-foreground group-hover:text-foreground/90">
+      <div className="min-w-0 space-y-1 pr-7">
+        <h3 className="break-keep font-semibold text-foreground group-hover:text-foreground/90">
           {title}
         </h3>
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <p className="break-keep text-sm leading-relaxed text-muted-foreground">
+          {description}
+        </p>
       </div>
       <ChevronRight className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground/50 transition-transform group-hover:translate-x-1" />
     </Link>
@@ -217,10 +221,10 @@ function InfoLinkItem({ icon: Icon, title, href }: InfoLinkProps) {
   return (
     <Link
       href={href}
-      className="group flex min-h-14 items-center gap-3 rounded-xl border border-border/60 bg-background px-4 py-3 transition-colors hover:border-primary/20 hover:bg-muted/50"
+      className="group flex min-h-14 min-w-0 items-center gap-3 rounded-xl border border-border/60 bg-background px-4 py-3 transition-colors hover:border-primary/20 hover:bg-muted/50"
     >
       <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-      <span className="whitespace-nowrap text-sm font-medium text-foreground">
+      <span className="min-w-0 break-keep text-sm font-medium text-foreground">
         {title}
       </span>
       <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
@@ -583,143 +587,135 @@ export default function SupportPage() {
   const viewerId = me?.id ?? null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Hero Section */}
-      <div className="relative overflow-hidden border-b border-border bg-gradient-to-b from-muted/50 to-background">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--muted)/0.4),transparent_50%)]" />
-        <SiteContainer className="relative py-12 md:py-16">
-          <div className="mx-auto max-w-2xl text-center">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-sm text-muted-foreground">
-              <Sparkles className="h-4 w-4" />
-              <span>고객센터</span>
-            </div>
-            <h1 className="mb-4 text-3xl font-bold tracking-tight text-foreground md:text-4xl lg:text-5xl">
-              무엇을 도와드릴까요?
-            </h1>
-            <p className="mb-8 text-base text-muted-foreground md:text-lg">
-              주문, 배송, 서비스 관련 궁금한 점을 빠르게 해결해 드립니다.
-            </p>
-
-            {/* Search Bar */}
-            <div className="relative mx-auto max-w-lg">
-              <div className="group relative">
-                <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-foreground" />
-                <Link
-                  href="#faq"
-                  className="flex h-14 w-full items-center rounded-xl border border-border bg-card pl-12 pr-4 text-muted-foreground shadow-sm transition-all hover:border-border/80 hover:shadow-md focus:outline-none"
-                >
-                  <span>자주 묻는 질문 검색하기</span>
-                </Link>
-              </div>
-            </div>
+      <PublicPageHero
+        align="center"
+        eyebrow="고객센터"
+        title="무엇을 도와드릴까요?"
+        description={
+          <p className="break-keep leading-relaxed">
+            주문, 배송, 서비스 관련 궁금한 점을 빠르게 해결해 드립니다.
+          </p>
+        }
+        className="bg-muted/30"
+      >
+        {/* Search Bar */}
+        <div className="w-full max-w-lg">
+          <div className="group relative">
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-foreground" />
+            <Link
+              href="#faq"
+              className="flex min-h-14 w-full items-center rounded-xl border border-border bg-card py-3 pl-12 pr-4 text-left text-muted-foreground shadow-sm transition-all hover:border-border/80 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              <span className="break-keep">자주 묻는 질문 검색하기</span>
+            </Link>
           </div>
-        </SiteContainer>
-      </div>
+        </div>
+      </PublicPageHero>
 
       <SiteContainer className="py-8 md:py-12">
-        {/* Quick Actions */}
-        <section className="mb-10 md:mb-14">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-foreground">빠른 문의</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              자주 사용하는 메뉴에 바로 접근하세요.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {quickActions.map((action) => (
-              <QuickActionCard key={action.href} {...action} />
-            ))}
-          </div>
-        </section>
+        <div className="space-y-10 md:space-y-14">
+          {/* Quick Actions */}
+          <section>
+            <SectionHeader
+              className="mb-6"
+              title="빠른 문의"
+              description="자주 사용하는 메뉴에 바로 접근하세요."
+            />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {quickActions.map((action) => (
+                <QuickActionCard key={action.href} {...action} />
+              ))}
+            </div>
+          </section>
 
-        {/* Info Links */}
-        <section className="mb-10 md:mb-14">
-          <Card className="border-border">
-            <CardContent className="p-3">
+          {/* Info Links */}
+          <section>
+            <PublicSurface padding="sm">
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
                 {infoLinks.map((link) => (
                   <InfoLinkItem key={link.href} {...link} />
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        </section>
+            </PublicSurface>
+          </section>
 
-        {/* FAQ Section */}
-        <section id="faq" className="mb-10 md:mb-14 scroll-mt-20">
-          <SupportFaqSearch />
-        </section>
+          {/* FAQ Section */}
+          <section id="faq" className="scroll-mt-20">
+            <SupportFaqSearch />
+          </section>
 
-        {/* Boards Section */}
-        <section>
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-foreground">게시판</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              공지사항, 이벤트, Q&A를 확인하세요.
-            </p>
-          </div>
+          {/* Boards Section */}
+          <section>
+            <SectionHeader
+              className="mb-6"
+              title="게시판"
+              description="공지사항, 이벤트, Q&A를 확인하세요."
+            />
 
-          <Card className="border-border">
-            <Tabs defaultValue="notice" className="w-full">
-              <CardHeader className="border-b border-border p-0">
-                <TabsList className="h-auto w-full justify-start gap-0 rounded-none border-0 bg-transparent p-0">
-                  <TabsTrigger
-                    value="notice"
-                    className="relative rounded-none border-b-2 border-transparent px-6 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none"
-                  >
-                    <Bell className="mr-2 h-4 w-4" />
-                    공지사항
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="event"
-                    className="relative rounded-none border-b-2 border-transparent px-6 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none"
-                  >
-                    <Gift className="mr-2 h-4 w-4" />
-                    이벤트
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="qna"
-                    className="relative rounded-none border-b-2 border-transparent px-6 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none"
-                  >
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    Q&A
-                  </TabsTrigger>
-                </TabsList>
-              </CardHeader>
-              <CardContent className="p-4 md:p-6">
-                <TabsContent value="notice" className="mt-0">
-                  <NoticeList
-                    items={notices}
-                    isAdmin={isAdmin}
-                    isLoading={isLoading}
-                    error={error}
-                    onRetry={() => mutate()}
-                  />
-                </TabsContent>
-                <TabsContent value="event" className="mt-0">
-                  <NoticeList
-                    mode="event"
-                    items={events}
-                    isAdmin={isAdmin}
-                    isLoading={isLoading}
-                    error={error}
-                    onRetry={() => mutate()}
-                  />
-                </TabsContent>
-                <TabsContent value="qna" className="mt-0">
-                  <QnaList
-                    items={qnas}
-                    viewerId={viewerId}
-                    isAdmin={isAdmin}
-                    isLoading={isLoading}
-                    error={error}
-                    onRetry={() => mutate()}
-                  />
-                </TabsContent>
-              </CardContent>
-            </Tabs>
-          </Card>
-        </section>
+            <Card className="border-border">
+              <Tabs defaultValue="notice" className="w-full">
+                <CardHeader className="border-b border-border p-0">
+                  <TabsList className="h-auto w-full justify-start gap-0 rounded-none border-0 bg-transparent p-0">
+                    <TabsTrigger
+                      value="notice"
+                      className="relative rounded-none border-b-2 border-transparent px-6 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                    >
+                      <Bell className="mr-2 h-4 w-4" />
+                      공지사항
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="event"
+                      className="relative rounded-none border-b-2 border-transparent px-6 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                    >
+                      <Gift className="mr-2 h-4 w-4" />
+                      이벤트
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="qna"
+                      className="relative rounded-none border-b-2 border-transparent px-6 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                    >
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      Q&A
+                    </TabsTrigger>
+                  </TabsList>
+                </CardHeader>
+                <CardContent className="p-4 md:p-6">
+                  <TabsContent value="notice" className="mt-0">
+                    <NoticeList
+                      items={notices}
+                      isAdmin={isAdmin}
+                      isLoading={isLoading}
+                      error={error}
+                      onRetry={() => mutate()}
+                    />
+                  </TabsContent>
+                  <TabsContent value="event" className="mt-0">
+                    <NoticeList
+                      mode="event"
+                      items={events}
+                      isAdmin={isAdmin}
+                      isLoading={isLoading}
+                      error={error}
+                      onRetry={() => mutate()}
+                    />
+                  </TabsContent>
+                  <TabsContent value="qna" className="mt-0">
+                    <QnaList
+                      items={qnas}
+                      viewerId={viewerId}
+                      isAdmin={isAdmin}
+                      isLoading={isLoading}
+                      error={error}
+                      onRetry={() => mutate()}
+                    />
+                  </TabsContent>
+                </CardContent>
+              </Tabs>
+            </Card>
+          </section>
+        </div>
       </SiteContainer>
     </div>
   );
