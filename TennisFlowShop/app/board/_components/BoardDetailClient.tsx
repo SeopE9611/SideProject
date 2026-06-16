@@ -225,9 +225,9 @@ function CommentItem({
 
   return (
     <div
-      className={`group relative rounded-xl transition-[background-color,border-color,box-shadow,color,opacity] ${isReply ? "ml-10 border-l-2 border-border bg-muted/50 pl-4 py-3 dark:border-border " : "border border-border bg-card p-5 hover:border-border hover:shadow-sm dark:hover:border-border"}`}
+      className={`group relative min-w-0 rounded-xl transition-[background-color,border-color,box-shadow,color,opacity] ${isReply ? "ml-3 border-l-2 border-border bg-muted/40 py-3 pl-4 sm:ml-8 dark:border-border" : "border border-border bg-card p-4 shadow-sm hover:border-border hover:bg-muted/20 sm:p-5 dark:hover:border-border"}`}
     >
-      <div className="mb-3 flex items-start justify-between gap-3">
+      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex flex-col gap-0.5">
             {comment.status === "deleted" ? (
@@ -280,7 +280,7 @@ function CommentItem({
           </div>
         </div>
         {!isDeleted && (
-          <div className="flex items-center gap-1 opacity-100">
+          <div className="flex flex-wrap items-center gap-1 opacity-100">
             {isCommentAuthor && !isEditing && (
               <>
                 <button
@@ -334,7 +334,7 @@ function CommentItem({
             }
             disabled={isCommentSubmitting}
           />
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-col justify-end gap-2 sm:flex-row">
             <Button
               type="button"
               variant="outline"
@@ -343,7 +343,7 @@ function CommentItem({
                 isReply ? onCancelEditReply(comment.id) : onCancelEditComment()
               }
               disabled={isCommentSubmitting}
-              className="h-8 px-4 text-xs bg-transparent"
+              className="h-9 w-full bg-transparent px-4 text-xs sm:w-auto"
             >
               취소
             </Button>
@@ -351,7 +351,7 @@ function CommentItem({
               type="button"
               size="sm"
               disabled={isCommentSubmitting}
-              className="h-8 bg-primary px-4 text-xs text-primary-foreground hover:bg-primary/90"
+              className="h-9 w-full bg-primary px-4 text-xs text-primary-foreground hover:bg-primary/90 sm:w-auto"
               onClick={() =>
                 onSaveEdit(
                   comment.id,
@@ -367,7 +367,7 @@ function CommentItem({
           </div>
         </div>
       ) : (
-        <p className="text-sm leading-relaxed text-muted-foreground">
+        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground/85">
           {comment.content}
         </p>
       )}
@@ -405,7 +405,7 @@ function CommentItem({
           {replyError && (
             <p className="text-xs text-destructive">{replyError}</p>
           )}
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-col justify-end gap-2 sm:flex-row">
             <Button
               type="button"
               variant="outline"
@@ -420,7 +420,7 @@ function CommentItem({
               type="submit"
               size="sm"
               disabled={isReplySubmitting}
-              className="h-8 bg-primary px-4 text-xs text-primary-foreground hover:bg-primary/90"
+              className="h-9 w-full bg-primary px-4 text-xs text-primary-foreground hover:bg-primary/90 sm:w-auto"
             >
               {isReplySubmitting ? "작성 중..." : "등록"}
             </Button>
@@ -1534,7 +1534,7 @@ export default function BoardDetailClient({
           toName={composeTo.name}
         />
       ) : null}
-      <div className="container mx-auto px-4 py-6 md:py-8 space-y-6 md:space-y-8">
+      <div className="container mx-auto max-w-5xl px-4 py-6 md:space-y-8 md:py-8 space-y-6">
         {/* 상단 헤더 (브레드크럼 + 버튼) */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -1550,7 +1550,7 @@ export default function BoardDetailClient({
               <span className="mx-1">›</span>
               <span>글 상세</span>
             </div>
-            <h1 className="font-bold text-2xl tracking-normal text-foreground md:text-3xl">
+            <h1 className="break-keep text-2xl font-bold tracking-normal text-foreground md:text-3xl">
               {config.boardTitle} 글 상세
             </h1>
             <p className="mt-1 text-sm text-foreground/80 md:text-base">
@@ -1563,7 +1563,7 @@ export default function BoardDetailClient({
               type="button"
               variant="outline"
               size="sm"
-              className="gap-1 bg-transparent"
+              className="w-full gap-1 bg-transparent sm:w-auto"
               onClick={() => {
                 if (!confirmLeaveIfDirty()) return;
                 router.push(listHref);
@@ -1572,7 +1572,7 @@ export default function BoardDetailClient({
               <ArrowLeft className="h-4 w-4" />
               <span>이전으로</span>
             </Button>
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
               <Link href={listHref}>목록으로</Link>
             </Button>
           </div>
@@ -1593,7 +1593,7 @@ export default function BoardDetailClient({
                 status={detailError.status}
                 fallbackMessage="글을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
               />
-              <div className="flex justify-end gap-2">
+              <div className="flex flex-col justify-end gap-2 sm:flex-row">
                 <Button asChild variant="outline" size="sm">
                   <Link href={listHref}>목록으로</Link>
                 </Button>
@@ -1608,11 +1608,11 @@ export default function BoardDetailClient({
         )}
 
         {!isLoading && !error && item && (
-          <Card className="border border-border bg-card shadow-sm">
-            <CardHeader className="space-y-3 border-b bg-muted/30">
-              <div className="flex items-start gap-3">
+          <Card className="overflow-hidden border border-border bg-card shadow-sm">
+            <CardHeader className="space-y-4 border-b bg-muted/30 p-4 sm:p-6">
+              <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex-1 space-y-2">
-                  <CardTitle className="text-base leading-snug md:text-lg">
+                  <CardTitle className="min-w-0 break-keep text-xl font-semibold leading-tight text-foreground sm:text-2xl md:text-3xl">
                     {typeof item.postNo === "number" && (
                       <span className="mr-2 text-sm font-semibold tabular-nums text-muted-foreground">
                         {item.postNo}
@@ -1644,7 +1644,7 @@ export default function BoardDetailClient({
                     {item.title}
                   </CardTitle>
 
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-foreground/75 md:text-sm [&>span]:shrink-0 [&>span]:whitespace-nowrap">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs leading-relaxed text-muted-foreground md:text-sm [&>span]:shrink-0 [&>span]:whitespace-nowrap">
                     {/* 작성자 */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -1796,7 +1796,7 @@ export default function BoardDetailClient({
               </div>
             </CardHeader>
 
-            <CardContent className="p-4 md:p-6">
+            <CardContent className="p-4 md:p-6 lg:p-8">
               {config.boardType === "market" && item.marketMeta && (
                 <div className="mb-6 space-y-4">
                   {/* ── 1. 거래 핵심 정보 ── */}
@@ -2378,7 +2378,7 @@ export default function BoardDetailClient({
         {/* ================== 댓글 카드 시작 ================== */}
         {!isLoading && !error && item && (
           <Card className="overflow-hidden border border-border bg-card shadow-sm">
-            <CardHeader className="border-b border-border bg-muted/50 px-6 py-4">
+            <CardHeader className="border-b border-border bg-muted/50 px-4 py-4 sm:px-6">
               <CardTitle className="flex items-center gap-3 text-base font-semibold text-foreground">
                 <MessageSquare className="h-5 w-5 text-muted-foreground" />
                 <span>댓글</span>
@@ -2388,7 +2388,7 @@ export default function BoardDetailClient({
               </CardTitle>
             </CardHeader>
 
-            <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6">
+            <CardContent className="space-y-4 p-4 md:space-y-6 md:p-6">
               <div className="space-y-3">
                 {user ? (
                   <>

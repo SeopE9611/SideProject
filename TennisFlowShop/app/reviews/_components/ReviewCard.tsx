@@ -241,7 +241,7 @@ export default function ReviewCard({
       {/* Tennis court line accent */}
       <div className="h-1 bg-secondary" />
 
-      <CardContent className="p-4 md:p-6 space-y-3 md:space-y-4 relative">
+      <CardContent className="relative space-y-4 p-4 md:p-6">
         {busy && (
           <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-card/80">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
@@ -250,8 +250,8 @@ export default function ReviewCard({
         )}
 
         {/* Header with badges and date */}
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
             <Badge
               variant={item.type === "product" ? "info" : "neutral"}
               className="gap-1.5 rounded-full px-3 py-1 font-medium"
@@ -264,7 +264,7 @@ export default function ReviewCard({
               {item.type === "product" ? "상품 리뷰" : "서비스 리뷰"}
             </Badge>
             {!!headerTitle && (
-              <span className="max-w-[320px] rounded-full border border-border/60 bg-secondary px-2 py-1 text-sm font-semibold text-foreground truncate">
+              <span className="line-clamp-1 max-w-full min-w-0 rounded-full border border-border/60 bg-secondary px-2 py-1 text-sm font-semibold text-foreground sm:max-w-[320px]">
                 {headerTitle}
               </span>
             )}
@@ -399,7 +399,7 @@ export default function ReviewCard({
           <MaskedBlock className="mt-1" />
         ) : (
           <div className="rounded-xl border border-border/60 bg-secondary/50 p-4">
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+            <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">
               {item.content}
             </p>
           </div>
@@ -407,13 +407,13 @@ export default function ReviewCard({
 
         {/* Photo thumbnails */}
         {Array.isArray(item.photos) && item.photos.length > 0 && (
-          <div className="flex items-center justify-between rounded-xl border border-border/60 bg-secondary/50 p-3">
+          <div className="flex flex-col gap-3 rounded-xl border border-border/60 bg-secondary/50 p-3 sm:flex-row sm:items-center sm:justify-between">
             <span className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
               <ImageIcon className="h-4 w-4 text-primary" />
               사진 {item.photos.length}장
             </span>
 
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {item.photos.slice(0, 4).map((src: string, idx: number) => (
                 <button
                   key={idx}
@@ -443,13 +443,13 @@ export default function ReviewCard({
         )}
 
         {/* Helpful + Date (우측 정렬) */}
-        <div className="pt-2 flex items-center gap-2">
+        <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:items-center">
           <Button
             size="sm"
             variant={voted ? "default" : "secondary"}
             onClick={onHelpful}
             disabled={pending}
-            className="rounded-full px-4 py-2 font-medium"
+            className="w-full rounded-full px-4 py-2 font-medium sm:w-auto"
             aria-pressed={voted}
             aria-label={`도움돼요 ${count ? `(${count})` : ""}`}
           >
@@ -462,7 +462,7 @@ export default function ReviewCard({
           </Button>
 
           {/* 날짜 */}
-          <time className="ml-auto whitespace-nowrap rounded-full border border-border/60 bg-secondary px-2 py-1 text-xs font-medium text-muted-foreground shrink-0 tabular-nums">
+          <time className="whitespace-nowrap rounded-full border border-border/60 bg-secondary px-2 py-1 text-xs font-medium text-muted-foreground sm:ml-auto shrink-0 tabular-nums">
             {fmt(item.createdAt)}
           </time>
         </div>
