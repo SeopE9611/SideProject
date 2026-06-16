@@ -493,9 +493,9 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
           <SiteContainer variant="wide" className="py-8">
             <div className="max-w-4xl mx-auto space-y-6">
               {/* 주문 정보 카드 */}
-              <Card data-cy="checkout-success-order-card" className="overflow-hidden border border-border bg-card shadow-2xl backdrop-blur-sm">
+              <Card data-cy="checkout-success-order-card" className="overflow-hidden border border-border bg-card shadow-xl backdrop-blur-sm">
                 <div className="border-b border-border bg-background p-6">
-                  <CardTitle className="flex items-center gap-3 text-2xl">
+                  <CardTitle className="flex flex-wrap items-center gap-3 break-keep text-xl leading-relaxed bp-sm:text-2xl">
                     <Package className="h-6 w-6 text-primary" />
                     주문 정보
                     {withStringService && <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">교체서비스 포함</span>}
@@ -514,13 +514,13 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                     <div className="space-y-3 rounded-lg border border-border bg-background p-4">
                       <div>
                         <span className="text-sm text-muted-foreground">주문 번호:</span>{" "}
-                        <span data-cy="checkout-order-id" className="font-mono font-semibold text-foreground">
+                        <span data-cy="checkout-order-id" className="break-all font-mono font-semibold text-foreground">
                           {order._id.toString()}
                         </span>
                       </div>
                       {withStringService && hasSubmittedApplication && representativeStringingApplicationId && (
                         <div>
-                          <span className="text-sm text-muted-foreground">교체서비스 신청 번호:</span> <span className="font-mono font-semibold text-foreground">{representativeStringingApplicationId}</span>
+                          <span className="text-sm text-muted-foreground">교체서비스 신청 번호:</span> <span className="break-all font-mono font-semibold text-foreground">{representativeStringingApplicationId}</span>
                         </div>
                       )}
                       {withStringService && <p className="text-sm text-muted-foreground">{hasSubmittedApplication ? "주문과 함께 교체서비스 신청이 접수되었습니다." : "현재 주문에 교체서비스가 포함되어 있습니다."}</p>}
@@ -543,10 +543,10 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                       <li>• {nextActionGuidance}</li>
                     </ul>
                     <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                      <Button asChild className="flex-1">
+                      <Button asChild className="min-h-11 flex-1" wrap="responsive">
                         <Link href="/mypage">마이페이지에서 확인하기</Link>
                       </Button>
-                      <Button asChild variant="outline" className="flex-1">
+                      <Button asChild variant="outline" className="min-h-11 flex-1" wrap="responsive">
                         <Link href="/support">고객센터 문의하기</Link>
                       </Button>
                     </div>
@@ -667,13 +667,13 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                         const totalItemPrice = formatPrice(item.price * itemQuantity);
 
                         return (
-                          <div key={index} className="flex items-center justify-between rounded-lg border border-border bg-background p-4">
-                            <div className="flex-1">
-                              <p className="font-semibold text-foreground">{item.name}</p>
+                          <div key={index} className="flex flex-col gap-3 rounded-lg border border-border bg-background p-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                            <div className="min-w-0 flex-1">
+                              <p className="break-keep break-words font-semibold leading-relaxed text-foreground">{item.name}</p>
                               <p className="text-sm text-muted-foreground">수량: {itemQuantity}개</p>
                               {item.selectedGauge && <p className="text-xs text-muted-foreground">선택 옵션: 게이지 {formatGaugeLabel(item.selectedGauge)}</p>}
                               {(item.selectedColorLabel || item.selectedColor) && (
-                                <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <p className="flex min-w-0 flex-wrap items-center gap-2 text-xs leading-relaxed text-muted-foreground">
                                   <span>선택 옵션: 색상</span>
                                   {item.selectedColorHex && (
                                     <span
@@ -684,11 +684,11 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                                       aria-hidden="true"
                                     />
                                   )}
-                                  <span>{item.selectedColorLabel || item.selectedColor}</span>
+                                  <span className="min-w-0 break-keep break-words">{item.selectedColorLabel || item.selectedColor}</span>
                                 </p>
                               )}
                             </div>
-                            <div className="text-right">
+                            <div className="shrink-0 text-left bp-sm:text-right">
                               <p className="text-lg font-bold text-primary">{totalItemPrice}원</p>
                               <p className="text-sm text-muted-foreground">단가: {itemPrice}원</p>
                             </div>
@@ -862,7 +862,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
 
                 <CardFooter className="border-t border-border bg-background p-4 md:p-6">
                   <div className="flex flex-col sm:flex-row gap-4 w-full">
-                    <Button className="h-12 flex-1 bg-primary text-primary-foreground shadow-lg transition-all duration-300 hover:bg-primary/90 hover:shadow-xl" asChild>
+                    <Button className="min-h-12 flex-1 bg-primary text-primary-foreground shadow-lg transition-all duration-300 hover:bg-primary/90 hover:shadow-xl" asChild wrap="responsive">
                       <Link href={isLoggedIn ? "/mypage" : `/order-lookup/details/${order._id}`} className="flex items-center gap-2">
                         <Package className="h-5 w-5" />
                         주문 내역 확인
