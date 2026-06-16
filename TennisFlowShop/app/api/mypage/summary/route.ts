@@ -10,6 +10,7 @@ import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
+import { isStringingReviewBlockedStatus } from "@/lib/reviews/review-policy";
 
 export const dynamic = "force-dynamic";
 
@@ -222,6 +223,49 @@ export async function GET() {
     )
     .toArray();
 
+  const serviceReviewCandidateIds = [...linkedApps, ...standaloneApps]
+    .filter((app: any) => {
+      const userConfirmedAt = app?.userConfirmedAt;
+      return (
+        Boolean(userConfirmedAt) && !isStringingReviewBlockedStatus(app?.status)
+      );
+    })
+    .map((app: any) => String(app._id))
+    .filter((id) => ObjectId.isValid(id));
+  const serviceReviewCandidateSet = new Set(serviceReviewCandidateIds);
+  const reviewedServiceApplicationIds = new Set<string>();
+
+  if (serviceReviewCandidateIds.length > 0) {
+    const serviceReviews = await db
+      .collection("reviews")
+      .find(
+        {
+          userId,
+          service: "stringing",
+          serviceApplicationId: {
+            $in: serviceReviewCandidateIds.flatMap((id) => [
+              new ObjectId(id),
+              id,
+            ]),
+          },
+          isDeleted: { $ne: true },
+        },
+        { projection: { serviceApplicationId: 1 } },
+      )
+      .toArray();
+
+    for (const review of serviceReviews as any[]) {
+      reviewedServiceApplicationIds.add(String(review.serviceApplicationId));
+    }
+  }
+
+  const hasPendingServiceReview = (applicationId?: string | null) =>
+    Boolean(
+      applicationId &&
+        serviceReviewCandidateSet.has(applicationId) &&
+        !reviewedServiceApplicationIds.has(applicationId),
+    );
+
   const actionableLinkedAppCountByOrderId = new Map<string, number>();
   const actionableLinkedAppCountByRentalId = new Map<string, number>();
 
@@ -252,6 +296,7 @@ export async function GET() {
           : typeof doc.userConfirmedAt === "string"
             ? doc.userConfirmedAt
             : null,
+      serviceReviewPending: hasPendingServiceReview(String(doc._id)),
     });
 
     if (!isActionable) continue;
@@ -356,6 +401,7 @@ export async function GET() {
           : typeof app?.userConfirmedAt === "string"
             ? app.userConfirmedAt
             : null,
+      serviceReviewPending: hasPendingServiceReview(String(app._id)),
     });
 
     if (needsAction) todoApplicationCount += 1;
