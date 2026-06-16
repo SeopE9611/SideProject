@@ -144,14 +144,14 @@ export default function ReviewsClient() {
         className="h-full w-full text-muted-foreground"
       />
 
-      <div className="relative z-10 container mx-auto px-4 py-6 md:py-8 space-y-4 md:space-y-6">
+      <div className="relative z-10 container mx-auto max-w-6xl space-y-5 px-4 py-6 md:space-y-7 md:py-8">
         {/* Header with tennis theme */}
         <div className="mb-6 space-y-3 text-center md:mb-8 md:space-y-4">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-secondary">
               <Trophy className="h-6 w-6 text-foreground" />
             </div>
-            <h1 className="text-3xl font-bold text-foreground">고객 리뷰</h1>
+            <h1 className="break-keep text-3xl font-bold text-foreground md:text-4xl">고객 리뷰</h1>
           </div>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             장비 사용 후기와 교체서비스 경험을 확인하세요. 문의가 필요하다면
@@ -163,10 +163,10 @@ export default function ReviewsClient() {
         <Card className="overflow-hidden border-border bg-card shadow-sm">
           <div className="h-px bg-border" />
           <CardContent className="p-4 md:p-6">
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-center">
               {/* Tabs with tennis court styling */}
-              <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
-                <TabsList className="bg-secondary p-1">
+              <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="w-full lg:w-auto">
+                <TabsList className="grid w-full grid-cols-3 bg-secondary p-1 lg:w-auto">
                   <TabsTrigger
                     value="all"
                     className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm"
@@ -190,7 +190,7 @@ export default function ReviewsClient() {
 
               {/* Sort dropdown */}
               <Select value={sort} onValueChange={(v) => setSort(v as any)}>
-                <SelectTrigger className="w-[150px] border-border bg-background">
+                <SelectTrigger className="w-full border-border bg-background sm:w-[150px]">
                   <SelectValue placeholder="정렬" />
                 </SelectTrigger>
                 <SelectContent>
@@ -205,7 +205,7 @@ export default function ReviewsClient() {
                 value={rating}
                 onValueChange={(v) => setRating(v as RatingFilter)}
               >
-                <SelectTrigger className="w-[130px] border-border bg-background">
+                <SelectTrigger className="w-full border-border bg-background sm:w-[130px]">
                   <SelectValue placeholder="전체 별점" />
                 </SelectTrigger>
                 <SelectContent>
@@ -229,7 +229,7 @@ export default function ReviewsClient() {
               </label>
 
               {/* Filter summary and reset */}
-              <div className="ml-auto flex items-center gap-3">
+              <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center lg:ml-auto lg:w-auto">
                 <Badge
                   variant={getAuxiliaryMetaBadgeSpec("attached").variant}
                   className="gap-2 rounded-full px-3 py-1"
@@ -241,7 +241,7 @@ export default function ReviewsClient() {
                   variant="outline"
                   size="sm"
                   onClick={resetFilters}
-                  className="rounded-full border-border hover:bg-muted dark:border-border dark:hover:bg-muted bg-transparent"
+                  className="w-full rounded-full border-border bg-transparent hover:bg-muted sm:w-auto dark:border-border dark:hover:bg-muted"
                   title="필터 초기화"
                 >
                   <X className="h-4 w-4 mr-1" />
@@ -254,7 +254,7 @@ export default function ReviewsClient() {
 
         {/* Loading skeleton */}
         {isFirstLoading && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-2">
             <ReviewSkeleton />
             <div className="hidden lg:block">
               <ReviewSkeleton />
@@ -266,7 +266,7 @@ export default function ReviewsClient() {
         {!isFirstLoading && (
           <>
             {items.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-2">
                 {items.map((it) => (
                   <ReviewCard
                     key={it._id}

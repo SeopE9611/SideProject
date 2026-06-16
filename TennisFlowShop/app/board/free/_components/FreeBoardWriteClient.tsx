@@ -406,7 +406,7 @@ export default function FreeBoardWriteClient() {
     <div className="min-h-screen bg-muted/30">
       <SiteContainer
         variant="wide"
-        className="space-y-6 py-6 bp-sm:py-8 bp-md:space-y-8 bp-md:py-10"
+        className="max-w-5xl space-y-6 py-6 bp-sm:py-8 bp-md:space-y-8 bp-md:py-10"
       >
         {/* 상단 헤더 영역 */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -425,7 +425,7 @@ export default function FreeBoardWriteClient() {
               <span className="mx-1">›</span>
               <span>글쓰기</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-normal text-foreground md:text-3xl">
+            <h1 className="break-keep text-2xl font-bold tracking-normal text-foreground md:text-3xl">
               자유 게시판 글쓰기
             </h1>
             <p className="mt-1 text-sm text-muted-foreground md:text-base">
@@ -435,8 +435,8 @@ export default function FreeBoardWriteClient() {
           </div>
 
           {/* 우측 버튼들: 목록으로 */}
-          <div className="flex gap-2">
-            <Button asChild variant="outline" size="sm" className="gap-1">
+          <div className="flex w-full gap-2 sm:w-auto">
+            <Button asChild variant="outline" size="sm" className="w-full gap-1 sm:w-auto">
               <Link href="/board/free" onClick={guardLeave}>
                 <ArrowLeft className="h-4 w-4" />
                 <span>목록으로</span>
@@ -446,8 +446,8 @@ export default function FreeBoardWriteClient() {
         </div>
 
         {/* 글쓰기 카드 */}
-        <Card className="border border-border bg-card shadow-md dark:bg-card">
-          <CardHeader className="flex flex-row items-center gap-3 border-b bg-muted/30">
+        <Card className="overflow-hidden border border-border bg-card shadow-sm dark:bg-card">
+          <CardHeader className="border-b bg-muted/30 p-4 sm:p-6">
             {/* 제목 입력 */}
             <div className="space-y-2">
               <Label htmlFor="title">제목</Label>
@@ -472,12 +472,12 @@ export default function FreeBoardWriteClient() {
             </div>
           </CardHeader>
 
-          <CardContent className="p-4 md:p-6">
-            <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
+          <CardContent className="p-4 md:p-6 lg:p-8">
+            <form className="space-y-6 md:space-y-8" onSubmit={handleSubmit}>
               {/* 분류 선택 */}
               <div className="space-y-2" ref={categoryRef}>
                 <Label>분류</Label>
-                <div className="flex flex-wrap gap-2 text-sm">
+                <div className="flex flex-wrap gap-2 rounded-xl border border-border bg-muted/30 p-3 text-sm">
                   {CATEGORY_OPTIONS.map((opt) => (
                     <button
                       key={opt.value}
@@ -491,7 +491,7 @@ export default function FreeBoardWriteClient() {
                           }));
                       }}
                       className={cn(
-                        "rounded-full border px-3 py-1",
+                        "rounded-full border px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         category === opt.value
                           ? "border-border bg-secondary text-foreground dark:border-border dark:bg-secondary dark:text-foreground"
                           : "border-border text-muted-foreground dark:border-border dark:text-muted-foreground",
@@ -514,7 +514,7 @@ export default function FreeBoardWriteClient() {
                 <Textarea
                   id="content"
                   ref={contentRef}
-                  className="min-h-[200px] resize-y"
+                  className="min-h-[280px] resize-y leading-relaxed"
                   value={content}
                   onChange={(e) => {
                     setContent(e.target.value);
@@ -575,7 +575,7 @@ export default function FreeBoardWriteClient() {
                   <TabsContent value="file" className="pt-4 space-y-4">
                     {/* 드롭존 */}
                     <div
-                      className="cursor-pointer rounded-lg border-2 border-dashed border-border bg-card p-4 text-center transition-colors hover:border-border md:p-6 dark:hover:border-border"
+                      className="cursor-pointer rounded-xl border-2 border-dashed border-border bg-muted/30 p-4 text-center transition-colors hover:bg-muted/50 md:p-6 dark:hover:border-border"
                       role="button"
                       tabIndex={0}
                       onClick={(e) => {
@@ -631,7 +631,7 @@ export default function FreeBoardWriteClient() {
                         <p className="text-xs text-muted-foreground">
                           첨부된 파일 ({selectedFiles.length}/{MAX_FILES})
                         </p>
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
                           {selectedFiles.map((file, index) => (
                             <div
                               key={`${file.name}-${index}`}
@@ -666,11 +666,12 @@ export default function FreeBoardWriteClient() {
               </div>
 
               {/* 버튼 영역 */}
-              <div className="flex items-center justify-end gap-2 pt-2">
+              <div className="flex flex-col-reverse items-stretch justify-end gap-2 border-t border-border pt-4 sm:flex-row sm:items-center">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
+                  className="w-full sm:w-auto"
                   disabled={
                     isSubmitting || isUploadingImages || isUploadingFiles
                   }
@@ -681,7 +682,7 @@ export default function FreeBoardWriteClient() {
                 <Button
                   type="submit"
                   size="sm"
-                  className={cn("gap-2")}
+                  className={cn("w-full gap-2 sm:w-auto")}
                   disabled={
                     isSubmitting || isUploadingImages || isUploadingFiles
                   }

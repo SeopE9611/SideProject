@@ -669,15 +669,15 @@ export default function FreeBoardWriteClient() {
               <span className="mx-1">{">"}</span>
               <span className="text-foreground">상품 등록</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-normal text-foreground md:text-3xl">
+            <h1 className="break-keep text-2xl font-bold tracking-normal text-foreground md:text-3xl">
               상품 등록
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               테니스 라켓, 스트링, 장비를 판매해 보세요.
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button asChild variant="outline" size="sm" className="gap-1">
+          <div className="flex w-full gap-2 sm:w-auto">
+            <Button asChild variant="outline" size="sm" className="w-full gap-1 sm:w-auto">
               <Link href="/board/market" onClick={guardLeave}>
                 <ArrowLeft className="h-4 w-4" />
                 <span>목록으로</span>

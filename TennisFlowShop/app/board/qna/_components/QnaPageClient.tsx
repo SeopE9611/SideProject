@@ -430,7 +430,7 @@ export default function QnaPageClient({
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="container mx-auto px-4 py-5 md:py-7 space-y-5 md:space-y-7">
+      <div className="container mx-auto max-w-6xl space-y-5 px-4 py-5 md:space-y-7 md:py-7">
         <div className="flex flex-col space-y-3 md:space-y-5">
           <div className="flex items-center space-x-3">
             <Button variant="ghost" asChild className="p-2">
@@ -455,7 +455,7 @@ export default function QnaPageClient({
             </div>
           </div>
 
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground">
+          <div className="rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
             <p className="font-semibold text-foreground">
               문의 유형을 먼저 확인해주세요
             </p>
@@ -525,7 +525,7 @@ export default function QnaPageClient({
           </div> */}
         </div>
 
-        <Card className="border border-border bg-card shadow-sm">
+        <Card className="overflow-hidden border border-border bg-card shadow-sm">
           <CardHeader className="border-b bg-muted/30 p-4 sm:p-5 md:p-6">
             <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -552,7 +552,7 @@ export default function QnaPageClient({
             </div>
           </CardHeader>
 
-          <div className="border-b bg-muted/20 px-4 py-3 sm:px-5 md:px-6">
+          <div className="border-b border-border bg-muted/20 px-4 py-4 sm:px-5 md:px-6">
             <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex min-w-0 flex-col gap-2 md:flex-row md:items-center">
                 <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -822,11 +822,11 @@ export default function QnaPageClient({
                     qna.isSecret && !canOpenSecret ? "비밀글입니다" : qna.title;
 
                   const CardInner = (
-                    <Card className="border-border transition-colors hover:border-success/25 hover:bg-muted/25">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
+                    <Card className="border-border shadow-sm transition-colors hover:border-border hover:bg-muted/25 focus-within:ring-2 focus-within:ring-ring">
+                      <CardContent className="p-4 sm:p-5">
+                        <div className="flex min-w-0 items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
-                            <div className="mb-1 flex items-start gap-2">
+                            <div className="mb-2 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                               <div className="flex min-w-0 flex-1 items-center gap-2 flex-wrap">
                                 <Badge
                                   variant={
@@ -895,7 +895,7 @@ export default function QnaPageClient({
                       <button
                         key={qna._id}
                         type="button"
-                        className="block w-full text-left"
+                        className="block w-full rounded-2xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         onClick={() =>
                           setSecretBlock({ open: true, item: qna })
                         }

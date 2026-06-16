@@ -902,8 +902,8 @@ export default function BoardListClient({
         </div>
 
         {/* 리스트 카드 */}
-        <Card className="border bg-card shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between gap-3 border-b border-border bg-muted/30 px-4 py-3 sm:px-6">
+        <Card className="overflow-hidden border border-border bg-card shadow-sm">
+          <CardHeader className="flex flex-col gap-3 border-b border-border bg-muted/30 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div className="flex items-center gap-3">
               <div>
                 <CardTitle className="text-sm font-semibold md:text-base">
@@ -916,7 +916,7 @@ export default function BoardListClient({
             </div>
           </CardHeader>
 
-          <CardContent className="p-4 sm:p-6 space-y-4">
+          <CardContent className="space-y-4 p-4 sm:p-6">
             {/* 상단: 총 글 수 + 정렬 옵션 + 카테고리 필터 */}
             {!error && (
               <div className="flex flex-col gap-3">
@@ -1535,7 +1535,7 @@ export default function BoardListClient({
                 <div className="hidden text-sm md:block">
                   {/* 헤더 행 */}
                   {config.boardType === "market" ? (
-                    <div className="grid grid-cols-[44px_64px_minmax(0,1fr)_110px_72px_90px_88px_52px] items-center border-b border-border bg-muted/40 px-3 py-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                    <div className="grid grid-cols-[52px_76px_minmax(0,1fr)_120px_84px_104px_96px_64px] items-center rounded-t-xl border-b border-border bg-muted/40 px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                       <div className="text-center">No.</div>
                       <div className="text-center">분류</div>
                       <div>상품 정보</div>
@@ -1550,7 +1550,7 @@ export default function BoardListClient({
                       </div>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-[60px_80px_minmax(0,1fr)_120px_140px_70px_70px_70px] items-center border-b-2 border-foreground/10 bg-muted/40 px-4 py-2.5 text-xs font-medium text-muted-foreground">
+                    <div className="grid grid-cols-[64px_88px_minmax(0,1fr)_128px_140px_72px_72px_72px] items-center rounded-t-xl border-b border-border bg-muted/40 px-4 py-3 text-xs font-semibold text-muted-foreground">
                       <div className="text-center">번호</div>
                       <div className="text-center">분류</div>
                       <div>제목</div>
@@ -1563,7 +1563,7 @@ export default function BoardListClient({
                   )}
 
                   {/* 데이터 행들 */}
-                  <div className="divide-y divide-border/60">
+                  <div className="divide-y divide-border/60 rounded-b-xl border-x border-b border-border bg-card">
                     {items.map((post) => {
                       const isMarket = config.boardType === "market";
                       const isSold = post.marketMeta?.saleStatus === "sold";
@@ -1573,7 +1573,7 @@ export default function BoardListClient({
                           key={post.id}
                           href={buildDetailHref(post.postNo ?? post.id)}
                           className={[
-                            "group grid grid-cols-[44px_64px_minmax(0,1fr)_110px_72px_90px_88px_52px] items-center px-3 py-2.5 text-sm transition-colors",
+                            "group grid grid-cols-[52px_76px_minmax(0,1fr)_120px_84px_104px_96px_64px] items-center px-4 py-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             isSold
                               ? "opacity-45 hover:opacity-65"
                               : "hover:bg-muted/40",
@@ -1606,7 +1606,7 @@ export default function BoardListClient({
                           {/* 상품 정보: 제목 + 브랜드/모델/등급 */}
                           <div className="min-w-0 pr-3">
                             <div className="flex items-center gap-1">
-                              <span className="line-clamp-1 break-keep text-sm font-medium text-foreground transition-colors group-hover:text-primary">
+                              <span className="line-clamp-2 min-w-0 break-keep text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-primary">
                                 {post.title}
                               </span>
                               {post.commentsCount ? (
