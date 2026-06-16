@@ -38,9 +38,9 @@ export default function StringRecommendResultCard({
   const primaryGauge = product.gauge || product.gaugeOptions?.[0];
 
   return (
-    <Card className="rounded-2xl">
-      <CardHeader className="space-y-3">
-        <Badge className="w-fit">TOP {rank}</Badge>
+    <Card className="flex h-full flex-col overflow-hidden rounded-2xl">
+      <CardHeader className="space-y-3 p-4 sm:p-5">
+        <Badge className="w-fit shrink-0">TOP {rank}</Badge>
         <div className="relative aspect-[5/4] w-full overflow-hidden rounded-xl bg-muted">
           {product.image ? (
             <Image
@@ -55,13 +55,15 @@ export default function StringRecommendResultCard({
             </div>
           )}
         </div>
-        <div>
-          <p className="text-xs text-muted-foreground">
+        <div className="min-w-0 space-y-2">
+          <p className="break-keep text-xs text-muted-foreground">
             {stringBrandLabel(product.brand) || "브랜드 정보 없음"}
           </p>
-          <CardTitle className="mt-1 text-base">{product.name}</CardTitle>
+          <CardTitle className="break-keep break-words text-base leading-snug">
+            {product.name}
+          </CardTitle>
           {isSale ? (
-            <div className="mt-2 space-y-1 tabular-nums">
+            <div className="space-y-1 tabular-nums">
               <div className="flex items-baseline gap-1.5">
                 <span className="text-[11px] text-muted-foreground">
                   할인가
@@ -81,37 +83,40 @@ export default function StringRecommendResultCard({
               </div>
             </div>
           ) : (
-            <p className="mt-2 text-sm font-semibold">
+            <p className="text-sm font-semibold">
               {displayPrice.toLocaleString()}원
             </p>
           )}
-          <p className="text-xs text-muted-foreground">
+          <p className="break-keep text-xs leading-relaxed text-muted-foreground">
             소재 {stringMaterialLabel(product.material) || "-"} · 게이지{" "}
             {formatGaugeLabel(primaryGauge) || "-"}
           </p>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="flex-1 space-y-3 p-4 pt-0 sm:p-5 sm:pt-0">
         <div className="flex flex-wrap gap-2">
           {result.badges.map((badge) => (
-            <Badge key={badge} variant="outline">
+            <Badge key={badge} variant="outline" wrap="normal">
               {badge}
             </Badge>
           ))}
         </div>
-        <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+        <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-muted-foreground">
           {result.reasons.map((reason) => (
-            <li key={reason}>{reason}</li>
+            <li key={reason} className="break-keep">
+              {reason}
+            </li>
           ))}
         </ul>
         {result.matchSummary && result.matchSummary.length > 0 ? (
-          <div className="rounded-lg border bg-background p-3 text-sm">
-            <p className="font-medium">추천 기준</p>
+          <div className="rounded-xl border border-border bg-background p-3 text-sm">
+            <p className="break-keep font-medium">추천 기준</p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {result.matchSummary.map((item) => (
                 <Badge
                   key={`${item.label}-${item.value}`}
                   variant="secondary"
+                  wrap="normal"
                   className="font-normal"
                 >
                   {item.label}: {item.value}
@@ -120,26 +125,26 @@ export default function StringRecommendResultCard({
             </div>
           </div>
         ) : null}
-        <div className="rounded-lg border bg-muted/40 p-3 text-sm">
-          <p className="font-medium">
+        <div className="rounded-xl border border-border bg-muted/40 p-3 text-sm">
+          <p className="break-keep font-medium">
             {result.tensionRange.label}: {result.tensionRange.min}~
             {result.tensionRange.max} lbs
           </p>
-          <p className="mt-1 text-muted-foreground">
+          <p className="mt-1 break-keep leading-relaxed text-muted-foreground">
             {result.tensionRange.note}
           </p>
         </div>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2">
+      <CardFooter className="flex-col items-start gap-3 p-4 pt-0 sm:p-5 sm:pt-0">
         <div className="mt-1 w-full space-y-2">
-          <Button asChild className="w-full">
+          <Button asChild wrap="normal" className="w-full">
             <Link href={productHref}>이 스트링으로 교체서비스 신청</Link>
           </Button>
-          <Button asChild variant="outline" className="w-full">
+          <Button asChild variant="outline" wrap="normal" className="w-full">
             <Link href={productHref}>상세 보기</Link>
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
+        <p className="break-keep text-xs leading-relaxed text-muted-foreground">
           상세 페이지에서 스트링 정보를 확인한 뒤 교체서비스 신청을 이어서
           진행할 수 있어요.
         </p>

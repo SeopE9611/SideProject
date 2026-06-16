@@ -1,4 +1,5 @@
 import StringRecommendClient from "@/app/products/recommend/_components/StringRecommendClient";
+import SiteContainer from "@/components/layout/SiteContainer";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -9,8 +10,10 @@ export const metadata: Metadata = {
 
 export default function StringRecommendPage() {
   return (
-    <main className="px-4">
-      <StringRecommendClient />
+    <main className="bg-background">
+      <SiteContainer variant="wide" className="py-8 sm:py-10">
+        <StringRecommendClient />
+      </SiteContainer>
     </main>
   );
 }
