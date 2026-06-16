@@ -62,28 +62,26 @@ export default function OrdersScopeTabs({
 }: OrdersScopeTabsProps) {
   return (
     <nav
-      className={cn("relative", className)}
+      className={cn("relative border-b border-border", className)}
       aria-label="거래/이용내역 하위 탭"
     >
-      <div className="flex flex-wrap gap-1.5 pb-1 sm:gap-2">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 sm:gap-x-7">
         {SCOPE_ITEMS.map((item) => {
           const isActive = item.value === activeScope;
           return (
             <Link
               key={item.value}
               href={item.href}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
-                "group relative flex min-w-fit items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-2.5 text-sm font-medium bp-sm:px-4",
-                "transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2",
+                "group relative -mb-px flex min-w-fit items-center whitespace-nowrap border-b-2 px-0.5 py-3 text-sm",
+                "transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2",
                 isActive
-                  ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
-                  : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground hover:shadow-sm",
+                  ? "border-foreground font-semibold text-foreground"
+                  : "border-transparent font-medium text-muted-foreground hover:text-foreground",
               )}
             >
               <span>{item.label}</span>
-              {isActive ? (
-                <span className="absolute -bottom-1 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-primary/40" />
-              ) : null}
             </Link>
           );
         })}

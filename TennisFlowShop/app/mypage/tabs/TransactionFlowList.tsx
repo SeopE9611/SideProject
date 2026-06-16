@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  collectionMethodLabel,
-  orderShippingMethodLabel,
-} from "@/app/features/stringing-applications/lib/fulfillment-labels";
+import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import OrdersScopeTabs, {
   parseOrdersScope,
 } from "@/app/mypage/_components/OrdersScopeTabs";
@@ -38,14 +35,11 @@ import {
   CheckCircle,
   ChevronDown,
   ChevronUp,
-  CreditCard,
-  Link2,
   Package,
   Sparkles,
   Store,
   Truck,
   Undo2,
-  Wallet,
   Wrench,
   XCircle,
 } from "lucide-react";
@@ -322,13 +316,6 @@ const getLinkedApplicationStatusSummary = (
   return `${label} · ${apps.length}건 연결`;
 };
 
-const getApplicationOriginLabel = (app?: ActivityApplicationSummary) => {
-  if (!app) return null;
-  if (app.orderId) return "주문";
-  if (app.rentalId) return "대여";
-  return "단독 신청";
-};
-
 const isStandaloneApplication = (app?: ActivityApplicationSummary) =>
   Boolean(app && !app.orderId && !app.rentalId);
 
@@ -356,31 +343,6 @@ const getApplicationTrackingLabel = (app?: ActivityApplicationSummary) => {
   if (!app.inboundRequired) return "운송장 입력 대상 아님";
   if (!app.needsInboundTracking) return "운송장 입력 선택 사항";
   return app.hasTracking ? "운송장 등록됨" : "운송장 등록 필요";
-};
-
-const getRentalReturnStatusLabel = (status?: string | null) => {
-  const normalized = getMypageNormalizedStatus(status);
-  if (normalized === "반납완료") return "반납완료";
-  if (normalized === "취소") return "반납 없음";
-  return "반납 대기";
-};
-
-const getRentalShippingStatusMeta = (rental?: ActivityGroup["rental"]) => {
-  const shippingMethod = String(rental?.shippingMethod ?? "")
-    .trim()
-    .toLowerCase();
-  const isVisitPickup =
-    shippingMethod === "pickup" || shippingMethod === "visit";
-  if (isVisitPickup) {
-    return {
-      label: "수령 상태",
-      value: rental?.hasOutboundShipping ? "수령 준비 완료" : "수령 준비중",
-    };
-  }
-  return {
-    label: "출고 상태",
-    value: rental?.hasOutboundShipping ? "출고됨" : "출고 준비중",
-  };
 };
 
 const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
@@ -471,7 +433,7 @@ const getFlowNextActionText = (
       "이용확정 필요": "반납 내용을 확인하고 이용확정을 진행해주세요.",
       "운송장 등록 필요": "운송장 정보를 등록해주세요.",
       "교체서비스 확정 필요":
-        "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.",
+        "작업 내용을 확인하고 교체서비스 확정을 진행해주���요.",
       "후기를 남길 수 있어요": "구매확정된 상품은 후기를 작성할 수 있어요.",
       "상품 후기 작성 가능": "구매확정된 상품은 후기를 작성할 수 있어요.",
       "교체서비스 후기 작성 가능":
@@ -1077,7 +1039,8 @@ export default function TransactionFlowList() {
           </CardContent>
         </Card>
       ) : (
-        items.map((g) => {
+        <div className="divide-y divide-border/70 border-y border-border/70">
+        {items.map((g) => {
           const orderId =
             g.order?.id ?? (g.kind === "order" ? g.detailTarget.id : undefined);
           const rentalId =
@@ -1257,285 +1220,113 @@ export default function TransactionFlowList() {
                 : getApplicationCollectionLabel(displayApplication);
 
           return (
-            <Card
+            <div
               key={g.key}
-              className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md"
+              className="flex flex-col gap-3 py-5 transition-colors hover:bg-muted/30 sm:flex-row sm:items-start sm:gap-6"
             >
-              <div className="absolute inset-0 border border-border/40 bg-secondary/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              <CardContent className="relative space-y-4 p-4 bp-sm:p-6">
-                <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
-                  <div className="flex min-w-0 gap-3">
-                    <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border bg-muted/30 text-muted-foreground">
-                      <FlowIcon className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0 flex-1 space-y-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge
-                          variant="outline"
-                          className="shrink-0 whitespace-nowrap"
-                        >
-                          {flowKindBadgeLabel}
-                        </Badge>
-                        <Badge
-                          variant={displayStatusBadgeSpec.variant}
-                          className="shrink-0 whitespace-nowrap"
-                        >
-                          {displayUserStatusLabel}
-                        </Badge>
-                        {todoPrimaryReason ? (
-                          <Badge
-                            variant={
-                              getWorkflowMetaBadgeSpec("action_required")
-                                .variant
-                            }
-                            className="shrink-0 whitespace-nowrap"
-                          >
-                            {todoPrimaryReason}
-                          </Badge>
-                        ) : null}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="line-clamp-2 break-keep text-base font-semibold text-foreground">
-                          {displayTitle}
-                        </p>
-                        <p className="mt-1 whitespace-normal break-keep text-xs tabular-nums text-muted-foreground">
-                          {displayMetaLabel} · {displayDateLabel}{" "}
-                          {formatDate(displayDateValue)}
-                          {standaloneApplicationIdMeta}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="rounded-2xl border border-border bg-muted/30 px-3 py-2 text-left md:min-w-36 md:text-right">
-                    <p className="break-words text-sm font-semibold tabular-nums text-foreground">
-                      {heroSummary}
-                    </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {heroSubSummary}
-                    </p>
-                  </div>
-                </div>
+              {/* 왼쪽: 주문 일자 / 타입 */}
+              <div className="flex shrink-0 items-center gap-2 sm:w-28 sm:flex-col sm:items-start sm:gap-1">
+                <span className="text-xs tabular-nums text-muted-foreground">
+                  {formatDate(displayDateValue)}
+                </span>
+                <span className="text-xs font-medium text-muted-foreground/80">
+                  {displayMetaLabel}
+                </span>
+              </div>
 
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  {linkedFlowBadgeLabel ? (
-                    <Badge
-                      variant="secondary"
-                      className="shrink-0 whitespace-nowrap"
-                    >
-                      {linkedFlowBadgeLabel}
-                    </Badge>
-                  ) : null}
-                  {shouldShowFlowBadge ? (
-                    <Badge
-                      variant="outline"
-                      className="shrink-0 whitespace-nowrap"
-                    >
-                      {g.flowLabel}
-                    </Badge>
-                  ) : null}
-                  {showLinkedStatusBadge ? (
-                    <Badge variant="secondary">
-                      {getLinkedApplicationStatusSummary(linkedApps)}
-                    </Badge>
-                  ) : null}
-                  {isCancelRequested ? (
-                    <Badge
-                      variant={
-                        getWorkflowMetaBadgeSpec("cancel_requested").variant
-                      }
-                      className="gap-1"
-                    >
-                      <AlertCircle className="h-3 w-3" />
-                      취소 요청됨
-                    </Badge>
-                  ) : null}
-                </div>
+              {/* 중간: 메인 정보 */}
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <Link
+                  href={detailHref}
+                  className="inline-flex max-w-full items-start gap-1.5"
+                >
+                  <FlowIcon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                  <span className="line-clamp-2 break-keep text-base font-semibold text-foreground transition-colors hover:text-primary">
+                    {displayTitle}
+                  </span>
+                </Link>
+                <p className="break-keep text-sm tabular-nums text-muted-foreground">
+                  {heroSummary}
+                  {heroSubSummary ? ` · ${heroSubSummary}` : ""}
+                  {standaloneApplicationIdMeta}
+                </p>
+
+                {linkedFlowBadgeLabel ||
+                shouldShowFlowBadge ||
+                showLinkedStatusBadge ||
+                isCancelRequested ? (
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-xs">
+                    {linkedFlowBadgeLabel ? (
+                      <Badge
+                        variant="secondary"
+                        className="shrink-0 whitespace-nowrap"
+                      >
+                        {linkedFlowBadgeLabel}
+                      </Badge>
+                    ) : null}
+                    {shouldShowFlowBadge ? (
+                      <Badge
+                        variant="outline"
+                        className="shrink-0 whitespace-nowrap"
+                      >
+                        {g.flowLabel}
+                      </Badge>
+                    ) : null}
+                    {showLinkedStatusBadge ? (
+                      <Badge variant="secondary">
+                        {getLinkedApplicationStatusSummary(linkedApps)}
+                      </Badge>
+                    ) : null}
+                    {isCancelRequested ? (
+                      <Badge
+                        variant={
+                          getWorkflowMetaBadgeSpec("cancel_requested").variant
+                        }
+                        className="gap-1"
+                      >
+                        <AlertCircle className="h-3 w-3" />
+                        취소 요청됨
+                      </Badge>
+                    ) : null}
+                  </div>
+                ) : null}
 
                 {todoPrimaryReason && nextActionText ? (
-                  <div
-                    className={`rounded-xl border p-3 bp-sm:p-4 ${scope === "todo" ? "border-primary/30 bg-primary/5 ring-1 ring-primary/10 dark:bg-primary/10" : "border-border/60 bg-secondary/40"}`}
-                  >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="secondary" className="text-[11px]">
-                        해야 할 일
-                      </Badge>
-                    </div>
-                    <p className="mt-2 text-sm font-semibold text-foreground">
+                  <p className="pt-0.5 text-xs leading-relaxed">
+                    <span className="font-semibold text-primary">
                       {todoPrimaryReason}
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {nextActionText}
-                    </p>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      아래 버튼에서 바로 처리할 수 있어요.
-                    </p>
-                  </div>
+                    </span>
+                    <span className="text-muted-foreground"> · {nextActionText}</span>
+                  </p>
                 ) : nextActionText ? (
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="pt-0.5 text-xs leading-relaxed text-muted-foreground">
                     {nextActionText}
                   </p>
                 ) : null}
+              </div>
 
-                <div className="flex flex-wrap gap-2 rounded-2xl border border-border bg-muted/30 p-2">
-                  {displayKind === "order" ? (
-                    <>
-                      <div className="flex min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
-                        <CreditCard className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-[11px] font-medium text-muted-foreground">
-                            결제 금액
-                          </p>
-                          <p className="break-words text-sm font-medium text-foreground">
-                            {formatAmount(g.order?.totalPrice)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
-                        <Package className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-[11px] font-medium text-muted-foreground">
-                            주문 상태
-                          </p>
-                          <p className="break-words text-sm font-medium text-foreground">
-                            {orderDisplayStatusLabel}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
-                        <Wallet className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-[11px] font-medium text-muted-foreground">
-                            결제 상태
-                          </p>
-                          <p className="break-words text-sm font-medium text-foreground">
-                            {getMypagePaymentStatusLabel(
-                              g.order?.paymentStatus,
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
-                        <Truck className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-[11px] font-medium text-muted-foreground">
-                            수령 방법
-                          </p>
-                          <p className="break-words text-sm font-medium text-foreground">
-                            {orderShippingMethodLabel(g.order?.shippingMethod)}
-                          </p>
-                        </div>
-                      </div>
-                    </>
-                  ) : null}
-
-                  {displayKind === "rental" ? (
-                    <>
-                      <div className="flex min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
-                        <CreditCard className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-[11px] font-medium text-muted-foreground">
-                            대여 금액
-                          </p>
-                          <p className="break-words text-sm font-medium text-foreground">
-                            {formatAmount(g.rental?.totalAmount)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-[11px] font-medium text-muted-foreground">
-                            대여 기간
-                          </p>
-                          <p className="break-words text-sm font-medium text-foreground">
-                            {typeof g.rental?.days === "number"
-                              ? `${g.rental.days}일`
-                              : "-"}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
-                        <Truck className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-[11px] font-medium text-muted-foreground">
-                            {getRentalShippingStatusMeta(g.rental).label}
-                          </p>
-                          <p className="break-words text-sm font-medium text-foreground">
-                            {getRentalShippingStatusMeta(g.rental).value}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
-                        <Undo2 className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-[11px] font-medium text-muted-foreground">
-                            반납 상태
-                          </p>
-                          <p className="break-words text-sm font-medium text-foreground">
-                            {getRentalReturnStatusLabel(g.rental?.status)}
-                          </p>
-                        </div>
-                      </div>
-                    </>
-                  ) : null}
-
-                  {displayKind === "application" ? (
-                    <>
-                      <div className="flex min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
-                        <Package className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-[11px] font-medium text-muted-foreground">
-                            접수 방식
-                          </p>
-                          <p className="break-words text-sm font-medium text-foreground">
-                            {getApplicationCollectionLabel(displayApplication)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
-                        <Truck className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-[11px] font-medium text-muted-foreground">
-                            운송장 상태
-                          </p>
-                          <p className="break-words text-sm font-medium text-foreground">
-                            {getApplicationTrackingLabel(displayApplication)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
-                        <Wrench className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-[11px] font-medium text-muted-foreground">
-                            진행 단계
-                          </p>
-                          <p className="break-words text-sm font-medium text-foreground">
-                            {displayUserStatusLabel}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
-                        <Link2 className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-[11px] font-medium text-muted-foreground">
-                            연계 원본
-                          </p>
-                          <p className="break-words text-sm font-medium text-foreground">
-                            {getApplicationOriginLabel(displayApplication)}
-                            {displayApplication?.orderId
-                              ? ` · #${shortId(displayApplication.orderId) ?? "-"}`
-                              : ""}
-                            {displayApplication?.rentalId
-                              ? ` · #${shortId(displayApplication.rentalId) ?? "-"}`
-                              : ""}
-                          </p>
-                        </div>
-                      </div>
-                    </>
+              {/* 오른쪽: 상태 배지 + 액션 버튼 */}
+              <div className="flex shrink-0 flex-col items-start gap-2.5 sm:items-end">
+                <div className="flex flex-wrap items-center gap-1.5 sm:justify-end">
+                  <Badge
+                    variant={displayStatusBadgeSpec.variant}
+                    className="shrink-0 whitespace-nowrap"
+                  >
+                    {displayUserStatusLabel}
+                  </Badge>
+                  {todoPrimaryReason ? (
+                    <Badge
+                      variant={
+                        getWorkflowMetaBadgeSpec("action_required").variant
+                      }
+                      className="shrink-0 whitespace-nowrap"
+                    >
+                      {todoPrimaryReason}
+                    </Badge>
                   ) : null}
                 </div>
 
-                <div className="flex flex-col items-stretch gap-2 border-t border-border/60 pt-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end md:pt-4 [&_a]:justify-center [&_button]:w-full [&_button]:whitespace-normal sm:[&_button]:w-auto sm:[&_button]:whitespace-nowrap">
+                <div className="flex flex-wrap items-center gap-1.5 sm:justify-end [&_a]:justify-center [&_button]:whitespace-nowrap">
                   {(() => {
                     type ActionDef = {
                       key: string;
@@ -2083,10 +1874,11 @@ export default function TransactionFlowList() {
                     );
                   })()}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           );
-        })
+        })}
+        </div>
       )}
 
       {hasMore ? (
