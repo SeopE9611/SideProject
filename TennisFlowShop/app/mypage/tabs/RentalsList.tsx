@@ -203,7 +203,7 @@ export default function RentalsList() {
         return (
           <Card
             key={r.id}
-            className={`group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:shadow-lg ${r.stringingApplicationId || r.withStringService ? "ring-1 ring-ring/50" : ""}`}
+            className={`group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:border-primary/30 hover:shadow-md ${r.stringingApplicationId || r.withStringService ? "ring-1 ring-ring/50" : ""}`}
           >
             <div
               className="absolute inset-0 border border-border/40 bg-secondary/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
@@ -213,12 +213,12 @@ export default function RentalsList() {
             </div>
 
             <CardContent className="relative space-y-4 p-4 md:p-6">
-              <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex flex-col gap-3 border-b border-border/60 pb-4 md:flex-row md:items-start md:justify-between">
                 <div className="min-w-0 flex-1">
                   <h3 className="line-clamp-2 break-keep text-base font-semibold text-foreground">
                     {rentalTitle}
                   </h3>
-                  <p className="mt-1 whitespace-nowrap text-xs tabular-nums text-foreground/75">
+                  <p className="mt-1 text-xs tabular-nums text-muted-foreground">
                     대여 기간 {r.days}일
                     {rentalMetaDate
                       ? ` · 최근 업데이트 ${formatDate(rentalMetaDate)}`
@@ -226,7 +226,7 @@ export default function RentalsList() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
                   {getStatusIcon(r.status)}
                   <Badge
                     variant={getStatusBadgeVariant(r.status)}
@@ -271,7 +271,7 @@ export default function RentalsList() {
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 rounded-xl border border-border/60 bg-muted/30 p-3 md:grid-cols-2 lg:grid-cols-3">
                 <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <div>

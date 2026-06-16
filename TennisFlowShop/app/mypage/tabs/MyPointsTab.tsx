@@ -165,7 +165,7 @@ export default function MyPointsTab() {
       {!isInitialLoading && (
         <>
           <div className="grid gap-3 bp-sm:gap-5 bp-md:grid-cols-2 bp-lg:grid-cols-3">
-            <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-muted/30 text-foreground">
+            <Card className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color] duration-200 hover:border-primary/30 hover:shadow-md text-foreground">
               <div className="absolute inset-0 bg-overlay/5 group-hover:bg-overlay/10 transition-colors duration-300" />
               <div className="absolute top-0 right-0 w-24 h-24 bg-card/5 rounded-full -mr-12 -mt-12" />
               <div className="absolute bottom-0 left-0 w-20 h-20 bg-card/5 rounded-full -ml-10 -mb-10" />
@@ -211,7 +211,7 @@ export default function MyPointsTab() {
               </CardContent>
             </Card>
 
-            <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-card">
+            <Card className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color] duration-200 hover:border-primary/30 hover:shadow-md">
               <div className="absolute inset-0 bg-muted/30 group-hover:opacity-80 transition-opacity duration-300" />
 
               <CardContent className="relative p-4 bp-sm:p-5">
@@ -233,7 +233,7 @@ export default function MyPointsTab() {
               </CardContent>
             </Card>
 
-            <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-card bp-md:col-span-2 bp-lg:col-span-1">
+            <Card className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color] duration-200 hover:border-primary/30 hover:shadow-md bp-md:col-span-2 bp-lg:col-span-1">
               <div className="absolute inset-0 bg-muted/30 group-hover:opacity-80 transition-opacity duration-300" />
 
               <CardContent className="relative p-4 bp-sm:p-5">
@@ -256,8 +256,8 @@ export default function MyPointsTab() {
             </Card>
           </div>
 
-          <Card className="border-0 shadow-xl bg-card/95 dark:bg-card/95 backdrop-blur-sm overflow-hidden">
-            <CardHeader className="bg-muted/30 border-b p-4 bp-sm:p-5 bp-md:p-6">
+          <Card className="overflow-hidden border border-border bg-card shadow-sm">
+            <CardHeader className="border-b border-border bg-muted/30 p-4 bp-sm:p-5 bp-md:p-6">
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div className="flex items-center gap-3">
                   <div className="bg-muted/30 rounded-xl p-2.5 shadow-md">
@@ -288,7 +288,7 @@ export default function MyPointsTab() {
               {isPageTransitionLoading ? (
                 <PointsListSkeleton count={5} />
               ) : shouldShowEmptyState ? (
-                <div className="flex flex-col items-center justify-center py-10 bp-sm:py-14 px-4">
+                <div className="flex flex-col items-center justify-center px-4 py-10 bp-sm:py-14">
                   <div className="bg-muted/50 rounded-full p-4 mb-4">
                     <Coins className="h-8 w-8 bp-sm:h-10 bp-sm:w-10 text-muted-foreground" />
                   </div>
@@ -304,12 +304,12 @@ export default function MyPointsTab() {
                   {pointsItems?.map((it, idx) => (
                     <div
                       key={it.id}
-                      className="group relative p-4 bp-sm:p-5 bp-lg:p-6 hover:bg-muted/30 dark:hover:bg-card transition-colors duration-200"
+                      className="group relative p-4 transition-colors duration-200 hover:bg-muted/30 bp-sm:p-5 bp-lg:p-6"
                       style={{
                         animation: `fadeIn 0.3s ease-out ${idx * 0.05}s both`,
                       }}
                     >
-                      <div className="flex items-start justify-between gap-3 bp-sm:gap-4">
+                      <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between bp-sm:gap-4">
                         <div className="flex items-start gap-3 bp-sm:gap-4 flex-1 min-w-0">
                           <div className="shrink-0 rounded-xl p-2 bp-sm:p-2.5 shadow-sm bg-muted/30">
                             {it.amount >= 0 ? (
@@ -389,7 +389,7 @@ export default function MyPointsTab() {
                           </div>
                         </div>
 
-                        <div className="shrink-0 text-right">
+                        <div className="shrink-0 text-left bp-sm:text-right">
                           <p className="text-xs bp-sm:text-sm text-muted-foreground whitespace-nowrap">
                             {safeLocalDateTime(it.createdAt)}
                           </p>

@@ -429,10 +429,10 @@ export default function OrderList() {
         return (
           <Card
             key={order.id}
-            className="group relative overflow-hidden border-0 bg-card shadow-md transition-[box-shadow,border-color,background-color,color,opacity] duration-200 bp-sm:hover:shadow-xl bp-sm:"
+            className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:border-primary/30 hover:shadow-md"
           >
             <div
-              className="pointer-events-none absolute inset-0 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              className="pointer-events-none absolute inset-0 bg-muted/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
               style={{ padding: "1px" }}
             >
               <div className="h-full w-full bg-card rounded-lg" />
@@ -440,9 +440,9 @@ export default function OrderList() {
 
             <CardContent className="relative p-4 bp-sm:p-6">
               {/* Header */}
-              <div className="flex items-start justify-between gap-3 mb-6">
+              <div className="mb-5 flex flex-col gap-3 border-b border-border/60 pb-4 md:flex-row md:items-start md:justify-between">
                 <div className="flex items-start gap-3 min-w-0">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-muted/40">
                     <ShoppingBag className="h-6 w-6 text-primary" />
                   </div>
                   <div className="min-w-0">
@@ -464,7 +464,7 @@ export default function OrderList() {
                         </Badge>
                       ) : null}
                     </div>
-                    <div className="mt-1 flex flex-nowrap items-center gap-x-1 overflow-x-auto whitespace-nowrap text-sm tabular-nums text-foreground/80">
+                    <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm tabular-nums text-muted-foreground">
                       <Calendar className="h-3 w-3" />
                       {formatDate(order.date)}
                     </div>
@@ -472,7 +472,7 @@ export default function OrderList() {
                 </div>
 
                 {/* 상태/취소 관련 영역 */}
-                <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
                   {getStatusIcon(
                     order.status,
                     isVisitPickupOrder(order.shippingInfo),
@@ -503,7 +503,7 @@ export default function OrderList() {
 
               {/* Customer Info */}
               {order.userSnapshot?.name && (
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted mb-4">
+                <div className="mb-4 flex items-center gap-3 rounded-xl border border-border/60 bg-muted/30 p-3">
                   <User className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <div className="text-xs text-foreground/75 uppercase tracking-wide">
@@ -528,7 +528,7 @@ export default function OrderList() {
                   {order.items.map((item, index) => (
                     <div
                       key={index}
-                      className="flex items-start gap-3 p-3 rounded-lg bg-muted"
+                      className="flex items-start gap-3 rounded-xl border border-border/60 bg-muted/30 p-3"
                     >
                       {/* 상품 썸네일 */}
                       {item.imageUrl ? (
@@ -574,7 +574,7 @@ export default function OrderList() {
               </div>
 
               {/* Footer */}
-              <div className="flex flex-col bp-sm:flex-row bp-sm:items-center bp-sm:justify-between gap-4 pt-4 border-t border-border/60 dark:border-border/60">
+              <div className="flex flex-col gap-4 border-t border-border/60 pt-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                 <div className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
                   <span className="whitespace-nowrap text-lg font-bold tabular-nums text-foreground">
@@ -584,7 +584,7 @@ export default function OrderList() {
                   </span>
                 </div>
 
-                <div className="hidden bp-sm:flex items-center gap-3">
+                <div className="hidden bp-sm:flex flex-wrap items-center justify-end gap-2">
                   <Button
                     size="sm"
                     variant="outline"

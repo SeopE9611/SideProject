@@ -142,7 +142,7 @@ export default function QnAList() {
       {qnas.map((qna) => (
         <Card
           key={qna.id}
-          className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:shadow-lg"
+          className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:border-primary/30 hover:shadow-md"
         >
           <div
             className="absolute inset-0 border border-border/40 bg-secondary/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
@@ -152,8 +152,8 @@ export default function QnAList() {
           </div>
 
           <CardContent className="relative p-4 md:p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
+            <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div className="flex min-w-0 items-start gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30">
                   <MessageCircleQuestion className="h-6 w-6 text-primary" />
                 </div>
@@ -166,13 +166,13 @@ export default function QnAList() {
                       </Badge>
                     );
                   })()}
-                  <h3 className="font-semibold text-foreground line-clamp-2">
+                  <h3 className="line-clamp-2 break-keep font-semibold text-foreground">
                     {qna.title}
                   </h3>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
                 {qna.status === "답변 완료" ? (
                   <CheckCircle className="h-5 w-5 text-success" />
                 ) : (
@@ -187,7 +187,7 @@ export default function QnAList() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-border/60 dark:border-border/60">
+            <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2 text-sm text-foreground/80">
                 <Calendar className="h-4 w-4" />
                 <span>{qna.date}</span>
@@ -197,7 +197,7 @@ export default function QnAList() {
                 size="sm"
                 variant="outline"
                 asChild
-                className="border-border bg-background transition-colors hover:bg-card"
+                className="w-full border-border bg-background transition-colors hover:bg-card sm:w-auto"
               >
                 <Link
                   href={`/board/qna/${qna.id}`}

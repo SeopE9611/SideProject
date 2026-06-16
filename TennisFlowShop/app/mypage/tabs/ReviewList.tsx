@@ -500,7 +500,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         itemsToRender.map((it) => (
           <Card
             key={it._id}
-            className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:shadow-lg"
+            className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:border-primary/30 hover:shadow-md"
           >
             <div
               className="absolute inset-0 border border-border/40 bg-secondary/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
@@ -509,10 +509,10 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               <div className="h-full w-full bg-card rounded-lg" />
             </div>
 
-            <CardContent className="relative p-4 md:p-6 space-y-4">
+            <CardContent className="relative space-y-4 p-4 md:p-6">
               {/* 헤더 영역 */}
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div className="flex min-w-0 items-start gap-3">
                   <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-warning/10 ring-1 ring-border/5 dark:bg-warning/15">
                     {it.cover ? (
                       <Image
@@ -529,10 +529,10 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                     )}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground mb-1">
+                    <h3 className="mb-1 line-clamp-2 break-keep font-semibold text-foreground">
                       {it.title}
                     </h3>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Stars rating={it.rating} />
                       <span className="text-sm font-medium text-warning">
                         {Number(it.rating).toFixed(1)}
@@ -546,7 +546,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Button
                     size="sm"
                     variant="outline"
@@ -617,7 +617,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               </div>
 
               {/* 푸터 */}
-              <div className="flex items-center justify-between pt-4 border-t border-border/60 dark:border-border/60">
+              <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2 text-sm text-foreground/80">
                   <Calendar className="h-4 w-4" />
                   <span>{(it.createdAt || "").slice(0, 10)}</span>
