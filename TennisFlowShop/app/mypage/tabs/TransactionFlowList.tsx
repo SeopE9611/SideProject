@@ -429,7 +429,7 @@ const getFlowNextActionText = (
 ): string | null => {
   if (opts?.todoPrimaryReason) {
     const todoMessageMap: Record<string, string> = {
-      "구매확정 필요": "상품을 받으셨다면 구매확정을 진행해주세요.",
+      "구매확정 필요": "상품을 받으셨다��� 구매확정을 진행해주세요.",
       "이용확정 필요": "반납 내용을 확인하고 이용확정을 진행해주세요.",
       "운송장 등록 필요": "운송장 정보를 등록해주세요.",
       "교체서비스 확정 필요":
@@ -1222,10 +1222,10 @@ export default function TransactionFlowList() {
           return (
             <div
               key={g.key}
-              className="flex flex-col gap-3 py-5 transition-colors hover:bg-muted/30 sm:flex-row sm:items-start sm:gap-6"
+              className="flex flex-col items-start gap-4 py-5 transition-colors hover:bg-muted/30 md:flex-row md:flex-wrap"
             >
               {/* 왼쪽: 주문 일자 / 타입 */}
-              <div className="flex shrink-0 items-center gap-2 sm:w-28 sm:flex-col sm:items-start sm:gap-1">
+              <div className="flex w-full shrink-0 items-center gap-2 md:w-32 md:flex-col md:items-start md:gap-1">
                 <span className="text-xs tabular-nums text-muted-foreground">
                   {formatDate(displayDateValue)}
                 </span>
@@ -1235,7 +1235,7 @@ export default function TransactionFlowList() {
               </div>
 
               {/* 중간: 메인 정보 */}
-              <div className="min-w-0 flex-1 space-y-1.5">
+              <div className="flex min-w-0 flex-1 flex-col gap-2">
                 <Link
                   href={detailHref}
                   className="inline-flex max-w-full items-start gap-1.5"
@@ -1305,29 +1305,8 @@ export default function TransactionFlowList() {
                 ) : null}
               </div>
 
-              {/* 오른쪽: 상태 배지 + 액션 버튼 */}
-              <div className="flex shrink-0 flex-col items-start gap-2.5 sm:items-end">
-                <div className="flex flex-wrap items-center gap-1.5 sm:justify-end">
-                  <Badge
-                    variant={displayStatusBadgeSpec.variant}
-                    className="shrink-0 whitespace-nowrap"
-                  >
-                    {displayUserStatusLabel}
-                  </Badge>
-                  {todoPrimaryReason ? (
-                    <Badge
-                      variant={
-                        getWorkflowMetaBadgeSpec("action_required").variant
-                      }
-                      className="shrink-0 whitespace-nowrap"
-                    >
-                      {todoPrimaryReason}
-                    </Badge>
-                  ) : null}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-1.5 sm:justify-end [&_a]:justify-center [&_button]:whitespace-nowrap">
-                  {(() => {
+              {/* 오른쪽(상태 배지 + 액션 버튼) + 펼침 패널 */}
+              {(() => {
                     type ActionDef = {
                       key: string;
                       priority: number;
@@ -1817,52 +1796,80 @@ export default function TransactionFlowList() {
 
                     return (
                       <>
-                        {inlineActions.map((action) => (
-                          <Fragment key={action.key}>{action.node}</Fragment>
-                        ))}
+                        {/* 오른쪽 컬럼: 상태 배지 + 액션 버튼 */}
+                        <div className="flex w-full shrink-0 flex-col items-start gap-2.5 md:w-auto md:items-end">
+                          <div className="flex flex-wrap items-center gap-1.5 md:justify-end">
+                            <Badge
+                              variant={displayStatusBadgeSpec.variant}
+                              className="shrink-0 whitespace-nowrap"
+                            >
+                              {displayUserStatusLabel}
+                            </Badge>
+                            {todoPrimaryReason ? (
+                              <Badge
+                                variant={
+                                  getWorkflowMetaBadgeSpec("action_required")
+                                    .variant
+                                }
+                                className="shrink-0 whitespace-nowrap"
+                              >
+                                {todoPrimaryReason}
+                              </Badge>
+                            ) : null}
+                          </div>
 
-                        {secondaryActions.length > 0 ? (
-                          <button
-                            type="button"
-                            className={`
-        group relative flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium
+                          <div className="flex flex-wrap items-center gap-2 md:flex-col md:items-end [&_a]:h-9 [&_a]:justify-center [&_button]:h-9 [&_button]:whitespace-nowrap">
+                            {inlineActions.map((action) => (
+                              <Fragment key={action.key}>
+                                {action.node}
+                              </Fragment>
+                            ))}
+
+                            {secondaryActions.length > 0 ? (
+                              <button
+                                type="button"
+                                className={`
+        group relative flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium
         transition-[box-shadow,border-color,background-color,color,opacity] duration-200 ease-out
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-1
   ${isSecondaryOpen ? "border-border bg-secondary text-foreground shadow-sm" : "border-border bg-background text-muted-foreground hover:bg-card hover:text-foreground"}
       `}
-                            onClick={() =>
-                              setExpandedSecondaryKey((prev) =>
-                                prev === g.key ? null : g.key,
-                              )
-                            }
-                          >
-                            <Sparkles
-                              className={`h-3.5 w-3.5 transition-[box-shadow,border-color,background-color,color,opacity] duration-200 ${isSecondaryOpen ? "text-primary" : "text-muted-foreground/70 group-hover:text-primary/70"}`}
-                            />
-                            <span>
-                              {isSecondaryOpen
-                                ? "보조 작업 닫기"
-                                : "보조 작업"}
-                            </span>
-                            <span
-                              className={`
+                                onClick={() =>
+                                  setExpandedSecondaryKey((prev) =>
+                                    prev === g.key ? null : g.key,
+                                  )
+                                }
+                              >
+                                <Sparkles
+                                  className={`h-3.5 w-3.5 transition-[box-shadow,border-color,background-color,color,opacity] duration-200 ${isSecondaryOpen ? "text-primary" : "text-muted-foreground/70 group-hover:text-primary/70"}`}
+                                />
+                                <span>
+                                  {isSecondaryOpen
+                                    ? "보조 작업 닫기"
+                                    : "보조 작업"}
+                                </span>
+                                <span
+                                  className={`
         flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold
         transition-colors duration-200
         ${isSecondaryOpen ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground group-hover:bg-secondary group-hover:text-foreground"}
       `}
-                            >
-                              {secondaryActions.length}
-                            </span>
-                            {isSecondaryOpen ? (
-                              <ChevronUp className="h-3.5 w-3.5 transition-transform duration-200" />
-                            ) : (
-                              <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-y-0.5" />
-                            )}
-                          </button>
-                        ) : null}
+                                >
+                                  {secondaryActions.length}
+                                </span>
+                                {isSecondaryOpen ? (
+                                  <ChevronUp className="h-3.5 w-3.5 transition-transform duration-200" />
+                                ) : (
+                                  <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-y-0.5" />
+                                )}
+                              </button>
+                            ) : null}
+                          </div>
+                        </div>
 
+                        {/* 펼침 패널: 메인 행 아래 전체 너비로 분리되어 펼쳐짐 */}
                         {secondaryActions.length > 0 && isSecondaryOpen ? (
-                          <div className="flex w-full animate-in fade-in flex-wrap justify-end gap-2 rounded-lg border border-dashed border-border/50 bg-muted/20 p-3 duration-200">
+                          <div className="flex w-full basis-full flex-wrap justify-start gap-2 rounded-lg border border-dashed border-border/50 bg-muted/20 p-3 animate-in fade-in duration-200 md:justify-end [&_a]:h-9 [&_a]:justify-center [&_button]:h-9 [&_button]:whitespace-nowrap">
                             {secondaryActions.map((action) => (
                               <Fragment key={action.key}>
                                 {action.node}
@@ -1873,8 +1880,6 @@ export default function TransactionFlowList() {
                       </>
                     );
                   })()}
-                </div>
-              </div>
             </div>
           );
         })}
