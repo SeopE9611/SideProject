@@ -327,247 +327,396 @@ export default function RacketPurchaseCheckoutClient({
     paymentInfo: { bank },
   };
 
+  const racketName = `${racketBrandLabel(racket.brand)} ${racket.model}`.trim();
+  const primaryImage = racket.images?.[0];
+  const pickupLabel = isVisitPickup ? "매장 방문 수령" : "택배 발송/수령";
+  const paymentLabel =
+    paymentMethod === "bank_transfer"
+      ? "무통장입금"
+      : paymentMethod === "tosspayments"
+        ? "카드/간편결제 (토스)"
+        : "카드/간편결제";
+
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-4 md:py-8">
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0 space-y-1">
-            <p className="text-sm font-semibold text-foreground">
-              새로운 라켓 구매 흐름을 이용할 수 있어요
-            </p>
-            <p className="text-sm text-muted-foreground">
-              라켓과 스트링을 함께 선택한 뒤 한{"\u00A0"}번에 결제하는 새 흐름을
-              권장합니다. 기존 결제 진행 중이거나 복구 링크로 들어오신 경우에는
-              현재 화면에서 계속 진행할 수 있어요.
-            </p>
-            <p className="text-xs text-muted-foreground">
-              현재 화면에서도 기존 결제 흐름은 계속 사용할 수 있습니다.
-            </p>
+    <div className="bg-background py-6 md:py-10">
+      <div className="mx-auto w-full max-w-6xl space-y-6 px-4">
+        <section className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0 space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-medium text-muted-foreground">
+                  라켓 구매 checkout
+                </span>
+                <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+                  정보 입력 · 결제 확인
+                </span>
+              </div>
+              <div className="space-y-2">
+                <h1 className="break-keep text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+                  라켓 구매 정보를 확인해주세요
+                </h1>
+                <p className="max-w-3xl break-keep text-sm leading-relaxed text-muted-foreground">
+                  수령 방식과 결제 정보를 입력한 뒤 최종 금액을 확인하세요. 라켓과 스트링을 함께 선택하는 새 구매 흐름도 계속 이용할 수 있습니다.
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              className="w-full shrink-0 break-keep sm:w-auto"
+              disabled={!racketId}
+              onClick={() => router.push(`/rackets/${racketId}/select-string`)}
+            >
+              스트링 선택 후 구매로 이동
+            </Button>
           </div>
-          <Button
-            type="button"
-            size="sm"
-            className="w-full shrink-0 break-keep sm:w-auto"
-            disabled={!racketId}
-            onClick={() => router.push(`/rackets/${racketId}/select-string`)}
-          >
-            스트링 선택 후 구매로 이동
-          </Button>
-        </div>
-      </div>
+        </section>
 
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
-        <div className="text-lg font-semibold text-foreground">라켓 구매</div>
-        <div className="mt-2 text-sm text-muted-foreground">
-          {racketBrandLabel(racket.brand)} {racket.model}
-        </div>
-        <div className="mt-3 flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3 text-sm tabular-nums">
-          <span className="text-muted-foreground">상품 금액</span><span className="font-semibold text-foreground">{racket.price.toLocaleString()}원</span>
-        </div>
-      </div>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+          <div className="min-w-0 space-y-6">
+            <section className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
+              <div className="flex flex-col gap-4 sm:flex-row">
+                <div className="flex h-28 w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/30 sm:h-32 sm:w-32 sm:shrink-0">
+                  {primaryImage ? (
+                    <img
+                      src={primaryImage}
+                      alt={racketName}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="px-4 text-center text-xs text-muted-foreground">
+                      이미지 준비 중
+                    </span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1 space-y-4">
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      구매 라켓
+                    </p>
+                    <h2 className="min-w-0 break-keep text-xl font-semibold text-foreground">
+                      <span className="break-words">{racket.model}</span>
+                    </h2>
+                    <p className="break-words text-sm text-muted-foreground">
+                      {racketBrandLabel(racket.brand)}
+                    </p>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-xl border border-border bg-muted/30 p-3">
+                      <p className="text-xs text-muted-foreground">상품 금액</p>
+                      <p className="mt-1 text-base font-semibold tabular-nums text-foreground">
+                        {racket.price.toLocaleString()}원
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-border bg-muted/30 p-3">
+                      <p className="text-xs text-muted-foreground">판매 상태</p>
+                      <p className="mt-1 break-keep text-base font-semibold text-foreground">
+                        {racketStatusLabel(racket.status)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
 
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6 space-y-3">
-        <div className="font-semibold text-foreground">라켓 접수 방식</div>
-        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-muted/30 p-3 text-sm transition-colors hover:bg-muted/50">
-          <input
-            type="radio"
-            name="pickup"
-            checked={pickupMethod === "courier"}
-            onChange={() => setPickupMethod("courier")}
-          />
-          택배 발송/수령
-        </label>
-        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-muted/30 p-3 text-sm transition-colors hover:bg-muted/50">
-          <input
-            type="radio"
-            name="pickup"
-            checked={pickupMethod === "visit"}
-            onChange={() => setPickupMethod("visit")}
-          />
-          오프라인 매장 방문
-        </label>
-      </div>
+            <section className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
+              <div className="space-y-1">
+                <h2 className="text-lg font-semibold text-foreground">수령 방식</h2>
+                <p className="text-sm text-muted-foreground">
+                  배송비와 입력 항목은 선택한 수령 방식에 맞춰 적용됩니다.
+                </p>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted/30 p-4 text-sm transition-colors hover:bg-muted/50">
+                  <input
+                    type="radio"
+                    name="pickup"
+                    checked={pickupMethod === "courier"}
+                    onChange={() => setPickupMethod("courier")}
+                    className="mt-1 shrink-0"
+                  />
+                  <span className="min-w-0">
+                    <span className="block font-medium text-foreground">택배 발송/수령</span>
+                    <span className="mt-1 block break-keep text-xs leading-relaxed text-muted-foreground">
+                      주소지로 라켓을 받아보는 기본 수령 방식입니다.
+                    </span>
+                  </span>
+                </label>
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted/30 p-4 text-sm transition-colors hover:bg-muted/50">
+                  <input
+                    type="radio"
+                    name="pickup"
+                    checked={pickupMethod === "visit"}
+                    onChange={() => setPickupMethod("visit")}
+                    className="mt-1 shrink-0"
+                  />
+                  <span className="min-w-0">
+                    <span className="block font-medium text-foreground">오프라인 매장 방문</span>
+                    <span className="mt-1 block break-keep text-xs leading-relaxed text-muted-foreground">
+                      매장에서 직접 수령하며 배송비가 제외됩니다.
+                    </span>
+                  </span>
+                </label>
+              </div>
+            </section>
 
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6 space-y-3">
-        <div className="font-semibold text-foreground">
-          {isVisitPickup ? "수령/연락 정보" : "배송 정보"}
-        </div>
+            <section className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
+              <div className="space-y-1">
+                <h2 className="text-lg font-semibold text-foreground">
+                  {isVisitPickup ? "수령/연락 정보" : "배송/연락 정보"}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  주문 확인과 수령 안내에 필요한 정보를 정확히 입력해주세요.
+                </p>
+              </div>
 
-        <Input
-          className="w-full text-sm"
-          placeholder="수령인"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <Input
-          className="w-full text-sm"
-          placeholder="연락처"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
-        {needsShippingAddress && (
-          <>
-            <Input
-              className="w-full text-sm"
-              placeholder="우편번호"
-              value={postalCode}
-              onChange={(e) => setPostalCode(e.target.value)}
-            />
-            <Input
-              className="w-full text-sm"
-              placeholder="주소"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
-            <Input
-              className="w-full text-sm"
-              placeholder="상세주소(선택)"
-              value={addressDetail}
-              onChange={(e) => setAddressDetail(e.target.value)}
-            />
-            <Input
-              className="w-full text-sm"
-              placeholder="배송 요청사항(선택)"
-              value={deliveryRequest}
-              onChange={(e) => setDeliveryRequest(e.target.value)}
-            />
-          </>
-        )}
-      </div>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <Input
+                  className="w-full text-sm"
+                  placeholder="수령인"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <Input
+                  className="w-full text-sm"
+                  placeholder="연락처"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+                {needsShippingAddress && (
+                  <>
+                    <Input
+                      className="w-full text-sm"
+                      placeholder="우편번호"
+                      value={postalCode}
+                      onChange={(e) => setPostalCode(e.target.value)}
+                    />
+                    <Input
+                      className="w-full text-sm sm:col-span-2"
+                      placeholder="주소"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                    />
+                    <Input
+                      className="w-full text-sm sm:col-span-2"
+                      placeholder="상세주소(선택)"
+                      value={addressDetail}
+                      onChange={(e) => setAddressDetail(e.target.value)}
+                    />
+                    <Input
+                      className="w-full text-sm sm:col-span-2"
+                      placeholder="배송 요청사항(선택)"
+                      value={deliveryRequest}
+                      onChange={(e) => setDeliveryRequest(e.target.value)}
+                    />
+                  </>
+                )}
+              </div>
+            </section>
 
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6 space-y-3">
-        <div className="font-semibold text-foreground">결제 정보</div>
+            <section className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
+              <div className="space-y-1">
+                <h2 className="text-lg font-semibold text-foreground">결제수단 및 동의</h2>
+                <p className="text-sm text-muted-foreground">
+                  결제수단을 선택하고 주문/결제에 필요한 동의 항목을 확인해주세요.
+                </p>
+              </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-muted/30 p-3 text-sm transition-colors hover:bg-muted/50">
-            <input
-              type="radio"
-              name="payment-method"
-              checked={paymentMethod === "bank_transfer"}
-              onChange={() => setPaymentMethod("bank_transfer")}
-            />
-            무통장입금
-          </label>
-          {tossPaymentsEnabled && (
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-muted/30 p-3 text-sm transition-colors hover:bg-muted/50">
-              <input
-                type="radio"
-                name="payment-method"
-                checked={paymentMethod === "tosspayments"}
-                onChange={() => setPaymentMethod("tosspayments")}
-                disabled={!Number.isFinite(totalPrice) || totalPrice <= 0}
-              />
-              카드/간편결제 (토스)
-            </label>
-          )}
-          {nicePaymentsEnabled && (
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-muted/30 p-3 text-sm transition-colors hover:bg-muted/50">
-              <input
-                type="radio"
-                name="payment-method"
-                checked={paymentMethod === "nicepay"}
-                onChange={() => setPaymentMethod("nicepay")}
-                disabled={!Number.isFinite(totalPrice) || totalPrice <= 0}
-              />
-              카드/간편결제
-            </label>
-          )}
-        </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted/30 p-4 text-sm transition-colors hover:bg-muted/50">
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    checked={paymentMethod === "bank_transfer"}
+                    onChange={() => setPaymentMethod("bank_transfer")}
+                    className="mt-1 shrink-0"
+                  />
+                  <span className="font-medium text-foreground">무통장입금</span>
+                </label>
+                {tossPaymentsEnabled && (
+                  <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted/30 p-4 text-sm transition-colors hover:bg-muted/50">
+                    <input
+                      type="radio"
+                      name="payment-method"
+                      checked={paymentMethod === "tosspayments"}
+                      onChange={() => setPaymentMethod("tosspayments")}
+                      disabled={!Number.isFinite(totalPrice) || totalPrice <= 0}
+                      className="mt-1 shrink-0"
+                    />
+                    <span className="font-medium text-foreground">카드/간편결제 (토스)</span>
+                  </label>
+                )}
+                {nicePaymentsEnabled && (
+                  <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted/30 p-4 text-sm transition-colors hover:bg-muted/50">
+                    <input
+                      type="radio"
+                      name="payment-method"
+                      checked={paymentMethod === "nicepay"}
+                      onChange={() => setPaymentMethod("nicepay")}
+                      disabled={!Number.isFinite(totalPrice) || totalPrice <= 0}
+                      className="mt-1 shrink-0"
+                    />
+                    <span className="font-medium text-foreground">카드/간편결제</span>
+                  </label>
+                )}
+              </div>
 
-        {paymentMethod === "bank_transfer" ? (
-          <>
-            <label className="block text-sm">
-              은행 선택
-              <Select
-                value={bank}
-                onValueChange={(value) => setBank(value as Bank)}
-              >
-                <SelectTrigger className="mt-1 w-full text-sm">
-                  <SelectValue placeholder="은행 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="shinhan">신한</SelectItem>
-                  <SelectItem value="kookmin">국민</SelectItem>
-                  <SelectItem value="woori">우리</SelectItem>
-                </SelectContent>
-              </Select>
-            </label>
+              <div className="mt-4 space-y-4 rounded-xl border border-border bg-muted/20 p-4">
+                {paymentMethod === "bank_transfer" ? (
+                  <>
+                    <label className="block text-sm font-medium text-foreground">
+                      은행 선택
+                      <Select
+                        value={bank}
+                        onValueChange={(value) => setBank(value as Bank)}
+                      >
+                        <SelectTrigger className="mt-2 w-full text-sm">
+                          <SelectValue placeholder="은행 선택" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="shinhan">신한</SelectItem>
+                          <SelectItem value="kookmin">국민</SelectItem>
+                          <SelectItem value="woori">우리</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </label>
 
-            <Input
-              className="w-full text-sm"
-              placeholder="입금자명"
-              value={depositor}
-              onChange={(e) => setDepositor(e.target.value)}
-            />
-          </>
-        ) : paymentMethod === "tosspayments" && tossPaymentsEnabled ? (
-          <TossPaymentWidget
-            amount={totalPrice}
-            customerKey={`${racket.id}:${onlyDigits(phone) || "guest"}`}
-            onStatusChange={({ ready, loadError }) => {
-              setTossWidgetReady(ready);
-              setTossWidgetLoadError(loadError);
-            }}
-          />
-        ) : null}
+                    <Input
+                      className="w-full text-sm"
+                      placeholder="입금자명"
+                      value={depositor}
+                      onChange={(e) => setDepositor(e.target.value)}
+                    />
+                  </>
+                ) : paymentMethod === "tosspayments" && tossPaymentsEnabled ? (
+                  <TossPaymentWidget
+                    amount={totalPrice}
+                    customerKey={`${racket.id}:${onlyDigits(phone) || "guest"}`}
+                    onStatusChange={({ ready, loadError }) => {
+                      setTossWidgetReady(ready);
+                      setTossWidgetLoadError(loadError);
+                    }}
+                  />
+                ) : null}
 
-        <div className="text-sm">
-          결제 금액:{" "}
-          <span className="font-semibold text-foreground">{totalPrice.toLocaleString()}원</span>
-        </div>
-
-        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-muted/30 p-3 text-sm transition-colors hover:bg-muted/50">
-          <input
-            type="checkbox"
-            checked={agree}
-            onChange={(e) => setAgree(e.target.checked)}
-          />
-          주문/결제/개인정보 제공에 동의합니다.
-        </label>
-
-        {paymentMethod === "bank_transfer" ? (
-          <Button
-            className="w-full break-keep text-sm"
-            variant="default"
-            disabled={!canSubmitBank || submitting}
-            onClick={onSubmitBankTransfer}
-          >
-            {submitting ? "처리 중..." : "스트링 선택으로 이동"}
-          </Button>
-        ) : paymentMethod === "tosspayments" && tossPaymentsEnabled ? (
-          <RacketTossCheckoutButton
-            disabled={!canSubmitBase || submitting}
-            widgetReady={tossWidgetReady}
-            widgetLoadError={tossWidgetLoadError}
-            payableAmount={totalPrice}
-            payload={paymentPayload}
-            onBeforeSuccessNavigation={() =>
-              setIsIntentionalSuccessNavigation(true)
-            }
-            onSuccessNavigationAbort={() =>
-              setIsIntentionalSuccessNavigation(false)
-            }
-          />
-        ) : paymentMethod === "nicepay" && nicePaymentsEnabled ? (
-          <RacketNiceCheckoutButton
-            disabled={!canSubmitBase || submitting}
-            payableAmount={totalPrice}
-            payload={paymentPayload}
-            onBeforeSuccessNavigation={() =>
-              setIsIntentionalSuccessNavigation(true)
-            }
-            onSuccessNavigationAbort={() =>
-              setIsIntentionalSuccessNavigation(false)
-            }
-          />
-        ) : null}
-
-        {racket.status !== "available" && (
-          <div className="text-sm text-destructive">
-            현재 판매 가능한 라켓이 아닙니다. (상태:{" "}
-            {racketStatusLabel(racket.status)})
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card p-4 text-sm transition-colors hover:bg-muted/50">
+                  <input
+                    type="checkbox"
+                    checked={agree}
+                    onChange={(e) => setAgree(e.target.checked)}
+                    className="mt-1 shrink-0"
+                  />
+                  <span className="break-keep leading-relaxed text-foreground">
+                    주문/결제/개인정보 제공에 동의합니다.
+                  </span>
+                </label>
+              </div>
+            </section>
           </div>
-        )}
+
+          <aside className="min-w-0 lg:sticky lg:top-6">
+            <section className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Order summary
+                </p>
+                <h2 className="text-lg font-semibold text-foreground">구매 요약</h2>
+              </div>
+
+              <div className="mt-5 space-y-4">
+                <div className="rounded-xl border border-border bg-muted/30 p-4">
+                  <p className="break-keep text-sm font-semibold text-foreground">
+                    {racket.model}
+                  </p>
+                  <p className="mt-1 break-words text-xs text-muted-foreground">
+                    {racketBrandLabel(racket.brand)}
+                  </p>
+                </div>
+
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-muted-foreground">상품 금액</span>
+                    <span className="text-right font-medium tabular-nums text-foreground">
+                      {racket.price.toLocaleString()}원
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-muted-foreground">배송비</span>
+                    <span className="text-right font-medium tabular-nums text-foreground">
+                      {shippingFee.toLocaleString()}원
+                    </span>
+                  </div>
+                  <div className="border-t border-border pt-3">
+                    <div className="flex items-end justify-between gap-4">
+                      <span className="font-semibold text-foreground">총 결제 금액</span>
+                      <span className="text-right text-xl font-semibold tabular-nums text-foreground">
+                        {totalPrice.toLocaleString()}원
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-4 text-sm">
+                  <div className="flex items-start justify-between gap-4">
+                    <span className="shrink-0 text-muted-foreground">수령 방식</span>
+                    <span className="break-keep text-right font-medium text-foreground">
+                      {pickupLabel}
+                    </span>
+                  </div>
+                  <div className="flex items-start justify-between gap-4">
+                    <span className="shrink-0 text-muted-foreground">결제수단</span>
+                    <span className="break-keep text-right font-medium text-foreground">
+                      {paymentLabel}
+                    </span>
+                  </div>
+                </div>
+
+                {paymentMethod === "bank_transfer" ? (
+                  <Button
+                    className="w-full break-keep text-sm"
+                    variant="default"
+                    disabled={!canSubmitBank || submitting}
+                    onClick={onSubmitBankTransfer}
+                  >
+                    {submitting ? "처리 중..." : "스트링 선택으로 이동"}
+                  </Button>
+                ) : paymentMethod === "tosspayments" && tossPaymentsEnabled ? (
+                  <RacketTossCheckoutButton
+                    disabled={!canSubmitBase || submitting}
+                    widgetReady={tossWidgetReady}
+                    widgetLoadError={tossWidgetLoadError}
+                    payableAmount={totalPrice}
+                    payload={paymentPayload}
+                    onBeforeSuccessNavigation={() =>
+                      setIsIntentionalSuccessNavigation(true)
+                    }
+                    onSuccessNavigationAbort={() =>
+                      setIsIntentionalSuccessNavigation(false)
+                    }
+                  />
+                ) : paymentMethod === "nicepay" && nicePaymentsEnabled ? (
+                  <RacketNiceCheckoutButton
+                    disabled={!canSubmitBase || submitting}
+                    payableAmount={totalPrice}
+                    payload={paymentPayload}
+                    onBeforeSuccessNavigation={() =>
+                      setIsIntentionalSuccessNavigation(true)
+                    }
+                    onSuccessNavigationAbort={() =>
+                      setIsIntentionalSuccessNavigation(false)
+                    }
+                  />
+                ) : null}
+
+                {racket.status !== "available" && (
+                  <div className="rounded-xl border border-border bg-muted/30 p-3 text-sm text-destructive">
+                    현재 판매 가능한 라켓이 아닙니다. (상태: {racketStatusLabel(racket.status)})
+                  </div>
+                )}
+              </div>
+            </section>
+          </aside>
+        </div>
       </div>
     </div>
   );
