@@ -129,10 +129,10 @@ export default async function TossCheckoutFailPage({
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-2 sm:flex-row">
-            <Button asChild className="w-full sm:w-auto">
+            <Button asChild className="w-full sm:w-auto" wrap="responsive">
               <Link href="/checkout">체크아웃으로 돌아가기</Link>
             </Button>
-            <Button asChild variant="outline" className="w-full sm:w-auto">
+            <Button asChild variant="outline" className="w-full sm:w-auto" wrap="responsive">
               <Link href="/cart">장바구니로 이동</Link>
             </Button>
           </CardFooter>

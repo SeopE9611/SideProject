@@ -1718,7 +1718,7 @@ export default function CheckoutPage() {
                           className="flex flex-col gap-4 rounded-xl border border-border/40 bg-secondary/35 p-4 bp-sm:flex-row bp-sm:items-center bp-sm:gap-5 bp-sm:p-5"
                           style={{ animationDelay: `${idx * 50}ms` }}
                         >
-                          <div className="flex items-center gap-4 min-w-0 flex-1">
+                          <div className="flex min-w-0 flex-1 items-start gap-4">
                             <div className="relative shrink-0">
                               <div className="overflow-hidden rounded-xl ring-2 ring-border/50">
                                 <Image
@@ -1739,7 +1739,7 @@ export default function CheckoutPage() {
                             </div>
 
                             <div className="min-w-0 flex-1 space-y-1.5">
-                              <h3 className="line-clamp-2 break-words text-sm font-semibold text-foreground bp-sm:text-base">
+                              <h3 className="line-clamp-2 break-keep break-words text-sm font-semibold leading-relaxed text-foreground bp-sm:text-base">
                                 {item.name}
                               </h3>
                               <div className="flex flex-wrap items-center gap-2">
@@ -1747,14 +1747,14 @@ export default function CheckoutPage() {
                                   수량 {item.quantity}개
                                 </span>
                                 {item.selectedGauge && (
-                                  <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-muted/40 px-2 py-0.5 text-xs text-foreground/80">
+                                  <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-muted/40 px-2 py-0.5 text-xs leading-relaxed text-foreground/80">
                                     게이지{" "}
                                     {formatGaugeLabel(item.selectedGauge)}
                                   </span>
                                 )}
                                 {(item.selectedColorLabel ||
                                   item.selectedColor) && (
-                                  <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-muted/40 px-2 py-0.5 text-xs text-foreground/80">
+                                  <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-muted/40 px-2 py-0.5 text-xs leading-relaxed text-foreground/80">
                                     색상
                                     {item.selectedColorHex && (
                                       <span
@@ -1765,8 +1765,10 @@ export default function CheckoutPage() {
                                         }}
                                       />
                                     )}
-                                    {item.selectedColorLabel ||
-                                      item.selectedColor}
+                                    <span className="min-w-0 break-keep break-words">
+                                      {item.selectedColorLabel ||
+                                        item.selectedColor}
+                                    </span>
                                   </span>
                                 )}
                                 {withStringService &&
@@ -1784,7 +1786,7 @@ export default function CheckoutPage() {
                             </div>
                           </div>
 
-                          <div className="rounded-lg border border-border/50 bg-card/70 px-3 py-2 bp-sm:min-w-[160px] bp-sm:text-right">
+                          <div className="w-full rounded-lg border border-border/50 bg-card/70 px-3 py-2 bp-sm:w-auto bp-sm:min-w-[160px] bp-sm:text-right">
                             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 bp-sm:justify-end">
                               <span className="text-xs font-medium text-muted-foreground">
                                 {typeof item.regularPrice === "number" &&
@@ -1954,7 +1956,7 @@ export default function CheckoutPage() {
                             )}
                           />
                         </div>
-                        <div className="flex-1">
+                        <div className="min-w-0 flex-1">
                           <div className="font-semibold text-sm bp-sm:text-base">
                             오프라인 매장 방문
                           </div>
@@ -2442,14 +2444,14 @@ export default function CheckoutPage() {
                           }}
                           className="space-y-3"
                         >
-                          <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border">
+                          <div className="flex min-w-0 items-center gap-3 rounded-lg border-2 border-border bg-background p-4">
                             <RadioGroupItem
                               value="bank-transfer"
                               id="bank-transfer"
                             />
                             <Label
                               htmlFor="bank-transfer"
-                              className="flex-1 cursor-pointer font-medium"
+                              className="min-w-0 flex-1 cursor-pointer break-keep font-medium leading-relaxed"
                             >
                               무통장입금
                             </Label>
@@ -2458,7 +2460,7 @@ export default function CheckoutPage() {
                           {nicePaymentsEnabled && (
                             <div
                               className={cn(
-                                "flex items-center space-x-3 p-4 bg-background rounded-lg border-2 border-border",
+                                "flex min-w-0 items-center gap-3 rounded-lg border-2 border-border bg-background p-4",
                                 isZeroPayableAmount && "opacity-60",
                               )}
                             >
@@ -2470,7 +2472,7 @@ export default function CheckoutPage() {
                               <Label
                                 htmlFor="nicepay"
                                 className={cn(
-                                  "flex-1 cursor-pointer font-medium",
+                                  "min-w-0 flex-1 cursor-pointer break-keep font-medium leading-relaxed",
                                   isZeroPayableAmount &&
                                     "cursor-not-allowed text-muted-foreground",
                                 )}
@@ -2726,7 +2728,8 @@ export default function CheckoutPage() {
                     <Button
                       type="button"
                       variant="default"
-                      className="shrink-0 whitespace-nowrap px-3 text-xs bp-sm:text-sm"
+                      className="min-h-10 shrink-0 whitespace-normal break-keep px-3 text-xs leading-snug bp-sm:text-sm"
+                      wrap="responsive"
                       onClick={() => {
                         requestStringingValidationMessages();
                         document

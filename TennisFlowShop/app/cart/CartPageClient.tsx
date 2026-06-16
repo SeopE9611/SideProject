@@ -894,7 +894,7 @@ export default function CartPageClient() {
                               type="checkbox"
                               checked={selectedLineKeys.includes(lineKey)}
                               onChange={() => toggleSelect(lineKey)}
-                              className="h-4 w-4 accent-blue-600"
+                              className="h-4 w-4 shrink-0 accent-primary"
                               aria-label={`${item.name} 선택`}
                             />
                             <Link href={itemHref} className="shrink-0">
@@ -913,7 +913,7 @@ export default function CartPageClient() {
                             <div className="min-w-0 flex-1">
                               <Link
                                 href={itemHref}
-                                className="block line-clamp-2 break-words font-medium text-foreground transition-colors hover:text-primary dark:text-foreground dark:hover:text-primary bp-sm:line-clamp-1"
+                                className="block line-clamp-2 break-keep break-words font-medium leading-relaxed text-foreground transition-colors hover:text-primary dark:text-foreground dark:hover:text-primary bp-sm:line-clamp-1"
                               >
                                 {item.name}
                               </Link>
@@ -948,13 +948,13 @@ export default function CartPageClient() {
                                 </div>
                               )}
                               {item.selectedGauge && (
-                                <div className="mt-1 whitespace-nowrap text-xs text-muted-foreground">
+                                <div className="mt-1 break-keep break-words text-xs leading-relaxed text-muted-foreground">
                                   게이지: {formatGaugeLabel(item.selectedGauge)}
                                 </div>
                               )}
                               {(item.selectedColorLabel ||
                                 item.selectedColor) && (
-                                <span className="mt-1 inline-flex max-w-full items-center gap-1 rounded-full bg-muted/40 px-2 py-0.5 text-xs text-muted-foreground [&>span:last-child]:truncate">
+                                <span className="mt-1 inline-flex max-w-full items-center gap-1 rounded-full bg-muted/40 px-2 py-0.5 text-xs leading-relaxed text-muted-foreground [&>span:last-child]:min-w-0 [&>span:last-child]:break-keep [&>span:last-child]:break-words">
                                   색상
                                   {item.selectedColorHex && (
                                     <span
@@ -1001,7 +1001,7 @@ export default function CartPageClient() {
                           </div>
 
                           {/* 하단(모바일) */}
-                          <div className="flex min-w-0 flex-wrap items-center gap-3 bp-sm:flex-1 bp-sm:flex-nowrap bp-sm:justify-end">
+                          <div className="flex min-w-0 flex-wrap items-start gap-3 bp-sm:flex-1 bp-sm:flex-nowrap bp-sm:justify-end">
                             {/* 수량 스테퍼 (번들이면 잠금 + 링크로만 변경) */}
                             {lockStepper ? (
                               <div className="order-1 flex flex-col items-center">

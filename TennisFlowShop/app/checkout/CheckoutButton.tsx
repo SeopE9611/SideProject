@@ -528,18 +528,19 @@ export default function CheckoutButton({
     <div className="w-full">
       <Button
         onClick={handleSubmit}
-        className="w-full h-14 text-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl transition-all duration-300"
+        className="min-h-14 w-full text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl transition-all duration-300 bp-sm:text-lg"
         size="lg"
+        wrap="responsive"
         disabled={disabled || isSubmitting}
       >
         {isSubmitting ? (
           <>
-            <Loader2 className="h-5 w-5 mr-3 animate-spin" />
+            <Loader2 className="mr-2 h-5 w-5 animate-spin bp-sm:mr-3" />
             주문 처리중...
           </>
         ) : (
           <>
-            <CreditCard className="h-5 w-5 mr-3" />
+            <CreditCard className="mr-2 h-5 w-5 bp-sm:mr-3" />
             주문 완료하기
           </>
         )}
