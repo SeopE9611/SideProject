@@ -328,10 +328,10 @@ export default function RacketPurchaseCheckoutClient({
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-4">
-      <div className="rounded-2xl border border-border bg-muted/30 p-4">
+    <div className="mx-auto max-w-6xl space-y-6 p-4 md:py-8">
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
+          <div className="min-w-0 space-y-1">
             <p className="text-sm font-semibold text-foreground">
               새로운 라켓 구매 흐름을 이용할 수 있어요
             </p>
@@ -347,7 +347,7 @@ export default function RacketPurchaseCheckoutClient({
           <Button
             type="button"
             size="sm"
-            className="shrink-0"
+            className="w-full shrink-0 break-keep sm:w-auto"
             disabled={!racketId}
             onClick={() => router.push(`/rackets/${racketId}/select-string`)}
           >
@@ -356,19 +356,19 @@ export default function RacketPurchaseCheckoutClient({
         </div>
       </div>
 
-      <div className="rounded-lg border p-4">
-        <div className="text-lg font-semibold">라켓 구매</div>
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
+        <div className="text-lg font-semibold text-foreground">라켓 구매</div>
         <div className="mt-2 text-sm text-muted-foreground">
           {racketBrandLabel(racket.brand)} {racket.model}
         </div>
-        <div className="mt-1 text-sm">
-          가격: {racket.price.toLocaleString()}원
+        <div className="mt-3 flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3 text-sm tabular-nums">
+          <span className="text-muted-foreground">상품 금액</span><span className="font-semibold text-foreground">{racket.price.toLocaleString()}원</span>
         </div>
       </div>
 
-      <div className="rounded-lg border p-4 space-y-3">
-        <div className="font-semibold">라켓 접수 방식</div>
-        <label className="flex items-center gap-2 text-sm">
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6 space-y-3">
+        <div className="font-semibold text-foreground">라켓 접수 방식</div>
+        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-muted/30 p-3 text-sm transition-colors hover:bg-muted/50">
           <input
             type="radio"
             name="pickup"
@@ -377,7 +377,7 @@ export default function RacketPurchaseCheckoutClient({
           />
           택배 발송/수령
         </label>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-muted/30 p-3 text-sm transition-colors hover:bg-muted/50">
           <input
             type="radio"
             name="pickup"
@@ -388,8 +388,8 @@ export default function RacketPurchaseCheckoutClient({
         </label>
       </div>
 
-      <div className="rounded-lg border p-4 space-y-3">
-        <div className="font-semibold">
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6 space-y-3">
+        <div className="font-semibold text-foreground">
           {isVisitPickup ? "수령/연락 정보" : "배송 정보"}
         </div>
 
@@ -435,11 +435,11 @@ export default function RacketPurchaseCheckoutClient({
         )}
       </div>
 
-      <div className="rounded-lg border p-4 space-y-3">
-        <div className="font-semibold">결제 정보</div>
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6 space-y-3">
+        <div className="font-semibold text-foreground">결제 정보</div>
 
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-muted/30 p-3 text-sm transition-colors hover:bg-muted/50">
             <input
               type="radio"
               name="payment-method"
@@ -449,7 +449,7 @@ export default function RacketPurchaseCheckoutClient({
             무통장입금
           </label>
           {tossPaymentsEnabled && (
-            <label className="flex items-center gap-2 text-sm">
+            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-muted/30 p-3 text-sm transition-colors hover:bg-muted/50">
               <input
                 type="radio"
                 name="payment-method"
@@ -461,7 +461,7 @@ export default function RacketPurchaseCheckoutClient({
             </label>
           )}
           {nicePaymentsEnabled && (
-            <label className="flex items-center gap-2 text-sm">
+            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-muted/30 p-3 text-sm transition-colors hover:bg-muted/50">
               <input
                 type="radio"
                 name="payment-method"
@@ -513,10 +513,10 @@ export default function RacketPurchaseCheckoutClient({
 
         <div className="text-sm">
           결제 금액:{" "}
-          <span className="font-semibold">{totalPrice.toLocaleString()}원</span>
+          <span className="font-semibold text-foreground">{totalPrice.toLocaleString()}원</span>
         </div>
 
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-muted/30 p-3 text-sm transition-colors hover:bg-muted/50">
           <input
             type="checkbox"
             checked={agree}
@@ -527,7 +527,7 @@ export default function RacketPurchaseCheckoutClient({
 
         {paymentMethod === "bank_transfer" ? (
           <Button
-            className="w-full text-sm"
+            className="w-full break-keep text-sm"
             variant="default"
             disabled={!canSubmitBank || submitting}
             onClick={onSubmitBankTransfer}

@@ -171,8 +171,8 @@ export function StringCard({
       className={cn(
         "group relative flex flex-col overflow-hidden rounded-2xl border bg-card transition-all duration-200",
         isSelected
-          ? "border-primary ring-2 ring-primary/20 shadow-lg"
-          : "border-border hover:border-primary/40 hover:shadow-md",
+          ? "border-primary ring-2 ring-primary/20 shadow-sm"
+          : "border-border hover:border-primary/40 hover:shadow-sm",
         isSoldOut && "opacity-60",
       )}
     >
@@ -193,7 +193,7 @@ export function StringCard({
             alt={product.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            className="object-cover transition-transform duration-300 "
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
@@ -213,11 +213,11 @@ export function StringCard({
       <div className="flex flex-1 flex-col p-4">
         {/* Title & Price */}
         <div className="mb-3 space-y-1.5">
-          <h3 className="line-clamp-2 text-sm font-semibold leading-tight text-foreground bp-md:text-base">
+          <h3 className="line-clamp-2 min-w-0 break-keep text-sm font-semibold leading-tight text-foreground bp-md:text-base">
             {product.name}
           </h3>
           {product.shortDescription && (
-            <p className="line-clamp-1 text-xs text-muted-foreground">
+            <p className="line-clamp-2 break-keep text-xs text-muted-foreground">
               {product.shortDescription}
             </p>
           )}
@@ -357,7 +357,7 @@ export function StringCard({
           <div className="mb-3 space-y-2">
             <span className="text-xs font-medium text-foreground">게이지</span>
             <Select value={selectedGauge} onValueChange={onGaugeChange}>
-              <SelectTrigger className="h-9 text-xs">
+              <SelectTrigger className="h-10 text-xs">
                 <SelectValue placeholder="게이지 선택" />
               </SelectTrigger>
               <SelectContent>
@@ -398,7 +398,7 @@ export function StringCard({
 
         {/* CTA Button */}
         <Button
-          className="mt-3 w-full justify-center gap-2"
+          className="mt-3 w-full justify-center gap-2 break-keep"
           disabled={isDisabled}
           onClick={onSelect}
         >
@@ -408,7 +408,7 @@ export function StringCard({
         <Button
           asChild
           variant="outline"
-          className="mt-2 w-full justify-center gap-2"
+          className="mt-2 w-full justify-center gap-2 break-keep"
         >
           <Link
             href={`/products/${product._id}`}
