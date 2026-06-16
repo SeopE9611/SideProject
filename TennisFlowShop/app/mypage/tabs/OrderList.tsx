@@ -440,46 +440,39 @@ export default function OrderList() {
 
             <CardContent className="relative p-4 bp-sm:p-6">
               {/* Header */}
-              <div className="mb-5 flex flex-col gap-3 border-b border-border/60 pb-4 md:flex-row md:items-start md:justify-between">
-                <div className="flex items-start gap-3 min-w-0">
+              <div className="mb-4 flex flex-col gap-3 border-b border-border/60 pb-4 md:flex-row md:items-start md:justify-between">
+                <div className="flex min-w-0 items-start gap-3">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-muted/40">
                     <ShoppingBag className="h-6 w-6 text-primary" />
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <h3 className="line-clamp-2 break-keep font-semibold text-foreground">
-                        {getOrderCompositionTitle(order)}
-                      </h3>
-
-                      {/* 신청서가 연결된 주문임을 한눈에 표시(탭 분리로 인한 혼란 완화) */}
-                      {order.stringingApplicationId ? (
-                        <Badge
-                          variant={
-                            getWorkflowMetaBadgeSpec("application_linked")
-                              .variant
-                          }
-                          className="shrink-0 px-2 py-0.5 text-[11px] font-semibold"
-                        >
-                          신청서 연결됨
-                        </Badge>
-                      ) : null}
+                    <div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      <span className="rounded-md bg-muted/60 px-2 py-1 font-medium text-foreground">
+                        주문
+                      </span>
+                      <span className="break-all tabular-nums">
+                        주문번호 {order.id}
+                      </span>
                     </div>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm tabular-nums text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
+                    <h3 className="line-clamp-2 break-keep text-base font-semibold leading-snug text-foreground bp-sm:text-lg">
+                      {getOrderCompositionTitle(order)}
+                    </h3>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm tabular-nums text-muted-foreground">
+                      <Calendar className="h-3 w-3 shrink-0" />
                       {formatDate(order.date)}
                     </div>
                   </div>
                 </div>
 
                 {/* 상태/취소 관련 영역 */}
-                <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
+                <div className="flex flex-wrap items-center gap-2 md:max-w-[45%] md:shrink-0 md:justify-end">
                   {getStatusIcon(
                     order.status,
                     isVisitPickupOrder(order.shippingInfo),
                   )}
                   <Badge
                     variant={getOrderStatusBadgeSpec(order.status).variant}
-                    className="shrink-0 whitespace-nowrap px-3 py-1 text-xs font-medium"
+                    className="shrink-0 whitespace-nowrap rounded-md px-3 py-1 text-xs font-medium"
                   >
                     {getOrderStatusLabelForDisplay(
                       order.status,
@@ -487,13 +480,25 @@ export default function OrderList() {
                     )}
                   </Badge>
 
+                  {/* 신청서가 연결된 주문임을 한눈에 표시(탭 분리로 인한 혼란 완화) */}
+                  {order.stringingApplicationId ? (
+                    <Badge
+                      variant={
+                        getWorkflowMetaBadgeSpec("application_linked").variant
+                      }
+                      className="shrink-0 rounded-md px-2 py-0.5 text-[11px] font-semibold"
+                    >
+                      신청서 연결됨
+                    </Badge>
+                  ) : null}
+
                   {/* 취소 요청이 들어간 주문이면 뱃지 표시 */}
                   {order.cancelStatus === "requested" && (
                     <Badge
                       variant={
                         getWorkflowMetaBadgeSpec("cancel_requested").variant
                       }
-                      className="ml-1 shrink-0 whitespace-nowrap text-[11px] font-medium"
+                      className="shrink-0 whitespace-nowrap rounded-md text-[11px] font-medium"
                     >
                       취소 요청됨
                     </Badge>
@@ -573,15 +578,53 @@ export default function OrderList() {
                 </div>
               </div>
 
-              {/* Footer */}
-              <div className="flex flex-col gap-4 border-t border-border/60 pt-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <span className="whitespace-nowrap text-lg font-bold tabular-nums text-foreground">
+              <div className="mb-4 grid grid-cols-2 gap-2 rounded-xl border border-border/60 bg-muted/20 p-2 bp-md:grid-cols-4">
+                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
+                  <p className="text-[11px] font-medium text-muted-foreground">
+                    결제 금액
+                  </p>
+                  <p className="mt-1 truncate text-sm font-semibold tabular-nums text-foreground">
                     {typeof order.totalPrice === "number"
                       ? `${order.totalPrice.toLocaleString()}원`
-                      : "총 결제 금액 정보 없음"}
-                  </span>
+                      : "정보 없음"}
+                  </p>
+                </div>
+                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
+                  <p className="text-[11px] font-medium text-muted-foreground">
+                    주문 상태
+                  </p>
+                  <p className="mt-1 truncate text-sm font-semibold text-foreground">
+                    {getOrderStatusLabelForDisplay(
+                      order.status,
+                      order.shippingInfo,
+                    )}
+                  </p>
+                </div>
+                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
+                  <p className="text-[11px] font-medium text-muted-foreground">
+                    교체서비스
+                  </p>
+                  <p className="mt-1 truncate text-sm font-semibold text-foreground">
+                    {order.shippingInfo?.withStringService ? "포함" : "미포함"}
+                  </p>
+                </div>
+                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
+                  <p className="text-[11px] font-medium text-muted-foreground">
+                    수령 방법
+                  </p>
+                  <p className="mt-1 truncate text-sm font-semibold text-foreground">
+                    {isVisitPickupOrder(order.shippingInfo)
+                      ? "방문 수령"
+                      : "배송"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex flex-col gap-4 border-t border-border/60 pt-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CreditCard className="h-4 w-4" />
+                  <span className="font-medium">결제 요약</span>
                 </div>
 
                 <div className="hidden bp-sm:flex flex-wrap items-center justify-end gap-2">
@@ -589,7 +632,7 @@ export default function OrderList() {
                     size="sm"
                     variant="outline"
                     asChild
-                    className="border-border hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20 bg-transparent"
+                    className="h-9 rounded-lg border-border bg-transparent hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20"
                   >
                     <Link
                       href={primaryDetailHref}
@@ -618,7 +661,7 @@ export default function OrderList() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="border-border hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20 bg-transparent"
+                              className="h-9 rounded-lg border-border bg-transparent hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20"
                               disabled={
                                 !isDelivered ||
                                 isConfirmed ||
@@ -696,7 +739,7 @@ export default function OrderList() {
                       size="sm"
                       variant="destructive"
                       onClick={() => handleWithdrawCancelRequest(order.id)}
-                      className="gap-2"
+                      className="h-9 rounded-lg gap-2"
                     >
                       취소 요청 철회
                     </Button>

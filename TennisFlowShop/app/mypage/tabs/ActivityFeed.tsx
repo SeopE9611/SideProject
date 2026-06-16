@@ -1341,78 +1341,152 @@ export default function ActivityFeed() {
                             </div>
 
                             <div className="flex-1 min-w-0 space-y-2.5 bp-sm:space-y-3">
-                              <div className="flex flex-col bp-sm:flex-row bp-sm:items-start bp-sm:justify-between gap-2 bp-sm:gap-4">
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                              <div className="flex flex-col gap-3 border-b border-border/60 pb-3 bp-md:flex-row bp-md:items-start bp-md:justify-between">
+                                <div className="min-w-0 flex-1">
+                                  <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                                     <span className="inline-flex bp-sm:hidden rounded-lg bg-muted p-2 shrink-0">
                                       {kindIcon(g.kind)}
                                     </span>
-
-                                    <Badge
-                                      variant={statusBadgeSpec(g).variant}
-                                      className="text-xs rounded-md font-medium"
-                                    >
-                                      {primaryStatusLabel(g)}
-                                    </Badge>
-                                    {g.kind !== "application" && app && (
-                                      <Badge
-                                        variant={
-                                          getApplicationStatusBadgeSpec(
-                                            applicationStatusLabel(app),
-                                          ).variant
-                                        }
-                                        className="text-xs rounded-md font-medium"
-                                      >
-                                        교체 {applicationStatusLabel(app)}
-                                      </Badge>
-                                    )}
-
-                                    <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+                                    <span className="rounded-md bg-muted/60 px-2 py-1 font-medium text-foreground">
+                                      {kindLabel(g.kind)}
+                                    </span>
+                                    <span className="tabular-nums">
                                       {formatDate(date)}
                                     </span>
-
-                                    {hasAction && (
-                                      <Badge
-                                        variant={
-                                          getWorkflowMetaBadgeSpec(
-                                            "action_required",
-                                          ).variant
-                                        }
-                                        className="text-xs rounded-md"
-                                      >
-                                        액션 필요
-                                      </Badge>
-                                    )}
+                                    {g.kind !== "application" &&
+                                    linkedCount > 1 ? (
+                                      <span className="break-keep">
+                                        대표 신청서 외 {linkedCount - 1}건
+                                      </span>
+                                    ) : null}
                                   </div>
 
-                                  <h3 className="mb-1 line-clamp-2 break-keep text-base font-semibold text-foreground bp-sm:text-lg">
+                                  <h3 className="line-clamp-2 break-keep text-base font-semibold leading-snug text-foreground bp-sm:text-lg">
                                     {title}
                                   </h3>
-                                  <p className="text-sm text-muted-foreground">
-                                    {kindLabel(g.kind)}
-                                  </p>
-                                  {g.kind !== "application" &&
-                                  linkedCount > 1 ? (
-                                    <p className="text-xs text-foreground/75 mt-1">
-                                      대표 신청서 외 {linkedCount - 1}건
-                                    </p>
-                                  ) : null}
                                 </div>
 
-                                {g.kind === "order" &&
-                                  g.order?.paymentStatus && (
+                                <div className="flex flex-wrap items-center gap-2 bp-md:max-w-[46%] bp-md:justify-end">
+                                  <Badge
+                                    variant={statusBadgeSpec(g).variant}
+                                    className="shrink-0 rounded-md text-xs font-medium"
+                                  >
+                                    {primaryStatusLabel(g)}
+                                  </Badge>
+                                  {g.kind === "order" &&
+                                    g.order?.paymentStatus && (
+                                      <Badge
+                                        variant={
+                                          paymentBadgeSpec(g)?.variant ??
+                                          "neutral"
+                                        }
+                                        className="shrink-0 rounded-md text-xs font-medium"
+                                      >
+                                        {getMypagePaymentStatusLabel(
+                                          g.order?.paymentStatus,
+                                        )}
+                                      </Badge>
+                                    )}
+                                  {g.kind !== "application" && app && (
                                     <Badge
                                       variant={
-                                        paymentBadgeSpec(g)?.variant ??
-                                        "neutral"
+                                        getApplicationStatusBadgeSpec(
+                                          applicationStatusLabel(app),
+                                        ).variant
                                       }
-                                      className="text-xs rounded-md font-medium shrink-0"
+                                      className="shrink-0 rounded-md text-xs font-medium"
                                     >
-                                      {getMypagePaymentStatusLabel(
-                                        g.order?.paymentStatus,
-                                      )}
+                                      교체 {applicationStatusLabel(app)}
                                     </Badge>
                                   )}
+                                  {hasAction && (
+                                    <Badge
+                                      variant={
+                                        getWorkflowMetaBadgeSpec(
+                                          "action_required",
+                                        ).variant
+                                      }
+                                      className="shrink-0 rounded-md text-xs font-medium"
+                                    >
+                                      액션 필요
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+
+                              {hasAction ? (
+                                <div className="rounded-xl border border-border/70 bg-muted/30 px-3 py-2.5">
+                                  <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-2">
+                                        <Badge
+                                          variant={
+                                            getWorkflowMetaBadgeSpec(
+                                              "action_required",
+                                            ).variant
+                                          }
+                                          className="rounded-md text-[11px] font-medium"
+                                        >
+                                          해야 할 일
+                                        </Badge>
+                                        <p className="text-sm font-semibold text-foreground">
+                                          {shippingLabel}
+                                        </p>
+                                      </div>
+                                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                                        교체서비스 진행을 위해 운송장 정보를 확인해 주세요.
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : null}
+
+                              <div className="grid grid-cols-2 gap-2 rounded-xl border border-border/60 bg-muted/20 p-2 bp-md:grid-cols-4">
+                                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
+                                  <p className="text-[11px] font-medium text-muted-foreground">
+                                    결제 금액
+                                  </p>
+                                  <p className="mt-1 truncate text-sm font-semibold tabular-nums text-foreground">
+                                    {typeof groupAmount(g) === "number"
+                                      ? `${groupAmount(g)!.toLocaleString()}원`
+                                      : "-"}
+                                  </p>
+                                </div>
+                                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
+                                  <p className="text-[11px] font-medium text-muted-foreground">
+                                    진행 상태
+                                  </p>
+                                  <p className="mt-1 truncate text-sm font-semibold text-foreground">
+                                    {primaryStatusLabel(g)}
+                                  </p>
+                                </div>
+                                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
+                                  <p className="text-[11px] font-medium text-muted-foreground">
+                                    결제 상태
+                                  </p>
+                                  <p className="mt-1 truncate text-sm font-semibold text-foreground">
+                                    {g.kind === "order"
+                                      ? getMypagePaymentStatusLabel(
+                                          g.order?.paymentStatus,
+                                        )
+                                      : "-"}
+                                  </p>
+                                </div>
+                                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
+                                  <p className="text-[11px] font-medium text-muted-foreground">
+                                    수령 방법
+                                  </p>
+                                  <p className="mt-1 truncate text-sm font-semibold text-foreground">
+                                    {g.kind === "order"
+                                      ? isVisitPickupOrder({
+                                          shippingMethod:
+                                            g.order?.shippingMethod,
+                                        })
+                                        ? "방문 수령"
+                                        : "배송"
+                                      : kindLabel(g.kind)}
+                                  </p>
+                                </div>
                               </div>
 
                               {meta.length > 0 && (
@@ -1421,7 +1495,7 @@ export default function ActivityFeed() {
                                     <span
                                       key={i}
                                       className={cn(
-                                        "text-xs px-3 py-1.5 rounded-lg font-medium border",
+                                        "rounded-lg border px-2.5 py-1 text-xs font-medium",
                                         m.className,
                                       )}
                                     >
@@ -1431,7 +1505,7 @@ export default function ActivityFeed() {
                                 </div>
                               )}
 
-                              <div className="grid grid-cols-1 gap-2 pt-2 sm:flex sm:flex-wrap">
+                              <div className="grid grid-cols-1 gap-2 border-t border-border/60 pt-3 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
                                 <Button
                                   asChild
                                   size="sm"
