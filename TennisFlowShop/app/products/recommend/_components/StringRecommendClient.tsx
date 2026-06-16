@@ -134,7 +134,7 @@ export default function StringRecommendClient() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 sm:space-y-7">
       <PublicSurface variant="muted" padding="lg" className="rounded-2xl">
         <SectionHeader
           title="스트링 추천 도우미"
@@ -177,12 +177,12 @@ export default function StringRecommendClient() {
         ))}
       </div>
       {isLoadingProducts ? (
-        <div className="rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground">
+        <div className="rounded-2xl border border-border bg-card p-4 text-sm leading-relaxed text-muted-foreground">
           추천에 사용할 스트링 정보를 불러오는 중...
         </div>
       ) : null}
       {productsError ? (
-        <div className="rounded-2xl border border-border bg-card p-4 text-sm text-destructive">
+        <div className="rounded-2xl border border-border bg-card p-4 text-sm leading-relaxed text-destructive">
           {productsError}
         </div>
       ) : null}
@@ -225,7 +225,7 @@ export default function StringRecommendClient() {
         </Card>
       ) : null}
       {hasSubmitted && results.length > 0 ? (
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-5 lg:grid-cols-3">
           {results.map((result, idx) => (
             <StringRecommendResultCard
               key={result.product.id}
@@ -255,13 +255,13 @@ export default function StringRecommendClient() {
       <div className="flex flex-col gap-2 rounded-2xl border border-border bg-card p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
         <Link
           href="/services/tension-guide"
-          className="text-primary hover:underline"
+          className="break-keep text-primary hover:underline"
         >
           텐션 가이드 보기
         </Link>
         <Link
           href="/products?from=apply"
-          className="text-primary hover:underline"
+          className="break-keep text-primary hover:underline"
         >
           전체 스트링 보기
         </Link>

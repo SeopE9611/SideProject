@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function StringRecommendPage() {
   return (
     <main className="bg-background">
-      <SiteContainer variant="wide" className="py-8 sm:py-10">
+      <SiteContainer variant="wide" className="py-8 sm:py-10 lg:py-12">
         <StringRecommendClient />
       </SiteContainer>
     </main>
