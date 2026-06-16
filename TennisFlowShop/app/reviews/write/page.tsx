@@ -6,7 +6,6 @@ import ApplicationStatusBadge from "@/app/features/stringing-applications/compon
 import PhotosReorderGrid from "@/components/reviews/PhotosReorderGrid";
 import PhotosUploader from "@/components/reviews/PhotosUploader";
 import LoginGate from "@/components/system/LoginGate";
-import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -681,20 +680,6 @@ export default function ReviewWritePage() {
   // 잠금: 서비스 모드에서는 신청서가 선택되어 있어야 언락
   const locked = state !== "ok" || (mode === "service" && !selectedAppId);
 
-  // 헤더 텍스트
-  const title =
-    mode === "product"
-      ? "스트링 상품 후기 작성"
-      : mode === "service"
-        ? "상품+교체서비스 후기 작성"
-        : "작성할 후기를 찾을 수 없어요";
-  const subtitle =
-    mode === "product"
-      ? "구매하신 스트링 상품에 대한 솔직한 후기를 남겨주세요."
-      : mode === "service"
-        ? "상품과 장착 경험을 함께 평가해주세요."
-        : "후기는 구매확정 또는 서비스 완료 후 작성할 수 있어요. 마이페이지에서 작성 가능한 주문이나 신청 내역을 다시 확인해주세요.";
-
   const badge =
     state === "loading"
       ? "검증 중…"
@@ -929,26 +914,43 @@ export default function ReviewWritePage() {
     }
   };
 
+  const targetTitle =
+    mode === "product"
+      ? "상품 후기"
+      : mode === "service"
+        ? "상품+교체서비스 후기"
+        : "리뷰 대상";
+  const selectedStringNames = (selectedApp?.stringItems || [])
+    .map((s) => s.name)
+    .filter(Boolean)
+    .join(", ");
+  const reviewPlaceholder =
+    mode === "product"
+      ? "상품의 사용감과 만족도를 적어주세요."
+      : mode === "service"
+        ? "상품 사용감과 교체서비스 경험을 함께 적어주세요."
+        : "상품 사용감, 장착 과정, 서비스 경험을 편하게 적어주세요.";
+
   // 비회원 차단
   if (!allowGuestCheckout && !authChecked) {
     return (
       <div className="min-h-screen bg-muted/30">
-        <div className="relative mx-auto max-w-7xl px-4 py-6 md:py-8">
-          <div className="grid lg:grid-cols-[400px_1fr] gap-6 md:gap-8 min-h-[80vh]">
-            <Card className="rounded-2xl">
+        <div className="mx-auto max-w-5xl px-4 py-6 md:py-8">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <Card className="rounded-2xl border-border bg-card">
               <CardContent className="space-y-4 p-4 md:p-6">
-                <Skeleton className="h-6 w-44" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-5/6" />
-                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-7 w-40" />
+                <Skeleton className="h-4 w-64 max-w-full" />
+                <Skeleton className="h-28 w-full" />
+                <Skeleton className="h-36 w-full" />
+                <Skeleton className="h-11 w-full sm:w-36" />
               </CardContent>
             </Card>
-            <Card className="rounded-2xl">
+            <Card className="rounded-2xl border-border bg-card">
               <CardContent className="space-y-4 p-4 md:p-6">
-                <Skeleton className="h-8 w-56" />
-                <Skeleton className="h-32 w-full" />
-                <Skeleton className="h-32 w-full" />
-                <Skeleton className="h-11 w-36" />
+                <Skeleton className="h-5 w-28" />
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-4 w-5/6" />
               </CardContent>
             </Card>
           </div>
@@ -962,373 +964,150 @@ export default function ReviewWritePage() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
+      <div className="mx-auto max-w-5xl px-4 py-6 md:py-8">
+        <header className="mb-5 md:mb-6">
+          <p className="text-sm font-medium text-muted-foreground">
+            {mode === "product"
+              ? "상품 후기"
+              : mode === "service"
+                ? "상품+교체서비스 후기"
+                : "리뷰 작성"}
+          </p>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+            리뷰 작성
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground md:text-base">
+            {mode === "service"
+              ? "상품과 교체서비스 경험을 함께 평가해주세요."
+              : mode === "product"
+                ? "이용 경험을 남겨주세요."
+                : "구매확정 또는 이용확정이 완료된 내역에서 후기를 작성할 수 있습니다."}
+          </p>
+        </header>
 
-      <div className="relative mx-auto max-w-7xl px-4 py-6 md:py-8">
-        <div className="grid lg:grid-cols-[400px_1fr] gap-6 md:gap-8 min-h-[80vh]">
-          {/* 왼쪽: 정보 패널 (코트의 왼쪽 서비스 박스) */}
-          <div className="space-y-4 md:space-y-6">
-            {/* 헤더 정보 카드 */}
-            <div className="relative rounded-2xl bg-card border border-border text-foreground p-4 md:p-6 shadow-sm overflow-hidden">
-              {/* 코트 라인 장식 */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-card/30"></div>
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-card/30"></div>
-              <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-card/20 transform -translate-x-0.5"></div>
-
-              <div className="relative">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-2 h-2 rounded-full bg-warning/10 dark:bg-warning/15"></div>
-                  <span className="text-sm font-medium opacity-90">
-                    {mode === "product"
-                      ? "PRODUCT REVIEW"
-                      : mode === "service"
-                        ? "SERVICE REVIEW"
-                        : "INVALID"}
-                  </span>
-                </div>
-
-                <h1 className="text-2xl font-bold mb-2">{title}</h1>
-                <p className="text-foreground/90 text-sm leading-relaxed">
-                  {subtitle}
-                </p>
-
-                {/* 상태 뱃지 */}
-                {badge && (
-                  <div className="mt-4 inline-flex items-center rounded-full bg-secondary px-3 py-1.5 text-sm font-medium border border-border/60">
-                    <div className="w-1.5 h-1.5 rounded-full bg-card/60 mr-2"></div>
-                    {badge}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* 현재 상품 정보 */}
-            {mode === "product" && currentMeta && (
-              <div className="rounded-xl bg-card dark:bg-muted p-4 md:p-5 shadow-lg ring-1 ring-ring">
-                <div className="flex items-center gap-4">
-                  <div className="relative h-16 w-16 overflow-hidden rounded-xl ring-2 ring-ring shrink-0">
-                    {currentMeta.image ? (
-                      <NextImage
-                        src={currentMeta.image}
-                        alt={currentMeta.name}
-                        fill
-                        sizes="64px"
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="h-full w-full grid place-items-center bg-muted text-foreground">
-                        IMG
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+          <main className="min-w-0 lg:order-1">
+            <Card className="rounded-2xl border-border bg-card shadow-sm">
+              <CardContent className="p-4 md:p-6">
+                <form onSubmit={onSubmit} className="space-y-6">
+                  {mode === "service" && (
+                    <section className="rounded-2xl border border-border bg-muted/30 p-4">
+                      <div className="flex flex-wrap items-end justify-between gap-3">
+                        <div className="min-w-0">
+                          <Label className="block text-sm font-semibold text-foreground">
+                            리뷰 대상 선택
+                          </Label>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {showAllApps
+                              ? "전체 신청서를 표시합니다. 작성 가능한 항목만 선택할 수 있습니다."
+                              : "작성 가능한 신청서만 표시합니다."}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowAllApps((v) => !v)}
+                          className="shrink-0 text-xs font-medium text-foreground underline underline-offset-4 hover:text-muted-foreground"
+                        >
+                          {showAllApps ? "작성 가능만 보기" : "전체 신청서 보기"}
+                        </button>
                       </div>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-foreground truncate">
-                      {currentMeta.name}
-                    </h3>
-                    {orderItems && (
-                      <div className="text-sm text-foreground mt-1">
-                        진행률: {orderItems.filter((x) => x.reviewed).length} /{" "}
-                        {orderItems.length} 완료
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
 
-            {/* 다른 상품들 (세로 리스트) */}
-            {mode === "product" && orderItems && orderItems.length > 1 && (
-              <div className="rounded-xl bg-card dark:bg-muted p-4 md:p-5 shadow-lg ring-1 ring-ring">
-                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <div className="w-1 h-4 bg-muted rounded-full"></div>이 주문의
-                  다른 상품
-                </h3>
-
-                <div className="space-y-3">
-                  {orderItems.map((it) => {
-                    const isCurrent = it.productId === resolvedProductId;
-                    const statusText = it.reviewed
-                      ? "완료"
-                      : isCurrent
-                        ? "작성중"
-                        : "미작성";
-                    const statusClass = it.reviewed
-                      ? "bg-muted text-foreground"
-                      : isCurrent
-                        ? "bg-muted text-foreground"
-                        : "bg-muted text-foreground";
-
-                    return (
-                      <div
-                        key={it.productId}
-                        className={`flex items-center gap-3 rounded-lg p-3 ${statusClass} transition-all duration-200 hover:shadow-sm`}
+                      <select
+                        className="mt-3 h-11 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring"
+                        value={selectedAppId ?? ""}
+                        onChange={(e) => {
+                          const nextId = e.target.value || null;
+                          if (nextId === selectedAppId) return;
+                          confirmLeaveIfDirty(() => {
+                            resetForm();
+                            setSelectedAppId(nextId);
+                          });
+                        }}
+                        disabled={!shownApps.length}
                       >
-                        <div className="relative h-10 w-10 overflow-hidden rounded-lg shrink-0">
-                          {it.image ? (
-                            <NextImage
-                              src={it.image}
-                              alt={it.name}
-                              fill
-                              sizes="40px"
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="h-full w-full grid place-items-center bg-card/50 text-foreground text-xs">
-                              IMG
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="min-w-0 flex-1">
-                          <div className="truncate text-sm font-medium">
-                            {it.name}
-                          </div>
-                          <div className="text-xs opacity-75">{statusText}</div>
-                        </div>
-
-                        {!isCurrent && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => switchProduct(it.productId)}
-                            className="shrink-0 h-7 px-2 text-xs"
-                          >
-                            작성
-                          </Button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 오른쪽: 작성 폼 (코트의 오른쪽 서비스 박스) */}
-          <div className="relative">
-            {/* 중앙선 장식 */}
-            <div className="absolute -left-4 top-0 bottom-0 w-0.5 bg-primary/40 opacity-60"></div>
-
-            <div className="rounded-2xl bg-card shadow-sm ring-1 ring-ring overflow-hidden">
-              {/* 폼 헤더 */}
-              <div className="bg-muted/50 px-4 md:px-6 py-4 border-b border-border">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-foreground">
-                    리뷰 작성
-                  </h2>
-                </div>
-              </div>
-
-              <form
-                onSubmit={onSubmit}
-                className="p-4 md:p-6 space-y-6 md:space-y-8"
-              >
-                {/* 서비스 모드: 대상 신청서 선택 ( selector는 항상 조작 가능하게 오버레이 밖으로 분리) */}
-                {mode === "service" && (
-                  <div className="mb-6 md:mb-8">
-                    <div className="flex items-end justify-between gap-3">
-                      <div className="min-w-0">
-                        <Label className="text-sm font-semibold text-foreground mb-1 block">
-                          대상 신청서
-                        </Label>
-                        <div className="text-xs text-foreground/80">
-                          {showAllApps
-                            ? "전체 신청서(비활성 포함)를 표시합니다."
-                            : "작성 가능한 신청서만 표시합니다."}
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => setShowAllApps((v) => !v)}
-                        className="shrink-0 text-xs underline underline-offset-2 hover:opacity-80 text-foreground"
-                      >
-                        {showAllApps
-                          ? "작성 가능한 신청서만 보기"
-                          : "전체 신청서 보기"}
-                      </button>
-                    </div>
-
-                    <select
-                      className="mt-3 w-full h-12 rounded-xl border border-border bg-card dark:bg-muted px-4 text-sm focus-visible:ring-2 focus-visible:ring-ring focus:border-border transition-all duration-200 text-left whitespace-normal leading-relaxed"
-                      value={selectedAppId ?? ""}
-                      onChange={(e) => {
-                        const nextId = e.target.value || null;
-                        if (nextId === selectedAppId) return;
-                        confirmLeaveIfDirty(() => {
-                          // 대상 신청서가 바뀌면 “작성 중인 내용”은 의미가 달라지므로 초기화
-                          resetForm();
-                          setSelectedAppId(nextId);
-                        });
-                      }}
-                      disabled={!shownApps.length}
-                    >
-                      {shownApps.length === 0 && (
-                        <option value="">
-                          {showAllApps
-                            ? "신청서가 없습니다"
-                            : allApps.length > 0
-                              ? "작성 가능한 신청서가 없습니다 (전체 보기로 확인)"
-                              : "작성 가능한 신청서가 없습니다"}
-                        </option>
-                      )}
-
-                      {shownApps.map((a) => {
-                        const isEligible =
-                          isServiceReviewSelectableStatus(a.status) &&
-                          !reviewedMap[a._id];
-                        const reason = reviewedMap[a._id]
-                          ? "이미 리뷰 작성됨"
-                          : !isServiceReviewSelectableStatus(a.status)
-                            ? `상태: ${a.status ?? "미정"}`
-                            : "";
-
-                        // 전체 보기(showAllApps)에서는 비활성 항목도 노출하되 선택/작성은 막음
-                        const optDisabled = showAllApps ? !isEligible : false;
-                        const optLabel = reason
-                          ? `${a.label} (${reason})`
-                          : a.label;
-
-                        return (
-                          <option
-                            key={a._id}
-                            value={a._id}
-                            disabled={optDisabled}
-                          >
-                            {optLabel}
+                        {shownApps.length === 0 && (
+                          <option value="">
+                            {showAllApps
+                              ? "신청서가 없습니다"
+                              : allApps.length > 0
+                                ? "작성 가능한 신청서가 없습니다"
+                                : "작성 가능한 신청서가 없습니다"}
                           </option>
-                        );
-                      })}
-                    </select>
-
-                    {/* 선택된 신청서 요약 카드 */}
-                    {selectedApp && (
-                      <div className="mt-3 rounded-xl border border-border bg-muted p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="text-sm font-medium text-foreground">
-                            {selectedApp.createdAt
-                              ? `신청일 ${formatKoDateTime(selectedApp.createdAt)}`
-                              : ""}
-                          </div>
-                          {selectedApp.status && (
-                            <ApplicationStatusBadge
-                              status={selectedApp.status}
-                            />
-                          )}
-                        </div>
-
-                        <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                          <div>
-                            <dt className="text-foreground">예약일자</dt>
-                            <dd className="text-foreground">
-                              {formatYMD(selectedApp.preferredDate) || "-"}
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="text-foreground">예약시간</dt>
-                            <dd className="text-foreground">
-                              {formatHM(selectedApp.preferredTime) || "-"}
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="text-foreground">라켓</dt>
-                            <dd className="text-foreground">
-                              {selectedApp.racketType || "-"}
-                            </dd>
-                          </div>
-                          <div>
-                            <dt className="text-foreground">스트링</dt>
-                            <dd className="text-foreground truncate">
-                              {(selectedApp.stringItems || [])
-                                .map((s) => s.name)
-                                .join(", ") || "-"}
-                            </dd>
-                          </div>
-                        </dl>
-
-                        {/* 요청사항 블록 */}
-                        {selectedApp.requirements && (
-                          <div className="mt-3 rounded-lg border border-border bg-card/60 dark:bg-muted p-3">
-                            <div className="text-xs text-foreground mb-1">
-                              요청사항
-                            </div>
-                            <p className="text-sm text-foreground whitespace-pre-line break-words">
-                              {selectedApp.requirements}
-                            </p>
-                          </div>
                         )}
 
-                        <div className="mt-2 text-xs text-foreground">
-                          신청번호 {selectedApp._id}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                        {shownApps.map((a) => {
+                          const isEligible =
+                            isServiceReviewSelectableStatus(a.status) &&
+                            !reviewedMap[a._id];
+                          const reason = reviewedMap[a._id]
+                            ? "이미 리뷰 작성됨"
+                            : !isServiceReviewSelectableStatus(a.status)
+                              ? `상태: ${a.status ?? "미정"}`
+                              : "";
+                          const optDisabled = showAllApps ? !isEligible : false;
+                          const optLabel = reason
+                            ? `${a.label} (${reason})`
+                            : a.label;
 
-                {/* 입력 블럭(별점/본문/사진) - 오버레이는 여기만 */}
-                <div className="relative">
-                  {locked && (
-                    <div className="absolute inset-0 z-10 rounded-xl bg-card flex items-center justify-center">
-                      <div className="text-center px-4">
-                        <div className="w-8 h-8 border-2 border-border border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                        <div className="text-sm text-foreground">
-                          {state === "loading"
-                            ? "검증 중..."
-                            : mode === "service" && !selectedAppId
-                              ? "대상 신청서를 선택해 주세요."
-                              : "작성할 수 없는 상태입니다."}
-                        </div>
-                      </div>
-                    </div>
+                          return (
+                            <option
+                              key={a._id}
+                              value={a._id}
+                              disabled={optDisabled}
+                            >
+                              {optLabel}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </section>
                   )}
 
-                  {/* 별점 섹션 */}
-                  <div className="text-center py-6 bg-secondary border border-border rounded-xl">
-                    <label className="block text-sm font-semibold text-foreground mb-4">
-                      만족도를 별점으로 평가해주세요
-                    </label>
-                    <Stars
-                      value={rating}
-                      onChange={setRating}
-                      disabled={locked}
-                    />
-                    <div className="mt-2 text-sm text-foreground">
-                      {rating === 5
-                        ? "최고예요!"
-                        : rating === 4
-                          ? "좋아요!"
-                          : rating === 3
-                            ? "보통이에요"
-                            : rating === 2
-                              ? "아쉬워요"
-                              : "별로예요"}
+                  <section className="space-y-3">
+                    <div>
+                      <Label className="text-base font-semibold text-foreground">
+                        별점을 선택해주세요
+                      </Label>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        사용 경험을 가장 잘 나타내는 점수를 선택하세요.
+                      </p>
                     </div>
-                  </div>
+                    <div className="rounded-2xl border border-border bg-muted/30 px-4 py-5">
+                      <Stars value={rating} onChange={setRating} disabled={locked} />
+                      <div className="mt-3 text-center text-sm font-medium text-foreground">
+                        {rating}점
+                      </div>
+                    </div>
+                  </section>
 
-                  {/* 후기 작성 */}
-                  <div className="space-y-4 mt-8">
-                    <label className="block text-sm font-semibold text-foreground">
-                      상세 후기
-                    </label>
+                  <section className="space-y-3">
+                    <div className="flex items-end justify-between gap-3">
+                      <Label className="text-base font-semibold text-foreground">
+                        후기 내용
+                      </Label>
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        {content.length} / 1000자
+                      </span>
+                    </div>
                     <Textarea
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
-                      placeholder="제품/장착 만족도, 타구감, 서비스 경험 등을 자유롭게 남겨주세요 (5자 이상)"
-                      className="min-h-[180px] resize-y border-border focus:ring-2 focus:ring-ring focus:border-border rounded-xl"
+                      placeholder={reviewPlaceholder}
+                      className="min-h-[150px] resize-y rounded-xl border-border bg-background focus-visible:ring-2 focus-visible:ring-ring"
                       disabled={locked}
                     />
-                    <div className="text-xs text-foreground text-right">
-                      {content.length} / 1000자
-                    </div>
-                  </div>
+                  </section>
 
-                  {/* 사진 업로드 */}
-                  <div className="space-y-4 mt-8">
-                    <Label className="text-sm font-semibold text-foreground">
-                      사진 첨부 (선택, 최대 5장)
-                    </Label>
-                    <div className="rounded-xl border-2 border-dashed border-border p-4">
+                  <section className="space-y-3">
+                    <div>
+                      <Label className="text-base font-semibold text-foreground">
+                        사진 첨부
+                      </Label>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        선택 사항이며 최대 5장까지 등록할 수 있습니다.
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-dashed border-border bg-background p-4">
                       <PhotosUploader
                         value={photos}
                         onChange={setPhotos}
@@ -1342,123 +1121,296 @@ export default function ReviewWritePage() {
                         disabled={locked || isUploading}
                       />
                       {isUploading && (
-                        <div className="mt-2 text-xs text-foreground">
+                        <div className="mt-2 text-xs text-muted-foreground">
                           이미지 업로드 중...
                         </div>
                       )}
                     </div>
+                  </section>
+
+                  {state !== "ok" &&
+                    (mode !== "invalid" || state === "serviceLinkedOrder") && (
+                      <div className="rounded-2xl border border-border bg-muted/30 p-4 text-sm text-foreground">
+                        {state === "loading" && "작성 가능 여부를 확인하고 있습니다."}
+                        {state === "notPurchased" && (
+                          <div className="space-y-2">
+                            <p className="font-medium">
+                              작성 가능한 이용 내역이 없습니다.
+                            </p>
+                            <p className="text-muted-foreground">
+                              구매확정 또는 이용확정이 완료된 내역에서 후기를 작성할 수 있습니다.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                confirmLeaveIfDirty(() => {
+                                  router.replace("/mypage?tab=orders");
+                                })
+                              }
+                              className="font-medium underline underline-offset-4"
+                            >
+                              마이페이지에서 확인
+                            </button>
+                          </div>
+                        )}
+                        {state === "already" && (
+                          <div className="space-y-1">
+                            <p className="font-medium">이미 이용 후기를 남겼어요.</p>
+                            <p className="text-muted-foreground">
+                              하나의 이용 내역에는 하나의 후기만 작성할 수 있습니다.
+                            </p>
+                          </div>
+                        )}
+                        {state === "serviceLinkedOrder" && (
+                          <div className="space-y-1">
+                            <p className="font-medium">
+                              상품+교체서비스 후기 대상입니다.
+                            </p>
+                            <p className="text-muted-foreground">
+                              연결된 교체서비스 이용확정 후 상품과 서비스 경험을 함께 남겨주세요.
+                            </p>
+                          </div>
+                        )}
+                        {state === "unauthorized" && "로그인이 필요합니다."}
+                        {state === "error" && "접근 확인 중 문제가 발생했어요."}
+                      </div>
+                    )}
+
+                  {mode === "invalid" && state !== "serviceLinkedOrder" && (
+                    <div className="rounded-2xl border border-border bg-muted/30 p-4 text-sm text-foreground">
+                      <p className="font-medium">작성할 후기를 찾을 수 없어요.</p>
+                      <p className="mt-1 text-muted-foreground">
+                        구매확정 또는 이용확정이 완료된 내역에서 후기를 작성할 수 있습니다.
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => confirmLeaveIfDirty(goPrimary)}
+                      className="order-2 w-full rounded-xl bg-transparent sm:order-1 sm:w-auto"
+                    >
+                      {mode === "product"
+                        ? "상품 상세"
+                        : mode === "service"
+                          ? "서비스 소개"
+                          : "리뷰 목록"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() =>
+                        confirmLeaveIfDirty(() =>
+                          router.replace("/mypage?tab=orders"),
+                        )
+                      }
+                      className="order-3 w-full rounded-xl sm:order-2 sm:w-auto"
+                    >
+                      마이페이지
+                    </Button>
+                    <Button
+                      data-cy="submit-review"
+                      type="submit"
+                      disabled={locked || isUploading}
+                      aria-disabled={locked || isUploading}
+                      className="order-1 w-full rounded-xl font-semibold sm:order-3 sm:w-auto"
+                    >
+                      {isUploading ? "이미지 업로드 중..." : "리뷰 등록"}
+                    </Button>
                   </div>
+                </form>
+              </CardContent>
+            </Card>
+          </main>
+
+          <aside className="min-w-0 space-y-4 lg:order-2">
+            <Card className="rounded-2xl border-border bg-card shadow-sm">
+              <CardContent className="space-y-4 p-4 md:p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      리뷰 대상
+                    </p>
+                    <h2 className="mt-1 break-keep text-lg font-semibold text-foreground">
+                      {targetTitle}
+                    </h2>
+                  </div>
+                  {badge && (
+                    <span className="shrink-0 rounded-full border border-border bg-muted px-2.5 py-1 text-xs font-medium text-foreground">
+                      {badge}
+                    </span>
+                  )}
                 </div>
 
-                {/* 안내문 */}
-                {state !== "ok" &&
-                  (mode !== "invalid" || state === "serviceLinkedOrder") && (
-                  <div className="rounded-lg bg-muted border border-border p-4">
-                    <div className="text-sm text-primary">
-                      {state === "notPurchased" && (
-                        <div>
-                          아직 후기를 작성할 수 없어요. 상품 수령 후 구매확정이
-                          완료되면 후기를 남길 수 있어요.
-                          <button
-                            type="button"
-                            onClick={() =>
-                              confirmLeaveIfDirty(() => {
-                                router.replace("/mypage?tab=orders");
-                              })
-                            }
-                            className="underline underline-offset-2 hover:opacity-80 font-medium"
+                {mode === "product" && currentMeta && (
+                  <div className="flex gap-3 rounded-2xl border border-border bg-muted/30 p-3">
+                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-border bg-background">
+                      {currentMeta.image ? (
+                        <NextImage
+                          src={currentMeta.image}
+                          alt={currentMeta.name}
+                          fill
+                          sizes="56px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="grid h-full w-full place-items-center text-xs text-muted-foreground">
+                          IMG
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="line-clamp-2 break-words text-sm font-medium text-foreground">
+                        {currentMeta.name}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        구매확정 완료
+                      </p>
+                      {resolvedOrderId && (
+                        <p className="mt-1 break-all text-xs text-muted-foreground">
+                          주문번호 {resolvedOrderId}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {mode === "service" && selectedApp && (
+                  <div className="rounded-2xl border border-border bg-muted/30 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground">
+                          교체서비스 신청 정보
+                        </p>
+                        {selectedApp.createdAt && (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            신청일 {formatKoDateTime(selectedApp.createdAt)}
+                          </p>
+                        )}
+                      </div>
+                      {selectedApp.status && (
+                        <ApplicationStatusBadge status={selectedApp.status} />
+                      )}
+                    </div>
+                    <dl className="mt-3 space-y-2 text-sm">
+                      {(formatYMD(selectedApp.preferredDate) ||
+                        formatHM(selectedApp.preferredTime)) && (
+                        <div className="flex justify-between gap-3">
+                          <dt className="shrink-0 text-muted-foreground">예약</dt>
+                          <dd className="min-w-0 break-words text-right text-foreground">
+                            {[formatYMD(selectedApp.preferredDate), formatHM(selectedApp.preferredTime)]
+                              .filter(Boolean)
+                              .join(" ")}
+                          </dd>
+                        </div>
+                      )}
+                      {selectedApp.racketType && (
+                        <div className="flex justify-between gap-3">
+                          <dt className="shrink-0 text-muted-foreground">라켓</dt>
+                          <dd className="min-w-0 break-words text-right text-foreground">
+                            {selectedApp.racketType}
+                          </dd>
+                        </div>
+                      )}
+                      {selectedStringNames && (
+                        <div className="flex justify-between gap-3">
+                          <dt className="shrink-0 text-muted-foreground">스트링</dt>
+                          <dd className="min-w-0 break-words text-right text-foreground">
+                            {selectedStringNames}
+                          </dd>
+                        </div>
+                      )}
+                      {selectedApp.requirements && (
+                        <div className="border-t border-border pt-2">
+                          <dt className="text-muted-foreground">요청사항</dt>
+                          <dd className="mt-1 whitespace-pre-wrap break-words text-foreground">
+                            {selectedApp.requirements}
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
+                    <p className="mt-3 break-all text-xs text-muted-foreground">
+                      신청번호 {selectedApp._id}
+                    </p>
+                  </div>
+                )}
+
+                {mode === "product" && orderItems && orderItems.length > 1 && (
+                  <div className="space-y-2 border-t border-border pt-4">
+                    <div className="flex items-center justify-between gap-3 text-sm">
+                      <span className="font-medium text-foreground">이 주문의 다른 상품</span>
+                      <span className="text-xs text-muted-foreground">
+                        미작성 {remainingCount}개
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      {orderItems.map((it) => {
+                        const isCurrent = it.productId === resolvedProductId;
+                        const statusText = it.reviewed
+                          ? "완료"
+                          : isCurrent
+                            ? "작성중"
+                            : "미작성";
+                        return (
+                          <div
+                            key={it.productId}
+                            className="flex items-center gap-2 rounded-xl border border-border bg-background p-2"
                           >
-                            마이페이지에서 진행 상태 확인
-                          </button>
-                        </div>
-                      )}
-                      {state === "already" && (
-                        <div>
-                          이미 후기를 남긴 항목입니다. 해당 주문 또는 서비스에
-                          대한 후기가 이미 등록되어 있어요.
-                        </div>
-                      )}
-                      {state === "serviceLinkedOrder" && (
-                        <div>
-                          교체서비스가 연결된 주문은 상품과 교체서비스 경험을 하나의 후기로 남겨주세요.
-                          연결된 교체서비스 이용확정 후 서비스 리뷰를 작성해 주세요.
-                        </div>
-                      )}
+                            <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-muted">
+                              {it.image ? (
+                                <NextImage
+                                  src={it.image}
+                                  alt={it.name}
+                                  fill
+                                  sizes="36px"
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <div className="grid h-full w-full place-items-center text-[10px] text-muted-foreground">
+                                  IMG
+                                </div>
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="line-clamp-1 break-words text-xs font-medium text-foreground">
+                                {it.name}
+                              </p>
+                              <p className="text-[11px] text-muted-foreground">
+                                {statusText}
+                              </p>
+                            </div>
+                            {!isCurrent && !it.reviewed && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => switchProduct(it.productId)}
+                                className="h-8 shrink-0 px-2 text-xs"
+                              >
+                                작성
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
+              </CardContent>
+            </Card>
 
-                {/* 액션 버튼들 */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-6 border-t border-border">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => confirmLeaveIfDirty(goPrimary)}
-                    className="rounded-xl shadow-sm order-2 sm:order-1 bg-transparent"
-                  >
-                    {mode === "product"
-                      ? "제품 상세 이동"
-                      : mode === "service"
-                        ? "서비스 소개"
-                        : "리뷰 목록 보기"}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() =>
-                      confirmLeaveIfDirty(() =>
-                        router.replace("/mypage?tab=orders"),
-                      )
-                    }
-                    className="rounded-xl shadow-sm order-3 sm:order-2"
-                  >
-                    마이페이지로 이동
-                  </Button>
-                  <Button
-                    data-cy="submit-review"
-                    type="submit"
-                    disabled={locked || isUploading}
-                    aria-disabled={locked || isUploading}
-                    className="rounded-xl shadow-sm bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 order-1 sm:order-3"
-                  >
-                    {isUploading ? "이미지 업로드 중..." : "후기 등록하기"}
-                  </Button>
-                </div>
-
-                {/* invalid 진입 시 CTA */}
-                {mode === "invalid" && state !== "serviceLinkedOrder" && (
-                  <div className="text-center py-6 text-sm text-foreground">
-                    <div className="font-medium text-foreground mb-2">
-                      작성할 후기를 찾을 수 없어요
-                    </div>
-                    <div className="space-x-4">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          confirmLeaveIfDirty(() =>
-                            router.replace("/mypage?tab=orders&scope=todo"),
-                          )
-                        }
-                        className="underline underline-offset-2 hover:opacity-80 text-foreground"
-                      >
-                        마이페이지로 이동
-                      </button>
-                      <span>·</span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          confirmLeaveIfDirty(() => router.replace("/reviews"))
-                        }
-                        className="underline underline-offset-2 hover:opacity-80 text-foreground"
-                      >
-                        리뷰 목록 보기
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </form>
-            </div>
-          </div>
+            <Card className="rounded-2xl border-border bg-card shadow-sm">
+              <CardContent className="space-y-2 p-4 md:p-5">
+                <h2 className="text-sm font-semibold text-foreground">작성 기준</h2>
+                <ul className="space-y-1 text-sm text-muted-foreground">
+                  <li>• 실제 사용 경험을 중심으로 작성해주세요.</li>
+                  <li>• 사진은 선택 사항이며 최대 5장까지 등록됩니다.</li>
+                  <li>• 하나의 이용 내역에는 하나의 후기만 작성할 수 있습니다.</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </aside>
         </div>
       </div>
     </div>
