@@ -1012,7 +1012,7 @@ export default function ActivityFeed() {
                                   교체 {applicationStatusLabel(app)}
                                 </Badge>
                               )}
-                              <span className="text-xs text-foreground/75">
+                              <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
                                 {formatDate(date)}
                               </span>
                             </div>
@@ -1186,7 +1186,7 @@ export default function ActivityFeed() {
                                 교체 {applicationStatusLabel(app)}
                               </Badge>
                             )}
-                            <span className="text-xs text-foreground/75">
+                            <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
                               {formatDate(date)}
                             </span>
                           </div>
@@ -1260,7 +1260,7 @@ export default function ActivityFeed() {
             <h3 className="text-lg bp-sm:text-xl font-semibold text-foreground mb-2">
               표시할 활동이 없습니다
             </h3>
-            <p className="text-sm text-foreground/80">
+            <p className="text-sm text-muted-foreground">
               필터를 조정하거나 검색어를 변경해보세요.
             </p>
           </div>
@@ -1324,7 +1324,7 @@ export default function ActivityFeed() {
                       return (
                         <div
                           key={g.key}
-                          className="min-w-0 rounded-xl bp-sm:rounded-2xl bg-card border border-border p-3 bp-sm:p-6 activity-card-hover"
+                          className="activity-card-hover min-w-0 rounded-xl border border-border bg-card p-4 shadow-sm transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:border-primary/30 hover:shadow-md bp-sm:rounded-2xl bp-sm:p-5"
                           style={{
                             animationDelay: `${dayIndex * 50 + itemIndex * 30}ms`,
                           }}
@@ -1333,7 +1333,7 @@ export default function ActivityFeed() {
                             <div
                               className={cn(
                                 "hidden bp-sm:flex",
-                                "rounded-xl bg-muted/30 dark:bg-card/40 p-3 bp-sm:p-4 shrink-0",
+                                "shrink-0 rounded-xl border border-border bg-muted/40 p-3 bp-sm:p-4",
                                 "w-fit self-start",
                               )}
                             >
@@ -1367,7 +1367,7 @@ export default function ActivityFeed() {
                                       </Badge>
                                     )}
 
-                                    <span className="text-xs text-foreground/75">
+                                    <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
                                       {formatDate(date)}
                                     </span>
 
@@ -1385,10 +1385,10 @@ export default function ActivityFeed() {
                                     )}
                                   </div>
 
-                                  <h3 className="text-base bp-sm:text-lg font-bold text-foreground mb-1 truncate">
+                                  <h3 className="mb-1 line-clamp-2 break-keep text-base font-semibold text-foreground bp-sm:text-lg">
                                     {title}
                                   </h3>
-                                  <p className="text-sm text-foreground/80">
+                                  <p className="text-sm text-muted-foreground">
                                     {kindLabel(g.kind)}
                                   </p>
                                   {g.kind !== "application" &&
@@ -1431,11 +1431,11 @@ export default function ActivityFeed() {
                                 </div>
                               )}
 
-                              <div className="flex flex-wrap gap-2 pt-2">
+                              <div className="grid grid-cols-1 gap-2 pt-2 sm:flex sm:flex-wrap">
                                 <Button
                                   asChild
                                   size="sm"
-                                  className="rounded-lg"
+                                  className="w-full rounded-lg sm:w-auto"
                                 >
                                   <Link href={detailHref}>
                                     {detailLabel}
@@ -1472,7 +1472,7 @@ export default function ActivityFeed() {
                                     orderId={g.order.id}
                                     orderStatus={g.order.status}
                                     userConfirmedAt={g.order.userConfirmedAt}
-                                    className="rounded-lg"
+                                    className="w-full rounded-lg sm:w-auto"
                                   />
                                 ) : null}
 
@@ -1481,7 +1481,7 @@ export default function ActivityFeed() {
                                   <Button
                                     asChild
                                     size="sm"
-                                    className="rounded-lg"
+                                    className="w-full rounded-lg sm:w-auto"
                                   >
                                     <Link href={shippingHref}>
                                       {shippingLabel}
@@ -1661,7 +1661,7 @@ export default function ActivityFeed() {
 
       {total > 0 && flat.length > 0 && (
         <div className="text-center pt-4">
-          <p className="text-sm text-foreground/80">
+          <p className="text-sm text-muted-foreground">
             전체 {total}건 중 {flat.length}건 로딩됨
           </p>
         </div>

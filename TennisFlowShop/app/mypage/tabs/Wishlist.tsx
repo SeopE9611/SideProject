@@ -121,7 +121,7 @@ export default function Wishlist() {
           <p className="mb-6 text-muted-foreground">
             마음에 드는 상품을 위시리스트에 추가해보세요!
           </p>
-          <Button asChild variant="default" className="shadow-sm">
+          <Button asChild variant="default" className="w-full shadow-sm sm:w-auto">
             <Link href="/products">상품 둘러보기</Link>
           </Button>
         </CardContent>
@@ -131,16 +131,16 @@ export default function Wishlist() {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {visibleItems.map((it) => (
           <Card
             key={it.id}
             variant="interactive"
-            className="overflow-hidden border-border bg-card"
+            className="flex h-full flex-col overflow-hidden border-border bg-card shadow-sm transition-[box-shadow,border-color] duration-200 hover:border-primary/30 hover:shadow-md"
           >
-            <CardContent className="p-4">
+            <CardContent className="flex h-full flex-col p-4">
               <Link href={`/products/${it.id}`} className="block">
-                <div className="relative w-full h-40">
+                <div className="relative h-44 w-full overflow-hidden rounded-xl bg-muted/30 sm:h-40">
                   <Image
                     src={it.image || "/placeholder.svg"}
                     alt={it.name}
@@ -150,10 +150,10 @@ export default function Wishlist() {
                   />
                 </div>
                 <div className="mt-3">
-                  <div className="line-clamp-2 font-medium hover:underline">
+                  <div className="line-clamp-2 min-h-10 break-keep font-semibold text-foreground hover:underline">
                     {it.name}
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="mt-1 text-sm tabular-nums text-muted-foreground">
                     {it.price.toLocaleString()}원
                   </div>
                   <div className="mt-2 space-y-0.5 text-xs text-muted-foreground">
@@ -184,11 +184,11 @@ export default function Wishlist() {
                 </div>
               </Link>
 
-              <div className="mt-3 flex gap-2">
+              <div className="mt-auto grid grid-cols-1 gap-2 pt-4 sm:grid-cols-2">
                 <Button
                   size="sm"
                   variant="default"
-                  className="shadow-sm"
+                  className="w-full shadow-sm"
                   onClick={() => handleAddToCart(it)}
                   disabled={
                     it.requiresOption &&
@@ -204,7 +204,7 @@ export default function Wishlist() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-destructive/40 hover:bg-destructive/10"
+                  className="w-full border-destructive/40 hover:bg-destructive/10"
                   onClick={() => {
                     remove(it.id).catch(() => {
                       showErrorToast("위시리스트 삭제에 실패했습니다.");

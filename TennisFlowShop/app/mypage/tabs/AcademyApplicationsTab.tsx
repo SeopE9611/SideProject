@@ -220,7 +220,7 @@ export default function AcademyApplicationsTab() {
         return (
           <Card
             key={application.id}
-            className="overflow-hidden border-border bg-card shadow-sm"
+            className="overflow-hidden border-border bg-card shadow-sm transition-[box-shadow,border-color] duration-200 hover:border-primary/30 hover:shadow-md"
           >
             <CardContent className="space-y-4 p-4 md:p-6">
               <div className="flex flex-col gap-3 border-b border-border/60 pb-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
@@ -231,7 +231,7 @@ export default function AcademyApplicationsTab() {
                     <span>·</span>
                     <span>신청일 {formatDateTime(application.appliedAt)}</span>
                   </div>
-                  <h3 className="break-keep text-lg font-semibold text-foreground">
+                  <h3 className="line-clamp-2 break-keep text-lg font-semibold text-foreground">
                     {application.classSnapshot?.name || "아카데미 클래스 신청"}
                   </h3>
                 </div>
@@ -241,7 +241,7 @@ export default function AcademyApplicationsTab() {
               </div>
 
               {application.classSnapshot ? (
-                <div className="rounded-xl border border-border/50 bg-muted/20 p-3">
+                <div className="rounded-xl border border-border/60 bg-muted/30 p-3">
                   <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                     <GraduationCap className="h-4 w-4 text-primary" />
                     선택 클래스
@@ -341,7 +341,12 @@ export default function AcademyApplicationsTab() {
               ) : null}
 
               <div className="flex justify-end border-t border-border/60 pt-4">
-                <Button asChild variant="outline" size="sm">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="w-full sm:w-auto"
+                >
                   <Link href={`/mypage/academy-applications/${application.id}`}>
                     상세 보기
                   </Link>

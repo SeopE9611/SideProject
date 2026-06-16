@@ -124,15 +124,15 @@ export default function PassList() {
     return (
       <div
         key={p.id}
-        className="bg-card p-3 shadow-sm ring-1 ring-border/70 dark:ring-border/70"
+        className="rounded-xl border border-border bg-card p-4 shadow-sm transition-[box-shadow,border-color] duration-200 hover:border-primary/30 hover:shadow-md md:p-5"
       >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div className="flex min-w-0 items-start gap-3">
             <div className="rounded-xl border border-primary/20 bg-primary/10 p-2 text-primary dark:bg-primary/20">
               <Ticket className="h-5 w-5" />
             </div>
             <div>
-              <div className="font-semibold">
+              <div className="line-clamp-2 break-keep font-semibold">
                 {p.planTitle ?? "교체 서비스 패키지"} {p.packageSize}회권
               </div>
               <div className="text-sm text-muted-foreground">
@@ -164,7 +164,7 @@ export default function PassList() {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
             {statusBadge(p)}
             {p.expiresAt && (
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -184,7 +184,7 @@ export default function PassList() {
                   style={{ width: `${remainPct}%` }}
                 />
               </div>
-              <div className="mt-2 text-sm text-muted-foreground">
+              <div className="mt-2 text-sm tabular-nums text-muted-foreground">
                 사용 {p.usedCount} / 총 {p.packageSize} · 잔여{" "}
                 {p.remainingCount}
               </div>
@@ -219,7 +219,7 @@ export default function PassList() {
           />
         ) : null}
         {hasNoHistory && (
-          <div className="flex flex-col items-center justify-center py-12 bp-sm:py-16 px-4">
+          <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-muted/30 px-4 py-12 bp-sm:py-16">
             <div className="bg-muted/50 rounded-full p-4 mb-4">
               <Ticket className="h-8 w-8 bp-sm:h-10 bp-sm:w-10 text-muted-foreground" />
             </div>
