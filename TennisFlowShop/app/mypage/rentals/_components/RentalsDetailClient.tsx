@@ -3,9 +3,16 @@
 import { getDepositBanner } from "@/app/features/rentals/utils/ui";
 import { NextTodoCallout } from "@/app/mypage/_components/OrdersScopeContextNav";
 import AsyncState from "@/components/system/AsyncState";
+import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { racketBrandLabel } from "@/lib/constants";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
@@ -69,6 +76,44 @@ type Rental = {
     tensionSummary: string | null;
     receptionLabel: string;
     reservationLabel: string | null;
+  } | null;
+  stringingApplication?: {
+    id: string;
+    status: string;
+    createdAt?: string | null;
+    updatedAt?: string | null;
+    userConfirmedAt?: string | null;
+    desiredDateTime?: string | null;
+    collectionMethod?: string | null;
+    receptionLabel?: string | null;
+    preferredDate?: string | null;
+    preferredTime?: string | null;
+    reservationLabel?: string | null;
+    requirements?: string | null;
+    lineCount?: number;
+    stringNames?: string[];
+    tensionSummary?: string | null;
+    totalPrice?: number | null;
+    needsInboundTracking?: boolean;
+    lines?: Array<{
+      id?: string | null;
+      racketType?: string | null;
+      racketLabel?: string | null;
+      stringName?: string | null;
+      tensionMain?: string | null;
+      tensionCross?: string | null;
+      note?: string | null;
+    }>;
+    shippingInfo?: {
+      collectionMethod?: string | null;
+      deliveryRequest?: string | null;
+      selfShip?: {
+        courier?: string | null;
+        trackingNo?: string | null;
+        shippedAt?: string | null;
+        note?: string | null;
+      } | null;
+    } | null;
   } | null;
 
   /**
@@ -203,6 +248,9 @@ const formatDateTime = (dateString: string) => {
 };
 const fmtDateOnly = (v?: string | Date | null) =>
   v ? new Date(v).toLocaleDateString("ko-KR") : "-";
+
+const formatCurrency = (amount: number) =>
+  `${new Intl.NumberFormat("ko-KR").format(amount)}원`;
 
 type Props = {
   id: string;
@@ -480,6 +528,35 @@ export default function RentalsDetailClient({
           ctaHref: returnShippingHref,
         }
       : null;
+  const linkedApplication = data.stringingApplication;
+  const linkedApplicationLines = linkedApplication?.lines ?? [];
+  const linkedApplicationDisplayLines =
+    linkedApplicationLines.length > 0
+      ? linkedApplicationLines
+      : data.applicationSummary
+        ? [
+            {
+              id: `${data.id}-stringing-summary`,
+              racketLabel: `${racketBrandLabel(data.brand)} ${data.model}`,
+              stringName:
+                data.applicationSummary.stringNames.join(", ") || null,
+              tensionMain: data.applicationSummary.tensionSummary,
+              tensionCross: null,
+              note: null,
+            },
+          ]
+        : [];
+  const linkedApplicationNeedsTracking = Boolean(
+    linkedApplication?.needsInboundTracking &&
+      !linkedApplication?.shippingInfo?.selfShip?.trackingNo,
+  );
+  const linkedApplicationShippingHref = data.stringingApplicationId
+    ? `/services/applications/${data.stringingApplicationId}/shipping?${new URLSearchParams(
+        {
+          return: `/mypage?tab=orders&flowType=rental&flowId=${data.id}&from=orders`,
+        },
+      ).toString()}`
+    : null;
   return (
     <main className="space-y-6 md:space-y-8">
       <div className="rounded-2xl border border-border bg-muted/30 p-4 shadow-sm bp-sm:p-6 md:p-8">
@@ -684,83 +761,223 @@ export default function RentalsDetailClient({
         </div>
       )}
 
-      {withStringService && (
-        <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-          <CardHeader className="border-b border-border bg-muted/30">
-            <CardTitle className="flex items-center space-x-2">
-              <Wrench className="h-5 w-5 text-primary" />
-              <span>연결된 교체서비스</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 p-4 text-sm bp-sm:p-6">
-            {data.applicationSummary ? (
-              <>
-                <p>
-                  <span className="text-muted-foreground">신청 상태:</span>{" "}
-                  <span className="whitespace-nowrap font-semibold text-foreground">
-                    {data.applicationSummary.status}
-                  </span>
-                </p>
-                <p>
-                  <span className="text-muted-foreground">접수 방식:</span>{" "}
-                  <span className="font-semibold text-foreground">
-                    {data.applicationSummary.receptionLabel}
-                  </span>
-                </p>
-                <p>
-                  <span className="text-muted-foreground">라인 수:</span>{" "}
-                  <span className="font-semibold text-foreground">
-                    {data.applicationSummary.lineCount}개
-                  </span>
-                </p>
-                {data.applicationSummary.stringNames.length > 0 && (
-                  <p>
-                    <span className="text-muted-foreground">선택 스트링:</span>{" "}
-                    <span className="font-semibold text-foreground">
-                      {data.applicationSummary.stringNames.join(", ")}
-                    </span>
-                  </p>
-                )}
-                {data.applicationSummary.tensionSummary && (
-                  <p>
-                    <span className="text-muted-foreground">텐션:</span>{" "}
-                    <span className="font-semibold text-foreground">
-                      {data.applicationSummary.tensionSummary}
-                    </span>
-                  </p>
-                )}
-                {data.applicationSummary.reservationLabel && (
-                  <p>
-                    <span className="text-muted-foreground">방문 예약:</span>{" "}
-                    <span className="font-semibold text-foreground">
-                      {data.applicationSummary.reservationLabel}
-                    </span>
-                  </p>
-                )}
-              </>
-            ) : (
-              <p className="text-muted-foreground">
-                교체서비스가 포함된 대여입니다. 교체서비스 상세에서 접수 상태를 확인할
-                수 있습니다.
-              </p>
-            )}
-            {applicationHref && (
-              <div className="pt-2">
-                <Button
-                  asChild
-                  variant="outline"
-                  className="w-full gap-2 lg:w-auto"
-                >
-                  <Link href={applicationHref}>
-                    <Wrench className="h-4 w-4" />
-                    교체서비스 상세 보기
-                  </Link>
-                </Button>
+      {withStringService ? (
+        <section id="stringing-service" className="scroll-mt-24">
+          <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+            <CardHeader className="border-b border-border bg-muted/30">
+              <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Wrench className="h-5 w-5 text-primary" />
+                    <span>연결된 교체서비스</span>
+                  </CardTitle>
+                  <CardDescription className="mt-1">
+                    대여 라켓과 함께 진행되는 교체서비스 정보를 한 흐름에서
+                    확인할 수 있어요.
+                  </CardDescription>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {data.stringingApplicationId ? (
+                    <Badge variant="secondary">교체서비스 연결</Badge>
+                  ) : (
+                    <Badge variant="secondary">신청 필요</Badge>
+                  )}
+                  {linkedApplicationNeedsTracking ? (
+                    <Badge variant="destructive">운송장 등록 필요</Badge>
+                  ) : null}
+                </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+            </CardHeader>
+            <CardContent className="space-y-4 p-4 bp-sm:p-6">
+              {linkedApplication || data.applicationSummary ? (
+                <>
+                  <div className="grid gap-3 text-sm text-foreground bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+                    <div className="rounded-xl border border-border bg-muted/30 p-3">
+                      <p className="text-muted-foreground">진행 상태</p>
+                      <Badge
+                        variant="info"
+                        className="mt-2 max-w-full whitespace-normal break-keep text-left"
+                      >
+                        {linkedApplication?.status ??
+                          data.applicationSummary?.status ??
+                          "접수 확인 중"}
+                      </Badge>
+                    </div>
+                    <div className="rounded-xl border border-border bg-muted/30 p-3">
+                      <p className="text-muted-foreground">신청일</p>
+                      <p className="mt-2 font-semibold tabular-nums text-foreground">
+                        {linkedApplication?.createdAt
+                          ? formatDate(linkedApplication.createdAt)
+                          : data.createdAt
+                            ? formatDate(data.createdAt)
+                            : "-"}
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-border bg-muted/30 p-3">
+                      <p className="text-muted-foreground">희망 작업일</p>
+                      <p className="mt-2 break-words font-semibold text-foreground">
+                        {linkedApplication?.reservationLabel ??
+                          data.applicationSummary?.reservationLabel ??
+                          "예약 정보 없음"}
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-border bg-muted/30 p-3">
+                      <p className="text-muted-foreground">서비스 금액</p>
+                      <p className="mt-2 font-semibold tabular-nums text-foreground">
+                        {typeof linkedApplication?.totalPrice === "number"
+                          ? formatCurrency(linkedApplication.totalPrice)
+                          : stringingFee > 0
+                            ? formatCurrency(stringingFee)
+                            : "결제 정보 확인"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold text-foreground">
+                      라켓·스트링 정보
+                    </p>
+                    <div className="grid gap-3 bp-md:grid-cols-2">
+                      {linkedApplicationDisplayLines.map((line, index) => {
+                        const racketLabel =
+                          line.racketLabel ||
+                          line.racketType ||
+                          `${racketBrandLabel(data.brand)} ${data.model}`;
+                        const stringName =
+                          line.stringName ||
+                          linkedApplication?.stringNames?.join(", ") ||
+                          data.applicationSummary?.stringNames.join(", ") ||
+                          "스트링 확인 중";
+                        const tensionMain =
+                          line.tensionMain ||
+                          linkedApplication?.tensionSummary ||
+                          data.applicationSummary?.tensionSummary ||
+                          "-";
+                        const tensionCross =
+                          line.tensionCross && line.tensionCross !== tensionMain
+                            ? line.tensionCross
+                            : null;
+
+                        return (
+                          <div
+                            key={line.id ?? `${data.id}-line-${index}`}
+                            className="rounded-xl border border-border bg-muted/30 p-3 text-sm"
+                          >
+                            <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+                              <p className="min-w-0 break-words font-semibold text-foreground">
+                                {racketLabel}
+                              </p>
+                              <Badge
+                                variant="outline"
+                                className="w-fit max-w-full whitespace-normal break-words text-left"
+                              >
+                                {stringName}
+                              </Badge>
+                            </div>
+                            <dl className="mt-3 space-y-2 text-foreground">
+                              <div className="flex gap-2">
+                                <dt className="w-20 shrink-0 text-muted-foreground">
+                                  텐션
+                                </dt>
+                                <dd className="min-w-0 break-words">
+                                  메인 {tensionMain}
+                                  {tensionCross
+                                    ? ` / 크로스 ${tensionCross}`
+                                    : ""}
+                                </dd>
+                              </div>
+                              {line.note || linkedApplication?.requirements ? (
+                                <div className="flex gap-2">
+                                  <dt className="w-20 shrink-0 text-muted-foreground">
+                                    요청사항
+                                  </dt>
+                                  <dd className="min-w-0 whitespace-pre-wrap break-words">
+                                    {line.note ??
+                                      linkedApplication?.requirements}
+                                  </dd>
+                                </div>
+                              ) : null}
+                            </dl>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3 rounded-xl border border-border bg-muted/20 p-3 text-sm text-foreground bp-sm:grid-cols-2">
+                    <p>
+                      <span className="text-muted-foreground">접수 방식:</span>{" "}
+                      {linkedApplication?.receptionLabel ??
+                        data.applicationSummary?.receptionLabel ??
+                        "확인 중"}
+                    </p>
+                    {linkedApplication?.shippingInfo?.selfShip ? (
+                      <p className="min-w-0 break-all">
+                        <span className="text-muted-foreground">
+                          발송 운송장:
+                        </span>{" "}
+                        {linkedApplication.shippingInfo.selfShip.courier ||
+                          "택배사 미등록"} ·{" "}
+                        {linkedApplication.shippingInfo.selfShip.trackingNo ||
+                          "운송장 미등록"}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:flex-wrap bp-sm:items-center">
+                    {linkedApplicationNeedsTracking &&
+                    linkedApplicationShippingHref ? (
+                      <Button asChild className="w-full gap-2 bp-sm:w-auto">
+                        <Link href={linkedApplicationShippingHref}>
+                          <Truck className="h-4 w-4" />
+                          교체서비스 운송장 등록
+                        </Link>
+                      </Button>
+                    ) : null}
+                    {applicationHref ? (
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="w-full gap-2 bp-sm:w-auto"
+                      >
+                        <Link href={applicationHref}>
+                          <Wrench className="h-4 w-4" />
+                          교체서비스 상세 보기
+                        </Link>
+                      </Button>
+                    ) : null}
+                    {data.stringingApplicationId ? (
+                      <ServiceReviewCTA
+                        applicationId={data.stringingApplicationId}
+                        userConfirmedAt={
+                          linkedApplication?.userConfirmedAt ?? null
+                        }
+                        className="w-full bp-sm:w-auto"
+                      />
+                    ) : null}
+                  </div>
+                </>
+              ) : canApplyStringService ? (
+                <div className="flex flex-col gap-3 rounded-xl border border-border bg-muted/20 p-4 text-sm bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                  <p className="text-muted-foreground">
+                    대여에 교체서비스가 포함되어 있어 신청서 작성이 필요합니다.
+                  </p>
+                  <Button asChild className="w-full gap-2 bp-sm:w-auto">
+                    <Link href={applyHref}>
+                      <Wrench className="h-4 w-4" />
+                      교체서비스 신청하기
+                    </Link>
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  교체서비스 상세 정보를 확인 중입니다.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
 
       <div className="grid gap-6 md:gap-8 lg:grid-cols-2">
         <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
