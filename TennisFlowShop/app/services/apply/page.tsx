@@ -1558,10 +1558,10 @@ export default function StringServiceApplyPage() {
                   <p className="text-sm text-muted-foreground leading-relaxed break-keep">마이페이지 주문/대여 내역에서 신청 가능한 항목을 선택해 교체서비스를 이어서 신청할 수 있습니다.</p>
                 </div>
                 <div className="mt-auto flex flex-col gap-2 bp-sm:flex-row">
-                  <Button type="button" variant="outline" onClick={() => safePush("/mypage?tab=orders&scope=order")} className="flex-1">
+                  <Button type="button" variant="outline" onClick={() => safePush("/mypage?tab=orders&scope=order")} className="flex-1 whitespace-normal break-keep">
                     주문 내역 보기
                   </Button>
-                  <Button type="button" variant="outline" onClick={() => safePush("/mypage?tab=orders&scope=rental")} className="flex-1">
+                  <Button type="button" variant="outline" onClick={() => safePush("/mypage?tab=orders&scope=rental")} className="flex-1 whitespace-normal break-keep">
                     대여 내역 보기
                   </Button>
                 </div>
@@ -1574,7 +1574,7 @@ export default function StringServiceApplyPage() {
                   <p className="text-sm font-semibold text-foreground break-keep">어떤 스트링을 골라야 할지 고민된다면</p>
                   <p className="text-sm text-muted-foreground leading-relaxed break-keep">스트링 선택이 어렵다면 플레이 성향에 맞는 추천을 먼저 확인해보세요.</p>
                 </div>
-                <Button asChild className="shrink-0 whitespace-normal break-keep text-center">
+                <Button asChild className="w-full shrink-0 whitespace-normal break-keep text-center bp-md:w-auto">
                   <Link href="/products/recommend">스트링 추천받기</Link>
                 </Button>
               </div>
