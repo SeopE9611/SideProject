@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   UNSAVED_CHANGES_MESSAGE,
@@ -312,41 +312,17 @@ export default function LoginPageClient() {
   };
 
   return (
-    <div className="min-h-screen bg-background px-4 py-8 md:flex md:items-center md:justify-center md:py-12">
-      <div className="grid w-full max-w-6xl gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch">
-        <aside className="rounded-2xl border border-border bg-card p-6 shadow-sm md:p-8 lg:flex lg:flex-col lg:justify-between">
-          <div>
-            <div className="mb-6 flex items-center gap-3">
-              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-border bg-muted/40">
-                <Image src="/brand/symbol-logo-light.png" alt="도깨비테니스 로고" fill className="object-contain p-2 dark:hidden" priority />
-                <Image src="/brand/symbol-logo-dark.png" alt="도깨비테니스 로고" fill className="hidden object-contain p-2 dark:block" priority />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-primary">DOKKAEBI TENNIS</p>
-                <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">안전한 계정으로 서비스를 이어가세요</h1>
-              </div>
-            </div>
-            <p className="break-keep text-sm leading-relaxed text-muted-foreground md:text-base">
-              주문, 쪽지, 알림, 예약 내역을 한 계정에서 안정적으로 관리할 수 있도록 로그인/회원가입 흐름을 간결하게 정리했습니다.
-            </p>
-          </div>
-          <div className="mt-6 grid gap-3 text-sm text-muted-foreground sm:grid-cols-3 lg:grid-cols-1">
-            {["보안 인증 기반 계정 보호", "주문·신청 내역 통합 관리", "쪽지와 알림으로 빠른 안내"].map((text) => (
-              <div key={text} className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 p-3">
-                <Shield className="h-4 w-4 shrink-0 text-primary" />
-                <span className="break-keep">{text}</span>
-              </div>
-            ))}
-          </div>
-        </aside>
-
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8 md:py-12">
+      <div
+        className={`mx-auto w-full ${activeTab === "register" ? "max-w-2xl" : "max-w-md"}`}
+      >
         <Card
-          className="overflow-hidden border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300"
+          className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300"
         >
-          <div className="border-b border-border bg-muted/30 p-4 text-foreground md:p-6">
+          <div className="border-b border-border bg-muted/30 p-4 text-foreground md:p-5">
             <div className="text-center">
-              <div className="mx-auto mb-4 flex justify-center">
-                <div className="relative h-20 w-20 shrink-0 overflow-hidden">
+              <div className="mx-auto mb-3 flex justify-center">
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden">
                   <Image
                     src="/brand/symbol-logo-light.png"
                     alt="도깨비테니스 로고"
@@ -364,7 +340,10 @@ export default function LoginPageClient() {
                 </div>
               </div>
 
-              <p className="text-sm font-medium text-muted-foreground md:text-base">
+              <h1 className="text-xl font-bold tracking-tight text-foreground">
+                도깨비테니스 계정
+              </h1>
+              <p className="mt-1 text-sm font-medium text-muted-foreground">
                 로그인 또는 회원가입을 선택해 계속 진행하세요
               </p>
             </div>
@@ -375,20 +354,25 @@ export default function LoginPageClient() {
             onValueChange={handleTabChange}
             className="w-full"
           >
+            <div className="border-b border-border px-4 py-3 md:px-5">
+              <TabsList className="grid h-11 w-full grid-cols-2">
+                <TabsTrigger value="login">로그인</TabsTrigger>
+                <TabsTrigger value="register">회원가입</TabsTrigger>
+              </TabsList>
+            </div>
             {activeTab === "login" && (
-              <TabsContent value="login" forceMount className="p-4 md:p-6 mt-0">
-                <div className="space-y-4 md:space-y-6">
-                  <div className="text-center md:text-left">
+              <TabsContent value="login" forceMount className="mt-0 p-4 md:p-5">
+                <div className="space-y-4">
+                  <div className="text-center">
                     <h2 className="text-2xl font-bold text-foreground">
                       로그인
                     </h2>
                     <p className="mt-2 break-keep text-sm leading-relaxed text-muted-foreground">
-                      카카오/네이버 로그인으로 빠르게 시작하거나 이메일로
-                      로그인하세요
+                      간편 로그인 또는 이메일로 계속 진행하세요.
                     </p>
                   </div>
 
-                  <div className="space-y-3 rounded-xl border border-border/60 bg-secondary/40 p-4">
+                  <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
                     <p className="text-sm font-semibold text-foreground text-center">
                       간편 로그인
                     </p>
@@ -576,7 +560,7 @@ export default function LoginPageClient() {
 
                   {showGuestLookup && (
                     <div className="text-center">
-                      <div className="mb-4 rounded-xl border border-border/60 bg-secondary/50 p-4">
+                      <div className="mb-4 rounded-xl border border-border/60 bg-muted/30 p-4">
                         <div className="flex items-center justify-center gap-2 mb-3">
                           <Shield className="h-5 w-5 text-foreground" />
                           <p className="text-sm font-semibold text-foreground">
