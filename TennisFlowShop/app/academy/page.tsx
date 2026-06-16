@@ -439,7 +439,7 @@ export default async function AcademyPage() {
                             <p className="break-keep font-semibold text-foreground">
                               {item.title}
                             </p>
-                            <p className="whitespace-nowrap break-keep text-sm text-muted-foreground">
+                            <p className="break-keep break-words text-sm leading-relaxed text-muted-foreground">
                               {item.detail}
                             </p>
                           </div>
@@ -497,7 +497,7 @@ export default async function AcademyPage() {
                     </div>
                     <a
                       href={`tel:${contact.phone.replaceAll("-", "")}`}
-                      className="inline-flex items-center gap-2 whitespace-nowrap text-lg font-medium text-primary transition-colors hover:text-primary/80"
+                      className="inline-flex min-w-0 items-center gap-2 break-keep text-lg font-medium text-primary transition-colors hover:text-primary/80"
                     >
                       <Phone className="h-4 w-4" />
                       {contact.phone}
@@ -507,7 +507,7 @@ export default async function AcademyPage() {
                     asChild
                     variant="outline"
                     size="lg"
-                    className="w-full shrink-0 whitespace-nowrap sm:w-auto"
+                    className="w-full shrink-0 whitespace-normal break-keep sm:w-auto"
                   >
                     <Link href={`tel:${contact.phone.replaceAll("-", "")}`}>
                       전화하기
@@ -606,7 +606,7 @@ export default async function AcademyPage() {
                               {scheduleDisplay.daysText}
                             </p>
                             {scheduleDisplay.timeText && (
-                              <p className="whitespace-nowrap break-keep text-sm text-muted-foreground">
+                              <p className="break-keep break-words text-sm leading-relaxed text-muted-foreground">
                                 {scheduleDisplay.timeText}
                               </p>
                             )}
@@ -617,7 +617,7 @@ export default async function AcademyPage() {
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             정원
                           </span>
-                          <span className="min-w-0 whitespace-nowrap break-keep text-muted-foreground tabular-nums">
+                          <span className="min-w-0 whitespace-normal break-keep break-words text-muted-foreground tabular-nums">
                             {typeof academyClass.capacity === "number" &&
                             academyClass.capacity > 0
                               ? `${academyClass.capacity}명`
@@ -629,7 +629,7 @@ export default async function AcademyPage() {
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             가격
                           </span>
-                          <span className="min-w-0 whitespace-nowrap break-keep font-semibold text-primary">
+                          <span className="min-w-0 whitespace-normal break-keep break-words font-semibold text-primary">
                             {formatClassPrice(academyClass.price)}
                           </span>
                         </div>
