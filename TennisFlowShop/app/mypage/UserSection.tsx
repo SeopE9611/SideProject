@@ -1,8 +1,8 @@
 "use client";
 
-import { Mail, ShieldCheck, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
+import { Mail, ShieldCheck, User } from "lucide-react";
 
 type Props = {
   user: {
@@ -24,54 +24,44 @@ export default function UserSection({ user }: Props) {
   const hasNaver = socialProviders.includes("naver");
 
   return (
-    <section className="rounded-2xl border border-border bg-card p-5 shadow-sm bp-sm:p-6 bp-lg:p-7">
-      <div className="flex min-w-0 items-start gap-4">
-        <div className="shrink-0 rounded-2xl border border-border bg-muted p-3">
-          <User className="h-6 w-6 text-primary" aria-hidden="true" />
+    <section className="rounded-2xl border border-border bg-card px-4 py-3 shadow-sm bp-sm:px-5 bp-sm:py-4">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-muted">
+          <User className="h-5 w-5 text-primary" aria-hidden="true" />
         </div>
-        <div className="min-w-0 space-y-3">
-          <h1 className="break-keep text-2xl font-semibold tracking-tight text-foreground bp-sm:text-3xl">
-            {user.name ?? "회원"}님, 안녕하세요.
-          </h1>
-          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
-            <span className="flex min-w-0 items-center gap-1.5">
-              <Mail className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span className="min-w-0 break-all">
-                {user.email || "이메일 없음"}
-              </span>
-            </span>
-            <Badge
-              variant={isAdmin ? "info" : "secondary"}
-              className="gap-1.5 whitespace-nowrap px-2.5 py-1 text-xs font-medium"
-            >
+
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+            <h1 className="min-w-0 break-keep text-base font-semibold text-foreground bp-sm:text-lg">{user.name ?? "회원"}님</h1>
+
+            <Badge variant={isAdmin ? "info" : "secondary"} className="h-6 gap-1 whitespace-nowrap px-2 text-xs font-medium">
               <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
               {isAdmin ? "관리자 계정" : "사용자 회원"}
             </Badge>
+
             {hasKakao && (
-              <Badge
-                variant={getSocialProviderBadgeSpec("kakao").variant}
-                className="whitespace-nowrap px-2.5 py-1 text-xs font-medium"
-              >
+              <Badge variant={getSocialProviderBadgeSpec("kakao").variant} className="h-6 whitespace-nowrap px-2 text-xs font-medium">
                 카카오 로그인
               </Badge>
             )}
+
             {hasNaver && (
-              <Badge
-                variant={getSocialProviderBadgeSpec("naver").variant}
-                className="whitespace-nowrap px-2.5 py-1 text-xs font-medium"
-              >
+              <Badge variant={getSocialProviderBadgeSpec("naver").variant} className="h-6 whitespace-nowrap px-2 text-xs font-medium">
                 네이버 로그인
               </Badge>
             )}
+
             {!hasKakao && !hasNaver && (
-              <Badge
-                variant="secondary"
-                className="whitespace-nowrap px-2.5 py-1 text-xs font-medium"
-              >
+              <Badge variant="secondary" className="h-6 whitespace-nowrap px-2 text-xs font-medium">
                 이메일 계정
               </Badge>
             )}
           </div>
+
+          <p className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+            <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            <span className="min-w-0 break-all">{user.email || "이메일 없음"}</span>
+          </p>
         </div>
       </div>
     </section>
