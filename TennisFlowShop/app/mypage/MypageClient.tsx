@@ -460,7 +460,7 @@ export default function MypageClient({ user }: Props) {
                           </>
                         ) : (
                           <span className="text-xs text-muted-foreground">
-                            일반 계정
+                            이메일 계정
                           </span>
                         )}
                       </div>
@@ -476,7 +476,7 @@ export default function MypageClient({ user }: Props) {
           {/* 메인 콘텐츠 */}
           <div className="bp-lg:col-span-3 min-w-0">
             <Tabs value={currentTab} onValueChange={handleTabChange}>
-              <Card className="mb-5 border-border bg-card shadow-sm bp-sm:mb-6">
+              <Card className="mb-5 border-border bg-card shadow-sm bp-sm:mb-6 bp-lg:hidden">
                 <CardContent className="p-3 bp-sm:p-4">
                   <p className="mb-2 px-1 text-xs font-medium text-muted-foreground">
                     내 상세 내역
