@@ -592,30 +592,25 @@ export default function RegisterTabPanel({
   };
 
   return (
-    <TabsContent value="register" className="p-4 md:p-6">
-      <div className="space-y-5 md:space-y-6">
-        <div className="rounded-xl border border-border bg-muted/30 p-4 text-center md:text-left">
+    <TabsContent value="register" className="mt-0 p-4 md:p-5">
+      <div className="space-y-5">
+        <div className="text-center">
           <h2 className="text-2xl font-bold text-foreground">회원가입</h2>
           <p className="mt-2 break-keep text-sm leading-relaxed text-muted-foreground">
             {isSocialOauthRegister
-              ? "소셜 가입 완료를 위해 추가 정보를 입력해주세요."
-              : "도깨비테니스의 회원이 되어보세요"}
+              ? "가입 완료를 위해 필요한 정보만 입력해주세요."
+              : "계정 생성에 필요한 정보를 입력해주세요."}
           </p>
-          {isSocialOauthRegister && (
-            <p className="mt-1 text-sm text-muted-foreground">
-              입력한 정보는 배송/주문 안내와 계정 식별을 위해 사용됩니다.
-            </p>
-          )}
         </div>
 
-        <form onSubmit={handleRegister} className="space-y-5 md:space-y-6">
+        <form onSubmit={handleRegister} className="space-y-5">
           {registerFormError && (
             <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <span className="break-keep">{registerFormError}</span>
             </div>
           )}
-          <div className="grid grid-cols-1 gap-4 rounded-xl border border-border bg-card p-4 md:grid-cols-2 md:gap-5">
+          <div className="grid grid-cols-1 gap-4 rounded-xl border border-border bg-card p-4 md:grid-cols-2 md:gap-5 md:p-5">
             <div className="md:col-span-2 space-y-2">
               <Label
                 htmlFor="register-email-id"
