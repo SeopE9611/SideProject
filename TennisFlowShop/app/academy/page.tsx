@@ -1,3 +1,6 @@
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicSurface } from "@/components/public/PublicSurface";
+import { SectionHeader } from "@/components/public/SectionHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -284,11 +287,10 @@ export default async function AcademyPage() {
   );
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background text-foreground">
       {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-border/40 bg-gradient-to-b from-muted/30 to-background">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
-        <div className="relative mx-auto max-w-6xl px-4 py-12 md:px-6 md:py-20">
+      <section className="border-b border-border bg-muted/30 py-12 md:py-16">
+        <SiteContainer variant="default">
           <div className="grid gap-10 lg:grid-cols-[1fr_400px] lg:items-center lg:gap-16">
             <div className="space-y-8">
               <div className="space-y-4">
@@ -303,7 +305,12 @@ export default async function AcademyPage() {
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Button asChild size="lg" className="h-12 px-8 text-base">
+                <Button
+                  asChild
+                  size="lg"
+                  wrap="responsive"
+                  className="h-12 w-full px-8 text-base sm:w-auto"
+                >
                   <Link
                     href={
                       userId
@@ -319,7 +326,8 @@ export default async function AcademyPage() {
                   asChild
                   size="lg"
                   variant="outline"
-                  className="h-12 px-8 text-base"
+                  wrap="responsive"
+                  className="h-12 w-full px-8 text-base sm:w-auto"
                 >
                   <Link href="/board/qna/write?category=academy">
                     <MessageCircle className="mr-2 h-5 w-5" />
@@ -367,27 +375,29 @@ export default async function AcademyPage() {
               </div>
             </div>
           </div>
-        </div>
+        </SiteContainer>
       </section>
 
-      <div className="mx-auto max-w-6xl space-y-16 px-4 py-12 md:px-6 md:py-16">
+      <SiteContainer
+        variant="default"
+        className="space-y-12 py-10 md:space-y-16 md:py-14"
+      >
         {/* Lesson Programs Section */}
-        <section className="space-y-8" aria-labelledby="lesson-fees-heading">
-          <div className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-wider text-primary">
-              Lesson Program
-            </p>
-            <h2
-              id="lesson-fees-heading"
-              className="text-balance text-2xl font-bold tracking-tight text-foreground md:text-3xl"
-            >
-              레슨 프로그램 & 기준 수강료
-            </h2>
-            <p className="max-w-2xl break-words text-base leading-relaxed text-muted-foreground">
-              레슨 유형과 횟수별 기준 수강료를 카드형 안내로 정리했습니다.
-              수강료는 레슨 유형과 일정에 따라 상담 후 최종 확인될 수 있습니다.
-            </p>
-          </div>
+        <section className="space-y-6" aria-labelledby="lesson-fees-heading">
+          <SectionHeader
+            eyebrow="Lesson Program"
+            title={
+              <span id="lesson-fees-heading">
+                레슨 프로그램 & 기준 수강료
+              </span>
+            }
+            description={
+              <p className="break-keep leading-relaxed">
+                레슨 유형과 횟수별 기준 수강료를 카드형 안내로 정리했습니다.
+                수강료는 레슨 유형과 일정에 따라 상담 후 최종 확인될 수 있습니다.
+              </p>
+            }
+          />
 
           <div className="grid gap-6 lg:grid-cols-3">
             {lessonPrograms.map((program) => {
@@ -395,16 +405,16 @@ export default async function AcademyPage() {
               return (
                 <Card
                   key={program.category}
-                  className="group relative flex h-full flex-col overflow-hidden border-border/60 bg-card transition-all duration-300 hover:border-primary/30 hover:shadow-lg"
+                  className="group relative flex h-full flex-col overflow-hidden border-border bg-card shadow-sm transition-colors hover:border-primary/40"
                 >
                   <CardHeader className="space-y-4 pb-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
                       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/15">
                         <IconComponent className="h-6 w-6 text-primary" />
                       </div>
                       <Badge
                         variant="secondary"
-                        className="bg-primary/10 text-primary hover:bg-primary/15"
+                        className="break-keep"
                       >
                         {program.badge}
                       </Badge>
@@ -413,7 +423,7 @@ export default async function AcademyPage() {
                       <CardTitle className="text-xl">
                         {program.category}
                       </CardTitle>
-                      <CardDescription className="text-sm leading-relaxed">
+                      <CardDescription className="break-keep text-sm leading-relaxed">
                         {program.description}
                       </CardDescription>
                     </div>
@@ -422,14 +432,14 @@ export default async function AcademyPage() {
                     {program.items.map((item) => (
                       <div
                         key={`${program.category}-${item.title}-${item.detail}`}
-                        className="rounded-xl border border-border/40 bg-muted/30 p-4 transition-all duration-200 hover:border-primary/20 hover:bg-muted/50"
+                        className="rounded-xl border border-border bg-muted/30 p-4 transition-colors hover:bg-muted/50"
                       >
-                        <div className="flex items-center justify-between gap-4">
+                        <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
                           <div className="min-w-0">
                             <p className="break-keep font-semibold text-foreground">
                               {item.title}
                             </p>
-                            <p className="whitespace-nowrap text-sm text-muted-foreground">
+                            <p className="whitespace-nowrap break-keep text-sm text-muted-foreground">
                               {item.detail}
                             </p>
                           </div>
@@ -448,7 +458,7 @@ export default async function AcademyPage() {
 
         {/* Contact Section */}
         <section
-          className="space-y-8"
+          className="space-y-6"
           aria-labelledby="academy-contact-heading"
         >
           <div className="space-y-3">
@@ -472,14 +482,14 @@ export default async function AcademyPage() {
             {academyContacts.map((contact) => (
               <Card
                 key={contact.phone}
-                className="group border-border/60 bg-card transition-all duration-300 hover:border-primary/30 hover:shadow-lg"
+                className="group border-border bg-card shadow-sm transition-colors hover:border-primary/40"
               >
                 <CardContent className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
                   <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary/10 transition-colors group-hover:bg-primary/15">
                     <User className="h-8 w-8 text-primary" />
                   </div>
                   <div className="min-w-0 flex-1 space-y-1.5">
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
                       <h3 className="break-keep text-xl font-semibold leading-tight text-foreground">
                         {contact.name}
                       </h3>
@@ -510,19 +520,17 @@ export default async function AcademyPage() {
         </section>
 
         {/* Classes Section */}
-        <section className="space-y-8">
-          <div className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-wider text-primary">
-              Classes
-            </p>
-            <h2 className="text-balance text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-              현재 모집 중인 클래스
-            </h2>
-            <p className="max-w-2xl break-words text-base leading-relaxed text-muted-foreground">
-              목적과 경험에 맞춰 상담 후 적합한 수업 방향을 안내합니다. 선택한
-              클래스는 상담 신청 기준으로 사용됩니다.
-            </p>
-          </div>
+        <section className="space-y-6">
+          <SectionHeader
+            eyebrow="Classes"
+            title="현재 모집 중인 클래스"
+            description={
+              <p className="break-keep leading-relaxed">
+                목적과 경험에 맞춰 상담 후 적합한 수업 방향을 안내합니다. 선택한
+                클래스는 상담 신청 기준으로 사용됩니다.
+              </p>
+            }
+          />
 
           {academyClasses.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -540,10 +548,10 @@ export default async function AcademyPage() {
                 return (
                   <Card
                     key={academyClass._id}
-                    className={`group flex h-full flex-col border-border/60 bg-card transition-all duration-300 hover:shadow-lg ${isClosed ? "opacity-75" : "hover:border-primary/30"}`}
+                    className={`group flex h-full flex-col border-border bg-card shadow-sm transition-colors ${isClosed ? "opacity-75" : "hover:border-primary/40"}`}
                   >
                     <CardHeader className="space-y-4 pb-4">
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <Badge
                           variant={isClosed ? "secondary" : "default"}
                           className={
@@ -552,10 +560,10 @@ export default async function AcademyPage() {
                         >
                           {academyClass.statusLabel}
                         </Badge>
-                        <Badge variant="outline">
+                        <Badge variant="outline" className="break-keep">
                           {academyClass.lessonTypeLabel}
                         </Badge>
-                        <Badge variant="outline">
+                        <Badge variant="outline" className="break-keep">
                           {academyClass.levelLabel}
                         </Badge>
                       </div>
@@ -569,8 +577,8 @@ export default async function AcademyPage() {
                           "도깨비테니스에서 레벨과 목표에 맞춰 안내하는 아카데미 클래스입니다."}
                       </p>
 
-                      <div className="space-y-3 rounded-xl border border-border/40 bg-muted/30 p-4">
-                        <div className="flex items-center gap-3 text-sm">
+                      <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
+                        <div className="flex min-w-0 items-center gap-3 text-sm">
                           <User className="h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             강사
@@ -579,7 +587,7 @@ export default async function AcademyPage() {
                             {academyClass.instructorName || "상담 후 안내"}
                           </span>
                         </div>
-                        <div className="flex items-center gap-3 text-sm">
+                        <div className="flex min-w-0 items-center gap-3 text-sm">
                           <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             장소
@@ -588,23 +596,23 @@ export default async function AcademyPage() {
                             {academyClass.location || "상담 후 안내"}
                           </span>
                         </div>
-                        <div className="flex items-start gap-3 text-sm">
+                        <div className="flex min-w-0 items-start gap-3 text-sm">
                           <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             일정
                           </span>
-                          <div className="min-w-0 space-y-0.5 whitespace-normal break-keep break-words">
-                            <p className="break-keep text-sm font-semibold leading-snug text-foreground">
+                          <div className="min-w-0 space-y-1 whitespace-normal break-keep break-words">
+                            <p className="break-keep text-sm font-semibold leading-relaxed text-foreground">
                               {scheduleDisplay.daysText}
                             </p>
                             {scheduleDisplay.timeText && (
-                              <p className="whitespace-nowrap text-sm text-muted-foreground">
+                              <p className="whitespace-nowrap break-keep text-sm text-muted-foreground">
                                 {scheduleDisplay.timeText}
                               </p>
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-3 text-sm">
+                        <div className="flex min-w-0 items-center gap-3 text-sm">
                           <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             정원
@@ -616,7 +624,7 @@ export default async function AcademyPage() {
                               : "상담 후 안내"}
                           </span>
                         </div>
-                        <div className="flex items-center gap-3 text-sm">
+                        <div className="flex min-w-0 items-center gap-3 text-sm">
                           <Wallet className="h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             가격
@@ -632,7 +640,8 @@ export default async function AcademyPage() {
                           <Button
                             asChild
                             variant="outline"
-                            className="w-full whitespace-nowrap border-primary/30 bg-primary/5 text-primary hover:border-primary/50 hover:bg-primary/10"
+                            wrap="responsive"
+                            className="w-full border-primary/30 bg-primary/5 text-primary hover:border-primary/50 hover:bg-primary/10"
                           >
                             <Link
                               href={`/mypage/academy-applications/${existingApplication.id}`}
@@ -653,7 +662,8 @@ export default async function AcademyPage() {
                             <Button
                               asChild
                               variant="outline"
-                              className="flex-1 whitespace-nowrap"
+                              wrap="responsive"
+                              className="flex-1"
                             >
                               <Link href="/board/qna/write?category=academy">
                                 문의하기
@@ -661,7 +671,7 @@ export default async function AcademyPage() {
                             </Button>
                           </div>
                         ) : (
-                          <Button asChild className="w-full whitespace-nowrap">
+                          <Button asChild wrap="responsive" className="w-full">
                             <Link href={userId ? applyHref : loginHref}>
                               {userId ? "레슨 신청하기" : "로그인 후 신청"}
                             </Link>
@@ -674,7 +684,7 @@ export default async function AcademyPage() {
               })}
             </div>
           ) : (
-            <Card className="border-border/60 bg-muted/30">
+            <Card className="border-border bg-muted/30">
               <CardContent className="flex flex-col items-center justify-center gap-4 py-16 text-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
                   <GraduationCap className="h-8 w-8 text-muted-foreground" />
@@ -736,9 +746,8 @@ export default async function AcademyPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-muted/50 to-muted/30 p-5 bp-sm:p-8 md:p-12">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
-          <div className="relative mx-auto max-w-2xl space-y-6 text-center">
+        <PublicSurface variant="muted" padding="lg" className="text-center">
+          <div className="mx-auto max-w-2xl space-y-6">
             <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
               <MessageCircle className="h-7 w-7 text-primary" />
             </div>
@@ -750,7 +759,12 @@ export default async function AcademyPage() {
               도와드리고, 등록 확정 후 현장에서 결제를 안내해드립니다.
             </p>
             <div className="flex flex-col justify-center gap-3 pt-2 sm:flex-row">
-              <Button asChild size="lg" className="h-12 w-full px-8 sm:w-auto">
+              <Button
+                asChild
+                size="lg"
+                wrap="responsive"
+                className="h-12 w-full px-8 sm:w-auto"
+              >
                 <Link
                   href={
                     userId
@@ -765,6 +779,7 @@ export default async function AcademyPage() {
                 asChild
                 variant="outline"
                 size="lg"
+                wrap="responsive"
                 className="h-12 w-full px-8 sm:w-auto"
               >
                 <Link href="/board/qna/write?category=academy">
@@ -773,8 +788,8 @@ export default async function AcademyPage() {
               </Button>
             </div>
           </div>
-        </section>
-      </div>
+        </PublicSurface>
+      </SiteContainer>
     </main>
   );
 }
