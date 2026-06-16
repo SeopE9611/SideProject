@@ -181,25 +181,25 @@ export default function PrivacyPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="border-b">
-        <SiteContainer className="max-w-5xl bp-lg:max-w-5xl py-8">
+      <div className="border-b bg-card/30">
+        <SiteContainer className="max-w-4xl bp-lg:max-w-4xl py-8 md:py-10">
           <Link
             href="/"
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
+            className="mb-6 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             홈으로 돌아가기
           </Link>
 
-          <div className="space-y-4">
-            <h1 className="text-4xl font-bold tracking-normal">
+          <div className="space-y-3">
+            <h1 className="break-keep text-3xl font-bold tracking-tight md:text-4xl">
               개인정보처리방침
             </h1>
-            <p className="text-muted-foreground max-w-3xl leading-relaxed">
+            <p className="max-w-3xl break-keep text-muted-foreground leading-relaxed">
               도깨비테니스(이하 '회사')는 이용자의 개인정보를 중요시하며,
               「개인정보 보호법」을 준수하기 위하여 노력하고 있습니다.
             </p>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               <RefreshCw className="h-4 w-4" />
               <span>최종 업데이트: 2025년 10월 14일</span>
             </div>
@@ -207,17 +207,17 @@ export default function PrivacyPage() {
         </SiteContainer>
       </div>
 
-      <SiteContainer className="max-w-5xl bp-lg:max-w-5xl py-12">
-        <div className="space-y-12">
+      <SiteContainer className="max-w-4xl bp-lg:max-w-4xl py-8 md:py-12">
+        <div className="space-y-6 md:space-y-8">
           {/* Introduction */}
-          <div className="space-y-4">
-            <p className="text-foreground/80 leading-relaxed">
+          <div className="space-y-4 rounded-2xl border border-border bg-card p-5 md:p-6">
+            <p className="break-keep text-foreground/80 leading-relaxed">
               회사는 개인정보처리방침을 통하여 회사가 이용자로부터 수집하는
               개인정보의 항목, 개인정보의 수집 및 이용목적, 개인정보의 보유 및
               이용기간, 개인정보의 제3자 제공 및 취급위탁에 관한 사항을
               알려드립니다.
             </p>
-            <p className="text-foreground/80 leading-relaxed">
+            <p className="break-keep text-foreground/80 leading-relaxed">
               본 개인정보처리방침은 관련 법령 및 지침의 변경이나 회사의 내부
               방침 변경 등으로 인하여 변경될 수 있으며, 변경 시에는 회사
               홈페이지를 통하여 공지하도록 하겠습니다.
@@ -231,14 +231,16 @@ export default function PrivacyPage() {
               <div
                 key={section.id}
                 id={section.id}
-                className="scroll-mt-20 space-y-4"
+                className="scroll-mt-20 space-y-4 rounded-2xl border border-border bg-card p-5 md:p-6"
               >
-                <div className="flex items-center gap-3">
-                  <Icon className="h-5 w-5 text-primary flex-shrink-0" />
-                  <h2 className="text-2xl font-semibold">{section.title}</h2>
+                <div className="flex items-start gap-3">
+                  <Icon className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
+                  <h2 className="break-keep text-xl font-semibold tracking-tight md:text-2xl">
+                    {section.title}
+                  </h2>
                 </div>
-                <div className="pl-8">
-                  <div className="whitespace-pre-line text-foreground/80 leading-relaxed">
+                <div className="min-w-0 md:pl-8">
+                  <div className="whitespace-pre-line break-keep break-words text-foreground/80 leading-relaxed">
                     {section.content}
                   </div>
                 </div>
@@ -247,18 +249,20 @@ export default function PrivacyPage() {
           })}
 
           {/* Contact Information */}
-          <div className="pt-8 border-t space-y-4">
-            <div className="flex items-center gap-3">
-              <Phone className="h-5 w-5 text-primary flex-shrink-0" />
-              <h2 className="text-2xl font-semibold">개인정보 관련 문의</h2>
+          <div className="space-y-4 rounded-2xl border border-border bg-muted/30 p-5 md:p-6">
+            <div className="flex items-start gap-3">
+              <Phone className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
+              <h2 className="break-keep text-xl font-semibold tracking-tight md:text-2xl">
+                개인정보 관련 문의
+              </h2>
             </div>
-            <div className="pl-8 space-y-3">
-              <p className="text-foreground/80 leading-relaxed">
+            <div className="min-w-0 space-y-3 md:pl-8">
+              <p className="break-keep text-foreground/80 leading-relaxed">
                 개인정보 보호 관련 문의사항이 있으시면 개인정보 보호책임자에게
                 연락해 주시기 바랍니다. 회사는 이용자의 개인정보를 보호하기 위해
                 최선을 다하겠습니다.
               </p>
-              <p className="text-foreground/80">
+              <p className="break-keep text-foreground/80">
                 더 자세한 문의는{" "}
                 <Link
                   href="/board/qna/write"
@@ -273,9 +277,9 @@ export default function PrivacyPage() {
         </div>
       </SiteContainer>
 
-      <div className="border-t mt-16">
-        <SiteContainer className="max-w-5xl bp-lg:max-w-5xl py-8">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+      <div className="mt-10 border-t">
+        <SiteContainer className="max-w-4xl bp-lg:max-w-4xl py-8 md:py-10">
+          <div className="flex flex-col items-start justify-between gap-4 text-sm text-muted-foreground sm:flex-row sm:items-center">
             <p>
               &copy; {new Date().getFullYear()} 도깨비테니스. All rights
               reserved.

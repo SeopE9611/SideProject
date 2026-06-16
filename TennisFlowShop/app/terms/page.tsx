@@ -109,23 +109,25 @@ export default function TermsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="border-b">
-        <SiteContainer className="max-w-5xl bp-lg:max-w-5xl py-8">
+      <div className="border-b bg-card/30">
+        <SiteContainer className="max-w-4xl bp-lg:max-w-4xl py-8 md:py-10">
           <Link
             href="/"
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
+            className="mb-6 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             홈으로 돌아가기
           </Link>
 
-          <div className="space-y-4">
-            <h1 className="text-3xl font-bold tracking-normal">이용약관</h1>
-            <p className="text-muted-foreground max-w-3xl leading-relaxed">
+          <div className="space-y-3">
+            <h1 className="break-keep text-3xl font-bold tracking-tight md:text-4xl">
+              이용약관
+            </h1>
+            <p className="max-w-3xl break-keep text-muted-foreground leading-relaxed">
               도깨비테니스 웹사이트 이용에 관한 약관입니다. 서비스 이용 전
               반드시 읽어주시기 바랍니다.
             </p>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               <RefreshCw className="h-4 w-4" />
               <span>최종 업데이트: 2025년 10월 14일</span>
             </div>
@@ -133,11 +135,11 @@ export default function TermsPage() {
         </SiteContainer>
       </div>
 
-      <SiteContainer className="max-w-5xl bp-lg:max-w-5xl py-12">
-        <div className="space-y-12">
+      <SiteContainer className="max-w-4xl bp-lg:max-w-4xl py-8 md:py-12">
+        <div className="space-y-6 md:space-y-8">
           {/* Introduction */}
-          <div className="space-y-4">
-            <p className="text-foreground/80 leading-relaxed">
+          <div className="space-y-4 rounded-2xl border border-border bg-card p-5 md:p-6">
+            <p className="break-keep text-foreground/80 leading-relaxed">
               도깨비테니스(이하 '회사')는 이용자의 권리를 보호하고 안전하고
               편리한 서비스를 제공하기 위해 본 약관을 마련하였습니다. 본 약관은
               회사가 제공하는 모든 서비스에 적용됩니다.
@@ -151,14 +153,16 @@ export default function TermsPage() {
               <div
                 key={section.id}
                 id={section.id}
-                className="scroll-mt-20 space-y-4"
+                className="scroll-mt-20 space-y-4 rounded-2xl border border-border bg-card p-5 md:p-6"
               >
-                <div className="flex items-center gap-3">
-                  <Icon className="h-5 w-5 text-primary flex-shrink-0" />
-                  <h2 className="text-2xl font-semibold">{section.title}</h2>
+                <div className="flex items-start gap-3">
+                  <Icon className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
+                  <h2 className="break-keep text-xl font-semibold tracking-tight md:text-2xl">
+                    {section.title}
+                  </h2>
                 </div>
-                <div className="pl-8">
-                  <div className="whitespace-pre-line text-foreground/80 leading-relaxed">
+                <div className="min-w-0 md:pl-8">
+                  <div className="whitespace-pre-line break-keep break-words text-foreground/80 leading-relaxed">
                     {section.content}
                   </div>
                 </div>
@@ -167,18 +171,20 @@ export default function TermsPage() {
           })}
 
           {/* Agreement Notice */}
-          <div className="pt-8 border-t space-y-4">
-            <div className="flex items-center gap-3">
-              <UserCheck className="h-5 w-5 text-primary flex-shrink-0" />
-              <h2 className="text-2xl font-semibold">약관 동의 안내</h2>
+          <div className="space-y-4 rounded-2xl border border-border bg-muted/30 p-5 md:p-6">
+            <div className="flex items-start gap-3">
+              <UserCheck className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
+              <h2 className="break-keep text-xl font-semibold tracking-tight md:text-2xl">
+                약관 동의 안내
+              </h2>
             </div>
-            <div className="pl-8 space-y-3">
-              <p className="text-foreground/80 leading-relaxed">
+            <div className="min-w-0 space-y-3 md:pl-8">
+              <p className="break-keep text-foreground/80 leading-relaxed">
                 본 약관에 동의하시면 도깨비테니스의 서비스를 이용하실 수
                 있습니다. 약관에 동의하지 않으실 경우 서비스 이용이 제한될 수
                 있습니다.
               </p>
-              <p className="text-foreground/80">
+              <p className="break-keep text-foreground/80">
                 문의사항이 있으시면{" "}
                 <Link
                   href="/board/qna/write"
@@ -193,9 +199,9 @@ export default function TermsPage() {
         </div>
       </SiteContainer>
 
-      <div className="border-t mt-16">
-        <SiteContainer className="max-w-5xl bp-lg:max-w-5xl py-8">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+      <div className="mt-10 border-t">
+        <SiteContainer className="max-w-4xl bp-lg:max-w-4xl py-8 md:py-10">
+          <div className="flex flex-col items-start justify-between gap-4 text-sm text-muted-foreground sm:flex-row sm:items-center">
             <p>
               &copy; {new Date().getFullYear()} 도깨비테니스. All rights
               reserved.
