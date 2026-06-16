@@ -295,7 +295,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
     }
 
     if (group.application?.serviceReviewPending) {
-      return "교체서비스 후기 작성 가능";
+      return "상품+교체서비스 후기 가능";
     }
 
     return null;
@@ -315,7 +315,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
     }
 
     if (group.application?.serviceReviewPending) {
-      return "교체서비스 후기 작성 가능";
+      return "상품+교체서비스 후기 가능";
     }
 
     if (!group.rental?.stringingApplicationId && group.rental?.withStringService) {
@@ -330,7 +330,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
   if (isApplicationTrackingNeeded(group.application)) return "운송장 등록 필요";
   if (isApplicationConfirmNeeded(group.application)) return "교체서비스 확정 필요";
   if (group.application?.serviceReviewPending) {
-    return "교체서비스 후기 작성 가능";
+    return "상품+교체서비스 후기 가능";
   }
 
   return null;
@@ -351,7 +351,8 @@ const getFlowNextActionText = (
       "교체서비스 확정 필요": "작업 내용을 확인하고 교체서비스 확정을 진행해주���요.",
       "후기를 남길 수 있어요": "구매확정된 상품은 후기를 작성할 수 있어요.",
       "상품 후기 작성 가능": "구매확정된 상품은 후기를 작성할 수 있어요.",
-      "교체서비스 후기 작성 가능": "이용확정된 교체서비스 후기를 작성할 수 있어요.",
+      "상품+교체서비스 후기 가능":
+        "이용확정된 교체서비스 후기를 작성할 수 있어요.",
       "교체서비스 신청 필요": "교체서비스 신청을 이어서 진행해주세요.",
     };
     return todoMessageMap[opts.todoPrimaryReason] ?? null;

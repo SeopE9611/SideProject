@@ -385,7 +385,12 @@ export async function GET(req: Request) {
   const cursorB64 = url.searchParams.get("cursor");
   const withHidden = url.searchParams.get("withHidden"); // 'mask' | 'all' | null
   const withDeleted = url.searchParams.get("withDeleted"); //  ('1' | 'true')
-  const needServiceJoin = type === "all" || type === "service";
+  const productFilterId = url.searchParams.get("productId");
+  const productFilterCandidates =
+    productFilterId && ObjectId.isValid(productFilterId)
+      ? [new ObjectId(productFilterId), productFilterId]
+      : null;
+  const needServiceJoin = type === "all" || type === "service" || Boolean(productFilterCandidates);
 
   // match 조건 구성
   const match: any = {};
@@ -398,6 +403,9 @@ export async function GET(req: Request) {
   if (withHidden !== "mask" && withHidden !== "all") match.status = "visible";
   if (type === "product") match.productId = { $exists: true };
   if (type === "service") match.service = { $exists: true };
+  if (productFilterCandidates && type === "product") {
+    match.productId = { $in: productFilterCandidates };
+  }
   if (rating) match.rating = Number(rating);
   if (hasPhoto)
     match.$expr = { $gt: [{ $size: { $ifNull: ["$photos", []] } }, 0] };
@@ -512,6 +520,8 @@ export async function GET(req: Request) {
     serviceApplicationId: 1,
     serviceTitle: 1,
     serviceTargetName: 1,
+    serviceContextLabel: 1,
+    __serviceProductIds: 1,
     rating: 1,
     helpfulCount: 1,
     createdAt: 1,
@@ -602,6 +612,9 @@ export async function GET(req: Request) {
                   $project: {
                     // 스키마가 케이스별로 다를 수 있어서 후보를 넓게 잡음
                     "stringDetails.stringItems.name": 1,
+                    "stringDetails.stringItems.productId": 1,
+                    "stringDetails.racketLines.stringName": 1,
+                    "stringDetails.racketLines.stringProductId": 1,
                     "stringItems.name": 1,
                     stringTypes: 1,
                   },
@@ -726,7 +739,36 @@ export async function GET(req: Request) {
               },
             },
           },
-          // 4) 최종 타이틀: "스트링 교체 서비스 - (상품명…)" 구성
+          {
+            $addFields: {
+              __serviceProductIds: {
+                $concatArrays: [
+                  {
+                    $map: {
+                      input: { $ifNull: ["$application.stringDetails.stringItems", []] },
+                      as: "x",
+                      in: "$$x.productId",
+                    },
+                  },
+                  {
+                    $map: {
+                      input: { $ifNull: ["$application.stringDetails.racketLines", []] },
+                      as: "x",
+                      in: "$$x.stringProductId",
+                    },
+                  },
+                ],
+              },
+              serviceContextLabel: {
+                $cond: [
+                  { $eq: ["$service", "stringing"] },
+                  "상품+교체서비스 후기",
+                  "서비스 후기",
+                ],
+              },
+            },
+          },
+          // 4) 최종 타이틀: "상품+교체서비스 - (상품명…)" 구성
           {
             $addFields: {
               serviceTitle: {
@@ -742,11 +784,11 @@ export async function GET(req: Request) {
                       },
                       {
                         $concat: [
-                          "스트링 교체 서비스 - ",
+                          "상품+교체서비스 - ",
                           "$serviceTargetName",
                         ],
                       },
-                      "스트링 교체 서비스",
+                      "상품+교체서비스 이용 후기",
                     ],
                   },
                   null,
@@ -792,7 +834,17 @@ export async function GET(req: Request) {
     pipeline.push({ $addFields: { votedByMe: false } });
   }
 
-  const rows = await db.collection("reviews").aggregate(pipeline).toArray();
+  let rows = await db.collection("reviews").aggregate(pipeline).toArray();
+
+  if (productFilterCandidates && type !== "product") {
+    const wanted = new Set(productFilterCandidates.map((v) => String(v)));
+    rows = rows.filter((row: any) => {
+      if (row.type === "product") return wanted.has(String(row.productId));
+      return Array.isArray(row.__serviceProductIds)
+        ? row.__serviceProductIds.some((pid: any) => wanted.has(String(pid)))
+        : false;
+    });
+  }
 
   // nextCursor 생성
   let nextCursor: string | null = null;
@@ -840,6 +892,7 @@ export async function GET(req: Request) {
     delete row.__racketBrand;
     delete row.__racketModel;
     delete row.__racketImages;
+    delete row.__serviceProductIds;
   }
 
   return NextResponse.json({ items: rows, nextCursor });

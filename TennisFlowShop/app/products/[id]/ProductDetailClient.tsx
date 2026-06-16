@@ -765,6 +765,37 @@ export default function ProductDetailClient({ product }: { product: any }) {
     { revalidateOnFocus: false },
   );
 
+  const { data: reviewEligibility } = useSWR(
+    activeTab === "reviews" && user
+      ? `/api/reviews/eligibility?productId=${product._id}`
+      : null,
+    fetcher,
+    { revalidateOnFocus: false },
+  );
+
+  const { data: linkedReviewData } = useSWR(
+    activeTab === "reviews"
+      ? `/api/reviews?type=all&productId=${product._id}&limit=20`
+      : null,
+    fetcher,
+    { revalidateOnFocus: false },
+  );
+
+  const productReviewHref = reviewEligibility?.suggestedApplicationId
+    ? `/reviews/write?service=stringing&applicationId=${reviewEligibility.suggestedApplicationId}`
+    : `/reviews/write?productId=${product._id}${reviewEligibility?.suggestedOrderId ? `&orderId=${reviewEligibility.suggestedOrderId}` : ""}`;
+  const productReviewCtaLabel = reviewEligibility?.suggestedApplicationId
+    ? "교체서비스 후기 작성"
+    : "리뷰 작성하기";
+  const productReviewHelper = reviewEligibility?.suggestedApplicationId
+    ? "이 상품으로 이용한 교체서비스 후기를 작성할 수 있습니다."
+    : reviewEligibility?.eligible
+      ? "구매확정된 단품 구매 후기를 작성할 수 있습니다."
+      : "작성 가능한 이용 내역이 없습니다.";
+  const canWriteFromProductReviewTab = Boolean(
+    reviewEligibility?.eligible || reviewEligibility?.suggestedApplicationId,
+  );
+
   // 내 리뷰 여부 판별(merged에서 ownedByMe 세팅 + id 비교)
   const isMine = (rv: any) =>
     !!rv?.ownedByMe ||
@@ -815,8 +846,21 @@ export default function ProductDetailClient({ product }: { product: any }) {
       });
     }
 
+    if (Array.isArray(linkedReviewData?.items)) {
+      const existingIds = new Set(next.map((r: any) => String(r._id)));
+      const linked = linkedReviewData.items
+        .filter((r: any) => !existingIds.has(String(r._id)))
+        .map((r: any) => ({
+          ...r,
+          user: r.userName ?? "익명",
+          date: typeof r.createdAt === "string" ? r.createdAt.slice(0, 10) : "",
+          serviceContextLabel: r.serviceContextLabel,
+        }));
+      next = [...next, ...linked];
+    }
+
     return next;
-  }, [product.reviews, myReview, isAdmin, adminReviews]);
+  }, [product.reviews, myReview, isAdmin, adminReviews, linkedReviewData]);
 
   // 인라인 수정 다이얼로그 상태/핸들러
   const [editOpen, setEditOpen] = useState(false);
@@ -1991,16 +2035,29 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         고객 리뷰
                       </h3>
                     </div>
-                    <Button
-                      asChild
-                      variant="secondary"
-                      className="text-xs sm:text-sm h-9 sm:h-10"
-                    >
-                      <Link href={`/reviews/write?productId=${product._id}`}>
-                        <Pencil className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                        리뷰 작성하기
-                      </Link>
-                    </Button>
+                    <div className="flex min-w-0 flex-col items-start gap-1 sm:items-end">
+                      <Button
+                        asChild={canWriteFromProductReviewTab}
+                        variant="secondary"
+                        disabled={!canWriteFromProductReviewTab}
+                        className="h-9 text-xs sm:h-10 sm:text-sm"
+                      >
+                        {canWriteFromProductReviewTab ? (
+                          <Link href={productReviewHref}>
+                            <Pencil className="mr-1.5 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                            {productReviewCtaLabel}
+                          </Link>
+                        ) : (
+                          <span className="inline-flex items-center">
+                            <Pencil className="mr-1.5 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                            후기 작성
+                          </span>
+                        )}
+                      </Button>
+                      <p className="max-w-xs break-keep text-xs text-muted-foreground sm:text-right">
+                        {productReviewHelper}
+                      </p>
+                    </div>
                   </div>
 
                   <div className="space-y-4 sm:space-y-6">
@@ -2025,7 +2082,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 </div>
                                 <div className="min-w-0">
                                   <div className="break-words font-bold text-foreground text-sm sm:text-base">
-                                    {review.status === "hidden"
+                                    {review.type === "service" ? "상품+교체서비스 후기" : review.status === "hidden"
                                       ? review.ownedByMe
                                         ? `${review.user ?? "내 리뷰"} (비공개)`
                                         : review.adminView
@@ -2325,15 +2382,26 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">
                           아직 리뷰가 없습니다
                         </h3>
-                        <p className="text-muted-foreground mb-6 text-base sm:text-lg">
-                          첫 번째 리뷰를 작성해보세요!
+                        <p className="mb-6 text-base text-muted-foreground sm:text-lg">
+                          {productReviewHelper}
                         </p>
                         <Button
+                          asChild={canWriteFromProductReviewTab}
                           variant="secondary"
-                          className="px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base"
+                          disabled={!canWriteFromProductReviewTab}
+                          className="px-6 py-2 text-sm sm:px-8 sm:py-3 sm:text-base"
                         >
-                          <Pencil className="h-4 w-4 mr-2" />
-                          리뷰 작성하기
+                          {canWriteFromProductReviewTab ? (
+                            <Link href={productReviewHref}>
+                              <Pencil className="mr-2 h-4 w-4" />
+                              {productReviewCtaLabel}
+                            </Link>
+                          ) : (
+                            <span className="inline-flex items-center">
+                              <Pencil className="mr-2 h-4 w-4" />
+                              작성 가능한 내역 없음
+                            </span>
+                          )}
                         </Button>
                       </div>
                     )}

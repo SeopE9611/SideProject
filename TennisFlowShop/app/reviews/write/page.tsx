@@ -381,7 +381,7 @@ export default function ReviewWritePage() {
             toastLocked.current = true;
             if (d.reason === "serviceLinkedOrder") {
               showInfoToast(
-                "교체서비스가 연결된 주문은 서비스 리뷰만 작성할 수 있습니다.",
+                "교체서비스가 연결된 주문은 상품과 교체서비스 경험을 하나의 이용 후기로 작성할 수 있습니다.",
               );
             } else {
               showErrorToast("잘못된 접근입니다.");
@@ -686,13 +686,13 @@ export default function ReviewWritePage() {
     mode === "product"
       ? "스트링 상품 후기 작성"
       : mode === "service"
-        ? "서비스 후기 작성"
+        ? "상품+교체서비스 후기 작성"
         : "작성할 후기를 찾을 수 없어요";
   const subtitle =
     mode === "product"
       ? "구매하신 스트링 상품에 대한 솔직한 후기를 남겨주세요."
       : mode === "service"
-        ? "스트링 교체 서비스 이용 후기를 남겨주세요."
+        ? "상품과 장착 경험을 함께 평가해주세요."
         : "후기는 구매확정 또는 서비스 완료 후 작성할 수 있어요. 마이페이지에서 작성 가능한 주문이나 신청 내역을 다시 확인해주세요.";
 
   const badge =
@@ -701,7 +701,7 @@ export default function ReviewWritePage() {
       : state === "already"
         ? "이미 작성한 대상입니다"
         : state === "serviceLinkedOrder"
-          ? "서비스 리뷰만 작성할 수 있어요"
+          ? "상품+교체서비스 후기 대상입니다"
           : state === "notPurchased"
             ? "아직 후기를 작성할 수 없어요"
             : state === "unauthorized"
@@ -916,7 +916,7 @@ export default function ReviewWritePage() {
         if (data?.message === "serviceLinkedOrder") {
           setState("serviceLinkedOrder");
           showInfoToast(
-            "교체서비스가 연결된 주문은 서비스 리뷰만 작성할 수 있습니다.",
+            "교체서비스가 연결된 주문은 상품과 교체서비스 경험을 하나의 이용 후기로 작성할 수 있습니다.",
           );
           return;
         }
@@ -1380,7 +1380,7 @@ export default function ReviewWritePage() {
                       )}
                       {state === "serviceLinkedOrder" && (
                         <div>
-                          교체서비스가 연결된 주문은 상품 리뷰를 작성할 수 없어요.
+                          교체서비스가 연결된 주문은 상품과 교체서비스 경험을 하나의 후기로 남겨주세요.
                           연결된 교체서비스 이용확정 후 서비스 리뷰를 작성해 주세요.
                         </div>
                       )}

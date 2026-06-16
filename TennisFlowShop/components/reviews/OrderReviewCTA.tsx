@@ -58,7 +58,7 @@ export default function OrderReviewCTA({
       <div className={`inline-flex items-center gap-2 ${className ?? ""}`}>
         <Button size={size} variant="secondary" disabled>
           <Check className="mr-1 h-4 w-4" />
-          모든 상품 후기를 남겼어요
+          모든 후기를 남겼어요
         </Button>
       </div>
     );
@@ -81,7 +81,7 @@ export default function OrderReviewCTA({
             href={`/reviews/write?productId=${reviewNextTargetProductId}&orderId=${orderId}`}
           >
             <MessageSquarePlus className="mr-1 h-4 w-4" />
-            후기 작성하기
+            후기 작성
           </Link>
         </Button>
         {unreviewedBadge}
