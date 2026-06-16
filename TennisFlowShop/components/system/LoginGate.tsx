@@ -133,18 +133,16 @@ export default function LoginGate({
     <div className={`${v.minHeight} bg-background`}>
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-2xl mx-auto">
-          <Card className="relative overflow-hidden border-0 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] bg-card/90 dark:bg-card/85">
-            <div className="h-1.5 w-full bg-primary" />
-
-            <CardContent className="p-8">
+          <Card className="relative overflow-hidden border border-border bg-card shadow-sm">
+            <CardContent className="p-6 md:p-8">
               <div className="w-14 h-14 rounded-2xl border border-primary/20 bg-primary/10 dark:bg-primary/20 text-primary grid place-content-center shadow-lg mb-6">
                 <LogIn className="h-7 w-7" />
               </div>
 
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-normal mb-2">
-                <span className="text-primary">로그인</span>이 필요합니다.
+              <h1 className="mb-2 break-keep text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+                로그인이 필요합니다.
               </h1>
-              <p className="text-muted-foreground">{v.description}</p>
+              <p className="break-keep text-sm leading-relaxed text-muted-foreground md:text-base">{v.description}</p>
 
               <div className="mt-4">
                 <Badge variant="highlight">
@@ -153,12 +151,12 @@ export default function LoginGate({
               </div>
             </CardContent>
 
-            <CardFooter className="px-8 pb-8">
-              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <Button asChild variant="default" className="whitespace-nowrap">
+            <CardFooter className="px-6 pb-6 md:px-8 md:pb-8">
+              <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Button asChild variant="default" className="w-full whitespace-nowrap sm:w-auto">
                   <Link href={loginHref}>로그인·회원가입하기</Link>
                 </Button>
-                <Button asChild variant="outline" className="whitespace-nowrap">
+                <Button asChild variant="outline" className="w-full whitespace-nowrap sm:w-auto">
                   <Link href={v.secondary.href}>{v.secondary.label}</Link>
                 </Button>
               </div>

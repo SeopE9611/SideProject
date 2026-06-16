@@ -154,7 +154,7 @@ export default function NotificationsClient() {
   const showEmpty = status === "ready" && items.length === 0;
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-6 md:py-8">
+    <div className="mx-auto w-full max-w-5xl px-4 py-6 md:py-8">
       <Card className="border-border bg-card shadow-sm">
         <CardHeader className="border-b border-border/60 bg-secondary/70">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -164,8 +164,8 @@ export default function NotificationsClient() {
               </div>
               <div>
                 <CardTitle className="text-xl font-semibold">알림</CardTitle>
-                <p className="mt-0.5 text-sm text-muted-foreground">
-                  읽지 않은 알림 {unreadCount.toLocaleString()}개
+                <p className="mt-0.5 break-keep text-sm text-muted-foreground">
+                  시간순으로 도착한 활동과 안내를 확인하세요 · 읽지 않은 알림 {unreadCount.toLocaleString()}개
                 </p>
               </div>
             </div>
@@ -173,7 +173,7 @@ export default function NotificationsClient() {
               variant="outline"
               disabled={unreadCount <= 0 || isMarkingAll}
               onClick={markAllAsRead}
-              className="gap-2"
+              className="w-full gap-2 sm:w-auto"
             >
               {isMarkingAll && <Loader2 className="h-4 w-4 animate-spin" />}
               모두 읽음
@@ -182,7 +182,7 @@ export default function NotificationsClient() {
         </CardHeader>
         <CardContent className="p-0">
           {status === "loading" ? (
-            <div className="space-y-1 p-3">
+            <div className="space-y-2 p-3 md:p-4">
               {Array.from({ length: 6 }).map((_, index) => (
                 <div key={index} className="space-y-2 rounded-lg px-3 py-3">
                   <Skeleton className="h-4 w-24" />
@@ -192,15 +192,15 @@ export default function NotificationsClient() {
               ))}
             </div>
           ) : status === "error" ? (
-            <div className="px-4 py-16 text-center text-sm text-muted-foreground">
-              알림을 불러오지 못했습니다.
+            <div className="m-4 rounded-xl border border-border bg-muted/30 px-4 py-16 text-center text-sm text-muted-foreground">
+              알림을 불러오지 못했습니다. 잠시 후 다시 확인해주세요.
             </div>
           ) : showEmpty ? (
-            <div className="px-4 py-16 text-center text-sm text-muted-foreground">
-              새 알림이 없습니다.
+            <div className="m-4 rounded-xl border border-border bg-muted/30 px-4 py-16 text-center text-sm text-muted-foreground">
+              새 알림이 없습니다. 중요한 안내가 도착하면 이곳에 표시됩니다.
             </div>
           ) : (
-            <div className="space-y-1 p-2">
+            <div className="space-y-2 p-3 md:p-4">
               {items.map((item) => (
                 <NotificationItem key={item.id} item={item} onClick={() => handleItemClick(item)} />
               ))}

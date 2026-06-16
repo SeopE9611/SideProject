@@ -234,7 +234,7 @@ export default function OrderLookupPage() {
             <h1 className="text-3xl md:text-4xl font-bold mb-4">
               비회원 주문 조회
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="mx-auto max-w-2xl break-keep text-base leading-relaxed text-muted-foreground md:text-xl">
               주문번호를 몰라도 주문 시 입력한 이름, 이메일, 연락처로 주문/신청
               상태와 다음 해야 할 일을 확인할 수 있어요
             </p>
@@ -242,20 +242,20 @@ export default function OrderLookupPage() {
         </div>
       </div>
 
-      <div className="container mx-auto py-8 md:py-12 px-4 md:px-6">
-        <div className="max-w-2xl mx-auto">
-          <div className="mb-6 md:mb-8">
+      <div className="container mx-auto px-4 py-8 md:px-6 md:py-12">
+        <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+          <div className="mb-0 lg:col-span-2">
             <Link
               href="/login"
               onClick={onLeaveToLoginClick}
-              className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors group"
+              className="inline-flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground group"
             >
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
               이전 페이지로 돌아가기
             </Link>
           </div>
 
-          <div className="mb-5 rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground">
+          <aside className="order-2 rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground shadow-sm lg:order-none lg:sticky lg:top-24">
             <p className="font-semibold text-foreground">
               조회 후 확인할 수 있는 정보
             </p>
@@ -264,8 +264,9 @@ export default function OrderLookupPage() {
               보여드립니다. 회원가입하면 다음부터 마이페이지에서 더 쉽게 관리할
               수 있어요.
             </p>
-          </div>
+          </aside>
 
+          <div className="min-w-0">
           {/* Main Card */}
           <Card className="border border-border bg-card shadow-sm">
             <CardHeader className="text-center pb-6 md:pb-8">
@@ -478,7 +479,7 @@ export default function OrderLookupPage() {
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full h-12 font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-[background-color,box-shadow] duration-200 hover:shadow-md"
+                  className="h-12 w-full font-semibold"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
@@ -508,7 +509,7 @@ export default function OrderLookupPage() {
           </Card>
 
           {/* Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-8 md:mt-12">
+          <div className="grid grid-cols-1 gap-4 md:mt-8">
             <div className="text-center p-4 md:p-6 bg-card rounded-xl border border-border shadow-sm">
               <div className="inline-flex items-center justify-center w-12 h-12 border border-border bg-secondary text-foreground rounded-full mb-4">
                 <Shield className="w-6 h-6 text-primary" />
@@ -542,6 +543,7 @@ export default function OrderLookupPage() {
                 배송 추적부터 결제 정보까지 한눈에
               </p>
             </div>
+          </div>
           </div>
         </div>
       </div>

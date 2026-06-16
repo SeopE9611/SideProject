@@ -312,12 +312,38 @@ export default function LoginPageClient() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="relative w-full max-w-6xl">
+    <div className="min-h-screen bg-background px-4 py-8 md:flex md:items-center md:justify-center md:py-12">
+      <div className="grid w-full max-w-6xl gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch">
+        <aside className="rounded-2xl border border-border bg-card p-6 shadow-sm md:p-8 lg:flex lg:flex-col lg:justify-between">
+          <div>
+            <div className="mb-6 flex items-center gap-3">
+              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-border bg-muted/40">
+                <Image src="/brand/symbol-logo-light.png" alt="도깨비테니스 로고" fill className="object-contain p-2 dark:hidden" priority />
+                <Image src="/brand/symbol-logo-dark.png" alt="도깨비테니스 로고" fill className="hidden object-contain p-2 dark:block" priority />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-primary">DOKKAEBI TENNIS</p>
+                <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">안전한 계정으로 서비스를 이어가세요</h1>
+              </div>
+            </div>
+            <p className="break-keep text-sm leading-relaxed text-muted-foreground md:text-base">
+              주문, 쪽지, 알림, 예약 내역을 한 계정에서 안정적으로 관리할 수 있도록 로그인/회원가입 흐름을 간결하게 정리했습니다.
+            </p>
+          </div>
+          <div className="mt-6 grid gap-3 text-sm text-muted-foreground sm:grid-cols-3 lg:grid-cols-1">
+            {["보안 인증 기반 계정 보호", "주문·신청 내역 통합 관리", "쪽지와 알림으로 빠른 안내"].map((text) => (
+              <div key={text} className="flex items-center gap-3 rounded-xl border border-border bg-muted/30 p-3">
+                <Shield className="h-4 w-4 shrink-0 text-primary" />
+                <span className="break-keep">{text}</span>
+              </div>
+            ))}
+          </div>
+        </aside>
+
         <Card
-          className={`mx-auto overflow-hidden border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 ${activeTab === "register" ? "max-w-4xl" : "max-w-md"}`}
+          className="overflow-hidden border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300"
         >
-          <div className="border-b border-border bg-secondary/60 p-4 text-foreground md:p-6">
+          <div className="border-b border-border bg-muted/30 p-4 text-foreground md:p-6">
             <div className="text-center">
               <div className="mx-auto mb-4 flex justify-center">
                 <div className="relative h-20 w-20 shrink-0 overflow-hidden">
@@ -338,8 +364,8 @@ export default function LoginPageClient() {
                 </div>
               </div>
 
-              <p className="text-foreground font-medium">
-                로그인하여 쇼핑과 서비스를 이용해보세요
+              <p className="text-sm font-medium text-muted-foreground md:text-base">
+                로그인 또는 회원가입을 선택해 계속 진행하세요
               </p>
             </div>
           </div>
@@ -352,11 +378,11 @@ export default function LoginPageClient() {
             {activeTab === "login" && (
               <TabsContent value="login" forceMount className="p-4 md:p-6 mt-0">
                 <div className="space-y-4 md:space-y-6">
-                  <div className="text-center">
+                  <div className="text-center md:text-left">
                     <h2 className="text-2xl font-bold text-foreground">
                       로그인
                     </h2>
-                    <p className="text-foreground mt-2">
+                    <p className="mt-2 break-keep text-sm leading-relaxed text-muted-foreground">
                       카카오/네이버 로그인으로 빠르게 시작하거나 이메일로
                       로그인하세요
                     </p>
@@ -391,12 +417,12 @@ export default function LoginPageClient() {
                     className="space-y-4"
                     data-cy="login-form"
                   >
-                    {/* {loginFormError && (
- <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
- <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
- <div className="whitespace-pre-line">{loginFormError}</div>
- </div>
- )} */}
+                    {loginFormError && (
+                      <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+                        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                        <div className="whitespace-pre-line break-keep">{loginFormError}</div>
+                      </div>
+                    )}
                     <div className="space-y-2">
                       <Label
                         htmlFor="email"
