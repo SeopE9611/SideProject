@@ -183,25 +183,25 @@ export default async function PackageSuccessPage({
   return (
     <>
       <BackButtonGuard />
-      <div className="min-h-full bg-muted/30">
+      <div className="min-h-full bg-background">
         {/* Hero Section */}
-        <div className="relative overflow-hidden border-b border-border bg-muted/30 text-foreground dark:bg-card/40">
+        <div className="relative overflow-hidden border-b border-border bg-muted/30 text-foreground">
           <div className="absolute inset-0 bg-overlay/20"></div>
           <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
           <div className="relative container py-10 md:py-16">
             <div className="text-center">
-              <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-secondary border border-border">
-                <CheckCircle className="h-12 w-12 text-foreground" />
+              <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-card shadow-sm">
+                <CheckCircle className="h-9 w-9 text-primary" />
               </div>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
                 패키지 구매가 완료되었습니다!
               </h1>
-              <p className="mb-6 text-xl text-muted-foreground">
+              <p className="mx-auto mb-6 max-w-2xl break-keep text-base leading-relaxed text-muted-foreground sm:text-lg">
                 스트링 교체 패키지를 구매해주셔서 감사합니다. 아래 정보를
                 확인해주세요.
               </p>
 
-              <div className="flex flex-wrap justify-center gap-6 text-sm">
+              <div className="flex flex-wrap justify-center gap-3 text-sm sm:gap-6">
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-success" />
                   <span>안전한 결제 완료</span>
@@ -220,8 +220,8 @@ export default async function PackageSuccessPage({
             </div>
 
             {/* 패키지 활성화 안내 */}
-            <div className="mt-8 max-w-2xl mx-auto">
-              <div className="bg-muted border border-border rounded-xl p-4 md:p-6 text-center">
+            <div className="mx-auto mt-8 max-w-3xl">
+              <div className="rounded-xl border border-border bg-card p-4 text-center shadow-sm md:p-6">
                 <div className="flex items-center justify-center gap-3 mb-4">
                   <div className="p-2 bg-secondary rounded-lg">
                     <Package className="h-6 w-6 text-primary" />
@@ -260,16 +260,16 @@ export default async function PackageSuccessPage({
           </div>
         </div>
 
-        <div className="container py-8">
-          <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
+        <div className="container py-8 md:py-10">
+          <div className="mx-auto max-w-5xl space-y-5 md:space-y-6">
             {/* 패키지 주문 정보 카드 */}
-            <Card className="bg-card border border-border shadow-md overflow-hidden">
-              <div className="bg-muted/60 p-4 md:p-6">
+            <Card className="overflow-hidden border border-border bg-card shadow-sm">
+              <div className="border-b border-border bg-muted/40 p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3 text-2xl">
                   <Package className="h-6 w-6 text-primary" />
                   패키지 주문 정보
                 </CardTitle>
-                <CardDescription className="mt-2 text-lg">
+                <CardDescription className="mt-2 break-all text-sm text-muted-foreground sm:text-base">
                   주문 번호:{" "}
                   <span className="font-mono font-semibold text-primary">
                     {packageOrder._id.toString()}
@@ -286,9 +286,9 @@ export default async function PackageSuccessPage({
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
+                <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
                   <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
+                    <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/40 p-4">
                       <Clock className="h-5 w-5 text-primary" />
                       <div>
                         <p className="text-sm text-muted-foreground">
@@ -307,7 +307,7 @@ export default async function PackageSuccessPage({
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
+                    <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/40 p-4">
                       <CreditCard className="h-5 w-5 text-primary" />
                       <div>
                         <p className="text-sm text-muted-foreground">
@@ -321,7 +321,7 @@ export default async function PackageSuccessPage({
                   </div>
 
                   {!isTossPayment && !isNicePayment ? (
-                    <div className="bg-muted p-4 md:p-6 rounded-xl border border-border">
+                    <div className="rounded-xl border border-border bg-muted/40 p-4 md:p-6">
                       <div className="flex items-center gap-2 mb-4">
                         <CreditCard className="h-5 w-5 text-primary" />
                         <h3 className="font-bold text-primary">
@@ -329,7 +329,7 @@ export default async function PackageSuccessPage({
                         </h3>
                       </div>
                       {paymentInfo?.bank && bankLabelMap[paymentInfo.bank] ? (
-                        <div className="bg-card p-4 rounded-lg border-2 border-border space-y-2">
+                        <div className="space-y-2 rounded-lg border border-border bg-card p-4">
                           <div className="font-semibold text-foreground">
                             {bankLabelMap[paymentInfo.bank].label}
                           </div>
@@ -356,7 +356,7 @@ export default async function PackageSuccessPage({
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-muted p-4 md:p-6 rounded-xl border border-border">
+                    <div className="rounded-xl border border-border bg-muted/40 p-4 md:p-6">
                       <h3 className="font-bold text-primary mb-3">
                         {isNicePayment ? "카드/간편결제 정보" : "토스 결제 정보"}
                       </h3>
@@ -383,7 +383,7 @@ export default async function PackageSuccessPage({
                     <MapPin className="h-5 w-5 text-primary" />
                     신청자 정보
                   </h3>
-                  <div className="bg-muted p-4 rounded-lg border border-border space-y-2">
+                  <div className="space-y-2 rounded-lg border border-border bg-muted/40 p-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <span className="text-sm text-muted-foreground">
@@ -427,8 +427,8 @@ export default async function PackageSuccessPage({
                 <Separator className="my-6" />
 
                 {/* 결제 금액 */}
-                <div className="bg-muted p-4 md:p-6 rounded-xl border border-border">
-                  <div className="flex justify-between items-center text-2xl font-bold">
+                <div className="rounded-xl border border-border bg-muted/40 p-4 md:p-6">
+                  <div className="flex items-end justify-between gap-4 text-xl font-bold sm:text-2xl">
                     <span className="text-foreground">총 결제 금액</span>
                     <span className="text-primary">
                       {formatPrice(packageOrder.totalPrice)}원
@@ -442,11 +442,11 @@ export default async function PackageSuccessPage({
                 </div>
               </CardContent>
 
-              <CardFooter className="bg-muted/40 p-4 md:p-6">
+              <CardFooter className="border-t border-border bg-muted/30 p-4 md:p-6">
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full">
                   <Button
                     variant="default"
-                    className="flex-1 h-12 shadow-sm hover:shadow-md transition-all duration-300"
+                    className="h-12 flex-1 shadow-sm transition-[box-shadow,background-color,border-color] hover:shadow-md"
                     asChild
                   >
                     <Link
@@ -464,7 +464,7 @@ export default async function PackageSuccessPage({
                   </Button>
                   <Button
                     variant="outline"
-                    className="flex-1 h-12 border-2"
+                    className="h-12 flex-1 border border-border"
                     asChild
                   >
                     <Link
@@ -486,17 +486,17 @@ export default async function PackageSuccessPage({
             </Card>
 
             {/* 안내사항 */}
-            <Card className="bg-card border border-border shadow-md">
-              <CardHeader className="bg-muted/40">
+            <Card className="border border-border bg-card shadow-sm">
+              <CardHeader className="border-b border-border bg-muted/40">
                 <CardTitle className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-primary" />
                   패키지 이용 안내사항
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 md:p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
                   <div className="space-y-4">
-                    <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
+                    <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-4">
                       <CreditCard className="h-5 w-5 text-primary mt-0.5" />
                       <div>
                         <h4 className="font-semibold text-primary mb-1">
@@ -511,7 +511,7 @@ export default async function PackageSuccessPage({
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
+                    <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-4">
                       <Calendar className="h-5 w-5 text-primary mt-0.5" />
                       <div>
                         <h4 className="font-semibold text-primary mb-1">
@@ -525,7 +525,7 @@ export default async function PackageSuccessPage({
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
+                    <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-4">
                       <Star className="h-5 w-5 text-primary mt-0.5" />
                       <div>
                         <h4 className="font-semibold text-foreground mb-1">
@@ -537,7 +537,7 @@ export default async function PackageSuccessPage({
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3 p-4 bg-muted rounded-lg">
+                    <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-4">
                       <Phone className="h-5 w-5 text-primary mt-0.5" />
                       <div>
                         <h4 className="font-semibold text-primary mb-1">

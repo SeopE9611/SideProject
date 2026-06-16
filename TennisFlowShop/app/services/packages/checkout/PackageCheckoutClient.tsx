@@ -382,11 +382,11 @@ export default function PackageCheckoutClient({
         </div>
       </div>
 
-      <div className="container py-8">
-        <div className={`mx-auto max-w-4xl space-y-4 md:space-y-6 ${isCheckoutSubmitting ? "pointer-events-none" : ""}`} aria-busy={isCheckoutSubmitting}>
+      <div className="container py-8 md:py-10">
+        <div className={`mx-auto grid max-w-6xl gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start ${isCheckoutSubmitting ? "pointer-events-none" : ""}`} aria-busy={isCheckoutSubmitting}>
           {/* 선택된 패키지 정보 */}
-          <Card className="bg-card border border-border shadow-sm overflow-hidden">
-            <div className="bg-secondary p-4 md:p-6">
+          <Card className="overflow-hidden border border-border bg-card shadow-sm lg:col-span-2">
+            <div className="border-b border-border bg-muted/40 p-4 md:p-6">
               <CardTitle className="flex items-center gap-3">
                 <Package className="h-5 w-5 text-primary" />
                 선택된 패키지
@@ -407,8 +407,8 @@ export default function PackageCheckoutClient({
           </Card>
 
           {/* 신청자 정보 */}
-          <Card className="bg-card border border-border shadow-sm overflow-hidden">
-            <div className="bg-secondary p-4 md:p-6">
+          <Card className="overflow-hidden border border-border bg-card shadow-sm">
+            <div className="border-b border-border bg-muted/40 p-4 md:p-6">
               <CardTitle className="flex items-center gap-3">
                 <UserIcon className="h-5 w-5 text-primary" />
                 신청자 정보
@@ -489,8 +489,8 @@ export default function PackageCheckoutClient({
           </Card>
 
           {/* 서비스 이용 안내 */}
-          <Card className="bg-card border border-border shadow-sm overflow-hidden">
-            <div className="bg-muted/50 dark:bg-muted/40 p-4 md:p-6">
+          <Card className="overflow-hidden border border-border bg-card shadow-sm">
+            <div className="border-b border-border bg-muted/40 p-4 md:p-6">
               <CardTitle className="flex items-center gap-3">
                 <Shield className="h-5 w-5 text-primary" />
                 서비스 이용 안내
@@ -525,8 +525,8 @@ export default function PackageCheckoutClient({
           </Card>
 
           {/* 결제 정보 */}
-          <Card className="bg-card border border-border shadow-sm overflow-hidden">
-            <div className="bg-muted/50 dark:bg-muted/40 p-6">
+          <Card className="overflow-hidden border border-border bg-card shadow-sm">
+            <div className="border-b border-border bg-muted/40 p-4 md:p-6">
               <CardTitle className="flex items-center gap-3">
                 <CreditCard className="h-5 w-5 text-primary" />
                 결제 정보
@@ -643,8 +643,8 @@ export default function PackageCheckoutClient({
           </Card>
 
           {/* 주문자 동의 */}
-          <Card className="bg-card border border-border shadow-sm overflow-hidden">
-            <div className="bg-muted/50 dark:bg-muted/40 p-6">
+          <Card className="overflow-hidden border border-border bg-card shadow-sm">
+            <div className="border-b border-border bg-muted/40 p-4 md:p-6">
               <CardTitle className="flex items-center gap-3">
                 <Shield className="h-5 w-5 text-primary" />
                 주문자 동의
@@ -726,8 +726,8 @@ export default function PackageCheckoutClient({
           </Card>
 
           {/* 최종 결제 확인 */}
-          <Card className="relative bg-card border border-border shadow-md overflow-hidden">
-            <div className="bg-muted/60 dark:bg-muted/50 p-4 md:p-6 text-foreground">
+          <Card className="relative overflow-hidden border border-border bg-card shadow-md lg:sticky lg:top-24 lg:col-start-2 lg:row-start-2">
+            <div className="border-b border-border bg-muted/40 p-4 text-foreground md:p-6">
               <CardTitle className="flex items-center gap-3 text-xl">
                 <div className="p-2 bg-secondary rounded-xl">
                   <Package className="h-5 w-5" />
@@ -738,27 +738,27 @@ export default function PackageCheckoutClient({
             </div>
             <CardContent className="p-4 md:p-6 space-y-4 md:space-y-6">
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between gap-4">
                   <span className="text-muted-foreground">패키지</span>
-                  <span className="font-semibold">{selectedPackage?.title ?? "-"}</span>
+                  <span className="min-w-0 break-keep text-right font-semibold">{selectedPackage?.title ?? "-"}</span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between gap-4">
                   <span className="text-muted-foreground">구성</span>
                   <span className="font-semibold">{selectedPackage ? `${selectedPackage.sessions}회` : "-"}</span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between gap-4">
                   <span className="text-muted-foreground">패키지 금액</span>
                   <span className="font-semibold text-lg">{selectedPackage ? `${selectedPackage.price.toLocaleString()}원` : "-"}</span>
                 </div>
 
                 {hasDiscount && (
                   <>
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between gap-4">
                       <span className="text-muted-foreground">정가</span>
                       <span className="text-muted-foreground line-through">{selectedPackage!.originalPrice!.toLocaleString()}원</span>
                     </div>
 
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between gap-4">
                       <span className="text-muted-foreground">할인 금액</span>
                       <span className="text-primary font-semibold">-{discountAmount.toLocaleString()}원</span>
                     </div>
@@ -813,7 +813,7 @@ export default function PackageCheckoutClient({
 
               <Separator />
 
-              <div className="flex justify-between items-center text-xl font-bold">
+              <div className="flex items-end justify-between gap-4 text-xl font-bold">
                 <span>총 결제 금액</span>
                 <span className="text-primary">{selectedPackage ? `${selectedPackage.price.toLocaleString()}원` : "-"}</span>
               </div>

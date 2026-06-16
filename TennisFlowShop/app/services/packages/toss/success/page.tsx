@@ -1,5 +1,7 @@
 "use client";
 
+import SiteContainer from "@/components/layout/SiteContainer";
+import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
@@ -39,9 +41,14 @@ export default function PackageTossSuccessPage() {
   }, [router, sp]);
 
   return (
-    <div className="mx-auto flex min-h-[50vh] max-w-xl flex-col items-center justify-center gap-3 px-6 text-center">
-      <Loader2 className="h-6 w-6 animate-spin" />
-      <p className="text-sm text-muted-foreground">결제 승인 처리 중입니다. 잠시만 기다려주세요.</p>
-    </div>
+    <SiteContainer className="flex min-h-[50vh] items-center justify-center py-10">
+      <Card className="w-full max-w-xl border border-border bg-card shadow-sm">
+        <CardContent className="flex flex-col items-center justify-center gap-3 p-8 text-center">
+          <Loader2 className="h-7 w-7 animate-spin text-primary" />
+          <p className="font-medium text-foreground">결제 승인 처리 중입니다.</p>
+          <p className="text-sm text-muted-foreground">잠시만 기다려주세요. 승인 결과 확인 후 완료 페이지로 이동합니다.</p>
+        </CardContent>
+      </Card>
+    </SiteContainer>
   );
 }

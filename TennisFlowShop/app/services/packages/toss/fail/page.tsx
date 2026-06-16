@@ -1,3 +1,4 @@
+import SiteContainer from "@/components/layout/SiteContainer";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -89,12 +90,12 @@ export default async function PackageTossFailPage({
   const rawMessage = (sp.message || "").trim();
 
   return (
-    <div className="mx-auto flex min-h-[60vh] w-full max-w-2xl items-center px-6">
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-2xl">{guide.title}</CardTitle>
+    <SiteContainer className="flex min-h-[60vh] items-center py-10">
+      <Card className="mx-auto w-full max-w-2xl border border-border bg-card shadow-sm">
+        <CardHeader className="border-b border-border bg-muted/40 text-center sm:text-left">
+          <CardTitle className="break-keep text-2xl">{guide.title}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5">
           <div className="space-y-1 text-sm text-muted-foreground">
             {guide.description.map((line) => (
               <p key={line}>• {line}</p>
@@ -108,14 +109,14 @@ export default async function PackageTossFailPage({
             </div>
           )}
 
-          <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+          <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
             <p>오류 코드: {code}</p>
             {rawMessage ? (
               <p className="mt-1">참고 메시지: {rawMessage}</p>
             ) : null}
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-2 sm:flex-row">
+        <CardFooter className="flex flex-col gap-2 border-t border-border sm:flex-row sm:justify-end">
           <Button asChild className="w-full sm:w-auto">
             <Link href="/services/packages">패키지 목록으로 돌아가기</Link>
           </Button>
@@ -126,6 +127,6 @@ export default async function PackageTossFailPage({
           </Button>
         </CardFooter>
       </Card>
-    </div>
+    </SiteContainer>
   );
 }
