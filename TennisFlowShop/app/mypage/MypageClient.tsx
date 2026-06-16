@@ -192,8 +192,8 @@ export default function MypageClient({ user }: Props) {
   // 페이지 톤 클래스 분류(대시보드 카드, 탭 헤더, 아이콘 배경)
   const pageTone = {
     dashboardPanel: "border-b border-border bg-background",
-    sectionHeader: "border-b border-border bg-muted/50 p-4 bp-sm:p-6",
-    iconSurface: "rounded-xl border border-border bg-muted p-2.5 bp-sm:rounded-2xl bp-sm:p-3",
+    sectionHeader: "border-b border-border bg-card px-4 py-3 bp-sm:px-5 bp-sm:py-4",
+    iconSurface: "rounded-lg border border-border bg-muted/50 p-2",
   };
   const todoCount = summary?.todoCount ?? 0;
   const hasTodoItems = !summaryLoading && todoCount > 0;
@@ -248,7 +248,7 @@ export default function MypageClient({ user }: Props) {
                       "현재 처리할 일이 없습니다"
                     )}
                   </h2>
-                  <p className="mt-1 line-clamp-2 break-keep text-sm text-muted-foreground">{hasTodoItems ? "후기 작성, 배송 확인, 확정이 필요한 내역을 모아 보여드립니다." : "새로 처리할 주문·서비스·대여 내역이 없습니다."}</p>
+                  <p className="mt-1 line-clamp-2 break-keep text-sm text-muted-foreground">{hasTodoItems ? "후기, 배송, 확정이 필요한 내역만 모았습니다." : "새로 처리할 내역이 없습니다."}</p>
                 </div>
 
                 <Badge variant={hasTodoItems ? "default" : "secondary"} className="shrink-0 whitespace-nowrap">
@@ -272,7 +272,7 @@ export default function MypageClient({ user }: Props) {
                     className="min-w-0 rounded-xl border border-border bg-muted/30 px-2 py-2 text-center transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     <span className="block text-base font-semibold tabular-nums text-foreground">{summaryLoading ? "-" : (item.value ?? 0)}</span>
-                    <span className="mt-0.5 block truncate text-xs text-muted-foreground">{item.label}</span>
+                    <span className="mt-0.5 block break-keep text-xs text-muted-foreground">{item.label}</span>
                   </button>
                 ))}
               </div>
@@ -295,14 +295,14 @@ export default function MypageClient({ user }: Props) {
           {/* 메인 콘텐츠 */}
           <div className="bp-lg:col-span-3 min-w-0">
             <Tabs value={currentTab} onValueChange={handleTabChange}>
-              <Card className="mb-5 border-border bg-card shadow-sm bp-sm:mb-6 bp-lg:hidden">
-                <CardContent className="p-3 bp-sm:p-4">
+              <Card className="mb-3 border-border bg-card shadow-sm bp-sm:mb-4 bp-lg:hidden">
+                <CardContent className="p-2.5 bp-sm:p-3">
                   <p className="mb-2 px-1 text-xs font-medium text-muted-foreground">내 상세 내역</p>
-                  <div className="overflow-x-auto pb-1">
-                    <TabsList className="inline-grid h-auto min-w-max grid-cols-7 gap-1 bg-muted p-1 bp-sm:gap-1.5 bp-lg:w-full">
+                  <div>
+                    <TabsList className="grid h-auto w-full grid-cols-4 gap-1 bg-muted p-1 bp-sm:grid-cols-7 bp-sm:gap-1.5 bp-lg:w-full">
                       <TabsTrigger
                         value="orders"
-                        className="flex min-w-[88px] flex-col items-center gap-1 px-2 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-2.5 bp-sm:py-2.5"
                       >
                         <ClipboardList className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm">
@@ -313,7 +313,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="academy"
-                        className="flex min-w-[88px] flex-col items-center gap-1 px-2 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-2.5 bp-sm:py-2.5"
                       >
                         <GraduationCap className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm">
@@ -324,7 +324,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="wishlist"
-                        className="flex min-w-[88px] flex-col items-center gap-1 px-2 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-2.5 bp-sm:py-2.5"
                       >
                         <Heart className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm">
@@ -335,7 +335,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="reviews"
-                        className="flex min-w-[88px] flex-col items-center gap-1 px-2 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-2.5 bp-sm:py-2.5"
                       >
                         <MessageSquare className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm">
@@ -346,7 +346,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="qna"
-                        className="flex min-w-[88px] flex-col items-center gap-1 px-2 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-2.5 bp-sm:py-2.5"
                       >
                         <MessageCircleQuestion className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm">
@@ -357,7 +357,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="passes"
-                        className="flex min-w-[88px] flex-col items-center gap-1 px-2 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-2.5 bp-sm:py-2.5"
                       >
                         <Ticket className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-center text-xs font-medium leading-tight bp-sm:text-sm">패키지</span>
@@ -365,7 +365,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="points"
-                        className="flex min-w-[88px] flex-col items-center gap-1 px-2 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-2.5 bp-sm:py-2.5"
                       >
                         <ReceiptCent className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm">
