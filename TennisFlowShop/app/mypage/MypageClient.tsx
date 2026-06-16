@@ -1,65 +1,29 @@
 "use client";
 
-import OrdersScopeTabs, {
-  resolveOrdersScopeContext,
-} from "@/app/mypage/_components/OrdersScopeTabs";
-import UserSection from "@/app/mypage/UserSection";
+import OrdersScopeTabs, { resolveOrdersScopeContext } from "@/app/mypage/_components/OrdersScopeTabs";
 import { UserSidebar } from "@/app/mypage/orders/_components/UserSidebar";
+import UserSection from "@/app/mypage/UserSection";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { TabPanelSkeleton } from "@/components/system/loading";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import {
-  ClipboardList,
-  GraduationCap,
-  Heart,
-  ListTodo,
-  MessageCircleQuestion,
-  MessageSquare,
-  ReceiptCent,
-  Target,
-  Ticket,
-  Trophy,
-  User,
-} from "lucide-react";
+import { ClipboardList, GraduationCap, Heart, MessageCircleQuestion, MessageSquare, ReceiptCent, Ticket } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import useSWR from "swr";
 
-const ApplicationDetail = dynamic(
-  () => import("@/app/mypage/applications/_components/ApplicationDetail"),
-  { loading: () => <TabPanelSkeleton rowCount={3} /> },
-);
-const OrderDetailClient = dynamic(
-  () => import("@/app/mypage/orders/_components/OrderDetailClient"),
-  { loading: () => <TabPanelSkeleton rowCount={4} /> },
-);
-const RentalsDetailClient = dynamic(
-  () => import("@/app/mypage/rentals/_components/RentalsDetailClient"),
-  { loading: () => <TabPanelSkeleton rowCount={3} /> },
-);
-const AcademyApplicationsTab = dynamic(
-  () => import("@/app/mypage/tabs/AcademyApplicationsTab"),
-  { loading: () => <TabPanelSkeleton rowCount={4} /> },
-);
+const ApplicationDetail = dynamic(() => import("@/app/mypage/applications/_components/ApplicationDetail"), { loading: () => <TabPanelSkeleton rowCount={3} /> });
+const OrderDetailClient = dynamic(() => import("@/app/mypage/orders/_components/OrderDetailClient"), { loading: () => <TabPanelSkeleton rowCount={4} /> });
+const RentalsDetailClient = dynamic(() => import("@/app/mypage/rentals/_components/RentalsDetailClient"), { loading: () => <TabPanelSkeleton rowCount={3} /> });
+const AcademyApplicationsTab = dynamic(() => import("@/app/mypage/tabs/AcademyApplicationsTab"), { loading: () => <TabPanelSkeleton rowCount={4} /> });
 const MyPointsTab = dynamic(() => import("@/app/mypage/tabs/MyPointsTab"), {
   loading: () => <TabPanelSkeleton rowCount={4} />,
 });
-const TransactionFlowList = dynamic(
-  () => import("@/app/mypage/tabs/TransactionFlowList"),
-  { loading: () => <TabPanelSkeleton rowCount={5} /> },
-);
+const TransactionFlowList = dynamic(() => import("@/app/mypage/tabs/TransactionFlowList"), { loading: () => <TabPanelSkeleton rowCount={5} /> });
 const PassList = dynamic(() => import("@/app/mypage/tabs/PassList"), {
   loading: () => <TabPanelSkeleton rowCount={4} />,
 });
@@ -73,15 +37,7 @@ const Wishlist = dynamic(() => import("@/app/mypage/tabs/Wishlist"), {
   loading: () => <TabPanelSkeleton rowCount={4} />,
 });
 
-const MYPAGE_TABS = [
-  "orders",
-  "academy",
-  "wishlist",
-  "reviews",
-  "qna",
-  "passes",
-  "points",
-] as const;
+const MYPAGE_TABS = ["orders", "academy", "wishlist", "reviews", "qna", "passes", "points"] as const;
 
 type Props = {
   user: {
@@ -113,13 +69,7 @@ export default function MypageClient({ user }: Props) {
   const hasSummaryError = !!summaryError;
 
   const resolveOrdersScope = (scope: string | null) => {
-    if (
-      scope === "all" ||
-      scope === "todo" ||
-      scope === "order" ||
-      scope === "application" ||
-      scope === "rental"
-    ) {
+    if (scope === "all" || scope === "todo" || scope === "order" || scope === "application" || scope === "rental") {
       return scope;
     }
     return null;
@@ -151,13 +101,7 @@ export default function MypageClient({ user }: Props) {
     const legacyRentalId = searchParams.get("rentalId");
     const from = searchParams.get("from");
 
-    if (
-      !legacyTab ||
-      legacyTab === "activity" ||
-      legacyTab === "applications" ||
-      legacyTab === "rentals" ||
-      !MYPAGE_TABS.includes(legacyTab as (typeof MYPAGE_TABS)[number])
-    ) {
+    if (!legacyTab || legacyTab === "activity" || legacyTab === "applications" || legacyTab === "rentals" || !MYPAGE_TABS.includes(legacyTab as (typeof MYPAGE_TABS)[number])) {
       nextParams.set("tab", "orders");
       changed = true;
     }
@@ -205,11 +149,7 @@ export default function MypageClient({ user }: Props) {
   }
 
   const tabParam = searchParams.get("tab");
-  const currentTab = MYPAGE_TABS.includes(
-    tabParam as (typeof MYPAGE_TABS)[number],
-  )
-    ? tabParam!
-    : "orders";
+  const currentTab = MYPAGE_TABS.includes(tabParam as (typeof MYPAGE_TABS)[number]) ? tabParam! : "orders";
 
   const handleTabChange = (value: string) => {
     const newParams = new URLSearchParams(searchParams.toString());
@@ -242,232 +182,111 @@ export default function MypageClient({ user }: Props) {
   const flowFromQuery = buildFlowFromQuery(from, scope);
   const ordersFlowFromQuery = buildFlowFromQuery("orders", scope);
   const isOrdersTab = currentTab === "orders";
-  const hasOrderFlowDetail = Boolean(
-    (flowType === "order" && flowId) || orderId,
-  );
-  const hasApplicationFlowDetail = Boolean(
-    (flowType === "application" && flowId) || selectedApplicationId,
-  );
-  const hasRentalFlowDetail = Boolean(
-    (flowType === "rental" && flowId) || selectedRentalId,
-  );
-  const isOrdersDetailView =
-    isOrdersTab &&
-    (hasOrderFlowDetail || hasApplicationFlowDetail || hasRentalFlowDetail);
-  const detailScopeFallback = hasApplicationFlowDetail
-    ? "application"
-    : hasRentalFlowDetail
-      ? "rental"
-      : "order";
-  const activeOrdersScope = resolveOrdersScopeContext(
-    flowBackUrl,
-    detailScopeFallback,
-  );
+  const hasOrderFlowDetail = Boolean((flowType === "order" && flowId) || orderId);
+  const hasApplicationFlowDetail = Boolean((flowType === "application" && flowId) || selectedApplicationId);
+  const hasRentalFlowDetail = Boolean((flowType === "rental" && flowId) || selectedRentalId);
+  const isOrdersDetailView = isOrdersTab && (hasOrderFlowDetail || hasApplicationFlowDetail || hasRentalFlowDetail);
+  const detailScopeFallback = hasApplicationFlowDetail ? "application" : hasRentalFlowDetail ? "rental" : "order";
+  const activeOrdersScope = resolveOrdersScopeContext(flowBackUrl, detailScopeFallback);
 
   // 페이지 톤 클래스 분류(대시보드 카드, 탭 헤더, 아이콘 배경)
   const pageTone = {
     dashboardPanel: "border-b border-border bg-background",
     sectionHeader: "border-b border-border bg-muted/50 p-4 bp-sm:p-6",
-    iconSurface:
-      "rounded-xl border border-border bg-muted p-2.5 bp-sm:rounded-2xl bp-sm:p-3",
+    iconSurface: "rounded-xl border border-border bg-muted p-2.5 bp-sm:rounded-2xl bp-sm:p-3",
   };
   const todoCount = summary?.todoCount ?? 0;
   const hasTodoItems = !summaryLoading && todoCount > 0;
-  const todoCardDescription = hasTodoItems ? "바로 확인" : "처리 완료";
+  const activitySummaryItems = [
+    {
+      label: "거래/이용",
+      value: summary?.activityFlowCount,
+      href: "/mypage?tab=orders",
+    },
+    {
+      label: "서비스",
+      value: summary?.applicationsCount,
+      href: "/mypage?tab=orders&scope=application",
+    },
+    {
+      label: "주문",
+      value: summary?.ordersCount,
+      href: "/mypage?tab=orders&scope=order",
+    },
+    {
+      label: "클래스",
+      value: summary?.academyActiveApplicationsCount,
+      href: "/mypage?tab=academy",
+    },
+  ];
 
   return (
     <div className="min-h-full bg-background">
       <div className={pageTone.dashboardPanel}>
-        <SiteContainer
-          variant="wide"
-          className="space-y-5 py-6 bp-sm:space-y-6 bp-sm:py-8 bp-lg:py-10"
-        >
+        <SiteContainer variant="wide" className="space-y-3 py-4 bp-sm:space-y-4 bp-sm:py-5 bp-lg:py-6">
           <UserSection user={user} />
 
-          <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] bp-lg:items-stretch">
-            <div className="rounded-2xl border border-border bg-card p-4 shadow-sm bp-sm:p-5 bp-lg:p-6">
-              <div className="mb-4 flex min-w-0 flex-col gap-1 bp-sm:flex-row bp-sm:items-end bp-sm:justify-between">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-primary">내 이용 요약</p>
-                  <h2 className="mt-1 break-keep text-xl font-semibold text-foreground bp-sm:text-2xl">
-                    주요 활동을 빠르게 확인하세요
-                  </h2>
-                </div>
-                {hasSummaryError ? (
-                  <p className="text-xs text-muted-foreground">
-                    일부 지표를 불러오지 못했습니다.
-                  </p>
-                ) : null}
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-xl:grid-cols-4">
-                <div className="flex h-full min-h-[132px] flex-col rounded-xl border border-border bg-muted/40 p-4">
-                  <Trophy className="mb-4 h-5 w-5 text-primary" />
-                  <div className="mt-auto">
-                    <div className="text-2xl font-semibold text-foreground">
-                      {summaryLoading ? (
-                        <Skeleton className="h-8 w-12" />
-                      ) : (
-                        (summary?.activityFlowCount ?? "-")
-                      )}
-                    </div>
-                    <div className="mt-1 text-sm text-muted-foreground">
-                      전체 이용 내역
-                    </div>
-                  </div>
-                </div>
-                <div className="flex h-full min-h-[132px] flex-col rounded-xl border border-border bg-muted/40 p-4">
-                  <Target className="mb-4 h-5 w-5 text-primary" />
-                  <div className="mt-auto">
-                    <div className="text-2xl font-semibold text-foreground">
-                      {summaryLoading ? (
-                        <Skeleton className="h-8 w-12" />
-                      ) : (
-                        (summary?.applicationsCount ?? "-")
-                      )}
-                    </div>
-                    <div className="mt-1 text-sm text-muted-foreground">
-                      교체서비스 신청
-                    </div>
-                  </div>
-                </div>
-                <div className="flex h-full min-h-[132px] flex-col rounded-xl border border-border bg-muted/40 p-4">
-                  <ClipboardList className="mb-4 h-5 w-5 text-primary" />
-                  <div className="mt-auto">
-                    <div className="text-2xl font-semibold text-foreground">
-                      {summaryLoading ? (
-                        <Skeleton className="h-8 w-12" />
-                      ) : (
-                        (summary?.ordersCount ?? "-")
-                      )}
-                    </div>
-                    <div className="mt-1 text-sm text-muted-foreground">
-                      상품 주문
-                    </div>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    router.push("/mypage?tab=academy", { scroll: false })
-                  }
-                  className="group flex h-full min-h-[132px] flex-col rounded-xl border border-border bg-muted/40 p-4 text-left transition-colors hover:border-primary/40 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  aria-label="클래스 신청 내역으로 이동"
-                >
-                  <GraduationCap className="mb-4 h-5 w-5 text-primary transition-transform group-hover:scale-105" />
-                  <div className="mt-auto">
-                    <div className="text-2xl font-semibold text-foreground">
-                      {summaryLoading ? (
-                        <Skeleton className="h-8 w-12" />
-                      ) : (
-                        (summary?.academyActiveApplicationsCount ?? "-")
-                      )}
-                    </div>
-                    <div className="mt-1 text-sm text-muted-foreground">
-                      클래스 신청
-                    </div>
-                  </div>
-                </button>
-              </div>
-            </div>
-
+          <div className="grid gap-3 bp-lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
             <button
               type="button"
-              onClick={() =>
-                router.push("/mypage?tab=orders&scope=todo", { scroll: false })
-              }
-              className={`group flex h-full min-h-[220px] flex-col rounded-2xl border p-5 text-left shadow-sm transition-colors bp-lg:p-6 ${
-                hasTodoItems
-                  ? "border-primary/30 bg-primary/5 hover:bg-primary/10"
-                  : "border-border bg-card hover:bg-muted/40"
+              onClick={() => router.push("/mypage?tab=orders&scope=todo", { scroll: false })}
+              className={`group rounded-2xl border px-4 py-3 text-left shadow-sm transition-colors bp-sm:px-5 bp-sm:py-4 ${
+                hasTodoItems ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-border bg-card hover:bg-muted/40"
               } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2`}
             >
-              <div className="flex items-start justify-between gap-4">
-                <div className="rounded-xl border border-border bg-card p-3">
-                  <ListTodo className="h-5 w-5 text-primary" />
+              <div className="flex min-w-0 items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-primary">해야 할 일</p>
+                  <h2 className="mt-1 break-keep text-lg font-semibold text-foreground bp-sm:text-xl">
+                    {summaryLoading ? (
+                      <span className="block">
+                        <Skeleton className="h-6 w-40" />
+                      </span>
+                    ) : hasTodoItems ? (
+                      `확인할 항목 ${todoCount}개`
+                    ) : (
+                      "현재 처리할 일이 없습니다"
+                    )}
+                  </h2>
+                  <p className="mt-1 line-clamp-2 break-keep text-sm text-muted-foreground">{hasTodoItems ? "후기 작성, 배송 확인, 확정이 필요한 내역을 모아 보여드립니다." : "새로 처리할 주문·서비스·대여 내역이 없습니다."}</p>
                 </div>
-                <Badge
-                  variant={hasTodoItems ? "default" : "secondary"}
-                  className="whitespace-nowrap"
-                >
-                  {todoCardDescription}
+
+                <Badge variant={hasTodoItems ? "default" : "secondary"} className="shrink-0 whitespace-nowrap">
+                  {hasTodoItems ? "확인하기" : "완료"}
                 </Badge>
               </div>
-              <div className="mt-auto pt-8">
-                <p className="text-sm font-medium text-primary">지금 처리할 일</p>
-                <h2 className="mt-2 break-keep text-2xl font-semibold text-foreground">
-                  {summaryLoading ? (
-                    <span className="block space-y-2">
-                      <Skeleton className="h-8 w-40" />
-                      <Skeleton className="h-4 w-56 max-w-full" />
-                    </span>
-                  ) : hasTodoItems ? (
-                    `확인할 항목 ${todoCount}개`
-                  ) : (
-                    "현재 처리할 일이 없습니다"
-                  )}
-                </h2>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  입금 대기, 운송장 등록, 구매확정, 리뷰 작성, 클래스 신청
-                  상태를 모아 보여드립니다.
-                </p>
-              </div>
             </button>
+
+            <div className="rounded-2xl border border-border bg-card px-4 py-3 shadow-sm bp-sm:px-5 bp-sm:py-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-foreground">내 활동</p>
+                {hasSummaryError ? <span className="text-xs text-muted-foreground">일부 지표 오류</span> : null}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-4">
+                {activitySummaryItems.map((item) => (
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={() => router.push(item.href, { scroll: false })}
+                    className="min-w-0 rounded-xl border border-border bg-muted/30 px-2 py-2 text-center transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <span className="block text-base font-semibold tabular-nums text-foreground">{summaryLoading ? "-" : (item.value ?? 0)}</span>
+                    <span className="mt-0.5 block truncate text-xs text-muted-foreground">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </SiteContainer>
       </div>
 
-      <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-lg:py-12">
+      <SiteContainer variant="wide" className="py-4 bp-sm:py-5 bp-lg:py-8">
         <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-4 bp-lg:gap-8">
           <div className="hidden bp-lg:block bp-lg:col-span-1">
             <div className="sticky top-8">
               <Card className="border-border bg-card shadow-sm">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-muted rounded-2xl p-3 ring-1 ring-ring/20">
-                      <User className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="line-clamp-2 break-words text-lg leading-tight">
-                        {user.name}
-                      </CardTitle>
-                      <div className="flex items-center gap-2 flex-wrap mt-1">
-                        <span className="min-w-0 break-all text-sm text-foreground">
-                          {user.email}
-                        </span>
-                        {user.oauthProviders?.length ? (
-                          <>
-                            {user.oauthProviders.includes("kakao") && (
-                              <Badge
-                                variant={
-                                  getSocialProviderBadgeSpec("kakao").variant
-                                }
-                                className="text-xs py-0 px-2 h-5"
-                              >
-                                카카오
-                              </Badge>
-                            )}
-                            {user.oauthProviders.includes("naver") && (
-                              <Badge
-                                variant={
-                                  getSocialProviderBadgeSpec("naver").variant
-                                }
-                                className="text-xs py-0 px-2 h-5"
-                              >
-                                네이버
-                              </Badge>
-                            )}
-                          </>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">
-                            이메일 계정
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
+                <CardContent className="p-3">
                   <UserSidebar />
                 </CardContent>
               </Card>
@@ -478,9 +297,7 @@ export default function MypageClient({ user }: Props) {
             <Tabs value={currentTab} onValueChange={handleTabChange}>
               <Card className="mb-5 border-border bg-card shadow-sm bp-sm:mb-6 bp-lg:hidden">
                 <CardContent className="p-3 bp-sm:p-4">
-                  <p className="mb-2 px-1 text-xs font-medium text-muted-foreground">
-                    내 상세 내역
-                  </p>
+                  <p className="mb-2 px-1 text-xs font-medium text-muted-foreground">내 상세 내역</p>
                   <div className="overflow-x-auto pb-1">
                     <TabsList className="inline-grid h-auto min-w-max grid-cols-7 gap-1 bg-muted p-1 bp-sm:gap-1.5 bp-lg:w-full">
                       <TabsTrigger
@@ -490,9 +307,7 @@ export default function MypageClient({ user }: Props) {
                         <ClipboardList className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm">
                           <span className="bp-lg:hidden">거래/이용</span>
-                          <span className="hidden bp-lg:inline">
-                            거래/이용 내역
-                          </span>
+                          <span className="hidden bp-lg:inline">거래/이용 내역</span>
                         </span>
                       </TabsTrigger>
 
@@ -503,9 +318,7 @@ export default function MypageClient({ user }: Props) {
                         <GraduationCap className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm">
                           <span className="bp-lg:hidden">클래스</span>
-                          <span className="hidden bp-lg:inline">
-                            클래스 신청
-                          </span>
+                          <span className="hidden bp-lg:inline">클래스 신청</span>
                         </span>
                       </TabsTrigger>
 
@@ -547,9 +360,7 @@ export default function MypageClient({ user }: Props) {
                         className="flex min-w-[88px] flex-col items-center gap-1 px-2 py-2.5 whitespace-nowrap leading-tight data-[state=active]:bg-card data-[state=active]:shadow-md dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-3 bp-sm:py-3"
                       >
                         <Ticket className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                        <span className="text-center text-xs font-medium leading-tight bp-sm:text-sm">
-                          패키지
-                        </span>
+                        <span className="text-center text-xs font-medium leading-tight bp-sm:text-sm">패키지</span>
                       </TabsTrigger>
 
                       <TabsTrigger
@@ -559,9 +370,7 @@ export default function MypageClient({ user }: Props) {
                         <ReceiptCent className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm">
                           <span className="bp-lg:hidden">포인트</span>
-                          <span className="hidden bp-lg:inline">
-                            적립 포인트
-                          </span>
+                          <span className="hidden bp-lg:inline">적립 포인트</span>
                         </span>
                       </TabsTrigger>
                     </TabsList>
@@ -572,58 +381,28 @@ export default function MypageClient({ user }: Props) {
               {/* 거래 내역 탭 */}
               <TabsContent value="orders" className="mt-0">
                 <Card className="border-border bg-card shadow-sm">
-                  <CardHeader className="bg-muted border-b border-border p-4 bp-sm:p-6">
-                    <div className="flex items-center gap-3">
-                      <div className={pageTone.iconSurface}>
-                        <ClipboardList className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg bp-sm:text-xl">
-                          거래/이용 내역
-                        </CardTitle>
-                        <CardDescription className="text-sm text-foreground/80">
-                          주문·신청·대여를 한 곳에서 확인하세요.
-                        </CardDescription>
+                  <CardHeader className="border-b border-border bg-card px-4 py-3 bp-sm:px-5 bp-sm:py-4">
+                    <div className="flex min-w-0 items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <CardTitle className="text-base font-semibold text-foreground bp-sm:text-lg">거래/이용 내역</CardTitle>
+                        <CardDescription className="mt-0.5 text-xs text-muted-foreground bp-sm:text-sm">상태와 다음 행동을 확인하세요.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
-                    {isOrdersDetailView ? (
-                      <OrdersScopeTabs
-                        activeScope={activeOrdersScope}
-                        className="mb-4 bp-sm:mb-5"
-                      />
-                    ) : null}
+                  <CardContent className="p-3 bp-sm:p-5">
+                    {isOrdersDetailView ? <OrdersScopeTabs activeScope={activeOrdersScope} className="mb-4 bp-sm:mb-5" /> : null}
                     {isOrdersTab && flowType === "order" && flowId ? (
-                      <OrderDetailClient
-                        orderId={flowId}
-                        backUrl={flowBackUrl}
-                        linkedApplicationHrefBuilder={(applicationId) =>
-                          `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${flowFromQuery}`
-                        }
-                      />
+                      <OrderDetailClient orderId={flowId} backUrl={flowBackUrl} linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${flowFromQuery}`} />
                     ) : isOrdersTab && flowType === "application" && flowId ? (
                       <ApplicationDetail id={flowId} backUrl={flowBackUrl} />
                     ) : isOrdersTab && flowType === "rental" && flowId ? (
                       <RentalsDetailClient id={flowId} backUrl={flowBackUrl} />
                     ) : isOrdersTab && orderId ? (
-                      <OrderDetailClient
-                        orderId={orderId}
-                        backUrl={flowBackUrl}
-                        linkedApplicationHrefBuilder={(applicationId) =>
-                          `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${ordersFlowFromQuery}`
-                        }
-                      />
+                      <OrderDetailClient orderId={orderId} backUrl={flowBackUrl} linkedApplicationHrefBuilder={(applicationId) => `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${ordersFlowFromQuery}`} />
                     ) : isOrdersTab && selectedApplicationId ? (
-                      <ApplicationDetail
-                        id={selectedApplicationId}
-                        backUrl={flowBackUrl}
-                      />
+                      <ApplicationDetail id={selectedApplicationId} backUrl={flowBackUrl} />
                     ) : isOrdersTab && selectedRentalId ? (
-                      <RentalsDetailClient
-                        id={selectedRentalId}
-                        backUrl={flowBackUrl}
-                      />
+                      <RentalsDetailClient id={selectedRentalId} backUrl={flowBackUrl} />
                     ) : isOrdersTab ? (
                       <TransactionFlowList />
                     ) : null}
@@ -640,20 +419,12 @@ export default function MypageClient({ user }: Props) {
                         <GraduationCap className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg bp-sm:text-xl">
-                          클래스 신청
-                        </CardTitle>
-                        <CardDescription className="text-sm text-foreground/80">
-                          도깨비테니스 아카데미 클래스 신청 내역을 확인하세요.
-                        </CardDescription>
+                        <CardTitle className="text-lg bp-sm:text-xl">클래스 신청</CardTitle>
+                        <CardDescription className="text-sm text-foreground/80">도깨비테니스 아카데미 클래스 신청 내역을 확인하세요.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
-                    {currentTab === "academy" ? (
-                      <AcademyApplicationsTab />
-                    ) : null}
-                  </CardContent>
+                  <CardContent className="p-3 bp-sm:p-6">{currentTab === "academy" ? <AcademyApplicationsTab /> : null}</CardContent>
                 </Card>
               </TabsContent>
 
@@ -666,18 +437,12 @@ export default function MypageClient({ user }: Props) {
                         <Heart className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg bp-sm:text-xl">
-                          위시리스트
-                        </CardTitle>
-                        <CardDescription className="text-sm text-foreground/80">
-                          찜한 상품 목록을 확인하실 수 있습니다.
-                        </CardDescription>
+                        <CardTitle className="text-lg bp-sm:text-xl">위시리스트</CardTitle>
+                        <CardDescription className="text-sm text-foreground/80">찜한 상품 목록을 확인하실 수 있습니다.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
-                    {currentTab === "wishlist" ? <Wishlist /> : null}
-                  </CardContent>
+                  <CardContent className="p-3 bp-sm:p-6">{currentTab === "wishlist" ? <Wishlist /> : null}</CardContent>
                 </Card>
               </TabsContent>
 
@@ -690,18 +455,12 @@ export default function MypageClient({ user }: Props) {
                         <MessageSquare className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg bp-sm:text-xl">
-                          리뷰 관리
-                        </CardTitle>
-                        <CardDescription className="text-sm text-foreground/80">
-                          작성한 리뷰를 확인하고 관리하실 수 있습니다.
-                        </CardDescription>
+                        <CardTitle className="text-lg bp-sm:text-xl">리뷰 관리</CardTitle>
+                        <CardDescription className="text-sm text-foreground/80">작성한 리뷰를 확인하고 관리하실 수 있습니다.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
-                    {currentTab === "reviews" ? <ReviewList /> : null}
-                  </CardContent>
+                  <CardContent className="p-3 bp-sm:p-6">{currentTab === "reviews" ? <ReviewList /> : null}</CardContent>
                 </Card>
               </TabsContent>
 
@@ -714,18 +473,12 @@ export default function MypageClient({ user }: Props) {
                         <MessageCircleQuestion className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg bp-sm:text-xl">
-                          Q&A 내역
-                        </CardTitle>
-                        <CardDescription className="text-sm text-foreground/80">
-                          문의 내역을 확인하고 답변을 받으실 수 있습니다.
-                        </CardDescription>
+                        <CardTitle className="text-lg bp-sm:text-xl">Q&A 내역</CardTitle>
+                        <CardDescription className="text-sm text-foreground/80">문의 내역을 확인하고 답변을 받으실 수 있습니다.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
-                    {currentTab === "qna" ? <QnAList /> : null}
-                  </CardContent>
+                  <CardContent className="p-3 bp-sm:p-6">{currentTab === "qna" ? <QnAList /> : null}</CardContent>
                 </Card>
               </TabsContent>
 
@@ -738,18 +491,12 @@ export default function MypageClient({ user }: Props) {
                         <Ticket className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg bp-sm:text-xl">
-                          패키지
-                        </CardTitle>
-                        <CardDescription className="text-sm text-foreground/80">
-                          보유 중인 패키지를 확인하실 수 있습니다.
-                        </CardDescription>
+                        <CardTitle className="text-lg bp-sm:text-xl">패키지</CardTitle>
+                        <CardDescription className="text-sm text-foreground/80">보유 중인 패키지를 확인하실 수 있습니다.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
-                    {currentTab === "passes" ? <PassList /> : null}
-                  </CardContent>
+                  <CardContent className="p-3 bp-sm:p-6">{currentTab === "passes" ? <PassList /> : null}</CardContent>
                 </Card>
               </TabsContent>
 
@@ -762,18 +509,12 @@ export default function MypageClient({ user }: Props) {
                         <ReceiptCent className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg bp-sm:text-xl">
-                          적립 포인트
-                        </CardTitle>
-                        <CardDescription className="text-sm text-foreground/80">
-                          포인트 적립 및 사용 내역을 확인하실 수 있습니다.
-                        </CardDescription>
+                        <CardTitle className="text-lg bp-sm:text-xl">적립 포인트</CardTitle>
+                        <CardDescription className="text-sm text-foreground/80">포인트 적립 및 사용 내역을 확인하실 수 있습니다.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
-                    {currentTab === "points" ? <MyPointsTab /> : null}
-                  </CardContent>
+                  <CardContent className="p-3 bp-sm:p-6">{currentTab === "points" ? <MyPointsTab /> : null}</CardContent>
                 </Card>
               </TabsContent>
             </Tabs>

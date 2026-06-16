@@ -1,20 +1,10 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { ChevronRight, ClipboardList, GraduationCap, Heart, MessageCircleQuestion, MessageSquare, ReceiptCent, Ticket, UserCog } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  ClipboardList,
-  Heart,
-  MessageCircleQuestion,
-  UserCog,
-  ChevronRight,
-  Ticket,
-  MessageSquare,
-  ReceiptCent,
-  GraduationCap,
-} from "lucide-react";
 
 export function UserSidebar({ activeTab }: { activeTab?: string } = {}) {
   const searchParams = useSearchParams();
@@ -72,46 +62,13 @@ export function UserSidebar({ activeTab }: { activeTab?: string } = {}) {
         const isActive = tab === value && !isProfile;
 
         return (
-          <Button
-            key={value}
-            variant="ghost"
-            className={cn(
-              "w-full justify-start gap-3 h-12 px-4 transition-all duration-300 group relative overflow-hidden rounded-xl",
-              isActive
-                ? "bg-primary/10 dark:bg-primary/20 border border-primary/20 ring-1 ring-ring/30 shadow-md"
-                : "hover:bg-muted dark:hover:bg-card",
-            )}
-            asChild
-          >
+          <Button key={value} variant="ghost" className={cn("w-full justify-start gap-2.5 h-10 px-3 transition-colors group relative rounded-lg", isActive ? "bg-primary/10 text-primary" : "hover:bg-muted dark:hover:bg-card")} asChild>
             <Link href={href} replace={!isProfile}>
-              <div
-                className={cn(
-                  "flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-300 shadow-sm",
-                  isActive
-                    ? "border border-primary/20 bg-primary/10 dark:bg-primary/20 text-primary shadow-lg"
-                    : "bg-muted text-muted-foreground group-hover:bg-muted/80 dark:group-hover:bg-muted",
-                )}
-              >
+              <div className={cn("flex h-7 w-7 items-center justify-center rounded-lg transition-colors", isActive ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground group-hover:bg-muted/80 dark:group-hover:bg-muted")}>
                 <Icon className="w-4 h-4" />
               </div>
-              <span
-                className={cn(
-                  "font-medium transition-colors duration-300",
-                  isActive
-                    ? "text-foreground"
-                    : "text-foreground group-hover:text-foreground dark:group-hover:text-muted-foreground",
-                )}
-              >
-                {label}
-              </span>
-              <ChevronRight
-                className={cn(
-                  "w-4 h-4 ml-auto transition-all duration-300",
-                  isActive
-                    ? "text-muted-foreground transform translate-x-1"
-                    : "text-muted-foreground group-hover:text-muted-foreground dark:group-hover:text-muted-foreground",
-                )}
-              />
+              <span className={cn("font-medium transition-colors", isActive ? "text-foreground" : "text-foreground group-hover:text-foreground")}>{label}</span>
+              <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
             </Link>
           </Button>
         );
