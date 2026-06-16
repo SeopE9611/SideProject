@@ -448,7 +448,7 @@ export default function SelectStringLayout({
     <div className="min-h-screen bg-background">
       <SiteContainer variant="wide" className="py-6 bp-md:py-10">
         {/* Header */}
-        <div className="mb-8 space-y-4">
+        <div className="mb-8 rounded-2xl border border-border bg-card p-5 shadow-sm bp-md:p-6">
           {backLink && (
             <Link
               href={backLink}
@@ -459,25 +459,36 @@ export default function SelectStringLayout({
             </Link>
           )}
 
-          <div className="text-center">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground bp-md:text-3xl bp-lg:text-4xl">
-              스트링 선택
-            </h1>
-            <p className="mt-2 text-sm text-muted-foreground bp-md:text-base">
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary" className="rounded-full">
+                1 라켓 확인
+              </Badge>
+              <Badge className="rounded-full">2 스트링 선택</Badge>
+              <Badge variant="outline" className="rounded-full">
+                3 결제 진행
+              </Badge>
+            </div>
+            <div>
+              <h1 className="break-keep text-2xl font-bold tracking-tight text-foreground bp-md:text-3xl bp-lg:text-4xl">
+                스트링 및 교체서비스 선택
+              </h1>
+              <p className="mt-2 max-w-3xl break-keep text-sm leading-relaxed text-muted-foreground bp-md:text-base">
               {flowType === "rental"
                 ? "대여 라켓에 장착할 스트링을 선택해주세요"
                 : isCartEditMode
                   ? "장바구니 번들의 스트링을 변경합니다"
                   : "라켓과 함께 구매하실 스트링을 선택해주세요"}
-            </p>
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="grid gap-6 bp-lg:grid-cols-[1fr_340px] bp-lg:gap-8">
+        <div className="grid gap-6 bp-lg:grid-cols-[minmax(0,1fr)_360px] bp-lg:gap-8">
           {/* Main Content */}
           <div className="space-y-6">
             {/* Search & Filter Bar */}
-            <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm bp-sm:flex-row bp-sm:items-center">
+            <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm bp-sm:flex-row bp-sm:items-center">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -548,7 +559,7 @@ export default function SelectStringLayout({
             <div className="bp-lg:hidden">{renderSelectedRacketSummary()}</div>
 
             {/* Product Count */}
-            <div className="text-sm text-muted-foreground">
+            <div className="flex items-center justify-between rounded-2xl border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
               {isLoadingInitial ? (
                 <Skeleton className="inline-block h-4 w-24" />
               ) : (
@@ -560,6 +571,7 @@ export default function SelectStringLayout({
                   개의 스트링
                 </>
               )}
+              <span className="hidden text-xs bp-sm:inline">옵션을 확인한 뒤 카드의 CTA로 다음 단계로 이동하세요</span>
             </div>
 
             {/* Product Grid/List */}
@@ -575,7 +587,7 @@ export default function SelectStringLayout({
                 {Array.from({ length: 8 }).map((_, idx) => (
                   <div
                     key={idx}
-                    className="rounded-2xl border border-border bg-card p-4"
+                    className="rounded-2xl border border-border bg-card p-4 shadow-sm"
                   >
                     <Skeleton className="aspect-square w-full rounded-xl" />
                     <Skeleton className="mt-4 h-4 w-3/4" />
@@ -585,7 +597,7 @@ export default function SelectStringLayout({
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/50 py-16 text-center">
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card py-16 shadow-sm text-center">
                 <ShoppingBag className="mb-4 h-12 w-12 text-muted-foreground/40" />
                 <p className="text-lg font-semibold text-foreground">
                   {products?.length === 0

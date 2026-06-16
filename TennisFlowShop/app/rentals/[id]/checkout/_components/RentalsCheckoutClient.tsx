@@ -785,15 +785,19 @@ export default function RentalsCheckoutClient({
   ) => (
     <div className="min-h-full bg-background">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-card text-foreground border-b border-border">
-        <div className="absolute inset-0 bg-foreground/10 dark:bg-foreground/10"></div>
-        <SiteContainer variant="wide" className="relative py-10 md:py-16">
+      <div className="border-b border-border bg-card text-foreground">
+        <SiteContainer variant="wide" className="py-8 md:py-12">
           <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-card rounded-full border border-border shadow-sm">
+            <div className="rounded-full border border-border bg-muted/30 p-3 shadow-sm">
               <CreditCard className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold mb-2">라켓 대여 결제</h1>
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <Badge variant="secondary" className="rounded-full">1 대여 정보</Badge>
+                <Badge variant="secondary" className="rounded-full">2 스트링 선택</Badge>
+                <Badge className="rounded-full">3 결제 진행</Badge>
+              </div>
+              <h1 className="mb-2 break-keep text-3xl font-bold md:text-4xl">라켓 대여 결제</h1>
               <p className="text-muted-foreground">
                 {isVisitPickup
                   ? "수령/연락 정보를 입력하고 대여를 완료하세요"
@@ -805,7 +809,7 @@ export default function RentalsCheckoutClient({
       </div>
 
       <SiteContainer variant="wide" className="py-6 md:py-8">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:gap-8">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_380px] md:gap-8">
           <div
             className={cn(
               "space-y-4 md:space-y-6",
@@ -814,8 +818,8 @@ export default function RentalsCheckoutClient({
             aria-busy={loading}
           >
             {/* 대여 상품 정보 */}
-            <Card className="bg-card border border-border shadow-sm overflow-hidden">
-              <div className="bg-muted border-b border-border p-4 md:p-6">
+            <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+              <div className="border-b border-border bg-muted/30 p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <Package className="h-5 w-5 text-primary" />
                   대여 라켓
@@ -825,7 +829,7 @@ export default function RentalsCheckoutClient({
                 </CardDescription>
               </div>
               <CardContent className="p-4 md:p-6">
-                <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg border border-border">
+                <div className="flex min-w-0 flex-col gap-4 rounded-2xl border border-border bg-muted/30 p-4 sm:flex-row sm:items-center">
                   <div className="relative">
                     {initial.racket?.image ? (
                       <Image
@@ -833,7 +837,7 @@ export default function RentalsCheckoutClient({
                         alt="racket"
                         width={80}
                         height={80}
-                        className="rounded-lg border-2 border-border shadow-lg object-cover"
+                        className="rounded-xl border border-border object-cover shadow-sm"
                       />
                     ) : (
                       <div className="w-20 h-20 bg-background rounded-lg flex items-center justify-center">
@@ -841,9 +845,9 @@ export default function RentalsCheckoutClient({
                       </div>
                     )}
                   </div>
-                  <div className="flex-1">
+                  <div className="min-w-0 flex-1">
                     <div className="text-sm text-foreground/80">중고 라켓</div>
-                    <h3 className="font-semibold text-foreground">
+                    <h3 className="break-keep font-semibold text-foreground">
                       {rentalRacketName}
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
@@ -857,7 +861,7 @@ export default function RentalsCheckoutClient({
                         대여 기간 {initial.period}일
                       </span>
                     </div>
-                    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-foreground/80">
+                    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
                       <span>대여료: {initial.fee.toLocaleString()}원</span>
                       <span>보증금: {initial.deposit.toLocaleString()}원</span>
                     </div>
@@ -867,8 +871,8 @@ export default function RentalsCheckoutClient({
             </Card>
 
             {/* 라켓 수령 방식 및 스트링 교체 옵션 */}
-            <Card className="bg-card border border-border shadow-sm overflow-hidden">
-              <div className="bg-muted border-b border-border p-4 md:p-6">
+            <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+              <div className="border-b border-border bg-muted/30 p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <Truck className="h-5 w-5 text-primary" />
                   라켓 수령 방식
@@ -1024,8 +1028,8 @@ export default function RentalsCheckoutClient({
             </Card>
 
             {/* 배송 정보 */}
-            <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <div className="bg-secondary/40 p-4 md:p-6">
+            <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+              <div className="border-b border-border bg-muted/30 p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <MapPin className="h-5 w-5 text-foreground" />
                   {isVisitPickup ? "수령/연락 정보" : "배송 정보"}
@@ -1049,7 +1053,7 @@ export default function RentalsCheckoutClient({
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="수령인 이름을 입력하세요"
-                        className="border-2 focus:border-border transition-colors"
+                        className="border-border focus-visible:ring-ring transition-colors"
                       />
                     </div>
                     <div className="space-y-2">
@@ -1066,7 +1070,7 @@ export default function RentalsCheckoutClient({
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="예: user@example.com"
-                        className="border-2 focus:border-border transition-colors"
+                        className="border-border focus-visible:ring-ring transition-colors"
                       />
                     </div>
                     <div className="space-y-2 bp-sm:col-span-2">
@@ -1082,7 +1086,7 @@ export default function RentalsCheckoutClient({
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="연락처를 입력하세요 ('-' 제외)"
-                        className="border-2 focus:border-primary transition-colors"
+                        className="border-border focus-visible:ring-ring transition-colors"
                       />
                     </div>
                   </div>
@@ -1133,7 +1137,7 @@ export default function RentalsCheckoutClient({
                           value={addressDetail}
                           onChange={(e) => setAddressDetail(e.target.value)}
                           placeholder="동/호수 등"
-                          className="border-2 focus:border-border transition-colors"
+                          className="border-border focus-visible:ring-ring transition-colors"
                         />
                       </div>
                     </>
@@ -1155,15 +1159,15 @@ export default function RentalsCheckoutClient({
                           ? "방문 수령 시 요청사항을 입력하세요"
                           : "배송 시 요청사항을 입력하세요"
                       }
-                      className="border-2 focus:border-border transition-colors"
+                      className="border-border focus-visible:ring-ring transition-colors"
                     />
                   </div>
                 </div>
               </CardContent>
             </Card>
             {/* 결제 정보 */}
-            <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <div className="bg-secondary/40 p-4 md:p-6">
+            <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+              <div className="border-b border-border bg-muted/30 p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <CreditCard className="h-5 w-5 text-foreground" />
                   결제 정보
@@ -1221,7 +1225,7 @@ export default function RentalsCheckoutClient({
                         >
                           <SelectTrigger
                             id="bank-account"
-                            className="border-2 focus:border-border"
+                            className="border-border focus-visible:ring-ring"
                           >
                             <SelectValue placeholder="입금 계좌를 선택하세요" />
                           </SelectTrigger>
@@ -1241,7 +1245,7 @@ export default function RentalsCheckoutClient({
                           value={depositor}
                           onChange={(e) => setDepositor(e.target.value)}
                           placeholder="입금자명을 입력하세요"
-                          className="border-2 focus:border-border transition-colors"
+                          className="border-border focus-visible:ring-ring transition-colors"
                         />
                       </div>
 
@@ -1348,7 +1352,7 @@ export default function RentalsCheckoutClient({
                               setPointsInput(String(v));
                             }}
                             placeholder="0"
-                            className="border-2"
+                            className="border-border"
                           />
 
                           <div className="text-xs text-foreground/75">
@@ -1363,8 +1367,8 @@ export default function RentalsCheckoutClient({
                 </div>
               </CardContent>
             </Card>
-            <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <div className="bg-secondary/40 p-4 md:p-6">
+            <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+              <div className="border-b border-border bg-muted/30 p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <Undo2 className="h-5 w-5 text-foreground" />
                   보증금 환급 계좌
@@ -1391,7 +1395,7 @@ export default function RentalsCheckoutClient({
                     value={refundAccount}
                     onChange={(e) => setRefundAccount(e.target.value)}
                     placeholder="예: 110-123-456789"
-                    className="border-2 focus:border-border"
+                    className="border-border focus-visible:ring-ring"
                   />
                 </div>
                 {/* 예금주 */}
@@ -1402,7 +1406,7 @@ export default function RentalsCheckoutClient({
                     value={refundHolder}
                     onChange={(e) => setRefundHolder(e.target.value)}
                     placeholder="예: 홍길동"
-                    className="border-2 focus:border-border"
+                    className="border-border focus-visible:ring-ring"
                   />
                 </div>
                 {/* 안내 */}
@@ -1416,8 +1420,8 @@ export default function RentalsCheckoutClient({
             </Card>
 
             {/* 주문자 동의 */}
-            <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <div className="bg-secondary/40 p-4 md:p-6">
+            <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+              <div className="border-b border-border bg-muted/30 p-4 md:p-6">
                 <CardTitle className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-destructive" />
                   주문자 동의
@@ -1521,12 +1525,12 @@ export default function RentalsCheckoutClient({
           </div>
 
           {/* 최종 결제 확인 */}
-          <div>
+          <aside className="lg:sticky lg:top-24">
             <div>
-              <Card className="relative overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-                <div className="p-4 md:p-6 border-b border-border bg-secondary text-foreground">
+              <Card className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+                <div className="border-b border-border bg-muted/30 p-4 text-foreground md:p-6">
                   <CardTitle className="flex items-center gap-3 text-xl">
-                    <div className="p-2 bg-card/20 rounded-full">
+                    <div className="rounded-full border border-border bg-card p-2">
                       <CreditCard className="h-5 w-5" />
                     </div>
                     최종 결제 확인
@@ -1536,13 +1540,13 @@ export default function RentalsCheckoutClient({
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">대여료</span>
-                      <span className="font-semibold text-lg">
+                      <span className="font-semibold tabular-nums text-foreground">
                         {initial.fee.toLocaleString()}원
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">보증금</span>
-                      <span className="font-semibold text-lg">
+                      <span className="font-semibold tabular-nums text-foreground">
                         {initial.deposit.toLocaleString()}원
                       </span>
                     </div>
@@ -1552,7 +1556,7 @@ export default function RentalsCheckoutClient({
                           <span className="text-muted-foreground">
                             스트링 구매가
                           </span>
-                          <span className="font-semibold text-lg">
+                          <span className="font-semibold tabular-nums text-foreground">
                             {selectedString.price.toLocaleString()}원
                           </span>
                         </div>
@@ -1561,7 +1565,7 @@ export default function RentalsCheckoutClient({
                           <span className="text-foreground/80">
                             교체서비스 장착비
                           </span>
-                          <span className="font-semibold text-lg">
+                          <span className="font-semibold tabular-nums text-foreground">
                             {stringingFee.toLocaleString()}원
                           </span>
                         </div>
@@ -1570,7 +1574,7 @@ export default function RentalsCheckoutClient({
 
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">배송비</span>
-                      <span className="font-semibold text-lg">0원</span>
+                      <span className="font-semibold tabular-nums text-foreground">0원</span>
                     </div>
 
                     {/* 포인트 차감 표시 */}
@@ -1584,7 +1588,7 @@ export default function RentalsCheckoutClient({
                     )}
 
                     <Separator />
-                    <div className="flex justify-between items-center text-xl font-bold">
+                    <div className="flex items-center justify-between text-xl font-bold">
                       <span>총 결제 금액</span>
                       <span className="text-foreground">
                         {payableTotal.toLocaleString()}원
@@ -1621,7 +1625,7 @@ export default function RentalsCheckoutClient({
                       onClick={() => onPay(rentalStringingAdapter)}
                       disabled={loading}
                       className={cn(
-                        "w-full h-12 bg-primary hover:bg-primary/90 shadow-sm transition-[box-shadow,background-color,color] duration-200 hover:shadow-md",
+                        "h-12 w-full break-keep bg-primary shadow-sm transition-[box-shadow,background-color,color] duration-200 hover:bg-primary/90 hover:shadow-sm",
                         loading && "opacity-50 cursor-not-allowed",
                       )}
                     >
@@ -1738,7 +1742,7 @@ export default function RentalsCheckoutClient({
                 )}
               </Card>
             </div>
-          </div>
+          </aside>
         </div>
       </SiteContainer>
     </div>
