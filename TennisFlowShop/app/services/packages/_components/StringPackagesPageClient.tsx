@@ -3,6 +3,9 @@
 import UnifiedPackageCard from "@/app/services/packages/_components/UnifiedPackageCard";
 import { type PackageCardData } from "@/app/services/packages/_lib/packageCard";
 import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero } from "@/components/public/PublicPageHero";
+import { PublicSurface } from "@/components/public/PublicSurface";
+import { SectionHeader } from "@/components/public/SectionHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -99,58 +102,71 @@ export default function StringPackagesPageClient({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-12 bp-md:py-16 bp-lg:py-20">
-        <div className="absolute inset-0 bg-muted/40" />
-        <SiteContainer
-          variant="wide"
-          className="relative z-10 text-center text-foreground"
-        >
-          <div className="mx-auto max-w-4xl">
-            <Card className="border border-border bg-card/95 shadow-md backdrop-blur-[1px]">
-              <CardContent className="p-6 text-center bp-md:p-8">
-                <h1 className="font-bold text-3xl sm:text-4xl mb-4 text-foreground">
-                  스트링 교체 패키지
-                </h1>
-                <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                  플레이 빈도와 필요에 맞는 패키지를 선택하세요.
-                  <br />
-                  모든 패키지는 전문가 상담과 품질 보장이 포함됩니다.
-                </p>
-                <div className="mt-5 rounded-lg border border-border bg-muted/40 p-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
-                  현역 테니스 코치가 직접 매는 스트링은 다릅니다.
-                  <br />
-                  단순 기계 작업이 아닌, 코트 위 실전 데이터를 기반으로 전담
-                  코치가 직접 스트링을 교체합니다.
-                  <br />
-                  전문가의 디테일한 상담과 완벽한 품질 보장까지, 회원님의 스윙에
-                  딱 맞는 스트링 패키지를 만나보세요.
-                </div>
-                <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button
-                    size="lg"
-                    variant="default"
-                    className="shadow-sm hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200"
-                    asChild
-                  >
-                    <Link href="#packages">
-                      <ArrowRight className="w-5 h-5 mr-2" />
-                      패키지 선택하기
-                    </Link>
-                  </Button>
+      <PublicPageHero
+        align="center"
+        eyebrow="스트링 교체 패키지"
+        title="플레이 빈도에 맞춰 더 합리적으로 관리하세요"
+        description={
+          <>
+            플레이 빈도와 필요에 맞는 패키지를 선택하세요.
+            <br className="hidden sm:block" />
+            모든 패키지는 전문가 상담과 품질 보장이 포함됩니다.
+          </>
+        }
+        actions={
+          <>
+            <Button
+              size="lg"
+              variant="default"
+              className="w-full shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md sm:w-auto"
+              asChild
+            >
+              <Link href="#packages">
+                <ArrowRight className="mr-2 h-5 w-5" />
+                패키지 선택하기
+              </Link>
+            </Button>
 
-                  <Button size="lg" variant="outline" asChild>
-                    <Link href="/services">
-                      <Phone className="w-5 h-5 mr-2" />
-                      상담 받기
-                    </Link>
-                  </Button>
+            <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
+              <Link href="/services">
+                <Phone className="mr-2 h-5 w-5" />
+                상담 받기
+              </Link>
+            </Button>
+          </>
+        }
+      >
+        <PublicSurface
+          variant="elevated"
+          padding="lg"
+          className="mx-auto max-w-5xl text-left"
+        >
+          <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr] lg:items-center">
+            <p className="break-keep text-sm leading-relaxed text-muted-foreground sm:text-base">
+              현역 테니스 코치가 직접 매는 스트링은 다릅니다. 단순 기계
+              작업이 아닌, 코트 위 실전 데이터를 기반으로 전담 코치가 직접
+              스트링을 교체합니다. 전문가의 디테일한 상담과 완벽한 품질
+              보장까지, 회원님의 스윙에 딱 맞는 스트링 패키지를 만나보세요.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              {additionalBenefits.slice(0, 3).map((benefit) => (
+                <div
+                  key={benefit.title}
+                  className="flex min-w-0 gap-3 rounded-lg border border-border bg-background p-3"
+                >
+                  <div className="shrink-0 text-primary">{benefit.icon}</div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-foreground">{benefit.title}</p>
+                    <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
+                      {benefit.description}
+                    </p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              ))}
+            </div>
           </div>
-        </SiteContainer>
-      </section>
+        </PublicSurface>
+      </PublicPageHero>
 
       {/* Package Cards Section */}
       <section
@@ -159,24 +175,24 @@ export default function StringPackagesPageClient({
         className="py-12 md:py-20 bg-background scroll-mt-24"
       >
         <SiteContainer variant="wide">
-          <div className="text-center mb-10 md:mb-16">
-            <Badge variant={packagesBadgeVariant("selection")} className="mb-4">
-              맞춤형 패키지 선택
-            </Badge>
-            <h2 className="font-bold text-3xl sm:text-4xl md:text-4xl mb-6 text-foreground">
-              스트링 교체 패키지
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              플레이 빈도와 필요에 맞는 패키지를 선택하세요.
-              <br />
-              모든 패키지는 전문가 상담과 품질 보장이 포함됩니다.
-            </p>
-            {ownershipBlockedMessage && (
-              <p className="mt-6 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-                {ownershipBlockedMessage}
-              </p>
-            )}
-          </div>
+          <SectionHeader
+            align="center"
+            className="mb-10 md:mb-14"
+            eyebrow={<Badge variant={packagesBadgeVariant("selection")}>맞춤형 패키지 선택</Badge>}
+            title="스트링 교체 패키지"
+            description={
+              <>
+                플레이 빈도와 필요에 맞는 패키지를 선택하세요.
+                <br className="hidden sm:block" />
+                모든 패키지는 전문가 상담과 품질 보장이 포함됩니다.
+              </>
+            }
+          />
+          {ownershipBlockedMessage && (
+            <PublicSurface variant="muted" className="mx-auto mb-8 max-w-3xl text-center text-sm text-muted-foreground">
+              {ownershipBlockedMessage}
+            </PublicSurface>
+          )}
 
           <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-4">
             {packages.map((pkg) => (
@@ -202,14 +218,13 @@ export default function StringPackagesPageClient({
       {/* FAQ Section */}
       <section className="py-12 md:py-20 bg-background">
         <SiteContainer variant="wide">
-          <div className="text-center mb-10 md:mb-16">
-            <Badge variant={packagesBadgeVariant("faq")} className="mb-4">
-              자주 묻는 질문
-            </Badge>
-            <h2 className="font-bold text-3xl sm:text-4xl md:text-4xl mb-6 text-foreground">
-              패키지 이용 안내
-            </h2>
-          </div>
+          <SectionHeader
+            align="center"
+            className="mb-10 md:mb-14"
+            eyebrow={<Badge variant={packagesBadgeVariant("faq")}>자주 묻는 질문</Badge>}
+            title="패키지 이용 안내"
+            description="구매 전 자주 확인하는 내용을 간결하게 정리했습니다."
+          />
 
           <div className="max-w-4xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
