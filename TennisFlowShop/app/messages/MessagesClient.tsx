@@ -32,6 +32,7 @@ import {
   User,
 } from "lucide-react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { mutate as globalMutate } from "swr";
 
@@ -207,16 +208,24 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
               </div>
             </div>
 
-            {user.role === "admin" && (
-              <Button
-                variant="default"
-                onClick={() => setBroadcastOpen(true)}
-                className="gap-2"
-              >
-                <Bell className="h-4 w-4" />
-                전체 공지 보내기
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+              <Button asChild variant="outline" className="w-full gap-2 sm:w-auto">
+                <Link href="/messages/write">
+                  <Send className="h-4 w-4" />
+                  새 쪽지 작성
+                </Link>
               </Button>
-            )}
+              {user.role === "admin" && (
+                <Button
+                  variant="default"
+                  onClick={() => setBroadcastOpen(true)}
+                  className="w-full gap-2 sm:w-auto"
+                >
+                  <Bell className="h-4 w-4" />
+                  전체 공지 보내기
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
 
@@ -253,7 +262,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
                 <div className="lg:col-span-5">
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/40">
-                    <div className="text-sm font-medium text-muted-foreground">
+                    <div className="break-keep text-sm font-medium text-muted-foreground">
                       총{" "}
                       <span className="text-foreground font-semibold">
                         {typeof total === "number" ? total : "-"}
@@ -368,7 +377,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                 <div className="min-w-0 flex-1">
                                   <div
                                     className={cn(
-                                      "text-sm truncate leading-tight",
+                                      "line-clamp-2 break-keep text-sm leading-tight",
                                       isUnread
                                         ? "font-semibold text-foreground"
                                         : "font-medium text-foreground/90",
@@ -456,7 +465,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
-                              <div className="flex items-center gap-2">
+                              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
                                 <User className="h-4 w-4" />
                                 <span>
                                   {tab === "send"
@@ -465,7 +474,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                 </span>
                               </div>
 
-                              <div className="flex items-center gap-2">
+                              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
                                 <Clock className="h-4 w-4" />
                                 <span>{formatKST(detail.createdAt)}</span>
                                 {tab !== "send" && (
@@ -485,13 +494,13 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
                               {tab !== "send" && (
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={openReply}
-                                  className="gap-2 bg-transparent"
+                                  className="w-full gap-2 bg-transparent sm:w-auto"
                                 >
                                   <Reply className="h-4 w-4" />
                                   답장
@@ -502,7 +511,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setDeleteOpen(true)}
-                                className="gap-2 hover:bg-destructive/10 dark:hover:bg-destructive/15 hover:text-destructive hover:border-destructive/50"
+                                className="w-full gap-2 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50 dark:hover:bg-destructive/15 sm:w-auto"
                               >
                                 <Trash2 className="h-4 w-4" />
                                 삭제

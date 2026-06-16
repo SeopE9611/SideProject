@@ -35,20 +35,21 @@ export function NotificationItem({ item, onClick }: { item: NotificationListItem
       type="button"
       onClick={onClick}
       className={cn(
-        "flex w-full gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        unread && "bg-primary/5",
+        "flex w-full gap-3 rounded-xl border border-border/60 bg-card px-4 py-3 text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        unread && "border-primary/30 bg-primary/5",
       )}
     >
       <span className={cn("mt-2 h-2 w-2 shrink-0 rounded-full", unread ? "bg-primary" : "bg-transparent")} />
       <span className="min-w-0 flex-1 space-y-1">
-        <span className="flex min-w-0 items-center gap-2">
-          <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
+        <span className="flex min-w-0 flex-wrap items-center gap-2">
+          <Badge variant={unread ? "brand" : "secondary"} className="h-5 shrink-0 px-1.5 text-[10px]">
             {TYPE_LABEL[item.type] ?? "알림"}
           </Badge>
-          <span className="truncate text-xs text-muted-foreground">{relativeTime(item.createdAt)}</span>
+          <span className="shrink-0 text-xs text-muted-foreground">{relativeTime(item.createdAt)}</span>
+          {unread && <span className="text-xs font-medium text-primary">읽지 않음</span>}
         </span>
-        <span className="block truncate text-sm font-semibold text-foreground">{item.title}</span>
-        {item.body && <span className="line-clamp-2 text-xs leading-5 text-muted-foreground">{item.body}</span>}
+        <span className="block line-clamp-2 break-keep text-sm font-semibold leading-5 text-foreground">{item.title}</span>
+        {item.body && <span className="line-clamp-2 break-words text-xs leading-5 text-muted-foreground">{item.body}</span>}
       </span>
     </button>
   );

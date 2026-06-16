@@ -113,10 +113,10 @@ export default function ResetPasswordPage() {
 
   if (isInvalidLink) {
     return (
-      <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <Card className="border border-border bg-card shadow-sm overflow-hidden">
-            <div className="p-4 md:p-6 border-b border-border bg-muted/40 text-center">
+            <div className="p-4 md:p-6 border-b border-border bg-muted/30 text-center">
               <div className="w-16 h-16 mx-auto mb-4 border border-border bg-secondary rounded-xl flex items-center justify-center">
                 <ShieldAlert className="h-8 w-8 text-foreground" />
               </div>
@@ -143,8 +143,18 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
-      <div className="relative w-full max-w-md">
+    <div className="min-h-screen bg-background px-4 py-8 md:flex md:items-center md:justify-center md:py-12">
+      <div className="grid w-full max-w-5xl gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+        <section className="rounded-2xl border border-border bg-card p-6 shadow-sm md:p-8">
+          <p className="text-sm font-semibold text-primary">ACCOUNT RECOVERY</p>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground md:text-3xl">계정 복구를 안전하게 완료하세요</h1>
+          <p className="mt-3 break-keep text-sm leading-relaxed text-muted-foreground">새 비밀번호는 기존 비밀번호와 구분되도록 설정하고, 저장 후에는 로그인 화면에서 다시 인증해주세요.</p>
+          <div className="mt-6 grid gap-3 text-sm text-muted-foreground">
+            <div className="rounded-xl border border-border bg-muted/30 p-3">8자 이상, 영문과 숫자 포함</div>
+            <div className="rounded-xl border border-border bg-muted/30 p-3">재설정 링크가 유효하지 않으면 다시 요청</div>
+          </div>
+        </section>
+        <div className="relative w-full">
         <div className="mb-6">
           <Link
             href="/login"
@@ -160,7 +170,7 @@ export default function ResetPasswordPage() {
         </div>
 
         <Card className="border border-border bg-card shadow-sm overflow-hidden">
-          <div className="p-4 md:p-6 border-b border-border bg-muted/40 text-center">
+          <div className="p-4 md:p-6 border-b border-border bg-muted/30 text-center">
             <div className="w-16 h-16 mx-auto mb-4 border border-border bg-secondary rounded-xl flex items-center justify-center">
               <KeyRound className="h-8 w-8 text-foreground" />
             </div>
@@ -203,7 +213,7 @@ export default function ResetPasswordPage() {
               <CardFooter className="p-4 md:p-6">
                 <Button
                   type="submit"
-                  className="w-full h-12"
+                  className="h-12 w-full"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "저장 중..." : "비밀번호 저장"}
@@ -229,7 +239,7 @@ export default function ResetPasswordPage() {
               <CardFooter className="p-4 md:p-6">
                 <Button
                   type="button"
-                  className="w-full h-12"
+                  className="h-12 w-full"
                   onClick={() => router.push("/login")}
                 >
                   로그인 페이지로 이동
@@ -238,6 +248,7 @@ export default function ResetPasswordPage() {
             </>
           )}
         </Card>
+        </div>
       </div>
     </div>
   );

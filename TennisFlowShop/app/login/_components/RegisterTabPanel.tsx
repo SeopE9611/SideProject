@@ -593,10 +593,10 @@ export default function RegisterTabPanel({
 
   return (
     <TabsContent value="register" className="p-4 md:p-6">
-      <div className="space-y-4 md:space-y-6">
-        <div className="text-center">
+      <div className="space-y-5 md:space-y-6">
+        <div className="rounded-xl border border-border bg-muted/30 p-4 text-center md:text-left">
           <h2 className="text-2xl font-bold text-foreground">회원가입</h2>
-          <p className="text-foreground mt-2">
+          <p className="mt-2 break-keep text-sm leading-relaxed text-muted-foreground">
             {isSocialOauthRegister
               ? "소셜 가입 완료를 위해 추가 정보를 입력해주세요."
               : "도깨비테니스의 회원이 되어보세요"}
@@ -608,9 +608,15 @@ export default function RegisterTabPanel({
           )}
         </div>
 
-        <form onSubmit={handleRegister} className="space-y-4 md:space-y-6">
-          <div className="grid grid-cols-1 bp-lg:grid-cols-2 gap-4 md:gap-6">
-            <div className="bp-lg:col-span-2 space-y-2">
+        <form onSubmit={handleRegister} className="space-y-5 md:space-y-6">
+          {registerFormError && (
+            <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <span className="break-keep">{registerFormError}</span>
+            </div>
+          )}
+          <div className="grid grid-cols-1 gap-4 rounded-xl border border-border bg-card p-4 md:grid-cols-2 md:gap-5">
+            <div className="md:col-span-2 space-y-2">
               <Label
                 htmlFor="register-email-id"
                 className="flex items-center gap-2 text-sm font-medium text-foreground"
@@ -620,7 +626,7 @@ export default function RegisterTabPanel({
               </Label>
 
               <div className="space-y-2">
-                <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
                   <div className="flex w-full items-center gap-2 min-w-0">
                     <div className="relative flex-1 min-w-0">
                       <Input
@@ -718,7 +724,7 @@ export default function RegisterTabPanel({
                     <Button
                       type="button"
                       variant="outline"
-                      className="h-12 px-4 shrink-0"
+                      className="h-12 w-full shrink-0 px-4 sm:w-auto"
                       onClick={checkEmailAvailability}
                       disabled={
                         !emailRegex.test(
@@ -939,7 +945,7 @@ export default function RegisterTabPanel({
               )}
             </div>
 
-            <div className="bp-lg:col-span-2 space-y-2">
+            <div className="md:col-span-2 space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-foreground font-medium">우편번호</Label>
                 <Button
@@ -971,7 +977,7 @@ export default function RegisterTabPanel({
               )}
             </div>
 
-            <div className="bp-lg:col-span-2 space-y-2">
+            <div className="md:col-span-2 space-y-2">
               <Label className="text-foreground font-medium">
                 기본 배송지 주소
               </Label>
@@ -992,7 +998,7 @@ export default function RegisterTabPanel({
               )}
             </div>
 
-            <div className="bp-lg:col-span-2 space-y-2">
+            <div className="md:col-span-2 space-y-2">
               <Label className="text-foreground font-medium">상세 주소</Label>
               <Input
                 id="register-address-detail"

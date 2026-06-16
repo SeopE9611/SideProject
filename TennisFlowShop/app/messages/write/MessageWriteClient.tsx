@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -78,13 +79,16 @@ export default function MessageWriteClient({
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-6">
+    <div className="mx-auto w-full max-w-4xl px-4 py-6 md:py-8">
       <Card
         className="border-border bg-card shadow-sm"
         data-cy="message-write-card"
       >
-        <CardHeader className="flex flex-row items-center justify-between border-b border-border/60 bg-secondary/70">
-          <CardTitle className="text-lg">쪽지 보내기</CardTitle>
+        <CardHeader className="flex flex-col gap-3 border-b border-border/60 bg-secondary/70 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-lg">쪽지 보내기</CardTitle>
+            <p className="mt-1 break-keep text-sm text-muted-foreground">받는 사람과 내용을 확인한 뒤 쪽지를 전송하세요.</p>
+          </div>
           <Button
             variant="outline"
             onClick={() => confirmLeaveIfDirty(() => router.back())}
@@ -93,7 +97,7 @@ export default function MessageWriteClient({
           </Button>
         </CardHeader>
 
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5 p-4 md:p-6">
           <div
             className="text-sm text-muted-foreground"
             data-cy="message-recipient"
@@ -104,23 +108,31 @@ export default function MessageWriteClient({
             </span>
           </div>
 
-          <Input
-            className="bg-background"
-            data-cy="message-title"
-            placeholder="제목"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <Textarea
-            className="bg-background"
-            data-cy="message-body"
-            placeholder="내용"
-            rows={10}
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-          />
+          <div className="space-y-2">
+            <Label htmlFor="message-title">제목</Label>
+            <Input
+              id="message-title"
+              className="bg-background"
+              data-cy="message-title"
+              placeholder="제목"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="message-body">내용</Label>
+            <Textarea
+              id="message-body"
+              className="min-h-[240px] bg-background leading-relaxed"
+              data-cy="message-body"
+              placeholder="내용"
+              rows={10}
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+            />
+          </div>
 
-          <div className="flex justify-end gap-2 border-t border-border/60 pt-3">
+          <div className="flex flex-col-reverse gap-2 border-t border-border/60 pt-4 sm:flex-row sm:justify-end">
             <Button
               data-cy="message-cancel"
               variant="outline"
