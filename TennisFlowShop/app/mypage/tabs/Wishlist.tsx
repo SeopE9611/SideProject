@@ -184,11 +184,11 @@ export default function Wishlist() {
                 </div>
               </Link>
 
-              <div className="mt-auto grid grid-cols-1 gap-2 pt-4 sm:grid-cols-2">
+              <div className="mt-auto grid grid-cols-1 gap-2 pt-4 xl:grid-cols-2">
                 <Button
                   size="sm"
                   variant="default"
-                  className="w-full shadow-sm"
+                  className="w-full min-w-0 whitespace-nowrap px-3 shadow-sm"
                   onClick={() => handleAddToCart(it)}
                   disabled={
                     it.requiresOption &&
@@ -204,7 +204,7 @@ export default function Wishlist() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="w-full border-destructive/40 hover:bg-destructive/10"
+                  className="w-full min-w-0 whitespace-nowrap border-destructive/40 px-3 hover:bg-destructive/10"
                   onClick={() => {
                     remove(it.id).catch(() => {
                       showErrorToast("위시리스트 삭제에 실패했습니다.");

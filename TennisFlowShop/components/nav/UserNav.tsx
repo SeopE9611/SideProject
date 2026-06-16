@@ -8,7 +8,13 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, LayoutDashboard, Settings, UserIcon } from "lucide-react";
+import {
+  LogOut,
+  LayoutDashboard,
+  MessageSquare,
+  Settings,
+  UserIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useAuthStore } from "@/app/store/authStore";
@@ -55,7 +61,8 @@ export function UserNav() {
     );
   }
 
-  const isAdmin = user.role === "admin";
+  const normalizedRole = String(user.role ?? "").toLowerCase();
+  const isAdmin = normalizedRole === "admin";
   const displayName = user.name?.trim() || "회원";
   const socialProviders = user.socialProviders ?? [];
   const hasKakao = socialProviders.includes("kakao");
@@ -118,6 +125,10 @@ export function UserNav() {
         <DropdownMenuItem onClick={() => router.push("/mypage")}>
           <Settings className="mr-2 h-4 w-4" />
           마이페이지
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push("/messages")}>
+          <MessageSquare className="mr-2 h-4 w-4" />
+          쪽지함
         </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem onClick={() => router.push("/admin/dashboard")}>
