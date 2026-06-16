@@ -12,6 +12,52 @@ const isOrderReviewConfirmed = (order: any) =>
   Boolean(order?.userConfirmedAt) || String(order?.status ?? "") === "구매확정";
 const isStringingReviewConfirmed = (app: any) => Boolean(app?.userConfirmedAt);
 
+async function findReviewableStringingApplicationForProduct(db: any, userId: ObjectId, productId: string) {
+  const productIdObj = new ObjectId(productId);
+  const orders = await db
+    .collection("orders")
+    .find({
+      userId,
+      "items.productId": { $in: [productIdObj, productId] },
+      $or: [
+        { userConfirmedAt: { $exists: true, $ne: null } },
+        { status: "구매확정" },
+      ],
+    })
+    .project({ _id: 1 })
+    .sort({ createdAt: -1 })
+    .toArray();
+
+  const orderIds = orders.flatMap((o: any) => [o._id, String(o._id)]);
+  const apps = await db
+    .collection("stringing_applications")
+    .find({
+      userId,
+      userConfirmedAt: { $exists: true, $ne: null },
+      $or: [
+        { orderId: { $in: orderIds } },
+        { "stringDetails.stringItems.productId": { $in: [productIdObj, productId] } },
+        { "stringDetails.racketLines.stringProductId": { $in: [productIdObj, productId] } },
+      ],
+    })
+    .project({ _id: 1, status: 1, stringDetails: 1, createdAt: 1 })
+    .sort({ createdAt: -1 })
+    .toArray();
+
+  const reviewed = await db
+    .collection("reviews")
+    .find({
+      userId,
+      service: "stringing",
+      serviceApplicationId: { $in: apps.map((a: any) => a._id) },
+      isDeleted: { $ne: true },
+    })
+    .project({ serviceApplicationId: 1 })
+    .toArray();
+  const reviewedSet = new Set(reviewed.map((r: any) => String(r.serviceApplicationId)));
+  return apps.find((a: any) => !isStringingReviewBlockedStatus(a.status) && !reviewedSet.has(String(a._id))) ?? null;
+}
+
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const productId = url.searchParams.get("productId");
@@ -91,8 +137,14 @@ export async function GET(req: Request) {
         );
       }
       if (await isOrderServiceReviewOnly(db, order)) {
+        const app = await findReviewableStringingApplicationForProduct(db, userId, productId);
         return NextResponse.json(
-          { eligible: false, reason: "serviceLinkedOrder" },
+          {
+            eligible: false,
+            reason: "serviceLinkedOrder",
+            suggestedApplicationId: app ? String(app._id) : null,
+            targetLabel: "상품+교체서비스 이용 후기",
+          },
           { headers: { "Cache-Control": "no-store" } },
         );
       }
@@ -167,16 +219,20 @@ export async function GET(req: Request) {
       ({ order, serviceOnly }) =>
         !serviceOnly && !reviewedSet.has(String(order._id)),
     )?.order;
-    if (!candidate)
+    if (!candidate) {
+      const serviceApp = await findReviewableStringingApplicationForProduct(db, userId, productId);
       return NextResponse.json(
         {
           eligible: false,
           reason: orderEligibility.every(({ serviceOnly }) => serviceOnly)
             ? "serviceLinkedOrder"
             : "already",
+          suggestedApplicationId: serviceApp ? String(serviceApp._id) : null,
+          targetLabel: serviceApp ? "상품+교체서비스 이용 후기" : undefined,
         },
         { headers: { "Cache-Control": "no-store" } },
       );
+    }
 
     return NextResponse.json(
       { eligible: true, reason: null, suggestedOrderId: String(candidate._id) },

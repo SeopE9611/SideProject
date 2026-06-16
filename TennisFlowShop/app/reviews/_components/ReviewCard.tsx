@@ -146,7 +146,9 @@ export default function ReviewCard({
       ? item.productName
       : item.serviceTitle ||
         item.serviceTargetName ||
-        (item.service === "stringing" ? "스트링 교체 서비스" : "서비스");
+        (item.service === "stringing"
+          ? "상품+교체서비스 이용 후기"
+          : "서비스");
 
   // 연타/경합 제어용
   const [pending, setPending] = useState(false); // 처리 중 버튼 잠금
@@ -261,7 +263,7 @@ export default function ReviewCard({
               ) : (
                 <Wrench className="h-3.5 w-3.5" />
               )}
-              {item.type === "product" ? "상품 리뷰" : "서비스 리뷰"}
+              {item.type === "product" ? "상품 후기" : "상품+교체서비스 후기"}
             </Badge>
             {!!headerTitle && (
               <span className="line-clamp-1 max-w-full min-w-0 rounded-full border border-border/60 bg-secondary px-2 py-1 text-sm font-semibold text-foreground sm:max-w-[320px]">
