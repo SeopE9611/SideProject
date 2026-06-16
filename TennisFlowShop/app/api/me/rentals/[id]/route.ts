@@ -17,7 +17,36 @@ function getApplicationLines(stringDetails: any): any[] {
 function getReceptionLabel(collectionMethod?: string | null): string {
   if (collectionMethod === "visit") return "방문 접수";
   if (collectionMethod === "courier_pickup") return "자가 발송(택배)";
+  if (collectionMethod === "self_ship") return "자가 발송(택배)";
   return "발송 접수";
+}
+
+const nullableTrim = (value: unknown) => {
+  const text = String(value ?? "").trim();
+  return text || null;
+};
+
+const toNullableIsoString = (value: unknown) => {
+  if (!value) return null;
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "string") return value;
+  return null;
+};
+
+function getTensionSummary(lines: any[]): string | null {
+  const tensionSet = Array.from(
+    new Set(
+      lines
+        .map((line: any) => {
+          const main = String(line?.tensionMain ?? "").trim();
+          const cross = String(line?.tensionCross ?? "").trim();
+          if (!main && !cross) return "";
+          return cross && cross !== main ? `${main}/${cross}` : main || cross;
+        })
+        .filter(Boolean),
+    ),
+  );
+  return tensionSet.length ? tensionSet.join(", ") : null;
 }
 
 export async function GET(
@@ -58,51 +87,110 @@ export async function GET(
       String((doc as any).stringingApplicationId))
     : null;
   let applicationSummary = null;
+  let stringingApplication = null;
   if (appId && ObjectId.isValid(appId)) {
     const app = await db
       .collection("stringing_applications")
       .findOne(
         { _id: new ObjectId(appId) },
-        { projection: { stringDetails: 1, collectionMethod: 1, status: 1 } },
+        {
+          projection: {
+            stringDetails: 1,
+            collectionMethod: 1,
+            status: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            userConfirmedAt: 1,
+            totalPrice: 1,
+            shippingInfo: 1,
+            desiredDateTime: 1,
+            rentalId: 1,
+          },
+        },
       );
     if (app) {
       const lines = getApplicationLines((app as any).stringDetails);
-      const tensionSet = Array.from(
-        new Set(
-          lines
-            .map((line: any) => {
-              const main = String(line?.tensionMain ?? "").trim();
-              const cross = String(line?.tensionCross ?? "").trim();
-              if (!main && !cross) return "";
-              return cross && cross !== main
-                ? `${main}/${cross}`
-                : main || cross;
-            })
-            .filter(Boolean),
-        ),
-      );
+      const tensionSummary = getTensionSummary(lines);
       const preferredDate = String(
         (app as any)?.stringDetails?.preferredDate ?? "",
       ).trim();
       const preferredTime = String(
         (app as any)?.stringDetails?.preferredTime ?? "",
       ).trim();
+      const stringNames = Array.from(
+        new Set(
+          lines
+            .map((line: any) => String(line?.stringName ?? "").trim())
+            .filter(Boolean),
+        ),
+      );
       applicationSummary = {
         status: String((app as any)?.status ?? "접수완료"),
         lineCount: lines.length,
-        stringNames: Array.from(
-          new Set(
-            lines
-              .map((line: any) => String(line?.stringName ?? "").trim())
-              .filter(Boolean),
-          ),
-        ),
-        tensionSummary: tensionSet.length ? tensionSet.join(", ") : null,
+        stringNames,
+        tensionSummary,
         receptionLabel: getReceptionLabel((app as any).collectionMethod),
         reservationLabel:
           preferredDate && preferredTime
             ? `${preferredDate} ${preferredTime}`
             : null,
+      };
+
+      const collectionMethod = String(
+        (app as any)?.collectionMethod ??
+          (app as any)?.shippingInfo?.collectionMethod ??
+          "",
+      ).trim();
+      const selfShip = (app as any)?.shippingInfo?.selfShip ?? null;
+      const normalizedLines = lines.map((line: any, index: number) => ({
+        id: nullableTrim(line?.id) ?? String(index),
+        racketType: nullableTrim(line?.racketType),
+        racketLabel:
+          nullableTrim(line?.racketLabel) ?? nullableTrim(line?.racketType),
+        stringName: nullableTrim(line?.stringName),
+        tensionMain: nullableTrim(line?.tensionMain),
+        tensionCross: nullableTrim(line?.tensionCross),
+        note: nullableTrim(line?.note),
+      }));
+      stringingApplication = {
+        id: appId,
+        status: String((app as any)?.status ?? "접수완료"),
+        createdAt: toNullableIsoString((app as any)?.createdAt),
+        updatedAt: toNullableIsoString((app as any)?.updatedAt),
+        userConfirmedAt: toNullableIsoString((app as any)?.userConfirmedAt),
+        desiredDateTime: toNullableIsoString((app as any)?.desiredDateTime),
+        collectionMethod: collectionMethod || null,
+        receptionLabel: getReceptionLabel(collectionMethod),
+        preferredDate: preferredDate || null,
+        preferredTime: preferredTime || null,
+        reservationLabel:
+          preferredDate && preferredTime
+            ? `${preferredDate} ${preferredTime}`
+            : null,
+        requirements: nullableTrim((app as any)?.stringDetails?.requirements),
+        lineCount: lines.length,
+        stringNames,
+        tensionSummary,
+        totalPrice:
+          typeof (app as any)?.totalPrice === "number"
+            ? (app as any).totalPrice
+            : null,
+        lines: normalizedLines,
+        needsInboundTracking: false,
+        shippingInfo: {
+          collectionMethod: collectionMethod || null,
+          deliveryRequest: nullableTrim(
+            (app as any)?.shippingInfo?.deliveryRequest,
+          ),
+          selfShip: selfShip
+            ? {
+                courier: nullableTrim(selfShip.courier),
+                trackingNo: nullableTrim(selfShip.trackingNo),
+                shippedAt: toNullableIsoString(selfShip.shippedAt),
+                note: nullableTrim(selfShip.note),
+              }
+            : null,
+        },
       };
     }
   }
@@ -127,6 +215,7 @@ export async function GET(
     // ObjectId로 저장된 경우를 대비해 string으로 정규화
     stringingApplicationId: appId,
     applicationSummary,
+    stringingApplication,
 
     /**
      * 교체 서비스 포함 여부(레거시/예외 케이스 보강)
