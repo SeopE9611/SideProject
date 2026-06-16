@@ -125,19 +125,21 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+    <div className="mx-auto w-full max-w-2xl px-4 py-6 bp-sm:px-6">
+      <Card className="rounded-2xl border border-border bg-card shadow-sm">
+        <CardHeader className="border-b border-border bg-muted/30">
+          <CardTitle className="flex items-center gap-2 break-keep text-foreground">
             <Truck className="h-5 w-5" /> 반납 운송장{" "}
             {hasExisting ? "수정" : "등록"}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5 p-4 bp-sm:p-6">
           <div className="space-y-2">
-            <Label>택배사</Label>
+            <Label className="text-sm font-medium text-foreground">
+              택배사
+            </Label>
             <Select value={courier} onValueChange={setCourier}>
-              <SelectTrigger>
+              <SelectTrigger className="border-border bg-background focus:ring-ring">
                 <SelectValue placeholder="택배사를 선택" />
               </SelectTrigger>
               <SelectContent>
@@ -150,7 +152,9 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
           </div>
 
           <div className="space-y-2">
-            <Label>운송장 번호</Label>
+            <Label className="text-sm font-medium text-foreground">
+              운송장 번호
+            </Label>
             <Input
               value={tracking}
               onChange={(e) => {
@@ -160,27 +164,43 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
               }}
               inputMode="numeric"
               placeholder="숫자만 입력 (9~20자리)"
+              className="border-border bg-background tabular-nums focus-visible:ring-ring"
             />
           </div>
           <div className="space-y-2">
-            <Label>발송일(선택)</Label>
+            <Label className="text-sm font-medium text-foreground">
+              발송일(선택)
+            </Label>
             <Input
               type="date"
               value={date}
+              className="border-border bg-background focus-visible:ring-ring"
               onChange={(e) => setDate(e.target.value)}
             />
           </div>
           <div className="space-y-2">
-            <Label>메모(선택)</Label>
+            <Label className="text-sm font-medium text-foreground">
+              메모(선택)
+            </Label>
             <Input
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="택배 접수 지점 등"
+              className="border-border bg-background focus-visible:ring-ring"
             />
           </div>
-          <Button onClick={onSubmit} disabled={busy}>
-            {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} 저장
-          </Button>
+          <div className="rounded-xl border border-border bg-muted/30 p-3 text-xs leading-relaxed text-muted-foreground">
+            운송장 번호는 숫자만 저장되며, 택배사와 번호를 다시 확인해 주세요.
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <Button
+              onClick={onSubmit}
+              disabled={busy}
+              className="w-full sm:w-auto"
+            >
+              {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} 저장
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

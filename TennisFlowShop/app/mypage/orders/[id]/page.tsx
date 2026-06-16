@@ -23,7 +23,7 @@ export default async function OrderDetailPage({
   }
   return (
     <div className="container py-6 bp-sm:py-8">
-      <h1 className="mb-6 text-2xl font-bold bp-sm:mb-8 bp-sm:text-3xl">
+      <h1 className="mb-6 break-keep text-2xl font-bold text-foreground bp-sm:mb-8 bp-sm:text-3xl">
         마이페이지
       </h1>
       <div className="grid grid-cols-1 gap-6 bp-sm:gap-8 md:grid-cols-4">

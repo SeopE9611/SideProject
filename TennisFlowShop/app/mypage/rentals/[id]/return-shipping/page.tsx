@@ -41,5 +41,9 @@ export default async function Page({
     }
   }
 
-  return <ReturnShippingForm rentalId={id} />;
+  return (
+    <main className="bg-background">
+      <ReturnShippingForm rentalId={id} />
+    </main>
+  );
 }

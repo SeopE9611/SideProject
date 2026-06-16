@@ -188,7 +188,7 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
 
   if (!classSnapshot) {
     return (
-      <Card className="border-border bg-card shadow-sm">
+      <Card className="rounded-2xl border border-border bg-card shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <GraduationCap className="h-5 w-5 text-primary" />
@@ -208,7 +208,7 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
   }
 
   return (
-    <Card className="border-border bg-card shadow-sm">
+    <Card className="rounded-2xl border border-border bg-card shadow-sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <GraduationCap className="h-5 w-5 text-primary" />
@@ -281,7 +281,7 @@ function ApplicationInfoCard({
   item: AcademyCustomerApplicationDetail;
 }) {
   return (
-    <Card className="border-border bg-card shadow-sm">
+    <Card className="rounded-2xl border border-border bg-card shadow-sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <UserRound className="h-5 w-5 text-primary" />
@@ -432,7 +432,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
 
   return (
     <div className="space-y-4 md:space-y-6">
-      <Card className="border-border bg-card shadow-sm">
+      <Card className="rounded-2xl border border-border bg-card shadow-sm">
         <CardContent className="space-y-4 p-4 md:p-6">
           <Button
             asChild
@@ -463,7 +463,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             </div>
             <Badge
               variant={badgeToneVariant(statusTone)}
-              className="w-fit text-sm"
+              className="w-fit shrink-0 text-sm"
             >
               {item.statusLabel}
             </Badge>
@@ -471,7 +471,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         </CardContent>
       </Card>
 
-      <Card className="border-border bg-card shadow-sm">
+      <Card className="rounded-2xl border border-border bg-card shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
             <CheckCircle2 className="h-5 w-5 text-primary" />
@@ -482,7 +482,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-xl border border-border/60 bg-muted/25 p-4">
+          <div className="rounded-2xl border border-border bg-muted/30 p-4">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm font-medium text-muted-foreground">
                 현재 상태
@@ -539,7 +539,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         </CardContent>
       </Card>
 
-      <Card className="border-border bg-card shadow-sm">
+      <Card className="rounded-2xl border border-border bg-card shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg">신청 관리</CardTitle>
           <CardDescription>
@@ -671,13 +671,13 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
       </Card>
 
       <div className="grid gap-3 bp-sm:grid-cols-3">
-        <Button asChild variant="outline" className="w-full">
+        <Button asChild variant="outline" className="w-full break-keep">
           <Link href="/mypage?tab=academy">목록으로 돌아가기</Link>
         </Button>
-        <Button asChild variant="secondary" className="w-full">
+        <Button asChild variant="secondary" className="w-full break-keep">
           <Link href="/academy">아카데미 홈 보기</Link>
         </Button>
-        <Button asChild variant="default" className="w-full">
+        <Button asChild variant="default" className="w-full break-keep">
           <Link href="/board/qna/write?category=academy">
             <PhoneCall className="h-4 w-4" />
             문의하기
