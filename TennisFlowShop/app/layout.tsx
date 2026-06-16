@@ -38,8 +38,7 @@ export const metadata: Metadata = {
     default: "도깨비테니스",
     template: "%s | 도깨비테니스",
   },
-  description:
-    "도깨비테니스는 테니스 스트링, 라켓, 장착 서비스, 대여 서비스를 제공하는 테니스 전문 쇼핑몰입니다.",
+  description: "도깨비테니스는 테니스 스트링, 라켓, 장착 서비스, 대여 서비스를 제공하는 테니스 전문 쇼핑몰입니다.",
   icons: {
     icon: [{ url: "/brand/symbol-dark.png", type: "image/png" }],
     shortcut: ["/brand/symbol-dark.png"],
@@ -47,9 +46,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const token = (await cookies()).get("accessToken")?.value;
 
   let initialUser: any = null;
@@ -71,19 +68,10 @@ export default async function RootLayout({
   }
   // throw new Error('[TEST] app/global error.tsx 동작 확인용');
   return (
-    <html
-      lang="ko"
-      suppressHydrationWarning
-      className="scroll-smooth overflow-x-hidden"
-    >
+    <html lang="ko" suppressHydrationWarning className="scroll-smooth overflow-x-hidden">
       <body className="bg-background text-foreground">
         {/* Kakao JavaScript SDK (채널 1:1 문의용) */}
-        <Script
-          id="kakao-jssdk"
-          src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.9/kakao.min.js"
-          strategy="afterInteractive"
-          crossOrigin="anonymous"
-        />
+        <Script id="kakao-jssdk" src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.9/kakao.min.js" strategy="afterInteractive" crossOrigin="anonymous" />
         <Script
           id="resume-debug-listeners"
           strategy="afterInteractive"
@@ -149,12 +137,7 @@ export default async function RootLayout({
         <ClaimsAutoLinker />
         <RootScrollLockBridge />
         <ScrollToTopOnPathChange />
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <div className="flex min-h-screen flex-col">
             <Header />
 

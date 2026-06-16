@@ -299,13 +299,13 @@ export default function MypageClient({ user }: Props) {
                 <CardContent className="p-2.5 bp-sm:p-3">
                   <p className="mb-2 px-1 text-xs font-medium text-muted-foreground">내 상세 내역</p>
                   <div>
-                    <TabsList className="grid h-auto w-full grid-cols-4 gap-1 bg-muted p-1 bp-sm:grid-cols-7 bp-sm:gap-1.5 bp-lg:w-full">
+                    <TabsList className="grid h-auto w-full grid-cols-4 gap-1 bg-muted p-1 bp-md:grid-cols-7 bp-md:gap-1.5 bp-lg:w-full">
                       <TabsTrigger
                         value="orders"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-2.5 bp-sm:py-2.5"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
-                        <ClipboardList className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                        <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm">
+                        <ClipboardList className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
+                        <span className="text-center text-xs font-medium leading-tight break-keep bp-md:text-sm">
                           <span className="bp-lg:hidden">거래/이용</span>
                           <span className="hidden bp-lg:inline">거래/이용 내역</span>
                         </span>
@@ -313,10 +313,10 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="academy"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-2.5 bp-sm:py-2.5"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
-                        <GraduationCap className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                        <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm">
+                        <GraduationCap className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
+                        <span className="text-center text-xs font-medium leading-tight break-keep bp-md:text-sm">
                           <span className="bp-lg:hidden">클래스</span>
                           <span className="hidden bp-lg:inline">클래스 신청</span>
                         </span>
@@ -324,10 +324,10 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="wishlist"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-2.5 bp-sm:py-2.5"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
-                        <Heart className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                        <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm">
+                        <Heart className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
+                        <span className="text-center text-xs font-medium leading-tight break-keep bp-md:text-sm">
                           <span className="bp-lg:hidden">찜</span>
                           <span className="hidden bp-lg:inline">찜한 상품</span>
                         </span>
@@ -335,10 +335,10 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="reviews"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-2.5 bp-sm:py-2.5"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
-                        <MessageSquare className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                        <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm">
+                        <MessageSquare className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
+                        <span className="text-center text-xs font-medium leading-tight break-keep bp-md:text-sm">
                           <span className="bp-lg:hidden">리뷰</span>
                           <span className="hidden bp-lg:inline">리뷰 관리</span>
                         </span>
@@ -346,10 +346,10 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="qna"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-2.5 bp-sm:py-2.5"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
-                        <MessageCircleQuestion className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                        <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm">
+                        <MessageCircleQuestion className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
+                        <span className="text-center text-xs font-medium leading-tight break-keep bp-md:text-sm">
                           <span className="bp-lg:hidden">Q&A</span>
                           <span className="hidden bp-lg:inline">Q&A 내역</span>
                         </span>
@@ -357,18 +357,18 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="passes"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-2.5 bp-sm:py-2.5"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
-                        <Ticket className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                        <span className="text-center text-xs font-medium leading-tight bp-sm:text-sm">패키지</span>
+                        <Ticket className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
+                        <span className="text-center text-xs font-medium leading-tight bp-md:text-sm">패키지</span>
                       </TabsTrigger>
 
                       <TabsTrigger
                         value="points"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-sm:gap-1.5 bp-sm:px-2.5 bp-sm:py-2.5"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
-                        <ReceiptCent className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                        <span className="text-center text-xs font-medium leading-tight break-keep bp-sm:text-sm">
+                        <ReceiptCent className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
+                        <span className="text-center text-xs font-medium leading-tight break-keep bp-md:text-sm">
                           <span className="bp-lg:hidden">포인트</span>
                           <span className="hidden bp-lg:inline">적립 포인트</span>
                         </span>
@@ -385,7 +385,7 @@ export default function MypageClient({ user }: Props) {
                     <div className="flex min-w-0 items-center justify-between gap-3">
                       <div className="min-w-0">
                         <CardTitle className="text-base font-semibold text-foreground bp-sm:text-lg">거래/이용 내역</CardTitle>
-                        <CardDescription className="mt-0.5 text-xs text-muted-foreground bp-sm:text-sm">상태와 다음 행동을 확인하세요.</CardDescription>
+                        <CardDescription className="mt-0.5 text-xs text-muted-foreground bp-md:text-sm">상태와 다음 행동을 확인하세요.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
@@ -416,11 +416,11 @@ export default function MypageClient({ user }: Props) {
                   <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
-                        <GraduationCap className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
+                        <GraduationCap className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg bp-sm:text-xl">클래스 신청</CardTitle>
-                        <CardDescription className="text-sm text-foreground/80">도깨비테니스 아카데미 클래스 신청 내역을 확인하세요.</CardDescription>
+                        <CardTitle className="text-base font-semibold text-foreground bp-sm:text-lg">클래스 신청</CardTitle>
+                        <CardDescription className="mt-0.5 text-xs text-muted-foreground bp-sm:text-sm">도깨비테니스 아카데미 클래스 신청 내역을 확인하세요.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
@@ -434,11 +434,11 @@ export default function MypageClient({ user }: Props) {
                   <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
-                        <Heart className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
+                        <Heart className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg bp-sm:text-xl">위시리스트</CardTitle>
-                        <CardDescription className="text-sm text-foreground/80">찜한 상품 목록을 확인하실 수 있습니다.</CardDescription>
+                        <CardTitle className="text-base font-semibold text-foreground bp-sm:text-lg">위시리스트</CardTitle>
+                        <CardDescription className="mt-0.5 text-xs text-muted-foreground bp-sm:text-sm">찜한 상품 목록을 확인하실 수 있습니다.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
@@ -452,11 +452,11 @@ export default function MypageClient({ user }: Props) {
                   <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
-                        <MessageSquare className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
+                        <MessageSquare className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg bp-sm:text-xl">리뷰 관리</CardTitle>
-                        <CardDescription className="text-sm text-foreground/80">작성한 리뷰를 확인하고 관리하실 수 있습니다.</CardDescription>
+                        <CardTitle className="text-base font-semibold text-foreground bp-sm:text-lg">리뷰 관리</CardTitle>
+                        <CardDescription className="mt-0.5 text-xs text-muted-foreground bp-sm:text-sm">작성한 리뷰를 확인하고 관리하실 수 있습니다.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
@@ -470,11 +470,11 @@ export default function MypageClient({ user }: Props) {
                   <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
-                        <MessageCircleQuestion className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
+                        <MessageCircleQuestion className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg bp-sm:text-xl">Q&A 내역</CardTitle>
-                        <CardDescription className="text-sm text-foreground/80">문의 내역을 확인하고 답변을 받으실 수 있습니다.</CardDescription>
+                        <CardTitle className="text-base font-semibold text-foreground bp-sm:text-lg">Q&A 내역</CardTitle>
+                        <CardDescription className="mt-0.5 text-xs text-muted-foreground bp-sm:text-sm">문의 내역을 확인하고 답변을 받으실 수 있습니다.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
@@ -488,11 +488,11 @@ export default function MypageClient({ user }: Props) {
                   <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
-                        <Ticket className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
+                        <Ticket className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg bp-sm:text-xl">패키지</CardTitle>
-                        <CardDescription className="text-sm text-foreground/80">보유 중인 패키지를 확인하실 수 있습니다.</CardDescription>
+                        <CardTitle className="text-base font-semibold text-foreground bp-sm:text-lg">패키지</CardTitle>
+                        <CardDescription className="mt-0.5 text-xs text-muted-foreground bp-sm:text-sm">보유 중인 패키지를 확인하실 수 있습니다.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
@@ -506,11 +506,11 @@ export default function MypageClient({ user }: Props) {
                   <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
-                        <ReceiptCent className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
+                        <ReceiptCent className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg bp-sm:text-xl">적립 포인트</CardTitle>
-                        <CardDescription className="text-sm text-foreground/80">포인트 적립 및 사용 내역을 확인하실 수 있습니다.</CardDescription>
+                        <CardTitle className="text-base font-semibold text-foreground bp-sm:text-lg">적립 포인트</CardTitle>
+                        <CardDescription className="mt-0.5 text-xs text-muted-foreground bp-sm:text-sm">포인트 적립 및 사용 내역을 확인하실 수 있습니다.</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
