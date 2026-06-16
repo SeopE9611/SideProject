@@ -38,7 +38,7 @@ export default function StringRecommendResultCard({
   const primaryGauge = product.gauge || product.gaugeOptions?.[0];
 
   return (
-    <Card className="flex h-full flex-col overflow-hidden rounded-2xl">
+    <Card className="flex h-full flex-col overflow-hidden rounded-2xl border-border/80">
       <CardHeader className="space-y-3 p-4 sm:p-5">
         <Badge className="w-fit shrink-0">TOP {rank}</Badge>
         <div className="relative aspect-[5/4] w-full overflow-hidden rounded-xl bg-muted">
@@ -64,7 +64,7 @@ export default function StringRecommendResultCard({
           </CardTitle>
           {isSale ? (
             <div className="space-y-1 tabular-nums">
-              <div className="flex items-baseline gap-1.5">
+              <div className="flex flex-wrap items-baseline gap-1.5">
                 <span className="text-[11px] text-muted-foreground">
                   할인가
                 </span>
@@ -109,7 +109,7 @@ export default function StringRecommendResultCard({
           ))}
         </ul>
         {result.matchSummary && result.matchSummary.length > 0 ? (
-          <div className="rounded-xl border border-border bg-background p-3 text-sm">
+          <div className="rounded-xl border border-border bg-background p-3 text-sm leading-relaxed">
             <p className="break-keep font-medium">추천 기준</p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {result.matchSummary.map((item) => (
@@ -125,7 +125,7 @@ export default function StringRecommendResultCard({
             </div>
           </div>
         ) : null}
-        <div className="rounded-xl border border-border bg-muted/40 p-3 text-sm">
+        <div className="rounded-xl border border-border bg-muted/40 p-3 text-sm leading-relaxed">
           <p className="break-keep font-medium">
             {result.tensionRange.label}: {result.tensionRange.min}~
             {result.tensionRange.max} lbs
@@ -137,10 +137,10 @@ export default function StringRecommendResultCard({
       </CardContent>
       <CardFooter className="flex-col items-start gap-3 p-4 pt-0 sm:p-5 sm:pt-0">
         <div className="mt-1 w-full space-y-2">
-          <Button asChild wrap="normal" className="w-full">
+          <Button asChild wrap="normal" className="min-h-10 w-full">
             <Link href={productHref}>이 스트링으로 교체서비스 신청</Link>
           </Button>
-          <Button asChild variant="outline" wrap="normal" className="w-full">
+          <Button asChild variant="outline" wrap="normal" className="min-h-10 w-full">
             <Link href={productHref}>상세 보기</Link>
           </Button>
         </div>

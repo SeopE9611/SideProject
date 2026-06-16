@@ -16,7 +16,7 @@ export default function StringRecommendQuestion({
   index,
 }: StringRecommendQuestionProps) {
   return (
-    <section className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5 md:p-6">
+    <section className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm sm:p-5 md:p-6">
       <div className="space-y-2 break-keep">
         <Badge variant="outline" className="w-fit shrink-0">
           질문 {index + 1}
@@ -30,7 +30,7 @@ export default function StringRecommendQuestion({
           </p>
         ) : null}
       </div>
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
+      <div className="mt-4 grid gap-3 sm:gap-4 md:grid-cols-2">
         {question.options.map((option) => {
           const selected = value === option.value;
           return (
@@ -40,17 +40,17 @@ export default function StringRecommendQuestion({
               aria-pressed={selected}
               onClick={() => onChange(option.value)}
               className={cn(
-                "min-h-24 w-full rounded-xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                "min-h-24 w-full rounded-xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:p-5",
                 selected
                   ? "border-primary/50 bg-primary/5 text-foreground ring-1 ring-primary/20"
                   : "border-border bg-background hover:bg-muted/40",
               )}
             >
-              <p className="break-keep font-medium leading-snug text-foreground">
+              <p className="min-w-0 break-keep break-words font-medium leading-snug text-foreground">
                 {option.label}
               </p>
               {option.description ? (
-                <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
+                <p className="mt-1 min-w-0 break-keep break-words text-sm leading-relaxed text-muted-foreground">
                   {option.description}
                 </p>
               ) : null}
