@@ -1200,7 +1200,7 @@ export default function TransactionFlowList() {
 
                       {/* 펼침 패널: 메인 행 아래 전체 너비로 분리되어 펼쳐짐 */}
                       {secondaryActions.length > 0 && isSecondaryOpen ? (
-                        <div className="col-span-full grid w-full grid-cols-2 gap-1.5 rounded-xl border border-border/60 bg-muted/20 px-3 py-2 md:flex md:flex-wrap md:justify-end [&_a]:h-8 [&_a]:w-full [&_a]:justify-center [&_a]:px-3 [&_a]:text-xs [&_button]:h-8 [&_button]:w-full [&_button]:whitespace-nowrap [&_button]:px-3 [&_button]:text-xs md:[&_a]:w-auto md:[&_button]:w-auto">
+                        <div className="col-span-full grid w-full grid-cols-2 gap-1.5 rounded-xl border border-border/60 bg-muted/20 px-3 py-2 md:flex md:flex-wrap md:justify-end [&_a]:h-8 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:px-3 [&_a]:text-center [&_a]:text-xs [&_a]:leading-tight [&_a]:whitespace-normal [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:px-3 [&_button]:text-center [&_button]:text-xs [&_button]:leading-tight [&_button]:whitespace-normal md:[&_a]:w-auto md:[&_a]:whitespace-nowrap md:[&_button]:w-auto md:[&_button]:whitespace-nowrap">
                           {secondaryActions.map((action) => (
                             <Fragment key={action.key}>{action.node}</Fragment>
                           ))}
