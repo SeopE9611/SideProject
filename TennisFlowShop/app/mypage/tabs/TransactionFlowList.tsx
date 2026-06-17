@@ -762,7 +762,7 @@ export default function TransactionFlowList() {
           {items.map((g) => {
             const orderId = g.order?.id ?? (g.kind === "order" ? g.detailTarget.id : undefined);
             const rentalId = g.rental?.id ?? (g.kind === "rental" ? g.detailTarget.id : undefined);
-            const applicationId = g.application?.id ?? (g.kind === "application" ? g.detailTarget.id : undefined);
+
             const linkedApps = g.kind === "order" ? (g.order?.applicationSummaries ?? []) : g.kind === "rental" ? (g.rental?.applicationSummaries ?? []) : [];
             const linkedActionableApplication = linkedApps.find((app) => isApplicationTrackingNeeded(app)) ?? linkedApps.find((app) => isApplicationTodoActionable(app));
             const prefersApplicationView = scope === "application" && Boolean(g.application);
@@ -796,7 +796,7 @@ export default function TransactionFlowList() {
               prefersApplicationView,
               todoPrimaryReason,
             });
-            const flowKindBadgeLabel = prefersApplicationView ? "서비스 신청" : g.kind === "order" ? "주문" : g.kind === "rental" ? "대여" : "서비스 신청";
+
             const linkedFlowBadgeLabel = !prefersApplicationView && (g.flowType === "order_plus_stringing" || g.flowType === "rental_plus_stringing") ? "교체서비스 연결" : null;
             const shouldShowFlowBadge = !prefersApplicationView && !linkedFlowBadgeLabel && Boolean(normalizedFlowLabel) && normalizedFlowLabel !== normalizedMetaLabel;
             const displayKind: FlowDetailType = prefersApplicationView ? "application" : g.kind;
@@ -805,7 +805,7 @@ export default function TransactionFlowList() {
             const displayStatus = prefersApplicationView ? displayApplication?.status : status;
             const displayUserStatusLabel = prefersApplicationView ? getMypageUserStatusLabel(displayStatus) : orderDisplayStatusLabel;
             const displayStatusBadgeSpec = prefersApplicationView ? getStatusBadgeSpec({ ...g, kind: "application" }, displayUserStatusLabel) : statusBadgeSpec;
-            const displayDateLabel = displayKind === "order" ? "주문일" : displayKind === "rental" ? "대여일" : "신청일";
+
             const displayDateValue = displayKind === "order" ? (g.order?.createdAt ?? g.sortAt) : displayKind === "rental" ? (g.rental?.createdAt ?? g.sortAt) : (displayApplication?.createdAt ?? g.createdAt ?? g.sortAt);
             const detailTargetType: FlowDetailType = prefersApplicationView ? "application" : g.detailTarget.type;
             const detailTargetId = prefersApplicationView && displayApplication?.id ? displayApplication.id : g.detailTarget.id;
@@ -1179,21 +1179,16 @@ export default function TransactionFlowList() {
                           {secondaryActions.length > 0 ? (
                             <button
                               type="button"
-                              className={`
-    group relative flex h-8 items-center gap-1.5 rounded-lg border px-3 text-xs font-medium
-    transition-colors duration-150
-    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1
-    ${isSecondaryOpen ? "border-border bg-secondary text-foreground shadow-sm" : "border-border bg-background text-muted-foreground hover:bg-card hover:text-foreground"}
-  `}
+                              className={`group relative flex h-8 items-center justify-center gap-1.5 rounded-lg border px-3 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
+                                isSecondaryOpen ? "border-border bg-secondary text-foreground shadow-sm" : "border-border bg-background text-muted-foreground hover:bg-card hover:text-foreground"
+                              }`}
                               onClick={() => setExpandedSecondaryKey((prev) => (prev === g.key ? null : g.key))}
                             >
                               <span>{isSecondaryOpen ? "닫기" : "더보기"}</span>
                               <span
-                                className={`
-    flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold
-    transition-colors duration-150
-    ${isSecondaryOpen ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground group-hover:bg-secondary group-hover:text-foreground"}
-  `}
+                                className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold transition-colors duration-150 ${
+                                  isSecondaryOpen ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground group-hover:bg-secondary group-hover:text-foreground"
+                                }`}
                               >
                                 {secondaryActions.length}
                               </span>
@@ -1205,7 +1200,7 @@ export default function TransactionFlowList() {
 
                       {/* 펼침 패널: 메인 행 아래 전체 너비로 분리되어 펼쳐짐 */}
                       {secondaryActions.length > 0 && isSecondaryOpen ? (
-                        <div className="col-span-full grid w-full grid-cols-2 gap-1.5 rounded-lg border border-border/60 bg-muted/20 px-3 py-2 animate-in fade-in duration-200 md:flex md:flex-wrap md:justify-end [&_a]:h-8 [&_a]:w-full [&_a]:justify-center [&_a]:px-3 [&_a]:text-xs [&_button]:h-8 [&_button]:w-full [&_button]:whitespace-nowrap [&_button]:px-3 [&_button]:text-xs md:[&_a]:w-auto md:[&_button]:w-auto">
+                        <div className="col-span-full grid w-full grid-cols-2 gap-1.5 rounded-xl border border-border/60 bg-muted/20 px-3 py-2 md:flex md:flex-wrap md:justify-end [&_a]:h-8 [&_a]:w-full [&_a]:justify-center [&_a]:px-3 [&_a]:text-xs [&_button]:h-8 [&_button]:w-full [&_button]:whitespace-nowrap [&_button]:px-3 [&_button]:text-xs md:[&_a]:w-auto md:[&_button]:w-auto">
                           {secondaryActions.map((action) => (
                             <Fragment key={action.key}>{action.node}</Fragment>
                           ))}
