@@ -371,7 +371,21 @@ const getFlowNextActionText = (
       return isVisitPickupOrder({ shippingMethod: group.order?.shippingMethod }) ? "수령 준비 상태를 확인해주세요." : "배송 정보를 확인해주세요.";
     }
     if (normalized === "배송완료") return "상품을 받으셨다면 구매확정을 진행해주세요.";
-    if (normalized === "구매확정") return group.application?.serviceReviewPending ? "이용확정된 교체서비스 후기를 작성할 수 있어요." : "구매확정된 상품은 후기를 작성할 수 있어요.";
+    if (normalized === "구매확정") {
+      const hasPendingOrderReview = Boolean(group.order?.hasPendingReview) || (group.order?.reviewPendingCount ?? 0) > 0;
+
+      const hasPendingServiceReview = Boolean(group.application?.serviceReviewPending) || (group.order?.applicationSummaries ?? []).some((app) => app.serviceReviewPending);
+
+      if (hasPendingServiceReview) {
+        return "이용확정된 교체서비스 후기를 작성할 수 있어요.";
+      }
+
+      if (hasPendingOrderReview) {
+        return "구매확정된 상품은 후기를 작성할 수 있어요.";
+      }
+
+      return null;
+    }
     return null;
   }
 
@@ -381,7 +395,19 @@ const getFlowNextActionText = (
     if (normalized === "대기중") return "결제를 완료해주세요.";
     if (normalized === "결제완료") return "대여 상품 출고 또는 수령 준비 중입니다.";
     if (normalized === "대여중") return "대여 중입니다. 반납 일정을 확인해주세요.";
-    if (normalized === "반납완료") return group.rental?.userConfirmedAt ? (group.application?.serviceReviewPending ? "이용확정된 교체서비스 후기를 작성할 수 있어요." : "이용확정이 완료되었습니다.") : "반납 내용을 확인하고 이용확정을 진행해주세요.";
+    if (normalized === "반납완료") {
+      const hasPendingServiceReview = Boolean(group.application?.serviceReviewPending) || (group.rental?.applicationSummaries ?? []).some((app) => app.serviceReviewPending);
+
+      if (!group.rental?.userConfirmedAt) {
+        return "반납 내용을 확인하고 이용확정을 진행해주세요.";
+      }
+
+      if (hasPendingServiceReview) {
+        return "이용확정된 교체서비스 후기를 작성할 수 있어요.";
+      }
+
+      return null;
+    }
     if (!group.rental?.stringingApplicationId && group.rental?.withStringService) return "교체서비스 신청을 이어서 진행해주세요.";
     if ((group.rental?.applicationSummaries ?? []).length > 0) return "해당 신청서의 진행 정보를 확인해주세요.";
     return null;
@@ -935,7 +961,10 @@ export default function TransactionFlowList() {
                         forceSecondary: true,
                         node: (
                           <Button key="application-linked-order" asChild size="sm" variant="outline" className="bg-transparent">
-                            <Link href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&${flowQuery}`}>연계 주문 보기</Link>
+                            <Link href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&${flowQuery}`}>
+                              연계 주문 보기
+                              <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                            </Link>
                           </Button>
                         ),
                       });
@@ -948,7 +977,10 @@ export default function TransactionFlowList() {
                         forceSecondary: true,
                         node: (
                           <Button key="application-linked-rental" asChild size="sm" variant="outline" className="bg-transparent">
-                            <Link href={`/mypage?tab=orders&flowType=rental&flowId=${rentalId}&${flowQuery}`}>연계 대여 보기</Link>
+                            <Link href={`/mypage?tab=orders&flowType=rental&flowId=${rentalId}&${flowQuery}`}>
+                              연계 대여 보기
+                              <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                            </Link>
                           </Button>
                         ),
                       });
@@ -960,7 +992,7 @@ export default function TransactionFlowList() {
                       const isVisitPickup = isVisitPickupOrder({
                         shippingMethod: g.order?.shippingMethod,
                       });
-                      const shippingInfoLabel = isVisitPickup ? "방문 수령 정보 확인" : "배송정보 확인";
+                      const shippingInfoLabel = isVisitPickup ? "수령정보 확인" : "배송정보 확인";
                       const ShippingInfoIcon = isVisitPickup ? Store : Truck;
                       actions.push({
                         key: "order-shipping-info",
@@ -1024,7 +1056,9 @@ export default function TransactionFlowList() {
                       });
                     }
 
-                    if (canRenderOrderReview) {
+                    const hasOrderReviewPending = Boolean(g.order?.hasPendingReview) || (g.order?.reviewPendingCount ?? 0) > 0;
+
+                    if (canRenderOrderReview && hasOrderReviewPending) {
                       actions.push({
                         key: "order-review",
                         priority: 4,
@@ -1068,7 +1102,10 @@ export default function TransactionFlowList() {
                         priority: 2,
                         node: (
                           <Button key="rental-linked-application" asChild size="sm" variant="outline" className="bg-transparent">
-                            <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.rental.stringingApplicationId}&${flowQuery}`}>교체서비스 상세 보기</Link>
+                            <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.rental.stringingApplicationId}&${flowQuery}`}>
+                              교체서비스 상세 보기
+                              <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                            </Link>
                           </Button>
                         ),
                       });
@@ -1078,7 +1115,10 @@ export default function TransactionFlowList() {
                         priority: 2,
                         node: (
                           <Button key="rental-apply-stringing" asChild size="sm">
-                            <Link href={`/services/apply?rentalId=${rentalId}`}>교체서비스 신청하기</Link>
+                            <Link href={`/services/apply?rentalId=${rentalId}`}>
+                              교체서비스 신청
+                              <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                            </Link>
                           </Button>
                         ),
                       });
@@ -1127,11 +1167,11 @@ export default function TransactionFlowList() {
                       });
                     }
 
-                    if (applicationActionTarget.userConfirmedAt) {
+                    if (applicationActionTarget.userConfirmedAt && applicationActionTarget.serviceReviewPending) {
                       actions.push({
                         key: "application-review",
-                        priority: applicationActionTarget.serviceReviewPending ? 0 : 4,
-                        pinInline: applicationActionTarget.serviceReviewPending,
+                        priority: 0,
+                        pinInline: true,
                         node: <ServiceReviewCTA key="application-review" applicationId={applicationActionTarget.id} status={applicationActionTarget.status} userConfirmedAt={applicationActionTarget.userConfirmedAt} />,
                       });
                     }
@@ -1143,7 +1183,10 @@ export default function TransactionFlowList() {
                       priority: 3,
                       node: (
                         <Button key="application-open-sheet" asChild size="sm" variant="default">
-                          <Link href={applicationActionTarget ? getStringingDetailHref(applicationActionTarget, flowQuery) : `/mypage?tab=orders&flowType=application&flowId=${actionableApplicationId}&${flowQuery}`}>교체서비스 상세 보기</Link>
+                          <Link href={applicationActionTarget ? getStringingDetailHref(applicationActionTarget, flowQuery) : `/mypage?tab=orders&flowType=application&flowId=${actionableApplicationId}&${flowQuery}`}>
+                            교체서비스 상세 보기
+                            <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                          </Link>
                         </Button>
                       ),
                     });
@@ -1164,14 +1207,14 @@ export default function TransactionFlowList() {
                   return (
                     <>
                       {/* 오른쪽 컬럼: 상태 배지 + 액션 버튼 */}
-                      <div className="flex w-full shrink-0 flex-col items-start gap-2 md:w-[150px] md:items-end">
+                      <div className="flex w-full shrink-0 flex-col items-start gap-2 md:w-[168px] md:items-stretch md:self-start">
                         <div className="hidden flex-wrap items-center gap-1.5 md:flex md:justify-end">
                           <Badge variant={displayStatusBadgeSpec.variant} className="shrink-0 whitespace-nowrap">
                             {displayUserStatusLabel}
                           </Badge>
                         </div>
 
-                        <div className="grid w-full grid-cols-2 gap-1.5 md:flex md:flex-col md:items-end [&_a]:h-8 [&_a]:w-full [&_a]:justify-center [&_a]:px-3 [&_a]:text-xs [&_button]:h-8 [&_button]:w-full [&_button]:whitespace-nowrap [&_button]:px-3 [&_button]:text-xs md:[&_a]:w-auto md:[&_button]:w-auto">
+                        <div className="grid w-full grid-cols-2 gap-1.5 md:flex md:w-full md:flex-col md:items-stretch [&_a]:h-8 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-3 [&_a]:text-center [&_a]:text-xs [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-3 [&_button]:text-center [&_button]:text-xs [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap">
                           {inlineActions.map((action) => (
                             <Fragment key={action.key}>{action.node}</Fragment>
                           ))}
@@ -1180,7 +1223,7 @@ export default function TransactionFlowList() {
                             <button
                               type="button"
                               className={`group relative flex h-8 items-center justify-center gap-1.5 rounded-lg border px-3 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
-                                isSecondaryOpen ? "border-border bg-secondary text-foreground shadow-sm" : "border-border bg-background text-muted-foreground hover:bg-card hover:text-foreground"
+                                isSecondaryOpen ? "border-border bg-muted text-foreground shadow-none" : "border-border bg-background text-muted-foreground hover:bg-card hover:text-foreground"
                               }`}
                               onClick={() => setExpandedSecondaryKey((prev) => (prev === g.key ? null : g.key))}
                             >
@@ -1196,11 +1239,16 @@ export default function TransactionFlowList() {
                             </button>
                           ) : null}
                         </div>
+                        {secondaryActions.length > 0 && isSecondaryOpen ? (
+                          <div className="hidden w-full grid-cols-1 gap-1.5 rounded-xl border border-border/60 bg-muted/20 px-2 py-2 md:grid [&_a]:h-8 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-3 [&_a]:text-center [&_a]:text-xs [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-3 [&_button]:text-center [&_button]:text-xs [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap">
+                            {secondaryActions.map((action) => (
+                              <Fragment key={action.key}>{action.node}</Fragment>
+                            ))}
+                          </div>
+                        ) : null}
                       </div>
-
-                      {/* 펼침 패널: 메인 행 아래 전체 너비로 분리되어 펼쳐짐 */}
                       {secondaryActions.length > 0 && isSecondaryOpen ? (
-                        <div className="col-span-full grid w-full grid-cols-2 gap-1.5 rounded-xl border border-border/60 bg-muted/20 px-3 py-2 md:flex md:flex-wrap md:justify-end [&_a]:h-8 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:px-3 [&_a]:text-center [&_a]:text-xs [&_a]:leading-tight [&_a]:whitespace-normal [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:px-3 [&_button]:text-center [&_button]:text-xs [&_button]:leading-tight [&_button]:whitespace-normal md:[&_a]:w-auto md:[&_a]:whitespace-nowrap md:[&_button]:w-auto md:[&_button]:whitespace-nowrap">
+                        <div className="col-span-full grid w-full grid-cols-2 gap-1.5 rounded-xl border border-border/60 bg-muted/20 px-3 py-2 md:hidden [&_a]:h-8 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-3 [&_a]:text-center [&_a]:text-xs [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-3 [&_button]:text-center [&_button]:text-xs [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap">
                           {secondaryActions.map((action) => (
                             <Fragment key={action.key}>{action.node}</Fragment>
                           ))}
