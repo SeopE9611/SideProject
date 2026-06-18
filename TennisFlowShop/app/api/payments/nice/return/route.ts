@@ -393,7 +393,10 @@ async function handleNiceReturn(req: Request) {
         "Content-Type": "application/json",
         "Idempotency-Key": idemKey,
       },
-      body: JSON.stringify(session.checkoutPayload ?? {}),
+      body: JSON.stringify({
+        ...(session.checkoutPayload ?? {}),
+        expectedPayableAmount: amount,
+      }),
     });
 
     const tryAutoCancelAfterApprove = async (

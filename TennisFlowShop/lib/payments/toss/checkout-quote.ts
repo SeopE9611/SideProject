@@ -23,7 +23,11 @@ export async function calculateCheckoutPayableAmount(params: {
     quantity: number;
     kind?: "product" | "racket";
   }>;
-  shippingInfo: { withStringService?: boolean; deliveryMethod?: string };
+  shippingInfo: {
+    withStringService?: boolean;
+    deliveryMethod?: string;
+    shippingMethod?: string;
+  };
   pointsToUse?: number;
   stringingApplicationInput?: StringingApplicationInput;
 }) {
@@ -129,7 +133,9 @@ export async function calculateCheckoutPayableAmount(params: {
 
   const computedShippingFee = calcOrderShippingFeeWithBundlePolicy({
     items: itemsWithSnapshot,
-    isVisitPickup: shippingInfo?.deliveryMethod === "방문수령",
+    isVisitPickup:
+      shippingInfo?.deliveryMethod === "방문수령" ||
+      shippingInfo?.shippingMethod === "visit",
     withStringService: !!shippingInfo?.withStringService,
   });
 
