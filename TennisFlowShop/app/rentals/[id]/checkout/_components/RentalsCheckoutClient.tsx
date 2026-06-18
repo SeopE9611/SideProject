@@ -2,7 +2,6 @@
 
 import { type StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
 import type useRentalCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useRentalCheckoutStringingServiceAdapter";
-import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import RentalCheckoutStringingRuntimeBridge from "@/app/rentals/[id]/checkout/_components/RentalCheckoutStringingRuntimeBridge";
 import RentalCheckoutStringingSections from "@/app/rentals/[id]/checkout/_components/RentalCheckoutStringingSections";
 import RentalNiceCheckoutButton from "@/app/rentals/[id]/checkout/_components/RentalNiceCheckoutButton";
@@ -212,9 +211,9 @@ export default function RentalsCheckoutClient({
   const isVisitPickup = deliveryMethod === "방문수령";
 
   /**
-   * 스트링 교체 신청서(/services/apply)에서 기본 수거/방문 방식을 결정하는 값
-   * - SELF_SEND: 택배로 보내기(자가 발송)
-   * - SHOP_VISIT: 매장 방문(방문 시간 선택 UI가 열리는 쪽)
+   * 스트링 교체 신청서(/services/apply)에서 기본 수령/방문 방식을 결정하는 값
+   * - SELF_SEND: 레거시 택배 수령 매핑값(대여 라켓은 매장에서 장착 후 발송)
+   * - SHOP_VISIT: 매장 방문 수령(방문 시간 선택 UI가 열리는 쪽)
    */
   const servicePickupMethod =
     deliveryMethod === "방문수령" ? "SHOP_VISIT" : "SELF_SEND";
@@ -933,8 +932,8 @@ export default function RentalsCheckoutClient({
                       </p>
                       <p className="text-sm text-foreground">
                         {deliveryMethod === "방문수령"
-                          ? `방문 수령을 선택하면 ${collectionMethodLabel("visit")}로 교체가 진행됩니다.`
-                          : "택배 수령을 선택하면 자가 발송(편의점/우체국 등) 방식으로 교체가 진행됩니다."}
+                          ? "매장에서 대여 라켓에 스트링을 장착한 뒤 방문 수령으로 준비합니다."
+                          : "매장에서 대여 라켓에 스트링을 장착한 뒤 고객님께 발송합니다."}
                       </p>
                     </div>
 

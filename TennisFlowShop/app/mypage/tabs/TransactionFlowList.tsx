@@ -91,6 +91,9 @@ type ActivityGroup = {
     shippingMethod?: string;
     hasOutboundShipping?: boolean;
     outboundTrackingNumber?: string | null;
+    dueAt?: string | null;
+    returnedAt?: string | null;
+    hasReturnShipping?: boolean;
     applicationSummaries?: ActivityApplicationSummary[];
   };
   application?: ActivityApplicationSummary;
@@ -273,6 +276,19 @@ const getApplicationTrackingLabel = (app?: ActivityApplicationSummary) => {
   return app.hasTracking ? "운송장 등록됨" : "운송장 등록 필요";
 };
 
+const isRentalReturnShippingAvailable = (rental?: ActivityGroup["rental"]) => {
+  if (!rental || rental.status !== "out" || rental.returnedAt) return false;
+  if (!rental.dueAt) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dueDate = new Date(rental.dueAt);
+  if (Number.isNaN(dueDate.getTime())) return false;
+  dueDate.setHours(0, 0, 0, 0);
+
+  return today >= dueDate;
+};
+
 const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
   if (group.kind === "order") {
     // 취소/환불된 주문은 사용자가 더 처리할 일이 없으므로 Todo에서 제외합니다.
@@ -304,10 +320,8 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
   if (group.kind === "rental") {
     if (isTerminalCanceledStatus(group.rental?.status)) return null;
 
-    const actionableApplication = group.rental?.applicationSummaries?.find((app) => isApplicationTrackingNeeded(app));
-
-    if (isApplicationTrackingNeeded(actionableApplication)) {
-      return "운송장 등록 필요";
+    if (isRentalReturnShippingAvailable(group.rental)) {
+      return group.rental?.hasReturnShipping ? "반납 운송장 수정 필요" : "반납 운송장 등록 필요";
     }
 
     if (getMypageNormalizedStatus(group.rental?.status) === "반납완료" && !group.rental?.userConfirmedAt) {
@@ -934,6 +948,10 @@ export default function TransactionFlowList() {
 
                   const hasOrderLinkedApplication = g.kind === "order" && !prefersApplicationView && Boolean(primaryLinkedApplicationId) && Boolean(orderId);
                   const hasRentalLinkedApplication = g.kind === "rental" && !prefersApplicationView && Boolean(primaryLinkedApplicationId) && Boolean(rentalId);
+                  const isRentalLinkedApplicationAction =
+                    g.kind === "rental" &&
+                    !prefersApplicationView &&
+                    Boolean(applicationActionTarget?.rentalId);
                   const hasIntegratedLinkedApplication = hasOrderLinkedApplication || hasRentalLinkedApplication;
 
                   const resolvedDetailHref =
@@ -1101,6 +1119,21 @@ export default function TransactionFlowList() {
                       });
                     }
 
+                    if (isRentalReturnShippingAvailable(g.rental)) {
+                      actions.push({
+                        key: "rental-return-shipping",
+                        priority: 0,
+                        pinInline: true,
+                        node: (
+                          <Button key="rental-return-shipping" asChild size="sm">
+                            <Link href={`/mypage/rentals/${rentalId}/return-shipping`}>
+                              {g.rental?.hasReturnShipping ? "반납 운송장 수정" : "반납 운송장 등록"}
+                            </Link>
+                          </Button>
+                        ),
+                      });
+                    }
+
                     if (!g.rental?.stringingApplicationId && g.rental?.withStringService) {
                       actions.push({
                         key: "rental-apply-stringing",
@@ -1118,7 +1151,7 @@ export default function TransactionFlowList() {
                   }
 
                   if (isApplicationActionContext && applicationActionTarget?.id) {
-                    if (isApplicationTrackingNeeded(applicationActionTarget)) {
+                    if (!isRentalLinkedApplicationAction && isApplicationTrackingNeeded(applicationActionTarget)) {
                       actions.push({
                         key: "application-shipping",
                         priority: 0,
