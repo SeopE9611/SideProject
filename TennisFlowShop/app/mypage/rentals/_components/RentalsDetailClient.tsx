@@ -586,7 +586,7 @@ export default function RentalsDetailClient({
           <div className="grid w-full grid-cols-1 gap-2 sm:ml-auto sm:grid-cols-2 lg:flex lg:w-auto lg:flex-wrap lg:justify-end">
             {/* 교체 서비스 CTA */}
             {applicationHref ? (
-              <Button asChild className="h-9 w-full gap-2 whitespace-nowrap lg:w-auto">
+              <Button asChild className="h-9 w-full gap-2 overflow-hidden whitespace-nowrap lg:w-auto">
                 <Link href={applicationHref}>
                   교체서비스 상세
                   <ArrowRight className="h-4 w-4" />
@@ -595,7 +595,7 @@ export default function RentalsDetailClient({
             ) : canApplyStringService ? (
               <Button
                 asChild
-                className="h-9 w-full gap-2 whitespace-nowrap bg-primary text-primary-foreground shadow-sm duration-200 hover:bg-primary/90 lg:w-auto"
+                className="h-9 w-full gap-2 overflow-hidden whitespace-nowrap bg-primary text-primary-foreground shadow-sm duration-200 hover:bg-primary/90 lg:w-auto"
               >
                 <Link href={applyHref}>
                   <Wrench className="h-4 w-4" />
@@ -609,7 +609,7 @@ export default function RentalsDetailClient({
                 variant="outline"
                 size="sm"
                 asChild
-                className="h-9 w-full whitespace-nowrap border-border bg-background hover:border-primary/30 lg:w-auto"
+                className="h-9 w-full overflow-hidden whitespace-nowrap border-border bg-background hover:border-primary/30 lg:w-auto"
               >
                 <Link href={returnShippingHref}>
                   <Truck className="mr-2 h-4 w-4" />
@@ -626,7 +626,7 @@ export default function RentalsDetailClient({
                 variant="destructive"
                 size="sm"
                 onClick={() => setCancelDialogOpen(true)}
-                className="h-9 w-full gap-2 whitespace-nowrap lg:w-auto"
+                className="h-9 w-full gap-2 overflow-hidden whitespace-nowrap lg:w-auto"
               >
                 <XCircle className="h-4 w-4" />
                 대여 취소
@@ -642,7 +642,7 @@ export default function RentalsDetailClient({
               variant="outline"
               size="sm"
               asChild
-              className="h-9 w-full whitespace-nowrap border-border bg-background hover:border-primary/30 lg:w-auto"
+              className="h-9 w-full overflow-hidden whitespace-nowrap border-border bg-background hover:border-primary/30 lg:w-auto"
             >
               <Link href={backUrl}>
                 목록으로 돌아가기
@@ -684,7 +684,7 @@ export default function RentalsDetailClient({
                 라켓 정보
               </span>
             </div>
-            <p className="break-words text-lg font-semibold text-foreground">
+            <p className="line-clamp-2 min-w-0 break-keep text-base font-semibold text-foreground bp-sm:text-lg">
               {racketBrandLabel(data.brand)} {data.model}
             </p>
           </div>
@@ -745,7 +745,7 @@ export default function RentalsDetailClient({
               size="sm"
               onClick={handleWithdrawCancelRequest}
               disabled={withdrawing}
-              className="mt-3 w-full whitespace-nowrap sm:ml-4 sm:mt-0 sm:w-auto"
+              className="mt-3 h-9 w-full overflow-hidden whitespace-nowrap sm:ml-4 sm:mt-0 sm:w-auto"
             >
               {withdrawing ? "철회 중…" : "취소 요청 철회"}
             </Button>

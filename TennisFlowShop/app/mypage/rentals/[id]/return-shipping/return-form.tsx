@@ -183,7 +183,7 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
               }}
               inputMode="numeric"
               placeholder="숫자만 입력 (9~20자리)"
-              className="border-border bg-background tabular-nums focus-visible:ring-ring"
+              className="h-9 border-border bg-background tabular-nums focus-visible:ring-ring"
             />
           </div>
           <div className="space-y-2">
@@ -193,7 +193,7 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
             <Input
               type="date"
               value={date}
-              className="border-border bg-background focus-visible:ring-ring"
+              className="h-9 border-border bg-background focus-visible:ring-ring"
               onChange={(e) => setDate(e.target.value)}
             />
           </div>
@@ -215,7 +215,7 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
             <Button
               onClick={onSubmit}
               disabled={busy}
-              className="h-9 w-full whitespace-nowrap sm:w-auto"
+              className="h-9 w-full overflow-hidden whitespace-nowrap sm:w-auto"
             >
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} 저장
             </Button>

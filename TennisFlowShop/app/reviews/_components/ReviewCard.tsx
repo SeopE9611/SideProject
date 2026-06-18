@@ -451,7 +451,7 @@ export default function ReviewCard({
             variant={voted ? "default" : "secondary"}
             onClick={onHelpful}
             disabled={pending}
-            className="h-9 w-full whitespace-nowrap rounded-xl px-4 font-medium sm:w-auto"
+            className="h-9 w-full overflow-hidden whitespace-nowrap rounded-xl px-4 font-medium sm:w-auto"
             aria-pressed={voted}
             aria-label={`도움돼요 ${count ? `(${count})` : ""}`}
           >
