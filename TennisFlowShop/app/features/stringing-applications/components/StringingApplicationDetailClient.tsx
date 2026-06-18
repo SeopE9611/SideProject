@@ -1394,7 +1394,7 @@ export default function StringingApplicationDetailClient({
                         asChild
                         variant="outline"
                         size="sm"
-                        className="w-full whitespace-nowrap border-border bg-card hover:bg-muted bp-lg:w-auto"
+                        className="h-9 w-full whitespace-nowrap border-border bg-card hover:bg-muted bp-lg:w-auto"
                       >
                         <Link href={inboundTrackingHref}>
                           <Truck className="w-4 h-4 mr-2" />
@@ -1409,7 +1409,7 @@ export default function StringingApplicationDetailClient({
                         asChild
                         variant="outline"
                         size="sm"
-                        className="w-full border-border bg-card hover:bg-muted bp-lg:w-auto"
+                        className="h-9 w-full whitespace-nowrap border-border bg-card hover:bg-muted bp-lg:w-auto"
                       >
                         <Link
                           href={`/admin/applications/stringing/${data.id}/shipping-update`}
@@ -1470,7 +1470,7 @@ export default function StringingApplicationDetailClient({
                         size="sm"
                         disabled={!canConfirmExchange || isConfirmSubmitting}
                         onClick={handleConfirmExchange}
-                        className="w-full bp-lg:w-auto"
+                        className="h-9 w-full whitespace-nowrap bp-lg:w-auto"
                       >
                         <CheckCircle2 className="w-4 h-4 mr-2" />
                         {isConfirmSubmitting
@@ -1493,12 +1493,13 @@ export default function StringingApplicationDetailClient({
                     asChild
                     size="sm"
                     variant="outline"
-                    className="h-8 w-full bg-card bp-sm:w-auto"
+                    className="h-9 w-full whitespace-nowrap bg-card bp-sm:w-auto"
                   >
                     <Link
                       href={`/mypage?tab=orders&flowType=order&flowId=${data.orderId}&${flowQuery.toString()}&focus=stringing`}
                     >
-                      이용 상세로 이동
+                      이용 상세
+                      <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
                 </div>
@@ -1519,7 +1520,7 @@ export default function StringingApplicationDetailClient({
                   "grid grid-cols-1 gap-3 bp-sm:grid-cols-2",
                   isAdmin
                     ? "md:grid-cols-3 xl:grid-cols-6"
-                    : "bp-lg:grid-cols-4 bp-sm:gap-4 bp-lg:gap-6",
+                    : "bp-xl:grid-cols-4 bp-sm:gap-4 bp-lg:gap-5",
                 )}
               >
                 <div

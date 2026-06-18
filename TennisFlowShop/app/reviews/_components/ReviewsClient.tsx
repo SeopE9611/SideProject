@@ -144,14 +144,14 @@ export default function ReviewsClient() {
         className="h-full w-full text-muted-foreground"
       />
 
-      <div className="relative z-10 container mx-auto max-w-6xl space-y-5 px-4 py-6 md:space-y-7 md:py-8">
+      <div className="relative z-10 container mx-auto max-w-5xl space-y-5 px-4 py-6 md:space-y-6 md:py-8">
         {/* Header with tennis theme */}
-        <div className="mb-6 space-y-3 text-center md:mb-8 md:space-y-4">
+        <div className="mb-5 space-y-2 text-center md:mb-6">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-secondary">
-              <Trophy className="h-6 w-6 text-foreground" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card shadow-sm">
+              <Trophy className="h-5 w-5 text-primary" />
             </div>
-            <h1 className="break-keep text-3xl font-bold text-foreground md:text-4xl">고객 리뷰</h1>
+            <h1 className="break-keep text-2xl font-bold text-foreground md:text-3xl">고객 리뷰</h1>
           </div>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             장비 사용 후기와 교체서비스 경험을 확인하세요. 문의가 필요하다면
@@ -177,13 +177,13 @@ export default function ReviewsClient() {
                     value="product"
                     className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm"
                   >
-                    상품
+                    상품 후기
                   </TabsTrigger>
                   <TabsTrigger
                     value="service"
                     className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm"
                   >
-                    서비스
+                    교체서비스
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -254,7 +254,7 @@ export default function ReviewsClient() {
 
         {/* Loading skeleton */}
         {isFirstLoading && (
-          <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:gap-5 lg:grid-cols-2">
             <ReviewSkeleton />
             <div className="hidden lg:block">
               <ReviewSkeleton />
@@ -266,7 +266,7 @@ export default function ReviewsClient() {
         {!isFirstLoading && (
           <>
             {items.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 md:gap-5 lg:grid-cols-2">
                 {items.map((it) => (
                   <ReviewCard
                     key={it._id}

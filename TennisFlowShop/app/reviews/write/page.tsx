@@ -935,7 +935,7 @@ export default function ReviewWritePage() {
   if (!allowGuestCheckout && !authChecked) {
     return (
       <div className="min-h-screen bg-muted/30">
-        <div className="mx-auto max-w-5xl px-4 py-6 md:py-8">
+        <div className="mx-auto max-w-4xl px-4 py-6 md:py-8">
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
             <Card className="rounded-2xl border-border bg-card">
               <CardContent className="space-y-4 p-4 md:p-6">
@@ -964,7 +964,7 @@ export default function ReviewWritePage() {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <div className="mx-auto max-w-5xl px-4 py-6 md:py-8">
+      <div className="mx-auto max-w-4xl px-4 py-6 md:py-8">
         <header className="mb-5 md:mb-6">
           <p className="text-sm font-medium text-muted-foreground">
             {mode === "product"
@@ -985,13 +985,13 @@ export default function ReviewWritePage() {
           </p>
         </header>
 
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
           <main className="min-w-0 lg:order-1">
             <Card className="rounded-2xl border-border bg-card shadow-sm">
               <CardContent className="p-4 md:p-6">
                 <form onSubmit={onSubmit} className="space-y-6">
                   {mode === "service" && (
-                    <section className="rounded-2xl border border-border bg-muted/30 p-4">
+                    <section className="rounded-2xl border border-border bg-muted/20 p-4">
                       <div className="flex flex-wrap items-end justify-between gap-3">
                         <div className="min-w-0">
                           <Label className="block text-sm font-semibold text-foreground">
@@ -1013,7 +1013,7 @@ export default function ReviewWritePage() {
                       </div>
 
                       <select
-                        className="mt-3 h-11 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring"
+                        className="mt-3 h-10 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring"
                         value={selectedAppId ?? ""}
                         onChange={(e) => {
                           const nextId = e.target.value || null;
@@ -1072,7 +1072,7 @@ export default function ReviewWritePage() {
                         사용 경험을 가장 잘 나타내는 점수를 선택하세요.
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-border bg-muted/30 px-4 py-5">
+                    <div className="rounded-2xl border border-border bg-muted/20 px-4 py-4">
                       <Stars value={rating} onChange={setRating} disabled={locked} />
                       <div className="mt-3 text-center text-sm font-medium text-foreground">
                         {rating}점
@@ -1093,7 +1093,7 @@ export default function ReviewWritePage() {
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
                       placeholder={reviewPlaceholder}
-                      className="min-h-[150px] resize-y rounded-xl border-border bg-background focus-visible:ring-2 focus-visible:ring-ring"
+                      className="min-h-[140px] resize-y rounded-xl border-border bg-background focus-visible:ring-2 focus-visible:ring-ring"
                       disabled={locked}
                     />
                   </section>
@@ -1190,7 +1190,7 @@ export default function ReviewWritePage() {
                       type="button"
                       variant="outline"
                       onClick={() => confirmLeaveIfDirty(goPrimary)}
-                      className="order-2 w-full rounded-xl bg-transparent sm:order-1 sm:w-auto"
+                      className="order-2 h-9 w-full whitespace-nowrap rounded-xl bg-transparent sm:order-1 sm:w-auto"
                     >
                       {mode === "product"
                         ? "상품 상세"
@@ -1206,7 +1206,7 @@ export default function ReviewWritePage() {
                           router.replace("/mypage?tab=orders"),
                         )
                       }
-                      className="order-3 w-full rounded-xl sm:order-2 sm:w-auto"
+                      className="order-3 h-9 w-full whitespace-nowrap rounded-xl sm:order-2 sm:w-auto"
                     >
                       마이페이지
                     </Button>
@@ -1215,7 +1215,7 @@ export default function ReviewWritePage() {
                       type="submit"
                       disabled={locked || isUploading}
                       aria-disabled={locked || isUploading}
-                      className="order-1 w-full rounded-xl font-semibold sm:order-3 sm:w-auto"
+                      className="order-1 h-9 w-full whitespace-nowrap rounded-xl font-semibold sm:order-3 sm:w-auto"
                     >
                       {isUploading ? "이미지 업로드 중..." : "리뷰 등록"}
                     </Button>

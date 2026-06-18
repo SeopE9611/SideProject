@@ -560,7 +560,7 @@ export default function RentalsDetailClient({
   return (
     <main className="space-y-5 bp-sm:space-y-6">
       <div className="rounded-2xl border border-border bg-card p-4 shadow-sm bp-sm:p-5 md:p-6">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="mb-0 flex min-w-0 items-center gap-4">
             <div className="shrink-0 rounded-full border border-border bg-card p-3 shadow-sm">
               <Briefcase className="h-8 w-8 text-primary" />
@@ -676,8 +676,8 @@ export default function RentalsDetailClient({
           />
         )}
 
-        <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 md:grid-cols-4">
-          <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
+        <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
             <div className="flex items-center space-x-2 mb-2">
               <Package className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">
@@ -689,7 +689,7 @@ export default function RentalsDetailClient({
             </p>
           </div>
 
-          <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
+          <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
             <div className="flex items-center space-x-2 mb-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">
@@ -701,7 +701,7 @@ export default function RentalsDetailClient({
             </p>
           </div>
 
-          <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
+          <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
             <div className="mb-2 flex items-center space-x-2">
               <CreditCard className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">
@@ -713,7 +713,7 @@ export default function RentalsDetailClient({
             </p>
           </div>
 
-          <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
+          <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
             <div className="flex items-center space-x-2 mb-2">
               {getStatusIcon(data.status)}
               <span className="text-sm font-medium text-muted-foreground">
