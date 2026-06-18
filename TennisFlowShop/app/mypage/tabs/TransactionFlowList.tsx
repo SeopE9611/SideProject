@@ -933,10 +933,17 @@ export default function TransactionFlowList() {
                   const actions: ActionDef[] = [];
 
                   const hasOrderLinkedApplication = g.kind === "order" && !prefersApplicationView && Boolean(primaryLinkedApplicationId) && Boolean(orderId);
+                  const hasRentalLinkedApplication = g.kind === "rental" && !prefersApplicationView && Boolean(primaryLinkedApplicationId) && Boolean(rentalId);
+                  const hasIntegratedLinkedApplication = hasOrderLinkedApplication || hasRentalLinkedApplication;
 
-                  const resolvedDetailHref = hasOrderLinkedApplication && orderId ? `/mypage?tab=orders&flowType=order&flowId=${orderId}&${flowQuery}&focus=stringing` : detailHref;
+                  const resolvedDetailHref =
+                    hasOrderLinkedApplication && orderId
+                      ? `/mypage?tab=orders&flowType=order&flowId=${orderId}&${flowQuery}&focus=stringing`
+                      : hasRentalLinkedApplication && rentalId
+                        ? `/mypage?tab=orders&flowType=rental&flowId=${rentalId}&${flowQuery}&focus=stringing`
+                        : detailHref;
 
-                  const resolvedDetailLabel = hasOrderLinkedApplication ? "교체서비스 상세" : "상세 보기";
+                  const resolvedDetailLabel = hasIntegratedLinkedApplication ? "교체서비스 상세" : "상세 보기";
 
                   const detailPriority = scope === "todo" || prefersApplicationView ? 10 : 3;
                   actions.push({
@@ -1094,20 +1101,7 @@ export default function TransactionFlowList() {
                       });
                     }
 
-                    if (g.rental?.stringingApplicationId) {
-                      actions.push({
-                        key: "rental-linked-application",
-                        priority: 2,
-                        node: (
-                          <Button key="rental-linked-application" asChild size="sm" variant="outline" className="bg-transparent">
-                            <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.rental.stringingApplicationId}&${flowQuery}`}>
-                              교체서비스 상세
-                              <ArrowRight className="ml-1 h-3.5 w-3.5" />
-                            </Link>
-                          </Button>
-                        ),
-                      });
-                    } else if (g.rental?.withStringService) {
+                    if (!g.rental?.stringingApplicationId && g.rental?.withStringService) {
                       actions.push({
                         key: "rental-apply-stringing",
                         priority: 2,
