@@ -157,7 +157,7 @@ export async function GET(
               ? "self_ship"
               : collectionMethodRaw;
       const selfShip = (app as any)?.shippingInfo?.selfShip ?? null;
-      const needsInboundTracking = collectionMethod === "self_ship";
+      const needsInboundTracking = false;
       const normalizedLines = lines.map((line: any, index: number) => ({
         id: nullableTrim(line?.id) ?? String(index),
         racketType: nullableTrim(line?.racketType),
@@ -170,6 +170,9 @@ export async function GET(
       }));
       stringingApplication = {
         id: appId,
+        rentalId: (app as any)?.rentalId
+          ? String((app as any).rentalId)
+          : null,
         status: String((app as any)?.status ?? "접수완료"),
         createdAt: toNullableIsoString((app as any)?.createdAt),
         updatedAt: toNullableIsoString((app as any)?.updatedAt),
