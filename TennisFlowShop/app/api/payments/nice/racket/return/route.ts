@@ -402,6 +402,7 @@ async function handleNiceRacketReturn(req: Request) {
       paymentInfo: racketPayload.paymentInfo,
       servicePickupMethod: racketPayload.servicePickupMethod,
       guestInfo: racketPayload.guestInfo ?? undefined,
+      expectedPayableAmount: amount,
     };
 
     const tryAutoCancelAfterApprove = async (
