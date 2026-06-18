@@ -70,7 +70,7 @@ import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
-  ArrowLeft,
+  ArrowRight,
   Calendar,
   CheckCircle2,
   Clock,
@@ -1292,7 +1292,7 @@ export default function StringingApplicationDetailClient({
                 "mb-6 rounded-2xl bp-sm:mb-8",
                 isAdmin
                   ? cn("p-5 lg:p-6", adminSurface.cardMuted)
-                  : "border border-border bg-muted/30 p-4 shadow-sm bp-sm:p-5 bp-lg:p-8",
+                  : "border border-border bg-card p-4 shadow-sm bp-sm:p-5 bp-lg:p-6",
               )}
             >
               <div
@@ -1304,7 +1304,7 @@ export default function StringingApplicationDetailClient({
                 )}
               >
                 <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-                  <div className="shrink-0 rounded-full border border-border bg-card p-3 shadow-sm">
+                  <div className="shrink-0 rounded-xl border border-border bg-muted/40 p-3">
                     {isAdmin ? (
                       <Settings className="h-8 w-8 text-foreground" />
                     ) : (
@@ -1379,14 +1379,12 @@ export default function StringingApplicationDetailClient({
                       asChild
                       variant="outline"
                       size="sm"
-                      className="w-full whitespace-nowrap border-border bg-card hover:bg-primary/10 bp-lg:mr-1 bp-lg:w-auto"
+                      className="h-9 w-full whitespace-nowrap border-border bg-card hover:bg-primary/10 bp-lg:mr-1 bp-lg:w-auto"
                     >
                       <Link href={backUrl}>
-                        <ArrowLeft className="w-4 h-4 mr-2" />
                         <span className="sm:hidden">목록</span>
-                        <span className="hidden sm:inline">
-                          신청 목록으로 돌아가기
-                        </span>
+                        <span className="hidden sm:inline">신청 목록으로 돌아가기</span>
+                        <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
 

@@ -1,10 +1,16 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Truck } from "lucide-react";
+import { CheckCircle2, Loader2, Truck } from "lucide-react";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   Select,
@@ -125,13 +131,26 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
   };
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-6 bp-sm:px-6">
+    <div className="mx-auto w-full max-w-3xl space-y-4 px-4 py-6 bp-sm:px-6">
       <Card className="rounded-2xl border border-border bg-card shadow-sm">
         <CardHeader className="border-b border-border bg-muted/30">
-          <CardTitle className="flex items-center gap-2 break-keep text-foreground">
-            <Truck className="h-5 w-5" /> 반납 운송장{" "}
-            {hasExisting ? "수정" : "등록"}
-          </CardTitle>
+          <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+            <div className="min-w-0">
+              <CardTitle className="flex items-center gap-2 break-keep text-foreground">
+                <Truck className="h-5 w-5 text-primary" /> 반납 운송장{" "}
+                {hasExisting ? "수정" : "등록"}
+              </CardTitle>
+              <CardDescription className="mt-1 break-keep">
+                반납 접수 후 받은 택배사와 운송장 번호를 등록해 주세요.
+              </CardDescription>
+            </div>
+            {hasExisting ? (
+              <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-foreground">
+                <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                등록된 정보 있음
+              </div>
+            ) : null}
+          </div>
         </CardHeader>
         <CardContent className="space-y-5 p-4 bp-sm:p-6">
           <div className="space-y-2">
@@ -196,7 +215,7 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
             <Button
               onClick={onSubmit}
               disabled={busy}
-              className="w-full sm:w-auto"
+              className="h-9 w-full whitespace-nowrap sm:w-auto"
             >
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} 저장
             </Button>
