@@ -106,7 +106,14 @@ async function handleNiceStringingReturn(req: Request) {
 
     const applicationId = String(session.applicationId ?? "");
     const application = ObjectId.isValid(applicationId) ? await db.collection("stringing_applications").findOne({ _id: new ObjectId(applicationId) }) : null;
-    if (!application || application.packageApplied || application.servicePaid || Number(application.totalPrice ?? 0) !== amount) {
+    if (
+      !application ||
+      application.orderId ||
+      application.rentalId ||
+      application.packageApplied ||
+      application.servicePaid ||
+      Number(application.totalPrice ?? 0) !== amount
+    ) {
       await cancelNicePaymentByTid({
         tid,
         orderId,
