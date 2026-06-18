@@ -128,8 +128,12 @@ type Rental = {
     shippingMethod?: string;
     outbound?: {
       courier?: string;
+      carrier?: string;
       trackingNumber?: string;
+      trackingNo?: string;
+      tracking_no?: string;
       shippedAt?: string | Date | null;
+      shipped_at?: string | Date | null;
     } | null;
     return?: {
       courier?: string;
@@ -228,6 +232,40 @@ const courierTrackUrl: Record<string, (no: string) => string> = {
 };
 const fmt = (v?: string | Date | null) =>
   v ? new Date(v).toLocaleString() : "-";
+
+const getTrackingNumber = (value: unknown) => {
+  const item = value as
+    | {
+        trackingNumber?: string | null;
+        trackingNo?: string | null;
+        tracking_no?: string | null;
+      }
+    | null
+    | undefined;
+  return item?.trackingNumber ?? item?.trackingNo ?? item?.tracking_no ?? null;
+};
+
+const getCourierValue = (value: unknown) => {
+  const item = value as
+    | {
+        courier?: string | null;
+        carrier?: string | null;
+      }
+    | null
+    | undefined;
+  return item?.courier ?? item?.carrier ?? null;
+};
+
+const getShippedAtValue = (value: unknown) => {
+  const item = value as
+    | {
+        shippedAt?: string | Date | null;
+        shipped_at?: string | Date | null;
+      }
+    | null
+    | undefined;
+  return item?.shippedAt ?? item?.shipped_at ?? null;
+};
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -480,7 +518,10 @@ export default function RentalsDetailClient({
     depositRefundedAt: data.depositRefundedAt ?? undefined,
   });
 
-  const hasOutboundShipping = !!data.shipping?.outbound?.trackingNumber;
+  const outboundTrackingNo = getTrackingNumber(data.shipping?.outbound);
+  const outboundCourier = getCourierValue(data.shipping?.outbound);
+  const outboundShippedAt = getShippedAtValue(data.shipping?.outbound);
+  const hasOutboundShipping = !!outboundTrackingNo;
   const rentalShippingMethod = normalizeRentalShippingMethod(
     data.shipping?.shippingMethod,
   );
@@ -953,25 +994,25 @@ export default function RentalsDetailClient({
                           {isVisitPickup ? "매장 수령" : "대여 라켓 출고"}
                         </dd>
                       </div>
-                      {data.shipping?.outbound?.trackingNumber ? (
+                      {outboundTrackingNo ? (
                         <>
                           <div>
                             <dt className="text-muted-foreground">출고 택배사</dt>
                             <dd className="mt-1 font-medium">
-                              {getCourierLabel(data.shipping.outbound.courier)}
+                              {getCourierLabel(outboundCourier ?? undefined)}
                             </dd>
                           </div>
                           <div>
                             <dt className="text-muted-foreground">출고 운송장</dt>
                             <dd className="mt-1 break-all font-medium">
-                              {data.shipping.outbound.trackingNumber}
+                              {outboundTrackingNo}
                             </dd>
                           </div>
                           <div>
                             <dt className="text-muted-foreground">출고일</dt>
                             <dd className="mt-1 font-medium">
-                              {data.shipping.outbound.shippedAt
-                                ? formatDate(data.shipping.outbound.shippedAt)
+                              {outboundShippedAt
+                                ? formatDate(String(outboundShippedAt))
                                 : "출고일 확인 중"}
                             </dd>
                           </div>
@@ -1188,11 +1229,11 @@ export default function RentalsDetailClient({
               <p className="text-sm text-foreground/80">수령 정보</p>
               <p className="text-sm font-semibold text-foreground mt-1">
                 {isVisitPickup
-                  ? data.shipping?.outbound?.trackingNumber
-                    ? `매장 수령 준비 완료 · ${data.shipping.outbound.trackingNumber}`
+                  ? outboundTrackingNo
+                    ? `매장 수령 준비 완료 · ${outboundTrackingNo}`
                     : "매장 수령 준비 중입니다."
-                  : data.shipping?.outbound?.trackingNumber
-                    ? `${getCourierLabel(data.shipping.outbound.courier)} · ${data.shipping.outbound.trackingNumber}`
+                  : outboundTrackingNo
+                    ? `${getCourierLabel(outboundCourier ?? undefined)} · ${outboundTrackingNo}`
                     : "출고 운송장 등록 전입니다."}
               </p>
             </div>
@@ -1233,7 +1274,7 @@ export default function RentalsDetailClient({
               </div>
             </div>
 
-            {data?.shipping?.outbound?.trackingNumber && (
+            {outboundTrackingNo && (
               <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
                   <Truck className="h-5 w-5 text-primary" />
@@ -1243,27 +1284,27 @@ export default function RentalsDetailClient({
                     {isVisitPickup ? "매장 수령 준비 완료" : "출고 운송장 등록"}
                   </p>
                   <p className="text-xs text-foreground/75">
-                    {fmtDateOnly(data.shipping.outbound.shippedAt)}
+                    {fmtDateOnly(outboundShippedAt)}
                   </p>
                   <p className="text-sm mt-1">
                     {isVisitPickup ? (
                       <>
                         준비 확인 번호 ·{" "}
-                        {data.shipping.outbound.trackingNumber ?? "-"}
+                        {outboundTrackingNo ?? "-"}
                       </>
                     ) : (
                       <>
-                        {getCourierLabel(data.shipping.outbound.courier)} ·{" "}
+                        {getCourierLabel(outboundCourier ?? undefined)} ·{" "}
                         <a
                           className="underline underline-offset-2"
                           href={getTrackHref(
-                            data.shipping.outbound.courier,
-                            data.shipping.outbound.trackingNumber,
+                            outboundCourier ?? undefined,
+                            outboundTrackingNo,
                           )}
                           target="_blank"
                           rel="noreferrer"
                         >
-                          {data.shipping.outbound.trackingNumber ?? "-"}
+                          {outboundTrackingNo ?? "-"}
                         </a>
                       </>
                     )}
