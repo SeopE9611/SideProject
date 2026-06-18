@@ -42,7 +42,7 @@ export default async function Page({
   }
 
   return (
-    <main className="bg-background">
+    <main className="min-h-screen bg-background">
       <ReturnShippingForm rentalId={id} />
     </main>
   );

@@ -238,12 +238,12 @@ export default function ReviewCard({
   return (
     <Card
       variant="interactive"
-      className="group overflow-hidden border-border bg-card"
+      className="group overflow-hidden rounded-2xl border-border bg-card shadow-sm"
     >
       {/* Tennis court line accent */}
       <div className="h-1 bg-secondary" />
 
-      <CardContent className="relative space-y-4 p-4 md:p-6">
+      <CardContent className="relative space-y-4 p-4 md:p-5">
         {busy && (
           <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-card/80">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
@@ -256,17 +256,17 @@ export default function ReviewCard({
           <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
             <Badge
               variant={item.type === "product" ? "info" : "neutral"}
-              className="gap-1.5 rounded-full px-3 py-1 font-medium"
+              className="gap-1.5 rounded-full px-2.5 py-1 font-medium"
             >
               {item.type === "product" ? (
                 <Package className="h-3.5 w-3.5" />
               ) : (
                 <Wrench className="h-3.5 w-3.5" />
               )}
-              {item.type === "product" ? "상품 후기" : "상품+교체서비스 후기"}
+              {item.type === "product" ? "상품 후기" : "교체서비스 후기"}
             </Badge>
             {!!headerTitle && (
-              <span className="line-clamp-1 max-w-full min-w-0 rounded-full border border-border/60 bg-secondary px-2 py-1 text-sm font-semibold text-foreground sm:max-w-[320px]">
+              <span className="line-clamp-1 max-w-full min-w-0 text-sm font-semibold text-foreground sm:max-w-[320px]">
                 {headerTitle}
               </span>
             )}
@@ -382,7 +382,7 @@ export default function ReviewCard({
         </div>
 
         {/* Rating with tennis court styling */}
-        <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-secondary/50 p-3">
+        <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-muted/20 p-3">
           <div className="flex items-center gap-1">
             {Array.from({ length: 5 }).map((_, i) => (
               <Star
@@ -400,7 +400,7 @@ export default function ReviewCard({
         {isMasked ? (
           <MaskedBlock className="mt-1" />
         ) : (
-          <div className="rounded-xl border border-border/60 bg-secondary/50 p-4">
+          <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
             <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">
               {item.content}
             </p>
@@ -409,7 +409,7 @@ export default function ReviewCard({
 
         {/* Photo thumbnails */}
         {Array.isArray(item.photos) && item.photos.length > 0 && (
-          <div className="flex flex-col gap-3 rounded-xl border border-border/60 bg-secondary/50 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 rounded-xl border border-border/60 bg-muted/20 p-3 sm:flex-row sm:items-center sm:justify-between">
             <span className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
               <ImageIcon className="h-4 w-4 text-primary" />
               사진 {item.photos.length}장
@@ -451,7 +451,7 @@ export default function ReviewCard({
             variant={voted ? "default" : "secondary"}
             onClick={onHelpful}
             disabled={pending}
-            className="w-full rounded-full px-4 py-2 font-medium sm:w-auto"
+            className="h-9 w-full whitespace-nowrap rounded-xl px-4 font-medium sm:w-auto"
             aria-pressed={voted}
             aria-label={`도움돼요 ${count ? `(${count})` : ""}`}
           >

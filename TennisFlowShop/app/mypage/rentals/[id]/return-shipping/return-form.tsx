@@ -131,9 +131,9 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
   };
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-4 px-4 py-6 bp-sm:px-6">
+    <div className="mx-auto w-full max-w-2xl space-y-4 px-4 py-5 bp-sm:px-6 bp-sm:py-6">
       <Card className="rounded-2xl border border-border bg-card shadow-sm">
-        <CardHeader className="border-b border-border bg-muted/30">
+        <CardHeader className="border-b border-border bg-muted/20 px-4 py-4 bp-sm:px-6">
           <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
             <div className="min-w-0">
               <CardTitle className="flex items-center gap-2 break-keep text-foreground">
@@ -152,7 +152,7 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
             ) : null}
           </div>
         </CardHeader>
-        <CardContent className="space-y-5 p-4 bp-sm:p-6">
+        <CardContent className="space-y-4 p-4 bp-sm:p-6">
           <div className="space-y-2">
             <Label className="text-sm font-medium text-foreground">
               택배사

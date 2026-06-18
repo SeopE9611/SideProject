@@ -174,7 +174,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       apiItems.map((a) => ({
         _id: a._id,
         type: a.target?.type ?? (a.productId ? "product" : "service"),
-        title: a.target?.name ?? (a.productId ? "상품 리뷰" : "서비스 리뷰"),
+        title: a.target?.name ?? (a.productId ? "상품 후기" : "교체서비스 후기"),
         rating: a.rating,
         content: a.content ?? "",
         status: a.status,
@@ -436,7 +436,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
   const isInitialLoading = !data && isValidating;
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-4 md:space-y-5">
       {isInitialLoading ? (
         <StackedCardListSkeleton
           count={3}
@@ -455,12 +455,12 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         />
       ) : null}
       {/* 필터 */}
-      <div className="flex justify-end gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
         <Select
           value={statusFilter}
           onValueChange={(v) => setStatusFilter(v as any)}
         >
-          <SelectTrigger className="w-32">
+          <SelectTrigger className="h-9 w-full sm:w-32">
             <SelectValue placeholder="상태" />
           </SelectTrigger>
           <SelectContent>
@@ -474,7 +474,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
           value={typeFilter}
           onValueChange={(v) => setTypeFilter(v as any)}
         >
-          <SelectTrigger className="w-32">
+          <SelectTrigger className="h-9 w-full sm:w-32">
             <SelectValue placeholder="유형" />
           </SelectTrigger>
           <SelectContent>
@@ -500,20 +500,19 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         itemsToRender.map((it) => (
           <Card
             key={it._id}
-            className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:border-primary/30 hover:shadow-md"
+            className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:border-primary/30 hover:shadow-md"
           >
             <div
-              className="absolute inset-0 border border-border/40 bg-secondary/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-              style={{ padding: "1px" }}
+              className="pointer-events-none absolute inset-0 border border-border/40 bg-muted/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
             >
               <div className="h-full w-full bg-card rounded-lg" />
             </div>
 
-            <CardContent className="relative space-y-4 p-4 md:p-6">
+            <CardContent className="relative space-y-4 p-4 md:p-5">
               {/* 헤더 영역 */}
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div className="flex min-w-0 items-start gap-3">
-                  <div className="relative h-12 w-12 rounded-xl overflow-hidden bg-warning/10 ring-1 ring-border/5 dark:bg-warning/15">
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-border bg-muted/20">
                     {it.cover ? (
                       <Image
                         src={it.cover}
@@ -590,7 +589,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               </div>
 
               {/* 본문 */}
-              <div className="rounded-xl border border-border/60 bg-secondary/50 p-4">
+              <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
                 <p className="text-foreground leading-relaxed whitespace-pre-wrap break-words">
                   {it.content}
                 </p>
@@ -625,7 +624,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                 <div className="flex items-center gap-1 text-xs text-foreground/75">
                   <Package className="h-3.5 w-3.5" />
                   <span>
-                    {it.type === "product" ? "상품 리뷰" : "서비스 리뷰"}
+                    {it.type === "product" ? "상품 후기" : "교체서비스 후기"}
                   </span>
                 </div>
               </div>
@@ -634,11 +633,11 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         ))
       ) : (
         <Card className="border-border bg-card shadow-sm">
-          <CardContent className="p-8 md:p-12 text-center">
-            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-border bg-secondary md:mb-6">
-              <Star className="h-10 w-10 text-warning" />
+          <CardContent className="p-6 text-center md:p-8">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-muted/20 md:mb-4">
+              <Star className="h-6 w-6 text-warning" />
             </div>
-            <h3 className="mb-2 text-xl font-semibold text-foreground">
+            <h3 className="mb-2 text-lg font-semibold text-foreground">
               {swrItems.length > 0
                 ? "조건에 맞는 리뷰가 없습니다"
                 : "작성한 리뷰가 없습니다"}
