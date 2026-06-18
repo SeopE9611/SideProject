@@ -14,7 +14,7 @@ import { getApplicationStatusBadgeSpec, getOrderStatusBadgeSpec, getRentalStatus
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { AlertCircle, ArrowRight, Calendar, CheckCircle, ChevronDown, ChevronUp, Package, Sparkles, Store, Truck, Undo2, Wrench, XCircle } from "lucide-react";
+import { AlertCircle, ArrowRight, Calendar, CheckCircle, ChevronDown, ChevronUp, Package, Sparkles, Undo2, Wrench, XCircle } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -936,7 +936,7 @@ export default function TransactionFlowList() {
 
                   const resolvedDetailHref = hasOrderLinkedApplication && orderId ? `/mypage?tab=orders&flowType=order&flowId=${orderId}&${flowQuery}&focus=stringing` : detailHref;
 
-                  const resolvedDetailLabel = hasOrderLinkedApplication ? "교체서비스 상세 보기" : "상세 보기";
+                  const resolvedDetailLabel = hasOrderLinkedApplication ? "교체서비스 상세" : "상세 보기";
 
                   const detailPriority = scope === "todo" || prefersApplicationView ? 10 : 3;
                   actions.push({
@@ -993,7 +993,6 @@ export default function TransactionFlowList() {
                         shippingMethod: g.order?.shippingMethod,
                       });
                       const shippingInfoLabel = isVisitPickup ? "수령정보 확인" : "배송정보 확인";
-                      const ShippingInfoIcon = isVisitPickup ? Store : Truck;
                       actions.push({
                         key: "order-shipping-info",
                         priority: 1,
@@ -1011,7 +1010,6 @@ export default function TransactionFlowList() {
                               })
                             }
                           >
-                            <ShippingInfoIcon className="mr-2 h-4 w-4" />
                             {shippingInfoLabel}
                           </Button>
                         ),
@@ -1103,7 +1101,7 @@ export default function TransactionFlowList() {
                         node: (
                           <Button key="rental-linked-application" asChild size="sm" variant="outline" className="bg-transparent">
                             <Link href={`/mypage?tab=orders&flowType=application&flowId=${g.rental.stringingApplicationId}&${flowQuery}`}>
-                              교체서비스 상세 보기
+                              교체서비스 상세
                               <ArrowRight className="ml-1 h-3.5 w-3.5" />
                             </Link>
                           </Button>
@@ -1184,7 +1182,7 @@ export default function TransactionFlowList() {
                       node: (
                         <Button key="application-open-sheet" asChild size="sm" variant="default">
                           <Link href={applicationActionTarget ? getStringingDetailHref(applicationActionTarget, flowQuery) : `/mypage?tab=orders&flowType=application&flowId=${actionableApplicationId}&${flowQuery}`}>
-                            교체서비스 상세 보기
+                            교체서비스 상세
                             <ArrowRight className="ml-1 h-3.5 w-3.5" />
                           </Link>
                         </Button>
@@ -1214,7 +1212,7 @@ export default function TransactionFlowList() {
                           </Badge>
                         </div>
 
-                        <div className="grid w-full grid-cols-2 gap-1.5 md:flex md:w-full md:flex-col md:items-stretch [&_a]:h-8 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-3 [&_a]:text-center [&_a]:text-xs [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-3 [&_button]:text-center [&_button]:text-xs [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap">
+                        <div className="grid w-full grid-cols-2 gap-2 md:flex md:w-full md:flex-col md:items-stretch [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-2.5 [&_a]:text-center [&_a]:text-xs [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap md:[&_a]:h-8 md:[&_a]:px-3 [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-2.5 [&_button]:text-center [&_button]:text-xs [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap md:[&_button]:h-8 md:[&_button]:px-3">
                           {inlineActions.map((action) => (
                             <Fragment key={action.key}>{action.node}</Fragment>
                           ))}
@@ -1222,7 +1220,7 @@ export default function TransactionFlowList() {
                           {secondaryActions.length > 0 ? (
                             <button
                               type="button"
-                              className={`group relative flex h-8 items-center justify-center gap-1.5 rounded-lg border px-3 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
+                              className={`group relative flex h-9 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 md:h-8 md:px-3 ${
                                 isSecondaryOpen ? "border-border bg-muted text-foreground shadow-none" : "border-border bg-background text-muted-foreground hover:bg-card hover:text-foreground"
                               }`}
                               onClick={() => setExpandedSecondaryKey((prev) => (prev === g.key ? null : g.key))}
@@ -1248,7 +1246,7 @@ export default function TransactionFlowList() {
                         ) : null}
                       </div>
                       {secondaryActions.length > 0 && isSecondaryOpen ? (
-                        <div className="col-span-full grid w-full grid-cols-2 gap-1.5 rounded-xl border border-border/60 bg-muted/20 px-3 py-2 md:hidden [&_a]:h-8 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-3 [&_a]:text-center [&_a]:text-xs [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-3 [&_button]:text-center [&_button]:text-xs [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap">
+                        <div className="col-span-full grid w-full grid-cols-2 gap-2 rounded-xl border border-border/60 bg-muted/20 px-3 py-2 md:hidden [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-2.5 [&_a]:text-center [&_a]:text-xs [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-2.5 [&_button]:text-center [&_button]:text-xs [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap">
                           {secondaryActions.map((action) => (
                             <Fragment key={action.key}>{action.node}</Fragment>
                           ))}
