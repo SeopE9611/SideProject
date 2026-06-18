@@ -926,6 +926,10 @@ export default function StringServiceApplyPage() {
     const found = order.items.find((it) => it.id === firstId);
     return found ?? null;
   }, [orderId, order, formData.stringTypes]);
+  const selectedColorDisplayLabel =
+    selectedOrderItem?.selectedColorLabel?.trim() ||
+    formData.selectedColor ||
+    "";
 
   // 4. 디버깅 콘솔 로그 (개발 환경에서만)
   useEffect(() => {
@@ -1630,7 +1634,9 @@ export default function StringServiceApplyPage() {
                   {formData.selectedGauge && formData.stringTypes.length > 0 ? (
                     <div className="mt-3 mb-4 rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
                       게이지: {formatGaugeLabel(formData.selectedGauge)}
-                      {formData.selectedColor ? ` · 색상: ${formData.selectedColor}` : ""}
+                      {selectedColorDisplayLabel
+                        ? ` · 색상: ${selectedColorDisplayLabel}`
+                        : ""}
                     </div>
                   ) : null}
 
