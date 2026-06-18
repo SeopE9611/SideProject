@@ -139,6 +139,9 @@ type ActivityRentalSummary = {
   withStringService: boolean;
   hasOutboundShipping: boolean;
   outboundTrackingNumber: string | null;
+  dueAt: string | null;
+  returnedAt: string | null;
+  hasReturnShipping: boolean;
   stringingApplicationIds: string[];
   applicationSummaries: ActivityApplicationSummary[];
   stringingApplicationId: string | null;
@@ -901,6 +904,12 @@ export async function GET(req: Request) {
       typeof r?.shipping?.outbound?.trackingNumber === "string"
         ? r.shipping.outbound.trackingNumber.trim()
         : "";
+    const returnTracking = String(
+      r?.shipping?.return?.trackingNumber ??
+        r?.shipping?.return?.trackingNo ??
+        r?.shipping?.return?.tracking_no ??
+        "",
+    ).trim();
 
     groups.push({
       key: `rental:${rentalId}`,
@@ -933,6 +942,9 @@ export async function GET(req: Request) {
         withStringService,
         hasOutboundShipping: Boolean(outboundTracking),
         outboundTrackingNumber: outboundTracking || null,
+        dueAt: r?.dueAt ? toISO(r.dueAt) : null,
+        returnedAt: r?.returnedAt ? toISO(r.returnedAt) : null,
+        hasReturnShipping: Boolean(returnTracking),
         stringingApplicationIds: linkedApps.map((app) => app.id),
         applicationSummaries: linkedApps,
         stringingApplicationId: linked?.id ?? null,

@@ -52,9 +52,9 @@ function getApplicationLines(stringDetails: any): any[] {
 }
 
 function getReceptionLabel(collectionMethod?: string | null): string {
-  if (collectionMethod === "visit") return "방문 접수";
-  if (collectionMethod === "courier_pickup") return "자가 발송(택배)";
-  return "발송 접수";
+  if (collectionMethod === "visit") return "매장 장착 후 방문 수령";
+  if (collectionMethod === "courier_pickup") return "매장 장착 후 택배 발송";
+  return "매장 장착 후 출고";
 }
 
 async function getData(db: any, id: string, r: any) {

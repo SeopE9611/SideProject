@@ -137,8 +137,12 @@ type Rental = {
     } | null;
     return?: {
       courier?: string;
+      carrier?: string;
       trackingNumber?: string;
+      trackingNo?: string;
+      tracking_no?: string;
       shippedAt?: string | Date | null;
+      shipped_at?: string | Date | null;
       note?: string;
     } | null;
   } | null;
@@ -521,13 +525,16 @@ export default function RentalsDetailClient({
   const outboundTrackingNo = getTrackingNumber(data.shipping?.outbound);
   const outboundCourier = getCourierValue(data.shipping?.outbound);
   const outboundShippedAt = getShippedAtValue(data.shipping?.outbound);
+  const returnTrackingNo = getTrackingNumber(data.shipping?.return);
   const hasOutboundShipping = !!outboundTrackingNo;
   const rentalShippingMethod = normalizeRentalShippingMethod(
     data.shipping?.shippingMethod,
   );
   const isVisitPickup = rentalShippingMethod === "pickup";
   const isLinkedStringingComplete =
-    !data.withStringService || data.applicationSummary?.status === "교체완료";
+    !data.withStringService ||
+    data.stringingApplication?.status === "교체완료" ||
+    data.applicationSummary?.status === "교체완료";
   const canReceiveRental =
     data.status === "paid" &&
     !isVisitPickup &&
@@ -586,10 +593,10 @@ export default function RentalsDetailClient({
       }
     : isReturnShippingAvailable
       ? {
-          label: data?.shipping?.return?.trackingNumber
+          label: returnTrackingNo
             ? "반납 운송장 확인/수정"
             : "반납 운송장 등록",
-          ctaLabel: data?.shipping?.return?.trackingNumber
+          ctaLabel: returnTrackingNo
             ? "반납 운송장 수정"
             : "반납 운송장 등록",
           ctaHref: returnShippingHref,
@@ -669,9 +676,7 @@ export default function RentalsDetailClient({
               >
                 <Link href={returnShippingHref}>
                   <Truck className="mr-2 h-4 w-4" />
-                  {data?.shipping?.return?.trackingNumber
-                    ? "반납 운송장 수정"
-                    : "반납 운송장 등록"}
+                  {returnTrackingNo ? "반납 운송장 수정" : "반납 운송장 등록"}
                 </Link>
               </Button>
             )}
@@ -1241,11 +1246,11 @@ export default function RentalsDetailClient({
               <p className="text-sm text-foreground/80">반납 정보</p>
               <p className="text-sm font-semibold text-foreground mt-1">
                 {isVisitPickup
-                  ? data.shipping?.return?.trackingNumber
-                    ? `매장 반환 접수 완료 · ${data.shipping.return.trackingNumber}`
+                  ? returnTrackingNo
+                    ? `매장 반환 접수 완료 · ${returnTrackingNo}`
                     : "매장 반환 접수 전입니다."
-                  : data.shipping?.return?.trackingNumber
-                    ? `${getCourierLabel(data.shipping.return.courier)} · ${data.shipping.return.trackingNumber}`
+                  : returnTrackingNo
+                    ? `${getCourierLabel(getCourierValue(data.shipping?.return) ?? undefined)} · ${returnTrackingNo}`
                     : "반납 운송장이 아직 등록되지 않았습니다."}
               </p>
             </div>
@@ -1326,7 +1331,7 @@ export default function RentalsDetailClient({
             </div>
 
             {/* 반납 운송장 등록(사용자 발송) */}
-            {data?.shipping?.return?.trackingNumber && (
+            {returnTrackingNo && (
               <div className="flex items-start gap-4 p-4 bg-muted/50 dark:bg-muted rounded-lg">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 dark:bg-primary/25">
                   <Truck className="h-5 w-5 text-primary" />
@@ -1336,26 +1341,26 @@ export default function RentalsDetailClient({
                     {isVisitPickup ? "매장 반환 접수 완료" : "반납 운송장 등록"}
                   </p>
                   <p className="text-xs text-foreground/75">
-                    {fmtDateOnly(data.shipping.return.shippedAt)}
+                    {fmtDateOnly(getShippedAtValue(data.shipping?.return))}
                   </p>
                   <p className="text-sm mt-1">
                     {isVisitPickup ? (
                       <>
-                        접수 번호 · {data.shipping.return.trackingNumber ?? "-"}
+                        접수 번호 · {returnTrackingNo ?? "-"}
                       </>
                     ) : (
                       <>
-                        {getCourierLabel(data.shipping.return.courier)} ·{" "}
+                        {getCourierLabel(getCourierValue(data.shipping?.return) ?? undefined)} ·{" "}
                         <a
                           className="underline underline-offset-2"
                           href={getTrackHref(
-                            data.shipping.return.courier,
-                            data.shipping.return.trackingNumber,
+                            getCourierValue(data.shipping?.return) ?? undefined,
+                            returnTrackingNo,
                           )}
                           target="_blank"
                           rel="noreferrer"
                         >
-                          {data.shipping.return.trackingNumber ?? "-"}
+                          {returnTrackingNo ?? "-"}
                         </a>
                       </>
                     )}
