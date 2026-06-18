@@ -183,14 +183,14 @@ export default function ReviewsClient() {
                     value="service"
                     className="rounded-full data-[state=active]:bg-card data-[state=active]:shadow-sm"
                   >
-                    교체서비스
+                    교체서비스 후기
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
 
               {/* Sort dropdown */}
               <Select value={sort} onValueChange={(v) => setSort(v as any)}>
-                <SelectTrigger className="w-full border-border bg-background sm:w-[150px]">
+                <SelectTrigger className="h-9 w-full border-border bg-background sm:w-[150px]">
                   <SelectValue placeholder="정렬" />
                 </SelectTrigger>
                 <SelectContent>
@@ -205,7 +205,7 @@ export default function ReviewsClient() {
                 value={rating}
                 onValueChange={(v) => setRating(v as RatingFilter)}
               >
-                <SelectTrigger className="w-full border-border bg-background sm:w-[130px]">
+                <SelectTrigger className="h-9 w-full border-border bg-background sm:w-[130px]">
                   <SelectValue placeholder="전체 별점" />
                 </SelectTrigger>
                 <SelectContent>
@@ -241,7 +241,7 @@ export default function ReviewsClient() {
                   variant="outline"
                   size="sm"
                   onClick={resetFilters}
-                  className="w-full rounded-full border-border bg-transparent hover:bg-muted sm:w-auto dark:border-border dark:hover:bg-muted"
+                  className="h-9 w-full overflow-hidden whitespace-nowrap rounded-full border-border bg-transparent hover:bg-muted sm:w-auto dark:border-border dark:hover:bg-muted"
                   title="필터 초기화"
                 >
                   <X className="h-4 w-4 mr-1" />
@@ -278,9 +278,9 @@ export default function ReviewsClient() {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center gap-4 py-12 md:py-20 text-center">
-                <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center">
-                  <MessageSquareText className="h-8 w-8 text-muted-foreground" />
+              <div className="flex flex-col items-center justify-center gap-3 py-10 text-center md:py-14">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/30">
+                  <MessageSquareText className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-lg font-semibold text-foreground">

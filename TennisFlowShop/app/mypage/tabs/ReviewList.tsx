@@ -460,7 +460,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
           value={statusFilter}
           onValueChange={(v) => setStatusFilter(v as any)}
         >
-          <SelectTrigger className="h-9 w-full sm:w-32">
+          <SelectTrigger className="h-9 w-full sm:w-36">
             <SelectValue placeholder="상태" />
           </SelectTrigger>
           <SelectContent>
@@ -589,7 +589,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               </div>
 
               {/* 본문 */}
-              <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+              <div className="rounded-xl border border-border/60 bg-muted/20 p-3 md:p-4">
                 <p className="text-foreground leading-relaxed whitespace-pre-wrap break-words">
                   {it.content}
                 </p>
@@ -633,8 +633,8 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         ))
       ) : (
         <Card className="border-border bg-card shadow-sm">
-          <CardContent className="p-6 text-center md:p-8">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-muted/20 md:mb-4">
+          <CardContent className="p-5 text-center md:p-6">
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted/20">
               <Star className="h-6 w-6 text-warning" />
             </div>
             <h3 className="mb-2 text-lg font-semibold text-foreground">

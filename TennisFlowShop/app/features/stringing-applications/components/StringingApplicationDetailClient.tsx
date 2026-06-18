@@ -1379,7 +1379,7 @@ export default function StringingApplicationDetailClient({
                       asChild
                       variant="outline"
                       size="sm"
-                      className="h-9 w-full whitespace-nowrap border-border bg-card hover:bg-primary/10 bp-lg:mr-1 bp-lg:w-auto"
+                      className="h-9 w-full overflow-hidden whitespace-nowrap border-border bg-card hover:bg-primary/10 bp-lg:mr-1 bp-lg:w-auto"
                     >
                       <Link href={backUrl}>
                         <span className="sm:hidden">목록</span>
@@ -1394,7 +1394,7 @@ export default function StringingApplicationDetailClient({
                         asChild
                         variant="outline"
                         size="sm"
-                        className="h-9 w-full whitespace-nowrap border-border bg-card hover:bg-muted bp-lg:w-auto"
+                        className="h-9 w-full overflow-hidden whitespace-nowrap border-border bg-card hover:bg-muted bp-lg:w-auto"
                       >
                         <Link href={inboundTrackingHref}>
                           <Truck className="w-4 h-4 mr-2" />
@@ -1460,7 +1460,7 @@ export default function StringingApplicationDetailClient({
                         applicationId={data.id}
                         status={data.status}
                         userConfirmedAt={data.userConfirmedAt ?? null}
-                        className="h-9 w-full px-3 text-sm bp-lg:w-auto"
+                        className="h-9 w-full overflow-hidden whitespace-nowrap px-3 text-sm bp-lg:w-auto"
                       />
                     )}
 
@@ -1470,7 +1470,7 @@ export default function StringingApplicationDetailClient({
                         size="sm"
                         disabled={!canConfirmExchange || isConfirmSubmitting}
                         onClick={handleConfirmExchange}
-                        className="h-9 w-full whitespace-nowrap bp-lg:w-auto"
+                        className="h-9 w-full overflow-hidden whitespace-nowrap bp-lg:w-auto"
                       >
                         <CheckCircle2 className="w-4 h-4 mr-2" />
                         {isConfirmSubmitting
@@ -1493,7 +1493,7 @@ export default function StringingApplicationDetailClient({
                     asChild
                     size="sm"
                     variant="outline"
-                    className="h-9 w-full whitespace-nowrap bg-card bp-sm:w-auto"
+                    className="h-9 w-full overflow-hidden whitespace-nowrap bg-card bp-sm:w-auto"
                   >
                     <Link
                       href={`/mypage?tab=orders&flowType=order&flowId=${data.orderId}&${flowQuery.toString()}&focus=stringing`}

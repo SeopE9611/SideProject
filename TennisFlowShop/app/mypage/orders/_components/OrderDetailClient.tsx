@@ -906,7 +906,7 @@ export default function OrderDetailClient({
                 variant="outline"
                 size="sm"
                 onClick={() => router.push(backUrl ?? "/mypage?tab=orders")}
-                className="h-9 w-full whitespace-nowrap border-border bg-background hover:border-primary/30 bp-lg:w-auto"
+                className="h-9 w-full overflow-hidden whitespace-nowrap border-border bg-background hover:border-primary/30 bp-lg:w-auto"
               >
                 <span className="bp-sm:hidden">목록</span>
                 <span className="hidden bp-sm:inline">주문 목록으로 돌아가기</span>
@@ -933,7 +933,7 @@ export default function OrderDetailClient({
                   variant="destructive"
                   size="sm"
                   onClick={() => setCancelDialogOpen(true)}
-                  className="h-9 w-full whitespace-nowrap bp-sm:col-span-2 bp-lg:w-auto"
+                  className="h-9 w-full overflow-hidden whitespace-nowrap bp-sm:col-span-2 bp-lg:w-auto"
                 >
                   주문 취소 요청
                 </Button>
@@ -975,7 +975,7 @@ export default function OrderDetailClient({
                     대표 상품
                   </span>
                 </div>
-                <p className="line-clamp-2 break-keep text-base font-semibold text-foreground bp-sm:text-lg">
+                <p className="line-clamp-2 min-w-0 break-keep text-base font-semibold text-foreground bp-sm:text-lg">
                   {orderDetail.items?.[0]?.name ?? "주문 상품"}
                   {orderDetail.items.length > 1
                     ? ` 외 ${orderDetail.items.length - 1}건`
@@ -1018,7 +1018,7 @@ export default function OrderDetailClient({
                 variant="destructive"
                 onClick={handleWithdrawCancelRequest}
                 disabled={isWithdrawingCancelRequest}
-                className="w-full gap-1.5 bp-sm:ml-4 bp-sm:w-auto"
+                className="h-9 w-full gap-1.5 overflow-hidden whitespace-nowrap bp-sm:ml-4 bp-sm:w-auto"
               >
                 <Undo2 className="h-4 w-4" />
                 {isWithdrawingCancelRequest
