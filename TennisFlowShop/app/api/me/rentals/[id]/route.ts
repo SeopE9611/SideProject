@@ -92,7 +92,11 @@ export async function GET(
     const app = await db
       .collection("stringing_applications")
       .findOne(
-        { _id: new ObjectId(appId) },
+        {
+          _id: new ObjectId(appId),
+          userId,
+          $or: [{ rentalId: new ObjectId(id) }, { rentalId: id }],
+        },
         {
           projection: {
             stringDetails: 1,
@@ -105,6 +109,7 @@ export async function GET(
             shippingInfo: 1,
             desiredDateTime: 1,
             rentalId: 1,
+            userId: 1,
           },
         },
       );
@@ -136,12 +141,23 @@ export async function GET(
             : null,
       };
 
-      const collectionMethod = String(
+      const collectionMethodRaw = String(
         (app as any)?.collectionMethod ??
           (app as any)?.shippingInfo?.collectionMethod ??
           "",
       ).trim();
+      const collectionMethod =
+        collectionMethodRaw === "SHOP_VISIT" || collectionMethodRaw === "visit"
+          ? "visit"
+          : collectionMethodRaw === "COURIER_VISIT" ||
+              collectionMethodRaw === "courier_pickup"
+            ? "courier_pickup"
+            : collectionMethodRaw === "SELF_SEND" ||
+                collectionMethodRaw === "self_ship"
+              ? "self_ship"
+              : collectionMethodRaw;
       const selfShip = (app as any)?.shippingInfo?.selfShip ?? null;
+      const needsInboundTracking = collectionMethod === "self_ship";
       const normalizedLines = lines.map((line: any, index: number) => ({
         id: nullableTrim(line?.id) ?? String(index),
         racketType: nullableTrim(line?.racketType),
@@ -176,7 +192,7 @@ export async function GET(
             ? (app as any).totalPrice
             : null,
         lines: normalizedLines,
-        needsInboundTracking: false,
+        needsInboundTracking,
         shippingInfo: {
           collectionMethod: collectionMethod || null,
           deliveryRequest: nullableTrim(

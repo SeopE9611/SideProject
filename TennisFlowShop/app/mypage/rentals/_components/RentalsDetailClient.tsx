@@ -252,6 +252,16 @@ const fmtDateOnly = (v?: string | Date | null) =>
 const formatCurrency = (amount: number) =>
   `${new Intl.NumberFormat("ko-KR").format(amount)}원`;
 
+const getCollectionMethodLabel = (value?: string | null) => {
+  const normalized = String(value ?? "").trim();
+  if (normalized === "visit" || normalized === "SHOP_VISIT") return "방문 접수";
+  if (normalized === "courier_pickup" || normalized === "COURIER_VISIT")
+    return "택배 방문 수거";
+  if (normalized === "self_ship" || normalized === "SELF_SEND")
+    return "자가 발송(택배)";
+  return normalized || "확인 중";
+};
+
 type Props = {
   id: string;
   backUrl?: string;
@@ -546,9 +556,16 @@ export default function RentalsDetailClient({
             },
           ]
         : [];
+  const linkedApplicationSelfShip = linkedApplication?.shippingInfo?.selfShip;
   const linkedApplicationNeedsTracking = Boolean(
     linkedApplication?.needsInboundTracking &&
-      !linkedApplication?.shippingInfo?.selfShip?.trackingNo,
+      !linkedApplicationSelfShip?.trackingNo,
+  );
+  const linkedApplicationStatus =
+    linkedApplication?.status ?? data.applicationSummary?.status ?? null;
+  const linkedApplicationIsComplete = linkedApplicationStatus === "교체완료";
+  const linkedApplicationHasReviewCta = Boolean(
+    data.stringingApplicationId && linkedApplication?.userConfirmedAt,
   );
   const linkedApplicationShippingHref = data.stringingApplicationId
     ? `/services/applications/${data.stringingApplicationId}/shipping?${new URLSearchParams(
@@ -584,26 +601,6 @@ export default function RentalsDetailClient({
           </div>
 
           <div className="grid w-full grid-cols-1 gap-2 sm:ml-auto sm:grid-cols-2 lg:flex lg:w-auto lg:flex-wrap lg:justify-end">
-            {/* 교체 서비스 CTA */}
-            {applicationHref ? (
-              <Button asChild className="h-9 w-full gap-2 overflow-hidden whitespace-nowrap lg:w-auto">
-                <Link href={applicationHref}>
-                  교체서비스 상세
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            ) : canApplyStringService ? (
-              <Button
-                asChild
-                className="h-9 w-full gap-2 overflow-hidden whitespace-nowrap bg-primary text-primary-foreground shadow-sm duration-200 hover:bg-primary/90 lg:w-auto"
-              >
-                <Link href={applyHref}>
-                  <Wrench className="h-4 w-4" />
-                  교체서비스 신청하기
-                </Link>
-              </Button>
-            ) : null}
-
             {data?.status === "out" && (
               <Button
                 variant="outline"
@@ -784,7 +781,7 @@ export default function RentalsDetailClient({
                     <span>연결된 교체서비스</span>
                   </CardTitle>
                   <CardDescription className="mt-1">
-                    대여 라켓과 함께 진행되는 교체서비스 정보를 한 흐름에서
+                    대여 라켓과 함께 진행되는 교체서비스 정보를 한 화면에서
                     확인할 수 있어요.
                   </CardDescription>
                 </div>
@@ -797,14 +794,20 @@ export default function RentalsDetailClient({
                   {linkedApplicationNeedsTracking ? (
                     <Badge variant="destructive">운송장 등록 필요</Badge>
                   ) : null}
+                  {linkedApplicationIsComplete ? (
+                    <Badge variant="success">교체완료</Badge>
+                  ) : null}
+                  {linkedApplicationHasReviewCta ? (
+                    <Badge variant="info">후기 작성 가능</Badge>
+                  ) : null}
                 </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4 p-4 bp-sm:p-6">
               {linkedApplication || data.applicationSummary ? (
                 <>
-                  <div className="grid gap-3 text-sm text-foreground bp-sm:grid-cols-2 bp-lg:grid-cols-4">
-                    <div className="rounded-xl border border-border bg-muted/30 p-3">
+                  <div className="grid grid-cols-1 gap-3 text-sm text-foreground bp-sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
                       <p className="text-muted-foreground">진행 상태</p>
                       <Badge
                         variant="info"
@@ -815,7 +818,7 @@ export default function RentalsDetailClient({
                           "접수 확인 중"}
                       </Badge>
                     </div>
-                    <div className="rounded-xl border border-border bg-muted/30 p-3">
+                    <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
                       <p className="text-muted-foreground">신청일</p>
                       <p className="mt-2 font-semibold tabular-nums text-foreground">
                         {linkedApplication?.createdAt
@@ -825,7 +828,7 @@ export default function RentalsDetailClient({
                             : "-"}
                       </p>
                     </div>
-                    <div className="rounded-xl border border-border bg-muted/30 p-3">
+                    <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
                       <p className="text-muted-foreground">희망 작업일</p>
                       <p className="mt-2 break-words font-semibold text-foreground">
                         {linkedApplication?.reservationLabel ??
@@ -833,7 +836,7 @@ export default function RentalsDetailClient({
                           "예약 정보 없음"}
                       </p>
                     </div>
-                    <div className="rounded-xl border border-border bg-muted/30 p-3">
+                    <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
                       <p className="text-muted-foreground">서비스 금액</p>
                       <p className="mt-2 font-semibold tabular-nums text-foreground">
                         {typeof linkedApplication?.totalPrice === "number"
@@ -873,7 +876,7 @@ export default function RentalsDetailClient({
                         return (
                           <div
                             key={line.id ?? `${data.id}-line-${index}`}
-                            className="rounded-xl border border-border bg-muted/30 p-3 text-sm"
+                            className="rounded-xl border border-border bg-background p-3 text-sm"
                           >
                             <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                               <p className="min-w-0 break-words font-semibold text-foreground">
@@ -916,30 +919,61 @@ export default function RentalsDetailClient({
                     </div>
                   </div>
 
-                  <div className="grid gap-3 rounded-xl border border-border bg-muted/20 p-3 text-sm text-foreground bp-sm:grid-cols-2">
-                    <p>
-                      <span className="text-muted-foreground">접수 방식:</span>{" "}
-                      {linkedApplication?.receptionLabel ??
-                        data.applicationSummary?.receptionLabel ??
-                        "확인 중"}
-                    </p>
-                    {linkedApplication?.shippingInfo?.selfShip ? (
-                      <p className="min-w-0 break-all">
-                        <span className="text-muted-foreground">
-                          발송 운송장:
-                        </span>{" "}
-                        {linkedApplication.shippingInfo.selfShip.courier ||
-                          "택배사 미등록"} ·{" "}
-                        {linkedApplication.shippingInfo.selfShip.trackingNo ||
-                          "운송장 미등록"}
-                      </p>
-                    ) : null}
+                  <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-3 text-sm text-foreground bp-sm:p-4">
+                    <p className="font-semibold text-foreground">배송·입고 정보</p>
+                    <dl className="grid gap-3 bp-sm:grid-cols-2">
+                      <div>
+                        <dt className="text-muted-foreground">접수 방식</dt>
+                        <dd className="mt-1 font-medium">
+                          {linkedApplication?.receptionLabel ??
+                            data.applicationSummary?.receptionLabel ??
+                            "확인 중"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted-foreground">수령/방문/택배</dt>
+                        <dd className="mt-1 font-medium">
+                          {getCollectionMethodLabel(
+                            linkedApplication?.collectionMethod ??
+                              linkedApplication?.shippingInfo?.collectionMethod,
+                          )}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted-foreground">택배사</dt>
+                        <dd className="mt-1 font-medium">
+                          {linkedApplicationSelfShip?.courier || "미등록"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted-foreground">운송장 번호</dt>
+                        <dd className="mt-1 break-all font-medium">
+                          {linkedApplicationSelfShip?.trackingNo || "미등록"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted-foreground">발송일</dt>
+                        <dd className="mt-1 font-medium">
+                          {linkedApplicationSelfShip?.shippedAt
+                            ? formatDate(linkedApplicationSelfShip.shippedAt)
+                            : "미등록"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted-foreground">배송 요청사항</dt>
+                        <dd className="mt-1 whitespace-pre-wrap break-words font-medium">
+                          {linkedApplication?.shippingInfo?.deliveryRequest ||
+                            linkedApplicationSelfShip?.note ||
+                            "없음"}
+                        </dd>
+                      </div>
+                    </dl>
                   </div>
 
                   <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:flex-wrap bp-sm:items-center">
                     {linkedApplicationNeedsTracking &&
                     linkedApplicationShippingHref ? (
-                      <Button asChild className="w-full gap-2 bp-sm:w-auto">
+                      <Button asChild className="h-9 w-full gap-2 overflow-hidden whitespace-nowrap bp-sm:w-auto">
                         <Link href={linkedApplicationShippingHref}>
                           <Truck className="h-4 w-4" />
                           교체서비스 운송장 등록
@@ -950,11 +984,11 @@ export default function RentalsDetailClient({
                       <Button
                         asChild
                         variant="outline"
-                        className="w-full gap-2 bp-sm:w-auto"
+                        className="h-9 w-full gap-2 overflow-hidden whitespace-nowrap bp-sm:w-auto"
                       >
                         <Link href={applicationHref}>
-                          <Wrench className="h-4 w-4" />
-                          교체서비스 상세 보기
+                          신청서 전체 보기
+                          <ArrowRight className="h-4 w-4" />
                         </Link>
                       </Button>
                     ) : null}
@@ -964,7 +998,7 @@ export default function RentalsDetailClient({
                         userConfirmedAt={
                           linkedApplication?.userConfirmedAt ?? null
                         }
-                        className="w-full bp-sm:w-auto"
+                        className="h-9 w-full overflow-hidden whitespace-nowrap bp-sm:w-auto"
                       />
                     ) : null}
                   </div>
@@ -974,7 +1008,7 @@ export default function RentalsDetailClient({
                   <p className="text-muted-foreground">
                     대여에 교체서비스가 포함되어 있어 신청서 작성이 필요합니다.
                   </p>
-                  <Button asChild className="w-full gap-2 bp-sm:w-auto">
+                  <Button asChild className="h-9 w-full gap-2 overflow-hidden whitespace-nowrap bp-sm:w-auto">
                     <Link href={applyHref}>
                       <Wrench className="h-4 w-4" />
                       교체서비스 신청하기
