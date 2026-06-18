@@ -624,10 +624,12 @@ export default function AdminRentalDetailClient() {
     lowerPayment.includes("미입금") ||
     lowerPayment.includes("pending");
   const isBeforeOut = lowerStatus === "pending" || lowerStatus === "paid";
+  const hasReturnTracking = Boolean(
+    String(data?.shipping?.return?.trackingNumber ?? "").trim(),
+  );
   const needsReturnCheck =
     lowerStatus === "out" &&
-    (Boolean(data?.rentalEndDate) ||
-      Boolean(data?.shipping?.inbound?.trackingNumber));
+    (Boolean(data?.dueAt) || hasReturnTracking);
   const needsDepositRefund =
     lowerStatus === "returned" && data?.depositRefunded !== true;
   const nextActionGuide: AdminNextActionGuide = hasCancelRequested
@@ -692,9 +694,9 @@ export default function AdminRentalDetailClient() {
             : hasLinkedApplication
               ? {
                   tone: "info",
-                  title: "교체서비스 연결 정보 확인",
+                  title: "대여 라켓 장착 정보 확인",
                   description:
-                    "교체서비스 상태와 연결 정보를 확인한 뒤 후속 처리를 진행하세요.",
+                    "장착 스트링과 교체서비스 상태를 확인한 뒤 후속 처리를 진행하세요.",
                 }
               : {
                   tone: "success",
@@ -712,7 +714,7 @@ export default function AdminRentalDetailClient() {
     { label: "반납 처리 확인", href: "#admin-rental-return", show: true },
     { label: "보증금 환불 확인", href: "#admin-rental-deposit", show: true },
     {
-      label: "교체서비스 연결 정보 확인",
+      label: "대여 라켓 장착 정보 확인",
       href: "#admin-rental-linked-docs",
       show: hasLinkedApplication,
     },
@@ -835,7 +837,9 @@ export default function AdminRentalDetailClient() {
                       className="h-8 whitespace-nowrap"
                     >
                       <Truck className="mr-2 h-4 w-4" />
-                      교체서비스 완료 후 출고 가능
+                      {hasLinkedApplication && !isStringingComplete
+                        ? "교체서비스 완료 후 출고 가능"
+                        : "출고 운송장 등록 필요"}
                     </Button>
                   ) : (
                     <Button
@@ -1249,11 +1253,11 @@ export default function AdminRentalDetailClient() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <CardTitle className="text-base">
-                      교체서비스 연결 정보
+                      대여 라켓 장착 정보
                     </CardTitle>
                     <CardDescription className="mt-1 max-w-3xl leading-relaxed">
-                      연결된 신청 정보와 장착 작업 상태를 한곳에서 확인하고 관리합니다.
-                      대여 결제·출고·반납 처리는 기존 대여 상태 관리 영역에서 진행합니다.
+                      대여 라켓에 장착할 스트링, 텐션, 요청사항과 작업 상태를 한곳에서 확인하고 관리합니다.
+                      매장 장착 후 대여 출고 운송장을 등록하고 반납 처리는 기존 대여 상태 관리 영역에서 진행합니다.
                     </CardDescription>
                   </div>
                   <Badge
@@ -1273,11 +1277,16 @@ export default function AdminRentalDetailClient() {
                     </span>
                   </p>
                   <p className="text-muted-foreground">
-                    스트링명:{" "}
+                    장착 스트링:{" "}
                     <span className="font-medium text-foreground">
                       {linkedApplicationStrings.join(", ") ||
+                        (Array.isArray(data?.stringingNames)
+                          ? data.stringingNames.join(", ")
+                          : "") ||
                         stringingName ||
-                        "정보 없음"}
+                        ((stringPrice > 0 || stringingFee > 0)
+                          ? "관리자 확인 필요"
+                          : "정보 없음")}
                     </span>
                   </p>
                   <p className="text-muted-foreground">
@@ -1416,7 +1425,7 @@ export default function AdminRentalDetailClient() {
                 <div className="space-y-1 text-xs leading-relaxed text-muted-foreground">
                   <p>
                     이 작업은 연결된 교체서비스 신청서의 작업 상태만 변경합니다.
-                    대여 결제, 출고, 대여 시작, 반납 처리는 기존 대여 액션에서
+                    대여 결제, 출고 운송장 등록, 대여 시작, 반납 처리는 기존 대여 액션에서
                     별도로 진행하세요.
                   </p>
                   <p>접수완료: 결제 확인 후 작업 접수 상태로 표시합니다.</p>

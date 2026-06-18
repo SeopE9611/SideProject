@@ -9,6 +9,49 @@ function maskAccount(acct?: string) {
   return `••••${last4}`;
 }
 
+function getStringNameCandidates(...values: unknown[]): string[] {
+  return Array.from(
+    new Set(
+      values
+        .flatMap((value) => {
+          if (Array.isArray(value)) return value;
+          if (typeof value === "string") return value.split(/[,+/]/);
+          return [];
+        })
+        .map((value) => String(value ?? "").trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
+function getRentalStringNames(doc: any): string[] {
+  return getStringNameCandidates(
+    doc?.stringing?.stringName,
+    doc?.stringing?.stringProductName,
+    doc?.stringing?.name,
+    doc?.stringName,
+    doc?.stringProductName,
+    doc?.stringingStringName,
+    doc?.selectedStringName,
+  );
+}
+
+function normalizeShippingSide(side: any) {
+  if (!side || typeof side !== "object") return null;
+  const trackingNumber = String(
+    side.trackingNumber ?? side.trackingNo ?? side.tracking_no ?? "",
+  ).trim();
+  const courier = String(side.courier ?? side.carrier ?? "").trim();
+  const shippedAt = side.shippedAt ?? side.shipped_at ?? null;
+  if (!trackingNumber && !courier && !shippedAt && !side.note) return null;
+  return {
+    courier,
+    trackingNumber,
+    shippedAt,
+    note: side.note ?? null,
+  };
+}
+
 function getApplicationLines(stringDetails: any): any[] {
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
   if (Array.isArray(stringDetails?.racketLines))
@@ -138,6 +181,8 @@ export async function GET(
         status: 1,
         collectionMethod: 1,
         stringDetails: 1,
+        stringNames: 1,
+        applicationSummary: 1,
         requirements: 1,
         paymentSource: 1,
         rentalId: 1,
@@ -154,12 +199,10 @@ export async function GET(
     );
     linkedApplicationRacketCount = lines.length;
     linkedApplicationTensionSummary = getTensionSummary(lines);
-    linkedApplicationStringNames = Array.from(
-      new Set(
-        lines
-          .map((line: any) => String(line?.stringName ?? "").trim())
-          .filter(Boolean),
-      ),
+    linkedApplicationStringNames = getStringNameCandidates(
+      lines.map((line: any) => line?.stringName),
+      (linkedApp as any).stringNames,
+      (linkedApp as any).applicationSummary?.stringNames,
     );
     const preferredDate = String(
       (linkedApp as any)?.stringDetails?.preferredDate ?? "",
@@ -218,7 +261,9 @@ export async function GET(
     stringingReceptionLabel: linkedApplicationReceptionLabel,
     stringingRacketCount: linkedApplicationRacketCount,
     stringingTensionSummary: linkedApplicationTensionSummary,
-    stringingNames: linkedApplicationStringNames,
+    stringingNames: linkedApplicationStringNames.length
+      ? linkedApplicationStringNames
+      : getRentalStringNames(doc),
     stringingReservationLabel: linkedApplicationReservationLabel,
     paymentStatusLabel: paymentMeta.label,
     paymentStatusSource: paymentMeta.source,
@@ -242,8 +287,8 @@ export async function GET(
     pickupMethodLabel: getPickupMethodLabel(servicePickupMethod),
 
     shipping: {
-      outbound: doc.shipping?.outbound ?? null,
-      return: doc.shipping?.return ?? null,
+      outbound: normalizeShippingSide(doc.shipping?.outbound),
+      return: normalizeShippingSide(doc.shipping?.return),
     },
     cancelRequest: doc.cancelRequest ?? null, // 취소 요청 정보(있으면 그대로, 없으면 null)
     stockDeduction:
