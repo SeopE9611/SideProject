@@ -80,6 +80,7 @@ type Rental = {
   } | null;
   stringingApplication?: {
     id: string;
+    rentalId?: string | null;
     status: string;
     createdAt?: string | null;
     updatedAt?: string | null;
@@ -253,15 +254,6 @@ const fmtDateOnly = (v?: string | Date | null) =>
 const formatCurrency = (amount: number) =>
   `${new Intl.NumberFormat("ko-KR").format(amount)}원`;
 
-const getCollectionMethodLabel = (value?: string | null) => {
-  const normalized = String(value ?? "").trim();
-  if (normalized === "visit" || normalized === "SHOP_VISIT") return "방문 접수";
-  if (normalized === "courier_pickup" || normalized === "COURIER_VISIT")
-    return "택배 방문 수거";
-  if (normalized === "self_ship" || normalized === "SELF_SEND")
-    return "자가 발송(택배)";
-  return normalized || "확인 중";
-};
 
 type Props = {
   id: string;
@@ -537,13 +529,21 @@ export default function RentalsDetailClient({
           : data.cancelRequest.reasonText || "",
       }
     : null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dueDate = data.dueAt ? new Date(data.dueAt) : null;
+  if (dueDate) dueDate.setHours(0, 0, 0, 0);
+  const isReturnWindowOpen = Boolean(dueDate && today >= dueDate);
+  const isReturnShippingAvailable =
+    data.status === "out" && !data.returnedAt && isReturnWindowOpen;
+
   const nextTodo = canApplyStringService
     ? {
         label: "교체서비스 신청",
         ctaLabel: "교체서비스 신청하기",
         ctaHref: applyHref,
       }
-    : data?.status === "out"
+    : isReturnShippingAvailable
       ? {
           label: data?.shipping?.return?.trackingNumber
             ? "반납 운송장 확인/수정"
@@ -572,21 +572,26 @@ export default function RentalsDetailClient({
             },
           ]
         : [];
-  const linkedApplicationSelfShip = linkedApplication?.shippingInfo?.selfShip;
-  const linkedApplicationNeedsTracking = Boolean(
-    linkedApplication?.needsInboundTracking &&
-      !linkedApplicationSelfShip?.trackingNo,
+  const installedStringNames = Array.from(
+    new Set(
+      [
+        ...linkedApplicationLines.map((line) => line.stringName),
+        ...(linkedApplication?.stringNames ?? []),
+        ...(data.applicationSummary?.stringNames ?? []),
+      ]
+        .map((name) => String(name ?? "").trim())
+        .filter(Boolean),
+    ),
   );
+  const installedStringLabel = installedStringNames.length
+    ? installedStringNames.join(", ")
+    : stringPrice > 0 || stringingFee > 0
+      ? "관리자 확인 중"
+      : "선택된 스트링 정보 없음";
+  const hasStringingCost = stringPrice > 0 || stringingFee > 0;
   const linkedApplicationStatus =
     linkedApplication?.status ?? data.applicationSummary?.status ?? null;
   const linkedApplicationIsComplete = linkedApplicationStatus === "교체완료";
-  const linkedApplicationShippingHref = data.stringingApplicationId
-    ? `/services/applications/${data.stringingApplicationId}/shipping?${new URLSearchParams(
-        {
-          return: `/mypage?tab=orders&flowType=rental&flowId=${data.id}&from=orders`,
-        },
-      ).toString()}`
-    : null;
   return (
     <main className="space-y-5 bp-sm:space-y-6">
       <div className="rounded-2xl border border-border bg-card p-4 shadow-sm bp-sm:p-5 md:p-6">
@@ -614,7 +619,7 @@ export default function RentalsDetailClient({
           </div>
 
           <div className="grid w-full grid-cols-1 gap-2 sm:ml-auto sm:grid-cols-2 lg:flex lg:w-auto lg:flex-wrap lg:justify-end">
-            {data?.status === "out" && (
+            {isReturnShippingAvailable && (
               <Button
                 variant="outline"
                 size="sm"
@@ -624,8 +629,8 @@ export default function RentalsDetailClient({
                 <Link href={returnShippingHref}>
                   <Truck className="mr-2 h-4 w-4" />
                   {data?.shipping?.return?.trackingNumber
-                    ? "운송장 수정"
-                    : "운송장 등록"}
+                    ? "반납 운송장 수정"
+                    : "반납 운송장 등록"}
                 </Link>
               </Button>
             )}
@@ -794,8 +799,7 @@ export default function RentalsDetailClient({
                     <span>연결된 교체서비스</span>
                   </CardTitle>
                   <CardDescription className="mt-1">
-                    대여 라켓과 함께 진행되는 교체서비스 정보를 한 화면에서
-                    확인할 수 있어요.
+                    대여 라켓에 장착될 스트링과 작업 정보를 확인할 수 있어요.
                   </CardDescription>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -804,9 +808,6 @@ export default function RentalsDetailClient({
                   ) : (
                     <Badge variant="secondary">신청 필요</Badge>
                   )}
-                  {linkedApplicationNeedsTracking ? (
-                    <Badge variant="destructive">운송장 등록 필요</Badge>
-                  ) : null}
                   {linkedApplicationIsComplete ? (
                     <Badge variant="success">교체완료</Badge>
                   ) : null}
@@ -872,7 +873,9 @@ export default function RentalsDetailClient({
                           line.stringName ||
                           linkedApplication?.stringNames?.join(", ") ||
                           data.applicationSummary?.stringNames.join(", ") ||
-                          "스트링 확인 중";
+                          (hasStringingCost
+                            ? "관리자 확인 중"
+                            : "선택된 스트링 정보 없음");
                         const tensionMain =
                           line.tensionMain ||
                           linkedApplication?.tensionSummary ||
@@ -930,66 +933,70 @@ export default function RentalsDetailClient({
                   </div>
 
                   <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-3 text-sm text-foreground bp-sm:p-4">
-                    <p className="font-semibold text-foreground">배송·입고 정보</p>
+                    <div>
+                      <p className="font-semibold text-foreground">
+                        장착·출고 안내
+                      </p>
+                      <p className="mt-1 text-muted-foreground">
+                        매장에서 대여 라켓에 스트링을 장착한 뒤 고객님께
+                        발송합니다.
+                      </p>
+                    </div>
                     <dl className="grid gap-3 bp-sm:grid-cols-2">
                       <div>
-                        <dt className="text-muted-foreground">접수 방식</dt>
+                        <dt className="text-muted-foreground">장착 방식</dt>
+                        <dd className="mt-1 font-medium">매장 장착</dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted-foreground">출고 방식</dt>
                         <dd className="mt-1 font-medium">
-                          {linkedApplication?.receptionLabel ??
-                            data.applicationSummary?.receptionLabel ??
-                            "확인 중"}
+                          {isVisitPickup ? "매장 수령" : "대여 라켓 출고"}
                         </dd>
                       </div>
-                      <div>
-                        <dt className="text-muted-foreground">수령/방문/택배</dt>
-                        <dd className="mt-1 font-medium">
-                          {getCollectionMethodLabel(
-                            linkedApplication?.collectionMethod ??
-                              linkedApplication?.shippingInfo?.collectionMethod,
-                          )}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-muted-foreground">택배사</dt>
-                        <dd className="mt-1 font-medium">
-                          {linkedApplicationSelfShip?.courier || "미등록"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-muted-foreground">운송장 번호</dt>
-                        <dd className="mt-1 break-all font-medium">
-                          {linkedApplicationSelfShip?.trackingNo || "미등록"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-muted-foreground">발송일</dt>
-                        <dd className="mt-1 font-medium">
-                          {linkedApplicationSelfShip?.shippedAt
-                            ? formatDate(linkedApplicationSelfShip.shippedAt)
-                            : "미등록"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-muted-foreground">배송 요청사항</dt>
-                        <dd className="mt-1 whitespace-pre-wrap break-words font-medium">
-                          {linkedApplication?.shippingInfo?.deliveryRequest ||
-                            linkedApplicationSelfShip?.note ||
-                            "없음"}
-                        </dd>
-                      </div>
+                      {data.shipping?.outbound?.trackingNumber ? (
+                        <>
+                          <div>
+                            <dt className="text-muted-foreground">출고 택배사</dt>
+                            <dd className="mt-1 font-medium">
+                              {getCourierLabel(data.shipping.outbound.courier)}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-muted-foreground">출고 운송장</dt>
+                            <dd className="mt-1 break-all font-medium">
+                              {data.shipping.outbound.trackingNumber}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-muted-foreground">출고일</dt>
+                            <dd className="mt-1 font-medium">
+                              {data.shipping.outbound.shippedAt
+                                ? formatDate(data.shipping.outbound.shippedAt)
+                                : "출고일 확인 중"}
+                            </dd>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="bp-sm:col-span-2">
+                          <dt className="text-muted-foreground">출고 운송장</dt>
+                          <dd className="mt-1 font-medium text-muted-foreground">
+                            관리자가 대여 라켓에 스트링을 장착한 뒤 출고
+                            운송장을 등록하면 이곳에서 확인할 수 있습니다.
+                          </dd>
+                        </div>
+                      )}
+                      {linkedApplication?.shippingInfo?.deliveryRequest ? (
+                        <div className="bp-sm:col-span-2">
+                          <dt className="text-muted-foreground">배송 요청사항</dt>
+                          <dd className="mt-1 whitespace-pre-wrap break-words font-medium">
+                            {linkedApplication.shippingInfo.deliveryRequest}
+                          </dd>
+                        </div>
+                      ) : null}
                     </dl>
                   </div>
 
                   <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:flex-wrap bp-sm:items-center">
-                    {linkedApplicationNeedsTracking &&
-                    linkedApplicationShippingHref ? (
-                      <Button asChild className="h-9 w-full gap-2 overflow-hidden whitespace-nowrap bp-sm:w-auto">
-                        <Link href={linkedApplicationShippingHref}>
-                          <Truck className="h-4 w-4" />
-                          교체서비스 운송장 등록
-                        </Link>
-                      </Button>
-                    ) : null}
                     {applicationHref ? (
                       <Button
                         asChild
@@ -1081,6 +1088,18 @@ export default function RentalsDetailClient({
                   </p>
                 </div>
               </div>
+
+              {withStringService && (
+                <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
+                  <Wrench className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-foreground/80">장착 스트링</p>
+                    <p className="font-semibold text-foreground">
+                      {installedStringLabel}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
                 <Clock className="h-4 w-4 text-muted-foreground" />
