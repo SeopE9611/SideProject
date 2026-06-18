@@ -61,6 +61,49 @@ function getPickupMethodLabel(
   return "택배 발송";
 }
 
+function getStringNameCandidates(...values: unknown[]): string[] {
+  return Array.from(
+    new Set(
+      values
+        .flatMap((value) => {
+          if (Array.isArray(value)) return value;
+          if (typeof value === "string") return value.split(/[,+/]/);
+          return [];
+        })
+        .map((value) => String(value ?? "").trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
+function getRentalStringNames(rentalDoc: any): string[] {
+  return getStringNameCandidates(
+    rentalDoc?.stringing?.stringName,
+    rentalDoc?.stringing?.stringProductName,
+    rentalDoc?.stringing?.name,
+    rentalDoc?.stringName,
+    rentalDoc?.stringProductName,
+    rentalDoc?.stringingStringName,
+    rentalDoc?.selectedStringName,
+  );
+}
+
+function normalizeShippingSide(side: any) {
+  if (!side || typeof side !== "object") return null;
+  const trackingNumber = String(
+    side.trackingNumber ?? side.trackingNo ?? side.tracking_no ?? "",
+  ).trim();
+  const courier = String(side.courier ?? side.carrier ?? "").trim();
+  const shippedAt = side.shippedAt ?? side.shipped_at ?? null;
+  if (!trackingNumber && !courier && !shippedAt && !side.note) return null;
+  return {
+    courier,
+    trackingNumber,
+    shippedAt,
+    note: side.note ?? null,
+  };
+}
+
 function getTensionSummary(lines: any[]): string | null {
   const set = Array.from(
     new Set(
@@ -276,7 +319,7 @@ export async function GET(req: Request) {
       .collection("stringing_applications")
       .find(
         { _id: { $in: appIds.map((id) => new ObjectId(id)) } },
-        { projection: { status: 1, collectionMethod: 1, stringDetails: 1 } },
+        { projection: { status: 1, collectionMethod: 1, stringDetails: 1, stringNames: 1, applicationSummary: 1 } },
       )
       .toArray();
 
@@ -293,12 +336,10 @@ export async function GET(req: Request) {
         receptionLabel: getReceptionLabel(app?.collectionMethod),
         racketCount: lines.length,
         tensionSummary: getTensionSummary(lines),
-        stringNames: Array.from(
-          new Set(
-            lines
-              .map((line: any) => String(line?.stringName ?? "").trim())
-              .filter(Boolean),
-          ),
+        stringNames: getStringNameCandidates(
+          lines.map((line: any) => line?.stringName),
+          app?.stringNames,
+          app?.applicationSummary?.stringNames,
         ),
         reservationLabel:
           preferredDate && preferredTime
@@ -373,27 +414,18 @@ export async function GET(req: Request) {
       stringingReceptionLabel: appSummary?.receptionLabel ?? null,
       stringingRacketCount: appSummary?.racketCount ?? null,
       stringingTensionSummary: appSummary?.tensionSummary ?? null,
-      stringingNames: appSummary?.stringNames ?? [],
+      stringingNames:
+        appSummary?.stringNames?.length
+          ? appSummary.stringNames
+          : getRentalStringNames(rentalDoc),
       stringingReservationLabel: appSummary?.reservationLabel ?? null,
       paymentStatusLabel: paymentMeta.label as "결제완료" | "결제대기",
       paymentStatusSource: paymentMeta.source,
       servicePickupMethod,
       pickupMethodLabel: getPickupMethodLabel(servicePickupMethod),
       shipping: {
-        outbound: out
-          ? {
-              courier: out.courier ?? "",
-              trackingNumber: out.trackingNumber ?? "",
-              shippedAt: out.shippedAt ?? null,
-            }
-          : null,
-        return: ret
-          ? {
-              courier: ret.courier ?? "",
-              trackingNumber: ret.trackingNumber ?? "",
-              shippedAt: ret.shippedAt ?? null,
-            }
-          : null,
+        outbound: normalizeShippingSide(out),
+        return: normalizeShippingSide(ret),
       },
       cancelRequest: rentalDoc.cancelRequest
         ? {
