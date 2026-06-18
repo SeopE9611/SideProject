@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 const CancelRentalDialog = dynamic(
@@ -273,6 +274,8 @@ export default function RentalsDetailClient({
   backUrl = "/mypage?tab=orders",
   applicationUrl,
 }: Props) {
+  const searchParams = useSearchParams();
+  const focusTarget = searchParams.get("focus");
   const [data, setData] = useState<Rental | null>(null);
   const [isReceiving, setIsReceiving] = useState(false);
   const refreshRental = async () => {
@@ -389,6 +392,19 @@ export default function RentalsDetailClient({
   // 신청서 ID가 없는데 교체 서비스가 포함된 경우 => "교체 신청하기" CTA 노출
   const canApplyStringService =
     withStringService && !data?.stringingApplicationId;
+
+  useEffect(() => {
+    if (focusTarget !== "stringing") return;
+    if (!withStringService) return;
+
+    const timeout = window.setTimeout(() => {
+      document
+        .getElementById("stringing-service")
+        ?.scrollIntoView({ block: "start", behavior: "smooth" });
+    }, 80);
+
+    return () => window.clearTimeout(timeout);
+  }, [focusTarget, withStringService, data?.stringingApplicationId]);
 
   // 교체서비스 보기 링크: "마이페이지 탭" 방식으로 통일
   const applicationHref = useMemo(() => {
