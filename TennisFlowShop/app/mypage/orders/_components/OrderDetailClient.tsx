@@ -47,7 +47,7 @@ import { isMountableStringItem } from "@/lib/orders/string-mounting-policy";
 import { cn } from "@/lib/utils";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import {
-  ArrowLeft,
+  ArrowRight,
   Calendar,
   CheckCircle,
   Clock,
@@ -873,14 +873,14 @@ export default function OrderDetailClient({
     <main className="w-full">
       <SiteContainer
         variant="wide"
-        className="space-y-5 px-0 py-4 bp-sm:space-y-8 bp-sm:px-4 bp-sm:py-6 bp-md:px-6 bp-lg:px-0"
+        className="space-y-5 px-0 py-4 bp-sm:space-y-6 bp-sm:px-4 bp-sm:py-6 bp-md:px-6 bp-lg:px-0"
       >
-        <div className="rounded-2xl border border-border bg-muted/30 p-4 shadow-sm bp-sm:p-5 bp-lg:p-8">
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm bp-sm:p-5 bp-lg:p-6">
           {/* 헤더: 제목과 액션 버튼 */}
           <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between bp-lg:gap-6">
             {/* 제목 섹션 */}
             <div className="flex min-w-0 flex-1 items-center gap-4">
-              <div className="shrink-0 rounded-full border border-border bg-card p-3 shadow-sm">
+              <div className="shrink-0 rounded-xl border border-border bg-muted/40 p-3">
                 <ShoppingCart className="h-8 w-8 text-primary" />
               </div>
               <div className="min-w-0">
@@ -906,13 +906,11 @@ export default function OrderDetailClient({
                 variant="outline"
                 size="sm"
                 onClick={() => router.push(backUrl ?? "/mypage?tab=orders")}
-                className="w-full whitespace-nowrap border-border bg-card hover:border-primary/30 bp-lg:w-auto"
+                className="h-9 w-full whitespace-nowrap border-border bg-background hover:border-primary/30 bp-lg:w-auto"
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
                 <span className="bp-sm:hidden">목록</span>
-                <span className="hidden bp-sm:inline">
-                  주문 목록으로 돌아가기
-                </span>
+                <span className="hidden bp-sm:inline">주문 목록으로 돌아가기</span>
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
 
               <Button
@@ -923,7 +921,7 @@ export default function OrderDetailClient({
                 className={cn(
                   isEditMode
                     ? ""
-                    : "w-full bg-card/70 backdrop-blur-sm border-border hover:bg-primary/10 dark:hover:bg-primary/20 bp-lg:w-auto",
+                    : "h-9 w-full whitespace-nowrap bg-background border-border hover:bg-primary/10 dark:hover:bg-primary/20 bp-lg:w-auto",
                 )}
               >
                 <Pencil className="mr-1 h-4 w-4" />
@@ -935,7 +933,7 @@ export default function OrderDetailClient({
                   variant="destructive"
                   size="sm"
                   onClick={() => setCancelDialogOpen(true)}
-                  className="w-full bp-sm:col-span-2 bp-lg:w-auto"
+                  className="h-9 w-full whitespace-nowrap bp-sm:col-span-2 bp-lg:w-auto"
                 >
                   주문 취소 요청
                 </Button>
@@ -944,7 +942,7 @@ export default function OrderDetailClient({
           </div>
           {/* 주문 상태 및 요약 섹션 */}
           <div className="mt-5 bp-sm:mt-8">
-            <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-sm:gap-4 bp-lg:grid-cols-3 bp-lg:gap-6">
+            <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
               <div className="rounded-xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -966,6 +964,22 @@ export default function OrderDetailClient({
                 </div>
                 <p className="break-keep text-base font-semibold tabular-nums text-foreground bp-sm:text-lg">
                   {formatCurrency(orderDetail.total)}
+                </p>
+              </div>
+
+
+              <div className="rounded-xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
+                <div className="mb-2 flex items-center space-x-2">
+                  <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">
+                    대표 상품
+                  </span>
+                </div>
+                <p className="line-clamp-2 break-keep text-base font-semibold text-foreground bp-sm:text-lg">
+                  {orderDetail.items?.[0]?.name ?? "주문 상품"}
+                  {orderDetail.items.length > 1
+                    ? ` 외 ${orderDetail.items.length - 1}건`
+                    : ""}
                 </p>
               </div>
 

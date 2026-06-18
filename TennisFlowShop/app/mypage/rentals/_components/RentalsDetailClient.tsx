@@ -17,7 +17,7 @@ import { racketBrandLabel } from "@/lib/constants";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   AlertCircle,
-  ArrowLeft,
+  ArrowRight,
   Briefcase,
   Calendar,
   CheckCircle,
@@ -558,8 +558,8 @@ export default function RentalsDetailClient({
       ).toString()}`
     : null;
   return (
-    <main className="space-y-6 md:space-y-8">
-      <div className="rounded-2xl border border-border bg-muted/30 p-4 shadow-sm bp-sm:p-6 md:p-8">
+    <main className="space-y-5 bp-sm:space-y-6">
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm bp-sm:p-5 md:p-6">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="mb-0 flex min-w-0 items-center gap-4">
             <div className="shrink-0 rounded-full border border-border bg-card p-3 shadow-sm">
@@ -586,16 +586,16 @@ export default function RentalsDetailClient({
           <div className="grid w-full grid-cols-1 gap-2 sm:ml-auto sm:grid-cols-2 lg:flex lg:w-auto lg:flex-wrap lg:justify-end">
             {/* 교체 서비스 CTA */}
             {applicationHref ? (
-              <Button asChild className="w-full gap-2 lg:w-auto">
+              <Button asChild className="h-9 w-full gap-2 whitespace-nowrap lg:w-auto">
                 <Link href={applicationHref}>
-                  <Wrench className="h-4 w-4" />
-                  교체서비스 상세 보기
+                  교체서비스 상세
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
             ) : canApplyStringService ? (
               <Button
                 asChild
-                className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg duration-200"
+                className="h-9 w-full gap-2 whitespace-nowrap bg-primary text-primary-foreground shadow-sm duration-200 hover:bg-primary/90 lg:w-auto"
               >
                 <Link href={applyHref}>
                   <Wrench className="h-4 w-4" />
@@ -609,13 +609,13 @@ export default function RentalsDetailClient({
                 variant="outline"
                 size="sm"
                 asChild
-                className="w-full border-border bg-card hover:border-primary/30 lg:w-auto"
+                className="h-9 w-full whitespace-nowrap border-border bg-background hover:border-primary/30 lg:w-auto"
               >
                 <Link href={returnShippingHref}>
-                  <Truck className="h-4 w-4 mr-2" />
+                  <Truck className="mr-2 h-4 w-4" />
                   {data?.shipping?.return?.trackingNumber
-                    ? "반납 운송장 수정"
-                    : "반납 운송장 등록"}
+                    ? "운송장 수정"
+                    : "운송장 등록"}
                 </Link>
               </Button>
             )}
@@ -626,10 +626,10 @@ export default function RentalsDetailClient({
                 variant="destructive"
                 size="sm"
                 onClick={() => setCancelDialogOpen(true)}
-                className="w-full gap-2 lg:w-auto"
+                className="h-9 w-full gap-2 whitespace-nowrap lg:w-auto"
               >
-                <XCircle className="mr-2 h-4 w-4" />
-                대여 취소 요청
+                <XCircle className="h-4 w-4" />
+                대여 취소
               </Button>
             ) : isOnlineCancelRestricted ? (
               <p className="max-w-sm text-sm text-muted-foreground">
@@ -642,11 +642,11 @@ export default function RentalsDetailClient({
               variant="outline"
               size="sm"
               asChild
-              className="w-full border-border bg-card hover:border-primary/30 lg:w-auto"
+              className="h-9 w-full whitespace-nowrap border-border bg-background hover:border-primary/30 lg:w-auto"
             >
               <Link href={backUrl}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
                 목록으로 돌아가기
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </div>
@@ -676,8 +676,8 @@ export default function RentalsDetailClient({
           />
         )}
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
-          <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
+        <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 md:grid-cols-4">
+          <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
             <div className="flex items-center space-x-2 mb-2">
               <Package className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">
@@ -689,7 +689,7 @@ export default function RentalsDetailClient({
             </p>
           </div>
 
-          <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
+          <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
             <div className="flex items-center space-x-2 mb-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">
@@ -701,7 +701,19 @@ export default function RentalsDetailClient({
             </p>
           </div>
 
-          <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
+          <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
+            <div className="mb-2 flex items-center space-x-2">
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">
+                결제 금액
+              </span>
+            </div>
+            <p className="break-keep text-lg font-semibold tabular-nums text-foreground">
+              {(data.amount?.total ?? 0).toLocaleString()}원
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-border bg-background p-4 shadow-sm">
             <div className="flex items-center space-x-2 mb-2">
               {getStatusIcon(data.status)}
               <span className="text-sm font-medium text-muted-foreground">
