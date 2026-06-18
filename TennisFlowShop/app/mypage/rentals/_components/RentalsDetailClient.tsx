@@ -564,9 +564,6 @@ export default function RentalsDetailClient({
   const linkedApplicationStatus =
     linkedApplication?.status ?? data.applicationSummary?.status ?? null;
   const linkedApplicationIsComplete = linkedApplicationStatus === "교체완료";
-  const linkedApplicationHasReviewCta = Boolean(
-    data.stringingApplicationId && linkedApplication?.userConfirmedAt,
-  );
   const linkedApplicationShippingHref = data.stringingApplicationId
     ? `/services/applications/${data.stringingApplicationId}/shipping?${new URLSearchParams(
         {
@@ -796,9 +793,6 @@ export default function RentalsDetailClient({
                   ) : null}
                   {linkedApplicationIsComplete ? (
                     <Badge variant="success">교체완료</Badge>
-                  ) : null}
-                  {linkedApplicationHasReviewCta ? (
-                    <Badge variant="info">후기 작성 가능</Badge>
                   ) : null}
                 </div>
               </div>

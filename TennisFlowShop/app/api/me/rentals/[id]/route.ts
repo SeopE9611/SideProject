@@ -16,7 +16,7 @@ function getApplicationLines(stringDetails: any): any[] {
 
 function getReceptionLabel(collectionMethod?: string | null): string {
   if (collectionMethod === "visit") return "방문 접수";
-  if (collectionMethod === "courier_pickup") return "자가 발송(택배)";
+  if (collectionMethod === "courier_pickup") return "택배 방문 수거";
   if (collectionMethod === "self_ship") return "자가 발송(택배)";
   return "발송 접수";
 }
