@@ -105,6 +105,8 @@ interface OrderItem {
   quantity: number;
   price: number;
   imageUrl?: string | null;
+  selectedStringName?: string | null;
+  stringPrice?: number | null;
   selectedGauge?: string;
   selectedColor?: string;
   selectedColorLabel?: string;
@@ -190,6 +192,9 @@ interface OrderDetail {
       stringName?: string | null;
       tensionMain?: string | null;
       tensionCross?: string | null;
+      gauge?: string | null;
+      color?: string | null;
+      colorLabel?: string | null;
       note?: string | null;
     }>;
     shippingInfo?: {
@@ -1218,6 +1223,18 @@ export default function OrderDetailClient({
                                         {stringName}
                                       </dd>
                                     </div>
+                                    {(line.gauge || line.colorLabel || line.color) ? (
+                                      <div className="flex gap-2">
+                                        <dt className="w-20 shrink-0 text-muted-foreground">
+                                          옵션
+                                        </dt>
+                                        <dd className="min-w-0 break-words">
+                                          {line.gauge ? `게이지 ${formatGaugeLabel(line.gauge)}` : "게이지 -"}
+                                          {" / 색상 "}
+                                          {line.colorLabel || line.color || "-"}
+                                        </dd>
+                                      </div>
+                                    ) : null}
                                     <div className="flex gap-2">
                                       <dt className="w-20 shrink-0 text-muted-foreground">
                                         텐션
@@ -1867,6 +1884,11 @@ export default function OrderDetailClient({
                       <p className="break-keep text-sm text-foreground/80">
                         수량: {item.quantity}개
                       </p>
+                      {item.selectedStringName && (
+                        <p className="text-xs text-foreground/70">
+                          선택 스트링: {item.selectedStringName}
+                        </p>
+                      )}
                       {item.selectedGauge && (
                         <p className="text-xs text-foreground/70">
                           게이지: {formatGaugeLabel(item.selectedGauge)}
@@ -1894,6 +1916,16 @@ export default function OrderDetailClient({
                       <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
                         가격: {formatCurrency(item.price)}
                       </p>
+                      {typeof item.stringPrice === "number" && item.stringPrice > 0 && (
+                        <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
+                          스트링 가격: {formatCurrency(item.stringPrice)}
+                        </p>
+                      )}
+                      {typeof item.mountingFee === "number" && item.mountingFee > 0 && (
+                        <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
+                          장착비: {formatCurrency(item.mountingFee)}
+                        </p>
+                      )}
                       <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
                         소계: {formatCurrency(item.price * item.quantity)}
                       </p>

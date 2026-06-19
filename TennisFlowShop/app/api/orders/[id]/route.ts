@@ -290,6 +290,10 @@ export async function GET(
             isMountableString: false,
             quantity: item.quantity,
             kind: "product" as const,
+            selectedGauge: (item as any)?.selectedGauge ?? null,
+            selectedColor: (item as any)?.selectedColor ?? null,
+            selectedColorLabel: (item as any)?.selectedColorLabel ?? null,
+            selectedColorHex: (item as any)?.selectedColorHex ?? null,
             stockDeduction: (item as any)?.stockDeduction ?? null,
           };
         }
@@ -304,6 +308,10 @@ export async function GET(
           isMountableString,
           quantity: item.quantity,
           kind: "product" as const,
+          selectedGauge: (item as any)?.selectedGauge ?? null,
+          selectedColor: (item as any)?.selectedColor ?? null,
+          selectedColorLabel: (item as any)?.selectedColorLabel ?? null,
+          selectedColorHex: (item as any)?.selectedColorHex ?? null,
           stockDeduction: (item as any)?.stockDeduction ?? null,
         };
       }
@@ -315,10 +323,16 @@ export async function GET(
           id: normalizedId,
           name: "알 수 없는 라켓",
           price: 0,
-          mountingFee: 0,
+          mountingFee: (item as any)?.mountingFee ?? 0,
           isMountableString: false,
           quantity: item.quantity,
           kind: "racket" as const,
+          selectedStringName: (item as any)?.selectedStringName ?? null,
+          selectedGauge: (item as any)?.selectedGauge ?? null,
+          selectedColor: (item as any)?.selectedColor ?? null,
+          selectedColorLabel: (item as any)?.selectedColorLabel ?? null,
+          selectedColorHex: (item as any)?.selectedColorHex ?? null,
+          stringPrice: (item as any)?.stringPrice ?? null,
           stockDeduction: (item as any)?.stockDeduction ?? null,
         };
       }
@@ -327,10 +341,16 @@ export async function GET(
         id: normalizedId,
         name: `${racket.brand} ${racket.model}`.trim(),
         price: racket.price ?? 0,
-        mountingFee: 0,
+        mountingFee: (item as any)?.mountingFee ?? 0,
         isMountableString: false,
         quantity: item.quantity,
         kind: "racket" as const,
+        selectedStringName: (item as any)?.selectedStringName ?? null,
+        selectedGauge: (item as any)?.selectedGauge ?? null,
+        selectedColor: (item as any)?.selectedColor ?? null,
+        selectedColorLabel: (item as any)?.selectedColorLabel ?? null,
+        selectedColorHex: (item as any)?.selectedColorHex ?? null,
+        stringPrice: (item as any)?.stringPrice ?? null,
         stockDeduction: (item as any)?.stockDeduction ?? null,
       };
     });
@@ -494,6 +514,15 @@ export async function GET(
         racketLabel:
           nullableTrim(line?.racketLabel) ?? nullableTrim(line?.racketType),
         stringName: nullableTrim(line?.stringName),
+        gauge:
+          nullableTrim(line?.selectedGauge) ?? nullableTrim(line?.gauge),
+        color:
+          nullableTrim(line?.selectedColor) ?? nullableTrim(line?.color),
+        colorLabel:
+          nullableTrim(line?.selectedColorLabel) ??
+          nullableTrim(line?.colorLabel) ??
+          nullableTrim(line?.selectedColor) ??
+          nullableTrim(line?.color),
         tensionMain: nullableTrim(line?.tensionMain),
         tensionCross: nullableTrim(line?.tensionCross),
         note: nullableTrim(line?.note),

@@ -157,6 +157,10 @@ interface OrderDetail {
     name: string;
     quantity: number;
     price: number;
+    mountingFee?: number | null;
+    isMountableString?: boolean;
+    selectedStringName?: string | null;
+    stringPrice?: number | null;
     selectedGauge?: string;
     selectedColor?: string;
     selectedColorLabel?: string;
@@ -190,6 +194,19 @@ interface OrderDetail {
     tensionSummary?: string | null;
     stringNames?: string[];
     totalPrice?: number | null;
+    requirements?: string | null;
+    lines?: Array<{
+      id?: string | null;
+      racketType?: string | null;
+      racketLabel?: string | null;
+      stringName?: string | null;
+      gauge?: string | null;
+      color?: string | null;
+      colorLabel?: string | null;
+      tensionMain?: string | null;
+      tensionCross?: string | null;
+      note?: string | null;
+    }>;
     packageInfo?: {
       applied: boolean;
       useCount: number;
@@ -222,6 +239,19 @@ interface OrderDetail {
     tensionSummary?: string | null;
     stringNames?: string[];
     totalPrice?: number | null;
+    requirements?: string | null;
+    lines?: Array<{
+      id?: string | null;
+      racketType?: string | null;
+      racketLabel?: string | null;
+      stringName?: string | null;
+      gauge?: string | null;
+      color?: string | null;
+      colorLabel?: string | null;
+      tensionMain?: string | null;
+      tensionCross?: string | null;
+      note?: string | null;
+    }>;
     packageInfo?: {
       applied: boolean;
       useCount: number;
@@ -653,6 +683,11 @@ export default function OrderDetailClient({ orderId }: Props) {
   );
   const latestStringSummary =
     latestStringNames.length > 0 ? latestStringNames.join(", ") : null;
+  const latestApplicationLines = latestLinkedApplication?.lines ?? [];
+  const latestRequirements =
+    latestLinkedApplication?.requirements ||
+    latestApplicationLines.map((line) => line.note).find(Boolean) ||
+    null;
   const latestRacketCount =
     typeof latestLinkedApplication?.racketCount === "number"
       ? latestLinkedApplication.racketCount
@@ -1512,6 +1547,32 @@ export default function OrderDetailClient({ orderId }: Props) {
                             </span>
                           </p>
                         )}
+                        {latestApplicationLines.length > 0 && (
+                          <div className="sm:col-span-2">
+                            <span className="text-muted-foreground">장착 정보:</span>{" "}
+                            <div className="mt-1 space-y-1">
+                              {latestApplicationLines.map((line, index) => (
+                                <p
+                                  key={line.id ?? `${latestLinkedApplication?.id}-line-${index}`}
+                                  className="font-medium text-foreground"
+                                >
+                                  {line.racketLabel || line.racketType || `${index + 1}번째 라켓`} · {line.stringName || "스트링 미입력"}
+                                  {(line.gauge || line.colorLabel || line.color)
+                                    ? ` · 게이지 ${line.gauge ? formatGaugeLabel(line.gauge) : "-"} / 색상 ${line.colorLabel || line.color || "-"}`
+                                    : ""}
+                                </p>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {latestRequirements && (
+                          <p className="sm:col-span-2">
+                            <span className="text-muted-foreground">요청사항:</span>{" "}
+                            <span className="whitespace-pre-wrap font-medium text-foreground">
+                              {latestRequirements}
+                            </span>
+                          </p>
+                        )}
                         {typeof latestLinkedApplication?.totalPrice ===
                           "number" && (
                           <p>
@@ -2298,6 +2359,11 @@ export default function OrderDetailClient({ orderId }: Props) {
                         <p className="text-sm text-foreground/80">
                           수량: {item.quantity}개
                         </p>
+                        {item.selectedStringName && (
+                          <p className="text-xs text-foreground/70">
+                            선택 스트링: {item.selectedStringName}
+                          </p>
+                        )}
                         {item.selectedGauge && (
                           <p className="text-xs text-foreground/70">
                             게이지: {formatGaugeLabel(item.selectedGauge)}
@@ -2325,6 +2391,16 @@ export default function OrderDetailClient({ orderId }: Props) {
                         <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
                           {formatCurrency(item.price)}
                         </p>
+                        {typeof item.stringPrice === "number" && item.stringPrice > 0 && (
+                          <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
+                            스트링 가격: {formatCurrency(item.stringPrice)}
+                          </p>
+                        )}
+                        {typeof item.mountingFee === "number" && item.mountingFee > 0 && (
+                          <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
+                            장착비: {formatCurrency(item.mountingFee)}
+                          </p>
+                        )}
                         <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
                           소계: {formatCurrency(item.price * item.quantity)}
                         </p>
