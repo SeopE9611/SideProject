@@ -148,7 +148,7 @@ function isApplicationShippingAvailable(
   if (!app) return false;
   if (isTerminalCanceledStatus(app.status)) return false;
 
-  return Boolean(app.needsInboundTracking);
+  return Boolean(app.needsInboundTracking && !app.orderId && !app.rentalId);
 }
 
 // 대여 상태는 프로젝트마다 다를 수 있어서 “넓게” 커버(한글/영문 혼합 대응)
@@ -282,7 +282,7 @@ function isApplicationTrackingNeeded(app?: ActivityApplicationSummary | null) {
   if (!app) return false;
   if (isTerminalCanceledStatus(app.status)) return false;
 
-  return Boolean(app.needsInboundTracking && !app.hasTracking);
+  return Boolean(app.needsInboundTracking && !app.hasTracking && !app.orderId && !app.rentalId);
 }
 
 /**
@@ -354,7 +354,9 @@ function metaPills(g: ActivityGroup): MetaPill[] {
 
     if (
       !isTerminalCanceledStatus(linked.status) &&
-      linked.needsInboundTracking
+      linked.needsInboundTracking &&
+      !linked.orderId &&
+      !linked.rentalId
     ) {
       pills.push({
         text: linked.hasTracking ? "운송장 등록" : "운송장 대기",
@@ -372,7 +374,9 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     if (
       app &&
       !isTerminalCanceledStatus(app.status) &&
-      app.needsInboundTracking
+      app.needsInboundTracking &&
+      !app.orderId &&
+      !app.rentalId
     ) {
       pills.push({
         text: app.hasTracking ? "운송장 등록" : "운송장 대기",
@@ -719,8 +723,12 @@ export default function ActivityFeed() {
           : `/mypage?tab=orders&flowType=application&flowId=${g.application?.id}&from=orders`;
 
     const detailLabel = hasOrderLinkedApplication
-      ? "이용 상세 보기"
-      : "상세 보기";
+      ? "주문 상세"
+      : g.kind === "rental"
+        ? "대여 상세"
+        : g.kind === "application"
+          ? "교체서비스 상세"
+          : "상세 보기";
 
     // 주문/대여 카드에 붙는 “연결 신청서”
 
@@ -1623,9 +1631,7 @@ export default function ActivityFeed() {
                                       g.kind !== "application" ? (
                                         <DropdownMenuItem asChild>
                                           <Link href={appDetailHref}>
-                                            {g.kind === "order"
-                                              ? "교체서비스 상세 보기"
-                                              : "교체서비스 상세 보기"}
+                                            {g.kind === "rental" ? "장착 정보 보기" : "교체서비스 상세 보기"}
                                           </Link>
                                         </DropdownMenuItem>
                                       ) : null}

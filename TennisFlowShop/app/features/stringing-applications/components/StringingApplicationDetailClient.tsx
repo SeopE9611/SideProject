@@ -1078,7 +1078,8 @@ export default function StringingApplicationDetailClient({
   // 서버에서 내려준 값 우선 사용 (라켓 구매/대여 연결이면 false로 내려옴)
   const inboundRequired = data.inboundRequired ?? true;
   const needsInboundTracking =
-    data.needsInboundTracking ?? (inboundRequired && isSelfShip);
+    !isLinkedApplication &&
+    (data.needsInboundTracking ?? (inboundRequired && isSelfShip));
 
   // "매장→고객" 배송은 shippingMethod로 별도 유지
   const shippingMethod = data.shippingInfo?.shippingMethod;
@@ -1514,7 +1515,7 @@ export default function StringingApplicationDetailClient({
                     <Link
                       href={`/mypage?tab=orders&flowType=order&flowId=${data.orderId}&${flowQuery.toString()}&focus=stringing`}
                     >
-                      이용 상세
+                      주문 상세
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
