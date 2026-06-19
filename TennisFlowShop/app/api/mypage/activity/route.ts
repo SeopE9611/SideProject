@@ -180,6 +180,9 @@ type ActivityApplicationSummary = {
   paymentStatus?: string | null;
   paymentProvider?: string | null;
   serviceReviewPending?: boolean;
+  selectedStringName?: string | null;
+  selectedGauge?: string | null;
+  selectedColorLabel?: string | null;
 };
 
 export type ActivityGroup = {
@@ -219,6 +222,51 @@ function getOrderFlowLabel(opts: {
   if (hasStringItem) return "스트링 구매 + 교체서비스";
   if (hasRacketItem) return "라켓 구매 + 교체서비스";
   return "주문 + 교체서비스";
+}
+
+
+function firstText(...values: unknown[]): string | null {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) return value.trim();
+    if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  }
+  return null;
+}
+
+function getApplicationLines(stringDetails: any): any[] {
+  if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
+  return [];
+}
+
+function summarizeStringSelection(appDoc: any) {
+  const details = appDoc?.stringDetails ?? {};
+  const meta = appDoc?.meta ?? {};
+  const lines = getApplicationLines(details);
+  const firstLine = lines[0] ?? {};
+  const stringName = firstText(
+    firstLine?.stringName,
+    details?.stringName,
+    details?.selectedStringName,
+    appDoc?.selectedStringName,
+    meta?.selectedStringName,
+    Array.isArray(appDoc?.stringNames) ? appDoc.stringNames[0] : appDoc?.stringNames,
+    Array.isArray(appDoc?.applicationSummary?.stringNames) ? appDoc.applicationSummary.stringNames[0] : appDoc?.applicationSummary?.stringNames,
+  );
+
+  return {
+    selectedStringName: stringName,
+    selectedGauge: firstText(firstLine?.selectedGauge, firstLine?.gauge, details?.selectedGauge, appDoc?.selectedGauge, meta?.selectedGauge),
+    selectedColorLabel: firstText(
+      firstLine?.selectedColorLabel,
+      firstLine?.colorLabel,
+      details?.selectedColorLabel,
+      details?.selectedColor,
+      appDoc?.selectedColorLabel,
+      meta?.selectedColorLabel,
+      meta?.selectedColor,
+    ),
+  };
 }
 
 function toISO(v: any): string {
@@ -491,6 +539,12 @@ export async function GET(req: Request) {
           paymentInfo: 1,
           paymentProvider: 1,
           paymentMethod: 1,
+          meta: 1,
+          stringNames: 1,
+          applicationSummary: 1,
+          selectedStringName: 1,
+          selectedGauge: 1,
+          selectedColorLabel: 1,
         },
       })
       .sort({ updatedAt: -1, createdAt: -1 })
@@ -602,6 +656,12 @@ export async function GET(req: Request) {
           paymentInfo: 1,
           paymentProvider: 1,
           paymentMethod: 1,
+          meta: 1,
+          stringNames: 1,
+          applicationSummary: 1,
+          selectedStringName: 1,
+          selectedGauge: 1,
+          selectedColorLabel: 1,
         },
       },
     )
@@ -718,6 +778,8 @@ export async function GET(req: Request) {
       linkedPaymentContext,
     );
 
+    const stringSelection = summarizeStringSelection(doc);
+
     const app: ActivityApplicationSummary = {
       id: String(doc._id),
       createdAt,
@@ -742,6 +804,7 @@ export async function GET(req: Request) {
       paymentStatus: paymentContext.paymentStatus,
       paymentProvider: paymentContext.paymentProvider,
       serviceReviewPending: hasPendingServiceReview(String(doc._id)),
+      ...stringSelection,
     };
 
     if (doc.orderId) {
@@ -993,6 +1056,7 @@ export async function GET(req: Request) {
     );
     const sortAt = isoMax(updatedAt, createdAt);
     const paymentContext = resolveStringingPaymentContext(doc);
+    const stringSelection = summarizeStringSelection(doc);
     groups.push({
       key: `application:${String(doc._id)}`,
       kind: "application",
@@ -1027,6 +1091,7 @@ export async function GET(req: Request) {
         paymentStatus: paymentContext.paymentStatus,
         paymentProvider: paymentContext.paymentProvider,
         serviceReviewPending: hasPendingServiceReview(String(doc._id)),
+        ...stringSelection,
       },
     });
   }
