@@ -475,7 +475,14 @@ export default function ActivityFeed() {
   // - 리뷰작성: 사용자 확정(userConfirmedAt) 이후에만 노출
   const canShowStringingConfirmCta = (
     app?: ActivityApplicationSummary | null,
-  ) => !!(app && app.status === "교체완료" && !app.userConfirmedAt);
+  ) =>
+    !!(
+      app &&
+      app.status === "교체완료" &&
+      !app.userConfirmedAt &&
+      !app.orderId &&
+      !app.rentalId
+    );
 
   const canShowStringingReviewCta = (app?: ActivityApplicationSummary | null) =>
     Boolean(app?.userConfirmedAt);
