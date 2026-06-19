@@ -21,12 +21,12 @@ type Props = {
 };
 
 const VARIANT_CLASS: Record<AsyncStateVariant, string> = {
-  card: "rounded-xl border px-4 py-5 sm:px-5 sm:py-6",
+  card: "rounded-2xl border px-4 py-5 shadow-sm sm:px-5 sm:py-6",
   inline: "rounded-md border px-3 py-2",
   "page-center":
-    "mx-auto flex min-h-[220px] w-full max-w-xl items-center justify-center rounded-xl border px-5 py-10",
+    "mx-auto flex min-h-[220px] w-full max-w-xl items-center justify-center rounded-2xl border px-5 py-10 shadow-sm",
   "grid-item":
-    "flex h-full min-h-[220px] w-full items-center justify-center rounded-xl border px-4 py-8",
+    "flex h-full min-h-[220px] w-full items-center justify-center rounded-2xl border px-4 py-8 shadow-sm",
 };
 
 export default function AsyncState({

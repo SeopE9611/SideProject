@@ -234,7 +234,7 @@ export function getOrderStatusTone(status?: string | null): BadgeSemanticTone {
     normalized === "배송준비중"
   )
     return "info";
-  if (normalized === "대기중") return "neutral";
+  if (normalized === "대기중") return "warning";
   return "neutral";
 }
 
@@ -272,7 +272,7 @@ export function getPaymentStatusTone(
   )
     return "success";
   if (normalized === "패키지차감") return "info";
-  if (normalized === "결제대기") return "neutral";
+  if (normalized === "결제대기") return "warning";
   if (normalized === "확인필요") return "warning";
   return "neutral";
 }
@@ -433,7 +433,7 @@ export function getRentalStatusTone(status?: string | null): BadgeSemanticTone {
   if (normalized === "paid" || normalized === "결제완료") return "success";
   if (normalized === "out" || normalized === "대여중") return "info";
   if (normalized === "returned" || normalized === "반납완료") return "success";
-  if (normalized === "pending" || normalized === "대기중") return "neutral";
+  if (normalized === "pending" || normalized === "대기중") return "warning";
   if (
     normalized === "canceled" ||
     normalized === "취소" ||
@@ -464,7 +464,7 @@ export function getApplicationStatusTone(
   if (normalized === "교체완료") return "success";
   if (normalized === "작업 중") return "info";
   if (normalized === "검토 중") return "info";
-  if (normalized === "접수완료") return "neutral";
+  if (normalized === "접수완료") return "warning";
   if (normalized.includes("취소")) return "danger";
   return "neutral";
 }
