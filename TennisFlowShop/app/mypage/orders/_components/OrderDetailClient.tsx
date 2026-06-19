@@ -1076,6 +1076,9 @@ export default function OrderDetailClient({
                       stringName: app.stringNames?.join(", ") || null,
                       tensionMain: app.tensionSummary ?? null,
                       tensionCross: null,
+                      gauge: null,
+                      color: null,
+                      colorLabel: null,
                       note: app.requirements ?? null,
                     };
                     const displayLines =

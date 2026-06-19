@@ -43,6 +43,9 @@ type ActivityApplicationSummary = {
   paymentStatus?: string | null;
   paymentProvider?: string | null;
   serviceReviewPending?: boolean;
+  selectedStringName?: string | null;
+  selectedGauge?: string | null;
+  selectedColorLabel?: string | null;
 };
 
 type ActivityGroup = {
@@ -267,6 +270,12 @@ const getApplicationCollectionLabel = (app?: ActivityApplicationSummary) => {
   if (!app) return "-";
   if (!app.inboundRequired) return "입고 불필요(연계 처리)";
   return collectionMethodLabel(app.collectionMethod);
+};
+
+const getStringSelectionSummary = (app?: ActivityApplicationSummary | null) => {
+  if (!app?.selectedStringName) return null;
+  const options = [app.selectedGauge, app.selectedColorLabel].filter(isFilledText).join(" · ");
+  return options ? `장착 스트링: ${app.selectedStringName} (${options})` : `장착 스트링: ${app.selectedStringName}`;
 };
 
 const getApplicationTrackingLabel = (app?: ActivityApplicationSummary) => {
@@ -867,6 +876,8 @@ export default function TransactionFlowList() {
                     ? `${g.rental.days}일 대여`
                     : "대여 기간 확인"
                   : getApplicationCollectionLabel(displayApplication);
+            const linkedStringSummary = !prefersApplicationView ? getStringSelectionSummary(g.application) : null;
+            const linkedApplicationStatusLabel = !prefersApplicationView && g.application ? getMypageUserStatusLabel(g.application.status) : null;
 
             return (
               <div
@@ -924,6 +935,12 @@ export default function TransactionFlowList() {
                     </div>
                   ) : null}
 
+                  {linkedStringSummary || linkedApplicationStatusLabel ? (
+                    <p className="line-clamp-2 break-keep text-xs leading-relaxed text-muted-foreground bp-sm:line-clamp-none">
+                      {[linkedStringSummary, linkedApplicationStatusLabel ? `교체서비스 상태: ${linkedApplicationStatusLabel}` : null].filter(Boolean).join(" · ")}
+                    </p>
+                  ) : null}
+
                   {todoPrimaryReason && nextActionText ? (
                     <p className="line-clamp-2 break-keep text-xs leading-relaxed bp-sm:line-clamp-none">
                       <span className="font-semibold text-primary">{todoPrimaryReason}</span>
@@ -961,7 +978,7 @@ export default function TransactionFlowList() {
                         ? `/mypage?tab=orders&flowType=rental&flowId=${rentalId}&${flowQuery}&focus=stringing`
                         : detailHref;
 
-                  const resolvedDetailLabel = hasIntegratedLinkedApplication ? "교체서비스 상세" : "상세 보기";
+                  const resolvedDetailLabel = hasOrderLinkedApplication ? "주문 상세" : hasRentalLinkedApplication ? "대여 상세" : detailTargetType === "order" ? "주문 상세" : detailTargetType === "rental" ? "대여 상세" : "교체서비스 상세";
 
                   const detailPriority = scope === "todo" || prefersApplicationView ? 10 : 3;
                   actions.push({
@@ -986,8 +1003,8 @@ export default function TransactionFlowList() {
                         forceSecondary: true,
                         node: (
                           <Button key="application-linked-order" asChild size="sm" variant="outline" className="bg-transparent">
-                            <Link href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&${flowQuery}`}>
-                              연계 주문 보기
+                            <Link href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&${flowQuery}&focus=stringing`}>
+                              주문 상세
                               <ArrowRight className="ml-1 h-3.5 w-3.5" />
                             </Link>
                           </Button>
@@ -1002,8 +1019,8 @@ export default function TransactionFlowList() {
                         forceSecondary: true,
                         node: (
                           <Button key="application-linked-rental" asChild size="sm" variant="outline" className="bg-transparent">
-                            <Link href={`/mypage?tab=orders&flowType=rental&flowId=${rentalId}&${flowQuery}`}>
-                              연계 대여 보기
+                            <Link href={`/mypage?tab=orders&flowType=rental&flowId=${rentalId}&${flowQuery}&focus=stringing`}>
+                              대여 상세
                               <ArrowRight className="ml-1 h-3.5 w-3.5" />
                             </Link>
                           </Button>
