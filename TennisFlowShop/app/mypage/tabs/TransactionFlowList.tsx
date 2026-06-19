@@ -334,7 +334,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
     }
 
     if (getMypageNormalizedStatus(group.rental?.status) === "반납완료" && !group.rental?.userConfirmedAt) {
-      return "이용확정 필요";
+      return "수령확인 필요";
     }
 
     if (group.application?.serviceReviewPending) {
@@ -369,12 +369,12 @@ const getFlowNextActionText = (
   if (opts?.todoPrimaryReason) {
     const todoMessageMap: Record<string, string> = {
       "구매확정 필요": "상품을 받으셨다면 구매확정을 진행해주세요.",
-      "이용확정 필요": "반납 내용을 확인하고 이용확정을 진행해주세요.",
+      "수령확인 필요": "반납 내용을 확인하고 수령확인을 진행해주세요.",
       "운송장 등록 필요": "운송장 정보를 등록해주세요.",
       "교체서비스 확정 필요": "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.",
       "후기를 남길 수 있어요": "구매확정된 상품은 후기를 작성할 수 있어요.",
       "상품 후기 작성 가능": "구매확정된 상품은 후기를 작성할 수 있어요.",
-      "상품+교체서비스 후기 가능": "이용확정된 교체서비스 후기를 작성할 수 있어요.",
+      "상품+교체서비스 후기 가능": "수령확인된 교체서비스 후기를 작성할 수 있어요.",
       "교체서비스 신청 필요": "교체서비스 신청을 이어서 진행해주세요.",
     };
     return todoMessageMap[opts.todoPrimaryReason] ?? null;
@@ -400,7 +400,7 @@ const getFlowNextActionText = (
       const hasPendingServiceReview = Boolean(group.application?.serviceReviewPending) || (group.order?.applicationSummaries ?? []).some((app) => app.serviceReviewPending);
 
       if (hasPendingServiceReview) {
-        return "이용확정된 교체서비스 후기를 작성할 수 있어요.";
+        return "수령확인된 교체서비스 후기를 작성할 수 있어요.";
       }
 
       if (hasPendingOrderReview) {
@@ -422,11 +422,11 @@ const getFlowNextActionText = (
       const hasPendingServiceReview = Boolean(group.application?.serviceReviewPending) || (group.rental?.applicationSummaries ?? []).some((app) => app.serviceReviewPending);
 
       if (!group.rental?.userConfirmedAt) {
-        return "반납 내용을 확인하고 이용확정을 진행해주세요.";
+        return "반납 내용을 확인하고 수령확인을 진행해주세요.";
       }
 
       if (hasPendingServiceReview) {
-        return "이용확정된 교체서비스 후기를 작성할 수 있어요.";
+        return "수령확인된 교체서비스 후기를 작성할 수 있어요.";
       }
 
       return null;
@@ -443,7 +443,7 @@ const getFlowNextActionText = (
   if (normalized === "검토 중") return "신청 내용을 확인 중입니다. 안내를 기다려주세요.";
   if (normalized === "승인") return "신청이 확인되었습니다. 다음 안내를 기다려주세요.";
   if (normalized === "처리중" || normalized === "작업 중") return "교체서비스 작업이 진행 중입니다. 완료 안내를 기다려주세요.";
-  if (normalized === "교체완료") return app?.serviceReviewPending ? "이용확정된 교체서비스 후기를 작성할 수 있어요." : "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.";
+  if (normalized === "교체완료") return app?.serviceReviewPending ? "수령확인된 교체서비스 후기를 작성할 수 있어요." : "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.";
   if (normalized === "거절") return "신청이 반려되었습니다. 자세한 내용은 고객센터로 문의해주세요.";
   return null;
 };
@@ -661,7 +661,7 @@ export default function TransactionFlowList() {
 
   const handleConfirmRental = async (rentalId: string) => {
     if (confirmingRentalId) return;
-    if (!window.confirm("이용확정 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.")) return;
+    if (!window.confirm("수령확인 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.")) return;
 
     try {
       setConfirmingRentalId(rentalId);
@@ -672,16 +672,16 @@ export default function TransactionFlowList() {
       const data = await res.json().catch(() => null);
 
       if (!res.ok || data?.ok === false) {
-        showErrorToast(data?.message || "이용확정 처리 중 오류가 발생했습니다.");
+        showErrorToast(data?.message || "수령확인 처리 중 오류가 발생했습니다.");
         return;
       }
 
       const earnedPoints = Number(data?.earnedPoints ?? 0);
-      showSuccessToast(data?.pointsGranted && earnedPoints > 0 ? `이용확정이 완료되었습니다. ${earnedPoints.toLocaleString()}P가 적립되었습니다.` : data?.already ? data?.message || "이미 이용확정된 대여입니다." : "이용확정이 완료되었습니다.");
+      showSuccessToast(data?.pointsGranted && earnedPoints > 0 ? `수령확인이 완료되었습니다. ${earnedPoints.toLocaleString()}P가 적립되었습니다.` : data?.already ? data?.message || "이미 수령확인된 대여입니다." : "수령확인이 완료되었습니다.");
       await refreshRelatedQueries();
     } catch (e) {
       console.error(e);
-      showErrorToast("이용확정 처리 중 오류가 발생했습니다.");
+      showErrorToast("수령확인 처리 중 오류가 발생했습니다.");
     } finally {
       setConfirmingRentalId(null);
     }
@@ -1116,7 +1116,7 @@ export default function TransactionFlowList() {
                         node: (
                           <Button key="rental-confirm" size="sm" disabled={confirmingRentalId === rentalId} onClick={() => handleConfirmRental(rentalId)}>
                             <CheckCircle className="mr-1 h-3.5 w-3.5" />
-                            {confirmingRentalId === rentalId ? "처리 중..." : "이용확정"}
+                            {confirmingRentalId === rentalId ? "처리 중..." : "수령확인"}
                           </Button>
                         ),
                       });

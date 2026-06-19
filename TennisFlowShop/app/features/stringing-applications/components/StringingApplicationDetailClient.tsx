@@ -2072,7 +2072,7 @@ export default function StringingApplicationDetailClient({
                                 {isOrderLinkedApplication
                                   ? "이 교체서비스는 연결된 주문의 구매확정과 함께 처리됩니다."
                                   : isRentalLinkedApplication
-                                    ? "이 교체서비스는 연결된 대여의 이용확정과 함께 처리됩니다."
+                                    ? "이 교체서비스는 연결된 대여의 수령확인과 함께 처리됩니다."
                                     : "단독 교체서비스는 교체서비스 상세에서 확정할 수 있습니다."}
                               </p>
                             </>
@@ -2186,7 +2186,7 @@ export default function StringingApplicationDetailClient({
 
                     {!isAdmin && isRentalLinkedApplication && (
                       <p className="max-w-xl text-sm text-muted-foreground">
-                        이 교체서비스는 연결된 대여의 이용확정과 함께 처리됩니다.
+                        이 교체서비스는 연결된 대여의 수령확인과 함께 처리됩니다.
                       </p>
                     )}
 
