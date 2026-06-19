@@ -591,10 +591,10 @@ export default function ApplicationsClient() {
               ? app.preferredDays.join(", ")
               : "희망 요일 미입력";
             const metaLinkLabel = hasOrderLink
-              ? "원 주문 연계"
+              ? "주문 기반 교체서비스"
               : hasRentalLink
-                ? "원 대여 연계"
-                : "단독 신청";
+                ? "대여 기반 장착 정보"
+                : "단독 교체서비스";
             const metaLinkId = hasOrderLink
               ? orderId
               : hasRentalLink
@@ -609,7 +609,7 @@ export default function ApplicationsClient() {
               <Card
                 key={app.id}
                 data-cy="mypage-application-summary-card"
-                className="group relative overflow-hidden border-0 bg-card shadow-md transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:shadow-xl"
+                className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:shadow-md"
               >
                 <div
                   className="absolute inset-0 bg-muted/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
@@ -891,7 +891,7 @@ export default function ApplicationsClient() {
                         onClick={() => router.push(detailHref)}
                         className="bg-transparent"
                       >
-                        교체서비스 상세 보기
+                        {hasOrderLink ? "주문 상세" : hasRentalLink ? "장착 정보 보기" : "교체서비스 상세"}
                         <ArrowRight className="ml-1 h-3 w-3" />
                       </Button>
                     ) : null}

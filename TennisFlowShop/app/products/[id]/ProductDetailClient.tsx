@@ -683,7 +683,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     canCheckoutWithService && !ENABLE_STRING_STANDALONE_ORDER;
   const cartCtaLabel = "장바구니 담기";
   const standalonePausedNotice =
-    "현재 스트링 단품 구매는 운영하지 않으며, 교체서비스 신청과 함께 이용할 수 있어요.";
+    "현재 스트링은 교체서비스 신청과 함께 이용할 수 있어요.";
 
   // 브라우저 뒤/앞으로 가기 시에도 URL 변화에 맞춰 동기화
   useEffect(() => {
@@ -1702,7 +1702,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     {isStringProduct && (
                       <div className="rounded-xl border border-border bg-primary/5 p-3 text-sm leading-relaxed text-muted-foreground">
                         <p className="font-semibold text-foreground">선택한 스트링은 교체서비스 신청과 함께 진행됩니다.</p>
-                        <p className="mt-1 break-keep">게이지·색상·수량을 확인한 뒤 장착 신청으로 이동하세요. 스트링 단품 구매 버튼은 운영 정책에 따라 노출되지 않습니다.</p>
+                        <p className="mt-1 break-keep">게이지·색상·수량을 확인한 뒤 장착 신청으로 이동하세요. 현재 스트링은 교체서비스 신청과 함께 이용할 수 있어요.</p>
                       </div>
                     )}
 

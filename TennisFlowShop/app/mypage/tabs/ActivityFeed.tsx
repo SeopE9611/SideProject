@@ -724,11 +724,11 @@ export default function ActivityFeed() {
 
     const detailLabel = hasOrderLinkedApplication
       ? "주문 상세"
-      : g.kind === "rental"
-        ? "대여 상세"
-        : g.kind === "application"
-          ? "교체서비스 상세"
-          : "상세 보기";
+      : g.kind === "order"
+        ? "주문 상세"
+        : g.kind === "rental"
+          ? "대여 상세"
+          : "교체서비스 상세";
 
     // 주문/대여 카드에 붙는 “연결 신청서”
 
@@ -743,7 +743,7 @@ export default function ActivityFeed() {
         ? "운송장 수정"
         : "운송장 등록";
 
-    // 주문에 연결된 교체서비스 → 신청 상세로 보내지 말고 이용 상세로 보내기 - 렌탈/단독 신청 → 기존 신청 상세 유지
+    // 주문에 연결된 교체서비스는 주문 상세, 대여에 연결된 교체서비스는 장착 정보로 안내
     const appDetailHref =
       linkedApp && g.kind === "rental"
         ? `/mypage?tab=orders&flowType=application&flowId=${linkedApp.id}&from=orders`
@@ -1631,7 +1631,7 @@ export default function ActivityFeed() {
                                       g.kind !== "application" ? (
                                         <DropdownMenuItem asChild>
                                           <Link href={appDetailHref}>
-                                            {g.kind === "rental" ? "장착 정보 보기" : "교체서비스 상세 보기"}
+                                            {g.kind === "rental" ? "장착 정보 보기" : "교체서비스 상세"}
                                           </Link>
                                         </DropdownMenuItem>
                                       ) : null}
