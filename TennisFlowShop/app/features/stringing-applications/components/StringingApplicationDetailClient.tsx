@@ -171,6 +171,19 @@ interface ApplicationDetail {
     price: number;
     quantity: number;
   }>;
+  linkedOrderItems?: Array<{
+    id: string;
+    productName: string;
+    quantity: number;
+    price?: number | null;
+    stringPrice?: number | null;
+    stringingFee?: number | null;
+    selectedGauge?: string | null;
+    selectedColor?: string | null;
+    selectedColorLabel?: string | null;
+    stringName?: string | null;
+    racketName?: string | null;
+  }>;
   stringDetails: {
     preferredDate: string;
     preferredTime: string;
@@ -856,6 +869,9 @@ export default function StringingApplicationDetailClient({
     ...it,
     subtotal: it.price * it.quantity,
   }));
+  const linkedOrderItems = Array.isArray(data.linkedOrderItems)
+    ? data.linkedOrderItems
+    : [];
 
   const lineSummaryLines = Array.isArray(data.lines) ? data.lines : [];
   const lineSummaryStringKinds = new Set(
@@ -2418,6 +2434,12 @@ export default function StringingApplicationDetailClient({
                           approvedAt={linkedPayment?.approvedAt ?? null}
                           paymentNiceSync={linkedPayment?.niceSync ?? null}
                         />
+                        {isOrderLinkedApplication && (
+                          <p className="mt-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs leading-relaxed text-foreground/80">
+                            결제는 연결 주문에서 처리되었습니다. 주문 결제에
+                            포함된 교체서비스입니다.
+                          </p>
+                        )}
                       </div>
                       {/* 패키지 사용 정보 요약 */}
                       {data.packageInfo && (
@@ -2670,6 +2692,65 @@ export default function StringingApplicationDetailClient({
                               <span>{selectedColorLabel}</span>
                             </p>
                           )}
+                        </div>
+                      </section>
+                    )}
+                    {data.orderId && linkedOrderItems.length > 0 && (
+                      <section className="space-y-3 border-b border-dashed border-border pb-4">
+                        <div className="flex items-center gap-2 text-foreground">
+                          <ShoppingCart className="w-5 h-5" />
+                          <span className="font-medium">연결 주문 상품</span>
+                        </div>
+                        <div className="space-y-2">
+                          {linkedOrderItems.map((item, index) => {
+                            const colorLabel =
+                              item.selectedColorLabel || item.selectedColor;
+                            return (
+                              <div
+                                key={`${item.id}-${index}`}
+                                className="rounded-lg border border-border/70 bg-card/70 p-3 text-sm"
+                              >
+                                <div className="flex flex-col gap-1 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+                                  <div className="min-w-0">
+                                    <p className="break-keep font-medium text-foreground">
+                                      {item.productName}
+                                    </p>
+                                    {item.stringName && (
+                                      <p className="text-xs text-foreground/75">
+                                        선택 스트링: {item.stringName}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <span className="shrink-0 text-xs text-foreground/70">
+                                    수량 {item.quantity}개
+                                  </span>
+                                </div>
+                                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-foreground/75">
+                                  {item.selectedGauge && (
+                                    <span>게이지: {item.selectedGauge}</span>
+                                  )}
+                                  {colorLabel && <span>색상: {colorLabel}</span>}
+                                  {typeof item.price === "number" && (
+                                    <span>
+                                      상품가: {item.price.toLocaleString()}원
+                                    </span>
+                                  )}
+                                  {typeof item.stringPrice === "number" && (
+                                    <span>
+                                      스트링 가격:{" "}
+                                      {item.stringPrice.toLocaleString()}원
+                                    </span>
+                                  )}
+                                  {typeof item.stringingFee === "number" && (
+                                    <span>
+                                      장착비:{" "}
+                                      {item.stringingFee.toLocaleString()}원
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       </section>
                     )}

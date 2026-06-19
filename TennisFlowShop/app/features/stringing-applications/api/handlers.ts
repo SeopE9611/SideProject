@@ -866,26 +866,44 @@ export async function handleGetStringingApplication(req: Request, id: string) {
         )
       : null;
 
-    const rawOrderItems = (order?.items ?? []) as {
-      productId: string;
-      quantity: number;
-    }[];
+    const rawOrderItems = (order?.items ?? []) as any[];
 
     const orderStrings = await Promise.all(
       rawOrderItems.map(async (oi) => {
-        const prod = await db
-          .collection("products")
-          .findOne(
-            { _id: new ObjectId(oi.productId) },
-            { projection: { name: 1, mountingFee: 1 } },
-          );
+        const productId = String(oi.productId ?? oi.id ?? "").trim();
+        const prod = ObjectId.isValid(productId)
+          ? await db
+              .collection("products")
+              .findOne(
+                { _id: new ObjectId(productId) },
+                { projection: { name: 1, mountingFee: 1 } },
+              )
+          : null;
         return {
-          id: oi.productId,
-          name: prod?.name ?? "알 수 없는 상품",
+          id: productId,
+          name: oi.name ?? prod?.name ?? "알 수 없는 상품",
           mountingFee: prod?.mountingFee ?? 0,
         };
       }),
     );
+    const linkedOrderItems = rawOrderItems.map((oi) => ({
+      id: String(oi.productId ?? oi.id ?? ""),
+      productName: String(oi.name ?? oi.productName ?? "주문 상품"),
+      quantity: typeof oi.quantity === "number" ? oi.quantity : 1,
+      price: typeof oi.price === "number" ? oi.price : null,
+      stringPrice: typeof oi.stringPrice === "number" ? oi.stringPrice : null,
+      stringingFee:
+        typeof oi.stringingFee === "number"
+          ? oi.stringingFee
+          : typeof oi.mountingFee === "number"
+            ? oi.mountingFee
+            : null,
+      selectedGauge: oi.selectedGauge ?? null,
+      selectedColor: oi.selectedColor ?? null,
+      selectedColorLabel: oi.selectedColorLabel ?? oi.selectedColor ?? null,
+      stringName: oi.stringName ?? oi.selectedStringName ?? null,
+      racketName: oi.racketName ?? oi.name ?? oi.productName ?? null,
+    }));
 
     const linkedOrderPickupMethod = (() => {
       if (!order) return null;
@@ -1027,9 +1045,10 @@ export async function handleGetStringingApplication(req: Request, id: string) {
           approvedAt: toIsoOrNull((app as any).packageRedeemedAt),
           niceSync: null,
         }
-      : paymentSourceRaw.startsWith("order:") && order
+      : (paymentSourceRaw.startsWith("order:") || app.orderId) && order
         ? buildLinkedPaymentFromDoc("order", order)
-        : paymentSourceRaw.startsWith("rental:") && linkedRental
+        : (paymentSourceRaw.startsWith("rental:") || rentalObjectId) &&
+            linkedRental
           ? buildLinkedPaymentFromDoc("rental", linkedRental)
           : {
               source: "application",
@@ -1065,6 +1084,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       rentalId: (app as any).rentalId?.toString?.() || null,
       paymentSource: paymentSourceRaw || null,
       linkedOrderPickupMethod,
+      linkedOrderItems,
       // 사용자 확정 시각 (없으면 null)
       userConfirmedAt:
         (app as any).userConfirmedAt instanceof Date
