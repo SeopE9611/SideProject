@@ -1144,7 +1144,7 @@ export default function TransactionFlowList() {
                         node: (
                           <Button key="rental-return-shipping" asChild size="sm">
                             <Link href={`/mypage/rentals/${rentalId}/return-shipping`}>
-                              {g.rental?.hasReturnShipping ? "반납 운송장 수정" : "반납 운송장 등록"}
+                              반납 운송장 등록
                             </Link>
                           </Button>
                         ),

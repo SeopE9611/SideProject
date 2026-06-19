@@ -1930,7 +1930,7 @@ export default function OrderDetailClient({
                         </p>
                       )}
                       <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
-                        소계: {formatCurrency(item.price * item.quantity)}
+                        상품 소계: {formatCurrency(item.price * item.quantity)}
                       </p>
                       <div className="mt-2">
                         {canShowReviewCTA &&
