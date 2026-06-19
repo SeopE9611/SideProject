@@ -590,11 +590,13 @@ export default function ApplicationsClient() {
             const preferredDaysLabel = app.preferredDays?.length
               ? app.preferredDays.join(", ")
               : "희망 요일 미입력";
-            const metaLinkLabel = hasOrderLink
-              ? "주문 기반 교체서비스"
-              : hasRentalLink
-                ? "대여 기반 장착 정보"
-                : "단독 교체서비스";
+            const metaLinkLabel = isAcademyLesson
+              ? null
+              : hasOrderLink
+                ? "주문 기반 교체서비스"
+                : hasRentalLink
+                  ? "대여 기반 장착 정보"
+                  : "단독 교체서비스";
             const metaLinkId = hasOrderLink
               ? orderId
               : hasRentalLink
@@ -661,13 +663,17 @@ export default function ApplicationsClient() {
                   </div>
 
                   <div className="flex flex-nowrap items-center gap-2 overflow-x-auto text-xs">
-                    <Badge
-                      variant="outline"
-                      className="shrink-0 whitespace-nowrap"
-                    >
-                      {metaLinkLabel}
-                      {metaLinkId ? ` · ${String(metaLinkId).slice(-6)}` : ""}
-                    </Badge>
+                    {metaLinkLabel ? (
+                      <Badge
+                        variant="outline"
+                        className="shrink-0 whitespace-nowrap"
+                      >
+                        {metaLinkLabel}
+                        {metaLinkId
+                          ? ` · ${String(metaLinkId).slice(-6)}`
+                          : ""}
+                      </Badge>
+                    ) : null}
                     {isAcademyLesson ? (
                       <Badge
                         variant="outline"
