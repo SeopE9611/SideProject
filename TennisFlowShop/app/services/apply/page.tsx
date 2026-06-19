@@ -1119,15 +1119,15 @@ export default function StringServiceApplyPage() {
   const entryBanner = useMemo(() => {
     if (isRentalBased) {
       return {
-        title: "대여 주문에 연결된 교체 서비스 신청입니다.",
-        body: "대여 결제 기준으로 신청 내용을 확인하고 접수해주세요.",
+        title: "대여 기반 교체서비스 신청입니다.",
+        body: "대여 라켓에 스트링을 장착한 뒤 출고됩니다. 대여 결제 기준으로 신청 내용을 확인하고 접수해주세요.",
       };
     }
 
     if (isSingleApplyMode) {
       return {
-        title: "단독 교체 서비스 신청입니다.",
-        body: "주문 연결 없이 직접 신청서를 작성하는 경로입니다.",
+        title: "일반 standalone 교체서비스 신청입니다.",
+        body: "보유 라켓을 보내거나 방문/수거 방식으로 교체서비스를 진행합니다.",
       };
     }
 
@@ -1140,8 +1140,8 @@ export default function StringServiceApplyPage() {
 
     if (loading) {
       return {
-        title: "주문 신청 가능 상태를 확인하고 있습니다.",
-        body: "남은 신청 가능 대상을 확인한 뒤 이어서 진행해주세요.",
+        title: "주문 기반 교체서비스 신청입니다.",
+        body: "이 교체서비스는 주문 결제에 포함됩니다. 남은 신청 가능 대상을 확인한 뒤 이어서 진행해주세요.",
       };
     }
 

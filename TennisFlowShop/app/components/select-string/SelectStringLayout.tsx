@@ -303,7 +303,10 @@ export default function SelectStringLayout({
         )}
 
         {/* Info Text */}
-        <p className="mt-4 text-center text-[11px] leading-relaxed text-muted-foreground">스트링별 재고 현황은 실시간으로 변동될 수 있습니다</p>
+        <div className="mt-4 rounded-xl border border-border bg-primary/5 p-3 text-xs leading-relaxed text-muted-foreground">
+          <p className="font-semibold text-foreground">다음 단계 안내</p>
+          <p className="mt-1 break-keep">선택한 라켓, 스트링 옵션, 수량은 체크아웃에서 한 번 더 확인할 수 있습니다. 장착 정보까지 입력하면 신청이 완료됩니다.</p>
+        </div>
       </div>
     </div>
   );
@@ -333,7 +336,11 @@ export default function SelectStringLayout({
             <div>
               <h1 className="break-keep text-2xl font-bold tracking-tight text-foreground bp-md:text-3xl bp-lg:text-4xl">스트링 및 교체서비스 선택</h1>
               <p className="mt-2 max-w-3xl break-keep text-sm leading-relaxed text-muted-foreground bp-md:text-base">
-                {flowType === "rental" ? "대여 라켓에 장착할 스트링을 선택해주세요" : isCartEditMode ? "장바구니 번들의 스트링을 변경합니다" : "라켓과 함께 구매하실 스트링을 선택해주세요"}
+                {flowType === "rental"
+                  ? "대여 라켓에 장착할 스트링을 선택해주세요. 장착 후 출고되는 흐름입니다"
+                  : isCartEditMode
+                    ? "장바구니 번들의 스트링을 변경합니다"
+                    : "라켓과 함께 구매할 스트링을 선택해주세요. 선택 완료 후 결제와 장착 정보 입력으로 이어집니다"}
               </p>
             </div>
           </div>
@@ -390,7 +397,7 @@ export default function SelectStringLayout({
             <div className="bp-lg:hidden">{renderSelectedRacketSummary()}</div>
 
             {/* Product Count */}
-            <div className="flex items-center justify-between rounded-2xl border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+            <div className="flex flex-col gap-1 rounded-2xl border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
               {isLoadingInitial ? (
                 <Skeleton className="inline-block h-4 w-24" />
               ) : (
@@ -399,7 +406,7 @@ export default function SelectStringLayout({
                   개의 스트링
                 </span>
               )}
-              <span className="hidden text-xs bp-sm:inline">옵션을 확인한 뒤 계속하기로 다음 단계로 이동하세요</span>
+              <span className="text-xs">브랜드·가격·게이지·색상을 확인한 뒤 계속하기로 이동하세요</span>
             </div>
 
             {/* Product Grid/List */}

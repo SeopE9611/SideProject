@@ -1489,9 +1489,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     </div>
                     {typeof product?.mountingFee === "number" && (
                       <div className="text-sm sm:text-base text-muted-foreground">
-                        <span className="inline-flex max-w-full items-center gap-1.5 rounded-xl bg-muted/50 border border-border/60 px-3 py-1.5 text-sm font-medium whitespace-nowrap tabular-nums">
-                          <Wrench className="h-3.5 w-3.5" />
-                          장착 서비스:{" "}
+                        <span className="inline-flex max-w-full items-center gap-1.5 rounded-xl bg-primary/5 border border-border px-3 py-1.5 text-sm font-medium whitespace-normal break-keep tabular-nums">
+                          <Wrench className="h-3.5 w-3.5 shrink-0" />
+                          교체서비스 장착비:{" "}
                           {product.mountingFee > 0
                             ? `+${product.mountingFee.toLocaleString()}원`
                             : "무료"}
@@ -1696,6 +1696,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             선택 가능한 게이지가 없습니다.
                           </p>
                         )}
+                      </div>
+                    )}
+
+                    {isStringProduct && (
+                      <div className="rounded-xl border border-border bg-primary/5 p-3 text-sm leading-relaxed text-muted-foreground">
+                        <p className="font-semibold text-foreground">선택한 스트링은 교체서비스 신청과 함께 진행됩니다.</p>
+                        <p className="mt-1 break-keep">게이지·색상·수량을 확인한 뒤 장착 신청으로 이동하세요. 스트링 단품 구매 버튼은 운영 정책에 따라 노출되지 않습니다.</p>
                       </div>
                     )}
 
