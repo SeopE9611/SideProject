@@ -562,6 +562,8 @@ export default function ApplicationsClient() {
             const hasOrderLink = Boolean(orderId);
             const hasRentalLink = !hasOrderLink && Boolean(rentalId);
             const isLinkedApplication = Boolean(orderId || rentalId);
+            const canShowInboundTracking =
+              isStringService && needsInboundTracking && !isLinkedApplication;
 
             // 종료 상태(수정 금지)
             const CLOSED = ["작업 중", "교체완료"];
@@ -904,7 +906,7 @@ export default function ApplicationsClient() {
                         <Link
                           href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders`}
                         >
-                          원 주문 보기
+                          주문 상세
                         </Link>
                       </Button>
                     ) : null}
@@ -918,12 +920,12 @@ export default function ApplicationsClient() {
                         <Link
                           href={`/mypage?tab=orders&flowType=rental&flowId=${rentalId}&from=orders`}
                         >
-                          원 대여 보기
+                          대여 상세
                         </Link>
                       </Button>
                     ) : null}
 
-                    {isSelfShip &&
+                    {canShowInboundTracking &&
                       (isClosed ? (
                         <Button
                           data-cy="mypage-application-shipping-cta"
@@ -948,7 +950,7 @@ export default function ApplicationsClient() {
                             )
                           }
                         >
-                          {hasTracking ? "운송장 수정하기" : "운송장 등록하기"}
+                          {hasTracking ? "라켓 발송 수정" : "라켓 발송 등록"}
                         </Button>
                       ))}
 
