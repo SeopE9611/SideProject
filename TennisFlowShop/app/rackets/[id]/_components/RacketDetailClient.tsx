@@ -669,7 +669,7 @@ export default function RacketDetailClient({
                         이 라켓으로 무엇을 할까요?
                       </h2>
                       <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
-                        스트링 선택 후 구매하거나 대여 일정을 선택할 수 있어요.
+                        구매 시 다음 단계에서 스트링을 선택하고 장착 정보를 함께 확인합니다. 라켓만 바로 결제되지 않아요.
                       </p>
                     </div>
                     <div className="grid grid-cols-1 gap-2.5">
@@ -689,7 +689,7 @@ export default function RacketDetailClient({
                         }
                       >
                         <ShoppingCart className="mr-2 h-4 w-4" />
-                        {soldOut ? "품절(구매 불가)" : "스트링 선택 후 구매"}
+                        {soldOut ? "품절(구매 불가)" : "스트링 선택하고 구매 계속"}
                       </Button>
 
                       {racket?.rental?.enabled ? (
