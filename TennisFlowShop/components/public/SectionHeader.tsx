@@ -24,26 +24,33 @@ export function SectionHeader({
   return (
     <div
       className={cn(
-        "flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between",
+        "flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between",
         centered && "items-center text-center sm:flex-col sm:items-center",
         className,
       )}
     >
       <div className="max-w-2xl space-y-2">
         {eyebrow && (
-          <div className="text-sm font-medium text-primary">{eyebrow}</div>
+          <div className="text-xs font-semibold uppercase tracking-[0.14em] text-primary sm:text-sm">
+            {eyebrow}
+          </div>
         )}
-        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+        <h2 className="text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl">
           {title}
         </h2>
         {description && (
-          <div className="text-sm text-muted-foreground sm:text-base">
+          <div className="text-sm leading-relaxed text-muted-foreground sm:text-base">
             {description}
           </div>
         )}
       </div>
       {actions && (
-        <div className={cn("shrink-0", centered && "flex justify-center")}>
+        <div
+          className={cn(
+            "flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center",
+            centered && "justify-center",
+          )}
+        >
           {actions}
         </div>
       )}

@@ -8,9 +8,9 @@ type PublicSurfaceProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 const variants = {
-  default: "bg-card",
-  muted: "bg-muted/40",
-  elevated: "bg-card shadow-sm",
+  default: "bg-card shadow-sm",
+  muted: "bg-muted/30 shadow-sm",
+  elevated: "bg-card shadow-md",
 };
 
 const paddings = {
@@ -29,7 +29,7 @@ export function PublicSurface({
   return (
     <div
       className={cn(
-        "rounded-xl border border-border text-foreground",
+        "rounded-2xl border border-border text-card-foreground",
         variants[variant],
         paddings[padding],
         className,
