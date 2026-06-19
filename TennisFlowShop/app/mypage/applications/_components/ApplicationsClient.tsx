@@ -876,7 +876,7 @@ export default function ApplicationsClient() {
                     <p className="text-sm text-muted-foreground">
                       {hasOrderLink
                         ? "이 교체서비스는 연결된 주문의 구매확정과 함께 처리됩니다."
-                        : "이 교체서비스는 연결된 대여의 이용확정과 함께 처리됩니다."}
+                        : "이 교체서비스는 연결된 대여의 수령확인과 함께 처리됩니다."}
                     </p>
                   ) : null}
 

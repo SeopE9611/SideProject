@@ -981,7 +981,7 @@ export default function ReviewWritePage() {
               ? "상품과 교체서비스 경험을 함께 평가해주세요."
               : mode === "product"
                 ? "이용 경험을 남겨주세요."
-                : "구매확정 또는 이용확정이 완료된 내역에서 후기를 작성할 수 있습니다."}
+                : "구매확정 또는 수령확인이 완료된 내역에서 후기를 작성할 수 있습니다."}
           </p>
         </header>
 
@@ -1138,7 +1138,7 @@ export default function ReviewWritePage() {
                               작성 가능한 이용 내역이 없습니다.
                             </p>
                             <p className="text-muted-foreground">
-                              구매확정 또는 이용확정이 완료된 내역에서 후기를 작성할 수 있습니다.
+                              구매확정 또는 수령확인이 완료된 내역에서 후기를 작성할 수 있습니다.
                             </p>
                             <button
                               type="button"
@@ -1167,7 +1167,7 @@ export default function ReviewWritePage() {
                               상품+교체서비스 후기 대상입니다.
                             </p>
                             <p className="text-muted-foreground">
-                              연결된 교체서비스 이용확정 후 상품과 서비스 경험을 함께 남겨주세요.
+                              연결된 교체서비스 수령확인 후 상품과 서비스 경험을 함께 남겨주세요.
                             </p>
                           </div>
                         )}
@@ -1180,7 +1180,7 @@ export default function ReviewWritePage() {
                     <div className="rounded-2xl border border-border bg-muted/30 p-4 text-sm text-foreground">
                       <p className="font-medium">작성할 후기를 찾을 수 없어요.</p>
                       <p className="mt-1 text-muted-foreground">
-                        구매확정 또는 이용확정이 완료된 내역에서 후기를 작성할 수 있습니다.
+                        구매확정 또는 수령확인이 완료된 내역에서 후기를 작성할 수 있습니다.
                       </p>
                     </div>
                   )}
