@@ -4,6 +4,7 @@ import { FilterPanel } from "@/app/products/components/FilterPanel";
 import ProductCard from "@/app/products/components/ProductCard";
 import { useInfiniteProducts } from "@/app/products/hooks/useInfiniteProducts";
 import AsyncState from "@/components/system/AsyncState";
+import { EmptyState, SummaryCard } from "@/components/public";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -737,35 +738,45 @@ export default function FilterableProductList({
       <div>
         {/* 상품 목록 */}
         <div className="min-w-0">
-          <div className="mb-6 bp-md:mb-8 space-y-3">
-            <div className="rounded-lg border border-border bg-muted/40 px-3 py-2.5 bp-sm:px-4">
-              <div
-                className="flex min-h-6 flex-wrap items-center gap-x-1 text-base font-semibold tabular-nums text-foreground bp-sm:text-lg"
-                aria-live="polite"
-              >
-                {productCountPrefix}{" "}
-                {isCountLoading ? (
-                  <Skeleton className="inline-block h-5 w-12 align-middle" />
-                ) : (
-                  <span className="text-primary font-bold">{total}</span>
-                )}
-                개
-                {isCountLoading ? (
-                  <Skeleton className="inline-block h-5 w-10 align-middle" />
-                ) : (
-                  <span className="ml-1 text-sm font-normal text-muted-foreground">
-                    (표시중 {loadedCount}개)
-                  </span>
-                )}
+          <div className="mb-6 space-y-3 bp-md:mb-8">
+            <SummaryCard
+              className="overflow-hidden"
+              contentClassName="p-4 bp-sm:p-5"
+            >
+              <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-end bp-sm:justify-between">
+                <div className="min-w-0 space-y-1">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+                    String Catalog
+                  </p>
+                  <div
+                    className="flex min-h-6 flex-wrap items-center gap-x-1 text-base font-semibold tabular-nums text-foreground bp-sm:text-lg"
+                    aria-live="polite"
+                  >
+                    {productCountPrefix}{" "}
+                    {isCountLoading ? (
+                      <Skeleton className="inline-block h-5 w-12 align-middle" />
+                    ) : (
+                      <span className="font-bold text-primary">{total}</span>
+                    )}
+                    개
+                    {isCountLoading ? (
+                      <Skeleton className="inline-block h-5 w-10 align-middle" />
+                    ) : (
+                      <span className="ml-1 text-sm font-normal text-muted-foreground">
+                        (표시중 {loadedCount}개)
+                      </span>
+                    )}
+                  </div>
+                </div>
                 {isBackgroundRefreshing ? (
-                  <span className="ml-1 text-xs font-medium text-muted-foreground">
+                  <span className="w-fit rounded-full border border-border bg-muted/30 px-2.5 py-1 text-xs font-medium text-muted-foreground">
                     조회 중...
                   </span>
                 ) : null}
               </div>
-            </div>
+            </SummaryCard>
             {activeFiltersCount > 0 && (
-              <div className="rounded-lg border border-border bg-card p-3 bp-sm:p-4">
+              <div className="rounded-2xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <p className="text-sm font-medium text-foreground">
                     적용 중인 조건
@@ -920,7 +931,7 @@ export default function FilterableProductList({
               </div>
             )}
 
-            <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-3">
+            <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-3 shadow-sm bp-sm:flex-row bp-sm:items-center">
               <Button
                 type="button"
                 variant="outline"
@@ -929,14 +940,14 @@ export default function FilterableProductList({
                   if (showFilters) cancelFiltersSheet();
                   else openFiltersSheet();
                 }}
-                className="h-9 min-w-[88px] shrink-0 whitespace-nowrap border-border px-3 hover:bg-primary/10 dark:hover:bg-primary/20"
+                className="h-10 w-full min-w-[88px] shrink-0 whitespace-nowrap border-border px-3 hover:bg-muted/30 bp-sm:h-9 bp-sm:w-auto"
                 aria-expanded={showFilters}
                 aria-label={showFilters ? "필터 닫기" : "필터 열기"}
               >
                 <Filter className="mr-2 h-4 w-4" />
                 필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
               </Button>
-              <div className="ml-auto flex min-w-[160px] flex-1 items-center justify-end gap-3 bp-sm:flex-initial">
+              <div className="flex w-full min-w-0 flex-1 items-center justify-end gap-3 bp-sm:ml-auto bp-sm:w-auto bp-sm:flex-initial">
                 {/* 뷰 모드 토글 */}
                 {!isMobileViewport && (
                   <div className="flex shrink-0 items-center rounded-lg border border-border bg-card p-1">
@@ -967,7 +978,7 @@ export default function FilterableProductList({
 
                 {/* 정렬 */}
                 <Select value={sortOption} onValueChange={setSortOption}>
-                  <SelectTrigger className="h-9 min-w-[160px] flex-1 rounded-lg border-border bg-background text-sm focus:border-border bp-sm:w-[180px] bp-sm:flex-none dark:focus:border-border">
+                  <SelectTrigger className="h-10 min-w-0 flex-1 rounded-xl border-border bg-background text-sm focus:border-border bp-sm:h-9 bp-sm:w-[180px] bp-sm:flex-none dark:focus:border-border">
                     <SelectValue placeholder="정렬" />
                   </SelectTrigger>
                   <SelectContent className="border-border dark:bg-card">
@@ -996,7 +1007,7 @@ export default function FilterableProductList({
                   (_, index) => (
                     <div
                       key={`products-loading-skeleton-${index}`}
-                      className="rounded-xl border border-border bg-card p-4"
+                      className="rounded-2xl border border-border bg-card p-4 shadow-sm"
                     >
                       <Skeleton className="mb-4 aspect-[4/3] w-full rounded-lg" />
                       <Skeleton className="h-5 w-2/3" />
@@ -1015,27 +1026,26 @@ export default function FilterableProductList({
               onAction={() => resetInfinite()}
             />
           ) : canShowEmptyState ? (
-            <div className="space-y-4">
-              <AsyncState
-                kind="empty"
-                variant="page-center"
-                title="검색 결과가 없습니다"
-                description={
-                  activeFiltersCount > 0
-                    ? "조건에 맞는 상품이 없습니다. 필터를 줄이거나 전체 초기화를 눌러 다시 확인해보세요."
-                    : "다른 검색어나 필터를 시도해보세요"
-                }
-                icon={<Search className="h-4 w-4" />}
-              />
-              <Button
-                type="button"
-                onClick={handleResetAll}
-                variant="outline"
-                className="border-border hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent"
-              >
-                필터 초기화
-              </Button>
-            </div>
+            <EmptyState
+              title="검색 결과가 없습니다"
+              description={
+                activeFiltersCount > 0
+                  ? "조건에 맞는 상품이 없습니다. 필터를 줄이거나 전체 초기화를 눌러 다시 확인해보세요."
+                  : "다른 검색어나 필터를 시도해보세요"
+              }
+              icon={<Search className="h-5 w-5" />}
+              action={
+                <Button
+                  type="button"
+                  onClick={handleResetAll}
+                  variant="outline"
+                  className="border-border bg-transparent hover:bg-muted/30"
+                >
+                  필터 초기화
+                </Button>
+              }
+              className="rounded-2xl bg-card shadow-sm"
+            />
           ) : (
             <>
               <div
@@ -1076,7 +1086,7 @@ export default function FilterableProductList({
                     variant="outline"
                     onClick={loadMore}
                     disabled={isFetchingMore}
-                    className="min-w-[140px]"
+                    className="min-w-[140px] rounded-xl border-border hover:bg-muted/30"
                     aria-label="상품 더 불러오기"
                   >
                     {isFetchingMore ? "불러오는 중..." : "상품 더 보기"}
@@ -1090,7 +1100,7 @@ export default function FilterableProductList({
                   {Array.from({ length: 4 }).map((_, index) => (
                     <div
                       key={`products-fetching-skeleton-${index}`}
-                      className="rounded-xl border border-border bg-card p-4"
+                      className="rounded-2xl border border-border bg-card p-4 shadow-sm"
                     >
                       <Skeleton className="mb-4 aspect-[4/3] w-full rounded-lg" />
                       <Skeleton className="h-5 w-2/3" />
