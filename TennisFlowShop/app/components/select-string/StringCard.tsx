@@ -56,7 +56,7 @@ type StringCardProps = {
   workCount?: number;
   ctaLabel?: string;
   ctaSubLabel?: string;
-  designVariant?: "default" | "racketPurchase";
+  designVariant?: "default" | "racketPurchase" | "rental";
 };
 
 export function StringCard({
