@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { cookies } from "next/headers";
 import LoginGate from "@/components/system/LoginGate";
+import { Badge } from "@/components/ui/badge";
 
 import type { Metadata } from "next";
 
@@ -62,18 +63,67 @@ export default async function SelectStringPage({ params }: PageProps) {
   // 라켓 구매 주문이 아니면 선택 모드로 올 수 없음
   if (!hasRacket) notFound();
 
+  const racketItem = order.items.find((it: any) => it?.kind === "racket");
+  const racketName = String(racketItem?.name ?? "주문 라켓");
+  const racketQuantity =
+    typeof racketItem?.quantity === "number" ? racketItem.quantity : undefined;
+  const racketPrice =
+    typeof racketItem?.price === "number" ? racketItem.price : undefined;
+
   // 통과: 기존 화면 렌더
   return (
-    <div className="container mx-auto px-4 md:px-6 py-8 md:py-12 space-y-6">
-      <div className="max-w-3xl space-y-2">
-        <h1 className="text-2xl font-semibold">스트링을 선택해 주세요</h1>
-        <p className="text-sm text-muted-foreground">
-          주문 ID: <span className="font-mono">{orderId}</span>
-        </p>
-        <div className="rounded-lg border border-border bg-card p-4 text-sm text-foreground">
-          선택한 스트링은 기존 라켓 주문과 연결되어 교체서비스 신청에
-          사용됩니다. 선택 후 장착 정보 입력 단계로 이어집니다.
+    <div className="container mx-auto space-y-5 px-4 py-6 md:px-6 md:py-8">
+      <div className="space-y-4">
+        <div className="max-w-3xl space-y-2">
+          <Badge variant="secondary" className="rounded-full">
+            라켓 주문 스트링 선택
+          </Badge>
+          <h1 className="break-keep text-2xl font-semibold tracking-tight md:text-3xl">
+            주문 라켓에 장착할 스트링을 선택하세요
+          </h1>
+          <p className="break-keep text-sm leading-relaxed text-muted-foreground">
+            기존 라켓 주문에 연결할 스트링과 옵션을 선택한 뒤 장착 정보 입력
+            단계로 진행합니다.
+          </p>
         </div>
+
+        <section className="rounded-2xl border border-border bg-card p-4 shadow-sm md:p-5">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div className="min-w-0 space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">
+                주문 라켓
+              </p>
+              <h2 className="break-keep text-base font-semibold text-foreground md:text-lg">
+                {racketName}
+              </h2>
+              <p className="break-all font-mono text-xs text-muted-foreground">
+                주문 ID: {orderId}
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-sm md:min-w-56">
+              {racketQuantity != null && (
+                <div className="rounded-xl border border-border bg-muted/20 px-3 py-2">
+                  <p className="text-xs text-muted-foreground">수량</p>
+                  <p className="mt-1 font-semibold tabular-nums">
+                    {racketQuantity.toLocaleString()}개
+                  </p>
+                </div>
+              )}
+              {racketPrice != null && (
+                <div className="rounded-xl border border-border bg-muted/20 px-3 py-2">
+                  <p className="text-xs text-muted-foreground">라켓 금액</p>
+                  <p className="mt-1 font-semibold tabular-nums">
+                    {racketPrice.toLocaleString()}원
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="mt-4 rounded-xl border border-border bg-muted/20 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+            선택한 스트링은 위 주문 라켓과 연결되어 교체서비스 신청에
+            사용됩니다.
+          </div>
+        </section>
       </div>
       <SelectStringClient orderId={orderId} />
     </div>
