@@ -701,9 +701,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
       ? [
           {
             id: "discount",
-            label: "할인 적용",
-            value: `${saleRate}% OFF`,
-            description: `정가 ${regularPrice.toLocaleString()}원 기준`,
+            label: "상품 할인",
+            value: `-${((regularPrice - salePrice) * quantity).toLocaleString()}원`,
+            description: `${saleRate}% OFF 적용`,
           } satisfies PriceSummaryRow,
         ]
       : []),
@@ -711,12 +711,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
       ? [
           {
             id: "mounting",
-            label: "교체서비스 장착비",
+            label: "교체서비스 선택 시 장착비",
             value:
               product.mountingFee > 0
                 ? `+${product.mountingFee.toLocaleString()}원`
                 : "무료",
-            description: "장착 서비스 선택 시 적용",
+            description: "교체서비스 신청 시 적용",
           } satisfies PriceSummaryRow,
         ]
       : []),
@@ -1895,7 +1895,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 </Button>
                               ) : undefined
                             }
-                            className="sm:w-full"
+                            className="sm:w-full sm:flex-col sm:items-stretch sm:[&>div>*]:w-full"
                           />
                           {renderWishlistButton()}
                         </div>
