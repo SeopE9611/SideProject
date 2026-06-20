@@ -56,6 +56,7 @@ type StringCardProps = {
   workCount?: number;
   ctaLabel?: string;
   ctaSubLabel?: string;
+  designVariant?: "default" | "racketPurchase";
 };
 
 export function StringCard({
@@ -70,7 +71,9 @@ export function StringCard({
   workCount = 1,
   ctaLabel = "스트링 선택",
   ctaSubLabel,
+  designVariant = "default",
 }: StringCardProps) {
+  const isRacketPurchaseDesign = designVariant === "racketPurchase";
   const stringId = String(product._id);
   const stringImage = product?.images?.[0] ?? product?.imageUrl;
   const hasVariantInventories =
@@ -169,10 +172,10 @@ export function StringCard({
   return (
     <div
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-2xl border bg-card transition-all duration-200",
+        "group relative flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-200",
         isSelected
-          ? "border-primary ring-2 ring-primary/20 shadow-sm"
-          : "border-border hover:border-primary/40 hover:shadow-sm",
+          ? cn("border-primary/40 bg-primary/5", !isRacketPurchaseDesign && "ring-2 ring-primary/20")
+          : "border-border hover:border-primary/40 hover:bg-muted/20",
         isSoldOut && "opacity-60",
       )}
     >
@@ -186,7 +189,7 @@ export function StringCard({
       )}
 
       {/* Image */}
-      <div className="relative aspect-square w-full overflow-hidden bg-secondary/30">
+      <div className={cn("relative w-full overflow-hidden bg-muted/20", isRacketPurchaseDesign ? "aspect-[4/3]" : "aspect-square")}>
         {stringImage ? (
           <Image
             src={stringImage}
@@ -210,7 +213,7 @@ export function StringCard({
       </div>
 
       {/* Content */}
-      <div className="flex flex-1 flex-col p-4">
+      <div className={cn("flex flex-1 flex-col", isRacketPurchaseDesign ? "p-3 bp-md:p-4" : "p-4")}>
         {/* Title & Price */}
         <div className="mb-3 space-y-1.5">
           <h3 className="line-clamp-2 min-w-0 break-keep text-sm font-semibold leading-tight text-foreground bp-md:text-base">
@@ -398,7 +401,7 @@ export function StringCard({
 
         {/* CTA Button */}
         <Button
-          className="mt-3 w-full justify-center gap-2 break-keep"
+          className="mt-3 h-10 w-full justify-center gap-2 whitespace-normal break-keep rounded-xl"
           disabled={isDisabled}
           onClick={onSelect}
         >
@@ -408,7 +411,7 @@ export function StringCard({
         <Button
           asChild
           variant="outline"
-          className="mt-2 w-full justify-center gap-2 break-keep"
+          className="mt-2 h-10 w-full justify-center gap-2 whitespace-normal break-keep rounded-xl"
         >
           <Link
             href={`/products/${product._id}`}
