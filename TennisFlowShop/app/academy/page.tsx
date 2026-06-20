@@ -1,4 +1,6 @@
 import SiteContainer from "@/components/layout/SiteContainer";
+import { EmptyState } from "@/components/public/EmptyState";
+import { PublicPageHero } from "@/components/public/PublicPageHero";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -38,7 +39,6 @@ import {
 } from "lucide-react";
 import type { Document } from "mongodb";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -289,94 +289,62 @@ export default async function AcademyPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       {/* Hero Section */}
-      <section className="border-b border-border bg-muted/30 py-12 md:py-16">
-        <SiteContainer variant="default">
-          <div className="grid gap-10 lg:grid-cols-[1fr_400px] lg:items-center lg:gap-16">
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground md:text-5xl lg:text-6xl">
-                  도깨비테니스 아카데미
-                </h1>
-                <p className="max-w-xl text-pretty text-sm leading-relaxed text-muted-foreground bp-sm:text-base md:text-lg">
-                  아카데미는 스트링/라켓 장비 서비스와 별도의 레슨 신청
-                  흐름입니다. 입문자부터 실전 플레이어까지, 목표와 레벨에 맞춘
-                  수업 방향을 상담하며 함께 찾아보세요.
-                </p>
+      <PublicPageHero
+        eyebrow="Dokebi Tennis Academy"
+        title="도깨비테니스 아카데미"
+        description={
+          <p className="break-keep leading-relaxed">
+            입문자부터 실전 플레이어까지, 목표와 레벨에 맞춘 레슨 방향을 상담하고
+            신청할 수 있는 아카데미 안내 페이지입니다.
+          </p>
+        }
+        actions={
+          <>
+            <Button
+              asChild
+              size="lg"
+              wrap="responsive"
+              className="h-12 w-full px-8 text-base bp-sm:w-auto"
+            >
+              <Link
+                href={
+                  userId
+                    ? "/academy/apply"
+                    : `/login?next=${encodeURIComponent("/academy/apply")}`
+                }
+              >
+                <GraduationCap className="mr-2 h-5 w-5" />
+                {userId ? "아카데미 신청하기" : "로그인 후 신청"}
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              wrap="responsive"
+              className="h-12 w-full px-8 text-base bp-sm:w-auto"
+            >
+              <Link href="/board/qna/write?category=academy">
+                <MessageCircle className="mr-2 h-5 w-5" />
+                문의하기
+              </Link>
+            </Button>
+          </>
+        }
+      >
+        <div className="grid gap-4 bp-sm:grid-cols-3">
+          {["1:1 맞춤 레슨", "유연한 일정 조율", "레벨별 맞춤 커리큘럼"].map(
+            (item) => (
+              <div
+                key={item}
+                className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-foreground shadow-sm"
+              >
+                {item}
               </div>
-
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Button
-                  asChild
-                  size="lg"
-                  wrap="responsive"
-                  className="h-12 w-full px-8 text-base sm:w-auto"
-                >
-                  <Link
-                    href={
-                      userId
-                        ? "/academy/apply"
-                        : `/login?next=${encodeURIComponent("/academy/apply")}`
-                    }
-                  >
-                    <GraduationCap className="mr-2 h-5 w-5" />
-                    {userId ? "레슨 신청하기" : "로그인 후 신청"}
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  wrap="responsive"
-                  className="h-12 w-full px-8 text-base sm:w-auto"
-                >
-                  <Link href="/board/qna/write?category=academy">
-                    <MessageCircle className="mr-2 h-5 w-5" />
-                    문의하기
-                  </Link>
-                </Button>
-              </div>
-
-              {/* Quick Stats */}
-              <div className="flex flex-wrap gap-6 pt-4">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                    <Users className="h-4 w-4 text-primary" />
-                  </div>
-                  <span>1:1 맞춤 레슨</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                    <Calendar className="h-4 w-4 text-primary" />
-                  </div>
-                  <span>유연한 일정 조율</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                    <CheckCircle2 className="h-4 w-4 text-primary" />
-                  </div>
-                  <span>레벨별 맞춤 커리큘럼</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Hero Image */}
-            <div className="relative hidden lg:block">
-              <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-muted/20 shadow-xl">
-                <Image
-                  src="/brand/academy-hero-tennis-court.webp"
-                  alt="도깨비테니스 아카데미 레슨 장면"
-                  width={1122}
-                  height={1402}
-                  priority
-                  sizes="(min-width: 1024px) 400px, 100vw"
-                  className="h-[480px] w-full object-cover object-center"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
-              </div>
-            </div>
-          </div>
-        </SiteContainer>
-      </section>
+            ),
+          )}
+        </div>
+      </PublicPageHero>
 
       <SiteContainer
         variant="default"
@@ -405,7 +373,7 @@ export default async function AcademyPage() {
               return (
                 <Card
                   key={program.category}
-                  className="group relative flex h-full flex-col overflow-hidden border-border bg-card shadow-sm transition-colors hover:border-primary/40"
+                  className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-colors hover:border-primary/40"
                 >
                   <CardHeader className="space-y-4 pb-4">
                     <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
@@ -423,16 +391,16 @@ export default async function AcademyPage() {
                       <CardTitle className="text-xl">
                         {program.category}
                       </CardTitle>
-                      <CardDescription className="break-keep text-sm leading-relaxed">
+                      <p className="break-keep text-sm leading-relaxed text-muted-foreground">
                         {program.description}
-                      </CardDescription>
+                      </p>
                     </div>
                   </CardHeader>
                   <CardContent className="flex flex-1 flex-col gap-3 pt-0">
                     {program.items.map((item) => (
                       <div
                         key={`${program.category}-${item.title}-${item.detail}`}
-                        className="rounded-xl border border-border bg-muted/30 p-4 transition-colors hover:bg-muted/50"
+                        className="rounded-xl border border-border bg-muted/20 p-4 transition-colors hover:bg-muted/30"
                       >
                         <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
                           <div className="min-w-0">
@@ -482,7 +450,7 @@ export default async function AcademyPage() {
             {academyContacts.map((contact) => (
               <Card
                 key={contact.phone}
-                className="group border-border bg-card shadow-sm transition-colors hover:border-primary/40"
+                className="group rounded-2xl border border-border bg-card shadow-sm transition-colors hover:border-primary/40"
               >
                 <CardContent className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
                   <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary/10 transition-colors group-hover:bg-primary/15">
@@ -548,7 +516,7 @@ export default async function AcademyPage() {
                 return (
                   <Card
                     key={academyClass._id}
-                    className={`group flex h-full flex-col border-border bg-card shadow-sm transition-colors ${isClosed ? "opacity-75" : "hover:border-primary/40"}`}
+                    className={`group flex h-full flex-col rounded-2xl border border-border bg-card shadow-sm transition-colors ${isClosed ? "opacity-75" : "hover:border-primary/40"}`}
                   >
                     <CardHeader className="space-y-4 pb-4">
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -577,8 +545,8 @@ export default async function AcademyPage() {
                           "도깨비테니스에서 레벨과 목표에 맞춰 안내하는 아카데미 클래스입니다."}
                       </p>
 
-                      <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
-                        <div className="flex min-w-0 items-center gap-3 text-sm">
+                      <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-4">
+                        <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] gap-3 text-sm">
                           <User className="h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             강사
@@ -587,7 +555,7 @@ export default async function AcademyPage() {
                             {academyClass.instructorName || "상담 후 안내"}
                           </span>
                         </div>
-                        <div className="flex min-w-0 items-center gap-3 text-sm">
+                        <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] gap-3 text-sm">
                           <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             장소
@@ -596,23 +564,23 @@ export default async function AcademyPage() {
                             {academyClass.location || "상담 후 안내"}
                           </span>
                         </div>
-                        <div className="flex min-w-0 items-start gap-3 text-sm">
+                        <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] items-start gap-3 text-sm">
                           <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             일정
                           </span>
-                          <div className="min-w-0 space-y-1 whitespace-normal break-keep break-words">
-                            <p className="break-keep text-sm font-semibold leading-relaxed text-foreground">
+                          <div className="min-w-0 space-y-1 whitespace-normal break-keep break-words leading-relaxed">
+                            <p className="text-sm font-semibold text-foreground">
                               {scheduleDisplay.daysText}
                             </p>
                             {scheduleDisplay.timeText && (
-                              <p className="break-keep break-words text-sm leading-relaxed text-muted-foreground">
+                              <p className="text-sm text-muted-foreground">
                                 {scheduleDisplay.timeText}
                               </p>
                             )}
                           </div>
                         </div>
-                        <div className="flex min-w-0 items-center gap-3 text-sm">
+                        <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] gap-3 text-sm">
                           <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             정원
@@ -624,7 +592,7 @@ export default async function AcademyPage() {
                               : "상담 후 안내"}
                           </span>
                         </div>
-                        <div className="flex min-w-0 items-center gap-3 text-sm">
+                        <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] gap-3 text-sm">
                           <Wallet className="h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             가격
@@ -641,7 +609,7 @@ export default async function AcademyPage() {
                             asChild
                             variant="outline"
                             wrap="responsive"
-                            className="w-full border-primary/30 bg-primary/5 text-primary hover:border-primary/50 hover:bg-primary/10"
+                            className="h-11 w-full border-primary/30 bg-primary/5 text-primary hover:border-primary/50 hover:bg-primary/10"
                           >
                             <Link
                               href={`/mypage/academy-applications/${existingApplication.id}`}
@@ -655,7 +623,7 @@ export default async function AcademyPage() {
                             <Button
                               disabled
                               variant="secondary"
-                              className="flex-1"
+                              className="h-11 flex-1"
                             >
                               모집 마감
                             </Button>
@@ -663,7 +631,7 @@ export default async function AcademyPage() {
                               asChild
                               variant="outline"
                               wrap="responsive"
-                              className="flex-1"
+                              className="h-11 flex-1"
                             >
                               <Link href="/board/qna/write?category=academy">
                                 문의하기
@@ -671,7 +639,7 @@ export default async function AcademyPage() {
                             </Button>
                           </div>
                         ) : (
-                          <Button asChild wrap="responsive" className="w-full">
+                          <Button asChild wrap="responsive" className="h-11 w-full">
                             <Link href={userId ? applyHref : loginHref}>
                               {userId ? "레슨 신청하기" : "로그인 후 신청"}
                             </Link>
@@ -684,24 +652,17 @@ export default async function AcademyPage() {
               })}
             </div>
           ) : (
-            <Card className="border-border bg-muted/30">
-              <CardContent className="flex flex-col items-center justify-center gap-4 py-16 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                  <GraduationCap className="h-8 w-8 text-muted-foreground" />
-                </div>
-                <div className="space-y-2">
-                  <p className="text-lg font-medium text-foreground">
-                    현재 모집 중인 클래스가 없습니다
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    새로운 클래스가 열리면 안내해 드리겠습니다.
-                  </p>
-                </div>
+            <EmptyState
+              icon={<GraduationCap className="h-8 w-8" />}
+              title="현재 모집 중인 클래스가 없습니다"
+              description="새로운 클래스가 열리면 안내해 드리겠습니다."
+              action={
                 <Button asChild variant="outline">
                   <Link href="/board/qna/write?category=academy">문의하기</Link>
                 </Button>
-              </CardContent>
-            </Card>
+              }
+              className="rounded-2xl bg-card shadow-sm"
+            />
           )}
         </section>
 
@@ -723,7 +684,7 @@ export default async function AcademyPage() {
             {faqs.map((faq, index) => (
               <Card
                 key={faq.question}
-                className="group border-border/60 bg-card transition-all duration-300 hover:border-primary/30 hover:shadow-md"
+                className="group rounded-2xl border border-border bg-card shadow-sm transition-colors hover:border-primary/30"
               >
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-start gap-3 text-base font-semibold">
