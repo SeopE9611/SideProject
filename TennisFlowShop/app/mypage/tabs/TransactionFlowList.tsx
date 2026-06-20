@@ -5,6 +5,8 @@ import OrdersScopeTabs, { parseOrdersScope } from "@/app/mypage/_components/Orde
 import { getMypageNormalizedStatus, getMypagePaymentStatusLabel, getMypageUserStatusLabel } from "@/app/mypage/_lib/status-label";
 import ActivityOrderReviewCTA from "@/app/mypage/tabs/_components/ActivityOrderReviewCTA";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
+import { EmptyState } from "@/components/public/EmptyState";
+import { PrimaryCTAGroup } from "@/components/public/PrimaryCTAGroup";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -456,7 +458,7 @@ function FlowListSkeleton() {
   return (
     <div className="space-y-4">
       {Array.from({ length: 3 }).map((_, idx) => (
-        <Card key={idx} className="border-0 bg-card">
+        <Card key={idx} className="border-border bg-card shadow-sm">
           <CardContent className="space-y-3 p-4 bp-sm:p-6">
             <Skeleton className="h-5 w-40" />
             <Skeleton className="h-4 w-52" />
@@ -782,7 +784,7 @@ export default function TransactionFlowList() {
       {/* Enhanced Filter Tabs */}
       <OrdersScopeTabs activeScope={scope} />
       {scope === "todo" ? (
-        <div className="rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5 dark:bg-primary/10">
+        <div className="rounded-xl border border-border bg-muted/30 px-3 py-2.5">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 shrink-0 text-primary" />
             <p className="break-keep text-xs font-medium text-foreground">지금 처리할 수 있는 구매확정, 운송장, 후기 작성 항목만 모았습니다.</p>
@@ -791,23 +793,13 @@ export default function TransactionFlowList() {
       ) : null}
       <p className="break-keep text-xs text-muted-foreground">주문·대여와 연결된 교체서비스를 함께 확인할 수 있습니다.</p>
       {items.length === 0 ? (
-        <Card className="border-0 bg-card">
-          <CardContent className="p-8 text-center">
-            <Package className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-            {scope === "todo" ? (
-              <div className="space-y-1">
-                <p className="text-sm font-semibold text-foreground/90">지금 처리할 일이 없습니다.</p>
-                <p className="text-sm text-muted-foreground">주문, 교체서비스, 대여 진행 중 필요한 작업이 생기면 이곳에 표시됩니다.</p>
-              </div>
-            ) : (
-              <p className="text-sm text-foreground/80">
-                {scope === "application" ? "표시할 서비스 신청이 없습니다." : scope === "rental" ? "표시할 대여 내역이 없습니다." : scope === "order" ? "표시할 주문 내역이 없습니다." : "표시할 거래/이용 내역이 없습니다."}
-              </p>
-            )}
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={<Package className="h-8 w-8" />}
+          title={scope === "todo" ? "지금 처리할 일이 없습니다." : scope === "application" ? "표시할 서비스 신청이 없습니다." : scope === "rental" ? "표시할 대여 내역이 없습니다." : scope === "order" ? "표시할 주문 내역이 없습니다." : "표시할 거래/이용 내역이 없습니다."}
+          description={scope === "todo" ? "주문, 교체서비스, 대여 진행 중 필요한 작업이 생기면 이곳에 표시됩니다." : "새 이용내역이 생기면 이곳에서 상태와 다음 행동을 확인할 수 있습니다."}
+        />
       ) : (
-        <div className="space-y-3 md:divide-y md:divide-border/70 md:space-y-0 md:border-y md:border-border/70">
+        <div className="space-y-3">
           {items.map((g) => {
             const orderId = g.order?.id ?? (g.kind === "order" ? g.detailTarget.id : undefined);
             const rentalId = g.rental?.id ?? (g.kind === "rental" ? g.detailTarget.id : undefined);
@@ -882,7 +874,7 @@ export default function TransactionFlowList() {
             return (
               <div
                 key={g.key}
-                className="grid gap-3 rounded-2xl border border-border bg-card px-4 py-4 shadow-sm transition-colors hover:bg-muted/30 md:rounded-none md:border-0 md:bg-transparent md:px-1 md:shadow-none bp-sm:px-4 md:grid-cols-[112px_minmax(0,1fr)_auto] md:items-start md:gap-4"
+                className="grid gap-3 rounded-2xl border border-border bg-card px-4 py-4 shadow-sm transition-colors hover:bg-muted/30 bp-sm:px-4 md:grid-cols-[112px_minmax(0,1fr)_auto] md:items-start md:gap-4"
               >
                 <div className="flex min-w-0 items-start justify-between gap-3 md:hidden">
                   <div className="min-w-0">
@@ -1258,31 +1250,38 @@ export default function TransactionFlowList() {
                           </Badge>
                         </div>
 
-                        <div className="grid w-full grid-cols-2 gap-2 md:flex md:w-full md:flex-col md:items-stretch [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-2.5 [&_a]:text-center [&_a]:text-xs [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap md:[&_a]:h-8 md:[&_a]:px-3 [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-2.5 [&_button]:text-center [&_button]:text-xs [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap md:[&_button]:h-8 md:[&_button]:px-3">
-                          {inlineActions.map((action) => (
-                            <Fragment key={action.key}>{action.node}</Fragment>
-                          ))}
-
-                          {secondaryActions.length > 0 ? (
-                            <button
-                              type="button"
-                              className={`group relative flex h-9 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 md:h-8 md:px-3 ${
-                                isSecondaryOpen ? "border-border bg-muted text-foreground shadow-none" : "border-border bg-background text-muted-foreground hover:bg-card hover:text-foreground"
-                              }`}
-                              onClick={() => setExpandedSecondaryKey((prev) => (prev === g.key ? null : g.key))}
-                            >
-                              <span>{isSecondaryOpen ? "닫기" : "더보기"}</span>
-                              <span
-                                className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold transition-colors duration-150 ${
-                                  isSecondaryOpen ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground group-hover:bg-secondary group-hover:text-foreground"
-                                }`}
-                              >
-                                {secondaryActions.length}
-                              </span>
-                              {isSecondaryOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                            </button>
-                          ) : null}
-                        </div>
+                        <PrimaryCTAGroup
+                          align="right"
+                          className="grid w-full grid-cols-2 gap-2 sm:w-full sm:grid-cols-2 sm:flex-none md:flex md:w-full md:flex-col md:items-stretch [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-2.5 [&_a]:text-center [&_a]:text-xs [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap md:[&_a]:h-8 md:[&_a]:px-3 [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-2.5 [&_button]:text-center [&_button]:text-xs [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap md:[&_button]:h-8 md:[&_button]:px-3"
+                          primary={inlineActions[0] ? <Fragment key={inlineActions[0].key}>{inlineActions[0].node}</Fragment> : null}
+                          secondary={inlineActions[1] ? <Fragment key={inlineActions[1].key}>{inlineActions[1].node}</Fragment> : null}
+                          tertiary={
+                            <>
+                              {inlineActions.slice(2).map((action) => (
+                                <Fragment key={action.key}>{action.node}</Fragment>
+                              ))}
+                              {secondaryActions.length > 0 ? (
+                                <button
+                                  type="button"
+                                  className={`group relative flex h-9 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 md:h-8 md:px-3 ${
+                                    isSecondaryOpen ? "border-border bg-muted text-foreground shadow-none" : "border-border bg-background text-muted-foreground hover:bg-card hover:text-foreground"
+                                  }`}
+                                  onClick={() => setExpandedSecondaryKey((prev) => (prev === g.key ? null : g.key))}
+                                >
+                                  <span>{isSecondaryOpen ? "닫기" : "더보기"}</span>
+                                  <span
+                                    className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold transition-colors duration-150 ${
+                                      isSecondaryOpen ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground group-hover:bg-secondary group-hover:text-foreground"
+                                    }`}
+                                  >
+                                    {secondaryActions.length}
+                                  </span>
+                                  {isSecondaryOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                                </button>
+                              ) : null}
+                            </>
+                          }
+                        />
                         {secondaryActions.length > 0 && isSecondaryOpen ? (
                           <div className="hidden w-full grid-cols-1 gap-1.5 rounded-xl border border-border/60 bg-muted/20 px-2 py-2 md:grid [&_a]:h-8 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-3 [&_a]:text-center [&_a]:text-xs [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-3 [&_button]:text-center [&_button]:text-xs [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap">
                             {secondaryActions.map((action) => (
