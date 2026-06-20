@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useInfiniteProducts } from "@/app/products/hooks/useInfiniteProducts";
+import { EmptyState } from "@/components/public/EmptyState";
+import { ResultState } from "@/components/public/ResultState";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -15,6 +17,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { stringColorLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { showErrorToast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import { Package, RotateCcw } from "lucide-react";
 
 type GaugeInventoryRow = {
   value: string;
@@ -382,24 +386,55 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
         {Array.from({ length: 6 }).map((_, idx) => (
           <div
             key={idx}
-            className="rounded-lg border border-border bg-card p-3 space-y-3"
+            className="space-y-3 rounded-2xl border border-border bg-card p-4 shadow-sm"
           >
             <Skeleton className="h-5 w-2/3" />
             <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-10 w-full rounded-xl" />
           </div>
         ))}
       </div>
     );
   if (error)
     return (
-      <div className="rounded-lg border border-border bg-card p-4 text-sm text-destructive">
-        목록을 불러오는 중 오류가 발생했습니다. {error}
-      </div>
+      <ResultState
+        status="error"
+        title="스트링 목록을 불러오지 못했습니다"
+        description={`잠시 후 다시 시도해주세요. ${error}`}
+        className="rounded-2xl border border-border bg-card shadow-sm"
+      />
     );
 
   return (
     <div className="space-y-4">
+      <div className="rounded-2xl border border-border bg-muted/30 px-4 py-3">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-foreground">
+              장착할 스트링 선택
+            </h2>
+            <p className="break-keep text-sm text-muted-foreground">
+              색상과 게이지를 확인한 뒤 원하는 스트링으로 다음 단계에
+              진행하세요.
+            </p>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            총{" "}
+            <span className="font-semibold text-foreground tabular-nums">
+              {mountableProducts.length}
+            </span>
+            개
+          </p>
+        </div>
+      </div>
+      {mountableProducts.length === 0 ? (
+        <EmptyState
+          icon={<Package className="h-10 w-10" />}
+          title="선택 가능한 스트링이 없습니다"
+          description="현재 장착 서비스로 선택할 수 있는 스트링 상품이 없습니다."
+          className="rounded-2xl bg-card shadow-sm"
+        />
+      ) : null}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {mountableProducts.map((p: SelectableStringProduct) => {
           const variants = normalizeVariantRows(p);
@@ -473,19 +508,50 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
             variantBlocked ||
             legacyColorBlocked ||
             legacyGaugeBlocked;
+          const selectedColorLabel =
+            effectiveColorRows.find((row) => row.value === selectedColor)
+              ?.label ?? selectedColor;
+          const selectedGaugeLabel =
+            gaugeRows.find((row) => row.value === selectedGauge)?.label ??
+            selectedGauge;
           return (
             <div
               key={p._id}
-              className="flex h-full flex-col rounded-lg border border-border bg-card p-3"
+              className="flex h-full min-w-0 flex-col rounded-2xl border border-border bg-card p-4 shadow-sm transition-colors hover:border-primary/40 hover:bg-muted/20"
             >
-              <div className="font-medium">{p.name}</div>
-              <div className="text-sm text-muted-foreground">
-                {typeof p.price === "number"
-                  ? `${p.price.toLocaleString()}원`
-                  : "가격 정보 없음"}
+              <div className="space-y-1.5">
+                <h3 className="line-clamp-2 break-keep text-base font-semibold leading-tight text-foreground">
+                  {p.name}
+                </h3>
+                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    스트링 금액
+                  </span>
+                  <span className="font-semibold tabular-nums text-foreground">
+                    {typeof p.price === "number"
+                      ? `${p.price.toLocaleString()}원`
+                      : "가격 정보 없음"}
+                  </span>
+                </div>
+                {typeof p.mountingFee === "number" && (
+                  <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                    <span>장착비</span>
+                    <span className="tabular-nums">
+                      {p.mountingFee.toLocaleString()}원
+                    </span>
+                  </div>
+                )}
               </div>
-              <div className="mt-3 space-y-2">
-                <div className="text-xs font-medium">색상 선택</div>
+
+              <div className="mt-4 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-xs font-medium">색상</div>
+                  {selectedColor ? (
+                    <div className="truncate text-xs text-muted-foreground">
+                      {selectedColorLabel}
+                    </div>
+                  ) : null}
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {(hasVariantInventories
                     ? effectiveColorRows.map((colorRow) => {
@@ -541,7 +607,13 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                           [p._id]: row.value,
                         }))
                       }
-                      className={`flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${selectedColor === row.value ? "border-primary ring-2 ring-primary/30" : "border-border"} ${row.disabled ? "opacity-50 cursor-not-allowed" : "hover:border-primary/60"}`}
+                      className={cn(
+                        "flex min-h-9 max-w-full items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs transition-colors",
+                        selectedColor === row.value
+                          ? "border-primary/40 bg-primary/5 text-foreground"
+                          : "border-border bg-card hover:border-primary/50",
+                        row.disabled && "cursor-not-allowed opacity-50",
+                      )}
                     >
                       {row.image ? (
                         <img
@@ -564,8 +636,15 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                 </div>
               </div>
               {gaugeRows.length > 0 && (
-                <div className="mt-3 space-y-1">
-                  <div className="text-xs font-medium">게이지 선택</div>
+                <div className="mt-3 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-xs font-medium">게이지</div>
+                    {selectedGauge ? (
+                      <div className="truncate text-xs text-muted-foreground">
+                        {selectedGaugeLabel}
+                      </div>
+                    ) : null}
+                  </div>
                   <Select
                     value={selectedGauge}
                     onValueChange={(value) =>
@@ -575,7 +654,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                       }))
                     }
                   >
-                    <SelectTrigger className="h-9 w-full text-xs">
+                    <SelectTrigger className="h-10 w-full rounded-xl text-xs">
                       <SelectValue placeholder="게이지를 선택하세요" />
                     </SelectTrigger>
                     <SelectContent>
@@ -599,9 +678,19 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                   </Select>
                 </div>
               )}
+              <div className="mt-3 rounded-xl border border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+                <div className="flex items-center justify-between gap-3">
+                  <span>선택한 옵션</span>
+                  <span className="min-w-0 truncate text-right text-foreground">
+                    {[selectedColorLabel, selectedGaugeLabel]
+                      .filter(Boolean)
+                      .join(" · ") || "옵션 선택 필요"}
+                  </span>
+                </div>
+              </div>
               <Button
                 type="button"
-                className="mt-auto"
+                className="mt-4 h-10 w-full rounded-xl break-keep"
                 disabled={disableSelectButton}
                 onClick={() =>
                   handleSelectString(p, selectedGauge, selectedColor)
@@ -621,9 +710,16 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
           variant="outline"
           onClick={loadMore}
           disabled={isFetchingMore || !!addingProductId}
-          className="w-full"
+          className="h-10 w-full rounded-xl"
         >
-          {isFetchingMore ? "로딩 중..." : "더 보기"}
+          {isFetchingMore ? (
+            "로딩 중..."
+          ) : (
+            <span className="inline-flex items-center gap-2">
+              <RotateCcw className="h-4 w-4" />
+              더 보기
+            </span>
+          )}
         </Button>
       )}
     </div>
