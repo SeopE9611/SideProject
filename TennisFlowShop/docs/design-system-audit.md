@@ -132,3 +132,14 @@
    - 금액/배송/포인트/총합 row를 통일해 결제 화면 신뢰도를 높인다.
 6. `/mypage`에 `StatusBadge`, `SummaryCard`, `EmptyState` 적용
    - 주문/대여/신청 상태를 동일 tone으로 정리한다.
+
+## 10. 공용 디자인 컴포넌트 기준 코드화
+
+이번 단계에서는 실제 사용자 플로우를 바꾸지 않고, 후속 페이지 개선에서 반복 사용할 표현 전용 컴포넌트만 추가한다.
+
+- `SummaryCard`: 주문 요약, 신청 요약, 요금 요약, 상태 요약처럼 제목/설명/액션/본문/푸터가 필요한 요약 패널에 사용한다. 기본 표면은 `rounded-2xl border border-border bg-card shadow-sm` 기준을 따른다.
+- `PriceSummary`: 상품가, 장착비, 배송비, 포인트, 할인, 총액 등 이미 계산된 label/value row를 일관되게 표시한다. 금액 계산이나 상태 분기는 컴포넌트 내부에서 하지 않는다.
+- `EmptyState`: 이미 `components/public/EmptyState.tsx`에 title, description, action, 선택 icon 구조가 있으므로 신규 중복 구현 없이 유지한다.
+- `PrimaryCTAGroup`: 주요 CTA 1개와 보조 CTA 1~2개를 모바일 세로 full-width, 데스크톱 가로 배치로 정렬한다. 라우팅이나 클릭 상태 변경은 만들지 않고 전달받은 노드만 렌더링한다.
+- `StepIndicator`: 이미 `components/public/StepIndicator.tsx`에 steps/currentStep 기반 current/completed/upcoming 표현이 있으므로 신규 중복 구현 없이 유지한다.
+- `StatusBadge`: 신규 중복 구현은 하지 않는다. 새 사용처에서는 `components/ui/badge.tsx`의 `Badge`와 `lib/badge-style.ts`의 `*BadgeSpec`, `badgeToneVariant` 계열을 조합하는 방향으로 점진 적용한다.
