@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { PriceSummary, type PriceSummaryRow } from "@/components/public/PriceSummary";
+import { SummaryCard } from "@/components/public/SummaryCard";
 import {
   BadgeDollarSign,
   Box,
@@ -65,22 +66,128 @@ export default function PriceSummaryCard({
         ? "자가 발송: 없음"
         : "—";
 
-  return (
-    <Card className="overflow-hidden border border-border shadow-sm">
-      {/* Header */}
-      <div className="bg-muted/40 dark:bg-muted/30 text-foreground px-4 py-3">
-        <div className="flex items-center gap-2">
-          <ReceiptText className="h-4 w-4" />
-          <p className="text-sm font-semibold">요금 요약</p>
-        </div>
-        <p className="text-[11px] text-muted-foreground mt-1">
-          {headerHint ?? "입력에 따라 실시간 반영됩니다"}
-        </p>
-      </div>
+  const rows: PriceSummaryRow[] = [
+    {
+      id: "base",
+      label: (
+        <span className="flex items-center gap-2">
+          <BadgeDollarSign className="h-4 w-4" />
+          <span>교체비</span>
+        </span>
+      ),
+      value: won(base),
+      description: isCustom
+        ? "보유/커스텀 스트링: 교체비만"
+        : stringIncluded
+          ? "스트링 상품: 주문/대여 결제 내역 우선"
+          : "스트링 상품: 선택 상품과 신청 방식 기준 안내",
+    },
+  ];
 
-      <CardContent className="pt-5">
+  if (isRentalBreakdown) {
+    if (rentalDeposit > 0) {
+      rows.push({
+        id: "rentalDeposit",
+        label: (
+          <span className="flex items-center gap-2">
+            <Box className="h-4 w-4" />
+            <span>보증금</span>
+          </span>
+        ),
+        value: won(rentalDeposit),
+      });
+    }
+
+    if (rentalFee > 0) {
+      rows.push({
+        id: "rentalFee",
+        label: (
+          <span className="flex items-center gap-2">
+            <Box className="h-4 w-4" />
+            <span>대여료</span>
+          </span>
+        ),
+        value: won(rentalFee),
+      });
+    }
+  } else if (racketPrice > 0) {
+    rows.push({
+      id: "racketPrice",
+      label: (
+        <span className="flex items-center gap-2">
+          <Box className="h-4 w-4" />
+          <span>라켓 금액</span>
+        </span>
+      ),
+      value: won(racketPrice),
+    });
+  }
+
+  if (stringPrice > 0) {
+    rows.push({
+      id: "stringPrice",
+      label: (
+        <span className="flex items-center gap-2">
+          <ReceiptText className="h-4 w-4" />
+          <span>스트링 금액</span>
+        </span>
+      ),
+      value: won(stringPrice),
+    });
+  }
+
+  if (pickupFee > 0) {
+    rows.push({
+      id: "pickupFee",
+      label: (
+        <span className="flex items-center gap-2">
+          <Package className="h-4 w-4" />
+          <span>{pickupLabel}</span>
+        </span>
+      ),
+      value: `+ ${won(pickupFee)}`,
+      description: pickupHint,
+    });
+  }
+
+  if (usingPackage) {
+    rows.push({
+      id: "package",
+      label: (
+        <span className="flex items-center gap-2">
+          <Ticket className="h-4 w-4 text-primary" />
+          <span>패키지 적용</span>
+        </span>
+      ),
+      value: <span className="text-primary">교체비 무료</span>,
+    });
+  }
+
+  rows.push({
+    id: "total",
+    label: totalLabel ?? "예상 결제 금액",
+    value: (
+      <span className="tabular-nums" aria-live="polite">
+        {won(total)}
+      </span>
+    ),
+    emphasis: true,
+  });
+
+  return (
+    <SummaryCard
+      title={
+        <span className="flex items-center gap-2">
+          <ReceiptText className="h-4 w-4" />
+          <span>요금 요약</span>
+        </span>
+      }
+      description={headerHint ?? "입력에 따라 실시간 반영됩니다"}
+      className="overflow-hidden"
+      contentClassName="space-y-4"
+    >
         {/* 선택 요약 */}
-        <div className="grid grid-cols-1 gap-3 mb-4">
+        <div className="grid grid-cols-1 gap-3 rounded-xl border border-border bg-muted/20 p-4">
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2 text-muted-foreground">
               <CalendarDays className="h-4 w-4" />
@@ -104,119 +211,14 @@ export default function PriceSummaryCard({
           </div>
         </div>
 
-        <div className="border-t my-3" />
-
-        {/* 금액 라인 */}
-        <div className="space-y-3">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-2">
-              <BadgeDollarSign className="h-4 w-4 text-muted-foreground" />
-              <div className="space-y-0.5">
-                <p className="text-sm font-medium">교체비</p>
-                <p className="text-xs text-muted-foreground">
-                  {isCustom
-                    ? "보유/커스텀 스트링: 교체비만"
-                    : stringIncluded
-                      ? "스트링 상품: 주문/대여 결제 내역 우선"
-                      : "스트링 상품: 선택 상품과 신청 방식 기준 안내"}
-                </p>
-              </div>
-            </div>
-
-            <p className="text-sm">{won(base)}</p>
-          </div>
-          {/* 대여 기반이면: 보증금/대여료를 분리 표시 */}
-          {isRentalBreakdown ? (
-            <>
-              {rentalDeposit > 0 && (
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <Box className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-sm font-medium">보증금</p>
-                  </div>
-                  <p className="text-sm">{won(rentalDeposit)}</p>
-                </div>
-              )}
-
-              {rentalFee > 0 && (
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <Box className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-sm font-medium">대여료</p>
-                  </div>
-                  <p className="text-sm">{won(rentalFee)}</p>
-                </div>
-              )}
-            </>
-          ) : (
-            /* 구매(주문) 기반이면: 라켓 금액 */
-            racketPrice > 0 && (
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <Box className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-sm font-medium">라켓 금액</p>
-                </div>
-                <p className="text-sm">{won(racketPrice)}</p>
-              </div>
-            )
-          )}
-
-          {stringPrice > 0 && (
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2">
-                <ReceiptText className="h-4 w-4 text-muted-foreground" />
-                <p className="text-sm font-medium">스트링 금액</p>
-              </div>
-              <p className="text-sm">{won(stringPrice)}</p>
-            </div>
-          )}
-
-          {pickupFee > 0 && (
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-muted-foreground" />
-                <div className="space-y-0.5">
-                  <p className="text-sm font-medium">{pickupLabel}</p>
-                  <p className="text-xs text-muted-foreground">{pickupHint}</p>
-                </div>
-              </div>
-              <p className="text-sm">{`+ ${won(pickupFee)}`}</p>
-            </div>
-          )}
-
-          {usingPackage && (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Ticket className="h-4 w-4 text-primary" />
-                <p className="text-sm font-medium">패키지 적용</p>
-              </div>
-              <p className="text-sm text-primary">교체비 무료</p>
-            </div>
-          )}
-
-          <div className="border-t my-2" />
-
-          {/* 합계 강조 */}
-          <div className="flex items-center justify-between">
-            <p className="text-base font-semibold">
-              {totalLabel ?? "예상 결제 금액"}
-            </p>
-            <p
-              className="text-base font-bold tabular-nums rounded-md px-2 py-1 ring-1 ring-inset ring-ring"
-              aria-live="polite"
-            >
-              {won(total)}
-            </p>
-          </div>
-
-          {/* 안내 */}
-          {usingPackage && (
-            <p className="mt-1 text-[11px] text-muted-foreground">
-              ※ 패키지 적용 시 교체비가 무료입니다.
-            </p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+        <PriceSummary
+          rows={rows}
+          footer={
+            usingPackage ? (
+              <p className="text-[11px]">※ 패키지 적용 시 교체비가 무료입니다.</p>
+            ) : undefined
+          }
+        />
+    </SummaryCard>
   );
 }

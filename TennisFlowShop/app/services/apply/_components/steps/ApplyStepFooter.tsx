@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { PrimaryCTAGroup } from "@/components/public/PrimaryCTAGroup";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle } from "lucide-react";
 
@@ -31,52 +32,61 @@ export default function ApplyStepFooter({
   handleSubmit,
   finalAction,
 }: Props) {
-  return (
-    <div className="mt-8 flex justify-between border-t pt-5 dark:border-border">
+  const primaryAction =
+    currentStep < 4 ? (
       <Button
         type="button"
-        variant="outline"
-        onClick={onPrev}
-        disabled={currentStep === 1}
-        className="px-8 py-3 transition-colors duration-200"
+        onClick={onNext}
+        disabled={!isStepValid(currentStep)}
+        variant="default"
+        className="px-6 py-3 transition-all duration-200 disabled:opacity-50"
       >
-        이전
+        다음
+        <ArrowRight className="ml-2 h-4 w-4" />
       </Button>
+    ) : finalAction ? (
+      finalAction
+    ) : (
+      <Button
+        type="button"
+        disabled={isSubmitting || isOrderSlotBlocked}
+        onClick={(e) => handleSubmit(e as unknown as React.FormEvent)}
+        variant="default"
+        className="px-6 py-3 transition-all duration-200 disabled:opacity-50"
+      >
+        {isSubmitting ? (
+          <>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-border mr-2" />
+            신청서 제출 중...
+          </>
+        ) : (
+          <>
+            신청 완료하기
+            <CheckCircle className="ml-2 h-4 w-4" />
+          </>
+        )}
+      </Button>
+    );
+  const secondaryAction = (
+    <Button
+      type="button"
+      variant="outline"
+      onClick={onPrev}
+      disabled={currentStep === 1}
+      className="px-8 py-3 transition-colors duration-200"
+    >
+      이전
+    </Button>
+  );
 
-      {currentStep < 4 ? (
-        <Button
-          type="button"
-          onClick={onNext}
-          disabled={!isStepValid(currentStep)}
-          variant="default"
-          className="px-6 py-3 transition-all duration-200 disabled:opacity-50"
-        >
-          다음
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      ) : finalAction ? (
-        finalAction
-      ) : (
-        <Button
-          type="button"
-          disabled={isSubmitting || isOrderSlotBlocked}
-          onClick={(e) => handleSubmit(e as unknown as React.FormEvent)}
-          variant="default"
-          className="px-6 py-3 transition-all duration-200 disabled:opacity-50"
-        >
-          {isSubmitting ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-border mr-2" />
-              신청서 제출 중...
-            </>
-          ) : (
-            <>
-              신청 완료하기
-              <CheckCircle className="ml-2 h-4 w-4" />
-            </>
-          )}
-        </Button>
-      )}
+  return (
+    <div className="mt-8 flex border-t border-border pt-5 sm:justify-end">
+      <PrimaryCTAGroup
+        primary={primaryAction}
+        secondary={secondaryAction}
+        align="right"
+        className="sm:flex-row-reverse"
+      />
     </div>
   );
 }

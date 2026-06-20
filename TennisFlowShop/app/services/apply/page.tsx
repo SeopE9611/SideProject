@@ -9,12 +9,13 @@ import ApplyHero from "@/app/services/apply/_components/ApplyHero";
 import { ApplyPriceSummaryDesktop, ApplyPriceSummaryMobile } from "@/app/services/apply/_components/ApplyPriceSummary";
 import { APPLY_STEPS } from "@/app/services/apply/_components/applySteps";
 import OrderPrefillBadge from "@/app/services/apply/_components/OrderPrefillBadge";
-import ProgressSteps from "@/app/services/apply/_components/ProgressSteps";
 import ApplyStepFooter from "@/app/services/apply/_components/steps/ApplyStepFooter";
 import { useReservedSlots } from "@/app/services/apply/_hooks/useReservedSlots";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
+import { StepIndicator } from "@/components/public/StepIndicator";
+import { SummaryCard } from "@/components/public/SummaryCard";
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1598,7 +1599,15 @@ export default function StringServiceApplyPage() {
         <div className="mx-auto max-w-7xl">
           {/* Progress Steps: 폼 폭(800px)에 맞춰 중앙 정렬 */}
           <div ref={stepsRef} className="mb-4 bp-sm:mb-5">
-            <ProgressSteps steps={steps} currentStep={currentStep} />
+            <StepIndicator
+              steps={steps.map((step) => ({
+                id: String(step.id),
+                label: step.title,
+                description: step.description,
+              }))}
+              currentStep={String(currentStep)}
+              className="mx-auto max-w-[800px]"
+            />
           </div>
 
           {/* === 폼만 '진짜' 중앙, 요금카드는 오른쪽에 겹쳐 배치 === */}
@@ -1614,19 +1623,21 @@ export default function StringServiceApplyPage() {
               ) : null}
               <Card className="border border-border bg-card shadow-sm bp-lg:bg-card/90">
                 <CardContent className="p-4 bp-sm:p-5 bp-lg:p-6">
-                  <div className={`mb-4 rounded-xl border px-4 py-3 ${isOrderSlotBlocked ? "border-border bg-muted/40" : "border-border bg-background/60"}`}>
-                    <p className="text-sm font-semibold text-foreground">{entryBanner.title}</p>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{entryBanner.body}</p>
-
-                    {isOrderSlotBlocked ? (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <button type="button" onClick={() => safePush("/mypage?tab=orders")} className="px-3 py-2 text-xs font-medium rounded-lg border border-border text-foreground hover:bg-card transition-colors">
-                          주문 상세에서 확인
-                        </button>
-                        <span className="px-3 py-2 text-xs text-muted-foreground">신청 내역은 주문 상세에서 확인할 수 있습니다.</span>
-                      </div>
-                    ) : null}
-                  </div>
+                  <SummaryCard
+                    title={entryBanner.title}
+                    description={entryBanner.body}
+                    className={`mb-4 shadow-none ${isOrderSlotBlocked ? "bg-muted/30" : "bg-muted/20"}`}
+                    footer={
+                      isOrderSlotBlocked ? (
+                        <div className="flex flex-wrap gap-2">
+                          <button type="button" onClick={() => safePush("/mypage?tab=orders")} className="px-3 py-2 text-xs font-medium rounded-lg border border-border text-foreground hover:bg-card transition-colors">
+                            주문 상세에서 확인
+                          </button>
+                          <span className="px-3 py-2 text-xs text-muted-foreground">신청 내역은 주문 상세에서 확인할 수 있습니다.</span>
+                        </div>
+                      ) : undefined
+                    }
+                  />
 
                   {/* 라켓 주문 프리필 배지 */}
                   <OrderPrefillBadge orderId={orderId} rentalId={rentalId} />
