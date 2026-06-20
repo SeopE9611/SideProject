@@ -1256,8 +1256,8 @@ export default function AdminRentalDetailClient() {
                       대여 라켓 장착 정보
                     </CardTitle>
                     <CardDescription className="mt-1 max-w-3xl leading-relaxed">
-                      대여 라켓에 장착할 스트링, 텐션, 요청사항과 작업 상태를 한곳에서 확인하고 관리합니다.
-                      매장 장착 후 대여 출고 운송장을 등록하고 반납 처리는 기존 대여 상태 관리 영역에서 진행합니다.
+                      대여 라켓에 장착할 스트링, 게이지, 색상, 텐션, 요청사항과 작업 상태를 한곳에서 확인합니다.
+                      매장 보유 대여 라켓에 장착하는 대여 기반 교체서비스이며, 출고 운송장과 반납 운송장은 아래 대여 정보에서 분리해 관리합니다.
                     </CardDescription>
                   </div>
                   <Badge
@@ -1402,7 +1402,7 @@ export default function AdminRentalDetailClient() {
                       <Link
                         href={`/admin/applications/stringing/${encodeURIComponent(String(linkedApplication.id))}`}
                       >
-                        신청서 상세 보기
+                        교체서비스 상세
                       </Link>
                     </Button>
                     <Button
