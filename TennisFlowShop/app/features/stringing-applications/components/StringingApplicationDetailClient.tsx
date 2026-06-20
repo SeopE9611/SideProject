@@ -905,8 +905,31 @@ export default function StringingApplicationDetailClient({
       ? `/admin/rentals/${encodeURIComponent(String(linkedRentalId))}`
       : null;
   const linkedAdminLabel = data.orderId
-    ? "연결 주문 상세로 이동"
-    : "연결 대여 상세로 이동";
+    ? "주문 상세"
+    : "대여 상세";
+  const applicationContext = isRentalLinkedApplication
+    ? {
+        label: "대여 기반 교체서비스",
+        title: "대여 라켓 장착 작업",
+        description:
+          "이 신청서는 매장 보유 대여 라켓에 스트링을 장착하는 작업입니다.",
+        payment: "결제는 연결 대여에서 처리되었습니다.",
+      }
+    : isOrderLinkedApplication
+      ? {
+          label: "주문 기반 교체서비스",
+          title: "주문에 포함된 교체서비스",
+          description:
+            "이 신청서는 주문에 포함된 교체서비스입니다. 작업 정보는 연결 주문과 함께 확인하세요.",
+          payment: "결제는 연결 주문에서 처리되었습니다.",
+        }
+      : {
+          label: "standalone 교체서비스",
+          title: "단독 교체서비스",
+          description:
+            "고객 보유 라켓 입고 후 작업하는 교체서비스입니다. 입고/수거/자가발송 정보를 확인하세요.",
+          payment: "결제는 교체서비스 신청서에서 처리합니다.",
+        };
   const effectiveStockDeduction =
     data.stockDeduction ??
     (data as any).stringing?.stockDeduction ??
@@ -1139,7 +1162,8 @@ export default function StringingApplicationDetailClient({
     normalizeAdminCancelRequestStatus(data.cancelRequest?.status) ===
     "requested";
   const hasLinkedDocs = linkedDocs.length > 0;
-  const needsShippingCheck = isCourierShipping && !invoice?.trackingNumber;
+  const needsShippingCheck =
+    !isLinkedApplication && isCourierShipping && !invoice?.trackingNumber;
   const nextActionGuide: AdminNextActionGuide = hasCancelRequest
     ? {
         tone: "urgent",
@@ -1421,7 +1445,7 @@ export default function StringingApplicationDetailClient({
                     )}
 
                     {/* 관리자: 매장 발송 운송장 등록/수정 버튼 */}
-                    {isAdmin && (
+                    {isAdmin && !isLinkedApplication && (
                       <Button
                         asChild
                         variant="outline"
@@ -1939,13 +1963,34 @@ export default function StringingApplicationDetailClient({
                     <ul className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
                       <li>□ 고객 요청사항 확인</li>
                       <li>□ 스트링/장력 정보 확인</li>
-                      <li>□ 결제 상태 또는 연결 주문 확인</li>
-                      <li>□ 배송/방문/자가발송 정보 확인</li>
+                      <li>□ 결제 상태 또는 연결 문서 확인</li>
+                      <li>□ {isLinkedApplication ? "배송/수령 정보 확인" : "배송/방문/자가발송 정보 확인"}</li>
                       <li>□ 작업 상태 변경</li>
                       <li>□ 완료 후 연결 주문/대여 상태 확인</li>
                     </ul>
                   </div>
                 </CardContent>
+              </Card>
+            )}
+
+            {isAdmin && (
+              <Card className="mb-4 border border-primary/30 bg-primary/5 shadow-sm">
+                <CardHeader className="pb-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <CardTitle className="text-base">
+                        {applicationContext.title}
+                      </CardTitle>
+                      <CardDescription className="mt-1 space-y-1 leading-relaxed">
+                        <span className="block">{applicationContext.description}</span>
+                        <span className="block">{applicationContext.payment}</span>
+                      </CardDescription>
+                    </div>
+                    <Badge variant="outline" className={cn(badgeBase, badgeSizeSm, "w-fit bg-card")}>
+                      {applicationContext.label}
+                    </Badge>
+                  </div>
+                </CardHeader>
               </Card>
             )}
 
@@ -3102,7 +3147,7 @@ export default function StringingApplicationDetailClient({
             </div>
             {/* 관리자 전용 운송장 정보 카드 */}
             <div className="mt-6 space-y-4 bp-sm:mt-8 bp-sm:space-y-6">
-              {isAdmin && (
+              {isAdmin && !isLinkedApplication && (
                 <Card
                   id="admin-stringing-shipping"
                   className={cn(detailCardClass, "mb-8")}
@@ -3121,7 +3166,7 @@ export default function StringingApplicationDetailClient({
 
                   <CardContent className="grid gap-4 p-4 md:grid-cols-2 bp-sm:p-6">
                     {/* 자가 발송(사용자 → 매장) */}
-                    <div className="rounded-lg border border-dashed border-border p-4">
+                    <div className="rounded-lg border border-dashed border-border bg-background/60 p-4">
                       <p className="text-sm font-semibold text-foreground">
                         라켓 발송 정보
                       </p>
@@ -3167,7 +3212,7 @@ export default function StringingApplicationDetailClient({
                     </div>
 
                     {/* 매장 발송(매장 → 사용자) */}
-                    <div className="rounded-lg border border-dashed border-border p-4">
+                    <div className="rounded-lg border border-dashed border-border bg-background/60 p-4">
                       <p className="text-sm font-semibold text-foreground">
                         반송 정보
                       </p>

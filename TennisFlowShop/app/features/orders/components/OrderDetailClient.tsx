@@ -798,9 +798,9 @@ export default function OrderDetailClient({ orderId }: Props) {
         : linkedDocs.length > 0 || Boolean(orderDetail.stringingApplicationId)
           ? {
               tone: "info",
-              title: "연결 신청서 세부정보 확인",
+              title: "주문에 포함된 교체서비스 확인",
               description:
-                "라켓, 스트링, 텐션과 요청사항은 연결 신청서에서 참고할 수 있습니다.",
+                "결제는 주문에서 처리되었습니다. 장착 정보와 요청사항은 연결 신청서에서 확인하세요.",
             }
           : orderGuide.stage || isDoneLikeStatus
             ? {
@@ -822,7 +822,7 @@ export default function OrderDetailClient({ orderId }: Props) {
       show: isCancelRequested || Boolean(cancelInfo),
     },
     {
-      label: "연결 신청서 참고",
+      label: "장착 정보 보기",
       href: "#admin-order-linked",
       show: linkedDocs.length > 0 || Boolean(orderDetail.stringingApplicationId),
     },
@@ -1140,7 +1140,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 </Badge>
                 {isShippingManagedByApplication && (
                   <p className="mt-1 text-sm text-foreground/75">
-                    운송장/배송 등록은 신청서에서 관리
+                    출고/배송 정보는 연결 신청서에서 관리
                   </p>
                 )}
               </div>
@@ -1190,20 +1190,17 @@ export default function OrderDetailClient({ orderId }: Props) {
             <Card className="mb-4 border border-primary/30 bg-primary/10 shadow-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base text-primary">
-                  교체서비스 연결 주문입니다
+                  주문 기반 교체서비스
                 </CardTitle>
                 <CardDescription className="space-y-1 text-sm leading-relaxed text-foreground/80">
                   <span className="block">
-                    이 주문은 상품 주문과 교체서비스 신청서가 함께 연결된 통합
-                    주문입니다.
+                    이 주문은 상품 주문에 교체서비스가 포함된 주문입니다.
                   </span>
                   <span className="block">
-                    결제 확인, 작업 접수·진행, 인도 준비·완료는 아래 연결 진행
-                    단계에서 관리하세요.
+                    결제는 주문에서 처리되었습니다. 교체서비스 신청서는 주문에 포함된 작업 정보로 확인하세요.
                   </span>
                   <span className="block">
-                    연결 신청서 상세에서는 라켓, 스트링, 텐션, 요청사항 등 세부
-                    작업 정보를 참고할 수 있습니다.
+                    연결 신청서에서 라켓, 선택 스트링, 게이지, 색상, 텐션, 요청사항을 확인하세요.
                   </span>
                 </CardDescription>
               </CardHeader>
@@ -1428,17 +1425,16 @@ export default function OrderDetailClient({ orderId }: Props) {
             <div className="mb-6">
               <Card className={adminSurface.card}>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base">4. 연결 문서 참고</CardTitle>
+                  <CardTitle className="text-base">4. 연결 신청서 · 장착 정보</CardTitle>
                   <CardDescription>
-                    연결 신청서는 상태 변경 경로가 아니라 요청사항과 작업 세부정보를
-                    확인하는 참고 문서입니다.
+                    주문에 포함된 교체서비스 신청서입니다. 상품 정보와 분리해 장착 정보와 요청사항을 확인하세요.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-4 lg:grid-cols-2">
                     <div className="rounded-lg border border-border/60 bg-background/40 p-3">
                       <p className="mb-2 text-sm font-semibold text-foreground">
-                        연결된 문서
+                        연결 신청서
                       </p>
                       <div className="space-y-2">
                         {linkedDocs.map((doc) => (
