@@ -277,13 +277,10 @@ export default async function AcademyApplyPage({
   return (
     <main className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-border/40">
-        <div className="absolute inset-0 bg-gradient-to-br from-muted/50 via-background to-muted/30" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-success/5 via-transparent to-transparent" />
-
-        <div className="relative mx-auto max-w-5xl px-6 py-12 md:py-16">
+      <section className="border-b border-border bg-muted/30">
+        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 md:py-10">
           {/* Breadcrumb */}
-          <nav className="mb-6">
+          <nav className="mb-5">
             <Button
               asChild
               variant="ghost"
@@ -298,16 +295,15 @@ export default async function AcademyApplyPage({
           </nav>
 
           <div className="flex flex-col gap-4">
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-success/30 bg-success/10 px-4 py-1.5 text-sm font-medium text-success">
-              <CheckCircle2 className="h-4 w-4" />
+            <div className="text-sm font-medium text-primary">
               도깨비테니스 아카데미
             </div>
 
-            <h1 className="text-balance font-brand text-2xl font-bold tracking-tight text-foreground md:text-3xl lg:text-4xl">
-              레슨 신청하기
+            <h1 className="text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+              아카데미 신청서
             </h1>
 
-            <p className="max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground">
+            <p className="max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
               신청서를 남겨주시면 도깨비테니스에서 일정과 수강 방식을 확인한 뒤
               상담을 도와드립니다.
             </p>
@@ -316,13 +312,13 @@ export default async function AcademyApplyPage({
       </section>
 
       {/* Main Content */}
-      <section className="mx-auto max-w-5xl px-6 py-10 md:py-14">
-        <div className="space-y-8">
+      <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 md:py-10">
+        <div className="space-y-6">
           {/* Notice Card */}
-          <div className="rounded-2xl border border-border/60 bg-card p-5 md:p-6">
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
             <div className="flex items-start gap-4">
-              <div className="shrink-0 rounded-xl bg-info/10 p-2.5">
-                <Info className="h-5 w-5 text-info" />
+              <div className="shrink-0 rounded-xl bg-muted/30 p-2.5">
+                <Info className="h-5 w-5 text-primary" />
               </div>
               <div className="space-y-3">
                 <h2 className="text-base font-semibold text-foreground">
@@ -345,9 +341,9 @@ export default async function AcademyApplyPage({
 
           {/* Duplicate Application Warning */}
           {duplicateApplication ? (
-            <div className="rounded-2xl border border-warning/40 bg-warning/5 p-6 md:p-8">
+            <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
-                <div className="shrink-0 rounded-xl bg-warning/10 p-3">
+                <div className="shrink-0 rounded-xl bg-muted/30 p-3">
                   <AlertCircle className="h-6 w-6 text-warning" />
                 </div>
                 <div className="flex-1 space-y-3">
@@ -360,7 +356,7 @@ export default async function AcademyApplyPage({
                       클래스는 진행 중인 신청이 있을 때 중복 신청할 수 없습니다.
                     </p>
                   </div>
-                  <div className="flex flex-col gap-2 sm:flex-row">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                     <Button asChild>
                       <a
                         href={`/mypage/academy-applications/${duplicateApplication.id}`}
@@ -380,10 +376,10 @@ export default async function AcademyApplyPage({
               {/* Selected Class Info */}
               {selectedClass && (
                 <div
-                  className={`rounded-2xl border ${selectedClass.status === "closed" ? "border-muted bg-muted/30" : "border-border/60 bg-card"} overflow-hidden`}
+                  className={`overflow-hidden rounded-2xl border shadow-sm ${selectedClass.status === "closed" ? "border-border bg-muted/30" : "border-border bg-card"}`}
                 >
                   {/* Class Header */}
-                  <div className="border-b border-border/40 bg-muted/30 px-5 py-4 md:px-6">
+                  <div className="border-b border-border bg-muted/30 px-5 py-4 md:px-6">
                     <div className="flex flex-wrap items-center gap-2">
                       <span
                         className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${selectedClass.status === "closed" ? "bg-muted text-muted-foreground" : "bg-success/10 text-success"}`}
@@ -422,7 +418,7 @@ export default async function AcademyApplyPage({
 
                     {/* Class Details Grid */}
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                      <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
+                      <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/20 p-3">
                         <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
                         <div className="min-w-0">
                           <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">
@@ -433,7 +429,7 @@ export default async function AcademyApplyPage({
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
+                      <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/20 p-3">
                         <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
                         <div className="min-w-0">
                           <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">
@@ -444,7 +440,7 @@ export default async function AcademyApplyPage({
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-3 rounded-xl bg-muted/50 p-3">
+                      <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/20 p-3">
                         <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                         <div className="min-w-0 space-y-0.5 whitespace-normal break-keep break-words">
                           <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">
@@ -460,7 +456,7 @@ export default async function AcademyApplyPage({
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
+                      <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/20 p-3">
                         <Wallet className="h-4 w-4 shrink-0 text-muted-foreground" />
                         <div className="min-w-0">
                           <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">
@@ -475,7 +471,7 @@ export default async function AcademyApplyPage({
 
                     {/* Closed Class Notice */}
                     {selectedClass.status === "closed" && (
-                      <div className="mt-4 rounded-xl border border-border bg-background p-4">
+                      <div className="mt-4 rounded-xl border border-border bg-muted/20 p-4">
                         <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
                           이 클래스는 현재 모집이 마감되었습니다. 문의하기를
                           통해 다음 모집 일정을 확인해 주세요.
@@ -493,7 +489,7 @@ export default async function AcademyApplyPage({
 
               {/* Invalid Class Warning */}
               {classId && !selectedClass && (
-                <div className="rounded-2xl border border-warning/40 bg-warning/5 p-5 md:p-6">
+                <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
                   <div className="flex items-start gap-4">
                     <div className="shrink-0 rounded-xl bg-warning/10 p-2.5">
                       <AlertCircle className="h-5 w-5 text-warning" />
