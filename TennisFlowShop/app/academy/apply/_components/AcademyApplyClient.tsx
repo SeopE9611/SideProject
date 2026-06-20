@@ -137,19 +137,19 @@ function SectionCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-border/60 bg-card overflow-hidden",
+        "overflow-hidden rounded-2xl border border-border bg-card shadow-sm",
         className,
       )}
     >
       {(title || description) && (
-        <div className="border-b border-border/40 bg-muted/30 px-5 py-4 md:px-6">
+        <div className="border-b border-border bg-muted/30 px-5 py-4 md:px-6">
           <div className="flex items-start gap-3">
             {Icon && (
               <div className="shrink-0 rounded-lg bg-primary/10 p-2">
                 <Icon className="h-4 w-4 text-primary" />
               </div>
             )}
-            <div>
+            <div className="min-w-0">
               {title && (
                 <h2 className="text-base font-semibold text-foreground">
                   {title}
@@ -183,17 +183,17 @@ function FormField({
   hint?: string;
 }) {
   return (
-    <div className="space-y-2">
+    <div className="min-w-0 space-y-2.5">
       <Label className="text-sm font-medium text-foreground">
         {label}
         {required && <span className="ml-1 text-destructive">*</span>}
       </Label>
       {children}
       {hint && !error && (
-        <p className="text-xs text-muted-foreground">{hint}</p>
+        <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p>
       )}
       {error && (
-        <p className="flex items-center gap-1.5 text-sm font-medium text-destructive">
+        <p className="flex items-center gap-1.5 text-sm font-medium leading-relaxed text-destructive">
           <AlertCircle className="h-3.5 w-3.5" />
           {error}
         </p>
@@ -227,7 +227,7 @@ function CustomSelect({
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
         className={cn(
-          "flex w-full items-center justify-between rounded-xl border bg-background px-4 py-3 text-left text-sm transition-all",
+          "flex w-full min-w-0 items-center justify-between rounded-xl border bg-background px-4 py-3 text-left text-sm transition-all",
           "hover:border-border focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
           error ? "border-destructive" : "border-border/60",
           disabled && "cursor-not-allowed opacity-50",
@@ -568,8 +568,8 @@ export default function AcademyApplyClient({
           title="신청자 정보"
           description="회원정보 기준으로 자동 입력됩니다"
         >
-          <div className="mb-4 rounded-xl bg-muted/50 p-3">
-            <p className="text-xs leading-relaxed text-muted-foreground">
+          <div className="mb-5 rounded-xl border border-border bg-muted/20 p-4">
+            <p className="break-keep text-xs leading-relaxed text-muted-foreground">
               정보 변경이 필요하시면{" "}
               <Link
                 href="/mypage/profile"
@@ -581,7 +581,7 @@ export default function AcademyApplyClient({
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-2">
             <div
               ref={(node) => {
                 fieldRefs.current.applicantName = node;
@@ -630,7 +630,7 @@ export default function AcademyApplyClient({
               </FormField>
             </div>
 
-            <div className="md:col-span-2">
+            <div className="min-w-0 md:col-span-2">
               <FormField label="이메일">
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -656,7 +656,7 @@ export default function AcademyApplyClient({
         >
           <div className="space-y-6">
             {/* Lesson Type & Level */}
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-5 md:grid-cols-2">
               <div
                 ref={(node) => {
                   fieldRefs.current.desiredLessonType = node;
@@ -716,7 +716,7 @@ export default function AcademyApplyClient({
               >
                 <div
                   className={cn(
-                    "grid grid-cols-7 gap-2 rounded-xl p-1",
+                    "grid grid-cols-4 gap-2 rounded-xl p-1 min-[390px]:grid-cols-7",
                     fieldErrors.preferredDays &&
                       "ring-2 ring-destructive ring-offset-2",
                   )}
@@ -730,7 +730,7 @@ export default function AcademyApplyClient({
                         onClick={() => toggleDay(day)}
                         disabled={isSubmitting || isSelectedClassClosed}
                         className={cn(
-                          "flex flex-col items-center justify-center rounded-xl border-2 py-3 text-sm font-medium transition-all",
+                          "flex min-w-0 flex-col items-center justify-center rounded-xl border py-3 text-sm font-medium transition-all",
                           "hover:border-primary/50 hover:bg-primary/5",
                           "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                           isSelected
@@ -778,7 +778,7 @@ export default function AcademyApplyClient({
                   maxLength={500}
                   placeholder="예: 기초부터 배우고 싶습니다. 랠리를 오래 이어가고 싶습니다."
                   disabled={isSubmitting || isSelectedClassClosed}
-                  className="min-h-[100px] resize-none pl-10"
+                  className="min-h-32 resize-y pl-10 leading-relaxed"
                 />
               </div>
             </FormField>
@@ -796,7 +796,7 @@ export default function AcademyApplyClient({
                   maxLength={1000}
                   placeholder="예: 라켓이 없어도 가능한지 궁금합니다."
                   disabled={isSubmitting || isSelectedClassClosed}
-                  className="min-h-[100px] resize-none pl-10"
+                  className="min-h-32 resize-y pl-10 leading-relaxed"
                 />
               </div>
             </FormField>
@@ -804,22 +804,30 @@ export default function AcademyApplyClient({
         </SectionCard>
 
         {/* Submit Section */}
-        <div className="rounded-2xl border border-border/60 bg-muted/30 p-5 md:p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="space-y-1">
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div className="min-w-0 space-y-1.5">
               <p className="text-sm font-medium text-foreground">
                 신청서 제출 준비가 완료되셨나요?
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="break-keep text-xs leading-relaxed text-muted-foreground">
                 신청 단계에서는 결제가 진행되지 않습니다. 등록 확정 후 현장에서
                 안내드립니다.
               </p>
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Button asChild variant="outline" className="gap-2">
+            <div className="flex w-full flex-col gap-2 sm:flex-row md:w-auto md:shrink-0">
+              <Button
+                asChild
+                variant="outline"
+                className="h-11 w-full gap-2 whitespace-nowrap rounded-xl sm:w-auto"
+              >
                 <Link href="/academy">아카데미로 돌아가기</Link>
               </Button>
-              <Button type="submit" disabled={!canSubmit} className="gap-2">
+              <Button
+                type="submit"
+                disabled={!canSubmit}
+                className="h-11 w-full gap-2 whitespace-nowrap rounded-xl px-6 sm:w-auto"
+              >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
