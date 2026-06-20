@@ -11,6 +11,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { EmptyState, SummaryCard } from "@/components/public";
 import AsyncState from "@/components/system/AsyncState";
 import { Search, Filter, Grid3X3, List } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -609,35 +610,38 @@ export default function FilterableRacketList({
         {/* 상품 목록 */}
         <div className="min-w-0">
           <div className="mb-6 space-y-3 bp-md:mb-8">
-            <div className="space-y-3">
-              <div className="rounded-lg border border-border bg-card px-3 py-2.5">
-                <div
-                  className="min-w-0 break-keep text-sm font-semibold tabular-nums text-foreground bp-sm:text-base"
-                  aria-live="polite"
-                >
-                  {racketCountPrefix}{" "}
-                  {isInitialLikeLoading ? (
-                    <Skeleton className="inline-block h-5 w-12 align-middle" />
-                  ) : (
-                    <span className="font-bold text-primary">{total}</span>
-                  )}
-                  {racketCountSuffix}
-                  {isInitialLikeLoading ? (
-                    <Skeleton className="ml-2 inline-block h-5 w-10 align-middle" />
-                  ) : (
-                    <span className="ml-2 text-sm text-muted-foreground">
-                      (표시중 {visibleProducts.length}개)
-                    </span>
-                  )}
-                  {isBackgroundRefreshing ? (
-                    <span className="ml-2 text-xs font-medium text-muted-foreground">
-                      조회 중...
-                    </span>
-                  ) : null}
-                </div>
+            <SummaryCard
+              eyebrow="Racket Finder"
+              title="라켓 목록"
+              description="브랜드, 상태, 가격대와 대여 가능 여부를 조합해 원하는 라켓을 찾아보세요."
+              contentClassName="space-y-4"
+            >
+              <div
+                className="min-w-0 break-keep rounded-xl border border-border bg-muted/20 px-4 py-3 text-sm font-semibold tabular-nums text-foreground bp-sm:text-base"
+                aria-live="polite"
+              >
+                {racketCountPrefix}{" "}
+                {isInitialLikeLoading ? (
+                  <Skeleton className="inline-block h-5 w-12 align-middle" />
+                ) : (
+                  <span className="font-bold text-primary">{total}</span>
+                )}
+                {racketCountSuffix}
+                {isInitialLikeLoading ? (
+                  <Skeleton className="ml-2 inline-block h-5 w-10 align-middle" />
+                ) : (
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    (표시중 {visibleProducts.length}개)
+                  </span>
+                )}
+                {isBackgroundRefreshing ? (
+                  <span className="ml-2 text-xs font-medium text-muted-foreground">
+                    조회 중...
+                  </span>
+                ) : null}
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-3 bp-md:justify-between">
+              <div className="flex flex-col gap-3 rounded-xl border border-border bg-muted/20 p-3 bp-sm:flex-row bp-sm:items-center bp-md:justify-between">
                 <Button
                   type="button"
                   variant="outline"
@@ -646,17 +650,17 @@ export default function FilterableRacketList({
                     if (showFilters) cancelFiltersSheet();
                     else openFiltersSheet();
                   }}
-                  className="h-9 shrink-0 whitespace-nowrap border-border px-3 hover:bg-secondary"
+                  className="h-10 w-full shrink-0 whitespace-nowrap rounded-lg border-border px-3 hover:bg-muted bp-sm:w-auto"
                   aria-expanded={showFilters}
                   aria-label={showFilters ? "필터 닫기" : "필터 열기"}
                 >
                   <Filter className="mr-2 h-4 w-4" />
                   필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
                 </Button>
-                <div className="ml-auto flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2 bp-sm:gap-3">
-                  <div className="min-w-[150px] flex-1 bp-sm:max-w-[180px]">
+                <div className="flex min-w-0 flex-1 flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-end bp-sm:gap-3">
+                  <div className="min-w-0 flex-1 bp-sm:max-w-[180px]">
                     <Select value={sortOption} onValueChange={setSortOption}>
-                      <SelectTrigger className="h-9 w-full min-w-0 rounded-lg border-2 bg-card text-sm focus:border-border dark:focus:border-border">
+                      <SelectTrigger className="h-10 w-full min-w-0 rounded-lg border border-border bg-card text-sm focus:border-border dark:focus:border-border">
                         <SelectValue placeholder="정렬" />
                       </SelectTrigger>
                       <SelectContent className="dark:border-border dark:bg-card">
@@ -702,10 +706,10 @@ export default function FilterableRacketList({
                   )}
                 </div>
               </div>
-            </div>
+            </SummaryCard>
 
             {activeFiltersCount > 0 && (
-              <div className="rounded-lg border border-border bg-card p-3">
+              <div className="rounded-2xl border border-border bg-card p-3 shadow-sm">
                 <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                   {submittedQuery && (
                     <span className={activeFilterChipClass}>
@@ -780,22 +784,21 @@ export default function FilterableRacketList({
               onAction={() => mutate()}
             />
           ) : !isInitialLikeLoading && products.length === 0 ? (
-            <div className="space-y-4">
-              <AsyncState
-                kind="empty"
-                variant="page-center"
-                title="검색 결과가 없습니다"
-                description="다른 검색어나 필터를 시도해보세요"
-                icon={<Search className="h-4 w-4" />}
-              />
-              <Button
-                onClick={handleResetAll}
-                variant="outline"
-                className="border-border hover:bg-secondary bg-transparent"
-              >
-                필터 초기화
-              </Button>
-            </div>
+            <EmptyState
+              icon={<Search className="h-5 w-5" />}
+              title="검색 결과가 없습니다"
+              description="다른 검색어나 필터를 시도해보세요"
+              className="rounded-2xl border-border bg-card shadow-sm"
+              action={
+                <Button
+                  onClick={handleResetAll}
+                  variant="outline"
+                  className="border-border bg-transparent hover:bg-muted"
+                >
+                  필터 초기화
+                </Button>
+              }
+            />
           ) : (
             <div
               aria-busy={isBackgroundRefreshing}
@@ -828,7 +831,7 @@ export default function FilterableRacketList({
                     variant="outline"
                     onClick={loadMore}
                     disabled={isLoadingMore}
-                    className="min-w-[140px]"
+                    className="min-w-[160px] rounded-lg border-border bg-card shadow-sm hover:bg-muted"
                     aria-label="라켓 더 불러오기"
                   >
                     {isLoadingMore ? "불러오는 중..." : "라켓 더 보기"}
