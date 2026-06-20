@@ -3,6 +3,7 @@
 import UnifiedPackageCard from "@/app/services/packages/_components/UnifiedPackageCard";
 import { type PackageCardData } from "@/app/services/packages/_lib/packageCard";
 import SiteContainer from "@/components/layout/SiteContainer";
+import { EmptyState, SummaryCard } from "@/components/public";
 import { PublicPageHero } from "@/components/public/PublicPageHero";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
@@ -136,10 +137,12 @@ export default function StringPackagesPageClient({
           </>
         }
       >
-        <PublicSurface
-          variant="elevated"
-          padding="lg"
+        <SummaryCard
+          eyebrow="이용 흐름"
+          title="플레이 빈도에 맞는 패키지 선택"
+          description="모든 패키지는 전문가 상담과 품질 보장이 포함됩니다."
           className="mx-auto max-w-5xl text-left"
+          contentClassName="pt-5"
         >
           <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr] lg:items-center">
             <p className="break-keep text-sm leading-relaxed text-muted-foreground sm:text-base">
@@ -152,7 +155,7 @@ export default function StringPackagesPageClient({
               {additionalBenefits.slice(0, 3).map((benefit) => (
                 <div
                   key={benefit.title}
-                  className="flex min-w-0 gap-3 rounded-lg border border-border bg-background p-3"
+                  className="flex min-w-0 gap-3 rounded-xl border border-border bg-muted/20 p-3"
                 >
                   <div className="shrink-0 text-primary">{benefit.icon}</div>
                   <div className="min-w-0">
@@ -165,7 +168,7 @@ export default function StringPackagesPageClient({
               ))}
             </div>
           </div>
-        </PublicSurface>
+        </SummaryCard>
       </PublicPageHero>
 
       {/* Package Cards Section */}
@@ -194,24 +197,32 @@ export default function StringPackagesPageClient({
             </PublicSurface>
           )}
 
-          <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {packages.map((pkg) => (
-              <UnifiedPackageCard
-                key={pkg.id}
-                pkg={pkg}
-                selected={selectedPackage === pkg.id}
-                onSelect={() => setSelectedPackage(pkg.id)}
-                ctaHref={`/services/packages/checkout?package=${pkg.id}`}
-                ctaLabel={
-                  ownershipBlockedMessage ? "추가 구매 불가" : "패키지 선택"
-                }
-                ctaDisabled={!!ownershipBlockedMessage}
-                ctaHelperText={
-                  ownershipBlockedMessage ? cardBlockedHelperText : undefined
-                }
-              />
-            ))}
-          </div>
+          {packages.length > 0 ? (
+            <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {packages.map((pkg) => (
+                <UnifiedPackageCard
+                  key={pkg.id}
+                  pkg={pkg}
+                  selected={selectedPackage === pkg.id}
+                  onSelect={() => setSelectedPackage(pkg.id)}
+                  ctaHref={`/services/packages/checkout?package=${pkg.id}`}
+                  ctaLabel={
+                    ownershipBlockedMessage ? "추가 구매 불가" : "패키지 선택"
+                  }
+                  ctaDisabled={!!ownershipBlockedMessage}
+                  ctaHelperText={
+                    ownershipBlockedMessage ? cardBlockedHelperText : undefined
+                  }
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              title="현재 구매 가능한 패키지가 없습니다"
+              description="패키지 구성이 준비되는 대로 다시 안내드리겠습니다."
+              className="mx-auto max-w-3xl"
+            />
+          )}
         </SiteContainer>
       </section>
 
@@ -251,7 +262,7 @@ export default function StringPackagesPageClient({
               ].map((faq, index) => (
                 <Card
                   key={index}
-                  className="border border-border shadow-sm hover:shadow-md transition-shadow duration-300"
+                  className="border border-border bg-card shadow-sm transition-shadow duration-200 hover:shadow-md"
                 >
                   <CardContent className="p-4 md:p-6">
                     <h3 className="font-bold text-lg mb-3 text-foreground">

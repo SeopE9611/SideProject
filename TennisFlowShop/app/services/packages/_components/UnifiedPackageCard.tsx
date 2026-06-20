@@ -10,6 +10,7 @@ import {
   PACKAGE_VARIANT_ICON_CLASS,
   PACKAGE_VARIANT_TOP_BAR_CLASS,
 } from "@/app/services/packages/_lib/packageVariant";
+import { PriceSummary } from "@/components/public";
 import {
   Award,
   CheckCircle,
@@ -29,7 +30,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
 const iconByVariant = {
   primary: Target,
@@ -66,7 +66,7 @@ export default function UnifiedPackageCard({
 
   return (
     <Card
-      className={`group relative flex h-full min-w-0 flex-col overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 ${onSelect ? "cursor-pointer hover:shadow-md" : ""} ${pkg.popular || selected ? "ring-2 ring-ring" : ""} ${className ?? ""}`}
+      className={`group relative flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 ${onSelect ? "cursor-pointer hover:shadow-md" : ""} ${selected ? "border-primary/40" : ""} ${className ?? ""}`}
       onClick={onSelect}
     >
       <div className={`h-1.5 ${PACKAGE_VARIANT_TOP_BAR_CLASS[pkg.variant]}`} />
@@ -74,13 +74,13 @@ export default function UnifiedPackageCard({
       <CardHeader className="pb-4 text-left">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div
-            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full shadow-sm ${PACKAGE_VARIANT_ICON_CLASS[pkg.variant]}`}
+            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${PACKAGE_VARIANT_ICON_CLASS[pkg.variant]}`}
           >
             <Icon className="h-6 w-6" />
           </div>
           <div className="flex flex-wrap justify-end gap-2">
             {pkg.popular && (
-              <Badge variant="secondary" className="whitespace-nowrap border border-border">
+              <Badge variant="brand" className="whitespace-nowrap">
                 추천
               </Badge>
             )}
@@ -100,61 +100,78 @@ export default function UnifiedPackageCard({
           </CardDescription>
         </div>
 
-        <div className="rounded-xl border border-border bg-muted/40 p-4">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">총 패키지 금액</p>
-              <div className="mt-1 whitespace-nowrap text-3xl font-bold tracking-tight text-foreground">
-                {pkg.price.toLocaleString()}원
-              </div>
-            </div>
-            {pkg.originalPrice && pkg.originalPrice > pkg.price && (
-              <div className="text-right text-sm text-muted-foreground">
-                <p>정가</p>
-                <p className="line-through">{pkg.originalPrice.toLocaleString()}원</p>
-              </div>
-            )}
-          </div>
-          <div className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
-            <p>회당 약 {pricingMeta.perSession.toLocaleString()}원</p>
-            {pricingMeta.originalPerSession > 0 ? (
-              <p className="sm:text-right">
-                정가 회당 {pricingMeta.originalPerSession.toLocaleString()}원
-              </p>
-            ) : null}
-          </div>
-        </div>
+        <PriceSummary
+          className="rounded-xl border border-border bg-muted/20 p-4"
+          rows={[
+            {
+              id: "sessions",
+              label: "이용 횟수",
+              value: `${pkg.sessions}회`,
+            },
+            {
+              id: "per-session",
+              label: "회당 단가",
+              value: `약 ${pricingMeta.perSession.toLocaleString()}원`,
+              ...(pricingMeta.originalPerSession > 0
+                ? {
+                    description: `정가 회당 ${pricingMeta.originalPerSession.toLocaleString()}원`,
+                  }
+                : {}),
+            },
+            ...(pricingMeta.savingAmount > 0
+              ? [
+                  {
+                    id: "saving",
+                    label: "절감액",
+                    value: `${pricingMeta.savingAmount.toLocaleString()}원`,
+                    ...(pricingMeta.discountRate > 0
+                      ? {
+                          description: `${pricingMeta.discountRate.toFixed(1)}% 할인`,
+                        }
+                      : {}),
+                  },
+                ]
+              : []),
+            {
+              id: "total",
+              label: "총 패키지 금액",
+              value: `${pkg.price.toLocaleString()}원`,
+              ...(pkg.originalPrice && pkg.originalPrice > pkg.price
+                ? { description: `정가 ${pkg.originalPrice.toLocaleString()}원` }
+                : {}),
+              emphasis: true,
+            },
+          ]}
+        />
       </CardHeader>
 
       <CardContent className="flex flex-1 flex-col space-y-5">
         <div
           className={`grid gap-3 ${showTotalPrice ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-2"}`}
         >
-          <div className="rounded-lg bg-muted p-3 text-center">
+          <div className="rounded-xl border border-border bg-muted/30 p-3 text-center">
             <div className="text-xl font-bold text-foreground">
               {pkg.sessions}회
             </div>
-            <div className="text-sm text-foreground/80">이용 회차</div>
+            <div className="text-sm text-muted-foreground">이용 회차</div>
           </div>
-          <div className="rounded-lg bg-muted p-3 text-center">
+          <div className="rounded-xl border border-border bg-muted/30 p-3 text-center">
             <div className="text-xl font-bold text-foreground">
               {pkg.validityPeriod}
             </div>
-            <div className="text-sm text-foreground/80">유효기간</div>
+            <div className="text-sm text-muted-foreground">유효기간</div>
           </div>
           {showTotalPrice && (
-            <div className="rounded-lg bg-muted p-3 text-center">
+            <div className="rounded-xl border border-border bg-muted/30 p-3 text-center">
               <div className="text-xl font-bold text-foreground">
                 {pkg.price.toLocaleString()}원
               </div>
-              <div className="text-sm text-foreground/80">총 금액</div>
+              <div className="text-sm text-muted-foreground">총 금액</div>
             </div>
           )}
         </div>
 
-        <Separator />
-
-        <div className="min-h-[148px]">
+        <div className="min-h-[148px] rounded-xl border border-border bg-muted/20 p-4">
           <h4 className="mb-3 flex items-center font-semibold">
             <CheckCircle className="mr-2 h-4 w-4 text-success" />
             포함 서비스
@@ -174,7 +191,7 @@ export default function UnifiedPackageCard({
           </ul>
         </div>
 
-        <div className="rounded-xl border border-border bg-muted/40 p-4 text-foreground">
+        <div className="rounded-xl border border-border bg-muted/20 p-4 text-foreground">
           <h4 className="mb-3 flex items-center font-semibold text-foreground">
             <Gift className="mr-2 h-4 w-4 text-muted-foreground" />
             혜택 요약
@@ -206,7 +223,7 @@ export default function UnifiedPackageCard({
               </Link>
             </Button>
             {ctaHelperText ? (
-              <p className="text-center text-sm text-foreground/80">
+              <p className="text-center text-sm text-muted-foreground">
                 {ctaHelperText}
               </p>
             ) : null}
