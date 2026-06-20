@@ -83,7 +83,7 @@ export default function RacketFilterPanel({
 }: Props) {
   if (isLoadingInitial) {
     return (
-      <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
         <SkeletonFilterDetailed />
       </div>
     );
@@ -92,7 +92,7 @@ export default function RacketFilterPanel({
   return (
     <div
       className={cn(
-        "rounded-xl border border-border bg-card p-5 shadow-sm bp-lg:max-h-[calc(100vh-120px)] bp-lg:overflow-y-auto bp-lg:overscroll-contain bp-lg:pr-3 bp-lg:[scrollbar-gutter:stable] bp-lg:[scrollbar-width:thin] bp-lg:[scrollbar-color:hsl(var(--muted-foreground)/0.15)_transparent] bp-lg:[&::-webkit-scrollbar]:w-1 bp-lg:[&::-webkit-scrollbar-track]:bg-transparent bp-lg:[&::-webkit-scrollbar-thumb]:rounded-full bp-lg:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 bp-lg:hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30",
+        "rounded-2xl border border-border bg-card p-5 shadow-sm bp-lg:max-h-[calc(100vh-120px)] bp-lg:overflow-y-auto bp-lg:overscroll-contain bp-lg:pr-3 bp-lg:[scrollbar-gutter:stable] bp-lg:[scrollbar-width:thin] bp-lg:[scrollbar-color:hsl(var(--muted-foreground)/0.15)_transparent] bp-lg:[&::-webkit-scrollbar]:w-1 bp-lg:[&::-webkit-scrollbar-track]:bg-transparent bp-lg:[&::-webkit-scrollbar-thumb]:rounded-full bp-lg:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 bp-lg:hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30",
       )}
     >
       <AnimatePresence mode="wait">
@@ -121,7 +121,7 @@ export default function RacketFilterPanel({
             </div>
           </div>
 
-          <p className="mb-4 text-xs leading-relaxed text-muted-foreground break-keep">
+          <p className="mb-4 rounded-xl border border-border bg-muted/20 px-3 py-2 text-xs leading-relaxed text-muted-foreground break-keep">
             {onClose
               ? "선택 후 검색/적용을 누르면 결과에 반영됩니다."
               : "조건을 선택하면 목록에 바로 반영됩니다."}
@@ -133,7 +133,7 @@ export default function RacketFilterPanel({
               e.preventDefault();
               onSearchSubmit();
             }}
-            className="mb-5 flex items-stretch gap-2"
+            className="mb-5 flex items-stretch gap-2 rounded-xl border border-border bg-muted/20 p-3"
           >
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -173,7 +173,7 @@ export default function RacketFilterPanel({
           </form>
 
           {/* 브랜드 */}
-          <div className="mb-5 space-y-2">
+          <div className="mb-5 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
             <Label
               htmlFor="brand"
               className="block text-sm font-medium text-foreground"
@@ -201,7 +201,7 @@ export default function RacketFilterPanel({
           </div>
 
           {/* 상태 등급 */}
-          <div className="mb-5 space-y-2">
+          <div className="mb-5 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
             <Label className="text-sm font-medium text-foreground">
               상태 등급
             </Label>
@@ -228,7 +228,7 @@ export default function RacketFilterPanel({
           </div>
 
           {/* 이용 유형 */}
-          <div className="mb-5 space-y-2">
+          <div className="mb-5 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
             <Label className="text-sm font-medium text-foreground">
               이용 유형
             </Label>
@@ -240,7 +240,7 @@ export default function RacketFilterPanel({
                   "rounded-md border px-3 py-2 text-sm font-medium transition-colors",
                   !rentOnly
                     ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
-                    : "border-border bg-background text-muted-foreground hover:bg-muted",
+                    : "border-border bg-card text-muted-foreground hover:bg-muted",
                 )}
               >
                 전체
@@ -252,7 +252,7 @@ export default function RacketFilterPanel({
                   "rounded-md border px-3 py-2 text-sm font-medium transition-colors",
                   rentOnly
                     ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
-                    : "border-border bg-background text-muted-foreground hover:bg-muted",
+                    : "border-border bg-card text-muted-foreground hover:bg-muted",
                 )}
               >
                 대여 가능
@@ -261,7 +261,7 @@ export default function RacketFilterPanel({
           </div>
 
           {/* 혜택 */}
-          <div className="mb-5 space-y-2">
+          <div className="mb-5 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
             <Label className="text-sm font-medium text-foreground">혜택</Label>
             <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-4">
               <Button
@@ -301,7 +301,7 @@ export default function RacketFilterPanel({
           </div>
 
           {/* 가격대 */}
-          <div className="space-y-2">
+          <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-3">
             <Label className="text-sm font-medium text-foreground">
               가격대
             </Label>
@@ -330,7 +330,7 @@ export default function RacketFilterPanel({
                       "min-w-0 w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-md border px-2 py-1.5 text-[11px] transition-colors bp-sm:text-xs",
                       isActive
                         ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
-                        : "border-border bg-background text-muted-foreground hover:bg-muted",
+                        : "border-border bg-card text-muted-foreground hover:bg-muted",
                     )}
                   >
                     {preset.label}
@@ -340,7 +340,7 @@ export default function RacketFilterPanel({
             </div>
           </div>
           {onClose && (
-            <div className="sticky bottom-0 mt-6 flex gap-2 border-t border-border bg-card py-4">
+            <div className="sticky bottom-0 mt-6 flex gap-2 border-t border-border bg-card/95 py-4 backdrop-blur">
               <Button
                 type="button"
                 variant="outline"

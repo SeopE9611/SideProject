@@ -33,9 +33,9 @@ const fetcher = (url: string) =>
   fetch(url, { credentials: "include" }).then((r) => r.json());
 
 const racketCardSurfaceClass =
-  "overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md";
+  "overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:bg-muted/20 hover:shadow-sm";
 const racketImageWrapClass =
-  "relative block w-full aspect-[4/3] overflow-hidden bg-muted/30";
+  "relative block w-full aspect-[4/3] overflow-hidden bg-muted/20";
 
 type RacketItem = {
   id: string;
@@ -416,7 +416,7 @@ const RacketCard = React.memo(
                 </div>
                 <Link href={`/rackets/${racket.id}`} className="block min-w-0">
                   <h3
-                    className="line-clamp-2 break-keep text-lg font-bold leading-snug text-foreground bp-sm:text-xl bp-lg:line-clamp-3"
+                    className="line-clamp-2 break-keep text-lg font-bold leading-snug text-foreground transition-colors hover:text-primary bp-sm:text-xl bp-lg:line-clamp-3"
                     title={racket.model}
                   >
                     {racket.model}
@@ -432,7 +432,7 @@ const RacketCard = React.memo(
               </div>
             </div>
 
-            <div className="flex shrink-0 flex-col justify-between gap-5 border-t border-border/60 p-4 bp-md:w-[280px] bp-lg:w-[300px] bp-md:border-l bp-md:border-t-0 bp-md:p-5">
+            <div className="flex shrink-0 flex-col justify-between gap-5 border-t border-border/60 bg-muted/10 p-4 bp-md:w-[280px] bp-lg:w-[300px] bp-md:border-l bp-md:border-t-0 bp-md:p-5">
               <div>{priceBlock("right")}</div>
               <div className="mt-4 space-y-2">
                 {actionButtons({ compact: true, stackOnNarrow: true })}
@@ -465,8 +465,6 @@ const RacketCard = React.memo(
           "group relative flex h-full flex-col",
         )}
       >
-        <div className="absolute left-0 right-0 top-0 h-1 bg-muted/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
         <Link
           href={`/rackets/${racket.id}`}
           className={racketImageWrapClass}
@@ -482,19 +480,19 @@ const RacketCard = React.memo(
             alt={`${displayBrandLabel} ${racket.model}`}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-contain object-center p-2 transition-transform duration-300 group-hover:scale-105"
+            className="object-contain object-center p-3 transition-opacity duration-200 group-hover:opacity-95"
           />
         </Link>
         <CardContent className="flex flex-1 flex-col p-4 bp-sm:p-6">
           <div
-            className="mb-2 max-w-full truncate text-xs font-medium text-muted-foreground bp-sm:text-base"
+            className="mb-2 max-w-full truncate text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground bp-sm:text-sm"
             title={displayBrandLabel}
           >
             {displayBrandLabel}
           </div>
           <Link href={`/rackets/${racket.id}`} className="block min-w-0">
             <CardTitle
-              className="mb-2 line-clamp-2 break-keep text-base leading-snug transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:text-lg bp-md:text-xl bp-lg:line-clamp-3"
+              className="mb-2 line-clamp-2 break-keep text-base leading-snug text-foreground transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:text-lg bp-md:text-xl bp-lg:line-clamp-3"
               title={racket.model}
             >
               {racket.model}
@@ -510,7 +508,7 @@ const RacketCard = React.memo(
           </div>
         </CardContent>
 
-        <CardFooter className="mt-auto border-t border-border/50 p-4 bp-sm:p-6">
+        <CardFooter className="mt-auto border-t border-border/50 bg-muted/10 p-4 bp-sm:p-6">
           <div className="w-full">
             <div>{priceBlock()}</div>
 
