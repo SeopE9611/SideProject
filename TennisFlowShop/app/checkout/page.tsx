@@ -14,6 +14,12 @@ import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { CartItem, useCartStore } from "@/app/store/cartStore";
 import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import SiteContainer from "@/components/layout/SiteContainer";
+import {
+  PriceSummary,
+  PrimaryCTAGroup,
+  SummaryCard,
+  type PriceSummaryRow,
+} from "@/components/public";
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -226,173 +232,140 @@ function FinalPaymentConfirmCard({
   selectedBank: string;
   depositor: string;
 }) {
+  const priceSummaryRows: PriceSummaryRow[] = [
+    ...(regularSubtotal > subtotal
+      ? [
+          {
+            id: "regular-subtotal",
+            label: "상품 정가 합계",
+            value: `${regularSubtotal.toLocaleString()}원`,
+          },
+          {
+            id: "product-discount",
+            label: "상품 할인",
+            value: `-${(regularSubtotal - subtotal).toLocaleString()}원`,
+          },
+        ]
+      : []),
+    {
+      id: "subtotal",
+      label: `상품 판매가 합계 (${orderItemsCount}개)`,
+      value: `${subtotal.toLocaleString()}원`,
+    },
+    {
+      id: "shipping-fee",
+      label: "배송비",
+      value: !isShippingFeeReady ? (
+        <Skeleton className="h-5 w-16 rounded" />
+      ) : shippingFee > 0 ? (
+        `${shippingFee.toLocaleString()}원`
+      ) : (
+        <Badge variant="outline" className="border-primary/30 text-xs text-primary">
+          무료
+        </Badge>
+      ),
+    },
+    ...(withStringService
+      ? [
+          {
+            id: "service-fee",
+            label: "교체서비스 비용",
+            value: !isMountingFeeReady ? (
+              <Skeleton className="h-5 w-20 rounded" />
+            ) : serviceFee > 0 ? (
+              `${serviceFee.toLocaleString()}원`
+            ) : (
+              <Badge
+                variant="outline"
+                className="border-primary/30 text-xs text-primary"
+              >
+                패키지
+              </Badge>
+            ),
+          },
+        ]
+      : []),
+    ...(withStringService && packageUsage?.canApplyPackage
+      ? [
+          {
+            id: "package-usage",
+            label: "패키지 적용",
+            value: packageUsage.usingPackage ? "적용됨" : "미사용",
+          },
+        ]
+      : []),
+    ...(withStringService && packageUsage?.usingPackage && baseServiceFee > 0
+      ? [
+          {
+            id: "package-discount",
+            label: "패키지 차감 서비스비",
+            value: `-${baseServiceFee.toLocaleString()}원`,
+          },
+        ]
+      : []),
+    ...(appliedPoints > 0
+      ? [
+          {
+            id: "applied-points",
+            label: "포인트 사용",
+            value: `-${appliedPoints.toLocaleString()}원`,
+          },
+        ]
+      : []),
+    {
+      id: "total-price",
+      label: "합계",
+      value: !isShippingFeeReady ? (
+        <Skeleton className="h-5 w-24 rounded" />
+      ) : (
+        `${totalPrice.toLocaleString()}원`
+      ),
+    },
+    {
+      id: "payable-total-price",
+      label: "결제 예정 금액",
+      value: !isShippingFeeReady ? (
+        <Skeleton className="h-9 w-32 rounded" />
+      ) : (
+        <span className="text-xl font-bold tabular-nums text-primary bp-sm:text-2xl">
+          {payableTotalPrice.toLocaleString()}
+          <span className="ml-0.5 text-base font-semibold">원</span>
+        </span>
+      ),
+      emphasis: true,
+    },
+  ];
+
   return (
-    <Card className="overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-      <div className="border-b border-border bg-secondary/40 p-5 bp-sm:p-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
-            <Shield className="h-5 w-5" />
-          </div>
-          <div>
-            <CardTitle className="break-keep text-lg font-bold leading-tight bp-sm:text-xl">
-              최종 결제 확인
-            </CardTitle>
-            <p className="text-xs bp-sm:text-sm text-foreground/80 mt-0.5">
-              주문 내역을 확인 후 결제를 진행해주세요
-            </p>
-          </div>
+    <SummaryCard
+      title="최종 결제 확인"
+      description="주문 내역을 확인 후 결제를 진행해주세요"
+      action={
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+          <Shield className="h-5 w-5" />
         </div>
-      </div>
-      <CardContent className="space-y-5 p-5 bp-sm:p-6">
-        <div className="space-y-3 text-sm">
-          {regularSubtotal > subtotal && (
-            <>
-              <div className="flex items-center justify-between gap-3 py-1">
-                <span className="min-w-0 break-words text-foreground/80">
-                  상품 정가 합계
-                </span>
-                <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
-                  {regularSubtotal.toLocaleString()}원
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3 py-1 text-primary">
-                <span className="min-w-0 break-words">상품 할인</span>
-                <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
-                  -{(regularSubtotal - subtotal).toLocaleString()}원
-                </span>
-              </div>
-            </>
-          )}
-          <div className="flex items-center justify-between gap-3 py-1">
-            <span className="min-w-0 break-words text-foreground/80">
-              상품 판매가 합계 ({orderItemsCount}개)
+      }
+      contentClassName="space-y-5"
+    >
+      <PriceSummary rows={priceSummaryRows} />
+      {withStringService && (
+        <p className="rounded-xl border border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+          결제 완료 후 교체서비스 신청 정보가 함께 접수됩니다.
+        </p>
+      )}
+      <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-3 text-xs text-foreground">
+        {paymentMethod === "bank-transfer" && (
+          <p className="text-muted-foreground">
+            입금 계좌:{" "}
+            {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.account ??
+              selectedBank}
+            <span className="block mt-1">
+              입금자명: {depositor.trim() || "미입력"}
             </span>
-            <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
-              {subtotal.toLocaleString()}원
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-3 py-1">
-            <span className="min-w-0 break-words text-foreground/80">
-              배송비
-            </span>
-            {!isShippingFeeReady ? (
-              <Skeleton className="h-5 w-16 rounded" />
-            ) : (
-              <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
-                {shippingFee > 0 ? (
-                  `${shippingFee.toLocaleString()}원`
-                ) : (
-                  <Badge
-                    variant="outline"
-                    className="text-xs border-primary/30 text-primary"
-                  >
-                    무료
-                  </Badge>
-                )}
-              </span>
-            )}
-          </div>
-          {withStringService && (
-            <div className="flex items-center justify-between gap-3 py-1">
-              <span className="min-w-0 break-words text-foreground/80">
-                교체서비스 비용
-              </span>
-              {!isMountingFeeReady ? (
-                <Skeleton className="h-5 w-20 rounded" />
-              ) : serviceFee > 0 ? (
-                <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
-                  {serviceFee.toLocaleString()}원
-                </span>
-              ) : (
-                <Badge
-                  variant="outline"
-                  className="text-xs border-primary/30 text-primary"
-                >
-                  패키지
-                </Badge>
-              )}
-            </div>
-          )}
-          {withStringService && packageUsage?.canApplyPackage && (
-            <div className="flex items-center justify-between gap-3 py-1">
-              <span className="min-w-0 break-words text-foreground/80">
-                패키지 적용
-              </span>
-              <span className="shrink-0 whitespace-nowrap text-right font-semibold">
-                {packageUsage.usingPackage ? "적용됨" : "미사용"}
-              </span>
-            </div>
-          )}
-          {withStringService &&
-            packageUsage?.usingPackage &&
-            baseServiceFee > 0 && (
-              <div className="flex items-center justify-between gap-3 py-1">
-                <span className="min-w-0 break-words text-foreground/80">
-                  패키지 차감 서비스비
-                </span>
-                <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums text-destructive">
-                  -{baseServiceFee.toLocaleString()}원
-                </span>
-              </div>
-            )}
-          {appliedPoints > 0 && (
-            <div className="flex items-center justify-between gap-3 py-1">
-              <span className="min-w-0 break-words text-foreground/80">
-                포인트 사용
-              </span>
-              <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums text-destructive">
-                -{appliedPoints.toLocaleString()}원
-              </span>
-            </div>
-          )}
-        </div>
-
-        <div className="h-px bg-border/70" />
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between gap-3 text-sm">
-            <span className="min-w-0 break-words text-foreground/90">합계</span>
-            {!isShippingFeeReady ? (
-              <Skeleton className="h-5 w-24 rounded" />
-            ) : (
-              <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
-                {totalPrice.toLocaleString()}원
-              </span>
-            )}
-          </div>
-          <div className="-mx-1 flex items-center justify-between gap-3 rounded-xl bg-primary/10 p-4">
-            <span className="min-w-0 break-words text-base font-bold bp-sm:text-lg">
-              결제 예정 금액
-            </span>
-            {!isShippingFeeReady ? (
-              <Skeleton className="h-9 w-32 rounded" />
-            ) : (
-              <span className="shrink-0 whitespace-nowrap text-right text-xl font-bold tabular-nums text-primary bp-sm:text-2xl bp-md:text-3xl">
-                {payableTotalPrice.toLocaleString()}
-                <span className="text-base font-semibold ml-0.5">원</span>
-              </span>
-            )}
-          </div>
-        </div>
-        {withStringService && (
-          <p className="rounded-lg border border-border/70 bg-secondary/20 px-3 py-2 text-xs text-foreground/85">
-            결제 완료 후 교체서비스 신청 정보가 함께 접수됩니다.
           </p>
         )}
-        <div className="space-y-2 rounded-xl border border-border/70 bg-secondary/20 p-3 text-xs text-foreground">
-          {paymentMethod === "bank-transfer" && (
-            <p className="text-muted-foreground">
-              입금 계좌:{" "}
-              {bankLabelMap[selectedBank as keyof typeof bankLabelMap]
-                ?.account ?? selectedBank}
-              <span className="block mt-1">
-                입금자명: {depositor.trim() || "미입력"}
-              </span>
-            </p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </SummaryCard>
   );
 }
 
@@ -2796,105 +2769,112 @@ export default function CheckoutPage() {
                         )}
                       </div>
                     )}
-                    {paymentMethod === "bank-transfer" ? (
-                      <div
-                        onPointerDownCapture={
-                          requestStringingValidationMessages
-                        }
-                        className="w-full"
-                      >
-                        <CheckoutButton
-                          disabled={!resolvedCanSubmit}
-                          name={name}
-                          phone={phone}
-                          email={email}
-                          postalCode={postalCode}
-                          address={address}
-                          addressDetail={addressDetail}
-                          depositor={depositor}
-                          totalPrice={totalPrice}
-                          shippingFee={shippingFee}
-                          payableAmount={payableTotalPrice}
-                          selectedBank={selectedBank}
-                          deliveryRequest={deliveryRequest}
-                          saveAddress={saveAddress}
-                          deliveryMethod={deliveryMethod}
-                          serviceTargetIds={serviceTargetIds}
-                          withStringService={withStringService}
-                          servicePickupMethod={servicePickupMethod}
-                          items={orderItems}
-                          serviceFee={finalServiceFee}
-                          pointsToUse={appliedPoints}
-                          stringingApplicationInput={stringingApplicationInput}
-                          onSubmittingChange={setIsCheckoutSubmitting}
-                          onBeforeSuccessNavigation={() =>
-                            setIsIntentionalSuccessNavigation(true)
-                          }
-                          onSuccessNavigationAbort={() =>
-                            setIsIntentionalSuccessNavigation(false)
-                          }
-                        />
-                      </div>
-                    ) : nicePaymentsEnabled && !isZeroPayableAmount ? (
-                      <div
-                        onPointerDownCapture={
-                          requestStringingValidationMessages
-                        }
-                        className="w-full"
-                      >
-                        <NiceCheckoutButton
-                          disabled={!resolvedCanSubmit}
-                          onBeforeSuccessNavigation={() =>
-                            setIsIntentionalSuccessNavigation(true)
-                          }
-                          onSuccessNavigationAbort={() =>
-                            setIsIntentionalSuccessNavigation(false)
-                          }
-                          payableAmount={payableTotalPrice}
-                          payload={{
-                            items: orderItems.map((item) => ({
-                              productId: item.id,
-                              quantity: item.quantity,
-                              kind: item.kind ?? "product",
-                              selectedGauge: item.selectedGauge,
-                              selectedColor: item.selectedColor,
-                              selectedColorLabel: item.selectedColorLabel,
-                              selectedColorHex: item.selectedColorHex,
-                              selectedColorImage: item.selectedColorImage,
-                            })),
-                            shippingInfo: {
-                              name: name.trim(),
-                              phone: phone.replace(/\D/g, ""),
-                              address: address.trim(),
-                              addressDetail: addressDetail.trim(),
-                              postalCode: postalCode.replace(/\D/g, ""),
-                              depositor: "나이스결제",
-                              deliveryRequest: deliveryRequest.trim(),
-                              deliveryMethod,
-                              withStringService,
-                            },
-                            paymentInfo: { method: "나이스페이" },
-                            totalPrice,
-                            shippingFee,
-                            serviceFee: finalServiceFee,
-                            pointsToUse: appliedPoints,
-                            guestInfo: !user
-                              ? {
+                    <PrimaryCTAGroup
+                      className="w-full sm:w-full"
+                      primary={
+                        paymentMethod === "bank-transfer" ? (
+                          <div
+                            onPointerDownCapture={
+                              requestStringingValidationMessages
+                            }
+                            className="w-full"
+                          >
+                            <CheckoutButton
+                              disabled={!resolvedCanSubmit}
+                              name={name}
+                              phone={phone}
+                              email={email}
+                              postalCode={postalCode}
+                              address={address}
+                              addressDetail={addressDetail}
+                              depositor={depositor}
+                              totalPrice={totalPrice}
+                              shippingFee={shippingFee}
+                              payableAmount={payableTotalPrice}
+                              selectedBank={selectedBank}
+                              deliveryRequest={deliveryRequest}
+                              saveAddress={saveAddress}
+                              deliveryMethod={deliveryMethod}
+                              serviceTargetIds={serviceTargetIds}
+                              withStringService={withStringService}
+                              servicePickupMethod={servicePickupMethod}
+                              items={orderItems}
+                              serviceFee={finalServiceFee}
+                              pointsToUse={appliedPoints}
+                              stringingApplicationInput={
+                                stringingApplicationInput
+                              }
+                              onSubmittingChange={setIsCheckoutSubmitting}
+                              onBeforeSuccessNavigation={() =>
+                                setIsIntentionalSuccessNavigation(true)
+                              }
+                              onSuccessNavigationAbort={() =>
+                                setIsIntentionalSuccessNavigation(false)
+                              }
+                            />
+                          </div>
+                        ) : nicePaymentsEnabled && !isZeroPayableAmount ? (
+                          <div
+                            onPointerDownCapture={
+                              requestStringingValidationMessages
+                            }
+                            className="w-full"
+                          >
+                            <NiceCheckoutButton
+                              disabled={!resolvedCanSubmit}
+                              onBeforeSuccessNavigation={() =>
+                                setIsIntentionalSuccessNavigation(true)
+                              }
+                              onSuccessNavigationAbort={() =>
+                                setIsIntentionalSuccessNavigation(false)
+                              }
+                              payableAmount={payableTotalPrice}
+                              payload={{
+                                items: orderItems.map((item) => ({
+                                  productId: item.id,
+                                  quantity: item.quantity,
+                                  kind: item.kind ?? "product",
+                                  selectedGauge: item.selectedGauge,
+                                  selectedColor: item.selectedColor,
+                                  selectedColorLabel: item.selectedColorLabel,
+                                  selectedColorHex: item.selectedColorHex,
+                                  selectedColorImage: item.selectedColorImage,
+                                })),
+                                shippingInfo: {
                                   name: name.trim(),
                                   phone: phone.replace(/\D/g, ""),
-                                  email: email.trim().toLowerCase(),
-                                }
-                              : undefined,
-                            isStringServiceApplied: withStringService,
-                            servicePickupMethod,
-                            stringingApplicationInput:
-                              withStringService && stringingApplicationInput
-                                ? stringingApplicationInput
-                                : undefined,
-                          }}
-                        />
-                      </div>
-                    ) : null}
+                                  address: address.trim(),
+                                  addressDetail: addressDetail.trim(),
+                                  postalCode: postalCode.replace(/\D/g, ""),
+                                  depositor: "나이스결제",
+                                  deliveryRequest: deliveryRequest.trim(),
+                                  deliveryMethod,
+                                  withStringService,
+                                },
+                                paymentInfo: { method: "나이스페이" },
+                                totalPrice,
+                                shippingFee,
+                                serviceFee: finalServiceFee,
+                                pointsToUse: appliedPoints,
+                                guestInfo: !user
+                                  ? {
+                                      name: name.trim(),
+                                      phone: phone.replace(/\D/g, ""),
+                                      email: email.trim().toLowerCase(),
+                                    }
+                                  : undefined,
+                                isStringServiceApplied: withStringService,
+                                servicePickupMethod,
+                                stringingApplicationInput:
+                                  withStringService && stringingApplicationInput
+                                    ? stringingApplicationInput
+                                    : undefined,
+                              }}
+                            />
+                          </div>
+                        ) : null
+                      }
+                    />
                     {/* <Button variant="outline" className="w-full border-2 hover:bg-background dark:hover:bg-muted bg-transparent" asChild>
                       <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick}>
                         장바구니로 돌아가기
