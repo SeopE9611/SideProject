@@ -1,6 +1,13 @@
 "use client";
 
 import WishlistSidebar from "@/app/cart/_components/WishlistSidebar";
+import {
+  EmptyState,
+  PriceSummary,
+  PrimaryCTAGroup,
+  SummaryCard,
+  type PriceSummaryRow,
+} from "@/components/public";
 import { useAuthStore, type User } from "@/app/store/authStore";
 import { useCartStore } from "@/app/store/cartStore";
 import SiteContainer from "@/components/layout/SiteContainer";
@@ -24,7 +31,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyInfo } from "@/lib/auth.client";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
@@ -38,7 +44,6 @@ import {
   ArrowRight,
   Loader2,
   Minus,
-  Package,
   PackageOpen,
   Plus,
   ShoppingBag,
@@ -225,6 +230,63 @@ export default function CartPageClient() {
     isShippingFeeReady,
   ]);
   const total = subtotal + shippingFee;
+
+  const priceSummaryRows = useMemo<PriceSummaryRow[]>(() => {
+    const rows: PriceSummaryRow[] = [];
+
+    if (productDiscount > 0) {
+      rows.push(
+        {
+          id: "regular-subtotal",
+          label: "상품 정가 합계",
+          value: `${formatKRW(regularSubtotal)}원`,
+        },
+        {
+          id: "product-discount",
+          label: "상품 할인",
+          value: `-${formatKRW(productDiscount)}원`,
+        },
+      );
+    }
+
+    rows.push(
+      {
+        id: "subtotal",
+        label: "상품 판매가 합계",
+        value: `${formatKRW(subtotal)}원`,
+      },
+      {
+        id: "shipping-fee",
+        label: "배송비",
+        value: !isShippingFeeReady ? (
+          <Skeleton className="h-6 w-20 rounded-md" />
+        ) : shippingFee > 0 ? (
+          `${formatKRW(shippingFee)}원`
+        ) : (
+          <span className="text-primary">무료</span>
+        ),
+      },
+      {
+        id: "total",
+        label: "예상 결제금액",
+        value: !isShippingFeeReady ? (
+          <Skeleton className="h-7 w-28 rounded-md" />
+        ) : (
+          <span className="text-primary">{formatKRW(total)}원</span>
+        ),
+        emphasis: true,
+      },
+    );
+
+    return rows;
+  }, [
+    isShippingFeeReady,
+    productDiscount,
+    regularSubtotal,
+    shippingFee,
+    subtotal,
+    total,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -790,7 +852,7 @@ export default function CartPageClient() {
           <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-3">
             {/* 목록 */}
             <div className="bp-lg:col-span-2 space-y-5">
-              <Card className="border border-border bg-card shadow-sm">
+              <Card className="rounded-2xl border border-border bg-card shadow-sm">
                 <CardHeader variant="section" className="rounded-t-2xl">
                   <div className="flex flex-col gap-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                     <div>
@@ -885,7 +947,7 @@ export default function CartPageClient() {
                     return (
                       <div
                         key={`${item.id}:${item.selectedGauge ?? ""}:${item.selectedColor ?? ""}`}
-                        className={`rounded-xl bg-card p-3 bp-sm:p-4 shadow-sm transition hover:shadow-md dark:bg-card ${highlightCleanupTarget ? "ring-2 ring-ring bg-muted/40 dark:bg-muted" : ""}`}
+                        className={`rounded-2xl border border-border bg-card p-3 shadow-sm transition hover:shadow-md bp-sm:p-4 dark:bg-card ${highlightCleanupTarget ? "bg-muted/30" : ""}`}
                       >
                         <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center">
                           {/* 상단(모바일): 체크+썸네일+이름 */}
@@ -954,7 +1016,7 @@ export default function CartPageClient() {
                               )}
                               {(item.selectedColorLabel ||
                                 item.selectedColor) && (
-                                <span className="mt-1 inline-flex max-w-full items-center gap-1 rounded-full bg-muted/40 px-2 py-0.5 text-xs leading-relaxed text-muted-foreground [&>span:last-child]:min-w-0 [&>span:last-child]:break-keep [&>span:last-child]:break-words">
+                                <span className="mt-1 inline-flex max-w-full items-center gap-1 rounded-full border border-border bg-muted/30 px-2 py-0.5 text-xs leading-relaxed text-muted-foreground [&>span:last-child]:min-w-0 [&>span:last-child]:break-keep [&>span:last-child]:break-words">
                                   색상
                                   {item.selectedColorHex && (
                                     <span
@@ -977,7 +1039,7 @@ export default function CartPageClient() {
                                   >
                                     교체서비스에 사용할 스트링
                                   </Badge>
-                                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-snug text-foreground/90 dark:text-foreground">
+                                  <div className="mt-2 rounded-xl border border-border bg-muted/20 p-3 text-xs leading-snug text-foreground dark:text-foreground">
                                     <span className="inline-flex items-center gap-1.5">
                                       <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                                       교체서비스에 사용할 스트링은 <b>1종만</b>{" "}
@@ -1004,7 +1066,7 @@ export default function CartPageClient() {
                           <div className="flex min-w-0 flex-wrap items-start gap-3 bp-sm:flex-1 bp-sm:flex-nowrap bp-sm:justify-end">
                             {/* 수량 스테퍼 (번들이면 잠금 + 링크로만 변경) */}
                             {lockStepper ? (
-                              <div className="order-1 flex flex-col items-center">
+                              <div className="order-1 flex flex-col items-center rounded-xl border border-border bg-muted/20 p-2">
                                 {/* 숫자만 표시(± 없음) */}
                                 <div className="flex h-8 items-center rounded-full bg-muted px-3 dark:bg-muted">
                                   <span className="tabular-nums w-8 select-none text-center font-medium">
@@ -1038,7 +1100,7 @@ export default function CartPageClient() {
                               </div>
                             ) : (
                               /* 수량 스테퍼 (pill, 비활성 표시) */
-                              <div className="order-1 flex flex-col items-center">
+                              <div className="order-1 flex flex-col items-center rounded-xl border border-border bg-muted/20 p-2">
                                 <div className="flex items-center rounded-full bg-muted px-1 dark:bg-muted">
                                   <Button
                                     variant="ghost"
@@ -1257,81 +1319,16 @@ export default function CartPageClient() {
             {/* 요약 */}
             <div className="bp-lg:col-span-1">
               <div className="bp-lg:sticky bp-lg:top-[calc(var(--header-h)+16px)]">
-                <Card className="border border-border bg-card shadow-sm overflow-hidden">
-                  <div className="bg-secondary/70 p-4 bp-sm:p-6 text-foreground border-b border-border">
-                    <CardTitle className="flex items-center gap-3 text-xl">
-                      <div className="rounded-2xl bg-card/20 p-2 shadow-lg">
-                        <Package className="h-5 w-5" />
-                      </div>
-                      예상 주문 요약
-                    </CardTitle>
-                  </div>
-                  <CardContent className="space-y-5 bp-sm:space-y-6 p-4 bp-sm:p-6">
-                    <div className="space-y-4">
-                      {productDiscount > 0 && (
-                        <>
-                          <div className="flex items-center justify-between gap-3">
-                            <span className="min-w-0 break-words text-muted-foreground">
-                              상품 정가 합계
-                            </span>
-                            <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
-                              {formatKRW(regularSubtotal)}원
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between gap-3 text-primary">
-                            <span className="min-w-0 break-words">
-                              상품 할인
-                            </span>
-                            <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
-                              -{formatKRW(productDiscount)}원
-                            </span>
-                          </div>
-                        </>
-                      )}
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="min-w-0 break-words text-muted-foreground">
-                          상품 판매가 합계
-                        </span>
-                        <span className="shrink-0 whitespace-nowrap text-right text-lg font-semibold tabular-nums">
-                          {formatKRW(subtotal)}원
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="min-w-0 break-words text-muted-foreground">
-                          배송비
-                        </span>
-                        {!isShippingFeeReady ? (
-                          <Skeleton className="h-6 w-20 rounded-md" />
-                        ) : (
-                          <span
-                            className={
-                              shippingFee === 0
-                                ? "shrink-0 whitespace-nowrap text-right font-semibold text-primary"
-                                : "shrink-0 whitespace-nowrap text-right font-semibold tabular-nums"
-                            }
-                          >
-                            {shippingFee > 0
-                              ? `${formatKRW(shippingFee)}원`
-                              : "무료"}
-                          </span>
-                        )}
-                      </div>
-                      <Separator className="opacity-40" />
-                      <div className="flex items-center justify-between gap-3 text-xl font-bold">
-                        <span className="min-w-0 break-words">
-                          예상 결제금액
-                        </span>
-                        {!isShippingFeeReady ? (
-                          <Skeleton className="h-7 w-28 rounded-md" />
-                        ) : (
-                          <span className="shrink-0 whitespace-nowrap text-right tabular-nums text-primary">
-                            {formatKRW(total)}원
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                <SummaryCard
+                  eyebrow="Order summary"
+                  title="예상 주문 요약"
+                  description="장바구니 기준 금액과 배송비를 확인한 뒤 주문을 진행하세요."
+                  className="overflow-hidden"
+                >
+                  <div className="space-y-5 bp-sm:space-y-6">
+                    <PriceSummary rows={priceSummaryRows} />
 
-                    <div className="rounded-xl border border-border/60 bg-secondary/50 p-4">
+                    <div className="rounded-xl border border-border bg-muted/20 p-4">
                       <div className="flex items-center gap-2 text-primary mb-2">
                         <Star className="h-4 w-4" />
                         <span className="font-semibold">배송 안내</span>
@@ -1343,12 +1340,12 @@ export default function CartPageClient() {
                         </span>
                       </p>
                     </div>
-                  </CardContent>
-                  <CardFooter className="flex flex-col items-stretch gap-3 p-4 bp-sm:p-6 pt-0">
+                  </div>
+                  <div className="mt-5 flex flex-col items-stretch gap-3 border-t border-border pt-5">
                     {blockServiceCheckout ? (
                       <>
                         {blockServiceCheckoutByComposition && (
-                          <div className="w-full rounded-lg border border-border bg-muted p-3 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground space-y-1.5">
+                          <div className="w-full space-y-1.5 rounded-xl border border-border bg-muted/20 p-3 text-sm text-foreground">
                             <p className="font-semibold">
                               교체서비스 구성을 정리해야 해요
                             </p>
@@ -1378,7 +1375,7 @@ export default function CartPageClient() {
                           </div>
                         )}
                         {blockServiceCheckoutByQty && (
-                          <div className="w-full rounded-lg border border-border bg-muted p-3 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground">
+                          <div className="w-full rounded-xl border border-border bg-muted/20 p-3 text-sm text-foreground">
                             라켓 1개에는 장착할 스트링 1개가 필요해요.
                             <br />
                             현재 라켓{" "}
@@ -1455,40 +1452,53 @@ export default function CartPageClient() {
                         <p className="rounded-lg border border-border/60 bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
                           최신 재고는 주문 시 다시 확인됩니다.
                         </p>
-                        <Button
-                          className="h-14 w-full font-semibold"
-                          size="lg"
-                          disabled={isCheckingCheckoutStock}
-                          onClick={handleCheckoutClick}
-                        >
-                          {isCheckingCheckoutStock ? (
-                            <Loader2 className="h-5 w-5 animate-spin" />
-                          ) : (
-                            <ShoppingBag className="h-5 w-5" />
-                          )}
-                          {user ? "주문하기" : "로그인 후 주문하기"}
-                          <ArrowRight className="h-5 w-5" />
-                        </Button>
+                        <PrimaryCTAGroup
+                          className="sm:w-full sm:flex-col sm:items-stretch"
+                          primary={
+                            <Button
+                              className="h-14 w-full font-semibold"
+                              size="lg"
+                              disabled={isCheckingCheckoutStock}
+                              onClick={handleCheckoutClick}
+                            >
+                              {isCheckingCheckoutStock ? (
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                              ) : (
+                                <ShoppingBag className="h-5 w-5" />
+                              )}
+                              {user ? "주문하기" : "로그인 후 주문하기"}
+                              <ArrowRight className="h-5 w-5" />
+                            </Button>
+                          }
+                          secondary={
+                            <Button
+                              variant="outline"
+                              className="w-full"
+                              asChild
+                            >
+                              <Link href="/products">쇼핑 계속하기</Link>
+                            </Button>
+                          }
+                        />
                       </>
                     )}
-                  </CardFooter>
-                </Card>
+                  </div>
+                </SummaryCard>
               </div>
             </div>
           </div>
         ) : (
           <div className="mx-auto max-w-2xl">
-            <Card className="border border-border bg-card shadow-sm text-center overflow-hidden">
-              <div className="bg-secondary/50 p-5 bp-sm:p-8 md:p-12">
-                <div className="mb-5 inline-flex h-20 w-20 items-center justify-center bp-sm:mb-6 bp-sm:h-24 bp-sm:w-24 rounded-full border border-border bg-muted text-foreground shadow-sm">
+            <EmptyState
+              className="rounded-2xl bg-card py-12 shadow-sm"
+              icon={
+                <span className="inline-flex h-20 w-20 items-center justify-center rounded-full border border-border bg-muted text-foreground shadow-sm bp-sm:h-24 bp-sm:w-24">
                   <PackageOpen className="h-10 w-10 bp-sm:h-12 bp-sm:w-12" />
-                </div>
-                <h2 className="mb-3 text-2xl font-bold text-foreground bp-md:mb-4 bp-md:text-3xl">
-                  장바구니가 비어있습니다
-                </h2>
-                <p className="mb-6 text-sm leading-relaxed text-muted-foreground bp-sm:text-base md:mb-8">
-                  마음에 드는 테니스 용품을 장바구니에 담아보세요!
-                </p>
+                </span>
+              }
+              title="장바구니가 비어있습니다"
+              description="마음에 드는 테니스 용품을 장바구니에 담아보세요!"
+              action={
                 <Button
                   className="w-full px-6 py-3 font-semibold bp-sm:w-auto md:px-8"
                   size="lg"
@@ -1503,8 +1513,8 @@ export default function CartPageClient() {
                     <ArrowRight className="h-5 w-5" />
                   </Link>
                 </Button>
-              </div>
-            </Card>
+              }
+            />
             <div className="mx-auto mt-8 max-w-2xl">
               <WishlistSidebar variant="inline" />
             </div>
@@ -1535,7 +1545,7 @@ export default function CartPageClient() {
               {blockServiceCheckout ? (
                 <div className="space-y-2">
                   {blockServiceCheckoutByComposition && (
-                    <div className="rounded-lg border border-border bg-muted p-3 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground space-y-1.5">
+                    <div className="space-y-1.5 rounded-xl border border-border bg-muted/20 p-3 text-sm text-foreground">
                       <p className="font-semibold">
                         교체서비스 구성을 정리해야 해요
                       </p>
@@ -1565,7 +1575,7 @@ export default function CartPageClient() {
                     </div>
                   )}
                   {blockServiceCheckoutByQty && (
-                    <div className="rounded-lg border border-border bg-muted p-3 text-sm text-foreground dark:border-border dark:bg-muted dark:text-foreground">
+                    <div className="rounded-xl border border-border bg-muted/20 p-3 text-sm text-foreground">
                       라켓 1개에는 장착할 스트링 1개가 필요해요. 현재 라켓{" "}
                       <span className="font-semibold">{totalRacketQty}개</span>{" "}
                       / 장착 스트링{" "}
