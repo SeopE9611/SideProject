@@ -60,7 +60,7 @@ type SelectStringLayoutProps = {
   /** CTA sub label */
   ctaSubLabel?: string;
   /** Page-specific visual treatment. Defaults keep existing shared flows unchanged. */
-  designVariant?: "default" | "racketPurchase";
+  designVariant?: "default" | "racketPurchase" | "rental";
 };
 
 export default function SelectStringLayout({
@@ -81,6 +81,7 @@ export default function SelectStringLayout({
   designVariant = "default",
 }: SelectStringLayoutProps) {
   const isRacketPurchaseDesign = designVariant === "racketPurchase";
+  const isRentalDesign = designVariant === "rental";
   // State
   const [workCount, setWorkCount] = useState(initialWorkCount);
   const [searchQuery, setSearchQuery] = useState("");
@@ -223,16 +224,22 @@ export default function SelectStringLayout({
   // Determine CTA labels
   const finalCtaLabel = ctaLabel ?? (flowType === "rental" ? "대여 계속하기" : isCartEditMode ? "이 스트링으로 변경" : "구매 계속하기");
   const finalCtaSubLabel = ctaSubLabel ?? (flowType === "rental" ? "선택 후 장착 정보 입력 단계로 이동합니다" : "선택한 스트링은 라켓과 함께 결제됩니다");
-  const headerTitle = isRacketPurchaseDesign ? "라켓에 장착할 스트링을 선택하세요" : "스트링 및 교체서비스 선택";
-  const headerDescription = isRacketPurchaseDesign
-    ? isCartEditMode
-      ? "장바구니 번들의 스트링을 변경합니다. 선택한 옵션은 다음 단계에서 다시 확인할 수 있습니다."
-      : "선택한 라켓을 확인하고 장착할 스트링을 고른 뒤 결제로 이어가세요."
-    : flowType === "rental"
-      ? "대여 라켓에 장착할 스트링을 선택해주세요. 장착 후 출고되는 흐름입니다"
-      : isCartEditMode
-        ? "장바구니 번들의 스트링을 변경합니다"
-        : "라켓과 함께 구매할 스트링을 선택해주세요. 선택 완료 후 결제와 장착 정보 입력으로 이어집니다";
+  const headerTitle = isRentalDesign
+    ? "대여 라켓에 장착할 스트링을 선택하세요"
+    : isRacketPurchaseDesign
+      ? "라켓에 장착할 스트링을 선택하세요"
+      : "스트링 및 교체서비스 선택";
+  const headerDescription = isRentalDesign
+    ? "선택한 대여 라켓을 확인하고 장착할 스트링을 고른 뒤 대여 신청 단계로 이어가세요."
+    : isRacketPurchaseDesign
+      ? isCartEditMode
+        ? "장바구니 번들의 스트링을 변경합니다. 선택한 옵션은 다음 단계에서 다시 확인할 수 있습니다."
+        : "선택한 라켓을 확인하고 장착할 스트링을 고른 뒤 결제로 이어가세요."
+      : flowType === "rental"
+        ? "대여 라켓에 장착할 스트링을 선택해주세요. 장착 후 출고되는 흐름입니다"
+        : isCartEditMode
+          ? "장바구니 번들의 스트링을 변경합니다"
+          : "라켓과 함께 구매할 스트링을 선택해주세요. 선택 완료 후 결제와 장착 정보 입력으로 이어집니다";
 
   const renderSelectedRacketSummary = () => (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
@@ -242,14 +249,14 @@ export default function SelectStringLayout({
           <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
             <Check className="h-3.5 w-3.5 text-primary" />
           </div>
-          <span className="text-sm font-semibold text-foreground">{flowType === "rental" ? "선택된 라켓 (대여)" : "선택된 라켓"}</span>
+          <span className="text-sm font-semibold text-foreground">{flowType === "rental" ? "대여 라켓 요약" : "선택된 라켓"}</span>
         </div>
       </div>
 
       {/* Racket Info */}
-      <div className="p-5">
-        <div className="flex gap-4">
-          <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-secondary/50">
+      <div className="p-4 bp-md:p-5">
+        <div className="flex gap-3 bp-md:gap-4">
+          <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl bg-secondary/50 bp-md:h-20 bp-md:w-20">
             {racket.image ? (
               <Image src={racket.image} alt={racket.name} fill sizes="80px" className="object-cover" />
             ) : (
@@ -259,11 +266,11 @@ export default function SelectStringLayout({
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="line-clamp-2 text-sm font-semibold leading-tight text-foreground">{racket.name}</h3>
+            <h3 className="line-clamp-2 min-w-0 break-keep text-sm font-semibold leading-tight text-foreground">{racket.name}</h3>
             {flowType === "rental" && rentalPeriod && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                대여 기간: <span className="font-medium text-foreground">{rentalPeriod}일</span>
-              </p>
+              <div className="mt-2 inline-flex rounded-full border border-border bg-muted/30 px-2.5 py-1 text-xs text-muted-foreground">
+                대여 기간 <span className="ml-1 font-medium tabular-nums text-foreground">{rentalPeriod}일</span>
+              </div>
             )}
             {flowType === "purchase" && racket.price != null && (
               <div className="mt-2 space-y-1 tabular-nums">
@@ -311,15 +318,15 @@ export default function SelectStringLayout({
 
         {/* Skip Button */}
         {onSkipString && (
-          <Button variant="outline" className="mt-4 w-full" onClick={onSkipString}>
+          <Button variant="outline" className="mt-4 h-10 w-full rounded-xl break-keep" onClick={onSkipString}>
             스트링 없이 {flowType === "rental" ? "대여" : "구매"}하기
           </Button>
         )}
 
         {/* Info Text */}
-        <div className="mt-4 rounded-xl border border-border bg-primary/5 p-3 text-xs leading-relaxed text-muted-foreground">
+        <div className="mt-4 rounded-xl border border-border bg-muted/20 p-3 text-xs leading-relaxed text-muted-foreground">
           <p className="font-semibold text-foreground">다음 단계 안내</p>
-          <p className="mt-1 break-keep">선택한 라켓, 스트링 옵션, 수량은 체크아웃에서 한 번 더 확인할 수 있습니다. 장착 정보까지 입력하면 신청이 완료됩니다.</p>
+          <p className="mt-1 break-keep">{flowType === "rental" ? "대여 라켓과 선택한 스트링 옵션은 체크아웃에서 한 번 더 확인할 수 있습니다." : "선택한 라켓, 스트링 옵션, 수량은 체크아웃에서 한 번 더 확인할 수 있습니다. 장착 정보까지 입력하면 신청이 완료됩니다."}</p>
         </div>
       </div>
     </div>
@@ -327,9 +334,9 @@ export default function SelectStringLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      <SiteContainer variant="wide" className={cn("py-6", isRacketPurchaseDesign ? "bp-md:py-8" : "bp-md:py-10")}>
+      <SiteContainer variant="wide" className={cn("py-5 bp-md:py-8", !isRacketPurchaseDesign && !isRentalDesign && "bp-md:py-10")}>
         {/* Header */}
-        <div className={cn("rounded-2xl border border-border bg-card shadow-sm", isRacketPurchaseDesign ? "mb-5 p-4 bp-md:mb-6 bp-md:p-5" : "mb-8 p-5 bp-md:p-6")}>
+        <div className={cn("rounded-2xl border border-border bg-card shadow-sm", isRacketPurchaseDesign || isRentalDesign ? "mb-5 p-4 bp-md:mb-6 bp-md:p-5" : "mb-8 p-5 bp-md:p-6")}>
           {backLink && (
             <Link href={backLink} className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
               <ArrowLeft className="h-4 w-4" />
@@ -337,7 +344,7 @@ export default function SelectStringLayout({
             </Link>
           )}
 
-          <div className={cn(isRacketPurchaseDesign ? "mt-3 space-y-3" : "space-y-4")}>
+          <div className={cn(isRacketPurchaseDesign || isRentalDesign ? "mt-3 space-y-3" : "space-y-4")}>
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary" className="rounded-full">
                 1 라켓 확인
@@ -348,7 +355,7 @@ export default function SelectStringLayout({
               </Badge>
             </div>
             <div>
-              <h1 className={cn("break-keep font-bold tracking-tight text-foreground", isRacketPurchaseDesign ? "text-2xl bp-md:text-3xl" : "text-2xl bp-md:text-3xl bp-lg:text-4xl")}>{headerTitle}</h1>
+              <h1 className={cn("break-keep font-bold tracking-tight text-foreground", isRacketPurchaseDesign || isRentalDesign ? "text-2xl bp-md:text-3xl" : "text-2xl bp-md:text-3xl bp-lg:text-4xl")}>{headerTitle}</h1>
               <p className="mt-2 max-w-3xl break-keep text-sm leading-relaxed text-muted-foreground bp-md:text-base">
                 {headerDescription}
               </p>
@@ -356,7 +363,7 @@ export default function SelectStringLayout({
           </div>
         </div>
 
-        <div className={cn("grid gap-5 bp-lg:gap-6", isRacketPurchaseDesign ? "bp-lg:grid-cols-[minmax(0,1fr)_340px]" : "bp-lg:grid-cols-[minmax(0,1fr)_360px]")}>
+        <div className={cn("grid gap-5 bp-lg:gap-6", isRacketPurchaseDesign || isRentalDesign ? "bp-lg:grid-cols-[minmax(0,1fr)_340px]" : "bp-lg:grid-cols-[minmax(0,1fr)_360px]")}>
           {/* Main Content */}
           <div className="space-y-6">
             {/* Search & Filter Bar */}
@@ -416,7 +423,7 @@ export default function SelectStringLayout({
                   개의 스트링
                 </span>
               )}
-              <span className="break-keep text-xs">브랜드·가격·옵션을 확인한 뒤 원하는 스트링을 선택하세요</span>
+              <span className="break-keep text-xs">{flowType === "rental" ? "대여 라켓에 장착할 스트링을 선택하세요" : "브랜드·가격·옵션을 확인한 뒤 원하는 스트링을 선택하세요"}</span>
             </div>
 
             {/* Product Grid/List */}
@@ -506,7 +513,7 @@ export default function SelectStringLayout({
           </div>
 
           {/* Sidebar - Selected Racket Summary */}
-          <div className={cn("hidden bp-lg:block bp-lg:h-fit", isRacketPurchaseDesign ? "bp-lg:sticky bp-lg:top-20" : "bp-lg:sticky bp-lg:top-24")}>{renderSelectedRacketSummary()}</div>
+          <div className={cn("hidden bp-lg:block bp-lg:h-fit", isRacketPurchaseDesign || isRentalDesign ? "bp-lg:sticky bp-lg:top-20" : "bp-lg:sticky bp-lg:top-24")}>{renderSelectedRacketSummary()}</div>
         </div>
       </SiteContainer>
     </div>
