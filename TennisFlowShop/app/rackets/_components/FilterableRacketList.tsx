@@ -657,22 +657,7 @@ export default function FilterableRacketList({
                   <Filter className="mr-2 h-4 w-4" />
                   필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
                 </Button>
-                <div className="flex min-w-0 flex-1 flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-end bp-sm:gap-3">
-                  <div className="min-w-0 flex-1 bp-sm:max-w-[180px]">
-                    <Select value={sortOption} onValueChange={setSortOption}>
-                      <SelectTrigger className="h-10 w-full min-w-0 rounded-lg border border-border bg-card text-sm focus:border-border dark:focus:border-border">
-                        <SelectValue placeholder="정렬" />
-                      </SelectTrigger>
-                      <SelectContent className="dark:border-border dark:bg-card">
-                        <SelectItem value="latest">최신순</SelectItem>
-                        <SelectItem value="sales-desc">구매 많은순</SelectItem>
-                        <SelectItem value="reviews-desc">리뷰 많은순</SelectItem>
-                        <SelectItem value="price-low">가격 낮은순</SelectItem>
-                        <SelectItem value="price-high">가격 높은순</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
+                <div className="flex w-full min-w-0 flex-1 items-center justify-end gap-3 bp-sm:ml-auto bp-sm:w-auto bp-sm:flex-initial">
                   {!isFilterSheetViewport && (
                     <div className="flex shrink-0 items-center rounded-lg border border-border bg-card p-1">
                       <Button
@@ -704,6 +689,21 @@ export default function FilterableRacketList({
                       </Button>
                     </div>
                   )}
+
+                  <div className="min-w-0 flex-1 bp-sm:w-[180px] bp-sm:flex-none">
+                    <Select value={sortOption} onValueChange={setSortOption}>
+                      <SelectTrigger className="h-10 w-full min-w-0 rounded-lg border border-border bg-card text-sm focus:border-border bp-sm:h-9 dark:focus:border-border">
+                        <SelectValue placeholder="정렬" />
+                      </SelectTrigger>
+                      <SelectContent className="dark:border-border dark:bg-card">
+                        <SelectItem value="latest">최신순</SelectItem>
+                        <SelectItem value="sales-desc">구매 많은순</SelectItem>
+                        <SelectItem value="reviews-desc">리뷰 많은순</SelectItem>
+                        <SelectItem value="price-low">가격 낮은순</SelectItem>
+                        <SelectItem value="price-high">가격 높은순</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
             </SummaryCard>

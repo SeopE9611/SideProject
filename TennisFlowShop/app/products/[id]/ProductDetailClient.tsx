@@ -11,10 +11,8 @@ import HorizontalProducts, {
 import SiteContainer from "@/components/layout/SiteContainer";
 import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
 import {
-  PriceSummary,
   PrimaryCTAGroup,
   SummaryCard,
-  type PriceSummaryRow,
 } from "@/components/public";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import { Badge } from "@/components/ui/badge";
@@ -675,9 +673,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
     v ? new Date(v).toLocaleDateString() : "";
 
   // 합계 계산
-  const unitPrice = Number(product?.price ?? 0);
+  const unitPrice = displayPrice;
   const qtyTotal = unitPrice * quantity;
-  const serviceTotal = qtyTotal + Number(product?.mountingFee ?? 0);
+  const mountingFee = Number(product?.mountingFee ?? 0);
+  const serviceTotal = qtyTotal + mountingFee;
   const canCheckoutWithService = isMountableStringByFee(product?.mountingFee);
   const isApplyFlow = searchParams.get("from") === "apply";
   const serviceCtaLabel = isApplyFlow
@@ -690,48 +689,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const cartCtaLabel = "장바구니 담기";
   const standalonePausedNotice =
     "현재 스트링은 교체서비스 신청과 함께 이용할 수 있어요.";
-  const priceSummaryRows: PriceSummaryRow[] = [
-    {
-      id: "product",
-      label: "상품 금액",
-      value: `${qtyTotal.toLocaleString()}원`,
-      description: `단가 ${unitPrice.toLocaleString()}원 × ${quantity}개`,
-    },
-    ...(isSale
-      ? [
-          {
-            id: "discount",
-            label: "상품 할인",
-            value: `-${((regularPrice - salePrice) * quantity).toLocaleString()}원`,
-            description: `${saleRate}% OFF 적용`,
-          } satisfies PriceSummaryRow,
-        ]
-      : []),
-    ...(typeof product?.mountingFee === "number"
-      ? [
-          {
-            id: "mounting",
-            label: "교체서비스 선택 시 장착비",
-            value:
-              product.mountingFee > 0
-                ? `+${product.mountingFee.toLocaleString()}원`
-                : "무료",
-            description: "교체서비스 신청 시 적용",
-          } satisfies PriceSummaryRow,
-        ]
-      : []),
-    ...(canCheckoutWithService
-      ? [
-          {
-            id: "service-total",
-            label: "예상 결제 금액",
-            value: `${serviceTotal.toLocaleString()}원`,
-            description: "상품 금액과 장착비 기준",
-            emphasis: true,
-          } satisfies PriceSummaryRow,
-        ]
-      : []),
-  ];
 
   // 브라우저 뒤/앞으로 가기 시에도 URL 변화에 맞춰 동기화
   useEffect(() => {
@@ -1414,7 +1371,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10">
         <div className="grid grid-cols-1 gap-6 sm:gap-8 bp-lg:grid-cols-5">
-          <div className="bp-lg:col-span-3 space-y-4 sm:space-y-5">
+          <div className="space-y-4 self-start sm:space-y-5 bp-lg:sticky bp-lg:top-[calc(var(--header-h)+24px)] bp-lg:col-span-3">
             <Card className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm">
               <div className="relative aspect-square bg-muted/20">
                 <Image
@@ -1535,15 +1492,26 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         </>
                       )}
                     </div>
-                    {typeof product?.mountingFee === "number" && (
-                      <div className="text-sm sm:text-base text-muted-foreground">
-                        <span className="inline-flex max-w-full items-center gap-1.5 rounded-xl bg-primary/5 border border-border px-3 py-1.5 text-sm font-medium whitespace-normal break-keep tabular-nums">
-                          <Wrench className="h-3.5 w-3.5 shrink-0" />
-                          교체서비스 장착비:{" "}
-                          {product.mountingFee > 0
-                            ? `+${product.mountingFee.toLocaleString()}원`
-                            : "무료"}
-                        </span>
+                    {canCheckoutWithService && (
+                      <div className="grid gap-2 rounded-xl border border-border bg-muted/20 p-3 text-sm sm:text-base">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-muted-foreground">상품가</span>
+                          <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">
+                            {qtyTotal.toLocaleString()}원
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
+                            <Wrench className="h-3.5 w-3.5 shrink-0" />
+                            교체서비스 포함
+                          </span>
+                          <span className="whitespace-nowrap tabular-nums font-bold text-primary">
+                            {serviceTotal.toLocaleString()}원
+                          </span>
+                        </div>
+                        <p className="break-keep text-xs text-muted-foreground">
+                          상품가 {qtyTotal.toLocaleString()}원 + 장착비 {mountingFee.toLocaleString()}원
+                        </p>
                       </div>
                     )}
                   </div>
@@ -1749,19 +1717,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                     {isStringProduct && (
                       <div className="rounded-xl border border-border bg-muted/20 p-3 text-sm leading-relaxed text-muted-foreground">
-                        <p className="font-semibold text-foreground">선택한 스트링은 교체서비스 신청과 함께 진행됩니다.</p>
-                        <p className="mt-1 break-keep">게이지·색상·수량을 확인한 뒤 장착 신청으로 이동하세요. 현재 스트링은 교체서비스 신청과 함께 이용할 수 있어요.</p>
+                        <p className="font-semibold text-foreground">교체서비스 신청용 스트링입니다.</p>
+                        <p className="mt-1 break-keep">게이지·색상·수량을 확인한 뒤 장착 신청으로 이동하세요.</p>
                       </div>
                     )}
-
-                    <SummaryCard
-                      title="예상 금액"
-                      description="현재 선택한 옵션 기준으로 확인하세요."
-                      className="rounded-2xl shadow-none"
-                      contentClassName="p-4 sm:p-5"
-                    >
-                      <PriceSummary rows={priceSummaryRows} />
-                    </SummaryCard>
 
                     <div className="flex flex-col gap-3 sm:gap-3.5">
                       {(

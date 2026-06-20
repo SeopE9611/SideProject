@@ -1063,10 +1063,10 @@ export default function CartPageClient() {
                           </div>
 
                           {/* 하단(모바일) */}
-                          <div className="flex min-w-0 flex-wrap items-start gap-3 bp-sm:flex-1 bp-sm:flex-nowrap bp-sm:justify-end">
+                          <div className="grid w-full min-w-0 grid-cols-[132px_minmax(96px,1fr)_40px] items-start gap-3 bp-sm:w-auto bp-sm:flex-none bp-sm:grid-cols-[132px_112px_40px] bp-sm:justify-end">
                             {/* 수량 스테퍼 (번들이면 잠금 + 링크로만 변경) */}
                             {lockStepper ? (
-                              <div className="order-1 flex flex-col items-center rounded-xl border border-border bg-muted/20 p-2">
+                              <div className="order-1 w-[132px] min-w-0 justify-self-start rounded-xl border border-border bg-muted/20 p-2 flex flex-col items-center">
                                 {/* 숫자만 표시(± 없음) */}
                                 <div className="flex h-8 items-center rounded-full bg-muted px-3 dark:bg-muted">
                                   <span className="tabular-nums w-8 select-none text-center font-medium">
@@ -1100,7 +1100,7 @@ export default function CartPageClient() {
                               </div>
                             ) : (
                               /* 수량 스테퍼 (pill, 비활성 표시) */
-                              <div className="order-1 flex flex-col items-center rounded-xl border border-border bg-muted/20 p-2">
+                              <div className="order-1 w-[132px] min-w-0 justify-self-start rounded-xl border border-border bg-muted/20 p-2 flex flex-col items-center">
                                 <div className="flex items-center rounded-full bg-muted px-1 dark:bg-muted">
                                   <Button
                                     variant="ghost"
@@ -1195,7 +1195,7 @@ export default function CartPageClient() {
                               </div>
                             )}
 
-                            <div className="order-2 ml-auto shrink-0 text-right bp-sm:ml-0">
+                            <div className="order-2 min-w-[96px] text-right">
                               <div className="text-sm text-foreground/75">
                                 합계
                               </div>
@@ -1272,7 +1272,7 @@ export default function CartPageClient() {
                                   );
                                 }
                               }}
-                              className="order-3 text-muted-foreground hover:text-destructive"
+                              className="order-3 h-10 w-10 justify-self-end text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>

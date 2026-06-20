@@ -5,11 +5,6 @@ import {
   useRacketCompareStore,
 } from "@/app/store/racketCompareStore";
 import SiteContainer from "@/components/layout/SiteContainer";
-import {
-  PriceSummary,
-  type PriceSummaryRow,
-} from "@/components/public/PriceSummary";
-import { PrimaryCTAGroup } from "@/components/public/PrimaryCTAGroup";
 import { SummaryCard } from "@/components/public/SummaryCard";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
@@ -125,37 +120,6 @@ export default function RacketDetailClient({
   const salePrice = getEffectiveRacketPrice(racket);
   const discountRate = getRacketDiscountRate(racket);
   const hasSalePrice = discountRate > 0;
-  const priceSummaryRows: PriceSummaryRow[] = [
-    {
-      id: "purchase-price",
-      label: "구매가",
-      value: `${salePrice.toLocaleString()}원`,
-      description: hasSalePrice
-        ? `정가 ${racket.price?.toLocaleString()}원 · ${discountRate}% OFF`
-        : undefined,
-      emphasis: true,
-    },
-    {
-      id: "shipping-fee",
-      label: "배송비",
-      value: racketShippingLabel,
-    },
-  ];
-
-  if (racket?.rental?.enabled) {
-    priceSummaryRows.push(
-      {
-        id: "rental-fee",
-        label: "대여료(7일)",
-        value: `${Number(racket.rental?.fee?.d7 ?? 0).toLocaleString()}원`,
-      },
-      {
-        id: "rental-deposit",
-        label: "보증금",
-        value: `${Number(racket.rental?.deposit ?? 0).toLocaleString()}원`,
-      },
-    );
-  }
 
   useEffect(() => {
     if (!racketId || !racket?.model) return;
@@ -706,7 +670,22 @@ export default function RacketDetailClient({
                     </span>
                   )}
                 </div>
-                <PriceSummary rows={priceSummaryRows} />
+                <div className="grid gap-2 text-sm sm:text-base">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-muted-foreground">배송비</span>
+                    <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">
+                      {racketShippingLabel}
+                    </span>
+                  </div>
+                  {racket?.rental?.enabled && (
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-muted-foreground">대여</span>
+                      <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">
+                        7일 {Number(racket.rental?.fee?.d7 ?? 0).toLocaleString()}원 · 보증금 {Number(racket.rental?.deposit ?? 0).toLocaleString()}원
+                      </span>
+                    </div>
+                  )}
+                </div>
                 <div className="rounded-xl border border-border bg-card p-3 text-xs leading-relaxed text-muted-foreground">
                   * 중고 상품 특성상 단순 변심 환불이 제한될 수 있어요.
                 </div>
@@ -725,67 +704,65 @@ export default function RacketDetailClient({
                     구매 시 다음 단계에서 스트링을 선택하고 장착 정보를 함께 확인합니다. 라켓만 바로 결제되지 않아요.
                   </p>
                 </div>
-                <PrimaryCTAGroup
-                  className="sm:w-full sm:flex-col sm:items-stretch [&>div>*]:min-h-12 [&>div>*]:min-w-0 [&>div>*]:whitespace-normal [&>div>*]:break-keep"
-                  primary={
-                    <Button
-                      wrap="responsive"
-                      className="w-full px-3"
-                      onClick={() =>
-                        router.push(`/rackets/${racketId}/select-string`)
-                      }
-                      disabled={soldOut}
-                      title={
-                        soldOut
-                          ? isAllRented
-                            ? "현재 전량 대여중이라 구매/대여가 불가합니다. 반납 시 다시 가능합니다."
-                            : "판매가 종료된 상품입니다."
-                          : undefined
-                      }
-                    >
-                      <ShoppingCart className="mr-2 h-4 w-4" />
-                      {soldOut ? "품절(구매 불가)" : "스트링 선택하고 구매 계속"}
-                    </Button>
-                  }
-                  secondary={
-                    racket?.rental?.enabled ? (
-                      soldOut ? (
-                        <Button
-                          className="w-full bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground"
-                          disabled
-                          title="현재 대여 가능 수량이 없습니다."
-                        >
-                          <Calendar className="mr-2 h-4 w-4" />
-                          품절(대여 불가)
-                        </Button>
-                      ) : (
-                        <div className="min-w-0">
-                          <RentDialog
-                            id={racketId}
-                            rental={racket.rental}
-                            brand={brandLabel}
-                            model={racket.model}
-                            autoOpen={autoOpen}
-                            full
-                          />
-                        </div>
-                      )
-                    ) : (
+                <div className="grid gap-2.5">
+                  <Button
+                    wrap="responsive"
+                    size="tall"
+                    className="min-h-12 w-full px-3 sm:min-h-14"
+                    onClick={() =>
+                      router.push(`/rackets/${racketId}/select-string`)
+                    }
+                    disabled={soldOut}
+                    title={
+                      soldOut
+                        ? isAllRented
+                          ? "현재 전량 대여중이라 구매/대여가 불가합니다. 반납 시 다시 가능합니다."
+                          : "판매가 종료된 상품입니다."
+                        : undefined
+                    }
+                  >
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    {soldOut ? "품절(구매 불가)" : "스트링 선택하고 구매 계속"}
+                  </Button>
+                  {racket?.rental?.enabled ? (
+                    soldOut ? (
                       <Button
-                        className="w-full bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground"
+                        size="tall"
+                        className="min-h-12 w-full bg-muted text-muted-foreground sm:min-h-14 dark:bg-card dark:text-muted-foreground"
                         disabled
+                        title="현재 대여 가능 수량이 없습니다."
                       >
                         <Calendar className="mr-2 h-4 w-4" />
-                        대여 불가
+                        품절(대여 불가)
                       </Button>
+                    ) : (
+                      <div className="min-w-0 [&_button]:min-h-12 [&_button]:w-full [&_button]:rounded-xl sm:[&_button]:min-h-14">
+                        <RentDialog
+                          id={racketId}
+                          rental={racket.rental}
+                          brand={brandLabel}
+                          model={racket.model}
+                          autoOpen={autoOpen}
+                          full
+                        />
+                      </div>
                     )
-                  }
-                />
+                  ) : (
+                    <Button
+                      size="tall"
+                      className="min-h-12 w-full bg-muted text-muted-foreground sm:min-h-14 dark:bg-card dark:text-muted-foreground"
+                      disabled
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      대여 불가
+                    </Button>
+                  )}
+                </div>
                 {/* 비교 버튼(상세에서도 비교 담기/이동 가능) */}
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <Button
                     variant="outline"
-                    className={`min-h-11 min-w-0 whitespace-normal break-keep px-2 text-sm ${isCompared ? "bg-secondary border-border text-foreground hover:bg-secondary/80" : "bg-card border-border text-foreground"}`}
+                    className={`min-h-11 min-w-0 rounded-xl whitespace-normal break-keep px-2 text-sm ${isCompared ? "bg-secondary border-border text-foreground hover:bg-secondary/80" : "bg-card border-border text-foreground"}`}
                     onClick={toggleCompare}
                     disabled={!racketId}
                     title={
@@ -802,7 +779,7 @@ export default function RacketDetailClient({
 
                   <Button
                     variant="outline"
-                    className="min-h-11 min-w-0 whitespace-normal break-keep px-2 text-sm"
+                    className="min-h-11 min-w-0 rounded-xl whitespace-normal break-keep px-2 text-sm"
                     onClick={() => router.push("/rackets/compare")}
                     disabled={compareCount < 2}
                     title={
