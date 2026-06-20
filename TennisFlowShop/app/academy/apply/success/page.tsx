@@ -4,13 +4,13 @@ import {
   Clock,
   FileText,
   MessageCircle,
-  Sparkles,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import SiteContainer from "@/components/layout/SiteContainer";
+import { SummaryCard } from "@/components/public/SummaryCard";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata: Metadata = {
   title: "레슨 신청 접수 완료 | 도깨비테니스 아카데미",
@@ -35,127 +35,111 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-border/40 bg-gradient-to-b from-muted/30 to-background">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
-
-        <div className="relative mx-auto max-w-3xl px-4 py-16 md:px-6 md:py-24">
-          <div className="flex flex-col items-center text-center">
-            {/* Success Icon */}
-            <div className="relative mb-8">
-              <div
-                className="absolute inset-0 animate-ping rounded-full bg-primary/20"
-                style={{ animationDuration: "2s" }}
-              />
-              <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 ring-4 ring-primary/20">
-                <CheckCircle2 className="h-10 w-10 text-primary" />
-              </div>
+      <SiteContainer className="max-w-3xl py-10 bp-sm:py-14 md:py-16">
+        <div className="space-y-5 sm:space-y-6">
+          <section className="rounded-2xl border border-border bg-card p-6 text-center shadow-sm sm:p-8 md:p-10">
+            <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary sm:size-16">
+              <CheckCircle2 className="size-7 sm:size-8" aria-hidden="true" />
             </div>
-
-            {/* Badge */}
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
-              <Sparkles className="h-4 w-4" />
+            <p className="mb-2 text-sm font-medium text-primary">
               도깨비테니스 아카데미
-            </div>
-
-            {/* Title */}
-            <h1 className="mb-4 text-balance text-3xl font-bold tracking-tight text-foreground md:text-4xl lg:text-5xl">
-              레슨 신청이 접수되었습니다
+            </p>
+            <h1 className="text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+              아카데미 신청이 완료되었습니다
             </h1>
-
-            <p className="mb-8 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
+            <p className="mx-auto mt-3 max-w-xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
               신청 내용이 접수되었습니다. 담당자가 일정과 수강 방식을 확인한 뒤
               상담을 도와드립니다.
             </p>
 
-            {/* Receipt Number */}
-            {receiptLabel && (
-              <div className="mb-8 inline-flex items-center gap-3 rounded-xl border border-border/60 bg-card px-5 py-3 shadow-sm">
-                <FileText className="h-5 w-5 text-muted-foreground" />
-                <div className="text-left">
-                  <p className="text-xs text-muted-foreground">접수번호</p>
-                  <p className="font-mono text-sm font-semibold text-foreground">
-                    {receiptLabel}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg" className="h-12 gap-2 px-6">
+            <div className="mt-7 flex w-full flex-col justify-center gap-2 sm:flex-row">
+              <Button asChild size="lg" wrap="responsive" className="h-12 px-6">
                 <Link href="/mypage?tab=academy">
                   마이페이지에서 확인하기
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="size-4" aria-hidden="true" />
                 </Link>
               </Button>
               <Button
                 asChild
                 variant="outline"
                 size="lg"
-                className="h-12 gap-2 px-6"
+                wrap="responsive"
+                className="h-12 px-6"
+              >
+                <Link href="/academy">아카데미로 돌아가기</Link>
+              </Button>
+            </div>
+          </section>
+
+          {receiptLabel && (
+            <SummaryCard
+              title="신청 정보"
+              description="접수된 신청의 기본 정보를 확인하세요."
+              contentClassName="p-0"
+            >
+              <dl className="divide-y divide-border">
+                <div className="grid gap-1 px-5 py-4 sm:grid-cols-[120px_1fr] sm:gap-4 sm:px-6">
+                  <dt className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <FileText className="size-4" aria-hidden="true" />
+                    접수번호
+                  </dt>
+                  <dd className="min-w-0 break-words font-mono text-sm font-semibold tabular-nums text-foreground">
+                    {receiptLabel}
+                  </dd>
+                </div>
+              </dl>
+            </SummaryCard>
+          )}
+
+          <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
+            <div className="flex items-start gap-3">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Clock className="size-5" aria-hidden="true" />
+              </div>
+              <div className="min-w-0 space-y-3">
+                <div>
+                  <h2 className="text-base font-semibold text-foreground">
+                    다음 단계 안내
+                  </h2>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    신청 이후 진행 상황은 마이페이지에서 확인할 수 있습니다.
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm leading-relaxed text-muted-foreground">
+                  관리자가 신청 내용을 확인한 뒤 등록 확정 여부를 안내합니다.
+                  신청 단계에서는 결제가 진행되지 않으며, 등록 확정 후 현장에서
+                  결제를 안내해드립니다.
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-border bg-muted/20 p-5 sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <h2 className="text-base font-semibold text-foreground">
+                  추가 문의가 필요하신가요?
+                </h2>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  신청 내용과 관련해 궁금한 점이 있다면 문의글을 남겨주세요.
+                </p>
+              </div>
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                wrap="responsive"
+                className="h-12 shrink-0 px-6"
               >
                 <Link href="/board/qna/write?category=academy">
-                  <MessageCircle className="h-4 w-4" />
+                  <MessageCircle className="size-4" aria-hidden="true" />
                   문의글 작성하기
                 </Link>
               </Button>
             </div>
-          </div>
+          </section>
         </div>
-      </section>
-
-      {/* Info Section */}
-      <section className="mx-auto max-w-3xl px-4 py-12 md:px-6 md:py-16">
-        <Card className="border-border/60 bg-card shadow-sm">
-          <CardContent className="p-6 md:p-8">
-            <h2 className="mb-6 flex items-center gap-3 text-lg font-semibold text-foreground">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-                <Clock className="h-5 w-5 text-primary" />
-              </div>
-              다음 단계 안내
-            </h2>
-
-            <div className="space-y-4">
-              {[
-                {
-                  step: 1,
-                  title: "신청 내용 확인",
-                  description:
-                    "관리자가 신청 내용을 확인한 뒤 등록 확정 여부를 안내합니다.",
-                },
-                {
-                  step: 2,
-                  title: "상태 확인",
-                  description:
-                    "진행 상태는 마이페이지의 아카데미 신청 내역에서 확인할 수 있습니다.",
-                },
-                {
-                  step: 3,
-                  title: "결제 안내",
-                  description:
-                    "신청 단계에서는 결제가 진행되지 않으며, 등록 확정 후 현장에서 결제를 안내해드립니다.",
-                },
-              ].map((item) => (
-                <div
-                  key={item.step}
-                  className="group flex gap-4 rounded-xl border border-border/40 bg-muted/30 p-4 transition-all duration-200 hover:border-primary/20 hover:bg-muted/50"
-                >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary transition-colors group-hover:bg-primary/15">
-                    {item.step}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-medium text-foreground">{item.title}</p>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                      {item.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </section>
+      </SiteContainer>
     </main>
   );
 }
