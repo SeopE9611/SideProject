@@ -4,6 +4,7 @@ import OrdersScopeTabs, { resolveOrdersScopeContext } from "@/app/mypage/_compon
 import { UserSidebar } from "@/app/mypage/orders/_components/UserSidebar";
 import UserSection from "@/app/mypage/UserSection";
 import SiteContainer from "@/components/layout/SiteContainer";
+import { SummaryCard } from "@/components/public/SummaryCard";
 import { TabPanelSkeleton } from "@/components/system/loading";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -227,37 +228,37 @@ export default function MypageClient({ user }: Props) {
           <UserSection user={user} />
 
           <div className="grid gap-3 bp-lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
-            <button
-              type="button"
-              onClick={() => router.push("/mypage?tab=orders&scope=todo", { scroll: false })}
-              className={`group rounded-2xl border px-4 py-3 text-left shadow-sm transition-colors bp-sm:px-5 bp-sm:py-4 ${
-                hasTodoItems ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-border bg-card hover:bg-muted/40"
-              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2`}
-            >
-              <div className="flex min-w-0 items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-primary">해야 할 일</p>
-                  <h2 className="mt-1 break-keep text-lg font-semibold text-foreground bp-sm:text-xl">
-                    {summaryLoading ? (
-                      <span className="block">
-                        <Skeleton className="h-6 w-40" />
-                      </span>
-                    ) : hasTodoItems ? (
-                      `확인할 항목 ${todoCount}개`
-                    ) : (
-                      "현재 처리할 일이 없습니다"
-                    )}
-                  </h2>
-                  <p className="mt-1 line-clamp-2 break-keep text-sm text-muted-foreground">{hasTodoItems ? "후기, 배송, 확정이 필요한 내역만 모았습니다." : "새로 처리할 내역이 없습니다."}</p>
+            <SummaryCard className="transition-colors hover:bg-muted/30" contentClassName="p-0">
+              <button
+                type="button"
+                onClick={() => router.push("/mypage?tab=orders&scope=todo", { scroll: false })}
+                className="group w-full rounded-2xl px-4 py-3 text-left transition-colors bp-sm:px-5 bp-sm:py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <div className="flex min-w-0 items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">해야 할 일</p>
+                    <h2 className="mt-1 break-keep text-lg font-semibold text-foreground bp-sm:text-xl">
+                      {summaryLoading ? (
+                        <span className="block">
+                          <Skeleton className="h-6 w-40" />
+                        </span>
+                      ) : hasTodoItems ? (
+                        `확인할 항목 ${todoCount}개`
+                      ) : (
+                        "현재 처리할 일이 없습니다"
+                      )}
+                    </h2>
+                    <p className="mt-1 line-clamp-2 break-keep text-sm text-muted-foreground">{hasTodoItems ? "후기, 배송, 확정이 필요한 내역만 모았습니다." : "새로 처리할 내역이 없습니다."}</p>
+                  </div>
+
+                  <Badge variant={hasTodoItems ? "default" : "secondary"} className="shrink-0 whitespace-nowrap">
+                    {hasTodoItems ? "확인하기" : "완료"}
+                  </Badge>
                 </div>
+              </button>
+            </SummaryCard>
 
-                <Badge variant={hasTodoItems ? "default" : "secondary"} className="shrink-0 whitespace-nowrap">
-                  {hasTodoItems ? "확인하기" : "완료"}
-                </Badge>
-              </div>
-            </button>
-
-            <div className="rounded-2xl border border-border bg-card px-4 py-3 shadow-sm bp-sm:px-5 bp-sm:py-4">
+            <SummaryCard contentClassName="px-4 py-3 bp-sm:px-5 bp-sm:py-4">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-sm font-semibold text-foreground">내 활동</p>
                 {hasSummaryError ? <span className="text-xs text-muted-foreground">일부 지표 오류</span> : null}
@@ -276,7 +277,7 @@ export default function MypageClient({ user }: Props) {
                   </button>
                 ))}
               </div>
-            </div>
+            </SummaryCard>
           </div>
         </SiteContainer>
       </div>
