@@ -90,7 +90,7 @@ function PerformanceSummary({
   if (entries.length === 0) return null;
 
   return (
-    <section className="rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5">
+    <section className="rounded-xl border border-border bg-muted/20 px-3 py-2.5">
       <p className="mb-1.5 text-[10px] font-semibold tracking-wide text-muted-foreground">
         성능 요약
       </p>
@@ -206,9 +206,9 @@ function RatingStars({
 }
 
 const productCardSurfaceClass =
-  "group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md";
+  "group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:bg-muted/20 hover:shadow-sm";
 const productImageWrapClass =
-  "relative w-full overflow-hidden rounded-t-2xl bg-secondary/40 aspect-[5/4] bp-md:aspect-square";
+  "relative w-full overflow-hidden rounded-t-2xl bg-muted/30 aspect-[5/4] bp-md:aspect-square";
 
 type Props = {
   product: Product;
@@ -402,7 +402,7 @@ const ProductCard = React.memo(
           {/* 리스트뷰: 배경 장식 SVG 제거 */}
 
           <div className="relative z-10 flex h-full flex-col bp-md:flex-row">
-            <div className="relative aspect-[4/3] w-full flex-shrink-0 overflow-hidden bg-secondary/30 bp-md:w-[280px] bp-xl:w-[320px]">
+            <div className="relative aspect-[4/3] w-full flex-shrink-0 overflow-hidden bg-muted/30 bp-md:w-[280px] bp-xl:w-[320px]">
               <Image
                 src={
                   (product.images?.[0] as string) ||
@@ -411,7 +411,7 @@ const ProductCard = React.memo(
                 alt={product.name}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1536px) 280px, 320px"
-                className="object-contain"
+                className="object-contain p-3"
               />
               {soldOutOverlay}
               {merchandisingBadges.length > 0 && (
@@ -460,13 +460,13 @@ const ProductCard = React.memo(
               <div className="mb-4 flex flex-col gap-3">
                 <div className="min-w-0 flex-1">
                   <div
-                    className="mb-1 max-w-full truncate text-xs font-medium text-muted-foreground sm:text-sm"
+                    className="mb-1 max-w-full truncate text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground sm:text-sm"
                     title={brandLabel}
                   >
                     {brandLabel}
                   </div>
                   <h3
-                    className="mb-2 line-clamp-2 break-words text-base font-bold text-foreground sm:text-lg md:text-xl bp-lg:line-clamp-3"
+                    className="mb-2 line-clamp-2 break-keep text-base font-bold text-foreground sm:text-lg md:text-xl bp-lg:line-clamp-3"
                     title={product.name}
                   >
                     {product.name}
@@ -520,7 +520,7 @@ const ProductCard = React.memo(
               {shouldShowStandaloneServiceBadge && (
                 <Badge
                   variant="secondary"
-                  className="mt-2 w-fit shrink-0 whitespace-nowrap text-[11px]"
+                  className="mt-2 w-fit shrink-0 whitespace-nowrap rounded-full border-border bg-muted/30 text-[11px]"
                 >
                   교체서비스 전용
                 </Badge>
@@ -549,7 +549,7 @@ const ProductCard = React.memo(
               alt={product.name}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-cover"
+              className="object-contain p-3 transition-transform duration-200 group-hover:scale-[1.01]"
             />
           </Link>
           {soldOutOverlay}
@@ -599,13 +599,13 @@ const ProductCard = React.memo(
           >
             <div>
               <div
-                className="mb-1.5 max-w-full truncate text-xs font-medium text-muted-foreground"
+                className="mb-1.5 max-w-full truncate text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground"
                 title={brandLabel}
               >
                 {brandLabel}
               </div>
               <CardTitle
-                className="mb-2 line-clamp-2 break-words text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-foreground sm:text-base bp-lg:line-clamp-3"
+                className="mb-2 line-clamp-2 break-keep text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-foreground sm:text-base bp-lg:line-clamp-3"
                 title={product.name}
               >
                 {product.name}
@@ -636,7 +636,7 @@ const ProductCard = React.memo(
               type="button"
               variant="outline"
               wrap="responsive"
-              className="text-sm"
+              className="h-10 rounded-xl text-sm"
             >
               <Link href={detailHref}>
                 <Eye className="h-4 w-4 mr-1.5" />
@@ -651,7 +651,7 @@ const ProductCard = React.memo(
             <Button
               type="button"
               variant="outline"
-              className="w-full rounded-lg h-10 px-3 text-xs sm:text-sm whitespace-nowrap text-center"
+              className="h-10 w-full rounded-xl px-3 text-center text-xs whitespace-nowrap sm:text-sm"
               onClick={handleStringSingleBuy}
               disabled={isSoldOut}
             >
