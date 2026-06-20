@@ -10,6 +10,12 @@ import HorizontalProducts, {
 } from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
 import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
+import {
+  PriceSummary,
+  PrimaryCTAGroup,
+  SummaryCard,
+  type PriceSummaryRow,
+} from "@/components/public";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -105,9 +111,9 @@ const ReviewEditDialog = dynamic(() => import("./ReviewEditDialog"), {
 });
 
 const detailSurfaceSubtleInnerClass =
-  "rounded-xl border border-border/60 bg-secondary/50";
+  "rounded-xl border border-border bg-muted/20";
 const detailSurfaceInfoItemClass =
-  "flex min-w-0 items-center gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3";
+  "flex min-w-0 items-center gap-3 rounded-xl border border-border bg-muted/20 p-3";
 type ProductBadge = "NEW" | "추천";
 
 const isTruthyBadgeField = (value: unknown) =>
@@ -684,6 +690,48 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const cartCtaLabel = "장바구니 담기";
   const standalonePausedNotice =
     "현재 스트링은 교체서비스 신청과 함께 이용할 수 있어요.";
+  const priceSummaryRows: PriceSummaryRow[] = [
+    {
+      id: "product",
+      label: "상품 금액",
+      value: `${qtyTotal.toLocaleString()}원`,
+      description: `단가 ${unitPrice.toLocaleString()}원 × ${quantity}개`,
+    },
+    ...(isSale
+      ? [
+          {
+            id: "discount",
+            label: "할인 적용",
+            value: `${saleRate}% OFF`,
+            description: `정가 ${regularPrice.toLocaleString()}원 기준`,
+          } satisfies PriceSummaryRow,
+        ]
+      : []),
+    ...(typeof product?.mountingFee === "number"
+      ? [
+          {
+            id: "mounting",
+            label: "교체서비스 장착비",
+            value:
+              product.mountingFee > 0
+                ? `+${product.mountingFee.toLocaleString()}원`
+                : "무료",
+            description: "장착 서비스 선택 시 적용",
+          } satisfies PriceSummaryRow,
+        ]
+      : []),
+    ...(canCheckoutWithService
+      ? [
+          {
+            id: "service-total",
+            label: "예상 결제 금액",
+            value: `${serviceTotal.toLocaleString()}원`,
+            description: "상품 금액과 장착비 기준",
+            emphasis: true,
+          } satisfies PriceSummaryRow,
+        ]
+      : []),
+  ];
 
   // 브라우저 뒤/앞으로 가기 시에도 URL 변화에 맞춰 동기화
   useEffect(() => {
@@ -1700,11 +1748,20 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     )}
 
                     {isStringProduct && (
-                      <div className="rounded-xl border border-border bg-primary/5 p-3 text-sm leading-relaxed text-muted-foreground">
+                      <div className="rounded-xl border border-border bg-muted/20 p-3 text-sm leading-relaxed text-muted-foreground">
                         <p className="font-semibold text-foreground">선택한 스트링은 교체서비스 신청과 함께 진행됩니다.</p>
                         <p className="mt-1 break-keep">게이지·색상·수량을 확인한 뒤 장착 신청으로 이동하세요. 현재 스트링은 교체서비스 신청과 함께 이용할 수 있어요.</p>
                       </div>
                     )}
+
+                    <SummaryCard
+                      title="예상 금액"
+                      description="현재 선택한 옵션 기준으로 확인하세요."
+                      className="rounded-2xl shadow-none"
+                      contentClassName="p-4 sm:p-5"
+                    >
+                      <PriceSummary rows={priceSummaryRows} />
+                    </SummaryCard>
 
                     <div className="flex flex-col gap-3 sm:gap-3.5">
                       {(
@@ -1729,73 +1786,119 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           {renderWishlistButton()}
                         </div>
                       ) : (
-                        <>
-                          {ENABLE_STRING_STANDALONE_ORDER && (
-                            <Button
-                              variant="default"
-                              size="tall"
-                              className="h-12 w-full sm:h-14"
-                              onClick={handleBuyNow}
-                              disabled={
-                                loading ||
-                                effectiveStock <= 0 ||
-                                quantity > effectiveStock ||
-                                (isStringProduct &&
-                                  gaugeRows.length > 0 &&
-                                  !selectedGauge) ||
-                                variantPurchaseBlocked
-                              }
-                            >
-                              <CreditCard className="mr-2 h-5 w-5" />
-                              스트링만 구매하기
-                            </Button>
-                          )}
-
-                          {canCheckoutWithService && (
-                            <Button
-                              variant={
-                                shouldEmphasizeServiceCta
-                                  ? "default"
-                                  : "secondary"
-                              }
-                              size="tall"
-                              className="min-h-12 w-full gap-2 whitespace-normal break-keep sm:min-h-14"
-                              disabled={
-                                loading ||
-                                quantity > effectiveStock ||
-                                (isStringProduct &&
-                                  gaugeRows.length > 0 &&
-                                  !selectedGauge) ||
-                                variantPurchaseBlocked
-                              }
-                              onClick={handleBuyNowWithService}
-                            >
-                              <Wrench className="mr-2 h-5 w-5" />
-                              {serviceCtaLabel}
-                            </Button>
-                          )}
-
-                          <div className="space-y-3">
-                            <Button
-                              variant="outline"
-                              size="lg"
-                              className="h-auto min-h-12 w-full whitespace-normal break-keep text-sm sm:text-base"
-                              onClick={handleAddToCart}
-                              disabled={
-                                loading ||
-                                quantity > effectiveStock ||
-                                (isStringProduct &&
-                                  gaugeRows.length > 0 &&
-                                  !selectedGauge) ||
-                                variantPurchaseBlocked
-                              }
-                            >
-                              <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                              {cartCtaLabel}
-                            </Button>
-                            {renderWishlistButton()}
-                          </div>
-                        </>
+                        <div className="space-y-3">
+                          <PrimaryCTAGroup
+                            primary={
+                              canCheckoutWithService ? (
+                                <Button
+                                  variant={
+                                    shouldEmphasizeServiceCta
+                                      ? "default"
+                                      : "secondary"
+                                  }
+                                  size="tall"
+                                  className="min-h-12 w-full gap-2 whitespace-normal break-keep sm:min-h-14"
+                                  disabled={
+                                    loading ||
+                                    quantity > effectiveStock ||
+                                    (isStringProduct &&
+                                      gaugeRows.length > 0 &&
+                                      !selectedGauge) ||
+                                    variantPurchaseBlocked
+                                  }
+                                  onClick={handleBuyNowWithService}
+                                >
+                                  <Wrench className="mr-2 h-5 w-5" />
+                                  {serviceCtaLabel}
+                                </Button>
+                              ) : ENABLE_STRING_STANDALONE_ORDER ? (
+                                <Button
+                                  variant="default"
+                                  size="tall"
+                                  className="h-12 w-full whitespace-normal break-keep sm:h-14"
+                                  onClick={handleBuyNow}
+                                  disabled={
+                                    loading ||
+                                    effectiveStock <= 0 ||
+                                    quantity > effectiveStock ||
+                                    (isStringProduct &&
+                                      gaugeRows.length > 0 &&
+                                      !selectedGauge) ||
+                                    variantPurchaseBlocked
+                                  }
+                                >
+                                  <CreditCard className="mr-2 h-5 w-5" />
+                                  스트링만 구매하기
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="lg"
+                                  className="h-auto min-h-12 w-full whitespace-normal break-keep text-sm sm:text-base"
+                                  onClick={handleAddToCart}
+                                  disabled={
+                                    loading ||
+                                    quantity > effectiveStock ||
+                                    (isStringProduct &&
+                                      gaugeRows.length > 0 &&
+                                      !selectedGauge) ||
+                                    variantPurchaseBlocked
+                                  }
+                                >
+                                  <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                                  {cartCtaLabel}
+                                </Button>
+                              )
+                            }
+                            secondary={
+                              canCheckoutWithService &&
+                              ENABLE_STRING_STANDALONE_ORDER ? (
+                                <Button
+                                  variant="secondary"
+                                  size="tall"
+                                  className="h-12 w-full whitespace-normal break-keep sm:h-14"
+                                  onClick={handleBuyNow}
+                                  disabled={
+                                    loading ||
+                                    effectiveStock <= 0 ||
+                                    quantity > effectiveStock ||
+                                    (isStringProduct &&
+                                      gaugeRows.length > 0 &&
+                                      !selectedGauge) ||
+                                    variantPurchaseBlocked
+                                  }
+                                >
+                                  <CreditCard className="mr-2 h-5 w-5" />
+                                  스트링만 구매하기
+                                </Button>
+                              ) : undefined
+                            }
+                            tertiary={
+                              canCheckoutWithService ||
+                              ENABLE_STRING_STANDALONE_ORDER ? (
+                                <Button
+                                  variant="outline"
+                                  size="lg"
+                                  className="h-auto min-h-12 w-full whitespace-normal break-keep text-sm sm:text-base"
+                                  onClick={handleAddToCart}
+                                  disabled={
+                                    loading ||
+                                    quantity > effectiveStock ||
+                                    (isStringProduct &&
+                                      gaugeRows.length > 0 &&
+                                      !selectedGauge) ||
+                                    variantPurchaseBlocked
+                                  }
+                                >
+                                  <ShoppingCart className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                                  {cartCtaLabel}
+                                </Button>
+                              ) : undefined
+                            }
+                            className="sm:w-full"
+                          />
+                          {renderWishlistButton()}
+                        </div>
                       )}
                     </div>
                   </div>
