@@ -4,13 +4,8 @@ import type React from "react";
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+
+import { AuthShell } from "@/components/public";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -196,94 +191,81 @@ export default function ForceChangePasswordClient() {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="container py-10 md:py-16">
-        <div className="mx-auto max-w-lg">
-          <Card className="border-border/40 bg-card/60 backdrop-blur shadow-xl">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold">
-                비밀번호 변경
-              </CardTitle>
-              <CardDescription className="text-base">
-                {reason === "must"
-                  ? "보안을 위해 먼저 비밀번호를 변경해 주세요."
-                  : "새 비밀번호로 변경해 주세요."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={onSubmit} className="space-y-4 md:space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword" className="text-sm font-medium">
-                    새 비밀번호 <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => {
-                      setNewPassword(e.target.value);
-                      if (fieldErrors.newPassword)
-                        setFieldErrors((prev) => ({
-                          ...prev,
-                          newPassword: undefined,
-                        }));
-                    }}
-                    placeholder="8자 이상 입력해주세요"
-                    required
-                    className={
-                      fieldErrors.newPassword
-                        ? "border-destructive focus-visible:border-destructive focus-visible:ring-ring"
-                        : ""
-                    }
-                  />
-                  <p className="min-h-[18px] text-sm text-destructive">
-                    {fieldErrors.newPassword ?? ""}
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="confirmPassword"
-                    className="text-sm font-medium"
-                  >
-                    새 비밀번호 확인 <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirm}
-                    onChange={(e) => {
-                      setConfirm(e.target.value);
-                      if (fieldErrors.confirm)
-                        setFieldErrors((prev) => ({
-                          ...prev,
-                          confirm: undefined,
-                        }));
-                    }}
-                    placeholder="비밀번호를 다시 입력해주세요"
-                    required
-                    className={
-                      fieldErrors.confirm
-                        ? "border-destructive focus-visible:border-destructive focus-visible:ring-ring"
-                        : ""
-                    }
-                  />
-                  <p className="min-h-[18px] text-sm text-destructive">
-                    {fieldErrors.confirm ?? ""}
-                  </p>
-                </div>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  variant="default"
-                  className="w-full font-medium py-2.5 shadow-lg hover:shadow-xl transition-all duration-200"
-                >
-                  {loading ? "변경 중…" : "비밀번호 변경"}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+    <AuthShell
+      title="비밀번호 변경"
+      description={
+        reason === "must"
+          ? "보안을 위해 먼저 비밀번호를 변경해 주세요."
+          : "새 비밀번호로 변경해 주세요."
+      }
+      className="bg-muted/30"
+    >
+      <form onSubmit={onSubmit} className="space-y-4 md:space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="newPassword" className="text-sm font-medium">
+            새 비밀번호 <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            id="newPassword"
+            type="password"
+            value={newPassword}
+            onChange={(e) => {
+              setNewPassword(e.target.value);
+              if (fieldErrors.newPassword)
+                setFieldErrors((prev) => ({
+                  ...prev,
+                  newPassword: undefined,
+                }));
+            }}
+            placeholder="8자 이상 입력해주세요"
+            required
+            className={
+              fieldErrors.newPassword
+                ? "border-destructive focus-visible:border-destructive focus-visible:ring-ring"
+                : ""
+            }
+          />
+          <p className="min-h-[18px] text-sm text-destructive">
+            {fieldErrors.newPassword ?? ""}
+          </p>
         </div>
-      </div>
-    </div>
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword" className="text-sm font-medium">
+            새 비밀번호 확인 <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            id="confirmPassword"
+            type="password"
+            value={confirm}
+            onChange={(e) => {
+              setConfirm(e.target.value);
+              if (fieldErrors.confirm)
+                setFieldErrors((prev) => ({
+                  ...prev,
+                  confirm: undefined,
+                }));
+            }}
+            placeholder="비밀번호를 다시 입력해주세요"
+            required
+            className={
+              fieldErrors.confirm
+                ? "border-destructive focus-visible:border-destructive focus-visible:ring-ring"
+                : ""
+            }
+          />
+          <p className="min-h-[18px] text-sm text-destructive">
+            {fieldErrors.confirm ?? ""}
+          </p>
+        </div>
+        <Button
+          type="submit"
+          disabled={loading}
+          variant="default"
+          className="w-full py-2.5 font-medium shadow-lg transition-all duration-200 hover:shadow-xl"
+        >
+          {loading ? "변경 중…" : "비밀번호 변경"}
+        </Button>
+      </form>
+    </AuthShell>
   );
 }
