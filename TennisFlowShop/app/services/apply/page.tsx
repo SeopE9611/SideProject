@@ -19,7 +19,6 @@ import { SummaryCard } from "@/components/public/SummaryCard";
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
 import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
@@ -36,14 +35,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 function StepFormSkeleton() {
   return (
-    <Card className="border-border bg-card">
-      <CardContent className="space-y-4 p-5 md:p-6">
-        <div className="h-6 w-1/3 rounded-md bg-muted animate-pulse" />
-        <div className="h-10 w-full rounded-md bg-muted animate-pulse" />
-        <div className="h-10 w-full rounded-md bg-muted animate-pulse" />
-        <div className="h-10 w-2/3 rounded-md bg-muted animate-pulse" />
-      </CardContent>
-    </Card>
+    <PublicSurface className="space-y-4" padding="md">
+      <div className="h-6 w-1/3 rounded-md bg-muted animate-pulse" />
+      <div className="h-10 w-full rounded-md bg-muted animate-pulse" />
+      <div className="h-10 w-full rounded-md bg-muted animate-pulse" />
+      <div className="h-10 w-2/3 rounded-md bg-muted animate-pulse" />
+    </PublicSurface>
   );
 }
 
@@ -1615,14 +1612,14 @@ export default function StringServiceApplyPage() {
             {/* 중앙 메인 폼 */}
             <div className="mx-auto w-full md:w-[800px]">
               {paymentError ? (
-                <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+                <PublicSurface className="mb-4 border-destructive/30 bg-destructive/10 text-sm text-destructive" padding="sm">
                   <p className="font-semibold">카드/간편결제가 완료되지 않았습니다.</p>
                   <p className="mt-1">{failedPaymentApplicationId ? "신청서는 저장되었으며, 결제만 다시 진행하거나 매장에 문의해 주세요." : "결제 상태를 확인할 수 없습니다. 다시 시도하거나 매장에 문의해 주세요."}</p>
                   {paymentErrorMessage ? <p className="mt-1 text-xs opacity-80">{paymentErrorMessage}</p> : null}
-                </div>
+                </PublicSurface>
               ) : null}
-              <Card className="border border-border bg-card shadow-sm bp-lg:bg-card/90">
-                <CardContent className="p-4 bp-sm:p-5 bp-lg:p-6">
+              <PublicSurface className="bp-lg:bg-card/90" padding="none">
+                <div className="p-4 bp-sm:p-5 bp-lg:p-6">
                   <SummaryCard
                     title={entryBanner.title}
                     description={entryBanner.body}
@@ -1643,12 +1640,12 @@ export default function StringServiceApplyPage() {
                   <OrderPrefillBadge orderId={orderId} rentalId={rentalId} />
 
                   {formData.selectedGauge && formData.stringTypes.length > 0 ? (
-                    <div className="mt-3 mb-4 rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                    <PublicSurface className="mt-3 mb-4 text-xs text-muted-foreground" variant="muted" padding="sm">
                       게이지: {formatGaugeLabel(formData.selectedGauge)}
                       {selectedColorDisplayLabel
                         ? ` · 색상: ${selectedColorDisplayLabel}`
                         : ""}
-                    </div>
+                    </PublicSurface>
                   ) : null}
 
                   <form onSubmit={handleSubmit}>
@@ -1690,8 +1687,8 @@ export default function StringServiceApplyPage() {
                       }
                     />
                   </form>
-                </CardContent>
-              </Card>
+                </div>
+              </PublicSurface>
             </div>
 
             <ApplyPriceSummaryDesktop
