@@ -3,13 +3,11 @@
 import UnifiedPackageCard from "@/app/services/packages/_components/UnifiedPackageCard";
 import { type PackageCardData } from "@/app/services/packages/_lib/packageCard";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { EmptyState, SummaryCard } from "@/components/public";
+import { EmptyState, PublicSurface, SummaryCard } from "@/components/public";
 import { PublicPageHero } from "@/components/public/PublicPageHero";
-import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { packagesBadgeVariant } from "@/lib/badge-style";
 import {
   ArrowRight,
@@ -260,19 +258,13 @@ export default function StringPackagesPageClient({
                     "패키지 구매 후 교체 신청서에서 사용 가능합니다. 자세한 문의는 매장으로 연락 주세요.",
                 },
               ].map((faq, index) => (
-                <Card
+                <SummaryCard
                   key={index}
-                  className="border border-border bg-card shadow-sm transition-shadow duration-200 hover:shadow-md"
-                >
-                  <CardContent className="p-4 md:p-6">
-                    <h3 className="font-bold text-lg mb-3 text-foreground">
-                      Q. {faq.question}
-                    </h3>
-                    <p className="text-muted-foreground leading-relaxed">
-                      A. {faq.answer}
-                    </p>
-                  </CardContent>
-                </Card>
+                  title={`Q. ${faq.question}`}
+                  description={`A. ${faq.answer}`}
+                  className="h-full transition-shadow duration-200 hover:shadow-md"
+                  contentClassName="hidden"
+                />
               ))}
             </div>
           </div>
