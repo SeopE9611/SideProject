@@ -3,6 +3,7 @@
 import type React from "react";
 
 import { CreditCard, Ticket } from "lucide-react";
+import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -48,11 +49,12 @@ export default function PaymentInfoSection({
 
       {/* 패키지 자동 적용 안내/옵트아웃 */}
       {packagePreview?.has ? (
-        <div
+        <PublicSurface
+          padding="sm"
           className={
             packageInsufficient
-              ? "rounded-2xl border border-destructive/30 bg-destructive/10 p-4 sm:p-5 dark:border-destructive/40 dark:bg-destructive/15"
-              : "rounded-2xl border border-border bg-muted/40 p-4 sm:p-5 dark:bg-muted/30"
+              ? "border-destructive/30 bg-destructive/10 dark:border-destructive/40 dark:bg-destructive/15"
+              : "bg-muted/40 dark:bg-muted/30"
           }
         >
           <div className="flex items-start gap-3 sm:gap-4">
@@ -194,10 +196,10 @@ export default function PaymentInfoSection({
               </div>
             </div>
           </div>
-        </div>
+        </PublicSurface>
       ) : (
         /* 패키지 없음 카드 다크모드 적용 */
-        <div className="rounded-2xl border border-border bg-muted/40 p-4 sm:p-5">
+        <PublicSurface variant="muted" padding="sm">
           <div className="flex items-start gap-3">
             <div className="h-10 w-10 shrink-0 rounded-full bg-muted dark:bg-card grid place-content-center text-muted-foreground">
               <Ticket className="h-5 w-5" />
@@ -211,17 +213,17 @@ export default function PaymentInfoSection({
               </p>
             </div>
           </div>
-        </div>
+        </PublicSurface>
       )}
 
       {!usingPackage && (
         <div className="space-y-6">
-          <div className="space-y-3">
+          <PublicSurface variant="muted" padding="sm" className="space-y-3">
             <Label className="text-sm font-medium">결제수단</Label>
             <label
-              className={`flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border p-4 transition-colors hover:bg-muted/50 focus-within:ring-2 focus-within:ring-ring ${
+              className={`flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border p-4 shadow-sm transition-colors hover:bg-muted/50 focus-within:ring-2 focus-within:ring-ring ${
                 formData.paymentMethod === "bank_transfer"
-                  ? "border-primary/40 bg-primary/5"
+                  ? "border-primary/40 bg-primary/5 text-primary"
                   : "border-border bg-card"
               }`}
             >
@@ -238,9 +240,9 @@ export default function PaymentInfoSection({
             </label>
             {allowCardPayment && nicePaymentsEnabled && (
               <label
-                className={`flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border p-4 transition-colors hover:bg-muted/50 focus-within:ring-2 focus-within:ring-ring ${
+                className={`flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border p-4 shadow-sm transition-colors hover:bg-muted/50 focus-within:ring-2 focus-within:ring-ring ${
                   formData.paymentMethod === "nicepay"
-                    ? "border-primary/40 bg-primary/5"
+                    ? "border-primary/40 bg-primary/5 text-primary"
                     : "border-border bg-card"
                 }`}
               >
@@ -256,7 +258,7 @@ export default function PaymentInfoSection({
                 <span className="font-medium">카드/간편결제</span>
               </label>
             )}
-          </div>
+          </PublicSurface>
 
           {formData.paymentMethod === "bank_transfer" && (
             <div className="space-y-6">
@@ -282,38 +284,47 @@ export default function PaymentInfoSection({
 
               {formData.shippingBank &&
               (bankLabelMap as any)[formData.shippingBank] ? (
-                <div className="rounded-xl border border-border bg-muted/40 p-4 sm:p-5">
+                <PublicSurface variant="muted" padding="sm">
                   <h3 className="mb-4 flex items-center font-semibold text-primary">
                     <CreditCard className="mr-2 h-5 w-5 shrink-0" />
                     계좌 정보
                   </h3>
                   <div className="space-y-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card p-3">
+                    <PublicSurface
+                      padding="sm"
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg p-3"
+                    >
                       <span className="text-sm text-muted-foreground">
                         은행
                       </span>
                       <span className="font-medium text-foreground">
                         {(bankLabelMap as any)[formData.shippingBank].label}
                       </span>
-                    </div>
-                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card p-3">
+                    </PublicSurface>
+                    <PublicSurface
+                      padding="sm"
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg p-3"
+                    >
                       <span className="text-sm text-muted-foreground">
                         계좌번호
                       </span>
                       <span className="break-all font-mono font-medium tabular-nums text-foreground">
                         {(bankLabelMap as any)[formData.shippingBank].account}
                       </span>
-                    </div>
-                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card p-3">
+                    </PublicSurface>
+                    <PublicSurface
+                      padding="sm"
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg p-3"
+                    >
                       <span className="text-sm text-muted-foreground">
                         예금주
                       </span>
                       <span className="font-medium text-foreground">
                         {(bankLabelMap as any)[formData.shippingBank].holder}
                       </span>
-                    </div>
+                    </PublicSurface>
                   </div>
-                </div>
+                </PublicSurface>
               ) : null}
 
               <div className="space-y-2">
