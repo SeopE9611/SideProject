@@ -458,6 +458,9 @@ export default function useStringingApplySharedState({
         );
 
         const next: ApplyFormData = { ...prev, lines: nextLines };
+        if (field === "stringName" && prev.stringTypes.includes("custom")) {
+          next.customStringType = nextLines[0]?.stringName?.trim() || "보유 스트링";
+        }
         if (index === 0 && field === "tensionMain") {
           next.defaultMainTension = String(value ?? "");
         }

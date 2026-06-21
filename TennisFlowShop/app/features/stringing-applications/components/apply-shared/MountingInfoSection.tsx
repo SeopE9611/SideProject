@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DollarSign, Ticket, Zap } from "lucide-react";
+import { DollarSign, Plus, Ticket, Trash2 } from "lucide-react";
 import React from "react";
 
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
@@ -17,6 +17,7 @@ import Link from "next/link";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
 import { SummaryCard } from "@/components/public/SummaryCard";
+import { CUSTOM_STRING_MOUNTING_FEE } from "@/lib/stringing-pricing-policy";
 
 export type MountingInfoSectionProps = {
   formData: any;
@@ -73,6 +74,7 @@ export type MountingInfoSectionProps = {
   visitSlotCountUi: number;
   visitDurationMinutesUi: number | null;
   visitTimeRange: any;
+  isSingleApplyMode?: boolean;
 };
 
 export default function MountingInfoSection(props: MountingInfoSectionProps) {
@@ -122,7 +124,99 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
     visitSlotCountUi,
     visitDurationMinutesUi,
     visitTimeRange,
+    isSingleApplyMode = false,
   } = props;
+
+
+  const canEditStandaloneWorkLines =
+    isSingleApplyMode && !orderId && !rentalId && !fromPDP;
+
+  React.useEffect(() => {
+    if (!canEditStandaloneWorkLines) return;
+    if (Array.isArray(formData.lines) && formData.lines.length > 0) {
+      if (
+        formData.stringTypes?.length === 1 &&
+        formData.stringTypes[0] === "custom" &&
+        formData.stringUseCounts?.custom === formData.lines.length &&
+        formData.customStringType
+      ) {
+        return;
+      }
+    }
+
+    setFormData((prev: any) => {
+      const prevLines = Array.isArray(prev.lines) ? prev.lines : [];
+      const lines = prevLines.length > 0
+        ? prevLines
+        : [
+            {
+              id: `standalone-${Date.now()}-0`,
+              racketType: "",
+              stringProductId: "custom",
+              stringName: prev.customStringType || "보유 스트링",
+              tensionMain: prev.defaultMainTension ?? "",
+              tensionCross: prev.defaultCrossTension ?? "",
+              note: "",
+              mountingFee: CUSTOM_STRING_MOUNTING_FEE,
+            },
+          ];
+      return {
+        ...prev,
+        lines,
+        stringTypes: ["custom"],
+        customStringType: lines[0]?.stringName?.trim() || "보유 스트링",
+        stringUseCounts: {
+          ...(prev.stringUseCounts ?? {}),
+          custom: lines.length,
+        },
+      };
+    });
+  }, [canEditStandaloneWorkLines, formData.lines, formData.stringTypes, formData.stringUseCounts, formData.customStringType, setFormData]);
+
+  const addStandaloneWorkLine = React.useCallback(() => {
+    if (!canEditStandaloneWorkLines) return;
+    setFormData((prev: any) => {
+      const current = Array.isArray(prev.lines) ? prev.lines : [];
+      if (current.length >= 10) return prev;
+      const nextIndex = current.length;
+      const nextLines = [
+        ...current,
+        {
+          id: `standalone-${Date.now()}-${nextIndex}`,
+          racketType: "",
+          stringProductId: "custom",
+          stringName: "",
+          tensionMain: prev.defaultMainTension ?? "",
+          tensionCross: prev.defaultCrossTension ?? "",
+          note: "",
+          mountingFee: CUSTOM_STRING_MOUNTING_FEE,
+        },
+      ];
+      return {
+        ...prev,
+        lines: nextLines,
+        stringTypes: ["custom"],
+        customStringType: nextLines[0]?.stringName?.trim() || "보유 스트링",
+        stringUseCounts: { ...(prev.stringUseCounts ?? {}), custom: nextLines.length },
+      };
+    });
+  }, [canEditStandaloneWorkLines, setFormData]);
+
+  const removeStandaloneWorkLine = React.useCallback((index: number) => {
+    if (!canEditStandaloneWorkLines) return;
+    setFormData((prev: any) => {
+      const current = Array.isArray(prev.lines) ? prev.lines : [];
+      if (current.length <= 1) return prev;
+      const nextLines = current.filter((_: any, i: number) => i !== index);
+      return {
+        ...prev,
+        lines: nextLines,
+        stringTypes: ["custom"],
+        customStringType: nextLines[0]?.stringName?.trim() || "보유 스트링",
+        stringUseCounts: { ...(prev.stringUseCounts ?? {}), custom: nextLines.length },
+      };
+    });
+  }, [canEditStandaloneWorkLines, setFormData]);
 
   // ---- 라켓별 라인 입력: "공통 값"을 한 번에 적용하기 위한 보조 상태 ----
   // - 단체 주문/다자루 작업에서 같은 텐션/요청사항을 반복 입력하는 피로를 줄이기 위함
@@ -335,18 +429,20 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
         </div> */}
 
         <div className="space-y-4">
-          <div>
-            <Label className="text-sm font-medium">
-              스트링 종류 <span className="text-destructive">*</span>
-            </Label>
-            <div className="mt-2 space-y-2">
-              <PublicSurface
-                padding="sm"
-                className="border-warning/30 bg-warning/10 dark:bg-warning/15"
-              >
-              </PublicSurface>
+          {!canEditStandaloneWorkLines && (
+            <div>
+              <Label className="text-sm font-medium">
+                스트링 종류 <span className="text-destructive">*</span>
+              </Label>
+              <div className="mt-2 space-y-2">
+                <PublicSurface
+                  padding="sm"
+                  className="border-warning/30 bg-warning/10 dark:bg-warning/15"
+                >
+                </PublicSurface>
+              </div>
             </div>
-          </div>
+          )}
           {/* PDP에서 이어졌을 때 노출되는 스트링 정보 카드 */}
           {(isLockedNonOrder || isRentalNonOrder) &&
             lockedStringId &&
@@ -514,7 +610,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
             </p>
           )}
 
-          {!shouldHideStringSelection && (
+          {!canEditStandaloneWorkLines && !shouldHideStringSelection && (
             <div
               className={
                 isLockedNonOrder ? "pointer-events-none opacity-60" : ""
@@ -554,6 +650,34 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 onCustomInputChange={handleCustomInputChange}
               />
             </div>
+          )}
+
+          {canEditStandaloneWorkLines && (
+            <PublicSurface variant="muted" padding="sm" className="space-y-3">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground">작업 항목</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground break-keep">
+                    라켓 1자루당 작업 항목 1개를 작성합니다. 스트링이 다르면 항목별로 스트링명을 다르게 입력하세요.
+                  </p>
+                </div>
+                <Badge variant="secondary" className="shrink-0">총 {lineCount}자루</Badge>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full gap-1.5 sm:w-auto"
+                onClick={addStandaloneWorkLine}
+                disabled={lineCount >= 10}
+              >
+                <Plus className="h-4 w-4" />
+                작업 항목 추가
+              </Button>
+              {lineCount >= 10 && (
+                <p className="text-xs text-muted-foreground">작업 항목은 최대 10개까지 추가할 수 있습니다.</p>
+              )}
+            </PublicSurface>
           )}
 
           <SummaryCard
@@ -976,21 +1100,23 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
           <SummaryCard
             title={
               <span className="text-base font-semibold text-foreground">
-                라켓별 세부 장착 정보
+                라켓·스트링별 작업 정보
               </span>
             }
             description={
-              <span>
-                위에서 선택한{" "}
-                <span className="font-semibold text-primary">"사용 개수"</span>{" "}
-                기준으로 라인이 자동 생성되어 있습니다. 각 라켓의 이름/별칭과
-                텐션, 메모를 입력하면 신청서에 함께 저장됩니다.
-              </span>
+              canEditStandaloneWorkLines ? (
+                <span>작업 항목 수에 맞춰 입력 항목이 생성됩니다. 각 항목마다 라켓 이름, 스트링명, 텐션, 메모를 입력하면 신청서에 함께 저장됩니다.</span>
+              ) : orderId ? (
+                <span>주문에서 선택한 사용 개수 기준으로 입력 항목이 생성됩니다. 각 라켓의 이름/별칭과 텐션, 메모를 입력하면 신청서에 함께 저장됩니다.</span>
+              ) : (
+                <span>선택한 수량 기준으로 입력 항목이 생성됩니다. 각 라켓의 이름/별칭과 텐션, 메모를 입력하면 신청서에 함께 저장됩니다.</span>
+              )
             }
             className="shadow-none"
             contentClassName="space-y-4"
           >
-            <PublicSurface variant="muted" padding="sm">
+            {lineCount >= 2 && (
+              <PublicSurface variant="muted" padding="sm">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="min-w-0 sm:min-w-[220px]">
                     <p className="text-sm font-semibold text-foreground">
@@ -1065,7 +1191,8 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     </p>
                   </div>
                 </div>
-            </PublicSurface>
+              </PublicSurface>
+            )}
             {linesForSubmit.map((line, index) => (
               <PublicSurface
                 key={line.id ?? index}
@@ -1084,20 +1211,36 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         {line.racketType?.trim() || `라켓 ${index + 1}`}
                       </span>
                     </div>
-                    <Badge
-                      variant="brand"
-                      className="flex max-w-[200px] items-center gap-1.5 px-2.5 py-1"
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                      <span className="truncate text-xs font-medium">
-                        {line.stringName}
-                      </span>
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {!canEditStandaloneWorkLines && (
+                        <Badge
+                          variant="brand"
+                          className="flex max-w-[200px] items-center gap-1.5 px-2.5 py-1"
+                        >
+                          <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                          <span className="truncate text-xs font-medium">
+                            {line.stringName}
+                          </span>
+                        </Badge>
+                      )}
+                      {canEditStandaloneWorkLines && lineCount > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 gap-1 px-2 text-xs text-destructive hover:text-destructive"
+                          onClick={() => removeStandaloneWorkLine(index)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          삭제
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   {/* 라켓 이름 + 텐션 */}
                   <div className="p-4 space-y-4">
-                    <div className="grid gap-3 md:grid-cols-3">
+                    <div className="grid gap-3 md:grid-cols-2">
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium text-foreground">
                           라켓 이름/별칭
@@ -1111,10 +1254,30 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                               e.target.value,
                             )
                           }
-                          placeholder="예: 라켓1"
+                          placeholder={canEditStandaloneWorkLines ? "예: 윌슨 블레이드 98, 첫 번째 라켓 등" : "예: 라켓1"}
                           className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                         />
                       </div>
+
+                      {canEditStandaloneWorkLines && (
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium text-foreground">
+                            스트링명
+                          </Label>
+                          <Input
+                            value={line.stringName ?? ""}
+                            onChange={(e) =>
+                              handleLineFieldChange(
+                                index,
+                                "stringName",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="예: 알루파워 러프, RPM Blast, 보유 스트링 등"
+                            className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                          />
+                        </div>
+                      )}
                       <div className="space-y-1.5">
                         <Label className="text-xs font-medium text-foreground">
                           메인 텐션(LB)
@@ -1154,7 +1317,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     {/* 라켓별 메모 */}
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium text-foreground">
-                        라켓별 메모 (선택)
+                        작업 메모 (선택)
                       </Label>
                       <Textarea
                         value={line.note ?? ""}

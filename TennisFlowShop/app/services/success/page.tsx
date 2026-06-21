@@ -309,9 +309,11 @@ export default async function StringServiceSuccessPage(props: Props) {
   // 최종 표시 문자열 (여러 개면 " + "로 연결)
   const stringDisplay = stringNames.join(" + ") || "-";
 
-  const racketLines = Array.isArray(stringDetails?.racketLines)
-    ? stringDetails.racketLines
-    : [];
+  const racketLines = Array.isArray(stringDetails?.lines)
+    ? stringDetails.lines
+    : Array.isArray(stringDetails?.racketLines)
+      ? stringDetails.racketLines
+      : [];
 
   // (통합결제) 주문 금액(라켓+스트링)까지 함께 보여주기 위한 주문 조회
   const orderObjectId =
@@ -1087,8 +1089,10 @@ export default async function StringServiceSuccessPage(props: Props) {
                 {racketLines.length > 0 && (
                   <div className="mt-6 md:mt-8">
                     <h4 className="text-lg font-semibold text-foreground mb-3">
-                      라켓별 세부 장착 정보
+                      라켓·스트링별 작업 정보
                     </h4>
+
+                    <p className="mb-3 text-sm text-muted-foreground">총 작업 수: {racketLines.length}자루</p>
 
                     <div className="space-y-3">
                       {racketLines.map((line: any, idx: number) => (
@@ -1125,6 +1129,11 @@ export default async function StringServiceSuccessPage(props: Props) {
                                     ? `${line.tensionCross}LB`
                                     : "-"}
                                 </span>
+                              </p>
+                            )}
+                            {typeof line.mountingFee === "number" && (
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                장착비: {line.mountingFee.toLocaleString("ko-KR")}원
                               </p>
                             )}
                             {line.note && (
