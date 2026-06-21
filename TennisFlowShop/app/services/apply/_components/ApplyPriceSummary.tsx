@@ -29,6 +29,14 @@ type PriceSummaryCommonProps = {
   rentalFee?: number;
   stringPrice: number;
   totalLabel: string;
+  summaryTitle?: string;
+  workLines?: Array<{
+    racketType?: string;
+    stringName?: string;
+    tensionMain?: string;
+    tensionCross?: string;
+    mountingFee?: number;
+  }>;
 };
 
 export function ApplyPriceSummaryMobile({
@@ -47,6 +55,8 @@ export function ApplyPriceSummaryMobile({
   rentalFee,
   stringPrice,
   totalLabel,
+  summaryTitle,
+  workLines,
 }: PriceSummaryCommonProps) {
   return (
     <div className="mt-6 bp-sm:mt-8 xl:hidden">
@@ -66,6 +76,8 @@ export function ApplyPriceSummaryMobile({
         rentalFee={rentalFee}
         stringPrice={stringPrice}
         totalLabel={totalLabel}
+        summaryTitle={summaryTitle}
+        workLines={workLines}
       />
     </div>
   );
@@ -92,6 +104,8 @@ export function ApplyPriceSummaryDesktop({
   rentalFee,
   stringPrice,
   totalLabel,
+  summaryTitle,
+  workLines,
 }: DesktopProps) {
   return (
     <div
@@ -122,6 +136,8 @@ export function ApplyPriceSummaryDesktop({
           rentalFee={rentalFee}
           stringPrice={stringPrice}
           totalLabel={totalLabel}
+          summaryTitle={summaryTitle}
+          workLines={workLines}
         />
       </div>
     </div>

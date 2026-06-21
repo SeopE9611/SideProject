@@ -2847,12 +2847,12 @@ export default function StringingApplicationDetailClient({
                       </section>
                     )}
 
-                    {/* 섹션 2: 라켓별 장착 정보 */}
+                    {/* 섹션 2: 라켓·스트링별 작업 정보 */}
                     {Array.isArray(data.lines) && data.lines.length > 0 && (
                       <section className="space-y-3">
                         <div className="flex items-center gap-2 text-foreground">
                           <Target className="w-5 h-5" />
-                          <span className="font-medium">라켓별 장착 정보</span>
+                          <span className="font-medium">라켓·스트링별 작업 정보</span>
                         </div>
                         <div className="space-y-3 rounded-xl border border-border/70 bg-muted/40 p-3">
                           <div className="grid grid-cols-1 gap-2 text-xs text-foreground/75 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
@@ -2873,8 +2873,8 @@ export default function StringingApplicationDetailClient({
                             }
                           >
                             {isLineDetailsExpanded
-                              ? "라켓별 상세 접기"
-                              : `라켓별 상세 ${lineCount}건 보기`}
+                              ? "작업 상세 접기"
+                              : `작업 상세 ${lineCount}건 보기`}
                           </Button>
                         </div>
 

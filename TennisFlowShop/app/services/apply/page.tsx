@@ -156,6 +156,7 @@ export default function StringServiceApplyPage() {
 
   const isOrderBased = Boolean(orderId);
   const isRentalBased = Boolean(rentalId);
+  const isSingleApplyMode = mode === "single" && !isOrderBased && !isRentalBased;
   const queryStringProductIdRaw = searchParams.get("productId") ?? searchParams.get("stringId");
   const selectedStringProductIdFromQuery = typeof queryStringProductIdRaw === "string" && queryStringProductIdRaw.trim() ? queryStringProductIdRaw.trim() : null;
   const selectedGaugeParam = searchParams.get("selectedGauge") ?? searchParams.get("gauge") ?? "";
@@ -493,7 +494,7 @@ export default function StringServiceApplyPage() {
       if (formData.stringTypes.length === 0) {
         return (toast("스트링 종류를 한 개 이상 선택해주세요."), false);
       }
-      if (formData.stringTypes.includes("custom") && !formData.customStringType.trim()) {
+      if (!isSingleApplyMode && formData.stringTypes.includes("custom") && !formData.customStringType.trim()) {
         return (toast("직접 입력한 스트링명을 적어주세요."), false);
       }
 
@@ -520,10 +521,16 @@ export default function StringServiceApplyPage() {
         for (let i = 0; i < linesForSubmit.length; i++) {
           const line = linesForSubmit[i];
           const racketName = (line.racketType ?? "").trim();
+          const stringName = (line.stringName ?? "").trim();
           const tensionMain = (line.tensionMain ?? "").trim();
           const tensionCross = (line.tensionCross ?? "").trim();
 
-          if (!racketName || !tensionMain || !tensionCross) {
+          if (isSingleApplyMode) {
+            if (!stringName) return (toast(`${i + 1}번 작업 항목의 스트링명을 입력해주세요.`), false);
+            if (!racketName) return (toast(`${i + 1}번 작업 항목의 라켓 이름을 입력해주세요.`), false);
+            if (!tensionMain) return (toast(`${i + 1}번 작업 항목의 메인 텐션을 입력해주세요.`), false);
+            if (!tensionCross) return (toast(`${i + 1}번 작업 항목의 크로스 텐션을 입력해주세요.`), false);
+          } else if (!racketName || !tensionMain || !tensionCross) {
             return (toast(`라켓 ${i + 1}의 이름과 메인/크로스 텐션을 모두 입력해주세요.`), false);
           }
         }
@@ -609,7 +616,7 @@ export default function StringServiceApplyPage() {
         if (formData.stringTypes.length === 0) {
           return { selector: 'input[type="checkbox"]' };
         }
-        if (formData.stringTypes.includes("custom") && !formData.customStringType.trim()) {
+        if (!isSingleApplyMode && formData.stringTypes.includes("custom") && !formData.customStringType.trim()) {
           return { selector: 'input[placeholder="직접 입력한 스트링 이름"]' };
         }
 
@@ -633,11 +640,15 @@ export default function StringServiceApplyPage() {
           for (let i = 0; i < linesForSubmit.length; i++) {
             const line = linesForSubmit[i];
             const racketName = (line.racketType ?? "").trim();
+            const stringName = (line.stringName ?? "").trim();
             const tensionMain = (line.tensionMain ?? "").trim();
             const tensionCross = (line.tensionCross ?? "").trim();
 
+            if (isSingleApplyMode && !stringName) {
+              return { selector: 'input[placeholder^="예: 알루파워"]' };
+            }
             if (!racketName || !tensionMain || !tensionCross) {
-              return { selector: 'input[placeholder="예: 라켓1"]' };
+              return { selector: 'input[placeholder^="예: 윌슨"], input[placeholder="예: 라켓1"]' };
             }
           }
         }
@@ -793,6 +804,8 @@ export default function StringServiceApplyPage() {
   // === 패키지 사용에 필요한 횟수 계산 ===
   // useMemo 대신 즉시 실행 함수(IIFE)로 계산 (훅 순서 꼬임 방지)
   const requiredPassCount = (() => {
+    if (isSingleApplyMode) return linesForSubmit.length;
+
     const ids = (formData.stringTypes || []).filter(Boolean);
     if (!ids.length) return 0;
 
@@ -1112,8 +1125,6 @@ export default function StringServiceApplyPage() {
     setVisitDurationMinutesUi(visitDurationMinutesUi);
   }, [visitDurationMinutesUi, setVisitDurationMinutesUi]);
 
-  const isSingleApplyMode = mode === "single" && !isOrderBased && !isRentalBased;
-
   const entryBanner = useMemo(() => {
     if (isRentalBased) {
       return {
@@ -1420,6 +1431,7 @@ export default function StringServiceApplyPage() {
             lockedStringStock={lockedStringStock}
             lockedRacketQuantity={lockedRacketQuantity}
             maxNonOrderQty={maxNonOrderQty}
+            isSingleApplyMode={isSingleApplyMode}
           />
         );
 
@@ -1664,6 +1676,8 @@ export default function StringServiceApplyPage() {
                       rentalFee={isRentalBased ? Number(rentalAmount?.fee ?? 0) : undefined}
                       stringPrice={summaryStringPrice}
                       totalLabel={totalLabel}
+                      summaryTitle={isSingleApplyMode && linesForSubmit.length > 0 ? "작업 신청 요약" : undefined}
+                      workLines={isSingleApplyMode ? linesForSubmit : undefined}
                     />
 
                     {/* 하단 네비게이션 */}
@@ -1704,6 +1718,8 @@ export default function StringServiceApplyPage() {
               rentalFee={isRentalBased ? Number(rentalAmount?.fee ?? 0) : undefined}
               stringPrice={summaryStringPrice}
               totalLabel={totalLabel}
+              summaryTitle={isSingleApplyMode && linesForSubmit.length > 0 ? "작업 신청 요약" : undefined}
+              workLines={isSingleApplyMode ? linesForSubmit : undefined}
             />
           </div>
         </div>
