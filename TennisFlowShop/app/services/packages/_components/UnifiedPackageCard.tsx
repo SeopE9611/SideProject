@@ -10,7 +10,7 @@ import {
   PACKAGE_VARIANT_ICON_CLASS,
   PACKAGE_VARIANT_TOP_BAR_CLASS,
 } from "@/app/services/packages/_lib/packageVariant";
-import { PriceSummary } from "@/components/public";
+import { PriceSummary, PublicSurface } from "@/components/public";
 import {
   Award,
   CheckCircle,
@@ -23,13 +23,6 @@ import {
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 const iconByVariant = {
   primary: Target,
@@ -65,13 +58,14 @@ export default function UnifiedPackageCard({
   const pricingMeta = getPackagePricingMeta(pkg);
 
   return (
-    <Card
-      className={`group relative flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 ${onSelect ? "cursor-pointer hover:shadow-md" : ""} ${selected ? "border-primary/40" : ""} ${className ?? ""}`}
+    <PublicSurface
+      padding="none"
+      className={`group relative flex h-full min-w-0 flex-col overflow-hidden transition-[box-shadow,border-color,background-color] duration-200 ${onSelect ? "cursor-pointer hover:shadow-md" : ""} ${selected ? "border-primary/40" : ""} ${className ?? ""}`}
       onClick={onSelect}
     >
       <div className={`h-1.5 ${PACKAGE_VARIANT_TOP_BAR_CLASS[pkg.variant]}`} />
 
-      <CardHeader className="pb-4 text-left">
+      <div className="p-5 pb-4 text-left sm:p-6 sm:pb-4">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div
             className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${PACKAGE_VARIANT_ICON_CLASS[pkg.variant]}`}
@@ -92,12 +86,12 @@ export default function UnifiedPackageCard({
           </div>
         </div>
         <div className="mb-5 flex min-h-[94px] flex-col justify-start">
-          <CardTitle className="line-clamp-2 text-xl font-bold leading-tight break-keep text-balance bp-xl:text-2xl">
+          <h3 className="line-clamp-2 text-xl font-bold leading-tight break-keep text-balance bp-xl:text-2xl">
             {pkg.title}
-          </CardTitle>
-          <CardDescription className="mt-2 line-clamp-3 min-h-[66px] text-sm break-keep leading-relaxed text-muted-foreground">
+          </h3>
+          <p className="mt-2 line-clamp-3 min-h-[66px] text-sm break-keep leading-relaxed text-muted-foreground">
             {pkg.description}
-          </CardDescription>
+          </p>
         </div>
 
         <PriceSummary
@@ -143,9 +137,9 @@ export default function UnifiedPackageCard({
             },
           ]}
         />
-      </CardHeader>
+      </div>
 
-      <CardContent className="flex flex-1 flex-col space-y-5">
+      <div className="flex flex-1 flex-col space-y-5 p-5 pt-0 sm:p-6 sm:pt-0">
         <div
           className={`grid gap-3 ${showTotalPrice ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-2"}`}
         >
@@ -229,7 +223,7 @@ export default function UnifiedPackageCard({
             ) : null}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </PublicSurface>
   );
 }
