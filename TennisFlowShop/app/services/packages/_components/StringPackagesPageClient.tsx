@@ -55,23 +55,23 @@ export default function StringPackagesPageClient({
   }> = [
     {
       icon: <Shield className="h-6 w-6" />,
-      title: "품질 보장",
-      description: "모든 스트링 교체에 대해 완벽한 품질을 보장합니다.",
+      title: "교체 품질 확인",
+      description: "접수 내용에 맞춰 스트링 상태와 작업 결과를 확인합니다.",
     },
     {
       icon: <Clock className="h-6 w-6" />,
-      title: "빠른 서비스",
-      description: "평균 30분 내 스트링 교체 완료",
+      title: "빠른 접수",
+      description: "방문 전 신청 내용을 확인해 교체 진행을 돕습니다.",
     },
     {
       icon: <Users className="h-6 w-6" />,
-      title: "전문가 상담",
-      description: "전문가가 직접 상담해드립니다.",
+      title: "전문 상담",
+      description: "플레이 스타일에 맞는 장력과 스트링 선택을 안내합니다.",
     },
     {
       icon: <Gift className="h-6 w-6" />,
-      title: "추가 혜택",
-      description: "패키지 구매 시 다양한 부가 서비스 제공",
+      title: "이용 횟수 관리",
+      description: "남은 횟수와 유효기간을 기준으로 패키지를 사용할 수 있습니다.",
     },
   ];
 
@@ -104,12 +104,12 @@ export default function StringPackagesPageClient({
       <PublicPageHero
         align="center"
         eyebrow="스트링 교체 패키지"
-        title="플레이 빈도에 맞춰 더 합리적으로 관리하세요"
+        title="이용 빈도에 맞는 스트링 교체 패키지"
         description={
           <>
-            플레이 빈도와 필요에 맞는 패키지를 선택하세요.
+            자주 교체하는 고객을 위한 선결제 패키지입니다.
             <br className="hidden sm:block" />
-            모든 패키지는 전문가 상담과 품질 보장이 포함됩니다.
+            횟수, 유효기간, 금액을 비교한 뒤 선택하세요.
           </>
         }
         actions={
@@ -137,18 +137,26 @@ export default function StringPackagesPageClient({
       >
         <SummaryCard
           eyebrow="이용 흐름"
-          title="플레이 빈도에 맞는 패키지 선택"
-          description="모든 패키지는 전문가 상담과 품질 보장이 포함됩니다."
+          title="패키지 이용은 이렇게 진행됩니다"
+          description="선택한 패키지는 결제 후 교체서비스 신청 시 사용할 수 있습니다."
           className="mx-auto max-w-5xl text-left"
-          contentClassName="pt-5"
+          contentClassName="pt-4"
         >
-          <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr] lg:items-center">
-            <p className="break-keep text-sm leading-relaxed text-muted-foreground sm:text-base">
-              현역 테니스 코치가 직접 매는 스트링은 다릅니다. 단순 기계
-              작업이 아닌, 코트 위 실전 데이터를 기반으로 전담 코치가 직접
-              스트링을 교체합니다. 전문가의 디테일한 상담과 완벽한 품질
-              보장까지, 회원님의 스윙에 딱 맞는 스트링 패키지를 만나보세요.
-            </p>
+          <div className="grid gap-4 lg:grid-cols-[1.15fr_1fr] lg:items-center">
+            <ol className="grid gap-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+              {[
+                "패키지별 횟수와 유효기간을 비교합니다.",
+                "선택한 패키지를 주문하고 결제합니다.",
+                "교체서비스 신청 시 보유 횟수에서 사용합니다.",
+              ].map((step, index) => (
+                <li key={step} className="flex min-w-0 gap-3 break-keep">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                    {index + 1}
+                  </span>
+                  <span className="min-w-0 break-words">{step}</span>
+                </li>
+              ))}
+            </ol>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
               {additionalBenefits.slice(0, 3).map((benefit) => (
                 <div
@@ -173,30 +181,41 @@ export default function StringPackagesPageClient({
       <section
         id="packages"
         ref={packagesSectionRef}
-        className="py-12 md:py-20 bg-background scroll-mt-24"
+        className="bg-background py-10 scroll-mt-24 md:py-16"
       >
         <SiteContainer variant="wide">
           <SectionHeader
             align="center"
-            className="mb-10 md:mb-14"
+            className="mb-8 md:mb-10"
             eyebrow={<Badge variant={packagesBadgeVariant("selection")}>맞춤형 패키지 선택</Badge>}
             title="스트링 교체 패키지"
             description={
               <>
-                플레이 빈도와 필요에 맞는 패키지를 선택하세요.
+                이용 횟수, 유효기간, 회당 금액을 비교해 선택하세요.
                 <br className="hidden sm:block" />
-                모든 패키지는 전문가 상담과 품질 보장이 포함됩니다.
+                선택 후 결제 화면에서 주문 정보를 확인할 수 있습니다.
               </>
             }
           />
           {ownershipBlockedMessage && (
-            <PublicSurface variant="muted" className="mx-auto mb-8 max-w-3xl text-center text-sm text-muted-foreground">
-              {ownershipBlockedMessage}
+            <PublicSurface
+              variant="muted"
+              className="mx-auto mb-6 max-w-3xl text-left sm:text-center"
+            >
+              <p className="text-sm font-semibold text-foreground">
+                추가 구매가 제한되어 있습니다
+              </p>
+              <p className="mt-2 break-keep text-sm leading-relaxed text-muted-foreground">
+                {ownershipBlockedMessage}
+              </p>
+              <p className="mt-1 break-keep text-xs leading-relaxed text-muted-foreground">
+                {cardBlockedHelperText}
+              </p>
             </PublicSurface>
           )}
 
           {packages.length > 0 ? (
-            <div className="grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid items-stretch gap-4 md:grid-cols-2 md:gap-5 xl:grid-cols-4">
               {packages.map((pkg) => (
                 <UnifiedPackageCard
                   key={pkg.id}
@@ -217,7 +236,7 @@ export default function StringPackagesPageClient({
           ) : (
             <EmptyState
               title="현재 구매 가능한 패키지가 없습니다"
-              description="패키지 구성이 준비되는 대로 다시 안내드리겠습니다."
+              description="현재 선택 가능한 패키지가 없습니다. 구성이 준비되면 다시 안내드리겠습니다."
               className="mx-auto max-w-3xl"
             />
           )}
@@ -225,37 +244,37 @@ export default function StringPackagesPageClient({
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 md:py-20 bg-background">
+      <section className="bg-background py-10 md:py-16">
         <SiteContainer variant="wide">
           <SectionHeader
             align="center"
-            className="mb-10 md:mb-14"
+            className="mb-8 md:mb-10"
             eyebrow={<Badge variant={packagesBadgeVariant("faq")}>자주 묻는 질문</Badge>}
             title="패키지 이용 안내"
             description="구매 전 자주 확인하는 내용을 간결하게 정리했습니다."
           />
 
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+          <div className="mx-auto max-w-4xl">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
               {[
                 {
                   question: "패키지 유효기간이 지나면 어떻게 되나요?",
                   answer:
-                    "유효기간 만료 전 미사용 횟수는 30일 연장 가능하며, 추가 비용 없이 1회 연장해드립니다.",
+                    "유효기간이 임박한 경우 운영 정책에 따라 연장 가능 여부를 안내드립니다.",
                 },
                 {
                   question: "다른 사람과 패키지를 공유할 수 있나요?",
-                  answer: "패키지는 구매자 본인만 사용 가능합니다.",
+                  answer: "패키지는 구매자 본인 사용을 기준으로 운영됩니다.",
                 },
                 {
                   question: "패키지 환불이 가능한가요?",
                   answer:
-                    "미사용 횟수에 대해서는 구매일로부터 7일 이내 100% 환불 가능합니다.",
+                    "환불 가능 여부와 금액은 사용 횟수와 결제 상태를 확인한 뒤 안내드립니다.",
                 },
                 {
                   question: "패키지 사용은 어떻게 하나요?",
                   answer:
-                    "패키지 구매 후 교체 신청서에서 사용 가능합니다. 자세한 문의는 매장으로 연락 주세요.",
+                    "구매 후 교체서비스 신청 시 보유 패키지를 선택해 사용할 수 있습니다.",
                 },
               ].map((faq, index) => (
                 <PublicSurface
@@ -265,7 +284,7 @@ export default function StringPackagesPageClient({
                   <h3 className="break-keep text-lg font-semibold leading-tight text-foreground">
                     Q. {faq.question}
                   </h3>
-                  <p className="mt-3 break-keep text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-2 break-keep text-sm leading-relaxed text-muted-foreground">
                     A. {faq.answer}
                   </p>
                 </PublicSurface>
@@ -273,11 +292,11 @@ export default function StringPackagesPageClient({
             </div>
           </div>
 
-          <div className="text-center mt-8 md:mt-12">
+          <div className="mt-8 text-center md:mt-10">
             <Button
               size="lg"
               variant="default"
-              className="shadow-sm hover:shadow-md transition-all duration-300"
+              className="w-full shadow-sm transition-all duration-300 hover:shadow-md sm:w-auto"
               asChild
             >
               <Link href="/board/qna">
