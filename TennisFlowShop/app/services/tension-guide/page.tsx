@@ -3,9 +3,9 @@
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero } from "@/components/public/PublicPageHero";
 import { PublicSurface } from "@/components/public/PublicSurface";
+import { SummaryCard } from "@/components/public/SummaryCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertTriangle,
@@ -481,14 +481,16 @@ export default function TensionGuidePage() {
             <div className="grid bp-lg:grid-cols-2 gap-6 bp-md:gap-8">
               {/* 입력 섹션 */}
               <div className="space-y-6">
-                <Card className="border border-border shadow-sm bg-card dark:bg-muted/90">
-                  <CardHeader className="pb-4 bp-md:pb-6">
-                    <CardTitle className="flex items-center gap-2 break-keep text-base leading-snug text-foreground bp-md:text-lg">
+                <SummaryCard
+                  title={
+                    <span className="flex items-center gap-2 break-keep">
                       <Settings2 className="h-4 w-4 bp-md:h-5 bp-md:w-5 text-primary" />
                       나의 플레이 정보
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6 bp-md:space-y-8">
+                    </span>
+                  }
+                  className="border border-border shadow-sm bg-card dark:bg-muted/90"
+                  contentClassName="space-y-6 bp-md:space-y-8"
+                >
                     {/* 성별 선택 */}
                     <div>
                       <label className="block text-sm font-semibold text-foreground mb-3">
@@ -606,20 +608,20 @@ export default function TensionGuidePage() {
                         ))}
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                </SummaryCard>
               </div>
 
               {/* 결과 섹션 */}
               <div className="space-y-6">
-                <Card className="border border-border shadow-sm bg-muted/40 dark:bg-muted/30 overflow-hidden">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="flex items-center gap-2 text-base bp-md:text-lg text-foreground dark:text-primary-foreground/90">
+                <SummaryCard
+                  title={
+                    <span className="flex items-center gap-2 text-foreground dark:text-primary-foreground/90">
                       <Target className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                       추천 텐션
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                    </span>
+                  }
+                  className="border border-border shadow-sm bg-muted/40 dark:bg-muted/30 overflow-hidden"
+                >
                     <div className="text-center mb-6 bp-md:mb-8">
                       <div className="text-5xl bp-sm:text-6xl bp-md:text-7xl font-bold text-primary mb-2 ">
                         {calculatedTension}LB
@@ -751,23 +753,25 @@ export default function TensionGuidePage() {
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button> */}
-                  </CardContent>
-                </Card>
+                </SummaryCard>
 
                 {/* 환경 요인 */}
-                <Card className="border border-border shadow-sm bg-card dark:bg-muted/90">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm bp-md:text-base flex items-center gap-2 text-foreground">
+                <SummaryCard
+                  title={
+                    <span className="flex items-center gap-2 text-foreground">
                       <Thermometer className="h-4 w-4 text-muted-foreground" />
                       환경에 따른 조정
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                    </span>
+                  }
+                  className="border border-border shadow-sm bg-card dark:bg-muted/90"
+                >
                     <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-sm:gap-3">
                       {environmentFactors.map((factor, index) => (
-                        <div
+                        <PublicSurface
                           key={index}
-                          className="flex items-start gap-2 p-2 bp-sm:p-3 bg-muted/50 dark:bg-muted/50 rounded-lg hover:bg-muted dark:hover:bg-muted transition-colors duration-200"
+                          variant="muted"
+                          padding="sm"
+                          className="flex items-start gap-2 rounded-lg hover:bg-muted dark:hover:bg-muted transition-colors duration-200"
                         >
                           <factor.icon
                             className={`h-4 w-4 mt-0.5 flex-shrink-0 ${factor.color}`}
@@ -780,11 +784,10 @@ export default function TensionGuidePage() {
                               {factor.adjustment}
                             </div>
                           </div>
-                        </div>
+                        </PublicSurface>
                       ))}
                     </div>
-                  </CardContent>
-                </Card>
+                </SummaryCard>
               </div>
             </div>
           </TabsContent>
@@ -796,12 +799,13 @@ export default function TensionGuidePage() {
                 const IconComponent = player.icon;
                 const isSelected = selectedLevel === index;
                 return (
-                  <Card
+                  <PublicSurface
                     key={index}
+                    padding="none"
                     className={`cursor-pointer transition-[background-color,color,border-color,box-shadow,opacity] duration-300 overflow-hidden border bg-card ${isSelected ? "border-primary/60 ring-2 ring-inset ring-primary/20 shadow-sm" : "hover:shadow-md"}`}
                     onClick={() => setSelectedLevel(isSelected ? null : index)}
                   >
-                    <CardHeader className="pb-3 bp-md:pb-4">
+                    <div className="p-5 pb-3 bp-md:pb-4 sm:p-6 sm:pb-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3 bp-sm:gap-4">
                           <div
@@ -810,9 +814,9 @@ export default function TensionGuidePage() {
                             <IconComponent className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 bp-md:h-7 bp-md:w-7 text-primary" />
                           </div>
                           <div>
-                            <CardTitle className="text-base bp-sm:text-lg bp-md:text-xl mb-1 text-card-foreground">
+                            <h3 className="text-base bp-sm:text-lg bp-md:text-xl mb-1 font-semibold text-card-foreground">
                               {player.type}
-                            </CardTitle>
+                            </h3>
                             <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                               <Badge
                                 variant="secondary"
@@ -833,8 +837,8 @@ export default function TensionGuidePage() {
                           className={`h-4 w-4 bp-md:h-5 bp-md:w-5 text-muted-foreground transition-transform ${isSelected ? "rotate-90" : ""}`}
                         />
                       </div>
-                    </CardHeader>
-                    <CardContent>
+                    </div>
+                    <div className="p-5 pt-0 sm:p-6 sm:pt-0">
                       <p className="text-sm bp-md:text-base text-muted-foreground mb-3 bp-md:mb-4">
                         {player.description}
                       </p>
@@ -914,8 +918,8 @@ export default function TensionGuidePage() {
                           </div>
                         </div>
                       )}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </PublicSurface>
                 );
               })}
             </div>
@@ -925,24 +929,25 @@ export default function TensionGuidePage() {
           <TabsContent value="strings" className="mt-6 bp-md:mt-8">
             <div className="grid grid-cols-1 bp-lg:grid-cols-2 gap-4 bp-md:gap-6">
               {stringTypes.map((string, index) => (
-                <Card
+                <PublicSurface
                   key={index}
+                  padding="none"
                   className="overflow-hidden border bg-card hover:shadow-md transition-[background-color,color,border-color,box-shadow,opacity] duration-300"
                 >
                   <div className={`h-1.5 bp-md:h-2 ${string.color}`} />
-                  <CardHeader className="pb-3 bp-md:pb-4">
+                  <div className="p-5 pb-3 bp-md:pb-4 sm:p-6 sm:pb-4">
                     <div className="flex items-center justify-between flex-wrap gap-2">
-                      <CardTitle className="flex items-center gap-2 bp-sm:gap-3 text-base bp-sm:text-lg bp-md:text-xl text-card-foreground">
+                      <h3 className="flex items-center gap-2 bp-sm:gap-3 text-base bp-sm:text-lg bp-md:text-xl font-semibold text-card-foreground">
                         <div
                           className={`w-8 h-8 bp-sm:w-9 bp-sm:h-9 bp-md:w-10 bp-md:h-10 ${string.color} rounded-lg bp-md:rounded-xl flex items-center justify-center`}
                         >
                           <string.icon className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" />
                         </div>
                         {string.name}
-                      </CardTitle>
+                      </h3>
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3 bp-md:space-y-4">
+                  </div>
+                  <div className="space-y-3 bp-md:space-y-4 p-5 pt-0 sm:p-6 sm:pt-0">
                     <p className="text-sm text-muted-foreground">
                       {string.characteristics}
                     </p>
@@ -1020,8 +1025,8 @@ export default function TensionGuidePage() {
                         추천: {string.bestFor}
                       </span>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </PublicSurface>
               ))}
             </div>
           </TabsContent>
@@ -1030,15 +1035,15 @@ export default function TensionGuidePage() {
           <TabsContent value="tips" className="mt-6 bp-md:mt-8">
             <div className="grid gap-4 bp-md:gap-6">
               {/* 텐션 이해하기 */}
-              <Card className="overflow-hidden border bg-card">
-                <div className="h-1 bg-muted/30" />
-                <CardHeader className="pb-3 bp-md:pb-4">
-                  <CardTitle className="flex items-center gap-2 text-base bp-md:text-lg text-card-foreground">
+              <SummaryCard
+                title={
+                  <span className="flex items-center gap-2 text-card-foreground">
                     <BarChart3 className="h-4 w-4 bp-md:h-5 bp-md:w-5 text-primary" />
                     텐션이 플레이에 미치는 영향
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+                  </span>
+                }
+                className="overflow-hidden border bg-card before:block before:h-1 before:bg-muted/30"
+              >
                   <div className="grid bp-md:grid-cols-2 gap-6 bp-md:gap-8">
                     {/* 낮은 텐션 */}
                     <div className="space-y-3 bp-md:space-y-4">
@@ -1112,19 +1117,20 @@ export default function TensionGuidePage() {
                       </ul>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </SummaryCard>
 
               {/* 텐션 관리 팁 */}
               <div className="grid bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
-                <Card className="bg-secondary border-border">
-                  <CardHeader className="pb-2 bp-md:pb-3">
-                    <CardTitle className="text-sm bp-md:text-base flex items-center gap-2 text-foreground dark:text-primary-foreground/90">
+                <SummaryCard
+                  title={
+                    <span className="flex items-center gap-2 text-foreground dark:text-primary-foreground/90">
                       <Gauge className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                       텐션 손실 이해하기
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2 bp-md:space-y-3">
+                    </span>
+                  }
+                  className="bg-secondary border-border"
+                  contentClassName="space-y-2 bp-md:space-y-3"
+                >
                     <p className="text-xs bp-md:text-sm text-foreground">
                       스트링은 장착 후 지속적으로 텐션이 감소합니다.
                     </p>
@@ -1142,17 +1148,18 @@ export default function TensionGuidePage() {
                         이후: 점진적 안정화
                       </li>
                     </ul>
-                  </CardContent>
-                </Card>
+                  </SummaryCard>
 
-                <Card className="bg-secondary border-border">
-                  <CardHeader className="pb-2 bp-md:pb-3">
-                    <CardTitle className="text-sm bp-md:text-base flex items-center gap-2 text-foreground">
+                <SummaryCard
+                  title={
+                    <span className="flex items-center gap-2 text-foreground">
                       <Shield className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                       스트링 보관 팁
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2 bp-md:space-y-3">
+                    </span>
+                  }
+                  className="bg-secondary border-border"
+                  contentClassName="space-y-2 bp-md:space-y-3"
+                >
                     <p className="text-xs bp-md:text-sm text-foreground">
                       올바른 보관은 스트링 수명과 텐션 유지에 중요합니다.
                     </p>
@@ -1170,17 +1177,18 @@ export default function TensionGuidePage() {
                         라켓 커버 사용
                       </li>
                     </ul>
-                  </CardContent>
-                </Card>
+                  </SummaryCard>
 
-                <Card className="bg-muted/50 dark:bg-muted/40 border-border bp-sm:col-span-2 bp-lg:col-span-1">
-                  <CardHeader className="pb-2 bp-md:pb-3">
-                    <CardTitle className="text-sm bp-md:text-base flex items-center gap-2 text-foreground">
+                <SummaryCard
+                  title={
+                    <span className="flex items-center gap-2 text-foreground">
                       <Target className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                       교체 시기 판단
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2 bp-md:space-y-3">
+                    </span>
+                  }
+                  className="bg-muted/50 dark:bg-muted/40 border-border bp-sm:col-span-2 bp-lg:col-span-1"
+                  contentClassName="space-y-2 bp-md:space-y-3"
+                >
                     <p className="text-xs bp-md:text-sm text-muted-foreground">
                       다음 신호가 나타나면 교체를 고려하세요.
                     </p>
@@ -1198,19 +1206,20 @@ export default function TensionGuidePage() {
                         변색 또는 보풀
                       </li>
                     </ul>
-                  </CardContent>
-                </Card>
+                  </SummaryCard>
               </div>
 
               {/* FAQ 섹션 */}
-              <Card className="border bg-card">
-                <CardHeader className="pb-3 bp-md:pb-4">
-                  <CardTitle className="flex items-center gap-2 text-base bp-md:text-lg text-card-foreground">
+              <SummaryCard
+                title={
+                  <span className="flex items-center gap-2 text-card-foreground">
                     <Info className="h-4 w-4 bp-md:h-5 bp-md:w-5 text-primary" />
                     자주 묻는 질문
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 bp-md:space-y-4">
+                  </span>
+                }
+                className="border bg-card"
+                contentClassName="space-y-3 bp-md:space-y-4"
+              >
                   <div className="space-y-4 bp-md:space-y-6">
                     <div className="border-b border-border pb-3 bp-md:pb-4">
                       <h4 className="font-semibold text-sm bp-md:text-base text-foreground mb-1.5 bp-md:mb-2">
@@ -1254,15 +1263,17 @@ export default function TensionGuidePage() {
                       </p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </SummaryCard>
             </div>
           </TabsContent>
         </Tabs>
 
         {/* CTA 섹션 */}
-        <Card className="bg-secondary border border-border overflow-hidden mb-6 bp-md:mb-8">
-          <CardContent className="p-4 bp-sm:p-6 bp-md:p-10 bp-lg:p-12">
+        <PublicSurface
+          padding="none"
+          className="bg-secondary border border-border overflow-hidden mb-6 bp-md:mb-8"
+        >
+          <div className="p-4 bp-sm:p-6 bp-md:p-10 bp-lg:p-12">
             <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
               <div className="text-center bp-md:text-left">
                 <h3 className="font-bold text-xl bp-sm:text-2xl bp-md:text-3xl mb-2 text-foreground">
@@ -1284,10 +1295,13 @@ export default function TensionGuidePage() {
                 </Link>
               </Button>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-secondary border border-border overflow-hidden mb-6 bp-md:mb-8">
-          <CardContent className="p-4 bp-sm:p-6 bp-md:p-10 bp-lg:p-12">
+          </div>
+        </PublicSurface>
+        <PublicSurface
+          padding="none"
+          className="bg-secondary border border-border overflow-hidden mb-6 bp-md:mb-8"
+        >
+          <div className="p-4 bp-sm:p-6 bp-md:p-10 bp-lg:p-12">
             <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
               <div className="text-center bp-md:text-left">
                 <h3 className="font-bold text-xl bp-sm:text-2xl bp-md:text-3xl mb-2 text-foreground">
@@ -1309,8 +1323,8 @@ export default function TensionGuidePage() {
                 </Link>
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </PublicSurface>
       </SiteContainer>
     </div>
   );
