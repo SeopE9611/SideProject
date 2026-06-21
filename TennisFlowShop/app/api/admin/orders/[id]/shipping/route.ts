@@ -14,7 +14,7 @@ import {
   normalizeOrderStatus,
   normalizePaymentStatus,
 } from "@/lib/admin-ops-normalize";
-import { normalizeCourierCode } from "@/lib/shipping/courier-map";
+import { findCourierCatalogItem, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 
 const shippingMethodMap: Record<string, string> = {
@@ -123,10 +123,17 @@ export async function PATCH(
       );
 
     const isCourier = normalizedMethod === "courier";
+    const normalizedCourier = isCourier ? normalizeCourierCode(courier) : "";
+    const courierItem = isCourier ? findCourierCatalogItem(normalizedCourier) : null;
     if (isCourier) {
-      if (!normalizeCourierCode(courier))
+      if (!courierItem)
         return NextResponse.json(
-          { success: false, message: "택배사를 선택해주세요." },
+          { success: false, message: "INVALID_COURIER" },
+          { status: 400 },
+        );
+      if (courierItem.code === "ems")
+        return NextResponse.json(
+          { success: false, message: "EMS는 현재 운송장 등록을 지원하지 않습니다." },
           { status: 400 },
         );
       const normalizedTrackingNumber = normalizeTrackingNumber(trackingNumber);
@@ -152,7 +159,7 @@ export async function PATCH(
 
     const nextMethod = String(normalizedMethod ?? shippingMethod ?? "").trim();
     const nextEstimatedDate = String(estimatedDate ?? "").trim();
-    const nextCourier = isCourier ? normalizeCourierCode(courier) : "";
+    const nextCourier = normalizedCourier;
     const nextTracking = isCourier ? normalizeTrackingNumber(trackingNumber) : "";
     const isFirstShippingRegistration =
       !isRegistered &&

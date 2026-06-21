@@ -7,7 +7,7 @@ import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { writeRentalHistory } from "@/app/features/rentals/utils/history";
 import { getLinkedRentalStringingStatus } from "@/lib/admin/rental-stringing-flow.server";
 import { hasRentalStringingService, isRentalStringingComplete } from "@/lib/rental-stringing-flow";
-import { normalizeCourierCode } from "@/lib/shipping/courier-map";
+import { findCourierCatalogItem, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 
 export const dynamic = "force-dynamic";
@@ -32,8 +32,19 @@ export async function POST(
     shippedAt,
   } = await req.json().catch(() => ({}));
   const normalizedCourier = normalizeCourierCode(courier);
+  const courierItem = findCourierCatalogItem(normalizedCourier);
   const normalizedTrackingNumber = normalizeTrackingNumber(trackingNumber);
-  if (!normalizedCourier || !normalizedTrackingNumber)
+  if (!courierItem)
+    return NextResponse.json(
+      { ok: false, message: "INVALID_COURIER" },
+      { status: 400 },
+    );
+  if (courierItem.code === "ems")
+    return NextResponse.json(
+      { ok: false, message: "EMS는 현재 운송장 등록을 지원하지 않습니다." },
+      { status: 400 },
+    );
+  if (!normalizedTrackingNumber)
     return NextResponse.json(
       { ok: false, message: "MISSING_FIELDS" },
       { status: 400 },

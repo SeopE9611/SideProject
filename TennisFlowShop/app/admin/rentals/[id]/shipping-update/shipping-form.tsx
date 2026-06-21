@@ -19,18 +19,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
-import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { showErrorToast } from "@/lib/toast";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { adminFetcher, adminMutator } from "@/lib/admin/adminFetcher";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
+import {
+  getSelectableCourierCatalog,
+  normalizeCourierCode,
+} from "@/lib/shipping/courier-map";
+import {
+  isValidTrackingNumberLength,
+  normalizeTrackingNumber,
+} from "@/lib/shipping/tracking-number";
 
 // dirty 비교용 시그니처(운송장 번호는 공백/하이픈 제거한 값 기준으로 비교)
 const shippingSig = (v: { courier: string; tracking: string; date: string }) =>
   JSON.stringify({
-    courier: String(v.courier ?? ""),
-    tracking: String(v.tracking ?? "")
-      .replaceAll("-", "")
-      .replaceAll(" ", ""),
+    courier: normalizeCourierCode(v.courier),
+    tracking: normalizeTrackingNumber(v.tracking),
     date: String(v.date ?? ""),
   });
 
@@ -68,8 +74,8 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
       setIsVisitPickup(isVisit);
       const out = json?.shipping?.outbound;
       const next = {
-        courier: out?.courier || "",
-        tracking: out?.trackingNumber || "",
+        courier: normalizeCourierCode(out?.courier) || "",
+        tracking: normalizeTrackingNumber(out?.trackingNumber),
         date: out?.shippedAt ? String(out.shippedAt).slice(0, 10) : "",
       };
       setCourier(next.courier);
@@ -87,7 +93,11 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
         "방문 수령 대여는 출고 운송장을 등록할 수 없습니다.",
       );
     if (!courier) return showErrorToast("택배사를 선택해주세요");
+    const normalizedCourier = normalizeCourierCode(courier);
+    const normalizedTracking = normalizeTrackingNumber(tracking);
     if (!tracking) return showErrorToast("운송장 번호를 입력해주세요");
+    if (!isValidTrackingNumberLength(normalizedTracking))
+      return showErrorToast("운송장 번호는 숫자 9~20자리로 입력해주세요.");
     setBusy(true);
     const result = await runAdminActionWithToast({
       action: () =>
@@ -95,8 +105,8 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            courier,
-            trackingNumber: tracking.replaceAll("-", "").replaceAll(" ", ""),
+            courier: normalizedCourier,
+            trackingNumber: normalizedTracking,
             shippedAt: date,
           }),
         }),
@@ -148,15 +158,19 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label>택배사</Label>
-            <Select value={courier} onValueChange={setCourier}>
+            <Select
+              value={courier}
+              onValueChange={(value) => setCourier(normalizeCourierCode(value))}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="택배사를 선택" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="cj">CJ대한통운</SelectItem>
-                <SelectItem value="post">우체국</SelectItem>
-                <SelectItem value="logen">로젠</SelectItem>
-                <SelectItem value="hanjin">한진</SelectItem>
+                {getSelectableCourierCatalog().map((item) => (
+                  <SelectItem key={item.code} value={item.code}>
+                    {item.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -164,7 +178,12 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
             <Label>운송장 번호</Label>
             <Input
               value={tracking}
-              onChange={(e) => setTracking(e.target.value)}
+              inputMode="numeric"
+              maxLength={20}
+              placeholder="숫자만 입력 (9~20자리)"
+              onChange={(e) =>
+                setTracking(normalizeTrackingNumber(e.target.value).slice(0, 20))
+              }
             />
           </div>
           <div className="space-y-2">

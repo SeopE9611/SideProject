@@ -1,7 +1,7 @@
 import { handleUpdateShippingInfo } from "@/app/features/stringing-applications/api/handlers";
 import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 import { getDb } from "@/lib/mongodb";
-import { normalizeCourierCode } from "@/lib/shipping/courier-map";
+import { findCourierCatalogItem, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -110,7 +110,20 @@ export async function PATCH(
     typeof incoming?.shippedAt === "string" ? incoming.shippedAt.trim() : "";
   const note = typeof incoming?.note === "string" ? incoming.note.trim() : "";
 
-  if (!courier || !trackingNo) {
+  const courierItem = findCourierCatalogItem(courier);
+  if (!courierItem) {
+    return NextResponse.json(
+      { ok: false, message: "INVALID_COURIER" },
+      { status: 400 },
+    );
+  }
+  if (courierItem.code === "ems") {
+    return NextResponse.json(
+      { ok: false, message: "EMS는 현재 운송장 등록을 지원하지 않습니다." },
+      { status: 400 },
+    );
+  }
+  if (!trackingNo) {
     return NextResponse.json(
       { ok: false, message: "INVALID_SELF_SHIP" },
       { status: 400 },

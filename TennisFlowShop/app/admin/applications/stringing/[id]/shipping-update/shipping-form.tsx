@@ -20,7 +20,7 @@ import {
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
-import { COURIER_CATALOG, normalizeCourierCode } from "@/lib/shipping/courier-map";
+import { getSelectableCourierCatalog, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { Loader2 } from "lucide-react";
@@ -295,7 +295,7 @@ export default function ShippingForm({
                     <SelectValue placeholder="택배사를 선택하세요" />
                   </SelectTrigger>
                   <SelectContent>
-                    {COURIER_CATALOG.map((item) => (
+                    {getSelectableCourierCatalog().map((item) => (
                       <SelectItem key={item.code} value={item.code}>
                         {item.label}
                       </SelectItem>

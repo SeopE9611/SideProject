@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
+import { findCourierCatalogItem, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { z } from "zod";
 
@@ -13,9 +14,7 @@ const isValidTrackingDigits = (digits: string) =>
   digits.length >= 9 && digits.length <= 20;
 
 const requestSchema = z.object({
-  courier: z.enum(["cj", "post", "logen", "hanjin"], {
-    errorMap: () => ({ message: "택배사를 올바르게 선택해주세요." }),
-  }),
+  courier: z.string().transform((s) => normalizeCourierCode(s)),
   trackingNumber: z
     .string()
     .transform((s) => normalizeTrackingNumber(s))
@@ -91,6 +90,16 @@ export async function POST(
   }
 
   const { courier, trackingNumber, shippedAt, note } = parsed.data;
+  const courierItem = findCourierCatalogItem(courier);
+  if (!courierItem) {
+    return NextResponse.json({ ok: false, message: "INVALID_COURIER" }, { status: 400 });
+  }
+  if (courierItem.code === "ems") {
+    return NextResponse.json(
+      { ok: false, message: "EMS는 현재 운송장 등록을 지원하지 않습니다." },
+      { status: 400 },
+    );
+  }
   // 소유자 검증
   const db = (await clientPromise).db();
   const _id = new ObjectId(id);
