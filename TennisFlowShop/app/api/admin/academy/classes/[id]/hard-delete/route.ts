@@ -47,16 +47,19 @@ export async function DELETE(
     );
   }
 
-  const applicationCount = await guard.db
+  const blockingApplicationCount = await guard.db
     .collection(APPLICATION_COLLECTION_NAME)
-    .countDocuments(buildClassApplicationFilter(id));
+    .countDocuments({
+      ...buildClassApplicationFilter(id),
+      status: { $ne: "cancelled" },
+    });
 
-  if (applicationCount > 0) {
+  if (blockingApplicationCount > 0) {
     return NextResponse.json(
       {
         success: false,
         message:
-          "이 클래스에 연결된 신청 내역이 있어 삭제할 수 없습니다. 고객 화면에서 숨기려면 숨김 처리를 사용하세요.",
+          "이 클래스에 취소되지 않은 신청 내역이 있어 삭제할 수 없습니다. 고객 화면에서 내리려면 숨김 처리를 사용하세요.",
       },
       { status: 409 },
     );
