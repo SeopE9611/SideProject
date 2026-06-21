@@ -4,15 +4,9 @@ import { InteractiveCard } from "@/components/public/InteractiveCard";
 import { PublicPageHero } from "@/components/public/PublicPageHero";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
+import { SummaryCard } from "@/components/public/SummaryCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { CUSTOM_STRING_MOUNTING_FEE } from "@/lib/stringing-pricing-policy";
 import {
   ArrowRight,
@@ -344,14 +338,14 @@ export default async function ServicesPage() {
                       {item.description}
                     </p>
 
-                    <div className="mt-4 rounded-xl border border-border bg-muted/30 p-3">
+                    <PublicSurface variant="muted" padding="sm" className="mt-4">
                       <p className="text-xs font-semibold text-primary">
                         진행 순서
                       </p>
                       <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                         {item.steps}
                       </p>
-                    </div>
+                    </PublicSurface>
 
                     <div className="mt-auto pt-5">
                       <span className="inline-flex min-h-10 w-full items-center justify-center gap-2 whitespace-normal break-keep text-center leading-snug rounded-lg border border-border bg-card px-3 py-2.5 text-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
@@ -380,17 +374,14 @@ export default async function ServicesPage() {
                   </div>
                   <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
                     {serviceNoticeChips.map((notice) => (
-                      <div
-                        key={notice.title}
-                        className="rounded-xl border border-border bg-card p-3"
-                      >
+                      <PublicSurface key={notice.title} padding="sm">
                         <p className="text-sm font-semibold text-foreground">
                           {notice.title}
                         </p>
                         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                           {notice.description}
                         </p>
-                      </div>
+                      </PublicSurface>
                     ))}
                   </div>
                 </div>
@@ -434,106 +425,109 @@ export default async function ServicesPage() {
 
           <div className="grid grid-cols-1 gap-4 bp-md:grid-cols-2 bp-md:gap-6 bp-lg:grid-cols-3 bp-lg:gap-8">
             {stringTypes.map((type) => (
-              <Card
+              <SummaryCard
                 key={type.id}
-                className="group relative overflow-hidden border border-border shadow-sm hover:shadow-md transition-[box-shadow,border-color,background-color] duration-200 bg-card"
+                title={
+                  <span className="block break-keep text-center text-2xl font-bold leading-tight">
+                    {type.title}
+                  </span>
+                }
+                description={
+                  <span className="block text-center text-base leading-relaxed">
+                    {type.description}
+                  </span>
+                }
+                className="group relative h-full overflow-hidden border-border shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md"
+                contentClassName="space-y-4 md:space-y-6"
               >
-                <div className="h-2 bg-muted"></div>
+                <div className="absolute inset-x-0 top-0 h-2 bg-muted" />
 
-                <CardHeader className="text-center pb-4">
-                  <div className="mx-auto mb-4 w-20 h-20 rounded-full border border-border/60 bg-secondary flex items-center justify-center text-muted-foreground shadow-sm transition-shadow duration-300 group-hover:shadow-md">
+                <div className="flex justify-center">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full border border-border/60 bg-secondary text-muted-foreground shadow-sm transition-shadow duration-300 group-hover:shadow-md">
                     {type.icon}
                   </div>
-                  <CardTitle className="mb-2 break-keep text-2xl font-bold leading-tight">
-                    {type.title}
-                  </CardTitle>
-                  <CardDescription className="text-pretty text-base leading-relaxed">
-                    {type.description}
-                  </CardDescription>
-                </CardHeader>
+                </div>
 
-                <CardContent className="space-y-4 md:space-y-6">
-                  {/* 성능 차트 */}
-                  <PublicSurface variant="muted" padding="sm">
-                    <h4 className="font-semibold mb-3 text-center">
-                      성능 특성
-                    </h4>
-                    <div className="space-y-2">
-                      {Object.entries(type.performance).map(([key, value]) => (
-                        <div
-                          key={key}
-                          className="flex items-center justify-between"
-                        >
-                          <span className="text-sm capitalize">
-                            {key === "power"
-                              ? "파워"
-                              : key === "control"
-                                ? "컨트롤"
-                                : key === "spin"
-                                  ? "스핀"
-                                  : "내구성"}
-                          </span>
-                          <div className="flex-1 mx-3 bg-muted rounded-full h-2">
-                            <div
-                              className="h-2 rounded-full bg-muted-foreground/70 transition-all duration-1000 ease-out"
-                              style={{ width: `${value}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-sm font-medium">{value}%</span>
+                {/* 성능 차트 */}
+                <PublicSurface variant="muted" padding="sm">
+                  <h4 className="mb-3 text-center font-semibold">
+                    성능 특성
+                  </h4>
+                  <div className="space-y-2">
+                    {Object.entries(type.performance).map(([key, value]) => (
+                      <div
+                        key={key}
+                        className="flex items-center justify-between"
+                      >
+                        <span className="text-sm capitalize">
+                          {key === "power"
+                            ? "파워"
+                            : key === "control"
+                              ? "컨트롤"
+                              : key === "spin"
+                                ? "스핀"
+                                : "내구성"}
+                        </span>
+                        <div className="mx-3 h-2 flex-1 rounded-full bg-muted">
+                          <div
+                            className="h-2 rounded-full bg-muted-foreground/70 transition-all duration-1000 ease-out"
+                            style={{ width: `${value}%` }}
+                          ></div>
                         </div>
-                      ))}
-                    </div>
-                  </PublicSurface>
-
-                  {/* 주요 특징 */}
-                  <div>
-                    <h4 className="font-semibold mb-3 flex items-center">
-                      <CheckCircle className="w-4 h-4 mr-2 text-muted-foreground" />
-                      주요 특징
-                    </h4>
-                    <ul className="space-y-2">
-                      {type.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start text-sm">
-                          <div className="w-2 h-2 rounded-full bg-muted-foreground/70 mt-2 mr-3 flex-shrink-0"></div>
-                          <span className="min-w-0 break-words">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
+                        <span className="text-sm font-medium">{value}%</span>
+                      </div>
+                    ))}
                   </div>
+                </PublicSurface>
 
-                  {/* 추천 대상 */}
-                  <div>
-                    <h4 className="font-semibold mb-3 flex items-center">
-                      <Users className="w-4 h-4 mr-2 text-muted-foreground" />
-                      추천 대상
-                    </h4>
-                    <ul className="space-y-2">
-                      {type.recommended.slice(0, 2).map((rec, idx) => (
-                        <li key={idx} className="flex items-start text-sm">
-                          <ArrowRight className="w-3 h-3 mt-1 mr-2 text-muted-foreground flex-shrink-0" />
-                          <span className="min-w-0 break-words">{rec}</span>
-                        </li>
-                      ))}
-                    </ul>
+                {/* 주요 특징 */}
+                <div>
+                  <h4 className="mb-3 flex items-center font-semibold">
+                    <CheckCircle className="mr-2 h-4 w-4 text-muted-foreground" />
+                    주요 특징
+                  </h4>
+                  <ul className="space-y-2">
+                    {type.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start text-sm">
+                        <div className="mr-3 mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-muted-foreground/70"></div>
+                        <span className="min-w-0 break-words">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* 추천 대상 */}
+                <div>
+                  <h4 className="mb-3 flex items-center font-semibold">
+                    <Users className="mr-2 h-4 w-4 text-muted-foreground" />
+                    추천 대상
+                  </h4>
+                  <ul className="space-y-2">
+                    {type.recommended.slice(0, 2).map((rec, idx) => (
+                      <li key={idx} className="flex items-start text-sm">
+                        <ArrowRight className="mr-2 mt-1 h-3 w-3 flex-shrink-0 text-muted-foreground" />
+                        <span className="min-w-0 break-words">{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* 대표 제품 */}
+                <PublicSurface variant="muted" padding="sm">
+                  <h4 className="mb-3 font-semibold">대표 제품</h4>
+                  <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
+                    {type.examples.map((example, idx) => (
+                      <Badge
+                        key={idx}
+                        variant="secondary"
+                        className="max-w-full whitespace-normal break-keep text-xs"
+                      >
+                        {example}
+                      </Badge>
+                    ))}
                   </div>
-
-                  {/* 대표 제품 */}
-                  <PublicSurface variant="muted" padding="sm">
-                    <h4 className="font-semibold mb-3">대표 제품</h4>
-                    <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
-                      {type.examples.map((example, idx) => (
-                        <Badge
-                          key={idx}
-                          variant="secondary"
-                          className="max-w-full whitespace-normal break-keep text-xs"
-                        >
-                          {example}
-                        </Badge>
-                      ))}
-                    </div>
-                  </PublicSurface>
-                </CardContent>
-              </Card>
+                </PublicSurface>
+              </SummaryCard>
             ))}
           </div>
         </SiteContainer>
