@@ -4,7 +4,7 @@ import type React from "react";
 
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { PublicSurface, ResultState, SummaryCard } from "@/components/public";
 import { Skeleton } from "@/components/ui/skeleton";
 import AsyncState from "@/components/system/AsyncState";
 import { Input } from "@/components/ui/input";
@@ -31,7 +31,6 @@ import {
   Clock,
   FileText,
   Loader2,
-  Package,
   Truck,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -176,24 +175,20 @@ export default function ShippingFormClient({
   const isClosed = CLOSED.includes(String(data?.status));
   if (!needsInboundTracking) {
     return (
-      <div className="max-w-3xl mx-auto mt-8 md:mt-12 px-4">
-        <Card className="border-border shadow-lg">
-          <CardContent className="p-8 md:p-12">
-            <div className="flex flex-col items-center gap-4 md:gap-6 text-center">
-              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-8 h-8 text-primary" />
-              </div>
-              <div className="space-y-3">
-                <h3 className="text-xl font-bold text-foreground">
-                  운송장 입력이 필요하지 않은 신청입니다
-                </h3>
-                <p className="text-muted-foreground leading-relaxed max-w-md">
-                  현재 신청은 고객 라켓 입고가 필요하지 않은 유형입니다. 운송장
-                  입력 없이 진행됩니다.
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 mt-4">
-                <Button variant="outline" onClick={() => router.back()}>
+      <div className="min-h-screen bg-muted/30 py-8 md:py-12">
+        <div className="mx-auto max-w-3xl px-4">
+          <ResultState
+            status="info"
+            icon={<AlertTriangle className="h-5 w-5" />}
+            title="운송장 입력이 필요하지 않은 신청입니다"
+            description="현재 신청은 고객 라켓 입고가 필요하지 않은 유형입니다. 운송장 입력 없이 진행됩니다."
+            actions={
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => router.back()}
+                  className="w-full sm:w-auto"
+                >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   돌아가기
                 </Button>
@@ -201,38 +196,29 @@ export default function ShippingFormClient({
                   onClick={() =>
                     router.push(`/mypage/applications/${applicationId}`)
                   }
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
                 >
                   신청 상세로 이동
                 </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </>
+            }
+          />
+        </div>
       </div>
     );
   }
 
   if (isClosed) {
     return (
-      <div className="max-w-3xl mx-auto mt-8 md:mt-12 px-4">
-        <Card className="border-border shadow-lg">
-          <CardContent className="p-8 md:p-12">
-            <div className="flex flex-col items-center gap-4 md:gap-6 text-center">
-              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-8 h-8 text-primary" />
-              </div>
-              <div className="space-y-3">
-                <h3 className="text-xl font-bold text-foreground">
-                  이미 종료된 신청서입니다
-                </h3>
-                <p className="text-muted-foreground leading-relaxed max-w-md">
-                  작업 중 또는 교체완료 상태에서는 운송장을 수정할 수 없습니다.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-muted/30 py-8 md:py-12">
+        <div className="mx-auto max-w-3xl px-4">
+          <ResultState
+            status="warning"
+            icon={<AlertTriangle className="h-5 w-5" />}
+            title="이미 종료된 신청서입니다"
+            description="작업 중 또는 교체완료 상태에서는 운송장을 수정할 수 없습니다."
+          />
+        </div>
       </div>
     );
   }
@@ -410,77 +396,50 @@ function SelfShipForm({
   };
 
   return (
-    <div className="min-h-screen bg-background py-8 md:py-12">
-      <div className="max-w-3xl mx-auto px-4">
-        {/* Header Section */}
-        <div className="mb-6 md:mb-8 text-center">
-          <div className="inline-flex items-center gap-3 mb-4">
-            <div className="w-12 h-px bg-primary/30"></div>
-            <div className="w-14 h-14 bg-card rounded-2xl flex items-center justify-center shadow-lg">
-              <Truck className="w-7 h-7 text-foreground" />
-            </div>
-            <div className="w-12 h-px bg-muted/30"></div>
-          </div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-3">
+    <div className="min-h-screen bg-muted/30 py-8 md:py-12">
+      <div className="mx-auto max-w-3xl px-4">
+        <header className="mb-6 text-center md:mb-8">
+          <p className="mb-2 text-sm font-semibold text-primary">라켓 발송 정보</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             {isLoading
               ? "라켓 발송 정보"
               : isEdit
                 ? "라켓 발송 정보 수정"
                 : "라켓 발송 정보 등록"}
           </h1>
-          <p className="text-muted-foreground leading-relaxed">
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
             {isLoading
               ? "배송 정보를 불러오는 중입니다."
               : "매장으로 보내는 라켓의 택배사와 운송장 번호를 입력해 주세요."}
           </p>
-        </div>
+        </header>
 
         <form onSubmit={onSubmit} className="space-y-4 md:space-y-6">
-          {/* Info Card */}
-          <Card className="border-border bg-card shadow-md">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Clock className="w-5 h-5 text-foreground" />
-                </div>
-                <div className="space-y-2">
-                  {isLoading ? (
-                    <>
-                      <Skeleton className="h-5 w-52" />
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-3/4" />
-                    </>
-                  ) : (
-                    <>
-                      <h3 className="font-semibold text-foreground">
-                        아직 발송 전이신가요?
-                      </h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        라켓 발송 후 이 페이지에서 발송 정보(택배사/운송장
-                        번호)를 등록하셔도 됩니다.
-                        <br />
-                        발송일은 선택 항목이며, 나중에 추가하실 수 있습니다.
-                      </p>
-                    </>
-                  )}
-                </div>
+          <PublicSurface variant="muted" padding="md">
+            {isLoading ? (
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-56" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Main Form Card */}
-          <Card className="border-border shadow-lg">
-            <CardContent className="p-4 md:p-8">
-              {/* Form Title with Divider */}
-              <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8">
-                <div className="flex-1 h-px bg-primary/30"></div>
-                <div className="flex items-center gap-2 text-foreground">
-                  <Package className="w-5 h-5" />
-                  <span className="font-semibold">배송 정보</span>
-                </div>
-                <div className="flex-1 h-px bg-muted/30"></div>
+            ) : (
+              <div className="space-y-1.5">
+                <h2 className="text-base font-semibold text-foreground">
+                  아직 발송 전이라면 나중에 등록할 수 있습니다.
+                </h2>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  라켓 발송 후 택배사와 송장번호를 입력해 주세요. 발송일과 메모는 선택 항목입니다.
+                </p>
               </div>
+            )}
+          </PublicSurface>
 
+          <SummaryCard
+            eyebrow="배송 정보"
+            title="운송장 정보"
+            description="택배사 선택 → 송장번호 입력 → 필요한 경우 발송일과 메모 입력 후 저장해 주세요."
+            contentClassName="space-y-4 md:space-y-6"
+          >
               {isLoading ? (
                 <div className="space-y-4 md:space-y-6">
                   <div className="space-y-2">
@@ -611,67 +570,63 @@ function SelfShipForm({
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
 
-          {/* Action Buttons */}
-          <Card className="border-border shadow-lg">
-            <CardContent className="p-4 md:p-6">
-              {isLoading ? (
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Skeleton className="h-12 flex-1" />
-                  <Skeleton className="h-12 flex-1" />
-                  <Skeleton className="h-12 flex-1" />
-                </div>
-              ) : (
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => confirmLeaveIfDirty(() => history.back())}
-                    disabled={submitting}
-                    className="flex-1 h-12 text-base border-border hover:bg-background dark:hover:bg-card"
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    돌아가기
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      confirmLeaveIfDirty(() => router.push(applyUrl))
-                    }
-                    disabled={submitting}
-                    className="flex-1 h-12 text-base border-border hover:bg-background dark:hover:bg-card"
-                  >
-                    <Clock className="w-4 h-4 mr-2" />
-                    나중에 등록할게요
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={submitting}
-                    className="flex-1 h-12 text-base bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {submitting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        저장 중...
-                      </>
-                    ) : (
-                      <>
-                        <Check className="w-4 h-4 mr-2" />
-                        {submitting
-                          ? "저장 중…"
-                          : isEdit
-                            ? "수정하기"
-                            : "저장하기"}
-                      </>
-                    )}
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              <div className="border-t border-border pt-4 md:pt-6">
+                {isLoading ? (
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Skeleton className="h-12 flex-1" />
+                    <Skeleton className="h-12 flex-1" />
+                    <Skeleton className="h-12 flex-1" />
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => confirmLeaveIfDirty(() => history.back())}
+                      disabled={submitting}
+                      className="flex-1 h-12 text-base border-border hover:bg-background dark:hover:bg-card"
+                    >
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      돌아가기
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() =>
+                        confirmLeaveIfDirty(() => router.push(applyUrl))
+                      }
+                      disabled={submitting}
+                      className="flex-1 h-12 text-base border-border hover:bg-background dark:hover:bg-card"
+                    >
+                      <Clock className="w-4 h-4 mr-2" />
+                      나중에 등록할게요
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={submitting}
+                      className="flex-1 h-12 text-base bg-primary text-primary-foreground hover:bg-primary/90 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          저장 중...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-4 h-4 mr-2" />
+                          {submitting
+                            ? "저장 중…"
+                            : isEdit
+                              ? "수정하기"
+                              : "저장하기"}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+          </SummaryCard>
         </form>
       </div>
     </div>
