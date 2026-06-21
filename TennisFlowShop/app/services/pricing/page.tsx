@@ -1,5 +1,9 @@
 import { getStringingPricingView } from "@/app/services/_lib/stringingPricingView";
-import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero } from "@/components/public/PublicPageHero";
+import { PublicSurface } from "@/components/public/PublicSurface";
+import { SectionHeader } from "@/components/public/SectionHeader";
+import { SummaryCard } from "@/components/public/SummaryCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -132,34 +136,27 @@ export default async function PricingPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <HeroCourtBackdrop
-        opacity="soft"
-        className="h-full w-full text-foreground"
+      <PublicPageHero
+        align="center"
+        eyebrow={
+          <span className="inline-flex items-center gap-2">
+            <Wrench className="h-5 w-5" />
+            장착 서비스 정책
+          </span>
+        }
+        title="장착 비용 안내"
+        description="신청 방식과 선택 상품에 따라 달라지는 비용 구조를 한눈에 확인하세요."
       />
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 md:py-12 space-y-8 md:space-y-12">
-        <div className="text-center">
-          <div className="inline-flex items-center gap-2 bg-secondary border border-border px-4 py-2 rounded-full mb-4 md:mb-6">
-            <Wrench className="h-5 w-5 text-foreground" />
-            <span className="text-sm font-semibold text-foreground">
-              장착 서비스 정책
-            </span>
-          </div>
-          <h1 className="mb-3 text-2xl font-bold bp-md:text-3xl bp-lg:text-4xl">
-            장착 비용 안내
-          </h1>
-          <p className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">
-            신청 방식과 선택 상품에 따라 달라지는 비용 구조를 한눈에 확인하세요.
-          </p>
-        </div>
-
+      <SiteContainer
+        variant="wide"
+        className="py-8 md:py-12 space-y-8 md:space-y-12"
+      >
         <section className="space-y-4 md:space-y-6">
-          <div className="text-center">
-            <h2 className="text-xl font-bold bp-md:text-2xl">비용 계산 방식</h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              먼저 내 신청 방식이 어디에 해당하는지 확인하면 최종 비용을
-              이해하기 쉽습니다.
-            </p>
-          </div>
+          <SectionHeader
+            align="center"
+            title="비용 계산 방식"
+            description="먼저 내 신청 방식이 어디에 해당하는지 확인하면 최종 비용을 이해하기 쉽습니다."
+          />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             {basicServices.map((service) => {
               const Icon = service.icon;
@@ -200,25 +197,23 @@ export default async function PricingPage() {
               );
             })}
           </div>
-          <Card className="bg-muted/30">
-            <CardContent className="p-4 text-sm text-muted-foreground space-y-1 break-keep">
-              <p>• {STRINGING_POLICY_TEXT.product}</p>
-              <p>• {STRINGING_POLICY_TEXT.package}</p>
-              <p>• {STRINGING_POLICY_TEXT.dynamic}</p>
-            </CardContent>
-          </Card>
+          <PublicSurface
+            variant="muted"
+            padding="sm"
+            className="text-sm text-muted-foreground space-y-1 break-keep"
+          >
+            <p>• {STRINGING_POLICY_TEXT.product}</p>
+            <p>• {STRINGING_POLICY_TEXT.package}</p>
+            <p>• {STRINGING_POLICY_TEXT.dynamic}</p>
+          </PublicSurface>
         </section>
 
         <section className="space-y-4 md:space-y-6">
-          <div className="text-center">
-            <h2 className="text-xl font-bold bp-md:text-2xl">
-              스트링 가격대별 안내
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              등록된 스트링 상품의 실제 상품가와 장착비 데이터를 소재별로
-              요약했습니다.
-            </p>
-          </div>
+          <SectionHeader
+            align="center"
+            title="스트링 가격대별 안내"
+            description="등록된 스트링 상품의 실제 상품가와 장착비 데이터를 소재별로 요약했습니다."
+          />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
             {primarySummaries.map((category) => {
               const hasProducts = category.count > 0;
@@ -456,74 +451,69 @@ export default async function PricingPage() {
         </section> */}
 
         <section className="grid gap-4 md:gap-6 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="break-keep leading-snug">
-                추가 서비스 / 무료 지원
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {additionalServices.map((service) => (
-                <div
-                  key={service.name}
-                  className="rounded-lg border border-border p-3"
-                >
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-                    <p className="font-medium">{service.name}</p>
-                    <Badge
-                      variant="secondary"
-                      className="shrink-0 whitespace-nowrap"
-                    >
-                      {service.policy}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {service.description}
-                  </p>
+          <SummaryCard
+            title="추가 서비스 / 무료 지원"
+            contentClassName="space-y-3"
+          >
+            {additionalServices.map((service) => (
+              <div
+                key={service.name}
+                className="rounded-lg border border-border p-3"
+              >
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                  <p className="font-medium">{service.name}</p>
+                  <Badge
+                    variant="secondary"
+                    className="shrink-0 whitespace-nowrap"
+                  >
+                    {service.policy}
+                  </Badge>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {service.description}
+                </p>
+              </div>
+            ))}
+          </SummaryCard>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 break-keep leading-snug">
+          <SummaryCard
+            title={
+              <span className="flex items-center gap-2 break-keep leading-snug">
                 <Truck className="h-5 w-5" />
                 예약 정책 안내
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm leading-relaxed text-muted-foreground">
-              <p>
-                • 일반 소요 시간은 30~60분이며, 예약 상황에 따라 달라질 수
-                있습니다.
-              </p>
-              <p>
-                • 스트링 교체는 예약제 운영이므로 신청서 또는 문의 후 방문해
-                주세요.
-              </p>
-            </CardContent>
-          </Card>
+              </span>
+            }
+            contentClassName="space-y-2 text-sm leading-relaxed text-muted-foreground"
+          >
+            <p>
+              • 일반 소요 시간은 30~60분이며, 예약 상황에 따라 달라질 수
+              있습니다.
+            </p>
+            <p>
+              • 스트링 교체는 예약제 운영이므로 신청서 또는 문의 후 방문해
+              주세요.
+            </p>
+          </SummaryCard>
         </section>
 
-        <Card className="bg-muted/40">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 break-keep leading-snug">
-              <Zap className="h-5 w-5" />
-              주의사항 / FAQ
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm leading-relaxed text-muted-foreground">
-            <p>
-              • 스트링 포함 가격은 고정값이 아니며 선택 상품과 신청 방식에 따라
-              달라집니다.
-            </p>
-            <p>• 패키지 적용 가능 시 교체비가 무료입니다.</p>
-            <p>
-              • 주문/대여 기반 신청은 이미 결제된 내역과 이번 신청의 별도 결제
-              항목을 구분해 안내됩니다.
-            </p>
-          </CardContent>
-        </Card>
+        <PublicSurface
+          variant="muted"
+          className="space-y-2 text-sm leading-relaxed text-muted-foreground"
+        >
+          <h2 className="flex items-center gap-2 break-keep text-lg font-semibold leading-snug text-foreground">
+            <Zap className="h-5 w-5" />
+            주의사항 / FAQ
+          </h2>
+          <p>
+            • 스트링 포함 가격은 고정값이 아니며 선택 상품과 신청 방식에 따라
+            달라집니다.
+          </p>
+          <p>• 패키지 적용 가능 시 교체비가 무료입니다.</p>
+          <p>
+            • 주문/대여 기반 신청은 이미 결제된 내역과 이번 신청의 별도 결제
+            항목을 구분해 안내됩니다.
+          </p>
+        </PublicSurface>
 
         <div className="flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
           <Button asChild size="lg" className="w-full sm:w-auto">
@@ -544,7 +534,7 @@ export default async function PricingPage() {
             </Link>
           </Button>
         </div>
-      </div>
+      </SiteContainer>
     </div>
   );
 }

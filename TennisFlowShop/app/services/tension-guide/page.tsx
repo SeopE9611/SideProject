@@ -1,5 +1,8 @@
 "use client";
 
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero } from "@/components/public/PublicPageHero";
+import { PublicSurface } from "@/components/public/PublicSurface";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -414,30 +417,25 @@ export default function TensionGuidePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden bg-muted/30 dark:bg-card/40 border-b border-border">
-        <div className="relative mx-auto w-full px-3 bp-sm:px-4 bp-md:px-6 bp-lg:max-w-[1200px] bp-lg:px-6 pt-8 bp-sm:pt-10 bp-md:pt-12 pb-10 bp-md:pb-16">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-secondary px-4 py-2 rounded-full mb-4 bp-md:mb-6">
-              <Gauge className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" />
-              <span className="text-xs bp-sm:text-sm font-semibold text-muted-foreground">
-                전문가 텐션 가이드
-              </span>
-            </div>
-            <h1 className="mb-4 text-balance text-2xl font-bold leading-tight text-foreground bp-md:mb-6 bp-md:text-3xl bp-lg:text-5xl">
-              나에게 맞는
-              <br />
-              <span className="text-primary">최적의 텐션</span>을 찾아보세요
-            </h1>
-            <p className="mx-auto mb-6 max-w-2xl px-2 text-pretty text-sm leading-relaxed text-muted-foreground bp-md:mb-8 bp-md:text-base bp-lg:text-lg">
-              플레이 스타일, 스윙 스피드, 스트링 타입에 따른 맞춤형 텐션
-              가이드로 최고의 퍼포먼스를 경험하세요
-            </p>
-          </div>
-        </div>
-      </div>
+      <PublicPageHero
+        align="center"
+        eyebrow={
+          <span className="inline-flex items-center gap-2">
+            <Gauge className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
+            전문가 텐션 가이드
+          </span>
+        }
+        title={
+          <>
+            나에게 맞는
+            <br />
+            <span className="text-primary">최적의 텐션</span>을 찾아보세요
+          </>
+        }
+        description="플레이 스타일, 스윙 스피드, 스트링 타입에 따른 맞춤형 텐션 가이드로 최고의 퍼포먼스를 경험하세요"
+      />
 
-      <div className="mx-auto w-full px-3 bp-sm:px-4 bp-md:px-6 bp-lg:max-w-[1200px] bp-lg:px-6 py-6 bp-md:py-10 bp-lg:pb-16">
+      <SiteContainer className="py-6 bp-md:py-10 bp-lg:pb-16">
         {/* Navigation Tabs */}
         <Tabs
           value={activeSection}
@@ -652,7 +650,10 @@ export default function TensionGuidePage() {
                     </div>
 
                     {/* 추천 범위 */}
-                    <div className="bg-card dark:bg-muted/80 rounded-xl border border-border p-4 mb-4">
+                    <PublicSurface
+                      padding="sm"
+                      className="mb-4 rounded-xl dark:bg-muted/80"
+                    >
                       <div className="flex items-center gap-2 mb-2">
                         <Info className="h-4 w-4 text-primary" />
                         <span className="font-medium text-foreground">
@@ -679,10 +680,13 @@ export default function TensionGuidePage() {
                           {oppositeRange.min}~{oppositeRange.max}LB
                         </Badge>
                       </div>
-                    </div>
+                    </PublicSurface>
 
                     {/* 계산 근거를 한눈에 보여주면 사용자가 추천값의 출처를 빠르게 이해할 수 있습니다. */}
-                    <div className="bg-card dark:bg-muted/80 rounded-xl border border-border p-4 mb-6">
+                    <PublicSurface
+                      padding="sm"
+                      className="mb-6 rounded-xl dark:bg-muted/80"
+                    >
                       <div className="flex items-center gap-2 mb-3">
                         <BarChart3 className="h-4 w-4 text-primary" />
                         <span className="font-medium text-foreground">
@@ -739,7 +743,7 @@ export default function TensionGuidePage() {
                           </span>
                         </li>
                       </ul>
-                    </div>
+                    </PublicSurface>
 
                     {/* <Button asChild className="w-full bg-secondary hover:bg-secondary/90 transition-[background-color,color,border-color,box-shadow,opacity] duration-200">
                       <Link href="/services/apply">
@@ -1307,7 +1311,7 @@ export default function TensionGuidePage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </SiteContainer>
     </div>
   );
 }

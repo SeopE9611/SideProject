@@ -1,7 +1,9 @@
-import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero } from "@/components/public/PublicPageHero";
+import { PublicSurface } from "@/components/public/PublicSurface";
+import { SummaryCard } from "@/components/public/SummaryCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, MapPin, Phone, Train } from "lucide-react";
 import Link from "next/link";
 
@@ -55,44 +57,29 @@ export default function LocationsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <HeroCourtBackdrop
-        opacity="soft"
-        className="h-full w-full text-primary"
+      <PublicPageHero
+        align="center"
+        eyebrow={
+          <span className="inline-flex items-center gap-2">
+            <MapPin className="h-5 w-5" />
+            오프라인 매장 찾기
+          </span>
+        }
+        title="매장 위치 안내"
+        description="가까운 매장을 찾아 편리하게 서비스를 이용하세요"
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-12">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-secondary px-4 py-2 rounded-full mb-6">
-            <MapPin className="h-5 w-5 text-primary" />
-            <span className="text-sm font-semibold text-primary">
-              오프라인 매장 찾기
-            </span>
-          </div>
-          <h1 className="font-bold text-3xl sm:text-4xl md:text-4xl text-foreground mb-4">
-            매장 위치 안내
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            가까운 매장을 찾아 편리하게 서비스를 이용하세요
-          </p>
-        </div>
-
+      <SiteContainer variant="wide" className="py-8 md:py-12">
         {/* Locations */}
         <div className="mb-16">
           <div className="max-w-2xl mx-auto">
             {locations.map((location, index) => (
-              <Card
+              <SummaryCard
                 key={index}
-                className="hover:shadow-lg transition-all duration-300 ring-2 ring-ring"
+                className="ring-2 ring-ring transition-[border-color,box-shadow,background-color] duration-200 hover:shadow-md"
+                title={location.name}
               >
-                <CardHeader>
-                  <CardTitle className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-xl font-bold">{location.name}</h3>
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+                <div className="space-y-4">
                   <div className="flex items-start gap-2">
                     <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                     <span className="text-sm">{location.address}</span>
@@ -127,11 +114,15 @@ export default function LocationsPage() {
                     </div>
                   </div>
 
-                  <div className="bg-secondary p-3 rounded-lg border border-border">
+                  <PublicSurface
+                    variant="muted"
+                    padding="sm"
+                    className="rounded-lg"
+                  >
                     <p className="text-sm font-medium text-primary">
                       {location.specialNote}
                     </p>
-                  </div>
+                  </PublicSurface>
 
                   <div className="flex flex-wrap gap-1">
                     {location.services.map((service, i) => (
@@ -150,8 +141,8 @@ export default function LocationsPage() {
                       네이버 지도 검색
                     </Link>
                   </Button>
-                </CardContent>
-              </Card>
+                </div>
+              </SummaryCard>
             ))}
           </div>
         </div>
@@ -222,7 +213,7 @@ export default function LocationsPage() {
             </div>
           </CardContent>
         </Card> */}
-      </div>
+      </SiteContainer>
     </div>
   );
 }
