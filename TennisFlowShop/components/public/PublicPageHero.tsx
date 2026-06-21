@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { cn } from "@/lib/utils";
 
-type PublicPageHeroProps = {
+export type PublicPageHeroProps = {
   eyebrow?: ReactNode;
   title: ReactNode;
   description?: ReactNode;

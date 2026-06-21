@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-type ResultStateProps = {
+export type ResultStateProps = {
   status?: "success" | "error" | "info" | "warning";
   title: ReactNode;
   description?: ReactNode;

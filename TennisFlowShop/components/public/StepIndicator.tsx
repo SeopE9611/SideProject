@@ -1,12 +1,12 @@
 import { cn } from "@/lib/utils";
 
-type Step = {
+export type Step = {
   id: string;
   label: string;
   description?: string;
 };
 
-type StepIndicatorProps = {
+export type StepIndicatorProps = {
   steps: Step[];
   currentStep: string;
   className?: string;

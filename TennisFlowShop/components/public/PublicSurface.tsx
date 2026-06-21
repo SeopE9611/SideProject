@@ -2,7 +2,7 @@ import type { HTMLAttributes } from "react";
 
 import { cn } from "@/lib/utils";
 
-type PublicSurfaceProps = HTMLAttributes<HTMLDivElement> & {
+export type PublicSurfaceProps = HTMLAttributes<HTMLDivElement> & {
   variant?: "default" | "muted" | "elevated";
   padding?: "none" | "sm" | "md" | "lg";
 };
