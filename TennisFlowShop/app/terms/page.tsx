@@ -1,4 +1,5 @@
 import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicSurface } from "@/components/public/PublicSurface";
 import {
   ArrowLeft,
   Ban,
@@ -138,22 +139,22 @@ export default function TermsPage() {
       <SiteContainer className="max-w-4xl bp-lg:max-w-4xl py-8 md:py-12">
         <div className="space-y-6 md:space-y-8">
           {/* Introduction */}
-          <div className="space-y-4 rounded-2xl border border-border bg-card p-5 md:p-6">
+          <PublicSurface className="space-y-4">
             <p className="break-keep text-foreground/80 leading-relaxed">
               도깨비테니스(이하 '회사')는 이용자의 권리를 보호하고 안전하고
               편리한 서비스를 제공하기 위해 본 약관을 마련하였습니다. 본 약관은
               회사가 제공하는 모든 서비스에 적용됩니다.
             </p>
-          </div>
+          </PublicSurface>
 
           {/* Terms Sections */}
           {termsSections.map((section) => {
             const Icon = section.icon;
             return (
-              <div
+              <PublicSurface
                 key={section.id}
                 id={section.id}
-                className="scroll-mt-20 space-y-4 rounded-2xl border border-border bg-card p-5 md:p-6"
+                className="scroll-mt-20 space-y-4"
               >
                 <div className="flex items-start gap-3">
                   <Icon className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
@@ -166,12 +167,12 @@ export default function TermsPage() {
                     {section.content}
                   </div>
                 </div>
-              </div>
+              </PublicSurface>
             );
           })}
 
           {/* Agreement Notice */}
-          <div className="space-y-4 rounded-2xl border border-border bg-muted/30 p-5 md:p-6">
+          <PublicSurface variant="muted" className="space-y-4">
             <div className="flex items-start gap-3">
               <UserCheck className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
               <h2 className="break-keep text-xl font-semibold tracking-tight md:text-2xl">
@@ -195,7 +196,7 @@ export default function TermsPage() {
                 로 연락해 주시기 바랍니다.
               </p>
             </div>
-          </div>
+          </PublicSurface>
         </div>
       </SiteContainer>
 

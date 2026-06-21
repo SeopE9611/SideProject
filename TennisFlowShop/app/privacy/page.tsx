@@ -1,4 +1,5 @@
 import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicSurface } from "@/components/public/PublicSurface";
 import {
   ArrowLeft,
   Bell,
@@ -210,7 +211,7 @@ export default function PrivacyPage() {
       <SiteContainer className="max-w-4xl bp-lg:max-w-4xl py-8 md:py-12">
         <div className="space-y-6 md:space-y-8">
           {/* Introduction */}
-          <div className="space-y-4 rounded-2xl border border-border bg-card p-5 md:p-6">
+          <PublicSurface className="space-y-4">
             <p className="break-keep text-foreground/80 leading-relaxed">
               회사는 개인정보처리방침을 통하여 회사가 이용자로부터 수집하는
               개인정보의 항목, 개인정보의 수집 및 이용목적, 개인정보의 보유 및
@@ -222,16 +223,16 @@ export default function PrivacyPage() {
               방침 변경 등으로 인하여 변경될 수 있으며, 변경 시에는 회사
               홈페이지를 통하여 공지하도록 하겠습니다.
             </p>
-          </div>
+          </PublicSurface>
 
           {/* Privacy Sections */}
           {privacySections.map((section) => {
             const Icon = section.icon;
             return (
-              <div
+              <PublicSurface
                 key={section.id}
                 id={section.id}
-                className="scroll-mt-20 space-y-4 rounded-2xl border border-border bg-card p-5 md:p-6"
+                className="scroll-mt-20 space-y-4"
               >
                 <div className="flex items-start gap-3">
                   <Icon className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
@@ -244,12 +245,12 @@ export default function PrivacyPage() {
                     {section.content}
                   </div>
                 </div>
-              </div>
+              </PublicSurface>
             );
           })}
 
           {/* Contact Information */}
-          <div className="space-y-4 rounded-2xl border border-border bg-muted/30 p-5 md:p-6">
+          <PublicSurface variant="muted" className="space-y-4">
             <div className="flex items-start gap-3">
               <Phone className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
               <h2 className="break-keep text-xl font-semibold tracking-tight md:text-2xl">
@@ -273,7 +274,7 @@ export default function PrivacyPage() {
                 를 통해 문의해 주시기 바랍니다.
               </p>
             </div>
-          </div>
+          </PublicSurface>
         </div>
       </SiteContainer>
 
