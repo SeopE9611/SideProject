@@ -9,12 +9,12 @@ import ApplyHero from "@/app/services/apply/_components/ApplyHero";
 import { ApplyPriceSummaryDesktop, ApplyPriceSummaryMobile } from "@/app/services/apply/_components/ApplyPriceSummary";
 import { APPLY_STEPS } from "@/app/services/apply/_components/applySteps";
 import OrderPrefillBadge from "@/app/services/apply/_components/OrderPrefillBadge";
+import ProgressSteps from "@/app/services/apply/_components/ProgressSteps";
 import ApplyStepFooter from "@/app/services/apply/_components/steps/ApplyStepFooter";
 import { useReservedSlots } from "@/app/services/apply/_hooks/useReservedSlots";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
-import { StepIndicator } from "@/components/public/StepIndicator";
 import { SummaryCard } from "@/components/public/SummaryCard";
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
@@ -1117,35 +1117,35 @@ export default function StringServiceApplyPage() {
   const entryBanner = useMemo(() => {
     if (isRentalBased) {
       return {
-        title: "대여 기반 교체서비스 신청입니다.",
-        body: "대여 라켓에 스트링을 장착한 뒤 출고됩니다. 대여 결제 기준으로 신청 내용을 확인하고 접수해주세요.",
+        title: "대여 라켓 교체서비스 신청입니다.",
+        body: "대여 라켓에 스트링을 장착한 뒤 출고됩니다. 대여 신청 내용을 확인하고 접수해주세요.",
       };
     }
 
     if (isSingleApplyMode) {
       return {
-        title: "일반 standalone 교체서비스 신청입니다.",
+        title: "보유 장비 교체서비스 신청입니다.",
         body: "보유 라켓을 보내거나 방문/수거 방식으로 교체서비스를 진행합니다.",
       };
     }
 
     if (!orderId) {
       return {
-        title: "추가/단독 교체 서비스 신청 페이지입니다.",
-        body: "일반적인 서비스 포함 주문은 체크아웃에서 함께 접수되며, 이 페이지는 기존 주문 연결·추가 신청·단독 신청에 사용됩니다.",
+        title: "보유 장비 교체서비스 신청입니다.",
+        body: "보유 라켓/보유 스트링으로 교체서비스를 신청합니다.",
       };
     }
 
     if (loading) {
       return {
-        title: "주문 기반 교체서비스 신청입니다.",
-        body: "이 교체서비스는 주문 결제에 포함됩니다. 남은 신청 가능 대상을 확인한 뒤 이어서 진행해주세요.",
+        title: "주문에 포함된 교체서비스 신청입니다.",
+        body: "주문과 연결된 대상 기준으로 신청 내용을 확인해주세요.",
       };
     }
 
     if (hasOrderApplicationHistory && isOrderSlotBlocked) {
       return {
-        title: "이 주문의 교체 서비스 신청 가능 대상은 모두 사용되었습니다.",
+        title: "이 주문의 교체서비스 신청 가능 대상이 모두 접수되었습니다.",
         body: "추가 신청은 필요하지 않습니다. 주문 상세 또는 기존 신청 내역에서 접수 상태를 확인해주세요.",
       };
     }
@@ -1153,15 +1153,17 @@ export default function StringServiceApplyPage() {
     if (hasOrderApplicationHistory) {
       return {
         title: "이미 일부 접수가 완료된 주문입니다.",
-        body: "남은 대상에 한해 교체 서비스 추가 신청을 진행할 수 있습니다.",
+        body: "남은 대상에 한해 교체서비스 신청을 이어서 진행할 수 있습니다.",
       };
     }
 
     return {
-      title: "이 주문에 연결된 교체 서비스 신청을 진행할 수 있습니다.",
+      title: "주문에 포함된 교체서비스 신청입니다.",
       body: "주문과 연결된 대상 기준으로 신청 내용을 확인해주세요.",
     };
   }, [isRentalBased, isSingleApplyMode, orderId, loading, hasOrderApplicationHistory, isOrderSlotBlocked]);
+
+  const shouldShowEntryBanner = isRentalBased || Boolean(orderId) || isOrderSlotBlocked || hasOrderApplicationHistory;
 
   const handleOpenPostcode = async () => {
     try {
@@ -1596,15 +1598,7 @@ export default function StringServiceApplyPage() {
         <div className="mx-auto max-w-7xl">
           {/* Progress Steps: 폼 폭(800px)에 맞춰 중앙 정렬 */}
           <div ref={stepsRef} className="mb-4 bp-sm:mb-5">
-            <StepIndicator
-              steps={steps.map((step) => ({
-                id: String(step.id),
-                label: step.title,
-                description: step.description,
-              }))}
-              currentStep={String(currentStep)}
-              className="mx-auto max-w-[800px]"
-            />
+            <ProgressSteps steps={steps} currentStep={currentStep} />
           </div>
 
           {/* === 폼만 '진짜' 중앙, 요금카드는 오른쪽에 겹쳐 배치 === */}
@@ -1620,21 +1614,23 @@ export default function StringServiceApplyPage() {
               ) : null}
               <PublicSurface className="bp-lg:bg-card/90" padding="none">
                 <div className="p-4 bp-sm:p-5 bp-lg:p-6">
-                  <SummaryCard
-                    title={entryBanner.title}
-                    description={entryBanner.body}
-                    className={`mb-4 shadow-none ${isOrderSlotBlocked ? "bg-muted/30" : "bg-muted/20"}`}
-                    footer={
-                      isOrderSlotBlocked ? (
-                        <div className="flex flex-wrap gap-2">
-                          <button type="button" onClick={() => safePush("/mypage?tab=orders")} className="px-3 py-2 text-xs font-medium rounded-lg border border-border text-foreground hover:bg-card transition-colors">
-                            주문 상세에서 확인
-                          </button>
-                          <span className="px-3 py-2 text-xs text-muted-foreground">신청 내역은 주문 상세에서 확인할 수 있습니다.</span>
-                        </div>
-                      ) : undefined
-                    }
-                  />
+                  {shouldShowEntryBanner ? (
+                    <SummaryCard
+                      title={entryBanner.title}
+                      description={entryBanner.body}
+                      className={`mb-4 shadow-none ${isOrderSlotBlocked ? "bg-muted/30" : "bg-muted/20"}`}
+                      footer={
+                        isOrderSlotBlocked ? (
+                          <div className="flex flex-wrap gap-2">
+                            <button type="button" onClick={() => safePush("/mypage?tab=orders")} className="px-3 py-2 text-xs font-medium rounded-lg border border-border text-foreground hover:bg-card transition-colors">
+                              주문 상세에서 확인
+                            </button>
+                            <span className="px-3 py-2 text-xs text-muted-foreground">신청 내역은 주문 상세에서 확인할 수 있습니다.</span>
+                          </div>
+                        ) : undefined
+                      }
+                    />
+                  ) : null}
 
                   {/* 라켓 주문 프리필 배지 */}
                   <OrderPrefillBadge orderId={orderId} rentalId={rentalId} />
