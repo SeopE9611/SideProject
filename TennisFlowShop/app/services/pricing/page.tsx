@@ -6,7 +6,6 @@ import { SectionHeader } from "@/components/public/SectionHeader";
 import { SummaryCard } from "@/components/public/SummaryCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   CUSTOM_STRING_MOUNTING_FEE,
   STRINGING_POLICY_TEXT,
@@ -161,39 +160,40 @@ export default async function PricingPage() {
             {basicServices.map((service) => {
               const Icon = service.icon;
               return (
-                <Card
+                <SummaryCard
                   key={service.name}
                   className="transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md"
+                  contentClassName="space-y-4"
                 >
-                  <CardHeader className="text-center">
+                  <div className="space-y-2 text-center">
                     <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
                       <Icon className="h-5 w-5 text-foreground" />
                     </div>
-                    <CardTitle>{service.name}</CardTitle>
+                    <h3 className="text-lg font-semibold leading-tight text-foreground">
+                      {service.name}
+                    </h3>
                     <div className="text-2xl font-bold text-foreground">
                       {service.price}
                     </div>
                     <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
                       <Clock className="h-4 w-4" /> 소요시간: {service.time}
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3 break-keep">
-                      {service.description}
-                    </p>
-                    <ul className="space-y-1">
-                      {service.features.map((feature) => (
-                        <li
-                          key={feature}
-                          className="text-sm flex items-center gap-2 break-keep"
-                        >
-                          <Check className="h-4 w-4 text-success" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
+                  </div>
+                  <p className="text-sm text-muted-foreground break-keep">
+                    {service.description}
+                  </p>
+                  <ul className="space-y-1">
+                    {service.features.map((feature) => (
+                      <li
+                        key={feature}
+                        className="text-sm flex items-center gap-2 break-keep"
+                      >
+                        <Check className="h-4 w-4 text-success" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </SummaryCard>
               );
             })}
           </div>
@@ -229,98 +229,101 @@ export default async function PricingPage() {
               );
 
               return (
-                <Card
+                <SummaryCard
                   key={category.key}
                   className={`transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md ${hasProducts ? "" : "opacity-75"}`}
-                >
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 break-keep leading-snug">
+                  title={
+                    <span className="flex items-center gap-2 break-keep leading-snug">
                       <Shield className="h-5 w-5 text-foreground" />
                       {category.label}
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      {materialDescriptions[category.key]}
-                    </p>
+                    </span>
+                  }
+                  description={materialDescriptions[category.key]}
+                  action={
                     <Badge
                       variant={hasProducts ? "brand" : "secondary"}
                       className="w-fit"
                     >
                       등록 상품 {category.count.toLocaleString("ko-KR")}개
                     </Badge>
-                  </CardHeader>
-                  <CardContent className="space-y-4 text-sm">
-                    {hasProducts ? (
-                      <>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                          <div className="rounded-xl border border-border bg-muted/30 p-3">
-                            <p className="text-xs font-medium text-muted-foreground">
-                              상품가
-                            </p>
-                            <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">
-                              {productPriceRange}
-                            </p>
-                          </div>
-                          <div className="rounded-xl border border-border bg-muted/30 p-3">
-                            <p className="text-xs font-medium text-muted-foreground">
-                              장착비
-                            </p>
-                            <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">
-                              {mountingFeeRange}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="space-y-2">
+                  }
+                  contentClassName="space-y-4 text-sm"
+                >
+                  {hasProducts ? (
+                    <>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                        <PublicSurface variant="muted" padding="sm">
                           <p className="text-xs font-medium text-muted-foreground">
-                            대표 브랜드
+                            상품가
                           </p>
-                          <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
-                            {category.brands.length ? (
-                              category.brands.map((brand) => (
-                                <Badge
-                                  key={brand}
-                                  variant="secondary"
-                                  className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left leading-snug"
-                                >
-                                  {brand}
-                                </Badge>
-                              ))
-                            ) : (
-                              <span className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">
-                                데이터 없음
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="space-y-2">
+                          <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">
+                            {productPriceRange}
+                          </p>
+                        </PublicSurface>
+                        <PublicSurface variant="muted" padding="sm">
                           <p className="text-xs font-medium text-muted-foreground">
-                            대표 상품
+                            장착비
                           </p>
-                          <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
-                            {category.productNames.length ? (
-                              category.productNames.map((name) => (
-                                <Badge
-                                  key={name}
-                                  variant="outline"
-                                  className="max-w-[12rem] shrink-0 whitespace-normal break-words text-left leading-snug sm:max-w-[14rem]"
-                                >
-                                  {name}
-                                </Badge>
-                              ))
-                            ) : (
-                              <span className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">
-                                데이터 없음
-                              </span>
-                            )}
-                          </div>
+                          <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">
+                            {mountingFeeRange}
+                          </p>
+                        </PublicSurface>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          대표 브랜드
+                        </p>
+                        <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
+                          {category.brands.length ? (
+                            category.brands.map((brand) => (
+                              <Badge
+                                key={brand}
+                                variant="secondary"
+                                className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left leading-snug"
+                              >
+                                {brand}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">
+                              데이터 없음
+                            </span>
+                          )}
                         </div>
-                      </>
-                    ) : (
-                      <p className="rounded-xl border border-dashed border-border bg-muted/30 p-4 text-muted-foreground break-keep">
-                        현재 등록된 상품 데이터가 없습니다.
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          대표 상품
+                        </p>
+                        <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
+                          {category.productNames.length ? (
+                            category.productNames.map((name) => (
+                              <Badge
+                                key={name}
+                                variant="outline"
+                                className="max-w-[12rem] shrink-0 whitespace-normal break-words text-left leading-snug sm:max-w-[14rem]"
+                              >
+                                {name}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">
+                              데이터 없음
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <PublicSurface
+                      variant="muted"
+                      padding="sm"
+                      className="text-muted-foreground break-keep"
+                    >
+                      현재 등록된 상품 데이터가 없습니다.
+                    </PublicSurface>
+                  )}
+                </SummaryCard>
               );
             })}
           </div>
@@ -456,10 +459,7 @@ export default async function PricingPage() {
             contentClassName="space-y-3"
           >
             {additionalServices.map((service) => (
-              <div
-                key={service.name}
-                className="rounded-lg border border-border p-3"
-              >
+              <PublicSurface key={service.name} padding="sm">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                   <p className="font-medium">{service.name}</p>
                   <Badge
@@ -472,7 +472,7 @@ export default async function PricingPage() {
                 <p className="text-sm text-muted-foreground mt-1">
                   {service.description}
                 </p>
-              </div>
+              </PublicSurface>
             ))}
           </SummaryCard>
 
