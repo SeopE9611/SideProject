@@ -1398,6 +1398,12 @@ export default function StringingApplicationDetailClient({
                     ) : (
                       <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2 text-sm text-muted-foreground">
                         <ApplicationStatusBadge status={data.status} />
+                        <Badge
+                          variant="outline"
+                          className={cn(badgeBase, badgeSizeSm, "bg-card")}
+                        >
+                          {applicationContext.label}
+                        </Badge>
                         <span className="break-all font-medium">
                           신청번호: #{toShortApplicationId(data.id)}
                         </span>
@@ -1539,7 +1545,27 @@ export default function StringingApplicationDetailClient({
                     <Link
                       href={`/mypage?tab=orders&flowType=order&flowId=${data.orderId}&${flowQuery.toString()}&focus=stringing`}
                     >
-                      주문 상세
+                      연결 주문 보기
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              ) : null}
+              {!isAdmin && linkedRentalId ? (
+                <div className="mb-4 flex flex-col gap-2 rounded-xl border border-primary/20 bg-primary/10 p-3 text-sm text-foreground dark:bg-primary/15 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                  <span>
+                    이 교체서비스는 연결된 대여의 수령확인과 함께 처리됩니다.
+                  </span>
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="h-9 w-full overflow-hidden whitespace-nowrap bg-card bp-sm:w-auto"
+                  >
+                    <Link
+                      href={`/mypage?tab=orders&flowType=rental&flowId=${encodeURIComponent(String(linkedRentalId))}&${flowQuery.toString()}`}
+                    >
+                      연결 대여 보기
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
@@ -1625,14 +1651,14 @@ export default function StringingApplicationDetailClient({
                         isAdmin ? "text-muted-foreground" : "text-foreground",
                       )}
                     >
-                      {isAdmin ? "신청 상태" : "라켓 종류"}
+                      {isAdmin ? "신청 상태" : "신청 유형"}
                     </span>
                   </div>
                   {isAdmin ? (
                     <ApplicationStatusBadge status={data.status} />
                   ) : (
                     <p className="line-clamp-2 break-keep text-base font-semibold leading-snug text-foreground bp-sm:text-lg">
-                      {racketTypeSummary}
+                      {applicationContext.label}
                     </p>
                   )}
                 </div>
@@ -1652,7 +1678,7 @@ export default function StringingApplicationDetailClient({
                         isAdmin ? "text-muted-foreground" : "text-foreground",
                       )}
                     >
-                      {isAdmin ? "결제 상태" : "희망 일시"}
+                      {isAdmin ? "결제 상태" : "총 작업 수"}
                     </span>
                   </div>
                   {isAdmin ? (
@@ -1669,7 +1695,7 @@ export default function StringingApplicationDetailClient({
                     })()
                   ) : (
                     <p className="break-words text-base font-semibold tabular-nums text-foreground bp-sm:text-lg">
-                      {visitTimeLabel}
+                      라켓 {racketCount}자루 · 스트링 {stringTypeCount}종
                     </p>
                   )}
                 </div>
@@ -1783,6 +1809,16 @@ export default function StringingApplicationDetailClient({
                   </div>
                 )}
               </div>
+
+              {!isAdmin && isCancelRequested && (
+                <div className="mt-4 rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm text-foreground shadow-sm">
+                  <p className="font-semibold">취소 요청 처리 중</p>
+                  <p className="mt-1 text-foreground/80">
+                    관리자 확인 후 결과가 반영됩니다. 필요하면 아래 신청
+                    상태 카드에서 취소 요청을 철회할 수 있습니다.
+                  </p>
+                </div>
+              )}
 
               {!isAdmin && (
                 <div className="mt-4 rounded-xl border border-border bg-card p-4 shadow-sm">
@@ -2289,14 +2325,16 @@ export default function StringingApplicationDetailClient({
               <Card
                 className={cn(
                   detailCardClass,
-                  isAdmin ? "xl:col-span-6" : "lg:col-start-2 lg:row-start-1",
+                  isAdmin
+                    ? "xl:col-span-6"
+                    : "order-4 lg:col-start-2 lg:row-start-2",
                 )}
               >
                 <CardHeader className={detailCardHeaderClass}>
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <User className="h-5 w-5 text-primary" />
-                      <span>고객 정보</span>
+                      <span>{isAdmin ? "고객 정보" : "신청자 정보"}</span>
                     </div>
                     {isEditMode && (
                       <Edit3 className="h-4 w-4 text-muted-foreground" />
@@ -2402,7 +2440,9 @@ export default function StringingApplicationDetailClient({
                 id="admin-stringing-payment"
                 className={cn(
                   detailCardClass,
-                  isAdmin ? "xl:col-span-6" : "lg:col-start-2 lg:row-start-2",
+                  isAdmin
+                    ? "xl:col-span-6"
+                    : "order-3 lg:col-start-2 lg:row-start-1",
                 )}
               >
                 <CardHeader
@@ -2413,7 +2453,7 @@ export default function StringingApplicationDetailClient({
                   )}
                 >
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <CreditCard className="w-5 h-5 text-primary" /> 결제 정보
+                    <CreditCard className="w-5 h-5 text-primary" /> 결제/패키지 정보
                   </CardTitle>
                   <div className="flex items-center space-x-2">
                     {(() => {
@@ -2487,7 +2527,7 @@ export default function StringingApplicationDetailClient({
                           </p>
                         )}
                       </div>
-                      {/* 패키지 사용 정보 요약 */}
+                      {/* 패키지 사용 요약 */}
                       {data.packageInfo && (
                         <div
                           className={
@@ -2503,7 +2543,7 @@ export default function StringingApplicationDetailClient({
                             <div className="min-w-0 flex-1 text-xs leading-relaxed">
                               <div className="mb-1 flex min-w-0 flex-col items-start gap-1.5 bp-sm:flex-row bp-sm:items-center bp-sm:gap-2">
                                 <span className="break-keep whitespace-normal font-semibold text-foreground">
-                                  패키지 사용 정보
+                                  패키지 사용
                                 </span>
                                 <Badge
                                   variant="outline"
@@ -2581,7 +2621,7 @@ export default function StringingApplicationDetailClient({
                         </div>
                       )}
 
-                      {/* 패키지 사용 정보 카드 아래에 차감 이력 표시 */}
+                      {/* 패키지 사용 카드 아래에 차감 이력 표시 */}
                       {data.packageConsumptions &&
                         data.packageConsumptions.length > 0 && (
                           <div className="mt-3 rounded-lg border border-dashed border-border bg-muted px-3 py-2 text-xs text-foreground/60 dark:bg-muted">
@@ -2658,7 +2698,9 @@ export default function StringingApplicationDetailClient({
                 id="admin-stringing-spec"
                 className={cn(
                   detailCardClass,
-                  isAdmin ? "xl:col-span-12" : "lg:col-start-1 lg:row-span-2 lg:row-start-1",
+                  isAdmin
+                    ? "xl:col-span-12"
+                    : "order-1 lg:col-start-1 lg:row-span-2 lg:row-start-1",
                 )}
               >
                 <CardHeader
@@ -2678,7 +2720,7 @@ export default function StringingApplicationDetailClient({
                   <CardTitle
                     className={cn("text-lg font-semibold", !isAdmin && "mt-2")}
                   >
-                    신청 스트링 정보
+                    {isAdmin ? "신청 스트링 정보" : "라켓·스트링별 작업 정보"}
                   </CardTitle>
                 </CardHeader>
 
@@ -3095,7 +3137,7 @@ export default function StringingApplicationDetailClient({
                 id="admin-stringing-request"
                 className={cn(
                   detailCardClass,
-                  isAdmin ? "xl:col-span-12" : "lg:col-start-1",
+                  isAdmin ? "xl:col-span-12" : "order-5 lg:col-start-1",
                 )}
               >
                 <CardHeader className={detailCardHeaderClass}>
@@ -3147,6 +3189,133 @@ export default function StringingApplicationDetailClient({
             </div>
             {/* 관리자 전용 운송장 정보 카드 */}
             <div className="mt-6 space-y-4 bp-sm:mt-8 bp-sm:space-y-6">
+              {!isAdmin && (
+                <Card className={cn(detailCardClass, "mb-4")}>
+                  <CardHeader className={detailCardHeaderClass}>
+                    <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+                      <Truck className="h-5 w-5 text-primary" />
+                      입고/수령/배송 정보
+                    </CardTitle>
+                    <CardDescription>
+                      고객→매장 입고와 매장→고객 반환 정보를 구분해서 확인하세요.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid gap-4 p-4 md:grid-cols-2 bp-sm:p-6">
+                    <div className="rounded-xl border border-border/70 bg-muted/30 p-4">
+                      <p className="text-sm font-semibold text-foreground">
+                        고객→매장 입고
+                      </p>
+                      <p className="mt-1 text-xs text-foreground/75">
+                        {inboundRequired
+                          ? isVisit
+                            ? "방문 예약 일시에 맞춰 라켓을 가져와 주세요."
+                            : "매장으로 보내는 라켓 발송 정보를 확인합니다."
+                          : "연결 주문/대여 기준으로 별도 입고가 필요하지 않습니다."}
+                      </p>
+                      <div className="mt-3 space-y-2 text-sm text-foreground/80">
+                        <p>
+                          입고 방식:{" "}
+                          <span className="font-medium text-foreground">
+                            {inboundRequired
+                              ? collectionMethodLabel(collectionMethodRaw)
+                              : "입고 불필요"}
+                          </span>
+                        </p>
+                        {isVisit && (
+                          <p>
+                            방문 예약:{" "}
+                            <span className="font-medium text-foreground">
+                              {visitTimeLabel}
+                            </span>
+                          </p>
+                        )}
+                        {isSelfShip && inboundRequired && (
+                          hasTracking ? (
+                            <p>
+                              운송장:{" "}
+                              <a
+                                href={
+                                  buildTrackingUrl(
+                                    selfShip?.courier,
+                                    selfShip?.trackingNo,
+                                  ) ?? "#"
+                                }
+                                target="_blank"
+                                rel="noreferrer"
+                                className="break-all underline underline-offset-2"
+                              >
+                                {selfShip?.trackingNo}
+                              </a>
+                            </p>
+                          ) : (
+                            <p>등록된 운송장이 없습니다.</p>
+                          )
+                        )}
+                      </div>
+                      {needsInboundTracking && (
+                        <Button
+                          asChild
+                          size="sm"
+                          className="mt-3 w-full bp-sm:w-auto"
+                        >
+                          <Link href={inboundTrackingHref}>
+                            {hasTracking ? "라켓 발송 수정" : "라켓 발송 등록"}
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="rounded-xl border border-border/70 bg-muted/30 p-4">
+                      <p className="text-sm font-semibold text-foreground">
+                        매장→고객 반환
+                      </p>
+                      <p className="mt-1 text-xs text-foreground/75">
+                        작업 완료 후 수령/배송 정보를 확인합니다.
+                      </p>
+                      <div className="mt-3 space-y-2 text-sm text-foreground/80">
+                        <p>
+                          반환 방식:{" "}
+                          <span className="font-medium text-foreground">
+                            {shouldShowReturnMethod
+                              ? shippingMethodBadge.label
+                              : "연결 주문 수령 방식 기준"}
+                          </span>
+                        </p>
+                        {isCourierShipping && invoice?.trackingNumber ? (
+                          <p>
+                            반송 운송장:{" "}
+                            <a
+                              href={
+                                buildTrackingUrl(
+                                  invoice.courier,
+                                  invoice.trackingNumber,
+                                ) ?? undefined
+                              }
+                              target="_blank"
+                              rel="noreferrer"
+                              className="break-all underline underline-offset-2"
+                            >
+                              {invoice.trackingNumber}
+                            </a>
+                          </p>
+                        ) : hasStoreShippingInfo ? (
+                          <p>
+                            예정일:{" "}
+                            {data.shippingInfo?.estimatedDate
+                              ? new Date(
+                                  data.shippingInfo.estimatedDate,
+                                ).toLocaleDateString("ko-KR")
+                              : "-"}
+                          </p>
+                        ) : (
+                          <p>등록된 반환 배송 정보가 없습니다.</p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {isAdmin && !isLinkedApplication && (
                 <Card
                   id="admin-stringing-shipping"

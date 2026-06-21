@@ -250,25 +250,27 @@ export async function DELETE(
     );
   }
 
-  const now = new Date();
-  const result = await collection.findOneAndUpdate(
-    filter,
-    {
-      $set: {
-        customerDeletedAt: now,
-        customerDeletedBy: "customer",
-        updatedAt: now,
-      },
-      $push: {
-        history: {
-          status: "cancelled",
-          date: now,
-          description: "고객이 마이페이지에서 취소 신청 기록을 삭제했습니다.",
-          actorId: userId,
-          actorName: "customer",
-        },
+  const now = new Date().toISOString();
+  const deleteUpdate: Document = {
+    $set: {
+      customerDeletedAt: now,
+      customerDeletedBy: "customer",
+      updatedAt: now,
+    },
+    $push: {
+      history: {
+        status: "cancelled",
+        date: now,
+        description: "고객이 마이페이지에서 취소 신청 기록을 삭제했습니다.",
+        actorId: userId,
+        actorName: "customer",
       },
     },
+  };
+
+  const result = await collection.findOneAndUpdate(
+    filter,
+    deleteUpdate,
     { returnDocument: "after" },
   );
 
