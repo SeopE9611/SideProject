@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { PublicSurface } from "@/components/public/PublicSurface";
 
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import { collectionVisitNotice } from "@/app/features/stringing-applications/lib/fulfillment-labels";
@@ -172,7 +173,7 @@ export default function ApplicantInfoSection({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-background/60 p-4">
+      <PublicSurface variant="muted" padding="sm">
         <div className="mb-3">
           <h3 className="text-base font-semibold text-foreground">고객 정보</h3>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -246,9 +247,9 @@ export default function ApplicantInfoSection({
             ) : null}
           </div>
         </div>
-      </div>
+      </PublicSurface>
 
-      <div className="rounded-2xl border border-border bg-background/60 p-4">
+      <PublicSurface variant="muted" padding="sm">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>
             <Label className="text-base font-semibold text-foreground">
@@ -394,13 +395,17 @@ export default function ApplicantInfoSection({
           </div>
         </RadioGroup>
         {lockCollection && (
-          <p className="mt-2 rounded-lg bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+          <PublicSurface
+            variant="muted"
+            padding="sm"
+            className="mt-2 rounded-lg text-xs text-muted-foreground"
+          >
             라켓 구매 단계에서 선택한 접수 방식은 변경할 수 없습니다.
-          </p>
+          </PublicSurface>
         )}
-      </div>
+      </PublicSurface>
 
-      <div className="rounded-2xl border border-border bg-background/60 p-4">
+      <PublicSurface variant="muted" padding="sm">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>
             <h3 className="text-base font-semibold text-foreground">
@@ -416,9 +421,13 @@ export default function ApplicantInfoSection({
         </div>
         <div className="space-y-3">
           {isVisitSelected ? (
-            <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+            <PublicSurface
+              variant="muted"
+              padding="sm"
+              className="rounded-lg text-xs text-muted-foreground"
+            >
               {collectionVisitNotice}
-            </div>
+            </PublicSurface>
           ) : (
             <>
               <div className="space-y-1">
@@ -496,7 +505,7 @@ export default function ApplicantInfoSection({
             </>
           )}
         </div>
-      </div>
+      </PublicSurface>
 
       {/* 로딩 오버레이 */}
       {isUserLoading && (
@@ -511,7 +520,10 @@ export default function ApplicantInfoSection({
         </div>
       )}
       {(orderId || isMember) && (
-        <div className="rounded-xl border border-warning/30 bg-warning/10 p-3 dark:bg-warning/15">
+        <PublicSurface
+          padding="sm"
+          className="rounded-xl border-warning/30 bg-warning/10 p-3 dark:bg-warning/15"
+        >
           <div className="flex items-start space-x-3">
             <Shield className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
             <div className="text-sm">
@@ -522,7 +534,7 @@ export default function ApplicantInfoSection({
               </ul>
             </div>
           </div>
-        </div>
+        </PublicSurface>
       )}
     </div>
   );
