@@ -5,16 +5,8 @@ import { toPackageVariant } from "@/app/services/packages/_lib/packageVariant";
 import DevMarkPaidButton from "@/app/services/packages/success/DevMarkPaidButton";
 import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 import LoginGate from "@/components/system/LoginGate";
+import { PublicSurface, SummaryCard } from "@/components/public";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { bankLabelMap } from "@/lib/constants";
 import clientPromise from "@/lib/mongodb";
@@ -221,7 +213,7 @@ export default async function PackageSuccessPage({
 
             {/* 패키지 활성화 안내 */}
             <div className="mx-auto mt-8 max-w-3xl">
-              <div className="rounded-xl border border-border bg-card p-4 text-center shadow-sm md:p-6">
+              <PublicSurface className="text-center">
                 <div className="flex items-center justify-center gap-3 mb-4">
                   <div className="p-2 bg-secondary rounded-lg">
                     <Package className="h-6 w-6 text-primary" />
@@ -235,13 +227,13 @@ export default async function PackageSuccessPage({
                     ? "결제가 완료되어 패키지가 활성화되었습니다. 바로 교체서비스 신청에 사용할 수 있어요."
                     : "입금 확인 후 패키지가 활성화되며, 교체서비스 신청 시 이용 횟수가 차감됩니다."}
                 </p>
-                <div className="mb-4 rounded-lg border border-border bg-card p-3 text-left text-sm text-muted-foreground">
+                <PublicSurface padding="sm" className="mb-4 text-left text-sm text-muted-foreground">
                   <p className="font-semibold text-foreground">다음 단계</p>
                   <p className="mt-1">
                     패키지 활성화 상태는 마이페이지에서 확인하고, 교체서비스
                     신청 시 패키지 적용 여부를 확인해주세요.
                   </p>
-                </div>
+                </PublicSurface>
                 <Button
                   variant="default"
                   className="font-semibold shadow-sm"
@@ -255,7 +247,7 @@ export default async function PackageSuccessPage({
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
-              </div>
+              </PublicSurface>
             </div>
           </div>
         </div>
@@ -263,20 +255,58 @@ export default async function PackageSuccessPage({
         <div className="container py-8 md:py-10">
           <div className="mx-auto max-w-5xl space-y-5 md:space-y-6">
             {/* 패키지 주문 정보 카드 */}
-            <Card className="overflow-hidden border border-border bg-card shadow-sm">
-              <div className="border-b border-border bg-muted/40 p-4 md:p-6">
-                <CardTitle className="flex items-center gap-3 text-2xl">
+            <SummaryCard
+              className="overflow-hidden"
+              title={
+                <span className="flex items-center gap-3 text-2xl">
                   <Package className="h-6 w-6 text-primary" />
                   패키지 주문 정보
-                </CardTitle>
-                <CardDescription className="mt-2 break-all text-sm text-muted-foreground sm:text-base">
+                </span>
+              }
+              description={
+                <span className="break-all text-sm text-muted-foreground sm:text-base">
                   주문 번호:{" "}
                   <span className="font-mono font-semibold text-primary">
                     {packageOrder._id.toString()}
                   </span>
-                </CardDescription>
-              </div>
-              <CardContent className="p-4 md:p-6">
+                </span>
+              }
+              footer={
+                <div className="flex w-full flex-col gap-3 sm:flex-row md:gap-4">
+                  <Button
+                    variant="default"
+                    className="h-12 flex-1 shadow-sm transition-[box-shadow,background-color,border-color] hover:shadow-md"
+                    asChild
+                  >
+                    <Link
+                      href={
+                        isLoggedIn
+                          ? "/mypage?tab=passes"
+                          : `/package-lookup/details/${packageOrder._id}`
+                      }
+                      className="flex items-center gap-2"
+                    >
+                      <Package className="h-5 w-5" />
+                      패키지 내역 확인
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-12 flex-1 border border-border"
+                    asChild
+                  >
+                    <Link
+                      href="/services/packages"
+                      className="flex items-center gap-2"
+                    >
+                      <Gift className="h-5 w-5" />
+                      다른 패키지 보기
+                    </Link>
+                  </Button>
+                </div>
+              }
+            >
                 {/* 패키지 정보 */}
                 <div className="mb-6 md:mb-8">
                   <UnifiedPackageCard
@@ -288,7 +318,7 @@ export default async function PackageSuccessPage({
 
                 <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
                   <div className="space-y-4">
-                    <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/40 p-4">
+                    <PublicSurface variant="muted" padding="sm" className="flex items-center gap-3">
                       <Clock className="h-5 w-5 text-primary" />
                       <div>
                         <p className="text-sm text-muted-foreground">
@@ -306,8 +336,8 @@ export default async function PackageSuccessPage({
                           )}
                         </p>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/40 p-4">
+                    </PublicSurface>
+                    <PublicSurface variant="muted" padding="sm" className="flex items-center gap-3">
                       <CreditCard className="h-5 w-5 text-primary" />
                       <div>
                         <p className="text-sm text-muted-foreground">
@@ -317,11 +347,11 @@ export default async function PackageSuccessPage({
                           {paymentMethodLabel}
                         </p>
                       </div>
-                    </div>
+                    </PublicSurface>
                   </div>
 
                   {!isTossPayment && !isNicePayment ? (
-                    <div className="rounded-xl border border-border bg-muted/40 p-4 md:p-6">
+                    <PublicSurface variant="muted" padding="sm">
                       <div className="flex items-center gap-2 mb-4">
                         <CreditCard className="h-5 w-5 text-primary" />
                         <h3 className="font-bold text-primary">
@@ -329,7 +359,7 @@ export default async function PackageSuccessPage({
                         </h3>
                       </div>
                       {paymentInfo?.bank && bankLabelMap[paymentInfo.bank] ? (
-                        <div className="space-y-2 rounded-lg border border-border bg-card p-4">
+                        <PublicSurface variant="default" padding="sm" className="space-y-2">
                           <div className="font-semibold text-foreground">
                             {bankLabelMap[paymentInfo.bank].label}
                           </div>
@@ -339,7 +369,7 @@ export default async function PackageSuccessPage({
                           <div className="text-sm text-muted-foreground">
                             예금주: {bankLabelMap[paymentInfo.bank].holder}
                           </div>
-                        </div>
+                        </PublicSurface>
                       ) : (
                         <p className="text-muted-foreground">
                           선택된 은행 없음
@@ -354,9 +384,9 @@ export default async function PackageSuccessPage({
                           23:59까지
                         </p>
                       </div>
-                    </div>
+                    </PublicSurface>
                   ) : (
-                    <div className="rounded-xl border border-border bg-muted/40 p-4 md:p-6">
+                    <PublicSurface variant="muted" padding="sm">
                       <h3 className="font-bold text-primary mb-3">
                         {isNicePayment ? "카드/간편결제 정보" : "토스 결제 정보"}
                       </h3>
@@ -371,11 +401,11 @@ export default async function PackageSuccessPage({
                             )
                           : "-"}
                       </p>
-                    </div>
+                    </PublicSurface>
                   )}
                 </div>
 
-                <Separator className="my-6" />
+                <div className="my-6 border-t border-border" />
 
                 {/* 신청자 정보 */}
                 <div className="mb-6">
@@ -383,7 +413,7 @@ export default async function PackageSuccessPage({
                     <MapPin className="h-5 w-5 text-primary" />
                     신청자 정보
                   </h3>
-                  <div className="space-y-2 rounded-lg border border-border bg-muted/40 p-4">
+                  <PublicSurface variant="muted" padding="sm" className="space-y-2">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <span className="text-sm text-muted-foreground">
@@ -421,13 +451,13 @@ export default async function PackageSuccessPage({
                         </span>
                       </div>
                     )}
-                  </div>
+                  </PublicSurface>
                 </div>
 
-                <Separator className="my-6" />
+                <div className="my-6 border-t border-border" />
 
                 {/* 결제 금액 */}
-                <div className="rounded-xl border border-border bg-muted/40 p-4 md:p-6">
+                <PublicSurface variant="muted" padding="sm">
                   <div className="flex items-end justify-between gap-4 text-xl font-bold sm:text-2xl">
                     <span className="text-foreground">총 결제 금액</span>
                     <span className="text-primary">
@@ -439,64 +469,28 @@ export default async function PackageSuccessPage({
                       ? "패키지 이용료 (결제 완료, 즉시 활성화)"
                       : "패키지 이용료 (입금 확인 후 활성화)"}
                   </p>
-                </div>
-              </CardContent>
+                </PublicSurface>
 
-              <CardFooter className="border-t border-border bg-muted/30 p-4 md:p-6">
-                <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full">
-                  <Button
-                    variant="default"
-                    className="h-12 flex-1 shadow-sm transition-[box-shadow,background-color,border-color] hover:shadow-md"
-                    asChild
-                  >
-                    <Link
-                      href={
-                        isLoggedIn
-                          ? "/mypage?tab=passes"
-                          : `/package-lookup/details/${packageOrder._id}`
-                      }
-                      className="flex items-center gap-2"
-                    >
-                      <Package className="h-5 w-5" />
-                      패키지 내역 확인
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="h-12 flex-1 border border-border"
-                    asChild
-                  >
-                    <Link
-                      href="/services/packages"
-                      className="flex items-center gap-2"
-                    >
-                      <Gift className="h-5 w-5" />
-                      다른 패키지 보기
-                    </Link>
-                  </Button>
-                </div>
-              </CardFooter>
               <div className="px-4 md:px-6">
                 <DevMarkPaidButton
                   orderId={packageOrder._id.toString()}
                   show={showDevBtn && !isPaid}
                 />
               </div>
-            </Card>
+            </SummaryCard>
 
             {/* 안내사항 */}
-            <Card className="border border-border bg-card shadow-sm">
-              <CardHeader className="border-b border-border bg-muted/40">
-                <CardTitle className="flex items-center gap-3">
+            <SummaryCard
+              title={
+                <span className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-primary" />
                   패키지 이용 안내사항
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 md:p-6">
+                </span>
+              }
+            >
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
                   <div className="space-y-4">
-                    <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-4">
+                    <PublicSurface variant="muted" padding="sm" className="flex items-start gap-3">
                       <CreditCard className="h-5 w-5 text-primary mt-0.5" />
                       <div>
                         <h4 className="font-semibold text-primary mb-1">
@@ -510,8 +504,8 @@ export default async function PackageSuccessPage({
                             : "패키지 금액을 위 계좌로 입금해주세요. 입금 확인 후 패키지가 활성화돼요."}
                         </p>
                       </div>
-                    </div>
-                    <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-4">
+                    </PublicSurface>
+                    <PublicSurface variant="muted" padding="sm" className="flex items-start gap-3">
                       <Calendar className="h-5 w-5 text-primary mt-0.5" />
                       <div>
                         <h4 className="font-semibold text-primary mb-1">
@@ -522,10 +516,10 @@ export default async function PackageSuccessPage({
                           신청이 완료되면 이용 횟수가 1회 차감돼요.
                         </p>
                       </div>
-                    </div>
+                    </PublicSurface>
                   </div>
                   <div className="space-y-4">
-                    <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-4">
+                    <PublicSurface variant="muted" padding="sm" className="flex items-start gap-3">
                       <Star className="h-5 w-5 text-primary mt-0.5" />
                       <div>
                         <h4 className="font-semibold text-foreground mb-1">
@@ -536,8 +530,8 @@ export default async function PackageSuccessPage({
                           기간 내 모든 횟수를 이용해주세요.
                         </p>
                       </div>
-                    </div>
-                    <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-4">
+                    </PublicSurface>
+                    <PublicSurface variant="muted" padding="sm" className="flex items-start gap-3">
                       <Phone className="h-5 w-5 text-primary mt-0.5" />
                       <div>
                         <h4 className="font-semibold text-primary mb-1">
@@ -548,11 +542,10 @@ export default async function PackageSuccessPage({
                           연락주세요.
                         </p>
                       </div>
-                    </div>
+                    </PublicSurface>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+            </SummaryCard>
           </div>
         </div>
       </div>
