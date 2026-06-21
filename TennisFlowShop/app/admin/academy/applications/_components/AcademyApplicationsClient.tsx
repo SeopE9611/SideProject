@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
 import useSWR from "swr";
-import { BookOpen, MoreHorizontal, Search } from "lucide-react";
+import { BookOpen, Eye, MoreHorizontal, Search, Trash2 } from "lucide-react";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
@@ -33,8 +33,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { adminFetcher } from "@/lib/admin/adminFetcher";
+import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
   ACADEMY_APPLICATION_STATUSES,
@@ -188,10 +189,11 @@ export default function AcademyApplicationsClient() {
     return `/api/admin/academy/applications?${params.toString()}`;
   }, [keyword, page, status]);
 
-  const { data, error, isLoading } = useSWR<ApplicationsResponse>(
+  const { data, error, isLoading, mutate } = useSWR<ApplicationsResponse>(
     query,
     adminFetcher,
   );
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const counts = data?.counts ?? {
     all: 0,
@@ -201,6 +203,27 @@ export default function AcademyApplicationsClient() {
     confirmed: 0,
     cancelled: 0,
   };
+
+  async function handleDelete(item: AcademyApplicationListItem) {
+    const confirmed = window.confirm(
+      "취소 신청 내역을 삭제할까요?\n\n삭제하면 관리자 목록과 고객 마이페이지에서 보이지 않습니다. 진행 중 신청은 삭제할 수 없습니다.",
+    );
+    if (!confirmed) return;
+
+    setDeletingId(item._id);
+    try {
+      const result = await adminMutator<{ success: boolean; message?: string }>(
+        `/api/admin/academy/applications/${item._id}`,
+        { method: "DELETE" },
+      );
+      showSuccessToast(result.message || "신청 내역이 삭제되었습니다.");
+      await mutate();
+    } catch (error) {
+      showErrorToast(getAdminErrorMessage(error));
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -480,8 +503,22 @@ export default function AcademyApplicationsClient() {
                                 goToDetail(item._id);
                               }}
                             >
+                              <Eye className="mr-2 h-4 w-4" />
                               상세 보기
                             </DropdownMenuItem>
+                            {item.status === "cancelled" ? (
+                              <DropdownMenuItem
+                                className="whitespace-nowrap text-destructive focus:text-destructive"
+                                disabled={deletingId === item._id}
+                                onSelect={(event) => {
+                                  event.preventDefault();
+                                  void handleDelete(item);
+                                }}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {deletingId === item._id ? "삭제 중..." : "삭제"}
+                              </DropdownMenuItem>
+                            ) : null}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>

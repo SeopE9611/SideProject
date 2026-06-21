@@ -93,6 +93,7 @@ function buildClassApplicationFilter(classId: string): Filter<Document> {
   }
 
   return {
+    adminDeletedAt: { $exists: false },
     $or: [{ classId: { $in: matchers } }, { "classSnapshot.classId": classId }],
   };
 }

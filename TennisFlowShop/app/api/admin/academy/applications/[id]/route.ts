@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId, type Document } from "mongodb";
 
+import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { requireAdmin } from "@/lib/admin.guard";
 
 const COLLECTION_NAME = "academy_lesson_applications";
@@ -128,7 +129,7 @@ export async function GET(
 
   const item = await guard.db
     .collection(COLLECTION_NAME)
-    .findOne({ _id: new ObjectId(id) });
+    .findOne({ _id: new ObjectId(id), adminDeletedAt: { $exists: false } });
 
   if (!item) {
     return NextResponse.json(
@@ -138,4 +139,76 @@ export async function GET(
   }
 
   return NextResponse.json({ success: true, item: serializeApplication(item) });
+}
+
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard.res;
+
+  const csrf = verifyAdminCsrf(req);
+  if (!csrf.ok) return csrf.res;
+
+  const { id } = await params;
+  if (!ObjectId.isValid(id)) {
+    return NextResponse.json(
+      { success: false, message: "유효하지 않은 신청 ID입니다." },
+      { status: 400 },
+    );
+  }
+
+  const collection = guard.db.collection(COLLECTION_NAME);
+  const filter = { _id: new ObjectId(id), adminDeletedAt: { $exists: false } };
+  const item = await collection.findOne(filter, { projection: { status: 1 } });
+
+  if (!item) {
+    return NextResponse.json(
+      { success: false, message: "신청 내역을 찾을 수 없습니다." },
+      { status: 404 },
+    );
+  }
+
+  if (item.status !== "cancelled") {
+    return NextResponse.json(
+      { success: false, message: "취소된 신청만 삭제할 수 있습니다." },
+      { status: 409 },
+    );
+  }
+
+  const now = new Date();
+  const result = await collection.findOneAndUpdate(
+    filter,
+    {
+      $set: {
+        adminDeletedAt: now,
+        adminDeletedBy: guard.admin._id.toHexString(),
+        updatedAt: now,
+      },
+      $push: {
+        history: {
+          status: "cancelled",
+          date: now,
+          description: "관리자가 취소 신청 내역을 삭제 처리했습니다.",
+          actorId: guard.admin._id,
+          actorName: guard.admin.name ?? "admin",
+        },
+      },
+    },
+    { returnDocument: "after" },
+  );
+
+  if (!result) {
+    return NextResponse.json(
+      { success: false, message: "신청 내역을 찾을 수 없습니다." },
+      { status: 404 },
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    message: "신청 내역이 삭제되었습니다.",
+  });
 }

@@ -163,6 +163,8 @@ export async function GET(
     {
       _id: new ObjectId(id),
       userId: { $in: [userObjectId, userId] },
+      adminDeletedAt: { $exists: false },
+      customerDeletedAt: { $exists: false },
     },
     {
       projection: {
@@ -199,4 +201,86 @@ export async function GET(
   }
 
   return NextResponse.json({ success: true, item: serializeApplication(item) });
+}
+
+
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const userId = await getCurrentUserId();
+  if (!userId || !ObjectId.isValid(userId)) {
+    return NextResponse.json(
+      { success: false, message: "로그인이 필요합니다." },
+      { status: 401 },
+    );
+  }
+
+  const { id } = await params;
+  if (!ObjectId.isValid(id)) {
+    return NextResponse.json(
+      { success: false, message: "신청 내역을 찾을 수 없습니다." },
+      { status: 404 },
+    );
+  }
+
+  const userObjectId = new ObjectId(userId);
+  const client = await clientPromise;
+  const db = client.db();
+  const collection = db.collection(COLLECTION_NAME);
+  const filter = {
+    _id: new ObjectId(id),
+    userId: { $in: [userObjectId, userId] },
+    adminDeletedAt: { $exists: false },
+    customerDeletedAt: { $exists: false },
+  };
+  const item = await collection.findOne(filter, { projection: { status: 1 } });
+
+  if (!item) {
+    return NextResponse.json(
+      { success: false, message: "신청 내역을 찾을 수 없습니다." },
+      { status: 404 },
+    );
+  }
+
+  if (item.status !== "cancelled") {
+    return NextResponse.json(
+      { success: false, message: "취소된 신청만 삭제할 수 있습니다." },
+      { status: 409 },
+    );
+  }
+
+  const now = new Date();
+  const result = await collection.findOneAndUpdate(
+    filter,
+    {
+      $set: {
+        customerDeletedAt: now,
+        customerDeletedBy: "customer",
+        updatedAt: now,
+      },
+      $push: {
+        history: {
+          status: "cancelled",
+          date: now,
+          description: "고객이 마이페이지에서 취소 신청 기록을 삭제했습니다.",
+          actorId: userId,
+          actorName: "customer",
+        },
+      },
+    },
+    { returnDocument: "after" },
+  );
+
+  if (!result) {
+    return NextResponse.json(
+      { success: false, message: "신청 내역을 찾을 수 없습니다." },
+      { status: 404 },
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    message: "신청 기록이 삭제되었습니다.",
+  });
 }
