@@ -139,6 +139,12 @@ function formatCapacityLabel(capacity: number | null | undefined) {
   return `정원 ${capacity.toLocaleString("ko-KR")}명`;
 }
 
+function getBlockingApplicationCount(item: AcademyClass) {
+  const applicationTotal = item.applicationStats?.total ?? 0;
+  const cancelledTotal = item.applicationStats?.cancelled ?? 0;
+  return Math.max(0, applicationTotal - cancelledTotal);
+}
+
 function ApplicationStatsCell({ item }: { item: AcademyClass }) {
   const total = item.applicationStats?.total ?? 0;
   const confirmed = item.applicationStats?.confirmed ?? 0;
@@ -262,10 +268,10 @@ export default function AcademyClassesClient() {
   async function hardDeleteClass(item: AcademyClass) {
     if (!item._id || deletingId) return;
 
-    const applicationTotal = item.applicationStats?.total ?? 0;
-    if (applicationTotal > 0) {
+    const blockingApplicationTotal = getBlockingApplicationCount(item);
+    if (blockingApplicationTotal > 0) {
       showErrorToast(
-        "이 클래스에는 신청 내역이 있어 삭제할 수 없습니다. 고객 화면에서 내리려면 숨김 처리를 사용하세요.",
+        "이 클래스에는 취소되지 않은 신청 내역이 있어 삭제할 수 없습니다. 고객 화면에서 내리려면 숨김 처리를 사용하세요.",
       );
       return;
     }
@@ -433,8 +439,13 @@ export default function AcademyClassesClient() {
                   const isHideDisabled =
                     item.status === "hidden" || hidingId === classId;
                   const applicationTotal = item.applicationStats?.total ?? 0;
+                  const cancelledTotal = item.applicationStats?.cancelled ?? 0;
+                  const blockingApplicationTotal = Math.max(
+                    0,
+                    applicationTotal - cancelledTotal,
+                  );
                   const isDeleteDisabled =
-                    applicationTotal > 0 || deletingId === classId;
+                    blockingApplicationTotal > 0 || deletingId === classId;
 
                   return (
                     <TableRow
@@ -569,9 +580,9 @@ export default function AcademyClassesClient() {
                               onSelect={(event) => {
                                 event.preventDefault();
                                 if (isDeleteDisabled) {
-                                  if (applicationTotal > 0) {
+                                  if (blockingApplicationTotal > 0) {
                                     showErrorToast(
-                                      "이 클래스에는 신청 내역이 있어 삭제할 수 없습니다. 고객 화면에서 내리려면 숨김 처리를 사용하세요.",
+                                      "이 클래스에는 취소되지 않은 신청 내역이 있어 삭제할 수 없습니다. 고객 화면에서 내리려면 숨김 처리를 사용하세요.",
                                     );
                                   }
                                   return;
@@ -580,8 +591,8 @@ export default function AcademyClassesClient() {
                               }}
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
-                              {applicationTotal > 0
-                                ? "삭제 불가: 신청 내역 있음"
+                              {blockingApplicationTotal > 0
+                                ? "삭제 불가: 진행 중 신청 내역 있음"
                                 : deletingId === classId
                                   ? "삭제 중"
                                   : "삭제"}
@@ -640,7 +651,7 @@ export default function AcademyClassesClient() {
             </AlertDialogTitle>
             <AlertDialogDescription className="leading-6">
               {pendingAction?.type === "delete"
-                ? "이 클래스를 영구 삭제할까요? 연결된 신청 내역이 없는 클래스만 삭제할 수 있으며, 삭제 후에는 복구할 수 없습니다."
+                ? "이 클래스를 영구 삭제할까요? 취소되지 않은 신청 내역이 없는 클래스만 삭제할 수 있으며, 삭제 후에는 복구할 수 없습니다."
                 : "이 클래스를 숨김 처리할까요? 고객 화면에는 노출되지 않지만, 기존 신청 내역과 운영 데이터는 보존됩니다."}
             </AlertDialogDescription>
           </AlertDialogHeader>
