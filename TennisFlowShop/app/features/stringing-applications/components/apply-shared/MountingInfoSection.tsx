@@ -654,26 +654,28 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
 
           {canEditStandaloneWorkLines && (
             <PublicSurface variant="muted" padding="sm" className="space-y-3">
-              <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-foreground">작업 항목</p>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground break-keep">
                     라켓 1자루당 작업 항목 1개를 작성합니다. 스트링이 다르면 항목별로 스트링명을 다르게 입력하세요.
                   </p>
                 </div>
-                <Badge variant="secondary" className="shrink-0">총 {lineCount}자루</Badge>
+                <Badge variant="secondary" className="w-fit shrink-0">총 {lineCount}자루</Badge>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="w-full gap-1.5 sm:w-auto"
-                onClick={addStandaloneWorkLine}
-                disabled={lineCount >= 10}
-              >
-                <Plus className="h-4 w-4" />
-                작업 항목 추가
-              </Button>
+              <div className="flex flex-col gap-2 sm:items-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-9 w-full gap-1.5 whitespace-nowrap sm:w-auto"
+                  onClick={addStandaloneWorkLine}
+                  disabled={lineCount >= 10}
+                >
+                  <Plus className="h-4 w-4" />
+                  작업 항목 추가
+                </Button>
+              </div>
               {lineCount >= 10 && (
                 <p className="text-xs text-muted-foreground">작업 항목은 최대 10개까지 추가할 수 있습니다.</p>
               )}
@@ -1117,7 +1119,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
           >
             {lineCount >= 2 && (
               <PublicSurface variant="muted" padding="sm">
-                <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0 sm:min-w-[220px]">
                     <p className="text-sm font-semibold text-foreground">
                       일괄 입력
@@ -1127,12 +1129,12 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="grid w-full gap-2 sm:w-auto sm:grid-cols-2">
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-8 w-full px-3 text-xs whitespace-nowrap sm:w-auto"
+                      className="h-9 w-full px-3 text-xs whitespace-nowrap"
                       onClick={applyFirstLineTensionToAll}
                       disabled={lineCount < 2}
                     >
@@ -1141,7 +1143,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     <Button
                       type="button"
                       size="sm"
-                      className="h-8 w-full px-3 text-xs whitespace-nowrap sm:w-auto"
+                      className="h-9 w-full px-3 text-xs whitespace-nowrap"
                       onClick={() => applyBulkToAllLines()}
                       disabled={lineCount < 1}
                     >
@@ -1200,22 +1202,22 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 className="group relative overflow-hidden"
               >
                   {/* 헤더 영역: 라켓 N, 스트링 이름 */}
-                  <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-b border-border bg-muted/30 px-4 py-3">
+                  <div className="flex min-w-0 items-center justify-between gap-2 border-b border-border bg-muted/30 px-4 py-3">
                     <div className="flex min-w-0 items-center gap-2.5">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary shadow-sm">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary shadow-sm">
                         <span className="text-sm font-bold text-primary">
                           {index + 1}
                         </span>
                       </div>
-                      <span className="text-sm font-medium text-foreground">
+                      <span className="min-w-0 truncate text-sm font-medium text-foreground">
                         {line.racketType?.trim() || `라켓 ${index + 1}`}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2">
                       {!canEditStandaloneWorkLines && (
                         <Badge
                           variant="brand"
-                          className="flex max-w-[200px] items-center gap-1.5 px-2.5 py-1"
+                          className="flex max-w-[120px] items-center gap-1.5 px-2.5 py-1 sm:max-w-[200px]"
                         >
                           <span className="h-1.5 w-1.5 rounded-full bg-current" />
                           <span className="truncate text-xs font-medium">
