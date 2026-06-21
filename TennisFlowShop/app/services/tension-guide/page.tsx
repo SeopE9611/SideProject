@@ -798,7 +798,7 @@ export default function TensionGuidePage() {
                 return (
                   <Card
                     key={index}
-                    className={`cursor-pointer transition-[background-color,color,border-color,box-shadow,opacity] duration-300 overflow-hidden border bg-card ${isSelected ? "ring-2 ring-ring shadow-sm" : "hover:shadow-md"}`}
+                    className={`cursor-pointer transition-[background-color,color,border-color,box-shadow,opacity] duration-300 overflow-hidden border bg-card ${isSelected ? "border-primary/60 ring-2 ring-inset ring-primary/20 shadow-sm" : "hover:shadow-md"}`}
                     onClick={() => setSelectedLevel(isSelected ? null : index)}
                   >
                     <CardHeader className="pb-3 bp-md:pb-4">

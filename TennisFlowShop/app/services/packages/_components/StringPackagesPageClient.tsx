@@ -258,13 +258,17 @@ export default function StringPackagesPageClient({
                     "패키지 구매 후 교체 신청서에서 사용 가능합니다. 자세한 문의는 매장으로 연락 주세요.",
                 },
               ].map((faq, index) => (
-                <SummaryCard
+                <PublicSurface
                   key={index}
-                  title={`Q. ${faq.question}`}
-                  description={`A. ${faq.answer}`}
                   className="h-full transition-shadow duration-200 hover:shadow-md"
-                  contentClassName="hidden"
-                />
+                >
+                  <h3 className="break-keep text-lg font-semibold leading-tight text-foreground">
+                    Q. {faq.question}
+                  </h3>
+                  <p className="mt-3 break-keep text-sm leading-relaxed text-muted-foreground">
+                    A. {faq.answer}
+                  </p>
+                </PublicSurface>
               ))}
             </div>
           </div>

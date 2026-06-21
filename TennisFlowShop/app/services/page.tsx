@@ -427,25 +427,21 @@ export default async function ServicesPage() {
             {stringTypes.map((type) => (
               <SummaryCard
                 key={type.id}
-                title={
-                  <span className="block break-keep text-center text-2xl font-bold leading-tight">
-                    {type.title}
-                  </span>
-                }
-                description={
-                  <span className="block text-center text-base leading-relaxed">
-                    {type.description}
-                  </span>
-                }
                 className="group relative h-full overflow-hidden border-border shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-md"
                 contentClassName="space-y-4 md:space-y-6"
               >
                 <div className="absolute inset-x-0 top-0 h-2 bg-muted" />
 
-                <div className="flex justify-center">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full border border-border/60 bg-secondary text-muted-foreground shadow-sm transition-shadow duration-300 group-hover:shadow-md">
+                <div className="text-center">
+                  <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-border/60 bg-secondary text-muted-foreground shadow-sm transition-shadow duration-300 group-hover:shadow-md">
                     {type.icon}
                   </div>
+                  <h3 className="break-keep text-2xl font-bold leading-tight text-foreground">
+                    {type.title}
+                  </h3>
+                  <p className="mt-2 text-base leading-relaxed text-muted-foreground">
+                    {type.description}
+                  </p>
                 </div>
 
                 {/* 성능 차트 */}
