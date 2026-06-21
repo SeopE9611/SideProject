@@ -1,11 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { ResultState } from "@/components/public";
 import Link from "next/link";
 
 import type { Metadata } from "next";
@@ -95,40 +89,37 @@ export default async function RacketTossFailPage({
 
   return (
     <div className="mx-auto flex min-h-[60vh] w-full max-w-2xl items-center px-6">
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-2xl">{guide.title}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-1 text-sm text-muted-foreground">
+      <ResultState
+        status="error"
+        title={guide.title}
+        description={
+          <div className="space-y-1">
             {guide.description.map((line) => (
               <p key={line}>• {line}</p>
             ))}
           </div>
-
+        }
+        actions={
+          <>
+            <Button asChild className="w-full sm:w-auto">
+              <Link href={fallbackHref}>라켓 구매로 돌아가기</Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full sm:w-auto">
+              <Link href="/rackets">라켓 목록으로 이동</Link>
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3 text-sm text-muted-foreground">
           {guide.accent === "warning" && (
-            <div className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning dark:bg-warning/15">
-              중복 결제를 막기 위해 반복 결제를 피하고, 주문 내역 또는 관리자
-              확인 후 진행해주세요.
-            </div>
+            <p className="text-warning">중복 결제를 막기 위해 반복 결제를 피하고, 주문 내역 또는 관리자 확인 후 진행해주세요.</p>
           )}
-
-          <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+          <div className="space-y-1 text-xs">
             <p>오류 코드: {code}</p>
-            {rawMessage ? (
-              <p className="mt-1">참고 메시지: {rawMessage}</p>
-            ) : null}
+            {rawMessage ? <p>참고 메시지: {rawMessage}</p> : null}
           </div>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-2 sm:flex-row">
-          <Button asChild className="w-full sm:w-auto">
-            <Link href={fallbackHref}>라켓 구매로 돌아가기</Link>
-          </Button>
-          <Button asChild variant="outline" className="w-full sm:w-auto">
-            <Link href="/rackets">라켓 목록으로 이동</Link>
-          </Button>
-        </CardFooter>
-      </Card>
+        </div>
+      </ResultState>
     </div>
   );
 }
