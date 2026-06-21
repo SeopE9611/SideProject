@@ -1,4 +1,5 @@
 import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicSurface } from "@/components/public/PublicSurface";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -69,7 +70,7 @@ export default function RefundPolicyPage() {
   return (
     <main className="py-8 md:py-12">
       <SiteContainer className="max-w-4xl bp-lg:max-w-4xl">
-        <section className="space-y-3 rounded-2xl border border-border bg-card p-5 md:p-8">
+        <PublicSurface padding="lg" className="space-y-3">
           <p className="text-sm font-medium text-primary">Policy</p>
           <h1 className="break-keep text-3xl font-bold tracking-tight md:text-4xl">
             환불 및 취소 정책
@@ -82,14 +83,11 @@ export default function RefundPolicyPage() {
             정책은 운영 상황과 결제수단에 따라 일부 달라질 수 있으며, 자세한
             확인이 필요한 경우 고객센터 Q&A로 문의해주세요.
           </p>
-        </section>
+        </PublicSurface>
 
         <section className="mt-8 space-y-4 md:space-y-5">
           {sections.map((section) => (
-            <article
-              key={section.title}
-              className="rounded-2xl border border-border bg-card p-5 md:p-6"
-            >
+            <PublicSurface key={section.title}>
               <h2 className="break-keep text-lg font-semibold tracking-tight">
                 {section.title}
               </h2>
@@ -98,11 +96,11 @@ export default function RefundPolicyPage() {
                   <li key={item}>{item}</li>
                 ))}
               </ul>
-            </article>
+            </PublicSurface>
           ))}
         </section>
 
-        <section className="mt-8 rounded-2xl border border-border bg-muted/30 p-5 md:p-6">
+        <PublicSurface variant="muted" className="mt-8">
           <h2 className="break-keep text-lg font-semibold tracking-tight">
             문의 안내
           </h2>
@@ -148,7 +146,7 @@ export default function RefundPolicyPage() {
               </Link>
             </li>
           </ul>
-        </section>
+        </PublicSurface>
       </SiteContainer>
     </main>
   );
