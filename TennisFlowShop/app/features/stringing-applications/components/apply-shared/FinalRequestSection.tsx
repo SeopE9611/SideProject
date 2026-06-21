@@ -3,6 +3,7 @@
 import type React from "react";
 import { Shield } from "lucide-react";
 
+import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,7 +45,11 @@ export default function FinalRequestSection({
 
       {/* 안내 배너: 주문/회원 기반일 때 */}
       {showApplyLockedNotice && (
-        <div className="rounded-xl border border-border bg-muted/40 p-4 dark:bg-muted/30 sm:p-5">
+        <PublicSurface
+          variant="muted"
+          padding="sm"
+          className="rounded-xl bg-muted/40 dark:bg-muted/30 sm:p-5"
+        >
           <div className="flex items-start gap-3">
             <Shield className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
             <div className="min-w-0 text-sm">
@@ -65,11 +70,15 @@ export default function FinalRequestSection({
               </p>
             </div>
           </div>
-        </div>
+        </PublicSurface>
       )}
 
       {context === "checkout" && (
-        <div className="rounded-xl border border-border bg-muted/40 p-4 dark:bg-muted/30 sm:p-5">
+        <PublicSurface
+          variant="muted"
+          padding="sm"
+          className="rounded-xl bg-muted/40 dark:bg-muted/30 sm:p-5"
+        >
           <div className="flex items-start gap-3">
             <Shield className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <div className="min-w-0 text-sm">
@@ -87,11 +96,11 @@ export default function FinalRequestSection({
               </p>
             </div>
           </div>
-        </div>
+        </PublicSurface>
       )}
 
       {/* 패키지 관련 최종 안내 */}
-      <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
+      <PublicSurface padding="sm" className="sm:p-5">
         <div className="flex flex-wrap items-start gap-3">
           <Badge
             className={`shrink-0 ${
@@ -116,10 +125,10 @@ export default function FinalRequestSection({
                 : "이번 신청은 일반 결제(무통장 입금)로 진행됩니다."}
           </p>
         </div>
-      </div>
+      </PublicSurface>
 
       {/* 추가 요청사항 */}
-      <div className="space-y-3 rounded-2xl border border-border bg-card p-4 sm:p-5">
+      <PublicSurface padding="sm" className="space-y-3 sm:p-5">
         <Label htmlFor="requirements" className="text-sm font-medium">
           추가 요청사항 (선택)
         </Label>
@@ -136,7 +145,7 @@ export default function FinalRequestSection({
             ? "장착 관련 요청이나 전달이 필요한 메모가 있다면 이곳에 남겨주세요."
             : "요청사항이 많거나 중요한 정보(주소 변경, 연락처 변경 등)가 있다면 이곳에 남겨주세요."}
         </p>
-      </div>
+      </PublicSurface>
     </div>
   );
 }
