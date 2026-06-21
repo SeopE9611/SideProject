@@ -13,6 +13,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -33,7 +43,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
+import {
+  adminFetcher,
+  adminMutator,
+  getAdminErrorMessage,
+} from "@/lib/admin/adminFetcher";
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -194,6 +208,8 @@ export default function AcademyApplicationsClient() {
     adminFetcher,
   );
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] =
+    useState<AcademyApplicationListItem | null>(null);
 
   const counts = data?.counts ?? {
     all: 0,
@@ -205,11 +221,6 @@ export default function AcademyApplicationsClient() {
   };
 
   async function handleDelete(item: AcademyApplicationListItem) {
-    const confirmed = window.confirm(
-      "취소 신청 내역을 삭제할까요?\n\n삭제하면 관리자 목록과 고객 마이페이지에서 보이지 않습니다. 진행 중 신청은 삭제할 수 없습니다.",
-    );
-    if (!confirmed) return;
-
     setDeletingId(item._id);
     try {
       const result = await adminMutator<{ success: boolean; message?: string }>(
@@ -218,6 +229,7 @@ export default function AcademyApplicationsClient() {
       );
       showSuccessToast(result.message || "신청 내역이 삭제되었습니다.");
       await mutate();
+      setPendingDelete(null);
     } catch (error) {
       showErrorToast(getAdminErrorMessage(error));
     } finally {
@@ -512,7 +524,7 @@ export default function AcademyApplicationsClient() {
                                 disabled={deletingId === item._id}
                                 onSelect={(event) => {
                                   event.preventDefault();
-                                  void handleDelete(item);
+                                  setPendingDelete(item);
                                 }}
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
@@ -556,6 +568,39 @@ export default function AcademyApplicationsClient() {
           </div>
         </CardContent>
       </Card>
+      <AlertDialog
+        open={Boolean(pendingDelete)}
+        onOpenChange={(open) => {
+          if (deletingId) return;
+          if (!open) setPendingDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>취소 신청 내역을 삭제할까요?</AlertDialogTitle>
+            <AlertDialogDescription>
+              삭제하면 관리자 목록과 고객 마이페이지에서 보이지 않습니다. 진행 중
+              신청은 삭제할 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={Boolean(deletingId)}>
+              취소
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={Boolean(deletingId) || !pendingDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={(event) => {
+                event.preventDefault();
+                if (!pendingDelete) return;
+                void handleDelete(pendingDelete);
+              }}
+            >
+              {deletingId ? "삭제 중..." : "삭제"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
