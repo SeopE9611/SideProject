@@ -924,7 +924,7 @@ export default function StringingApplicationDetailClient({
           payment: "결제는 연결 주문에서 처리되었습니다.",
         }
       : {
-          label: "standalone 교체서비스",
+          label: "단독 교체서비스",
           title: "단독 교체서비스",
           description:
             "고객 보유 라켓 입고 후 작업하는 교체서비스입니다. 입고/수거/자가발송 정보를 확인하세요.",
