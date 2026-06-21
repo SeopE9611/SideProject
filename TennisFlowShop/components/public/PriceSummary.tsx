@@ -10,7 +10,7 @@ export type PriceSummaryRow = {
   emphasis?: boolean;
 };
 
-type PriceSummaryProps = {
+export type PriceSummaryProps = {
   rows: PriceSummaryRow[];
   title?: ReactNode;
   description?: ReactNode;

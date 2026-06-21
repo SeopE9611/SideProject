@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-type SectionHeaderProps = {
+export type SectionHeaderProps = {
   eyebrow?: ReactNode;
   title: ReactNode;
   description?: ReactNode;

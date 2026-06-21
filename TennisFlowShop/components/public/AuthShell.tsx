@@ -2,7 +2,7 @@ import { useId, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
-type AuthShellProps = {
+export type AuthShellProps = {
   title: ReactNode;
   description?: ReactNode;
   children: ReactNode;
