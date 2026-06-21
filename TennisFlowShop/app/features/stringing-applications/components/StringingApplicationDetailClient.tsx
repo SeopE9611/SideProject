@@ -1293,13 +1293,13 @@ export default function StringingApplicationDetailClient({
   );
   const detailGridClass = isAdmin
     ? "grid gap-4 xl:grid-cols-12"
-    : "grid gap-4 bp-sm:gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.8fr)] lg:items-start";
+    : "grid gap-3 bp-sm:gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.8fr)] lg:items-start";
   const detailCardClass = isAdmin
     ? "overflow-hidden border border-border/70 bg-card/80 shadow-sm"
     : "overflow-hidden rounded-2xl border border-border bg-card shadow-sm";
   const detailCardHeaderClass = isAdmin
     ? "border-b border-border/70 bg-muted/30 pb-3"
-    : "border-b border-border bg-muted/30 pb-3";
+    : "border-b border-border bg-muted/30 px-4 py-3 bp-lg:px-6";
   return (
     <main
       className={cn(
@@ -1417,8 +1417,10 @@ export default function StringingApplicationDetailClient({
                 <TooltipProvider>
                   <div
                     className={cn(
-                      "grid w-full grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-lg:flex bp-lg:w-auto bp-lg:flex-wrap bp-lg:items-center bp-lg:justify-end",
+                      "grid w-full grid-cols-1 gap-1.5 bp-sm:grid-cols-2 bp-lg:flex bp-lg:w-auto bp-lg:flex-wrap bp-lg:items-center bp-lg:justify-end",
                       isAdmin &&
+                        "bp-sm:[&>*:first-child]:col-span-2 bp-lg:[&>*:first-child]:col-span-1",
+                      !isAdmin &&
                         "bp-sm:[&>*:first-child]:col-span-2 bp-lg:[&>*:first-child]:col-span-1",
                     )}
                   >
@@ -1426,7 +1428,7 @@ export default function StringingApplicationDetailClient({
                       asChild
                       variant="outline"
                       size="sm"
-                      className="h-9 w-full overflow-hidden whitespace-nowrap border-border bg-card hover:bg-primary/10 bp-lg:mr-1 bp-lg:w-auto"
+                      className="h-8 w-full overflow-hidden whitespace-nowrap border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground bp-lg:mr-1 bp-lg:h-9 bp-lg:w-auto"
                     >
                       <Link href={backUrl}>
                         <span className="sm:hidden">목록</span>
@@ -1441,7 +1443,7 @@ export default function StringingApplicationDetailClient({
                         asChild
                         variant="outline"
                         size="sm"
-                        className="h-9 w-full overflow-hidden whitespace-nowrap border-border bg-card hover:bg-muted bp-lg:w-auto"
+                        className="h-8 w-full overflow-hidden whitespace-nowrap border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground bp-lg:h-9 bp-lg:w-auto"
                       >
                         <Link href={inboundTrackingHref}>
                           <Truck className="w-4 h-4 mr-2" />
@@ -1507,7 +1509,7 @@ export default function StringingApplicationDetailClient({
                         applicationId={data.id}
                         status={data.status}
                         userConfirmedAt={data.userConfirmedAt ?? null}
-                        className="h-9 w-full overflow-hidden whitespace-nowrap px-3 text-sm bp-lg:w-auto"
+                        className="h-8 w-full overflow-hidden whitespace-nowrap px-3 text-sm bp-lg:h-9 bp-lg:w-auto"
                       />
                     )}
 
@@ -1515,9 +1517,10 @@ export default function StringingApplicationDetailClient({
                     {!isAdmin && !isLinkedApplication && showConfirmExchangeButton && (
                       <Button
                         size="sm"
+                        variant="outline"
                         disabled={!canConfirmExchange || isConfirmSubmitting}
                         onClick={handleConfirmExchange}
-                        className="h-9 w-full overflow-hidden whitespace-nowrap bp-lg:w-auto"
+                        className="h-8 w-full overflow-hidden whitespace-nowrap border-primary/30 text-primary hover:bg-primary/10 bp-lg:h-9 bp-lg:w-auto"
                       >
                         <CheckCircle2 className="w-4 h-4 mr-2" />
                         {isConfirmSubmitting
@@ -1532,15 +1535,15 @@ export default function StringingApplicationDetailClient({
               </div>
 
               {!isAdmin && data.orderId ? (
-                <div className="mb-4 flex flex-col gap-2 rounded-xl border border-primary/20 bg-primary/10 p-3 text-sm text-foreground dark:bg-primary/15 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                  <span>
-                    이 교체서비스는 연결된 주문의 구매확정과 함께 처리됩니다.
+                <div className="mb-3 flex flex-col gap-2 rounded-xl border border-border/70 bg-muted/40 p-3 text-sm text-foreground bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                  <span className="break-keep text-foreground/80">
+                    연결 주문의 구매확정과 함께 처리됩니다.
                   </span>
                   <Button
                     asChild
                     size="sm"
                     variant="outline"
-                    className="h-9 w-full overflow-hidden whitespace-nowrap bg-card bp-sm:w-auto"
+                    className="h-8 w-full overflow-hidden whitespace-nowrap bg-card text-muted-foreground hover:text-foreground bp-sm:w-auto"
                   >
                     <Link
                       href={`/mypage?tab=orders&flowType=order&flowId=${data.orderId}&${flowQuery.toString()}&focus=stringing`}
@@ -1552,15 +1555,15 @@ export default function StringingApplicationDetailClient({
                 </div>
               ) : null}
               {!isAdmin && linkedRentalId ? (
-                <div className="mb-4 flex flex-col gap-2 rounded-xl border border-primary/20 bg-primary/10 p-3 text-sm text-foreground dark:bg-primary/15 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                  <span>
-                    이 교체서비스는 연결된 대여의 수령확인과 함께 처리됩니다.
+                <div className="mb-3 flex flex-col gap-2 rounded-xl border border-border/70 bg-muted/40 p-3 text-sm text-foreground bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                  <span className="break-keep text-foreground/80">
+                    연결 대여의 수령확인과 함께 처리됩니다.
                   </span>
                   <Button
                     asChild
                     size="sm"
                     variant="outline"
-                    className="h-9 w-full overflow-hidden whitespace-nowrap bg-card bp-sm:w-auto"
+                    className="h-8 w-full overflow-hidden whitespace-nowrap bg-card text-muted-foreground hover:text-foreground bp-sm:w-auto"
                   >
                     <Link
                       href={`/mypage?tab=orders&flowType=rental&flowId=${encodeURIComponent(String(linkedRentalId))}&${flowQuery.toString()}`}
@@ -1573,7 +1576,7 @@ export default function StringingApplicationDetailClient({
               ) : null}
               {!isAdmin && userNextTodo && (
                 <NextTodoCallout
-                  className="mb-4"
+                  className="mb-3 bp-sm:mb-4"
                   label={userNextTodo.label}
                   ctaLabel={userNextTodo.ctaLabel}
                   ctaHref={userNextTodo.ctaHref}
@@ -2341,7 +2344,7 @@ export default function StringingApplicationDetailClient({
                     )}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-4 bp-lg:p-6">
+                <CardContent className={cn("p-4 bp-lg:p-6", !isAdmin && "py-3 bp-lg:py-5")}>
                   {editingCustomer ? (
                     <CustomerEditForm
                       initialData={{
@@ -2364,12 +2367,12 @@ export default function StringingApplicationDetailClient({
                       onCancel={() => setEditingCustomer(false)}
                     />
                   ) : (
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
+                    <div className={cn("space-y-4", !isAdmin && "space-y-3")}>
+                      <div className="flex min-w-0 items-start gap-3 rounded-lg bg-muted p-3">
                         <User className="h-4 w-4 text-muted-foreground" />
-                        <div>
+                        <div className="min-w-0">
                           <p className="text-sm text-foreground/80">이름</p>
-                          <p className="font-semibold text-foreground">
+                          <p className="break-words font-semibold text-foreground">
                             {data.customer.name ?? "정보 없음"}
                           </p>
                         </div>
@@ -2387,9 +2390,9 @@ export default function StringingApplicationDetailClient({
 
                       <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                         <Phone className="h-4 w-4 text-muted-foreground" />
-                        <div>
+                        <div className="min-w-0">
                           <p className="text-sm text-foreground/80">전화번호</p>
-                          <p className="font-semibold text-foreground">
+                          <p className="break-words font-semibold text-foreground">
                             {data.customer?.phone ?? "정보 없음"}
                           </p>
                         </div>
@@ -2405,7 +2408,7 @@ export default function StringingApplicationDetailClient({
                             {customerAddressValue}
                           </p>
                           {!isVisit && data.customer?.addressDetail && (
-                            <p className="text-sm text-foreground/80 mt-1">
+                            <p className="mt-1 break-words text-sm text-foreground/80">
                               {data.customer.addressDetail}
                             </p>
                           )}
@@ -2473,7 +2476,7 @@ export default function StringingApplicationDetailClient({
                   </div>
                 </CardHeader>
 
-                <CardContent className="p-4 bp-lg:p-6">
+                <CardContent className={cn("p-4 bp-lg:p-6", !isAdmin && "py-3 bp-lg:py-5")}>
                   {editingPayment ? (
                     <PaymentEditForm
                       initialData={{
@@ -2533,7 +2536,7 @@ export default function StringingApplicationDetailClient({
                           className={
                             data.packageInfo.applied
                               ? "p-3 rounded-lg border border-border bg-muted dark:border-border dark:bg-muted"
-                              : "p-3 rounded-lg border border-border bg-muted/80 /60 dark:bg-background/40"
+                              : "p-3 rounded-lg border border-border bg-muted/60 dark:bg-background/40"
                           }
                         >
                           <div className="flex items-start gap-2">
@@ -2551,7 +2554,7 @@ export default function StringingApplicationDetailClient({
                                     "whitespace-normal break-keep text-left leading-relaxed",
                                     data.packageInfo.applied
                                       ? "border-border text-foreground"
-                                      : "border-border text-muted-foreground ",
+                                      : "border-border text-muted-foreground",
                                   )}
                                 >
                                   {data.packageInfo.applied
@@ -2570,7 +2573,7 @@ export default function StringingApplicationDetailClient({
                                   가 차감되었습니다.
                                 </p>
                               ) : (
-                                <p className="break-keep text-muted-foreground">
+                                <p className="break-words text-muted-foreground">
                                   이 신청은 패키지 기준으로는{" "}
                                   <span className="font-semibold">
                                     {data.packageInfo.useCount}회
@@ -2724,7 +2727,7 @@ export default function StringingApplicationDetailClient({
                   </CardTitle>
                 </CardHeader>
 
-                <div className="mx-4 mt-4 mb-3 rounded-xl bp-sm:mx-6 border border-border/80 bg-muted/90 /80 dark:bg-background/70 px-4 py-3">
+                <div className="mx-4 mb-3 mt-3 rounded-xl border border-border/80 bg-muted/80 px-3 py-3 dark:bg-background/70 bp-sm:mx-6 bp-sm:mt-4 bp-sm:px-4">
                   <div className="flex flex-col gap-3 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between">
                     <div className="flex flex-wrap gap-2">
                       <Badge
@@ -2748,7 +2751,7 @@ export default function StringingApplicationDetailClient({
                 </div>
 
                 <CardContent className="px-4 pb-4 bp-lg:px-6 bp-lg:pb-6">
-                  <div className="space-y-6">
+                  <div className={cn("space-y-6", !isAdmin && "space-y-5")}>
                     <section className="flex flex-col gap-2 border-b border-dashed border-border pb-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                       <div className="flex items-center gap-2 text-foreground">
                         <Calendar className="w-5 h-5" />
@@ -2891,12 +2894,12 @@ export default function StringingApplicationDetailClient({
 
                     {/* 섹션 2: 라켓·스트링별 작업 정보 */}
                     {Array.isArray(data.lines) && data.lines.length > 0 && (
-                      <section className="space-y-3">
+                      <section className="space-y-2.5">
                         <div className="flex items-center gap-2 text-foreground">
                           <Target className="w-5 h-5" />
                           <span className="font-medium">라켓·스트링별 작업 정보</span>
                         </div>
-                        <div className="space-y-3 rounded-xl border border-border/70 bg-muted/40 p-3">
+                        <div className="space-y-2.5 rounded-xl border border-border/70 bg-muted/40 p-3">
                           <div className="grid grid-cols-1 gap-2 text-xs text-foreground/75 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
                             <p>라켓 {lineSummary.racketCount}자루</p>
                             <p>스트링 {lineSummary.stringTypeCount}종</p>
@@ -2925,11 +2928,11 @@ export default function StringingApplicationDetailClient({
                             {data.lines.map((line, index) => (
                               <div
                                 key={line.id ?? index}
-                                className="min-w-0 rounded-xl px-3 py-3 ring-1 ring-ring bg-card/70 dark:ring-ring dark:bg-background/40 bp-sm:px-4"
+                                className="min-w-0 rounded-xl bg-card/70 px-3 py-2.5 ring-1 ring-ring dark:bg-background/40 dark:ring-ring bp-sm:px-4 bp-sm:py-3"
                               >
                                 {/* 라켓 이름 + 순번 */}
                                 <div className="mb-2 flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                                  <p className="min-w-0 break-keep font-medium text-foreground">
+                                  <p className="min-w-0 break-words font-medium text-foreground">
                                     라켓 {index + 1}
                                     {line.racketType
                                       ? ` · ${line.racketType}`
@@ -2954,7 +2957,7 @@ export default function StringingApplicationDetailClient({
 
                                 {/* 스트링 이름 */}
                                 {line.stringName && (
-                                  <p className="min-w-0 break-keep text-xs text-foreground">
+                                  <p className="min-w-0 break-words text-xs text-foreground">
                                     스트링:{" "}
                                     <span className="font-medium">
                                       {line.stringName}
@@ -2964,7 +2967,7 @@ export default function StringingApplicationDetailClient({
 
                                 {/* 라켓별 메모 */}
                                 {line.note && (
-                                  <p className="mt-2 break-keep text-xs leading-relaxed text-foreground/75">
+                                  <p className="mt-2 break-words text-xs leading-relaxed text-foreground/75">
                                     메모: {line.note}
                                   </p>
                                 )}
@@ -3197,11 +3200,11 @@ export default function StringingApplicationDetailClient({
                       입고/수령/배송 정보
                     </CardTitle>
                     <CardDescription>
-                      고객→매장 입고와 매장→고객 반환 정보를 구분해서 확인하세요.
+                      입고와 반환 정보를 구분해 확인하세요.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="grid gap-4 p-4 md:grid-cols-2 bp-sm:p-6">
-                    <div className="rounded-xl border border-border/70 bg-muted/30 p-4">
+                  <CardContent className="grid gap-3 p-3 md:grid-cols-2 bp-sm:p-5">
+                    <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
                       <p className="text-sm font-semibold text-foreground">
                         고객→매장 입고
                       </p>
@@ -3265,7 +3268,7 @@ export default function StringingApplicationDetailClient({
                       )}
                     </div>
 
-                    <div className="rounded-xl border border-border/70 bg-muted/30 p-4">
+                    <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
                       <p className="text-sm font-semibold text-foreground">
                         매장→고객 반환
                       </p>
