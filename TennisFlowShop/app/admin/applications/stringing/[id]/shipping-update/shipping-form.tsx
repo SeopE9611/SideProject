@@ -20,6 +20,8 @@ import {
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
+import { COURIER_CATALOG, normalizeCourierCode } from "@/lib/shipping/courier-map";
+import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -102,10 +104,10 @@ export default function ShippingForm({
 
     // 방문 수령(visit) 등 택배가 아닌 경우, 택배정보는 의미 없으므로 baseline에서도 ''로 맞춘다.
     const baseCourier = isCourierShippingMethod(baseMethod)
-      ? String(initialCourier ?? "")
+      ? normalizeCourierCode(initialCourier)
       : "";
     const baseTracking = isCourierShippingMethod(baseMethod)
-      ? String(initialTrackingNumber ?? "")
+      ? normalizeTrackingNumber(initialTrackingNumber)
       : "";
 
     return {
@@ -126,9 +128,11 @@ export default function ShippingForm({
     const curMethod = isVisitPickup
       ? fixedVisitMethod
       : String(shippingMethod ?? "").trim();
-    const curCourier = isCourierShippingMethod(curMethod) ? courier : "";
+    const curCourier = isCourierShippingMethod(curMethod)
+      ? normalizeCourierCode(courier)
+      : "";
     const curTracking = isCourierShippingMethod(curMethod)
-      ? trackingNumber
+      ? normalizeTrackingNumber(trackingNumber)
       : "";
 
     return (
@@ -150,11 +154,11 @@ export default function ShippingForm({
   useUnsavedChangesGuard(isDirty && !isSubmitting);
 
   useEffect(() => {
-    setCourier(initialCourier || "");
+    setCourier(normalizeCourierCode(initialCourier) || "");
   }, [initialCourier]);
 
   useEffect(() => {
-    setTrackingNumber(initialTrackingNumber || "");
+    setTrackingNumber(normalizeTrackingNumber(initialTrackingNumber));
   }, [initialTrackingNumber]);
 
   useEffect(() => {
@@ -184,8 +188,16 @@ export default function ShippingForm({
         showErrorToast("택배사를 선택해주세요");
         return;
       }
-      if (!trackingNumber) {
+      const normalizedTrackingNumber = normalizeTrackingNumber(trackingNumber);
+      if (!normalizedTrackingNumber) {
         showErrorToast("운송장 번호를 입력해주세요");
+        return;
+      }
+      if (
+        normalizedTrackingNumber.length < 9 ||
+        normalizedTrackingNumber.length > 20
+      ) {
+        showErrorToast("운송장 번호는 숫자 9~20자리로 입력해주세요");
         return;
       }
     }
@@ -204,10 +216,10 @@ export default function ShippingForm({
               estimatedDate: estimatedDelivery,
               invoice: {
                 courier: isCourierShippingMethod(effectiveMethod)
-                  ? courier
+                  ? normalizeCourierCode(courier)
                   : "",
                 trackingNumber: isCourierShippingMethod(effectiveMethod)
-                  ? trackingNumber
+                  ? normalizeTrackingNumber(trackingNumber)
                   : "",
               },
             },
@@ -283,11 +295,11 @@ export default function ShippingForm({
                     <SelectValue placeholder="택배사를 선택하세요" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="cj">CJ 대한통운</SelectItem>
-                    <SelectItem value="hanjin">한진택배</SelectItem>
-                    <SelectItem value="logen">로젠택배</SelectItem>
-                    <SelectItem value="post">우체국택배</SelectItem>
-                    <SelectItem value="etc">기타</SelectItem>
+                    {COURIER_CATALOG.map((item) => (
+                      <SelectItem key={item.code} value={item.code}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -297,7 +309,9 @@ export default function ShippingForm({
                 <Input
                   id="tracking-number"
                   value={trackingNumber}
-                  onChange={(e) => setTrackingNumber(e.target.value)}
+                  onChange={(e) =>
+                    setTrackingNumber(normalizeTrackingNumber(e.target.value))
+                  }
                   placeholder="예: 1234567890"
                 />
               </div>

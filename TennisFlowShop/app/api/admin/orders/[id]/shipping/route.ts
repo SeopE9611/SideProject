@@ -14,6 +14,8 @@ import {
   normalizeOrderStatus,
   normalizePaymentStatus,
 } from "@/lib/admin-ops-normalize";
+import { normalizeCourierCode } from "@/lib/shipping/courier-map";
+import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 
 const shippingMethodMap: Record<string, string> = {
   courier: "택배 배송",
@@ -122,14 +124,23 @@ export async function PATCH(
 
     const isCourier = normalizedMethod === "courier";
     if (isCourier) {
-      if (!courier || !String(courier).trim())
+      if (!normalizeCourierCode(courier))
         return NextResponse.json(
           { success: false, message: "택배사를 선택해주세요." },
           { status: 400 },
         );
-      if (!trackingNumber || !String(trackingNumber).trim())
+      const normalizedTrackingNumber = normalizeTrackingNumber(trackingNumber);
+      if (!normalizedTrackingNumber)
         return NextResponse.json(
           { success: false, message: "운송장 번호를 입력해주세요." },
+          { status: 400 },
+        );
+      if (
+        normalizedTrackingNumber.length < 9 ||
+        normalizedTrackingNumber.length > 20
+      )
+        return NextResponse.json(
+          { success: false, message: "운송장 번호는 숫자 9~20자리로 입력해주세요." },
           { status: 400 },
         );
     }
@@ -141,8 +152,8 @@ export async function PATCH(
 
     const nextMethod = String(normalizedMethod ?? shippingMethod ?? "").trim();
     const nextEstimatedDate = String(estimatedDate ?? "").trim();
-    const nextCourier = isCourier ? String(courier ?? "").trim() : "";
-    const nextTracking = isCourier ? String(trackingNumber ?? "").trim() : "";
+    const nextCourier = isCourier ? normalizeCourierCode(courier) : "";
+    const nextTracking = isCourier ? normalizeTrackingNumber(trackingNumber) : "";
     const isFirstShippingRegistration =
       !isRegistered &&
       Boolean(nextMethod || nextEstimatedDate || nextCourier || nextTracking);
@@ -213,8 +224,8 @@ export async function PATCH(
 
     if (isCourier) {
       setOps["shippingInfo.invoice"] = {
-        courier: String(courier).trim(),
-        trackingNumber: String(trackingNumber).trim(),
+        courier: nextCourier,
+        trackingNumber: nextTracking,
       };
     } else {
       updateDoc.$unset = { "shippingInfo.invoice": "" };

@@ -3,12 +3,12 @@ import { cookies } from "next/headers";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
+import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
 // 서버 기준: courier allowlist + trackingNumber digits(9~20) + note(<=200) + shippedAt 유효날짜
-const onlyDigits = (v: unknown) => String(v ?? "").replace(/\D/g, "");
 const isValidTrackingDigits = (digits: string) =>
   digits.length >= 9 && digits.length <= 20;
 
@@ -18,7 +18,7 @@ const requestSchema = z.object({
   }),
   trackingNumber: z
     .string()
-    .transform((s) => onlyDigits(s))
+    .transform((s) => normalizeTrackingNumber(s))
     .refine((d) => isValidTrackingDigits(d), {
       message: "운송장 번호는 숫자 9~20자리만 입력해주세요.",
     }),

@@ -22,6 +22,8 @@ import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
+import { COURIER_CATALOG, normalizeCourierCode } from "@/lib/shipping/courier-map";
+import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   AlertTriangle,
@@ -48,16 +50,6 @@ type SelfShipInfo = {
   note?: string;
 };
 
-const COURIER_OPTIONS = [
-  "CJ대한통운",
-  "우체국택배",
-  "한진택배",
-  "롯데택배",
-  "로젠택배",
-  "경동택배",
-  "기타",
-];
-
 type Application = {
   _id: string;
   status: string;
@@ -75,7 +67,14 @@ type Application = {
 
 const FormSchema = z.object({
   courier: z.string().trim().min(1, "택배사를 입력하세요."),
-  trackingNo: z.string().trim().min(1, "송장번호를 입력하세요."),
+  trackingNo: z
+    .string()
+    .transform((value) => normalizeTrackingNumber(value))
+    .refine((value) => value.length > 0, "송장번호를 입력하세요.")
+    .refine(
+      (value) => value.length >= 9 && value.length <= 20,
+      "송장번호는 숫자 9~20자리로 입력해 주세요.",
+    ),
   shippedAt: z.string().trim().optional(),
   note: z.string().trim().optional(),
 });
@@ -254,8 +253,8 @@ function SelfShipForm({
   // 초기값은 항상 계산 (훅 순서 고정)
   const initial: FormValues = useMemo(
     () => ({
-      courier: application?.shippingInfo?.selfShip?.courier ?? "",
-      trackingNo: application?.shippingInfo?.selfShip?.trackingNo ?? "",
+      courier: normalizeCourierCode(application?.shippingInfo?.selfShip?.courier) || "",
+      trackingNo: normalizeTrackingNumber(application?.shippingInfo?.selfShip?.trackingNo),
       shippedAt: application?.shippingInfo?.selfShip?.shippedAt ?? "",
       note: application?.shippingInfo?.selfShip?.note ?? "",
     }),
@@ -305,7 +304,10 @@ function SelfShipForm({
   const onChange =
     (k: keyof FormValues) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const v = e.target.value;
+      const v =
+        k === "trackingNo"
+          ? normalizeTrackingNumber(e.target.value)
+          : e.target.value;
       setForm((prev) => ({ ...prev, [k]: v }));
       // 입력 중이면 해당 필드 에러를 즉시 해제 (UX)
       if (fieldErrors[k]) {
@@ -348,7 +350,15 @@ function SelfShipForm({
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ shippingInfo: { selfShip: parsed.data } }),
+          body: JSON.stringify({
+            shippingInfo: {
+              selfShip: {
+                ...parsed.data,
+                courier: normalizeCourierCode(parsed.data.courier),
+                trackingNo: normalizeTrackingNumber(parsed.data.trackingNo),
+              },
+            },
+          }),
         },
       );
       if (!res.ok)
@@ -492,9 +502,9 @@ function SelfShipForm({
                         <SelectValue placeholder="택배사를 선택하세요" />
                       </SelectTrigger>
                       <SelectContent>
-                        {COURIER_OPTIONS.map((label) => (
-                          <SelectItem key={label} value={label}>
-                            {label}
+                        {COURIER_CATALOG.map((item) => (
+                          <SelectItem key={item.code} value={item.code}>
+                            {item.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -518,7 +528,7 @@ function SelfShipForm({
                       id="trackingNo"
                       value={form.trackingNo}
                       onChange={onChange("trackingNo")}
-                      placeholder="숫자 또는 영문 조합으로 입력해 주세요"
+                      placeholder="예: 1234567890"
                       className={`h-12 text-base focus:ring-2 focus:ring-ring dark:focus:ring-ring ${fieldErrors.trackingNo ? "border-destructive focus:border-destructive" : "border-border focus:border-border dark:focus:border-border"}`}
                     />
                     <p className="min-h-[18px] text-sm text-destructive">

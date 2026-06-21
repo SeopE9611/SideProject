@@ -36,6 +36,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import LoginGate from "@/components/system/LoginGate";
 import { badgeToneVariant, getOrderStatusTone } from "@/lib/badge-style";
+import { formatKoreanPhone } from "@/lib/phone";
 import {
   hasCompletedStringingApplication,
   normalizeStringingApplicationId,
@@ -210,7 +211,7 @@ export default function OrderLookupResultsPage() {
               orderNumber: o._id.slice(-6), // 보기 좋게 마지막 6자리만 주문번호처럼 사용
               orderDate: new Date(o.createdAt).toLocaleDateString(),
               recipient: o.shippingInfo?.name ?? "",
-              contactNumber: o.shippingInfo?.phone ?? "",
+              contactNumber: formatKoreanPhone(o.shippingInfo?.phone) || "",
               totalAmount: o.totalPrice ?? 0,
               status: o.status ?? "배송준비중",
               shippingInfo: {

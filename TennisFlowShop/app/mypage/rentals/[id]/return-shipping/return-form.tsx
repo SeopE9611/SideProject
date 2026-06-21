@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckCircle2, Loader2, Truck } from "lucide-react";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { COURIER_CATALOG, normalizeCourierCode } from "@/lib/shipping/courier-map";
+import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import {
   Select,
   SelectContent,
@@ -22,7 +24,6 @@ import {
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 
 // 서버 정규확 검증
-const onlyDigits = (v: string) => v.replace(/\D/g, "");
 const isValidTrackingDigits = (digits: string) =>
   digits.length >= 9 && digits.length <= 20;
 
@@ -78,8 +79,8 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
         if (cancelled) return;
         const ret = json?.shipping?.return;
         if (ret) {
-          setCourier(ret.courier || "");
-          setTracking(ret.trackingNumber || "");
+          setCourier(normalizeCourierCode(ret.courier) || "");
+          setTracking(normalizeTrackingNumber(ret.trackingNumber));
           setDate(ret.shippedAt ? String(ret.shippedAt).slice(0, 10) : "");
           setNote(ret.note || "");
           setHasExisting(true);
@@ -96,7 +97,7 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
   const onSubmit = async () => {
     if (!courier) return showErrorToast("택배사를 입력하세요");
     // 운송장: 숫자만 + 9~20자리
-    const trackingDigits = onlyDigits(tracking);
+    const trackingDigits = normalizeTrackingNumber(tracking);
     if (!trackingDigits) return showErrorToast("운송장 번호를 입력하세요");
     if (!isValidTrackingDigits(trackingDigits))
       return showErrorToast("운송장 번호는 숫자 9~20자리만 입력해주세요");
@@ -112,7 +113,7 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({
-        courier,
+        courier: normalizeCourierCode(courier),
         trackingNumber: trackingDigits,
         shippedAt: date || undefined,
         note: noteTrimmed || undefined,
@@ -162,10 +163,13 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
                 <SelectValue placeholder="택배사를 선택" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="cj">CJ대한통운</SelectItem>
-                <SelectItem value="post">우체국</SelectItem>
-                <SelectItem value="logen">로젠</SelectItem>
-                <SelectItem value="hanjin">한진</SelectItem>
+                {COURIER_CATALOG.filter((item) =>
+                  ["cj", "post", "logen", "hanjin"].includes(item.code),
+                ).map((item) => (
+                  <SelectItem key={item.code} value={item.code}>
+                    {item.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -178,7 +182,7 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
               value={tracking}
               onChange={(e) => {
                 // 입력 중에도 숫자만 유지 + 최대 20자리 제한
-                const digits = onlyDigits(e.target.value).slice(0, 20);
+                const digits = normalizeTrackingNumber(e.target.value).slice(0, 20);
                 setTracking(digits);
               }}
               inputMode="numeric"

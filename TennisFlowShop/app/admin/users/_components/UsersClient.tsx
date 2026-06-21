@@ -23,6 +23,7 @@ import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/ad
 import { useAdminListQueryState } from "@/lib/admin/useAdminListQueryState";
 import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import { formatKoreanPhone } from "@/lib/phone";
 import type { UserCleanupPreviewCandidateDto } from "@/types/admin/users";
 import { AlertCircle, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Copy, Filter, Loader2, Mail, MoreHorizontal, Search, Trash2, UserCheck, UserX } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -940,7 +941,7 @@ export default function UsersClient() {
                             {u.phone ? (
                               <div className="flex items-center justify-center gap-1">
                                 <a href={`tel:${u.phone}`} className="underline decoration-dotted">
-                                  {u.phone}
+                                  {formatKoreanPhone(u.phone) || u.phone}
                                 </a>
                                 <button className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-background" onClick={() => copy(u.phone!)} title="복사" aria-label="전화번호 복사">
                                   <Copy className="w-3 h-3" />

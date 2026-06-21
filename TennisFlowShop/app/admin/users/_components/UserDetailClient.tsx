@@ -31,6 +31,7 @@ import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/use
 import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import { formatKoreanPhone } from "@/lib/phone";
 import { Activity as ActivityIcon, CalendarDays, ChevronLeft, ListTree, LogIn, Mail, MapPin, MonitorSmartphone, Pencil, Phone, RefreshCw, ShieldAlert, ShieldCheck, ShoppingBag, Smartphone, Star, UserCog, Wrench } from "lucide-react";
 
 // 변경이력 포맷터 유틸
@@ -662,7 +663,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                   value={
                     user.phone ? (
                       <a className="underline decoration-dotted" data-no-unsaved-guard href={`tel:${user.phone}`}>
-                        {user.phone}
+                        {formatKoreanPhone(user.phone) || user.phone}
                       </a>
                     ) : (
                       "-"

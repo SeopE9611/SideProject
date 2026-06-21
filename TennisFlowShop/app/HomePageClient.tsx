@@ -903,7 +903,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   신청 방식 선택
                 </h3>
                 <p className="text-xs bp-sm:text-sm leading-relaxed text-foreground/80">
-                  스트링 구매·라켓{"\u00A0"}구매/대여·보유 장비 중 선택
+                  구매·대여·보유 중 선택
                 </p>
               </div>
               <div className={processStepSurfaceClass}>

@@ -47,6 +47,7 @@ export default function KakaoInquiryWidget() {
 
   // 하단 고정 바(모바일 CTA 등)와 겹치지 않도록 위로 올리는 픽셀
   const [liftPx, setLiftPx] = useState(0);
+  const [hideForOverlay, setHideForOverlay] = useState(false);
 
   // 클라이언트 노출 가능한 env만 사용 (NEXT_PUBLIC_*)
   const jsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY ?? "";
@@ -132,15 +133,28 @@ export default function KakaoInquiryWidget() {
 
     const pickTargets = (): HTMLElement[] => {
       const marked = Array.from(document.querySelectorAll<HTMLElement>('[data-bottom-sticky="1"]'));
-      if (marked.length) return marked;
+      if (marked.length) return marked.filter((el) => !isWidgetOverlay(el));
       // (예비) 혹시 마킹을 빠뜨린 경우를 대비한 fallback
-      return Array.from(document.querySelectorAll<HTMLElement>(".fixed.inset-x-0.bottom-0"));
+      return Array.from(document.querySelectorAll<HTMLElement>(".fixed.inset-x-0.bottom-0")).filter(
+        (el) => !isWidgetOverlay(el),
+      );
     };
+
+    const isWidgetOverlay = (el: HTMLElement) =>
+      el.matches('[data-kakao-widget-hide="1"], [role="dialog"]') ||
+      Boolean(el.closest('[data-kakao-widget-hide="1"], [role="dialog"]'));
+
+    const hasBlockingOverlay = () =>
+      Array.from(document.querySelectorAll<HTMLElement>('[data-kakao-widget-hide="1"]')).some((el) => {
+        const rect = el.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0;
+      });
 
     const schedule = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         const targets = pickTargets();
+        setHideForOverlay(hasBlockingOverlay());
 
         let maxCover = 0;
         for (const el of targets) {
@@ -231,7 +245,7 @@ export default function KakaoInquiryWidget() {
     setPanel(null);
   };
 
-  if (shouldHide) return null;
+  if (shouldHide || hideForOverlay) return null;
 
   return (
     <div className={cn("fixed bottom-4 right-4 z-[70] bp-sm:bottom-4 bp-sm:right-4", hideOnFinderTouch && "hidden bp-lg:block")} style={liftPx ? { transform: `translateY(-${liftPx}px)` } : undefined}>

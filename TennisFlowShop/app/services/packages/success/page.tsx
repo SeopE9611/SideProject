@@ -7,6 +7,7 @@ import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 import LoginGate from "@/components/system/LoginGate";
 import { PublicSurface, SummaryCard } from "@/components/public";
 import { Button } from "@/components/ui/button";
+import { formatKoreanPhone } from "@/lib/phone";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { bankLabelMap } from "@/lib/constants";
 import clientPromise from "@/lib/mongodb";
@@ -428,7 +429,7 @@ export default async function PackageSuccessPage({
                           연락처:
                         </span>
                         <span className="ml-2 font-semibold text-foreground">
-                          {serviceInfo?.phone || "정보 없음"}
+                          {formatKoreanPhone(serviceInfo?.phone) || "정보 없음"}
                         </span>
                       </div>
                     </div>

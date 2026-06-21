@@ -591,6 +591,7 @@ export default function FilterableRacketList({
     <>
       <Sheet open={showFilters} onOpenChange={handleSheetOpenChange}>
         <SheetContent
+          data-kakao-widget-hide="1"
           side={isFilterSheetViewport ? "bottom" : "left"}
           className={
             isFilterSheetViewport

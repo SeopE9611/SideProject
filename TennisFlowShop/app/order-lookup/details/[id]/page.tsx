@@ -19,6 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { badgeToneVariant, getOrderStatusTone } from "@/lib/badge-style";
 import { bankLabelMap } from "@/lib/constants";
+import { formatKoreanPhone } from "@/lib/phone";
 import {
   getOrderStatusLabelForDisplay,
   isVisitPickupOrder,
@@ -940,7 +941,8 @@ export default function OrderDetailPage() {
                             연락처
                           </p>
                           <p className="font-semibold">
-                            {order.shippingInfo.phone}
+                            {formatKoreanPhone(order.shippingInfo.phone) ||
+                              order.shippingInfo.phone}
                           </p>
                         </div>
                       </div>

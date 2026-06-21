@@ -13,6 +13,7 @@ import { bankLabelMap } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import clientPromise from "@/lib/mongodb";
 import { getOrderDeliveryInfoTitle, isVisitPickupOrder, shouldShowDeliveryOnlyFields } from "@/lib/order-shipping";
+import { formatKoreanPhone } from "@/lib/phone";
 import { ArrowRight, CheckCircle, Clock, CreditCard, MapPin, Package, Phone, Shield, Star } from "lucide-react";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -800,7 +801,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
                         </div>
                         <div>
                           <span className="text-sm text-muted-foreground">연락처:</span>
-                          <span className="ml-2 font-semibold text-foreground">{order.shippingInfo?.phone || "정보 없음"}</span>
+                          <span className="ml-2 font-semibold text-foreground">{formatKoreanPhone(order.shippingInfo?.phone) || "정보 없음"}</span>
                         </div>
                       </div>
                       {showDeliveryOnlyFields && (

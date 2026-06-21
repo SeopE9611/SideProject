@@ -7,6 +7,8 @@ import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { writeRentalHistory } from "@/app/features/rentals/utils/history";
 import { getLinkedRentalStringingStatus } from "@/lib/admin/rental-stringing-flow.server";
 import { hasRentalStringingService, isRentalStringingComplete } from "@/lib/rental-stringing-flow";
+import { normalizeCourierCode } from "@/lib/shipping/courier-map";
+import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 
 export const dynamic = "force-dynamic";
 
@@ -29,9 +31,16 @@ export async function POST(
     trackingNumber = "",
     shippedAt,
   } = await req.json().catch(() => ({}));
-  if (!courier || !trackingNumber)
+  const normalizedCourier = normalizeCourierCode(courier);
+  const normalizedTrackingNumber = normalizeTrackingNumber(trackingNumber);
+  if (!normalizedCourier || !normalizedTrackingNumber)
     return NextResponse.json(
       { ok: false, message: "MISSING_FIELDS" },
+      { status: 400 },
+    );
+  if (normalizedTrackingNumber.length < 9 || normalizedTrackingNumber.length > 20)
+    return NextResponse.json(
+      { ok: false, message: "INVALID_TRACKING_NUMBER" },
       { status: 400 },
     );
 
@@ -61,8 +70,8 @@ export async function POST(
   }
 
   const prevOutbound = rental?.shipping?.outbound ?? {};
-  const prevCourier = String(prevOutbound?.courier ?? "").trim();
-  const prevTracking = String(prevOutbound?.trackingNumber ?? "").trim();
+  const prevCourier = normalizeCourierCode(prevOutbound?.courier);
+  const prevTracking = normalizeTrackingNumber(prevOutbound?.trackingNumber);
   const prevShippedAt = prevOutbound?.shippedAt
     ? new Date(prevOutbound.shippedAt)
     : null;
@@ -90,8 +99,8 @@ export async function POST(
     {
       $set: {
         "shipping.outbound": {
-          courier,
-          trackingNumber,
+          courier: normalizedCourier,
+          trackingNumber: normalizedTrackingNumber,
           shippedAt: nextShippedAt,
         },
         updatedAt: new Date(),
@@ -114,8 +123,8 @@ export async function POST(
       message: hadOutbound ? "출고 운송장 수정" : "출고 운송장 등록",
       diff: {
         outbound: {
-          courier: String(courier).trim(),
-          trackingNumber: String(trackingNumber).trim(),
+          courier: normalizedCourier,
+          trackingNumber: normalizedTrackingNumber,
           shippedAt: nextShippedAt,
         },
       },
@@ -130,8 +139,8 @@ export async function POST(
     actor: { role: "admin", id: String(guard.admin._id) },
     snapshot: {
       outbound: {
-        courier: String(courier).trim(),
-        trackingNumber: String(trackingNumber).trim(),
+        courier: normalizedCourier,
+        trackingNumber: normalizedTrackingNumber,
         shippedAt: nextShippedAt,
       },
     },
