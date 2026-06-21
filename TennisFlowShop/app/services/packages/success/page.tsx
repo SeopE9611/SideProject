@@ -172,102 +172,122 @@ export default async function PackageSuccessPage({
       : undefined,
     popular: Number(packageInfo.sessions) === 30,
   });
+  const isOnlinePayment = isTossPayment || isNicePayment;
+  const lookupHref = isLoggedIn
+    ? "/mypage?tab=passes"
+    : `/package-lookup/details/${packageOrder._id}`;
 
   return (
     <>
       <BackButtonGuard />
       <div className="min-h-full bg-background">
         {/* Hero Section */}
-        <div className="relative overflow-hidden border-b border-border bg-muted/30 text-foreground">
-          <div className="absolute inset-0 bg-overlay/20"></div>
-          <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
-          <div className="relative container py-10 md:py-16">
+        <div className="relative overflow-hidden border-b border-border bg-muted/20 text-foreground">
+          <div className="absolute inset-0 bg-overlay/10"></div>
+          <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.05] dark:opacity-[0.08]" />
+          <div className="relative container py-8 md:py-12">
             <div className="text-center">
-              <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-card shadow-sm">
-                <CheckCircle className="h-9 w-9 text-primary" />
+              <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-card shadow-sm">
+                <CheckCircle className="h-8 w-8 text-primary" />
               </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
-                패키지 구매가 완료되었습니다!
+              <h1 className="mb-3 text-2xl font-bold sm:text-3xl md:text-4xl">
+                {isOnlinePayment
+                  ? "패키지 결제가 완료되었습니다"
+                  : "패키지 주문이 접수되었습니다"}
               </h1>
-              <p className="mx-auto mb-6 max-w-2xl break-keep text-base leading-relaxed text-muted-foreground sm:text-lg">
-                스트링 교체 패키지를 구매해주셔서 감사합니다. 아래 정보를
-                확인해주세요.
+              <p className="mx-auto mb-5 max-w-2xl break-keep text-base leading-relaxed text-muted-foreground sm:text-lg">
+                {isOnlinePayment
+                  ? "결제가 확인되어 패키지가 즉시 활성화되었습니다. 아래에서 주문 요약과 다음 행동을 확인해주세요."
+                  : "주문 정보가 접수되었습니다. 입금 확인 후 패키지가 활성화되며, 활성화 전에는 패키지 사용이 제한됩니다."}
               </p>
 
-              <div className="flex flex-wrap justify-center gap-3 text-sm sm:gap-6">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-wrap justify-center gap-2 text-sm sm:gap-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5">
                   <Shield className="h-4 w-4 text-success" />
-                  <span>안전한 결제 완료</span>
+                  <span>{isOnlinePayment ? "결제 완료" : "주문 접수"}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5">
                   <Calendar className="h-4 w-4 text-primary" />
                   <span>
                     {isPaid ? "패키지 활성화 완료" : "패키지 활성화 대기"}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Star className="h-4 w-4 text-primary" />
-                  <span>프리미엄 서비스</span>
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5">
+                  <Package className="h-4 w-4 text-primary" />
+                  <span>{isPaid ? "바로 신청 가능" : "입금 확인 필요"}</span>
                 </div>
               </div>
             </div>
 
             {/* 패키지 활성화 안내 */}
-            <div className="mx-auto mt-8 max-w-3xl">
-              <PublicSurface className="text-center">
-                <div className="flex items-center justify-center gap-3 mb-4">
-                  <div className="p-2 bg-secondary rounded-lg">
-                    <Package className="h-6 w-6 text-primary" />
+            <div className="mx-auto mt-6 max-w-4xl">
+              <PublicSurface className="space-y-4">
+                <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
+                  <div className="rounded-xl border border-border bg-muted/40 p-4">
+                    <p className="font-semibold text-foreground">
+                      {isOnlinePayment ? "결제 완료" : "주문 접수"}
+                    </p>
+                    <p className="mt-1 text-muted-foreground">
+                      {paymentMethodLabel}
+                    </p>
                   </div>
-                  <h3 className="text-xl font-bold text-foreground">
-                    패키지 활성화 안내
-                  </h3>
+                  <div className="rounded-xl border border-border bg-muted/40 p-4">
+                    <p className="font-semibold text-foreground">
+                      {isPaid ? "패키지 즉시 활성화" : "입금 확인 후 활성화"}
+                    </p>
+                    <p className="mt-1 text-muted-foreground">
+                      {isPaid ? "현재 사용 가능합니다" : "입금 전 사용 불가"}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-muted/40 p-4">
+                    <p className="font-semibold text-foreground">다음 행동</p>
+                    <p className="mt-1 text-muted-foreground">
+                      {isPaid ? "교체서비스 신청 가능" : "패키지 내역 확인"}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-muted-foreground mb-4">
-                  {isTossPayment || isNicePayment
-                    ? "결제가 완료되어 패키지가 활성화되었습니다. 바로 교체서비스 신청에 사용할 수 있어요."
-                    : "입금 확인 후 패키지가 활성화되며, 교체서비스 신청 시 이용 횟수가 차감됩니다."}
-                </p>
-                <PublicSurface padding="sm" className="mb-4 text-left text-sm text-muted-foreground">
-                  <p className="font-semibold text-foreground">다음 단계</p>
-                  <p className="mt-1">
-                    패키지 활성화 상태는 마이페이지에서 확인하고, 교체서비스
-                    신청 시 패키지 적용 여부를 확인해주세요.
-                  </p>
-                </PublicSurface>
-                <Button
-                  variant="default"
-                  className="font-semibold shadow-sm"
-                  asChild
-                >
-                  <Link
-                    href="/services/apply"
-                    className="flex items-center gap-2"
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <Button
+                    variant={isPaid ? "default" : "outline"}
+                    className="h-12 flex-1 font-semibold shadow-sm"
+                    asChild
                   >
-                    교체서비스 신청하기
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
+                    <Link href="/services/apply" className="flex items-center gap-2">
+                      교체서비스 신청하기
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button
+                    variant={isPaid ? "outline" : "default"}
+                    className="h-12 flex-1 font-semibold"
+                    asChild
+                  >
+                    <Link href={lookupHref} className="flex items-center gap-2">
+                      <Package className="h-4 w-4" />
+                      패키지 내역 확인
+                    </Link>
+                  </Button>
+                </div>
               </PublicSurface>
             </div>
           </div>
         </div>
 
         <div className="container py-8 md:py-10">
-          <div className="mx-auto max-w-5xl space-y-5 md:space-y-6">
+          <div className="mx-auto max-w-5xl space-y-4 md:space-y-6">
             {/* 패키지 주문 정보 카드 */}
             <SummaryCard
               className="overflow-hidden"
               title={
-                <span className="flex items-center gap-3 text-2xl">
+                <span className="flex items-center gap-3 text-xl sm:text-2xl">
                   <Package className="h-6 w-6 text-primary" />
                   패키지 주문 정보
                 </span>
               }
               description={
-                <span className="break-all text-sm text-muted-foreground sm:text-base">
+                <span className="break-all text-sm text-muted-foreground">
                   주문 번호:{" "}
-                  <span className="font-mono font-semibold text-primary">
+                  <span className="font-mono text-xs font-semibold text-primary sm:text-sm">
                     {packageOrder._id.toString()}
                   </span>
                 </span>
@@ -281,9 +301,7 @@ export default async function PackageSuccessPage({
                   >
                     <Link
                       href={
-                        isLoggedIn
-                          ? "/mypage?tab=passes"
-                          : `/package-lookup/details/${packageOrder._id}`
+                        lookupHref
                       }
                       className="flex items-center gap-2"
                     >
@@ -340,13 +358,32 @@ export default async function PackageSuccessPage({
                     </PublicSurface>
                     <PublicSurface variant="muted" padding="sm" className="flex items-center gap-3">
                       <CreditCard className="h-5 w-5 text-primary" />
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-sm text-muted-foreground">
                           결제 방법
                         </p>
-                        <p className="font-semibold text-foreground">
+                        <p className="break-words font-semibold text-foreground">
                           {paymentMethodLabel}
                         </p>
+                      </div>
+                    </PublicSurface>
+                    <PublicSurface variant="muted" padding="sm" className="flex items-center gap-3">
+                      <CheckCircle className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          결제/활성화 상태
+                        </p>
+                        <p className="font-semibold text-foreground">
+                          {isPaid ? "결제 완료 · 활성화 완료" : "입금 확인 대기 · 활성화 대기"}
+                        </p>
+                      </div>
+                    </PublicSurface>
+                    <PublicSurface variant="muted" padding="sm">
+                      <div className="flex items-end justify-between gap-4 text-lg font-bold sm:text-xl">
+                        <span className="text-foreground">총 결제 금액</span>
+                        <span className="shrink-0 text-primary">
+                          {formatPrice(packageOrder.totalPrice)}원
+                        </span>
                       </div>
                     </PublicSurface>
                   </div>
@@ -364,7 +401,7 @@ export default async function PackageSuccessPage({
                           <div className="font-semibold text-foreground">
                             {bankLabelMap[paymentInfo.bank].label}
                           </div>
-                          <div className="font-mono text-lg font-bold text-primary">
+                          <div className="break-all font-mono text-lg font-bold text-primary">
                             {bankLabelMap[paymentInfo.bank].account}
                           </div>
                           <div className="text-sm text-muted-foreground">
@@ -376,9 +413,9 @@ export default async function PackageSuccessPage({
                           선택된 은행 없음
                         </p>
                       )}
-                      <div className="mt-4 p-3 bg-destructive/10 rounded-lg border border-destructive/30 dark:bg-destructive/15">
-                        <p className="text-destructive font-semibold text-sm">
-                          ⏰ 입금 기한:{" "}
+                      <div className="mt-4 rounded-lg border border-border bg-card p-3">
+                        <p className="text-sm font-semibold text-foreground">
+                          입금 기한:{" "}
                           {new Date(packageOrder.createdAt).toLocaleDateString(
                             "ko-KR",
                           )}{" "}
@@ -392,7 +429,7 @@ export default async function PackageSuccessPage({
                         {isNicePayment ? "카드/간편결제 정보" : "토스 결제 정보"}
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        결제 상태: 결제완료
+                        결제 상태: 결제 완료
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">
                         승인 시각:{" "}
@@ -415,62 +452,45 @@ export default async function PackageSuccessPage({
                     신청자 정보
                   </h3>
                   <PublicSurface variant="muted" padding="sm" className="space-y-2">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div className="min-w-0">
                         <span className="text-sm text-muted-foreground">
                           신청자:
                         </span>
-                        <span className="ml-2 font-semibold text-foreground">
+                        <span className="ml-2 break-words font-semibold text-foreground">
                           {serviceInfo?.name || "정보 없음"}
                         </span>
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <span className="text-sm text-muted-foreground">
                           연락처:
                         </span>
-                        <span className="ml-2 font-semibold text-foreground">
+                        <span className="ml-2 break-words font-semibold text-foreground">
                           {formatKoreanPhone(serviceInfo?.phone) || "정보 없음"}
                         </span>
                       </div>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <span className="text-sm text-muted-foreground">
                         이메일:
                       </span>
-                      <span className="ml-2 font-semibold text-foreground">
+                      <span className="ml-2 break-words font-semibold text-foreground">
                         {serviceInfo?.email || "정보 없음"}
                       </span>
                     </div>
 
                     {serviceInfo?.serviceRequest && (
-                      <div>
+                      <div className="min-w-0">
                         <span className="text-sm text-muted-foreground">
                           서비스 요청사항:
                         </span>
-                        <span className="ml-2 font-semibold text-foreground">
+                        <span className="ml-2 break-words font-semibold text-foreground">
                           {serviceInfo.serviceRequest}
                         </span>
                       </div>
                     )}
                   </PublicSurface>
                 </div>
-
-                <div className="my-6 border-t border-border" />
-
-                {/* 결제 금액 */}
-                <PublicSurface variant="muted" padding="sm">
-                  <div className="flex items-end justify-between gap-4 text-xl font-bold sm:text-2xl">
-                    <span className="text-foreground">총 결제 금액</span>
-                    <span className="text-primary">
-                      {formatPrice(packageOrder.totalPrice)}원
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {isTossPayment || isNicePayment
-                      ? "패키지 이용료 (결제 완료, 즉시 활성화)"
-                      : "패키지 이용료 (입금 확인 후 활성화)"}
-                  </p>
-                </PublicSurface>
 
               <div className="px-4 md:px-6">
                 <DevMarkPaidButton
@@ -500,9 +520,9 @@ export default async function PackageSuccessPage({
                             : "입금 안내"}
                         </h4>
                         <p className="text-sm text-muted-foreground">
-                          {isTossPayment || isNicePayment
+                          {isOnlinePayment
                             ? `${isNicePayment ? "카드/간편" : "토스"} 결제가 완료되어 패키지가 즉시 활성화되었습니다.`
-                            : "패키지 금액을 위 계좌로 입금해주세요. 입금 확인 후 패키지가 활성화돼요."}
+                            : "입금 확인 후 패키지가 활성화되며, 활성화 전에는 패키지를 사용할 수 없습니다."}
                         </p>
                       </div>
                     </PublicSurface>
@@ -513,8 +533,8 @@ export default async function PackageSuccessPage({
                           사용 안내
                         </h4>
                         <p className="text-sm text-muted-foreground">
-                          활성화 완료 후부터 패키지를 사용할 수 있고 교체서비스
-                          신청이 완료되면 이용 횟수가 1회 차감돼요.
+                          교체서비스 신청이 완료되면 패키지 이용 횟수가 1회
+                          차감됩니다.
                         </p>
                       </div>
                     </PublicSurface>
@@ -539,8 +559,8 @@ export default async function PackageSuccessPage({
                           고객 지원
                         </h4>
                         <p className="text-sm text-muted-foreground">
-                          패키지 관련 문의사항은 고객센터(010-5218-5248)로
-                          연락주세요.
+                          패키지 관련 문의는 고객센터(010-5218-5248)로
+                          연락해주세요.
                         </p>
                       </div>
                     </PublicSurface>
