@@ -178,25 +178,27 @@ export async function DELETE(
     );
   }
 
-  const now = new Date();
-  const result = await collection.findOneAndUpdate(
-    filter,
-    {
-      $set: {
-        adminDeletedAt: now,
-        adminDeletedBy: guard.admin._id.toHexString(),
-        updatedAt: now,
-      },
-      $push: {
-        history: {
-          status: "cancelled",
-          date: now,
-          description: "관리자가 취소 신청 내역을 삭제 처리했습니다.",
-          actorId: guard.admin._id,
-          actorName: guard.admin.name ?? "admin",
-        },
+  const now = new Date().toISOString();
+  const deleteUpdate: Document = {
+    $set: {
+      adminDeletedAt: now,
+      adminDeletedBy: guard.admin._id.toHexString(),
+      updatedAt: now,
+    },
+    $push: {
+      history: {
+        status: "cancelled",
+        date: now,
+        description: "관리자가 취소 신청 내역을 삭제 처리했습니다.",
+        actorId: guard.admin._id.toHexString(),
+        actorName: guard.admin.name ?? "admin",
       },
     },
+  };
+
+  const result = await collection.findOneAndUpdate(
+    filter,
+    deleteUpdate,
     { returnDocument: "after" },
   );
 
