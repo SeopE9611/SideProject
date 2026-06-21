@@ -288,20 +288,14 @@ export default function ApplicantInfoSection({ formData, setFormData, handleInpu
             <RadioGroupItem id="cm-self" value="self_ship" disabled={lockCollection || isVisitDelivery} className="peer sr-only" />
             <Label
               htmlFor="cm-self"
-              className="group block min-h-[86px] cursor-pointer rounded-xl border border-border bg-card px-4 py-3 transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none peer-data-[state=checked]:border-primary/70 peer-data-[state=checked]:bg-muted/50 peer-data-[state=checked]:shadow-sm peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-disabled:hover:border-border peer-disabled:hover:bg-card"
+              className="group block min-h-[96px] cursor-pointer rounded-xl border border-border bg-card px-4 py-3 transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-primary/25 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-disabled:hover:border-border peer-disabled:hover:bg-card"
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Box className="h-4 w-4 text-primary" />
                   <span className="font-medium text-foreground">자가 발송</span>
                 </div>
-<<<<<<< HEAD
                 <CheckCircle2 className={`h-4 w-4 shrink-0 text-primary transition-opacity ${formData.collectionMethod === "self_ship" ? "opacity-100" : "opacity-0"}`} />
-=======
-                <CheckCircle2
-                  className={`h-3.5 w-3.5 shrink-0 text-primary transition-opacity ${formData.collectionMethod === "self_ship" ? "opacity-80" : "opacity-0"}`}
-                />
->>>>>>> 321740fc4b31d21cee4e72135a315bdab7092d5d
               </div>
               <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">편의점/우체국 등</p>
             </Label>
@@ -312,20 +306,14 @@ export default function ApplicantInfoSection({ formData, setFormData, handleInpu
             <RadioGroupItem id="cm-visit" value="visit" disabled={lockCollection /* 방문 모드도 주문 기반이면 변경 금지 */} className="peer sr-only" />
             <Label
               htmlFor="cm-visit"
-              className="group block min-h-[86px] cursor-pointer rounded-xl border border-border bg-card px-4 py-3 transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none peer-data-[state=checked]:border-primary/70 peer-data-[state=checked]:bg-muted/50 peer-data-[state=checked]:shadow-sm peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-disabled:hover:border-border peer-disabled:hover:bg-card"
+              className="group block min-h-[96px] cursor-pointer rounded-xl border border-border bg-card px-4 py-3 transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-primary/25 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-disabled:hover:border-border peer-disabled:hover:bg-card"
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Store className="h-4 w-4 text-primary" />
                   <span className="font-medium text-foreground">매장 방문 접수</span>
                 </div>
-<<<<<<< HEAD
                 <CheckCircle2 className={`h-4 w-4 shrink-0 text-primary transition-opacity ${normalizeCollection(formData.collectionMethod) === "visit" ? "opacity-100" : "opacity-0"}`} />
-=======
-                <CheckCircle2
-                  className={`h-3.5 w-3.5 shrink-0 text-primary transition-opacity ${normalizeCollection(formData.collectionMethod) === "visit" ? "opacity-80" : "opacity-0"}`}
-                />
->>>>>>> 321740fc4b31d21cee4e72135a315bdab7092d5d
               </div>
               <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">방문 가능 시간대만 선택</p>
             </Label>
