@@ -226,9 +226,9 @@ export default function PriceSummaryCard({
 
         {hasWorkLines && (
           <div className="space-y-2 rounded-xl border border-border bg-card p-3">
-            <div className="flex items-center justify-between gap-2 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-1.5 text-sm">
               <span className="font-semibold text-foreground">작업 {workLines?.length ?? 0}자루</span>
-              <span className="text-xs text-muted-foreground">1자루 = 교체 1회</span>
+              <span className="text-xs leading-tight text-muted-foreground">1자루 = 교체 1회</span>
             </div>
             <div className="space-y-2">
               {visibleWorkLines.map((line, index) => {
@@ -242,8 +242,10 @@ export default function PriceSummaryCard({
                     <p className="truncate font-medium text-foreground">
                       {index + 1}. {racketName} / {stringName}
                     </p>
-                    <p className="mt-0.5 text-muted-foreground">
-                      {tension} / {won(Number(line.mountingFee ?? 0))}
+                    <p className="mt-0.5 break-words text-[11px] leading-snug text-muted-foreground">
+                      <span>{tension}</span>
+                      <span className="mx-1">/</span>
+                      <span>{won(Number(line.mountingFee ?? 0))}</span>
                     </p>
                   </div>
                 );
