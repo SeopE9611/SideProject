@@ -1,13 +1,6 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,7 +14,9 @@ import StringCheckboxes from "@/app/services/_components/StringCheckboxes";
 import TimeSlotSelector from "@/app/services/_components/TimeSlotSelector";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
+import { SummaryCard } from "@/components/public/SummaryCard";
 
 export type MountingInfoSectionProps = {
   formData: any;
@@ -345,7 +340,10 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
               스트링 종류 <span className="text-destructive">*</span>
             </Label>
             <div className="mt-2 space-y-2">
-              <div className="rounded-xl border border-warning/30 bg-warning/10 p-4 dark:bg-warning/15">
+              <PublicSurface
+                padding="sm"
+                className="border-warning/30 bg-warning/10 dark:bg-warning/15"
+              >
                 <div className="flex min-w-0 items-start gap-3">
                   <Zap className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
                   <div className="min-w-0 space-y-1 text-sm leading-relaxed text-foreground break-keep">
@@ -417,14 +415,18 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     )}
                   </div>
                 </div>
-              </div>
+              </PublicSurface>
             </div>
           </div>
           {/* PDP에서 이어졌을 때 노출되는 스트링 정보 카드 */}
           {(isLockedNonOrder || isRentalNonOrder) &&
             lockedStringId &&
             lockedStringId !== "custom" && (
-              <div className="mb-4 rounded-xl border border-border bg-muted/50 p-4">
+              <PublicSurface
+                variant="muted"
+                padding="sm"
+                className="mb-4 bg-muted/50"
+              >
                 {isLoadingPdpProduct ? (
                   <div className="space-y-2">
                     <Skeleton className="h-4 w-40" />
@@ -478,7 +480,10 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
 
                     {/* (대여) 체크 해제 상태를 “체감”으로 확실히 보이게: 경고 + 즉시 복구 CTA */}
                     {isRentalNonOrder && !isLockedIdSelected && (
-                      <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/15 p-3 text-xs text-destructive dark:bg-destructive/20">
+                      <PublicSurface
+                        padding="sm"
+                        className="mt-3 rounded-md border-destructive/30 bg-destructive/15 p-3 text-xs text-destructive dark:bg-destructive/20"
+                      >
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div className="leading-relaxed">
                             <p className="font-medium">
@@ -510,16 +515,20 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                             다시 포함하기
                           </Button>
                         </div>
-                      </div>
+                      </PublicSurface>
                     )}
                   </>
                 )}
-              </div>
+              </PublicSurface>
             )}
 
           {/* 주문 기반 진입 시 안내 문구 */}
           {orderId && typeof orderRemainingSlots === "number" && (
-            <div className="mb-3 rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm text-foreground dark:border-border dark:bg-card/40 dark:text-foreground">
+            <PublicSurface
+              variant="muted"
+              padding="sm"
+              className="mb-3 py-3 text-sm text-foreground dark:bg-card/40 dark:text-foreground"
+            >
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <span className="font-medium">
                   이 주문에서 남은 교체 가능 횟수
@@ -549,7 +558,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                   자동으로 반영되지 않습니다.
                 </p>
               )}
-            </div>
+            </PublicSurface>
           )}
           {orderId && (
             <p className="mb-2 text-xs leading-relaxed text-muted-foreground break-keep">
@@ -618,11 +627,15 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
             </div>
           )}
 
-          <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
-            <h3 className="font-semibold text-foreground mb-4 flex items-center">
-              <DollarSign className="h-5 w-5 mr-2 text-primary" />
-              예상 장착 비용
-            </h3>
+          <SummaryCard
+            title={
+              <span className="flex items-center">
+                <DollarSign className="h-5 w-5 mr-2 text-primary" />
+                예상 장착 비용
+              </span>
+            }
+            contentClassName="space-y-3 p-4 sm:p-5"
+          >
             <div className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/50 p-3 dark:border-border">
                 <span className="text-sm text-muted-foreground">
@@ -795,7 +808,11 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
               )}
               {/* 주문 기반 진입: 입금 안내*/}
               {orderId && order && lineCount > 0 && (
-                <div className="mt-3 rounded-md border border-border bg-muted/40 p-3 text-sm text-foreground/75">
+                <PublicSurface
+                  variant="muted"
+                  padding="sm"
+                  className="mt-3 rounded-md bg-muted/40 p-3 text-sm text-foreground/75"
+                >
                   <p>
                     최종 결제 금액은 우측 요금 요약의{" "}
                     <span className="font-semibold">
@@ -803,7 +820,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     </span>
                     을 기준으로 합니다.
                   </p>
-                </div>
+                </PublicSurface>
               )}
 
               {/* (대여/PDP) 비-주문 기반 진입 시 스트링 사용 개수 입력(구매 UX와 동일한 리스트 형태) */}
@@ -917,19 +934,20 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 </div>
               )}
             </div>
-          </div>
+          </SummaryCard>
         </div>
 
         {/* 패키지 요약 - 장착 정보 단계 */}
         {!rentalId && (
           <div className="mt-4">
-            <div
+            <PublicSurface
+              padding="sm"
               className={
                 packagePreview?.has
                   ? canApplyPackage
-                    ? "rounded-xl border border-border bg-muted/50 px-4 py-4"
-                    : "rounded-xl border border-border bg-muted/40 px-4 py-4"
-                  : "rounded-xl border border-border bg-card px-4 py-4"
+                    ? "bg-muted/50"
+                    : "bg-muted/40"
+                  : "bg-card"
               }
             >
               <div className="flex items-start gap-3">
@@ -1021,25 +1039,29 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                   )}
                 </div>
               </div>
-            </div>
+            </PublicSurface>
           </div>
         )}
         {/* 라켓/라인 세부 입력 (선택 사항) */}
         {lineCount > 0 && (
-          <Card className="border border-border bg-card shadow-none">
-            <CardHeader className="pb-4 space-y-1">
-              <CardTitle className="text-base font-semibold text-foreground">
+          <SummaryCard
+            title={
+              <span className="text-base font-semibold text-foreground">
                 라켓별 세부 장착 정보
-              </CardTitle>
-              <CardDescription className="text-sm text-muted-foreground leading-relaxed">
+              </span>
+            }
+            description={
+              <span>
                 위에서 선택한{" "}
                 <span className="font-semibold text-primary">"사용 개수"</span>{" "}
                 기준으로 라인이 자동 생성되어 있습니다. 각 라켓의 이름/별칭과
                 텐션, 메모를 입력하면 신청서에 함께 저장됩니다.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-xl border border-border bg-muted/30 p-4">
+              </span>
+            }
+            className="shadow-none"
+            contentClassName="space-y-4"
+          >
+            <PublicSurface variant="muted" padding="sm">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="min-w-0 sm:min-w-[220px]">
                     <p className="text-sm font-semibold text-foreground">
@@ -1114,12 +1136,13 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     </p>
                   </div>
                 </div>
-              </div>
-              {linesForSubmit.map((line, index) => (
-                <div
-                  key={line.id ?? index}
-                  className="group relative overflow-hidden rounded-xl border border-border bg-card"
-                >
+            </PublicSurface>
+            {linesForSubmit.map((line, index) => (
+              <PublicSurface
+                key={line.id ?? index}
+                padding="none"
+                className="group relative overflow-hidden"
+              >
                   {/* 헤더 영역: 라켓 N, 스트링 이름 */}
                   <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-b border-border bg-muted/30 px-4 py-3">
                     <div className="flex min-w-0 items-center gap-2.5">
@@ -1215,10 +1238,9 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                       />
                     </div>
                   </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+              </PublicSurface>
+            ))}
+          </SummaryCard>
         )}
 
         {normalizeCollection(formData.collectionMethod) === "visit" && (
@@ -1240,7 +1262,11 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 formData.preferredTime &&
                 visitSlotCountUi > 0 &&
                 visitDurationMinutesUi && (
-                  <div className="mt-3 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs leading-relaxed text-foreground md:text-[13px]">
+                  <PublicSurface
+                    variant="muted"
+                    padding="sm"
+                    className="mt-3 rounded-lg px-3 py-2 text-xs leading-relaxed text-foreground md:text-[13px]"
+                  >
                     <p className="font-medium">
                       이번 방문 예상 소요 시간:{" "}
                       {visitTimeRange
@@ -1252,7 +1278,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                       선택하신 시간부터 연속으로 작업이 진행되며,&nbsp; 해당
                       시간대에는 다른 예약이 불가능합니다.
                     </p>
-                  </div>
+                  </PublicSurface>
                 )}
             </div>
 
