@@ -325,12 +325,14 @@ export default function PackageCheckoutClient({
 
   if (!selectedPackage && !isPackageLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="max-w-md mx-auto">
-          <CardContent className="p-6 md:p-8 text-center">
-            <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-2xl font-bold mb-4">패키지를 선택해주세요</h2>
-            <p className="text-muted-foreground mb-6">올바른 패키지가 선택되지 않았습니다.</p>
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <Card className="mx-auto max-w-md border-border bg-card shadow-sm">
+          <CardContent className="p-6 text-center md:p-8">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+              <Package className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <h2 className="mb-3 text-2xl font-bold">패키지를 선택해주세요</h2>
+            <p className="mb-6 text-sm text-muted-foreground">결제를 진행할 패키지 정보가 없습니다. 패키지 목록에서 상품을 다시 선택해 주세요.</p>
             <Button asChild>
               <Link href="/services/packages">패키지 선택하러 가기</Link>
             </Button>
@@ -352,31 +354,28 @@ export default function PackageCheckoutClient({
   return (
     <div className="min-h-full bg-background">
       {/* Hero Section */}
-      <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40 text-foreground">
-        <div className="absolute inset-0 bg-muted/50 dark:bg-card/60"></div>
-        <div className="relative container py-10 md:py-16">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-secondary rounded-full">
-              <CreditCard className="h-8 w-8" />
-            </div>
+      <div className="border-b border-border bg-muted/20 text-foreground">
+        <div className="container py-8 md:py-10">
+          <div className="max-w-3xl space-y-4">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold mb-2">패키지 주문/결제</h1>
-              <p className="text-muted-foreground">선택하신 패키지로 프리미엄 서비스를 시작하세요</p>
+              <p className="mb-2 text-sm font-semibold text-primary">주문 정보 확인</p>
+              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">패키지 주문/결제</h1>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">선택한 패키지와 신청자 정보를 확인한 뒤 결제수단을 선택하고 결제를 진행해 주세요.</p>
             </div>
-          </div>
 
-          <div className="flex items-center gap-4 md:gap-6 text-sm">
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-foreground" />
-              <span>SSL 보안 결제</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-primary" />
-              <span>최대 12개월 유효</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Star className="h-4 w-4 text-primary" />
-              <span>전문가 서비스</span>
+            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground sm:text-sm">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5">
+                <Shield className="h-3.5 w-3.5 text-primary" />
+                SSL 보안 결제
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5">
+                <Calendar className="h-3.5 w-3.5 text-primary" />
+                패키지별 유효기간 적용
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5">
+                <Star className="h-3.5 w-3.5 text-primary" />
+                전문가 스트링 서비스
+              </span>
             </div>
           </div>
         </div>
@@ -385,13 +384,13 @@ export default function PackageCheckoutClient({
       <div className="container py-8 md:py-10">
         <div className={`mx-auto grid max-w-6xl gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start ${isCheckoutSubmitting ? "pointer-events-none" : ""}`} aria-busy={isCheckoutSubmitting}>
           {/* 선택된 패키지 정보 */}
-          <Card className="overflow-hidden border border-border bg-card shadow-sm lg:col-span-2">
+          <Card className="overflow-hidden border border-border bg-card shadow-sm lg:col-start-1">
             <div className="border-b border-border bg-muted/40 p-4 md:p-6">
               <CardTitle className="flex items-center gap-3">
                 <Package className="h-5 w-5 text-primary" />
                 선택된 패키지
               </CardTitle>
-              <CardDescription className="mt-2">구매하실 스트링 교체 패키지 정보입니다.</CardDescription>
+              <CardDescription className="mt-2">패키지명, 이용 횟수, 유효기간과 결제 금액을 확인해 주세요.</CardDescription>
             </div>
             <CardContent className="p-4 md:p-6">
               {selectedPackage ? (
@@ -407,16 +406,16 @@ export default function PackageCheckoutClient({
           </Card>
 
           {/* 신청자 정보 */}
-          <Card className="overflow-hidden border border-border bg-card shadow-sm">
-            <div className="border-b border-border bg-muted/40 p-4 md:p-6">
+          <Card className="overflow-hidden border border-border bg-card shadow-sm lg:col-start-1">
+            <div className="border-b border-border bg-muted/30 p-4 md:p-5">
               <CardTitle className="flex items-center gap-3">
                 <UserIcon className="h-5 w-5 text-primary" />
                 신청자 정보
               </CardTitle>
-              <CardDescription className="mt-2">패키지를 이용하실 분의 정보를 입력해주세요.</CardDescription>
+              <CardDescription className="mt-2">결제 안내를 받을 신청자 정보를 입력해 주세요.</CardDescription>
             </div>
-            <CardContent className="p-4 md:p-6">
-              <div className="space-y-4 md:space-y-6">
+            <CardContent className="p-4 md:p-5">
+              <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="applicant-name" className="flex items-center gap-2">
@@ -475,7 +474,7 @@ export default function PackageCheckoutClient({
                   </div>
                 </div>
 
-                <div className="bg-secondary p-4 rounded-lg border border-border">
+                <div className="rounded-lg border border-border bg-muted/30 p-3 md:p-4">
                   <div className="flex items-center space-x-2">
                     <Checkbox id="save-info" checked={saveInfo} onCheckedChange={(checked) => setSaveInfo(!!checked)} disabled={!isLoggedIn || isFrameLoading} />
                     <label htmlFor="save-info" className={`text-sm font-medium ${!isLoggedIn ? "text-muted-foreground" : "text-primary"}`}>
@@ -489,35 +488,32 @@ export default function PackageCheckoutClient({
           </Card>
 
           {/* 서비스 이용 안내 */}
-          <Card className="overflow-hidden border border-border bg-card shadow-sm">
-            <div className="border-b border-border bg-muted/40 p-4 md:p-6">
+          <Card className="overflow-hidden border border-border bg-card shadow-sm lg:col-start-1">
+            <div className="border-b border-border bg-muted/30 p-4 md:p-5">
               <CardTitle className="flex items-center gap-3">
                 <Shield className="h-5 w-5 text-primary" />
                 서비스 이용 안내
               </CardTitle>
-              <CardDescription className="mt-2">패키지 주문 전 꼭 확인해주세요.</CardDescription>
+              <CardDescription className="mt-2">요청사항은 선택 입력이며, 결제 방식별 처리 기준만 확인해 주세요.</CardDescription>
             </div>
             <CardContent className="p-4 md:p-6 space-y-4">
-              <div className="rounded-lg border border-border bg-secondary p-4 space-y-2 text-sm text-foreground">
-                <p>• 무통장 입금 시 관리자가 확인 후 패키지를 활성화해드려요.</p>
-                <p>• 카드/간편결제시 자동으로 패키지 활성화돼요.</p>
-                <p>• 활성화 완료 후부터 패키지를 사용할 수 있어요.</p>
-                <p>• 교체서비스 신청이 완료되면 이용 횟수가 1회 차감돼요.</p>
-                <p>• 패키지가 비활성화된 동안에는 서비스를 이용할 수 없어요.</p>
-                <p>• 비활성화 상태에서는 유효기간 카운트가 일시 정지돼요.</p>
+              <div className="rounded-lg border border-border bg-muted/30 p-3 text-sm leading-6 text-muted-foreground md:p-4">
+                <p>• 무통장입금은 입금 확인 후 패키지가 활성화됩니다.</p>
+                <p>• 카드/간편결제는 결제 완료 후 자동으로 활성화됩니다.</p>
+                <p>• 교체서비스 신청이 완료되면 이용 횟수가 1회 차감됩니다.</p>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="service-request" className="flex items-center gap-2">
                   <MessageSquare className="h-4 w-4 text-primary" />
-                  서비스 요청사항
+                  서비스 요청사항 <span className="text-xs font-normal text-muted-foreground">(선택)</span>
                 </Label>
                 <Textarea
                   id="service-request"
                   value={serviceRequest}
                   onChange={(e) => setServiceRequest(e.target.value)}
-                  placeholder="서비스 이용 시 요청사항을 입력하세요"
-                  className="border-2 focus:border-border transition-colors"
+                  placeholder="서비스 이용 시 요청사항이 있으면 입력해 주세요"
+                  className="min-h-[104px] border-2 focus:border-border transition-colors"
                   disabled={isFrameLoading}
                 />
               </div>
@@ -525,20 +521,20 @@ export default function PackageCheckoutClient({
           </Card>
 
           {/* 결제 정보 */}
-          <Card className="overflow-hidden border border-border bg-card shadow-sm">
-            <div className="border-b border-border bg-muted/40 p-4 md:p-6">
+          <Card className="overflow-hidden border border-border bg-card shadow-sm lg:col-start-1">
+            <div className="border-b border-border bg-muted/30 p-4 md:p-5">
               <CardTitle className="flex items-center gap-3">
                 <CreditCard className="h-5 w-5 text-primary" />
                 결제 정보
               </CardTitle>
               <CardDescription className="mt-2">결제 방법을 선택하고 필요한 정보를 입력해주세요.</CardDescription>
             </div>
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-5">
               <div className="space-y-6">
                 <div className="space-y-3">
                   <Label>결제 방법</Label>
-                  <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v === "nicepay" && nicePaymentsEnabled ? "nicepay" : v === "tosspayments" && tossPaymentsEnabled ? "tosspayments" : "bank_transfer")} className="space-y-3">
-                    <div className="flex items-center space-x-3 p-4 bg-secondary rounded-lg border border-border">
+                  <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v === "nicepay" && nicePaymentsEnabled ? "nicepay" : v === "tosspayments" && tossPaymentsEnabled ? "tosspayments" : "bank_transfer")} className="space-y-2">
+                    <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3 md:p-4">
                       <RadioGroupItem value="bank_transfer" id="bank-transfer" disabled={isFrameLoading} />
                       <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
                         무통장입금
@@ -546,19 +542,19 @@ export default function PackageCheckoutClient({
                       <Building2 className="h-5 w-5 text-primary" />
                     </div>
                     {nicePaymentsEnabled && (
-                      <div className="flex items-center space-x-3 p-4 bg-muted/40 rounded-lg border-2 border-border">
+                      <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3 md:p-4">
                         <RadioGroupItem value="nicepay" id="nice-payments" disabled={isFrameLoading || tossBlockedByZeroAmount} />
                         <Label htmlFor="nice-payments" className="flex-1 cursor-pointer font-medium">
-                          카드/간편결제
+                          카드/간편결제 <span className="block text-xs font-normal text-muted-foreground">NicePay로 진행</span>
                         </Label>
                         <CreditCard className="h-5 w-5 text-primary" />
                       </div>
                     )}
                     {tossPaymentsEnabled && (
-                      <div className="flex items-center space-x-3 p-4 bg-muted/40 rounded-lg border-2 border-border">
+                      <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3 md:p-4">
                         <RadioGroupItem value="tosspayments" id="toss-payments" disabled={isFrameLoading || tossBlockedByZeroAmount} />
                         <Label htmlFor="toss-payments" className="flex-1 cursor-pointer font-medium">
-                          카드/간편결제
+                          카드/간편결제 <span className="block text-xs font-normal text-muted-foreground">TossPayments로 진행</span>
                         </Label>
                         <CreditCard className="h-5 w-5 text-primary" />
                       </div>
@@ -603,7 +599,7 @@ export default function PackageCheckoutClient({
                       {hasInteracted && fieldErrors.depositor && <p className="mt-1 text-xs text-destructive">{fieldErrors.depositor}</p>}
                     </div>
 
-                    <div className="bg-secondary p-3 md:p-4 rounded-lg border border-border">
+                    <div className="rounded-lg border border-border bg-muted/30 p-3 md:p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <Shield className="h-5 w-5 text-primary" />
                         <p className="font-semibold text-foreground">무통장입금 안내</p>
@@ -643,16 +639,16 @@ export default function PackageCheckoutClient({
           </Card>
 
           {/* 주문자 동의 */}
-          <Card className="overflow-hidden border border-border bg-card shadow-sm">
-            <div className="border-b border-border bg-muted/40 p-4 md:p-6">
+          <Card className="overflow-hidden border border-border bg-card shadow-sm lg:col-start-1">
+            <div className="border-b border-border bg-muted/30 p-4 md:p-5">
               <CardTitle className="flex items-center gap-3">
                 <Shield className="h-5 w-5 text-primary" />
                 주문자 동의
               </CardTitle>
             </div>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div className="bg-secondary p-3 md:p-4 rounded-lg border border-border">
+            <CardContent className="p-4 md:p-5">
+              <div className="space-y-3">
+                <div className="rounded-lg border border-border bg-muted/30 p-3 md:p-4">
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="agree-all"
@@ -666,7 +662,7 @@ export default function PackageCheckoutClient({
                       }}
                       disabled={isFrameLoading}
                     />
-                    <label htmlFor="agree-all" className="font-semibold text-lg text-foreground">
+                    <label htmlFor="agree-all" className="font-semibold text-foreground">
                       전체 동의
                     </label>
                   </div>
@@ -696,8 +692,8 @@ export default function PackageCheckoutClient({
                       href: "/refund-policy",
                     },
                   ].map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 bg-muted/40 dark:bg-muted/30 rounded-lg">
-                      <div className="flex items-center space-x-2">
+                    <div key={item.id} className="flex items-center justify-between gap-3 rounded-lg bg-muted/30 p-3">
+                      <div className="flex min-w-0 items-center space-x-2">
                         <Checkbox
                           id={item.id}
                           checked={item.state}
@@ -709,7 +705,7 @@ export default function PackageCheckoutClient({
                           }}
                           disabled={isFrameLoading}
                         />
-                        <label htmlFor={item.id} className="text-sm font-medium text-foreground">
+                        <label htmlFor={item.id} className="min-w-0 text-sm font-medium text-foreground">
                           {item.label}
                         </label>
                       </div>
@@ -726,30 +722,47 @@ export default function PackageCheckoutClient({
           </Card>
 
           {/* 최종 결제 확인 */}
-          <Card className="relative overflow-hidden border border-border bg-card shadow-md lg:sticky lg:top-24 lg:col-start-2 lg:row-start-2">
-            <div className="border-b border-border bg-muted/40 p-4 text-foreground md:p-6">
-              <CardTitle className="flex items-center gap-3 text-xl">
-                <div className="p-2 bg-secondary rounded-xl">
-                  <Package className="h-5 w-5" />
-                </div>
+          <Card className="relative overflow-hidden border border-border bg-card shadow-md lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1">
+            <div className="border-b border-border bg-muted/30 p-4 text-foreground md:p-5">
+              <CardTitle className="flex items-center gap-3 text-lg">
+                <Package className="h-5 w-5 text-primary" />
                 최종 결제 확인
               </CardTitle>
-              <CardDescription className="mt-2">패키지 구성과 결제 정보를 확인한 뒤 결제를 진행해주세요.</CardDescription>
+              <CardDescription className="mt-2">총 결제 금액과 결제수단을 마지막으로 확인해 주세요.</CardDescription>
             </div>
-            <CardContent className="p-4 md:p-6 space-y-4 md:space-y-6">
-              <div className="space-y-4">
+            <CardContent className="space-y-4 p-4 md:p-5">
+              <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between gap-4">
-                  <span className="text-muted-foreground">패키지</span>
-                  <span className="min-w-0 break-keep text-right font-semibold">{selectedPackage?.title ?? "-"}</span>
+                  <span className="shrink-0 text-muted-foreground">패키지</span>
+                  <span className="min-w-0 break-words text-right font-semibold">{selectedPackage?.title ?? "-"}</span>
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <span className="text-muted-foreground">구성</span>
+                  <span className="text-muted-foreground">횟수</span>
                   <span className="font-semibold">{selectedPackage ? `${selectedPackage.sessions}회` : "-"}</span>
                 </div>
                 <div className="flex items-center justify-between gap-4">
-                  <span className="text-muted-foreground">패키지 금액</span>
-                  <span className="font-semibold text-lg">{selectedPackage ? `${selectedPackage.price.toLocaleString()}원` : "-"}</span>
+                  <span className="text-muted-foreground">유효기간</span>
+                  <span className="font-semibold">{selectedPackage?.validityPeriod ?? "-"}</span>
                 </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-muted-foreground">회당 금액</span>
+                  <span className="font-semibold">{perSessionPrice.toLocaleString()}원</span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-muted-foreground">결제수단</span>
+                  <span className="font-semibold">{paymentMethod === "bank_transfer" ? "무통장 입금" : paymentMethod === "tosspayments" ? "카드/간편결제(TossPayments)" : "카드/간편결제(NicePay)"}</span>
+                </div>
+
+                {paymentMethod === "bank_transfer" && (
+                  <div className="rounded-lg border border-border bg-muted/30 p-3 text-muted-foreground">
+                    <div className="space-y-1 break-all">
+                      <p>은행: {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.label ?? selectedBank}</p>
+                      <p>계좌: {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.account ?? "-"}</p>
+                      <p>예금주: {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.holder ?? "-"}</p>
+                      <p>입금자명: {depositor.trim() || "미입력"}</p>
+                    </div>
+                  </div>
+                )}
 
                 {hasDiscount && (
                   <>
@@ -757,58 +770,12 @@ export default function PackageCheckoutClient({
                       <span className="text-muted-foreground">정가</span>
                       <span className="text-muted-foreground line-through">{selectedPackage!.originalPrice!.toLocaleString()}원</span>
                     </div>
-
                     <div className="flex items-center justify-between gap-4">
                       <span className="text-muted-foreground">할인 금액</span>
-                      <span className="text-primary font-semibold">-{discountAmount.toLocaleString()}원</span>
+                      <span className="font-semibold text-primary">-{discountAmount.toLocaleString()}원</span>
                     </div>
                   </>
                 )}
-              </div>
-
-              <Separator />
-
-              <div className="bg-secondary p-4 rounded-lg border border-border">
-                <div className="flex items-center gap-2 text-foreground mb-2">
-                  <CreditCard className="h-4 w-4" />
-                  <span className="font-semibold">결제수단 요약</span>
-                </div>
-                <div className="text-sm text-foreground space-y-1">
-                  <p>• {paymentMethod === "bank_transfer" ? "무통장 입금" : paymentMethod === "tosspayments" ? "Toss 결제" : "카드/간편결제"}</p>
-                  {paymentMethod === "bank_transfer" && (
-                    <>
-                      <p>• 선택 은행: {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.label ?? selectedBank}</p>
-                      <p>• 계좌번호: {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.account ?? "-"}</p>
-                      <p>• 예금주: {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.holder ?? "-"}</p>
-                      <p>• 입금자명: {depositor.trim() || "미입력"}</p>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <div className="bg-secondary p-4 rounded-lg border border-border">
-                <div className="flex items-center gap-2 text-foreground mb-2">
-                  <Star className="h-4 w-4" />
-                  <span className="font-semibold">패키지 혜택</span>
-                </div>
-                <div className="text-sm text-foreground space-y-1">
-                  <p>• {selectedPackage ? `${selectedPackage.sessions}회 스트링 교체 서비스` : "패키지 정보를 확인 중입니다."}</p>
-                  <p>• 유효기간: {selectedPackage?.validityPeriod ?? "-"}</p>
-                  <p>• 회당 {perSessionPrice.toLocaleString()}원</p>
-                  {selectedPackage?.discount && <p>• {selectedPackage.discount}% 할인 적용</p>}
-                </div>
-              </div>
-
-              <div className="bg-secondary p-4 rounded-lg border border-border">
-                <div className="flex items-center gap-2 text-foreground mb-2">
-                  <Shield className="h-4 w-4" />
-                  <span className="font-semibold">패키지 안내</span>
-                </div>
-                <div className="text-sm text-muted-foreground space-y-1">
-                  <p>• 입금 확인 후 패키지가 활성화됩니다.</p>
-                  <p>• 예약은 전화 또는 온라인으로 가능합니다.</p>
-                  <p>• 유효기간 내에 모든 횟수를 이용해주세요.</p>
-                </div>
               </div>
 
               <Separator />
