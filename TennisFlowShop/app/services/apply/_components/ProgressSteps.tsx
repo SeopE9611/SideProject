@@ -16,15 +16,16 @@ type Props = {
 
 export default function ProgressSteps({ steps, currentStep }: Props) {
   return (
-    <div className="max-w-[800px] mx-auto">
-      <div className="flex items-center justify-between mb-8">
+    <div className="mx-auto w-full max-w-[800px]">
+      <div className="mb-6 flex items-center justify-between sm:mb-8">
         {steps.map((step, index) => (
           <div key={step.id} className="flex items-center">
             <div className="flex flex-col items-center">
               <div
-                className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-300 ${currentStep >= step.id ? "bg-secondary border-border text-foreground" : "border-border text-muted-foreground bg-card"}`}
+                className={`flex h-11 w-11 items-center justify-center rounded-full border-2 transition-all duration-300 sm:h-12 sm:w-12 ${currentStep >= step.id ? "bg-secondary border-border text-foreground" : "border-border text-muted-foreground bg-card"}`}
+                aria-current={currentStep === step.id ? "step" : undefined}
               >
-                <step.icon className="h-6 w-6" />
+                <step.icon className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <div className="mt-2 text-center">
                 <p
@@ -39,7 +40,7 @@ export default function ProgressSteps({ steps, currentStep }: Props) {
             </div>
             {index < steps.length - 1 && (
               <div
-                className={`flex-1 h-0.5 mx-4 transition-all duration-300 ${currentStep > step.id ? "bg-primary/30" : "bg-muted"}`}
+                className={`mx-2 h-0.5 flex-1 transition-all duration-300 sm:mx-4 ${currentStep > step.id ? "bg-primary/30" : "bg-muted"}`}
               />
             )}
           </div>
