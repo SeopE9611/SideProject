@@ -2,15 +2,14 @@
 
 import type React from "react";
 
-import { CheckCircle2, User, Store, Shield, MapPin, Box } from "lucide-react";
+import { Box, CheckCircle2, MapPin, Shield, Store, User } from "lucide-react";
 
+import { PublicSurface } from "@/components/public/PublicSurface";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { PublicSurface } from "@/components/public/PublicSurface";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import { collectionVisitNotice } from "@/app/features/stringing-applications/lib/fulfillment-labels";
@@ -47,18 +46,7 @@ const format010Phone = (v: string) => {
 
 const isValid010Phone = (v: string) => /^010\d{8}$/.test(onlyDigits(v));
 
-export default function ApplicantInfoSection({
-  formData,
-  setFormData,
-  handleInputChange,
-  handleOpenPostcode,
-  orderId,
-  isMember,
-  isVisitDelivery,
-  lockCollection,
-  applicationId,
-  isUserLoading,
-}: ApplicantInfoSectionProps) {
+export default function ApplicantInfoSection({ formData, setFormData, handleInputChange, handleOpenPostcode, orderId, isMember, isVisitDelivery, lockCollection, applicationId, isUserLoading }: ApplicantInfoSectionProps) {
   const shippingAddressSnapshotRef = useRef<{
     shippingPostcode: string;
     shippingAddress: string;
@@ -71,8 +59,7 @@ export default function ApplicantInfoSection({
 
   // Step1에서 제출 전 기본 검증 + 인라인 에러를 제공하기 위한 상태
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const markTouched = (key: string) =>
-    setTouched((prev) => ({ ...prev, [key]: true }));
+  const markTouched = (key: string) => setTouched((prev) => ({ ...prev, [key]: true }));
 
   const fieldErrors = useMemo(() => {
     const next: Record<string, string> = {};
@@ -88,15 +75,12 @@ export default function ApplicantInfoSection({
     if (!nameTrim) next.name = "이름을 입력해주세요.";
     if (!emailTrim) next.email = "이메일을 입력해주세요.";
     if (!phoneVal.trim()) next.phone = "연락처를 입력해주세요.";
-    else if (!isValid010Phone(phoneVal))
-      next.phone = "올바른 연락처 형식으로 입력해주세요. (01012345678)";
+    else if (!isValid010Phone(phoneVal)) next.phone = "올바른 연락처 형식으로 입력해주세요. (01012345678)";
 
     // 방문 접수는 주소 입력이 비필수, 그 외 방식은 주소를 필수로 유지
     if (!isVisitCollection) {
-      if (!postcodeTrim)
-        next.shippingPostcode = "우편번호 찾기를 통해 주소를 등록해주세요.";
-      if (!addrTrim)
-        next.shippingAddress = "우편번호 찾기를 통해 주소를 등록해주세요.";
+      if (!postcodeTrim) next.shippingPostcode = "우편번호 찾기를 통해 주소를 등록해주세요.";
+      if (!addrTrim) next.shippingAddress = "우편번호 찾기를 통해 주소를 등록해주세요.";
     }
 
     if (!method) next.collectionMethod = "수거 방식을 선택해주세요.";
@@ -114,14 +98,11 @@ export default function ApplicantInfoSection({
 
   // 방문 수령(주문 기반)일 땐 방문 접수 외 선택을 막는 용도
   const lockVisit = lockCollection || isVisitDelivery;
-  const isVisitSelected =
-    normalizeCollection(formData.collectionMethod) === "visit";
+  const isVisitSelected = normalizeCollection(formData.collectionMethod) === "visit";
 
   // 정상 프리필되면 잠그고 비어있는경우 풀림
   const isPrefillLocked = !!(orderId || isMember);
-  const hasPrefilledAddress = Boolean(
-    formData.shippingPostcode?.trim() && formData.shippingAddress?.trim(),
-  );
+  const hasPrefilledAddress = Boolean(formData.shippingPostcode?.trim() && formData.shippingAddress?.trim());
   const lockAddressFields = isPrefillLocked && hasPrefilledAddress;
 
   // 우편번호/주소는 "검색으로 자동입력"되는 영역이므로 항상 직접 입력을 막는다.
@@ -145,16 +126,10 @@ export default function ApplicantInfoSection({
       shippingAddress: address,
       shippingAddressDetail: addressDetail,
     };
-  }, [
-    isVisitSelected,
-    formData?.shippingPostcode,
-    formData?.shippingAddress,
-    formData?.shippingAddressDetail,
-  ]);
+  }, [isVisitSelected, formData?.shippingPostcode, formData?.shippingAddress, formData?.shippingAddressDetail]);
 
   // 에러 텍스트는 "있을 때만" 렌더 (불필요한 상시 여백 제거)
-  const errorText = (key: string) =>
-    touched[key] && fieldErrors[key] ? fieldErrors[key] : "";
+  const errorText = (key: string) => (touched[key] && fieldErrors[key] ? fieldErrors[key] : "");
   const errCls = "mt-1 px-3 text-xs leading-tight text-destructive";
 
   return (
@@ -164,21 +139,15 @@ export default function ApplicantInfoSection({
           <User className="h-5 w-5 text-foreground" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-foreground">
-            신청자/수령 정보
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            먼저 라켓을 전달할 방식을 선택하고 필요한 연락처를 확인해주세요.
-          </p>
+          <h2 className="text-xl font-bold text-foreground">신청자/수령 정보</h2>
+          <p className="mt-1 text-sm text-muted-foreground">먼저 라켓을 전달할 방식을 선택하고 필요한 연락처를 확인해주세요.</p>
         </div>
       </div>
 
       <PublicSurface variant="muted" padding="sm">
         <div className="mb-3">
           <h3 className="text-base font-semibold text-foreground">고객 정보</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            접수와 안내에 사용할 기본 정보입니다.
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">접수와 안내에 사용할 기본 정보입니다.</p>
         </div>
         {/* 기본 정보: 2열 */}
         <div className="grid gap-x-6 gap-y-3 md:grid-cols-2">
@@ -196,9 +165,7 @@ export default function ApplicantInfoSection({
               className={`transition-all duration-200 ${orderId || isMember ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
               placeholder="이름을 입력해주세요"
             />
-            {errorText("name") ? (
-              <p className={errCls}>{errorText("name")}</p>
-            ) : null}
+            {errorText("name") ? <p className={errCls}>{errorText("name")}</p> : null}
           </div>
 
           <div className="space-y-1">
@@ -216,9 +183,7 @@ export default function ApplicantInfoSection({
               className={`transition-all duration-200 ${orderId || isMember ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
               placeholder="이메일을 입력해주세요"
             />
-            {errorText("email") ? (
-              <p className={errCls}>{errorText("email")}</p>
-            ) : null}
+            {errorText("email") ? <p className={errCls}>{errorText("email")}</p> : null}
           </div>
 
           <div className="md:col-span-2 space-y-1">
@@ -242,9 +207,7 @@ export default function ApplicantInfoSection({
               className={`transition-all duration-200 ${orderId || isMember ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
               placeholder="01012345678"
             />
-            {errorText("phone") ? (
-              <p className={errCls}>{errorText("phone")}</p>
-            ) : null}
+            {errorText("phone") ? <p className={errCls}>{errorText("phone")}</p> : null}
           </div>
         </div>
       </PublicSurface>
@@ -255,9 +218,7 @@ export default function ApplicantInfoSection({
             <Label className="text-base font-semibold text-foreground">
               수령/전달 방식 <span className="text-destructive">*</span>
             </Label>
-            <p className="mt-1 text-sm text-muted-foreground">
-              택배로 보내거나 매장 방문으로 접수할 수 있습니다.
-            </p>
+            <p className="mt-1 text-sm text-muted-foreground">택배로 보내거나 매장 방문으로 접수할 수 있습니다.</p>
           </div>
         </div>
 
@@ -304,9 +265,7 @@ export default function ApplicantInfoSection({
                 shippingAddressSnapshotRef.current = {
                   shippingPostcode: String(prev.shippingPostcode || ""),
                   shippingAddress: String(prev.shippingAddress || ""),
-                  shippingAddressDetail: String(
-                    prev.shippingAddressDetail || "",
-                  ),
+                  shippingAddressDetail: String(prev.shippingAddressDetail || ""),
                 };
                 (next as any).preferredDate = "";
                 (next as any).preferredTime = "";
@@ -315,21 +274,9 @@ export default function ApplicantInfoSection({
                 (next as any).shippingAddressDetail = "";
               } else if (prevCollection === "visit") {
                 const snapshot = shippingAddressSnapshotRef.current;
-                (next as any).shippingPostcode = String(
-                  prev.shippingPostcode || "",
-                ).trim()
-                  ? prev.shippingPostcode
-                  : snapshot.shippingPostcode;
-                (next as any).shippingAddress = String(
-                  prev.shippingAddress || "",
-                ).trim()
-                  ? prev.shippingAddress
-                  : snapshot.shippingAddress;
-                (next as any).shippingAddressDetail = String(
-                  prev.shippingAddressDetail || "",
-                ).trim()
-                  ? prev.shippingAddressDetail
-                  : snapshot.shippingAddressDetail;
+                (next as any).shippingPostcode = String(prev.shippingPostcode || "").trim() ? prev.shippingPostcode : snapshot.shippingPostcode;
+                (next as any).shippingAddress = String(prev.shippingAddress || "").trim() ? prev.shippingAddress : snapshot.shippingAddress;
+                (next as any).shippingAddressDetail = String(prev.shippingAddressDetail || "").trim() ? prev.shippingAddressDetail : snapshot.shippingAddressDetail;
               }
               return next;
             })
@@ -338,12 +285,7 @@ export default function ApplicantInfoSection({
         >
           {/* 자가 발송 */}
           <div>
-            <RadioGroupItem
-              id="cm-self"
-              value="self_ship"
-              disabled={lockCollection || isVisitDelivery}
-              className="peer sr-only"
-            />
+            <RadioGroupItem id="cm-self" value="self_ship" disabled={lockCollection || isVisitDelivery} className="peer sr-only" />
             <Label
               htmlFor="cm-self"
               className="group block min-h-[96px] cursor-pointer rounded-xl border border-border bg-card px-4 py-3 transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-primary/25 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-disabled:hover:border-border peer-disabled:hover:bg-card"
@@ -353,26 +295,15 @@ export default function ApplicantInfoSection({
                   <Box className="h-4 w-4 text-primary" />
                   <span className="font-medium text-foreground">자가 발송</span>
                 </div>
-                <CheckCircle2
-                  className={`h-4 w-4 shrink-0 text-primary transition-opacity ${formData.collectionMethod === "self_ship" ? "opacity-100" : "opacity-0"}`}
-                />
+                <CheckCircle2 className={`h-4 w-4 shrink-0 text-primary transition-opacity ${formData.collectionMethod === "self_ship" ? "opacity-100" : "opacity-0"}`} />
               </div>
-              <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
-                편의점/우체국 등
-              </p>
+              <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">편의점/우체국 등</p>
             </Label>
           </div>
 
           {/* 매장 방문 접수 */}
           <div>
-            <RadioGroupItem
-              id="cm-visit"
-              value="visit"
-              disabled={
-                lockCollection /* 방문 모드도 주문 기반이면 변경 금지 */
-              }
-              className="peer sr-only"
-            />
+            <RadioGroupItem id="cm-visit" value="visit" disabled={lockCollection /* 방문 모드도 주문 기반이면 변경 금지 */} className="peer sr-only" />
             <Label
               htmlFor="cm-visit"
               className="group block min-h-[96px] cursor-pointer rounded-xl border border-border bg-card px-4 py-3 transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:ring-2 peer-data-[state=checked]:ring-primary/25 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-disabled:hover:border-border peer-disabled:hover:bg-card"
@@ -380,26 +311,16 @@ export default function ApplicantInfoSection({
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <Store className="h-4 w-4 text-primary" />
-                  <span className="font-medium text-foreground">
-                    매장 방문 접수
-                  </span>
+                  <span className="font-medium text-foreground">매장 방문 접수</span>
                 </div>
-                <CheckCircle2
-                  className={`h-4 w-4 shrink-0 text-primary transition-opacity ${normalizeCollection(formData.collectionMethod) === "visit" ? "opacity-100" : "opacity-0"}`}
-                />
+                <CheckCircle2 className={`h-4 w-4 shrink-0 text-primary transition-opacity ${normalizeCollection(formData.collectionMethod) === "visit" ? "opacity-100" : "opacity-0"}`} />
               </div>
-              <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
-                방문 가능 시간대만 선택
-              </p>
+              <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">방문 가능 시간대만 선택</p>
             </Label>
           </div>
         </RadioGroup>
         {lockCollection && (
-          <PublicSurface
-            variant="muted"
-            padding="sm"
-            className="mt-2 rounded-lg text-xs text-muted-foreground"
-          >
+          <PublicSurface variant="muted" padding="sm" className="mt-2 rounded-lg text-xs text-muted-foreground">
             라켓 구매 단계에서 선택한 접수 방식은 변경할 수 없습니다.
           </PublicSurface>
         )}
@@ -407,34 +328,22 @@ export default function ApplicantInfoSection({
 
       <PublicSurface variant="muted" padding="sm">
         <div className="mb-3 flex items-start justify-between gap-3">
-          <div>
-            <h3 className="text-base font-semibold text-foreground">
-              배송/방문 정보
-            </h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              선택한 방식에 따라 필요한 입력만 표시됩니다.
-            </p>
+          <div className="min-w-0">
+            <h3 className="text-base font-semibold text-foreground">배송/방문 정보</h3>
+            <p className="mt-1 text-sm text-muted-foreground">선택한 방식에 따라 필요한 입력만 표시됩니다.</p>
           </div>
-          <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-            {isVisitSelected ? "방문" : "택배 발송"}
-          </span>
+
+          <span className="shrink-0 whitespace-nowrap rounded-full border border-border bg-background px-2 py-0.5 text-[11px] font-medium leading-5 text-muted-foreground">{isVisitSelected ? "방문" : "택배 발송"}</span>
         </div>
         <div className="space-y-3">
           {isVisitSelected ? (
-            <PublicSurface
-              variant="muted"
-              padding="sm"
-              className="rounded-lg text-xs text-muted-foreground"
-            >
+            <PublicSurface variant="muted" padding="sm" className="rounded-lg text-xs text-muted-foreground">
               {collectionVisitNotice}
             </PublicSurface>
           ) : (
             <>
               <div className="space-y-1">
-                <Label
-                  htmlFor="shippingPostcode"
-                  className="text-sm font-medium"
-                >
+                <Label htmlFor="shippingPostcode" className="text-sm font-medium">
                   우편번호 <span className="text-destructive">*</span>
                 </Label>
                 <div className="flex flex-col gap-2 md:flex-row md:items-center">
@@ -448,27 +357,17 @@ export default function ApplicantInfoSection({
                     placeholder=""
                   />
                   {canOpenPostcodeSearch && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleOpenPostcode}
-                      className="h-10 whitespace-nowrap transition-colors duration-200"
-                    >
+                    <Button type="button" variant="outline" onClick={handleOpenPostcode} className="h-10 whitespace-nowrap transition-colors duration-200">
                       <MapPin className="h-4 w-4 mr-2" />
                       우편번호 검색
                     </Button>
                   )}
                 </div>
-                {errorText("shippingPostcode") ? (
-                  <p className={errCls}>{errorText("shippingPostcode")}</p>
-                ) : null}
+                {errorText("shippingPostcode") ? <p className={errCls}>{errorText("shippingPostcode")}</p> : null}
               </div>
 
               <div className="space-y-1">
-                <Label
-                  htmlFor="shippingAddress"
-                  className="text-sm font-medium"
-                >
+                <Label htmlFor="shippingAddress" className="text-sm font-medium">
                   주소 <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -480,16 +379,11 @@ export default function ApplicantInfoSection({
                   className={`transition-all duration-200 ${postcodeAddressReadOnly ? "bg-muted text-muted-foreground cursor-not-allowed" : "focus:ring-2 focus:ring-ring"}`}
                   placeholder=""
                 />
-                {errorText("shippingAddress") ? (
-                  <p className={errCls}>{errorText("shippingAddress")}</p>
-                ) : null}
+                {errorText("shippingAddress") ? <p className={errCls}>{errorText("shippingAddress")}</p> : null}
               </div>
 
               <div className="space-y-1">
-                <Label
-                  htmlFor="shippingAddressDetail"
-                  className="text-sm font-medium"
-                >
+                <Label htmlFor="shippingAddressDetail" className="text-sm font-medium">
                   상세 주소
                 </Label>
                 <Input
@@ -520,10 +414,7 @@ export default function ApplicantInfoSection({
         </div>
       )}
       {(orderId || isMember) && (
-        <PublicSurface
-          padding="sm"
-          className="rounded-xl border-warning/30 bg-warning/10 p-3 dark:bg-warning/15"
-        >
+        <PublicSurface padding="sm" className="rounded-xl border-warning/30 bg-warning/10 p-3 dark:bg-warning/15">
           <div className="flex items-start space-x-3">
             <Shield className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
             <div className="text-sm">
