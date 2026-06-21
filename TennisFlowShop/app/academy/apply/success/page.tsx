@@ -9,7 +9,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import SiteContainer from "@/components/layout/SiteContainer";
-import { SummaryCard } from "@/components/public/SummaryCard";
+import { PublicSurface, ResultState, SummaryCard } from "@/components/public";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
@@ -37,39 +37,42 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
     <main className="min-h-screen bg-background">
       <SiteContainer className="max-w-3xl py-10 bp-sm:py-14 md:py-16">
         <div className="space-y-5 sm:space-y-6">
-          <section className="rounded-2xl border border-border bg-card p-6 text-center shadow-sm sm:p-8 md:p-10">
-            <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary sm:size-16">
-              <CheckCircle2 className="size-7 sm:size-8" aria-hidden="true" />
-            </div>
-            <p className="mb-2 text-sm font-medium text-primary">
-              도깨비테니스 아카데미
-            </p>
-            <h1 className="text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-              아카데미 신청이 완료되었습니다
-            </h1>
-            <p className="mx-auto mt-3 max-w-xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-              신청 내용이 접수되었습니다. 담당자가 일정과 수강 방식을 확인한 뒤
-              상담을 도와드립니다.
-            </p>
-
-            <div className="mt-7 flex w-full flex-col justify-center gap-2 sm:flex-row">
-              <Button asChild size="lg" wrap="responsive" className="h-12 px-6">
-                <Link href="/mypage?tab=academy">
-                  마이페이지에서 확인하기
-                  <ArrowRight className="size-4" aria-hidden="true" />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                wrap="responsive"
-                className="h-12 px-6"
-              >
-                <Link href="/academy">아카데미로 돌아가기</Link>
-              </Button>
-            </div>
-          </section>
+          <ResultState
+            status="success"
+            title="아카데미 신청이 완료되었습니다"
+            icon={<CheckCircle2 className="size-7" aria-hidden="true" />}
+            description={
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-primary">
+                  도깨비테니스 아카데미
+                </p>
+                <p className="text-pretty leading-relaxed">
+                  신청 내용이 접수되었습니다. 담당자가 일정과 수강 방식을 확인한 뒤
+                  상담을 도와드립니다.
+                </p>
+              </div>
+            }
+            actions={
+              <>
+                <Button asChild size="lg" wrap="responsive" className="h-12 px-6">
+                  <Link href="/mypage?tab=academy">
+                    마이페이지에서 확인하기
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  wrap="responsive"
+                  className="h-12 px-6"
+                >
+                  <Link href="/academy">아카데미로 돌아가기</Link>
+                </Button>
+              </>
+            }
+            className="max-w-none rounded-2xl border border-border bg-card px-6 py-8 shadow-sm sm:px-8 sm:py-10"
+          />
 
           {receiptLabel && (
             <SummaryCard
@@ -91,30 +94,27 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
             </SummaryCard>
           )}
 
-          <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
-            <div className="flex items-start gap-3">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Clock className="size-5" aria-hidden="true" />
-              </div>
-              <div className="min-w-0 space-y-3">
-                <div>
-                  <h2 className="text-base font-semibold text-foreground">
-                    다음 단계 안내
-                  </h2>
-                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                    신청 이후 진행 상황은 마이페이지에서 확인할 수 있습니다.
-                  </p>
-                </div>
-                <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm leading-relaxed text-muted-foreground">
-                  관리자가 신청 내용을 확인한 뒤 등록 확정 여부를 안내합니다.
-                  신청 단계에서는 결제가 진행되지 않으며, 등록 확정 후 현장에서
-                  결제를 안내해드립니다.
-                </div>
-              </div>
-            </div>
-          </section>
+          <SummaryCard
+            title={
+              <span className="flex items-center gap-2">
+                <Clock className="size-5 text-primary" aria-hidden="true" />
+                다음 단계 안내
+              </span>
+            }
+            description="신청 이후 진행 상황은 마이페이지에서 확인할 수 있습니다."
+          >
+            <PublicSurface
+              variant="muted"
+              padding="sm"
+              className="text-sm leading-relaxed text-muted-foreground"
+            >
+              관리자가 신청 내용을 확인한 뒤 등록 확정 여부를 안내합니다.
+              신청 단계에서는 결제가 진행되지 않으며, 등록 확정 후 현장에서
+              결제를 안내해드립니다.
+            </PublicSurface>
+          </SummaryCard>
 
-          <section className="rounded-2xl border border-border bg-muted/20 p-5 sm:p-6">
+          <PublicSurface variant="muted">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <h2 className="text-base font-semibold text-foreground">
@@ -137,7 +137,7 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
                 </Link>
               </Button>
             </div>
-          </section>
+          </PublicSurface>
         </div>
       </SiteContainer>
     </main>
