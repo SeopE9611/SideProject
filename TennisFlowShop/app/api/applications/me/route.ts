@@ -225,6 +225,11 @@ export async function GET(req: Request) {
   // 각 컬렉션에서 현재 페이지 계산에 필요한 최대치(skip + limit)만 가져온다.
   const pageWindow = skip + limit;
   const academyUserIdFilter = { $in: [subStr, userId] };
+  const academyVisibleFilter = {
+    userId: academyUserIdFilter,
+    adminDeletedAt: { $exists: false },
+    customerDeletedAt: { $exists: false },
+  };
   const academyProjection = {
     applicantName: 1,
     phone: 1,
@@ -246,11 +251,11 @@ export async function GET(req: Request) {
     const [academyTotal, rawAcademyList] = await Promise.all([
       db
         .collection("academy_lesson_applications")
-        .countDocuments({ userId: academyUserIdFilter }),
+        .countDocuments(academyVisibleFilter),
       db
         .collection("academy_lesson_applications")
         .find(
-          { userId: academyUserIdFilter },
+          academyVisibleFilter,
           { projection: academyProjection },
         )
         .sort({ createdAt: -1 })
@@ -272,7 +277,7 @@ export async function GET(req: Request) {
         .countDocuments({ userId, status: { $ne: "draft" } }),
       db
         .collection("academy_lesson_applications")
-        .countDocuments({ userId: academyUserIdFilter }),
+        .countDocuments(academyVisibleFilter),
       db
         .collection("stringing_applications")
         .find({ userId, status: { $ne: "draft" } })
@@ -282,7 +287,7 @@ export async function GET(req: Request) {
       db
         .collection("academy_lesson_applications")
         .find(
-          { userId: academyUserIdFilter },
+          academyVisibleFilter,
           { projection: academyProjection },
         )
         .sort({ createdAt: -1 })

@@ -229,6 +229,7 @@ async function getApplicationStatsByClassId(db: Db, classes: Document[]) {
     .collection(APPLICATION_COLLECTION_NAME)
     .find(
       {
+        adminDeletedAt: { $exists: false },
         $or: [
           { classId: { $in: classIdMatchers } },
           { "classSnapshot.classId": { $in: classIdStrings } },

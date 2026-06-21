@@ -8,14 +8,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import {
   CalendarDays,
+  ChevronDown,
+  ChevronUp,
+  Eye,
   GraduationCap,
   MapPin,
   MessageSquareText,
+  Trash2,
   WalletCards,
 } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import useSWRInfinite from "swr/infinite";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 type AcademyClassSnapshotForApplication = {
   classId: string;
@@ -145,6 +150,8 @@ function InfoItem({ label, value }: { label: string; value?: string | null }) {
 }
 
 export default function AcademyApplicationsTab() {
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const getKey = (
     pageIndex: number,
     previousPageData: AcademyApplicationsResponse | null,
@@ -174,6 +181,47 @@ export default function AcademyApplicationsTab() {
   const isInitialLoading = !data && isValidating;
   const isLoadingMore = Boolean(data) && isValidating;
   const hasMore = data ? applications.length < total : false;
+
+  const toggleExpanded = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleDelete = async (id: string) => {
+    const confirmed = window.confirm(
+      "취소 신청 기록을 삭제할까요?\n\n삭제하면 마이페이지에서 이 신청 기록이 보이지 않습니다. 운영 기록은 보존됩니다.",
+    );
+    if (!confirmed) return;
+
+    setDeletingId(id);
+    try {
+      const response = await fetch(`/api/applications/academy/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const payload = (await response.json().catch(() => null)) as {
+        success?: boolean;
+        message?: string;
+      } | null;
+      if (!response.ok || !payload?.success) {
+        throw new Error(payload?.message || "신청 기록 삭제 중 문제가 발생했습니다.");
+      }
+      showSuccessToast(payload.message || "신청 기록이 삭제되었습니다.");
+      await mutate();
+    } catch (error) {
+      showErrorToast(
+        error instanceof Error
+          ? error.message
+          : "신청 기록 삭제 중 문제가 발생했습니다.",
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (error) {
     return (
@@ -216,6 +264,7 @@ export default function AcademyApplicationsTab() {
     <div className="space-y-4 md:space-y-6">
       {applications.map((application) => {
         const isCancelled = application.status === "cancelled";
+        const isExpanded = expandedIds.has(application.id);
 
         return (
           <Card
@@ -240,7 +289,20 @@ export default function AcademyApplicationsTab() {
                 </Badge>
               </div>
 
-              {application.classSnapshot ? (
+              <div className="grid gap-3 bp-sm:grid-cols-2">
+                <InfoItem label="수업 유형" value={application.classSnapshot?.lessonTypeLabel || application.desiredLessonTypeLabel} />
+                <InfoItem label="레벨" value={application.classSnapshot?.levelLabel || application.currentLevelLabel} />
+                <InfoItem label="일정" value={application.classSnapshot?.scheduleText || application.preferredDays?.join(", ") || application.preferredTimeText} />
+                <InfoItem label="희망 시간대" value={application.preferredTimeText} />
+              </div>
+
+              {isCancelled ? (
+                <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
+                  취소된 신청입니다. 필요하면 마이페이지에서 기록을 삭제할 수 있습니다.
+                </div>
+              ) : null}
+
+              {isExpanded && application.classSnapshot ? (
                 <div className="rounded-xl border border-border/60 bg-muted/30 p-3">
                   <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                     <GraduationCap className="h-4 w-4 text-primary" />
@@ -299,7 +361,8 @@ export default function AcademyApplicationsTab() {
                 </div>
               ) : null}
 
-              <div className="grid gap-3 bp-sm:grid-cols-2">
+              {isExpanded ? (
+                <div className="grid gap-3 bp-sm:grid-cols-2">
                 <InfoItem
                   label="희망 레슨 유형"
                   value={application.desiredLessonTypeLabel}
@@ -320,15 +383,10 @@ export default function AcademyApplicationsTab() {
                   label="희망 시간대"
                   value={application.preferredTimeText}
                 />
-              </div>
-
-              {isCancelled ? (
-                <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
-                  취소된 신청입니다. 상세 페이지에서 상태를 확인할 수 있습니다.
                 </div>
               ) : null}
 
-              {application.customerMessage ? (
+              {isExpanded && application.customerMessage ? (
                 <div className="rounded-xl border border-info/30 bg-info/10 p-3 text-info dark:bg-info/15">
                   <div className="flex items-center gap-2 text-sm font-semibold">
                     <MessageSquareText className="h-4 w-4" />
@@ -340,17 +398,23 @@ export default function AcademyApplicationsTab() {
                 </div>
               ) : null}
 
-              <div className="flex justify-end border-t border-border/60 pt-4">
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="w-full sm:w-auto"
-                >
+              <div className="flex flex-col gap-2 border-t border-border/60 pt-4 sm:flex-row sm:justify-end">
+                <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
                   <Link href={`/mypage/academy-applications/${application.id}`}>
+                    <Eye className="h-4 w-4" />
                     상세 보기
                   </Link>
                 </Button>
+                <Button type="button" variant="secondary" size="sm" className="w-full sm:w-auto" onClick={() => toggleExpanded(application.id)}>
+                  {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  {isExpanded ? "접기" : "펼쳐보기"}
+                </Button>
+                {isCancelled ? (
+                  <Button type="button" variant="destructive" size="sm" className="w-full sm:w-auto" disabled={deletingId === application.id} onClick={() => void handleDelete(application.id)}>
+                    <Trash2 className="h-4 w-4" />
+                    {deletingId === application.id ? "삭제 중..." : "기록 삭제"}
+                  </Button>
+                ) : null}
               </div>
             </CardContent>
           </Card>

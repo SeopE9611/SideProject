@@ -45,10 +45,12 @@ import {
   GraduationCap,
   MessageSquareText,
   PhoneCall,
+  Trash2,
   UserRound,
   WalletCards,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import useSWR from "swr";
 
@@ -353,8 +355,10 @@ function RequestInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
 }
 
 export default function AcademyApplicationDetailClient({ id }: { id: string }) {
+  const router = useRouter();
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [cancelReasonDetail, setCancelReasonDetail] = useState("");
   const { data, error, isLoading, mutate } =
@@ -391,6 +395,37 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
 
   const statusTone = getStatusTone(item.status);
   const isCancelled = item.status === "cancelled";
+
+  const handleDeleteApplication = async () => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/applications/academy/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const payload = (await response.json().catch(() => null)) as {
+        success?: boolean;
+        message?: string;
+      } | null;
+
+      if (!response.ok || !payload?.success) {
+        throw new Error(
+          payload?.message || "신청 기록 삭제 중 문제가 발생했습니다.",
+        );
+      }
+
+      showSuccessToast(payload.message || "신청 기록이 삭제되었습니다.");
+      router.push("/mypage?tab=academy");
+    } catch (error) {
+      showErrorToast(
+        error instanceof Error
+          ? error.message
+          : "신청 기록 삭제 중 문제가 발생했습니다.",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const handleCancelApplication = async () => {
     if (!cancelReason) {
@@ -560,19 +595,60 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         </CardHeader>
         <CardContent className="space-y-4">
           {isCancelled ? (
-            <div className="space-y-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-              <p className="font-medium">
-                이미 취소된 신청입니다. 다시 수강을 원하시면 아카데미 페이지에서
-                새로 신청해 주세요.
-              </p>
-              {item.cancelReasonLabel ? (
-                <p className="text-xs leading-5 text-destructive/85">
-                  취소 사유: {item.cancelReasonLabel}
-                  {item.cancelReasonDetail
-                    ? ` - ${item.cancelReasonDetail}`
-                    : ""}
+            <div className="space-y-3">
+              <div className="space-y-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+                <p className="font-medium">
+                  이미 취소된 신청입니다. 다시 수강을 원하시면 아카데미 페이지에서
+                  새로 신청해 주세요.
                 </p>
-              ) : null}
+                {item.cancelReasonLabel ? (
+                  <p className="text-xs leading-5 text-destructive/85">
+                    취소 사유: {item.cancelReasonLabel}
+                    {item.cancelReasonDetail
+                      ? ` - ${item.cancelReasonDetail}`
+                      : ""}
+                  </p>
+                ) : null}
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    wrap="responsive"
+                    className="w-full bp-sm:w-auto"
+                    disabled={isDeleting}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {isDeleting ? "삭제 중..." : "기록 삭제"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      취소 신청 기록을 삭제할까요?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      삭제하면 마이페이지에서 이 신청 기록이 보이지 않습니다. 운영 기록은 보존됩니다.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isDeleting}>
+                      취소
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      disabled={isDeleting}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        void handleDeleteApplication();
+                      }}
+                    >
+                      {isDeleting ? "삭제 중..." : "기록 삭제"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           ) : (
             <AlertDialog

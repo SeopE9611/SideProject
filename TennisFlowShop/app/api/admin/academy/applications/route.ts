@@ -94,7 +94,7 @@ export async function GET(req: Request) {
   const keyword = (url.searchParams.get("keyword") ?? "").trim();
   const sort = url.searchParams.get("sort") ?? "latest";
 
-  const filter: Filter<Document> = {};
+  const filter: Filter<Document> = { adminDeletedAt: { $exists: false } };
   if (statusParam && statusParam !== "all") {
     if (!isAcademyApplicationStatus(statusParam)) {
       return NextResponse.json(
@@ -152,7 +152,10 @@ export async function GET(req: Request) {
       .aggregate<{
         _id: AcademyLessonApplicationStatus;
         count: number;
-      }>([{ $group: { _id: "$status", count: { $sum: 1 } } }])
+      }>([
+        { $match: { adminDeletedAt: { $exists: false } } },
+        { $group: { _id: "$status", count: { $sum: 1 } } },
+      ])
       .toArray(),
   ]);
 
