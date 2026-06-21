@@ -46,6 +46,8 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { isMountableStringItem } from "@/lib/orders/string-mounting-policy";
 import { cn } from "@/lib/utils";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
+import { formatKoreanPhone } from "@/lib/phone";
+import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import {
   ArrowRight,
   Calendar,
@@ -1495,7 +1497,8 @@ export default function OrderDetailClient({
                     <div>
                       <p className="text-sm text-foreground/80">전화번호</p>
                       <p className="font-semibold text-foreground">
-                        {orderDetail.customer.phone ?? "전화번호 없음"}
+                        {formatKoreanPhone(orderDetail.customer.phone) ||
+                          "전화번호 없음"}
                       </p>
                     </div>
                   </div>
@@ -1649,14 +1652,9 @@ export default function OrderDetailClient({
                         <div>
                           <p className="text-sm text-foreground/80">택배사</p>
                           <p className="font-semibold text-foreground">
-                            {{
-                              cj: "CJ 대한통운",
-                              hanjin: "한진택배",
-                              logen: "로젠택배",
-                              post: "우체국택배",
-                              etc: "기타",
-                            }[orderDetail.shippingInfo.invoice.courier] ||
-                              "미지정"}
+                            {getCourierDisplayName(
+                              orderDetail.shippingInfo.invoice.courier,
+                            )}
                           </p>
                         </div>
                       </div>

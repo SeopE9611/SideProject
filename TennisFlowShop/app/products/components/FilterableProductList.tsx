@@ -720,6 +720,7 @@ export default function FilterableProductList({
     <>
       <Sheet open={showFilters} onOpenChange={handleSheetOpenChange}>
         <SheetContent
+          data-kakao-widget-hide="1"
           side={isMobileViewport ? "bottom" : "left"}
           className={
             isMobileViewport

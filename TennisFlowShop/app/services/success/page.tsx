@@ -18,6 +18,7 @@ import {
 } from "@/lib/auth.utils";
 import { bankLabelMap, racketBrandLabel } from "@/lib/constants";
 import clientPromise from "@/lib/mongodb";
+import { formatKoreanPhone } from "@/lib/phone";
 import jwt from "jsonwebtoken";
 import {
   ArrowRight,
@@ -1058,7 +1059,8 @@ export default async function StringServiceSuccessPage(props: Props) {
                             연락처
                           </p>
                           <p className="font-semibold text-foreground">
-                            {application.phone}
+                            {formatKoreanPhone(application.phone) ||
+                              application.phone}
                           </p>
                         </div>
                       </div>

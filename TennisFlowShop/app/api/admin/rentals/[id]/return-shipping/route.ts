@@ -3,13 +3,13 @@ import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
 // 서버 검증
 const ALLOWED_COURIERS = ["cj", "post", "logen", "hanjin"] as const;
-const onlyDigits = (v: unknown) => String(v ?? "").replace(/\D/g, "");
 
 function badRequest(error: string, fieldErrors?: Record<string, string[]>) {
   return NextResponse.json(
@@ -76,7 +76,7 @@ export async function POST(
   }
 
   const courier = parsed.data.courier;
-  const trackingDigits = onlyDigits(parsed.data.trackingNumber);
+  const trackingDigits = normalizeTrackingNumber(parsed.data.trackingNumber);
   if (!trackingDigits) {
     return badRequest("운송장 번호를 입력하세요", {
       trackingNumber: ["운송장 번호를 입력하세요"],

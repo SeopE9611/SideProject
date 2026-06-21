@@ -1,6 +1,8 @@
 import { handleUpdateShippingInfo } from "@/app/features/stringing-applications/api/handlers";
 import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 import { getDb } from "@/lib/mongodb";
+import { normalizeCourierCode } from "@/lib/shipping/courier-map";
+import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -97,9 +99,13 @@ export async function PATCH(
   const incoming = body?.shippingInfo?.selfShip ?? null;
 
   const courier =
-    typeof incoming?.courier === "string" ? incoming.courier.trim() : "";
+    typeof incoming?.courier === "string"
+      ? normalizeCourierCode(incoming.courier)
+      : "";
   const trackingNo =
-    typeof incoming?.trackingNo === "string" ? incoming.trackingNo.trim() : "";
+    typeof incoming?.trackingNo === "string"
+      ? normalizeTrackingNumber(incoming.trackingNo)
+      : "";
   const shippedAt =
     typeof incoming?.shippedAt === "string" ? incoming.shippedAt.trim() : "";
   const note = typeof incoming?.note === "string" ? incoming.note.trim() : "";
@@ -107,6 +113,12 @@ export async function PATCH(
   if (!courier || !trackingNo) {
     return NextResponse.json(
       { ok: false, message: "INVALID_SELF_SHIP" },
+      { status: 400 },
+    );
+  }
+  if (trackingNo.length < 9 || trackingNo.length > 20) {
+    return NextResponse.json(
+      { ok: false, message: "INVALID_TRACKING_NUMBER" },
       { status: 400 },
     );
   }

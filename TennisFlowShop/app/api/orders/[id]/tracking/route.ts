@@ -8,9 +8,12 @@ import {
   type DeliveryTrackerSummaryFailure,
 } from "@/lib/shipping/delivery-tracker";
 import {
+  findCourierCatalogItem,
   getCourierDisplayName,
   mapCourierCodeToCarrierId,
+  normalizeCourierCode,
 } from "@/lib/shipping/courier-map";
+import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 
 function externalFailureResponse(result: DeliveryTrackerSummaryFailure) {
   return NextResponse.json(
@@ -70,12 +73,10 @@ export async function GET(
       );
     }
 
-    const courier = String(order?.shippingInfo?.invoice?.courier ?? "")
-      .trim()
-      .toLowerCase();
-    const trackingNumber = String(
+    const courier = normalizeCourierCode(order?.shippingInfo?.invoice?.courier);
+    const trackingNumber = normalizeTrackingNumber(
       order?.shippingInfo?.invoice?.trackingNumber ?? "",
-    ).trim();
+    );
 
     if (!trackingNumber) {
       return NextResponse.json(
@@ -84,14 +85,15 @@ export async function GET(
       );
     }
 
+    const courierItem = findCourierCatalogItem(courier);
     const carrierId = mapCourierCodeToCarrierId(courier);
-    const carrierDisplayName = getCourierDisplayName(courier);
-    if (!carrierId) {
+    const carrierDisplayName = courierItem?.label ?? getCourierDisplayName(courier);
+    if (!courierItem?.supportsTracking || !carrierId) {
       return NextResponse.json({
         success: true,
         supported: false,
         reason: "unsupported_courier",
-        message: "현재 택배사는 자동 배송조회가 지원되지 않습니다.",
+        message: `${carrierDisplayName}은(는) 현재 자동 배송조회가 지원되지 않습니다.`,
       });
     }
 
