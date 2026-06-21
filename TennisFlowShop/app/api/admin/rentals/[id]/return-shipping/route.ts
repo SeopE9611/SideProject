@@ -3,14 +3,13 @@ import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
+import { findCourierCatalogItem, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
 // 서버 검증
-const ALLOWED_COURIERS = ["cj", "post", "logen", "hanjin"] as const;
-
 function badRequest(error: string, fieldErrors?: Record<string, string[]>) {
   return NextResponse.json(
     {
@@ -61,7 +60,7 @@ export async function POST(
     return NextResponse.json({ message: "BAD_ID" }, { status: 400 });
   const body = await req.json().catch(() => ({}));
   const schema = z.object({
-    courier: z.enum(ALLOWED_COURIERS),
+    courier: z.string(),
     trackingNumber: z.string(),
     shippedAt: z.any().optional(),
     note: z.string().optional(),
@@ -75,7 +74,16 @@ export async function POST(
     );
   }
 
-  const courier = parsed.data.courier;
+  const courier = normalizeCourierCode(parsed.data.courier);
+  const courierItem = findCourierCatalogItem(courier);
+  if (!courierItem) {
+    return NextResponse.json({ ok: false, message: "INVALID_COURIER" }, { status: 400 });
+  }
+  if (courierItem.code === "ems") {
+    return badRequest("EMS는 현재 운송장 등록을 지원하지 않습니다.", {
+      courier: ["EMS는 현재 운송장 등록을 지원하지 않습니다."],
+    });
+  }
   const trackingDigits = normalizeTrackingNumber(parsed.data.trackingNumber);
   if (!trackingDigits) {
     return badRequest("운송장 번호를 입력하세요", {

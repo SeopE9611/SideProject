@@ -116,6 +116,10 @@ export function normalizeCourierCode(courier?: string | null): string {
   return normalized;
 }
 
+export function getSelectableCourierCatalog(): readonly CourierCatalogItem[] {
+  return COURIER_CATALOG.filter((item) => item.code !== "ems");
+}
+
 export function findCourierCatalogItem(
   courier?: string | null,
 ): CourierCatalogItem | null {

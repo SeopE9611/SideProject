@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckCircle2, Loader2, Truck } from "lucide-react";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { COURIER_CATALOG, normalizeCourierCode } from "@/lib/shipping/courier-map";
+import { getSelectableCourierCatalog, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import {
   Select,
@@ -163,9 +163,7 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
                 <SelectValue placeholder="택배사를 선택" />
               </SelectTrigger>
               <SelectContent>
-                {COURIER_CATALOG.filter((item) =>
-                  ["cj", "post", "logen", "hanjin"].includes(item.code),
-                ).map((item) => (
+                {getSelectableCourierCatalog().map((item) => (
                   <SelectItem key={item.code} value={item.code}>
                     {item.label}
                   </SelectItem>

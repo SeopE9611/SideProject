@@ -2,6 +2,7 @@ export {
   COURIER_CATALOG,
   findCourierCatalogItem,
   getCourierDisplayName,
+  getSelectableCourierCatalog,
   mapCourierCodeToCarrierId,
   normalizeCourierCode,
 } from "./courier-catalog";
