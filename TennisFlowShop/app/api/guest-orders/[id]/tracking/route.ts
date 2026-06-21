@@ -31,6 +31,10 @@ function safeVerifyAccessToken(token?: string | null) {
   }
 }
 
+function getOrderIdClaim(claims: ReturnType<typeof verifyOrderAccessToken>) {
+  return claims && "orderId" in claims ? claims.orderId : null;
+}
+
 function externalFailureResponse(result: DeliveryTrackerSummaryFailure) {
   return NextResponse.json(
     {
@@ -90,7 +94,7 @@ export async function GET(
       const orderClaims = orderAccessToken
         ? verifyOrderAccessToken(orderAccessToken)
         : null;
-      if (!orderClaims || orderClaims.orderId !== String(order._id)) {
+      if (getOrderIdClaim(orderClaims) !== String(order._id)) {
         return NextResponse.json(
           { success: false, error: "권한이 없습니다." },
           { status: 403 },
