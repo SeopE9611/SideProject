@@ -29,6 +29,15 @@ import {
   calcStringingTotal,
 } from "@/lib/pricing";
 import { normalizeEmailForSearch } from "@/lib/search-email";
+import {
+  findCourierCatalogItem,
+  getCourierDisplayName,
+  normalizeCourierCode,
+} from "@/lib/shipping/courier-map";
+import {
+  isValidTrackingNumberLength,
+  normalizeTrackingNumber,
+} from "@/lib/shipping/tracking-number";
 import { getStringingServicePrice } from "@/lib/stringing-prices";
 import { ServicePassConsumption } from "@/lib/types/pass";
 import {
@@ -73,20 +82,6 @@ function toCollectionMethodFromServicePickup(
   if (pickup === "SHOP_VISIT") return "visit";
   if (pickup === "COURIER_VISIT") return "courier_pickup";
   return "self_ship";
-}
-function mapCourierLabel(raw?: string | null): string {
-  if (!raw) return "택배사 미입력";
-  const c = raw.toLowerCase();
-
-  if (c.includes("cj")) return "CJ대한통운";
-  if (c.includes("우체국") || c.includes("post")) return "우체국택배";
-  if (c.includes("한진") || c.includes("hanjin")) return "한진택배";
-  if (c.includes("로젠") || c.includes("logen")) return "로젠택배";
-  if (c.includes("롯데") || c.includes("lotte")) return "롯데택배";
-  if (c.includes("경동") || c.includes("kd")) return "경동택배";
-  if (c.includes("기타") || c.includes("etc")) return "기타";
-
-  return raw;
 }
 type CancelStatus = "none" | "requested" | "approved" | "rejected";
 type LinkedPaymentSource =
@@ -2304,6 +2299,66 @@ export async function handleUpdateShippingInfo(
       ...newShippingInfo,
     };
 
+    const isInvoiceCourierShipping =
+      Boolean((newShippingInfo as any).invoice) &&
+      (nextMethodNormalized === "delivery" ||
+        normalizeMethod(mergedShippingInfo.shippingMethod) === "delivery");
+
+    if (isInvoiceCourierShipping) {
+      const invoice = (newShippingInfo as any).invoice || {};
+      const normalizedCourier = normalizeCourierCode(invoice.courier);
+      const courierItem = findCourierCatalogItem(normalizedCourier);
+
+      if (!courierItem) {
+        return NextResponse.json(
+          { success: false, message: "INVALID_COURIER" },
+          { status: 400 },
+        );
+      }
+
+      if (courierItem.code === "ems") {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "EMS는 현재 운송장 등록을 지원하지 않습니다.",
+          },
+          { status: 400 },
+        );
+      }
+
+      const normalizedTracking = normalizeTrackingNumber(
+        invoice.trackingNumber,
+      );
+
+      if (!normalizedTracking) {
+        return NextResponse.json(
+          { success: false, message: "운송장 번호를 입력해주세요." },
+          { status: 400 },
+        );
+      }
+
+      if (!isValidTrackingNumberLength(normalizedTracking)) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "운송장 번호는 숫자 9~20자리로 입력해주세요.",
+          },
+          { status: 400 },
+        );
+      }
+
+      mergedShippingInfo.invoice = {
+        ...mergedShippingInfo.invoice,
+        courier: normalizedCourier,
+        trackingNumber: normalizedTracking,
+      };
+      newShippingInfo.invoice = {
+        ...newShippingInfo.invoice,
+        courier: normalizedCourier,
+        trackingNumber: normalizedTracking,
+      };
+    }
+
     // 실제 DB $set 에 사용할 필드
     const setFields: any = {
       shippingInfo: mergedShippingInfo,
@@ -2383,7 +2438,7 @@ export async function handleUpdateShippingInfo(
     }
 
     if (changedCourier && nextCourierStore) {
-      const courierLabel = mapCourierLabel(nextCourierStore);
+      const courierLabel = getCourierDisplayName(nextCourierStore);
       storeChanges.push(`택배사: ${courierLabel}`);
     }
 
@@ -2405,7 +2460,7 @@ export async function handleUpdateShippingInfo(
       const nextTracking = (nextSelfShip.trackingNo || "").trim();
       const prevCourier = (prevSelfShip.courier || "").trim();
       const nextCourier = (nextSelfShip.courier || "").trim();
-      const courierLabel = mapCourierLabel(nextCourier);
+      const courierLabel = getCourierDisplayName(nextCourier);
 
       if (nextTracking && !prevTracking) {
         // 최초 등록
