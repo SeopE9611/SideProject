@@ -7,7 +7,8 @@ import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/public/EmptyState";
+import { PublicSurface } from "@/components/public/PublicSurface";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
@@ -134,25 +135,29 @@ const getNoRefundAccountMessage = (app?: Application | null) => {
 const ApplicationsListSkeleton = ({ count = 3 }: { count?: number }) => (
   <div className="space-y-4">
     {Array.from({ length: count }).map((_, idx) => (
-      <Card key={idx} className="border-0 bg-card">
-        <CardContent className="space-y-4 p-4 md:p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-28" />
-              <Skeleton className="h-5 w-56" />
-            </div>
-            <Skeleton className="h-7 w-20 rounded-full" />
+      <PublicSurface key={idx} padding="md" className="space-y-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-6 w-full max-w-sm" />
+            <Skeleton className="h-4 w-44" />
           </div>
-          <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-          </div>
-          <div className="flex justify-end gap-2">
-            <Skeleton className="h-9 w-24" />
-            <Skeleton className="h-9 w-24" />
-          </div>
-        </CardContent>
-      </Card>
+          <Skeleton className="h-7 w-20 rounded-full" />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Skeleton className="h-6 w-28 rounded-full" />
+          <Skeleton className="h-6 w-32 rounded-full" />
+          <Skeleton className="h-6 w-24 rounded-full" />
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Skeleton className="h-20 w-full rounded-xl" />
+          <Skeleton className="h-20 w-full rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:flex md:justify-end">
+          <Skeleton className="h-9 w-full md:w-24" />
+          <Skeleton className="h-9 w-full md:w-24" />
+        </div>
+      </PublicSurface>
     ))}
   </div>
 );
@@ -484,19 +489,26 @@ export default function ApplicationsClient() {
     <div className="space-y-4 md:space-y-6">
       {isInitialLoading ? <ApplicationsListSkeleton count={3} /> : null}
       {!isInitialLoading && applications.length === 0 ? (
-        <Card className="relative overflow-hidden border-0 bg-muted/30">
-          <CardContent className="p-8 text-center md:p-12">
-            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 md:mb-6">
-              <FileText className="h-10 w-10 text-success" />
+        <EmptyState
+          icon={
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-background shadow-sm">
+              <FileText className="h-8 w-8 text-success" />
             </div>
-            <h3 className="mb-2 text-xl font-semibold text-foreground">
-              신청 내역이 없습니다
-            </h3>
-            <p className="mb-4 text-muted-foreground md:mb-6">
-              아직 신청하신 서비스가 없습니다.
-            </p>
-          </CardContent>
-        </Card>
+          }
+          title="신청 내역이 없습니다"
+          description="아직 신청하신 서비스가 없습니다. 필요한 서비스를 신청하고 진행 상태를 이곳에서 확인해 보세요."
+          action={
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <Button asChild>
+                <Link href="/services/apply?mode=single">교체서비스 신청하기</Link>
+              </Button>
+              <Button asChild variant="outline" className="bg-transparent">
+                <Link href="/services">서비스 안내 보기</Link>
+              </Button>
+            </div>
+          }
+          className="rounded-2xl py-12"
+        />
       ) : null}
 
       {!isInitialLoading
@@ -608,19 +620,12 @@ export default function ApplicationsClient() {
                 : `/mypage?tab=orders&flowType=application&flowId=${app.id}&from=orders`;
 
             return (
-              <Card
+              <PublicSurface
                 key={app.id}
                 data-cy="mypage-application-summary-card"
-                className="group relative overflow-hidden border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:shadow-md"
+                padding="md"
+                className="space-y-4 transition-[box-shadow,border-color] duration-200 hover:border-primary/30 hover:shadow-md"
               >
-                <div
-                  className="absolute inset-0 bg-muted/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                  style={{ padding: "1px" }}
-                >
-                  <div className="h-full w-full rounded-lg bg-card" />
-                </div>
-
-                <CardContent className="relative space-y-4 p-4 md:p-6">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <h3 className="line-clamp-2 break-keep text-base font-semibold text-foreground">
@@ -662,7 +667,7 @@ export default function ApplicationsClient() {
                     </div>
                   </div>
 
-                  <div className="flex flex-nowrap items-center gap-2 overflow-x-auto text-xs">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
                     {metaLinkLabel ? (
                       <Badge
                         variant="outline"
@@ -687,7 +692,7 @@ export default function ApplicationsClient() {
                         variant="outline"
                         className="shrink-0 whitespace-nowrap"
                       >
-                        {collectionLabel.replace("접수 방식: ", "")}
+                        {collectionLabel}
                       </Badge>
                     ) : null}
                   </div>
@@ -699,8 +704,8 @@ export default function ApplicationsClient() {
                           <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                             <Clock className="h-4 w-4 text-muted-foreground" />
                             <div>
-                              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                                방문 희망일시
+                              <p className="text-xs font-medium text-muted-foreground">
+                                방문 예약
                               </p>
                               <p className="whitespace-nowrap font-medium tabular-nums text-foreground">
                                 {visitTimeLabel}
@@ -889,7 +894,7 @@ export default function ApplicationsClient() {
                   ) : null}
 
                   <div className="grid grid-cols-1 gap-2 border-t border-border/60 pt-3 bp-sm:flex bp-sm:flex-wrap bp-sm:items-center md:pt-4 [&_button]:w-full bp-sm:[&_button]:w-auto">
-                    {isStringService ? (
+                    {(isStringService || isAcademyLesson) ? (
                       <Button
                         data-cy="mypage-application-detail-cta"
                         variant="outline"
@@ -897,7 +902,7 @@ export default function ApplicationsClient() {
                         onClick={() => router.push(detailHref)}
                         className="bg-transparent"
                       >
-                        {hasOrderLink ? "주문 상세" : hasRentalLink ? "장착 정보 보기" : "교체서비스 상세"}
+                        상세보기
                         <ArrowRight className="ml-1 h-3 w-3" />
                       </Button>
                     ) : null}
@@ -931,34 +936,48 @@ export default function ApplicationsClient() {
                       </Button>
                     ) : null}
 
-                    {canShowInboundTracking &&
-                      (isClosed ? (
-                        <Button
-                          data-cy="mypage-application-shipping-cta"
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            showInfoToast(
-                              "이미 종료된 신청서입니다. 운송장 수정이 불가합니다.",
-                            )
-                          }
-                        >
-                          운송장 수정하기
-                        </Button>
-                      ) : (
-                        <Button
-                          data-cy="mypage-application-shipping-cta"
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            router.push(
-                              `/services/applications/${app.id}/shipping?return=${encodeURIComponent("/mypage?tab=orders")}`,
-                            )
-                          }
-                        >
-                          {hasTracking ? "라켓 발송 수정" : "라켓 발송 등록"}
-                        </Button>
-                      ))}
+                    {canShowInboundTracking ? (
+                      <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 sm:col-span-2 md:w-full">
+                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm">
+                          <span className="font-medium text-foreground">운송장 상태</span>
+                          <Badge variant={hasTracking ? "outline" : "default"}>
+                            {hasTracking ? "등록됨" : "등록 필요"}
+                          </Badge>
+                        </div>
+                        <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+                          {hasTracking
+                            ? "등록된 운송장을 수정할 수 있습니다."
+                            : "라켓을 보내신 뒤 운송장을 등록해 주세요."}
+                        </p>
+                        {isClosed ? (
+                          <Button
+                            data-cy="mypage-application-shipping-cta"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              showInfoToast(
+                                "이미 종료된 신청서입니다. 운송장 수정이 불가합니다.",
+                              )
+                            }
+                          >
+                            운송장 수정
+                          </Button>
+                        ) : (
+                          <Button
+                            data-cy="mypage-application-shipping-cta"
+                            variant={hasTracking ? "outline" : "default"}
+                            size="sm"
+                            onClick={() =>
+                              router.push(
+                                `/services/applications/${app.id}/shipping?return=${encodeURIComponent("/mypage?tab=orders")}`,
+                              )
+                            }
+                          >
+                            {hasTracking ? "운송장 수정" : "운송장 등록"}
+                          </Button>
+                        )}
+                      </div>
+                    ) : null}
 
                     {isStringService && !isLinkedApplication && (
                       <TooltipProvider>
@@ -1047,7 +1066,7 @@ export default function ApplicationsClient() {
                         className="gap-2"
                       >
                         <Undo2 className="h-4 w-4" />
-                        신청 취소 요청 철회
+                        취소 요청 철회
                       </Button>
                     ) : (
                       isCancelable && (
@@ -1058,13 +1077,12 @@ export default function ApplicationsClient() {
                           className="gap-2"
                         >
                           <XCircle className="h-4 w-4" />
-                          신청 취소 요청
+                          취소 요청
                         </Button>
                       )
                     )}
                   </div>
-                </CardContent>
-              </Card>
+              </PublicSurface>
             );
           })
         : null}
