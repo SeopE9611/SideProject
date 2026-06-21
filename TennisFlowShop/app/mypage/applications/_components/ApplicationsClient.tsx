@@ -614,8 +614,9 @@ export default function ApplicationsClient() {
               : hasRentalLink
                 ? rentalId
                 : null;
-            const detailHref =
-              hasOrderLink && orderId
+            const detailHref = isAcademyLesson
+              ? `/mypage/academy-applications/${app.id}`
+              : hasOrderLink && orderId
                 ? `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders&focus=stringing`
                 : `/mypage?tab=orders&flowType=application&flowId=${app.id}&from=orders`;
 
