@@ -7,16 +7,9 @@ import {
 import BackButtonGuard from "@/app/services/_components/BackButtonGuard";
 import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 import LoginGate from "@/components/system/LoginGate";
+import { PublicSurface, ResultState, SummaryCard } from "@/components/public";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   verifyAccessToken,
@@ -432,36 +425,26 @@ export default async function StringServiceSuccessPage(props: Props) {
       <BackButtonGuard />
 
       <div className="min-h-full bg-muted/30">
-        <div className="relative overflow-hidden bg-muted/30 py-12 md:py-20">
-          <div className="absolute inset-0 bg-overlay/20"></div>
+        <div className="relative overflow-hidden bg-muted/30 py-10 md:py-16">
+          <div className="absolute inset-0 bg-overlay/10"></div>
           <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
-          <div className="absolute inset-0">
-            <div className="absolute top-10 left-10 w-20 h-20 bg-secondary rounded-full"></div>
-            <div className="absolute top-32 right-20 w-16 h-16 bg-secondary rounded-full delay-1000"></div>
-            <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-secondary rounded-full delay-500"></div>
-          </div>
 
-          <div className="relative container mx-auto px-4 text-center text-foreground">
-            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-secondary border border-border mb-6 md:mb-8">
-              <CheckCircle className="h-12 w-12 text-primary" />
+          <ResultState
+            status="success"
+            title="신청이 완료되었습니다!"
+            description="도깨비테니스에서 확인 후 빠르게 연락드리겠습니다"
+            icon={<CheckCircle className="h-6 w-6" />}
+            className="relative py-0 sm:py-4"
+          >
+            <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm">
+              <Calendar className="h-4 w-4 text-primary" />
+              신청일: {createdAtLabel}
             </div>
-            <h1 className="font-bold text-3xl sm:text-4xl md:text-5xl mb-4 md:mb-6 text-foreground">
-              신청이 완료되었습니다!
-            </h1>
-            <p className="text-xl md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              도깨비테니스에서 확인 후 빠르게 연락드리겠습니다
-            </p>
-            <div className="mt-6 md:mt-8 inline-flex items-center space-x-2 bg-secondary rounded-full border border-border px-6 py-3">
-              <Calendar className="h-5 w-5" />
-              <span className="text-sm font-medium">
-                신청일: {createdAtLabel}
-              </span>
-            </div>
-          </div>
+          </ResultState>
 
           {needsInboundTracking && (
             <div className="mt-8 md:mt-10 max-w-2xl mx-auto px-4">
-              <div className="bg-muted/30 border border-border rounded-xl p-4 md:p-6 text-center">
+              <PublicSurface variant="default" className="text-center">
                 <div className="flex items-center justify-center gap-3 mb-3 md:mb-4">
                   <div className="rounded-full border border-border bg-secondary p-2 text-foreground">
                     <Package className="h-6 w-6 text-primary" />
@@ -491,30 +474,61 @@ export default async function StringServiceSuccessPage(props: Props) {
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
-              </div>
+              </PublicSurface>
             </div>
           )}
         </div>
 
         <div className="container mx-auto px-4 py-8 md:py-16">
           <div className="max-w-5xl mx-auto">
-            <Card
-              data-cy="service-success-summary-card"
-              className="mb-8 bg-card border border-border shadow-md"
+            <div data-cy="service-success-summary-card" className="mb-8">
+            <SummaryCard
+              className="shadow-md"
+              contentClassName="p-0"
+              footer={
+                <div className="flex w-full flex-col gap-3 sm:flex-row">
+                  <Button
+                    variant="default"
+                    className="h-12 flex-1 transition-all duration-200"
+                    asChild
+                  >
+                    <Link
+                      data-cy="service-success-application-link"
+                      href={`/mypage?${new URLSearchParams({
+                        tab: "applications",
+                        applicationId: String(application._id),
+                      }).toString()}`}
+                    >
+                      <FileText className="h-5 w-5 mr-2" />
+                      신청 내역 보기
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-12 flex-1 transition-colors duration-200"
+                    asChild
+                  >
+                    <Link href="/">
+                      <Home className="h-5 w-5 mr-2" />
+                      홈으로 돌아가기
+                    </Link>
+                  </Button>
+                </div>
+              }
             >
-              <CardHeader className="bg-muted/30 rounded-t-lg">
+              <div className="border-b border-border bg-muted/30 p-5 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-2xl font-bold text-foreground flex items-center">
+                    <h2 className="text-2xl font-bold text-foreground flex items-center">
                       <FileText className="h-6 w-6 mr-3 text-primary" />
                       신청 정보
-                    </CardTitle>
-                    <CardDescription className="text-lg mt-2">
+                    </h2>
+                    <p className="text-lg mt-2 text-muted-foreground">
                       신청 번호:{" "}
                       <span className="font-mono font-semibold text-primary">
                         {application._id.toString()}
                       </span>
-                    </CardDescription>
+                    </p>
                   </div>
                   <div className="text-right">
                     <Badge
@@ -526,9 +540,9 @@ export default async function StringServiceSuccessPage(props: Props) {
                     </Badge>
                   </div>
                 </div>
-              </CardHeader>
+              </div>
 
-              <CardContent className="p-4 md:p-8">
+              <div className="p-4 md:p-8">
                 <div className="mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4 md:p-5">
                   <h3 className="text-base font-bold text-foreground">
                     다음 단계
@@ -554,10 +568,10 @@ export default async function StringServiceSuccessPage(props: Props) {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 md:gap-6 mb-6 md:mb-8">
                   <div
                     data-cy="service-success-amount-card"
-                    className="bg-muted p-4 md:p-6 rounded-xl"
+                    className="bg-muted/50 p-4 rounded-xl border border-border"
                   >
                     <div className="flex items-center mb-3">
                       <Calendar className="h-6 w-6 text-primary mr-3" />
@@ -572,7 +586,7 @@ export default async function StringServiceSuccessPage(props: Props) {
 
                   <div
                     data-cy="service-success-collection-card"
-                    className="bg-muted p-4 md:p-6 rounded-xl"
+                    className="bg-muted/50 p-4 rounded-xl border border-border lg:col-span-2"
                   >
                     <div className="flex items-center mb-3">
                       <CreditCard className="h-6 w-6 text-primary mr-3" />
@@ -645,7 +659,41 @@ export default async function StringServiceSuccessPage(props: Props) {
                     ) : null}
                   </div>
 
-                  <div className="bg-muted p-4 md:p-6 rounded-xl">
+                  <div className="bg-muted/50 p-4 rounded-xl border border-border">
+                    <div className="flex items-center mb-3">
+                      <CheckCircle className="h-6 w-6 text-primary mr-3" />
+                      <h3 className="font-semibold text-foreground">
+                        현재 상태
+                      </h3>
+                    </div>
+                    <p className="text-lg font-bold text-primary">접수 완료</p>
+                  </div>
+
+                  <div className="bg-muted/50 p-4 rounded-xl border border-border">
+                    <div className="flex items-center mb-3">
+                      <Package className="h-6 w-6 text-primary mr-3" />
+                      <h3 className="font-semibold text-foreground">
+                        수령 방식
+                      </h3>
+                    </div>
+                    <p className="text-lg font-bold text-primary">
+                      {shippingSectionTitle}
+                    </p>
+                  </div>
+
+                  <div className="bg-muted/50 p-4 rounded-xl border border-border">
+                    <div className="flex items-center mb-3">
+                      <Racquet className="h-6 w-6 text-primary mr-3" />
+                      <h3 className="font-semibold text-foreground">
+                        총 작업 수
+                      </h3>
+                    </div>
+                    <p className="text-lg font-bold text-primary">
+                      {racketLines.length}자루
+                    </p>
+                  </div>
+
+                  <div className="bg-muted/50 p-4 rounded-xl border border-border lg:col-span-2">
                     <div className="flex items-center mb-3">
                       <Clock className="h-6 w-6 text-primary mr-3" />
                       <h3 className="font-semibold text-foreground">
@@ -928,7 +976,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                             <p className="text-sm text-muted-foreground mb-1">
                               계좌번호
                             </p>
-                            <p className="font-mono font-bold text-lg text-foreground">
+                            <p className="font-mono font-bold text-lg text-foreground break-all tabular-nums">
                               {bankInfo.account}
                             </p>
                           </div>
@@ -1053,26 +1101,11 @@ export default async function StringServiceSuccessPage(props: Props) {
                 <div className="space-y-4 md:space-y-6">
                   <h3 className="text-xl font-bold text-foreground flex items-center">
                     <Racquet className="h-6 w-6 mr-3 text-primary" />
-                    장착 정보
+                    작업 요청사항
                   </h3>
-                  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
- <div className="p-4 md:p-6 bg-muted rounded-xl">
- <div className="flex items-center mb-3">
- <Racquet className="h-5 w-5 text-primary mr-2" />
- <p className="text-sm font-medium text-muted-foreground">라켓</p>
- </div>
- <p className="font-bold text-lg text-foreground">{application.stringDetails.racketType}</p>
- </div>
- <div className="p-4 md:p-6 bg-muted rounded-xl">
- <div className="flex items-center mb-3">
- <p className="text-sm font-medium text-muted-foreground">스트링</p>
- </div>
- <p className="font-bold text-lg text-foreground">{stringDisplay}</p>
- </div>
- </div> */}
 
                   {stringDetails?.requirements && (
-                    <div className="p-4 md:p-6 bg-muted rounded-xl">
+                    <PublicSurface variant="muted" className="rounded-xl">
                       <div className="flex items-start mb-3">
                         <FileText className="h-5 w-5 text-primary mr-2 mt-0.5" />
                         <p className="text-sm font-medium text-muted-foreground">
@@ -1082,25 +1115,29 @@ export default async function StringServiceSuccessPage(props: Props) {
                       <p className="text-foreground leading-relaxed">
                         {String(stringDetails.requirements)}
                       </p>
-                    </div>
+                    </PublicSurface>
                   )}
                 </div>
-                {/* 기존 장착 정보 카드 아래 쪽에 추가 */}
                 {racketLines.length > 0 && (
                   <div className="mt-6 md:mt-8">
-                    <h4 className="text-lg font-semibold text-foreground mb-3">
-                      라켓·스트링별 작업 정보
-                    </h4>
+                    <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <h3 className="text-xl font-bold text-foreground flex items-center">
+                        <Racquet className="h-6 w-6 mr-3 text-primary" />
+                        라켓·스트링별 작업 정보
+                      </h3>
+                      <Badge variant="neutral">
+                        총 작업 수: {racketLines.length}자루
+                      </Badge>
+                    </div>
 
-                    <p className="mb-3 text-sm text-muted-foreground">총 작업 수: {racketLines.length}자루</p>
-
-                    <div className="space-y-3">
+                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                       {racketLines.map((line: any, idx: number) => (
-                        <div
+                        <PublicSurface
                           key={line.id ?? idx}
-                          className="p-4 rounded-lg bg-card flex flex-col md:flex-row md:items-center md:justify-between gap-3"
+                          padding="sm"
+                          className="rounded-xl"
                         >
-                          <div>
+                          <div className="space-y-3">
                             <p className="text-xs text-muted-foreground mb-1">
                               라켓{" "}
                               {line.racketType ||
@@ -1108,88 +1145,58 @@ export default async function StringServiceSuccessPage(props: Props) {
                                 `${idx + 1}번`}
                             </p>
 
-                            {line.stringName && (
-                              <p className="font-semibold text-foreground">
-                                스트링: {line.stringName}
-                              </p>
-                            )}
-                          </div>
+                            <p className="font-semibold text-foreground">
+                              스트링: {line.stringName || "스트링명 미입력"}
+                            </p>
 
-                          <div className="text-sm text-foreground text-right">
-                            {(line.tensionMain || line.tensionCross) && (
-                              <p>
-                                텐션&nbsp;
-                                <span className="font-medium">
-                                  메인{" "}
-                                  {line.tensionMain
-                                    ? `${line.tensionMain}LB`
-                                    : "-"}{" "}
-                                  / 크로스{" "}
-                                  {line.tensionCross
-                                    ? `${line.tensionCross}LB`
-                                    : "-"}
-                                </span>
-                              </p>
-                            )}
-                            {typeof line.mountingFee === "number" && (
-                              <p className="mt-1 text-xs text-muted-foreground">
-                                장착비: {line.mountingFee.toLocaleString("ko-KR")}원
-                              </p>
-                            )}
-                            {line.note && (
-                              <p className="mt-1 text-xs text-muted-foreground">
-                                메모: {line.note}
-                              </p>
-                            )}
+                            <div className="grid grid-cols-1 gap-2 text-sm text-foreground">
+                              {(line.tensionMain || line.tensionCross) && (
+                                <p>
+                                  텐션{" "}
+                                  <span className="font-medium">
+                                    메인{" "}
+                                    {line.tensionMain
+                                      ? `${line.tensionMain}LB`
+                                      : "-"}{" "}
+                                    / 크로스{" "}
+                                    {line.tensionCross
+                                      ? `${line.tensionCross}LB`
+                                      : "-"}
+                                  </span>
+                                </p>
+                              )}
+                              {typeof line.mountingFee === "number" && (
+                                <p className="text-muted-foreground">
+                                  장착비:{" "}
+                                  {line.mountingFee.toLocaleString("ko-KR")}원
+                                </p>
+                              )}
+                              {line.note && (
+                                <p className="text-muted-foreground break-words">
+                                  메모: {line.note}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        </div>
+                        </PublicSurface>
                       ))}
                     </div>
                   </div>
                 )}
-              </CardContent>
-
-              <CardFooter className="bg-card rounded-b-lg p-4 md:p-8">
-                <div className="flex flex-col sm:flex-row gap-4 w-full">
-                  <Button
-                    variant="default"
-                    className="flex-1 h-12 transition-all duration-200"
-                    asChild
-                  >
-                    <Link
-                      data-cy="service-success-application-link"
-                      href={`/mypage?${new URLSearchParams({
-                        tab: "applications",
-                        applicationId: String(application._id),
-                      }).toString()}`}
-                    >
-                      <FileText className="h-5 w-5 mr-2" />
-                      신청 내역 보기
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1 h-12 transition-colors duration-200"
-                    asChild
-                  >
-                    <Link href="/">
-                      <Home className="h-5 w-5 mr-2" />
-                      홈으로 돌아가기
-                    </Link>
-                  </Button>
-                </div>
-              </CardFooter>
-            </Card>
+              </div>
+            </SummaryCard>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-              <Card className="bg-card border border-border shadow-md">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-lg">
+              <SummaryCard
+                title={
+                  <span className="flex items-center">
                     <Shield className="h-6 w-6 mr-3 text-primary" />
                     신청 안내사항
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+                  </span>
+                }
+                className="shadow-md"
+              >
                   <ul className="space-y-3">
                     <li className="flex items-start">
                       <CheckCircle className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
@@ -1210,17 +1217,17 @@ export default async function StringServiceSuccessPage(props: Props) {
                       </span>
                     </li>
                   </ul>
-                </CardContent>
-              </Card>
+              </SummaryCard>
 
-              <Card className="bg-card border border-border shadow-md">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-lg">
+              <SummaryCard
+                title={
+                  <span className="flex items-center">
                     <Award className="h-6 w-6 mr-3 text-foreground" />
                     서비스 특징
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+                  </span>
+                }
+                className="shadow-md"
+              >
                   <div className="space-y-4">
                     <div className="flex items-center p-3 bg-secondary border border-border rounded-lg">
                       <Shield className="h-6 w-6 text-primary mr-3" />
@@ -1256,8 +1263,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+              </SummaryCard>
             </div>
           </div>
         </div>
