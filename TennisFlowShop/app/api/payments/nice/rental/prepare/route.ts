@@ -5,7 +5,8 @@ import { buildNiceOrderName, createNiceOrderId } from "@/lib/payments/nice/serve
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
 import { getPointsSummary } from "@/lib/points.service";
-import { publicProductFilter, publicRacketStatusFilter } from "@/lib/public-visibility";
+import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
+import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -95,7 +96,7 @@ export async function POST(req: Request) {
     const db = client.db();
 
     const racketObjectId = new ObjectId(parsed.data.racketId);
-    const racket = await db.collection("used_rackets").findOne({ _id: racketObjectId, ...publicRacketStatusFilter });
+    const racket = await db.collection("used_rackets").findOne({ _id: racketObjectId, ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) });
     if (!racket) return NextResponse.json({ success: false, error: "라켓 없음" }, { status: 404 });
 
     const activeCount = await db.collection("rental_orders").countDocuments({
@@ -115,7 +116,7 @@ export async function POST(req: Request) {
       if (!sid || !ObjectId.isValid(sid)) {
         return NextResponse.json({ success: false, error: "BAD_STRING_ID" }, { status: 400 });
       }
-      const s = await db.collection("products").findOne({ _id: new ObjectId(sid), ...publicProductFilter }, { projection: { price: 1, mountingFee: 1 } });
+      const s = await db.collection("products").findOne({ _id: new ObjectId(sid), ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) }, { projection: { price: 1, mountingFee: 1 } });
       if (!s) return NextResponse.json({ success: false, error: "STRING_NOT_FOUND" }, { status: 404 });
       stringPrice = Number((s as any)?.price ?? 0);
       stringingFee = Number((s as any)?.mountingFee ?? 0);

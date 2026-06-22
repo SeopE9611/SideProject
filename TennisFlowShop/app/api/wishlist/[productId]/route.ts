@@ -3,7 +3,8 @@ import { cookies } from "next/headers";
 import { ObjectId } from "mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { getDb } from "@/lib/mongodb";
-import { publicProductFilter } from "@/lib/public-visibility";
+import { productVisibilityFilterFor } from "@/lib/public-visibility";
+import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 
 // “개별 아이템” 한 개만 제거 - 해당 productId 한 건만 삭제(deleteOne)
 
@@ -91,7 +92,7 @@ export async function PATCH(
     const productObjectId = new ObjectId(productId);
     const prod = await db.collection("products").findOne({
       _id: productObjectId,
-      ...publicProductFilter,
+      ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
     });
     if (!prod) {
       return NextResponse.json(

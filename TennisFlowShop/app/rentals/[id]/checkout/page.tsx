@@ -9,7 +9,8 @@ import {
 } from "@/lib/product-pricing";
 import { cookies } from "next/headers";
 import LoginGate from "@/components/system/LoginGate";
-import { publicProductFilter, publicRacketStatusFilter } from "@/lib/public-visibility";
+import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
+import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 
 import type { Metadata } from "next";
 
@@ -37,7 +38,7 @@ async function getInitialForRacket(
   const db = (await clientPromise).db();
   const racket = await db.collection("used_rackets").findOne({
     _id: new ObjectId(racketId),
-    ...publicRacketStatusFilter,
+    ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()),
   });
 
   if (!racket) return null;
@@ -71,7 +72,7 @@ async function getInitialForRacket(
       } = undefined;
   if (stringId && ObjectId.isValid(stringId)) {
     const p = await db.collection("products").findOne(
-      { _id: new ObjectId(stringId), ...publicProductFilter },
+      { _id: new ObjectId(stringId), ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) },
       {
         projection: {
           name: 1,

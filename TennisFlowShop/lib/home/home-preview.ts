@@ -1,4 +1,5 @@
-import { publicProductFilter, publicRacketStatusFilter } from "@/lib/public-visibility";
+import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
+import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import "server-only";
 
 import { unstable_cache } from "next/cache";
@@ -117,7 +118,7 @@ const toIsoString = (value: unknown) => {
 
 async function loadProducts() {
   const db = await getDb();
-  const filter: Filter<ProductDoc> = publicProductFilter;
+  const filter: Filter<ProductDoc> = productVisibilityFilterFor(await getVisibilityViewerFromCookies());
   const collection = db.collection<ProductDoc>("products");
   const projection = {
     name: 1,
@@ -162,7 +163,7 @@ async function loadProducts() {
 
 async function loadRackets() {
   const db = await getDb();
-  const filter: Filter<RacketDoc> = { ...publicRacketStatusFilter };
+  const filter: Filter<RacketDoc> = { ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) };
   const sort: Sort = { createdAt: -1, _id: -1 };
   const collection = db.collection<RacketDoc>("used_rackets");
   const projection = {

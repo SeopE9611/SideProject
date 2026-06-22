@@ -1,4 +1,5 @@
-import { publicProductFilter, publicRacketStatusFilter } from "@/lib/public-visibility";
+import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
+import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import { ObjectId, type Db } from "mongodb";
 import {
   calcOrderShippingFeeWithBundlePolicy,
@@ -48,7 +49,7 @@ export async function calculateCheckoutPayableAmount(params: {
       if (kind === "product") {
         const prod = await db
           .collection("products")
-          .findOne({ _id: new ObjectId(it.productId), ...publicProductFilter });
+          .findOne({ _id: new ObjectId(it.productId), ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) });
         if (!prod) throw new Error("PRODUCT_NOT_AVAILABLE");
         return {
           name: prod?.name ?? "알 수 없는 상품",
@@ -64,7 +65,7 @@ export async function calculateCheckoutPayableAmount(params: {
       }
       const racket = await db
         .collection("used_rackets")
-        .findOne({ _id: new ObjectId(it.productId), ...publicRacketStatusFilter });
+        .findOne({ _id: new ObjectId(it.productId), ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) });
       if (!racket) throw new Error("RACKET_NOT_AVAILABLE");
       return {
         name: racket

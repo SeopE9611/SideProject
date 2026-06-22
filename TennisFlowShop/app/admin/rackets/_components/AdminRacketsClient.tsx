@@ -546,7 +546,7 @@ export default function AdminRacketsClient() {
                                 <DropdownMenuItem asChild className="whitespace-nowrap">
                                   <Link href={`/rackets/${item.id}`} className="flex items-center">
                                     <Eye className="h-4 w-4 mr-2" />
-                                    상세 보기
+                                    {item.status === "inactive" || item.status === "비노출" ? "관리자 미리보기" : "상세 보기"}
                                   </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild className="whitespace-nowrap">

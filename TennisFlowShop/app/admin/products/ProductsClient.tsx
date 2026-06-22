@@ -573,15 +573,9 @@ export default function ProductsClient() {
                             <TableCell className="text-left align-middle py-3">
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
-                                  {isHidden ? (
-                                    <div className="line-clamp-2 break-keep font-medium text-foreground" title={s.name}>
-                                      {s.name}
-                                    </div>
-                                  ) : (
-                                    <Link href={`/products/${s._id}`} className="line-clamp-2 break-keep font-medium text-foreground hover:text-foreground dark:hover:text-foreground" title={s.name}>
-                                      {s.name}
-                                    </Link>
-                                  )}
+                                  <Link href={`/products/${s._id}`} className="line-clamp-2 break-keep font-medium text-foreground hover:text-foreground dark:hover:text-foreground" title={s.name}>
+                                    {s.name}
+                                  </Link>
                                   {isHidden && (
                                     <Badge variant="outline" className="shrink-0 whitespace-nowrap rounded-full px-1.5 py-0 text-[10px] font-medium text-muted-foreground">
                                       숨김
@@ -625,13 +619,9 @@ export default function ProductsClient() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="border-border">
                                   <DropdownMenuLabel>작업</DropdownMenuLabel>
-                                  {isHidden ? (
-                                    <DropdownMenuItem disabled>사용자 상세 숨김</DropdownMenuItem>
-                                  ) : (
-                                    <DropdownMenuItem asChild>
-                                      <Link href={`/products/${s._id}`}>상세 보기</Link>
-                                    </DropdownMenuItem>
-                                  )}
+                                  <DropdownMenuItem asChild>
+                                    <Link href={`/products/${s._id}`}>{isHidden ? "관리자 미리보기" : "상세 보기"}</Link>
+                                  </DropdownMenuItem>
                                   <DropdownMenuItem asChild>
                                     <Link href={`/admin/products/${s._id}/edit`}>수정</Link>
                                   </DropdownMenuItem>

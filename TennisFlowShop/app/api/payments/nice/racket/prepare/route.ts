@@ -1,4 +1,5 @@
-import { publicRacketStatusFilter } from "@/lib/public-visibility";
+import { racketVisibilityFilterFor } from "@/lib/public-visibility";
+import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
 import { buildNiceOrderName, createNiceOrderId } from "@/lib/payments/nice/server";
@@ -97,7 +98,7 @@ export async function POST(req: Request) {
 
     const client = await clientPromise;
     const db = client.db();
-    const racket = await db.collection("used_rackets").findOne({ _id: new ObjectId(racketId), ...publicRacketStatusFilter });
+    const racket = await db.collection("used_rackets").findOne({ _id: new ObjectId(racketId), ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) });
 
     if (!racket || racket.status !== "available") {
       return NextResponse.json({ success: false, error: "구매 가능한 라켓이 아닙니다." }, { status: 400 });

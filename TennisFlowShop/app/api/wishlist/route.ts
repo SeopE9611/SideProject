@@ -13,7 +13,8 @@ import {
   normalizeGaugeRows,
   normalizeVariantRows,
 } from "@/lib/products/string-stock";
-import { publicProductFilter } from "@/lib/public-visibility";
+import { productVisibilityFilterFor } from "@/lib/public-visibility";
+import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 
 // 내 위시리스트 목록 + 상품 요약
 
@@ -170,7 +171,7 @@ export async function GET() {
             foreignField: "_id",
             as: "product",
             pipeline: [
-              { $match: publicProductFilter },
+              { $match: productVisibilityFilterFor(await getVisibilityViewerFromCookies()) },
               {
                 $project: {
                   name: 1,
@@ -279,7 +280,7 @@ export async function POST(req: Request) {
 
     const prod = await products.findOne({
       _id: new ObjectId(productId),
-      ...publicProductFilter,
+      ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
     });
     if (!prod)
       return NextResponse.json(
