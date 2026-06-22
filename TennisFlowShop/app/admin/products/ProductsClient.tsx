@@ -35,6 +35,7 @@ type Product = {
   gauge: string;
   material: string;
   price: number;
+  isVisible?: boolean;
   inventory?: { stock: number; lowStock?: number };
   computedStatus?: StatusKey;
 };
@@ -566,19 +567,31 @@ export default function ProductsClient() {
                       items.map((s) => {
                         const statusKey: StatusKey = (s.computedStatus ?? "active") as StatusKey;
                         const S = STATUS_UI[statusKey];
+                        const isHidden = s.isVisible === false;
                         return (
                           <TableRow key={s._id} className="h-14 border-b border-border last:border-b-0 dark:border-border hover:bg-muted dark:hover:bg-card even:bg-muted dark:even:bg-card transition-colors">
                             <TableCell className="text-left align-middle py-3">
-                              <Link href={`/products/${s._id}`} className="hover:text-foreground dark:hover:text-foreground">
-                                <div className="space-y-1">
-                                  <div className="line-clamp-2 break-keep font-medium text-foreground" title={s.name}>
-                                    {s.name}
-                                  </div>
-                                  <div className="truncate font-mono text-[11px] text-muted-foreground" title={s.sku}>
-                                    {s.sku}
-                                  </div>
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  {isHidden ? (
+                                    <div className="line-clamp-2 break-keep font-medium text-foreground" title={s.name}>
+                                      {s.name}
+                                    </div>
+                                  ) : (
+                                    <Link href={`/products/${s._id}`} className="line-clamp-2 break-keep font-medium text-foreground hover:text-foreground dark:hover:text-foreground" title={s.name}>
+                                      {s.name}
+                                    </Link>
+                                  )}
+                                  {isHidden && (
+                                    <Badge variant="outline" className="shrink-0 whitespace-nowrap rounded-full px-1.5 py-0 text-[10px] font-medium text-muted-foreground">
+                                      숨김
+                                    </Badge>
+                                  )}
                                 </div>
-                              </Link>
+                                <div className="truncate font-mono text-[11px] text-muted-foreground" title={s.sku}>
+                                  {s.sku}
+                                </div>
+                              </div>
                             </TableCell>
 
                             <TableCell className="text-center align-middle">
@@ -612,9 +625,13 @@ export default function ProductsClient() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="border-border">
                                   <DropdownMenuLabel>작업</DropdownMenuLabel>
-                                  <DropdownMenuItem asChild>
-                                    <Link href={`/products/${s._id}`}>상세 보기</Link>
-                                  </DropdownMenuItem>
+                                  {isHidden ? (
+                                    <DropdownMenuItem disabled>사용자 상세 숨김</DropdownMenuItem>
+                                  ) : (
+                                    <DropdownMenuItem asChild>
+                                      <Link href={`/products/${s._id}`}>상세 보기</Link>
+                                    </DropdownMenuItem>
+                                  )}
                                   <DropdownMenuItem asChild>
                                     <Link href={`/admin/products/${s._id}/edit`}>수정</Link>
                                   </DropdownMenuItem>
