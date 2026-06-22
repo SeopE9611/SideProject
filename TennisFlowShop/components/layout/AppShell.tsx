@@ -14,7 +14,6 @@ const HIDE_SIDEMENU_PREFIXES = [
   "/mypage",
   "/admin",
   "/checkout",
-  "/cart",
   "/services/apply",
   "/order-lookup",
   "/login",
@@ -24,6 +23,7 @@ const HIDE_SIDEMENU_PREFIXES = [
 ];
 
 const HIDE_SIDEMENU_EXACT_PATHS = new Set([
+  "/cart",
   "/services/success",
   "/services/packages/checkout",
   "/services/packages/success",

@@ -4,7 +4,7 @@ import WishlistSidebar from "@/app/cart/_components/WishlistSidebar";
 import { useAuthStore, type User } from "@/app/store/authStore";
 import { useCartStore } from "@/app/store/cartStore";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { EmptyState, PriceSummary, SummaryCard, type PriceSummaryRow } from "@/components/public";
+import { EmptyState, PriceSummary, type PriceSummaryRow } from "@/components/public";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -594,11 +594,13 @@ export default function CartPageClient() {
 
                     {/* 전체선택 / 선택n개 / 선택삭제 */}
                     <div className="flex w-full flex-wrap items-center gap-2 rounded-xl bg-muted/30 p-2 text-[13px] bp-sm:w-auto bp-sm:justify-end bp-sm:bg-transparent bp-sm:p-0 [&_button]:shrink-0">
-                      <button type="button" onClick={toggleAll} className="inline-flex items-center gap-2 rounded-md px-1.5 py-1 font-medium text-foreground hover:bg-muted">
-                        <Checkbox checked={selectedLineKeys.length === cartItems.length} aria-hidden="true" tabIndex={-1} className="pointer-events-none" />
-                        전체 선택
-                      </button>
-                      <div className="hidden bp-sm:block h-4 w-px bg-foreground/10 dark:bg-card/10" />
+                      <div className="inline-flex items-center gap-2 rounded-md px-1.5 py-1 font-medium text-foreground hover:bg-muted">
+                        <Checkbox checked={selectedLineKeys.length === cartItems.length} onCheckedChange={toggleAll} aria-label={selectedLineKeys.length === cartItems.length ? "전체 해제" : "전체 선택"} />
+                        <button type="button" onClick={toggleAll} className="font-medium">
+                          {selectedLineKeys.length === cartItems.length ? "전체 해제" : "전체 선택"}
+                        </button>
+                      </div>
+                      <div className="hidden h-4 w-px bg-foreground/10 bp-sm:block dark:bg-card/10" />
                       <span className="text-muted-foreground">선택 {selectedCartItems.length}개</span>
                       <Button variant="ghost" size="sm" onClick={removeSelected} disabled={!hasSelectedItems} className="h-8 px-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:text-muted-foreground/60 dark:hover:bg-destructive/10">
                         선택 삭제
@@ -614,7 +616,6 @@ export default function CartPageClient() {
                     const isRacket = (item.kind ?? "product") === "racket";
                     // 라켓은 /rackets/[id], 일반 상품은 /products/[id]
                     const itemHref = isRacket ? `/rackets/${item.id}` : `/products/${item.id}`;
-                    const stock = item.stock ?? Number.POSITIVE_INFINITY;
                     const canDec = item.quantity > 1;
                     const maxStock = getMaxStock(item.stock);
                     const canInc = item.quantity < maxStock;
@@ -695,136 +696,128 @@ export default function CartPageClient() {
 
                           {/* 옵션/수량 박스: 카드 전체 폭으로 분리 */}
                           <div className="min-w-0 rounded-xl border border-border bg-muted/25 p-3 bp-sm:ml-8">
-                            <div className="mb-2 min-w-0 text-[13px] text-muted-foreground">
-                              <p className="flex max-w-full flex-wrap items-center gap-1.5">
+                            <div className="flex min-w-0 items-start justify-between gap-3">
+                              <p className="flex min-w-0 flex-wrap items-center gap-1.5 pr-2 text-[13px] leading-relaxed text-muted-foreground">
                                 <span className="font-medium text-foreground">옵션:</span>
-                                  {item.selectedGauge ? <span className="whitespace-nowrap">게이지 {formatGaugeLabel(item.selectedGauge)}</span> : null}
-                                  {item.selectedColorLabel || item.selectedColor ? (
-                                    <span className="inline-flex max-w-full items-center gap-1 whitespace-nowrap">
-                                      <span className="text-border">·</span> 색상
-                                      {item.selectedColorHex && <span className="h-2.5 w-2.5 shrink-0 rounded-full border border-border/60" style={{ backgroundColor: item.selectedColorHex }} />}
-                                      <span className="min-w-0 truncate">{item.selectedColorLabel || item.selectedColor}</span>
-                                    </span>
-                                  ) : null}
-                                  {!item.selectedGauge && !item.selectedColorLabel && !item.selectedColor && <span>기본 옵션</span>}
+                                {item.selectedGauge ? <span className="whitespace-nowrap">게이지 {formatGaugeLabel(item.selectedGauge)}</span> : null}
+                                {item.selectedColorLabel || item.selectedColor ? (
+                                  <span className="inline-flex max-w-full items-center gap-1 whitespace-nowrap">
+                                    <span className="text-border">·</span>
+                                    <span>색상</span>
+                                    {item.selectedColorHex && <span className="h-2.5 w-2.5 shrink-0 rounded-full border border-border/60" style={{ backgroundColor: item.selectedColorHex }} />}
+                                    <span className="min-w-0 truncate">{item.selectedColorLabel || item.selectedColor}</span>
+                                  </span>
+                                ) : null}
+                                {!item.selectedGauge && !item.selectedColorLabel && !item.selectedColor && <span>기본 옵션</span>}
                               </p>
+
+                              {/* 삭제 버튼 (컨펌) */}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label={lockStepper ? `번들(라켓+스트링) 삭제` : `${item.name} 삭제`}
+                                title={lockStepper ? "라켓과 장착 스트링이 함께 담긴 구성이라 둘 중 하나만 삭제할 수 없어요." : undefined}
+                                onClick={() => {
+                                  // 번들(라켓/장착 스트링) 라인에서 삭제를 누르면
+                                  // "불일치"가 생기지 않도록 번들 2개를 같이 삭제한다.
+                                  if (lockStepper && bundleLockedIds.length === 2) {
+                                    if (confirm("번들(라켓 + 장착 스트링)을 통째로 장바구니에서 삭제할까요?")) {
+                                      cartItems.filter((it) => bundleLockedIds.includes(it.id)).forEach((it) => removeItem(it.id, it.selectedGauge, it.selectedColor));
+                                      setSelectedLineKeys((prev) =>
+                                        prev.filter((selectedLineKey) => {
+                                          const selectedItem = cartItems.find((it) => getCartLineKey(it) === selectedLineKey);
+                                          return selectedItem ? !bundleLockedIds.includes(selectedItem.id) : true;
+                                        }),
+                                      );
+                                    }
+                                    return;
+                                  }
+
+                                  // 일반 상품은 기존처럼 개별 삭제
+                                  if (confirm(`"${item.name}"을(를) 장바구니에서 삭제할까요?`)) {
+                                    removeItem(item.id, item.selectedGauge, item.selectedColor);
+                                  }
+                                }}
+                                className="-mr-1 -mt-1 h-8 w-8 shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </div>
-                            <div className="grid w-full min-w-0 grid-cols-1 items-end gap-3 bp-sm:grid-cols-[minmax(160px,1fr)_auto]">
+
+                            <div className="mt-3 flex min-w-0 items-end justify-between gap-3">
                               {/* 수량 스테퍼 (번들이면 잠금 + 링크로만 변경) */}
-                              {lockStepper ? (
-                                <div className="w-[132px] min-w-0 justify-self-start flex flex-col items-start bp-md:items-center bp-md:justify-self-center">
-                                  {/* 숫자만 표시(± 없음) */}
-                                  <div className="flex h-8 items-center rounded-full bg-muted px-3 dark:bg-muted">
-                                    <span className="tabular-nums w-8 select-none text-center font-medium">{item.quantity}</span>
-                                  </div>
+                              <div className="min-w-0 text-left">
+                                {lockStepper ? (
+                                  <>
+                                    {/* 숫자만 표시(± 없음) */}
+                                    <div className="inline-flex h-8 items-center rounded-full bg-muted px-3 dark:bg-muted">
+                                      <span className="w-8 select-none text-center font-medium tabular-nums">{item.quantity}</span>
+                                    </div>
 
-                                  {/* 번들 변경 링크: 라켓/스트링 양쪽에 보여줘도 UX가 덜 헷갈림 */}
-                                  {bundleEditHref && (
-                                    <>
-                                      <Link href={bundleEditHref} className="mt-1 text-xs font-medium text-primary hover:underline dark:text-primary">
-                                        번들 변경
-                                      </Link>
-                                      <p className="mt-1 max-w-[220px] text-center text-[11px] leading-snug text-muted-foreground">스트링 선택 화면에서 수량과 스트링을 함께 변경할 수 있어요.</p>
-                                    </>
-                                  )}
+                                    {Number.isFinite(maxStock) && <span className={`mt-1 block text-xs leading-snug ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}>재고 {maxStock}개</span>}
 
-                                  {Number.isFinite(maxStock) && <span className={`mt-1 text-center text-xs leading-snug ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}>재고 {maxStock}개</span>}
-                                </div>
-                              ) : (
-                                /* 수량 스테퍼 (pill, 비활성 표시) */
-                                <div className="w-[132px] min-w-0 justify-self-start flex flex-col items-start bp-md:items-center bp-md:justify-self-center">
-                                  <div className="flex items-center rounded-full bg-muted px-1 dark:bg-muted">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-8 w-8 disabled:opacity-40"
-                                      aria-label={`${item.name} 수량 감소`}
-                                      disabled={lockStepper ? true : !canDec}
-                                      onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedGauge, item.selectedColor)}
-                                      title={lockStepper ? "번들 품목은 스트링 선택 화면에서만 수량을 변경할 수 있어요." : undefined}
-                                    >
-                                      <Minus className="h-4 w-4" />
-                                    </Button>
+                                    {/* 번들 변경 링크: 라켓/스트링 양쪽에 보여줘도 UX가 덜 헷갈림 */}
+                                    {bundleEditHref && (
+                                      <>
+                                        <Link href={bundleEditHref} className="mt-1 block text-xs font-medium text-primary hover:underline dark:text-primary">
+                                          번들 변경
+                                        </Link>
+                                        <p className="mt-1 max-w-[220px] text-[11px] leading-snug text-muted-foreground">스트링 선택 화면에서 수량과 스트링을 함께 변경할 수 있어요.</p>
+                                      </>
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="inline-flex items-center rounded-full bg-muted px-1 dark:bg-muted">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 disabled:opacity-40"
+                                        aria-label={`${item.name} 수량 감소`}
+                                        disabled={lockStepper ? true : !canDec}
+                                        onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedGauge, item.selectedColor)}
+                                        title={lockStepper ? "번들 품목은 스트링 선택 화면에서만 수량을 변경할 수 있어요." : undefined}
+                                      >
+                                        <Minus className="h-4 w-4" />
+                                      </Button>
 
-                                    <span className={`tabular-nums w-8 select-none text-center font-medium ${lockStepper ? "opacity-60" : ""}`}>{item.quantity}</span>
+                                      <span className={`w-8 select-none text-center font-medium tabular-nums ${lockStepper ? "opacity-60" : ""}`}>{item.quantity}</span>
 
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-8 w-8 disabled:opacity-40"
-                                      aria-label={`${item.name} 수량 증가`}
-                                      disabled={lockStepper ? true : !canInc}
-                                      title={lockStepper ? "번들 품목은 스트링 선택 화면에서만 수량을 변경할 수 있어요." : undefined}
-                                      onClick={() => {
-                                        if (!canInc) {
-                                          showErrorToast(
-                                            <>
-                                              <p>
-                                                <strong>{item.name}</strong>의 최대 주문 수량은 {maxStock}
-                                                개입니다.
-                                              </p>
-                                              <p>더 이상 수량을 늘릴 수 없습니다.</p>
-                                            </>,
-                                          );
-                                          return;
-                                        }
-                                        updateQuantity(item.id, item.quantity + 1, item.selectedGauge, item.selectedColor);
-                                      }}
-                                    >
-                                      <Plus className="h-4 w-4" />
-                                    </Button>
-                                  </div>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 disabled:opacity-40"
+                                        aria-label={`${item.name} 수량 증가`}
+                                        disabled={lockStepper ? true : !canInc}
+                                        title={lockStepper ? "번들 품목은 스트링 선택 화면에서만 수량을 변경할 수 있어요." : undefined}
+                                        onClick={() => {
+                                          if (!canInc) {
+                                            showErrorToast(
+                                              <>
+                                                <p>
+                                                  <strong>{item.name}</strong>의 최대 주문 수량은 {maxStock}
+                                                  개입니다.
+                                                </p>
+                                                <p>더 이상 수량을 늘릴 수 없습니다.</p>
+                                              </>,
+                                            );
+                                            return;
+                                          }
+                                          updateQuantity(item.id, item.quantity + 1, item.selectedGauge, item.selectedColor);
+                                        }}
+                                      >
+                                        <Plus className="h-4 w-4" />
+                                      </Button>
+                                    </div>
 
-                                  {lockStepper && bundleEditHref ? (
-                                    <>
-                                      <Link href={bundleEditHref} className="mt-1 text-xs font-medium text-primary hover:underline dark:text-primary">
-                                        번들 변경
-                                      </Link>
-                                      <p className="mt-1 max-w-[220px] text-center text-[11px] leading-snug text-muted-foreground">스트링 선택 화면에서 수량과 스트링을 함께 변경할 수 있어요.</p>
-                                    </>
-                                  ) : (
-                                    Number.isFinite(maxStock) && <span className={`mt-1 text-center text-xs leading-snug ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}>재고 {maxStock}개</span>
-                                  )}
-                                </div>
-                              )}
+                                    {Number.isFinite(maxStock) && <span className={`mt-1 block text-xs leading-snug ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}>재고 {maxStock}개</span>}
+                                  </>
+                                )}
+                              </div>
 
-                              <div className="flex items-start justify-between gap-3 bp-sm:justify-end">
-                                <div className="min-w-[120px] text-right">
-                                  <div className="text-sm text-foreground/75">합계</div>
-                                  <div className="whitespace-nowrap tabular-nums text-lg font-semibold text-foreground">{formatKRW(item.price * item.quantity)}원</div>
-                                </div>
-
-                                {/* 삭제 버튼 (컨펌) */}
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  aria-label={lockStepper ? `번들(라켓+스트링) 삭제` : `${item.name} 삭제`}
-                                  title={lockStepper ? "라켓과 장착 스트링이 함께 담긴 구성이라 둘 중 하나만 삭제할 수 없어요." : undefined}
-                                  onClick={() => {
-                                    // 번들(라켓/장착 스트링) 라인에서 삭제를 누르면
-                                    // "불일치"가 생기지 않도록 번들 2개를 같이 삭제한다.
-                                    if (lockStepper && bundleLockedIds.length === 2) {
-                                      if (confirm("번들(라켓 + 장착 스트링)을 통째로 장바구니에서 삭제할까요?")) {
-                                        cartItems.filter((it) => bundleLockedIds.includes(it.id)).forEach((it) => removeItem(it.id, it.selectedGauge, it.selectedColor));
-                                        setSelectedLineKeys((prev) =>
-                                          prev.filter((selectedLineKey) => {
-                                            const selectedItem = cartItems.find((it) => getCartLineKey(it) === selectedLineKey);
-                                            return selectedItem ? !bundleLockedIds.includes(selectedItem.id) : true;
-                                          }),
-                                        );
-                                      }
-                                      return;
-                                    }
-
-                                    // 일반 상품은 기존처럼 개별 삭제
-                                    if (confirm(`"${item.name}"을(를) 장바구니에서 삭제할까요?`)) {
-                                      removeItem(item.id, item.selectedGauge, item.selectedColor);
-                                    }
-                                  }}
-                                  className="h-10 w-10 justify-self-end text-muted-foreground hover:text-destructive"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
+                              <div className="shrink-0 whitespace-nowrap text-right">
+                                <div className="text-[13px] text-muted-foreground">합계</div>
+                                <div className="whitespace-nowrap tabular-nums text-lg font-semibold text-foreground">{formatKRW(item.price * item.quantity)}원</div>
                               </div>
                             </div>
                           </div>
@@ -834,7 +827,7 @@ export default function CartPageClient() {
                   })}
                 </CardContent>
 
-                <CardFooter className="border-t border-border bg-background px-4 py-3">
+                <CardFooter className="border-t border-border bg-background px-4 py-3 pr-12 bp-lg:pr-4">
                   <div className="flex w-full items-center justify-between gap-3">
                     <Button variant="ghost" size="sm" className="group text-muted-foreground hover:text-foreground" asChild>
                       <Link href="/products" className="flex items-center gap-2">
@@ -863,8 +856,13 @@ export default function CartPageClient() {
             {/* 요약 */}
             <div className="min-w-0">
               <div className="bp-lg:sticky bp-lg:top-[calc(var(--header-h)+16px)]">
-                <SummaryCard eyebrow="ORDER SUMMARY" title="주문 요약" description={`선택 ${selectedCartItems.length}개 기준으로 계산됩니다.`} className="overflow-hidden">
-                  <div className="space-y-3">
+                <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+                  <CardHeader className="space-y-1">
+                    <CardTitle className="text-lg">주문 요약</CardTitle>
+                    <p className="text-sm text-muted-foreground">선택 {selectedCartItems.length}개 기준으로 계산됩니다.</p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-3">
                     <PriceSummary rows={priceSummaryRows} />
 
                     <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">
@@ -878,7 +876,7 @@ export default function CartPageClient() {
                       </p>
                     </div>
                   </div>
-                  <div className="mt-4 flex flex-col items-stretch gap-3 border-t border-border pt-4">
+                    <div className="flex flex-col items-stretch gap-3 border-t border-border pt-4">
                     {blockServiceCheckout ? (
                       <>
                         {blockServiceCheckoutByComposition && (
@@ -906,7 +904,7 @@ export default function CartPageClient() {
                           </div>
                         )}
                         {bundleEditHref ? (
-                          <Button asChild className="flex h-14 w-full items-center justify-center gap-2 px-4 text-base font-semibold bp-sm:gap-3 bp-sm:text-lg">
+                          <Button asChild className="flex h-12 w-full items-center justify-center gap-2 px-3 font-semibold">
                             <Link href={bundleEditHref}>
                               <ShoppingBag className="h-5 w-5" />
                               번들 변경
@@ -914,7 +912,7 @@ export default function CartPageClient() {
                             </Link>
                           </Button>
                         ) : (
-                          <Button className="flex h-14 w-full items-center justify-center gap-2 px-4 text-base font-semibold bp-sm:gap-3 bp-sm:text-lg" size="lg" onClick={() => showErrorToast(serviceBlockToastMessage)}>
+                          <Button className="flex h-12 w-full items-center justify-center gap-2 px-3 font-semibold" size="lg" onClick={() => showErrorToast(serviceBlockToastMessage)}>
                             <ShoppingBag className="h-5 w-5" />
                             {blockServiceCheckoutByComposition ? "구성 정리 후 결제하기" : "수량 맞춘 뒤 주문하기"}
                             <ArrowRight className="h-5 w-5" />
@@ -922,12 +920,12 @@ export default function CartPageClient() {
                         )}
                       </>
                     ) : loading ? (
-                      <Button className="h-14 w-full font-semibold opacity-70" size="lg" disabled>
+                      <Button className="h-12 w-full font-semibold opacity-70" disabled>
                         <Loader2 className="h-5 w-5 animate-spin" />
                         로그인 확인 중...
                       </Button>
                     ) : !isShippingFeeReady ? (
-                      <Button className="h-14 w-full font-semibold opacity-70" size="lg" disabled>
+                      <Button className="h-12 w-full font-semibold opacity-70" disabled>
                         <Loader2 className="h-5 w-5 animate-spin" />
                         금액 계산 중...
                       </Button>
@@ -953,7 +951,8 @@ export default function CartPageClient() {
                       </>
                     )}
                   </div>
-                </SummaryCard>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>
@@ -1003,7 +1002,7 @@ export default function CartPageClient() {
               <p className="truncate text-lg font-black tabular-nums text-foreground">{formatKRW(total)}원</p>
             </div>
             <Button className="h-12 min-w-[148px] font-semibold" disabled={!hasSelectedItems || !isShippingFeeReady || isCheckingCheckoutStock} onClick={handleCheckoutClick}>
-              {!hasSelectedItems ? "상품을 선택해주세요" : `주문하기 ${selectedCartItems.length}`}
+              {!hasSelectedItems ? "상품 선택" : `주문하기 ${selectedCartItems.length}`}
             </Button>
           </div>
         </div>
