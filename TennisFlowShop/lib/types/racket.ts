@@ -23,6 +23,7 @@ export type UsedRacket = {
   shippingFee: number; // 상품별 배송비
   images: string[]; // Supabase 등 업로드 URL
   status: "available" | "sold" | "rented" | "inactive";
+  isVisible?: boolean;
   quantity?: number;
   searchKeywords?: string[];
 

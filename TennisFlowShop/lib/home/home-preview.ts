@@ -1,8 +1,6 @@
 import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
-import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import "server-only";
 
-import { unstable_cache } from "next/cache";
 import { ObjectId, type Filter, type Sort } from "mongodb";
 
 import { getBoardList } from "@/lib/boards.queries";
@@ -118,7 +116,7 @@ const toIsoString = (value: unknown) => {
 
 async function loadProducts() {
   const db = await getDb();
-  const filter: Filter<ProductDoc> = productVisibilityFilterFor(await getVisibilityViewerFromCookies());
+  const filter: Filter<ProductDoc> = productVisibilityFilterFor();
   const collection = db.collection<ProductDoc>("products");
   const projection = {
     name: 1,
@@ -163,7 +161,7 @@ async function loadProducts() {
 
 async function loadRackets() {
   const db = await getDb();
-  const filter: Filter<RacketDoc> = { ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) };
+  const filter: Filter<RacketDoc> = { ...racketVisibilityFilterFor() };
   const sort: Sort = { createdAt: -1, _id: -1 };
   const collection = db.collection<RacketDoc>("used_rackets");
   const projection = {
@@ -286,8 +284,4 @@ async function loadHomePreviewData(): Promise<HomePreviewData | null> {
   return { products, rackets, notices, marketPosts };
 }
 
-export const getHomePreviewData = unstable_cache(
-  loadHomePreviewData,
-  ["home-preview-data-v1"],
-  { revalidate: 45, tags: ["home-preview"] },
-);
+export const getHomePreviewData = loadHomePreviewData;

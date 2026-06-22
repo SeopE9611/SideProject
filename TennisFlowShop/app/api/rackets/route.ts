@@ -32,6 +32,7 @@ export async function GET(req: Request) {
   const cond = searchParams.get("cond")?.trim(); // 'A' | 'B' | 'C'
   const keyword = searchParams.get("q")?.trim() || null;
   const exposure = searchParams.get("exposure") || "all";
+  const viewer = await getVisibilityViewerFromCookies();
 
   // 가격 범위 파라미터: min/max + minPrice/maxPrice(별칭) 둘 다 지원
   const minStr = searchParams.get("min") ?? searchParams.get("minPrice");
@@ -52,7 +53,7 @@ export async function GET(req: Request) {
   // 일반 사용자는 비노출 라켓을 숨기고, 관리자는 사용자 화면 미리보기를 위해 조회를 허용합니다.
   // 단 "대여 가능만(rentOnly)"에서는 sold를 기존처럼 제외해 실제 대여 가능 정책을 유지합니다.
   const q: any = {
-    ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies(), { rentOnly }),
+    ...racketVisibilityFilterFor(viewer, { rentOnly }),
   };
 
   // 브랜드(대소문자 무시) — 예: ?brand=yonex

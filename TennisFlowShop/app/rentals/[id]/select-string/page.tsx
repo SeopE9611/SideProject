@@ -28,11 +28,12 @@ export const dynamic = "force-dynamic";
 
 async function getRacketMini(racketId: string) {
   const db = (await clientPromise).db();
+  const viewer = await getVisibilityViewerFromCookies();
 
   const racket = await db
     .collection("used_rackets")
     .findOne(
-      { _id: new ObjectId(racketId), ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) },
+      { _id: new ObjectId(racketId), ...racketVisibilityFilterFor(viewer) },
       { projection: { brand: 1, model: 1, condition: 1, images: 1 } },
     );
 
