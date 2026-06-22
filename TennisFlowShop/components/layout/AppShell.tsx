@@ -14,6 +14,7 @@ const HIDE_SIDEMENU_PREFIXES = [
   "/mypage",
   "/admin",
   "/checkout",
+  "/cart",
   "/services/apply",
   "/order-lookup",
   "/login",
