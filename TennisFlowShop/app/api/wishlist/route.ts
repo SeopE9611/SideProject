@@ -13,6 +13,7 @@ import {
   normalizeGaugeRows,
   normalizeVariantRows,
 } from "@/lib/products/string-stock";
+import { publicProductFilter } from "@/lib/public-visibility";
 
 // 내 위시리스트 목록 + 상품 요약
 
@@ -169,7 +170,7 @@ export async function GET() {
             foreignField: "_id",
             as: "product",
             pipeline: [
-              { $match: { isDeleted: { $ne: true } } },
+              { $match: publicProductFilter },
               {
                 $project: {
                   name: 1,
@@ -278,7 +279,7 @@ export async function POST(req: Request) {
 
     const prod = await products.findOne({
       _id: new ObjectId(productId),
-      isDeleted: { $ne: true },
+      ...publicProductFilter,
     });
     if (!prod)
       return NextResponse.json(

@@ -1,3 +1,4 @@
+import { publicProductFilter, publicRacketStatusFilter } from "@/lib/public-visibility";
 import "server-only";
 
 import { unstable_cache } from "next/cache";
@@ -116,7 +117,7 @@ const toIsoString = (value: unknown) => {
 
 async function loadProducts() {
   const db = await getDb();
-  const filter: Filter<ProductDoc> = { isDeleted: { $ne: true } };
+  const filter: Filter<ProductDoc> = publicProductFilter;
   const collection = db.collection<ProductDoc>("products");
   const projection = {
     name: 1,
@@ -161,12 +162,7 @@ async function loadProducts() {
 
 async function loadRackets() {
   const db = await getDb();
-  const filter: Filter<RacketDoc> = {
-    $or: [
-      { status: { $exists: false } },
-      { status: { $nin: ["inactive", "비노출"] } },
-    ],
-  };
+  const filter: Filter<RacketDoc> = { ...publicRacketStatusFilter };
   const sort: Sort = { createdAt: -1, _id: -1 };
   const collection = db.collection<RacketDoc>("used_rackets");
   const projection = {

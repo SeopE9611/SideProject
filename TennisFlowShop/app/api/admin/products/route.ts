@@ -36,6 +36,7 @@ function toAuditProductSnapshot(doc: Record<string, unknown>) {
     isPublished:
       typeof doc.isPublished === "boolean" ? doc.isPublished : undefined,
     imageCount,
+    isVisible: doc.isVisible !== false,
   };
 }
 
@@ -122,7 +123,7 @@ function parseCreateRequest(raw: unknown): AdminProductCreateRequestDto | null {
   const shippingFee = normalizeItemShippingFee(body.shippingFee);
 
   if (!name || !Number.isFinite(price)) return null;
-  return { name, price, shippingFee, raw: body };
+  return { name, price, shippingFee, raw: { ...body, isVisible: body.isVisible === false ? false : true } };
 }
 
 function toProductListItem(doc: ProductDoc): AdminProductListItemDto {
@@ -335,6 +336,7 @@ export async function POST(req: NextRequest) {
       name: requestDto.name,
       price: requestDto.price,
       shippingFee: requestDto.shippingFee,
+      isVisible: requestDto.raw.isVisible === false ? false : true,
     });
 
     const createdDoc = {
@@ -362,6 +364,7 @@ export async function POST(req: NextRequest) {
             status: afterSnapshot.status,
             isActive: afterSnapshot.isActive,
             isPublished: afterSnapshot.isPublished,
+            isVisible: afterSnapshot.isVisible,
           },
           metadata: {
             createdKeys: Object.keys(requestDto.raw),

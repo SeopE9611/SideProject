@@ -1,3 +1,4 @@
+import { publicProductFilter, publicRacketStatusFilter } from "@/lib/public-visibility";
 import { ObjectId, type Db } from "mongodb";
 import {
   calcOrderShippingFeeWithBundlePolicy,
@@ -47,7 +48,8 @@ export async function calculateCheckoutPayableAmount(params: {
       if (kind === "product") {
         const prod = await db
           .collection("products")
-          .findOne({ _id: new ObjectId(it.productId) });
+          .findOne({ _id: new ObjectId(it.productId), ...publicProductFilter });
+        if (!prod) throw new Error("PRODUCT_NOT_AVAILABLE");
         return {
           name: prod?.name ?? "알 수 없는 상품",
           price: getEffectiveProductPrice(prod),
@@ -62,7 +64,8 @@ export async function calculateCheckoutPayableAmount(params: {
       }
       const racket = await db
         .collection("used_rackets")
-        .findOne({ _id: new ObjectId(it.productId) });
+        .findOne({ _id: new ObjectId(it.productId), ...publicRacketStatusFilter });
+      if (!racket) throw new Error("RACKET_NOT_AVAILABLE");
       return {
         name: racket
           ? `${racketBrandLabel(String(racket.brand ?? ""))} ${racket.model}`.trim()

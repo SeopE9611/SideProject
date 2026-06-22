@@ -138,6 +138,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
   // 검색 키워드(쉼표 구분) 입력 상태
   const [searchKeywordsInput, setSearchKeywordsInput] = useState("");
+  const [isVisible, setIsVisible] = useState(true);
   const [gaugeInventories, setGaugeInventories] = useState<ProductGaugeInventory[]>([]);
   const [colorInventories, setColorInventories] = useState<ProductColorInventory[]>([]);
   const [variantInventories, setVariantInventories] = useState<ProductVariantInventory[]>([]);
@@ -431,6 +432,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
     setFeatures(nextFeatures);
     setTags(nextTags);
     setInventory(nextInventory);
+    setIsVisible(p.isVisible !== false);
     setShowGaugeStockToUser(nextShowGaugeStockToUser);
     setAdditionalFeatures(nextAdditionalFeatures);
     setImages(nextImages);
@@ -557,6 +559,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
         features,
         tags,
         inventory,
+        isVisible,
         searchKeywordsInput,
         additionalFeatures,
         images,
@@ -570,7 +573,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
         showGaugeStockToUser,
         mainImageIndex,
       }),
-    [basicInfo, features, tags, inventory, searchKeywordsInput, additionalFeatures, images, hybridMain, hybridCross, colorInventories, variantInventories, gaugeInputsByColor, showGaugeStockToUser, mainImageIndex],
+    [basicInfo, features, tags, inventory, isVisible, searchKeywordsInput, additionalFeatures, images, hybridMain, hybridCross, colorInventories, variantInventories, gaugeInputsByColor, showGaugeStockToUser, mainImageIndex],
   );
 
   const isDirty = baselineRef.current !== null && baselineRef.current !== snapshot;
@@ -832,6 +835,8 @@ export default function ProductEditClient({ productId }: { productId: string }) 
         variantInventories: normalizedVariants,
 
         searchKeywords,
+
+        isVisible,
 
         features: {
           ...features,
@@ -2004,6 +2009,23 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                 <Label htmlFor="string-sale" className="cursor-pointer">
                                   할인 상품
                                 </Label>
+                              </div>
+                              <div className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/10 p-4 md:col-span-3">
+                                <Switch
+                                  id="string-visible"
+                                  checked={isVisible}
+                                  onCheckedChange={setIsVisible}
+                                />
+                                <div className="space-y-1">
+                                  <Label htmlFor="string-visible" className="cursor-pointer">
+                                    일반 사용자에게 상품 노출
+                                  </Label>
+                                  {!isVisible && (
+                                    <p className="text-xs text-muted-foreground">
+                                      끄면 관리자 화면에서만 보이며, 일반 회원의 목록/상세/추천/결제 경로에서 차단됩니다.
+                                    </p>
+                                  )}
+                                </div>
                               </div>
                             </div>
 

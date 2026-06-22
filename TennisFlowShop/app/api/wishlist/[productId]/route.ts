@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { ObjectId } from "mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { getDb } from "@/lib/mongodb";
+import { publicProductFilter } from "@/lib/public-visibility";
 
 // “개별 아이템” 한 개만 제거 - 해당 productId 한 건만 삭제(deleteOne)
 
@@ -90,7 +91,7 @@ export async function PATCH(
     const productObjectId = new ObjectId(productId);
     const prod = await db.collection("products").findOne({
       _id: productObjectId,
-      isDeleted: { $ne: true },
+      ...publicProductFilter,
     });
     if (!prod) {
       return NextResponse.json(
