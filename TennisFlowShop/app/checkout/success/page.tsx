@@ -3,6 +3,7 @@ import BackButtonGuard from "@/app/checkout/success/_components/BackButtonGuard"
 import ClearCartOnMount from "@/app/checkout/success/_components/ClearCartOnMount";
 import SetGuestOrderToken from "@/app/checkout/success/_components/SetGuestOrderToken";
 import SiteContainer from "@/components/layout/SiteContainer";
+import { ResultState } from "@/components/public";
 import LoginGate from "@/components/system/LoginGate";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -477,19 +478,15 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
         <ClearCartOnMount />
         <SetGuestOrderToken orderId={order._id.toString()} isGuest={isGuest} />
         <div className="min-h-full bg-background text-foreground">
-          {/* Hero Section */}
-          <div className="relative overflow-hidden border-b border-border bg-muted/30 text-foreground dark:bg-card/40">
-            <div className="absolute inset-0 bg-muted/50 dark:bg-card/60"></div>
-            <SiteContainer variant="wide" className="relative py-10 md:py-16">
-              <div className="text-center">
-                <div className="mb-4 md:mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm dark:bg-primary/20">
-                  <CheckCircle className="h-12 w-12 text-foreground" />
-                </div>
-                <h1 className="font-bold text-3xl md:text-4xl mb-4">주문이 완료되었습니다!</h1>
-                <p className="mb-4 md:mb-6 text-xl text-muted-foreground">주문해주셔서 감사합니다. 아래 정보를 확인해주세요.</p>
-              </div>
-            </SiteContainer>
-          </div>
+          <SiteContainer variant="wide" className="py-8 md:py-12">
+            <ResultState
+              status="success"
+              icon={<CheckCircle className="h-6 w-6" />}
+              title="주문이 완료되었습니다"
+              description="주문해주셔서 감사합니다. 아래에서 주문 번호, 결제 상태와 다음 단계 안내를 확인해주세요."
+              className="py-8 sm:py-10"
+            />
+          </SiteContainer>
 
           <SiteContainer variant="wide" className="py-8">
             <div className="max-w-4xl mx-auto space-y-6">

@@ -5,6 +5,8 @@ import {
   normalizeOrderShippingMethod,
 } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import { hasCompletedStringingApplication } from "@/app/order-lookup/_lib/stringing-status";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { EmptyState, PublicPageHero, PublicSurface, ResultState } from "@/components/public";
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -309,19 +311,15 @@ export default function OrderDetailPage() {
   if (loading) {
     return (
       <div className="min-h-full bg-background">
-        <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
-          <div className="absolute inset-0 bg-overlay/10" />
-          <div className="relative container mx-auto px-4 py-10 md:py-16">
-            <div className="text-center">
-              <Skeleton className="mx-auto h-16 w-16 rounded-full" />
-              <Skeleton className="mx-auto mt-6 h-10 w-72 max-w-full" />
-              <Skeleton className="mx-auto mt-4 h-6 w-52 max-w-full" />
-              <Skeleton className="mx-auto mt-4 h-9 w-40 rounded-full" />
-            </div>
-          </div>
-        </div>
+        <PublicPageHero
+          align="center"
+          title={<Skeleton className="mx-auto h-10 w-72 max-w-full" />}
+          description={<Skeleton className="mx-auto h-6 w-52 max-w-full" />}
+        >
+          <Skeleton className="mx-auto h-14 w-14 rounded-full" />
+        </PublicPageHero>
 
-        <div className="container mx-auto px-4 py-8 md:px-6 md:py-12">
+        <SiteContainer className="py-8 md:py-12">
           <div className="mx-auto max-w-4xl space-y-4 md:space-y-6">
             <Skeleton className="h-5 w-40" />
 
@@ -342,7 +340,7 @@ export default function OrderDetailPage() {
               </Card>
             ))}
           </div>
-        </div>
+        </SiteContainer>
       </div>
     );
   }
@@ -351,59 +349,26 @@ export default function OrderDetailPage() {
   if (error) {
     return (
       <div className="min-h-full bg-background">
-        {/* Hero Section */}
-        <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
-          <div className="absolute inset-0 bg-overlay/10"></div>
-          <div className="relative container mx-auto px-4 py-10 md:py-16">
-            <div className="text-center text-foreground">
-              <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full border border-border bg-secondary shadow-sm">
-                <Package className="w-8 h-8" />
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                주문 상세 정보 오류
-              </h1>
-              <p className="text-xl text-destructive">
-                주문 정보를 불러오는 중 문제가 발생했습니다
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="container mx-auto px-4 py-8 md:px-6 md:py-12">
-          <div className="max-w-4xl mx-auto">
-            <Card className="border border-border bg-card shadow-sm">
-              <CardContent className="flex flex-col items-center justify-center py-16">
-                <div className="text-center">
-                  <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full border border-border bg-muted text-foreground">
-                    <Package className="w-8 h-8 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-4">
-                    주문 정보를 확인할 수 없습니다
-                  </h3>
-                  <p className="text-muted-foreground mb-3 max-w-md">
-                    조회 정보가 만료되었거나 주문 시 입력한 정보와 일치하지 않을
-                    수 있어요.
-                  </p>
-                  <p className="text-muted-foreground mb-8 max-w-md">
-                    다시 조회하거나 고객센터로 문의해주세요.
-                  </p>
-                  <p className="mb-8 text-sm text-muted-foreground">{error}</p>
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <Button asChild>
-                      <Link href="/order-lookup">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        주문 다시 조회하기
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline">
-                      <Link href="/board/qna/write">고객센터 문의하기</Link>
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        <SiteContainer className="flex min-h-[60vh] items-center py-10 md:py-16">
+          <ResultState
+            status="error"
+            title="주문 정보를 확인할 수 없습니다"
+            description={error}
+            actions={
+              <>
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/order-lookup">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    주문 다시 조회하기
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="w-full sm:w-auto">
+                  <Link href="/board/qna/write">고객센터 문의하기</Link>
+                </Button>
+              </>
+            }
+          />
+        </SiteContainer>
       </div>
     );
   }
@@ -411,38 +376,25 @@ export default function OrderDetailPage() {
   if (!order) {
     return (
       <div className="min-h-full bg-background">
-        <div className="container mx-auto px-4 py-10 md:px-6 md:py-14">
-          <div className="mx-auto max-w-3xl">
-            <Card className="rounded-2xl border border-border/60 bg-card/90 shadow-sm">
-              <CardContent className="flex flex-col items-center py-14 text-center">
-                <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-full border border-border bg-muted">
-                  <Package className="h-7 w-7 text-muted-foreground" />
-                </div>
-                <h2 className="text-2xl font-semibold text-foreground">
-                  주문 정보를 확인할 수 없습니다.
-                </h2>
-                <p className="mt-3 text-sm text-muted-foreground md:text-base">
-                  조회 정보가 만료되었거나 주문 시 입력한 정보와 일치하지 않을
-                  수 있어요.
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground md:text-base">
-                  다시 조회하거나 고객센터로 문의해주세요.
-                </p>
-                <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
-                  <Button asChild>
-                    <Link href="/order-lookup">
-                      <ArrowLeft className="mr-2 h-4 w-4" />
-                      주문 다시 조회하기
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline">
-                    <Link href="/board/qna/write">고객센터 문의하기</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        <SiteContainer className="py-10 md:py-14">
+          <EmptyState
+            title="주문 정보를 확인할 수 없습니다"
+            description="조회 정보가 만료되었거나 주문 시 입력한 정보와 일치하지 않을 수 있어요. 다시 조회하거나 고객센터로 문의해주세요."
+            action={
+              <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-center">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href="/order-lookup">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    주문 다시 조회하기
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="w-full sm:w-auto">
+                  <Link href="/board/qna/write">고객센터 문의하기</Link>
+                </Button>
+              </div>
+            }
+          />
+        </SiteContainer>
       </div>
     );
   }
@@ -606,37 +558,27 @@ export default function OrderDetailPage() {
 
   return (
     <div className="min-h-full bg-background">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
-        <div className="absolute inset-0 bg-overlay/10"></div>
-        <div className="relative container mx-auto px-4 py-10 md:py-16">
-          <div className="text-center text-foreground">
-            <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full border border-border bg-secondary shadow-sm">
-              <Package className="w-8 h-8" />
-            </div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              <span className="text-primary">주문</span> 상세 정보
-            </h1>
-            <p className="text-xl text-muted-foreground">
-              주문번호: {order._id.slice(-8)}
-            </p>
-            <div className="mt-4">
-              <p className="mb-3 text-sm text-muted-foreground">
-                현재 상태와 다음 해야 할 일을 아래 타임라인에서 확인하세요.
-              </p>
-              <Badge
-                variant={badgeToneVariant(getOrderStatusTone(displayStatus))}
-                className="gap-2 px-4 py-2 text-lg font-semibold"
-              >
-                {getStatusIcon(displayStatus, isVisitPickup)}
-                {displayStatus}
-              </Badge>
-            </div>
+      <PublicPageHero
+        align="center"
+        eyebrow="Guest order detail"
+        title="주문 상세 정보"
+        description={`주문번호 ${order._id.slice(-8)}의 현재 상태와 다음 해야 할 일을 확인하세요.`}
+      >
+        <div className="flex flex-col items-center gap-3">
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-border bg-card shadow-sm">
+            <Package className="h-7 w-7" />
           </div>
+          <Badge
+            variant={badgeToneVariant(getOrderStatusTone(displayStatus))}
+            className="gap-2 px-4 py-2 text-base font-semibold"
+          >
+            {getStatusIcon(displayStatus, isVisitPickup)}
+            {displayStatus}
+          </Badge>
         </div>
-      </div>
+      </PublicPageHero>
 
-      <div className="container mx-auto px-4 py-8 md:px-6 md:py-12">
+      <SiteContainer className="py-8 md:py-12">
         <div className="max-w-6xl mx-auto">
           {/* Back Button */}
           <div className="mb-6 md:mb-8">
@@ -651,14 +593,14 @@ export default function OrderDetailPage() {
           </div>
 
           {nextActionText && (
-            <div className="mb-6 rounded-xl border border-border bg-muted/30 p-4 md:mb-8">
+            <PublicSurface variant="muted" className="mb-6 md:mb-8">
               <p className="text-sm font-medium text-foreground">
                 현재 진행 안내
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
                 {nextActionText}
               </p>
-            </div>
+            </PublicSurface>
           )}
 
           <Card className="mb-6 rounded-xl border border-border bg-card shadow-sm md:mb-8">
@@ -1148,7 +1090,7 @@ export default function OrderDetailPage() {
             </div>
           </div>
         </div>
-      </div>
+      </SiteContainer>
     </div>
   );
 }

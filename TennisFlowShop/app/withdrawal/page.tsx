@@ -1,14 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { ResultState } from "@/components/public";
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
 import { useRouter, useSearchParams } from "next/navigation";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
@@ -40,31 +36,18 @@ export default function AccountDeletedPage() {
   };
 
   return (
-    <div className="grid min-h-[100svh] place-items-center bg-muted/30 px-4 py-12">
-      <Card className="w-full max-w-md border border-border bg-card shadow-sm">
-        <CardHeader className="flex flex-col items-center pt-10 pb-6">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-border bg-secondary">
-            <CheckCircle className="h-8 w-8 text-foreground" />
-          </div>
-          <h1 className="text-2xl font-bold text-center text-foreground">
-            회원 탈퇴가 정상적으로 완료되었습니다
-          </h1>
-        </CardHeader>
-
-        <CardContent className="text-center pb-6">
-          <p className="text-muted-foreground">
-            탈퇴 후 7일간 개인정보를 보관 후 폐기됩니다.
-          </p>
-          {/* <p className="text-muted-foreground mt-2 text-sm">탈퇴를 철회하시려면 아래 버튼을 클릭해주세요.</p> */}
-        </CardContent>
-
-        <CardFooter className="flex flex-col sm:flex-row gap-3 justify-center pb-10">
-          {/* <Button onClick={handleRestore}>탈퇴 철회하기</Button> */}
+    <SiteContainer className="grid min-h-[100svh] place-items-center py-12">
+      <ResultState
+        status="success"
+        icon={<CheckCircle className="h-6 w-6" />}
+        title="회원 탈퇴가 정상적으로 완료되었습니다"
+        description="탈퇴 후 7일간 개인정보를 보관 후 폐기됩니다."
+        actions={
           <Button variant="outline" className="w-full sm:w-auto" asChild>
             <Link href="/">홈으로 이동</Link>
           </Button>
-        </CardFooter>
-      </Card>
-    </div>
+        }
+      />
+    </SiteContainer>
   );
 }
