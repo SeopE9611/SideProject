@@ -802,41 +802,43 @@ export default function CartPageClient() {
         </AlertDialogContent>
       </AlertDialog>
       {/* 헤더 */}
-      <div className="relative overflow-hidden bg-muted text-foreground">
-        <div className="absolute inset-0 bg-foreground/10" />
-        <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.10] dark:opacity-[0.12]" />
+      <div className="relative overflow-hidden border-b border-border bg-muted/40 text-foreground">
+        <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.04] dark:opacity-[0.06]" />
         <SiteContainer
           variant="wide"
-          className="relative py-10 bp-sm:py-12 bp-md:py-14"
+          className="relative py-6 bp-sm:py-8 bp-md:py-10"
         >
-          <div className="mb-4 flex items-center gap-4">
-            <div className="rounded-2xl border border-border/60 bg-secondary p-3 shadow-sm">
-              <ShoppingBag className="h-8 w-8" />
-            </div>
-            <div>
-              <h1 className="mb-2 text-2xl bp-sm:text-3xl bp-md:text-4xl font-black">
+          <div className="flex flex-col gap-4 bp-sm:flex-row bp-sm:items-end bp-sm:justify-between">
+            <div className="min-w-0">
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-3 py-1 text-xs font-medium text-muted-foreground">
+                <ShoppingBag className="h-3.5 w-3.5" />
+                주문 전 확인
+              </div>
+              <h1 className="mb-2 text-2xl font-black bp-sm:text-3xl bp-md:text-4xl">
                 장바구니
               </h1>
-              <p className="text-muted-foreground">
-                선택하신 상품들을 확인하고 주문을 진행해보세요
+              <p className="max-w-2xl break-keep text-sm leading-relaxed text-muted-foreground bp-sm:text-base">
+                담은 상품과 옵션, 수량을 확인한 뒤 주문을 진행하세요.
               </p>
             </div>
-          </div>
 
-          {cartItems.length > 0 && (
-            <div className="flex flex-col items-start gap-2 text-sm bp-sm:flex-row bp-sm:items-center bp-sm:gap-6">
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-muted" />
-                <span className="whitespace-nowrap">
-                  총 {cartItems.length}개 상품
-                </span>
+            {cartItems.length > 0 && (
+              <div className="grid w-full gap-2 text-sm bp-sm:w-auto bp-sm:min-w-[300px] bp-sm:grid-cols-2">
+                <div className="rounded-xl border border-border bg-card/70 px-3 py-2">
+                  <span className="block text-xs text-muted-foreground">
+                    총 상품 수
+                  </span>
+                  <strong className="tabular-nums">{cartItems.length}개</strong>
+                </div>
+                <div className="rounded-xl border border-border bg-card/70 px-3 py-2">
+                  <span className="block text-xs text-muted-foreground">
+                    배송/서비스
+                  </span>
+                  <strong className="break-keep text-sm">구성별 자동 계산</strong>
+                </div>
               </div>
-              <div className="flex min-w-0 items-center gap-2 break-keep leading-relaxed">
-                <Star className="h-4 w-4 shrink-0 text-warning" />
-                <span>상품별 배송비 정책 적용</span>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </SiteContainer>
       </div>
 
@@ -844,7 +846,7 @@ export default function CartPageClient() {
         variant="wide"
         className={
           cartItems.length > 0
-            ? "pt-6 pb-56 bp-sm:pt-8 bp-sm:pb-48 bp-md:py-8"
+            ? "py-5 bp-sm:py-7 bp-md:py-8"
             : "pt-6 pb-12 bp-sm:pt-8 bp-sm:pb-16 bp-md:py-8"
         }
       >
@@ -860,15 +862,15 @@ export default function CartPageClient() {
                         <span className="rounded-2xl bg-muted p-2 shadow-lg dark:bg-background">
                           <ShoppingBag className="h-5 w-5 text-primary" />
                         </span>
-                        선택한 상품 ({cartItems.length}개)
+                        장바구니 상품 ({cartItems.length}개)
                       </CardTitle>
                       <p className="mt-2 text-sm text-muted-foreground">
-                        상품명을 눌러 상세로 이동할 수 있어요.
+                        선택한 상품은 주문에 포함됩니다. 옵션과 수량, 합계를 확인하세요.
                       </p>
                     </div>
 
                     {/* 전체선택 / 선택n개 / 선택삭제 */}
-                    <div className="flex w-full flex-wrap items-center gap-2 text-sm bp-sm:w-auto bp-sm:justify-end [&_button]:shrink-0">
+                    <div className="flex w-full flex-wrap items-center gap-2 rounded-xl bg-muted/30 p-2 text-sm bp-sm:w-auto bp-sm:justify-end bp-sm:bg-transparent bp-sm:p-0 [&_button]:shrink-0">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -947,9 +949,9 @@ export default function CartPageClient() {
                     return (
                       <div
                         key={`${item.id}:${item.selectedGauge ?? ""}:${item.selectedColor ?? ""}`}
-                        className={`rounded-2xl border border-border bg-card p-3 shadow-sm transition hover:shadow-md bp-sm:p-4 dark:bg-card ${highlightCleanupTarget ? "bg-muted/30" : ""}`}
+                        className={`rounded-2xl border border-border bg-card p-3 shadow-sm transition hover:shadow-md bp-sm:p-4 dark:bg-card ${highlightCleanupTarget ? "bg-muted/30 ring-1 ring-warning/30" : ""}`}
                       >
-                        <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center">
+                        <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-center">
                           {/* 상단(모바일): 체크+썸네일+이름 */}
                           <div className="flex min-w-0 flex-1 items-center gap-3">
                             <input
@@ -975,11 +977,11 @@ export default function CartPageClient() {
                             <div className="min-w-0 flex-1">
                               <Link
                                 href={itemHref}
-                                className="block line-clamp-2 break-keep break-words font-medium leading-relaxed text-foreground transition-colors hover:text-primary dark:text-foreground dark:hover:text-primary bp-sm:line-clamp-1"
+                                className="block min-w-0 line-clamp-2 break-keep break-words font-medium leading-relaxed text-foreground transition-colors hover:text-primary dark:text-foreground dark:hover:text-primary bp-md:line-clamp-1"
                               >
                                 {item.name}
                               </Link>
-                              <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-sm">
+                              <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-sm">
                                 <span className="text-muted-foreground">
                                   {hasDiscount ? "할인가" : "판매가"}
                                 </span>
@@ -1039,7 +1041,7 @@ export default function CartPageClient() {
                                   >
                                     교체서비스에 사용할 스트링
                                   </Badge>
-                                  <div className="mt-2 rounded-xl border border-border bg-muted/20 p-3 text-xs leading-snug text-foreground dark:text-foreground">
+                                  <div className="mt-2 space-y-2 rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs leading-snug text-foreground dark:text-foreground">
                                     <span className="inline-flex items-center gap-1.5">
                                       <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                                       교체서비스에 사용할 스트링은 <b>1종만</b>{" "}
@@ -1047,7 +1049,7 @@ export default function CartPageClient() {
                                     </span>
                                     <button
                                       type="button"
-                                      className="font-semibold underline underline-offset-2 text-foreground hover:text-foreground dark:hover:text-foreground"
+                                      className="inline-flex font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
                                       onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
@@ -1063,7 +1065,7 @@ export default function CartPageClient() {
                           </div>
 
                           {/* 하단(모바일) */}
-                          <div className="grid w-full min-w-0 grid-cols-[132px_minmax(96px,1fr)_40px] items-start gap-3 bp-sm:w-auto bp-sm:flex-none bp-sm:grid-cols-[132px_112px_40px] bp-sm:justify-end">
+                          <div className="grid w-full min-w-0 grid-cols-[minmax(128px,1fr)_minmax(96px,1fr)_40px] items-start gap-3 bp-sm:grid-cols-[132px_minmax(112px,1fr)_40px] bp-md:w-auto bp-md:flex-none bp-md:justify-end">
                             {/* 수량 스테퍼 (번들이면 잠금 + 링크로만 변경) */}
                             {lockStepper ? (
                               <div className="order-1 w-[132px] min-w-0 justify-self-start rounded-xl border border-border bg-muted/20 p-2 flex flex-col items-center">
@@ -1081,11 +1083,10 @@ export default function CartPageClient() {
                                       href={bundleEditHref}
                                       className="mt-1 text-xs font-medium text-primary hover:underline dark:text-primary"
                                     >
-                                      번들 수량/스트링 변경
+                                      번들 변경
                                     </Link>
                                     <p className="mt-1 max-w-[220px] text-center text-[11px] leading-snug text-muted-foreground">
-                                      라켓과 장착 스트링 수량은 함께 맞춰야 해서
-                                      스트링 선택 화면에서 변경할 수 있어요.
+                                      스트링 선택 화면에서 수량과 스트링을 함께 변경할 수 있어요.
                                     </p>
                                   </>
                                 )}
@@ -1176,11 +1177,10 @@ export default function CartPageClient() {
                                       href={bundleEditHref}
                                       className="mt-1 text-xs font-medium text-primary hover:underline dark:text-primary"
                                     >
-                                      번들 수량/스트링 변경
+                                      번들 변경
                                     </Link>
                                     <p className="mt-1 max-w-[220px] text-center text-[11px] leading-snug text-muted-foreground">
-                                      라켓과 장착 스트링 수량은 함께 맞춰야 해서
-                                      스트링 선택 화면에서 변경할 수 있어요.
+                                      스트링 선택 화면에서 수량과 스트링을 함께 변경할 수 있어요.
                                     </p>
                                   </>
                                 ) : (
@@ -1322,20 +1322,20 @@ export default function CartPageClient() {
                 <SummaryCard
                   eyebrow="Order summary"
                   title="예상 주문 요약"
-                  description="장바구니 기준 금액과 배송비를 확인한 뒤 주문을 진행하세요."
+                  description="상품 금액, 할인, 배송비를 확인하고 결제로 이동하세요."
                   className="overflow-hidden"
                 >
-                  <div className="space-y-5 bp-sm:space-y-6">
+                  <div className="space-y-4 bp-sm:space-y-5">
                     <PriceSummary rows={priceSummaryRows} />
 
                     <div className="rounded-xl border border-border bg-muted/20 p-4">
                       <div className="flex items-center gap-2 text-primary mb-2">
                         <Star className="h-4 w-4" />
-                        <span className="font-semibold">배송 안내</span>
+                        <span className="font-semibold">배송비/교체서비스 안내</span>
                       </div>
                       <p className="text-sm text-primary">
-                        상품에 따라 배송비가 다를 수 있습니다.
-                        <span className="block mt-1">
+                        상품별 배송비와 라켓+장착 스트링 구성은 주문 요약에 반영됩니다.
+                        <span className="mt-1 block">
                           무료배송 상품은 배송비가 0원으로 표시됩니다.
                         </span>
                       </p>
@@ -1390,7 +1390,7 @@ export default function CartPageClient() {
                             <span className="mt-1 inline-flex items-center gap-1.5">
                               <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                               {bundleEditHref
-                                ? "아래 ‘번들 수량/스트링 변경’에서 수량을 함께 맞춰주세요."
+                                ? "아래 ‘번들 변경’에서 수량을 함께 맞춰주세요."
                                 : "먼저 교체서비스 신청 구성을 정리한 뒤 수량을 다시 확인해주세요."}
                             </span>
                           </div>
@@ -1402,7 +1402,7 @@ export default function CartPageClient() {
                           >
                             <Link href={bundleEditHref}>
                               <ShoppingBag className="h-5 w-5" />
-                              번들 수량/스트링 변경
+                              번들 변경
                               <ArrowRight className="h-5 w-5" />
                             </Link>
                           </Button>
@@ -1443,7 +1443,7 @@ export default function CartPageClient() {
                     ) : (
                       <>
                         {hasMountableStringOnlyFlow && (
-                          <div className="space-y-1 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm leading-relaxed text-muted-foreground break-keep">
+                          <div className="space-y-1 rounded-xl border border-primary/25 bg-primary/5 p-3 text-sm leading-relaxed text-foreground break-keep">
                             {stringStandalonePausedNoticeLines.map((line) => (
                               <p key={line}>{line}</p>
                             ))}
@@ -1466,7 +1466,11 @@ export default function CartPageClient() {
                               ) : (
                                 <ShoppingBag className="h-5 w-5" />
                               )}
-                              {user ? "주문하기" : "로그인 후 주문하기"}
+                              {isCheckingCheckoutStock
+                                ? "재고 확인 중..."
+                                : user
+                                  ? "주문하기"
+                                  : "로그인 후 주문하기"}
                               <ArrowRight className="h-5 w-5" />
                             </Button>
                           }
@@ -1497,22 +1501,30 @@ export default function CartPageClient() {
                 </span>
               }
               title="장바구니가 비어있습니다"
-              description="마음에 드는 테니스 용품을 장바구니에 담아보세요!"
+              description="담아둔 상품이 없어요. 상품을 둘러보거나 라켓 교체서비스 흐름을 확인해보세요."
               action={
-                <Button
-                  className="w-full px-6 py-3 font-semibold bp-sm:w-auto md:px-8"
-                  size="lg"
-                  asChild
-                >
-                  <Link
-                    href="/products"
-                    className="flex items-center justify-center gap-3"
+                <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row">
+                  <Button
+                    className="w-full px-6 py-3 font-semibold bp-sm:w-auto md:px-8"
+                    size="lg"
+                    asChild
                   >
-                    <ShoppingBag className="h-5 w-5" />
-                    쇼핑하러 가기
-                    <ArrowRight className="h-5 w-5" />
-                  </Link>
-                </Button>
+                    <Link
+                      href="/products"
+                      className="flex items-center justify-center gap-3"
+                    >
+                      <ShoppingBag className="h-5 w-5" />
+                      상품 보러가기
+                      <ArrowRight className="h-5 w-5" />
+                    </Link>
+                  </Button>
+                  <Button variant="outline" className="w-full bp-sm:w-auto" asChild>
+                    <Link href="/rackets">라켓 보러가기</Link>
+                  </Button>
+                  <Button variant="outline" className="w-full bp-sm:w-auto" asChild>
+                    <Link href="/services">서비스 안내 보기</Link>
+                  </Button>
+                </div>
               }
             />
             <div className="mx-auto mt-8 max-w-2xl">
@@ -1522,133 +1534,6 @@ export default function CartPageClient() {
         )}
       </SiteContainer>
 
-      {/* 모바일 하단 결제 바 */}
-      {cartItems.length > 0 && (
-        <div
-          data-bottom-sticky="1"
-          className="fixed inset-x-0 bottom-0 z-40 bp-md:hidden"
-        >
-          <div className="rounded-t-2xl border-t border-border bg-card shadow-sm">
-            <SiteContainer variant="full" className="max-w-screen-sm py-3">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">
-                  예상 결제금액
-                </span>
-                {!isShippingFeeReady ? (
-                  <Skeleton className="h-6 w-24 rounded-md" />
-                ) : (
-                  <span className="tabular-nums text-lg font-bold text-primary">
-                    {formatKRW(total)}원
-                  </span>
-                )}
-              </div>
-              {blockServiceCheckout ? (
-                <div className="space-y-2">
-                  {blockServiceCheckoutByComposition && (
-                    <div className="space-y-1.5 rounded-xl border border-border bg-muted/20 p-3 text-sm text-foreground">
-                      <p className="font-semibold">
-                        교체서비스 구성을 정리해야 해요
-                      </p>
-                      <p>라켓 1종에는 장착할 스트링 1종이 필요해요.</p>
-                      <p>
-                        현재 라켓{" "}
-                        <span className="font-semibold">
-                          {racketLineCount}종
-                        </span>{" "}
-                        / 장착 스트링{" "}
-                        <span className="font-semibold">
-                          {mountableStringLineCount}종
-                        </span>
-                      </p>
-                      {mountableStringLineCount > 1 && (
-                        <p>해야 할 일: 장착할 스트링 1종만 남겨주세요.</p>
-                      )}
-                      {mountableStringLineCount === 0 && (
-                        <p>라켓에 장착할 스트링을 먼저 선택해주세요.</p>
-                      )}
-                      {racketLineCount !== 1 && (
-                        <p>
-                          교체서비스 신청은 한{"\u00A0"}번에 라켓 1종 기준으로
-                          진행됩니다.
-                        </p>
-                      )}
-                    </div>
-                  )}
-                  {blockServiceCheckoutByQty && (
-                    <div className="rounded-xl border border-border bg-muted/20 p-3 text-sm text-foreground">
-                      라켓 1개에는 장착할 스트링 1개가 필요해요. 현재 라켓{" "}
-                      <span className="font-semibold">{totalRacketQty}개</span>{" "}
-                      / 장착 스트링{" "}
-                      <span className="font-semibold">
-                        {totalMountableStringQty}개
-                      </span>
-                      입니다.{" "}
-                      {bundleEditHref
-                        ? "아래 ‘번들 수량/스트링 변경’에서 수량을 함께 맞춰주세요."
-                        : "먼저 교체서비스 신청 구성을 정리한 뒤 수량을 다시 확인해주세요."}
-                    </div>
-                  )}
-                  {bundleEditHref ? (
-                    <Button asChild className="h-12 w-full font-semibold">
-                      <Link href={bundleEditHref}>번들 수량/스트링 변경</Link>
-                    </Button>
-                  ) : (
-                    <Button
-                      className="h-12 w-full font-semibold"
-                      onClick={() => showErrorToast(serviceBlockToastMessage)}
-                    >
-                      {blockServiceCheckoutByComposition
-                        ? "구성 정리 후 결제하기"
-                        : "수량 맞춘 뒤 주문하기"}
-                    </Button>
-                  )}
-                </div>
-              ) : loading ? (
-                <Button
-                  className="h-12 w-full bg-primary text-primary-foreground font-semibold opacity-70"
-                  disabled
-                >
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  로그인 확인 중...
-                </Button>
-              ) : !isShippingFeeReady ? (
-                <Button
-                  className="h-12 w-full bg-primary text-primary-foreground font-semibold opacity-70"
-                  disabled
-                >
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  금액 계산 중...
-                </Button>
-              ) : (
-                <>
-                  {hasMountableStringOnlyFlow && (
-                    <div className="space-y-1 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm leading-relaxed text-muted-foreground break-keep">
-                      {stringStandalonePausedNoticeLines.map((line) => (
-                        <p key={line}>{line}</p>
-                      ))}
-                    </div>
-                  )}
-                  <Button
-                    type="button"
-                    className="h-12 w-full font-semibold"
-                    onClick={handleCheckoutClick}
-                    disabled={isCheckingCheckoutStock}
-                  >
-                    {isCheckingCheckoutStock ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : null}
-                    {isCheckingCheckoutStock
-                      ? "재고 확인 중..."
-                      : user
-                        ? "주문하기"
-                        : "로그인 후 주문하기"}
-                  </Button>
-                </>
-              )}
-            </SiteContainer>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
