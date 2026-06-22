@@ -522,6 +522,10 @@ export default function CartPageClient() {
       showErrorToast("주문할 상품을 선택해주세요.");
       return;
     }
+    if (!isCartPriceReady) {
+      showErrorToast("금액을 계산 중입니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
     if (blockServiceCheckout) {
       showErrorToast(serviceBlockToastMessage);
       return;
@@ -1041,7 +1045,7 @@ export default function CartPageClient() {
           <div className="mx-auto flex max-w-[1240px] items-center gap-3">
             <div className="min-w-0 flex-1">
               <p className="text-xs text-muted-foreground">총 주문 예상 금액</p>
-              <p className="truncate text-lg font-black tabular-nums text-foreground">{formatKRW(total)}원</p>
+              <p className="truncate text-lg font-black tabular-nums text-foreground">{!isCartPriceReady ? "계산 중" : `${formatKRW(total)}원`}</p>
             </div>
             <Button className="h-11 min-w-[140px] font-semibold" disabled={!hasSelectedItems || !isCartPriceReady || isCheckingCheckoutStock} onClick={handleCheckoutClick}>
               {!hasSelectedItems ? "상품 선택" : `주문하기 ${selectedCartItems.length}`}
