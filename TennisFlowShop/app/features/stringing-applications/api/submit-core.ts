@@ -17,6 +17,7 @@ import {
   calcStringingTotal,
 } from "@/lib/pricing";
 import { consumePass, findOneActivePassForUser } from "@/lib/passes.service";
+import { publicProductFilter } from "@/lib/public-visibility";
 import { normalizeEmailForSearch } from "@/lib/search-email";
 
 export type StringingApplicationInput = {
@@ -154,6 +155,7 @@ async function applyStringingVariantInventoryDeduction(params: {
   const result = await db.collection("products").updateOne(
     {
       _id: productId,
+      ...publicProductFilter,
       "inventory.stock": { $gte: quantity },
       variantInventories: {
         $elemMatch: {
@@ -652,7 +654,7 @@ export async function submitStringingApplicationCore({
       isColorStockAlreadyDeductedByOrderItem;
 
     const stringProduct = await db.collection("products").findOne(
-      { _id: stringProductObjectId },
+      { _id: stringProductObjectId, ...publicProductFilter },
       {
         projection: {
           _id: 1,
@@ -800,6 +802,7 @@ export async function submitStringingApplicationCore({
       const colorDeductResult = await db.collection("products").updateOne(
         {
           _id: stringProductObjectId,
+          ...publicProductFilter,
           ...(shouldAdjustGlobalInventory
             ? { "inventory.stock": { $gte: 1 } }
             : {}),
@@ -873,6 +876,7 @@ export async function submitStringingApplicationCore({
       const gaugeDeductResult = await db.collection("products").updateOne(
         {
           _id: stringProductObjectId,
+          ...publicProductFilter,
           "inventory.stock": { $gte: stringQuantity },
           gaugeInventories: {
             $elemMatch: {

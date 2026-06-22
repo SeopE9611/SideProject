@@ -10,6 +10,7 @@ import type { Db } from "mongodb";
 import { ObjectId } from "mongodb";
 
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
+import { publicProductFilter } from "@/lib/public-visibility";
 import { CUSTOM_STRING_MOUNTING_FEE } from "@/lib/stringing-pricing-policy";
 
 function createInvalidStringProductError(message: string) {
@@ -29,7 +30,7 @@ async function resolveStringProductMountingFee(
   const prod = await db
     .collection("products")
     .findOne(
-      { _id: new ObjectId(productId), isDeleted: { $ne: true } },
+      { _id: new ObjectId(productId), ...publicProductFilter },
       { projection: { mountingFee: 1 } },
     );
   if (!prod) {

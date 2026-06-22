@@ -1,5 +1,6 @@
 import { stringBrandLabel } from "@/lib/constants";
 import { getDb } from "@/lib/mongodb";
+import { publicProductFilter } from "@/lib/public-visibility";
 
 type MaterialKey = "polyester" | "syntheticGut" | "naturalGut" | "other";
 
@@ -166,7 +167,7 @@ async function fetchStringingProducts(): Promise<ProductLite[]> {
     return await db
       .collection<ProductLite>("products")
       .find(
-        { isDeleted: { $ne: true }, mountingFee: { $exists: true } },
+        { ...publicProductFilter, mountingFee: { $exists: true } },
         {
           projection: {
             name: 1,

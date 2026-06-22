@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { getHangulInitials } from "@/lib/hangul-utils";
+import { publicProductFilter, publicRacketStatusFilter } from "@/lib/public-visibility";
 
 type SearchResult = {
   _id: string; // 기존 SearchPreview가 쓰는 필드 유지
@@ -48,17 +49,11 @@ export async function GET(req: NextRequest) {
     const [products, rackets] = await Promise.all([
       db
         .collection("products")
-        .find({ isDeleted: { $ne: true } })
+        .find(publicProductFilter)
         .toArray(),
       db
         .collection("used_rackets")
-        .find({
-          // 비노출/비활성 제외 (기존 /api/rackets 기준과 맞춤)
-          $or: [
-            { status: { $exists: false } },
-            { status: { $nin: ["inactive", "비노출"] } },
-          ],
-        })
+        .find(publicRacketStatusFilter)
         .toArray(),
     ]);
 
