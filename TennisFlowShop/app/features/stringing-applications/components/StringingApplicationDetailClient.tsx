@@ -65,6 +65,7 @@ import {
 import { readCancelRequestError } from "@/lib/cancel-request/refund-account-client";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
+import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { stringColorLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -295,15 +296,7 @@ const getNextActionCardClass = (tone: AdminNextActionTone) => {
   return adminSurface.cardMuted;
 };
 
-// 스트링 교체 서비스용 택배사 라벨/URL 헬퍼
-const stringingCourierLabelMap: Record<string, string> = {
-  cj: "CJ대한통운",
-  hanjin: "한진택배",
-  logen: "로젠택배",
-  post: "우체국택배",
-  etc: "기타",
-};
-
+// 스트링 교체 서비스용 운송장 조회 URL 헬퍼
 // 코드 + 운송장번호 → 조회 URL
 // 코드/라벨 모두 대응하는 운송장 조회 URL 헬퍼
 const buildTrackingUrl = (
@@ -342,8 +335,8 @@ const buildTrackingUrl = (
 
 // 코드 → 한글 라벨
 const getCourierLabel = (courier?: string | null) => {
-  if (!courier) return "택배사 미입력";
-  return stringingCourierLabelMap[courier] ?? courier;
+  const normalized = courier?.trim();
+  return normalized ? getCourierDisplayName(normalized) : "택배사 미입력";
 };
 
 // 시간(시/분)을 2자리 문자열로 포맷
@@ -3349,7 +3342,7 @@ export default function StringingApplicationDetailClient({
                         <div className="mt-2 space-y-1 text-sm text-foreground">
                           <p>
                             택배사:{" "}
-                            {data.shippingInfo.selfShip.courier || "미입력"}
+                            {getCourierLabel(data.shippingInfo.selfShip.courier)}
                           </p>
                           <p>
                             운송장:
@@ -3504,7 +3497,7 @@ export default function StringingApplicationDetailClient({
                             </p>
                             {/* 택배사 + 운송장번호 + 조회 링크 */}
                             <p className="mt-1 break-words text-sm text-foreground/80">
-                              {(selfShip.courier || "택배사 미입력") + " · "}
+                              {getCourierLabel(selfShip.courier) + " · "}
                               <a
                                 href={
                                   buildTrackingUrl(

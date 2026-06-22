@@ -633,7 +633,10 @@ export default function OrderDetailClient({
   const selfShipInfo = primaryStringingApp?.shippingInfo?.selfShip ?? null;
   const hasSelfShipTracking = Boolean(selfShipInfo?.trackingNo);
   const selfShipStatusLabel = hasSelfShipTracking ? "등록 완료" : "미등록";
-  const selfShipCourierLabel = selfShipInfo?.courier?.trim() || "미등록";
+  const selfShipCourierValue = selfShipInfo?.courier?.trim();
+  const selfShipCourierLabel = selfShipCourierValue
+    ? getCourierDisplayName(selfShipCourierValue)
+    : "미등록";
   const selfShipTrackingNoLabel = selfShipInfo?.trackingNo?.trim() || "미등록";
 
   // 취소 요청 상태/라벨 계산
@@ -1298,7 +1301,9 @@ export default function OrderDetailClient({
                                 <span className="text-muted-foreground">
                                   택배사:
                                 </span>{" "}
-                                {appSelfShipInfo?.courier?.trim() || "미등록"}
+                                {appSelfShipInfo?.courier?.trim()
+                                  ? getCourierDisplayName(appSelfShipInfo.courier)
+                                  : "미등록"}
                               </p>
                               <p>
                                 <span className="text-muted-foreground">

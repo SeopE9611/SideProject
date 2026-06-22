@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { racketBrandLabel } from "@/lib/constants";
+import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   AlertCircle,
@@ -168,7 +169,7 @@ const normalizeRentalShippingMethod = (value?: string | null) => {
 
 // 안전 라벨/URL 헬퍼
 const getCourierLabel = (code?: string) =>
-  code ? (courierLabel[code] ?? code) : "-";
+  code ? getCourierDisplayName(code) : "-";
 
 const getTrackHref = (code?: string, no?: string) => {
   if (!code || !no) return "#";
@@ -218,12 +219,6 @@ const getStatusLabel = (status: string) => {
   return labels[status] || status;
 };
 
-const courierLabel: Record<string, string> = {
-  cj: "CJ대한통운",
-  post: "우체국",
-  logen: "로젠",
-  hanjin: "한진",
-};
 const courierTrackUrl: Record<string, (no: string) => string> = {
   cj: (no) =>
     `https://trace.cjlogistics.com/web/detail.jsp?slipno=${encodeURIComponent(no)}`,

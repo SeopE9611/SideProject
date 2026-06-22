@@ -65,6 +65,7 @@ import {
   isAdminCancelableOrderStatus,
 } from "@/lib/orders/cancel-refund-policy";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import {
   trackingSWRFetcher,
   type TrackingSWRFetcherError,
@@ -2084,14 +2085,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                                 택배사
                               </p>
                               <p className="font-semibold text-foreground">
-                                {{
-                                  cj: "CJ 대한통운",
-                                  hanjin: "한진택배",
-                                  logen: "로젠택배",
-                                  post: "우체국택배",
-                                  etc: "기타",
-                                }[orderDetail.shippingInfo.invoice.courier] ||
-                                  "미지정"}
+                                {getCourierDisplayName(orderDetail.shippingInfo.invoice.courier)}
                               </p>
                             </div>
                           </div>
