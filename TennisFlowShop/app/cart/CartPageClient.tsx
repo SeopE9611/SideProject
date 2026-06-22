@@ -862,15 +862,11 @@ export default function CartPageClient() {
       <div className="border-b border-border bg-background text-foreground">
         <SiteContainer
           variant="wide"
-          className="py-4 bp-sm:py-6"
+          className="py-5 bp-sm:py-6"
         >
-          <div className="flex flex-col gap-4 bp-sm:flex-row bp-sm:items-end bp-sm:justify-between">
+          <div className="space-y-4">
             <div className="min-w-0">
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-3 py-1 text-xs font-medium text-muted-foreground">
-                <ShoppingBag className="h-3.5 w-3.5" />
-                주문 전 확인
-              </div>
-              <h1 className="mb-2 text-2xl font-black bp-sm:text-3xl bp-md:text-4xl">
+              <h1 className="mb-2 text-2xl font-black bp-sm:text-3xl">
                 장바구니
               </h1>
               <p className="max-w-2xl break-keep text-sm leading-relaxed text-muted-foreground bp-sm:text-base">
@@ -879,18 +875,20 @@ export default function CartPageClient() {
             </div>
 
             {cartItems.length > 0 && (
-              <div className="grid w-full gap-2 text-sm bp-sm:w-auto bp-sm:min-w-[300px] bp-sm:grid-cols-2">
-                <div className="rounded-xl border border-border bg-card/70 px-3 py-2">
-                  <span className="block text-xs text-muted-foreground">
-                    전체 / 선택
-                  </span>
-                  <strong className="tabular-nums">{cartItems.length}개 / {selectedCartItems.length}개</strong>
+              <div className="flex flex-col gap-2 border-t border-border pt-4 bp-md:flex-row bp-md:items-center bp-md:justify-between">
+                <div className="grid grid-cols-2 overflow-hidden rounded-xl border border-border bg-card text-sm bp-sm:inline-grid bp-sm:w-auto bp-sm:grid-cols-2">
+                  <div className="flex items-center justify-between gap-4 border-r border-border px-4 py-3 bp-sm:min-w-[160px]">
+                    <span className="font-medium text-muted-foreground">전체 상품</span>
+                    <strong className="tabular-nums text-foreground">{cartItems.length}개</strong>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 px-4 py-3 bp-sm:min-w-[160px]">
+                    <span className="font-medium text-muted-foreground">선택 상품</span>
+                    <strong className="tabular-nums text-primary">{selectedCartItems.length}개</strong>
+                  </div>
                 </div>
-                <div className="rounded-xl border border-border bg-card/70 px-3 py-2">
-                  <span className="block text-xs text-muted-foreground">
-                    상품 / 라켓
-                  </span>
-                  <strong className="break-keep text-sm">{normalCount}개 / {serviceCount}개</strong>
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <span className="rounded-full border border-border bg-card px-3 py-1">일반상품 {normalCount}개</span>
+                  <span className="rounded-full border border-border bg-card px-3 py-1">라켓 {serviceCount}개</span>
                 </div>
               </div>
             )}
@@ -902,14 +900,14 @@ export default function CartPageClient() {
         variant="wide"
         className={
           cartItems.length > 0
-            ? "py-5 bp-sm:py-7 bp-md:py-8"
+            ? "pb-32 pt-5 bp-sm:pt-7 bp-md:pt-8 bp-lg:pb-8"
             : "pt-6 pb-12 bp-sm:pt-8 bp-sm:pb-16 bp-md:py-8"
         }
       >
         {cartItems.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-[minmax(0,1fr)_340px] bp-xl:grid-cols-[minmax(0,1fr)_360px]">
             {/* 목록 */}
-            <div className="bp-lg:col-span-2 space-y-5">
+            <div className="min-w-0 space-y-5">
               <Card className="rounded-2xl border border-border bg-card shadow-sm">
                 <CardHeader variant="section" className="rounded-t-2xl">
                   <div className="flex flex-col gap-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
@@ -954,7 +952,7 @@ export default function CartPageClient() {
                   </div>
                 </CardHeader>
 
-                <CardContent className="p-3 bp-sm:p-4 bp-md:p-6 space-y-3 bp-sm:space-y-4">
+                <CardContent className="p-0">
                   {cartItems.map((item) => {
                     const lineKey = getCartLineKey(item);
                     // 버튼 비활성 판단
@@ -1006,11 +1004,11 @@ export default function CartPageClient() {
                     return (
                       <div
                         key={`${item.id}:${item.selectedGauge ?? ""}:${item.selectedColor ?? ""}`}
-                        className={`rounded-2xl border border-border bg-card p-3 shadow-sm transition hover:shadow-md bp-sm:p-4 dark:bg-card ${highlightCleanupTarget ? "bg-muted/30 ring-1 ring-warning/30" : ""}`}
+                        className={`border-b border-border bg-card px-2 py-4 transition last:border-b-0 bp-sm:px-3 bp-md:px-4 ${highlightCleanupTarget ? "bg-muted/30 ring-1 ring-warning/30" : ""}`}
                       >
-                        <div className="flex flex-col gap-4 bp-md:flex-row bp-md:items-center">
+                        <div className="grid min-w-0 grid-cols-1 gap-3 bp-md:grid-cols-[minmax(0,1fr)_132px_128px_40px] bp-md:items-center">
                           {/* 상단(모바일): 체크+썸네일+이름 */}
-                          <div className="flex min-w-0 flex-1 items-center gap-3">
+                          <div className="grid min-w-0 grid-cols-[20px_76px_minmax(0,1fr)] items-start gap-3 bp-md:items-center">
                             <input
                               type="checkbox"
                               checked={selectedLineKeySet.has(lineKey)}
@@ -1025,8 +1023,8 @@ export default function CartPageClient() {
                                   "/placeholder.svg?height=72&width=72"
                                 }
                                 alt={item.name}
-                                width={72}
-                                height={72}
+                                width={80}
+                                height={80}
                                 loading="lazy"
                                 className="aspect-square rounded-lg object-cover"
                               />
@@ -1122,10 +1120,10 @@ export default function CartPageClient() {
                           </div>
 
                           {/* 수량 / 합계 / 삭제 */}
-                          <div className="grid w-full min-w-0 grid-cols-[minmax(128px,1fr)_minmax(96px,1fr)_40px] items-start gap-3 bp-sm:grid-cols-[132px_minmax(112px,1fr)_40px] bp-md:w-auto bp-md:flex-none bp-md:items-center bp-md:justify-end">
+                          <div className="grid w-full min-w-0 grid-cols-[minmax(128px,1fr)_minmax(96px,1fr)_40px] items-start gap-3 bp-md:contents">
                             {/* 수량 스테퍼 (번들이면 잠금 + 링크로만 변경) */}
                             {lockStepper ? (
-                              <div className="order-1 w-[132px] min-w-0 justify-self-start flex flex-col items-center bp-md:justify-self-center">
+                              <div className="w-[132px] min-w-0 justify-self-start flex flex-col items-start bp-md:items-center bp-md:justify-self-center">
                                 {/* 숫자만 표시(± 없음) */}
                                 <div className="flex h-8 items-center rounded-full bg-muted px-3 dark:bg-muted">
                                   <span className="tabular-nums w-8 select-none text-center font-medium">
@@ -1158,7 +1156,7 @@ export default function CartPageClient() {
                               </div>
                             ) : (
                               /* 수량 스테퍼 (pill, 비활성 표시) */
-                              <div className="order-1 w-[132px] min-w-0 justify-self-start flex flex-col items-center bp-md:justify-self-center">
+                              <div className="w-[132px] min-w-0 justify-self-start flex flex-col items-start bp-md:items-center bp-md:justify-self-center">
                                 <div className="flex items-center rounded-full bg-muted px-1 dark:bg-muted">
                                   <Button
                                     variant="ghost"
@@ -1252,7 +1250,7 @@ export default function CartPageClient() {
                               </div>
                             )}
 
-                            <div className="order-2 min-w-[96px] text-right">
+                            <div className="min-w-[96px] justify-self-end text-right">
                               <div className="text-sm text-foreground/75">
                                 합계
                               </div>
@@ -1329,7 +1327,7 @@ export default function CartPageClient() {
                                   );
                                 }
                               }}
-                              className="order-3 h-10 w-10 justify-self-end text-muted-foreground hover:text-destructive"
+                              className="h-10 w-10 justify-self-end text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -1384,12 +1382,12 @@ export default function CartPageClient() {
             </div>
 
             {/* 요약 */}
-            <div className="bp-lg:col-span-1">
+            <div className="min-w-0">
               <div className="bp-lg:sticky bp-lg:top-[calc(var(--header-h)+16px)]">
                 <SummaryCard
-                  eyebrow="Order summary"
+                  eyebrow="ORDER SUMMARY"
                   title="예상 주문 요약"
-                  description="상품 금액, 할인, 배송비를 확인하고 결제로 이동하세요."
+                  description="선택 n개 기준으로 계산됩니다."
                   className="overflow-hidden"
                 >
                   <div className="space-y-4 bp-sm:space-y-5">
@@ -1605,7 +1603,7 @@ export default function CartPageClient() {
       </SiteContainer>
 
       {cartItems.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur bp-lg:hidden">
+        <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+16px)] z-30 border-t border-border bg-background/95 p-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur bp-lg:hidden">
           <div className="mx-auto flex max-w-7xl items-center gap-3">
             <div className="min-w-0 flex-1">
               <p className="text-xs text-muted-foreground">총 주문 예상 금액</p>
