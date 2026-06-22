@@ -101,6 +101,7 @@ export type ProductDetail = {
   inventory: ProductInventory;
   additionalFeatures: string;
   images: string[];
+  isVisible?: boolean;
 };
 
 export type ProductDetailResponse = {

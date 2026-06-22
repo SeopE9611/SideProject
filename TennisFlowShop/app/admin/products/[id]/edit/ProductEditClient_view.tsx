@@ -443,6 +443,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
         features: nextFeatures,
         tags: nextTags,
         inventory: nextInventory,
+        isVisible: p.isVisible !== false,
         searchKeywordsInput: nextSearchKeywordsInput,
         additionalFeatures: nextAdditionalFeatures,
         images: nextImages,

@@ -606,6 +606,7 @@ export async function createOrder(
         const colorUpdated = await db.collection("products").updateOne(
           {
             _id: productId,
+            ...publicProductFilter,
             colorInventories: {
               $elemMatch: {
                 value: selectedColor,
@@ -762,6 +763,7 @@ export async function createOrder(
               const gaugeUpdated = await db.collection("products").updateOne(
                 {
                   _id: productId,
+                  ...publicProductFilter,
                   "inventory.stock": { $gte: quantity },
                   gaugeInventories: {
                     $elemMatch: {
@@ -833,7 +835,7 @@ export async function createOrder(
             await db
               .collection("products")
               .updateOne(
-                { _id: productId },
+                { _id: productId, ...publicProductFilter },
                 { $inc: { "inventory.stock": -quantity, sold: quantity } },
                 { session },
               );

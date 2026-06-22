@@ -47,6 +47,7 @@ export type ProductEditSnapshotInput = {
     isSale: boolean;
     salePrice: number;
   };
+  isVisible: boolean;
   searchKeywordsInput: string;
   additionalFeatures: string;
   images: string[];
@@ -145,6 +146,7 @@ export function buildProductEditInitialSnapshot(product: ProductDetail): string 
       isSale: product.inventory.isSale,
       salePrice: product.inventory.salePrice,
     },
+    isVisible: product.isVisible !== false,
     searchKeywordsInput: Array.isArray(product.searchKeywords) ? product.searchKeywords.join(", ") : "",
     additionalFeatures: product.additionalFeatures,
     images: product.images,
