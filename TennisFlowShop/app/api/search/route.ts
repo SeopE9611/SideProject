@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { getHangulInitials } from "@/lib/hangul-utils";
-import { publicProductFilter, publicRacketStatusFilter } from "@/lib/public-visibility";
+import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
+import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 
 type SearchResult = {
   _id: string; // 기존 SearchPreview가 쓰는 필드 유지
@@ -49,11 +50,11 @@ export async function GET(req: NextRequest) {
     const [products, rackets] = await Promise.all([
       db
         .collection("products")
-        .find(publicProductFilter)
+        .find(productVisibilityFilterFor(await getVisibilityViewerFromCookies()))
         .toArray(),
       db
         .collection("used_rackets")
-        .find(publicRacketStatusFilter)
+        .find(racketVisibilityFilterFor(await getVisibilityViewerFromCookies()))
         .toArray(),
     ]);
 

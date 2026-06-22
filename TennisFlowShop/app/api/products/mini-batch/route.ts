@@ -1,7 +1,8 @@
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
-import { publicProductFilter } from "@/lib/public-visibility";
+import { productVisibilityFilterFor } from "@/lib/public-visibility";
+import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import {
   hasPaidMountingFee,
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
       ? await db
           .collection("products")
           .find(
-            { _id: { $in: validObjectIds }, ...publicProductFilter },
+            { _id: { $in: validObjectIds }, ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) },
             { projection: { _id: 1, mountingFee: 1, shippingFee: 1 } },
           )
           .toArray()

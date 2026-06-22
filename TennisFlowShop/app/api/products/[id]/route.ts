@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
-import { publicProductFilter } from "@/lib/public-visibility";
+import { productVisibilityFilterFor } from "@/lib/public-visibility";
+import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 
 // 단일 상품 조회
 
@@ -15,7 +16,7 @@ export async function GET(
     const { id } = await params;
     const prod = await db
       .collection("products")
-      .findOne({ _id: new ObjectId(id), ...publicProductFilter });
+      .findOne({ _id: new ObjectId(id), ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) });
     if (!prod) {
       return NextResponse.json(
         { message: "상품을 찾을 수 없습니다." },

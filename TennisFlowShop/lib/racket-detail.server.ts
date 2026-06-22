@@ -1,7 +1,8 @@
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
-import { publicRacketStatusFilter } from "@/lib/public-visibility";
+import { racketVisibilityFilterFor } from "@/lib/public-visibility";
+import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 
 function normalizeRacketMarketing(value: any) {
   return {
@@ -45,8 +46,8 @@ export async function getRacketDetailPayload(
   const col = db.collection<UsedRacketDoc>("used_rackets");
 
   const filter = ObjectId.isValid(id)
-    ? { _id: new ObjectId(id), ...publicRacketStatusFilter }
-    : { _id: id, ...publicRacketStatusFilter };
+    ? { _id: new ObjectId(id), ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) }
+    : { _id: id, ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) };
   const doc = await col.findOne(filter);
 
   if (!doc) return null;
@@ -168,7 +169,7 @@ export async function getRacketActiveCountPayload(
   const projRackets = { projection: { quantity: 1 } } as const;
   const used = await db
     .collection("used_rackets")
-    .findOne({ _id: new ObjectId(racketId), ...publicRacketStatusFilter }, projUsed);
+    .findOne({ _id: new ObjectId(racketId), ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) }, projUsed);
   const rack =
     used ??
     (await db

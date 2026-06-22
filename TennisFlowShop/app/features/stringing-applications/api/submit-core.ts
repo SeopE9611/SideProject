@@ -17,7 +17,8 @@ import {
   calcStringingTotal,
 } from "@/lib/pricing";
 import { consumePass, findOneActivePassForUser } from "@/lib/passes.service";
-import { publicProductFilter } from "@/lib/public-visibility";
+import { productVisibilityFilterFor } from "@/lib/public-visibility";
+import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import { normalizeEmailForSearch } from "@/lib/search-email";
 
 export type StringingApplicationInput = {
@@ -155,7 +156,7 @@ async function applyStringingVariantInventoryDeduction(params: {
   const result = await db.collection("products").updateOne(
     {
       _id: productId,
-      ...publicProductFilter,
+      ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
       "inventory.stock": { $gte: quantity },
       variantInventories: {
         $elemMatch: {
@@ -654,7 +655,7 @@ export async function submitStringingApplicationCore({
       isColorStockAlreadyDeductedByOrderItem;
 
     const stringProduct = await db.collection("products").findOne(
-      { _id: stringProductObjectId, ...publicProductFilter },
+      { _id: stringProductObjectId, ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) },
       {
         projection: {
           _id: 1,
@@ -802,7 +803,7 @@ export async function submitStringingApplicationCore({
       const colorDeductResult = await db.collection("products").updateOne(
         {
           _id: stringProductObjectId,
-          ...publicProductFilter,
+          ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
           ...(shouldAdjustGlobalInventory
             ? { "inventory.stock": { $gte: 1 } }
             : {}),
@@ -876,7 +877,7 @@ export async function submitStringingApplicationCore({
       const gaugeDeductResult = await db.collection("products").updateOne(
         {
           _id: stringProductObjectId,
-          ...publicProductFilter,
+          ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
           "inventory.stock": { $gte: stringQuantity },
           gaugeInventories: {
             $elemMatch: {

@@ -1,7 +1,8 @@
 import ProductDetailClient from "@/app/products/[id]/ProductDetailClient";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { getDb } from "@/lib/mongodb";
-import { publicProductFilter } from "@/lib/public-visibility";
+import { productVisibilityFilterFor } from "@/lib/public-visibility";
+import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import Link from "next/link";
@@ -147,7 +148,7 @@ export default async function ProductDetailPage({
   let product;
   try {
     product = await withRetry(
-      async () => db.collection("products").findOne({ _id: productObjectId, ...publicProductFilter }),
+      async () => db.collection("products").findOne({ _id: productObjectId, ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) }),
       {
         retries: 2,
         delayMs: 150,

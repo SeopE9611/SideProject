@@ -1,4 +1,5 @@
-import { publicRacketStatusFilter } from "@/lib/public-visibility";
+import { racketVisibilityFilterFor } from "@/lib/public-visibility";
+import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import SiteContainer from "@/components/layout/SiteContainer";
 import LoginGate from "@/components/system/LoginGate";
 import { verifyAccessToken } from "@/lib/auth.utils";
@@ -63,7 +64,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const racketObjectId = new ObjectId(id);
   const doc: any = await db
     .collection("used_rackets")
-    .findOne({ _id: racketObjectId, ...publicRacketStatusFilter });
+    .findOne({ _id: racketObjectId, ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) });
 
   if (!doc) {
     return (

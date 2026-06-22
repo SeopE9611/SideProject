@@ -3,6 +3,8 @@ import clientPromise from "@/lib/mongodb";
 import type { Sort } from "mongodb";
 import { parseBenefitFilters } from "@/lib/benefit-labels";
 import { createApiPerfLogger } from "@/lib/api/perf";
+import { racketVisibilityFilterFor } from "@/lib/public-visibility";
+import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 
 export const dynamic = "force-dynamic";
 
@@ -47,13 +49,10 @@ export async function GET(req: Request) {
     return v === "1" || v === "true" || v === "yes" || v === "on";
   })();
 
-  // 기본 목록에서는 sold(품절/판매완료)도 노출,
-  // 단 "대여 가능만(rentOnly)"에서는 sold를 제외해 결과/total을 정확히 유지
-  const hiddenStatuses = rentOnly
-    ? ["inactive", "비노출", "sold"]
-    : ["inactive", "비노출"];
+  // 일반 사용자는 비노출 라켓을 숨기고, 관리자는 사용자 화면 미리보기를 위해 조회를 허용합니다.
+  // 단 "대여 가능만(rentOnly)"에서는 sold를 기존처럼 제외해 실제 대여 가능 정책을 유지합니다.
   const q: any = {
-    $or: [{ status: { $exists: false } }, { status: { $nin: hiddenStatuses } }],
+    ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies(), { rentOnly }),
   };
 
   // 브랜드(대소문자 무시) — 예: ?brand=yonex
