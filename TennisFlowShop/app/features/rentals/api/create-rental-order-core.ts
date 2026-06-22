@@ -71,6 +71,7 @@ async function applyRentalVariantInventoryDeduction(params: {
   const stockUpdateResult = await db.collection("products").updateOne(
     {
       _id: productId,
+      ...publicProductFilter,
       "inventory.stock": { $gte: quantity },
       variantInventories: {
         $elemMatch: {
@@ -587,6 +588,7 @@ export async function createRentalOrderCore(params: {
                   .updateOne(
                     {
                       _id: stringingSnap.stringId,
+                      ...publicProductFilter,
                       "inventory.stock": { $gte: stringQuantity },
                       gaugeInventories: {
                         $elemMatch: {
@@ -628,6 +630,7 @@ export async function createRentalOrderCore(params: {
                   .updateOne(
                     {
                       _id: stringingSnap.stringId,
+                      ...publicProductFilter,
                       "inventory.stock": { $gte: stringQuantity },
                       gaugeInventories: {
                         $elemMatch: {
@@ -655,6 +658,7 @@ export async function createRentalOrderCore(params: {
                 .updateOne(
                   {
                     _id: stringingSnap.stringId,
+                    ...publicProductFilter,
                     "inventory.stock": { $gte: stringQuantity },
                     gaugeInventories: {
                       $elemMatch: {
@@ -682,6 +686,7 @@ export async function createRentalOrderCore(params: {
                   .updateOne(
                     {
                       _id: stringingSnap.stringId,
+                      ...publicProductFilter,
                       "inventory.stock": { $gte: stringQuantity },
                       colorInventories: {
                         $elemMatch: {
@@ -708,6 +713,7 @@ export async function createRentalOrderCore(params: {
                   .updateOne(
                     {
                       _id: stringingSnap.stringId,
+                      ...publicProductFilter,
                       "inventory.stock": { $gte: stringQuantity },
                     },
                     {
@@ -796,7 +802,7 @@ export async function createRentalOrderCore(params: {
             await db
               .collection("used_rackets")
               .updateOne(
-                { _id: racketObjectId },
+                { _id: racketObjectId, ...publicRacketStatusFilter },
                 { $set: { status: "rented", updatedAt: new Date() } },
                 { session },
               );
