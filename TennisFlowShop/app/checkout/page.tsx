@@ -115,6 +115,15 @@ declare global {
   }
 }
 
+
+const CART_CHECKOUT_SELECTION_KEY = "cart.checkout.selectedLineKeys.v1";
+
+const getCartLineKey = (item: {
+  id: string;
+  selectedGauge?: string;
+  selectedColor?: string;
+}) => `${item.id}::${item.selectedGauge ?? ""}::${item.selectedColor ?? ""}`;
+
 type CheckoutField =
   | "name"
   | "phone"
@@ -441,14 +450,46 @@ export default function CheckoutPage() {
   });
 
   const mode = sp.get("mode"); // 'buynow' | null
+  const isCartSelectionSource = sp.get("source") === "cart-selection";
 
   // 비회원 체크아웃 노출 정책(클라)
   const guestOrderMode = getGuestOrderModeClient();
   const allowGuestCheckout = guestOrderMode === "on";
 
   const { items: cartItems } = useCartStore();
+  const [selectedLineKeys, setSelectedLineKeys] = useState<string[] | null>(null);
   const { item: buyNowItem } = useBuyNowStore();
   const { items: pdpBundleItems } = usePdpBundleStore();
+
+  useEffect(() => {
+    if (mode === "buynow" || !isCartSelectionSource) {
+      setSelectedLineKeys(null);
+      return;
+    }
+
+    try {
+      const raw = sessionStorage.getItem(CART_CHECKOUT_SELECTION_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      setSelectedLineKeys(
+        Array.isArray(parsed)
+          ? parsed.filter((key): key is string => typeof key === "string")
+          : [],
+      );
+    } catch {
+      setSelectedLineKeys([]);
+    }
+  }, [isCartSelectionSource, mode]);
+
+  const selectedCartItems = useMemo(
+    () => {
+      if (!isCartSelectionSource) return cartItems;
+      if (!selectedLineKeys) return [];
+      return cartItems.filter((item) =>
+        selectedLineKeys.includes(getCartLineKey(item)),
+      );
+    },
+    [cartItems, isCartSelectionSource, selectedLineKeys],
+  );
 
   // 장바구니 결제 vs 즉시 구매 모드 분기
   const orderItems: CartItem[] =
@@ -458,7 +499,9 @@ export default function CheckoutPage() {
         : buyNowItem
           ? [buyNowItem]
           : []
-      : cartItems;
+      : isCartSelectionSource
+        ? selectedCartItems
+        : cartItems;
   const orderItemsKey = orderItems
     .map(
       (it) =>
