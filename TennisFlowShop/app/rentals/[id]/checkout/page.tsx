@@ -9,6 +9,7 @@ import {
 } from "@/lib/product-pricing";
 import { cookies } from "next/headers";
 import LoginGate from "@/components/system/LoginGate";
+import { publicProductFilter, publicRacketStatusFilter } from "@/lib/public-visibility";
 
 import type { Metadata } from "next";
 
@@ -36,6 +37,7 @@ async function getInitialForRacket(
   const db = (await clientPromise).db();
   const racket = await db.collection("used_rackets").findOne({
     _id: new ObjectId(racketId),
+    ...publicRacketStatusFilter,
   });
 
   if (!racket) return null;
@@ -69,7 +71,7 @@ async function getInitialForRacket(
       } = undefined;
   if (stringId && ObjectId.isValid(stringId)) {
     const p = await db.collection("products").findOne(
-      { _id: new ObjectId(stringId) },
+      { _id: new ObjectId(stringId), ...publicProductFilter },
       {
         projection: {
           name: 1,
@@ -81,21 +83,21 @@ async function getInitialForRacket(
         },
       },
     );
-    if (p) {
-      const img =
-        (typeof (p as any).thumbnail === "string" && (p as any).thumbnail) ||
-        (Array.isArray((p as any).images) && (p as any).images[0]
-          ? (p as any).images[0]
-          : null);
-      selectedString = {
-        id: stringId,
-        name: (p as any).name ?? "",
-        price: getEffectiveProductPrice(p),
-        ...getProductPriceDisplayMeta(p),
-        mountingFee: Number((p as any).mountingFee ?? 0),
-        image: img,
-      };
-    }
+    if (!p) return null;
+
+    const img =
+      (typeof (p as any).thumbnail === "string" && (p as any).thumbnail) ||
+      (Array.isArray((p as any).images) && (p as any).images[0]
+        ? (p as any).images[0]
+        : null);
+    selectedString = {
+      id: stringId,
+      name: (p as any).name ?? "",
+      price: getEffectiveProductPrice(p),
+      ...getProductPriceDisplayMeta(p),
+      mountingFee: Number((p as any).mountingFee ?? 0),
+      image: img,
+    };
   }
 
   return {

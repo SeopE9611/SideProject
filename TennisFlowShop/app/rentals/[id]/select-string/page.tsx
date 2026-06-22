@@ -5,6 +5,7 @@ import RentalSelectStringClient from "@/app/rentals/[id]/select-string/RentalSel
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { cookies } from "next/headers";
 import LoginGate from "@/components/system/LoginGate";
+import { publicRacketStatusFilter } from "@/lib/public-visibility";
 
 import type { Metadata } from "next";
 
@@ -30,7 +31,7 @@ async function getRacketMini(racketId: string) {
   const racket = await db
     .collection("used_rackets")
     .findOne(
-      { _id: new ObjectId(racketId) },
+      { _id: new ObjectId(racketId), ...publicRacketStatusFilter },
       { projection: { brand: 1, model: 1, condition: 1, images: 1 } },
     );
 
