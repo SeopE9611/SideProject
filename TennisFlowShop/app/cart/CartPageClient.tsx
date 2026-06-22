@@ -888,7 +888,7 @@ export default function CartPageClient() {
                 </div>
                 <div className="rounded-xl border border-border bg-card/70 px-3 py-2">
                   <span className="block text-xs text-muted-foreground">
-                    일반배송 / 교체서비스
+                    상품 / 라켓
                   </span>
                   <strong className="break-keep text-sm">{normalCount}개 / {serviceCount}개</strong>
                 </div>
@@ -1121,11 +1121,11 @@ export default function CartPageClient() {
                             </div>
                           </div>
 
-                          {/* 하단(모바일) */}
-                          <div className="grid w-full min-w-0 grid-cols-[minmax(128px,1fr)_minmax(96px,1fr)_40px] items-start gap-3 bp-sm:grid-cols-[132px_minmax(112px,1fr)_40px] bp-md:w-auto bp-md:flex-none bp-md:justify-end">
+                          {/* 수량 / 합계 / 삭제 */}
+                          <div className="grid w-full min-w-0 grid-cols-[minmax(128px,1fr)_minmax(96px,1fr)_40px] items-start gap-3 bp-sm:grid-cols-[132px_minmax(112px,1fr)_40px] bp-md:w-auto bp-md:flex-none bp-md:items-center bp-md:justify-end">
                             {/* 수량 스테퍼 (번들이면 잠금 + 링크로만 변경) */}
                             {lockStepper ? (
-                              <div className="order-1 w-[132px] min-w-0 justify-self-start rounded-xl border border-border bg-muted/20 p-2 flex flex-col items-center">
+                              <div className="order-1 w-[132px] min-w-0 justify-self-start flex flex-col items-center bp-md:justify-self-center">
                                 {/* 숫자만 표시(± 없음) */}
                                 <div className="flex h-8 items-center rounded-full bg-muted px-3 dark:bg-muted">
                                   <span className="tabular-nums w-8 select-none text-center font-medium">
@@ -1150,7 +1150,7 @@ export default function CartPageClient() {
 
                                 {Number.isFinite(maxStock) && (
                                   <span
-                                    className={`mt-1 text-xs ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}
+                                    className={`mt-1 text-center text-xs leading-snug ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}
                                   >
                                     장바구니 기준 재고: {maxStock}개
                                   </span>
@@ -1158,7 +1158,7 @@ export default function CartPageClient() {
                               </div>
                             ) : (
                               /* 수량 스테퍼 (pill, 비활성 표시) */
-                              <div className="order-1 w-[132px] min-w-0 justify-self-start rounded-xl border border-border bg-muted/20 p-2 flex flex-col items-center">
+                              <div className="order-1 w-[132px] min-w-0 justify-self-start flex flex-col items-center bp-md:justify-self-center">
                                 <div className="flex items-center rounded-full bg-muted px-1 dark:bg-muted">
                                   <Button
                                     variant="ghost"
@@ -1243,7 +1243,7 @@ export default function CartPageClient() {
                                 ) : (
                                   Number.isFinite(maxStock) && (
                                     <span
-                                      className={`mt-1 text-xs ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}
+                                      className={`mt-1 text-center text-xs leading-snug ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}
                                     >
                                       장바구니 기준 재고: {maxStock}개
                                     </span>
@@ -1340,10 +1340,10 @@ export default function CartPageClient() {
                   })}
                 </CardContent>
 
-                <CardFooter className="rounded-b-lg bg-muted/50 dark:bg-background">
-                  <div className="flex w-full flex-col justify-between gap-4 bp-sm:flex-row">
+                <CardFooter className="rounded-b-lg bg-muted/30 dark:bg-background">
+                  <div className="flex w-full flex-col justify-between gap-3 bp-sm:flex-row bp-sm:items-center">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       className="group w-full bp-sm:w-auto"
                       asChild
                     >
@@ -1355,17 +1355,27 @@ export default function CartPageClient() {
                         쇼핑 계속하기
                       </Link>
                     </Button>
-                    <Button
-                      variant="destructive"
-                      className="w-full bp-sm:w-auto"
-                      onClick={() => {
-                        if (confirm("장바구니의 모든 상품을 비울까요?"))
-                          clearCart();
-                      }}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      장바구니 비우기
-                    </Button>
+                    <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row">
+                      <Button
+                        variant="outline"
+                        className="w-full border-destructive/30 text-destructive hover:bg-destructive/10 bp-sm:w-auto"
+                        onClick={removeSelected}
+                        disabled={!hasSelectedItems}
+                      >
+                        선택 삭제
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive bp-sm:w-auto"
+                        onClick={() => {
+                          if (confirm("장바구니의 모든 상품을 비울까요?"))
+                            clearCart();
+                        }}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        장바구니 비우기
+                      </Button>
+                    </div>
                   </div>
                 </CardFooter>
               </Card>
