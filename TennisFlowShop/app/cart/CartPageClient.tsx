@@ -875,20 +875,24 @@ export default function CartPageClient() {
             </div>
 
             {cartItems.length > 0 && (
-              <div className="flex flex-col gap-2 border-t border-border pt-4 bp-md:flex-row bp-md:items-center bp-md:justify-between">
-                <div className="grid grid-cols-2 overflow-hidden rounded-xl border border-border bg-card text-sm bp-sm:inline-grid bp-sm:w-auto bp-sm:grid-cols-2">
-                  <div className="flex items-center justify-between gap-4 border-r border-border px-4 py-3 bp-sm:min-w-[160px]">
+              <div className="border-t border-border pt-4">
+                <div className="grid grid-cols-2 gap-2 text-sm bp-sm:grid-cols-4">
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
                     <span className="font-medium text-muted-foreground">전체 상품</span>
                     <strong className="tabular-nums text-foreground">{cartItems.length}개</strong>
                   </div>
-                  <div className="flex items-center justify-between gap-4 px-4 py-3 bp-sm:min-w-[160px]">
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
                     <span className="font-medium text-muted-foreground">선택 상품</span>
                     <strong className="tabular-nums text-primary">{selectedCartItems.length}개</strong>
                   </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  <span className="rounded-full border border-border bg-card px-3 py-1">일반상품 {normalCount}개</span>
-                  <span className="rounded-full border border-border bg-card px-3 py-1">라켓 {serviceCount}개</span>
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
+                    <span className="font-medium text-muted-foreground">일반상품</span>
+                    <strong className="tabular-nums text-foreground">{normalCount}개</strong>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
+                    <span className="font-medium text-muted-foreground">라켓</span>
+                    <strong className="tabular-nums text-foreground">{serviceCount}개</strong>
+                  </div>
                 </div>
               </div>
             )}
@@ -900,12 +904,12 @@ export default function CartPageClient() {
         variant="wide"
         className={
           cartItems.length > 0
-            ? "pb-32 pt-5 bp-sm:pt-7 bp-md:pt-8 bp-lg:pb-8"
+            ? "pb-44 pt-5 bp-sm:pt-7 bp-md:pt-8 bp-lg:pb-12"
             : "pt-6 pb-12 bp-sm:pt-8 bp-sm:pb-16 bp-md:py-8"
         }
       >
         {cartItems.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-[minmax(0,1fr)_340px] bp-xl:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="grid grid-cols-1 gap-6 bp-2xl:grid-cols-[minmax(720px,1fr)_360px]">
             {/* 목록 */}
             <div className="min-w-0 space-y-5">
               <Card className="rounded-2xl border border-border bg-card shadow-sm">
@@ -1006,15 +1010,15 @@ export default function CartPageClient() {
                         key={`${item.id}:${item.selectedGauge ?? ""}:${item.selectedColor ?? ""}`}
                         className={`border-b border-border bg-card px-2 py-4 transition last:border-b-0 bp-sm:px-3 bp-md:px-4 ${highlightCleanupTarget ? "bg-muted/30 ring-1 ring-warning/30" : ""}`}
                       >
-                        <div className="grid min-w-0 grid-cols-1 gap-3 bp-md:grid-cols-[minmax(0,1fr)_132px_128px_40px] bp-md:items-center">
-                          {/* 상단(모바일): 체크+썸네일+이름 */}
-                          <div className="grid min-w-0 grid-cols-[20px_76px_minmax(0,1fr)] items-start gap-3 bp-md:items-center">
+                        <div className="space-y-3">
+                          {/* 상품 기본 정보: 체크박스, 이미지, 상품명/가격/옵션 요약 */}
+                          <div className="grid min-w-0 grid-cols-[20px_76px_minmax(0,1fr)] items-start gap-3 bp-sm:grid-cols-[20px_84px_minmax(220px,1fr)]">
                             <input
                               type="checkbox"
                               checked={selectedLineKeySet.has(lineKey)}
                               onChange={() => toggleSelect(lineKey)}
                               className="h-4 w-4 shrink-0 accent-primary"
-                              aria-label={`${item.name} 선택`}
+                                aria-label={`${item.name} 선택`}
                             />
                             <Link href={itemHref} className="shrink-0">
                               <Image
@@ -1032,7 +1036,7 @@ export default function CartPageClient() {
                             <div className="min-w-0 flex-1">
                               <Link
                                 href={itemHref}
-                                className="block min-w-0 line-clamp-2 break-keep break-words font-medium leading-relaxed text-foreground transition-colors hover:text-primary dark:text-foreground dark:hover:text-primary bp-md:line-clamp-1"
+                                className="block min-w-0 line-clamp-2 break-keep break-words font-medium leading-relaxed text-foreground transition-colors hover:text-primary dark:text-foreground dark:hover:text-primary"
                               >
                                 {item.name}
                               </Link>
@@ -1066,27 +1070,31 @@ export default function CartPageClient() {
                                   </Badge>
                                 </div>
                               )}
-                              {item.selectedGauge && (
-                                <div className="mt-1 break-keep break-words text-xs leading-relaxed text-muted-foreground">
-                                  게이지: {formatGaugeLabel(item.selectedGauge)}
-                                </div>
-                              )}
-                              {(item.selectedColorLabel ||
-                                item.selectedColor) && (
-                                <span className="mt-1 inline-flex max-w-full items-center gap-1 rounded-full border border-border bg-muted/30 px-2 py-0.5 text-xs leading-relaxed text-muted-foreground [&>span:last-child]:min-w-0 [&>span:last-child]:break-keep [&>span:last-child]:break-words">
-                                  색상
-                                  {item.selectedColorHex && (
-                                    <span
-                                      className="h-2.5 w-2.5 rounded-full border border-border/60"
-                                      style={{
-                                        backgroundColor: item.selectedColorHex,
-                                      }}
-                                    />
-                                  )}
-                                  {item.selectedColorLabel ||
-                                    item.selectedColor}
-                                </span>
-                              )}
+                              <div className="mt-2 flex max-w-full flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                                {item.selectedGauge && (
+                                  <span className="inline-flex max-w-full items-center rounded-full border border-border bg-muted/30 px-2 py-0.5 leading-relaxed whitespace-nowrap">
+                                    게이지: {formatGaugeLabel(item.selectedGauge)}
+                                  </span>
+                                )}
+                                {(item.selectedColorLabel ||
+                                  item.selectedColor) && (
+                                  <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-border bg-muted/30 px-2 py-0.5 leading-relaxed whitespace-nowrap">
+                                    색상
+                                    {item.selectedColorHex && (
+                                      <span
+                                        className="h-2.5 w-2.5 shrink-0 rounded-full border border-border/60"
+                                        style={{
+                                          backgroundColor: item.selectedColorHex,
+                                        }}
+                                      />
+                                    )}
+                                    <span className="min-w-0 truncate">
+                                      {item.selectedColorLabel ||
+                                        item.selectedColor}
+                                    </span>
+                                  </span>
+                                )}
+                              </div>
                               {highlightCleanupTarget && (
                                 <>
                                   <Badge
@@ -1119,8 +1127,38 @@ export default function CartPageClient() {
                             </div>
                           </div>
 
-                          {/* 수량 / 합계 / 삭제 */}
-                          <div className="grid w-full min-w-0 grid-cols-[minmax(128px,1fr)_minmax(96px,1fr)_40px] items-start gap-3 bp-md:contents">
+                          {/* 옵션/수량 박스: 카드 전체 폭으로 분리 */}
+                          <div className="min-w-0 rounded-2xl border border-border bg-muted/30 p-3 bp-sm:ml-8 bp-sm:p-4">
+                            <div className="mb-3 flex min-w-0 items-start justify-between gap-3">
+                              <div className="min-w-0 text-sm">
+                                <p className="font-medium text-foreground">옵션 정보</p>
+                                <p className="mt-1 flex max-w-full flex-wrap gap-1.5 text-xs text-muted-foreground">
+                                  {item.selectedGauge ? (
+                                    <span className="whitespace-nowrap rounded-full bg-background px-2 py-0.5">
+                                      게이지: {formatGaugeLabel(item.selectedGauge)}
+                                    </span>
+                                  ) : null}
+                                  {item.selectedColorLabel || item.selectedColor ? (
+                                    <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-background px-2 py-0.5 whitespace-nowrap">
+                                      색상
+                                      {item.selectedColorHex && (
+                                        <span
+                                          className="h-2.5 w-2.5 shrink-0 rounded-full border border-border/60"
+                                          style={{ backgroundColor: item.selectedColorHex }}
+                                        />
+                                      )}
+                                      <span className="min-w-0 truncate">
+                                        {item.selectedColorLabel || item.selectedColor}
+                                      </span>
+                                    </span>
+                                  ) : null}
+                                  {!item.selectedGauge &&
+                                    !item.selectedColorLabel &&
+                                    !item.selectedColor && <span>기본 옵션</span>}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="grid w-full min-w-0 grid-cols-1 items-end gap-3 bp-sm:grid-cols-[minmax(160px,1fr)_auto]">
                             {/* 수량 스테퍼 (번들이면 잠금 + 링크로만 변경) */}
                             {lockStepper ? (
                               <div className="w-[132px] min-w-0 justify-self-start flex flex-col items-start bp-md:items-center bp-md:justify-self-center">
@@ -1150,7 +1188,7 @@ export default function CartPageClient() {
                                   <span
                                     className={`mt-1 text-center text-xs leading-snug ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}
                                   >
-                                    장바구니 기준 재고: {maxStock}개
+                                    재고 {maxStock}개
                                   </span>
                                 )}
                               </div>
@@ -1162,7 +1200,7 @@ export default function CartPageClient() {
                                     variant="ghost"
                                     size="sm"
                                     className="h-8 w-8 disabled:opacity-40"
-                                    aria-label={`${item.name} 수량 감소`}
+                                      aria-label={`${item.name} 수량 감소`}
                                     disabled={lockStepper ? true : !canDec}
                                     onClick={() =>
                                       updateQuantity(
@@ -1172,7 +1210,7 @@ export default function CartPageClient() {
                                         item.selectedColor,
                                       )
                                     }
-                                    title={
+                                      title={
                                       lockStepper
                                         ? "번들 품목은 스트링 선택 화면에서만 수량을 변경할 수 있어요."
                                         : undefined
@@ -1191,14 +1229,14 @@ export default function CartPageClient() {
                                     variant="ghost"
                                     size="sm"
                                     className="h-8 w-8 disabled:opacity-40"
-                                    aria-label={`${item.name} 수량 증가`}
+                                      aria-label={`${item.name} 수량 증가`}
                                     disabled={lockStepper ? true : !canInc}
-                                    title={
+                                      title={
                                       lockStepper
                                         ? "번들 품목은 스트링 선택 화면에서만 수량을 변경할 수 있어요."
                                         : undefined
                                     }
-                                    onClick={() => {
+                                      onClick={() => {
                                       if (!canInc) {
                                         showErrorToast(
                                           <>
@@ -1243,32 +1281,33 @@ export default function CartPageClient() {
                                     <span
                                       className={`mt-1 text-center text-xs leading-snug ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}
                                     >
-                                      장바구니 기준 재고: {maxStock}개
+                                      재고 {maxStock}개
                                     </span>
                                   )
                                 )}
                               </div>
                             )}
 
-                            <div className="min-w-[96px] justify-self-end text-right">
-                              <div className="text-sm text-foreground/75">
-                                합계
+                            <div className="flex items-start justify-between gap-3 bp-sm:justify-end">
+                              <div className="min-w-[120px] text-right">
+                                <div className="text-sm text-foreground/75">
+                                  합계
+                                </div>
+                                <div className="whitespace-nowrap tabular-nums text-lg font-semibold text-foreground">
+                                  {formatKRW(item.price * item.quantity)}원
+                                </div>
                               </div>
-                              <div className="whitespace-nowrap tabular-nums text-lg font-semibold text-foreground">
-                                {formatKRW(item.price * item.quantity)}원
-                              </div>
-                            </div>
 
-                            {/* 삭제 버튼 (컨펌) */}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label={
+                              {/* 삭제 버튼 (컨펌) */}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label={
                                 lockStepper
                                   ? `번들(라켓+스트링) 삭제`
                                   : `${item.name} 삭제`
                               }
-                              title={
+                                title={
                                 lockStepper
                                   ? "라켓과 장착 스트링이 함께 담긴 구성이라 둘 중 하나만 삭제할 수 없어요."
                                   : undefined
@@ -1326,11 +1365,12 @@ export default function CartPageClient() {
                                     item.selectedColor,
                                   );
                                 }
-                              }}
-                              className="h-10 w-10 justify-self-end text-muted-foreground hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                                }}
+                                className="h-10 w-10 justify-self-end text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1383,7 +1423,7 @@ export default function CartPageClient() {
 
             {/* 요약 */}
             <div className="min-w-0">
-              <div className="bp-lg:sticky bp-lg:top-[calc(var(--header-h)+16px)]">
+              <div className="bp-2xl:sticky bp-2xl:top-[calc(var(--header-h)+16px)]">
                 <SummaryCard
                   eyebrow="ORDER SUMMARY"
                   title="예상 주문 요약"
@@ -1603,7 +1643,7 @@ export default function CartPageClient() {
       </SiteContainer>
 
       {cartItems.length > 0 && (
-        <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+16px)] z-30 border-t border-border bg-background/95 p-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur bp-lg:hidden">
+        <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+88px)] z-30 border-t border-border bg-background/95 p-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur bp-2xl:hidden">
           <div className="mx-auto flex max-w-7xl items-center gap-3">
             <div className="min-w-0 flex-1">
               <p className="text-xs text-muted-foreground">총 주문 예상 금액</p>
