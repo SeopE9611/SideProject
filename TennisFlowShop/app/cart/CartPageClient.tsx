@@ -819,7 +819,9 @@ export default function CartPageClient() {
                 </CardFooter>
               </Card>
 
-              <WishlistSidebar variant="inline" />
+              <div className="hidden bp-lg:block">
+                <WishlistSidebar variant="inline" />
+              </div>
             </div>
 
             {/* 요약 */}
