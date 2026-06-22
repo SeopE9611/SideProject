@@ -122,6 +122,13 @@ export default function CartPageClient() {
     return shippingFeeIdsToResolve.every((id) => Object.prototype.hasOwnProperty.call(shippingFeeByProductId, id));
   }, [shippingFeeIdsToResolve, shippingFeeByProductId]);
 
+  const isServiceMetaReady = useMemo(() => {
+    if (productIds.length === 0) return true;
+    return productIds.every((id) => Object.prototype.hasOwnProperty.call(mountingFeeByProductId, id) && Object.prototype.hasOwnProperty.call(mountableStringByProductId, id));
+  }, [productIds, mountingFeeByProductId, mountableStringByProductId]);
+
+  const isCartPriceReady = isShippingFeeReady && isServiceMetaReady;
+
   const shippingFee = useMemo(() => {
     if (!isShippingFeeReady) return 0;
     if (!hasSelectedItems) return 0;
@@ -137,47 +144,6 @@ export default function CartPageClient() {
       withStringService: hasRacket && hasMountableString,
     });
   }, [selectedCartItems, mountingFeeByProductId, mountableStringByProductId, shippingFeeByProductId, hasSelectedItems, isShippingFeeReady]);
-  const total = subtotal + shippingFee;
-
-  const priceSummaryRows = useMemo<PriceSummaryRow[]>(() => {
-    const rows: PriceSummaryRow[] = [];
-
-    if (productDiscount > 0) {
-      rows.push(
-        {
-          id: "regular-subtotal",
-          label: "정가",
-          value: `${formatKRW(regularSubtotal)}원`,
-        },
-        {
-          id: "product-discount",
-          label: "상품 할인",
-          value: `-${formatKRW(productDiscount)}원`,
-        },
-      );
-    }
-
-    rows.push(
-      {
-        id: "subtotal",
-        label: "상품금액",
-        value: `${formatKRW(subtotal)}원`,
-      },
-      {
-        id: "shipping-fee",
-        label: "배송비",
-        value: !hasSelectedItems ? "계산 전" : !isShippingFeeReady ? <Skeleton className="h-6 w-20 rounded-md" /> : shippingFee > 0 ? `${formatKRW(shippingFee)}원` : <span className="text-primary">무료</span>,
-      },
-      {
-        id: "total",
-        label: "결제예정금액",
-        value: !isShippingFeeReady ? <Skeleton className="h-7 w-28 rounded-md" /> : <span className="text-primary">{formatKRW(total)}원</span>,
-        emphasis: true,
-      },
-    );
-
-    return rows;
-  }, [hasSelectedItems, isShippingFeeReady, productDiscount, regularSubtotal, shippingFee, subtotal, total]);
 
   useEffect(() => {
     let cancelled = false;
@@ -251,6 +217,7 @@ export default function CartPageClient() {
       } catch {
         if (!cancelled) {
           setMountingFeeByProductId(Object.fromEntries(productIds.map((id) => [id, 0] as const)));
+          setMountableStringByProductId(Object.fromEntries(productIds.map((id) => [id, false] as const)));
           setShippingFeeByProductId(Object.fromEntries(shippingFeeIdsToResolve.map((id) => [id, 3000] as const)));
         }
       }
@@ -336,6 +303,71 @@ export default function CartPageClient() {
   // - isBundleLocked: 라켓 1종 + 장착 스트링 1종이 동시에 존재하고, 편집 링크까지 만들어질 정도로 번들이 성립한 상태
   // - blockServiceCheckout: 구성/수량 불일치면 장바구니에서 이미 막히는 상태
   const shouldEnterCheckoutWithService = hasSelectedItems && ((!blockServiceCheckout && isBundleLocked) || hasMountableStringOnlyFlow);
+  const shouldIncludeServiceFee = shouldEnterCheckoutWithService;
+  const serviceFee = useMemo(() => {
+    if (!shouldIncludeServiceFee) return 0;
+
+    return selectedCartItems.reduce((sum, item) => {
+      if ((item.kind ?? "product") !== "product") return sum;
+      if (mountableStringByProductId[String(item.id)] !== true) return sum;
+
+      const fee = Number(mountingFeeByProductId[String(item.id)] ?? 0);
+      if (!Number.isFinite(fee) || fee <= 0) return sum;
+
+      return sum + fee * item.quantity;
+    }, 0);
+  }, [selectedCartItems, shouldIncludeServiceFee, mountingFeeByProductId, mountableStringByProductId]);
+  const total = subtotal + serviceFee + shippingFee;
+
+  const priceSummaryRows = useMemo<PriceSummaryRow[]>(() => {
+    const rows: PriceSummaryRow[] = [];
+
+    if (productDiscount > 0) {
+      rows.push(
+        {
+          id: "regular-subtotal",
+          label: "정가",
+          value: `${formatKRW(regularSubtotal)}원`,
+        },
+        {
+          id: "product-discount",
+          label: "상품 할인",
+          value: `-${formatKRW(productDiscount)}원`,
+        },
+      );
+    }
+
+    rows.push({
+      id: "subtotal",
+      label: "상품금액",
+      value: `${formatKRW(subtotal)}원`,
+    });
+
+    if (serviceFee > 0) {
+      rows.push({
+        id: "service-fee",
+        label: "교체서비스",
+        value: `${formatKRW(serviceFee)}원`,
+        description: "선택한 스트링 장착비",
+      });
+    }
+
+    rows.push(
+      {
+        id: "shipping-fee",
+        label: "배송비",
+        value: !hasSelectedItems ? "계산 전" : !isCartPriceReady ? <Skeleton className="h-6 w-20 rounded-md" /> : shippingFee > 0 ? `${formatKRW(shippingFee)}원` : <span className="text-primary">무료</span>,
+      },
+      {
+        id: "total",
+        label: "결제예정금액",
+        value: !isCartPriceReady ? <Skeleton className="h-7 w-28 rounded-md" /> : <span className="text-primary">{formatKRW(total)}원</span>,
+        emphasis: true,
+      },
+    );
+
+    return rows;
+  }, [hasSelectedItems, isCartPriceReady, productDiscount, regularSubtotal, serviceFee, shippingFee, subtotal, total]);
   const stringStandalonePausedNoticeLines = ["스트링 단품 구매는 현재 운영하지 않습니다.", "선택한 스트링은 교체서비스 신청용으로 사용됩니다."];
   const checkoutBasePath = shouldEnterCheckoutWithService ? "/checkout?withService=1&source=cart-selection" : "/checkout?source=cart-selection";
   const checkoutHref = user ? checkoutBasePath : `/login?next=${encodeURIComponent(checkoutBasePath)}`;
@@ -551,7 +583,7 @@ export default function CartPageClient() {
       </AlertDialog>
       {/* 헤더 */}
       <div className="border-b border-border bg-background text-foreground">
-        <SiteContainer className="max-w-[1180px] py-4 bp-sm:py-5">
+        <SiteContainer className="max-w-[1240px] py-4 bp-sm:py-5">
           <div className="space-y-4">
             <div className="min-w-0">
               <h1 className="mb-2 text-2xl font-black bp-sm:text-3xl">장바구니</h1>
@@ -562,9 +594,9 @@ export default function CartPageClient() {
         </SiteContainer>
       </div>
 
-      <SiteContainer className={cartItems.length > 0 ? "max-w-[1180px] pb-[calc(96px+env(safe-area-inset-bottom))] pt-4 bp-sm:pt-5 bp-lg:pb-12" : "max-w-[1180px] pt-6 pb-12 bp-sm:pt-8 bp-sm:pb-16 bp-md:py-8"}>
+      <SiteContainer className={cartItems.length > 0 ? "max-w-[1240px] pb-[calc(96px+env(safe-area-inset-bottom))] pt-4 bp-sm:pt-5 bp-lg:pb-12" : "max-w-[1240px] pt-6 pb-12 bp-sm:pt-8 bp-sm:pb-16 bp-md:py-8"}>
         {cartItems.length > 0 ? (
-          <div className="grid grid-cols-1 gap-5 bp-lg:grid-cols-[minmax(0,1fr)_320px] bp-xl:gap-6">
+          <div className="grid grid-cols-1 gap-5 bp-lg:grid-cols-[minmax(0,1fr)_360px] bp-xl:grid-cols-[minmax(0,1fr)_380px] bp-xl:gap-6">
             {/* 목록 */}
             <div className="min-w-0 space-y-5">
               <Card className="rounded-2xl border border-border bg-card shadow-sm">
@@ -598,6 +630,12 @@ export default function CartPageClient() {
                     const isStockLimitReached = Number.isFinite(maxStock) && item.quantity >= maxStock;
                     const shouldEmphasizeStock = isLowStock || isStockLimitReached;
                     const hasDiscount = typeof item.regularPrice === "number" && Number.isFinite(item.regularPrice) && item.regularPrice > item.price;
+                    const itemMountingFee = Number(mountingFeeByProductId[String(item.id)] ?? 0);
+                    const isMountableStringLine = (item.kind ?? "product") === "product" && mountableStringByProductId[String(item.id)] === true;
+                    const shouldShowItemServiceFee = shouldIncludeServiceFee && isMountableStringLine && Number.isFinite(itemMountingFee) && itemMountingFee > 0;
+                    const itemProductTotal = item.price * item.quantity;
+                    const itemServiceFeeTotal = shouldShowItemServiceFee ? itemMountingFee * item.quantity : 0;
+                    const itemLineTotal = itemProductTotal + itemServiceFeeTotal;
 
                     const isBundleRacket = isBundleLocked && !!bundleRacketItem && item.id === bundleRacketItem.id && (item.kind ?? "product") === "racket";
 
@@ -607,7 +645,7 @@ export default function CartPageClient() {
 
                     //- "구성 정리 필요" 상태에서 어떤 라인을 정리해야 하는지(장착 대상 스트링)를 시각적으로 강조
                     // - 장착 대상 스트링: isMountableString=true 인 스트링 상품
-                    const isMountableString = (item.kind ?? "product") === "product" && mountableStringByProductId[String(item.id)] === true;
+                    const isMountableString = isMountableStringLine;
 
                     // - 구성 정리 필요 상태: 라켓이 있고 + (라켓 1종 / 장착 스트링 1종 규칙 위반) + 특히 장착 스트링이 2종 이상인 경우
                     const needsCompositionCleanup = blockServiceCheckoutByComposition && totalRacketQty > 0 && mountableStringLineCount > 1;
@@ -635,6 +673,11 @@ export default function CartPageClient() {
                                 <span className="text-muted-foreground">{hasDiscount ? "할인가" : "판매가"}</span>
                                 <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">{formatKRW(item.price)}원</span>
                               </div>
+                              {shouldShowItemServiceFee && (
+                                <div className="mt-1 text-xs text-muted-foreground">
+                                  교체서비스 <span className="font-medium text-foreground">{formatKRW(itemMountingFee)}원</span> / 개
+                                </div>
+                              )}
                               {hasDiscount && (
                                 <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs tabular-nums">
                                   <span className="text-muted-foreground">
@@ -799,7 +842,8 @@ export default function CartPageClient() {
 
                               <div className="shrink-0 whitespace-nowrap text-right">
                                 <div className="text-[13px] text-muted-foreground">합계</div>
-                                <div className="whitespace-nowrap tabular-nums text-lg font-semibold text-foreground">{formatKRW(item.price * item.quantity)}원</div>
+                                <div className="whitespace-nowrap tabular-nums text-lg font-semibold text-foreground">{formatKRW(itemLineTotal)}원</div>
+                                {itemServiceFeeTotal > 0 && <div className="mt-0.5 text-[11px] text-muted-foreground">교체 +{formatKRW(itemServiceFeeTotal)}원 포함</div>}
                               </div>
                             </div>
                           </div>
@@ -849,7 +893,7 @@ export default function CartPageClient() {
                         <span className="font-semibold">배송비/교체서비스</span>
                       </div>
                       <p className="text-xs leading-relaxed text-muted-foreground">
-                        상품별 배송비와 라켓+장착 스트링 구성은 주문 요약에 반영됩니다.
+                        상품별 배송비와 선택한 스트링의 교체서비스 비용이 주문 요약에 반영됩니다.
                         <span className="mt-1 block">무료배송 상품은 배송비가 0원으로 표시됩니다.</span>
                       </p>
                     </div>
@@ -903,7 +947,7 @@ export default function CartPageClient() {
                         <Loader2 className="h-5 w-5 animate-spin" />
                         로그인 확인 중...
                       </Button>
-                    ) : !isShippingFeeReady ? (
+                    ) : !isCartPriceReady ? (
                       <Button className="h-12 w-full font-semibold opacity-70" disabled>
                         <Loader2 className="h-5 w-5 animate-spin" />
                         금액 계산 중...
@@ -919,7 +963,7 @@ export default function CartPageClient() {
                         )}
                         <p className="text-xs text-muted-foreground">최신 재고와 배송비는 주문 단계에서 다시 확인됩니다.</p>
                         <div className="grid grid-cols-1 gap-2">
-                          <Button className="h-12 w-full px-2 font-semibold" disabled={!hasSelectedItems || isCheckingCheckoutStock} onClick={handleCheckoutClick}>
+                          <Button className="h-12 w-full px-2 font-semibold" disabled={!hasSelectedItems || !isCartPriceReady || isCheckingCheckoutStock} onClick={handleCheckoutClick}>
                             {isCheckingCheckoutStock ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingBag className="h-4 w-4" />}
                             <span className="truncate">{isCheckingCheckoutStock ? "재고 확인 중" : !hasSelectedItems ? "상품 선택" : user ? `주문하기 ${selectedCartItems.length}` : "로그인 주문"}</span>
                           </Button>
@@ -994,12 +1038,12 @@ export default function CartPageClient() {
         <div
           data-bottom-sticky="1"
           className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur bp-lg:hidden">
-          <div className="mx-auto flex max-w-[1180px] items-center gap-3">
+          <div className="mx-auto flex max-w-[1240px] items-center gap-3">
             <div className="min-w-0 flex-1">
               <p className="text-xs text-muted-foreground">총 주문 예상 금액</p>
               <p className="truncate text-lg font-black tabular-nums text-foreground">{formatKRW(total)}원</p>
             </div>
-            <Button className="h-11 min-w-[140px] font-semibold" disabled={!hasSelectedItems || !isShippingFeeReady || isCheckingCheckoutStock} onClick={handleCheckoutClick}>
+            <Button className="h-11 min-w-[140px] font-semibold" disabled={!hasSelectedItems || !isCartPriceReady || isCheckingCheckoutStock} onClick={handleCheckoutClick}>
               {!hasSelectedItems ? "상품 선택" : `주문하기 ${selectedCartItems.length}`}
             </Button>
           </div>
