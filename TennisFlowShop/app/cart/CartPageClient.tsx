@@ -11,7 +11,6 @@ import {
 import { useAuthStore, type User } from "@/app/store/authStore";
 import { useCartStore } from "@/app/store/cartStore";
 import SiteContainer from "@/components/layout/SiteContainer";
-import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -62,6 +61,8 @@ const getMaxStock = (stock?: number) =>
   typeof stock === "number" && Number.isFinite(stock)
     ? stock
     : Number.POSITIVE_INFINITY;
+
+const CART_CHECKOUT_SELECTION_KEY = "cart.checkout.selectedLineKeys.v1";
 
 const getCartLineKey = (item: {
   id: string;
@@ -155,13 +156,26 @@ export default function CartPageClient() {
     };
   }, []);
 
+  const selectedCartItems = useMemo(
+    () =>
+      cartItems.filter((item) =>
+        selectedLineKeys.includes(getCartLineKey(item)),
+      ),
+    [cartItems, selectedLineKeys],
+  );
+  const selectedLineKeySet = useMemo(
+    () => new Set(selectedLineKeys),
+    [selectedLineKeys],
+  );
+  const hasSelectedItems = selectedCartItems.length > 0;
+
   const subtotal = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    [cartItems],
+    () => selectedCartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [selectedCartItems],
   );
   const regularSubtotal = useMemo(
     () =>
-      cartItems.reduce((sum, item) => {
+      selectedCartItems.reduce((sum, item) => {
         const regularPrice =
           typeof item.regularPrice === "number" &&
           Number.isFinite(item.regularPrice) &&
@@ -170,9 +184,19 @@ export default function CartPageClient() {
             : item.price;
         return sum + regularPrice * item.quantity;
       }, 0),
-    [cartItems],
+    [selectedCartItems],
   );
   const productDiscount = regularSubtotal - subtotal;
+
+  const normalCount = useMemo(
+    () => cartItems.filter((it) => (it.kind ?? "product") !== "racket").length,
+    [cartItems],
+  );
+
+  const serviceCount = useMemo(
+    () => cartItems.filter((it) => (it.kind ?? "product") === "racket").length,
+    [cartItems],
+  );
 
   const productIds = useMemo(
     () =>
@@ -205,16 +229,17 @@ export default function CartPageClient() {
 
   const shippingFee = useMemo(() => {
     if (!isShippingFeeReady) return 0;
-    const hasRacket = cartItems.some(
+    if (!hasSelectedItems) return 0;
+    const hasRacket = selectedCartItems.some(
       (it) => (it.kind ?? "product") === "racket",
     );
-    const hasMountableString = cartItems.some(
+    const hasMountableString = selectedCartItems.some(
       (it) =>
         (it.kind ?? "product") === "product" &&
         mountableStringByProductId[String(it.id)] === true,
     );
     return calcOrderShippingFeeWithBundlePolicy({
-      items: cartItems.map((it) => ({
+      items: selectedCartItems.map((it) => ({
         kind: (it.kind ?? "product") as "product" | "racket",
         shippingFee: shippingFeeByProductId[String(it.id)],
         mountingFee: mountingFeeByProductId[String(it.id)] ?? 0,
@@ -223,10 +248,11 @@ export default function CartPageClient() {
       withStringService: hasRacket && hasMountableString,
     });
   }, [
-    cartItems,
+    selectedCartItems,
     mountingFeeByProductId,
     mountableStringByProductId,
     shippingFeeByProductId,
+    hasSelectedItems,
     isShippingFeeReady,
   ]);
   const total = subtotal + shippingFee;
@@ -258,7 +284,9 @@ export default function CartPageClient() {
       {
         id: "shipping-fee",
         label: "배송비",
-        value: !isShippingFeeReady ? (
+        value: !hasSelectedItems ? (
+          "상품 선택 후 계산"
+        ) : !isShippingFeeReady ? (
           <Skeleton className="h-6 w-20 rounded-md" />
         ) : shippingFee > 0 ? (
           `${formatKRW(shippingFee)}원`
@@ -280,6 +308,7 @@ export default function CartPageClient() {
 
     return rows;
   }, [
+    hasSelectedItems,
     isShippingFeeReady,
     productDiscount,
     regularSubtotal,
@@ -397,38 +426,38 @@ export default function CartPageClient() {
   // (서버에서도 검증하지만, 장바구니에서 먼저 막아주면 사용자가 덜 헷갈림.)
   const totalRacketQty = useMemo(
     () =>
-      cartItems
+      selectedCartItems
         .filter((it) => it.kind === "racket")
         .reduce((acc, it) => acc + Number(it.quantity ?? 0), 0),
-    [cartItems],
+    [selectedCartItems],
   );
 
   const totalMountableStringQty = useMemo(
     () =>
-      cartItems
+      selectedCartItems
         .filter(
           (it) =>
             (it.kind ?? "product") === "product" &&
             mountableStringByProductId[String(it.id)] === true,
         )
         .reduce((acc, it) => acc + Number(it.quantity ?? 0), 0),
-    [cartItems, mountableStringByProductId],
+    [selectedCartItems, mountableStringByProductId],
   );
 
   // "종류(라인) 개수" 체크: 서버 INVALID_COMPOSITION 규칙과 동일한 기준
   const racketLineCount = useMemo(
-    () => cartItems.filter((it) => (it.kind ?? "product") === "racket").length,
-    [cartItems],
+    () => selectedCartItems.filter((it) => (it.kind ?? "product") === "racket").length,
+    [selectedCartItems],
   );
 
   const mountableStringLineCount = useMemo(
     () =>
-      cartItems.filter(
+      selectedCartItems.filter(
         (it) =>
           (it.kind ?? "product") === "product" &&
           mountableStringByProductId[String(it.id)] === true,
       ).length,
-    [cartItems, mountableStringByProductId],
+    [selectedCartItems, mountableStringByProductId],
   );
 
   // 장착 대상 스트링이 2종 이상이면, 어떤 라인을 정리해야 하는지 표시하기 위한 id 목록
@@ -512,8 +541,8 @@ export default function CartPageClient() {
 
   const hasMountableStringOnlyFlow =
     !ENABLE_STRING_STANDALONE_ORDER &&
-    cartItems.length > 0 &&
-    cartItems.every(
+    hasSelectedItems &&
+    selectedCartItems.every(
       (it) =>
         (it.kind ?? "product") === "product" &&
         mountableStringByProductId[String(it.id)] === true,
@@ -523,14 +552,15 @@ export default function CartPageClient() {
   // - isBundleLocked: 라켓 1종 + 장착 스트링 1종이 동시에 존재하고, 편집 링크까지 만들어질 정도로 번들이 성립한 상태
   // - blockServiceCheckout: 구성/수량 불일치면 장바구니에서 이미 막히는 상태
   const shouldEnterCheckoutWithService =
-    (!blockServiceCheckout && isBundleLocked) || hasMountableStringOnlyFlow;
+    hasSelectedItems &&
+    ((!blockServiceCheckout && isBundleLocked) || hasMountableStringOnlyFlow);
   const stringStandalonePausedNoticeLines = [
     "스트링 단품 구매는 현재 운영하지 않습니다.",
     "선택한 스트링은 교체서비스 신청용으로 사용됩니다.",
   ];
   const checkoutBasePath = shouldEnterCheckoutWithService
-    ? "/checkout?withService=1"
-    : "/checkout";
+    ? "/checkout?withService=1&source=cart-selection"
+    : "/checkout?source=cart-selection";
   const checkoutHref = user
     ? checkoutBasePath
     : `/login?next=${encodeURIComponent(checkoutBasePath)}`;
@@ -545,11 +575,23 @@ export default function CartPageClient() {
 
   // 선택/일괄
   const toggleSelect = (lineKey: string) => {
-    setSelectedLineKeys((prev) =>
-      prev.includes(lineKey)
-        ? prev.filter((x) => x !== lineKey)
-        : [...prev, lineKey],
-    );
+    const item = cartItems.find((it) => getCartLineKey(it) === lineKey);
+    const bundleLineKeys =
+      bundleLockedIds.length === 2 && item && bundleLockedIds.includes(item.id)
+        ? cartItems
+            .filter((it) => bundleLockedIds.includes(it.id))
+            .map((it) => getCartLineKey(it))
+        : [lineKey];
+
+    setSelectedLineKeys((prev) => {
+      const next = new Set(prev);
+      const shouldSelect = bundleLineKeys.some((key) => !next.has(key));
+      bundleLineKeys.forEach((key) => {
+        if (shouldSelect) next.add(key);
+        else next.delete(key);
+      });
+      return Array.from(next);
+    });
   };
   const toggleAll = () => {
     if (selectedLineKeys.length === cartItems.length) setSelectedLineKeys([]);
@@ -649,7 +691,7 @@ export default function CartPageClient() {
   };
 
   const validateLatestStockBeforeCheckout = async () => {
-    const cartProductItems = cartItems.filter(
+    const cartProductItems = selectedCartItems.filter(
       (item) => (item.kind ?? "product") === "product",
     );
     if (cartProductItems.length === 0) return true;
@@ -733,6 +775,21 @@ export default function CartPageClient() {
   };
 
   const handleCheckoutClick = async () => {
+    if (!hasSelectedItems) {
+      showErrorToast("주문할 상품을 선택해주세요.");
+      return;
+    }
+    if (blockServiceCheckout) {
+      showErrorToast(serviceBlockToastMessage);
+      return;
+    }
+
+    const checkoutLineKeys = selectedCartItems.map((item) => getCartLineKey(item));
+    sessionStorage.setItem(
+      CART_CHECKOUT_SELECTION_KEY,
+      JSON.stringify(checkoutLineKeys),
+    );
+
     if (!user) {
       window.location.href = checkoutHref;
       return;
@@ -802,11 +859,10 @@ export default function CartPageClient() {
         </AlertDialogContent>
       </AlertDialog>
       {/* 헤더 */}
-      <div className="relative overflow-hidden border-b border-border bg-muted/40 text-foreground">
-        <HeroCourtBackdrop className="h-full w-full text-primary opacity-[0.04] dark:opacity-[0.06]" />
+      <div className="border-b border-border bg-background text-foreground">
         <SiteContainer
           variant="wide"
-          className="relative py-6 bp-sm:py-8 bp-md:py-10"
+          className="py-4 bp-sm:py-6"
         >
           <div className="flex flex-col gap-4 bp-sm:flex-row bp-sm:items-end bp-sm:justify-between">
             <div className="min-w-0">
@@ -826,15 +882,15 @@ export default function CartPageClient() {
               <div className="grid w-full gap-2 text-sm bp-sm:w-auto bp-sm:min-w-[300px] bp-sm:grid-cols-2">
                 <div className="rounded-xl border border-border bg-card/70 px-3 py-2">
                   <span className="block text-xs text-muted-foreground">
-                    총 상품 수
+                    전체 / 선택
                   </span>
-                  <strong className="tabular-nums">{cartItems.length}개</strong>
+                  <strong className="tabular-nums">{cartItems.length}개 / {selectedCartItems.length}개</strong>
                 </div>
                 <div className="rounded-xl border border-border bg-card/70 px-3 py-2">
                   <span className="block text-xs text-muted-foreground">
-                    배송/서비스
+                    일반배송 / 교체서비스
                   </span>
-                  <strong className="break-keep text-sm">구성별 자동 계산</strong>
+                  <strong className="break-keep text-sm">{normalCount}개 / {serviceCount}개</strong>
                 </div>
               </div>
             )}
@@ -883,13 +939,14 @@ export default function CartPageClient() {
                       </Button>
                       <div className="hidden bp-sm:block h-4 w-px bg-foreground/10 dark:bg-card/10" />
                       <span className="text-muted-foreground">
-                        선택 {selectedLineKeys.length}개
+                        선택 {selectedCartItems.length}개
                       </span>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={removeSelected}
-                        className="text-destructive hover:bg-destructive/15 dark:hover:bg-destructive/15"
+                        disabled={!hasSelectedItems}
+                        className="text-destructive hover:bg-destructive/15 disabled:text-muted-foreground dark:hover:bg-destructive/15"
                       >
                         선택 삭제
                       </Button>
@@ -956,7 +1013,7 @@ export default function CartPageClient() {
                           <div className="flex min-w-0 flex-1 items-center gap-3">
                             <input
                               type="checkbox"
-                              checked={selectedLineKeys.includes(lineKey)}
+                              checked={selectedLineKeySet.has(lineKey)}
                               onChange={() => toggleSelect(lineKey)}
                               className="h-4 w-4 shrink-0 accent-primary"
                               aria-label={`${item.name} 선택`}
@@ -1326,6 +1383,7 @@ export default function CartPageClient() {
                   className="overflow-hidden"
                 >
                   <div className="space-y-4 bp-sm:space-y-5">
+                    <div className="rounded-xl border border-border bg-muted/10 p-3 text-sm text-muted-foreground">선택 {selectedCartItems.length}개 기준으로 계산됩니다.</div>
                     <PriceSummary rows={priceSummaryRows} />
 
                     <div className="rounded-xl border border-border bg-muted/20 p-4">
@@ -1458,7 +1516,7 @@ export default function CartPageClient() {
                             <Button
                               className="h-14 w-full font-semibold"
                               size="lg"
-                              disabled={isCheckingCheckoutStock}
+                              disabled={!hasSelectedItems || isCheckingCheckoutStock}
                               onClick={handleCheckoutClick}
                             >
                               {isCheckingCheckoutStock ? (
@@ -1468,9 +1526,11 @@ export default function CartPageClient() {
                               )}
                               {isCheckingCheckoutStock
                                 ? "재고 확인 중..."
-                                : user
-                                  ? "주문하기"
-                                  : "로그인 후 주문하기"}
+                                : !hasSelectedItems
+                                  ? "상품을 선택해주세요"
+                                  : user
+                                    ? `주문하기 ${selectedCartItems.length}`
+                                    : "로그인 후 주문하기"}
                               <ArrowRight className="h-5 w-5" />
                             </Button>
                           }
@@ -1534,6 +1594,25 @@ export default function CartPageClient() {
         )}
       </SiteContainer>
 
+      {cartItems.length > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur bp-lg:hidden">
+          <div className="mx-auto flex max-w-7xl items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs text-muted-foreground">총 주문 예상 금액</p>
+              <p className="truncate text-lg font-black tabular-nums text-foreground">
+                {formatKRW(total)}원
+              </p>
+            </div>
+            <Button
+              className="h-12 min-w-[148px] font-semibold"
+              disabled={!hasSelectedItems || !isShippingFeeReady || isCheckingCheckoutStock}
+              onClick={handleCheckoutClick}
+            >
+              {!hasSelectedItems ? "상품을 선택해주세요" : `주문하기 ${selectedCartItems.length}`}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

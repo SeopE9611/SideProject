@@ -5,8 +5,18 @@ import { useCartStore } from "@/app/store/cartStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 
+const CART_CHECKOUT_SELECTION_KEY = "cart.checkout.selectedLineKeys.v1";
+
+const getCartLineKey = (item: {
+  id: string;
+  selectedGauge?: string;
+  selectedColor?: string;
+}) => `${item.id}::${item.selectedGauge ?? ""}::${item.selectedColor ?? ""}`;
+
 export default function ClearCartOnMount() {
+  const cartItems = useCartStore((s) => s.items);
   const clearCart = useCartStore((s) => s.clearCart);
+  const removeItem = useCartStore((s) => s.removeItem);
   const clearBuyNow = useBuyNowStore((s) => s.clear);
   const clearPdpBundle = usePdpBundleStore((s) => s.clear);
 
@@ -18,10 +28,30 @@ export default function ClearCartOnMount() {
   useEffect(() => {
     if (ran.current) return;
     ran.current = true;
-    clearCart(); // 기존 장바구니 비우기
+    try {
+      const raw = sessionStorage.getItem(CART_CHECKOUT_SELECTION_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      const selectedLineKeys = Array.isArray(parsed)
+        ? parsed.filter((key): key is string => typeof key === "string")
+        : null;
+
+      if (selectedLineKeys && selectedLineKeys.length > 0) {
+        cartItems
+          .filter((item) => selectedLineKeys.includes(getCartLineKey(item)))
+          .forEach((item) =>
+            removeItem(item.id, item.selectedGauge, item.selectedColor),
+          );
+      } else {
+        clearCart(); // 기존 장바구니 비우기
+      }
+      sessionStorage.removeItem(CART_CHECKOUT_SELECTION_KEY);
+    } catch {
+      clearCart();
+      sessionStorage.removeItem(CART_CHECKOUT_SELECTION_KEY);
+    }
     clearBuyNow(); //  buy-now 임시 상태도 함께 비우기
     clearPdpBundle();
-  }, [clearCart, clearBuyNow, clearPdpBundle]);
+  }, [cartItems, clearCart, clearBuyNow, clearPdpBundle, removeItem]);
 
   return null;
 }
