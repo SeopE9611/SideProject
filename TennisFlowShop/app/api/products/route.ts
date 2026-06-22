@@ -5,6 +5,7 @@ import { getHangulInitials } from "@/lib/hangul-utils";
 import { ObjectId } from "mongodb";
 import type { Filter } from "mongodb";
 import { createApiPerfLogger } from "@/lib/api/perf";
+import { publicProductFilter } from "@/lib/public-visibility";
 
 type ProductDoc = {
   _id: ObjectId;
@@ -31,6 +32,7 @@ type ProductDoc = {
   ratingAvg?: number;
   ratingAverage?: number;
   isDeleted?: boolean;
+  isVisible?: boolean;
 };
 
 const productListProjection = {
@@ -94,7 +96,7 @@ export async function GET(req: NextRequest) {
         // isDeleted 플래그가 true인 문서는 제외
         if (!query) {
           return collection
-            .find({ isDeleted: { $ne: true } })
+            .find(publicProductFilter)
             .project(previewProjection)
             .sort({ _id: -1 })
             .limit(10)
@@ -104,7 +106,7 @@ export async function GET(req: NextRequest) {
         if (!isChosungOnly) {
           return collection
             .find({
-              isDeleted: { $ne: true },
+              ...publicProductFilter,
               name: { $regex: escapeRegExp(query), $options: "i" },
             })
             .project(previewProjection)
@@ -114,7 +116,7 @@ export async function GET(req: NextRequest) {
 
         const initialsQuery = getHangulInitials(query);
         const candidates = await collection
-          .find({ isDeleted: { $ne: true } })
+          .find(publicProductFilter)
           .project(previewProjection)
           .sort({ _id: -1 })
           .limit(500)
@@ -162,7 +164,7 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(100, Number(params.get("limit") || "12"));
     const skip = (page - 1) * limit;
 
-    const filter: Filter<ProductDoc> = { isDeleted: { $ne: true } }; // Soft-Delete된 상품은 기본적으로 제외
+    const filter: Filter<ProductDoc> = { ...publicProductFilter }; // Soft-Delete된 상품은 기본적으로 제외
     if (brand) filter.brand = brand;
 
     const powerScore = normalizeFeatureFilterParam(power);

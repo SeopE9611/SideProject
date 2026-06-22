@@ -111,6 +111,7 @@ export default function NewStringPage() {
 
   // 검색 키워드 입력값 (쉼표로 구분)
   const [searchKeywordsInput, setSearchKeywordsInput] = useState("");
+  const [isVisible, setIsVisible] = useState(true);
   const [colorInventories, setColorInventories] = useState<ProductColorInventory[]>([]);
   const [variantInventories, setVariantInventories] = useState<ProductVariantInventory[]>([]);
   const [gaugeInputsByColor, setGaugeInputsByColor] = useState<Record<string, string>>({});
@@ -403,6 +404,7 @@ export default function NewStringPage() {
         features,
         tags,
         inventory,
+        isVisible,
         searchKeywordsInput,
         additionalFeatures,
         images,
@@ -788,6 +790,7 @@ export default function NewStringPage() {
       colorInventories: normalizedColorInventories,
       variantInventories: normalizedVariants,
       searchKeywords,
+      isVisible,
       features: { ...features },
       tags: { ...tags },
       specifications: { ...specifications, gauge: normalizedGauge },
@@ -1838,6 +1841,23 @@ export default function NewStringPage() {
                               <Label htmlFor="string-sale" className="cursor-pointer">
                                 할인 상품
                               </Label>
+                            </div>
+                            <div className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/10 p-4 md:col-span-3">
+                              <Switch
+                                id="string-visible"
+                                checked={isVisible}
+                                onCheckedChange={setIsVisible}
+                              />
+                              <div className="space-y-1">
+                                <Label htmlFor="string-visible" className="cursor-pointer">
+                                  일반 사용자에게 상품 노출
+                                </Label>
+                                {!isVisible && (
+                                  <p className="text-xs text-muted-foreground">
+                                    끄면 관리자 화면에서만 보이며, 일반 회원의 목록/상세/추천/결제 경로에서 차단됩니다.
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </div>
 

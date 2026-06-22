@@ -1,3 +1,4 @@
+import { publicRacketStatusFilter } from "@/lib/public-visibility";
 import { NextResponse } from "next/server";
 import {
   ENABLE_RACKET_STANDALONE_ORDER,
@@ -89,7 +90,7 @@ export async function POST(req: Request) {
     const db = client.db();
     const racket = await db
       .collection("used_rackets")
-      .findOne({ _id: new ObjectId(racketId) });
+      .findOne({ _id: new ObjectId(racketId), ...publicRacketStatusFilter });
 
     if (!racket || racket.status !== "available") {
       return NextResponse.json(

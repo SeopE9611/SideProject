@@ -136,6 +136,7 @@ export interface AdminProductCreateRequestDto {
   price: number;
   shippingFee: number;
   raw: Record<string, unknown>;
+  isVisible?: boolean;
 }
 
 export interface AdminProductListItemDto extends Record<string, unknown> {
@@ -173,6 +174,7 @@ export interface AdminProductUpdateRequestDto {
   mountingFee: number;
   price: number;
   shippingFee: number;
+  isVisible?: boolean;
   features: Record<string, unknown>;
   tags: Record<string, unknown>;
   specifications: Record<string, unknown>;

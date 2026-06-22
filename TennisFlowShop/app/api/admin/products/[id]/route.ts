@@ -155,6 +155,7 @@ function toProductAuditSnapshot(doc: Record<string, unknown> | null) {
         ? (safe.isPublished as boolean)
         : undefined,
     imageCount: Array.isArray(safe.images) ? safe.images.length : 0,
+    isVisible: safe.isVisible !== false,
   };
 }
 
@@ -211,6 +212,7 @@ function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
     images: asStringArray(body.images),
     inventory: asRecord(body.inventory) ?? {},
     searchKeywords: asStringArray(body.searchKeywords),
+    isVisible: body.isVisible === false ? false : true,
   };
 }
 
@@ -330,6 +332,7 @@ export async function PUT(
             status: before.status,
             isActive: before.isActive,
             isPublished: before.isPublished,
+            isVisible: before.isVisible,
           },
           after: {
             name: after.name,
@@ -339,6 +342,7 @@ export async function PUT(
             status: after.status,
             isActive: after.isActive,
             isPublished: after.isPublished,
+            isVisible: after.isVisible,
           },
           metadata: {
             changedKeys: Object.keys(updateData),
@@ -414,6 +418,7 @@ export async function DELETE(
             status: before.status,
             isActive: before.isActive,
             isPublished: before.isPublished,
+            isVisible: before.isVisible,
           },
           after: { deleted: true },
           metadata: {
