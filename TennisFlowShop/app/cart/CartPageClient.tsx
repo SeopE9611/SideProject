@@ -1,8 +1,9 @@
 "use client";
 
+import CartOptionChangeOverlay from "@/app/cart/_components/CartOptionChangeOverlay";
 import WishlistSidebar from "@/app/cart/_components/WishlistSidebar";
 import { useAuthStore, type User } from "@/app/store/authStore";
-import { useCartStore } from "@/app/store/cartStore";
+import { useCartStore, type CartItem } from "@/app/store/cartStore";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { EmptyState, PriceSummary, type PriceSummaryRow } from "@/components/public";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -45,7 +46,7 @@ type ProductForCartValidation = {
 
 export default function CartPageClient() {
   const { logout } = useAuthStore(); // 사용 여부와 관계없이 훅 순서 안정
-  const { items: cartItems, removeItem, updateQuantity, clearCart } = useCartStore();
+  const { items: cartItems, addItem, removeItem, updateQuantity, clearCart } = useCartStore();
 
   // 인증
   const [user, setUser] = useState<User | null>(null);
@@ -59,6 +60,7 @@ export default function CartPageClient() {
   const [cleanupKeepLineKey, setCleanupKeepLineKey] = useState<string | null>(null);
   const [cleanupRemoveLineKeys, setCleanupRemoveLineKeys] = useState<string[]>([]);
   const [isCheckingCheckoutStock, setIsCheckingCheckoutStock] = useState(false);
+  const [optionChangeItem, setOptionChangeItem] = useState<CartItem | null>(null);
 
   // [장착 대상 스트링 정리 다이얼로그] 남길/삭제될 대상 텍스트 생성
   const keepStringItem = cleanupKeepLineKey ? cartItems.find((i) => getCartLineKey(i) === cleanupKeepLineKey) : undefined;
@@ -296,6 +298,56 @@ export default function CartPageClient() {
   }, [bundleRacketItem, bundleStringItem, bundleQty, blockServiceCheckoutByComposition]);
 
   const isBundleLocked = Boolean(bundleEditHref);
+
+
+  const handleOptionChangeApply = (
+    item: CartItem,
+    nextOption: Pick<CartItem, "selectedGauge" | "selectedColor" | "selectedColorLabel" | "selectedColorHex" | "selectedColorImage" | "image" | "stock">,
+  ) => {
+    const oldLineKey = getCartLineKey(item);
+    const nextItem: CartItem = { ...item, ...nextOption, quantity: item.quantity };
+    const newLineKey = getCartLineKey(nextItem);
+    const nextStock = getMaxStock(nextItem.stock);
+
+    if (oldLineKey === newLineKey) {
+      showSuccessToast("변경된 옵션이 없습니다.");
+      setOptionChangeItem(null);
+      return;
+    }
+
+    if (Number.isFinite(nextStock) && item.quantity > nextStock) {
+      showErrorToast(`선택한 옵션의 재고가 부족합니다. 현재 재고: ${nextStock}개`);
+      return;
+    }
+
+    const existingSameOption = cartItems.find((candidate) => getCartLineKey(candidate) === newLineKey);
+    if (existingSameOption && Number.isFinite(nextStock) && existingSameOption.quantity + item.quantity > nextStock) {
+      showErrorToast("이미 담긴 동일 옵션 수량을 포함하면 재고를 초과합니다.");
+      return;
+    }
+
+    const addResult = addItem(nextItem);
+    if (!addResult.success) {
+      showErrorToast(addResult.message ?? "선택한 옵션의 재고가 부족합니다.");
+      return;
+    }
+
+    removeItem(item.id, item.selectedGauge, item.selectedColor);
+    setSelectedLineKeys((prev) => {
+      const wasSelected = prev.includes(oldLineKey);
+      const withoutOld = prev.filter((lineKey) => lineKey !== oldLineKey);
+      if (!wasSelected || withoutOld.includes(newLineKey)) return withoutOld;
+      return [...withoutOld, newLineKey];
+    });
+    setOptionChangeItem(null);
+    showSuccessToast("옵션을 변경했어요.");
+  };
+
+  const getRacketOptionChangeHref = (item: CartItem) => {
+    if (bundleEditHref) return bundleEditHref;
+    const params = new URLSearchParams({ from: "cart", qty: String(item.quantity), returnTo: "/cart" });
+    return `/rackets/${item.id}/select-string?${params.toString()}`;
+  };
 
   const hasMountableStringOnlyFlow = !ENABLE_STRING_STANDALONE_ORDER && hasSelectedItems && selectedCartItems.every((it) => (it.kind ?? "product") === "product" && mountableStringByProductId[String(it.id)] === true);
 
@@ -646,6 +698,8 @@ export default function CartPageClient() {
                     const isBundleString = isBundleLocked && !!bundleStringItem && item.id === bundleStringItem.id && (item.kind ?? "product") === "product" && mountableStringByProductId[String(item.id)] === true;
 
                     const lockStepper = isBundleRacket || isBundleString;
+                    const canOpenOptionOverlay = (item.kind ?? "product") === "product" && !lockStepper && (isMountableStringLine || Boolean(item.selectedGauge || item.selectedColor || item.selectedColorLabel));
+                    const optionChangeHref = (item.kind ?? "product") === "racket" || lockStepper ? getRacketOptionChangeHref(item) : null;
 
                     //- "구성 정리 필요" 상태에서 어떤 라인을 정리해야 하는지(장착 대상 스트링)를 시각적으로 강조
                     // - 장착 대상 스트링: isMountableString=true 인 스트링 상품
@@ -736,6 +790,24 @@ export default function CartPageClient() {
                                 {!item.selectedGauge && !item.selectedColorLabel && !item.selectedColor && <span>기본 옵션</span>}
                               </p>
 
+                              <div className="-mr-1 -mt-1 flex shrink-0 items-center gap-1">
+                                {(canOpenOptionOverlay || optionChangeHref) && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 whitespace-nowrap px-2.5 text-xs"
+                                    onClick={() => {
+                                      if (optionChangeHref) {
+                                        window.location.href = optionChangeHref;
+                                        return;
+                                      }
+                                      setOptionChangeItem(item);
+                                    }}
+                                  >
+                                    {(item.kind ?? "product") === "racket" ? "스트링 변경" : "옵션 변경"}
+                                  </Button>
+                                )}
+
                               {/* 삭제 버튼 (컨펌) */}
                               <Button
                                 variant="ghost"
@@ -763,10 +835,11 @@ export default function CartPageClient() {
                                     removeItem(item.id, item.selectedGauge, item.selectedColor);
                                   }
                                 }}
-                                className="-mr-1 -mt-1 h-8 w-8 shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                                className="h-8 w-8 shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
+                              </div>
                             </div>
 
                             <div className="mt-3 flex min-w-0 items-end justify-between gap-3">
@@ -783,15 +856,7 @@ export default function CartPageClient() {
                                       {Number.isFinite(maxStock) && <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium leading-none ${shouldEmphasizeStock ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>재고 {maxStock}개</span>}
                                     </div>
 
-                                    {/* 번들 변경 링크: 라켓/스트링 양쪽에 보여줘도 UX가 덜 헷갈림 */}
-                                    {bundleEditHref && (
-                                      <>
-                                        <Link href={bundleEditHref} className="mt-1 block text-xs font-medium text-primary hover:underline dark:text-primary">
-                                          번들 변경
-                                        </Link>
-                                        <p className="mt-1 max-w-[220px] text-[11px] leading-snug text-muted-foreground">스트링 선택 화면에서 수량과 스트링을 함께 변경할 수 있어요.</p>
-                                      </>
-                                    )}
+                                    <p className="mt-1 max-w-[220px] text-[11px] leading-snug text-muted-foreground">옵션 panel 우상단에서 수량과 스트링을 함께 변경할 수 있어요.</p>
                                   </>
                                 ) : (
                                   <>
@@ -1053,6 +1118,16 @@ export default function CartPageClient() {
           </div>
         </div>
       )}
+
+      <CartOptionChangeOverlay
+        open={Boolean(optionChangeItem)}
+        item={optionChangeItem}
+        mountingFee={optionChangeItem ? Number(mountingFeeByProductId[String(optionChangeItem.id)] ?? 0) : 0}
+        onOpenChange={(open) => {
+          if (!open) setOptionChangeItem(null);
+        }}
+        onApply={handleOptionChangeApply}
+      />
     </div>
   );
 }
