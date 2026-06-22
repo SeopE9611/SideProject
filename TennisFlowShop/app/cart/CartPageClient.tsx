@@ -594,6 +594,9 @@ export default function CartPageClient() {
                     const canDec = item.quantity > 1;
                     const maxStock = getMaxStock(item.stock);
                     const canInc = item.quantity < maxStock;
+                    const isLowStock = Number.isFinite(maxStock) && maxStock <= 3;
+                    const isStockLimitReached = Number.isFinite(maxStock) && item.quantity >= maxStock;
+                    const shouldEmphasizeStock = isLowStock || isStockLimitReached;
                     const hasDiscount = typeof item.regularPrice === "number" && Number.isFinite(item.regularPrice) && item.regularPrice > item.price;
 
                     const isBundleRacket = isBundleLocked && !!bundleRacketItem && item.id === bundleRacketItem.id && (item.kind ?? "product") === "racket";
@@ -730,7 +733,7 @@ export default function CartPageClient() {
                                         <span className="w-8 select-none text-center font-medium tabular-nums">{item.quantity}</span>
                                       </div>
 
-                                      {Number.isFinite(maxStock) && <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium leading-none ${item.quantity >= maxStock ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>재고 {maxStock}개</span>}
+                                      {Number.isFinite(maxStock) && <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium leading-none ${shouldEmphasizeStock ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>재고 {maxStock}개</span>}
                                     </div>
 
                                     {/* 번들 변경 링크: 라켓/스트링 양쪽에 보여줘도 UX가 덜 헷갈림 */}
@@ -788,7 +791,7 @@ export default function CartPageClient() {
                                         </Button>
                                       </div>
 
-                                      {Number.isFinite(maxStock) && <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium leading-none ${item.quantity >= maxStock ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>재고 {maxStock}개</span>}
+                                      {Number.isFinite(maxStock) && <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium leading-none ${shouldEmphasizeStock ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>재고 {maxStock}개</span>}
                                     </div>
                                   </>
                                 )}
@@ -945,6 +948,9 @@ export default function CartPageClient() {
                     </div>
                   </CardContent>
                 </Card>
+                <div className="mt-4 bp-lg:hidden">
+                  <WishlistSidebar variant="inline" className="mt-0 shadow-none" />
+                </div>
               </div>
             </div>
           </div>
