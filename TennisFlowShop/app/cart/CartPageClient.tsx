@@ -111,10 +111,6 @@ export default function CartPageClient() {
   );
   const productDiscount = regularSubtotal - subtotal;
 
-  const normalCount = useMemo(() => cartItems.filter((it) => (it.kind ?? "product") !== "racket").length, [cartItems]);
-
-  const serviceCount = useMemo(() => cartItems.filter((it) => (it.kind ?? "product") === "racket").length, [cartItems]);
-
   const productIds = useMemo(() => Array.from(new Set(cartItems.filter((it) => (it.kind ?? "product") === "product").map((it) => String(it.id)))), [cartItems]);
 
   const shippingFeeIdsToResolve = useMemo(() => Array.from(new Set(cartItems.map((it) => String(it.id)))), [cartItems]);
@@ -562,52 +558,31 @@ export default function CartPageClient() {
               <p className="max-w-2xl break-keep text-sm leading-relaxed text-muted-foreground bp-sm:text-base">담은 상품과 옵션, 수량을 확인한 뒤 주문을 진행하세요.</p>
             </div>
 
-            {cartItems.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 border-t border-border pt-3 text-[13px] text-muted-foreground">
-                <span className="rounded-full bg-muted/50 px-2.5 py-1">전체 <strong className="tabular-nums text-foreground">{cartItems.length}개</strong></span>
-                <span className="rounded-full bg-primary/10 px-2.5 py-1 text-primary">선택 <strong className="tabular-nums">{selectedCartItems.length}개</strong></span>
-                <span className="hidden rounded-full bg-muted/50 px-2.5 py-1 bp-sm:inline-flex">일반상품 <strong className="ml-1 tabular-nums text-foreground">{normalCount}개</strong></span>
-                <span className="hidden rounded-full bg-muted/50 px-2.5 py-1 bp-sm:inline-flex">라켓 <strong className="ml-1 tabular-nums text-foreground">{serviceCount}개</strong></span>
-              </div>
-            )}
           </div>
         </SiteContainer>
       </div>
 
-      <SiteContainer className={cartItems.length > 0 ? "max-w-[1180px] pb-32 pt-5 bp-sm:pt-6 bp-lg:pb-12" : "max-w-[1180px] pt-6 pb-12 bp-sm:pt-8 bp-sm:pb-16 bp-md:py-8"}>
+      <SiteContainer className={cartItems.length > 0 ? "max-w-[1180px] pb-40 pt-4 bp-sm:pt-5 bp-lg:pb-12" : "max-w-[1180px] pt-6 pb-12 bp-sm:pt-8 bp-sm:pb-16 bp-md:py-8"}>
         {cartItems.length > 0 ? (
           <div className="grid grid-cols-1 gap-5 bp-lg:grid-cols-[minmax(0,1fr)_320px] bp-xl:gap-6">
             {/* 목록 */}
             <div className="min-w-0 space-y-5">
               <Card className="rounded-2xl border border-border bg-card shadow-sm">
-                <CardHeader variant="section" className="rounded-t-2xl">
-                  <div className="flex flex-col gap-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
-                    <div>
-                      <CardTitle className="flex min-w-0 items-center gap-3 text-lg bp-sm:text-xl">
-                        <span className="rounded-2xl bg-muted p-2 shadow-lg dark:bg-background">
-                          <ShoppingBag className="h-5 w-5 text-primary" />
-                        </span>
-                        장바구니 상품 ({cartItems.length}개)
-                      </CardTitle>
-                      <p className="mt-2 text-sm text-muted-foreground">선택한 상품은 주문에 포함됩니다. 옵션과 수량, 합계를 확인하세요.</p>
-                    </div>
-
-                    {/* 전체선택 / 선택n개 / 선택삭제 */}
-                    <div className="flex w-full flex-wrap items-center gap-2 rounded-xl bg-muted/30 p-2 text-[13px] bp-sm:w-auto bp-sm:justify-end bp-sm:bg-transparent bp-sm:p-0 [&_button]:shrink-0">
-                      <div className="inline-flex items-center gap-2 rounded-md px-1.5 py-1 font-medium text-foreground hover:bg-muted">
-                        <Checkbox checked={selectedLineKeys.length === cartItems.length} onCheckedChange={toggleAll} aria-label={selectedLineKeys.length === cartItems.length ? "전체 해제" : "전체 선택"} />
-                        <button type="button" onClick={toggleAll} className="font-medium">
-                          {selectedLineKeys.length === cartItems.length ? "전체 해제" : "전체 선택"}
-                        </button>
-                      </div>
-                      <div className="hidden h-4 w-px bg-foreground/10 bp-sm:block dark:bg-card/10" />
-                      <span className="text-muted-foreground">선택 {selectedCartItems.length}개</span>
-                      <Button variant="ghost" size="sm" onClick={removeSelected} disabled={!hasSelectedItems} className="h-8 px-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:text-muted-foreground/60 dark:hover:bg-destructive/10">
-                        선택 삭제
-                      </Button>
-                    </div>
-                  </div>
+                <CardHeader variant="section" className="rounded-t-2xl px-4 py-4 bp-sm:px-5">
+                  <CardTitle className="text-lg bp-sm:text-xl">장바구니 상품</CardTitle>
                 </CardHeader>
+
+                <div className="flex h-12 items-center justify-between border-b border-border px-4 bp-sm:px-5">
+                  <div className="inline-flex items-center gap-2">
+                    <Checkbox checked={selectedLineKeys.length === cartItems.length} onCheckedChange={toggleAll} aria-label={selectedLineKeys.length === cartItems.length ? "전체 해제" : "전체 선택"} />
+                    <button type="button" onClick={toggleAll} className="text-sm font-semibold text-foreground">
+                      {selectedLineKeys.length === cartItems.length ? "전체 해제" : "전체 선택"}
+                    </button>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={removeSelected} disabled={!hasSelectedItems} className="h-9 px-2 text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-40 dark:hover:bg-destructive/10">
+                    선택 삭제
+                  </Button>
+                </div>
 
                 <CardContent className="p-0">
                   {cartItems.map((item) => {
@@ -640,14 +615,14 @@ export default function CartPageClient() {
                     return (
                       <div
                         key={`${item.id}:${item.selectedGauge ?? ""}:${item.selectedColor ?? ""}`}
-                        className={`border-b border-border bg-card px-2 py-3 transition last:border-b-0 bp-sm:px-3 bp-md:px-4 ${highlightCleanupTarget ? "bg-muted/30 ring-1 ring-warning/30" : ""}`}
+                        className={`border-b border-border bg-card px-4 py-4 transition last:border-b-0 bp-sm:px-5 ${highlightCleanupTarget ? "bg-muted/30 ring-1 ring-warning/30" : ""}`}
                       >
                         <div className="space-y-3">
                           {/* 상품 기본 정보: 체크박스, 이미지, 상품명/가격/옵션 요약 */}
-                          <div className="grid min-w-0 grid-cols-[20px_72px_minmax(0,1fr)] items-start gap-3 bp-sm:grid-cols-[20px_80px_minmax(220px,1fr)]">
+                          <div className="grid min-w-0 grid-cols-[24px_88px_minmax(0,1fr)] items-start gap-3">
                             <Checkbox checked={selectedLineKeySet.has(lineKey)} onCheckedChange={() => toggleSelect(lineKey)} aria-label={`${item.name} 선택`} />
                             <Link href={itemHref} className="shrink-0">
-                              <Image src={item.image || "/placeholder.svg?height=72&width=72"} alt={item.name} width={80} height={80} loading="lazy" className="aspect-square rounded-lg object-cover" />
+                              <Image src={item.image || "/placeholder.svg?height=72&width=72"} alt={item.name} width={88} height={88} loading="lazy" className="h-[88px] w-[88px] rounded-lg object-cover" />
                             </Link>
                             <div className="min-w-0 flex-1">
                               <Link href={itemHref} className="block min-w-0 line-clamp-2 break-keep break-words font-medium leading-relaxed text-foreground transition-colors hover:text-primary dark:text-foreground dark:hover:text-primary">
@@ -695,7 +670,7 @@ export default function CartPageClient() {
                           </div>
 
                           {/* 옵션/수량 박스: 카드 전체 폭으로 분리 */}
-                          <div className="min-w-0 rounded-xl border border-border bg-muted/25 p-3 bp-sm:ml-8">
+                          <div className="mt-3 min-w-0 rounded-xl border border-border bg-muted/25 p-3">
                             <div className="flex min-w-0 items-start justify-between gap-3">
                               <p className="flex min-w-0 flex-wrap items-center gap-1.5 pr-2 text-[13px] leading-relaxed text-muted-foreground">
                                 <span className="font-medium text-foreground">옵션:</span>
@@ -827,14 +802,8 @@ export default function CartPageClient() {
                   })}
                 </CardContent>
 
-                <CardFooter className="border-t border-border bg-background px-4 py-3 pr-12 bp-lg:pr-4">
-                  <div className="flex w-full items-center justify-between gap-3">
-                    <Button variant="ghost" size="sm" className="group text-muted-foreground hover:text-foreground" asChild>
-                      <Link href="/products" className="flex items-center gap-2">
-                        <ArrowRight className="h-4 w-4 -rotate-180 transition-transform group-hover:-translate-x-1" />
-                        쇼핑 계속하기
-                      </Link>
-                    </Button>
+                <CardFooter className="border-t border-border bg-background px-4 py-3 bp-sm:px-5">
+                  <div className="flex w-full items-center justify-end gap-3">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -857,11 +826,11 @@ export default function CartPageClient() {
             <div className="min-w-0">
               <div className="bp-lg:sticky bp-lg:top-[calc(var(--header-h)+16px)]">
                 <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-                  <CardHeader className="space-y-1">
+                  <CardHeader className="space-y-1 px-4 py-4 bp-sm:px-5">
                     <CardTitle className="text-lg">주문 요약</CardTitle>
-                    <p className="text-sm text-muted-foreground">선택 {selectedCartItems.length}개 기준으로 계산됩니다.</p>
+                    <p className="text-sm text-muted-foreground">선택 상품 기준</p>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-4 px-4 pb-4 bp-sm:px-5">
                     <div className="space-y-3">
                     <PriceSummary rows={priceSummaryRows} />
 
@@ -876,7 +845,7 @@ export default function CartPageClient() {
                       </p>
                     </div>
                   </div>
-                    <div className="flex flex-col items-stretch gap-3 border-t border-border pt-4">
+                    <div className="hidden flex-col items-stretch gap-3 border-t border-border pt-4 bp-lg:flex">
                     {blockServiceCheckout ? (
                       <>
                         {blockServiceCheckoutByComposition && (
@@ -939,7 +908,7 @@ export default function CartPageClient() {
                           </div>
                         )}
                         <p className="rounded-lg border border-border/60 bg-muted/50 px-3 py-2 text-xs text-muted-foreground">최신 재고는 주문 시 다시 확인됩니다.</p>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 gap-2">
                           <Button className="h-12 w-full px-2 font-semibold" disabled={!hasSelectedItems || isCheckingCheckoutStock} onClick={handleCheckoutClick}>
                             {isCheckingCheckoutStock ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingBag className="h-4 w-4" />}
                             <span className="truncate">{isCheckingCheckoutStock ? "재고 확인 중" : !hasSelectedItems ? "상품 선택" : user ? `주문하기 ${selectedCartItems.length}` : "로그인 주문"}</span>
@@ -951,6 +920,22 @@ export default function CartPageClient() {
                       </>
                     )}
                   </div>
+                    <div className="space-y-2 border-t border-border pt-4 bp-lg:hidden">
+                      {blockServiceCheckoutByComposition && (
+                        <p className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-xs leading-relaxed text-muted-foreground">교체서비스 신청은 라켓 1종과 장착 스트링 1종 기준으로 진행됩니다. 구성을 정리한 뒤 주문해주세요.</p>
+                      )}
+                      {blockServiceCheckoutByQty && (
+                        <p className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-xs leading-relaxed text-muted-foreground">라켓 1개에는 장착 스트링 1개가 필요해요. 수량을 맞춘 뒤 주문해주세요.</p>
+                      )}
+                      {hasMountableStringOnlyFlow && (
+                        <div className="space-y-1 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs leading-relaxed text-foreground break-keep">
+                          {stringStandalonePausedNoticeLines.map((line) => (
+                            <p key={line}>{line}</p>
+                          ))}
+                        </div>
+                      )}
+                      <p className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">최신 재고는 주문 시 다시 확인됩니다.</p>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
