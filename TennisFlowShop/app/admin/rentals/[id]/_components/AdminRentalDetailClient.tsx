@@ -44,6 +44,7 @@ import {
 import { buildAdminCancelRequestView } from "@/lib/cancel-request/admin-cancel-request-view";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 import { racketBrandLabel, stringColorLabel } from "@/lib/constants";
+import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import {
   APPLICATION_STATUSES,
@@ -84,12 +85,6 @@ const rentalStatusLabels: Record<string, string> = {
   cancelled: "취소됨",
 };
 
-const courierLabel: Record<string, string> = {
-  cj: "CJ대한통운",
-  post: "우체국",
-  logen: "로젠",
-  hanjin: "한진",
-};
 const courierTrackUrl: Record<string, (no: string) => string> = {
   cj: (no) =>
     `https://trace.cjlogistics.com/web/detail.jsp?slipno=${encodeURIComponent(no)}`,
@@ -1954,9 +1949,9 @@ export default function AdminRentalDetailClient() {
                       <div>
                         택배사:{" "}
                         <b>
-                          {courierLabel[data.shipping.outbound.courier] ??
-                            data.shipping.outbound.courier ??
-                            "-"}
+                          {data.shipping.outbound.courier
+                            ? getCourierDisplayName(data.shipping.outbound.courier)
+                            : "-"}
                         </b>
                       </div>
                       <div>
@@ -1993,9 +1988,9 @@ export default function AdminRentalDetailClient() {
                       <div>
                         택배사:{" "}
                         <b>
-                          {courierLabel[data.shipping.return.courier] ??
-                            data.shipping.return.courier ??
-                            "-"}
+                          {data.shipping.return.courier
+                            ? getCourierDisplayName(data.shipping.return.courier)
+                            : "-"}
                         </b>
                       </div>
                       <div>

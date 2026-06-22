@@ -27,6 +27,7 @@ import {
   getOrderStatusLabelForDisplay,
   isVisitPickupOrder,
 } from "@/lib/order-shipping";
+import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 type CourierCode =
   | "cj"
@@ -92,28 +93,7 @@ type OrderTrackingResponse =
     };
 
 function courierLabel(code?: CourierCode) {
-  switch (code) {
-    case "cj":
-      return "CJ대한통운";
-    case "hanjin":
-      return "한진택배";
-    case "logen":
-      return "로젠택배";
-    case "lotte":
-      return "롯데택배";
-    case "post":
-      return "우체국택배";
-    case "daesin":
-      return "대신택배";
-    case "ilogen":
-      return "일로젠";
-    case "kr":
-      return "대한통운(구)";
-    case "etc":
-      return "기타";
-    default:
-      return code || "-";
-  }
+  return code ? getCourierDisplayName(code) : "-";
 }
 
 async function copyToClipboard(text: string) {
