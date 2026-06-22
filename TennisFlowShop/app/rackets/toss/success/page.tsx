@@ -1,5 +1,7 @@
 "use client";
 
+import SiteContainer from "@/components/layout/SiteContainer";
+import { ResultState } from "@/components/public";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
@@ -43,9 +45,13 @@ export default function RacketTossSuccessPage() {
   }, [router, sp]);
 
   return (
-    <div className="mx-auto flex min-h-[50vh] max-w-xl flex-col items-center justify-center gap-3 px-6 text-center">
-      <Loader2 className="h-6 w-6 animate-spin" />
-      <p className="text-sm text-muted-foreground">결제 승인 처리 중입니다. 잠시만 기다려주세요.</p>
-    </div>
+    <SiteContainer className="flex min-h-[50vh] items-center py-10 md:py-16">
+      <ResultState
+        status="info"
+        icon={<Loader2 className="h-5 w-5 animate-spin" />}
+        title="결제 승인 처리 중입니다"
+        description="카드/간편결제 승인 결과를 확인하고 있어요. 잠시만 기다려주세요."
+      />
+    </SiteContainer>
   );
 }

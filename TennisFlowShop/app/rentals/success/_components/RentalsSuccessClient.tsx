@@ -1,6 +1,7 @@
 "use client";
 
 import SiteContainer from "@/components/layout/SiteContainer";
+import { ResultState } from "@/components/public";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -196,22 +197,15 @@ export default function RentalsSuccessClient({ data }: Props) {
     : "무통장입금";
   return (
     <div className="min-h-full bg-muted/30">
-      <div className="relative overflow-hidden bg-muted/30 text-foreground">
-        <div className="absolute inset-0 bg-overlay/20 dark:bg-overlay/40"></div>
-        <SiteContainer variant="wide" className="relative py-10 md:py-16">
-          <div className="text-center">
-            <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-card border border-border shadow-sm">
-              <CheckCircle className="h-12 w-12 text-foreground" />
-            </div>
-            <h1 className="mb-4 text-3xl font-bold md:text-4xl">
-              대여 신청 접수 완료
-            </h1>
-            <p className="mb-6 text-xl text-success">
-              신청이 정상 접수되었습니다. 결제 상태에 따라 출고가 진행됩니다.
-            </p>
-          </div>
-        </SiteContainer>
-      </div>
+      <SiteContainer variant="wide" className="py-8 md:py-12">
+        <ResultState
+          status="success"
+          icon={<CheckCircle className="h-6 w-6" />}
+          title="대여 신청 접수 완료"
+          description="신청이 정상 접수되었습니다. 결제 상태에 따라 출고가 진행됩니다."
+          className="py-8 sm:py-10"
+        />
+      </SiteContainer>
 
       <SiteContainer variant="wide" className="py-8">
         <div className="mx-auto max-w-4xl space-y-4 md:space-y-6">

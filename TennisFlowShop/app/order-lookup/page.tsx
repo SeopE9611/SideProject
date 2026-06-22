@@ -2,6 +2,8 @@
 
 import type React from "react";
 
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero, SummaryCard } from "@/components/public";
 import LoginGate from "@/components/system/LoginGate";
 import { Button } from "@/components/ui/button";
 import {
@@ -223,26 +225,18 @@ export default function OrderLookupPage() {
 
   return (
     <div className="min-h-full bg-background">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
-        <div className="absolute inset-0 bg-overlay/10"></div>
-        <div className="relative container mx-auto px-4 py-10 md:py-16">
-          <div className="text-center text-foreground">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-card rounded-full mb-6 border border-border shadow-sm">
-              <Search className="w-8 h-8" />
-            </div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              비회원 주문 조회
-            </h1>
-            <p className="mx-auto max-w-2xl break-keep text-base leading-relaxed text-muted-foreground md:text-xl">
-              주문번호를 몰라도 주문 시 입력한 이름, 이메일, 연락처로 주문/신청
-              상태와 다음 해야 할 일을 확인할 수 있어요
-            </p>
-          </div>
+      <PublicPageHero
+        align="center"
+        eyebrow="Guest order lookup"
+        title="비회원 주문 조회"
+        description="주문번호를 몰라도 주문 시 입력한 이름, 이메일, 연락처로 주문/신청 상태와 다음 해야 할 일을 확인할 수 있어요."
+      >
+        <div className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-border bg-card shadow-sm">
+          <Search className="h-7 w-7" />
         </div>
-      </div>
+      </PublicPageHero>
 
-      <div className="container mx-auto px-4 py-8 md:px-6 md:py-12">
+      <SiteContainer className="py-8 md:py-12">
         <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
           <div className="mb-0 lg:col-span-2">
             <Link
@@ -255,16 +249,13 @@ export default function OrderLookupPage() {
             </Link>
           </div>
 
-          <aside className="order-2 rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground shadow-sm lg:order-none lg:sticky lg:top-24">
-            <p className="font-semibold text-foreground">
-              조회 후 확인할 수 있는 정보
-            </p>
-            <p className="mt-2">
+          <SummaryCard className="order-2 text-sm text-muted-foreground lg:order-none lg:sticky lg:top-24" contentClassName="space-y-2" title="조회 후 확인할 수 있는 정보">
+            <p>
               현재 상태, 다음 해야 할 일, 문의가 필요한 경우의 안내를 함께
               보여드립니다. 회원가입하면 다음부터 마이페이지에서 더 쉽게 관리할
               수 있어요.
             </p>
-          </aside>
+          </SummaryCard>
 
           <div className="min-w-0">
           {/* Main Card */}
@@ -546,7 +537,7 @@ export default function OrderLookupPage() {
           </div>
           </div>
         </div>
-      </div>
+      </SiteContainer>
     </div>
   );
 }

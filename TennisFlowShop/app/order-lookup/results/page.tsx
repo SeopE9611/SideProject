@@ -1,5 +1,7 @@
 "use client";
 
+import SiteContainer from "@/components/layout/SiteContainer";
+import { EmptyState, PublicPageHero, ResultState } from "@/components/public";
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
@@ -270,101 +272,63 @@ export default function OrderLookupResultsPage() {
   if (error) {
     return (
       <div className="min-h-full bg-background">
-        {/* Hero Section */}
-        <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
-          <div className="absolute inset-0 bg-overlay/10"></div>
-          <div className="relative container mx-auto px-4 py-10 md:py-16">
-            <div className="text-center text-foreground">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-card rounded-full mb-4 md:mb-6 border border-border shadow-sm">
-                <Package className="w-8 h-8" />
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">조회 오류</h1>
-              <p className="text-xl text-destructive">
-                주문 정보를 불러오는 중 문제가 발생했습니다
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="container mx-auto py-8 md:py-12 px-4 md:px-6">
-          <div className="max-w-4xl mx-auto">
-            <Card className="border border-border bg-card shadow-sm">
-              <CardContent className="flex flex-col items-center justify-center py-10 md:py-16">
-                <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 border border-border bg-secondary text-foreground rounded-full mb-6">
-                    <Package className="w-8 h-8 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-4">
-                    오류가 발생했습니다
-                  </h3>
-                  <p className="text-muted-foreground mb-6 md:mb-8 max-w-md">
-                    {error}
-                  </p>
-                  {fieldErrors && (
-                    <div className="w-full max-w-md mb-6 md:mb-8 text-left">
-                      <div className="rounded-lg border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 p-4 text-foreground">
-                        <p className="text-sm font-semibold text-destructive mb-2">
-                          입력값 오류 상세
-                        </p>
-                        <ul className="list-disc pl-5 space-y-1">
-                          {Object.entries(fieldErrors).map(([field, msgs]) =>
-                            (msgs ?? []).map((msg, i) => (
-                              <li
-                                key={`${field}-${i}`}
-                                className="text-sm text-destructive"
-                              >
-                                <span className="font-medium">
-                                  {FIELD_LABELS[field] ?? field}:
-                                </span>{" "}
-                                {msg}
-                              </li>
-                            )),
-                          )}
-                        </ul>
-                      </div>
-                    </div>
+        <SiteContainer className="flex min-h-[60vh] items-center py-10 md:py-16">
+          <ResultState
+            status="error"
+            title="주문 정보를 불러오지 못했어요"
+            description={error}
+            actions={
+              <Button
+                onClick={handleGoBack}
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                주문 조회 페이지로 돌아가기
+              </Button>
+            }
+          >
+            {fieldErrors && (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-foreground dark:bg-destructive/15">
+                <p className="mb-2 text-sm font-semibold text-destructive">
+                  입력값 오류 상세
+                </p>
+                <ul className="list-disc space-y-1 pl-5">
+                  {Object.entries(fieldErrors).map(([field, msgs]) =>
+                    (msgs ?? []).map((msg, i) => (
+                      <li
+                        key={`${field}-${i}`}
+                        className="text-sm text-destructive"
+                      >
+                        <span className="font-medium">
+                          {FIELD_LABELS[field] ?? field}:
+                        </span>{" "}
+                        {msg}
+                      </li>
+                    )),
                   )}
-                  <Button
-                    onClick={handleGoBack}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    주문 조회 페이지로 돌아가기
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                </ul>
+              </div>
+            )}
+          </ResultState>
+        </SiteContainer>
       </div>
     );
   }
 
   return (
     <div className="min-h-full bg-background">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden border-b border-border bg-muted/30 dark:bg-card/40">
-        <div className="absolute inset-0 bg-overlay/10"></div>
-        <div className="relative container mx-auto px-4 py-10 md:py-16">
-          <div className="text-center text-foreground">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-card rounded-full mb-4 md:mb-6 border border-border shadow-sm">
-              <CheckCircle2 className="w-8 h-8" />
-            </div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              주문 조회 결과
-            </h1>
-            <p className="text-xl text-muted-foreground">
-              {displayName}님의 주문 내역 {orders?.length || 0}건
-            </p>
-            <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground">
-              각 주문 카드에서 현재 상태와 다음 해야 할 일을 확인하고,
-              회원가입하면 다음부터 마이페이지에서 더 쉽게 관리할 수 있어요.
-            </p>
-          </div>
+      <PublicPageHero
+        align="center"
+        eyebrow="Guest order results"
+        title="주문 조회 결과"
+        description={`${displayName}님의 주문 내역 ${orders?.length || 0}건을 확인했어요. 주문 상태와 다음 행동을 카드에서 확인해주세요.`}
+      >
+        <div className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-border bg-card shadow-sm">
+          <CheckCircle2 className="h-7 w-7" />
         </div>
-      </div>
+      </PublicPageHero>
 
-      <div className="container mx-auto py-8 md:py-12 px-4 md:px-6">
+      <SiteContainer className="py-8 md:py-12">
         <div className="max-w-6xl mx-auto">
           {/* Back Button */}
           <div className="mb-6 md:mb-8">
@@ -394,9 +358,12 @@ export default function OrderLookupResultsPage() {
 
             <CardContent className="pt-6 md:pt-8">
               {isInitialLoading ? (
-                <div className="py-10 text-center text-sm text-muted-foreground">
-                  주문 내역을 불러오는 중입니다...
-                </div>
+                <ResultState
+                  status="info"
+                  title="주문 내역을 불러오는 중입니다"
+                  description="입력하신 정보와 일치하는 주문을 확인하고 있어요."
+                  className="py-8 sm:py-10"
+                />
               ) : orders && orders.length > 0 ? (
                 <div className="space-y-4 md:space-y-6">
                   {orders.map((order, index) => {
@@ -578,51 +545,29 @@ export default function OrderLookupResultsPage() {
                   })}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-10 md:py-16">
-                  <div className="inline-flex items-center justify-center w-20 h-20 bg-muted rounded-full mb-4 md:mb-6">
-                    <ShoppingBag className="h-10 w-10 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-2xl font-semibold text-foreground mb-4">
-                    조회된 주문이 없습니다
-                  </h3>
-                  <p className="text-muted-foreground text-center mb-3 max-w-xl">
-                    입력하신 정보와 일치하는 비회원 주문을 찾지 못했습니다. 주문
-                    시 입력한 정보가 정확한지 확인한 뒤 다시 조회해주세요.
-                  </p>
-                  <ul className="mb-4 space-y-1.5 text-sm text-muted-foreground text-left max-w-xl">
-                    <li>
-                      • 주문자 이름에 띄어쓰기나 오타가 없는지 확인해주세요.
-                    </li>
-                    <li>• 주문 당시 사용한 이메일 주소인지 확인해주세요.</li>
-                    <li>
-                      • 전화번호를 입력했다면 주문 당시 번호와 같은지
-                      확인해주세요.
-                    </li>
-                    <li>• 최근 6개월 이내 주문인지 확인해주세요.</li>
-                  </ul>
-                  <p className="text-sm text-muted-foreground text-center mb-6 md:mb-8 max-w-xl">
-                    주문 완료 후 시간이 오래 지나지 않았다면 잠시 후 다시
-                    시도해볼 수 있어요. 계속 조회되지 않는다면 고객센터 Q&A로
-                    문의해주세요.
-                  </p>
-                  <div className="flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
-                    <Button
-                      onClick={handleGoBack}
-                      className="bg-primary text-primary-foreground hover:bg-primary/90"
-                    >
-                      <ArrowLeft className="w-4 h-4 mr-2" />
-                      다시 조회하기
-                    </Button>
-                    <Button asChild variant="outline" className="border-border">
-                      <Link href="/board/qna/write">고객센터 문의하기</Link>
-                    </Button>
-                  </div>
-                </div>
+                <EmptyState
+                  title="조회된 주문이 없습니다"
+                  description="입력하신 정보와 일치하는 비회원 주문을 찾지 못했습니다. 주문 시 입력한 정보가 정확한지 확인한 뒤 다시 조회해주세요."
+                  action={
+                    <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-center">
+                      <Button
+                        onClick={handleGoBack}
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
+                      >
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        다시 조회하기
+                      </Button>
+                      <Button asChild variant="outline" className="w-full border-border sm:w-auto">
+                        <Link href="/board/qna/write">고객센터 문의하기</Link>
+                      </Button>
+                    </div>
+                  }
+                />
               )}
             </CardContent>
           </Card>
         </div>
-      </div>
+      </SiteContainer>
     </div>
   );
 }
