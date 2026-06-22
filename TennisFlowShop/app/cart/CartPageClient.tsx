@@ -166,7 +166,7 @@ export default function CartPageClient() {
       {
         id: "shipping-fee",
         label: "배송비",
-        value: !hasSelectedItems ? "상품 선택 후 계산" : !isShippingFeeReady ? <Skeleton className="h-6 w-20 rounded-md" /> : shippingFee > 0 ? `${formatKRW(shippingFee)}원` : <span className="text-primary">무료</span>,
+        value: !hasSelectedItems ? "계산 전" : !isShippingFeeReady ? <Skeleton className="h-6 w-20 rounded-md" /> : shippingFee > 0 ? `${formatKRW(shippingFee)}원` : <span className="text-primary">무료</span>,
       },
       {
         id: "total",
@@ -562,7 +562,7 @@ export default function CartPageClient() {
         </SiteContainer>
       </div>
 
-      <SiteContainer className={cartItems.length > 0 ? "max-w-[1180px] pb-40 pt-4 bp-sm:pt-5 bp-lg:pb-12" : "max-w-[1180px] pt-6 pb-12 bp-sm:pt-8 bp-sm:pb-16 bp-md:py-8"}>
+      <SiteContainer className={cartItems.length > 0 ? "max-w-[1180px] pb-[calc(96px+env(safe-area-inset-bottom))] pt-4 bp-sm:pt-5 bp-lg:pb-12" : "max-w-[1180px] pt-6 pb-12 bp-sm:pt-8 bp-sm:pb-16 bp-md:py-8"}>
         {cartItems.length > 0 ? (
           <div className="grid grid-cols-1 gap-5 bp-lg:grid-cols-[minmax(0,1fr)_320px] bp-xl:gap-6">
             {/* 목록 */}
@@ -725,11 +725,13 @@ export default function CartPageClient() {
                                 {lockStepper ? (
                                   <>
                                     {/* 숫자만 표시(± 없음) */}
-                                    <div className="inline-flex h-8 items-center rounded-full bg-muted px-3 dark:bg-muted">
-                                      <span className="w-8 select-none text-center font-medium tabular-nums">{item.quantity}</span>
-                                    </div>
+                                    <div className="inline-flex items-center gap-2">
+                                      <div className="inline-flex h-8 items-center rounded-full bg-muted px-3 dark:bg-muted">
+                                        <span className="w-8 select-none text-center font-medium tabular-nums">{item.quantity}</span>
+                                      </div>
 
-                                    {Number.isFinite(maxStock) && <span className={`mt-1 block text-xs leading-snug ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}>재고 {maxStock}개</span>}
+                                      {Number.isFinite(maxStock) && <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium leading-none ${item.quantity >= maxStock ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>재고 {maxStock}개</span>}
+                                    </div>
 
                                     {/* 번들 변경 링크: 라켓/스트링 양쪽에 보여줘도 UX가 덜 헷갈림 */}
                                     {bundleEditHref && (
@@ -743,49 +745,51 @@ export default function CartPageClient() {
                                   </>
                                 ) : (
                                   <>
-                                    <div className="inline-flex items-center rounded-full bg-muted px-1 dark:bg-muted">
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-8 w-8 disabled:opacity-40"
-                                        aria-label={`${item.name} 수량 감소`}
-                                        disabled={lockStepper ? true : !canDec}
-                                        onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedGauge, item.selectedColor)}
-                                        title={lockStepper ? "번들 품목은 스트링 선택 화면에서만 수량을 변경할 수 있어요." : undefined}
-                                      >
-                                        <Minus className="h-4 w-4" />
-                                      </Button>
+                                    <div className="inline-flex items-center gap-2">
+                                      <div className="inline-flex items-center rounded-full bg-muted px-1 dark:bg-muted">
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 w-8 disabled:opacity-40"
+                                          aria-label={`${item.name} 수량 감소`}
+                                          disabled={lockStepper ? true : !canDec}
+                                          onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedGauge, item.selectedColor)}
+                                          title={lockStepper ? "번들 품목은 스트링 선택 화면에서만 수량을 변경할 수 있어요." : undefined}
+                                        >
+                                          <Minus className="h-4 w-4" />
+                                        </Button>
 
-                                      <span className={`w-8 select-none text-center font-medium tabular-nums ${lockStepper ? "opacity-60" : ""}`}>{item.quantity}</span>
+                                        <span className={`w-8 select-none text-center font-medium tabular-nums ${lockStepper ? "opacity-60" : ""}`}>{item.quantity}</span>
 
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-8 w-8 disabled:opacity-40"
-                                        aria-label={`${item.name} 수량 증가`}
-                                        disabled={lockStepper ? true : !canInc}
-                                        title={lockStepper ? "번들 품목은 스트링 선택 화면에서만 수량을 변경할 수 있어요." : undefined}
-                                        onClick={() => {
-                                          if (!canInc) {
-                                            showErrorToast(
-                                              <>
-                                                <p>
-                                                  <strong>{item.name}</strong>의 최대 주문 수량은 {maxStock}
-                                                  개입니다.
-                                                </p>
-                                                <p>더 이상 수량을 늘릴 수 없습니다.</p>
-                                              </>,
-                                            );
-                                            return;
-                                          }
-                                          updateQuantity(item.id, item.quantity + 1, item.selectedGauge, item.selectedColor);
-                                        }}
-                                      >
-                                        <Plus className="h-4 w-4" />
-                                      </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 w-8 disabled:opacity-40"
+                                          aria-label={`${item.name} 수량 증가`}
+                                          disabled={lockStepper ? true : !canInc}
+                                          title={lockStepper ? "번들 품목은 스트링 선택 화면에서만 수량을 변경할 수 있어요." : undefined}
+                                          onClick={() => {
+                                            if (!canInc) {
+                                              showErrorToast(
+                                                <>
+                                                  <p>
+                                                    <strong>{item.name}</strong>의 최대 주문 수량은 {maxStock}
+                                                    개입니다.
+                                                  </p>
+                                                  <p>더 이상 수량을 늘릴 수 없습니다.</p>
+                                                </>,
+                                              );
+                                              return;
+                                            }
+                                            updateQuantity(item.id, item.quantity + 1, item.selectedGauge, item.selectedColor);
+                                          }}
+                                        >
+                                          <Plus className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+
+                                      {Number.isFinite(maxStock) && <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium leading-none ${item.quantity >= maxStock ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>재고 {maxStock}개</span>}
                                     </div>
-
-                                    {Number.isFinite(maxStock) && <span className={`mt-1 block text-xs leading-snug ${item.quantity >= maxStock ? "text-destructive" : "text-muted-foreground"}`}>재고 {maxStock}개</span>}
                                   </>
                                 )}
                               </div>
@@ -807,7 +811,7 @@ export default function CartPageClient() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      className="h-8 text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                       onClick={() => {
                         if (confirm("장바구니의 모든 상품을 비울까요?")) clearCart();
                       }}
@@ -836,16 +840,17 @@ export default function CartPageClient() {
                     <div className="space-y-3">
                     <PriceSummary rows={priceSummaryRows} />
 
-                    <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">
-                      <div className="mb-1 flex items-center gap-1.5 text-[13px] text-primary">
+                    <div className="rounded-lg border border-border/70 bg-muted/15 px-3 py-2">
+                      <div className="mb-1 flex items-center gap-1.5 text-xs text-primary">
                         <Star className="h-3.5 w-3.5" />
                         <span className="font-semibold">배송비/교체서비스</span>
                       </div>
-                      <p className="text-[13px] leading-relaxed text-muted-foreground">
+                      <p className="text-xs leading-relaxed text-muted-foreground">
                         상품별 배송비와 라켓+장착 스트링 구성은 주문 요약에 반영됩니다.
                         <span className="mt-1 block">무료배송 상품은 배송비가 0원으로 표시됩니다.</span>
                       </p>
                     </div>
+                    {!hasSelectedItems && <p className="text-xs text-muted-foreground">상품 선택 후 배송비가 계산됩니다.</p>}
                   </div>
                     <div className="hidden flex-col items-stretch gap-3 border-t border-border pt-4 bp-lg:flex">
                     {blockServiceCheckout ? (
@@ -909,7 +914,7 @@ export default function CartPageClient() {
                             ))}
                           </div>
                         )}
-                        <p className="rounded-lg border border-border/60 bg-muted/50 px-3 py-2 text-xs text-muted-foreground">최신 재고는 주문 시 다시 확인됩니다.</p>
+                        <p className="text-xs text-muted-foreground">최신 재고와 배송비는 주문 단계에서 다시 확인됩니다.</p>
                         <div className="grid grid-cols-1 gap-2">
                           <Button className="h-12 w-full px-2 font-semibold" disabled={!hasSelectedItems || isCheckingCheckoutStock} onClick={handleCheckoutClick}>
                             {isCheckingCheckoutStock ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingBag className="h-4 w-4" />}
@@ -936,7 +941,7 @@ export default function CartPageClient() {
                           ))}
                         </div>
                       )}
-                      <p className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">최신 재고는 주문 시 다시 확인됩니다.</p>
+                      <p className="text-xs text-muted-foreground">최신 재고와 배송비는 주문 단계에서 다시 확인됩니다.</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -982,13 +987,13 @@ export default function CartPageClient() {
       {cartItems.length > 0 && (
         <div
           data-bottom-sticky="1"
-          className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur bp-lg:hidden">
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur bp-lg:hidden">
           <div className="mx-auto flex max-w-[1180px] items-center gap-3">
             <div className="min-w-0 flex-1">
               <p className="text-xs text-muted-foreground">총 주문 예상 금액</p>
               <p className="truncate text-lg font-black tabular-nums text-foreground">{formatKRW(total)}원</p>
             </div>
-            <Button className="h-12 min-w-[148px] font-semibold" disabled={!hasSelectedItems || !isShippingFeeReady || isCheckingCheckoutStock} onClick={handleCheckoutClick}>
+            <Button className="h-11 min-w-[140px] font-semibold" disabled={!hasSelectedItems || !isShippingFeeReady || isCheckingCheckoutStock} onClick={handleCheckoutClick}>
               {!hasSelectedItems ? "상품 선택" : `주문하기 ${selectedCartItems.length}`}
             </Button>
           </div>
