@@ -1087,12 +1087,6 @@ export default function CartPageClient() {
                       <ArrowRight className="h-5 w-5" />
                     </Link>
                   </Button>
-                  <Button variant="outline" className="w-full bp-sm:w-auto" asChild>
-                    <Link href="/rackets">라켓 보러가기</Link>
-                  </Button>
-                  <Button variant="outline" className="w-full bp-sm:w-auto" asChild>
-                    <Link href="/services">서비스 안내 보기</Link>
-                  </Button>
                 </div>
               }
             />
