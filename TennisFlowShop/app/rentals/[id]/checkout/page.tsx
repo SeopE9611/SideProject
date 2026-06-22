@@ -36,9 +36,10 @@ async function getInitialForRacket(
   stringId?: string,
 ) {
   const db = (await clientPromise).db();
+  const viewer = await getVisibilityViewerFromCookies();
   const racket = await db.collection("used_rackets").findOne({
     _id: new ObjectId(racketId),
-    ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+    ...racketVisibilityFilterFor(viewer),
   });
 
   if (!racket) return null;
@@ -72,7 +73,7 @@ async function getInitialForRacket(
       } = undefined;
   if (stringId && ObjectId.isValid(stringId)) {
     const p = await db.collection("products").findOne(
-      { _id: new ObjectId(stringId), ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) },
+      { _id: new ObjectId(stringId), ...productVisibilityFilterFor(viewer) },
       {
         projection: {
           name: 1,

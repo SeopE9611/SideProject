@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
 
     const client = await clientPromise;
     const db = client.db();
+    const viewer = await getVisibilityViewerFromCookies();
 
     const initialsQuery = getHangulInitials(query);
     const isChosungOnly = /^[ㄱ-ㅎ]+$/.test(query); // 초성만 입력된 경우
@@ -50,11 +51,11 @@ export async function GET(req: NextRequest) {
     const [products, rackets] = await Promise.all([
       db
         .collection("products")
-        .find(productVisibilityFilterFor(await getVisibilityViewerFromCookies()))
+        .find(productVisibilityFilterFor(viewer))
         .toArray(),
       db
         .collection("used_rackets")
-        .find(racketVisibilityFilterFor(await getVisibilityViewerFromCookies()))
+        .find(racketVisibilityFilterFor(viewer))
         .toArray(),
     ]);
 

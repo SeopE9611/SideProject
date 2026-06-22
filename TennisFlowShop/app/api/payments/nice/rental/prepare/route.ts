@@ -94,9 +94,10 @@ export async function POST(req: Request) {
 
     const client = await clientPromise;
     const db = client.db();
+    const viewer = await getVisibilityViewerFromCookies();
 
     const racketObjectId = new ObjectId(parsed.data.racketId);
-    const racket = await db.collection("used_rackets").findOne({ _id: racketObjectId, ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) });
+    const racket = await db.collection("used_rackets").findOne({ _id: racketObjectId, ...racketVisibilityFilterFor(viewer) });
     if (!racket) return NextResponse.json({ success: false, error: "라켓 없음" }, { status: 404 });
 
     const activeCount = await db.collection("rental_orders").countDocuments({
@@ -116,7 +117,7 @@ export async function POST(req: Request) {
       if (!sid || !ObjectId.isValid(sid)) {
         return NextResponse.json({ success: false, error: "BAD_STRING_ID" }, { status: 400 });
       }
-      const s = await db.collection("products").findOne({ _id: new ObjectId(sid), ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) }, { projection: { price: 1, mountingFee: 1 } });
+      const s = await db.collection("products").findOne({ _id: new ObjectId(sid), ...productVisibilityFilterFor(viewer) }, { projection: { price: 1, mountingFee: 1 } });
       if (!s) return NextResponse.json({ success: false, error: "STRING_NOT_FOUND" }, { status: 404 });
       stringPrice = Number((s as any)?.price ?? 0);
       stringingFee = Number((s as any)?.mountingFee ?? 0);

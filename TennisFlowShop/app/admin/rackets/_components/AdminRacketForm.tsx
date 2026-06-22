@@ -66,6 +66,7 @@ export type RacketForm = {
   shippingFee: number;
   condition: "A" | "B" | "C";
   status: "available" | "rented" | "sold" | "inactive";
+  isVisible: boolean;
   spec: {
     weight: number | null;
     balance: number | null;
@@ -115,6 +116,7 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: { in
     quantity: initial?.quantity ?? 1,
     condition: toCondition(initial?.condition),
     status: toStatus(initial?.status),
+    isVisible: initial?.isVisible !== false,
     spec: {
       weight: initial?.spec?.weight ?? null,
       balance: initial?.spec?.balance ?? null,
@@ -592,9 +594,25 @@ export default function AdminRacketForm({ initial, submitLabel, onSubmit }: { in
                         <SelectItem value="available">판매가능</SelectItem>
                         <SelectItem value="rented">대여중</SelectItem>
                         <SelectItem value="sold">판매완료</SelectItem>
-                        <SelectItem value="inactive">비노출</SelectItem>
                       </SelectContent>
                     </Select>
+                  </FormField>
+                  <FormField label="일반 사용자에게 상품 노출">
+                    <div className="flex min-h-10 items-center justify-between rounded-md border border-border bg-background px-3 py-2">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">{form.isVisible ? "노출" : "숨김"}</p>
+                        <p className="text-xs text-muted-foreground">숨김이어도 관리자는 사용자 화면에서 미리보기와 결제 테스트를 할 수 있습니다.</p>
+                      </div>
+                      <Switch
+                        checked={form.isVisible}
+                        onCheckedChange={(checked) =>
+                          setForm({
+                            ...form,
+                            isVisible: checked,
+                          })
+                        }
+                      />
+                    </div>
                   </FormField>
                   <FormField label="보유 수량" required>
                     <Input

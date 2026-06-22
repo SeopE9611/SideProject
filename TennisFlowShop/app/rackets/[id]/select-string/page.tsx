@@ -53,6 +53,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   }
 
   const db = (await clientPromise).db();
+  const viewer = await getVisibilityViewerFromCookies();
 
   if (!ObjectId.isValid(id)) {
     return (
@@ -64,7 +65,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const racketObjectId = new ObjectId(id);
   const doc: any = await db
     .collection("used_rackets")
-    .findOne({ _id: racketObjectId, ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) });
+    .findOne({ _id: racketObjectId, ...racketVisibilityFilterFor(viewer) });
 
   if (!doc) {
     return (

@@ -113,6 +113,7 @@ export async function PATCH(
     shippingFee: normalizeItemShippingFee(body.shippingFee),
     images: Array.isArray(body.images) ? body.images : [],
     status: body.status ?? "available",
+    isVisible: body.isVisible === false ? false : true,
     searchKeywords: Array.isArray(body.searchKeywords)
       ? body.searchKeywords
           .map((k: any) => String(k).trim())

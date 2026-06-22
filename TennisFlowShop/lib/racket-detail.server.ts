@@ -43,11 +43,13 @@ export async function getRacketDetailPayload(
   currentUserId?: ObjectId | null,
 ) {
   const db = (await clientPromise).db();
-  const col = db.collection<UsedRacketDoc>("used_rackets");
+  const col = db.collection("used_rackets");
+  const viewer = await getVisibilityViewerFromCookies();
+  const visibilityFilter = racketVisibilityFilterFor(viewer);
 
-  const filter = ObjectId.isValid(id)
-    ? { _id: new ObjectId(id), ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) }
-    : { _id: id, ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) };
+  const filter: Record<string, unknown> = ObjectId.isValid(id)
+    ? { _id: new ObjectId(id), ...visibilityFilter }
+    : { _id: id, ...visibilityFilter };
   const doc = await col.findOne(filter);
 
   if (!doc) return null;
@@ -159,6 +161,7 @@ export async function getRacketActiveCountPayload(
   }
 
   const db = (await clientPromise).db();
+  const viewer = await getVisibilityViewerFromCookies();
 
   const count = await db.collection("rental_orders").countDocuments({
     racketId: new ObjectId(racketId),
@@ -169,7 +172,7 @@ export async function getRacketActiveCountPayload(
   const projRackets = { projection: { quantity: 1 } } as const;
   const used = await db
     .collection("used_rackets")
-    .findOne({ _id: new ObjectId(racketId), ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) }, projUsed);
+    .findOne({ _id: new ObjectId(racketId), ...racketVisibilityFilterFor(viewer) }, projUsed);
   const rack =
     used ??
     (await db

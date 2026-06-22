@@ -81,6 +81,7 @@ export async function GET(req: Request) {
         images: 1,
         quantity: 1,
         marketing: 1,
+        isVisible: 1,
       })
       .toArray(),
     db.collection("used_rackets").countDocuments(q),
@@ -159,6 +160,7 @@ export async function POST(req: Request) {
     shippingFee: normalizeItemShippingFee(body.shippingFee),
     images: Array.isArray(body.images) ? body.images : [],
     status: body.status ?? "available", // available | rented | sold | inactive
+    isVisible: body.isVisible === false ? false : true,
     rental: {
       enabled: !!body?.rental?.enabled,
       deposit: Number(body?.rental?.deposit ?? 0),

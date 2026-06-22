@@ -41,7 +41,8 @@ type Item = {
   model: string;
   price: number;
   condition: "A" | "B" | "C";
-  status: "available" | "rented" | "sold" | "inactive";
+  status: "available" | "rented" | "sold" | "inactive" | "비노출";
+  isVisible?: boolean;
   rental?: {
     enabled: boolean;
     deposit: number;
@@ -68,7 +69,8 @@ function StatusBadge({ status }: { status: string }) {
     available: { label: "판매가능", variant: "default" },
     rented: { label: "대여중", variant: "secondary" },
     sold: { label: "판매완료", variant: "destructive" },
-    inactive: { label: "비노출", variant: "outline" },
+    inactive: { label: "비노출 상태", variant: "outline" },
+    비노출: { label: "비노출 상태", variant: "outline" },
   };
   const config = variants[status] || { label: status, variant: "outline" };
   return (
@@ -526,7 +528,15 @@ export default function AdminRacketsClient() {
                             <ConditionBadge condition={item.condition} />
                           </TableCell>
                           <TableCell className="text-center">
-                            <StatusBadge status={item.status} />
+                            <div className="flex flex-col items-center gap-1">
+                              <StatusBadge status={item.status} />
+                              {item.isVisible === false && (
+                                <Badge variant="outline" className="shrink-0 whitespace-nowrap border-warning/60 text-warning">숨김</Badge>
+                              )}
+                              {(item.status === "inactive" || item.status === "비노출") && (
+                                <Badge variant="outline" className="shrink-0 whitespace-nowrap">기존 비노출 상태</Badge>
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell className="text-center">
                             <Badge className={cn(item.rental?.enabled ? usedBadgeMeta("rental", "available").className : usedBadgeMeta("rental", "unavailable").className, "shrink-0 whitespace-nowrap")}>{item.rental?.enabled ? "가능" : "불가"}</Badge>
@@ -546,7 +556,7 @@ export default function AdminRacketsClient() {
                                 <DropdownMenuItem asChild className="whitespace-nowrap">
                                   <Link href={`/rackets/${item.id}`} className="flex items-center">
                                     <Eye className="h-4 w-4 mr-2" />
-                                    {item.status === "inactive" || item.status === "비노출" ? "관리자 미리보기" : "상세 보기"}
+                                    {item.isVisible === false || item.status === "inactive" || item.status === "비노출" ? "관리자 미리보기" : "상세 보기"}
                                   </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild className="whitespace-nowrap">
