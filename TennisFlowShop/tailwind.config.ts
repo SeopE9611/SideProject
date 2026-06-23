@@ -3,12 +3,7 @@ import animate from "tailwindcss-animate";
 
 const config: Config = {
   darkMode: ["class"],
-  content: [
-    "./app/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./lib/**/*.{ts,tsx}",
-    "node_modules/react-day-picker/dist/style.css",
-  ],
+  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}", "node_modules/react-day-picker/dist/style.css"],
   theme: {
     container: {
       center: true,
@@ -34,6 +29,21 @@ const config: Config = {
       "7xl": ["4.625rem", { lineHeight: "1.05" }],
       "8xl": ["6rem", { lineHeight: "1" }],
       "9xl": ["8rem", { lineHeight: "1" }],
+      "ui-micro": ["0.6875rem", { lineHeight: "0.875rem" }], // 11px
+      "ui-caption": ["0.75rem", { lineHeight: "1rem" }], // 12px
+      "ui-label": ["0.8125rem", { lineHeight: "1.25rem" }], // 13px
+      "ui-body-sm": ["0.875rem", { lineHeight: "1.5rem" }], // 14px
+      "ui-body": ["0.9375rem", { lineHeight: "1.625rem" }], // 15px
+      "ui-body-lg": ["1rem", { lineHeight: "1.625rem" }], // 16px
+      "ui-card-title": ["1rem", { lineHeight: "1.375rem" }], // 16px
+      "ui-card-title-lg": ["1.0625rem", { lineHeight: "1.5rem" }], // 17px
+      "ui-section-title": ["1.25rem", { lineHeight: "1.75rem" }], // 20px
+      "ui-section-title-lg": ["1.5rem", { lineHeight: "2rem" }], // 24px
+      "ui-page-title": ["1.5rem", { lineHeight: "1.875rem" }], // 24px
+      "ui-page-title-lg": ["1.875rem", { lineHeight: "2.25rem" }], // 30px
+      "ui-price": ["1.125rem", { lineHeight: "1.5rem" }], // 18px
+      "ui-price-lg": ["1.5rem", { lineHeight: "1.875rem" }], // 24px
+      "ui-input": ["1rem", { lineHeight: "1.5rem" }], // 16px
     },
     extend: {
       /**
