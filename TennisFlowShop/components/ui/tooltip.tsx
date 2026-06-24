@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
-import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { cn } from "@/lib/utils";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import * as React from "react";
 
 // Provider wraps the part of your app that will use tooltips
 const TooltipProvider = TooltipPrimitive.Provider;
@@ -25,13 +25,10 @@ const TooltipContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        // 전역 Tooltip 스타일
-        // - 모달(Dialog) 오버레이(z-50)보다 위로 올려서 "툴팁이 반투명"처럼 보이는 현상 방지
-        // - 배경/텍스트는 디자인 토큰(popover)로 통일 (다크모드 포함)
-        "z-[60] overflow-hidden rounded-md border border-border bg-popover px-3 py-1.5 " +
-          "text-sm text-popover-foreground shadow-md opacity-100 animate-in fade-in-0 zoom-in-95 " +
-          "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 " +
-          className,
+        "z-[60] overflow-hidden rounded-md border border-border bg-popover px-3 py-1.5",
+        "text-ui-label text-popover-foreground shadow-md opacity-100 animate-in fade-in-0 zoom-in-95",
+        "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+        className,
       )}
       {...props}
     >
@@ -44,4 +41,4 @@ const TooltipContent = React.forwardRef<
 ));
 TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
-export { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent };
+export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger };

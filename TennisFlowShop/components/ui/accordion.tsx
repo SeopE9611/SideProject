@@ -98,7 +98,7 @@ export function AccordionTrigger({ value, className, children }: TriggerProps) {
       type="button"
       onClick={() => ctx.toggle(value)}
       className={cn(
-        "flex w-full items-center justify-between py-3 text-left text-sm font-medium",
+        "flex w-full items-center justify-between py-3 text-left text-ui-body-sm font-medium",
         "focus-visible:ring-2 ring-ring rounded-lg",
         className,
       )}

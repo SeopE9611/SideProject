@@ -14,11 +14,7 @@ export const metadata: Metadata = {
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-export default async function ProductsPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
+export default async function ProductsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams;
 
   // 유틸: string | string[] | undefined → string | null 로 정리
@@ -36,36 +32,21 @@ export default async function ProductsPage({
         align="center"
         title="테니스 스트링"
         description="플레이 스타일에 맞는 스트링을 고르고, 교체서비스까지 이어서 신청하세요."
-        actions={
-          <Button asChild variant="outline" wrap="responsive">
-            <Link href="#product-list">상품 목록 보기</Link>
-          </Button>
-        }
       />
 
-      <SiteContainer
-        variant="wide"
-        className="py-6 bp-sm:py-8 bp-md:py-12 bp-lg:max-w-[1600px] bp-xl:max-w-[1680px]"
-      >
+      <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-12 bp-lg:max-w-[1600px] bp-xl:max-w-[1680px]">
         <PublicSurface
           variant="muted"
           padding="sm"
           className="mb-4 flex flex-col gap-4 bp-sm:mb-6 md:flex-row md:items-center md:justify-between"
         >
           <div className="min-w-0 space-y-1">
-            <p className="text-balance text-sm font-semibold text-foreground">
-              어떤 스트링이 맞을지 모르겠나요?
-            </p>
+            <p className="text-balance text-sm font-semibold text-foreground">어떤 스트링이 맞을지 모르겠나요?</p>
             <p className="break-words text-sm leading-relaxed text-muted-foreground">
-              간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을 확인할
-              수 있어요.
+              간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을 확인할 수 있어요.
             </p>
           </div>
-          <Button
-            asChild
-            wrap="responsive"
-            className="w-full shrink-0 md:w-auto"
-          >
+          <Button asChild wrap="responsive" className="w-full shrink-0 md:w-auto">
             <Link href="/products/recommend">스트링 추천받기</Link>
           </Button>
         </PublicSurface>
@@ -78,12 +59,11 @@ export default async function ProductsPage({
                   1단계: 장착할 스트링을 선택해주세요
                 </p>
                 <p className="text-xs leading-relaxed text-muted-foreground bp-sm:text-sm">
-                  선택 후 결제 화면에서 수령 방식과 장착 요청사항을 입력합니다.
-                  결제와 함께 교체서비스 신청이 접수됩니다.
+                  선택 후 결제 화면에서 수령 방식과 장착 요청사항을 입력합니다. 결제와 함께 교체서비스 신청이
+                  접수됩니다.
                 </p>
                 <p className="text-xs text-muted-foreground bp-sm:text-sm">
-                  현재 스트링 단품 구매는 운영하지 않으며, 스트링 교체 신청과
-                  함께 이용할 수 있습니다.
+                  현재 스트링 단품 구매는 운영하지 않으며, 스트링 교체 신청과 함께 이용할 수 있습니다.
                 </p>
               </div>
 
@@ -109,19 +89,10 @@ export default async function ProductsPage({
               />
 
               <div className="flex w-full flex-col gap-2 bp-sm:flex-row bp-sm:justify-end">
-                <Button
-                  asChild
-                  variant="outline"
-                  wrap="responsive"
-                  className="w-full bp-sm:w-auto"
-                >
+                <Button asChild variant="outline" wrap="responsive" className="w-full bp-sm:w-auto">
                   <Link href="/services/apply">신청 방식 다시 선택</Link>
                 </Button>
-                <Button
-                  asChild
-                  wrap="responsive"
-                  className="w-full bp-sm:w-auto"
-                >
+                <Button asChild wrap="responsive" className="w-full bp-sm:w-auto">
                   <Link href="/services/pricing">가격표 보기</Link>
                 </Button>
               </div>
@@ -129,10 +100,7 @@ export default async function ProductsPage({
           </PublicSurface>
         )}
         <div id="product-list" className="scroll-mt-24 bp-md:scroll-mt-28">
-          <FilterableProductList
-            initialBrand={initialBrand}
-            initialMaterial={initialMaterial}
-          />
+          <FilterableProductList initialBrand={initialBrand} initialMaterial={initialMaterial} />
         </div>
       </SiteContainer>
     </div>

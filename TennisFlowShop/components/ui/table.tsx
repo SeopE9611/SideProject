@@ -10,7 +10,7 @@ const Table = React.forwardRef<
     <table
       ref={ref}
       className={cn(
-        "w-full caption-bottom bg-background text-sm leading-normal text-foreground",
+        "w-full caption-bottom bg-background text-ui-body-sm text-foreground",
         className,
       )}
       {...props}
@@ -109,19 +109,14 @@ const TableCaption = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <caption
     ref={ref}
-    className={cn("mt-4 text-sm text-muted-foreground", className)}
+    className={cn("mt-4 text-ui-label text-muted-foreground", className)}
     {...props}
   />
 ));
 TableCaption.displayName = "TableCaption";
 
 export {
-  Table,
-  TableHeader,
-  TableBody,
-  TableFooter,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableCaption,
+  Table, TableBody, TableCaption, TableCell, TableFooter,
+  TableHead, TableHeader, TableRow
 };
+
