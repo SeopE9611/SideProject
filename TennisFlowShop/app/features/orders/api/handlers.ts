@@ -1,5 +1,3 @@
-import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
-import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import { createStringingApplicationFromOrder } from "@/app/features/stringing-applications/api/create-from-order";
 import {
   submitStringingApplicationCore,
@@ -13,15 +11,17 @@ import {
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { getShippingBadge } from "@/lib/badge-style";
 import clientPromise from "@/lib/mongodb";
-import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_RACKET_STANDALONE_ORDER } from "@/lib/orders/racket-standalone-policy";
+import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { findOneActivePassForUser } from "@/lib/passes.service";
 import { deductPoints } from "@/lib/points.service";
+import { getEffectiveProductPrice } from "@/lib/product-pricing";
+import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
+import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
+import { getEffectiveRacketPrice } from "@/lib/racket-pricing";
 import { normalizeEmailForSearch } from "@/lib/search-email";
 import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
-import { getEffectiveProductPrice } from "@/lib/product-pricing";
-import { getEffectiveRacketPrice } from "@/lib/racket-pricing";
 import type { DBOrder } from "@/lib/types/order-db";
 import { ObjectId, type Db } from "mongodb";
 import { cookies } from "next/headers";
@@ -194,6 +194,19 @@ async function ensureOrdersIdemIndex(db: Db) {
   await ordersIdemIndexGlobal.__tf_orders_idem_index_promise__;
 }
 
+function isDuplicateKeyError(error: unknown) {
+  if (!error || typeof error !== "object") return false;
+
+  const target = error as {
+    code?: unknown;
+    message?: unknown;
+  };
+
+  if (target.code === 11000) return true;
+
+  return typeof target.message === "string" && target.message.includes("E11000");
+}
+
 // 주문 생성 핸들러
 type CreateOrderExecutionContext = {
   source?: "api_orders_route" | "nicepay_return";
@@ -204,9 +217,13 @@ export async function createOrder(
   req: Request,
   executionContext?: CreateOrderExecutionContext,
 ): Promise<Response> {
+  let idemKeyForDuplicateRecovery: string | undefined;
+  let dbForDuplicateRecovery: Db | null = null;
+
   try {
     const idemKeyRaw = req.headers.get("Idempotency-Key");
     const idemKey = idemKeyRaw && idemKeyRaw.trim() ? idemKeyRaw : undefined;
+    idemKeyForDuplicateRecovery = idemKey;
 
     class HttpError extends Error {
       status: number;
@@ -351,6 +368,7 @@ export async function createOrder(
     // DB
     const client = await clientPromise;
     const db = client.db();
+    dbForDuplicateRecovery = db;
 
     type OrderDoc = Omit<DBOrder, "_id"> & {
       idemKey?: string;
@@ -368,7 +386,18 @@ export async function createOrder(
     if (idemKey) {
       const dup = await ordersCol.findOne({ idemKey });
       if (dup) {
-        return NextResponse.json({ success: true, orderId: String(dup._id) }, { status: 200 });
+        return NextResponse.json(
+          {
+            success: true,
+            orderId: String(dup._id),
+            stringingApplicationId: dup.stringingApplicationId
+              ? String(dup.stringingApplicationId)
+              : null,
+            stringingSubmitted: Boolean(dup.stringingApplicationId),
+            idempotent: true,
+          },
+          { status: 200 },
+        );
       }
     }
 
@@ -1330,6 +1359,35 @@ export async function createOrder(
       { status: 201 },
     );
   } catch (error) {
+    if (idemKeyForDuplicateRecovery && dbForDuplicateRecovery && isDuplicateKeyError(error)) {
+      const dup = await dbForDuplicateRecovery.collection("orders").findOne(
+        {
+          idemKey: idemKeyForDuplicateRecovery,
+        },
+        {
+          projection: {
+            _id: 1,
+            stringingApplicationId: 1,
+          },
+        },
+      );
+
+      if (dup?._id) {
+        return NextResponse.json(
+          {
+            success: true,
+            orderId: String(dup._id),
+            stringingApplicationId: dup.stringingApplicationId
+              ? String(dup.stringingApplicationId)
+              : null,
+            stringingSubmitted: Boolean(dup.stringingApplicationId),
+            idempotent: true,
+          },
+          { status: 200 },
+        );
+      }
+    }
+
     const fallbackMessage = "주문 생성 중 오류 발생";
 
     const getErrorStatus = (target: unknown) => {

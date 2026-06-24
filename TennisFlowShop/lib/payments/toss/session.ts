@@ -4,6 +4,7 @@ export type PaymentProvider = "toss" | "nicepay";
 
 export type TossPaymentSessionStatus =
   | "ready"
+  | "processing"
   | "approved"
   | "failed"
   | "confirm_succeeded_order_failed"
@@ -36,6 +37,7 @@ export type TossPaymentSession = {
   status: TossPaymentSessionStatus;
   flowType: TossPaymentFlowType;
   checkoutPayload?: Record<string, unknown>;
+
   packagePayload?: {
     packageId: string;
     serviceInfo: {
@@ -107,6 +109,7 @@ export type TossPaymentSession = {
   mongoOrderId?: string | null;
   applicationId?: string | null;
   paymentKey?: string | null;
+  processingStartedAt?: Date;
   failureStage?: TossPaymentFailureStage;
   failureCode?: string;
   failureMessage?: string;

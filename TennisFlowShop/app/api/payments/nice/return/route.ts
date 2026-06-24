@@ -33,6 +33,10 @@ function toFailUrl(code: string, message?: string) {
   return `/checkout/nice/fail?${qs.toString()}`;
 }
 
+function redirect303(req: Request, path: string) {
+  return NextResponse.redirect(new URL(path, req.url), { status: 303 });
+}
+
 function toAmount(value: string) {
   const amount = Math.floor(Number(value || 0));
   return Number.isFinite(amount) ? amount : 0;
@@ -101,53 +105,106 @@ async function handleNiceReturn(req: Request) {
     const signature = pick(raw, "signature", "Signature");
 
     if (!orderId) {
-      return NextResponse.redirect(
-        new URL(toFailUrl("SESSION_NOT_FOUND", "orderId 값이 누락되었습니다."), req.url),
-      );
+      return redirect303(req, toFailUrl("SESSION_NOT_FOUND", "orderId 값이 누락되었습니다."));
     }
 
     const client = await clientPromise;
     const db = client.db();
     await ensureTossPaymentSessionIndexes(db);
     const col = tossPaymentSessions(db);
-    const session = await col.findOne({ niceOrderId: orderId });
+
+    // 이미 처리된 결제 세션이면 다시 주문 생성하지 말고 바로 결과 페이지로 보내는 방어 로직
+    let session = await col.findOne({ niceOrderId: orderId });
 
     if (!session || (session.provider && session.provider !== "nicepay")) {
-      return NextResponse.redirect(
-        new URL(toFailUrl("SESSION_NOT_FOUND", "결제 세션을 찾을 수 없습니다."), req.url),
-      );
+      return redirect303(req, toFailUrl("SESSION_NOT_FOUND", "결제 세션을 찾을 수 없습니다."));
     }
 
     if (session.status === "approved" && session.mongoOrderId) {
-      return NextResponse.redirect(
-        new URL(`/checkout/success?orderId=${encodeURIComponent(session.mongoOrderId)}`, req.url),
+      return redirect303(
+        req,
+        `/checkout/success?orderId=${encodeURIComponent(session.mongoOrderId)}`,
+      );
+    }
+
+    if (session.status === "failed") {
+      return redirect303(
+        req,
+        toFailUrl(
+          session.failureCode || "APPROVE_FAILED",
+          session.failureMessage || "이미 실패 처리된 결제 세션입니다.",
+        ),
       );
     }
 
     if (session.status === "approve_succeeded_order_failed") {
-      return NextResponse.redirect(
-        new URL(
-          toFailUrl(
-            "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
-            session.failureMessage || "승인 이후 주문 처리 실패 상태입니다.",
-          ),
-          req.url,
-        ),
-      );
-    }
-    if (session.status === "approve_succeeded_auto_cancel_succeeded") {
-      return NextResponse.redirect(
-        new URL(
-          toFailUrl(
-            "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
-            "승인 후 주문 생성 실패로 자동 취소가 완료되었습니다.",
-          ),
-          req.url,
+      return redirect303(
+        req,
+        toFailUrl(
+          "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+          session.failureMessage || "승인 이후 주문 처리 실패 상태입니다.",
         ),
       );
     }
 
+    if (session.status === "approve_succeeded_auto_cancel_succeeded") {
+      return redirect303(
+        req,
+        toFailUrl(
+          "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+          "승인 후 주문 생성 실패로 자동 취소가 완료되었습니다.",
+        ),
+      );
+    }
+
+    if (session.status === "approve_succeeded_auto_cancel_failed") {
+      return redirect303(
+        req,
+        toFailUrl(
+          "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+          "승인 후 주문 생성 실패가 발생했고 자동 취소 상태 확인이 필요합니다.",
+        ),
+      );
+    }
+
+    //----------------------------------
+
     const now = new Date();
+    if (session.status === "processing") {
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+
+      const latest = await col.findOne({ niceOrderId: orderId });
+
+      if (latest?.status === "approved" && latest.mongoOrderId) {
+        return redirect303(
+          req,
+          `/checkout/success?orderId=${encodeURIComponent(latest.mongoOrderId)}`,
+        );
+      }
+
+      if (
+        latest?.status === "approve_succeeded_order_failed" ||
+        latest?.status === "approve_succeeded_auto_cancel_succeeded" ||
+        latest?.status === "approve_succeeded_auto_cancel_failed" ||
+        latest?.status === "failed"
+      ) {
+        return redirect303(
+          req,
+          toFailUrl(
+            latest.failureCode || "PAYMENT_PROCESSING_FAILED",
+            latest.failureMessage || "결제 처리 결과를 확인해주세요.",
+          ),
+        );
+      }
+
+      return redirect303(
+        req,
+        toFailUrl(
+          "PAYMENT_PROCESSING",
+          "결제 처리가 진행 중입니다. 중복 결제하지 말고 잠시 후 주문 내역을 확인해주세요.",
+        ),
+      );
+    }
     if (session.expiresAt && session.expiresAt.getTime() < now.getTime()) {
       await col.updateOne(
         { _id: session._id },
@@ -161,10 +218,69 @@ async function handleNiceReturn(req: Request) {
           },
         },
       );
-      return NextResponse.redirect(
-        new URL(toFailUrl("SESSION_EXPIRED", "결제 세션 유효시간이 만료되었습니다."), req.url),
+      return redirect303(req, toFailUrl("SESSION_EXPIRED", "결제 세션 유효시간이 만료되었습니다."));
+    }
+
+    if (session.status !== "ready") {
+      return redirect303(
+        req,
+        toFailUrl(
+          "INVALID_PAYMENT_SESSION_STATUS",
+          "이미 처리 중이거나 처리 완료된 결제 세션입니다.",
+        ),
       );
     }
+
+    const claimedSession = await col.findOneAndUpdate(
+      {
+        _id: session._id,
+        status: "ready",
+      },
+      {
+        $set: {
+          status: "processing",
+          processingStartedAt: now,
+          updatedAt: now,
+        },
+      },
+      { returnDocument: "after" },
+    );
+
+    if (!claimedSession) {
+      const latest = await col.findOne({ niceOrderId: orderId });
+
+      if (latest?.status === "approved" && latest.mongoOrderId) {
+        return redirect303(
+          req,
+          `/checkout/success?orderId=${encodeURIComponent(latest.mongoOrderId)}`,
+        );
+      }
+
+      if (
+        latest?.status === "approve_succeeded_order_failed" ||
+        latest?.status === "approve_succeeded_auto_cancel_succeeded" ||
+        latest?.status === "approve_succeeded_auto_cancel_failed" ||
+        latest?.status === "failed"
+      ) {
+        return redirect303(
+          req,
+          toFailUrl(
+            latest.failureCode || "PAYMENT_PROCESSING_FAILED",
+            latest.failureMessage || "결제 처리 결과를 확인해주세요.",
+          ),
+        );
+      }
+
+      return redirect303(
+        req,
+        toFailUrl(
+          "PAYMENT_SESSION_ALREADY_PROCESSING",
+          "결제 처리가 이미 진행 중입니다. 중복 결제하지 말고 주문 내역을 확인해주세요.",
+        ),
+      );
+    }
+
+    session = claimedSession;
 
     if (authResultCode !== "0000") {
       await col.updateOne(
@@ -180,8 +296,10 @@ async function handleNiceReturn(req: Request) {
           },
         },
       );
-      return NextResponse.redirect(
-        new URL(toFailUrl("AUTH_FAILED", authResultMsg || "인증 결제에 실패했습니다."), req.url),
+
+      return redirect303(
+        req,
+        toFailUrl("AUTH_FAILED", authResultMsg || "인증 결제에 실패했습니다."),
       );
     }
 
@@ -207,9 +325,7 @@ async function handleNiceReturn(req: Request) {
           },
         },
       );
-      return NextResponse.redirect(
-        new URL(toFailUrl("AUTH_FAILED", "인증 응답 필수값 검증에 실패했습니다."), req.url),
-      );
+      return redirect303(req, toFailUrl("AUTH_FAILED", "인증 응답 필수값 검증에 실패했습니다."));
     }
 
     if (
@@ -231,17 +347,28 @@ async function handleNiceReturn(req: Request) {
           },
         },
       );
-      return NextResponse.redirect(
-        new URL(toFailUrl("AMOUNT_MISMATCH", "결제 금액 검증에 실패했습니다."), req.url),
-      );
+      return redirect303(req, toFailUrl("AMOUNT_MISMATCH", "결제 금액 검증에 실패했습니다."));
     }
 
     const { clientKey, secretKey } = getApproveCredentials();
     const approveApiBase = getApproveApiBase();
+
     if (!clientKey || !secretKey) {
-      return NextResponse.redirect(
-        new URL(toFailUrl("APPROVE_FAILED", "결제 승인 설정이 올바르지 않습니다."), req.url),
+      await col.updateOne(
+        { _id: session._id },
+        {
+          $set: {
+            status: "failed",
+            failureStage: "approve_payment",
+            failureCode: "APPROVE_FAILED",
+            failureMessage: "결제 승인 설정이 올바르지 않습니다.",
+            niceAuthRaw: raw,
+            updatedAt: new Date(),
+          },
+        },
       );
+
+      return redirect303(req, toFailUrl("APPROVE_FAILED", "결제 승인 설정이 올바르지 않습니다."));
     }
 
     let approvedRaw = session.niceApprovedRaw;
@@ -286,11 +413,9 @@ async function handleNiceReturn(req: Request) {
             },
           },
         );
-        return NextResponse.redirect(
-          new URL(
-            toFailUrl("APPROVE_FAILED", error?.message || "승인 처리에 실패했습니다."),
-            req.url,
-          ),
+        return redirect303(
+          req,
+          toFailUrl("APPROVE_FAILED", error?.message || "승인 처리에 실패했습니다."),
         );
       }
     }
@@ -318,7 +443,7 @@ async function handleNiceReturn(req: Request) {
           },
         },
       );
-      return NextResponse.redirect(new URL(toFailUrl("APPROVE_FAILED", resultMsg), req.url));
+      return redirect303(req, toFailUrl("APPROVE_FAILED", resultMsg));
     }
     console.info("[nicepay][flow]", {
       stage: "approve_success",
@@ -517,6 +642,57 @@ async function handleNiceReturn(req: Request) {
       }
       if (!orderRes.ok || !orderJson?.orderId) {
         const failureMessage = orderJson?.error ?? "주문 생성에 실패했습니다.";
+        const recoveredOrder = await db.collection("orders").findOne(
+          { idemKey },
+          {
+            projection: {
+              _id: 1,
+            },
+          },
+        );
+
+        if (recoveredOrder?._id) {
+          const recoveredMongoOrderId = String(recoveredOrder._id);
+
+          console.warn("[nicepay][flow]", {
+            stage: "recover_existing_order_before_auto_cancel",
+            source: "nicepay_return",
+            tid,
+            orderId,
+            amount,
+            mongoOrderId: recoveredMongoOrderId,
+            failureReason: orderJson?.code || orderJson?.error || "unknown_create_order_failure",
+          });
+
+          await col.updateOne(
+            { _id: session._id },
+            {
+              $set: {
+                status: "approved",
+                mongoOrderId: recoveredMongoOrderId,
+                niceAuthRaw: raw,
+                niceApprovedRaw: approvedRaw,
+                confirmedPaymentSummary: {
+                  orderId,
+                  method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
+                  totalAmount: amount,
+                  approvedAt: new Date(),
+                },
+                updatedAt: new Date(),
+              },
+              $unset: {
+                failureStage: "",
+                failureCode: "",
+                failureMessage: "",
+              },
+            },
+          );
+
+          return redirect303(
+            req,
+            `/checkout/success?orderId=${encodeURIComponent(recoveredMongoOrderId)}`,
+          );
+        }
         console.error("[nicepay][flow]", {
           stage: "before_auto_cancel_after_create_order_failed",
           source: "nicepay_return",
@@ -546,13 +722,11 @@ async function handleNiceReturn(req: Request) {
           },
         );
         await tryAutoCancelAfterApprove(failureMessage, "create_order_after_approve");
-        return NextResponse.redirect(
-          new URL(
-            toFailUrl(
-              "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
-              "승인 후 주문 생성에 실패했습니다. 주문 내역을 확인해주세요.",
-            ),
-            req.url,
+        return redirect303(
+          req,
+          toFailUrl(
+            "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+            "승인 후 주문 생성에 실패했습니다. 주문 내역을 확인해주세요.",
           ),
         );
       }
@@ -704,9 +878,7 @@ async function handleNiceReturn(req: Request) {
         orderId,
         mongoOrderId,
       });
-      return NextResponse.redirect(
-        new URL(`/checkout/success?orderId=${encodeURIComponent(mongoOrderId)}`, req.url),
-      );
+      return redirect303(req, `/checkout/success?orderId=${encodeURIComponent(mongoOrderId)}`);
     } catch (downstreamError: any) {
       const failureMessage =
         downstreamError?.message || "승인 이후 내부 주문 후처리에 실패했습니다.";
@@ -717,23 +889,20 @@ async function handleNiceReturn(req: Request) {
         amount,
         message: failureMessage,
       });
+
       await tryAutoCancelAfterApprove(failureMessage, "create_order_after_approve");
-      return NextResponse.redirect(
-        new URL(
-          toFailUrl(
-            "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
-            "승인 후 내부 주문 처리에 실패했습니다. 결제 상태를 확인해주세요.",
-          ),
-          req.url,
+      return redirect303(
+        req,
+        toFailUrl(
+          "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+          "승인 후 내부 주문 처리에 실패했습니다. 결제 상태를 확인해주세요.",
         ),
       );
     }
   } catch (error: any) {
-    return NextResponse.redirect(
-      new URL(
-        toFailUrl("APPROVE_FAILED", error?.message || "결제 승인 처리 중 오류가 발생했습니다."),
-        req.url,
-      ),
+    return redirect303(
+      req,
+      toFailUrl("APPROVE_FAILED", error?.message || "결제 승인 처리 중 오류가 발생했습니다."),
     );
   }
 }
