@@ -6,11 +6,7 @@ export const metadata: Metadata = {
   title: "배송 정보 수정",
 };
 
-export default async function ShippingUpdatePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function ShippingUpdatePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   return <ShippingFormClient applicationId={id} />;

@@ -1,11 +1,7 @@
 // 대여 상태 전이 가드(멱등/일관성 보장용)
 // pending → paid → out → returned / canceled(종결)
 export type RentalStatus = "pending" | "paid" | "out" | "returned" | "canceled";
-export type ShippingStatus =
-  | "none"
-  | "outbound-set"
-  | "return-set"
-  | "both-set";
+export type ShippingStatus = "none" | "outbound-set" | "return-set" | "both-set";
 
 // 전이 가능한 상태맵
 const FLOW: Record<RentalStatus, RentalStatus[]> = {

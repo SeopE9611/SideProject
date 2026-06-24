@@ -5,11 +5,7 @@
  *  stringingApplicationId?: string | null,
  * }} params
  */
-export function buildCheckoutSuccessLinks({
-  accessSub,
-  orderId,
-  stringingApplicationId,
-}) {
+export function buildCheckoutSuccessLinks({ accessSub, orderId, stringingApplicationId }) {
   const isLoggedIn = Boolean(accessSub);
   const normalizedApplicationId =
     typeof stringingApplicationId === "string" && stringingApplicationId.trim()
@@ -18,9 +14,7 @@ export function buildCheckoutSuccessLinks({
 
   return {
     isLoggedIn,
-    orderDetailHref: isLoggedIn
-      ? "/mypage"
-      : `/order-lookup/details/${orderId}`,
+    orderDetailHref: isLoggedIn ? "/mypage" : `/order-lookup/details/${orderId}`,
     stringingApplicationHref:
       isLoggedIn && normalizedApplicationId
         ? `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(normalizedApplicationId)}&from=orders`

@@ -27,8 +27,7 @@ function safeVerifyAccessToken(token?: string | null) {
 
 function getApplicationLines(stringDetails: any): any[] {
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
-  if (Array.isArray(stringDetails?.racketLines))
-    return stringDetails.racketLines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
   return [];
 }
 
@@ -54,10 +53,7 @@ function getTensionSummary(lines: any[]): string | null {
   return set.length ? set.join(", ") : null;
 }
 
-export async function GET(
-  _: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // 운영 정책: 비회원 주문을 받지 않는 경우(off)에는 "비회원 주문 조회/상세"도 중단
     // 주문 존재 여부를 외부에 노출하지 않기 위해 404로 통일.
@@ -72,9 +68,7 @@ export async function GET(
 
     // 요청된 주문 ID로 주문 조회
     const { id } = await params;
-    const order = await db
-      .collection("orders")
-      .findOne({ _id: new ObjectId(id) });
+    const order = await db.collection("orders").findOne({ _id: new ObjectId(id) });
 
     if (!order) {
       return NextResponse.json(
@@ -90,10 +84,7 @@ export async function GET(
     // 보호 로직: 회원 주문일 경우, 로그인된 사용자만 접근 가능
     if (order.userId) {
       if (!payload || payload.sub !== order.userId.toString()) {
-        return NextResponse.json(
-          { success: false, error: "권한이 없습니다." },
-          { status: 403 },
-        );
+        return NextResponse.json({ success: false, error: "권한이 없습니다." }, { status: 403 });
       }
     }
 
@@ -109,18 +100,10 @@ export async function GET(
     const stringingApplications = apps.map((app: any) => {
       const lines = getApplicationLines(app?.stringDetails);
       const stringNames = Array.from(
-        new Set(
-          lines
-            .map((line: any) => String(line?.stringName ?? "").trim())
-            .filter(Boolean),
-        ),
+        new Set(lines.map((line: any) => String(line?.stringName ?? "").trim()).filter(Boolean)),
       );
-      const preferredDate = String(
-        app?.stringDetails?.preferredDate ?? "",
-      ).trim();
-      const preferredTime = String(
-        app?.stringDetails?.preferredTime ?? "",
-      ).trim();
+      const preferredDate = String(app?.stringDetails?.preferredDate ?? "").trim();
+      const preferredTime = String(app?.stringDetails?.preferredTime ?? "").trim();
       return {
         id: app._id?.toString(),
         status: app.status ?? "draft",
@@ -130,9 +113,7 @@ export async function GET(
         tensionSummary: getTensionSummary(lines),
         stringNames,
         reservationLabel:
-          preferredDate && preferredTime
-            ? `${preferredDate} ${preferredTime}`
-            : null,
+          preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
       };
     });
 
@@ -140,9 +121,7 @@ export async function GET(
       stringingApplications
         .filter((app) => app.id)
         .sort(
-          (a, b) =>
-            new Date(b.createdAt ?? 0).getTime() -
-            new Date(a.createdAt ?? 0).getTime(),
+          (a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime(),
         )[0] ?? null;
 
     const normalizedStringingApplicationId =
@@ -165,9 +144,6 @@ export async function GET(
     });
   } catch (err) {
     console.error("[GUEST_ORDER_DETAIL_ERROR]", err);
-    return NextResponse.json(
-      { success: false, error: "서버 오류" },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: "서버 오류" }, { status: 500 });
   }
 }

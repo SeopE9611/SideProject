@@ -36,10 +36,7 @@ function safeVerifyAccessToken(token?: string | null) {
  * - 운송장(배송정보) 입력 전까지만 철회 가능.
  * - 주문 소유자 또는 관리자만 호출 가능.
  */
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
@@ -83,8 +80,7 @@ export async function POST(
       .filter(Boolean);
 
     const isOwner = existing.userId && user.sub === existing.userId.toString();
-    const isAdmin =
-      user.role === "admin" || (user.email && adminList.includes(user.email));
+    const isAdmin = user.role === "admin" || (user.email && adminList.includes(user.email));
 
     // 비회원 주문(guest)의 경우 관리자만 취소 요청 철회 가능
     if (existing.userId ? !(isOwner || isAdmin) : !isAdmin) {
@@ -95,11 +91,7 @@ export async function POST(
 
     // 2-1) 이미 취소/환불된 주문이면 철회 자체가 의미 없음
     if (existing.status === "취소" || existing.status === "환불") {
-      return jsonError(
-        400,
-        "이미 취소되었거나 환불된 주문입니다.",
-        "ALREADY_CLOSED",
-      );
+      return jsonError(400, "이미 취소되었거나 환불된 주문입니다.", "ALREADY_CLOSED");
     }
 
     // 2-2) 운송장(배송정보)이 이미 입력된 경우 철회 불가
@@ -146,13 +138,10 @@ export async function POST(
     };
 
     // ───────── 5) DB 업데이트 (경합 방어: requested 상태일 때만 업데이트) ─────────
-    const result = await orders.updateOne(
-      { _id, "cancelRequest.status": "requested" },
-      {
-        $set: { cancelRequest: updatedCancelRequest, updatedAt: now },
-        $push: { history: historyEntry },
-      } as any,
-    );
+    const result = await orders.updateOne({ _id, "cancelRequest.status": "requested" }, {
+      $set: { cancelRequest: updatedCancelRequest, updatedAt: now },
+      $push: { history: historyEntry },
+    } as any);
 
     if (result.matchedCount === 0) {
       return jsonError(
@@ -188,10 +177,7 @@ export async function POST(
         req,
       );
     } catch (error) {
-      console.error(
-        "[orders/cancel-request-withdraw] appendAudit failed",
-        error,
-      );
+      console.error("[orders/cancel-request-withdraw] appendAudit failed", error);
     }
 
     await recordCancelRefundSignal(db, {

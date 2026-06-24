@@ -38,8 +38,7 @@ export async function proxyToLegacyAdminRoute(
   return new NextResponse(text, {
     status: res.status,
     headers: {
-      "content-type":
-        res.headers.get("content-type") ?? "application/json; charset=utf-8",
+      "content-type": res.headers.get("content-type") ?? "application/json; charset=utf-8",
     },
   });
 }

@@ -91,15 +91,9 @@ export async function readCancelRequestError(
 
   const fieldErrors = (payload?.fieldErrors ?? {}) as RefundAccountFieldErrors;
   const firstFieldMessage =
-    fieldErrors.bank?.[0] ||
-    fieldErrors.account?.[0] ||
-    fieldErrors.holder?.[0];
+    fieldErrors.bank?.[0] || fieldErrors.account?.[0] || fieldErrors.holder?.[0];
   const message =
-    firstFieldMessage ||
-    payload?.message ||
-    payload?.detail ||
-    payload?.error ||
-    fallback;
+    firstFieldMessage || payload?.message || payload?.detail || payload?.error || fallback;
 
   return {
     message,

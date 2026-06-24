@@ -18,18 +18,13 @@ export async function GET() {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("accessToken")?.value;
-    if (!token)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const user = verifyAccessToken(token);
-    if (!user)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const userId = String((user as any).sub ?? "");
     if (!ObjectId.isValid(userId))
-      return NextResponse.json(
-        { error: "Invalid token payload" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid token payload" }, { status: 400 });
 
     const client = await clientPromise;
     const db = client.db();
@@ -129,8 +124,7 @@ export async function GET() {
         const orderStatus = String(order.status ?? "").trim();
 
         // 사용자 화면에서는 운영/결제 상태를 단순화해 이해 가능한 상태로 보여준다.
-        let status: "pending_payment" | "pending_activation" | "cancelled" =
-          "pending_activation";
+        let status: "pending_payment" | "pending_activation" | "cancelled" = "pending_activation";
         if (paymentStatus === "결제대기") status = "pending_payment";
         else if (
           paymentStatus === "결제취소" ||

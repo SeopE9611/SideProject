@@ -4,10 +4,7 @@ import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAudit } from "@/lib/audit";
 import { offlineCustomerCreateSchema } from "@/lib/offline/validators";
-import {
-  buildCustomerSearchFilter,
-  sanitizeCustomer,
-} from "@/lib/offline/offline.repository";
+import { buildCustomerSearchFilter, sanitizeCustomer } from "@/lib/offline/offline.repository";
 import { normalizeEmail, normalizePhone } from "@/lib/offline/normalizers";
 
 export async function GET(req: Request) {

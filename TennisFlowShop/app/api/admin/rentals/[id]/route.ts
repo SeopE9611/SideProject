@@ -54,8 +54,7 @@ function normalizeShippingSide(side: any) {
 
 function getApplicationLines(stringDetails: any): any[] {
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
-  if (Array.isArray(stringDetails?.racketLines))
-    return stringDetails.racketLines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
   return [];
 }
 
@@ -81,22 +80,17 @@ function getTensionSummary(lines: any[]): string | null {
   return set.length ? set.join(", ") : null;
 }
 
-function normalizeServicePickupMethod(
-  v: any,
-): "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT" | null {
+function normalizeServicePickupMethod(v: any): "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT" | null {
   const raw = String(v ?? "")
     .trim()
     .toUpperCase();
-  if (raw === "SELF_SEND" || raw === "COURIER_VISIT" || raw === "SHOP_VISIT")
-    return raw;
+  if (raw === "SELF_SEND" || raw === "COURIER_VISIT" || raw === "SHOP_VISIT") return raw;
   if (raw === "DELIVERY") return "SELF_SEND";
   if (raw === "PICKUP") return "SHOP_VISIT";
   return null;
 }
 
-function getPickupMethodLabel(
-  method: "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT" | null,
-): string {
+function getPickupMethodLabel(method: "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT" | null): string {
   if (method === "SHOP_VISIT") return "방문 수령";
   if (method === "COURIER_VISIT") return "자가 발송(택배)";
   return "택배 발송";
@@ -109,10 +103,7 @@ function maskName(name?: string) {
   return name.slice(0, -1).replace(/./g, "•") + name.slice(-1);
 }
 
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!("ok" in guard) || !guard.ok) return guard.res;
   const db = guard.db;
@@ -122,9 +113,7 @@ export async function GET(
     return NextResponse.json({ message: "BAD_ID" }, { status: 400 });
   }
 
-  const doc = await db
-    .collection("rental_orders")
-    .findOne({ _id: new ObjectId(id) });
+  const doc = await db.collection("rental_orders").findOne({ _id: new ObjectId(id) });
   if (!doc) return NextResponse.json({ message: "Not Found" }, { status: 404 });
 
   const latestHistory = await db
@@ -135,8 +124,7 @@ export async function GET(
   let user: { name?: string; email?: string; phone?: string } | null = null;
   if (doc.userId) {
     const u = await db.collection("users").findOne({ _id: doc.userId });
-    if (u)
-      user = { name: u.name ?? "", email: u.email ?? "", phone: u.phone ?? "" };
+    if (u) user = { name: u.name ?? "", email: u.email ?? "", phone: u.phone ?? "" };
   }
 
   // 환불계좌(관리자 전용, 마스킹)
@@ -149,9 +137,7 @@ export async function GET(
     : null;
 
   const paymentMeta = normalizeRentalPaymentMeta(doc);
-  const servicePickupMethod = normalizeServicePickupMethod(
-    (doc as any).servicePickupMethod,
-  );
+  const servicePickupMethod = normalizeServicePickupMethod((doc as any).servicePickupMethod);
 
   let linkedApplicationStatus: string | null = null;
   let linkedApplicationReceptionLabel: string | null = null;
@@ -171,8 +157,7 @@ export async function GET(
     { rentalId: id },
     { paymentSource: `rental:${id}` },
   ];
-  if (applicationObjectId)
-    applicationLinks.unshift({ _id: applicationObjectId });
+  if (applicationObjectId) applicationLinks.unshift({ _id: applicationObjectId });
 
   const linkedApp = await db.collection("stringing_applications").findOne(
     { $or: applicationLinks },
@@ -190,13 +175,10 @@ export async function GET(
       },
     },
   );
-  linkedApplicationStatus =
-    typeof linkedApp?.status === "string" ? linkedApp.status : null;
+  linkedApplicationStatus = typeof linkedApp?.status === "string" ? linkedApp.status : null;
   if (linkedApp) {
     const lines = getApplicationLines((linkedApp as any).stringDetails);
-    linkedApplicationReceptionLabel = getReceptionLabel(
-      (linkedApp as any).collectionMethod,
-    );
+    linkedApplicationReceptionLabel = getReceptionLabel((linkedApp as any).collectionMethod);
     linkedApplicationRacketCount = lines.length;
     linkedApplicationTensionSummary = getTensionSummary(lines);
     linkedApplicationStringNames = getStringNameCandidates(
@@ -204,23 +186,15 @@ export async function GET(
       (linkedApp as any).stringNames,
       (linkedApp as any).applicationSummary?.stringNames,
     );
-    const preferredDate = String(
-      (linkedApp as any)?.stringDetails?.preferredDate ?? "",
-    ).trim();
-    const preferredTime = String(
-      (linkedApp as any)?.stringDetails?.preferredTime ?? "",
-    ).trim();
+    const preferredDate = String((linkedApp as any)?.stringDetails?.preferredDate ?? "").trim();
+    const preferredTime = String((linkedApp as any)?.stringDetails?.preferredTime ?? "").trim();
     linkedApplicationReservationLabel =
-      preferredDate && preferredTime
-        ? `${preferredDate} ${preferredTime}`
-        : null;
+      preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null;
     linkedApplication = {
       id: String(linkedApp._id),
       status: linkedApplicationStatus,
       paymentSource: (linkedApp as any).paymentSource ?? null,
-      rentalId: (linkedApp as any).rentalId
-        ? String((linkedApp as any).rentalId)
-        : null,
+      rentalId: (linkedApp as any).rentalId ? String((linkedApp as any).rentalId) : null,
       requirements: (linkedApp as any).requirements ?? null,
       selectedGauge: (linkedApp as any)?.meta?.selectedGauge ?? null,
       selectedColor:
@@ -242,8 +216,7 @@ export async function GET(
     brand: doc.brand,
     model: doc.model,
     days: doc.days,
-    status:
-      typeof doc.status === "string" ? doc.status.toLowerCase() : doc.status,
+    status: typeof doc.status === "string" ? doc.status.toLowerCase() : doc.status,
     amount: doc.amount, // { deposit, fee, stringPrice?, stringingFee?, total }
     createdAt: doc.createdAt,
     outAt: doc.outAt ?? null,
@@ -254,8 +227,7 @@ export async function GET(
     // 대여 기반 교체 서비스 신청서 연결 정보 (있으면 관리자 상세에서 CTA 노출 가능)
     isStringServiceApplied: !!(doc as any).isStringServiceApplied,
     stringing: (doc as any).stringing ?? null,
-    stringingApplicationId:
-      linkedApplication?.id ?? (doc as any).stringingApplicationId ?? null,
+    stringingApplicationId: linkedApplication?.id ?? (doc as any).stringingApplicationId ?? null,
     stringingApplicationStatus: linkedApplicationStatus,
     linkedStringingApplication: linkedApplication,
     stringingReceptionLabel: linkedApplicationReceptionLabel,
@@ -291,12 +263,8 @@ export async function GET(
       return: normalizeShippingSide(doc.shipping?.return),
     },
     cancelRequest: doc.cancelRequest ?? null, // 취소 요청 정보(있으면 그대로, 없으면 null)
-    stockDeduction:
-      (doc as any).stockDeduction ??
-      (doc as any).stringing?.stockDeduction ??
-      null,
-    stockRestore:
-      (doc as any).stockRestore ?? (doc as any).stringing?.stockRestore ?? null,
+    stockDeduction: (doc as any).stockDeduction ?? (doc as any).stringing?.stockDeduction ?? null,
+    stockRestore: (doc as any).stockRestore ?? (doc as any).stringing?.stockRestore ?? null,
     latestHistory: latestHistory
       ? {
           action: latestHistory.action ?? null,

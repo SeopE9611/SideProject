@@ -87,14 +87,8 @@ export async function acquireAdminExecutionLock(params: AcquireLockParams) {
   return { ok: false as const };
 }
 
-export async function releaseAdminExecutionLock(
-  db: Db,
-  lockKey: string,
-  owner: string,
-) {
-  await db
-    .collection<AdminExecutionLockDoc>(LOCK_COLLECTION)
-    .deleteOne({ _id: lockKey, owner });
+export async function releaseAdminExecutionLock(db: Db, lockKey: string, owner: string) {
+  await db.collection<AdminExecutionLockDoc>(LOCK_COLLECTION).deleteOne({ _id: lockKey, owner });
   logInfo({
     msg: "admin.execution_lock.released",
     userId: owner,

@@ -1,13 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ArrowLeft,
-  Calendar,
-  Eye,
-  MessageSquare,
-  Settings,
-  User,
-} from "lucide-react";
+import { ArrowLeft, Calendar, Eye, MessageSquare, Settings, User } from "lucide-react";
 import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,9 +47,7 @@ function normalizeBoardIdentifier(id: string) {
   }
 }
 
-function getStatusVariant(
-  status: string,
-): "success" | "warning" | "destructive" {
+function getStatusVariant(status: string): "success" | "warning" | "destructive" {
   switch (status) {
     case "public":
       return "success";
@@ -122,11 +113,7 @@ function formatDate(dateValue?: string | Date) {
   }).format(date);
 }
 
-export default async function BoardPostDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function BoardPostDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const boardId = normalizeBoardIdentifier(id);
 
@@ -213,15 +200,9 @@ export default async function BoardPostDetailPage({
                   <Badge className={getBoardTypeColor(String(post.type ?? ""))}>
                     {getBoardTypeName(String(post.type ?? ""))}
                   </Badge>
-                  <Badge variant={getStatusVariant(postStatus)}>
-                    {getStatusName(postStatus)}
-                  </Badge>
-                  {!!post.category && (
-                    <Badge variant="outline">{post.category}</Badge>
-                  )}
-                  {post.isPinned && (
-                    <Badge variant="secondary">상단 고정</Badge>
-                  )}
+                  <Badge variant={getStatusVariant(postStatus)}>{getStatusName(postStatus)}</Badge>
+                  {!!post.category && <Badge variant="outline">{post.category}</Badge>}
+                  {post.isPinned && <Badge variant="secondary">상단 고정</Badge>}
                 </div>
                 <CardTitle className="text-2xl font-bold text-foreground">
                   {post.title || "(제목 없음)"}
@@ -244,9 +225,7 @@ export default async function BoardPostDetailPage({
                   <User className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none text-foreground">
-                      {post.authorDisplayName ||
-                        post.authorNickname ||
-                        "작성자 미상"}
+                      {post.authorDisplayName || post.authorNickname || "작성자 미상"}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {post.authorNickname || post.authorId || "-"}
@@ -256,31 +235,21 @@ export default async function BoardPostDetailPage({
                 <div className="flex items-center p-3 bg-card rounded-lg">
                   <Calendar className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">
-                      작성일
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatDate(post.createdAt)}
-                    </p>
+                    <p className="text-sm font-medium leading-none text-foreground">작성일</p>
+                    <p className="text-sm text-muted-foreground">{formatDate(post.createdAt)}</p>
                   </div>
                 </div>
                 <div className="flex items-center p-3 bg-card rounded-lg">
                   <Eye className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">
-                      조회수
-                    </p>
-                    <p className="text-sm text-primary font-semibold">
-                      {Number(post.views ?? 0)}
-                    </p>
+                    <p className="text-sm font-medium leading-none text-foreground">조회수</p>
+                    <p className="text-sm text-primary font-semibold">{Number(post.views ?? 0)}</p>
                   </div>
                 </div>
                 <div className="flex items-center p-3 bg-card rounded-lg">
                   <MessageSquare className="mr-3 h-4 w-4 text-primary" />
                   <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">
-                      댓글
-                    </p>
+                    <p className="text-sm font-medium leading-none text-foreground">댓글</p>
                     <p className="text-sm text-primary font-semibold">
                       {Number(post.commentsCount ?? 0)}개
                     </p>

@@ -84,12 +84,10 @@ describe("Boards/Community 리스트 쿼리 계약", () => {
           expect(communityRes.status).to.eq(200);
           expect(communityRes.body).to.have.property("ok", true);
 
-          const boardIds = (boardsRes.body.items as Array<{ id: string }>).map(
+          const boardIds = (boardsRes.body.items as Array<{ id: string }>).map((item) => item.id);
+          const communityIds = (communityRes.body.items as Array<{ id: string }>).map(
             (item) => item.id,
           );
-          const communityIds = (
-            communityRes.body.items as Array<{ id: string }>
-          ).map((item) => item.id);
 
           expect(boardIds).to.deep.equal(communityIds);
           expect(boardsRes.body.total).to.eq(communityRes.body.total);

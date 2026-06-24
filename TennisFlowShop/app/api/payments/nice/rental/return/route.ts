@@ -34,20 +34,14 @@ function toAmount(value: string) {
   return Number.isFinite(amount) ? amount : 0;
 }
 
-function toFailUrl(
-  code: string,
-  message?: string,
-  options?: { racketId?: string },
-) {
+function toFailUrl(code: string, message?: string, options?: { racketId?: string }) {
   const qs = new URLSearchParams({ code });
   if (message) qs.set("message", message);
   if (options?.racketId) qs.set("racketId", options.racketId);
   return `/rentals/nice/fail?${qs.toString()}`;
 }
 
-async function parseRequestPayload(
-  req: Request,
-): Promise<Record<string, string>> {
+async function parseRequestPayload(req: Request): Promise<Record<string, string>> {
   const contentType = req.headers.get("content-type") || "";
   if (
     contentType.includes("application/x-www-form-urlencoded") ||
@@ -55,27 +49,15 @@ async function parseRequestPayload(
   ) {
     const formData = await req.formData();
     const obj: Record<string, string> = {};
-    for (const [k, v] of formData.entries())
-      obj[k] = typeof v === "string" ? v : "";
+    for (const [k, v] of formData.entries()) obj[k] = typeof v === "string" ? v : "";
     return obj;
   }
   if (contentType.includes("application/json")) {
-    const json = (await req.json().catch(() => ({}))) as Record<
-      string,
-      unknown
-    >;
-    return Object.entries(json).reduce<Record<string, string>>(
-      (acc, [k, v]) => {
-        acc[k] =
-          typeof v === "string"
-            ? v
-            : v === undefined || v === null
-              ? ""
-              : String(v);
-        return acc;
-      },
-      {},
-    );
+    const json = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+    return Object.entries(json).reduce<Record<string, string>>((acc, [k, v]) => {
+      acc[k] = typeof v === "string" ? v : v === undefined || v === null ? "" : String(v);
+      return acc;
+    }, {});
   }
   const text = await req.text().catch(() => "");
   if (text.trim()) return Object.fromEntries(new URLSearchParams(text));
@@ -94,10 +76,7 @@ function getApproveCredentials() {
 }
 
 function getApproveApiBase() {
-  return String(
-    process.env.NICEPAY_APPROVE_API_BASE ||
-      "https://api.nicepay.co.kr/v1/payments",
-  )
+  return String(process.env.NICEPAY_APPROVE_API_BASE || "https://api.nicepay.co.kr/v1/payments")
     .trim()
     .replace(/\/+$/, "");
 }
@@ -116,10 +95,7 @@ export async function POST(req: Request) {
 
     if (!orderId)
       return NextResponse.redirect(
-        new URL(
-          toFailUrl("INVALID_QUERY", "orderId 값이 누락되었습니다."),
-          req.url,
-        ),
+        new URL(toFailUrl("INVALID_QUERY", "orderId 값이 누락되었습니다."), req.url),
       );
 
     const client = await clientPromise;
@@ -129,37 +105,26 @@ export async function POST(req: Request) {
     const session = await col.findOne({ niceOrderId: orderId });
     if (!session)
       return NextResponse.redirect(
-        new URL(
-          toFailUrl("SESSION_NOT_FOUND", "결제 세션을 찾을 수 없습니다."),
-          req.url,
-        ),
+        new URL(toFailUrl("SESSION_NOT_FOUND", "결제 세션을 찾을 수 없습니다."), req.url),
       );
 
     const failOptions = {
       racketId:
-        typeof (session.rentalPayload as { racketId?: unknown } | undefined)
-          ?.racketId === "string"
+        typeof (session.rentalPayload as { racketId?: unknown } | undefined)?.racketId === "string"
           ? (session.rentalPayload as { racketId?: string }).racketId
           : undefined,
     };
     if (session.provider !== "nicepay" || session.flowType !== "rental_order") {
       return NextResponse.redirect(
         new URL(
-          toFailUrl(
-            "SESSION_NOT_FOUND",
-            "라켓 대여 Nice 결제 세션이 아닙니다.",
-            failOptions,
-          ),
+          toFailUrl("SESSION_NOT_FOUND", "라켓 대여 Nice 결제 세션이 아닙니다.", failOptions),
           req.url,
         ),
       );
     }
     if (session.status === "approved" && session.mongoOrderId) {
       return NextResponse.redirect(
-        new URL(
-          `/rentals/success?id=${encodeURIComponent(session.mongoOrderId)}`,
-          req.url,
-        ),
+        new URL(`/rentals/success?id=${encodeURIComponent(session.mongoOrderId)}`, req.url),
       );
     }
 
@@ -179,11 +144,7 @@ export async function POST(req: Request) {
       );
       return NextResponse.redirect(
         new URL(
-          toFailUrl(
-            "SESSION_EXPIRED",
-            "결제 세션 유효시간이 만료되었습니다.",
-            failOptions,
-          ),
+          toFailUrl("SESSION_EXPIRED", "결제 세션 유효시간이 만료되었습니다.", failOptions),
           req.url,
         ),
       );
@@ -204,9 +165,7 @@ export async function POST(req: Request) {
             failureCode: code,
             failureMessage: message,
             niceAuthRaw: raw,
-            ...(includeApproveRaw
-              ? { niceApprovedRaw: includeApproveRaw }
-              : {}),
+            ...(includeApproveRaw ? { niceApprovedRaw: includeApproveRaw } : {}),
             updatedAt: new Date(),
           },
         },
@@ -214,18 +173,10 @@ export async function POST(req: Request) {
     };
 
     if (authResultCode !== "0000") {
-      await markFailure(
-        "verify_auth",
-        "AUTH_FAILED",
-        authResultMsg || "인증 결제에 실패했습니다.",
-      );
+      await markFailure("verify_auth", "AUTH_FAILED", authResultMsg || "인증 결제에 실패했습니다.");
       return NextResponse.redirect(
         new URL(
-          toFailUrl(
-            "AUTH_FAILED",
-            authResultMsg || "인증 결제에 실패했습니다.",
-            failOptions,
-          ),
+          toFailUrl("AUTH_FAILED", authResultMsg || "인증 결제에 실패했습니다.", failOptions),
           req.url,
         ),
       );
@@ -240,18 +191,10 @@ export async function POST(req: Request) {
       !prepared.clientId ||
       clientId !== prepared.clientId
     ) {
-      await markFailure(
-        "verify_auth",
-        "AUTH_FAILED",
-        "인증 응답 필수값 검증에 실패했습니다.",
-      );
+      await markFailure("verify_auth", "AUTH_FAILED", "인증 응답 필수값 검증에 실패했습니다.");
       return NextResponse.redirect(
         new URL(
-          toFailUrl(
-            "AUTH_FAILED",
-            "인증 응답 필수값 검증에 실패했습니다.",
-            failOptions,
-          ),
+          toFailUrl("AUTH_FAILED", "인증 응답 필수값 검증에 실패했습니다.", failOptions),
           req.url,
         ),
       );
@@ -263,18 +206,10 @@ export async function POST(req: Request) {
       session.amount !== amount ||
       prepared.orderId !== orderId
     ) {
-      await markFailure(
-        "verify_auth",
-        "AMOUNT_MISMATCH",
-        "결제 금액 검증에 실패했습니다.",
-      );
+      await markFailure("verify_auth", "AMOUNT_MISMATCH", "결제 금액 검증에 실패했습니다.");
       return NextResponse.redirect(
         new URL(
-          toFailUrl(
-            "AMOUNT_MISMATCH",
-            "결제 금액 검증에 실패했습니다.",
-            failOptions,
-          ),
+          toFailUrl("AMOUNT_MISMATCH", "결제 금액 검증에 실패했습니다.", failOptions),
           req.url,
         ),
       );
@@ -283,18 +218,10 @@ export async function POST(req: Request) {
     const { clientKey, secretKey } = getApproveCredentials();
     const approveApiBase = getApproveApiBase();
     if (!clientKey || !secretKey) {
-      await markFailure(
-        "approve_payment",
-        "APPROVE_FAILED",
-        "결제 승인 설정이 올바르지 않습니다.",
-      );
+      await markFailure("approve_payment", "APPROVE_FAILED", "결제 승인 설정이 올바르지 않습니다.");
       return NextResponse.redirect(
         new URL(
-          toFailUrl(
-            "APPROVE_FAILED",
-            "결제 승인 설정이 올바르지 않습니다.",
-            failOptions,
-          ),
+          toFailUrl("APPROVE_FAILED", "결제 승인 설정이 올바르지 않습니다.", failOptions),
           req.url,
         ),
       );
@@ -317,11 +244,7 @@ export async function POST(req: Request) {
       );
       return NextResponse.redirect(
         new URL(
-          toFailUrl(
-            "APPROVE_FAILED",
-            error?.message || "승인 처리에 실패했습니다.",
-            failOptions,
-          ),
+          toFailUrl("APPROVE_FAILED", error?.message || "승인 처리에 실패했습니다.", failOptions),
           req.url,
         ),
       );
@@ -329,23 +252,14 @@ export async function POST(req: Request) {
 
     const approveResultCode = pick(approvedRaw, "resultCode", "ResultCode");
     if (approveResultCode !== "0000") {
-      const message =
-        pick(approvedRaw, "resultMsg", "ResultMsg") ||
-        "승인 처리에 실패했습니다.";
-      await markFailure(
-        "approve_payment",
-        "APPROVE_FAILED",
-        message,
-        approvedRaw,
-      );
+      const message = pick(approvedRaw, "resultMsg", "ResultMsg") || "승인 처리에 실패했습니다.";
+      await markFailure("approve_payment", "APPROVE_FAILED", message, approvedRaw);
       return NextResponse.redirect(
         new URL(toFailUrl("APPROVE_FAILED", message, failOptions), req.url),
       );
     }
 
-    const rentalPayload = session.rentalPayload as
-      | RentalCreatePayload
-      | undefined;
+    const rentalPayload = session.rentalPayload as RentalCreatePayload | undefined;
     if (!rentalPayload?.racketId || !rentalPayload?.days) {
       await col.updateOne(
         { _id: session._id },
@@ -381,9 +295,7 @@ export async function POST(req: Request) {
         db,
         client,
         userObjectId:
-          session.userId && ObjectId.isValid(session.userId)
-            ? new ObjectId(session.userId)
-            : null,
+          session.userId && ObjectId.isValid(session.userId) ? new ObjectId(session.userId) : null,
         payload: {
           ...rentalPayload,
           payment: { method: "nicepay" },
@@ -394,13 +306,10 @@ export async function POST(req: Request) {
           paidAt: new Date(),
           paymentStatus: "결제완료",
           paymentInfo: {
-            ...(rentalPayloadAny?.paymentInfo &&
-            typeof rentalPayloadAny.paymentInfo === "object"
+            ...(rentalPayloadAny?.paymentInfo && typeof rentalPayloadAny.paymentInfo === "object"
               ? (rentalPayloadAny.paymentInfo as Record<string, unknown>)
               : {}),
-            originalTotal: Number(
-              rentalPayloadAny?.originalTotal ?? session.amount ?? amount ?? 0,
-            ),
+            originalTotal: Number(rentalPayloadAny?.originalTotal ?? session.amount ?? amount ?? 0),
             pointsUsed: Number(rentalPayloadAny?.pointsToUse ?? 0),
             deposit: Number(rentalPayloadAny?.amount?.deposit ?? 0),
             rentalFee: Number(rentalPayloadAny?.amount?.fee ?? 0),
@@ -411,9 +320,7 @@ export async function POST(req: Request) {
             provider: "nicepay",
             method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
             tid,
-            approvedAt:
-              pick(approvedRaw, "approvedAt", "authDate") ||
-              new Date().toISOString(),
+            approvedAt: pick(approvedRaw, "approvedAt", "authDate") || new Date().toISOString(),
             easyPayProvider: easyPayProvider || undefined,
             cardDisplayName: card?.displayName ?? undefined,
             cardCompany: card?.issuerName ?? card?.acquirerName ?? undefined,
@@ -440,10 +347,7 @@ export async function POST(req: Request) {
         },
       );
 
-      const redirectUrl = new URL(
-        `/rentals/success?id=${encodeURIComponent(rental.id)}`,
-        req.url,
-      );
+      const redirectUrl = new URL(`/rentals/success?id=${encodeURIComponent(rental.id)}`, req.url);
       const res = NextResponse.redirect(redirectUrl);
       if (!session.userId) {
         const token = signOrderAccessToken({ rentalId: rental.id });
@@ -457,8 +361,7 @@ export async function POST(req: Request) {
       }
       return res;
     } catch (orderError: any) {
-      const failureMessage =
-        orderError?.message || "결제 승인 후 주문 생성에 실패했습니다.";
+      const failureMessage = orderError?.message || "결제 승인 후 주문 생성에 실패했습니다.";
       try {
         const canceled = await cancelNicePaymentByTid({
           tid,
@@ -508,12 +411,9 @@ export async function POST(req: Request) {
               niceAutoCancel: {
                 attemptedAt: new Date(),
                 resultCode: String(
-                  cancelError?.resultCode ||
-                    cancelError?.code ||
-                    "AUTO_CANCEL_REQUEST_ERROR",
+                  cancelError?.resultCode || cancelError?.code || "AUTO_CANCEL_REQUEST_ERROR",
                 ),
-                resultMsg:
-                  cancelError?.message || "자동 취소 중 오류가 발생했습니다.",
+                resultMsg: cancelError?.message || "자동 취소 중 오류가 발생했습니다.",
                 status: "failed",
               },
             },
@@ -522,11 +422,7 @@ export async function POST(req: Request) {
       }
       return NextResponse.redirect(
         new URL(
-          toFailUrl(
-            "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
-            failureMessage,
-            failOptions,
-          ),
+          toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", failureMessage, failOptions),
           req.url,
         ),
       );
@@ -534,10 +430,7 @@ export async function POST(req: Request) {
   } catch (error: any) {
     return NextResponse.redirect(
       new URL(
-        toFailUrl(
-          "SERVER_ERROR",
-          error?.message || "카드/간편결제 처리 중 오류가 발생했습니다.",
-        ),
+        toFailUrl("SERVER_ERROR", error?.message || "카드/간편결제 처리 중 오류가 발생했습니다."),
         req.url,
       ),
     );

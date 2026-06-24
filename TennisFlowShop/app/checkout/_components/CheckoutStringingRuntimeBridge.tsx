@@ -4,9 +4,7 @@ import type { ReactNode } from "react";
 
 import useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
 
-type CheckoutStringingServiceAdapter = ReturnType<
-  typeof useCheckoutStringingServiceAdapter
->;
+type CheckoutStringingServiceAdapter = ReturnType<typeof useCheckoutStringingServiceAdapter>;
 type CheckoutStringingRuntimeBridgeProps = Parameters<
   typeof useCheckoutStringingServiceAdapter
 >[0] & {

@@ -52,9 +52,7 @@ export function createPasswordResetToken(userId: string, email: string) {
  * null을 반환하는 형태로 만들어 두면,
  * API 쪽에서 try/catch를 반복하지 않고 깔끔하게 처리할 수 있습니다.
  */
-export function verifyPasswordResetToken(
-  token: string,
-): PasswordResetTokenPayload | null {
+export function verifyPasswordResetToken(token: string): PasswordResetTokenPayload | null {
   try {
     const decoded = jwt.verify(token, getRecoveryTokenSecret());
 

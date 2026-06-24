@@ -1,5 +1,4 @@
-const DELIVERY_TRACKER_GRAPHQL_ENDPOINT =
-  "https://apis.tracker.delivery/graphql";
+const DELIVERY_TRACKER_GRAPHQL_ENDPOINT = "https://apis.tracker.delivery/graphql";
 
 type DeliveryStatus = "배송준비중" | "배송중" | "배송완료" | "조회불가";
 
@@ -25,13 +24,7 @@ export type DeliveryTrackerSummarySuccess = {
 
 export type DeliveryTrackerSummaryFailure = {
   success: false;
-  errorCode:
-    | "NOT_FOUND"
-    | "BAD_REQUEST"
-    | "UNAUTHENTICATED"
-    | "FORBIDDEN"
-    | "INTERNAL"
-    | "UNKNOWN";
+  errorCode: "NOT_FOUND" | "BAD_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "INTERNAL" | "UNKNOWN";
   message: string;
   statusCode: number;
 };
@@ -100,8 +93,7 @@ function getDeliveryTrackerErrorInfo(payload: any): DeliveryTrackerErrorInfo {
       return {
         errorCode: "NOT_FOUND",
         statusCode: 404,
-        message:
-          "해당 운송장을 조회할 수 없습니다. 택배사 또는 운송장 번호를 확인해주세요.",
+        message: "해당 운송장을 조회할 수 없습니다. 택배사 또는 운송장 번호를 확인해주세요.",
       };
     case "BAD_REQUEST":
       return {
@@ -125,8 +117,7 @@ function getDeliveryTrackerErrorInfo(payload: any): DeliveryTrackerErrorInfo {
       return {
         errorCode: "INTERNAL",
         statusCode: 502,
-        message:
-          "배송조회 서비스 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+        message: "배송조회 서비스 내부 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
       };
     default:
       return {
@@ -181,13 +172,7 @@ export async function fetchDeliveryTrackerSummary(params: {
   clientSecret: string;
   carrierDisplayName?: string | null;
 }): Promise<DeliveryTrackerSummarySuccess | DeliveryTrackerSummaryFailure> {
-  const {
-    carrierId,
-    trackingNumber,
-    clientId,
-    clientSecret,
-    carrierDisplayName,
-  } = params;
+  const { carrierId, trackingNumber, clientId, clientSecret, carrierDisplayName } = params;
   const auth = `TRACKQL-API-KEY ${clientId}:${clientSecret}`;
 
   try {
@@ -210,8 +195,7 @@ export async function fetchDeliveryTrackerSummary(params: {
         success: false,
         errorCode: response.status === 401 ? "UNAUTHENTICATED" : "UNKNOWN",
         statusCode: response.status,
-        message:
-          "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
+        message: "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
       };
     }
 
@@ -221,8 +205,7 @@ export async function fetchDeliveryTrackerSummary(params: {
         success: false,
         errorCode: "UNKNOWN",
         statusCode: 502,
-        message:
-          "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
+        message: "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
       };
     }
     if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
@@ -244,9 +227,7 @@ export async function fetchDeliveryTrackerSummary(params: {
     }
 
     const track = payload.data.track;
-    const stateId = track?.lastEvent?.status?.code
-      ? String(track.lastEvent.status.code)
-      : null;
+    const stateId = track?.lastEvent?.status?.code ? String(track.lastEvent.status.code) : null;
     const progresses = Array.isArray(track?.events?.edges)
       ? track.events.edges
           .map((edge: any) => edge?.node)
@@ -255,9 +236,7 @@ export async function fetchDeliveryTrackerSummary(params: {
           .reverse()
       : [];
 
-    const lastEvent = track?.lastEvent
-      ? normalizeProgress(track.lastEvent)
-      : null;
+    const lastEvent = track?.lastEvent ? normalizeProgress(track.lastEvent) : null;
 
     return {
       success: true,
@@ -265,9 +244,7 @@ export async function fetchDeliveryTrackerSummary(params: {
       carrierName: carrierDisplayName ? String(carrierDisplayName) : null,
       trackingNumber,
       stateId,
-      stateText: track?.lastEvent?.status?.name
-        ? String(track.lastEvent.status.name)
-        : null,
+      stateText: track?.lastEvent?.status?.name ? String(track.lastEvent.status.name) : null,
       displayStatus: normalizeDisplayStatus(stateId),
       linkUrl: buildDeliveryTrackerLink({
         clientId,
@@ -282,8 +259,7 @@ export async function fetchDeliveryTrackerSummary(params: {
       success: false,
       errorCode: "UNKNOWN",
       statusCode: 503,
-      message:
-        "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
+      message: "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
     };
   }
 }

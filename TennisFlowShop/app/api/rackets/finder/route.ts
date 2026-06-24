@@ -45,9 +45,7 @@ function buildGripSizeCandidates(gripSizes: string[]) {
     values.add(normalized.toLowerCase());
 
     // G1/G2/G3 value에 대응하는 화면 label도 검색 후보로 포함
-    const label = GRIP_SIZE_OPTIONS.find(
-      (option) => option.value === normalized,
-    )?.label;
+    const label = GRIP_SIZE_OPTIONS.find((option) => option.value === normalized)?.label;
     if (label) {
       values.add(label);
       values.add(label.replace(/\s+/g, ""));
@@ -77,13 +75,9 @@ function normalizeRental(r: any) {
   return {
     enabled,
     deposit: Number.isFinite(Number(r.deposit)) ? Number(r.deposit) : 0,
-    fee: feeOk
-      ? { d7: Number(fee.d7), d15: Number(fee.d15), d30: Number(fee.d30) }
-      : undefined,
+    fee: feeOk ? { d7: Number(fee.d7), d15: Number(fee.d15), d30: Number(fee.d30) } : undefined,
     // enabled=true인데 fee가 없으면, UI가 "대여 불가"로 떨어지도록 사유를 세팅
-    disabledReason: enabled
-      ? null
-      : (r.disabledReason ?? "대여 정보(요금)가 누락되었습니다."),
+    disabledReason: enabled ? null : (r.disabledReason ?? "대여 정보(요금)가 누락되었습니다."),
   };
 }
 
@@ -117,24 +111,19 @@ function resolveSort(sortKey: string | null): SortResolved {
   const key = (sortKey ?? "createdAt_desc").trim();
 
   // 기본: 최신순
-  if (key === "createdAt_desc")
-    return { key, kind: "find", sort: { createdAt: -1 } };
+  if (key === "createdAt_desc") return { key, kind: "find", sort: { createdAt: -1 } };
 
   // 가격 정렬(가격은 null 가능성이 거의 없으므로 find sort로 충분)
-  if (key === "price_asc")
-    return { key, kind: "find", sort: { price: 1, createdAt: -1 } };
-  if (key === "price_desc")
-    return { key, kind: "find", sort: { price: -1, createdAt: -1 } };
+  if (key === "price_asc") return { key, kind: "find", sort: { price: 1, createdAt: -1 } };
+  if (key === "price_desc") return { key, kind: "find", sort: { price: -1, createdAt: -1 } };
 
   // 스펙 정렬(특정 스펙이 null/누락인 라켓이 있을 수 있으므로 "null은 항상 아래"로 보내기 위해 aggregation 사용)
   if (key === "swingWeight_asc")
     return { key, kind: "agg", field: "spec.swingWeight", dir: 1 as const };
   if (key === "swingWeight_desc")
     return { key, kind: "agg", field: "spec.swingWeight", dir: -1 as const };
-  if (key === "weight_asc")
-    return { key, kind: "agg", field: "spec.weight", dir: 1 as const };
-  if (key === "weight_desc")
-    return { key, kind: "agg", field: "spec.weight", dir: -1 as const };
+  if (key === "weight_asc") return { key, kind: "agg", field: "spec.weight", dir: 1 as const };
+  if (key === "weight_desc") return { key, kind: "agg", field: "spec.weight", dir: -1 as const };
   if (key === "stiffnessRa_asc")
     return { key, kind: "agg", field: "spec.stiffnessRa", dir: 1 as const };
   if (key === "stiffnessRa_desc")
@@ -180,27 +169,12 @@ export async function GET(req: Request) {
 
   // numeric ranges
   const priceR = range(toNum(sp.get("minPrice")), toNum(sp.get("maxPrice")));
-  const headR = range(
-    toNum(sp.get("minHeadSize")),
-    toNum(sp.get("maxHeadSize")),
-  );
+  const headR = range(toNum(sp.get("minHeadSize")), toNum(sp.get("maxHeadSize")));
   const weightR = range(toNum(sp.get("minWeight")), toNum(sp.get("maxWeight")));
-  const balanceR = range(
-    toNum(sp.get("minBalance")),
-    toNum(sp.get("maxBalance")),
-  );
-  const lenR = range(
-    toNum(sp.get("minLengthIn")),
-    toNum(sp.get("maxLengthIn")),
-  );
-  const raR = range(
-    toNum(sp.get("minStiffnessRa")),
-    toNum(sp.get("maxStiffnessRa")),
-  );
-  const swR = range(
-    toNum(sp.get("minSwingWeight")),
-    toNum(sp.get("maxSwingWeight")),
-  );
+  const balanceR = range(toNum(sp.get("minBalance")), toNum(sp.get("maxBalance")));
+  const lenR = range(toNum(sp.get("minLengthIn")), toNum(sp.get("maxLengthIn")));
+  const raR = range(toNum(sp.get("minStiffnessRa")), toNum(sp.get("maxStiffnessRa")));
+  const swR = range(toNum(sp.get("minSwingWeight")), toNum(sp.get("maxSwingWeight")));
 
   // match
   const match: any = {

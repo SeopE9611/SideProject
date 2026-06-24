@@ -1,12 +1,6 @@
 import { NextResponse } from "next/server";
-import {
-  buildRevenueReport,
-  parseReportDate,
-} from "../_lib/buildRevenueReport";
-import {
-  buildRevenueReportCsv,
-  safeRevenueReportFilenameDate,
-} from "../_lib/revenueReportCsv";
+import { buildRevenueReport, parseReportDate } from "../_lib/buildRevenueReport";
+import { buildRevenueReportCsv, safeRevenueReportFilenameDate } from "../_lib/revenueReportCsv";
 import { requireAdmin } from "@/lib/admin.guard";
 import type { RevenueReportGroupBy } from "@/types/admin/reports";
 
@@ -19,29 +13,16 @@ export async function GET(req: Request) {
   const to = url.searchParams.get("to");
   const groupByParam = url.searchParams.get("groupBy");
 
-  if (
-    !from ||
-    !to ||
-    !parseReportDate(from, "from") ||
-    !parseReportDate(to, "to")
-  ) {
-    return NextResponse.json(
-      { message: "invalid date filter" },
-      { status: 400 },
-    );
+  if (!from || !to || !parseReportDate(from, "from") || !parseReportDate(to, "to")) {
+    return NextResponse.json({ message: "invalid date filter" }, { status: 400 });
   }
   if (groupByParam && groupByParam !== "day" && groupByParam !== "month") {
     return NextResponse.json({ message: "invalid groupBy" }, { status: 400 });
   }
 
-  const groupBy: RevenueReportGroupBy =
-    groupByParam === "month" ? "month" : "day";
+  const groupBy: RevenueReportGroupBy = groupByParam === "month" ? "month" : "day";
   const report = await buildRevenueReport(guard.db, { from, to, groupBy });
-  if (!report)
-    return NextResponse.json(
-      { message: "invalid date range" },
-      { status: 400 },
-    );
+  if (!report) return NextResponse.json({ message: "invalid date range" }, { status: 400 });
 
   const filename = `revenue-report-${safeRevenueReportFilenameDate(report.range.from)}-${safeRevenueReportFilenameDate(report.range.to)}-${groupBy}.csv`;
   return new Response(buildRevenueReportCsv(report), {

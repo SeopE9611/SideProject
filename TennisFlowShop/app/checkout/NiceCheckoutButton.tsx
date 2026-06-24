@@ -72,11 +72,9 @@ export default function NiceCheckoutButton({
             return;
           }
           existing.addEventListener("load", () => resolve(), { once: true });
-          existing.addEventListener(
-            "error",
-            () => reject(new Error("NICE_SCRIPT_LOAD_FAILED")),
-            { once: true },
-          );
+          existing.addEventListener("error", () => reject(new Error("NICE_SCRIPT_LOAD_FAILED")), {
+            once: true,
+          });
           return;
         }
         const script = document.createElement("script");
@@ -98,14 +96,10 @@ export default function NiceCheckoutButton({
       setScriptReady(false);
       const code = String(error?.message || "");
       if (code === "NICE_SCRIPT_LOAD_FAILED") {
-        setScriptError(
-          "카드/간편결제 모듈을 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.",
-        );
+        setScriptError("카드/간편결제 모듈을 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.");
         return;
       }
-      setScriptError(
-        "카드/간편결제창 준비 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
-      );
+      setScriptError("카드/간편결제창 준비 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
     });
 
     return () => {
@@ -131,14 +125,10 @@ export default function NiceCheckoutButton({
         body: JSON.stringify(payload),
       });
 
-      const prepJson = (await prepRes
-        .json()
-        .catch(() => null)) as NicePrepareResponse | null;
+      const prepJson = (await prepRes.json().catch(() => null)) as NicePrepareResponse | null;
       if (!prepRes.ok || !prepJson?.success || !prepJson?.nice) {
         onSuccessNavigationAbort?.();
-        throw new Error(
-          prepJson?.error || "카드/간편결제 준비에 실패했습니다.",
-        );
+        throw new Error(prepJson?.error || "카드/간편결제 준비에 실패했습니다.");
       }
 
       if (typeof window.AUTHNICE?.requestPay !== "function") {
@@ -175,9 +165,7 @@ export default function NiceCheckoutButton({
         buyerEmail: prepJson.nice.buyerEmail,
         fnError: (result: any) => {
           const msg = String(
-            result?.errorMsg ||
-              result?.message ||
-              "결제가 취소되었거나 실패했습니다.",
+            result?.errorMsg || result?.message || "결제가 취소되었거나 실패했습니다.",
           );
           setInlineError(msg);
           setLoading(false);
@@ -192,11 +180,7 @@ export default function NiceCheckoutButton({
 
   return (
     <div className="space-y-2 w-full">
-      <Button
-        onClick={handleClick}
-        className="w-full h-14 text-lg"
-        disabled={isDisabled}
-      >
+      <Button onClick={handleClick} className="w-full h-14 text-lg" disabled={isDisabled}>
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -9,16 +9,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNotificationList } from "@/lib/hooks/useNotificationList";
 import { showErrorToast } from "@/lib/toast";
 
-export function NotificationPanel({
-  enabled,
-  onClose,
-}: {
-  enabled: boolean;
-  onClose: () => void;
-}) {
+export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onClose: () => void }) {
   const router = useRouter();
-  const { items, unreadCount, status, markAsRead, markAllAsRead } =
-    useNotificationList({ enabled, limit: 10 });
+  const { items, unreadCount, status, markAsRead, markAllAsRead } = useNotificationList({
+    enabled,
+    limit: 10,
+  });
 
   const handleItemClick = async (id: string, href: string | null) => {
     try {
@@ -48,12 +44,7 @@ export function NotificationPanel({
             읽지 않은 알림 {unreadCount.toLocaleString()}개
           </p>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          disabled={unreadCount <= 0}
-          onClick={handleMarkAllAsRead}
-        >
+        <Button variant="ghost" size="sm" disabled={unreadCount <= 0} onClick={handleMarkAllAsRead}>
           모두 읽음
         </Button>
       </div>

@@ -19,11 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
-import {
-  adminFetcher,
-  adminMutator,
-  ensureAdminMutationSucceeded,
-} from "@/lib/admin/adminFetcher";
+import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
 import { formatKRWCard, formatKRWFull } from "@/lib/money";
@@ -66,11 +62,7 @@ import {
   prevMonthRange_KST,
 } from "./filters/settlementDateFilters";
 import { useInitialYyyymmFromQuery } from "./hooks/useInitialYyyymmFromQuery";
-import {
-  sortSettlementRows,
-  type SortDirection,
-  type SortField,
-} from "./table/settlementSort";
+import { sortSettlementRows, type SortDirection, type SortField } from "./table/settlementSort";
 import {
   buildAllSettlementSelection,
   getSettlementCacheKey,
@@ -79,19 +71,15 @@ import {
   validateYyyymmClient,
 } from "./utils/settlementClientTransforms";
 
-const settlementStatusToneMap: Record<
-  "checking" | "ok" | "stale",
-  BadgeSemanticTone
-> = {
+const settlementStatusToneMap: Record<"checking" | "ok" | "stale", BadgeSemanticTone> = {
   checking: "neutral",
   ok: "brand",
   stale: "danger",
 };
 
-const AdminConfirmDialog = dynamic(
-  () => import("@/components/admin/AdminConfirmDialog"),
-  { loading: () => null },
-);
+const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirmDialog"), {
+  loading: () => null,
+});
 
 export default function SettlementsClient() {
   const router = useRouter();
@@ -100,9 +88,7 @@ export default function SettlementsClient() {
   // ──────────────────────────────────────────────────────────
   // 상태
   // ──────────────────────────────────────────────────────────
-  const [yyyymm, setYyyymm] = useState<string>(() =>
-    fmtYMD_KST().slice(0, 7).replace("-", ""),
-  ); // KST 기준 초기 yyyymm
+  const [yyyymm, setYyyymm] = useState<string>(() => fmtYMD_KST().slice(0, 7).replace("-", "")); // KST 기준 초기 yyyymm
   const { data, mutate, isLoading } = useSWR<SettlementSnapshot[]>(
     "/api/admin/settlements",
     authenticatedSWRFetcher,
@@ -144,17 +130,13 @@ export default function SettlementsClient() {
 
   // 상태 배지
   const [staleMap, setStaleMap] = useState<Record<string, boolean>>({});
-  const [statusMap, setStatusMap] = useState<
-    Record<string, "ok" | "stale" | "checking">
-  >({});
+  const [statusMap, setStatusMap] = useState<Record<string, "ok" | "stale" | "checking">>({});
 
   // 전체 검증 로딩
   const [bulkChecking, setBulkChecking] = useState(false);
 
   // 체크박스 선택 상태 (스냅샷 관리 탭만 사용)
-  const [selectedSnapshots, setSelectedSnapshots] = useState<Set<string>>(
-    new Set(),
-  );
+  const [selectedSnapshots, setSelectedSnapshots] = useState<Set<string>>(new Set());
   const [selectedLive, setSelectedLive] = useState<boolean>(false);
 
   // 정렬 상태
@@ -181,16 +163,12 @@ export default function SettlementsClient() {
   });
   useEffect(() => {
     if (typeof window !== "undefined") {
-      window.localStorage.setItem(
-        "settlements.kpi.compact",
-        compact ? "1" : "0",
-      );
+      window.localStorage.setItem("settlements.kpi.compact", compact ? "1" : "0");
     }
   }, [compact]);
 
   // 공용 표시 함수
-  const displayKRW = (n: number) =>
-    compact ? formatKRWCard(n) : formatKRWFull(n);
+  const displayKRW = (n: number) => (compact ? formatKRWCard(n) : formatKRWFull(n));
 
   const renderOfflineAmountCard = (
     label: string,
@@ -208,12 +186,8 @@ export default function SettlementsClient() {
     return (
       <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
         <p className="text-xs font-semibold text-muted-foreground">{label}</p>
-        <p className={cn("mt-2 text-xl font-bold tabular-nums", toneClass)}>
-          {displayKRW(value)}
-        </p>
-        {sub ? (
-          <p className="mt-1 text-xs text-muted-foreground">{sub}</p>
-        ) : null}
+        <p className={cn("mt-2 text-xl font-bold tabular-nums", toneClass)}>{displayKRW(value)}</p>
+        {sub ? <p className="mt-1 text-xs text-muted-foreground">{sub}</p> : null}
       </div>
     );
   };
@@ -221,9 +195,7 @@ export default function SettlementsClient() {
   const renderOfflineReference = (offline?: OfflineSettlementReference) => {
     if (!offline) return null;
 
-    const methodLabels: Array<
-      [keyof OfflineSettlementReference["byMethod"], string]
-    > = [
+    const methodLabels: Array<[keyof OfflineSettlementReference["byMethod"], string]> = [
       ["cash", "현금"],
       ["card", "매장 카드"],
       ["bank_transfer", "계좌이체"],
@@ -236,14 +208,12 @@ export default function SettlementsClient() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-foreground">
-                  오프라인 매출 참고
-                </h3>
+                <h3 className="text-lg font-bold text-foreground">오프라인 매출 참고</h3>
                 <Badge variant="secondary">정산 지급액 미포함</Badge>
               </div>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                오프라인 매출은 현금/매장 카드/계좌이체 등으로 처리된 별도 운영
-                매출이며, 현재 온라인 PG 정산 지급액 계산에는 포함되지 않습니다.
+                오프라인 매출은 현금/매장 카드/계좌이체 등으로 처리된 별도 운영 매출이며, 현재
+                온라인 PG 정산 지급액 계산에는 포함되지 않습니다.
               </p>
             </div>
             <div className="rounded-lg border border-border bg-muted px-3 py-2 text-xs text-muted-foreground">
@@ -297,10 +267,7 @@ export default function SettlementsClient() {
               </h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {methodLabels.map(([key, label]) => (
-                  <div
-                    key={key}
-                    className="rounded-lg bg-card border border-border p-3"
-                  >
+                  <div key={key} className="rounded-lg bg-card border border-border p-3">
                     <p className="text-xs text-muted-foreground">{label}</p>
                     <p className="mt-1 font-bold tabular-nums text-foreground">
                       {displayKRW(offline.byMethod[key] || 0)}
@@ -313,18 +280,13 @@ export default function SettlementsClient() {
             <div className="rounded-xl border border-border bg-muted/30 p-4">
               <div className="flex items-center gap-2 mb-3">
                 <AlertTriangle className="w-4 h-4 text-primary" />
-                <h4 className="text-sm font-bold text-foreground">
-                  발급 보정 필요
-                </h4>
+                <h4 className="text-sm font-bold text-foreground">발급 보정 필요</h4>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-lg bg-card border border-border p-3">
                   <p className="text-xs text-muted-foreground">건수</p>
                   <p className="mt-1 font-bold tabular-nums text-foreground">
-                    {(
-                      offline.packageSales.issueFailedCount || 0
-                    ).toLocaleString()}
-                    건
+                    {(offline.packageSales.issueFailedCount || 0).toLocaleString()}건
                   </p>
                 </div>
                 <div className="rounded-lg bg-card border border-border p-3">
@@ -346,8 +308,7 @@ export default function SettlementsClient() {
   // ──────────────────────────────────────────────────────────
   const createSnapshot = async () => {
     const result = await runAdminActionWithToast({
-      action: () =>
-        adminMutator(`/api/admin/settlements/${yyyymm}`, { method: "POST" }),
+      action: () => adminMutator(`/api/admin/settlements/${yyyymm}`, { method: "POST" }),
       successMessage: `${yyyymm} 스냅샷 생성 완료`,
       fallbackErrorMessage: "스냅샷 생성 실패",
     });
@@ -356,8 +317,7 @@ export default function SettlementsClient() {
 
   async function rebuildSnapshot(yyyymm: string) {
     const result = await runAdminActionWithToast({
-      action: () =>
-        adminMutator(`/api/admin/settlements/${yyyymm}`, { method: "POST" }),
+      action: () => adminMutator(`/api/admin/settlements/${yyyymm}`, { method: "POST" }),
       fallbackErrorMessage: "스냅샷 재생성 실패",
     });
     return result;
@@ -365,9 +325,7 @@ export default function SettlementsClient() {
 
   async function fetchLive() {
     if (invalidRange) {
-      showErrorToast(
-        "시작일이 종료일보다 늦습니다. 날짜를 다시 선택해 주세요.",
-      );
+      showErrorToast("시작일이 종료일보다 늦습니다. 날짜를 다시 선택해 주세요.");
       return;
     }
     const q = new URLSearchParams({ from, to }).toString();
@@ -540,24 +498,14 @@ export default function SettlementsClient() {
         nextStale[key] = cached === "stale";
       }
     }
-    if (Object.keys(nextStatus).length)
-      setStatusMap((prev) => ({ ...nextStatus, ...prev }));
-    if (Object.keys(nextStale).length)
-      setStaleMap((prev) => ({ ...nextStale, ...prev }));
+    if (Object.keys(nextStatus).length) setStatusMap((prev) => ({ ...nextStatus, ...prev }));
+    if (Object.keys(nextStale).length) setStaleMap((prev) => ({ ...nextStale, ...prev }));
   }, [data]);
 
   // 스냅샷 CSV 다운로드
   const downloadCSV = () => {
     const rows = sortedData() ?? [];
-    const header = [
-      "월(YYYYMM)",
-      "매출",
-      "환불",
-      "순익",
-      "주문수",
-      "신청수",
-      "패키지수",
-    ];
+    const header = ["월(YYYYMM)", "매출", "환불", "순익", "주문수", "신청수", "패키지수"];
     const csvRows = rows.map((r) => [
       `'${String(r.yyyymm)}`, // yyyymm 자동서식 방지
       r.totals?.paid || 0,
@@ -577,9 +525,7 @@ export default function SettlementsClient() {
     const lines = [header, ...csvRows].map((a) => a.join(",")).join("\r\n");
     const csv = "\ufeff" + lines;
 
-    const fileName = makeCsvFilename(
-      `도깨비테니스_정산스냅샷_${minYm}-${maxYm}`,
-    );
+    const fileName = makeCsvFilename(`도깨비테니스_정산스냅샷_${minYm}-${maxYm}`);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -589,18 +535,12 @@ export default function SettlementsClient() {
     URL.revokeObjectURL(url);
   };
 
-  const totalRevenue = (data ?? []).reduce(
-    (sum: number, row) => sum + (row.totals?.paid || 0),
-    0,
-  );
+  const totalRevenue = (data ?? []).reduce((sum: number, row) => sum + (row.totals?.paid || 0), 0);
   const totalRefunds = (data ?? []).reduce(
     (sum: number, row) => sum + (row.totals?.refund || 0),
     0,
   );
-  const totalNet = (data ?? []).reduce(
-    (sum: number, row) => sum + (row.totals?.net || 0),
-    0,
-  );
+  const totalNet = (data ?? []).reduce((sum: number, row) => sum + (row.totals?.net || 0), 0);
   const totalRentalDeposit = (data ?? []).reduce(
     (sum: number, row) => sum + (row.totals?.rentalDeposit || 0),
     0,
@@ -621,9 +561,7 @@ export default function SettlementsClient() {
           helperText="스냅샷은 운영 마감 기준으로 사용되며 필요 시 재생성할 수 있습니다."
           actions={
             <Button asChild variant="outline" size="sm">
-              <Link href="/admin/reports/revenue">
-                온라인/오프라인 매출 리포트
-              </Link>
+              <Link href="/admin/reports/revenue">온라인/오프라인 매출 리포트</Link>
             </Button>
           }
         />
@@ -634,9 +572,7 @@ export default function SettlementsClient() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    전체 정산 월
-                  </p>
+                  <p className="text-sm font-medium text-muted-foreground">전체 정산 월</p>
                   <p className="text-3xl font-bold text-foreground">
                     {isLoading ? (
                       <span className="inline-block h-9 w-16 rounded bg-muted/70 animate-pulse" />
@@ -733,9 +669,7 @@ export default function SettlementsClient() {
                     </label>
                     <input
                       value={yyyymm}
-                      onChange={(e) =>
-                        setYyyymm(e.target.value.replace(/[^0-9]/g, ""))
-                      }
+                      onChange={(e) => setYyyymm(e.target.value.replace(/[^0-9]/g, ""))}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") createSnapshot();
                       }}
@@ -835,12 +769,7 @@ export default function SettlementsClient() {
               </CardContent>
             </Card>
 
-            <Card
-              className={cn(
-                adminSurface.tableCard,
-                "overflow-visible max-w-6xl mx-auto",
-              )}
-            >
+            <Card className={cn(adminSurface.tableCard, "overflow-visible max-w-6xl mx-auto")}>
               {/* 데스크탑 */}
               <div className="hidden md:block overflow-x-auto">
                 <div className="min-w-[980px]">
@@ -963,12 +892,8 @@ export default function SettlementsClient() {
                             <div className="flex items-center justify-center">
                               <input
                                 type="checkbox"
-                                checked={selectedSnapshots.has(
-                                  String(row.yyyymm),
-                                )}
-                                onChange={() =>
-                                  toggleSelect(String(row.yyyymm))
-                                }
+                                checked={selectedSnapshots.has(String(row.yyyymm))}
+                                onChange={() => toggleSelect(String(row.yyyymm))}
                                 className="w-4 h-4 rounded border-border text-primary focus:ring-ring cursor-pointer"
                                 aria-label={`${row.yyyymm} 선택`}
                               />
@@ -978,12 +903,8 @@ export default function SettlementsClient() {
                               <button
                                 className="font-semibold text-primary hover:text-foreground hover:underline underline-offset-4 transition-all"
                                 onClick={() => {
-                                  const { from, to } = monthEdges(
-                                    String(row.yyyymm),
-                                  );
-                                  router.push(
-                                    `/admin/orders?from=${from}&to=${to}`,
-                                  );
+                                  const { from, to } = monthEdges(String(row.yyyymm));
+                                  router.push(`/admin/orders?from=${from}&to=${to}`);
                                 }}
                                 title="이 월의 주문/신청 목록 보기"
                                 aria-label={`${row.yyyymm} 월의 주문/신청 목록 보기`}
@@ -1014,9 +935,7 @@ export default function SettlementsClient() {
                             <div className="flex items-center justify-center">
                               {statusMap[String(row.yyyymm)] === "checking" && (
                                 <Badge
-                                  variant={badgeToneVariant(
-                                    settlementStatusToneMap.checking,
-                                  )}
+                                  variant={badgeToneVariant(settlementStatusToneMap.checking)}
                                   className="gap-1.5 px-3 py-1.5 text-xs font-medium"
                                 >
                                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1025,9 +944,7 @@ export default function SettlementsClient() {
                               )}
                               {statusMap[String(row.yyyymm)] === "ok" && (
                                 <Badge
-                                  variant={badgeToneVariant(
-                                    settlementStatusToneMap.ok,
-                                  )}
+                                  variant={badgeToneVariant(settlementStatusToneMap.ok)}
                                   className="gap-1.5 px-3 py-1.5 text-xs font-medium"
                                 >
                                   <CheckCircle2 className="w-3.5 h-3.5" />
@@ -1036,9 +953,7 @@ export default function SettlementsClient() {
                               )}
                               {statusMap[String(row.yyyymm)] === "stale" && (
                                 <Badge
-                                  variant={badgeToneVariant(
-                                    settlementStatusToneMap.stale,
-                                  )}
+                                  variant={badgeToneVariant(settlementStatusToneMap.stale)}
                                   className="gap-1.5 px-3 py-1.5 text-xs font-medium"
                                 >
                                   <AlertTriangle className="w-3.5 h-3.5" />
@@ -1046,9 +961,7 @@ export default function SettlementsClient() {
                                 </Badge>
                               )}
                               {!statusMap[String(row.yyyymm)] && (
-                                <span className="text-xs text-muted-foreground">
-                                  -
-                                </span>
+                                <span className="text-xs text-muted-foreground">-</span>
                               )}
                             </div>
 
@@ -1083,9 +996,7 @@ export default function SettlementsClient() {
                                             ...d,
                                             rebuild: row.yyyymm,
                                           }));
-                                          await rebuildSnapshot(
-                                            String(row.yyyymm),
-                                          );
+                                          await rebuildSnapshot(String(row.yyyymm));
                                           await mutate();
                                           setStatusMap((prev) => ({
                                             ...prev,
@@ -1095,14 +1006,10 @@ export default function SettlementsClient() {
                                             ...prev,
                                             [String(row.yyyymm)]: false,
                                           }));
-                                          showSuccessToast(
-                                            `${row.yyyymm} 스냅샷을 갱신했습니다.`,
-                                          );
+                                          showSuccessToast(`${row.yyyymm} 스냅샷을 갱신했습니다.`);
                                         } catch (e) {
                                           console.error(e);
-                                          showErrorToast(
-                                            "스냅샷 갱신 중 오류가 발생했습니다.",
-                                          );
+                                          showErrorToast("스냅샷 갱신 중 오류가 발생했습니다.");
                                         } finally {
                                           setDoing((d) => ({
                                             ...d,
@@ -1127,28 +1034,23 @@ export default function SettlementsClient() {
                                             ...prev,
                                             [key]: "checking",
                                           }));
-                                          const { ok, live } =
-                                            await checkStalenessOfRow(row);
+                                          const { ok, live } = await checkStalenessOfRow(row);
 
                                           const snap = {
                                             paid: row.totals?.paid || 0,
                                             refund: row.totals?.refund || 0,
                                             net: row.totals?.net || 0,
                                             orders: row.breakdown?.orders || 0,
-                                            applications:
-                                              row.breakdown?.applications || 0,
-                                            packages:
-                                              row.breakdown?.packages || 0,
+                                            applications: row.breakdown?.applications || 0,
+                                            packages: row.breakdown?.packages || 0,
                                           };
                                           const livePack = {
                                             paid: live.totals?.paid || 0,
                                             refund: live.totals?.refund || 0,
                                             net: live.totals?.net || 0,
                                             orders: live.breakdown?.orders || 0,
-                                            applications:
-                                              live.breakdown?.applications || 0,
-                                            packages:
-                                              live.breakdown?.packages || 0,
+                                            applications: live.breakdown?.applications || 0,
+                                            packages: live.breakdown?.packages || 0,
                                           };
 
                                           setDiffMap((prev) => ({
@@ -1165,9 +1067,7 @@ export default function SettlementsClient() {
                                           }));
 
                                           if (ok) {
-                                            showSuccessToast(
-                                              "스냅샷이 현재 집계와 일치합니다.",
-                                            );
+                                            showSuccessToast("스냅샷이 현재 집계와 일치합니다.");
                                             setOpenMap((prev) => ({
                                               ...prev,
                                               [key]: false,
@@ -1187,9 +1087,7 @@ export default function SettlementsClient() {
                                             ...prev,
                                             [key]: "stale",
                                           }));
-                                          showErrorToast(
-                                            "검증 중 오류가 발생했습니다.",
-                                          );
+                                          showErrorToast("검증 중 오류가 발생했습니다.");
                                         }
                                       }}
                                     >
@@ -1256,37 +1154,22 @@ export default function SettlementsClient() {
                                         스냅샷
                                       </div>
                                       <div className="text-right tabular-nums text-sm text-foreground">
-                                        {diffMap[
-                                          String(row.yyyymm)
-                                        ]!.snap.paid.toLocaleString()}
+                                        {diffMap[String(row.yyyymm)]!.snap.paid.toLocaleString()}
                                       </div>
                                       <div className="text-right tabular-nums text-sm text-foreground">
-                                        {diffMap[
-                                          String(row.yyyymm)
-                                        ]!.snap.refund.toLocaleString()}
+                                        {diffMap[String(row.yyyymm)]!.snap.refund.toLocaleString()}
                                       </div>
                                       <div className="text-right tabular-nums text-sm font-bold text-foreground">
-                                        {diffMap[
-                                          String(row.yyyymm)
-                                        ]!.snap.net.toLocaleString()}
+                                        {diffMap[String(row.yyyymm)]!.snap.net.toLocaleString()}
                                       </div>
                                       <div className="text-right tabular-nums text-sm text-foreground">
-                                        {
-                                          diffMap[String(row.yyyymm)]!.snap
-                                            .orders
-                                        }
+                                        {diffMap[String(row.yyyymm)]!.snap.orders}
                                       </div>
                                       <div className="text-right tabular-nums text-sm text-foreground">
-                                        {
-                                          diffMap[String(row.yyyymm)]!.snap
-                                            .applications
-                                        }
+                                        {diffMap[String(row.yyyymm)]!.snap.applications}
                                       </div>
                                       <div className="text-right tabular-nums text-sm text-foreground">
-                                        {
-                                          diffMap[String(row.yyyymm)]!.snap
-                                            .packages
-                                        }
+                                        {diffMap[String(row.yyyymm)]!.snap.packages}
                                       </div>
                                     </div>
                                     <div className="grid grid-cols-7 gap-4 p-4 hover:bg-muted/50 dark:hover:bg-card/50 transition-colors">
@@ -1294,37 +1177,22 @@ export default function SettlementsClient() {
                                         실시간
                                       </div>
                                       <div className="text-right tabular-nums text-sm text-foreground">
-                                        {diffMap[
-                                          String(row.yyyymm)
-                                        ]!.live.paid.toLocaleString()}
+                                        {diffMap[String(row.yyyymm)]!.live.paid.toLocaleString()}
                                       </div>
                                       <div className="text-right tabular-nums text-sm text-foreground">
-                                        {diffMap[
-                                          String(row.yyyymm)
-                                        ]!.live.refund.toLocaleString()}
+                                        {diffMap[String(row.yyyymm)]!.live.refund.toLocaleString()}
                                       </div>
                                       <div className="text-right tabular-nums text-sm font-bold text-foreground">
-                                        {diffMap[
-                                          String(row.yyyymm)
-                                        ]!.live.net.toLocaleString()}
+                                        {diffMap[String(row.yyyymm)]!.live.net.toLocaleString()}
                                       </div>
                                       <div className="text-right tabular-nums text-sm text-foreground">
-                                        {
-                                          diffMap[String(row.yyyymm)]!.live
-                                            .orders
-                                        }
+                                        {diffMap[String(row.yyyymm)]!.live.orders}
                                       </div>
                                       <div className="text-right tabular-nums text-sm text-foreground">
-                                        {
-                                          diffMap[String(row.yyyymm)]!.live
-                                            .applications
-                                        }
+                                        {diffMap[String(row.yyyymm)]!.live.applications}
                                       </div>
                                       <div className="text-right tabular-nums text-sm text-foreground">
-                                        {
-                                          diffMap[String(row.yyyymm)]!.live
-                                            .packages
-                                        }
+                                        {diffMap[String(row.yyyymm)]!.live.packages}
                                       </div>
                                     </div>
                                   </div>
@@ -1332,8 +1200,7 @@ export default function SettlementsClient() {
                                   <div className="mt-4 flex items-center gap-3 p-4 rounded-xl bg-destructive/15 dark:bg-destructive/20 border-2 border-destructive/40">
                                     <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0" />
                                     <span className="text-sm text-destructive flex-1 font-medium">
-                                      값이 다릅니다. '지금 갱신'을 눌러 스냅샷을
-                                      업데이트 하세요.
+                                      값이 다릅니다. '지금 갱신'을 눌러 스냅샷을 업데이트 하세요.
                                     </span>
                                     <button
                                       className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 flex-shrink-0"
@@ -1344,9 +1211,7 @@ export default function SettlementsClient() {
                                             ...d,
                                             rebuild: row.yyyymm,
                                           }));
-                                          await rebuildSnapshot(
-                                            String(row.yyyymm),
-                                          );
+                                          await rebuildSnapshot(String(row.yyyymm));
                                           await mutate();
                                           setStatusMap((prev) => ({
                                             ...prev,
@@ -1360,14 +1225,10 @@ export default function SettlementsClient() {
                                             ...prev,
                                             [String(row.yyyymm)]: false,
                                           }));
-                                          showSuccessToast(
-                                            `${row.yyyymm} 스냅샷을 갱신했습니다.`,
-                                          );
+                                          showSuccessToast(`${row.yyyymm} 스냅샷을 갱신했습니다.`);
                                         } catch (e) {
                                           console.error(e);
-                                          showErrorToast(
-                                            "스냅샷 갱신 중 오류가 발생했습니다.",
-                                          );
+                                          showErrorToast("스냅샷 갱신 중 오류가 발생했습니다.");
                                         } finally {
                                           setDoing((d) => ({
                                             ...d,
@@ -1409,9 +1270,7 @@ export default function SettlementsClient() {
                       className="w-4 h-4 rounded border-border text-primary focus:ring-ring cursor-pointer"
                       aria-label="전체 선택"
                     />
-                    <span className="text-sm font-medium text-foreground">
-                      전체 선택
-                    </span>
+                    <span className="text-sm font-medium text-foreground">전체 선택</span>
                   </div>
                 )}
 
@@ -1427,9 +1286,7 @@ export default function SettlementsClient() {
                     <div className="bg-muted rounded-full p-4 mb-4 inline-flex">
                       <Package className="w-8 h-8 text-primary" />
                     </div>
-                    <p className="text-sm font-semibold text-foreground mb-1">
-                      데이터가 없습니다
-                    </p>
+                    <p className="text-sm font-semibold text-foreground mb-1">데이터가 없습니다</p>
                     <p className="text-xs text-muted-foreground">
                       위에서 월을 선택하여 스냅샷을 생성하세요
                     </p>
@@ -1452,12 +1309,8 @@ export default function SettlementsClient() {
                           <button
                             className="font-semibold text-primary hover:underline underline-offset-4"
                             onClick={() => {
-                              const { from, to } = monthEdges(
-                                String(row.yyyymm),
-                              );
-                              router.push(
-                                `/admin/orders?from=${from}&to=${to}`,
-                              );
+                              const { from, to } = monthEdges(String(row.yyyymm));
+                              router.push(`/admin/orders?from=${from}&to=${to}`);
                             }}
                             aria-label={`${row.yyyymm} 월 상세로 이동`}
                           >
@@ -1503,9 +1356,7 @@ export default function SettlementsClient() {
                                     ...prev,
                                     [String(row.yyyymm)]: false,
                                   }));
-                                  showSuccessToast(
-                                    `${row.yyyymm} 스냅샷을 갱신했습니다.`,
-                                  );
+                                  showSuccessToast(`${row.yyyymm} 스냅샷을 갱신했습니다.`);
                                 } finally {
                                   setDoing((d) => ({
                                     ...d,
@@ -1530,15 +1381,13 @@ export default function SettlementsClient() {
                                     ...prev,
                                     [key]: "checking",
                                   }));
-                                  const { ok, live } =
-                                    await checkStalenessOfRow(row);
+                                  const { ok, live } = await checkStalenessOfRow(row);
                                   const snap = {
                                     paid: row.totals?.paid || 0,
                                     refund: row.totals?.refund || 0,
                                     net: row.totals?.net || 0,
                                     orders: row.breakdown?.orders || 0,
-                                    applications:
-                                      row.breakdown?.applications || 0,
+                                    applications: row.breakdown?.applications || 0,
                                     packages: row.breakdown?.packages || 0,
                                   };
                                   const livePack = {
@@ -1546,8 +1395,7 @@ export default function SettlementsClient() {
                                     refund: live.totals?.refund || 0,
                                     net: live.totals?.net || 0,
                                     orders: live.breakdown?.orders || 0,
-                                    applications:
-                                      live.breakdown?.applications || 0,
+                                    applications: live.breakdown?.applications || 0,
                                     packages: live.breakdown?.packages || 0,
                                   };
 
@@ -1564,9 +1412,7 @@ export default function SettlementsClient() {
                                     [key]: !ok,
                                   }));
                                   if (ok) {
-                                    showSuccessToast(
-                                      "스냅샷이 현재 집계와 일치합니다.",
-                                    );
+                                    showSuccessToast("스냅샷이 현재 집계와 일치합니다.");
                                   } else {
                                     showInfoToast(
                                       `변경 감지됨: ${key} 스냅샷과 현재 집계가 다릅니다.`,
@@ -1581,9 +1427,7 @@ export default function SettlementsClient() {
                                     ...prev,
                                     [key]: "stale",
                                   }));
-                                  showErrorToast(
-                                    "검증 중 오류가 발생했습니다.",
-                                  );
+                                  showErrorToast("검증 중 오류가 발생했습니다.");
                                 }
                               }}
                             >
@@ -1609,9 +1453,7 @@ export default function SettlementsClient() {
                       </div>
 
                       <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-                        <div className="text-muted-foreground">
-                          온라인 기준 매출
-                        </div>
+                        <div className="text-muted-foreground">온라인 기준 매출</div>
                         <div className="text-right tabular-nums text-foreground">
                           {(row.totals?.paid || 0).toLocaleString()}
                         </div>
@@ -1645,9 +1487,7 @@ export default function SettlementsClient() {
                       <div className="mt-3 pt-3 border-t border-border">
                         {statusMap[String(row.yyyymm)] === "checking" && (
                           <Badge
-                            variant={badgeToneVariant(
-                              settlementStatusToneMap.checking,
-                            )}
+                            variant={badgeToneVariant(settlementStatusToneMap.checking)}
                             className="gap-1.5 px-3 py-1.5 text-xs font-medium"
                           >
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1656,9 +1496,7 @@ export default function SettlementsClient() {
                         )}
                         {statusMap[String(row.yyyymm)] === "ok" && (
                           <Badge
-                            variant={badgeToneVariant(
-                              settlementStatusToneMap.ok,
-                            )}
+                            variant={badgeToneVariant(settlementStatusToneMap.ok)}
                             className="gap-1.5 px-3 py-1.5 text-xs font-medium"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
@@ -1667,9 +1505,7 @@ export default function SettlementsClient() {
                         )}
                         {statusMap[String(row.yyyymm)] === "stale" && (
                           <Badge
-                            variant={badgeToneVariant(
-                              settlementStatusToneMap.stale,
-                            )}
+                            variant={badgeToneVariant(settlementStatusToneMap.stale)}
                             className="gap-1.5 px-3 py-1.5 text-xs font-medium"
                           >
                             <AlertTriangle className="w-3.5 h-3.5" />
@@ -1677,9 +1513,7 @@ export default function SettlementsClient() {
                           </Badge>
                         )}
                         {!statusMap[String(row.yyyymm)] && (
-                          <span className="text-xs text-muted-foreground">
-                            -
-                          </span>
+                          <span className="text-xs text-muted-foreground">-</span>
                         )}
                       </div>
 
@@ -1712,48 +1546,27 @@ export default function SettlementsClient() {
                                 스냅샷
                               </div>
                               <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-                                <div className="text-muted-foreground">
-                                  매출
-                                </div>
+                                <div className="text-muted-foreground">매출</div>
                                 <div className="text-right tabular-nums">
-                                  {diffMap[
-                                    String(row.yyyymm)
-                                  ]!.snap.paid.toLocaleString()}
+                                  {diffMap[String(row.yyyymm)]!.snap.paid.toLocaleString()}
                                 </div>
-                                <div className="text-muted-foreground">
-                                  환불
-                                </div>
+                                <div className="text-muted-foreground">환불</div>
                                 <div className="text-right tabular-nums">
-                                  {diffMap[
-                                    String(row.yyyymm)
-                                  ]!.snap.refund.toLocaleString()}
+                                  {diffMap[String(row.yyyymm)]!.snap.refund.toLocaleString()}
                                 </div>
-                                <div className="text-muted-foreground">
-                                  순익
-                                </div>
+                                <div className="text-muted-foreground">순익</div>
                                 <div className="text-right tabular-nums font-semibold">
-                                  {diffMap[
-                                    String(row.yyyymm)
-                                  ]!.snap.net.toLocaleString()}
+                                  {diffMap[String(row.yyyymm)]!.snap.net.toLocaleString()}
                                 </div>
-                                <div className="text-muted-foreground">
-                                  주문수
-                                </div>
+                                <div className="text-muted-foreground">주문수</div>
                                 <div className="text-right tabular-nums">
                                   {diffMap[String(row.yyyymm)]!.snap.orders}
                                 </div>
-                                <div className="text-muted-foreground">
-                                  신청수
-                                </div>
+                                <div className="text-muted-foreground">신청수</div>
                                 <div className="text-right tabular-nums">
-                                  {
-                                    diffMap[String(row.yyyymm)]!.snap
-                                      .applications
-                                  }
+                                  {diffMap[String(row.yyyymm)]!.snap.applications}
                                 </div>
-                                <div className="text-muted-foreground">
-                                  패키지수
-                                </div>
+                                <div className="text-muted-foreground">패키지수</div>
                                 <div className="text-right tabular-nums">
                                   {diffMap[String(row.yyyymm)]!.snap.packages}
                                 </div>
@@ -1763,48 +1576,27 @@ export default function SettlementsClient() {
                                 실시간
                               </div>
                               <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-                                <div className="text-muted-foreground">
-                                  매출
-                                </div>
+                                <div className="text-muted-foreground">매출</div>
                                 <div className="text-right tabular-nums">
-                                  {diffMap[
-                                    String(row.yyyymm)
-                                  ]!.live.paid.toLocaleString()}
+                                  {diffMap[String(row.yyyymm)]!.live.paid.toLocaleString()}
                                 </div>
-                                <div className="text-muted-foreground">
-                                  환불
-                                </div>
+                                <div className="text-muted-foreground">환불</div>
                                 <div className="text-right tabular-nums">
-                                  {diffMap[
-                                    String(row.yyyymm)
-                                  ]!.live.refund.toLocaleString()}
+                                  {diffMap[String(row.yyyymm)]!.live.refund.toLocaleString()}
                                 </div>
-                                <div className="text-muted-foreground">
-                                  순익
-                                </div>
+                                <div className="text-muted-foreground">순익</div>
                                 <div className="text-right tabular-nums font-semibold">
-                                  {diffMap[
-                                    String(row.yyyymm)
-                                  ]!.live.net.toLocaleString()}
+                                  {diffMap[String(row.yyyymm)]!.live.net.toLocaleString()}
                                 </div>
-                                <div className="text-muted-foreground">
-                                  주문수
-                                </div>
+                                <div className="text-muted-foreground">주문수</div>
                                 <div className="text-right tabular-nums">
                                   {diffMap[String(row.yyyymm)]!.live.orders}
                                 </div>
-                                <div className="text-muted-foreground">
-                                  신청수
-                                </div>
+                                <div className="text-muted-foreground">신청수</div>
                                 <div className="text-right tabular-nums">
-                                  {
-                                    diffMap[String(row.yyyymm)]!.live
-                                      .applications
-                                  }
+                                  {diffMap[String(row.yyyymm)]!.live.applications}
                                 </div>
-                                <div className="text-muted-foreground">
-                                  패키지수
-                                </div>
+                                <div className="text-muted-foreground">패키지수</div>
                                 <div className="text-right tabular-nums">
                                   {diffMap[String(row.yyyymm)]!.live.packages}
                                 </div>
@@ -1833,9 +1625,7 @@ export default function SettlementsClient() {
                                       ...prev,
                                       [String(row.yyyymm)]: false,
                                     }));
-                                    showSuccessToast(
-                                      `${row.yyyymm} 스냅샷을 갱신했습니다.`,
-                                    );
+                                    showSuccessToast(`${row.yyyymm} 스냅샷을 갱신했습니다.`);
                                   } finally {
                                     setDoing((d) => ({
                                       ...d,
@@ -1931,9 +1721,7 @@ export default function SettlementsClient() {
                       className="px-3 sm:px-4 py-2.5 border-2 border-border rounded-xl text-sm font-semibold hover:bg-muted dark:hover:bg-card transition-all shadow-sm hover:shadow"
                       onClick={() => {
                         const end = new Date();
-                        const start = new Date(
-                          end.getTime() - 6 * 24 * 60 * 60 * 1000,
-                        );
+                        const start = new Date(end.getTime() - 6 * 24 * 60 * 60 * 1000);
                         setFrom(fmtYMD_KST(start));
                         setTo(fmtYMD_KST(end));
                       }}
@@ -1983,9 +1771,7 @@ export default function SettlementsClient() {
                             live.breakdown?.packages || 0,
                           ],
                         ];
-                        const lines = [header, ...rows]
-                          .map((r) => r.join(","))
-                          .join("\r\n");
+                        const lines = [header, ...rows].map((r) => r.join(",")).join("\r\n");
                         const csv = "\ufeff" + lines;
                         const blob = new Blob([csv], {
                           type: "text/csv;charset=utf-8;",
@@ -2024,14 +1810,11 @@ export default function SettlementsClient() {
                       <div
                         className="grid gap-4 p-5 text-sm font-semibold text-foreground"
                         style={{
-                          gridTemplateColumns:
-                            "1fr 120px 120px 120px 100px 100px 100px",
+                          gridTemplateColumns: "1fr 120px 120px 120px 100px 100px 100px",
                         }}
                       >
                         <div className="text-center">기간</div>
-                        <div className="text-center tabular-nums">
-                          온라인 기준 매출
-                        </div>
+                        <div className="text-center tabular-nums">온라인 기준 매출</div>
                         <div className="text-center tabular-nums">환불</div>
                         <div className="text-center tabular-nums">순익</div>
                         <div className="text-center tabular-nums">주문수</div>
@@ -2042,8 +1825,7 @@ export default function SettlementsClient() {
                     <div
                       className="grid gap-4 p-5 border-b border-border hover:bg-muted/70 transition-colors"
                       style={{
-                        gridTemplateColumns:
-                          "1fr 120px 120px 120px 100px 100px 100px ",
+                        gridTemplateColumns: "1fr 120px 120px 120px 100px 100px 100px ",
                       }}
                     >
                       <div className="text-sm font-medium text-foreground text-center flex items-center justify-center">
@@ -2071,8 +1853,7 @@ export default function SettlementsClient() {
                     <div
                       className="grid gap-4 p-5 bg-muted"
                       style={{
-                        gridTemplateColumns:
-                          "1fr 120px 120px 120px 100px 100px 100px",
+                        gridTemplateColumns: "1fr 120px 120px 120px 100px 100px 100px",
                       }}
                     >
                       <div className="text-sm font-bold text-foreground text-center flex items-center justify-center">
@@ -2107,9 +1888,7 @@ export default function SettlementsClient() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="text-muted-foreground">
-                        온라인 기준 매출
-                      </div>
+                      <div className="text-muted-foreground">온라인 기준 매출</div>
                       <div className="text-right tabular-nums text-foreground">
                         {(live.totals?.paid || 0).toLocaleString()}
                       </div>

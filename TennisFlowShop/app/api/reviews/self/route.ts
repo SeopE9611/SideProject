@@ -10,10 +10,7 @@ export async function GET(req: Request) {
     const productId = url.searchParams.get("productId");
     const orderId = url.searchParams.get("orderId");
     if (!productId) {
-      return NextResponse.json(
-        { error: "productId required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "productId required" }, { status: 400 });
     }
 
     const token = (await cookies()).get("accessToken")?.value;
@@ -36,21 +33,17 @@ export async function GET(req: Request) {
 
     // 문자열/오브젝트ID 모두 커버하는 후보 배열
     const productIdCandidates: (string | ObjectId)[] = [productId];
-    if (ObjectId.isValid(productId))
-      productIdCandidates.push(new ObjectId(productId));
+    if (ObjectId.isValid(productId)) productIdCandidates.push(new ObjectId(productId));
 
     // orderId도 후보 배열로 준비(있을 때만)
     const orderIdCandidates: (string | ObjectId)[] = [];
     if (orderId) {
       orderIdCandidates.push(orderId);
-      if (ObjectId.isValid(orderId))
-        orderIdCandidates.push(new ObjectId(orderId));
+      if (ObjectId.isValid(orderId)) orderIdCandidates.push(new ObjectId(orderId));
     }
 
     // userId는 string/ObjectId 모두 허용
-    const userId = ObjectId.isValid(String(uid))
-      ? new ObjectId(String(uid))
-      : String(uid);
+    const userId = ObjectId.isValid(String(uid)) ? new ObjectId(String(uid)) : String(uid);
 
     // 기본 필터 + (orderId가 있으면 추가 AND 조건)
     const filter: any = {

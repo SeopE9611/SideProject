@@ -184,12 +184,7 @@ export async function getBoardList(
       category: doc.category ?? null,
       // QnA 리스트 UI에서 필요한 필드(답변상태/비밀글/작성자)
       authorName: type === "qna" ? (doc.authorName ?? null) : undefined,
-      authorId:
-        type === "qna"
-          ? doc.authorId
-            ? String(doc.authorId)
-            : null
-          : undefined,
+      authorId: type === "qna" ? (doc.authorId ? String(doc.authorId) : null) : undefined,
       isSecret: type === "qna" ? !!doc.isSecret : undefined,
       answer:
         type === "qna" && doc.answer

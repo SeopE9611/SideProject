@@ -10,13 +10,7 @@ export type EmptyStateProps = {
   className?: string;
 };
 
-export function EmptyState({
-  icon,
-  title,
-  description,
-  action,
-  className,
-}: EmptyStateProps) {
+export function EmptyState({ icon, title, description, action, className }: EmptyStateProps) {
   return (
     <section
       className={cn(
@@ -29,13 +23,9 @@ export function EmptyState({
           {icon}
         </div>
       )}
-      <h2 className="text-ui-card-title-lg font-semibold text-foreground">
-        {title}
-      </h2>
+      <h2 className="text-ui-card-title-lg font-semibold text-foreground">{title}</h2>
       {description && (
-        <div className="mt-2 max-w-md text-ui-body-sm text-muted-foreground">
-          {description}
-        </div>
+        <div className="mt-2 max-w-md text-ui-body-sm text-muted-foreground">{description}</div>
       )}
       {action && <div className="mt-5">{action}</div>}
     </section>

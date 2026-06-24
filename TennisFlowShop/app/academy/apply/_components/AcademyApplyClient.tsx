@@ -104,12 +104,7 @@ type FormState = {
   requestMemo: string;
 };
 
-type FieldName =
-  | "applicantName"
-  | "phone"
-  | "desiredLessonType"
-  | "currentLevel"
-  | "preferredDays";
+type FieldName = "applicantName" | "phone" | "desiredLessonType" | "currentLevel" | "preferredDays";
 
 type FieldErrors = Partial<Record<FieldName, string>>;
 
@@ -150,16 +145,8 @@ function SectionCard({
               </div>
             )}
             <div className="min-w-0">
-              {title && (
-                <h2 className="text-base font-semibold text-foreground">
-                  {title}
-                </h2>
-              )}
-              {description && (
-                <p className="mt-0.5 text-sm text-muted-foreground">
-                  {description}
-                </p>
-              )}
+              {title && <h2 className="text-base font-semibold text-foreground">{title}</h2>}
+              {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
             </div>
           </div>
         </div>
@@ -189,9 +176,7 @@ function FormField({
         {required && <span className="ml-1 text-destructive">*</span>}
       </Label>
       {children}
-      {hint && !error && (
-        <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p>
-      )}
+      {hint && !error && <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p>}
       {error && (
         <p className="flex items-center gap-1.5 text-sm font-medium leading-relaxed text-destructive">
           <AlertCircle className="h-3.5 w-3.5" />
@@ -234,11 +219,7 @@ function CustomSelect({
           isOpen && "ring-2 ring-ring ring-offset-2",
         )}
       >
-        <span
-          className={cn(
-            selectedOption ? "text-foreground" : "text-muted-foreground",
-          )}
-        >
+        <span className={cn(selectedOption ? "text-foreground" : "text-muted-foreground")}>
           {selectedOption?.label || placeholder}
         </span>
         <ChevronDown
@@ -251,10 +232,7 @@ function CustomSelect({
 
       {isOpen && (
         <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-          />
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
           <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-64 overflow-auto rounded-xl border border-border bg-popover p-1.5 shadow-lg">
             {options.map((option) => (
               <button
@@ -270,13 +248,9 @@ function CustomSelect({
                   option.value === value && "bg-muted",
                 )}
               >
-                <span className="text-sm font-medium text-foreground">
-                  {option.label}
-                </span>
+                <span className="text-sm font-medium text-foreground">{option.label}</span>
                 {option.description && (
-                  <span className="text-xs text-muted-foreground">
-                    {option.description}
-                  </span>
+                  <span className="text-xs text-muted-foreground">{option.description}</span>
                 )}
               </button>
             ))}
@@ -314,8 +288,7 @@ function validateForm(form: FormState): {
       "회원정보의 이름을 먼저 등록해 주세요. 마이페이지에서 변경할 수 있습니다.";
   }
   if (!form.phone.trim()) {
-    errors.phone =
-      "회원정보의 연락처를 먼저 등록해 주세요. 마이페이지에서 변경할 수 있습니다.";
+    errors.phone = "회원정보의 연락처를 먼저 등록해 주세요. 마이페이지에서 변경할 수 있습니다.";
   }
   if (!form.desiredLessonType) {
     errors.desiredLessonType = "희망 레슨 유형을 선택해 주세요.";
@@ -349,9 +322,7 @@ function getDayConflict(
   for (const application of activeApplications) {
     if (selectedClassId && application.classId === selectedClassId) continue;
 
-    const overlapDays = application.preferredDays.filter((day) =>
-      selectedDays.includes(day),
-    );
+    const overlapDays = application.preferredDays.filter((day) => selectedDays.includes(day));
     if (overlapDays.length > 0) {
       return { application, overlapDays };
     }
@@ -390,16 +361,11 @@ export default function AcademyApplyClient({
   activeApplications: AcademyActiveApplicationSummary[];
 }) {
   const router = useRouter();
-  const [form, setForm] = useState<FormState>(() =>
-    createInitialFormState(initialApplicantInfo),
-  );
+  const [form, setForm] = useState<FormState>(() => createInitialFormState(initialApplicantInfo));
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [conflictDialog, setConflictDialog] =
-    useState<ConflictDialogState>(null);
-  const fieldRefs = useRef<Partial<Record<FieldName, HTMLDivElement | null>>>(
-    {},
-  );
+  const [conflictDialog, setConflictDialog] = useState<ConflictDialogState>(null);
+  const fieldRefs = useRef<Partial<Record<FieldName, HTMLDivElement | null>>>({});
   const isSelectedClassClosed = selectedClass?.status === "closed";
   const canSubmit = !isSubmitting && !isSelectedClassClosed;
 
@@ -451,8 +417,7 @@ export default function AcademyApplyClient({
     event.preventDefault();
 
     if (isSelectedClassClosed) {
-      const message =
-        "모집이 마감된 클래스는 신청할 수 없습니다. 문의하기를 이용해 주세요.";
+      const message = "모집이 마감된 클래스는 신청할 수 없습니다. 문의하기를 이용해 주세요.";
       showErrorToast(message);
       return;
     }
@@ -460,8 +425,7 @@ export default function AcademyApplyClient({
     const { errors, firstErrorField } = validateForm(form);
     setFieldErrors(errors);
     if (firstErrorField) {
-      const message =
-        errors[firstErrorField] ?? "신청서 필수값을 확인해 주세요.";
+      const message = errors[firstErrorField] ?? "신청서 필수값을 확인해 주세요.";
       showErrorToast(message);
       scrollToField(firstErrorField);
       return;
@@ -499,8 +463,7 @@ export default function AcademyApplyClient({
           preferredTimeText: form.preferredTimeText,
           lessonGoal: form.lessonGoal,
           requestMemo: form.requestMemo,
-          classId:
-            selectedClass?.status === "visible" ? selectedClass._id : undefined,
+          classId: selectedClass?.status === "visible" ? selectedClass._id : undefined,
         }),
       });
 
@@ -536,8 +499,7 @@ export default function AcademyApplyClient({
       if (response.status === 409 && data?.code === "ACADEMY_DUPLICATE_CLASS") {
         openConflictDialog({
           title: "이미 신청한 클래스입니다.",
-          description:
-            data.message || "기존 신청 내역에서 진행 상태를 확인해 주세요.",
+          description: data.message || "기존 신청 내역에서 진행 상태를 확인해 주세요.",
           applicationId: data.existingApplicationId,
         });
         return;
@@ -549,10 +511,7 @@ export default function AcademyApplyClient({
 
       router.push(`/academy/apply/success?applicationId=${data.applicationId}`);
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "레슨 신청 접수에 실패했습니다.";
+      const message = error instanceof Error ? error.message : "레슨 신청 접수에 실패했습니다.";
       showErrorToast(message);
     } finally {
       setIsSubmitting(false);
@@ -587,11 +546,7 @@ export default function AcademyApplyClient({
                 fieldRefs.current.applicantName = node;
               }}
             >
-              <FormField
-                label="신청자명"
-                required
-                error={fieldErrors.applicantName}
-              >
+              <FormField label="신청자명" required error={fieldErrors.applicantName}>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
@@ -662,16 +617,10 @@ export default function AcademyApplyClient({
                   fieldRefs.current.desiredLessonType = node;
                 }}
               >
-                <FormField
-                  label="희망 레슨 유형"
-                  required
-                  error={fieldErrors.desiredLessonType}
-                >
+                <FormField label="희망 레슨 유형" required error={fieldErrors.desiredLessonType}>
                   <CustomSelect
                     value={form.desiredLessonType}
-                    onChange={(value) =>
-                      updateField("desiredLessonType", value)
-                    }
+                    onChange={(value) => updateField("desiredLessonType", value)}
                     options={lessonTypeOptions}
                     placeholder="레슨 유형을 선택해 주세요"
                     disabled={isSubmitting || isSelectedClassClosed}
@@ -685,11 +634,7 @@ export default function AcademyApplyClient({
                   fieldRefs.current.currentLevel = node;
                 }}
               >
-                <FormField
-                  label="현재 실력"
-                  required
-                  error={fieldErrors.currentLevel}
-                >
+                <FormField label="현재 실력" required error={fieldErrors.currentLevel}>
                   <CustomSelect
                     value={form.currentLevel}
                     onChange={(value) => updateField("currentLevel", value)}
@@ -717,8 +662,7 @@ export default function AcademyApplyClient({
                 <div
                   className={cn(
                     "grid grid-cols-4 gap-2 rounded-xl p-1 min-[390px]:grid-cols-7",
-                    fieldErrors.preferredDays &&
-                      "ring-2 ring-destructive ring-offset-2",
+                    fieldErrors.preferredDays && "ring-2 ring-destructive ring-offset-2",
                   )}
                 >
                   {dayOptions.map((day) => {
@@ -754,9 +698,7 @@ export default function AcademyApplyClient({
                 <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={form.preferredTimeText}
-                  onChange={(e) =>
-                    updateField("preferredTimeText", e.target.value)
-                  }
+                  onChange={(e) => updateField("preferredTimeText", e.target.value)}
                   maxLength={100}
                   placeholder="희망하시는 시간대를 입력해 주세요"
                   disabled={isSubmitting || isSelectedClassClosed}
@@ -766,10 +708,7 @@ export default function AcademyApplyClient({
             </FormField>
 
             {/* Lesson Goal */}
-            <FormField
-              label="레슨 목표"
-              hint="원하시는 레슨 목표를 자유롭게 작성해 주세요"
-            >
+            <FormField label="레슨 목표" hint="원하시는 레슨 목표를 자유롭게 작성해 주세요">
               <div className="relative">
                 <Target className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Textarea
@@ -784,10 +723,7 @@ export default function AcademyApplyClient({
             </FormField>
 
             {/* Request Memo */}
-            <FormField
-              label="요청사항"
-              hint="추가로 궁금하신 점이나 요청사항을 남겨주세요"
-            >
+            <FormField label="요청사항" hint="추가로 궁금하신 점이나 요청사항을 남겨주세요">
               <div className="relative">
                 <MessageSquare className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Textarea
@@ -811,8 +747,7 @@ export default function AcademyApplyClient({
                 신청서 제출 준비가 완료되셨나요?
               </p>
               <p className="break-keep text-xs leading-relaxed text-muted-foreground">
-                신청 단계에서는 결제가 진행되지 않습니다. 등록 확정 후 현장에서
-                안내드립니다.
+                신청 단계에서는 결제가 진행되지 않습니다. 등록 확정 후 현장에서 안내드립니다.
               </p>
             </div>
             <div className="flex w-full flex-col gap-2 sm:flex-row md:w-auto md:shrink-0">
@@ -870,16 +805,12 @@ export default function AcademyApplyClient({
           <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
             {conflictDialog?.applicationId && (
               <Button asChild variant="outline" className="w-full sm:w-auto">
-                <Link
-                  href={`/mypage/academy-applications/${conflictDialog.applicationId}`}
-                >
+                <Link href={`/mypage/academy-applications/${conflictDialog.applicationId}`}>
                   신청 내역 보기
                 </Link>
               </Button>
             )}
-            <AlertDialogAction className="w-full sm:w-auto">
-              확인하고 수정하기
-            </AlertDialogAction>
+            <AlertDialogAction className="w-full sm:w-auto">확인하고 수정하기</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -34,10 +34,7 @@ const PASS_STATUS = {
 // 이제 상태 변경해보기.STEP 3: 결제 상태에 따라 동작 잠금(서버+UI)
 
 // body: { delta: number, clampZero?: boolean, reason?: string }
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   // 관리자 인증/인가 표준 가드
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
@@ -48,8 +45,7 @@ export async function POST(
 
   try {
     const { id } = await params;
-    if (!ObjectId.isValid(id))
-      return NextResponse.json({ error: "invalid id" }, { status: 400 });
+    if (!ObjectId.isValid(id)) return NextResponse.json({ error: "invalid id" }, { status: 400 });
 
     // 입력 파싱
     const body = await req.json().catch(() => ({}));
@@ -57,25 +53,17 @@ export async function POST(
     const clampZero = Boolean(body?.clampZero);
     const reason = String(body?.reason ?? "");
     if (!Number.isFinite(delta) || delta === 0)
-      return NextResponse.json(
-        { error: "delta must be a non-zero number" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "delta must be a non-zero number" }, { status: 400 });
 
     const db = (await clientPromise).db();
     const packageOrders = db.collection<PackageOrder>("packageOrders");
-    const passes = db.collection<ServicePass & { history?: PassHistoryItem[] }>(
-      "service_passes",
-    );
+    const passes = db.collection<ServicePass & { history?: PassHistoryItem[] }>("service_passes");
 
     const _id = new ObjectId(id);
 
     const passDoc = await passes.findOne({ orderId: _id });
     if (!passDoc) {
-      return NextResponse.json(
-        { error: "service pass not found for this order" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "service pass not found for this order" }, { status: 404 });
     }
 
     const pkgOrder = await packageOrders.findOne({ _id });
@@ -91,10 +79,7 @@ export async function POST(
     }
 
     if (passDoc.status === PASS_STATUS.cancelled) {
-      return NextResponse.json(
-        { error: "취소된 패스입니다." },
-        { status: 409 },
-      );
+      return NextResponse.json({ error: "취소된 패스입니다." }, { status: 409 });
     }
 
     const now = new Date();
@@ -197,14 +182,8 @@ export async function POST(
           },
           after: {
             remainingCount: Number(freshPass?.remainingCount ?? next),
-            usedCount: Number(
-              (freshPass as any)?.usedCount ?? (passDoc as any).usedCount ?? 0,
-            ),
-            totalCount: Number(
-              (freshPass as any)?.totalCount ??
-                (passDoc as any).totalCount ??
-                0,
-            ),
+            usedCount: Number((freshPass as any)?.usedCount ?? (passDoc as any).usedCount ?? 0),
+            totalCount: Number((freshPass as any)?.totalCount ?? (passDoc as any).totalCount ?? 0),
             status: String(freshPass?.status ?? nextStatus ?? passDoc.status),
           },
           servicePassId: String(passDoc._id),

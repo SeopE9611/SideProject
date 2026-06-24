@@ -21,17 +21,14 @@ export const dynamic = "force-dynamic";
 const POSTAL_RE = /^\d{5}$/;
 const PAYMENT_BANKS = new Set(["kakao"] as const);
 
-const toTrimmedString = (v: unknown) =>
-  v === null || v === undefined ? "" : String(v).trim();
+const toTrimmedString = (v: unknown) => (v === null || v === undefined ? "" : String(v).trim());
 const toDigits = (v: unknown) => toTrimmedString(v).replace(/\D/g, "");
 
 const PaymentSchema = z
   .object({
     method: z.literal("bank_transfer"),
     bank: z.preprocess(toTrimmedString, z.string().optional()).optional(),
-    depositor: z
-      .preprocess(toTrimmedString, z.string().max(50).optional())
-      .optional(),
+    depositor: z.preprocess(toTrimmedString, z.string().max(50).optional()).optional(),
   })
   .passthrough();
 
@@ -41,12 +38,8 @@ const ShippingSchema = z
     phone: z.preprocess(toDigits, z.string().min(8).max(13)),
     postalCode: z.preprocess(toDigits, z.string().regex(POSTAL_RE)),
     address: z.preprocess(toTrimmedString, z.string().min(1).max(200)),
-    addressDetail: z
-      .preprocess(toTrimmedString, z.string().max(200).optional())
-      .optional(),
-    deliveryRequest: z
-      .preprocess(toTrimmedString, z.string().max(200).optional())
-      .optional(),
+    addressDetail: z.preprocess(toTrimmedString, z.string().max(200).optional()).optional(),
+    deliveryRequest: z.preprocess(toTrimmedString, z.string().max(200).optional()).optional(),
   })
   .passthrough();
 
@@ -66,26 +59,16 @@ const PrepareBodySchema = z
  *   refundAccount?: { bank: string, account: string, holder: string }
  * }
  */
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     if (!ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { ok: false, message: "BAD_ID" },
-        { status: 400 },
-      );
+      return NextResponse.json({ ok: false, message: "BAD_ID" }, { status: 400 });
     }
     const db = (await clientPromise).db();
     const _id = new ObjectId(id);
     const rental = await db.collection("rental_orders").findOne({ _id });
-    if (!rental)
-      return NextResponse.json(
-        { ok: false, message: "NOT_FOUND" },
-        { status: 404 },
-      );
+    if (!rental) return NextResponse.json({ ok: false, message: "NOT_FOUND" }, { status: 404 });
 
     // 1차 보호: 회원 대여건이면 소유자만 수정 가능 (비회원 보류)
     if (rental.userId) {
@@ -100,10 +83,7 @@ export async function POST(
       }
       const sub = typeof payload?.sub === "string" ? payload.sub : null;
       if (!sub || !ObjectId.isValid(sub) || sub !== String(rental.userId)) {
-        return NextResponse.json(
-          { ok: false, message: "FORBIDDEN" },
-          { status: 403 },
-        );
+        return NextResponse.json({ ok: false, message: "FORBIDDEN" }, { status: 403 });
       }
     }
     // JSON 파싱 실패 시 업데이트를 막아서 "기존 값이 null로 덮이는 사고" 방지
@@ -111,18 +91,12 @@ export async function POST(
     try {
       rawBody = await req.json();
     } catch {
-      return NextResponse.json(
-        { ok: false, message: "INVALID_JSON" },
-        { status: 400 },
-      );
+      return NextResponse.json({ ok: false, message: "INVALID_JSON" }, { status: 400 });
     }
 
     const parsed = PrepareBodySchema.safeParse(rawBody);
     if (!parsed.success) {
-      return NextResponse.json(
-        { ok: false, message: "BAD_BODY" },
-        { status: 400 },
-      );
+      return NextResponse.json({ ok: false, message: "BAD_BODY" }, { status: 400 });
     }
 
     const body = parsed.data;
@@ -130,10 +104,7 @@ export async function POST(
     // 은행 값 최종 방어(입금 bank)
     const bank = body?.payment?.bank ? String(body.payment.bank).trim() : "";
     if (bank && !PAYMENT_BANKS.has(bank as any)) {
-      return NextResponse.json(
-        { ok: false, message: "INVALID_BANK" },
-        { status: 400 },
-      );
+      return NextResponse.json({ ok: false, message: "INVALID_BANK" }, { status: 400 });
     }
 
     await db.collection("rental_orders").updateOne(
@@ -151,9 +122,6 @@ export async function POST(
     return NextResponse.json({ ok: true, id });
   } catch (err) {
     console.error("POST /api/rentals/[id]/prepare error:", err);
-    return NextResponse.json(
-      { ok: false, message: "SERVER_ERROR" },
-      { status: 500 },
-    );
+    return NextResponse.json({ ok: false, message: "SERVER_ERROR" }, { status: 500 });
   }
 }

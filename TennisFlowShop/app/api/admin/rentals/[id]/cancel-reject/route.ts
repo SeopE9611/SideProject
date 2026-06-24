@@ -5,10 +5,7 @@ import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { writeRentalHistory } from "@/app/features/rentals/utils/history";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
 
@@ -28,10 +25,7 @@ export async function POST(
     const _id = new ObjectId(id);
     const existing: any = await rentals.findOne({ _id });
     if (!existing)
-      return NextResponse.json(
-        { ok: false, message: "대여를 찾을 수 없습니다." },
-        { status: 404 },
-      );
+      return NextResponse.json({ ok: false, message: "대여를 찾을 수 없습니다." }, { status: 404 });
 
     const currentStatus = String(existing.status ?? "pending");
     const cancel = existing.cancelRequest;
@@ -47,16 +41,13 @@ export async function POST(
     }
 
     const now = new Date();
-    const updated = await rentals.updateOne(
-      { _id, "cancelRequest.status": "requested" },
-      {
-        $set: {
-          "cancelRequest.status": "rejected",
-          "cancelRequest.processedAt": now,
-          updatedAt: now,
-        },
-      } as any,
-    );
+    const updated = await rentals.updateOne({ _id, "cancelRequest.status": "requested" }, {
+      $set: {
+        "cancelRequest.status": "rejected",
+        "cancelRequest.processedAt": now,
+        updatedAt: now,
+      },
+    } as any);
 
     if (updated.matchedCount === 0) {
       return NextResponse.json(
@@ -102,9 +93,6 @@ export async function POST(
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("POST /api/admin/rentals/[id]/cancel-reject 오류:", error);
-    return NextResponse.json(
-      { ok: false, message: "서버 오류가 발생했습니다." },
-      { status: 500 },
-    );
+    return NextResponse.json({ ok: false, message: "서버 오류가 발생했습니다." }, { status: 500 });
   }
 }

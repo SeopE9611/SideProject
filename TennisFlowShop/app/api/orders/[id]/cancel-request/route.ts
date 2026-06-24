@@ -43,10 +43,7 @@ function safeVerifyAccessToken(token?: string | null) {
  * - 운송장(배송정보) 입력 전까지만 요청 가능.
  * - 주문 소유자 또는 관리자만 호출 가능.
  */
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
@@ -92,8 +89,7 @@ export async function POST(
       .filter(Boolean);
 
     const isOwner = existing.userId && user.sub === existing.userId.toString();
-    const isAdmin =
-      user.role === "admin" || (user.email && adminList.includes(user.email));
+    const isAdmin = user.role === "admin" || (user.email && adminList.includes(user.email));
 
     // 비회원 주문(guest)의 경우 관리자만 취소 요청을 넣을 수 있도록 제한
     if (existing.userId ? !(isOwner || isAdmin) : !isAdmin) {
@@ -118,17 +114,13 @@ export async function POST(
       invoice.trackingNumber.trim().length > 0;
 
     if (hasTrackingNumber) {
-      return new NextResponse(
-        "이미 배송이 진행 중이어서 취소 요청을 할 수 없습니다.",
-        { status: 400 },
-      );
+      return new NextResponse("이미 배송이 진행 중이어서 취소 요청을 할 수 없습니다.", {
+        status: 400,
+      });
     }
 
     // 이미 취소 요청이 들어간 주문인지 검사
-    if (
-      existing.cancelRequest &&
-      existing.cancelRequest.status === "requested"
-    ) {
+    if (existing.cancelRequest && existing.cancelRequest.status === "requested") {
       return new NextResponse("이미 취소 요청이 접수된 주문입니다.", {
         status: 400,
       });
@@ -151,9 +143,7 @@ export async function POST(
       .trim()
       .toLowerCase();
     const needsRefundAccount =
-      normalizedProvider === "nicepay"
-        ? false
-        : existing.paymentStatus === "결제완료";
+      normalizedProvider === "nicepay" ? false : existing.paymentStatus === "결제완료";
 
     /**
      * 환불 계좌는 "필요한 결제 케이스"에서만 검증/저장한다.
@@ -164,11 +154,7 @@ export async function POST(
     const parsedRefundAccount = needsRefundAccount
       ? RefundAccountSchema.safeParse(body.refundAccount ?? null)
       : null;
-    if (
-      needsRefundAccount &&
-      parsedRefundAccount &&
-      !parsedRefundAccount.success
-    ) {
+    if (needsRefundAccount && parsedRefundAccount && !parsedRefundAccount.success) {
       return NextResponse.json(
         {
           ok: false,
@@ -180,9 +166,7 @@ export async function POST(
       );
     }
     const refundAccount =
-      needsRefundAccount && parsedRefundAccount?.success
-        ? parsedRefundAccount.data
-        : null;
+      needsRefundAccount && parsedRefundAccount?.success ? parsedRefundAccount.data : null;
 
     // 연결된 스트링 교체 서비스 신청도 함께 취소되도록 요청하는지 여부
     const withStringing: boolean =

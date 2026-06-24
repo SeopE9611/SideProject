@@ -15,10 +15,7 @@ import {
  * - 비정상 값이면 defaultValue 적용
  * - min/max 범위로 clamp
  */
-function parseIntParam(
-  v: string | null,
-  opts: { defaultValue: number; min: number; max: number },
-) {
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
@@ -40,8 +37,7 @@ function toObjectIdMaybe(v: any): ObjectId | null {
 function getApplicationLines(stringDetails: any): any[] {
   // 통합 플로우 우선(lines) + 레거시(racketLines) fallback
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
-  if (Array.isArray(stringDetails?.racketLines))
-    return stringDetails.racketLines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
   return [];
 }
 
@@ -60,39 +56,24 @@ function serializeClassSnapshot(value: unknown): AcademyClassSnapshot | null {
   const record = value as Document;
   return {
     classId:
-      typeof record.classId === "string"
-        ? record.classId
-        : serializeObjectId(record.classId),
+      typeof record.classId === "string" ? record.classId : serializeObjectId(record.classId),
     name: typeof record.name === "string" ? record.name : "",
-    description:
-      typeof record.description === "string" ? record.description : null,
+    description: typeof record.description === "string" ? record.description : null,
     level:
-      typeof record.level === "string"
-        ? (record.level as AcademyClassSnapshot["level"])
-        : null,
-    levelLabel:
-      typeof record.levelLabel === "string" ? record.levelLabel : null,
+      typeof record.level === "string" ? (record.level as AcademyClassSnapshot["level"]) : null,
+    levelLabel: typeof record.levelLabel === "string" ? record.levelLabel : null,
     lessonType:
       typeof record.lessonType === "string"
         ? (record.lessonType as AcademyClassSnapshot["lessonType"])
         : null,
-    lessonTypeLabel:
-      typeof record.lessonTypeLabel === "string"
-        ? record.lessonTypeLabel
-        : null,
-    instructorName:
-      typeof record.instructorName === "string" ? record.instructorName : null,
+    lessonTypeLabel: typeof record.lessonTypeLabel === "string" ? record.lessonTypeLabel : null,
+    instructorName: typeof record.instructorName === "string" ? record.instructorName : null,
     location: typeof record.location === "string" ? record.location : null,
-    scheduleText:
-      typeof record.scheduleText === "string" ? record.scheduleText : null,
+    scheduleText: typeof record.scheduleText === "string" ? record.scheduleText : null,
     capacity: typeof record.capacity === "number" ? record.capacity : null,
     price: typeof record.price === "number" ? record.price : null,
-    status:
-      record.status === "visible" || record.status === "closed"
-        ? record.status
-        : undefined,
-    statusLabel:
-      typeof record.statusLabel === "string" ? record.statusLabel : null,
+    status: record.status === "visible" || record.status === "closed" ? record.status : undefined,
+    statusLabel: typeof record.statusLabel === "string" ? record.statusLabel : null,
   };
 }
 
@@ -147,8 +128,7 @@ function serializeAcademyApplication(doc: Document) {
   const status = typeof doc.status === "string" ? doc.status : "submitted";
   const desiredLessonType =
     typeof doc.desiredLessonType === "string" ? doc.desiredLessonType : null;
-  const currentLevel =
-    typeof doc.currentLevel === "string" ? doc.currentLevel : null;
+  const currentLevel = typeof doc.currentLevel === "string" ? doc.currentLevel : null;
 
   return {
     _id: doc._id.toString(),
@@ -156,8 +136,7 @@ function serializeAcademyApplication(doc: Document) {
     kind: "academy_lesson",
     type: "아카데미 레슨 신청",
     title: "아카데미 레슨 신청",
-    applicantName:
-      typeof doc.applicantName === "string" ? doc.applicantName : null,
+    applicantName: typeof doc.applicantName === "string" ? doc.applicantName : null,
     phone: typeof doc.phone === "string" ? doc.phone : null,
     appliedAt: toISOStringMaybe(doc.createdAt) ?? new Date(0).toISOString(),
     status,
@@ -167,8 +146,7 @@ function serializeAcademyApplication(doc: Document) {
     currentLevel,
     currentLevelLabel: getAcademyCurrentLevelLabel(currentLevel),
     preferredDays: toStringArray(doc.preferredDays),
-    preferredTimeText:
-      typeof doc.preferredTimeText === "string" ? doc.preferredTimeText : null,
+    preferredTimeText: typeof doc.preferredTimeText === "string" ? doc.preferredTimeText : null,
     lessonGoal: typeof doc.lessonGoal === "string" ? doc.lessonGoal : null,
     requestMemo: typeof doc.requestMemo === "string" ? doc.requestMemo : null,
     customerMessage:
@@ -195,8 +173,7 @@ export async function GET(req: Request) {
   if (!payload?.sub) return new NextResponse("Unauthorized", { status: 401 });
   // payload.sub → ObjectId 변환은 throw 가능 → 선검증
   const subStr = String(payload.sub);
-  if (!ObjectId.isValid(subStr))
-    return new NextResponse("Unauthorized", { status: 401 });
+  if (!ObjectId.isValid(subStr)) return new NextResponse("Unauthorized", { status: 401 });
   const userId = new ObjectId(subStr);
 
   // 페이지 파라미터
@@ -249,9 +226,7 @@ export async function GET(req: Request) {
 
   if (academyOnly) {
     const [academyTotal, rawAcademyList] = await Promise.all([
-      db
-        .collection("academy_lesson_applications")
-        .countDocuments(academyVisibleFilter),
+      db.collection("academy_lesson_applications").countDocuments(academyVisibleFilter),
       db
         .collection("academy_lesson_applications")
         .find(academyVisibleFilter, { projection: academyProjection })
@@ -267,27 +242,22 @@ export async function GET(req: Request) {
     });
   }
 
-  const [stringingTotal, academyTotal, rawStringingList, rawAcademyList] =
-    await Promise.all([
-      db
-        .collection("stringing_applications")
-        .countDocuments({ userId, status: { $ne: "draft" } }),
-      db
-        .collection("academy_lesson_applications")
-        .countDocuments(academyVisibleFilter),
-      db
-        .collection("stringing_applications")
-        .find({ userId, status: { $ne: "draft" } })
-        .sort({ createdAt: -1 })
-        .limit(pageWindow)
-        .toArray(),
-      db
-        .collection("academy_lesson_applications")
-        .find(academyVisibleFilter, { projection: academyProjection })
-        .sort({ createdAt: -1 })
-        .limit(pageWindow)
-        .toArray(),
-    ]);
+  const [stringingTotal, academyTotal, rawStringingList, rawAcademyList] = await Promise.all([
+    db.collection("stringing_applications").countDocuments({ userId, status: { $ne: "draft" } }),
+    db.collection("academy_lesson_applications").countDocuments(academyVisibleFilter),
+    db
+      .collection("stringing_applications")
+      .find({ userId, status: { $ne: "draft" } })
+      .sort({ createdAt: -1 })
+      .limit(pageWindow)
+      .toArray(),
+    db
+      .collection("academy_lesson_applications")
+      .find(academyVisibleFilter, { projection: academyProjection })
+      .sort({ createdAt: -1 })
+      .limit(pageWindow)
+      .toArray(),
+  ]);
 
   const total = stringingTotal + academyTotal;
   const mergedPage = [
@@ -297,9 +267,7 @@ export async function GET(req: Request) {
     .sort((a, b) => getCreatedAtTime(b.doc) - getCreatedAtTime(a.doc))
     .slice(skip, skip + limit);
 
-  const rawList = mergedPage
-    .filter((item) => item.kind === "stringing")
-    .map((item) => item.doc);
+  const rawList = mergedPage.filter((item) => item.kind === "stringing").map((item) => item.doc);
 
   /**
    * order 기반 신청서의 "라켓 포함 여부"를 미리 조회해서 Map으로 만듬
@@ -352,9 +320,7 @@ export async function GET(req: Request) {
     for (const o of orders as any[]) {
       const hasRacket =
         Array.isArray(o.items) &&
-        o.items.some(
-          (it: any) => it?.kind === "racket" || it?.kind === "used_racket",
-        );
+        o.items.some((it: any) => it?.kind === "racket" || it?.kind === "used_racket");
       orderHasRacketById.set(String(o._id), hasRacket);
       orderPaymentContextById.set(String(o._id), buildPaymentContext(o));
     }
@@ -380,10 +346,7 @@ export async function GET(req: Request) {
       )
       .toArray();
     for (const rental of rentals as any[]) {
-      rentalPaymentContextById.set(
-        String(rental._id),
-        buildPaymentContext(rental),
-      );
+      rentalPaymentContextById.set(String(rental._id), buildPaymentContext(rental));
     }
   }
 
@@ -391,9 +354,7 @@ export async function GET(req: Request) {
   const stringingItems = await Promise.all(
     rawList.map(async (doc) => {
       const details: any = (doc as any).stringDetails ?? {};
-      const typeIds: string[] = Array.isArray(details.stringTypes)
-        ? details.stringTypes
-        : [];
+      const typeIds: string[] = Array.isArray(details.stringTypes) ? details.stringTypes : [];
 
       // 스트링 이름 목록 생성 (커스텀/상품명 혼합)
       const names = await Promise.all(
@@ -403,10 +364,7 @@ export async function GET(req: Request) {
           }
           const prod = await db
             .collection("products")
-            .findOne(
-              { _id: new ObjectId(prodId) },
-              { projection: { name: 1 } },
-            );
+            .findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
           return prod?.name || "알 수 없는 상품";
         }),
       );
@@ -441,23 +399,16 @@ export async function GET(req: Request) {
        * - order 기반 + 주문에 racket 포함: 매장 라켓(구매/대여) 기반 → 고객 입고/운송장 불필요
        * - 그 외(단독 신청 / 스트링만 구매 + 서비스 등): 고객 라켓 기반 → 입고 필요
        */
-      const orderIdStr = (doc as any).orderId
-        ? String((doc as any).orderId)
-        : null;
-      const fromOrder = Boolean(
-        (doc as any).orderId || (doc as any)?.meta?.fromOrder,
-      );
+      const orderIdStr = (doc as any).orderId ? String((doc as any).orderId) : null;
+      const fromOrder = Boolean((doc as any).orderId || (doc as any)?.meta?.fromOrder);
       const orderHasRacket =
-        fromOrder && orderIdStr
-          ? Boolean(orderHasRacketById.get(orderIdStr))
-          : false;
+        fromOrder && orderIdStr ? Boolean(orderHasRacketById.get(orderIdStr)) : false;
       const inboundRequired = (() => {
         if ((doc as any).rentalId) return false;
         if (fromOrder && orderHasRacket) return false;
         return true;
       })();
-      const needsInboundTracking =
-        inboundRequired && collectionMethod === "self_ship";
+      const needsInboundTracking = inboundRequired && collectionMethod === "self_ship";
 
       // 취소 요청 정보 정리
       const cancel: any = (doc as any).cancelRequest ?? {};
@@ -469,8 +420,7 @@ export async function GET(req: Request) {
         if (cancel.reasonCode) {
           // 예: "CHANGE_MIND (다른 상품 구매)" 식으로 한 줄 요약
           cancelReasonSummary =
-            cancel.reasonCode +
-            (cancel.reasonText ? ` (${cancel.reasonText})` : "");
+            cancel.reasonCode + (cancel.reasonText ? ` (${cancel.reasonText})` : "");
         } else if (cancel.reasonText) {
           cancelReasonSummary = cancel.reasonText;
         }
@@ -486,12 +436,10 @@ export async function GET(req: Request) {
       const fallbackPaymentContext = buildPaymentContext(doc as Document);
       const paymentStatus = packageApplied
         ? "패키지 적용 완료"
-        : (linkedPaymentContext?.paymentStatus ??
-          fallbackPaymentContext.paymentStatus);
+        : (linkedPaymentContext?.paymentStatus ?? fallbackPaymentContext.paymentStatus);
       const paymentProvider = packageApplied
         ? null
-        : (linkedPaymentContext?.paymentProvider ??
-          fallbackPaymentContext.paymentProvider);
+        : (linkedPaymentContext?.paymentProvider ?? fallbackPaymentContext.paymentProvider);
 
       return {
         id: doc._id.toString(),
@@ -538,10 +486,8 @@ export async function GET(req: Request) {
         preferredTime: cm === "visit" ? (details.preferredTime ?? null) : null,
 
         // 방문 예약 슬롯 정보 (없으면 null)
-        visitSlotCount:
-          cm === "visit" ? ((doc as any).visitSlotCount ?? null) : null,
-        visitDurationMinutes:
-          cm === "visit" ? ((doc as any).visitDurationMinutes ?? null) : null,
+        visitSlotCount: cm === "visit" ? ((doc as any).visitSlotCount ?? null) : null,
+        visitDurationMinutes: cm === "visit" ? ((doc as any).visitDurationMinutes ?? null) : null,
 
         requests: details.requirements ?? null,
         shippingInfo: {
@@ -578,9 +524,7 @@ export async function GET(req: Request) {
     }),
   );
 
-  const stringingItemById = new Map(
-    stringingItems.map((item) => [item.id, item]),
-  );
+  const stringingItemById = new Map(stringingItems.map((item) => [item.id, item]));
 
   const items = mergedPage
     .map((item) => {

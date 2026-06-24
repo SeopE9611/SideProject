@@ -2,20 +2,9 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -34,15 +23,7 @@ import {
 } from "@/lib/hooks/useUnsavedChangesGuard";
 import { supabase } from "@/lib/supabase";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import {
-  ArrowLeft,
-  Bell,
-  ChevronLeft,
-  ChevronRight,
-  Pin,
-  Upload,
-  X,
-} from "lucide-react";
+import { ArrowLeft, Bell, ChevronLeft, ChevronRight, Pin, Upload, X } from "lucide-react";
 import NextImage from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -68,14 +49,11 @@ const TITLE_MAX = 80;
 const CONTENT_MIN = 10;
 const CONTENT_MAX = 8000;
 const hasHtmlLike = (s: string) => /<[^>]+>/.test(s); // 최소 수준 태그 감지
-const hasScriptLike = (s: string) =>
-  /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
+const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
 
 type NoticeWriteClientProps = { mode?: "notice" | "event" };
 
-export default function NoticeWriteClient({
-  mode = "notice",
-}: NoticeWriteClientProps) {
+export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClientProps) {
   const sp = useSearchParams();
   const router = useRouter();
   const editId = sp.get("id"); // 있으면 수정 모드
@@ -146,9 +124,10 @@ export default function NoticeWriteClient({
 
   // 프리뷰 index에서 모달 열기 (이미지들만 모아서)
   const openViewerFromIndex = (uiIndex: number) => {
-    const only = previews
-      .map((url, i) => ({ url, i }))
-      .filter((v) => !!v.url) as { url: string; i: number }[];
+    const only = previews.map((url, i) => ({ url, i })).filter((v) => !!v.url) as {
+      url: string;
+      i: number;
+    }[];
     if (only.length === 0) return;
 
     const start = only.findIndex((v) => v.i === uiIndex);
@@ -163,9 +142,7 @@ export default function NoticeWriteClient({
     setViewerIndex((i) => (i - 1 + viewerImages.length) % viewerImages.length);
 
   const [isPinned, setIsPinned] = useState(false);
-  const [category, setCategory] = useState<string>(
-    fixedCategoryCode ?? "general",
-  );
+  const [category, setCategory] = useState<string>(fixedCategoryCode ?? "general");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -299,27 +276,18 @@ export default function NoticeWriteClient({
   const isEditRouteMismatch =
     !!editId &&
     !!detail?.item &&
-    (isEventMode
-      ? detail.item.category !== "이벤트"
-      : detail.item.category === "이벤트");
+    (isEventMode ? detail.item.category !== "이벤트" : detail.item.category === "이벤트");
 
   useEffect(() => {
     if (!editId || !detail?.item || !isEditRouteMismatch) return;
     const targetBase =
-      detail.item.category === "이벤트"
-        ? "/board/event/write"
-        : "/board/notice/write";
+      detail.item.category === "이벤트" ? "/board/event/write" : "/board/notice/write";
     router.replace(`${targetBase}?id=${encodeURIComponent(editId)}`);
   }, [editId, detail?.item, isEditRouteMismatch, router]);
 
   // 프리필: 상세 응답을 코드값으로 역변환해서 넣는다.
   useEffect(() => {
-    if (
-      !editId ||
-      !detail?.item ||
-      prefilledRef.current ||
-      isEditRouteMismatch
-    ) {
+    if (!editId || !detail?.item || prefilledRef.current || isEditRouteMismatch) {
       return;
     }
     const p = detail.item;
@@ -392,9 +360,7 @@ export default function NoticeWriteClient({
     // "기존 첨부 + 새 첨부" 합산 기준으로 MAX 강제 (수정 모드에서 초과 업로드 방지)
     const totalNow = (existingAttachments?.length ?? 0) + selectedFiles.length;
     if (totalNow + files.length > MAX) {
-      showErrorToast(
-        `첨부는 최대 ${MAX}개까지만 업로드할 수 있어요. (현재 ${totalNow}개)`,
-      );
+      showErrorToast(`첨부는 최대 ${MAX}개까지만 업로드할 수 있어요. (현재 ${totalNow}개)`);
       return;
     }
     if (files.some((f) => f.size > MAX_MB * 1024 * 1024)) {
@@ -403,9 +369,7 @@ export default function NoticeWriteClient({
     }
     // 일부 브라우저에서 MIME이 비어있을 수 있어 확장자로 한 번 더 체크
     const extOk = (name: string) =>
-      /\.(pdf|docx?|xlsx?|xls|pptx?|ppt|hwp|hwpx|txt|jpe?g|png|gif|webp)$/i.test(
-        name,
-      );
+      /\.(pdf|docx?|xlsx?|xls|pptx?|ppt|hwp|hwpx|txt|jpe?g|png|gif|webp)$/i.test(name);
     if (files.some((f) => !(ALLOWED.has(f.type) || extOk(f.name)))) {
       showErrorToast(
         "이미지(JPG/PNG/GIF/WEBP) 또는 문서(PDF/DOC/DOCX/XLS/XLSX/PPT/PPTX/HWP/HWPX/TXT)만 업로드할 수 있어요.",
@@ -464,9 +428,7 @@ export default function NoticeWriteClient({
       }
       // 공지 입력은 기본적으로 HTML/스크립트 입력을 허용하지 않는 편이 안전
       if (hasScriptLike(t) || hasScriptLike(c)) {
-        showErrorToast(
-          "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.",
-        );
+        showErrorToast("스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.");
         return;
       }
       if (hasHtmlLike(t) || hasHtmlLike(c)) {
@@ -502,12 +464,10 @@ export default function NoticeWriteClient({
       const uploadOne = async (file: File) => {
         const ext = file.name.split(".").pop() || "bin";
         const path = `${FOLDER}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-        const { error } = await supabase.storage
-          .from(BUCKET)
-          .upload(path, file, {
-            upsert: false,
-            contentType: file.type || undefined,
-          });
+        const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+          upsert: false,
+          contentType: file.type || undefined,
+        });
         if (error) throw error;
         const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
         const meta = await getImageSize(file);
@@ -526,9 +486,7 @@ export default function NoticeWriteClient({
 
       // 새로 추가한 파일 업로드
       const uploaded =
-        selectedFiles.length > 0
-          ? await Promise.all(selectedFiles.map(uploadOne))
-          : [];
+        selectedFiles.length > 0 ? await Promise.all(selectedFiles.map(uploadOne)) : [];
       const cleanNew = uploaded.map((a) => ({
         url: a.url,
         name: a.name,
@@ -544,9 +502,7 @@ export default function NoticeWriteClient({
         title: t,
         content: c,
         isPinned,
-        category: isEventMode
-          ? "이벤트"
-          : (NOTICE_LABEL_BY_CODE[category] ?? "일반"), // 코드 -> 라벨 변환
+        category: isEventMode ? "이벤트" : (NOTICE_LABEL_BY_CODE[category] ?? "일반"), // 코드 -> 라벨 변환
         attachments,
         ...(removedPaths.length > 0 ? { removedPaths } : {}), // 새 업로드 파일을 올리고 -> 응답을 attachments로 병합해서 서버로 보냄
         ...(editId && clientSeenDate ? { clientSeenDate } : {}),
@@ -559,9 +515,7 @@ export default function NoticeWriteClient({
         method,
         headers: {
           "Content-Type": "application/json",
-          ...(editId && clientSeenDate
-            ? { "If-Unmodified-Since": clientSeenDate }
-            : {}),
+          ...(editId && clientSeenDate ? { "If-Unmodified-Since": clientSeenDate } : {}),
         },
         body: JSON.stringify(payload),
       });
@@ -583,21 +537,13 @@ export default function NoticeWriteClient({
           return;
         }
 
-        const msg =
-          typeof json.error === "string"
-            ? json.error
-            : JSON.stringify(json.error);
+        const msg = typeof json.error === "string" ? json.error : JSON.stringify(json.error);
         throw new Error(
-          msg ||
-            (editId
-              ? "수정 실패(권한 확인 필요)"
-              : "저장 실패(권한 확인 필요)"),
+          msg || (editId ? "수정 실패(권한 확인 필요)" : "저장 실패(권한 확인 필요)"),
         );
       }
-      const latestUpdatedAt =
-        res.headers.get("x-updated-at") || json?.item?.updatedAt || null;
-      if (latestUpdatedAt)
-        setClientSeenDate(new Date(latestUpdatedAt).toISOString());
+      const latestUpdatedAt = res.headers.get("x-updated-at") || json?.item?.updatedAt || null;
+      if (latestUpdatedAt) setClientSeenDate(new Date(latestUpdatedAt).toISOString());
 
       // 편집 상태 리셋
       setSelectedFiles([]);
@@ -609,20 +555,12 @@ export default function NoticeWriteClient({
       const goId = editId || json.item?._id;
       if (goId) {
         if (json.item) {
-          await mutate(
-            `/api/boards/${goId}`,
-            { ok: true, item: json.item },
-            false,
-          );
+          await mutate(`/api/boards/${goId}`, { ok: true, item: json.item }, false);
         } else {
           await mutate(`/api/boards/${goId}`);
         }
 
-        await mutate(
-          (key) =>
-            typeof key === "string" &&
-            key.startsWith("/api/boards?type=notice"),
-        );
+        await mutate((key) => typeof key === "string" && key.startsWith("/api/boards?type=notice"));
         showSuccessToast(
           editId
             ? isEventMode
@@ -638,10 +576,7 @@ export default function NoticeWriteClient({
         return;
       }
 
-      await mutate(
-        (key) =>
-          typeof key === "string" && key.startsWith("/api/boards?type=notice"),
-      );
+      await mutate((key) => typeof key === "string" && key.startsWith("/api/boards?type=notice"));
       showSuccessToast(
         editId
           ? isEventMode
@@ -679,9 +614,7 @@ export default function NoticeWriteClient({
                 <h1 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">
                   {pageHeading}
                 </h1>
-                <p className="text-lg text-muted-foreground">
-                  {pageDescription}
-                </p>
+                <p className="text-lg text-muted-foreground">{pageDescription}</p>
               </div>
             </div>
           </div>
@@ -778,9 +711,7 @@ export default function NoticeWriteClient({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder={
-                    isEventMode
-                      ? "이벤트 제목을 입력해주세요"
-                      : "공지사항 제목을 입력해주세요"
+                    isEventMode ? "이벤트 제목을 입력해주세요" : "공지사항 제목을 입력해주세요"
                   }
                   className="h-12 bg-card text-base"
                 />
@@ -795,9 +726,7 @@ export default function NoticeWriteClient({
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder={
-                    isEventMode
-                      ? "이벤트 내용을 작성해주세요"
-                      : "공지사항 내용을 작성해주세요"
+                    isEventMode ? "이벤트 내용을 작성해주세요" : "공지사항 내용을 작성해주세요"
                   }
                   className="min-h-[300px] bg-card text-base resize-none"
                 />
@@ -808,9 +737,7 @@ export default function NoticeWriteClient({
                   <Label className="text-base font-semibold">기존 첨부</Label>
                   <ul className="divide-y rounded-lg border bg-card">
                     {existingAttachments.map((att, idx) => {
-                      const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(
-                        att.url,
-                      );
+                      const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(att.url);
                       return (
                         <li
                           key={att.url + idx}
@@ -833,9 +760,7 @@ export default function NoticeWriteClient({
                                 {att.name ?? att.url}
                               </div>
                               <div className="text-xs text-muted-foreground">
-                                {att.size
-                                  ? `${(att.size / 1024).toFixed(0)} KB`
-                                  : ""}
+                                {att.size ? `${(att.size / 1024).toFixed(0)} KB` : ""}
                               </div>
                             </div>
                           </div>
@@ -887,9 +812,7 @@ export default function NoticeWriteClient({
                       fileInputRef.current?.click();
                     }}
                     onKeyDown={(e) =>
-                      e.key === "Enter" || e.key === " "
-                        ? fileInputRef.current?.click()
-                        : null
+                      e.key === "Enter" || e.key === " " ? fileInputRef.current?.click() : null
                     }
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => {
@@ -899,8 +822,7 @@ export default function NoticeWriteClient({
                   >
                     <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                     <p className="text-sm text-muted-foreground mb-2">
-                      클릭하여 이미지 또는 파일을 선택하거나 드래그하여
-                      업로드하세요
+                      클릭하여 이미지 또는 파일을 선택하거나 드래그하여 업로드하세요
                     </p>
                     <input
                       ref={fileInputRef}
@@ -1014,8 +936,7 @@ export default function NoticeWriteClient({
                   {/* 제한 안내 뱃지 */}
                   <div className="text-xs text-muted-foreground">
                     • 최대 5개 / 파일당 최대 10MB
-                    <br />• 지원 형식: 이미지(JPG/PNG/GIF/WEBP),
-                    문서(PDF/DOC/DOCX)
+                    <br />• 지원 형식: 이미지(JPG/PNG/GIF/WEBP), 문서(PDF/DOC/DOCX)
                   </div>
                 </div>
               </div>
@@ -1045,12 +966,7 @@ export default function NoticeWriteClient({
             </CardContent>
 
             <CardFooter className="flex justify-between border-t bg-card p-4 md:p-8">
-              <Button
-                variant="outline"
-                asChild
-                size="lg"
-                className="px-8 bg-transparent"
-              >
+              <Button variant="outline" asChild size="lg" className="px-8 bg-transparent">
                 <Link href={listHref} onClick={guardLeave}>
                   취소
                 </Link>

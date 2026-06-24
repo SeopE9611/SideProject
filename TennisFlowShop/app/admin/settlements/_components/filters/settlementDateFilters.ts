@@ -16,10 +16,7 @@ export function firstDayOfMonth_KST(base = new Date()) {
     month: "2-digit",
   })
     .formatToParts(base)
-    .reduce<Record<string, string>>(
-      (acc, p) => ((acc[p.type] = p.value), acc),
-      {},
-    );
+    .reduce<Record<string, string>>((acc, p) => ((acc[p.type] = p.value), acc), {});
   return `${parts.year}-${parts.month}-01`;
 }
 
@@ -30,10 +27,7 @@ export function prevMonthRange_KST(base = new Date()) {
     month: "2-digit",
   })
     .formatToParts(base)
-    .reduce<Record<string, string>>(
-      (acc, p) => ((acc[p.type] = p.value), acc),
-      {},
-    );
+    .reduce<Record<string, string>>((acc, p) => ((acc[p.type] = p.value), acc), {});
   let y = Number(parts.year);
   let m = Number(parts.month);
   m -= 1;

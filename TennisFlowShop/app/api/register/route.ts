@@ -2,11 +2,7 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb"; // 단일 DB 유틸 사용
 import { hash } from "bcryptjs";
-import {
-  isSignupBonusActive,
-  SIGNUP_BONUS_POINTS,
-  signupBonusRefKey,
-} from "@/lib/points.policy";
+import { isSignupBonusActive, SIGNUP_BONUS_POINTS, signupBonusRefKey } from "@/lib/points.policy";
 import { grantPoints } from "@/lib/points.service";
 import { z } from "zod";
 import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
@@ -83,10 +79,7 @@ export async function POST(req: Request) {
   try {
     rawBody = await req.json();
   } catch {
-    return NextResponse.json(
-      { message: "요청 본문(JSON)이 올바르지 않습니다." },
-      { status: 400 },
-    );
+    return NextResponse.json({ message: "요청 본문(JSON)이 올바르지 않습니다." }, { status: 400 });
   }
 
   const parsed = RegisterBodySchema.safeParse(rawBody);
@@ -153,10 +146,7 @@ export async function POST(req: Request) {
     // 3) 애플리케이션 레벨 중복 검사(낙관적)
     const existing = await users.findOne({ email });
     if (existing) {
-      return NextResponse.json(
-        { message: "이미 존재하는 사용자입니다" },
-        { status: 409 },
-      );
+      return NextResponse.json({ message: "이미 존재하는 사용자입니다" }, { status: 409 });
     }
 
     // 4) 비밀번호 해시
@@ -200,10 +190,7 @@ export async function POST(req: Request) {
     // 6) DB 레벨 unique 충돌 대응(인덱스가 있는 경우)
     //    E11000 duplicate key error collection: ... index: email_1 dup key: { email: "..." }
     if (err?.code === 11000) {
-      return NextResponse.json(
-        { message: "이미 존재하는 사용자입니다" },
-        { status: 409 },
-      );
+      return NextResponse.json({ message: "이미 존재하는 사용자입니다" }, { status: 409 });
     }
 
     console.error("[API register] error:", err);

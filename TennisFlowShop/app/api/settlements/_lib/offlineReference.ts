@@ -9,10 +9,7 @@ import type {
 export const OFFLINE_SETTLEMENT_NOTICE =
   "오프라인 매출은 기존 PG 정산 payout 공식에 포함되지 않는 참고 항목입니다.";
 
-type OfflineReferenceBucket = Omit<
-  OfflineRevenueBucket,
-  "totalCount" | "byMethod"
->;
+type OfflineReferenceBucket = Omit<OfflineRevenueBucket, "totalCount" | "byMethod">;
 
 export type OfflineSettlementReference = {
   range: { from: string; to: string };

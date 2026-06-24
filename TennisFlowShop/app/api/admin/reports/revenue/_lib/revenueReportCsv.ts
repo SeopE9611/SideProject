@@ -1,7 +1,4 @@
-import type {
-  RevenueReportResponse,
-  RevenueReportSnapshotStatus,
-} from "@/types/admin/reports";
+import type { RevenueReportResponse, RevenueReportSnapshotStatus } from "@/types/admin/reports";
 
 const METHOD_LABELS = {
   cash: "현금",
@@ -45,42 +42,17 @@ function buildCommonRows(report: RevenueReportResponse): unknown[][] {
     ],
     ["온라인 환불", report.online.refundedAmount, "", "기존 정산 환불 기준"],
     ["온라인 순매출", report.online.netAmount, "", "온라인 매출 - 온라인 환불"],
-    [
-      "오프라인 운영 매출",
-      report.offline.paidAmount,
-      "",
-      "오프라인 summary 기준",
-    ],
-    [
-      "오프라인 환불",
-      report.offline.refundedAmount,
-      "",
-      "오프라인 summary 기준",
-    ],
-    [
-      "오프라인 순매출",
-      report.offline.netAmount,
-      "",
-      "오프라인 운영 매출 - 오프라인 환불",
-    ],
-    [
-      "오프라인 미결제",
-      report.offline.pendingAmount,
-      "",
-      "참고 합계 결제완료 매출 제외",
-    ],
+    ["오프라인 운영 매출", report.offline.paidAmount, "", "오프라인 summary 기준"],
+    ["오프라인 환불", report.offline.refundedAmount, "", "오프라인 summary 기준"],
+    ["오프라인 순매출", report.offline.netAmount, "", "오프라인 운영 매출 - 오프라인 환불"],
+    ["오프라인 미결제", report.offline.pendingAmount, "", "참고 합계 결제완료 매출 제외"],
     [
       "온라인 + 오프라인 참고 합계",
       report.combinedPreview.paidAmount,
       "",
       "정산 지급액 계산에 사용되지 않습니다.",
     ],
-    [
-      "참고 합계 순매출",
-      report.combinedPreview.netAmount,
-      "",
-      report.combinedPreview.note,
-    ],
+    ["참고 합계 순매출", report.combinedPreview.netAmount, "", report.combinedPreview.note],
     [
       "패키지 발급 보정 필요 건수",
       "",
@@ -136,14 +108,8 @@ export function buildRevenueReportCsv(report: RevenueReportResponse) {
     ["온라인/오프라인 매출 리포트"],
     ["기간", `${report.range.from} ~ ${report.range.to}`],
     ["그룹 기준", report.range.groupBy === "day" ? "일별" : "월별"],
-    [
-      "안내",
-      "온라인 + 오프라인 참고 합계는 정산 지급액 계산에 사용되지 않습니다.",
-    ],
-    [
-      "안내",
-      "오프라인 현금/계좌이체/매장 카드 매출은 별도 운영 정산 대상입니다.",
-    ],
+    ["안내", "온라인 + 오프라인 참고 합계는 정산 지급액 계산에 사용되지 않습니다."],
+    ["안내", "오프라인 현금/계좌이체/매장 카드 매출은 별도 운영 정산 대상입니다."],
     [],
     ...buildCommonRows(report),
   ];
@@ -166,14 +132,8 @@ export function buildRevenueReportSnapshotCsv(
       "안내",
       "저장 이후 주문/환불/오프라인 기록 수정에 따라 현재 실시간 리포트와 차이가 날 수 있습니다.",
     ],
-    [
-      "안내",
-      "온라인 + 오프라인 참고 합계는 정산 지급액 계산에 사용되지 않습니다.",
-    ],
-    [
-      "안내",
-      "오프라인 현금/계좌이체/매장 카드 매출은 별도 운영 정산 대상입니다.",
-    ],
+    ["안내", "온라인 + 오프라인 참고 합계는 정산 지급액 계산에 사용되지 않습니다."],
+    ["안내", "오프라인 현금/계좌이체/매장 카드 매출은 별도 운영 정산 대상입니다."],
     [],
     ...buildCommonRows(report),
   ];

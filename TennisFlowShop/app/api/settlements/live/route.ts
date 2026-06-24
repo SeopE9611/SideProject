@@ -18,10 +18,7 @@ import { buildOfflineSettlementReference } from "@/app/api/settlements/_lib/offl
 function withDeprecation(res: NextResponse) {
   res.headers.set("Deprecation", "true");
   res.headers.set("Sunset", "Wed, 31 Dec 2026 14:59:59 GMT");
-  res.headers.set(
-    "Link",
-    '</api/admin/settlements/live>; rel="successor-version"',
-  );
+  res.headers.set("Link", '</api/admin/settlements/live>; rel="successor-version"');
   return res;
 }
 
@@ -47,18 +44,12 @@ export async function GET(req: Request) {
 
     if (!from || !to) {
       return withDeprecation(
-        NextResponse.json(
-          { error: "from,to 쿼리 필요(yyyy-mm-dd)" },
-          { status: 400 },
-        ),
+        NextResponse.json({ error: "from,to 쿼리 필요(yyyy-mm-dd)" }, { status: 400 }),
       );
     }
     if (new Date(from) > new Date(to)) {
       return withDeprecation(
-        NextResponse.json(
-          { error: "시작일이 종료일보다 늦습니다." },
-          { status: 400 },
-        ),
+        NextResponse.json({ error: "시작일이 종료일보다 늦습니다." }, { status: 400 }),
       );
     }
     // KST 기준으로 하루 경계 잡기 → UTC로 변환
@@ -141,10 +132,7 @@ export async function GET(req: Request) {
       .collection("rental_orders")
       .find(
         {
-          $and: [
-            { createdAt: { $gte: start, $lt: endExclusive } },
-            buildRentalPaidMatch(),
-          ],
+          $and: [{ createdAt: { $gte: start, $lt: endExclusive } }, buildRentalPaidMatch()],
         },
         {
           projection: {
@@ -158,41 +146,18 @@ export async function GET(req: Request) {
       )
       .toArray();
 
-    const standaloneApps = apps.filter((a: any) =>
-      isStandaloneStringingApplication(a),
-    );
+    const standaloneApps = apps.filter((a: any) => isStandaloneStringingApplication(a));
 
     const paidOrders = orders.reduce((s, o: any) => s + orderPaidAmount(o), 0);
-    const paidApps = standaloneApps.reduce(
-      (s, a: any) => s + applicationPaidAmount(a),
-      0,
-    );
-    const pkgPaid = packages.reduce(
-      (s: number, p: any) => s + orderPaidAmount(p),
-      0,
-    );
-    const rentalPaid = rentals.reduce(
-      (s: number, r: any) => s + rentalPaidAmount(r),
-      0,
-    );
-    const rentalDeposit = rentals.reduce(
-      (s: number, r: any) => s + rentalDepositAmount(r),
-      0,
-    );
+    const paidApps = standaloneApps.reduce((s, a: any) => s + applicationPaidAmount(a), 0);
+    const pkgPaid = packages.reduce((s: number, p: any) => s + orderPaidAmount(p), 0);
+    const rentalPaid = rentals.reduce((s: number, r: any) => s + rentalPaidAmount(r), 0);
+    const rentalDeposit = rentals.reduce((s: number, r: any) => s + rentalDepositAmount(r), 0);
     const paid = paidOrders + paidApps + pkgPaid + rentalPaid;
 
-    const refundOrders = orders.reduce(
-      (s: number, o: any) => s + refundsAmount(o),
-      0,
-    );
-    const refundApps = standaloneApps.reduce(
-      (s: number, a: any) => s + refundsAmount(a),
-      0,
-    );
-    const refundPackages = packages.reduce(
-      (s: number, p: any) => s + refundsAmount(p),
-      0,
-    );
+    const refundOrders = orders.reduce((s: number, o: any) => s + refundsAmount(o), 0);
+    const refundApps = standaloneApps.reduce((s: number, a: any) => s + refundsAmount(a), 0);
+    const refundPackages = packages.reduce((s: number, p: any) => s + refundsAmount(p), 0);
     const refund = refundOrders + refundApps + refundPackages;
     const net = paid - refund;
     const offline = await buildOfflineSettlementReference(db, {
@@ -215,8 +180,6 @@ export async function GET(req: Request) {
     );
   } catch (e) {
     console.error("[settlements/live]", e);
-    return withDeprecation(
-      NextResponse.json({ message: "internal_error" }, { status: 500 }),
-    );
+    return withDeprecation(NextResponse.json({ message: "internal_error" }, { status: 500 }));
   }
 }

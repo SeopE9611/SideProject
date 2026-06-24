@@ -6,13 +6,7 @@ import AsyncState from "@/components/system/AsyncState";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { racketBrandLabel } from "@/lib/constants";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -168,8 +162,7 @@ const normalizeRentalShippingMethod = (value?: string | null) => {
 };
 
 // 안전 라벨/URL 헬퍼
-const getCourierLabel = (code?: string) =>
-  code ? getCourierDisplayName(code) : "-";
+const getCourierLabel = (code?: string) => (code ? getCourierDisplayName(code) : "-");
 
 const getTrackHref = (code?: string, no?: string) => {
   if (!code || !no) return "#";
@@ -220,17 +213,14 @@ const getStatusLabel = (status: string) => {
 };
 
 const courierTrackUrl: Record<string, (no: string) => string> = {
-  cj: (no) =>
-    `https://trace.cjlogistics.com/web/detail.jsp?slipno=${encodeURIComponent(no)}`,
+  cj: (no) => `https://trace.cjlogistics.com/web/detail.jsp?slipno=${encodeURIComponent(no)}`,
   post: (no) =>
     `https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=${encodeURIComponent(no)}`,
-  logen: (no) =>
-    `https://www.ilogen.com/m/personal/trace/${encodeURIComponent(no)}`,
+  logen: (no) => `https://www.ilogen.com/m/personal/trace/${encodeURIComponent(no)}`,
   hanjin: (no) =>
     `https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnum=${encodeURIComponent(no)}`,
 };
-const fmt = (v?: string | Date | null) =>
-  v ? new Date(v).toLocaleString() : "-";
+const fmt = (v?: string | Date | null) => (v ? new Date(v).toLocaleString() : "-");
 
 const getTrackingNumber = (value: unknown) => {
   const item = value as
@@ -288,8 +278,7 @@ const formatDateTime = (dateString: string) => {
 const fmtDateOnly = (v?: string | Date | null) =>
   v ? new Date(v).toLocaleDateString("ko-KR") : "-";
 
-const formatCurrency = (amount: number) =>
-  `${new Intl.NumberFormat("ko-KR").format(amount)}원`;
+const formatCurrency = (amount: number) => `${new Intl.NumberFormat("ko-KR").format(amount)}원`;
 
 type Props = {
   id: string;
@@ -343,11 +332,7 @@ export default function RentalsDetailClient({
       showSuccessToast("수령 확인이 완료되어 대여가 시작되었습니다.");
       await refreshRental();
     } catch (error) {
-      showErrorToast(
-        error instanceof Error
-          ? error.message
-          : "수령 확인을 처리하지 못했습니다.",
-      );
+      showErrorToast(error instanceof Error ? error.message : "수령 확인을 처리하지 못했습니다.");
     } finally {
       setIsReceiving(false);
     }
@@ -359,8 +344,7 @@ export default function RentalsDetailClient({
 
   const handleWithdrawCancelRequest = async () => {
     if (!data) return;
-    if (!data.cancelRequest || data.cancelRequest.status !== "requested")
-      return;
+    if (!data.cancelRequest || data.cancelRequest.status !== "requested") return;
 
     try {
       setWithdrawing(true);
@@ -371,8 +355,7 @@ export default function RentalsDetailClient({
 
       if (!res.ok) {
         const body = await res.json().catch(() => null);
-        const msg =
-          body?.message ?? "대여 취소 요청 철회 중 오류가 발생했습니다.";
+        const msg = body?.message ?? "대여 취소 요청 철회 중 오류가 발생했습니다.";
         showErrorToast(msg);
         return;
       }
@@ -418,8 +401,7 @@ export default function RentalsDetailClient({
     Boolean(data?.isStringServiceApplied) ||
     Boolean(data?.stringingApplicationId);
   // 신청서 ID가 없는데 교체 서비스가 포함된 경우 => "교체 신청하기" CTA 노출
-  const canApplyStringService =
-    withStringService && !data?.stringingApplicationId;
+  const canApplyStringService = withStringService && !data?.stringingApplicationId;
 
   useEffect(() => {
     if (focusTarget !== "stringing") return;
@@ -507,8 +489,7 @@ export default function RentalsDetailClient({
   const stringPrice = data.amount?.stringPrice ?? 0;
   const stringingFee = data.amount?.stringingFee ?? 0;
   // 서버가 total을 계산해 저장하지만, 혹시 없을 경우를 대비해 동일 로직으로 fallback
-  const total =
-    data.amount?.total ?? fee + deposit + stringPrice + stringingFee;
+  const total = data.amount?.total ?? fee + deposit + stringPrice + stringingFee;
 
   const banner = getDepositBanner({
     status: data.status,
@@ -521,19 +502,14 @@ export default function RentalsDetailClient({
   const outboundShippedAt = getShippedAtValue(data.shipping?.outbound);
   const returnTrackingNo = getTrackingNumber(data.shipping?.return);
   const hasOutboundShipping = !!outboundTrackingNo;
-  const rentalShippingMethod = normalizeRentalShippingMethod(
-    data.shipping?.shippingMethod,
-  );
+  const rentalShippingMethod = normalizeRentalShippingMethod(data.shipping?.shippingMethod);
   const isVisitPickup = rentalShippingMethod === "pickup";
   const isLinkedStringingComplete =
     !data.withStringService ||
     data.stringingApplication?.status === "교체완료" ||
     data.applicationSummary?.status === "교체완료";
   const canReceiveRental =
-    data.status === "paid" &&
-    !isVisitPickup &&
-    hasOutboundShipping &&
-    isLinkedStringingComplete;
+    data.status === "paid" && !isVisitPickup && hasOutboundShipping && isLinkedStringingComplete;
   const displayStatusLabel = data.depositRefundedAt
     ? "보증금 환급 완료"
     : data.status === "paid"
@@ -557,10 +533,7 @@ export default function RentalsDetailClient({
   // 취소 상태 배너용 데이터
   const cancelBanner = data.cancelRequest?.status
     ? {
-        status: data.cancelRequest.status as
-          | "requested"
-          | "approved"
-          | "rejected",
+        status: data.cancelRequest.status as "requested" | "approved" | "rejected",
         title:
           data.cancelRequest.status === "requested"
             ? "대여 취소 요청 처리 중입니다. 관리자 확인 후 결과가 반영됩니다."
@@ -575,8 +548,7 @@ export default function RentalsDetailClient({
   const dueDate = data.dueAt ? new Date(data.dueAt) : null;
   if (dueDate) dueDate.setHours(0, 0, 0, 0);
   const isReturnWindowOpen = Boolean(dueDate && today >= dueDate);
-  const isReturnShippingAvailable =
-    data.status === "out" && !data.returnedAt && isReturnWindowOpen;
+  const isReturnShippingAvailable = data.status === "out" && !data.returnedAt && isReturnWindowOpen;
 
   const nextTodo = canApplyStringService
     ? {
@@ -586,9 +558,7 @@ export default function RentalsDetailClient({
       }
     : isReturnShippingAvailable
       ? {
-          label: returnTrackingNo
-            ? "반납 운송장 확인/수정"
-            : "반납 운송장 등록",
+          label: returnTrackingNo ? "반납 운송장 확인/수정" : "반납 운송장 등록",
           ctaLabel: returnTrackingNo ? "반납 운송장 수정" : "반납 운송장 등록",
           ctaHref: returnShippingHref,
         }
@@ -603,8 +573,7 @@ export default function RentalsDetailClient({
             {
               id: `${data.id}-stringing-summary`,
               racketLabel: `${racketBrandLabel(data.brand)} ${data.model}`,
-              stringName:
-                data.applicationSummary.stringNames.join(", ") || null,
+              stringName: data.applicationSummary.stringNames.join(", ") || null,
               tensionMain: data.applicationSummary.tensionSummary,
               tensionCross: null,
               note: null,
@@ -640,13 +609,9 @@ export default function RentalsDetailClient({
               <Briefcase className="h-8 w-8 text-primary" />
             </div>
             <div className="min-w-0">
-              <h1 className="break-keep text-2xl font-bold text-foreground">
-                대여 상세
-              </h1>
+              <h1 className="break-keep text-2xl font-bold text-foreground">대여 상세</h1>
               <div className="flex flex-wrap items-center gap-2 mt-1">
-                <p className="min-w-0 break-all text-muted-foreground">
-                  대여번호: {data.id}
-                </p>
+                <p className="min-w-0 break-all text-muted-foreground">대여번호: {data.id}</p>
 
                 {data.stringingApplicationId ? (
                   <Badge variant="info">신청서 연결됨</Badge>
@@ -685,8 +650,8 @@ export default function RentalsDetailClient({
               </Button>
             ) : isOnlineCancelRestricted ? (
               <p className="max-w-sm text-sm text-muted-foreground">
-                이미 출고 또는 대여가 진행된 건은 온라인 취소 요청이 불가합니다.
-                변경이 필요하면 고객센터로 문의해주세요.
+                이미 출고 또는 대여가 진행된 건은 온라인 취소 요청이 불가합니다. 변경이 필요하면
+                고객센터로 문의해주세요.
               </p>
             ) : null}
 
@@ -705,19 +670,11 @@ export default function RentalsDetailClient({
         </div>
         {canReceiveRental && (
           <div className="mb-4 rounded-xl border border-primary/20 bg-primary/10 p-4">
-            <p className="font-semibold text-foreground">
-              라켓을 수령하셨나요?
-            </p>
+            <p className="font-semibold text-foreground">라켓을 수령하셨나요?</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              수령 확인을 누르면 오늘부터 대여 기간이 시작되고 반납 예정일이
-              계산됩니다.
+              수령 확인을 누르면 오늘부터 대여 기간이 시작되고 반납 예정일이 계산됩니다.
             </p>
-            <Button
-              size="sm"
-              className="mt-3"
-              disabled={isReceiving}
-              onClick={handleReceiveRental}
-            >
+            <Button size="sm" className="mt-3" disabled={isReceiving} onClick={handleReceiveRental}>
               {isReceiving ? "수령 확인 처리 중..." : "수령 확인하고 대여 시작"}
             </Button>
           </div>
@@ -735,9 +692,7 @@ export default function RentalsDetailClient({
           <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
             <div className="flex items-center space-x-2 mb-2">
               <Package className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">
-                라켓 정보
-              </span>
+              <span className="text-sm font-medium text-muted-foreground">라켓 정보</span>
             </div>
             <p className="line-clamp-2 min-w-0 break-keep text-base font-semibold text-foreground bp-sm:text-lg">
               {racketBrandLabel(data.brand)} {data.model}
@@ -747,21 +702,15 @@ export default function RentalsDetailClient({
           <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
             <div className="flex items-center space-x-2 mb-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">
-                대여 기간
-              </span>
+              <span className="text-sm font-medium text-muted-foreground">대여 기간</span>
             </div>
-            <p className="break-words text-lg font-semibold text-foreground">
-              {data.days}일
-            </p>
+            <p className="break-words text-lg font-semibold text-foreground">{data.days}일</p>
           </div>
 
           <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
             <div className="mb-2 flex items-center space-x-2">
               <CreditCard className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">
-                결제 금액
-              </span>
+              <span className="text-sm font-medium text-muted-foreground">결제 금액</span>
             </div>
             <p className="break-keep text-lg font-semibold tabular-nums text-foreground">
               {(data.amount?.total ?? 0).toLocaleString()}원
@@ -771,9 +720,7 @@ export default function RentalsDetailClient({
           <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
             <div className="flex items-center space-x-2 mb-2">
               {getStatusIcon(data.status)}
-              <span className="text-sm font-medium text-muted-foreground">
-                대여 상태
-              </span>
+              <span className="text-sm font-medium text-muted-foreground">대여 상태</span>
             </div>
             <Badge
               variant={getStatusBadgeVariant(data.status)}
@@ -820,9 +767,7 @@ export default function RentalsDetailClient({
             )}
             <div>
               <p className="font-semibold text-lg">{banner.title}</p>
-              {banner.desc && (
-                <p className="text-sm mt-1 opacity-80">{banner.desc}</p>
-              )}
+              {banner.desc && <p className="text-sm mt-1 opacity-80">{banner.desc}</p>}
             </div>
           </div>
         </div>
@@ -848,9 +793,7 @@ export default function RentalsDetailClient({
                   ) : (
                     <Badge variant="secondary">신청 필요</Badge>
                   )}
-                  {linkedApplicationIsComplete ? (
-                    <Badge variant="success">교체완료</Badge>
-                  ) : null}
+                  {linkedApplicationIsComplete ? <Badge variant="success">교체완료</Badge> : null}
                 </div>
               </div>
             </CardHeader>
@@ -900,9 +843,7 @@ export default function RentalsDetailClient({
                   </div>
 
                   <div className="space-y-3">
-                    <p className="text-sm font-semibold text-foreground">
-                      라켓·스트링 정보
-                    </p>
+                    <p className="text-sm font-semibold text-foreground">라켓·스트링 정보</p>
                     <div className="grid gap-3 bp-md:grid-cols-2">
                       {linkedApplicationDisplayLines.map((line, index) => {
                         const racketLabel =
@@ -913,9 +854,7 @@ export default function RentalsDetailClient({
                           line.stringName ||
                           linkedApplication?.stringNames?.join(", ") ||
                           data.applicationSummary?.stringNames.join(", ") ||
-                          (hasStringingCost
-                            ? "관리자 확인 중"
-                            : "선택된 스트링 정보 없음");
+                          (hasStringingCost ? "관리자 확인 중" : "선택된 스트링 정보 없음");
                         const tensionMain =
                           line.tensionMain ||
                           linkedApplication?.tensionSummary ||
@@ -944,24 +883,17 @@ export default function RentalsDetailClient({
                             </div>
                             <dl className="mt-3 space-y-2 text-foreground">
                               <div className="flex gap-2">
-                                <dt className="w-20 shrink-0 text-muted-foreground">
-                                  텐션
-                                </dt>
+                                <dt className="w-20 shrink-0 text-muted-foreground">텐션</dt>
                                 <dd className="min-w-0 break-words">
                                   메인 {tensionMain}
-                                  {tensionCross
-                                    ? ` / 크로스 ${tensionCross}`
-                                    : ""}
+                                  {tensionCross ? ` / 크로스 ${tensionCross}` : ""}
                                 </dd>
                               </div>
                               {line.note || linkedApplication?.requirements ? (
                                 <div className="flex gap-2">
-                                  <dt className="w-20 shrink-0 text-muted-foreground">
-                                    요청사항
-                                  </dt>
+                                  <dt className="w-20 shrink-0 text-muted-foreground">요청사항</dt>
                                   <dd className="min-w-0 whitespace-pre-wrap break-words">
-                                    {line.note ??
-                                      linkedApplication?.requirements}
+                                    {line.note ?? linkedApplication?.requirements}
                                   </dd>
                                 </div>
                               ) : null}
@@ -974,12 +906,9 @@ export default function RentalsDetailClient({
 
                   <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-3 text-sm text-foreground bp-sm:p-4">
                     <div>
-                      <p className="font-semibold text-foreground">
-                        장착·출고 안내
-                      </p>
+                      <p className="font-semibold text-foreground">장착·출고 안내</p>
                       <p className="mt-1 text-muted-foreground">
-                        매장에서 대여 라켓에 스트링을 장착한 뒤 고객님께
-                        발송합니다.
+                        매장에서 대여 라켓에 스트링을 장착한 뒤 고객님께 발송합니다.
                       </p>
                     </div>
                     <dl className="grid gap-3 bp-sm:grid-cols-2">
@@ -996,20 +925,14 @@ export default function RentalsDetailClient({
                       {outboundTrackingNo ? (
                         <>
                           <div>
-                            <dt className="text-muted-foreground">
-                              출고 택배사
-                            </dt>
+                            <dt className="text-muted-foreground">출고 택배사</dt>
                             <dd className="mt-1 font-medium">
                               {getCourierLabel(outboundCourier ?? undefined)}
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-muted-foreground">
-                              출고 운송장
-                            </dt>
-                            <dd className="mt-1 break-all font-medium">
-                              {outboundTrackingNo}
-                            </dd>
+                            <dt className="text-muted-foreground">출고 운송장</dt>
+                            <dd className="mt-1 break-all font-medium">{outboundTrackingNo}</dd>
                           </div>
                           <div>
                             <dt className="text-muted-foreground">출고일</dt>
@@ -1024,16 +947,14 @@ export default function RentalsDetailClient({
                         <div className="bp-sm:col-span-2">
                           <dt className="text-muted-foreground">출고 운송장</dt>
                           <dd className="mt-1 font-medium text-muted-foreground">
-                            관리자가 대여 라켓에 스트링을 장착한 뒤 출고
-                            운송장을 등록하면 이곳에서 확인할 수 있습니다.
+                            관리자가 대여 라켓에 스트링을 장착한 뒤 출고 운송장을 등록하면 이곳에서
+                            확인할 수 있습니다.
                           </dd>
                         </div>
                       )}
                       {linkedApplication?.shippingInfo?.deliveryRequest ? (
                         <div className="bp-sm:col-span-2">
-                          <dt className="text-muted-foreground">
-                            배송 요청사항
-                          </dt>
+                          <dt className="text-muted-foreground">배송 요청사항</dt>
                           <dd className="mt-1 whitespace-pre-wrap break-words font-medium">
                             {linkedApplication.shippingInfo.deliveryRequest}
                           </dd>
@@ -1058,9 +979,7 @@ export default function RentalsDetailClient({
                     {data.stringingApplicationId ? (
                       <ServiceReviewCTA
                         applicationId={data.stringingApplicationId}
-                        userConfirmedAt={
-                          linkedApplication?.userConfirmedAt ?? null
-                        }
+                        userConfirmedAt={linkedApplication?.userConfirmedAt ?? null}
                         className="h-9 w-full overflow-hidden whitespace-nowrap bp-sm:w-auto"
                       />
                     ) : null}
@@ -1119,9 +1038,7 @@ export default function RentalsDetailClient({
                 <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
                   <Wrench className="h-4 w-4 text-muted-foreground" />
                   <div className="flex-1">
-                    <p className="text-sm text-foreground/80">
-                      교체서비스 비용
-                    </p>
+                    <p className="text-sm text-foreground/80">교체서비스 비용</p>
                     <p className="whitespace-nowrap font-semibold text-foreground tabular-nums">
                       {stringingFee.toLocaleString()}원
                     </p>
@@ -1143,9 +1060,7 @@ export default function RentalsDetailClient({
                   <Wrench className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-sm text-foreground/80">장착 스트링</p>
-                    <p className="font-semibold text-foreground">
-                      {installedStringLabel}
-                    </p>
+                    <p className="font-semibold text-foreground">{installedStringLabel}</p>
                   </div>
                 </div>
               )}
@@ -1161,10 +1076,7 @@ export default function RentalsDetailClient({
               <div className="flex items-center space-x-3 p-3 bg-muted/50 dark:bg-muted rounded-lg">
                 <div className="flex-1">
                   <p className="text-sm text-foreground/80">상태</p>
-                  <Badge
-                    variant={getStatusBadgeVariant(data.status)}
-                    className="mt-1"
-                  >
+                  <Badge variant={getStatusBadgeVariant(data.status)} className="mt-1">
                     {displayStatusLabel}
                   </Badge>
                 </div>
@@ -1291,9 +1203,7 @@ export default function RentalsDetailClient({
                   <p className="text-sm font-medium text-foreground">
                     {isVisitPickup ? "매장 수령 준비 완료" : "출고 운송장 등록"}
                   </p>
-                  <p className="text-xs text-foreground/75">
-                    {fmtDateOnly(outboundShippedAt)}
-                  </p>
+                  <p className="text-xs text-foreground/75">{fmtDateOnly(outboundShippedAt)}</p>
                   <p className="text-sm mt-1">
                     {isVisitPickup ? (
                       <>준비 확인 번호 · {outboundTrackingNo ?? "-"}</>
@@ -1302,10 +1212,7 @@ export default function RentalsDetailClient({
                         {getCourierLabel(outboundCourier ?? undefined)} ·{" "}
                         <a
                           className="underline underline-offset-2"
-                          href={getTrackHref(
-                            outboundCourier ?? undefined,
-                            outboundTrackingNo,
-                          )}
+                          href={getTrackHref(outboundCourier ?? undefined, outboundTrackingNo)}
                           target="_blank"
                           rel="noreferrer"
                         >
@@ -1348,10 +1255,7 @@ export default function RentalsDetailClient({
                       <>접수 번호 · {returnTrackingNo ?? "-"}</>
                     ) : (
                       <>
-                        {getCourierLabel(
-                          getCourierValue(data.shipping?.return) ?? undefined,
-                        )}{" "}
-                        ·{" "}
+                        {getCourierLabel(getCourierValue(data.shipping?.return) ?? undefined)} ·{" "}
                         <a
                           className="underline underline-offset-2"
                           href={getTrackHref(
@@ -1387,13 +1291,9 @@ export default function RentalsDetailClient({
                 <CreditCard className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">
-                  보증금 환불
-                </p>
+                <p className="text-sm font-medium text-foreground">보증금 환불</p>
                 <p className="text-sm text-foreground/80">
-                  {data.depositRefundedAt
-                    ? formatDateTime(data.depositRefundedAt)
-                    : "-"}
+                  {data.depositRefundedAt ? formatDateTime(data.depositRefundedAt) : "-"}
                 </p>
               </div>
             </div>

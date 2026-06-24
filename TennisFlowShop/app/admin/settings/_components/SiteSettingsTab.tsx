@@ -35,9 +35,7 @@ export function SiteSettingsTab({
           <CardDescription>사이트 기본 정보를 관리합니다.</CardDescription>
         </CardHeader>
         {error.message && (
-          <div className="mx-6 rounded border px-3 py-2 text-sm">
-            {error.message}
-          </div>
+          <div className="mx-6 rounded border px-3 py-2 text-sm">{error.message}</div>
         )}
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-3">
@@ -47,19 +45,11 @@ export function SiteSettingsTab({
             </div>
             <div>
               <Label htmlFor="siteDescription">설명</Label>
-              <Textarea
-                id="siteDescription"
-                rows={3}
-                {...form.register("siteDescription")}
-              />
+              <Textarea id="siteDescription" rows={3} {...form.register("siteDescription")} />
             </div>
             <div>
               <Label htmlFor="contactEmail">문의 이메일</Label>
-              <Input
-                id="contactEmail"
-                type="email"
-                {...form.register("contactEmail")}
-              />
+              <Input id="contactEmail" type="email" {...form.register("contactEmail")} />
             </div>
             <div>
               <Label htmlFor="contactPhone">문의 전화</Label>

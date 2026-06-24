@@ -71,8 +71,7 @@ const FAQ_ITEMS: FaqItem[] = [
     id: "delivery-2",
     category: "배송/수령",
     question: "배송 상태가 수령 준비중으로 보이는 이유는 무엇인가요?",
-    answer:
-      "방문 수령 주문은 배송중 상태를 사용자 화면에서 수령 준비중으로 안내합니다.",
+    answer: "방문 수령 주문은 배송중 상태를 사용자 화면에서 수령 준비중으로 안내합니다.",
     keywords: ["수령 준비중", "배송 상태", "방문 수령", "주문 상태"],
   },
   {
@@ -135,23 +134,17 @@ export default function SupportFaqSearch() {
     const query = searchQuery.trim().toLowerCase();
 
     return FAQ_ITEMS.filter((item) => {
-      const byCategory =
-        selectedCategory === "전체" || item.category === selectedCategory;
+      const byCategory = selectedCategory === "전체" || item.category === selectedCategory;
       if (!byCategory) return false;
       if (!query) return true;
 
-      const targetText = [item.question, item.answer, ...item.keywords]
-        .join(" ")
-        .toLowerCase();
+      const targetText = [item.question, item.answer, ...item.keywords].join(" ").toLowerCase();
       return targetText.includes(query);
     });
   }, [searchQuery, selectedCategory]);
 
-  const isDefaultFaqView =
-    selectedCategory === "전체" && searchQuery.trim().length === 0;
-  const visibleFaqs = isDefaultFaqView
-    ? filteredFaqs.slice(0, 6)
-    : filteredFaqs;
+  const isDefaultFaqView = selectedCategory === "전체" && searchQuery.trim().length === 0;
+  const visibleFaqs = isDefaultFaqView ? filteredFaqs.slice(0, 6) : filteredFaqs;
   const hiddenFaqCount = filteredFaqs.length - visibleFaqs.length;
 
   const clearSearch = () => {
@@ -167,9 +160,7 @@ export default function SupportFaqSearch() {
             <HelpCircle className="h-5 w-5 text-muted-foreground" />
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="break-keep text-xl font-semibold text-foreground">
-              자주 묻는 질문
-            </h2>
+            <h2 className="break-keep text-xl font-semibold text-foreground">자주 묻는 질문</h2>
             <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
               자주 묻는 내용을 먼저 확인해보세요.
             </p>
@@ -181,8 +172,7 @@ export default function SupportFaqSearch() {
           <div
             className={cn(
               "relative min-w-0 transition-all duration-200",
-              isFocused &&
-                "rounded-lg ring-2 ring-ring ring-offset-2 ring-offset-background",
+              isFocused && "rounded-lg ring-2 ring-ring ring-offset-2 ring-offset-background",
             )}
           >
             <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -241,18 +231,11 @@ export default function SupportFaqSearch() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
               <Search className="h-6 w-6 text-muted-foreground" />
             </div>
-            <p className="break-keep text-base font-medium text-foreground">
-              검색 결과가 없습니다
-            </p>
+            <p className="break-keep text-base font-medium text-foreground">검색 결과가 없습니다</p>
             <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
               다른 검색어를 입력하거나 Q&A 문의로 남겨주세요.
             </p>
-            <Button
-              asChild
-              className="mt-4 w-full sm:w-auto"
-              size="sm"
-              wrap="responsive"
-            >
+            <Button asChild className="mt-4 w-full sm:w-auto" size="sm" wrap="responsive">
               <Link href="/board/qna/write">문의하기</Link>
             </Button>
           </div>
@@ -293,8 +276,8 @@ export default function SupportFaqSearch() {
 
             {hiddenFaqCount > 0 && (
               <p className="break-keep py-2 text-center text-sm leading-relaxed text-muted-foreground">
-                {visibleFaqs.length}개의 질문을 표시 중입니다. 더 많은 질문은
-                검색하거나 카테고리를 선택해 확인하세요.
+                {visibleFaqs.length}개의 질문을 표시 중입니다. 더 많은 질문은 검색하거나 카테고리를
+                선택해 확인하세요.
               </p>
             )}
 

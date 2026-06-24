@@ -54,10 +54,7 @@ test("getOrderShippingReadLabels visit/delivery 구분", () => {
 });
 
 test("withAddressValue/withPostalValue visit 안내 및 기본값 처리", () => {
-  assert.equal(
-    withAddressValue("visit", "서울시 강남구"),
-    "매장 방문 접수 (주소 입력 불필요)",
-  );
+  assert.equal(withAddressValue("visit", "서울시 강남구"), "매장 방문 접수 (주소 입력 불필요)");
   assert.equal(withPostalValue("visit", "12345"), collectionVisitNotice);
 
   assert.equal(withAddressValue("self_ship", "서울시 강남구"), "서울시 강남구");

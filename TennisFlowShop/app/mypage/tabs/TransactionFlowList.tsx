@@ -1,9 +1,7 @@
 "use client";
 
 import { collectionMethodLabel } from "@/app/features/stringing-applications/lib/fulfillment-labels";
-import OrdersScopeTabs, {
-  parseOrdersScope,
-} from "@/app/mypage/_components/OrdersScopeTabs";
+import OrdersScopeTabs, { parseOrdersScope } from "@/app/mypage/_components/OrdersScopeTabs";
 import {
   getMypageNormalizedStatus,
   getMypagePaymentStatusLabel,
@@ -24,10 +22,7 @@ import {
   getWorkflowMetaBadgeSpec,
 } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import {
-  getOrderStatusLabelForDisplay,
-  isVisitPickupOrder,
-} from "@/lib/order-shipping";
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   AlertCircle,
@@ -149,17 +144,13 @@ type CancelStringingParams = {
   refundAccount?: { bank: string; account: string; holder: string };
 };
 
-const shouldRequestCancelRefundAccount = (
-  app?: ActivityApplicationSummary | null,
-) => {
+const shouldRequestCancelRefundAccount = (app?: ActivityApplicationSummary | null) => {
   if (!app) return true;
   const normalizedProvider = String(app.paymentProvider ?? "")
     .trim()
     .toLowerCase();
   return (
-    !app.packageApplied &&
-    app.paymentStatus === "결제완료" &&
-    normalizedProvider !== "nicepay"
+    !app.packageApplied && app.paymentStatus === "결제완료" && normalizedProvider !== "nicepay"
   );
 };
 
@@ -265,8 +256,7 @@ const getStatusBadgeSpec = (group: ActivityGroup, label: string) => {
   if (normalized === "승인") return getApplicationStatusBadgeSpec("접수완료");
   if (normalized === "거절") return getApplicationStatusBadgeSpec("취소");
   if (normalized === "환불") return getApplicationStatusBadgeSpec("취소");
-  if (normalized === "반납완료")
-    return getApplicationStatusBadgeSpec("교체완료");
+  if (normalized === "반납완료") return getApplicationStatusBadgeSpec("교체완료");
   return getApplicationStatusBadgeSpec(label);
 };
 
@@ -281,9 +271,7 @@ const isApplicationConfirmNeeded = (app?: ActivityApplicationSummary) => {
   if (!app) return false;
   if (isTerminalCanceledStatus(app.status)) return false;
 
-  return (
-    getMypageNormalizedStatus(app.status) === "교체완료" && !app.userConfirmedAt
-  );
+  return getMypageNormalizedStatus(app.status) === "교체완료" && !app.userConfirmedAt;
 };
 
 const isApplicationServiceReviewPending = (app?: ActivityApplicationSummary) =>
@@ -298,16 +286,11 @@ const isTerminalCanceledStatus = (status?: string | null) => {
   const normalized = getMypageNormalizedStatus(status);
 
   return (
-    normalized === "취소" ||
-    normalized === "환불" ||
-    normalized === "거절" ||
-    normalized === "반려"
+    normalized === "취소" || normalized === "환불" || normalized === "거절" || normalized === "반려"
   );
 };
 
-const getLinkedApplicationStatusSummary = (
-  apps: ActivityApplicationSummary[] = [],
-) => {
+const getLinkedApplicationStatusSummary = (apps: ActivityApplicationSummary[] = []) => {
   if (apps.length === 0) return null;
   const latest = [...apps].sort((a, b) => {
     const aUpdated = new Date(a.updatedAt ?? a.createdAt ?? 0).getTime();
@@ -345,9 +328,7 @@ const getApplicationCollectionLabel = (app?: ActivityApplicationSummary) => {
 
 const getStringSelectionSummary = (app?: ActivityApplicationSummary | null) => {
   if (!app?.selectedStringName) return null;
-  const options = [app.selectedGauge, app.selectedColorLabel]
-    .filter(isFilledText)
-    .join(" · ");
+  const options = [app.selectedGauge, app.selectedColorLabel].filter(isFilledText).join(" · ");
   return options
     ? `장착 스트링: ${app.selectedStringName} (${options})`
     : `장착 스트링: ${app.selectedStringName}`;
@@ -382,8 +363,8 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
       return "구매확정 필요";
     }
 
-    const actionableApplication = group.order?.applicationSummaries?.find(
-      (app) => isApplicationTrackingNeeded(app),
+    const actionableApplication = group.order?.applicationSummaries?.find((app) =>
+      isApplicationTrackingNeeded(app),
     );
 
     if (isApplicationTrackingNeeded(actionableApplication)) {
@@ -409,9 +390,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
     if (isTerminalCanceledStatus(group.rental?.status)) return null;
 
     if (isRentalReturnShippingAvailable(group.rental)) {
-      return group.rental?.hasReturnShipping
-        ? "반납 운송장 수정 필요"
-        : "반납 운송장 등록 필요";
+      return group.rental?.hasReturnShipping ? "반납 운송장 수정 필요" : "반납 운송장 등록 필요";
     }
 
     if (
@@ -425,10 +404,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
       return "상품+교체서비스 후기 가능";
     }
 
-    if (
-      !group.rental?.stringingApplicationId &&
-      group.rental?.withStringService
-    ) {
+    if (!group.rental?.stringingApplicationId && group.rental?.withStringService) {
       return "교체서비스 신청 필요";
     }
 
@@ -438,8 +414,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
   if (isTerminalCanceledStatus(group.application?.status)) return null;
 
   if (isApplicationTrackingNeeded(group.application)) return "운송장 등록 필요";
-  if (isApplicationConfirmNeeded(group.application))
-    return "교체서비스 확정 필요";
+  if (isApplicationConfirmNeeded(group.application)) return "교체서비스 확정 필요";
   if (group.application?.serviceReviewPending) {
     return "상품+교체서비스 후기 가능";
   }
@@ -459,21 +434,17 @@ const getFlowNextActionText = (
       "구매확정 필요": "상품을 받으셨다면 구매확정을 진행해주세요.",
       "수령확인 필요": "반납 내용을 확인하고 수령확인을 진행해주세요.",
       "운송장 등록 필요": "운송장 정보를 등록해주세요.",
-      "교체서비스 확정 필요":
-        "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.",
+      "교체서비스 확정 필요": "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.",
       "후기를 남길 수 있어요": "구매확정된 상품은 후기를 작성할 수 있어요.",
       "상품 후기 작성 가능": "구매확정된 상품은 후기를 작성할 수 있어요.",
-      "상품+교체서비스 후기 가능":
-        "수령확인된 교체서비스 후기를 작성할 수 있어요.",
+      "상품+교체서비스 후기 가능": "수령확인된 교체서비스 후기를 작성할 수 있어요.",
       "교체서비스 신청 필요": "교체서비스 신청을 이어서 진행해주세요.",
     };
     return todoMessageMap[opts.todoPrimaryReason] ?? null;
   }
 
   const viewKind: ActivityGroup["kind"] =
-    opts?.prefersApplicationView && group.application
-      ? "application"
-      : group.kind;
+    opts?.prefersApplicationView && group.application ? "application" : group.kind;
 
   if (viewKind === "order") {
     const normalized = getMypageNormalizedStatus(group.order?.status);
@@ -483,8 +454,7 @@ const getFlowNextActionText = (
     if (normalized === "환불" || normalized === "환불 처리중")
       return "환불 진행 상태를 확인해주세요.";
     if (normalized === "대기중") return "결제를 완료해주세요.";
-    if (normalized === "결제완료")
-      return "결제가 완료되었습니다. 상품 준비를 기다려주세요.";
+    if (normalized === "결제완료") return "결제가 완료되었습니다. 상품 준비를 기다려주세요.";
     if (normalized === "처리중")
       return "상품을 준비하고 있습니다. 준비가 끝나면 배송 또는 수령 안내가 진행됩니다.";
     if (normalized === "배송중") {
@@ -492,18 +462,14 @@ const getFlowNextActionText = (
         ? "수령 준비 상태를 확인해주세요."
         : "배송 정보를 확인해주세요.";
     }
-    if (normalized === "배송완료")
-      return "상품을 받으셨다면 구매확정을 진행해주세요.";
+    if (normalized === "배송완료") return "상품을 받으셨다면 구매확정을 진행해주세요.";
     if (normalized === "구매확정") {
       const hasPendingOrderReview =
-        Boolean(group.order?.hasPendingReview) ||
-        (group.order?.reviewPendingCount ?? 0) > 0;
+        Boolean(group.order?.hasPendingReview) || (group.order?.reviewPendingCount ?? 0) > 0;
 
       const hasPendingServiceReview =
         Boolean(group.application?.serviceReviewPending) ||
-        (group.order?.applicationSummaries ?? []).some(
-          (app) => app.serviceReviewPending,
-        );
+        (group.order?.applicationSummaries ?? []).some((app) => app.serviceReviewPending);
 
       if (hasPendingServiceReview) {
         return "수령확인된 교체서비스 후기를 작성할 수 있어요.";
@@ -522,16 +488,12 @@ const getFlowNextActionText = (
     const normalized = getMypageNormalizedStatus(group.rental?.status);
     if (normalized === "취소") return "대여가 취소되었습니다.";
     if (normalized === "대기중") return "결제를 완료해주세요.";
-    if (normalized === "결제완료")
-      return "대여 상품 출고 또는 수령 준비 중입니다.";
-    if (normalized === "대여중")
-      return "대여 중입니다. 반납 일정을 확인해주세요.";
+    if (normalized === "결제완료") return "대여 상품 출고 또는 수령 준비 중입니다.";
+    if (normalized === "대여중") return "대여 중입니다. 반납 일정을 확인해주세요.";
     if (normalized === "반납완료") {
       const hasPendingServiceReview =
         Boolean(group.application?.serviceReviewPending) ||
-        (group.rental?.applicationSummaries ?? []).some(
-          (app) => app.serviceReviewPending,
-        );
+        (group.rental?.applicationSummaries ?? []).some((app) => app.serviceReviewPending);
 
       if (!group.rental?.userConfirmedAt) {
         return "반납 내용을 확인하고 수령확인을 진행해주세요.";
@@ -543,10 +505,7 @@ const getFlowNextActionText = (
 
       return null;
     }
-    if (
-      !group.rental?.stringingApplicationId &&
-      group.rental?.withStringService
-    )
+    if (!group.rental?.stringingApplicationId && group.rental?.withStringService)
       return "교체서비스 신청을 이어서 진행해주세요.";
     if ((group.rental?.applicationSummaries ?? []).length > 0)
       return "해당 신청서의 진행 정보를 확인해주세요.";
@@ -556,29 +515,21 @@ const getFlowNextActionText = (
   const app = group.application;
   const normalized = getMypageNormalizedStatus(app?.status);
   if (normalized === "취소") return "신청이 취소되었습니다.";
-  if (normalized === "접수완료")
-    return "신청이 접수되었습니다. 검토를 기다려주세요.";
-  if (normalized === "검토 중")
-    return "신청 내용을 확인 중입니다. 안내를 기다려주세요.";
-  if (normalized === "승인")
-    return "신청이 확인되었습니다. 다음 안내를 기다려주세요.";
+  if (normalized === "접수완료") return "신청이 접수되었습니다. 검토를 기다려주세요.";
+  if (normalized === "검토 중") return "신청 내용을 확인 중입니다. 안내를 기다려주세요.";
+  if (normalized === "승인") return "신청이 확인되었습니다. 다음 안내를 기다려주세요.";
   if (normalized === "처리중" || normalized === "작업 중")
     return "교체서비스 작업이 진행 중입니다. 완료 안내를 기다려주세요.";
   if (normalized === "교체완료")
     return app?.serviceReviewPending
       ? "수령확인된 교체서비스 후기를 작성할 수 있어요."
       : "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.";
-  if (normalized === "거절")
-    return "신청이 반려되었습니다. 자세한 내용은 고객센터로 문의해주세요.";
+  if (normalized === "거절") return "신청이 반려되었습니다. 자세한 내용은 고객센터로 문의해주세요.";
   return null;
 };
 const canShowOrderShippingInfo = (status?: string | null) => {
   const normalized = getMypageNormalizedStatus(status);
-  return (
-    normalized === "배송중" ||
-    normalized === "배송완료" ||
-    normalized === "구매확정"
-  );
+  return normalized === "배송중" || normalized === "배송완료" || normalized === "구매확정";
 };
 
 function FlowListSkeleton() {
@@ -600,46 +551,22 @@ function FlowListSkeleton() {
 export default function TransactionFlowList() {
   const searchParams = useSearchParams();
   const scope = parseOrdersScope(searchParams.get("scope")) ?? "all";
-  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(
-    null,
-  );
-  const [confirmingRentalId, setConfirmingRentalId] = useState<string | null>(
-    null,
-  );
-  const [confirmingApplicationId, setConfirmingApplicationId] = useState<
-    string | null
-  >(null);
-  const [expandedSecondaryKey, setExpandedSecondaryKey] = useState<
-    string | null
-  >(null);
-  const [cancelOrderDialogId, setCancelOrderDialogId] = useState<string | null>(
-    null,
-  );
-  const [cancelApplicationDialogId, setCancelApplicationDialogId] = useState<
-    string | null
-  >(null);
-  const [cancelRentalDialogId, setCancelRentalDialogId] = useState<
-    string | null
-  >(null);
+  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
+  const [confirmingRentalId, setConfirmingRentalId] = useState<string | null>(null);
+  const [confirmingApplicationId, setConfirmingApplicationId] = useState<string | null>(null);
+  const [expandedSecondaryKey, setExpandedSecondaryKey] = useState<string | null>(null);
+  const [cancelOrderDialogId, setCancelOrderDialogId] = useState<string | null>(null);
+  const [cancelApplicationDialogId, setCancelApplicationDialogId] = useState<string | null>(null);
+  const [cancelRentalDialogId, setCancelRentalDialogId] = useState<string | null>(null);
   const [shippingInfoDialogTarget, setShippingInfoDialogTarget] = useState<{
     orderId: string;
     triggerLabel: string;
     shippingMethod?: string;
   } | null>(null);
-  const [isCancelApplicationSubmitting, setIsCancelApplicationSubmitting] =
-    useState(false);
-  const [withdrawingOrderCancelId, setWithdrawingOrderCancelId] = useState<
-    string | null
-  >(null);
-  const getKey = (
-    pageIndex: number,
-    previousPageData: ActivityResponse | null,
-  ) => {
-    if (
-      previousPageData &&
-      previousPageData.items &&
-      previousPageData.items.length < LIMIT
-    )
+  const [isCancelApplicationSubmitting, setIsCancelApplicationSubmitting] = useState(false);
+  const [withdrawingOrderCancelId, setWithdrawingOrderCancelId] = useState<string | null>(null);
+  const getKey = (pageIndex: number, previousPageData: ActivityResponse | null) => {
+    if (previousPageData && previousPageData.items && previousPageData.items.length < LIMIT)
       return null;
     const page = pageIndex + 1;
     const params = new URLSearchParams();
@@ -651,17 +578,17 @@ export default function TransactionFlowList() {
     return `/api/mypage/activity?${params.toString()}`;
   };
 
-  const { data, size, setSize, isValidating, error, mutate } =
-    useSWRInfinite<ActivityResponse>(getKey, fetcher, {
+  const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite<ActivityResponse>(
+    getKey,
+    fetcher,
+    {
       revalidateFirstPage: true,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-    });
+    },
+  );
 
-  const patchOrderCancelStatus = async (
-    orderId: string,
-    nextCancelStatus: "requested" | null,
-  ) => {
+  const patchOrderCancelStatus = async (orderId: string, nextCancelStatus: "requested" | null) => {
     await mutate(
       (currentPages) => {
         if (!currentPages) return currentPages;
@@ -670,8 +597,7 @@ export default function TransactionFlowList() {
           ...page,
           items: page.items.map((item) => {
             const isTargetOrderCard = item.order?.id === orderId;
-            const isTargetLinkedApplication =
-              item.application?.orderId === orderId;
+            const isTargetLinkedApplication = item.application?.orderId === orderId;
 
             if (!isTargetOrderCard && !isTargetLinkedApplication) return item;
 
@@ -690,17 +616,14 @@ export default function TransactionFlowList() {
                     ...item.order,
                     cancelStatus: nextCancelStatus,
                     cancelReasonSummary:
-                      nextCancelStatus === null
-                        ? null
-                        : (item.order.cancelReasonSummary ?? null),
-                    applicationSummaries: item.order.applicationSummaries?.map(
-                      (app) =>
-                        app.orderId === orderId
-                          ? {
-                              ...app,
-                              cancelStatus: nextCancelStatus,
-                            }
-                          : app,
+                      nextCancelStatus === null ? null : (item.order.cancelReasonSummary ?? null),
+                    applicationSummaries: item.order.applicationSummaries?.map((app) =>
+                      app.orderId === orderId
+                        ? {
+                            ...app,
+                            cancelStatus: nextCancelStatus,
+                          }
+                        : app,
                     ),
                   }
                 : item.order;
@@ -717,14 +640,12 @@ export default function TransactionFlowList() {
     await Promise.all([
       mutate(undefined, { revalidate: true }),
       globalMutate(
-        (key) =>
-          typeof key === "string" && key.startsWith("/api/mypage/activity"),
+        (key) => typeof key === "string" && key.startsWith("/api/mypage/activity"),
         undefined,
         { revalidate: true },
       ),
       globalMutate(
-        (key) =>
-          typeof key === "string" && key.startsWith("/api/users/me/orders"),
+        (key) => typeof key === "string" && key.startsWith("/api/users/me/orders"),
         undefined,
         { revalidate: true },
       ),
@@ -734,8 +655,7 @@ export default function TransactionFlowList() {
         { revalidate: true },
       ),
       globalMutate(
-        (key) =>
-          typeof key === "string" && key.startsWith("/api/applications/me"),
+        (key) => typeof key === "string" && key.startsWith("/api/applications/me"),
         undefined,
         { revalidate: true },
       ),
@@ -761,12 +681,7 @@ export default function TransactionFlowList() {
 
   const handleConfirmPurchase = async (orderId: string) => {
     if (confirmingOrderId) return;
-    if (
-      !window.confirm(
-        "구매확정 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.",
-      )
-    )
-      return;
+    if (!window.confirm("구매확정 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.")) return;
 
     try {
       setConfirmingOrderId(orderId);
@@ -777,11 +692,7 @@ export default function TransactionFlowList() {
       const data = await res.json().catch(() => null);
 
       if (!res.ok || data?.ok === false) {
-        showErrorToast(
-          data?.error ||
-            data?.message ||
-            "구매확정 처리 중 오류가 발생했습니다.",
-        );
+        showErrorToast(data?.error || data?.message || "구매확정 처리 중 오류가 발생했습니다.");
         return;
       }
 
@@ -796,10 +707,7 @@ export default function TransactionFlowList() {
               if (item.order?.id !== orderId) return item;
 
               const patchConfirmedApp = (app: ActivityApplicationSummary) => {
-                if (
-                  app.userConfirmedAt ||
-                  getMypageNormalizedStatus(app.status) !== "교체완료"
-                )
+                if (app.userConfirmedAt || getMypageNormalizedStatus(app.status) !== "교체완료")
                   return app;
                 return { ...app, userConfirmedAt: optimisticConfirmedAt };
               };
@@ -815,10 +723,9 @@ export default function TransactionFlowList() {
                       ...item.order,
                       status: "구매확정",
                       userConfirmedAt: optimisticConfirmedAt,
-                      applicationSummaries:
-                        item.order.applicationSummaries?.map((app) =>
-                          patchConfirmedApp(app),
-                        ),
+                      applicationSummaries: item.order.applicationSummaries?.map((app) =>
+                        patchConfirmedApp(app),
+                      ),
                     }
                   : item.order,
                 application: patchedSelectedApplication,
@@ -841,22 +748,15 @@ export default function TransactionFlowList() {
 
   const handleConfirmApplication = async (applicationId: string) => {
     if (confirmingApplicationId) return;
-    if (
-      !window.confirm(
-        "교체 확정 처리할까요?\n확정 시 포인트가 지급되며 되돌릴 수 없습니다.",
-      )
-    )
+    if (!window.confirm("교체 확정 처리할까요?\n확정 시 포인트가 지급되며 되돌릴 수 없습니다."))
       return;
 
     try {
       setConfirmingApplicationId(applicationId);
-      const res = await fetch(
-        `/api/applications/stringing/${applicationId}/confirm`,
-        {
-          method: "POST",
-          credentials: "include",
-        },
-      );
+      const res = await fetch(`/api/applications/stringing/${applicationId}/confirm`, {
+        method: "POST",
+        credentials: "include",
+      });
       const data = await res.json().catch(() => null);
 
       if (!res.ok || data?.ok === false) {
@@ -879,12 +779,7 @@ export default function TransactionFlowList() {
 
   const handleConfirmRental = async (rentalId: string) => {
     if (confirmingRentalId) return;
-    if (
-      !window.confirm(
-        "수령확인 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.",
-      )
-    )
-      return;
+    if (!window.confirm("수령확인 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.")) return;
 
     try {
       setConfirmingRentalId(rentalId);
@@ -895,9 +790,7 @@ export default function TransactionFlowList() {
       const data = await res.json().catch(() => null);
 
       if (!res.ok || data?.ok === false) {
-        showErrorToast(
-          data?.message || "수령확인 처리 중 오류가 발생했습니다.",
-        );
+        showErrorToast(data?.message || "수령확인 처리 중 오류가 발생했습니다.");
         return;
       }
 
@@ -918,9 +811,7 @@ export default function TransactionFlowList() {
     }
   };
 
-  const handleApplicationCancelRequest = async (
-    params: CancelStringingParams,
-  ) => {
+  const handleApplicationCancelRequest = async (params: CancelStringingParams) => {
     if (!cancelApplicationDialogId) return;
     try {
       setIsCancelApplicationSubmitting(true);
@@ -932,18 +823,14 @@ export default function TransactionFlowList() {
           body: JSON.stringify({
             reasonCode: params.reasonCode,
             reasonText: params.reasonText,
-            ...(params.refundAccount
-              ? { refundAccount: params.refundAccount }
-              : {}),
+            ...(params.refundAccount ? { refundAccount: params.refundAccount } : {}),
           }),
         },
       );
 
       if (!res.ok) {
         const body = await res.json().catch(() => null);
-        showErrorToast(
-          body?.message || "신청 취소 요청 처리 중 오류가 발생했습니다.",
-        );
+        showErrorToast(body?.message || "신청 취소 요청 처리 중 오류가 발생했습니다.");
         return;
       }
 
@@ -964,19 +851,14 @@ export default function TransactionFlowList() {
 
     try {
       setWithdrawingOrderCancelId(orderId);
-      const res = await fetch(
-        `/api/orders/${orderId}/cancel-request-withdraw`,
-        {
-          method: "POST",
-          credentials: "include",
-        },
-      );
+      const res = await fetch(`/api/orders/${orderId}/cancel-request-withdraw`, {
+        method: "POST",
+        credentials: "include",
+      });
       const body = await res.json().catch(() => null);
 
       if (!res.ok) {
-        showErrorToast(
-          body?.message || "취소 요청 철회 중 오류가 발생했습니다.",
-        );
+        showErrorToast(body?.message || "취소 요청 철회 중 오류가 발생했습니다.");
         return;
       }
 
@@ -998,15 +880,10 @@ export default function TransactionFlowList() {
     return params.toString();
   }, [scope]);
 
-  const items = useMemo(
-    () => (data ? data.flatMap((d) => d.items) : []),
-    [data],
-  );
+  const items = useMemo(() => (data ? data.flatMap((d) => d.items) : []), [data]);
   const cancelOrderTarget = cancelOrderDialogId
     ? items.find((group) => {
-        const id =
-          group.order?.id ??
-          (group.kind === "order" ? group.detailTarget.id : undefined);
+        const id = group.order?.id ?? (group.kind === "order" ? group.detailTarget.id : undefined);
         return id === cancelOrderDialogId;
       })?.order
     : null;
@@ -1031,12 +908,7 @@ export default function TransactionFlowList() {
 
   if (error) {
     return (
-      <AsyncState
-        kind="error"
-        variant="card"
-        resourceName="거래 흐름"
-        onAction={() => mutate()}
-      />
+      <AsyncState kind="error" variant="card" resourceName="거래 흐름" onAction={() => mutate()} />
     );
   }
 
@@ -1080,12 +952,8 @@ export default function TransactionFlowList() {
       ) : (
         <div className="space-y-3">
           {items.map((g) => {
-            const orderId =
-              g.order?.id ??
-              (g.kind === "order" ? g.detailTarget.id : undefined);
-            const rentalId =
-              g.rental?.id ??
-              (g.kind === "rental" ? g.detailTarget.id : undefined);
+            const orderId = g.order?.id ?? (g.kind === "order" ? g.detailTarget.id : undefined);
+            const rentalId = g.rental?.id ?? (g.kind === "rental" ? g.detailTarget.id : undefined);
 
             const linkedApps =
               g.kind === "order"
@@ -1096,16 +964,12 @@ export default function TransactionFlowList() {
             const linkedActionableApplication =
               linkedApps.find((app) => isApplicationTrackingNeeded(app)) ??
               linkedApps.find((app) => isApplicationTodoActionable(app));
-            const prefersApplicationView =
-              scope === "application" && Boolean(g.application);
+            const prefersApplicationView = scope === "application" && Boolean(g.application);
             const displayApplication = g.application;
-            const isDirectApplicationCard =
-              g.kind === "application" || prefersApplicationView;
-            const applicationActionTarget =
-              displayApplication ?? linkedActionableApplication;
+            const isDirectApplicationCard = g.kind === "application" || prefersApplicationView;
+            const applicationActionTarget = displayApplication ?? linkedActionableApplication;
             const isLinkedApplicationConfirmSuppressed = Boolean(
-              applicationActionTarget?.orderId ||
-              applicationActionTarget?.rentalId,
+              applicationActionTarget?.orderId || applicationActionTarget?.rentalId,
             );
             const actionableApplicationId = applicationActionTarget?.id;
             const primaryLinkedApplicationId =
@@ -1139,17 +1003,11 @@ export default function TransactionFlowList() {
                 : g.kind === "rental"
                   ? (g.rental?.linkedApplicationCount ?? 0)
                   : 0;
-            const needsTrackingAction = isApplicationTrackingNeeded(
-              applicationActionTarget,
-            );
-            const normalizedMetaLabel = normalizeLabel(
-              FLOW_TYPE_META_LABEL[g.flowType],
-            );
+            const needsTrackingAction = isApplicationTrackingNeeded(applicationActionTarget);
+            const normalizedMetaLabel = normalizeLabel(FLOW_TYPE_META_LABEL[g.flowType]);
             const normalizedFlowLabel = normalizeLabel(g.flowLabel);
             const todoPrimaryReason =
-              scope === "todo" || scope === "all"
-                ? getTodoPrimaryReason(g)
-                : null;
+              scope === "todo" || scope === "all" ? getTodoPrimaryReason(g) : null;
             const nextActionText = getFlowNextActionText(g, {
               prefersApplicationView,
               todoPrimaryReason,
@@ -1157,8 +1015,7 @@ export default function TransactionFlowList() {
 
             const linkedFlowBadgeLabel =
               !prefersApplicationView &&
-              (g.flowType === "order_plus_stringing" ||
-                g.flowType === "rental_plus_stringing")
+              (g.flowType === "order_plus_stringing" || g.flowType === "rental_plus_stringing")
                 ? "교체서비스 연결"
                 : null;
             const shouldShowFlowBadge =
@@ -1166,26 +1023,19 @@ export default function TransactionFlowList() {
               !linkedFlowBadgeLabel &&
               Boolean(normalizedFlowLabel) &&
               normalizedFlowLabel !== normalizedMetaLabel;
-            const displayKind: FlowDetailType = prefersApplicationView
-              ? "application"
-              : g.kind;
+            const displayKind: FlowDetailType = prefersApplicationView ? "application" : g.kind;
             const isApplicationActionContext =
               Boolean(applicationActionTarget) &&
               (isDirectApplicationCard || scope === "todo" || scope === "all");
             const displayTitle = prefersApplicationView
               ? getApplicationTitle(displayApplication)
               : getRepresentativeTitle(g);
-            const displayStatus = prefersApplicationView
-              ? displayApplication?.status
-              : status;
+            const displayStatus = prefersApplicationView ? displayApplication?.status : status;
             const displayUserStatusLabel = prefersApplicationView
               ? getMypageUserStatusLabel(displayStatus)
               : orderDisplayStatusLabel;
             const displayStatusBadgeSpec = prefersApplicationView
-              ? getStatusBadgeSpec(
-                  { ...g, kind: "application" },
-                  displayUserStatusLabel,
-                )
+              ? getStatusBadgeSpec({ ...g, kind: "application" }, displayUserStatusLabel)
               : statusBadgeSpec;
 
             const displayDateValue =
@@ -1209,28 +1059,18 @@ export default function TransactionFlowList() {
               ? "교체서비스 신청"
               : FLOW_TYPE_META_LABEL[g.flowType];
             const showLinkedStatusBadge =
-              g.flowType !== "application_only" &&
-              linkedCount > 0 &&
-              !prefersApplicationView;
+              g.flowType !== "application_only" && linkedCount > 0 && !prefersApplicationView;
             const standaloneApplicationIdMeta =
-              isStandaloneApplication(displayApplication) &&
-              displayApplication?.id
+              isStandaloneApplication(displayApplication) && displayApplication?.id
                 ? ` · #${shortId(displayApplication.id) ?? "-"}`
                 : "";
             const isCancelRequested =
-              (displayKind === "order" &&
-                g.order?.cancelStatus === "requested") ||
-              (displayKind === "rental" &&
-                g.rental?.cancelStatus === "requested") ||
+              (displayKind === "order" && g.order?.cancelStatus === "requested") ||
+              (displayKind === "rental" && g.rental?.cancelStatus === "requested") ||
               (displayKind === "application" &&
-                (displayApplication ?? g.application)?.cancelStatus ===
-                  "requested");
+                (displayApplication ?? g.application)?.cancelStatus === "requested");
             const FlowIcon =
-              displayKind === "order"
-                ? Package
-                : displayKind === "rental"
-                  ? Calendar
-                  : Wrench;
+              displayKind === "order" ? Package : displayKind === "rental" ? Calendar : Wrench;
             const heroSummary =
               displayKind === "order"
                 ? formatAmount(g.order?.totalPrice)
@@ -1279,10 +1119,7 @@ export default function TransactionFlowList() {
 
                 {/* 중간: 메인 정보 */}
                 <div className="flex min-w-0 flex-col gap-1.5">
-                  <Link
-                    href={detailHref}
-                    className="inline-flex max-w-full items-start gap-1.5"
-                  >
+                  <Link href={detailHref} className="inline-flex max-w-full items-start gap-1.5">
                     <FlowIcon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                     <span className="line-clamp-2 break-keep text-sm font-semibold text-foreground transition-colors hover:text-primary bp-sm:text-base">
                       {displayTitle}
@@ -1300,18 +1137,12 @@ export default function TransactionFlowList() {
                   isCancelRequested ? (
                     <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-xs">
                       {linkedFlowBadgeLabel ? (
-                        <Badge
-                          variant="secondary"
-                          className="shrink-0 whitespace-nowrap"
-                        >
+                        <Badge variant="secondary" className="shrink-0 whitespace-nowrap">
                           {linkedFlowBadgeLabel}
                         </Badge>
                       ) : null}
                       {shouldShowFlowBadge ? (
-                        <Badge
-                          variant="outline"
-                          className="shrink-0 whitespace-nowrap"
-                        >
+                        <Badge variant="outline" className="shrink-0 whitespace-nowrap">
                           {g.flowLabel}
                         </Badge>
                       ) : null}
@@ -1325,9 +1156,7 @@ export default function TransactionFlowList() {
                       ) : null}
                       {isCancelRequested ? (
                         <Badge
-                          variant={
-                            getWorkflowMetaBadgeSpec("cancel_requested").variant
-                          }
+                          variant={getWorkflowMetaBadgeSpec("cancel_requested").variant}
                           className="gap-1"
                         >
                           <AlertCircle className="h-3 w-3" />
@@ -1352,13 +1181,8 @@ export default function TransactionFlowList() {
 
                   {todoPrimaryReason && nextActionText ? (
                     <p className="line-clamp-2 break-keep text-xs leading-relaxed bp-sm:line-clamp-none">
-                      <span className="font-semibold text-primary">
-                        {todoPrimaryReason}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {" "}
-                        · {nextActionText}
-                      </span>
+                      <span className="font-semibold text-primary">{todoPrimaryReason}</span>
+                      <span className="text-muted-foreground"> · {nextActionText}</span>
                     </p>
                   ) : nextActionText ? (
                     <p className="line-clamp-2 break-keep text-xs leading-relaxed text-muted-foreground bp-sm:line-clamp-none">
@@ -1413,8 +1237,7 @@ export default function TransactionFlowList() {
                           ? "대여 상세"
                           : "교체서비스 상세";
 
-                  const detailPriority =
-                    scope === "todo" || prefersApplicationView ? 10 : 3;
+                  const detailPriority = scope === "todo" || prefersApplicationView ? 10 : 3;
                   actions.push({
                     key: "flow-detail",
                     priority: detailPriority,
@@ -1427,16 +1250,14 @@ export default function TransactionFlowList() {
                         className="bg-transparent"
                       >
                         <Link href={resolvedDetailHref}>
-                          {resolvedDetailLabel}{" "}
-                          <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                          {resolvedDetailLabel} <ArrowRight className="ml-1 h-3.5 w-3.5" />
                         </Link>
                       </Button>
                     ),
                   });
 
                   const canRenderOrderReview =
-                    Boolean(g.order?.userConfirmedAt) ||
-                    normalizedStatus === "구매확정";
+                    Boolean(g.order?.userConfirmedAt) || normalizedStatus === "구매확정";
 
                   if (prefersApplicationView) {
                     if (orderId) {
@@ -1488,18 +1309,12 @@ export default function TransactionFlowList() {
                     }
                   }
 
-                  if (
-                    g.kind === "order" &&
-                    orderId &&
-                    !prefersApplicationView
-                  ) {
+                  if (g.kind === "order" && orderId && !prefersApplicationView) {
                     if (canShowOrderShippingInfo(status)) {
                       const isVisitPickup = isVisitPickupOrder({
                         shippingMethod: g.order?.shippingMethod,
                       });
-                      const shippingInfoLabel = isVisitPickup
-                        ? "수령정보 확인"
-                        : "배송정보 확인";
+                      const shippingInfoLabel = isVisitPickup ? "수령정보 확인" : "배송정보 확인";
                       actions.push({
                         key: "order-shipping-info",
                         priority: 1,
@@ -1537,15 +1352,11 @@ export default function TransactionFlowList() {
                             onClick={() => handleOrderCancelWithdraw(orderId)}
                           >
                             <Undo2 className="mr-1 h-3.5 w-3.5" />
-                            {withdrawingOrderCancelId === orderId
-                              ? "철회 중..."
-                              : "취소 요청 철회"}
+                            {withdrawingOrderCancelId === orderId ? "철회 중..." : "취소 요청 철회"}
                           </Button>
                         ),
                       });
-                    } else if (
-                      ["대기중", "결제완료"].includes(normalizedStatus)
-                    ) {
+                    } else if (["대기중", "결제완료"].includes(normalizedStatus)) {
                       actions.push({
                         key: "order-cancel-request",
                         priority: 1,
@@ -1575,17 +1386,14 @@ export default function TransactionFlowList() {
                             onClick={() => handleConfirmPurchase(orderId)}
                           >
                             <CheckCircle className="mr-1 h-3.5 w-3.5" />
-                            {confirmingOrderId === orderId
-                              ? "처리 중..."
-                              : "구매확정"}
+                            {confirmingOrderId === orderId ? "처리 중..." : "구매확정"}
                           </Button>
                         ),
                       });
                     }
 
                     const hasOrderReviewPending =
-                      Boolean(g.order?.hasPendingReview) ||
-                      (g.order?.reviewPendingCount ?? 0) > 0;
+                      Boolean(g.order?.hasPendingReview) || (g.order?.reviewPendingCount ?? 0) > 0;
 
                     if (canRenderOrderReview && hasOrderReviewPending) {
                       actions.push({
@@ -1604,15 +1412,8 @@ export default function TransactionFlowList() {
                     }
                   }
 
-                  if (
-                    g.kind === "rental" &&
-                    rentalId &&
-                    !prefersApplicationView
-                  ) {
-                    if (
-                      normalizedStatus === "반납완료" &&
-                      !g.rental?.userConfirmedAt
-                    ) {
+                  if (g.kind === "rental" && rentalId && !prefersApplicationView) {
+                    if (normalizedStatus === "반납완료" && !g.rental?.userConfirmedAt) {
                       actions.push({
                         key: "rental-confirm",
                         priority: 0,
@@ -1625,18 +1426,14 @@ export default function TransactionFlowList() {
                             onClick={() => handleConfirmRental(rentalId)}
                           >
                             <CheckCircle className="mr-1 h-3.5 w-3.5" />
-                            {confirmingRentalId === rentalId
-                              ? "처리 중..."
-                              : "수령확인"}
+                            {confirmingRentalId === rentalId ? "처리 중..." : "수령확인"}
                           </Button>
                         ),
                       });
                     }
 
                     if (
-                      ["pending", "paid", "대기중", "결제완료"].includes(
-                        normalizedStatus,
-                      ) &&
+                      ["pending", "paid", "대기중", "결제완료"].includes(normalizedStatus) &&
                       !g.rental?.hasOutboundShipping
                     ) {
                       actions.push({
@@ -1663,14 +1460,8 @@ export default function TransactionFlowList() {
                         priority: 0,
                         pinInline: true,
                         node: (
-                          <Button
-                            key="rental-return-shipping"
-                            asChild
-                            size="sm"
-                          >
-                            <Link
-                              href={`/mypage/rentals/${rentalId}/return-shipping`}
-                            >
+                          <Button key="rental-return-shipping" asChild size="sm">
+                            <Link href={`/mypage/rentals/${rentalId}/return-shipping`}>
                               {g.rental?.hasReturnShipping
                                 ? "반납 운송장 수정"
                                 : "반납 운송장 등록"}
@@ -1680,19 +1471,12 @@ export default function TransactionFlowList() {
                       });
                     }
 
-                    if (
-                      !g.rental?.stringingApplicationId &&
-                      g.rental?.withStringService
-                    ) {
+                    if (!g.rental?.stringingApplicationId && g.rental?.withStringService) {
                       actions.push({
                         key: "rental-apply-stringing",
                         priority: 2,
                         node: (
-                          <Button
-                            key="rental-apply-stringing"
-                            asChild
-                            size="sm"
-                          >
+                          <Button key="rental-apply-stringing" asChild size="sm">
                             <Link href={`/services/apply?rentalId=${rentalId}`}>
                               교체서비스 신청
                               <ArrowRight className="ml-1 h-3.5 w-3.5" />
@@ -1703,10 +1487,7 @@ export default function TransactionFlowList() {
                     }
                   }
 
-                  if (
-                    isApplicationActionContext &&
-                    applicationActionTarget?.id
-                  ) {
+                  if (isApplicationActionContext && applicationActionTarget?.id) {
                     if (
                       !isRentalLinkedApplicationAction &&
                       isApplicationTrackingNeeded(applicationActionTarget)
@@ -1726,9 +1507,7 @@ export default function TransactionFlowList() {
                             <Link
                               href={`/services/applications/${applicationActionTarget.id}/shipping?return=${encodeURIComponent(`/mypage?tab=orders&${flowQuery}`)}`}
                             >
-                              {applicationActionTarget.hasTracking
-                                ? "운송장 수정"
-                                : "운송장 등록"}
+                              {applicationActionTarget.hasTracking ? "운송장 수정" : "운송장 등록"}
                             </Link>
                           </Button>
                         ),
@@ -1738,9 +1517,7 @@ export default function TransactionFlowList() {
                     if (
                       isDirectApplicationCard &&
                       ["접수완료", "검토 중"].includes(
-                        getMypageNormalizedStatus(
-                          applicationActionTarget.status,
-                        ),
+                        getMypageNormalizedStatus(applicationActionTarget.status),
                       )
                     ) {
                       actions.push({
@@ -1752,11 +1529,7 @@ export default function TransactionFlowList() {
                             key="application-cancel-request"
                             size="sm"
                             variant="destructive"
-                            onClick={() =>
-                              setCancelApplicationDialogId(
-                                applicationActionTarget.id,
-                              )
-                            }
+                            onClick={() => setCancelApplicationDialogId(applicationActionTarget.id)}
                           >
                             <XCircle className="mr-1 h-3.5 w-3.5" />
                             신청 취소 요청
@@ -1766,9 +1539,7 @@ export default function TransactionFlowList() {
                     }
 
                     if (
-                      getMypageNormalizedStatus(
-                        applicationActionTarget.status,
-                      ) === "교체완료" &&
+                      getMypageNormalizedStatus(applicationActionTarget.status) === "교체완료" &&
                       !applicationActionTarget.userConfirmedAt &&
                       !isLinkedApplicationConfirmSuppressed
                     ) {
@@ -1780,19 +1551,11 @@ export default function TransactionFlowList() {
                           <Button
                             key="application-confirm"
                             size="sm"
-                            disabled={
-                              confirmingApplicationId ===
-                              applicationActionTarget.id
-                            }
-                            onClick={() =>
-                              handleConfirmApplication(
-                                applicationActionTarget.id,
-                              )
-                            }
+                            disabled={confirmingApplicationId === applicationActionTarget.id}
+                            onClick={() => handleConfirmApplication(applicationActionTarget.id)}
                           >
                             <CheckCircle className="mr-1 h-3.5 w-3.5" />
-                            {confirmingApplicationId ===
-                            applicationActionTarget.id
+                            {confirmingApplicationId === applicationActionTarget.id
                               ? "처리 중..."
                               : "교체서비스 확정"}
                           </Button>
@@ -1813,9 +1576,7 @@ export default function TransactionFlowList() {
                             key="application-review"
                             applicationId={applicationActionTarget.id}
                             status={applicationActionTarget.status}
-                            userConfirmedAt={
-                              applicationActionTarget.userConfirmedAt
-                            }
+                            userConfirmedAt={applicationActionTarget.userConfirmedAt}
                           />
                         ),
                       });
@@ -1832,19 +1593,11 @@ export default function TransactionFlowList() {
                       key: "application-open-sheet",
                       priority: 3,
                       node: (
-                        <Button
-                          key="application-open-sheet"
-                          asChild
-                          size="sm"
-                          variant="default"
-                        >
+                        <Button key="application-open-sheet" asChild size="sm" variant="default">
                           <Link
                             href={
                               applicationActionTarget
-                                ? getStringingDetailHref(
-                                    applicationActionTarget,
-                                    flowQuery,
-                                  )
+                                ? getStringingDetailHref(applicationActionTarget, flowQuery)
                                 : `/mypage?tab=orders&flowType=application&flowId=${actionableApplicationId}&${flowQuery}`
                             }
                           >
@@ -1856,27 +1609,16 @@ export default function TransactionFlowList() {
                     });
                   }
 
-                  const sortedActions = actions.sort(
-                    (a, b) => a.priority - b.priority,
-                  );
-                  const forcedSecondary = sortedActions.filter(
-                    (a) => a.forceSecondary,
-                  );
-                  const inlineEligible = sortedActions.filter(
-                    (a) => !a.forceSecondary,
-                  );
+                  const sortedActions = actions.sort((a, b) => a.priority - b.priority);
+                  const forcedSecondary = sortedActions.filter((a) => a.forceSecondary);
+                  const inlineEligible = sortedActions.filter((a) => !a.forceSecondary);
                   const shouldUseSecondary =
                     inlineEligible.length > 3 || forcedSecondary.length > 0;
                   const pinnedInline = sortedActions.filter((a) => a.pinInline);
                   const nonPinned = inlineEligible.filter((a) => !a.pinInline);
 
-                  const primaryCount = shouldUseSecondary
-                    ? 1
-                    : nonPinned.length;
-                  const inlineActions = [
-                    ...pinnedInline,
-                    ...nonPinned.slice(0, primaryCount),
-                  ];
+                  const primaryCount = shouldUseSecondary ? 1 : nonPinned.length;
+                  const inlineActions = [...pinnedInline, ...nonPinned.slice(0, primaryCount)];
                   const secondaryActions = shouldUseSecondary
                     ? [...nonPinned.slice(primaryCount), ...forcedSecondary]
                     : [];
@@ -1895,13 +1637,10 @@ export default function TransactionFlowList() {
                           </Badge>
                         </div>
 
-                        {inlineActions.length > 0 ||
-                        secondaryActions.length > 0 ? (
+                        {inlineActions.length > 0 || secondaryActions.length > 0 ? (
                           <div className="grid w-full grid-cols-2 gap-2 md:flex md:w-full md:flex-col md:items-stretch [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-2.5 [&_a]:text-center [&_a]:text-xs [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap md:[&_a]:h-8 md:[&_a]:px-3 [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-2.5 [&_button]:text-center [&_button]:text-xs [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap md:[&_button]:h-8 md:[&_button]:px-3">
                             {inlineActions.map((action) => (
-                              <Fragment key={action.key}>
-                                {action.node}
-                              </Fragment>
+                              <Fragment key={action.key}>{action.node}</Fragment>
                             ))}
                             {secondaryActions.length > 0 ? (
                               <button
@@ -1912,9 +1651,7 @@ export default function TransactionFlowList() {
                                     : "border-border bg-background text-muted-foreground hover:bg-card hover:text-foreground"
                                 }`}
                                 onClick={() =>
-                                  setExpandedSecondaryKey((prev) =>
-                                    prev === g.key ? null : g.key,
-                                  )
+                                  setExpandedSecondaryKey((prev) => (prev === g.key ? null : g.key))
                                 }
                               >
                                 <span>
@@ -1934,9 +1671,7 @@ export default function TransactionFlowList() {
                         {secondaryActions.length > 0 && isSecondaryOpen ? (
                           <div className="hidden w-full grid-cols-1 gap-1.5 rounded-xl border border-border/60 bg-muted/20 px-2 py-2 md:grid [&_a]:h-8 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-3 [&_a]:text-center [&_a]:text-xs [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-3 [&_button]:text-center [&_button]:text-xs [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap">
                             {secondaryActions.map((action) => (
-                              <Fragment key={action.key}>
-                                {action.node}
-                              </Fragment>
+                              <Fragment key={action.key}>{action.node}</Fragment>
                             ))}
                           </div>
                         ) : null}
@@ -1959,11 +1694,7 @@ export default function TransactionFlowList() {
 
       {hasMore ? (
         <div className="flex justify-center pt-2">
-          <Button
-            variant="outline"
-            onClick={() => setSize(size + 1)}
-            disabled={isValidating}
-          >
+          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating}>
             {isValidating ? "불러오는 중..." : "더 보기"}
           </Button>
         </div>
@@ -1991,12 +1722,8 @@ export default function TransactionFlowList() {
           onOpenChange={(open) => !open && setCancelApplicationDialogId(null)}
           onConfirm={handleApplicationCancelRequest}
           isSubmitting={isCancelApplicationSubmitting}
-          needsRefundAccount={shouldRequestCancelRefundAccount(
-            cancelApplicationTarget,
-          )}
-          noRefundAccountMessage={getNoRefundAccountMessage(
-            cancelApplicationTarget,
-          )}
+          needsRefundAccount={shouldRequestCancelRefundAccount(cancelApplicationTarget)}
+          noRefundAccountMessage={getNoRefundAccountMessage(cancelApplicationTarget)}
         />
       ) : null}
 

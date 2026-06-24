@@ -5,15 +5,11 @@ import clientPromise from "@/lib/mongodb";
 import { writeRentalHistory } from "@/app/features/rentals/utils/history";
 import { verifyAccessToken } from "@/lib/auth.utils";
 
-export async function POST(
-  req: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     // 1) 인증
     const at = (await cookies()).get("accessToken")?.value;
-    if (!at)
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!at) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     let payload: any;
     try {
@@ -26,11 +22,8 @@ export async function POST(
      * - sub가 ObjectId 형식이 아니면 new ObjectId(sub)에서 500이 발생할 수 있음
      */
     const sub =
-      typeof payload?.sub === "string" && ObjectId.isValid(payload.sub)
-        ? payload.sub
-        : null;
-    if (!sub)
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      typeof payload?.sub === "string" && ObjectId.isValid(payload.sub) ? payload.sub : null;
+    if (!sub) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     // 2) 파라미터
     const { id } = await ctx.params;
@@ -120,9 +113,6 @@ export async function POST(
     });
   } catch (e) {
     console.error("cancel-withdraw error:", e);
-    return NextResponse.json(
-      { message: "Internal Server Error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
 }

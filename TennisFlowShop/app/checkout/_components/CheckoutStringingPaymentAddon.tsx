@@ -45,8 +45,7 @@ export default function CheckoutStringingPaymentAddon({
           패키지를 사용하지 않으면 교체서비스 비용이 결제금액에 포함됩니다.
         </p>
         <p className="text-xs text-foreground/75">
-          패키지를 사용하면 보유 횟수에서 차감되고 결제금액에서 교체서비스
-          비용이 제외됩니다.
+          패키지를 사용하면 보유 횟수에서 차감되고 결제금액에서 교체서비스 비용이 제외됩니다.
         </p>
       </div>
 
@@ -59,15 +58,9 @@ export default function CheckoutStringingPaymentAddon({
       >
         <div className="flex items-center gap-2 mb-2">
           <Ticket
-            className={
-              packageInsufficient
-                ? "h-4 w-4 text-destructive"
-                : "h-4 w-4 text-primary"
-            }
+            className={packageInsufficient ? "h-4 w-4 text-destructive" : "h-4 w-4 text-primary"}
           />
-          <p className="text-sm font-semibold text-foreground">
-            교체서비스 패키지 적용 상태
-          </p>
+          <p className="text-sm font-semibold text-foreground">교체서비스 패키지 적용 상태</p>
           <Badge
             variant="outline"
             className={
@@ -90,16 +83,13 @@ export default function CheckoutStringingPaymentAddon({
           <>
             <div className="flex flex-wrap gap-2 text-xs">
               <Badge variant="outline">패키지 잔여 {packageRemaining}회</Badge>
-              <Badge variant="outline">
-                이번 신청 필요 {requiredPassCount}회
-              </Badge>
+              <Badge variant="outline">이번 신청 필요 {requiredPassCount}회</Badge>
             </div>
 
             {packageInsufficient ? (
               <p className="text-xs text-destructive mt-2 flex items-start gap-1.5">
                 <AlertTriangle className="h-3.5 w-3.5 mt-0.5" />
-                잔여 횟수가 부족하여 이번 주문의 교체서비스는 일반 결제로
-                접수됩니다.
+                잔여 횟수가 부족하여 이번 주문의 교체서비스는 일반 결제로 접수됩니다.
               </p>
             ) : canApplyPackage ? (
               <p className="text-xs text-foreground mt-2 flex items-start gap-1.5">
@@ -130,8 +120,7 @@ export default function CheckoutStringingPaymentAddon({
           </>
         ) : (
           <p className="text-xs text-foreground/75">
-            사용 가능한 교체서비스 패키지가 없어 이번 주문의 교체서비스는 일반
-            결제로 접수됩니다.
+            사용 가능한 교체서비스 패키지가 없어 이번 주문의 교체서비스는 일반 결제로 접수됩니다.
           </p>
         )}
       </div>

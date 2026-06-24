@@ -9,8 +9,7 @@ import StatusBadge from "@/components/badges/StatusBadge";
 import { racketBrandLabel } from "@/lib/constants";
 
 // 간단 fetcher (쿠키 포함 필요 시 credentials 옵션)
-const fetcher = (url: string) =>
-  fetch(url, { credentials: "include" }).then((r) => r.json());
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
 type RacketItem = {
   id: string;
@@ -54,11 +53,7 @@ export default function RacketsClient() {
   }, [data, brand, cond]);
 
   if (error) {
-    return (
-      <div className="p-4 text-destructive">
-        라켓 목록을 불러오는 중 오류가 발생했어요.
-      </div>
-    );
+    return <div className="p-4 text-destructive">라켓 목록을 불러오는 중 오류가 발생했어요.</div>;
   }
 
   return (
@@ -97,9 +92,7 @@ export default function RacketsClient() {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="p-6 md:p-8 text-center text-muted-foreground">
-          등록된 라켓이 없습니다.
-        </div>
+        <div className="p-6 md:p-8 text-center text-muted-foreground">등록된 라켓이 없습니다.</div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {items.map((it) => (
@@ -124,27 +117,17 @@ export default function RacketsClient() {
                 )}
                 {it.rental?.enabled === false && (
                   <div className="absolute top-2 left-2 shadow">
-                    <StatusBadge
-                      kind="rental"
-                      state="unavailable"
-                      surface="image"
-                    />
+                    <StatusBadge kind="rental" state="unavailable" surface="image" />
                   </div>
                 )}
               </div>
               <div className="p-3 space-y-1">
-                <div className="text-sm text-muted-foreground">
-                  {racketBrandLabel(it.brand)}
-                </div>
-                <div className="font-medium group-hover:underline">
-                  {it.model}
-                </div>
+                <div className="text-sm text-muted-foreground">{racketBrandLabel(it.brand)}</div>
+                <div className="font-medium group-hover:underline">{it.model}</div>
                 <div className="text-sm">
                   상태: <span className="font-semibold">{it.condition}</span>
                 </div>
-                <div className="text-base font-semibold">
-                  {it.price.toLocaleString()}원
-                </div>
+                <div className="text-base font-semibold">{it.price.toLocaleString()}원</div>
                 {it.rental?.enabled ? (
                   // 라켓별 진행중 대여 수 조회
                   <RacketAvailBadge id={it.id} />
@@ -172,10 +155,7 @@ function RacketAvailBadge({ id }: { id: string }) {
     { dedupingInterval: 5000 }, // (선택) 5초 이내 중복 호출 방지
   );
   const qty = Number(data?.quantity ?? 1);
-  const avail = Math.max(
-    0,
-    Number(data?.available ?? qty - Number(data?.count ?? 0)),
-  );
+  const avail = Math.max(0, Number(data?.available ?? qty - Number(data?.count ?? 0)));
   const soldOut = avail <= 0;
   return (
     <div className={`text-xs ${soldOut ? "text-destructive" : "text-primary"}`}>

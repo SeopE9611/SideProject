@@ -34,10 +34,7 @@ export async function ensureBoardIndexes(db: Db) {
     process.env.COMMUNITY_VIEW_DEDUPE_TTL_SECONDS ?? 60 * 30,
   );
   const communityViewDedupeTtl = Number.isFinite(communityViewDedupeTtlRaw)
-    ? Math.max(
-        60 * 30,
-        Math.min(60 * 60 * 24, Math.floor(communityViewDedupeTtlRaw)),
-      )
+    ? Math.max(60 * 30, Math.min(60 * 60 * 24, Math.floor(communityViewDedupeTtlRaw)))
     : 60 * 30;
 
   // 기본 조회 패턴: 타입/상태별 최신
@@ -76,12 +73,7 @@ export async function ensureBoardIndexes(db: Db) {
     { name: "boards_list_compound" },
   );
   // 최신 수정순: updatedAt desc
-  await ensureIndex(
-    db,
-    "board_posts",
-    { updatedAt: -1 },
-    { name: "boards_updatedAt_desc" },
-  );
+  await ensureIndex(db, "board_posts", { updatedAt: -1 }, { name: "boards_updatedAt_desc" });
   // 첨부 경로: attachments.storagePath (스토리지 삭제/정합 점검용)
   await ensureIndex(
     db,
@@ -159,19 +151,17 @@ export async function ensureBoardIndexes(db: Db) {
   );
 
   // 기존 createdAt 기반 TTL 인덱스와 달리 expireAt 절대시각을 사용하면 TTL 변경을 즉시 반영하기 쉽다.
-  await db
-    .collection("community_post_view_dedupe")
-    .updateMany({ expireAt: { $exists: false } }, [
-      {
-        $set: {
-          expireAt: {
-            $dateAdd: {
-              startDate: "$createdAt",
-              unit: "second",
-              amount: communityViewDedupeTtl,
-            },
+  await db.collection("community_post_view_dedupe").updateMany({ expireAt: { $exists: false } }, [
+    {
+      $set: {
+        expireAt: {
+          $dateAdd: {
+            startDate: "$createdAt",
+            unit: "second",
+            amount: communityViewDedupeTtl,
           },
         },
       },
-    ]);
+    },
+  ]);
 }

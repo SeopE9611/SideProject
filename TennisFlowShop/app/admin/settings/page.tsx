@@ -28,11 +28,7 @@ export default function SettingsPage() {
             helperText="변경 내용은 저장 전까지 적용되지 않으며, 탭 이동 시 확인 절차가 유지됩니다."
           />
 
-          <Tabs
-            value={vm.activeTab}
-            onValueChange={vm.requestTabChange}
-            className="space-y-4"
-          >
+          <Tabs value={vm.activeTab} onValueChange={vm.requestTabChange} className="space-y-4">
             {vm.isBootstrapping && (
               <div
                 className="rounded-lg border border-border bg-primary/10 px-4 py-3 dark:bg-primary/20"

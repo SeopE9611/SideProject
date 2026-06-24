@@ -54,8 +54,7 @@ import { NextResponse } from "next/server";
 function gone(body?: Record<string, any>) {
   return NextResponse.json(
     {
-      message:
-        "This endpoint has been deprecated. Use /api/applications/stringing/* instead.",
+      message: "This endpoint has been deprecated. Use /api/applications/stringing/* instead.",
       ...(body ?? {}),
     },
     {

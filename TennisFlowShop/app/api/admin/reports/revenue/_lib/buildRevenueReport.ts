@@ -35,10 +35,7 @@ type OnlineSeriesAccumulator = {
   rentals: number;
 };
 
-export function parseReportDate(
-  value: string | null,
-  boundary: "from" | "to",
-): Date | null {
+export function parseReportDate(value: string | null, boundary: "from" | "to"): Date | null {
   if (!value) return null;
   const trimmed = value.trim();
   if (!trimmed) return null;
@@ -97,12 +94,8 @@ export function buildRevenueReportDateRange(
   };
 }
 
-function groupKey(
-  dateValue: unknown,
-  groupBy: RevenueReportGroupBy,
-): string | null {
-  const date =
-    dateValue instanceof Date ? dateValue : new Date(String(dateValue ?? ""));
+function groupKey(dateValue: unknown, groupBy: RevenueReportGroupBy): string | null {
+  const date = dateValue instanceof Date ? dateValue : new Date(String(dateValue ?? ""));
   if (Number.isNaN(date.getTime())) return null;
   const ymd = formatKstYmd(date);
   return groupBy === "month" ? ymd.slice(0, 7) : ymd;
@@ -204,9 +197,7 @@ async function buildOnlineRevenueReport(
       .toArray(),
   ]);
 
-  const standaloneApps = apps.filter((doc: Document) =>
-    isStandaloneStringingApplication(doc),
-  );
+  const standaloneApps = apps.filter((doc: Document) => isStandaloneStringingApplication(doc));
   const series = new Map<string, OnlineSeriesAccumulator>();
 
   let ordersPaid = 0;
@@ -225,33 +216,18 @@ async function buildOnlineRevenueReport(
     const amount = applicationPaidAmount(doc);
     appsPaid += amount;
     refundedAmount += refundsAmount(doc);
-    addOnlineSeries(
-      series,
-      groupKey(doc.createdAt, groupBy),
-      "stringingApplications",
-      amount,
-    );
+    addOnlineSeries(series, groupKey(doc.createdAt, groupBy), "stringingApplications", amount);
   }
   for (const doc of packageOrders) {
     const amount = orderPaidAmount(doc);
     packagesPaid += amount;
     refundedAmount += refundsAmount(doc);
-    addOnlineSeries(
-      series,
-      groupKey(doc.createdAt, groupBy),
-      "packageOrders",
-      amount,
-    );
+    addOnlineSeries(series, groupKey(doc.createdAt, groupBy), "packageOrders", amount);
   }
   for (const doc of rentals) {
     const amount = rentalPaidAmount(doc);
     rentalsPaid += amount;
-    addOnlineSeries(
-      series,
-      groupKey(doc.createdAt, groupBy),
-      "rentals",
-      amount,
-    );
+    addOnlineSeries(series, groupKey(doc.createdAt, groupBy), "rentals", amount);
   }
 
   const paidAmount = ordersPaid + appsPaid + packagesPaid + rentalsPaid;
@@ -260,11 +236,7 @@ async function buildOnlineRevenueReport(
       paidAmount,
       refundedAmount,
       netAmount: paidAmount - refundedAmount,
-      count:
-        orders.length +
-        standaloneApps.length +
-        packageOrders.length +
-        rentals.length,
+      count: orders.length + standaloneApps.length + packageOrders.length + rentals.length,
       bySource: {
         orders: ordersPaid,
         stringingApplications: appsPaid,
@@ -278,11 +250,7 @@ async function buildOnlineRevenueReport(
 
 export async function buildRevenueReport(
   db: Db,
-  {
-    from,
-    to,
-    groupBy,
-  }: { from: string | null; to: string | null; groupBy: RevenueReportGroupBy },
+  { from, to, groupBy }: { from: string | null; to: string | null; groupBy: RevenueReportGroupBy },
 ): Promise<RevenueReportResponse | null> {
   const range = buildRevenueReportDateRange(from, to);
   if (!range || range.from > range.toInclusive) return null;
@@ -300,10 +268,7 @@ export async function buildRevenueReport(
   const seriesMap = new Map<string, RevenueReportSeriesPoint>();
   for (const [date, item] of onlineReport.series.entries()) {
     const onlinePaidAmount =
-      item.orders +
-      item.stringingApplications +
-      item.packageOrders +
-      item.rentals;
+      item.orders + item.stringingApplications + item.packageOrders + item.rentals;
     seriesMap.set(date, {
       date,
       onlinePaidAmount,
@@ -319,8 +284,7 @@ export async function buildRevenueReport(
       combinedPaidAmount: 0,
     };
     current.offlinePaidAmount = item.totalPaidAmount;
-    current.combinedPaidAmount =
-      current.onlinePaidAmount + current.offlinePaidAmount;
+    current.combinedPaidAmount = current.onlinePaidAmount + current.offlinePaidAmount;
     seriesMap.set(item.date, current);
   }
 
@@ -339,16 +303,11 @@ export async function buildRevenueReport(
       issueFailedAmount: offlineSummary.packageSales.issueFailedAmount,
     },
     combinedPreview: {
-      paidAmount:
-        onlineReport.bucket.paidAmount + offlineSummary.total.paidAmount,
-      refundedAmount:
-        onlineReport.bucket.refundedAmount +
-        offlineSummary.total.refundedAmount,
+      paidAmount: onlineReport.bucket.paidAmount + offlineSummary.total.paidAmount,
+      refundedAmount: onlineReport.bucket.refundedAmount + offlineSummary.total.refundedAmount,
       netAmount: onlineReport.bucket.netAmount + offlineSummary.total.netAmount,
       note: COMBINED_PREVIEW_NOTE,
     },
-    series: Array.from(seriesMap.values()).sort((a, b) =>
-      a.date.localeCompare(b.date),
-    ),
+    series: Array.from(seriesMap.values()).sort((a, b) => a.date.localeCompare(b.date)),
   };
 }

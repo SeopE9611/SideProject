@@ -33,11 +33,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import {
-  getKstMonthRange,
-  getKstRecentDaysRange,
-  getKstTodayRange,
-} from "@/lib/date/kst";
+import { getKstMonthRange, getKstRecentDaysRange, getKstTodayRange } from "@/lib/date/kst";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import type {
@@ -74,10 +70,7 @@ type SnapshotDiffRow = {
   diff: number;
 };
 
-function formatSnapshotDiffValue(
-  value: number,
-  unit: SnapshotDiffUnit,
-): string {
+function formatSnapshotDiffValue(value: number, unit: SnapshotDiffUnit): string {
   return unit === "currency" ? formatKRW(value) : formatCount(value);
 }
 
@@ -218,8 +211,7 @@ function getMonthlySnapshotTarget(
   from: string,
   to: string,
 ): { yyyymm: string; from: string; to: string } | null {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to))
-    return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to)) return null;
   const yyyymm = from.slice(0, 7);
   if (from !== `${yyyymm}-01`) return null;
   const expectedTo = monthLastDay(yyyymm);
@@ -255,22 +247,14 @@ function SummaryCard({
     >
       <CardContent className="p-5">
         <p className="text-sm font-medium text-muted-foreground">{title}</p>
-        <p className="mt-2 text-2xl font-bold tabular-nums text-foreground">
-          {value}
-        </p>
-        {sub ? (
-          <p className="mt-1 text-xs text-muted-foreground">{sub}</p>
-        ) : null}
+        <p className="mt-2 text-2xl font-bold tabular-nums text-foreground">{value}</p>
+        {sub ? <p className="mt-1 text-xs text-muted-foreground">{sub}</p> : null}
       </CardContent>
     </Card>
   );
 }
 
-function SnapshotSummaryCard({
-  snapshot,
-}: {
-  snapshot: RevenueReportSnapshot;
-}) {
+function SnapshotSummaryCard({ snapshot }: { snapshot: RevenueReportSnapshot }) {
   return (
     <Card className="border-dashed border-primary/40 bg-primary/5">
       <CardHeader>
@@ -319,9 +303,7 @@ function SnapshotSummaryCard({
           <Row
             label="상태"
             value={
-              snapshot.status === "finalized"
-                ? "finalized · 마감 스냅샷"
-                : "draft · 임시 저장"
+              snapshot.status === "finalized" ? "finalized · 마감 스냅샷" : "draft · 임시 저장"
             }
           />
           <Row
@@ -362,12 +344,11 @@ function SnapshotDiffCard({
               <DatabaseZap className="h-4 w-4" /> 실시간 리포트와 스냅샷 차이
             </CardTitle>
             <p className="mt-2 text-sm text-muted-foreground">
-              아래 차이는 현재 실시간 리포트 값에서 저장된 스냅샷 값을 뺀
-              값입니다.
+              아래 차이는 현재 실시간 리포트 값에서 저장된 스냅샷 값을 뺀 값입니다.
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              이 비교는 운영 확인용이며 정산 지급액 계산에는 사용되지 않습니다.
-              스냅샷과 실시간 리포트는 별도 기준입니다.
+              이 비교는 운영 확인용이며 정산 지급액 계산에는 사용되지 않습니다. 스냅샷과 실시간
+              리포트는 별도 기준입니다.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -395,9 +376,7 @@ function SnapshotDiffCard({
           <tbody className="divide-y divide-border">
             {rows.map((row) => (
               <tr key={row.label}>
-                <td className="py-2 pr-4 font-medium text-foreground">
-                  {row.label}
-                </td>
+                <td className="py-2 pr-4 font-medium text-foreground">{row.label}</td>
                 <td className="py-2 pr-4 tabular-nums text-muted-foreground">
                   {formatSnapshotDiffValue(row.snapshotValue, row.unit)}
                 </td>
@@ -417,8 +396,8 @@ function SnapshotDiffCard({
           </tbody>
         </table>
         <p className="mt-4 text-xs text-muted-foreground">
-          차이 공식: 현재 실시간 값 - 저장된 스냅샷 값. 일별 series 차이 비교는
-          이번 화면에서 제공하지 않습니다.
+          차이 공식: 현재 실시간 값 - 저장된 스냅샷 값. 일별 series 차이 비교는 이번 화면에서
+          제공하지 않습니다.
         </p>
       </CardContent>
     </Card>
@@ -432,8 +411,7 @@ export default function RevenueReportClient() {
     groupBy: RevenueReportGroupBy;
   }>(() => defaultReportRange());
   const [applied, setApplied] = useState(filters);
-  const [snapshotStatus, setSnapshotStatus] =
-    useState<RevenueReportSnapshotStatus>("draft");
+  const [snapshotStatus, setSnapshotStatus] = useState<RevenueReportSnapshotStatus>("draft");
   const [snapshotMemo, setSnapshotMemo] = useState("");
   const [savingSnapshot, setSavingSnapshot] = useState(false);
   const [autoGeneratingSnapshot, setAutoGeneratingSnapshot] = useState(false);
@@ -479,13 +457,9 @@ export default function RevenueReportClient() {
     data: snapshotData,
     isLoading: isSnapshotLoading,
     mutate: mutateSnapshot,
-  } = useSWR<RevenueReportSnapshotResponse>(
-    snapshotKey,
-    authenticatedSWRFetcher,
-    {
-      revalidateOnFocus: false,
-    },
-  );
+  } = useSWR<RevenueReportSnapshotResponse>(snapshotKey, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+  });
 
   const applyPreset = (preset: "today" | "month" | "7d" | "30d") => {
     const next = (() => {
@@ -531,9 +505,7 @@ export default function RevenueReportClient() {
       await mutateSnapshot(result, { revalidate: true });
     } catch (saveError) {
       showErrorToast(
-        saveError instanceof Error
-          ? saveError.message
-          : "스냅샷 저장에 실패했습니다.",
+        saveError instanceof Error ? saveError.message : "스냅샷 저장에 실패했습니다.",
       );
     } finally {
       setSavingSnapshot(false);
@@ -596,13 +568,7 @@ export default function RevenueReportClient() {
 
     setSnapshotStatus(snapshot.status ?? "draft");
     setSnapshotMemo(snapshot.memo ?? "");
-  }, [
-    activeSnapshotMonth,
-    snapshot?.id,
-    snapshot?.updatedAt,
-    snapshot?.status,
-    snapshot?.memo,
-  ]);
+  }, [activeSnapshotMonth, snapshot?.id, snapshot?.updatedAt, snapshot?.status, snapshot?.memo]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -649,20 +615,10 @@ export default function RevenueReportClient() {
               >
                 이번 달
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => applyPreset("7d")}
-              >
+              <Button type="button" variant="outline" size="sm" onClick={() => applyPreset("7d")}>
                 최근 7일
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => applyPreset("30d")}
-              >
+              <Button type="button" variant="outline" size="sm" onClick={() => applyPreset("30d")}>
                 최근 30일
               </Button>
             </div>
@@ -673,9 +629,7 @@ export default function RevenueReportClient() {
                   id="report-from"
                   type="date"
                   value={filters.from}
-                  onChange={(e) =>
-                    setFilters((prev) => ({ ...prev, from: e.target.value }))
-                  }
+                  onChange={(e) => setFilters((prev) => ({ ...prev, from: e.target.value }))}
                 />
               </div>
               <div className="space-y-1.5">
@@ -684,9 +638,7 @@ export default function RevenueReportClient() {
                   id="report-to"
                   type="date"
                   value={filters.to}
-                  onChange={(e) =>
-                    setFilters((prev) => ({ ...prev, to: e.target.value }))
-                  }
+                  onChange={(e) => setFilters((prev) => ({ ...prev, to: e.target.value }))}
                 />
               </div>
               <div className="space-y-1.5">
@@ -722,8 +674,8 @@ export default function RevenueReportClient() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              CSV 다운로드는 현재 조회 중인 실시간 리포트 기준입니다. 스냅샷
-              CSV는 아래 월별 리포트 스냅샷 카드에서 별도로 다운로드합니다.
+              CSV 다운로드는 현재 조회 중인 실시간 리포트 기준입니다. 스냅샷 CSV는 아래 월별 리포트
+              스냅샷 카드에서 별도로 다운로드합니다.
             </p>
           </CardContent>
         </Card>
@@ -741,9 +693,8 @@ export default function RevenueReportClient() {
                   <strong className="text-foreground">
                     {monthlySnapshotTarget.yyyymm} 월별 스냅샷 저장 가능
                   </strong>{" "}
-                  · 저장 시 서버에서 {monthlySnapshotTarget.from} ~{" "}
-                  {monthlySnapshotTarget.to} 범위를 day 기준으로 다시
-                  집계합니다.
+                  · 저장 시 서버에서 {monthlySnapshotTarget.from} ~ {monthlySnapshotTarget.to}{" "}
+                  범위를 day 기준으로 다시 집계합니다.
                 </p>
               ) : (
                 <p>
@@ -755,27 +706,24 @@ export default function RevenueReportClient() {
               )}
               <ul className="mt-3 list-disc space-y-1 pl-5">
                 <li>
-                  스냅샷은 저장 시점의 매출 리포트이며, 이후 주문/환불/오프라인
-                  기록 수정에 따라 실시간 리포트와 차이가 날 수 있습니다.
+                  스냅샷은 저장 시점의 매출 리포트이며, 이후 주문/환불/오프라인 기록 수정에 따라
+                  실시간 리포트와 차이가 날 수 있습니다.
                 </li>
                 <li>스냅샷은 정산 지급액 계산에 사용되지 않습니다.</li>
                 <li>
-                  이미 저장된 월별 스냅샷을 새로 저장하면 저장 당시의 리포트
-                  값으로 덮어써집니다.
+                  이미 저장된 월별 스냅샷을 새로 저장하면 저장 당시의 리포트 값으로 덮어써집니다.
                 </li>
                 <li>
-                  자동 생성은 스냅샷 저장을 편하게 하기 위한 기능이며, 정산
-                  지급액 계산에는 사용되지 않습니다.
+                  자동 생성은 스냅샷 저장을 편하게 하기 위한 기능이며, 정산 지급액 계산에는 사용되지
+                  않습니다.
                 </li>
               </ul>
               <div className="mt-4 flex flex-col gap-3 rounded-lg border border-border bg-background/70 p-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="font-medium text-foreground">
-                    이전 달 마감 스냅샷 생성
-                  </p>
+                  <p className="font-medium text-foreground">이전 달 마감 스냅샷 생성</p>
                   <p className="mt-1 text-xs">
-                    KST 기준 이전 달을 finalized 상태로 생성하며, 이미 해당 월
-                    스냅샷이 있으면 새로 생성한 값으로 덮어씁니다.
+                    KST 기준 이전 달을 finalized 상태로 생성하며, 이미 해당 월 스냅샷이 있으면 새로
+                    생성한 값으로 덮어씁니다.
                   </p>
                 </div>
                 <Button
@@ -809,13 +757,7 @@ export default function RevenueReportClient() {
                       </p>
                     </div>
                     {snapshot ? (
-                      <Badge
-                        variant={
-                          snapshot.status === "finalized"
-                            ? "default"
-                            : "secondary"
-                        }
-                      >
+                      <Badge variant={snapshot.status === "finalized" ? "default" : "secondary"}>
                         {snapshot.status}
                       </Badge>
                     ) : (
@@ -825,14 +767,8 @@ export default function RevenueReportClient() {
                   {snapshot ? (
                     <>
                       <dl className="mt-4 space-y-2 text-sm">
-                        <Row
-                          label="마지막 저장일"
-                          value={formatDateTime(snapshot.updatedAt)}
-                        />
-                        <Row
-                          label="메모"
-                          value={snapshot.memo?.trim() || "-"}
-                        />
+                        <Row label="마지막 저장일" value={formatDateTime(snapshot.updatedAt)} />
+                        <Row label="메모" value={snapshot.memo?.trim() || "-"} />
                       </dl>
                       <div className="mt-4 flex flex-wrap gap-2">
                         <Button
@@ -853,8 +789,8 @@ export default function RevenueReportClient() {
                         ) : null}
                       </div>
                       <p className="mt-3 text-xs text-muted-foreground">
-                        스냅샷 CSV는 저장 당시 리포트 기준입니다. 현재 조회 중인
-                        실시간 CSV와 파일명 및 기준값이 다릅니다.
+                        스냅샷 CSV는 저장 당시 리포트 기준입니다. 현재 조회 중인 실시간 CSV와 파일명
+                        및 기준값이 다릅니다.
                       </p>
                     </>
                   ) : null}
@@ -886,9 +822,7 @@ export default function RevenueReportClient() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="draft">draft · 임시 저장</SelectItem>
-                        <SelectItem value="finalized">
-                          finalized · 마감 스냅샷
-                        </SelectItem>
+                        <SelectItem value="finalized">finalized · 마감 스냅샷</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -927,9 +861,7 @@ export default function RevenueReportClient() {
             {snapshot && showSnapshot ? (
               <>
                 <SnapshotSummaryCard snapshot={snapshot} />
-                {report ? (
-                  <SnapshotDiffCard report={report} snapshot={snapshot} />
-                ) : null}
+                {report ? <SnapshotDiffCard report={report} snapshot={snapshot} /> : null}
               </>
             ) : null}
           </CardContent>
@@ -938,17 +870,11 @@ export default function RevenueReportClient() {
         {error ? (
           <Card className="border-destructive/40 bg-destructive/10">
             <CardContent className="p-5">
-              <p className="font-semibold text-destructive">
-                매출 리포트를 불러오지 못했습니다.
-              </p>
+              <p className="font-semibold text-destructive">매출 리포트를 불러오지 못했습니다.</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 필터를 확인한 뒤 다시 시도해주세요.
               </p>
-              <Button
-                className="mt-4"
-                variant="outline"
-                onClick={() => mutate()}
-              >
+              <Button className="mt-4" variant="outline" onClick={() => mutate()}>
                 다시 불러오기
               </Button>
             </CardContent>
@@ -1018,12 +944,10 @@ export default function RevenueReportClient() {
               <CardContent className="p-5">
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
-                    <h2 className="text-lg font-bold">
-                      실시간 온라인/오프라인 비교
-                    </h2>
+                    <h2 className="text-lg font-bold">실시간 온라인/오프라인 비교</h2>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      현재 DB 기준 리포트입니다. 저장된 스냅샷과 다를 수 있으며,
-                      참고 합계는 정산 지급액처럼 사용하지 않습니다.
+                      현재 DB 기준 리포트입니다. 저장된 스냅샷과 다를 수 있으며, 참고 합계는 정산
+                      지급액처럼 사용하지 않습니다.
                     </p>
                   </div>
                   <Badge variant="secondary">
@@ -1041,18 +965,13 @@ export default function RevenueReportClient() {
                       />
                       <Row
                         label="독립 스트링 신청"
-                        value={formatKRW(
-                          report.online.bySource.stringingApplications,
-                        )}
+                        value={formatKRW(report.online.bySource.stringingApplications)}
                       />
                       <Row
                         label="온라인 패키지"
                         value={formatKRW(report.online.bySource.packageOrders)}
                       />
-                      <Row
-                        label="대여"
-                        value={formatKRW(report.online.bySource.rentals)}
-                      />
+                      <Row label="대여" value={formatKRW(report.online.bySource.rentals)} />
                     </dl>
                   </div>
                   <div className="rounded-xl border border-border p-4">
@@ -1066,14 +985,8 @@ export default function RevenueReportClient() {
                         label="오프라인 패키지 판매"
                         value={formatKRW(report.offline.packageSalesPaidAmount)}
                       />
-                      <Row
-                        label="미결제"
-                        value={formatKRW(report.offline.pendingAmount)}
-                      />
-                      <Row
-                        label="환불"
-                        value={formatKRW(report.offline.refundedAmount)}
-                      />
+                      <Row label="미결제" value={formatKRW(report.offline.pendingAmount)} />
+                      <Row label="환불" value={formatKRW(report.offline.refundedAmount)} />
                     </dl>
                   </div>
                 </div>
@@ -1091,11 +1004,7 @@ export default function RevenueReportClient() {
                   <SummaryCard
                     key={key}
                     title={label}
-                    value={formatKRW(
-                      report.offline.byMethod[
-                        key as keyof typeof METHOD_LABELS
-                      ],
-                    )}
+                    value={formatKRW(report.offline.byMethod[key as keyof typeof METHOD_LABELS])}
                     sub="오프라인 결제완료 매출"
                   />
                 ))}
@@ -1121,19 +1030,14 @@ export default function RevenueReportClient() {
                   <tbody className="divide-y divide-border">
                     {report.series.length === 0 ? (
                       <tr>
-                        <td
-                          colSpan={4}
-                          className="py-6 text-center text-muted-foreground"
-                        >
+                        <td colSpan={4} className="py-6 text-center text-muted-foreground">
                           조회 기간의 매출 데이터가 없습니다.
                         </td>
                       </tr>
                     ) : (
                       report.series.map((point) => (
                         <tr key={point.date}>
-                          <td className="py-2 pr-4 font-medium">
-                            {point.date}
-                          </td>
+                          <td className="py-2 pr-4 font-medium">{point.date}</td>
                           <td className="py-2 pr-4 tabular-nums">
                             {formatKRW(point.onlinePaidAmount)}
                           </td>
@@ -1148,9 +1052,7 @@ export default function RevenueReportClient() {
                     )}
                   </tbody>
                 </table>
-                <p className="mt-4 text-xs text-muted-foreground">
-                  {report.combinedPreview.note}
-                </p>
+                <p className="mt-4 text-xs text-muted-foreground">{report.combinedPreview.note}</p>
               </CardContent>
             </Card>
           </>

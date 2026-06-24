@@ -76,14 +76,11 @@ function serializePublicClass(doc: Document): PublicAcademyClass {
     levelLabel: getAcademyClassLevelLabel(level),
     lessonType,
     lessonTypeLabel: getAcademyClassLessonTypeLabel(lessonType),
-    instructorName:
-      typeof doc.instructorName === "string" ? doc.instructorName : null,
+    instructorName: typeof doc.instructorName === "string" ? doc.instructorName : null,
     location: typeof doc.location === "string" ? doc.location : null,
-    scheduleText:
-      typeof doc.scheduleText === "string" ? doc.scheduleText : null,
+    scheduleText: typeof doc.scheduleText === "string" ? doc.scheduleText : null,
     capacity: typeof doc.capacity === "number" ? doc.capacity : null,
-    enrolledCount:
-      typeof doc.enrolledCount === "number" ? doc.enrolledCount : 0,
+    enrolledCount: typeof doc.enrolledCount === "number" ? doc.enrolledCount : 0,
     price: typeof doc.price === "number" ? doc.price : null,
     status,
     statusLabel: getAcademyClassStatusLabel(status),
@@ -131,16 +128,9 @@ async function getPublicAcademyClassById(
   }
 }
 
-const ACTIVE_APPLICATION_STATUSES = [
-  "submitted",
-  "reviewing",
-  "contacted",
-  "confirmed",
-] as const;
+const ACTIVE_APPLICATION_STATUSES = ["submitted", "reviewing", "contacted", "confirmed"] as const;
 
-function serializeActiveApplication(
-  doc: Document,
-): AcademyActiveApplicationSummary {
+function serializeActiveApplication(doc: Document): AcademyActiveApplicationSummary {
   const classSnapshot =
     doc.classSnapshot && typeof doc.classSnapshot === "object"
       ? (doc.classSnapshot as { name?: unknown })
@@ -156,22 +146,16 @@ function serializeActiveApplication(
           ? doc.className
           : null,
     preferredDays: Array.isArray(doc.preferredDays)
-      ? doc.preferredDays.filter(
-          (day): day is string => typeof day === "string",
-        )
+      ? doc.preferredDays.filter((day): day is string => typeof day === "string")
       : [],
     status:
-      doc.status === "reviewing" ||
-      doc.status === "contacted" ||
-      doc.status === "confirmed"
+      doc.status === "reviewing" || doc.status === "contacted" || doc.status === "confirmed"
         ? doc.status
         : "submitted",
   };
 }
 
-async function getApplicantProfile(
-  userId: string,
-): Promise<AcademyApplicantProfile> {
+async function getApplicantProfile(userId: string): Promise<AcademyApplicantProfile> {
   if (!ObjectId.isValid(userId)) {
     return { name: "", phone: "", email: "" };
   }
@@ -180,10 +164,7 @@ async function getApplicantProfile(
     const db = await getDb();
     const user = await db
       .collection("users")
-      .findOne(
-        { _id: new ObjectId(userId) },
-        { projection: { name: 1, phone: 1, email: 1 } },
-      );
+      .findOne({ _id: new ObjectId(userId) }, { projection: { name: 1, phone: 1, email: 1 } });
 
     return {
       name: typeof user?.name === "string" ? user.name : "",
@@ -196,9 +177,7 @@ async function getApplicantProfile(
   }
 }
 
-async function getActiveApplications(
-  userId: string,
-): Promise<AcademyActiveApplicationSummary[]> {
+async function getActiveApplications(userId: string): Promise<AcademyActiveApplicationSummary[]> {
   try {
     const db = await getDb();
     const docs = await db
@@ -259,16 +238,13 @@ export default async function AcademyApplyPage({
     redirect(`/login?next=${encodeURIComponent(currentPath)}`);
   }
 
-  const [selectedClass, initialApplicantInfo, activeApplications] =
-    await Promise.all([
-      getPublicAcademyClassById(classId ?? null),
-      getApplicantProfile(userId),
-      getActiveApplications(userId),
-    ]);
+  const [selectedClass, initialApplicantInfo, activeApplications] = await Promise.all([
+    getPublicAcademyClassById(classId ?? null),
+    getApplicantProfile(userId),
+    getActiveApplications(userId),
+  ]);
   const duplicateApplication = selectedClass
-    ? activeApplications.find(
-        (application) => application.classId === selectedClass._id,
-      )
+    ? activeApplications.find((application) => application.classId === selectedClass._id)
     : null;
   const selectedClassSchedule = selectedClass
     ? getAcademyScheduleDisplay(selectedClass.scheduleText)
@@ -295,17 +271,14 @@ export default async function AcademyApplyPage({
           </nav>
 
           <div className="flex flex-col gap-4">
-            <div className="text-sm font-medium text-primary">
-              도깨비테니스 아카데미
-            </div>
+            <div className="text-sm font-medium text-primary">도깨비테니스 아카데미</div>
 
             <h1 className="text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
               아카데미 신청서
             </h1>
 
             <p className="max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-              신청서를 남겨주시면 도깨비테니스에서 일정과 수강 방식을 확인한 뒤
-              상담을 도와드립니다.
+              신청서를 남겨주시면 도깨비테니스에서 일정과 수강 방식을 확인한 뒤 상담을 도와드립니다.
             </p>
           </div>
         </div>
@@ -321,9 +294,7 @@ export default async function AcademyApplyPage({
                 <Info className="h-5 w-5 text-primary" />
               </div>
               <div className="space-y-3">
-                <h2 className="text-base font-semibold text-foreground">
-                  신청 전 안내사항
-                </h2>
+                <h2 className="text-base font-semibold text-foreground">신청 전 안내사항</h2>
                 <ul className="space-y-2">
                   {notices.map((notice, index) => (
                     <li
@@ -352,15 +323,13 @@ export default async function AcademyApplyPage({
                       이미 신청한 클래스입니다
                     </h2>
                     <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                      기존 신청 내역에서 진행 상태를 확인해 주세요. 같은
-                      클래스는 진행 중인 신청이 있을 때 중복 신청할 수 없습니다.
+                      기존 신청 내역에서 진행 상태를 확인해 주세요. 같은 클래스는 진행 중인 신청이
+                      있을 때 중복 신청할 수 없습니다.
                     </p>
                   </div>
                   <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                     <Button asChild>
-                      <a
-                        href={`/mypage/academy-applications/${duplicateApplication.id}`}
-                      >
+                      <a href={`/mypage/academy-applications/${duplicateApplication.id}`}>
                         신청 내역 보기
                       </a>
                     </Button>
@@ -473,13 +442,11 @@ export default async function AcademyApplyPage({
                     {selectedClass.status === "closed" && (
                       <div className="mt-4 rounded-xl border border-border bg-muted/20 p-4">
                         <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
-                          이 클래스는 현재 모집이 마감되었습니다. 문의하기를
-                          통해 다음 모집 일정을 확인해 주세요.
+                          이 클래스는 현재 모집이 마감되었습니다. 문의하기를 통해 다음 모집 일정을
+                          확인해 주세요.
                         </p>
                         <Button asChild size="sm">
-                          <Link href="/board/qna/write?category=academy">
-                            문의하기
-                          </Link>
+                          <Link href="/board/qna/write?category=academy">문의하기</Link>
                         </Button>
                       </div>
                     )}
@@ -500,9 +467,9 @@ export default async function AcademyApplyPage({
                           클래스 정보를 찾을 수 없습니다
                         </h3>
                         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                          선택한 클래스 정보를 찾을 수 없어 일반 레슨 신청으로
-                          접수됩니다. 특정 클래스를 신청하려면 아카데미
-                          페이지에서 모집 중인 클래스를 다시 선택해 주세요.
+                          선택한 클래스 정보를 찾을 수 없어 일반 레슨 신청으로 접수됩니다. 특정
+                          클래스를 신청하려면 아카데미 페이지에서 모집 중인 클래스를 다시 선택해
+                          주세요.
                         </p>
                       </div>
                       <Button asChild variant="outline" size="sm">

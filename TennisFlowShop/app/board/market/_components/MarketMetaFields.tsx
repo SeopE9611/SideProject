@@ -55,7 +55,9 @@ export default function MarketMetaFields({
 }: Props) {
   const hasValidPrice = typeof value.price === "number" && value.price > 0;
   const priceDisplay =
-    typeof value.price === "number" && value.price > 0 ? `${value.price.toLocaleString("ko-KR")}원` : null;
+    typeof value.price === "number" && value.price > 0
+      ? `${value.price.toLocaleString("ko-KR")}원`
+      : null;
 
   return (
     <div className="space-y-6">
@@ -63,7 +65,9 @@ export default function MarketMetaFields({
       <div className="rounded-xl border border-border bg-card shadow-sm">
         <div className="border-b border-border px-5 py-4 md:px-6">
           <h3 className="text-sm font-semibold text-foreground">거래 핵심 정보</h3>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">구매자가 가장 먼저 확인하는 판매 조건입니다.</p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
+            구매자가 가장 먼저 확인하는 판매 조건입니다.
+          </p>
         </div>
 
         <div className="px-5 py-5 md:px-6 space-y-5">
@@ -94,8 +98,12 @@ export default function MarketMetaFields({
                 원
               </span>
             </div>
-            {fieldErrors?.price ? <p className="text-xs text-destructive">{fieldErrors.price}</p> : null}
-            <p className={`text-xs ${hasValidPrice ? "text-muted-foreground" : "text-muted-foreground"}`}>
+            {fieldErrors?.price ? (
+              <p className="text-xs text-destructive">{fieldErrors.price}</p>
+            ) : null}
+            <p
+              className={`text-xs ${hasValidPrice ? "text-muted-foreground" : "text-muted-foreground"}`}
+            >
               {priceDisplay ? (
                 <>
                   입력 가격: <span className="font-semibold text-foreground">{priceDisplay}</span>
@@ -154,7 +162,9 @@ export default function MarketMetaFields({
               className="min-h-[100px] resize-y placeholder:text-muted-foreground/60"
               placeholder="ex: 프레임 상단에 생활 스크래치가 있고, 그립은 최근 교체했습니다."
             />
-            <p className="text-[11px] text-muted-foreground">실물 상태를 솔직하게 적을수록 거래 신뢰도가 올라갑니다.</p>
+            <p className="text-[11px] text-muted-foreground">
+              실물 상태를 솔직하게 적을수록 거래 신뢰도가 올라갑니다.
+            </p>
           </div>
         </div>
       </div>
@@ -172,7 +182,9 @@ export default function MarketMetaFields({
           <div className="px-5 py-5 md:px-6 space-y-6">
             {/* 핵심 스펙 */}
             <div>
-              <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">핵심 스펙</p>
+              <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                핵심 스펙
+              </p>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2 sm:col-span-2">
                   <Label className="text-sm">
@@ -195,10 +207,14 @@ export default function MarketMetaFields({
                     disabled={disabled}
                     className={cn(
                       "placeholder:text-muted-foreground/60",
-                      fieldErrors?.modelName ? "border-destructive focus-visible:border-destructive" : "",
+                      fieldErrors?.modelName
+                        ? "border-destructive focus-visible:border-destructive"
+                        : "",
                     )}
                   />
-                  {fieldErrors?.modelName ? <p className="text-xs text-destructive">{fieldErrors.modelName}</p> : null}
+                  {fieldErrors?.modelName ? (
+                    <p className="text-xs text-destructive">{fieldErrors.modelName}</p>
+                  ) : null}
                 </div>
                 {(
                   [
@@ -235,7 +251,9 @@ export default function MarketMetaFields({
 
             {/* 선택 스펙 */}
             <div>
-              <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">선택 스펙</p>
+              <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                선택 스펙
+              </p>
               <div className="grid gap-4 sm:grid-cols-2">
                 {(
                   [
@@ -353,10 +371,14 @@ export default function MarketMetaFields({
                   disabled={disabled}
                   className={cn(
                     "placeholder:text-muted-foreground/60",
-                    fieldErrors?.modelName ? "border-destructive focus-visible:border-destructive" : "",
+                    fieldErrors?.modelName
+                      ? "border-destructive focus-visible:border-destructive"
+                      : "",
                   )}
                 />
-                {fieldErrors?.modelName ? <p className="text-xs text-destructive">{fieldErrors.modelName}</p> : null}
+                {fieldErrors?.modelName ? (
+                  <p className="text-xs text-destructive">{fieldErrors.modelName}</p>
+                ) : null}
               </div>
               <div className="space-y-2">
                 <Label className="text-sm">재질</Label>

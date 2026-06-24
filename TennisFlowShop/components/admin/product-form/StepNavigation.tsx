@@ -2,13 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Save,
-  Loader2,
-  ArrowLeft,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Save, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 interface StepNavigationProps {
@@ -63,12 +57,7 @@ export function StepNavigation({
       <div className="flex items-center gap-2">
         {/* Previous step */}
         {!isFirstStep && (
-          <Button
-            variant="outline"
-            type="button"
-            onClick={onPrevious}
-            className="gap-1"
-          >
+          <Button variant="outline" type="button" onClick={onPrevious} className="gap-1">
             <ChevronLeft className="h-4 w-4" />
             이전
           </Button>
@@ -122,18 +111,9 @@ interface StepIndicatorProps {
   className?: string;
 }
 
-export function StepIndicator({
-  current,
-  total,
-  className,
-}: StepIndicatorProps) {
+export function StepIndicator({ current, total, className }: StepIndicatorProps) {
   return (
-    <div
-      className={cn(
-        "flex items-center gap-1 text-sm text-muted-foreground",
-        className,
-      )}
-    >
+    <div className={cn("flex items-center gap-1 text-sm text-muted-foreground", className)}>
       <span className="font-semibold text-primary">{current}</span>
       <span>/</span>
       <span>{total}</span>

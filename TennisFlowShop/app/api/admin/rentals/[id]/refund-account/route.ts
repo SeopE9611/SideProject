@@ -2,17 +2,13 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!("ok" in guard) || !guard.ok) return guard.res;
   const db = guard.db;
 
   const { id } = await params;
-  if (!ObjectId.isValid(id))
-    return NextResponse.json({ message: "BAD_ID" }, { status: 400 });
+  if (!ObjectId.isValid(id)) return NextResponse.json({ message: "BAD_ID" }, { status: 400 });
 
   const doc = await db
     .collection("rental_orders")

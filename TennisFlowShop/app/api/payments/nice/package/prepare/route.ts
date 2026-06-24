@@ -2,15 +2,9 @@ import { getPackagePricingInfo } from "@/app/features/packages/api/db";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
 import { findBlockingPackageOrderByUserId } from "@/lib/package-order-ownership";
-import {
-  buildNiceOrderName,
-  createNiceOrderId,
-} from "@/lib/payments/nice/server";
+import { buildNiceOrderName, createNiceOrderId } from "@/lib/payments/nice/server";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
-import {
-  ensureTossPaymentSessionIndexes,
-  tossPaymentSessions,
-} from "@/lib/payments/toss/session";
+import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -18,9 +12,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
 
 function resolveClientId() {
-  return String(
-    process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "",
-  ).trim();
+  return String(process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "").trim();
 }
 
 function resolveAppUrl() {
@@ -62,10 +54,7 @@ export async function POST(req: Request) {
     const payload = token ? verifyAccessToken(token) : null;
     const userId = payload?.sub ?? null;
     if (!userId) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 },
-      );
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json().catch(() => ({}));
@@ -172,8 +161,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        error:
-          error?.message || "패키지 카드/간편결제 준비 중 오류가 발생했습니다.",
+        error: error?.message || "패키지 카드/간편결제 준비 중 오류가 발생했습니다.",
       },
       { status: 500 },
     );

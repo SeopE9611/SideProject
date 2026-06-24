@@ -1,7 +1,4 @@
-import type {
-  PointTransactionStatus,
-  PointTransactionType,
-} from "@/lib/types/points";
+import type { PointTransactionStatus, PointTransactionType } from "@/lib/types/points";
 
 type AnyStr = string | null | undefined;
 

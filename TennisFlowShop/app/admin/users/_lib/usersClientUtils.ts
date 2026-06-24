@@ -1,8 +1,4 @@
-export const fullAddress = (
-  postal?: string,
-  addr?: string,
-  detail?: string,
-) => {
+export const fullAddress = (postal?: string, addr?: string, detail?: string) => {
   const p = postal ? `[${postal}] ` : "";
   const a = addr || "";
   const d = detail ? ` ${detail}` : "";
@@ -27,8 +23,7 @@ export const splitDateTime = (iso?: string) => {
 
 export const th =
   "sticky top-0 z-10 whitespace-nowrap px-3.5 py-2 bg-card shadow-sm border-b border-border text-[12px] font-semibold text-foreground text-center";
-export const td =
-  "px-3.5 py-2 align-middle text-center text-[13px] leading-tight tabular-nums";
+export const td = "px-3.5 py-2 align-middle text-center text-[13px] leading-tight tabular-nums";
 
 export const roleColors: Record<"admin" | "user", string> = {
   admin: "bg-muted text-foreground border-border",
@@ -39,8 +34,7 @@ export const STATUS = {
   active: "bg-primary/10 text-primary border-border dark:bg-primary/20",
   suspended:
     "bg-warning/10 text-warning border-warning/30 dark:bg-warning/15 dark:text-warning dark:border-warning/40",
-  deleted:
-    "bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15",
+  deleted: "bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15",
 } as const;
 
 export type UserStatusKey = keyof typeof STATUS;

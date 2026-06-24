@@ -11,12 +11,7 @@ import {
   toPackageVariant,
 } from "@/app/services/packages/_lib/packageVariant";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,10 +32,7 @@ import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
-import {
-  isNicePaymentsEnabled,
-  isTossPaymentsEnabled,
-} from "@/lib/payments/provider-flags";
+import { isNicePaymentsEnabled, isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
 import {
   Building2,
   Calendar,
@@ -106,12 +98,7 @@ const TEMPLATE_PACKAGES: Record<string, PackageCardData> = {
     price: 300000,
     originalPrice: 360000,
     popular: true,
-    features: [
-      "30회 스트링 교체",
-      "무료 장력 상담",
-      "프리미엄 스트링 선택",
-      "우선 예약",
-    ],
+    features: ["30회 스트링 교체", "무료 장력 상담", "프리미엄 스트링 선택", "우선 예약"],
     benefits: ["6만원 절약", "우선 예약 혜택"],
     variant: "accent",
     description: "정기적으로 테니스를 즐기는 분들을 위한 추천 패키지",
@@ -172,9 +159,7 @@ function mapSelectedPackageFromConfigs(
 
   const sessions = Number(config.sessions || 0);
   const price = Number(config.price || 0);
-  const originalPrice = Number(
-    config.originalPrice != null ? config.originalPrice : price,
-  );
+  const originalPrice = Number(config.originalPrice != null ? config.originalPrice : price);
 
   const templateKey =
     sessions === 10
@@ -189,8 +174,7 @@ function mapSelectedPackageFromConfigs(
   const base = templateKey ? TEMPLATE_PACKAGES[templateKey] : null;
   const variant = toPackageVariant(
     config.variant,
-    base?.variant ??
-      (config.isPopular ? "accent" : getPackageVariantByIndex(configIndex)),
+    base?.variant ?? (config.isPopular ? "accent" : getPackageVariantByIndex(configIndex)),
   );
 
   return normalizePackageCardData({
@@ -223,22 +207,20 @@ export default function PackageCheckoutClient({
   initialOwnershipBlockedMessage?: string | null;
 }) {
   const searchParams = useSearchParams();
-  const packageId =
-    searchParams.get("package") ?? initialQuery?.package ?? null;
+  const packageId = searchParams.get("package") ?? initialQuery?.package ?? null;
 
   // 선택된 패키지 정보 (DB 설정 + 템플릿 병합 결과)
-  const [selectedPackage, setSelectedPackage] =
-    useState<PackageCardData | null>(() => {
-      return mapSelectedPackageFromConfigs(packageId, initialPackageConfigs);
-    });
+  const [selectedPackage, setSelectedPackage] = useState<PackageCardData | null>(() => {
+    return mapSelectedPackageFromConfigs(packageId, initialPackageConfigs);
+  });
 
   // 서버 선조회가 있으면 mount 후 추가 fetch 없이 즉시 화면을 안정화할 수 있다.
   const [isPackageLoading, setIsPackageLoading] = useState(
     packageId ? initialPackageConfigs.length === 0 : false,
   );
-  const [paymentMethod, setPaymentMethod] = useState<
-    "bank_transfer" | "nicepay" | "tosspayments"
-  >("bank_transfer");
+  const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "nicepay" | "tosspayments">(
+    "bank_transfer",
+  );
   const nicePaymentsEnabled = isNicePaymentsEnabled();
   const tossPaymentsEnabled = isTossPaymentsEnabled();
   const [selectedBank, setSelectedBank] = useState("kakao");
@@ -253,26 +235,17 @@ export default function PackageCheckoutClient({
   const touch = () => setHasInteracted(true);
 
   // 에러가 있는 필드는 테두리를 붉게 표시 (UI 피드백)
-  const inputClass = (
-    base: string,
-    field: CheckoutField,
-    errs: CheckoutFieldErrors,
-  ) => {
+  const inputClass = (base: string, field: CheckoutField, errs: CheckoutFieldErrors) => {
     if (!hasInteracted) return base;
-    return errs[field]
-      ? `${base} border-destructive focus:border-destructive`
-      : base;
+    return errs[field] ? `${base} border-destructive focus:border-destructive` : base;
   };
 
   const [saveInfo, setSaveInfo] = useState(false);
   const isLoggedIn = Boolean(initialUser?.id);
   const [isCheckoutSubmitting, setIsCheckoutSubmitting] = useState(false);
-  const [isIntentionalSuccessNavigation, setIsIntentionalSuccessNavigation] =
-    useState(false);
+  const [isIntentionalSuccessNavigation, setIsIntentionalSuccessNavigation] = useState(false);
   const [tossWidgetReady, setTossWidgetReady] = useState(false);
-  const [tossWidgetLoadError, setTossWidgetLoadError] = useState<string | null>(
-    null,
-  );
+  const [tossWidgetLoadError, setTossWidgetLoadError] = useState<string | null>(null);
 
   const [agreeAll, setAgreeAll] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -284,9 +257,7 @@ export default function PackageCheckoutClient({
   };
 
   const [prefillDone] = useState(true);
-  const [ownershipBlockedMessage] = useState<string | null>(
-    initialOwnershipBlockedMessage,
-  );
+  const [ownershipBlockedMessage] = useState<string | null>(initialOwnershipBlockedMessage);
 
   const fingerprint = useMemo(
     () =>
@@ -355,9 +326,7 @@ export default function PackageCheckoutClient({
     }
 
     if (initialPackageConfigs.length > 0) {
-      setSelectedPackage(
-        mapSelectedPackageFromConfigs(packageId, initialPackageConfigs),
-      );
+      setSelectedPackage(mapSelectedPackageFromConfigs(packageId, initialPackageConfigs));
       setIsPackageLoading(false);
       return;
     }
@@ -371,9 +340,7 @@ export default function PackageCheckoutClient({
         });
         if (!res.ok) throw new Error("패키지 설정 API 응답 오류");
         const data = await res.json();
-        const configs: PackageConfigLike[] = Array.isArray(data.packages)
-          ? data.packages
-          : [];
+        const configs: PackageConfigLike[] = Array.isArray(data.packages) ? data.packages : [];
         if (cancelled) return;
         setSelectedPackage(mapSelectedPackageFromConfigs(packageId, configs));
       } catch (error) {
@@ -397,13 +364,11 @@ export default function PackageCheckoutClient({
 
     const nameTrim = name.trim();
     if (!nameTrim) errs.name = "신청자 이름은 필수입니다.";
-    else if (nameTrim.length < 2)
-      errs.name = "신청자 이름은 2자 이상 입력해주세요.";
+    else if (nameTrim.length < 2) errs.name = "신청자 이름은 2자 이상 입력해주세요.";
 
     const emailTrim = email.trim();
     if (!emailTrim) errs.email = "이메일은 필수입니다.";
-    else if (!EMAIL_RE.test(emailTrim))
-      errs.email = "이메일 형식을 확인해주세요.";
+    else if (!EMAIL_RE.test(emailTrim)) errs.email = "이메일 형식을 확인해주세요.";
 
     const phoneDigits = onlyDigits(phone);
     if (!phoneDigits) errs.phone = "연락처는 필수입니다.";
@@ -413,8 +378,7 @@ export default function PackageCheckoutClient({
     if (paymentMethod === "bank_transfer") {
       const depositorTrim = depositor.trim();
       if (!depositorTrim) errs.depositor = "입금자명은 필수입니다.";
-      else if (depositorTrim.length < 2)
-        errs.depositor = "입금자명은 2자 이상 입력해주세요.";
+      else if (depositorTrim.length < 2) errs.depositor = "입금자명은 2자 이상 입력해주세요.";
     }
 
     return errs;
@@ -455,8 +419,7 @@ export default function PackageCheckoutClient({
             </div>
             <h2 className="mb-3 text-2xl font-bold">패키지를 선택해주세요</h2>
             <p className="mb-6 text-sm text-muted-foreground">
-              결제를 진행할 패키지 정보가 없습니다. 패키지 목록에서 상품을 다시
-              선택해 주세요.
+              결제를 진행할 패키지 정보가 없습니다. 패키지 목록에서 상품을 다시 선택해 주세요.
             </p>
             <Button asChild>
               <Link href="/services/packages">패키지 선택하러 가기</Link>
@@ -482,9 +445,7 @@ export default function PackageCheckoutClient({
 
   // 할인 금액 (없으면 0)
   const discountAmount =
-    hasDiscount && selectedPackage
-      ? selectedPackage.originalPrice! - selectedPackage.price
-      : 0;
+    hasDiscount && selectedPackage ? selectedPackage.originalPrice! - selectedPackage.price : 0;
 
   return (
     <div className="min-h-full bg-background">
@@ -493,15 +454,10 @@ export default function PackageCheckoutClient({
         <div className="container py-8 md:py-10">
           <div className="max-w-3xl space-y-4">
             <div>
-              <p className="mb-2 text-sm font-semibold text-primary">
-                주문 정보 확인
-              </p>
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                패키지 주문/결제
-              </h1>
+              <p className="mb-2 text-sm font-semibold text-primary">주문 정보 확인</p>
+              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">패키지 주문/결제</h1>
               <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
-                선택한 패키지와 신청자 정보를 확인한 뒤 결제수단을 선택하고
-                결제를 진행해 주세요.
+                선택한 패키지와 신청자 정보를 확인한 뒤 결제수단을 선택하고 결제를 진행해 주세요.
               </p>
             </div>
 
@@ -541,10 +497,7 @@ export default function PackageCheckoutClient({
             </div>
             <CardContent className="p-4 md:p-6">
               {selectedPackage ? (
-                <UnifiedPackageCard
-                  pkg={selectedPackage}
-                  className="shadow-none"
-                />
+                <UnifiedPackageCard pkg={selectedPackage} className="shadow-none" />
               ) : (
                 <div className="space-y-3 rounded-xl border border-border bg-card p-4">
                   <Skeleton className="h-6 w-1/3" />
@@ -570,10 +523,7 @@ export default function PackageCheckoutClient({
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="applicant-name"
-                      className="flex items-center gap-2"
-                    >
+                    <Label htmlFor="applicant-name" className="flex items-center gap-2">
                       <UserIcon className="h-4 w-4 text-primary" />
                       신청자 이름
                     </Label>
@@ -593,16 +543,11 @@ export default function PackageCheckoutClient({
                       )}
                     />
                     {hasInteracted && fieldErrors.name && (
-                      <p className="mt-1 text-xs text-destructive">
-                        {fieldErrors.name}
-                      </p>
+                      <p className="mt-1 text-xs text-destructive">{fieldErrors.name}</p>
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="applicant-email"
-                      className="flex items-center gap-2"
-                    >
+                    <Label htmlFor="applicant-email" className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-primary" />
                       이메일
                     </Label>
@@ -623,16 +568,11 @@ export default function PackageCheckoutClient({
                       )}
                     />
                     {hasInteracted && fieldErrors.email && (
-                      <p className="mt-1 text-xs text-destructive">
-                        {fieldErrors.email}
-                      </p>
+                      <p className="mt-1 text-xs text-destructive">{fieldErrors.email}</p>
                     )}
                   </div>
                   <div className="space-y-2 sm:col-span-2">
-                    <Label
-                      htmlFor="applicant-phone"
-                      className="flex items-center gap-2"
-                    >
+                    <Label htmlFor="applicant-phone" className="flex items-center gap-2">
                       <Phone className="h-4 w-4 text-foreground" />
                       연락처
                     </Label>
@@ -652,9 +592,7 @@ export default function PackageCheckoutClient({
                       )}
                     />
                     {hasInteracted && fieldErrors.phone && (
-                      <p className="mt-1 text-xs text-destructive">
-                        {fieldErrors.phone}
-                      </p>
+                      <p className="mt-1 text-xs text-destructive">{fieldErrors.phone}</p>
                     )}
                   </div>
                 </div>
@@ -703,15 +641,10 @@ export default function PackageCheckoutClient({
               </div>
 
               <div className="space-y-2">
-                <Label
-                  htmlFor="service-request"
-                  className="flex items-center gap-2"
-                >
+                <Label htmlFor="service-request" className="flex items-center gap-2">
                   <MessageSquare className="h-4 w-4 text-primary" />
                   서비스 요청사항{" "}
-                  <span className="text-xs font-normal text-muted-foreground">
-                    (선택)
-                  </span>
+                  <span className="text-xs font-normal text-muted-foreground">(선택)</span>
                 </Label>
                 <Textarea
                   id="service-request"
@@ -759,10 +692,7 @@ export default function PackageCheckoutClient({
                         id="bank-transfer"
                         disabled={isFrameLoading}
                       />
-                      <Label
-                        htmlFor="bank-transfer"
-                        className="flex-1 cursor-pointer font-medium"
-                      >
+                      <Label htmlFor="bank-transfer" className="flex-1 cursor-pointer font-medium">
                         무통장입금
                       </Label>
                       <Building2 className="h-5 w-5 text-primary" />
@@ -824,9 +754,7 @@ export default function PackageCheckoutClient({
                           <SelectValue placeholder="입금 계좌를 선택하세요" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="kakao">
-                            {bankOptionLabel("kakao")}
-                          </SelectItem>
+                          <SelectItem value="kakao">{bankOptionLabel("kakao")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -849,24 +777,19 @@ export default function PackageCheckoutClient({
                         )}
                       />
                       {hasInteracted && fieldErrors.depositor && (
-                        <p className="mt-1 text-xs text-destructive">
-                          {fieldErrors.depositor}
-                        </p>
+                        <p className="mt-1 text-xs text-destructive">{fieldErrors.depositor}</p>
                       )}
                     </div>
 
                     <div className="rounded-lg border border-border bg-muted/30 p-3 md:p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <Shield className="h-5 w-5 text-primary" />
-                        <p className="font-semibold text-foreground">
-                          무통장입금 안내
-                        </p>
+                        <p className="font-semibold text-foreground">무통장입금 안내</p>
                       </div>
                       <ul className="space-y-2 text-sm text-muted-foreground">
                         <li className="flex items-center gap-2">
                           <CheckCircle className="h-4 w-4" />
-                          주문 후 24시간 이내에 입금해 주셔야 주문이 정상
-                          처리됩니다.
+                          주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
                         </li>
                         <li className="flex items-center gap-2">
                           <CheckCircle className="h-4 w-4" />
@@ -892,8 +815,8 @@ export default function PackageCheckoutClient({
                   </div>
                 ) : paymentMethod === "nicepay" && nicePaymentsEnabled ? (
                   <div className="rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">
-                    카드/간편결제창으로 안전하게 결제를 진행합니다. 결제 버튼을
-                    눌러 계속 진행해주세요.
+                    카드/간편결제창으로 안전하게 결제를 진행합니다. 결제 버튼을 눌러 계속
+                    진행해주세요.
                   </div>
                 ) : null}
               </div>
@@ -924,10 +847,7 @@ export default function PackageCheckoutClient({
                       }}
                       disabled={isFrameLoading}
                     />
-                    <label
-                      htmlFor="agree-all"
-                      className="font-semibold text-foreground"
-                    >
+                    <label htmlFor="agree-all" className="font-semibold text-foreground">
                       전체 동의
                     </label>
                   </div>
@@ -969,8 +889,7 @@ export default function PackageCheckoutClient({
                             const value = !!checked;
                             item.setState(value);
                             if (!value) setAgreeAll(false);
-                            else if (agreeTerms && agreePrivacy && agreeRefund)
-                              setAgreeAll(true);
+                            else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
                           }}
                           disabled={isFrameLoading}
                         />
@@ -987,11 +906,7 @@ export default function PackageCheckoutClient({
                         className="h-auto p-0 text-primary hover:text-primary"
                         asChild
                       >
-                        <Link
-                          href={item.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
+                        <Link href={item.href} target="_blank" rel="noopener noreferrer">
                           보기
                         </Link>
                       </Button>
@@ -1029,15 +944,11 @@ export default function PackageCheckoutClient({
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-muted-foreground">유효기간</span>
-                  <span className="font-semibold">
-                    {selectedPackage?.validityPeriod ?? "-"}
-                  </span>
+                  <span className="font-semibold">{selectedPackage?.validityPeriod ?? "-"}</span>
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-muted-foreground">회당 금액</span>
-                  <span className="font-semibold">
-                    {perSessionPrice.toLocaleString()}원
-                  </span>
+                  <span className="font-semibold">{perSessionPrice.toLocaleString()}원</span>
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-muted-foreground">결제수단</span>
@@ -1055,18 +966,16 @@ export default function PackageCheckoutClient({
                     <div className="space-y-1 break-all">
                       <p>
                         은행:{" "}
-                        {bankLabelMap[selectedBank as keyof typeof bankLabelMap]
-                          ?.label ?? selectedBank}
+                        {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.label ??
+                          selectedBank}
                       </p>
                       <p>
                         계좌:{" "}
-                        {bankLabelMap[selectedBank as keyof typeof bankLabelMap]
-                          ?.account ?? "-"}
+                        {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.account ?? "-"}
                       </p>
                       <p>
                         예금주:{" "}
-                        {bankLabelMap[selectedBank as keyof typeof bankLabelMap]
-                          ?.holder ?? "-"}
+                        {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.holder ?? "-"}
                       </p>
                       <p>입금자명: {depositor.trim() || "미입력"}</p>
                     </div>
@@ -1096,9 +1005,7 @@ export default function PackageCheckoutClient({
               <div className="flex items-end justify-between gap-4 text-xl font-bold">
                 <span>총 결제 금액</span>
                 <span className="text-primary">
-                  {selectedPackage
-                    ? `${selectedPackage.price.toLocaleString()}원`
-                    : "-"}
+                  {selectedPackage ? `${selectedPackage.price.toLocaleString()}원` : "-"}
                 </span>
               </div>
             </CardContent>
@@ -1108,16 +1015,11 @@ export default function PackageCheckoutClient({
                   {ownershipBlockedMessage}
                 </p>
               )}
-              {hasInteracted &&
-                agreeTerms &&
-                agreePrivacy &&
-                agreeRefund &&
-                !isFormValid && (
-                  <p className="text-xs text-destructive">
-                    필수 입력칸을 확인해주세요. (이름/이메일/연락처/결제수단별
-                    필수값)
-                  </p>
-                )}
+              {hasInteracted && agreeTerms && agreePrivacy && agreeRefund && !isFormValid && (
+                <p className="text-xs text-destructive">
+                  필수 입력칸을 확인해주세요. (이름/이메일/연락처/결제수단별 필수값)
+                </p>
+              )}
               {selectedPackage && paymentMethod === "bank_transfer" && (
                 <PackageCheckoutButton
                   disabled={!canSubmit}
@@ -1132,56 +1034,40 @@ export default function PackageCheckoutClient({
                   saveInfo={saveInfo}
                   isLoggedIn={isLoggedIn}
                   onSubmittingChange={setIsCheckoutSubmitting}
-                  onBeforeSuccessNavigation={() =>
-                    setIsIntentionalSuccessNavigation(true)
-                  }
-                  onSuccessNavigationAbort={() =>
-                    setIsIntentionalSuccessNavigation(false)
-                  }
+                  onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                  onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
                 />
               )}
-              {selectedPackage &&
-                tossPaymentsEnabled &&
-                paymentMethod === "tosspayments" && (
-                  <PackageTossCheckoutButton
-                    disabled={!canSubmit}
-                    widgetReady={tossWidgetReady}
-                    widgetLoadError={tossWidgetLoadError}
-                    payableAmount={Number(selectedPackage.price ?? 0)}
-                    packageId={selectedPackage.id}
-                    packageName={selectedPackage.title}
-                    name={name}
-                    phone={phone}
-                    email={email}
-                    serviceRequest={serviceRequest}
-                    onBeforeSuccessNavigation={() =>
-                      setIsIntentionalSuccessNavigation(true)
-                    }
-                    onSuccessNavigationAbort={() =>
-                      setIsIntentionalSuccessNavigation(false)
-                    }
-                  />
-                )}
-              {selectedPackage &&
-                nicePaymentsEnabled &&
-                paymentMethod === "nicepay" && (
-                  <PackageNiceCheckoutButton
-                    disabled={!canSubmit}
-                    payableAmount={Number(selectedPackage.price ?? 0)}
-                    packageId={selectedPackage.id}
-                    packageName={selectedPackage.title}
-                    name={name}
-                    phone={phone}
-                    email={email}
-                    serviceRequest={serviceRequest}
-                    onBeforeSuccessNavigation={() =>
-                      setIsIntentionalSuccessNavigation(true)
-                    }
-                    onSuccessNavigationAbort={() =>
-                      setIsIntentionalSuccessNavigation(false)
-                    }
-                  />
-                )}
+              {selectedPackage && tossPaymentsEnabled && paymentMethod === "tosspayments" && (
+                <PackageTossCheckoutButton
+                  disabled={!canSubmit}
+                  widgetReady={tossWidgetReady}
+                  widgetLoadError={tossWidgetLoadError}
+                  payableAmount={Number(selectedPackage.price ?? 0)}
+                  packageId={selectedPackage.id}
+                  packageName={selectedPackage.title}
+                  name={name}
+                  phone={phone}
+                  email={email}
+                  serviceRequest={serviceRequest}
+                  onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                  onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                />
+              )}
+              {selectedPackage && nicePaymentsEnabled && paymentMethod === "nicepay" && (
+                <PackageNiceCheckoutButton
+                  disabled={!canSubmit}
+                  payableAmount={Number(selectedPackage.price ?? 0)}
+                  packageId={selectedPackage.id}
+                  packageName={selectedPackage.title}
+                  name={name}
+                  phone={phone}
+                  email={email}
+                  serviceRequest={serviceRequest}
+                  onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
+                  onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                />
+              )}
               <Button variant="outline" className="w-full border-2" asChild>
                 <Link href="/services/packages" onClick={onLeavePageClick}>
                   패키지 선택으로 돌아가기
@@ -1193,9 +1079,7 @@ export default function PackageCheckoutClient({
                 <div className="absolute inset-0 grid place-items-center">
                   <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    <span className="text-sm">
-                      패키지 주문을 처리하고 있어요…
-                    </span>
+                    <span className="text-sm">패키지 주문을 처리하고 있어요…</span>
                   </div>
                 </div>
               </div>

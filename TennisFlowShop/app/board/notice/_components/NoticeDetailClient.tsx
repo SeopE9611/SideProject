@@ -1,18 +1,9 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-  badgeBaseOutlined,
-  badgeSizeSm,
-  getNoticeCategoryBadgeSpec,
-} from "@/lib/badge-style";
+import { badgeBaseOutlined, badgeSizeSm, getNoticeCategoryBadgeSpec } from "@/lib/badge-style";
 import { communityFetch } from "@/lib/community/communityFetch.client";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
@@ -40,18 +31,14 @@ import useSWR from "swr";
 
 type NoticeDetailClientProps = { mode?: "notice" | "event" };
 
-export default function NoticeDetailClient({
-  mode = "notice",
-}: NoticeDetailClientProps) {
+export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClientProps) {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
   const isEventMode = mode === "event";
   const listBasePath = isEventMode ? "/board/event" : "/board/notice";
   const otherDetailBasePath = isEventMode ? "/board/notice" : "/board/event";
-  const writeBasePath = isEventMode
-    ? "/board/event/write"
-    : "/board/notice/write";
+  const writeBasePath = isEventMode ? "/board/event/write" : "/board/notice/write";
   const sectionLabel = isEventMode ? "이벤트" : "공지사항";
   const pageTitle = isEventMode ? "고객센터 · 이벤트" : "고객센터 · 공지사항";
   const pageDescription = isEventMode
@@ -74,9 +61,7 @@ export default function NoticeDetailClient({
     const okFalse = isRecord(json) && json["ok"] === false;
     if (!res.ok || okFalse) {
       const message =
-        isRecord(json) && typeof json["error"] === "string"
-          ? json["error"]
-          : "request_failed";
+        isRecord(json) && typeof json["error"] === "string" ? json["error"] : "request_failed";
 
       const err: FetchError = new Error(message);
       err.status = res.status;
@@ -88,25 +73,18 @@ export default function NoticeDetailClient({
   };
 
   // (me 로드는 기존처럼 "에러로 던지지 않는" fetcher 유지)
-  const fetcher = (url: string) =>
-    fetch(url, { credentials: "include" }).then((r) => r.json());
-  const { data, error, isLoading, mutate } = useSWR(
-    id ? `/api/boards/${id}` : null,
-    boardFetcher,
-    {
-      // 404/401/403 같은 “회복 불가” 에러에서 불필요한 재요청 차단
-      shouldRetryOnError: false,
-      onErrorRetry: () => {}, // SWR 내부 재시도 로직 자체를 강제 차단
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      dedupingInterval: 30_000, // 짧은 시간 중복 요청 방지
-    },
-  );
+  const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
+  const { data, error, isLoading, mutate } = useSWR(id ? `/api/boards/${id}` : null, boardFetcher, {
+    // 404/401/403 같은 “회복 불가” 에러에서 불필요한 재요청 차단
+    shouldRetryOnError: false,
+    onErrorRetry: () => {}, // SWR 내부 재시도 로직 자체를 강제 차단
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 30_000, // 짧은 시간 중복 요청 방지
+  });
 
   const notice = data?.item;
-  const isCurrentModeMatched = notice
-    ? isEventMode === (notice.category === "이벤트")
-    : false;
+  const isCurrentModeMatched = notice ? isEventMode === (notice.category === "이벤트") : false;
 
   useEffect(() => {
     if (!notice?._id) return;
@@ -137,9 +115,7 @@ export default function NoticeDetailClient({
         // 화면에서 조회수 숫자 즉시 반영(추가 GET 없이)
         mutate(
           (prev: any) =>
-            prev?.item
-              ? { ...prev, item: { ...prev.item, viewCount: json.viewCount } }
-              : prev,
+            prev?.item ? { ...prev, item: { ...prev.item, viewCount: json.viewCount } } : prev,
           false,
         );
       }
@@ -194,9 +170,7 @@ export default function NoticeDetailClient({
     if (!notice?._id) return;
     if (
       !confirm(
-        isEventMode
-          ? "정말 이 이벤트를 삭제하시겠습니까?"
-          : "정말 이 공지를 삭제하시겠습니까?",
+        isEventMode ? "정말 이 이벤트를 삭제하시겠습니까?" : "정말 이 공지를 삭제하시겠습니까?",
       )
     )
       return;
@@ -213,18 +187,13 @@ export default function NoticeDetailClient({
     router.replace(listHref);
   };
 
-  const attachments = Array.isArray(notice?.attachments)
-    ? notice!.attachments
-    : [];
+  const attachments = Array.isArray(notice?.attachments) ? notice!.attachments : [];
   const { data: navListData } = useSWR<{
     ok: true;
     items: Array<{ _id: string; title: string }>;
   }>(
     notice ? navListKey : null,
-    (url: string) =>
-      fetch(url, { credentials: "include" }).then((r) =>
-        r.ok ? r.json() : null,
-      ),
+    (url: string) => fetch(url, { credentials: "include" }).then((r) => (r.ok ? r.json() : null)),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
@@ -232,9 +201,7 @@ export default function NoticeDetailClient({
     },
   );
   const navIndex =
-    navListData?.items?.findIndex(
-      (candidate) => candidate._id === notice?._id,
-    ) ?? -1;
+    navListData?.items?.findIndex((candidate) => candidate._id === notice?._id) ?? -1;
   const prevPost =
     navIndex >= 0 && navIndex < (navListData?.items?.length ?? 0) - 1
       ? navListData?.items?.[navIndex + 1]
@@ -244,19 +211,13 @@ export default function NoticeDetailClient({
   const imageAtts = attachments.filter((att: any) => {
     const url = typeof att === "string" ? att : att?.url;
     const mime = (att?.mime || "") as string;
-    return (
-      !!url &&
-      (mime.startsWith("image/") ||
-        /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(url))
-    );
+    return !!url && (mime.startsWith("image/") || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(url));
   });
   const fileAtts = attachments.filter((att: any) => {
     const url = typeof att === "string" ? att : att?.url;
     const mime = (att?.mime || "") as string;
     const isImg =
-      !!url &&
-      (mime.startsWith("image/") ||
-        /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(url));
+      !!url && (mime.startsWith("image/") || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(url));
     return !!url && !isImg;
   });
 
@@ -335,9 +296,7 @@ export default function NoticeDetailClient({
               )}
               {error && (
                 <div className="text-center py-8 space-y-3">
-                  <div className="text-destructive text-lg font-semibold">
-                    {errorTitle}
-                  </div>
+                  <div className="text-destructive text-lg font-semibold">{errorTitle}</div>
                   <p className="text-sm text-muted-foreground">{errorBody}</p>
                   <div className="grid grid-cols-1 gap-2 sm:inline-flex sm:grid-cols-none sm:items-center sm:justify-center">
                     {(error as FetchError | undefined)?.status === 401 && (
@@ -386,21 +345,12 @@ export default function NoticeDetailClient({
                         >
                           {imageAtts.length > 0 && (
                             <span title="이미지 첨부" aria-label="이미지 첨부">
-                              <ImageIcon
-                                className="h-3.5 w-3.5"
-                                aria-hidden="true"
-                              />
+                              <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
                             </span>
                           )}
                           {fileAtts.length > 0 && (
-                            <span
-                              title="첨부파일 있음"
-                              aria-label="첨부파일 있음"
-                            >
-                              <Paperclip
-                                className="h-3.5 w-3.5"
-                                aria-hidden="true"
-                              />
+                            <span title="첨부파일 있음" aria-label="첨부파일 있음">
+                              <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
                             </span>
                           )}
                         </span>
@@ -422,20 +372,17 @@ export default function NoticeDetailClient({
                         <span className="font-medium">작성일</span>
                         <span>{fmt(notice.createdAt)}</span>
                       </div>
-                      {notice.updatedAt &&
-                        notice.updatedAt !== notice.createdAt && (
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            <span className="font-medium">수정일</span>
-                            <span>{fmt(notice.updatedAt)}</span>
-                          </div>
-                        )}
+                      {notice.updatedAt && notice.updatedAt !== notice.createdAt && (
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4" />
+                          <span className="font-medium">수정일</span>
+                          <span>{fmt(notice.updatedAt)}</span>
+                        </div>
+                      )}
                       <div className="flex items-center gap-2">
                         <Eye className="h-4 w-4" />
                         <span className="font-medium">조회수</span>
-                        <span className="font-semibold text-primary">
-                          {notice.viewCount ?? 0}
-                        </span>
+                        <span className="font-semibold text-primary">{notice.viewCount ?? 0}</span>
                       </div>
                     </div>
                   </div>
@@ -443,19 +390,11 @@ export default function NoticeDetailClient({
                   {/* 오른쪽: 관리자 액션 */}
                   {isAdmin && (
                     <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:grid-cols-1 sm:shrink-0">
-                      <Button
-                        variant="outline"
-                        onClick={onEdit}
-                        className="w-full"
-                      >
+                      <Button variant="outline" onClick={onEdit} className="w-full">
                         <Pencil className="h-4 w-4 mr-1" />
                         수정
                       </Button>
-                      <Button
-                        variant="destructive"
-                        onClick={onDelete}
-                        className="w-full"
-                      >
+                      <Button variant="destructive" onClick={onDelete} className="w-full">
                         <Trash2 className="h-4 w-4 mr-1" />
                         삭제
                       </Button>
@@ -486,9 +425,7 @@ export default function NoticeDetailClient({
                     <section className="space-y-4">
                       <div className="flex items-center gap-2">
                         <ImageIcon className="h-5 w-5" />
-                        <h2 className="text-xl font-semibold text-foreground">
-                          이미지
-                        </h2>
+                        <h2 className="text-xl font-semibold text-foreground">이미지</h2>
                       </div>
 
                       {imageAtts.length === 1 ? (
@@ -526,8 +463,7 @@ export default function NoticeDetailClient({
                       ) : (
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                           {imageAtts.map((att: any, i: number) => {
-                            const url =
-                              typeof att === "string" ? att : att?.url;
+                            const url = typeof att === "string" ? att : att?.url;
                             const name =
                               typeof att === "string"
                                 ? `image-${i + 1}`
@@ -570,9 +506,7 @@ export default function NoticeDetailClient({
                     <section className="space-y-4">
                       <div className="flex items-center gap-2">
                         <FileText className="h-5 w-5" />
-                        <h2 className="text-xl font-semibold text-foreground">
-                          첨부파일
-                        </h2>
+                        <h2 className="text-xl font-semibold text-foreground">첨부파일</h2>
                       </div>
 
                       <div className="grid gap-3">
@@ -582,16 +516,13 @@ export default function NoticeDetailClient({
                             typeof att === "string"
                               ? `attachment-${i + 1}`
                               : att?.name || `attachment-${i + 1}`;
-                          const size = att?.size
-                            ? (att.size / 1024 / 1024).toFixed(2) + " MB"
-                            : "";
+                          const size = att?.size ? (att.size / 1024 / 1024).toFixed(2) + " MB" : "";
                           const mime = (att?.mime || "") as string;
                           const downloadUrl =
                             typeof att === "object" && att?.downloadUrl
                               ? att.downloadUrl
                               : `${url}${url.includes("?") ? "&" : "?"}download=${encodeURIComponent(name)}`;
-                          const isPdf =
-                            mime === "application/pdf" || /\.pdf$/i.test(name);
+                          const isPdf = mime === "application/pdf" || /\.pdf$/i.test(name);
 
                           return (
                             <div
@@ -622,11 +553,7 @@ export default function NoticeDetailClient({
                                     asChild
                                     className="w-full min-w-0 sm:w-auto"
                                   >
-                                    <a
-                                      href={url}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                    >
+                                    <a href={url} target="_blank" rel="noreferrer">
                                       <ExternalLink className="h-4 w-4 mr-1" />
                                       미리보기
                                     </a>
@@ -712,9 +639,7 @@ export default function NoticeDetailClient({
                         <div className="flex w-full items-start gap-3">
                           <Icon className="mt-0.5 h-4 w-4 shrink-0" />
                           <div className="min-w-0">
-                            <p className="text-xs text-muted-foreground">
-                              {label}
-                            </p>
+                            <p className="text-xs text-muted-foreground">{label}</p>
                             <p className="line-clamp-2 text-sm font-medium text-foreground">
                               {target.title}
                             </p>
@@ -726,9 +651,7 @@ export default function NoticeDetailClient({
                         <Icon className="mt-0.5 h-4 w-4 shrink-0" />
                         <span className="min-w-0">
                           <span className="block text-xs">{label}</span>
-                          <span className="block line-clamp-1 text-sm">
-                            이동할 글이 없습니다.
-                          </span>
+                          <span className="block line-clamp-1 text-sm">이동할 글이 없습니다.</span>
                         </span>
                       </span>
                     )}

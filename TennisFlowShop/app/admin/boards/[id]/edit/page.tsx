@@ -19,11 +19,7 @@ function normalizeBoardIdentifier(id: string) {
   }
 }
 
-export default async function AdminBoardEditPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function AdminBoardEditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const boardId = normalizeBoardIdentifier(id);
 

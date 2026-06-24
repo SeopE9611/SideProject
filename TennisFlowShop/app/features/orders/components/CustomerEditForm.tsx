@@ -53,9 +53,7 @@ export default function CustomerEditForm({
     try {
       await loadDaumPostcode();
     } catch {
-      showErrorToast(
-        "주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
-      );
+      showErrorToast("주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
       return;
     }
     if (!(window as any).daum?.Postcode) return;
@@ -88,9 +86,7 @@ export default function CustomerEditForm({
       <div>
         <label className="block text-sm font-medium">이름</label>
         <Input {...register("name", { required: "필수 입력입니다." })} />
-        {errors.name && (
-          <p className="text-destructive text-xs">{errors.name.message}</p>
-        )}
+        {errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>}
       </div>
       <div>
         <label className="block text-sm font-medium">이메일</label>
@@ -103,9 +99,7 @@ export default function CustomerEditForm({
             },
           })}
         />
-        {errors.email && (
-          <p className="text-destructive text-xs">{errors.email.message}</p>
-        )}
+        {errors.email && <p className="text-destructive text-xs">{errors.email.message}</p>}
       </div>
       <div>
         <label className="block text-sm font-medium">전화번호</label>
@@ -114,42 +108,26 @@ export default function CustomerEditForm({
       <div>
         <label className="block text-sm font-medium">우편번호</label>
         <div className="flex gap-2">
-          <Input
-            readOnly
-            {...register("postalCode", { required: "필수 입력입니다." })}
-          />
+          <Input readOnly {...register("postalCode", { required: "필수 입력입니다." })} />
           <Button type="button" size="sm" onClick={handleOpenPostcode}>
             주소 검색
           </Button>
         </div>
         {errors.postalCode && (
-          <p className="text-destructive text-xs">
-            {errors.postalCode.message}
-          </p>
+          <p className="text-destructive text-xs">{errors.postalCode.message}</p>
         )}
       </div>
       <div>
         <label className="block text-sm font-medium">기본 주소</label>
-        <Textarea
-          readOnly
-          {...register("address", { required: "필수 입력입니다." })}
-          rows={2}
-        />
-        {errors.address && (
-          <p className="text-destructive text-xs">{errors.address.message}</p>
-        )}
+        <Textarea readOnly {...register("address", { required: "필수 입력입니다." })} rows={2} />
+        {errors.address && <p className="text-destructive text-xs">{errors.address.message}</p>}
       </div>
       <div>
         <label className="block text-sm font-medium">상세 주소</label>
         <Input {...register("addressDetail")} placeholder="예: 101호, 건물명" />
       </div>
       <div className="flex justify-end gap-2">
-        <Button
-          variant="outline"
-          type="button"
-          onClick={onCancel}
-          disabled={isSubmitting}
-        >
+        <Button variant="outline" type="button" onClick={onCancel} disabled={isSubmitting}>
           취소
         </Button>
         <Button type="submit" disabled={isSubmitting}>

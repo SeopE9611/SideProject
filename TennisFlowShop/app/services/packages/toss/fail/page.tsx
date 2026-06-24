@@ -101,9 +101,7 @@ export default async function PackageTossFailPage({
               <Link href="/services/packages">패키지 목록으로 돌아가기</Link>
             </Button>
             <Button asChild variant="outline" className="w-full sm:w-auto">
-              <Link href="/services/packages/checkout">
-                패키지 체크아웃으로 이동
-              </Link>
+              <Link href="/services/packages/checkout">패키지 체크아웃으로 이동</Link>
             </Button>
           </>
         }
@@ -111,8 +109,8 @@ export default async function PackageTossFailPage({
         <div className="space-y-3 text-sm text-muted-foreground">
           {guide.accent === "warning" && (
             <p className="text-warning">
-              중복 결제를 막기 위해 같은 패키지로 반복 결제하지 마시고, 주문
-              내역 또는 관리자 확인 후 진행해주세요.
+              중복 결제를 막기 위해 같은 패키지로 반복 결제하지 마시고, 주문 내역 또는 관리자 확인
+              후 진행해주세요.
             </p>
           )}
           <div className="space-y-1 text-xs">

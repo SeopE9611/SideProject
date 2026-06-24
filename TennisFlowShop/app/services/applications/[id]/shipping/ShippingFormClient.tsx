@@ -22,10 +22,7 @@ import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
-import {
-  getSelectableCourierCatalog,
-  normalizeCourierCode,
-} from "@/lib/shipping/courier-map";
+import { getSelectableCourierCatalog, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
@@ -108,11 +105,7 @@ function focusById(id: string) {
 // ──────────────────────────────────────────────────────────────
 // Wrapper: 데이터 로드/분기만 담당 (훅 순서 안정)
 // ──────────────────────────────────────────────────────────────
-export default function ShippingFormClient({
-  applicationId,
-}: {
-  applicationId: string;
-}) {
+export default function ShippingFormClient({ applicationId }: { applicationId: string }) {
   const router = useRouter();
   const { data, error, isLoading, mutate } = useSWR<Application>(
     `/api/applications/stringing/${applicationId}`,
@@ -151,12 +144,9 @@ export default function ShippingFormClient({
   }
 
   // 자가발송 여부
-  const rawMethod =
-    data.shippingInfo?.collectionMethod ?? data.collectionMethod ?? null;
+  const rawMethod = data.shippingInfo?.collectionMethod ?? data.collectionMethod ?? null;
   const normalizedMethod =
-    typeof rawMethod === "string"
-      ? normalizeCollection(rawMethod)
-      : "self_ship";
+    typeof rawMethod === "string" ? normalizeCollection(rawMethod) : "self_ship";
   const fallbackOrderHasRacket =
     typeof data.orderHasRacket === "boolean" ? data.orderHasRacket : false;
   const inboundRequired =
@@ -195,9 +185,7 @@ export default function ShippingFormClient({
                   돌아가기
                 </Button>
                 <Button
-                  onClick={() =>
-                    router.push(`/mypage/applications/${applicationId}`)
-                  }
+                  onClick={() => router.push(`/mypage/applications/${applicationId}`)}
                   className="w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
                 >
                   신청 상세로 이동
@@ -256,12 +244,8 @@ function SelfShipForm({
   // 초기값은 항상 계산 (훅 순서 고정)
   const initial: FormValues = useMemo(
     () => ({
-      courier:
-        normalizeCourierCode(application?.shippingInfo?.selfShip?.courier) ||
-        "",
-      trackingNo: normalizeTrackingNumber(
-        application?.shippingInfo?.selfShip?.trackingNo,
-      ),
+      courier: normalizeCourierCode(application?.shippingInfo?.selfShip?.courier) || "",
+      trackingNo: normalizeTrackingNumber(application?.shippingInfo?.selfShip?.trackingNo),
       shippedAt: application?.shippingInfo?.selfShip?.shippedAt ?? "",
       note: application?.shippingInfo?.selfShip?.note ?? "",
     }),
@@ -309,12 +293,8 @@ function SelfShipForm({
   };
 
   const onChange =
-    (k: keyof FormValues) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const v =
-        k === "trackingNo"
-          ? normalizeTrackingNumber(e.target.value)
-          : e.target.value;
+    (k: keyof FormValues) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const v = k === "trackingNo" ? normalizeTrackingNumber(e.target.value) : e.target.value;
       setForm((prev) => ({ ...prev, [k]: v }));
       // 입력 중이면 해당 필드 에러를 즉시 해제 (UX)
       if (fieldErrors[k]) {
@@ -325,8 +305,7 @@ function SelfShipForm({
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (submittingRef.current || submitting || isLoading || !application)
-      return;
+    if (submittingRef.current || submitting || isLoading || !application) return;
 
     const parsed = FormSchema.safeParse(form);
     if (!parsed.success) {
@@ -351,43 +330,35 @@ function SelfShipForm({
       submittingRef.current = true;
       setSubmitting(true);
 
-      const res = await fetch(
-        `/api/applications/stringing/${applicationId}/shipping`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            shippingInfo: {
-              selfShip: {
-                ...parsed.data,
-                courier: normalizeCourierCode(parsed.data.courier),
-                trackingNo: normalizeTrackingNumber(parsed.data.trackingNo),
-              },
+      const res = await fetch(`/api/applications/stringing/${applicationId}/shipping`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          shippingInfo: {
+            selfShip: {
+              ...parsed.data,
+              courier: normalizeCourierCode(parsed.data.courier),
+              trackingNo: normalizeTrackingNumber(parsed.data.trackingNo),
             },
-          }),
-        },
-      );
-      if (!res.ok)
-        throw new Error(
-          (await res.text().catch(() => "")) || "운송장 업데이트 실패",
-        );
+          },
+        }),
+      });
+      if (!res.ok) throw new Error((await res.text().catch(() => "")) || "운송장 업데이트 실패");
 
       showSuccessToast("운송장 정보가 저장되었습니다.");
       // 1) 마이페이지 목록 캐시 무효화(페이지네이션 포함)
 
       try {
         await globalMutate(
-          (key: any) =>
-            typeof key === "string" && key.startsWith("/api/applications/me"),
+          (key: any) => typeof key === "string" && key.startsWith("/api/applications/me"),
         );
       } catch {}
       // Activity 탭 캐시도 같이 갱신해야 "운송장 등록 → 수정" 라벨이 즉시 반영됨
       // (ActivityFeed는 /api/mypage/activity?page=... 를 사용)
       try {
         await globalMutate(
-          (key) =>
-            typeof key === "string" && key.startsWith("/api/mypage/activity"),
+          (key) => typeof key === "string" && key.startsWith("/api/mypage/activity"),
         );
       } catch {}
       // 2) 돌아갈 경로 우선 사용
@@ -416,15 +387,9 @@ function SelfShipForm({
     <div className="min-h-screen bg-muted/30 py-8 md:py-12">
       <div className="mx-auto max-w-3xl px-4">
         <header className="mb-6 text-center md:mb-8">
-          <p className="mb-2 text-sm font-semibold text-primary">
-            라켓 발송 정보
-          </p>
+          <p className="mb-2 text-sm font-semibold text-primary">라켓 발송 정보</p>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-            {isLoading
-              ? "라켓 발송 정보"
-              : isEdit
-                ? "라켓 발송 정보 수정"
-                : "라켓 발송 정보 등록"}
+            {isLoading ? "라켓 발송 정보" : isEdit ? "라켓 발송 정보 수정" : "라켓 발송 정보 등록"}
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
             {isLoading
@@ -447,8 +412,7 @@ function SelfShipForm({
                   아직 발송 전이라면 나중에 등록할 수 있습니다.
                 </h2>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  라켓 발송 후 택배사와 송장번호를 입력해 주세요. 발송일과
-                  메모는 선택 항목입니다.
+                  라켓 발송 후 택배사와 송장번호를 입력해 주세요. 발송일과 메모는 선택 항목입니다.
                 </p>
               </div>
             )}
@@ -554,9 +518,7 @@ function SelfShipForm({
                   >
                     <Calendar className="w-4 h-4 text-primary dark:text-foreground" />
                     발송일
-                    <span className="text-xs text-muted-foreground font-normal">
-                      (선택사항)
-                    </span>
+                    <span className="text-xs text-muted-foreground font-normal">(선택사항)</span>
                   </Label>
                   <Input
                     id="shippedAt"
@@ -575,9 +537,7 @@ function SelfShipForm({
                   >
                     <FileText className="w-4 h-4 text-muted-foreground" />
                     메모
-                    <span className="text-xs text-muted-foreground font-normal">
-                      (선택사항)
-                    </span>
+                    <span className="text-xs text-muted-foreground font-normal">(선택사항)</span>
                   </Label>
                   <Textarea
                     id="note"
@@ -613,9 +573,7 @@ function SelfShipForm({
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() =>
-                      confirmLeaveIfDirty(() => router.push(applyUrl))
-                    }
+                    onClick={() => confirmLeaveIfDirty(() => router.push(applyUrl))}
                     disabled={submitting}
                     className="flex-1 h-12 text-base border-border hover:bg-background dark:hover:bg-card"
                   >
@@ -635,11 +593,7 @@ function SelfShipForm({
                     ) : (
                       <>
                         <Check className="w-4 h-4 mr-2" />
-                        {submitting
-                          ? "저장 중…"
-                          : isEdit
-                            ? "수정하기"
-                            : "저장하기"}
+                        {submitting ? "저장 중…" : isEdit ? "수정하기" : "저장하기"}
                       </>
                     )}
                   </Button>

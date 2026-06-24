@@ -23,10 +23,7 @@ function safeVerifyAccessToken(token?: string | null) {
  *   "reason": "고객 요청으로 1개월 연장"
  * }
  */
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     if (!ObjectId.isValid(id)) {
@@ -44,8 +41,7 @@ export async function POST(
         user = jwt.verify(rt, process.env.REFRESH_TOKEN_SECRET!);
       } catch {}
     }
-    if (!user?.sub)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user?.sub) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
       .split(",")
@@ -56,8 +52,7 @@ export async function POST(
       user?.roles?.includes?.("admin") ||
       user?.isAdmin === true ||
       ADMIN_EMAILS.includes((user?.email ?? "").toLowerCase());
-    if (!isAdmin)
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (!isAdmin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
     // 입력 파싱/검증
     const body = await req.json().catch(() => ({}));
@@ -65,18 +60,14 @@ export async function POST(
     const reason = String(body?.reason ?? "");
 
     if (mode !== "days" && mode !== "absolute") {
-      return NextResponse.json(
-        { error: "mode must be days|absolute" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "mode must be days|absolute" }, { status: 400 });
     }
 
     // 대상 패스 로드
     const db = (await clientPromise).db();
     const passes = db.collection("service_passes");
     const pass = await passes.findOne({ _id: new ObjectId(id) });
-    if (!pass)
-      return NextResponse.json({ error: "pass not found" }, { status: 404 });
+    if (!pass) return NextResponse.json({ error: "pass not found" }, { status: 404 });
 
     // 차기 만료일 계산
     const now = new Date();
@@ -86,20 +77,14 @@ export async function POST(
     if (mode === "days") {
       const days = Number(body?.days || 0);
       if (!Number.isFinite(days) || days === 0) {
-        return NextResponse.json(
-          { error: "days must be non-zero number" },
-          { status: 400 },
-        );
+        return NextResponse.json({ error: "days must be non-zero number" }, { status: 400 });
       }
       const base = currentExpiry && currentExpiry > now ? currentExpiry : now;
       nextExpiry = new Date(base.getTime() + days * 86400000);
     } else {
       const d = new Date(body?.newExpiry);
       if (!d || Number.isNaN(d.getTime())) {
-        return NextResponse.json(
-          { error: "invalid newExpiry" },
-          { status: 400 },
-        );
+        return NextResponse.json({ error: "invalid newExpiry" }, { status: 400 });
       }
       nextExpiry = d;
     }

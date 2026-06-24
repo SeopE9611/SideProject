@@ -52,18 +52,12 @@ export default function AdminSummaryCard({
         {Icon ? <Icon className={cn("h-4 w-4", accentClass[tone])} /> : null}
         <span>{title}</span>
       </div>
-      <div className="mt-2 text-2xl font-bold tabular-nums text-foreground">
-        {value}
-      </div>
+      <div className="mt-2 text-2xl font-bold tabular-nums text-foreground">{value}</div>
       {description ? (
-        <p className="mt-1 text-xs leading-relaxed text-foreground/75">
-          {description}
-        </p>
+        <p className="mt-1 text-xs leading-relaxed text-foreground/75">{description}</p>
       ) : null}
       {actionLabel ? (
-        <span
-          className={cn("mt-3 block text-xs font-semibold", accentClass[tone])}
-        >
+        <span className={cn("mt-3 block text-xs font-semibold", accentClass[tone])}>
           {actionLabel}
         </span>
       ) : null}

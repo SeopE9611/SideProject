@@ -77,9 +77,7 @@ export function UserSidebar({ activeTab }: { activeTab?: string } = {}) {
             variant="ghost"
             className={cn(
               "w-full justify-start gap-2.5 h-10 px-3 transition-colors group relative rounded-lg",
-              isActive
-                ? "bg-primary/10 text-primary"
-                : "hover:bg-muted dark:hover:bg-card",
+              isActive ? "bg-primary/10 text-primary" : "hover:bg-muted dark:hover:bg-card",
             )}
             asChild
           >
@@ -97,9 +95,7 @@ export function UserSidebar({ activeTab }: { activeTab?: string } = {}) {
               <span
                 className={cn(
                   "font-medium transition-colors",
-                  isActive
-                    ? "text-foreground"
-                    : "text-foreground group-hover:text-foreground",
+                  isActive ? "text-foreground" : "text-foreground group-hover:text-foreground",
                 )}
               >
                 {label}

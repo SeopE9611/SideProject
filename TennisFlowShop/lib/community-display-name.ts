@@ -25,9 +25,7 @@ function getEmailLocalPart(email: NameSource): string | null {
   return localPart || null;
 }
 
-export function resolveCommunityDisplayName(
-  input: CommunityDisplayNameInput,
-): string {
+export function resolveCommunityDisplayName(input: CommunityDisplayNameInput): string {
   return (
     normalizeName(input.userName) ??
     normalizeName(input.userNickname) ??

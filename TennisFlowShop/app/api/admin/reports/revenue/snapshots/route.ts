@@ -43,12 +43,7 @@ export async function GET(req: Request) {
   const limit = parsePositiveInt(url.searchParams.get("limit"), 20, 100);
   const skip = (page - 1) * limit;
   const [items, total] = await Promise.all([
-    collection
-      .find({})
-      .sort({ updatedAt: -1, yyyymm: -1 })
-      .skip(skip)
-      .limit(limit)
-      .toArray(),
+    collection.find({}).sort({ updatedAt: -1, yyyymm: -1 }).skip(skip).limit(limit).toArray(),
     collection.countDocuments({}),
   ]);
 
@@ -70,10 +65,7 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const parsed = saveSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { message: "invalid snapshot input" },
-      { status: 400 },
-    );
+    return NextResponse.json({ message: "invalid snapshot input" }, { status: 400 });
   }
 
   const actorId = guard.admin._id.toHexString();
@@ -85,10 +77,7 @@ export async function POST(req: Request) {
     meta: { source: "manual_save" },
   });
   if (!snapshotInput)
-    return NextResponse.json(
-      { message: "failed to build revenue report" },
-      { status: 500 },
-    );
+    return NextResponse.json({ message: "failed to build revenue report" }, { status: 500 });
 
   const { snapshot, previousUpdatedAt, duplicateKeyReturnedExisting } =
     await saveRevenueReportSnapshot(guard.db, snapshotInput, { actorId });

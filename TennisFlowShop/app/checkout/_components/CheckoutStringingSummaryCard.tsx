@@ -5,9 +5,7 @@ import { CheckCircle2, CircleDot, ClipboardList } from "lucide-react";
 import type useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
 import { Badge } from "@/components/ui/badge";
 
-type CheckoutStringingServiceAdapter = ReturnType<
-  typeof useCheckoutStringingServiceAdapter
->;
+type CheckoutStringingServiceAdapter = ReturnType<typeof useCheckoutStringingServiceAdapter>;
 
 type Props = {
   adapter: CheckoutStringingServiceAdapter;
@@ -20,8 +18,7 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
       ? `${summary.reservationLabel} (${visitTimeRange.start}~${visitTimeRange.end}, ${visitSlotCountUi}슬롯)`
       : summary.reservationLabel;
   const lineConfiguredDone =
-    completion.lineConfiguredCount === completion.totalLineCount &&
-    completion.totalLineCount > 0;
+    completion.lineConfiguredCount === completion.totalLineCount && completion.totalLineCount > 0;
   const statusMessage = completion.isReadyToSubmit
     ? "교체서비스 접수 준비가 완료되었습니다."
     : completion.needsVisitReservation && !completion.hasReservation
@@ -59,9 +56,7 @@ export default function CheckoutStringingSummaryCard({ adapter }: Props) {
         </p>
         <p>
           <span className="text-muted-foreground">선택 스트링:</span>{" "}
-          <span className="font-medium">
-            {summary.stringNames.join(", ") || "미선택"}
-          </span>
+          <span className="font-medium">{summary.stringNames.join(", ") || "미선택"}</span>
         </p>
         <p>
           <span className="text-muted-foreground">텐션:</span>{" "}

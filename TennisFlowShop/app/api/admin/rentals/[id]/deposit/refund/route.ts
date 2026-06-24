@@ -10,10 +10,7 @@ import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
  * - 'mark'  : depositRefundedAt = now   (이미 있으면 멱등 200)
  * - 'clear' : depositRefundedAt = null  (이미 null이면 멱등 200)
  */
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   // 관리자 권한 체크
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
@@ -22,27 +19,17 @@ export async function POST(
 
   const { id } = await params;
   if (!ObjectId.isValid(id))
-    return NextResponse.json(
-      { ok: false, message: "잘못된 ID" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, message: "잘못된 ID" }, { status: 400 });
 
   const { action = "mark" } = await req.json().catch(() => ({}));
   if (!["mark", "clear"].includes(action)) {
-    return NextResponse.json(
-      { ok: false, message: "잘못된 action" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, message: "잘못된 action" }, { status: 400 });
   }
 
   const db = (await clientPromise).db();
   const c = db.collection("rental_orders");
   const doc = await c.findOne({ _id: new ObjectId(id) });
-  if (!doc)
-    return NextResponse.json(
-      { ok: false, message: "NOT_FOUND" },
-      { status: 404 },
-    );
+  if (!doc) return NextResponse.json({ ok: false, message: "NOT_FOUND" }, { status: 404 });
 
   // returned 상태에서만 처리 허용
   if ((doc as any).status !== "returned") {
@@ -111,8 +98,7 @@ export async function POST(
     );
     return NextResponse.json({ ok: true, id, depositRefundedAt: now });
   } else {
-    if (!doc.depositRefundedAt)
-      return NextResponse.json({ ok: true, id, depositRefundedAt: null }); // 멱등
+    if (!doc.depositRefundedAt) return NextResponse.json({ ok: true, id, depositRefundedAt: null }); // 멱등
     await c.updateOne(
       { _id: new ObjectId(id) },
       { $unset: { depositRefundedAt: "" }, $set: { updatedAt: new Date() } },

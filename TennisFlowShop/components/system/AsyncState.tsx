@@ -59,12 +59,7 @@ export default function AsyncState({
       : "아직 표시할 내용이 없습니다.");
 
   const resolvedIcon =
-    icon ??
-    (isError ? (
-      <AlertTriangle className="h-4 w-4" />
-    ) : (
-      <Inbox className="h-4 w-4" />
-    ));
+    icon ?? (isError ? <AlertTriangle className="h-4 w-4" /> : <Inbox className="h-4 w-4" />);
 
   return (
     <div
@@ -88,10 +83,7 @@ export default function AsyncState({
           {resolvedIcon}
         </div>
         <p
-          className={cn(
-            "font-semibold",
-            variant === "inline" ? "text-sm" : "text-sm sm:text-base",
-          )}
+          className={cn("font-semibold", variant === "inline" ? "text-sm" : "text-sm sm:text-base")}
         >
           {resolvedTitle}
         </p>
@@ -104,13 +96,7 @@ export default function AsyncState({
           {resolvedDescription}
         </p>
         {isError && onAction && (
-          <Button
-            type="button"
-            onClick={onAction}
-            size="sm"
-            variant="outline"
-            className="mt-1"
-          >
+          <Button type="button" onClick={onAction} size="sm" variant="outline" className="mt-1">
             <RefreshCcw className="mr-1 h-3.5 w-3.5" />
             {actionLabel}
           </Button>

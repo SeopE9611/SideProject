@@ -5,9 +5,7 @@ const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB || "tennis_academy";
 
 if (!uri) {
-  console.error(
-    "[audit-unique-index-conflicts] MONGODB_URI 환경 변수가 필요합니다.",
-  );
+  console.error("[audit-unique-index-conflicts] MONGODB_URI 환경 변수가 필요합니다.");
   process.exit(1);
 }
 
@@ -20,9 +18,7 @@ const normalizeNullOrMissing = (field) => ({
 const duplicateSummaryPipeline = (fields) => [
   {
     $group: {
-      _id: Object.fromEntries(
-        fields.map((field) => [field, normalizeNullOrMissing(field)]),
-      ),
+      _id: Object.fromEntries(fields.map((field) => [field, normalizeNullOrMissing(field)])),
       documentCount: { $sum: 1 },
     },
   },
@@ -39,9 +35,7 @@ const duplicateSummaryPipeline = (fields) => [
 const nullOrMissingDuplicateSummaryPipeline = (fields) => [
   {
     $group: {
-      _id: Object.fromEntries(
-        fields.map((field) => [field, normalizeNullOrMissing(field)]),
-      ),
+      _id: Object.fromEntries(fields.map((field) => [field, normalizeNullOrMissing(field)])),
       documentCount: { $sum: 1 },
       hasNullOrMissing: {
         $max: {
@@ -104,10 +98,7 @@ async function main() {
   await client.connect();
   const db = client.db(dbName);
 
-  const usersEmail = await summarize(
-    db.collection("users"),
-    duplicateSummaryPipeline(["email"]),
-  );
+  const usersEmail = await summarize(db.collection("users"), duplicateSummaryPipeline(["email"]));
   const usersEmailNullOrMissing = await summarize(
     db.collection("users"),
     nullOrMissingDuplicateSummaryPipeline(["email"]),
@@ -142,35 +133,23 @@ async function main() {
   );
 
   printSummary("users.email duplicate groups", usersEmail);
-  printSummary(
-    "users.email null/missing conflict candidates",
-    usersEmailNullOrMissing,
-  );
+  printSummary("users.email null/missing conflict candidates", usersEmailNullOrMissing);
   printSummary(
     "users.email trim/lowercase reference candidates (not direct index-key conflicts)",
     usersEmailNormalizedReference,
   );
-  printSummary(
-    "wishlists userId+productId duplicate groups",
-    wishlistsUserProduct,
-  );
+  printSummary("wishlists userId+productId duplicate groups", wishlistsUserProduct);
   printSummary(
     "wishlists userId+productId null/missing conflict candidates",
     wishlistsNullOrMissing,
   );
-  printSummary(
-    "community_likes postId+userId duplicate groups",
-    communityLikesPostUser,
-  );
+  printSummary("community_likes postId+userId duplicate groups", communityLikesPostUser);
   printSummary(
     "community_likes postId+userId null/missing conflict candidates",
     communityLikesNullOrMissing,
   );
   printSummary("admin_locks key duplicate groups", adminLocksKey);
-  printSummary(
-    "admin_locks key null/missing conflict candidates",
-    adminLocksKeyNullOrMissing,
-  );
+  printSummary("admin_locks key null/missing conflict candidates", adminLocksKeyNullOrMissing);
 
   const directConflictGroupCount =
     usersEmail.duplicateGroups +
@@ -191,9 +170,7 @@ async function main() {
 
 main()
   .catch((error) => {
-    console.error(
-      `[audit-unique-index-conflicts] 스크립트 오류: ${error?.name ?? "UnknownError"}`,
-    );
+    console.error(`[audit-unique-index-conflicts] 스크립트 오류: ${error?.name ?? "UnknownError"}`);
     process.exitCode = 1;
   })
   .finally(async () => {

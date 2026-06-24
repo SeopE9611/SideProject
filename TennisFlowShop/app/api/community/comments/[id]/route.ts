@@ -6,11 +6,7 @@ import { z } from "zod";
 
 import { getDb } from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
-import {
-  normalizeSanitizedContent,
-  sanitizeHtml,
-  validateSanitizedLength,
-} from "@/lib/sanitize";
+import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from "@/lib/sanitize";
 import { verifyCommunityCsrf } from "@/lib/community/security";
 
 // 공통: 인증 페이로드
@@ -41,10 +37,7 @@ const updateCommentSchema = z.object({
 
 // --------------------------- PATCH: 댓글 수정 ---------------------------
 
-export async function PATCH(
-  req: NextRequest,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const csrf = verifyCommunityCsrf(req);
   if (!csrf.ok) {
     return csrf.response;
@@ -52,18 +45,12 @@ export async function PATCH(
   const { id } = await ctx.params;
 
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json(
-      { ok: false, error: "invalid_id" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "invalid_id" }, { status: 400 });
   }
 
   const payload = await getAuthPayload();
   if (!payload) {
-    return NextResponse.json(
-      { ok: false, error: "unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
   const db = await getDb();
@@ -75,18 +62,12 @@ export async function PATCH(
   const existing = await commentsCol.findOne({ _id: commentObjectId });
 
   if (!existing || existing.status === "deleted") {
-    return NextResponse.json(
-      { ok: false, error: "not_found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
 
   // 작성자 본인인지 확인
   if (!existing.userId || String(existing.userId) !== String(payload.sub)) {
-    return NextResponse.json(
-      { ok: false, error: "forbidden" },
-      { status: 403 },
-    );
+    return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
   }
 
   // 깨진 JSON이면 throw → 500 방지 (400으로 정리)
@@ -94,10 +75,7 @@ export async function PATCH(
   try {
     raw = await req.json();
   } catch {
-    return NextResponse.json(
-      { ok: false, error: "invalid_json" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 });
   }
   const parsed = updateCommentSchema.safeParse(raw);
 
@@ -108,9 +86,7 @@ export async function PATCH(
     );
   }
 
-  const sanitizedContent = normalizeSanitizedContent(
-    await sanitizeHtml(parsed.data.content),
-  );
+  const sanitizedContent = normalizeSanitizedContent(await sanitizeHtml(parsed.data.content));
   const contentLengthValidation = validateSanitizedLength(sanitizedContent, {
     min: 1,
     max: 1000,
@@ -132,9 +108,7 @@ export async function PATCH(
       {
         ok: false,
         error: "validation_error",
-        details: [
-          { path: ["content"], message: "댓글은 1000자 이내로 입력해 주세요." },
-        ],
+        details: [{ path: ["content"], message: "댓글은 1000자 이내로 입력해 주세요." }],
       },
       { status: 400 },
     );
@@ -155,10 +129,7 @@ export async function PATCH(
 
 // --------------------------- DELETE: 댓글 삭제 ---------------------------
 
-export async function DELETE(
-  req: NextRequest,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const csrf = verifyCommunityCsrf(req);
   if (!csrf.ok) {
     return csrf.response;
@@ -166,18 +137,12 @@ export async function DELETE(
   const { id } = await ctx.params;
 
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json(
-      { ok: false, error: "invalid_id" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "invalid_id" }, { status: 400 });
   }
 
   const payload = await getAuthPayload();
   if (!payload) {
-    return NextResponse.json(
-      { ok: false, error: "unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
   const db = await getDb();
@@ -189,18 +154,12 @@ export async function DELETE(
   const existing = await commentsCol.findOne({ _id: commentObjectId });
 
   if (!existing || existing.status === "deleted") {
-    return NextResponse.json(
-      { ok: false, error: "not_found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
 
   // 작성자 본인인지 확인
   if (!existing.userId || String(existing.userId) !== String(payload.sub)) {
-    return NextResponse.json(
-      { ok: false, error: "forbidden" },
-      { status: 403 },
-    );
+    return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
   }
 
   // 소프트 삭제 + 댓글 수 감소

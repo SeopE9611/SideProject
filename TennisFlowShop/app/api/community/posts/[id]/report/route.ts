@@ -50,10 +50,7 @@ type ReportInput = z.infer<typeof reportSchema>;
 // -----------------------------------------------------------------------
 // POST: 게시글 신고 생성
 // -----------------------------------------------------------------------
-export async function POST(
-  req: NextRequest,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const stop = startTimer();
   const meta = reqMeta(req);
 
@@ -73,10 +70,7 @@ export async function POST(
 
   // 1) ID 유효성 검사
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json(
-      { ok: false, error: "invalid_id" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "invalid_id" }, { status: 400 });
   }
 
   // 2) 요청 본문 파싱 + Zod 검증
@@ -84,10 +78,7 @@ export async function POST(
   try {
     json = await req.json();
   } catch {
-    return NextResponse.json(
-      { ok: false, error: "invalid_body" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "invalid_body" }, { status: 400 });
   }
 
   const parsed = reportSchema.safeParse(json);
@@ -121,10 +112,7 @@ export async function POST(
     //   ...meta,
     // });
 
-    return NextResponse.json(
-      { ok: false, error: "not_found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
 
   // 4) 신고자 정보 (회원만 허용)
@@ -132,10 +120,7 @@ export async function POST(
 
   if (!payload) {
     // 비회원은 신고 불가
-    return NextResponse.json(
-      { ok: false, error: "unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
   // 여기까지 왔으면 인증된 사용자
@@ -160,15 +145,11 @@ export async function POST(
     return rateLimit.response;
   }
 
-  const reportsCol =
-    db.collection<CommunityReportDocument>("community_reports");
+  const reportsCol = db.collection<CommunityReportDocument>("community_reports");
 
   // 자기글은 신고불가
   if (post.userId && String(post.userId) === reporter.reporterUserId) {
-    return NextResponse.json(
-      { ok: false, error: "cannot_report_own_post" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "cannot_report_own_post" }, { status: 400 });
   }
 
   // 5)  중복 신고 방지 로직
@@ -184,10 +165,7 @@ export async function POST(
     });
 
     if (recent) {
-      return NextResponse.json(
-        { ok: false, error: "too_many_requests" },
-        { status: 429 },
-      );
+      return NextResponse.json({ ok: false, error: "too_many_requests" }, { status: 429 });
     }
   }
 

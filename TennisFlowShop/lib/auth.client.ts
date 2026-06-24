@@ -4,21 +4,16 @@ import { axiosInstance } from "./useAxiosInstance";
 import { User } from "../app/store/authStore";
 import { showErrorToast } from "@/lib/toast";
 
-export async function getMyInfo(opts?: {
-  quiet?: boolean;
-}): Promise<{ user: User | null }> {
+export async function getMyInfo(opts?: { quiet?: boolean }): Promise<{ user: User | null }> {
   const headers = opts?.quiet ? { "x-suppress-auth-expired": "1" } : undefined;
   try {
-    const res = await axiosInstance.get<User & { isDeleted?: boolean }>(
-      "/api/users/me",
-      { headers },
-    );
+    const res = await axiosInstance.get<User & { isDeleted?: boolean }>("/api/users/me", {
+      headers,
+    });
     const user = res.data;
 
     if (user.isDeleted) {
-      showErrorToast(
-        "탈퇴 처리된 계정입니다.\n재가입을 원하시면 고객센터로 문의해주세요.",
-      );
+      showErrorToast("탈퇴 처리된 계정입니다.\n재가입을 원하시면 고객센터로 문의해주세요.");
       return { user: null };
     }
     return { user };

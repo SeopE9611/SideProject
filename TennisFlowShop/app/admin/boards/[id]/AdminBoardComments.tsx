@@ -55,20 +55,14 @@ export default function AdminBoardComments({ postId }: Props) {
               <div className="text-sm text-muted-foreground">
                 {comment.parentId ? "답글" : "댓글"} · {comment.nickname}
               </div>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => deleteComment(comment)}
-              >
+              <Button size="sm" variant="destructive" onClick={() => deleteComment(comment)}>
                 <Trash2 className="mr-1 h-4 w-4" /> 삭제
               </Button>
             </div>
             <p className="text-sm">{comment.content}</p>
           </div>
         ))}
-        {comments.length === 0 && (
-          <p className="text-sm text-muted-foreground">댓글이 없습니다.</p>
-        )}
+        {comments.length === 0 && <p className="text-sm text-muted-foreground">댓글이 없습니다.</p>}
       </CardContent>
     </Card>
   );

@@ -46,10 +46,8 @@ export async function issuePassesForPaidOrder(db: Db, order: any) {
     const meta = it?.meta || {};
     if (meta?.kind !== "service_package") continue;
 
-    const orderId =
-      typeof order._id === "string" ? new OID(order._id) : order._id;
-    const userId =
-      typeof order.userId === "string" ? new OID(order.userId) : order.userId;
+    const orderId = typeof order._id === "string" ? new OID(order._id) : order._id;
+    const userId = typeof order.userId === "string" ? new OID(order.userId) : order.userId;
 
     // 멱등: 같은 orderId + orderItemId 로 이미 발급된 패스가 있으면 스킵
     const existing = await passes.findOne({
@@ -121,14 +119,10 @@ export async function consumePass(
   options: { session?: ClientSession } = {},
 ) {
   const passes = db.collection<ServicePass>("service_passes");
-  const consumptions = db.collection<ServicePassConsumption>(
-    "service_pass_consumptions",
-  );
+  const consumptions = db.collection<ServicePassConsumption>("service_pass_consumptions");
   const packageOrders = db.collection("packageOrders"); // ← 주문 컬렉션
   const now = new Date();
-  const sessionOptions = options.session
-    ? { session: options.session }
-    : undefined;
+  const sessionOptions = options.session ? { session: options.session } : undefined;
 
   // 1) 먼저 패스를 읽어서 연결된 orderId 확인
   const passDoc = await passes.findOne(
@@ -192,9 +186,7 @@ export async function consumePass(
     { returnDocument: "after", ...sessionOptions } as any,
   );
 
-  const updatedDoc = (
-    raw && "value" in raw ? raw.value : raw
-  ) as ServicePass | null;
+  const updatedDoc = (raw && "value" in raw ? raw.value : raw) as ServicePass | null;
 
   if (!updatedDoc) {
     // 차감 실패 시 소비 로그 롤백 시도
@@ -221,12 +213,8 @@ export async function revertConsumption(
   options: { session?: ClientSession } = {},
 ) {
   const passes = db.collection<ServicePass>("service_passes");
-  const consumptions = db.collection<ServicePassConsumption>(
-    "service_pass_consumptions",
-  );
-  const sessionOptions = options.session
-    ? { session: options.session }
-    : undefined;
+  const consumptions = db.collection<ServicePassConsumption>("service_pass_consumptions");
+  const sessionOptions = options.session ? { session: options.session } : undefined;
 
   // 아직 되돌리지 않은 소비 로그 조회
   const log = await consumptions.findOne(
@@ -314,26 +302,17 @@ export async function revertConsumption(
 }
 
 /** 패키지 주문(결제완료) → 패스 발급(멱등) */
-export async function issuePassesForPaidPackageOrder(
-  db: Db,
-  packageOrder: any,
-) {
+export async function issuePassesForPaidPackageOrder(db: Db, packageOrder: any) {
   const passes = db.collection<ServicePass>("service_passes");
   const now = new Date();
 
   // 멱등: 같은 packageOrder._id 로 이미 발급된 패스가 있으면 스킵
   const orderId =
-    typeof packageOrder._id === "string"
-      ? new OID(packageOrder._id)
-      : packageOrder._id;
+    typeof packageOrder._id === "string" ? new OID(packageOrder._id) : packageOrder._id;
   const userId =
-    typeof packageOrder.userId === "string"
-      ? new OID(packageOrder.userId)
-      : packageOrder.userId;
+    typeof packageOrder.userId === "string" ? new OID(packageOrder.userId) : packageOrder.userId;
   const sessions = Number(packageOrder?.packageInfo?.sessions || 0);
-  const validityDays = normalizeValidityDays(
-    packageOrder?.packageInfo?.validityPeriod,
-  );
+  const validityDays = normalizeValidityDays(packageOrder?.packageInfo?.validityPeriod);
   const planId = packageOrder?.packageInfo?.id ?? `sessions-${sessions}`;
   const planTitle = packageOrder?.packageInfo?.title ?? "교체 서비스 패키지";
 
@@ -369,11 +348,7 @@ export async function issuePassesForPaidPackageOrder(
 }
 
 // 이미 차감됐다면 아무것도 안 하는 멱등 차감
-export async function deductPassIfNeeded(
-  db: Db,
-  passId: ObjectId,
-  applicationId: ObjectId,
-) {
+export async function deductPassIfNeeded(db: Db, passId: ObjectId, applicationId: ObjectId) {
   const used = await db
     .collection("pass_usages")
     .findOne({ passId, applicationId, type: "deduct" });
@@ -381,10 +356,7 @@ export async function deductPassIfNeeded(
 
   await db
     .collection("service_passes")
-    .updateOne(
-      { _id: passId, remainingCount: { $gt: 0 } },
-      { $inc: { remainingCount: -1 } },
-    );
+    .updateOne({ _id: passId, remainingCount: { $gt: 0 } }, { $inc: { remainingCount: -1 } });
   await db.collection("pass_usages").insertOne({
     passId,
     applicationId,
@@ -394,11 +366,7 @@ export async function deductPassIfNeeded(
 }
 
 // 이미 복원됐다면 아무것도 안 하는 멱등 복원
-export async function restorePassIfNeeded(
-  db: Db,
-  passId: ObjectId,
-  applicationId: ObjectId,
-) {
+export async function restorePassIfNeeded(db: Db, passId: ObjectId, applicationId: ObjectId) {
   const restored = await db
     .collection("pass_usages")
     .findOne({ passId, applicationId, type: "restore" });

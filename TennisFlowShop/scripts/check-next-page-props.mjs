@@ -27,8 +27,7 @@ const violations = [];
 for (const file of pageFiles) {
   const source = readFileSync(file, "utf8");
 
-  const hasSearchParamsRecord =
-    /searchParams\??\s*:\s*Record<\s*string\s*,/m.test(source);
+  const hasSearchParamsRecord = /searchParams\??\s*:\s*Record<\s*string\s*,/m.test(source);
   const hasParamsObject = /params\??\s*:\s*\{[^}]*\}/m.test(source);
 
   if (hasSearchParamsRecord) {
@@ -49,9 +48,7 @@ for (const file of pageFiles) {
 }
 
 if (violations.length > 0) {
-  console.error(
-    "\n[check-next-page-props] Found Next.js 15 page prop typing issues:\n",
-  );
+  console.error("\n[check-next-page-props] Found Next.js 15 page prop typing issues:\n");
   for (const v of violations) {
     console.error(`- ${v.file}: ${v.reason}`);
   }

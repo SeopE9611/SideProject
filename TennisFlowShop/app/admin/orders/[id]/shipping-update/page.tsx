@@ -4,10 +4,7 @@ import Link from "next/link";
 import { Store, Truck } from "lucide-react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import {
-  hasAnyRegisteredFulfillmentField,
-  isVisitPickupOrder,
-} from "@/lib/order-shipping";
+import { hasAnyRegisteredFulfillmentField, isVisitPickupOrder } from "@/lib/order-shipping";
 
 export const metadata: Metadata = {
   title: "배송 정보 수정",
@@ -19,11 +16,7 @@ type StringingApplicationLite = {
   createdAt?: string;
 };
 
-export default async function ShippingUpdatePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function ShippingUpdatePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const headersList = await headers();
   const host = headersList.get("host");
@@ -39,13 +32,10 @@ export default async function ShippingUpdatePage({
   // - 예: /admin/orders/{applicationId}/shipping-update 로 직접 접근했을 때
   // - 이 경우 주문 조회는 404가 나므로, 신청서 조회가 성공하면 신청서 배송 페이지로 즉시 이동
   if (!res.ok) {
-    const appRes = await fetch(
-      `${baseUrl}/api/admin/applications/stringing/${id}`,
-      {
-        cache: "no-store",
-        headers: { cookie },
-      },
-    );
+    const appRes = await fetch(`${baseUrl}/api/admin/applications/stringing/${id}`, {
+      cache: "no-store",
+      headers: { cookie },
+    });
 
     if (appRes.ok) {
       redirect(`/admin/applications/stringing/${id}/shipping-update`);
@@ -59,9 +49,7 @@ export default async function ShippingUpdatePage({
             <div className="bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
               <Truck className="h-8 w-8 text-primary mx-auto" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground mb-2">
-              배송 정보 관리
-            </h1>
+            <h1 className="text-2xl font-bold text-foreground mb-2">배송 정보 관리</h1>
             <p className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">
               주문 데이터를 불러올 수 없습니다.
             </p>
@@ -97,22 +85,17 @@ export default async function ShippingUpdatePage({
   // "상품 주문 + 교체서비스 신청서"로 연결된 케이스는
   // 배송/운송장 관리를 신청서에서만 하도록 단일화한다.
   // 주문 배송등록 URL로 들어오면 신청서 배송등록으로 강제 이동(관리자 혼란 방지)
-  const apps: StringingApplicationLite[] = Array.isArray(
-    order?.stringingApplications,
-  )
+  const apps: StringingApplicationLite[] = Array.isArray(order?.stringingApplications)
     ? order.stringingApplications
     : [];
 
   const appsWithId = apps.filter(
     (
       a: StringingApplicationLite,
-    ): a is Required<Pick<StringingApplicationLite, "id">> &
-      StringingApplicationLite => Boolean(a?.id),
+    ): a is Required<Pick<StringingApplicationLite, "id">> & StringingApplicationLite =>
+      Boolean(a?.id),
   );
-  const sortByCreatedAtDesc = (
-    a: StringingApplicationLite,
-    b: StringingApplicationLite,
-  ) =>
+  const sortByCreatedAtDesc = (a: StringingApplicationLite, b: StringingApplicationLite) =>
     new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime();
 
   const appIdFromList =
@@ -130,9 +113,7 @@ export default async function ShippingUpdatePage({
 
   // 기존 배송정보가 하나라도 있으면 "수정", 아무것도 없으면 "등록"
   const rawMethod =
-    order?.shippingInfo?.shippingMethod ??
-    order?.shippingInfo?.deliveryMethod ??
-    "";
+    order?.shippingInfo?.shippingMethod ?? order?.shippingInfo?.deliveryMethod ?? "";
   const isRegistered = hasAnyRegisteredFulfillmentField(order?.shippingInfo);
   const isVisitPickup = isVisitPickupOrder(order?.shippingInfo);
   const pageTitle = isVisitPickup
@@ -162,9 +143,7 @@ export default async function ShippingUpdatePage({
               <Truck className="h-8 w-8 text-primary mx-auto" />
             )}
           </div>
-          <h1 className="mb-2 text-2xl font-bold text-foreground bp-md:text-3xl">
-            {pageTitle}
-          </h1>
+          <h1 className="mb-2 text-2xl font-bold text-foreground bp-md:text-3xl">{pageTitle}</h1>
           <p className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">
             {pageDesc}
           </p>
@@ -173,14 +152,10 @@ export default async function ShippingUpdatePage({
         <ShippingFormClient
           orderId={order._id}
           initialShippingMethod={rawMethod}
-          initialRegisteredShippingMethod={
-            order.shippingInfo?.shippingMethod ?? ""
-          }
+          initialRegisteredShippingMethod={order.shippingInfo?.shippingMethod ?? ""}
           initialEstimatedDelivery={order.shippingInfo?.estimatedDate ?? ""}
           initialCourier={order.shippingInfo?.invoice?.courier ?? ""}
-          initialTrackingNumber={
-            order.shippingInfo?.invoice?.trackingNumber ?? ""
-          }
+          initialTrackingNumber={order.shippingInfo?.invoice?.trackingNumber ?? ""}
           isVisitPickupOrder={isVisitPickup}
         />
       </div>

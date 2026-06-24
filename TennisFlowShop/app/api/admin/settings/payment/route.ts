@@ -30,21 +30,13 @@ function inferNicepayMode(apiBaseRaw: string): NicepayMode {
 }
 
 function getNicepayMeta() {
-  const approveApiBase = String(
-    process.env.NICEPAY_APPROVE_API_BASE ?? "",
-  ).trim();
+  const approveApiBase = String(process.env.NICEPAY_APPROVE_API_BASE ?? "").trim();
   const hasClientId = Boolean(
-    String(
-      process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "",
-    ).trim(),
+    String(process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "").trim(),
   );
-  const hasSecretKey = Boolean(
-    String(process.env.NICEPAY_SECRET_KEY ?? "").trim(),
-  );
+  const hasSecretKey = Boolean(String(process.env.NICEPAY_SECRET_KEY ?? "").trim());
   const enabledRaw = String(
-    process.env.NEXT_PUBLIC_ENABLE_NICE_PAYMENTS ??
-      process.env.ENABLE_NICE_PAYMENTS ??
-      "",
+    process.env.NEXT_PUBLIC_ENABLE_NICE_PAYMENTS ?? process.env.ENABLE_NICE_PAYMENTS ?? "",
   )
     .trim()
     .toLowerCase();
@@ -65,9 +57,7 @@ export async function GET(req: Request) {
   if (!guard.ok) return guard.res;
 
   const db = await getDb();
-  const doc = await db
-    .collection<any>(SETTINGS_COLLECTION)
-    .findOne({ _id: DOC_ID });
+  const doc = await db.collection<any>(SETTINGS_COLLECTION).findOne({ _id: DOC_ID });
   const merged = { ...defaultPaymentSettings, ...(doc?.value ?? {}) };
   const parsed = paymentSettingsSchema.safeParse(merged);
   const data = parsed.success ? parsed.data : defaultPaymentSettings;
@@ -91,9 +81,7 @@ export async function PATCH(req: Request) {
   const csrf = verifyAdminCsrf(req);
   if (!csrf.ok) return csrf.res;
 
-  const payload = (await req
-    .json()
-    .catch(() => null)) as Partial<PaymentSettings> | null;
+  const payload = (await req.json().catch(() => null)) as Partial<PaymentSettings> | null;
   const parsed = paymentSettingsSchema.safeParse(payload);
   if (!parsed.success) {
     return NextResponse.json(
@@ -106,9 +94,7 @@ export async function PATCH(req: Request) {
   }
 
   const db = await getDb();
-  const prev = await db
-    .collection<any>(SETTINGS_COLLECTION)
-    .findOne({ _id: DOC_ID });
+  const prev = await db.collection<any>(SETTINGS_COLLECTION).findOne({ _id: DOC_ID });
   const prevValue = (prev?.value ?? {}) as Partial<PaymentSettings>;
 
   const toSave: PaymentSettings = {

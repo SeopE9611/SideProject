@@ -25,9 +25,7 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: {
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [slotsError, setSlotsError] = useState<string | null>(null);
-  const slotsCache = useRef<
-    Map<string, { disabled: string[]; reserved: string[] }>
-  >(new Map());
+  const slotsCache = useRef<Map<string, { disabled: string[]; reserved: string[] }>>(new Map());
 
   // 추가 상태: 캐시 히트 여부 (로딩 중 버튼 비활성화 여부 판단에 사용)
   const [hasCacheForDate, setHasCacheForDate] = useState(false);
@@ -82,8 +80,7 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: {
           if (res.status === 400) {
             const j = await res.json().catch(() => null);
             setSlotsError(
-              j?.message ??
-                "현재 날짜부터 30일 이내만 예약 가능합니다. 다른 날짜를 선택해주세요.",
+              j?.message ?? "현재 날짜부터 30일 이내만 예약 가능합니다. 다른 날짜를 선택해주세요.",
             );
             // 시간대 격자는 감춤
             setTimeSlots([]);
@@ -96,9 +93,7 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: {
 
           // 그 외(500/네트워크 등)만 일반 오류로 처리
           if (!cacheHit) setDisabledTimes([]);
-          setSlotsError(
-            "예약 현황을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
-          );
+          setSlotsError("예약 현황을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
           return;
         }
 
@@ -117,9 +112,7 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: {
 
         // 서버 슬롯/비활성 시간 반영
         setTimeSlots(Array.isArray(data?.allTimes) ? data.allTimes : []);
-        const reserved: string[] = Array.isArray(data?.reservedTimes)
-          ? data.reservedTimes
-          : [];
+        const reserved: string[] = Array.isArray(data?.reservedTimes) ? data.reservedTimes : [];
         const disabled: string[] = Array.isArray(data?.blockedTimes)
           ? data.blockedTimes
           : Array.isArray(data?.reservedTimes)
@@ -130,10 +123,7 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: {
         setReservedTimes(reserved);
 
         // (선택) 현재 선택된 시간이 사용 불가면 선택 해제
-        if (
-          data?.availableTimes &&
-          !data.availableTimes.includes(preferredTime)
-        ) {
+        if (data?.availableTimes && !data.availableTimes.includes(preferredTime)) {
           setFormData((prev) => ({ ...prev, preferredTime: "" }) as T);
         }
 
@@ -146,9 +136,7 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: {
       } catch {
         if (!cacheHit) {
           setDisabledTimes([]);
-          setSlotsError(
-            "예약 현황을 불러오지 못했습니다. 네트워크 상태를 확인해주세요.",
-          );
+          setSlotsError("예약 현황을 불러오지 못했습니다. 네트워크 상태를 확인해주세요.");
         }
       } finally {
         if (loadingTimer) clearTimeout(loadingTimer);
@@ -175,9 +163,7 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: {
   useEffect(() => {
     if (!preferredDate) return;
     // 날짜 변경 시 선택된 시간 초기화
-    setFormData((prev) =>
-      prev.preferredTime ? ({ ...prev, preferredTime: "" } as T) : prev,
-    );
+    setFormData((prev) => (prev.preferredTime ? ({ ...prev, preferredTime: "" } as T) : prev));
     // 캐시에 같은 날짜가 있어도 초기화는 고정 동작
   }, [preferredDate, setFormData]);
 
@@ -194,9 +180,7 @@ export function useReservedSlots<T extends { preferredTime: string }>(args: {
       );
       if (!res.ok) return;
       const data = await res.json();
-      const reserved: string[] = Array.isArray(data?.reservedTimes)
-        ? data.reservedTimes
-        : [];
+      const reserved: string[] = Array.isArray(data?.reservedTimes) ? data.reservedTimes : [];
       const disabled: string[] = Array.isArray(data?.blockedTimes)
         ? data.blockedTimes
         : Array.isArray(data?.reservedTimes)

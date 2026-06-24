@@ -1,13 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -20,10 +14,7 @@ import {
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
-import {
-  getSelectableCourierCatalog,
-  normalizeCourierCode,
-} from "@/lib/shipping/courier-map";
+import { getSelectableCourierCatalog, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { Loader2 } from "lucide-react";
@@ -69,9 +60,7 @@ export default function ShippingForm({
   }, [initialShippingMethod, isVisitPickup]);
 
   const [estimatedDelivery, setEstimatedDelivery] = useState<string>(
-    initialEstimatedDelivery
-      ? new Date(initialEstimatedDelivery).toISOString().split("T")[0]
-      : "",
+    initialEstimatedDelivery ? new Date(initialEstimatedDelivery).toISOString().split("T")[0] : "",
   );
   const [courier, setCourier] = useState("");
   const [trackingNumber, setTrackingNumber] = useState("");
@@ -128,12 +117,8 @@ export default function ShippingForm({
   ]);
 
   const isDirty = useMemo(() => {
-    const curMethod = isVisitPickup
-      ? fixedVisitMethod
-      : String(shippingMethod ?? "").trim();
-    const curCourier = isCourierShippingMethod(curMethod)
-      ? normalizeCourierCode(courier)
-      : "";
+    const curMethod = isVisitPickup ? fixedVisitMethod : String(shippingMethod ?? "").trim();
+    const curCourier = isCourierShippingMethod(curMethod) ? normalizeCourierCode(courier) : "";
     const curTracking = isCourierShippingMethod(curMethod)
       ? normalizeTrackingNumber(trackingNumber)
       : "";
@@ -144,14 +129,7 @@ export default function ShippingForm({
       baseline.courier !== curCourier ||
       baseline.trackingNumber !== curTracking
     );
-  }, [
-    baseline,
-    shippingMethod,
-    estimatedDelivery,
-    courier,
-    trackingNumber,
-    isVisitPickup,
-  ]);
+  }, [baseline, shippingMethod, estimatedDelivery, courier, trackingNumber, isVisitPickup]);
 
   // 저장 중에는 confirm을 띄우지 않도록(UX)
   useUnsavedChangesGuard(isDirty && !isSubmitting);
@@ -196,10 +174,7 @@ export default function ShippingForm({
         showErrorToast("운송장 번호를 입력해주세요");
         return;
       }
-      if (
-        normalizedTrackingNumber.length < 9 ||
-        normalizedTrackingNumber.length > 20
-      ) {
+      if (normalizedTrackingNumber.length < 9 || normalizedTrackingNumber.length > 20) {
         showErrorToast("운송장 번호는 숫자 9~20자리로 입력해주세요");
         return;
       }
@@ -208,27 +183,24 @@ export default function ShippingForm({
     setIsSubmitting(true);
 
     try {
-      await adminMutator(
-        `/api/admin/applications/stringing/${applicationId}/shipping`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            shippingInfo: {
-              shippingMethod: effectiveMethod,
-              estimatedDate: estimatedDelivery,
-              invoice: {
-                courier: isCourierShippingMethod(effectiveMethod)
-                  ? normalizeCourierCode(courier)
-                  : "",
-                trackingNumber: isCourierShippingMethod(effectiveMethod)
-                  ? normalizeTrackingNumber(trackingNumber)
-                  : "",
-              },
+      await adminMutator(`/api/admin/applications/stringing/${applicationId}/shipping`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shippingInfo: {
+            shippingMethod: effectiveMethod,
+            estimatedDate: estimatedDelivery,
+            invoice: {
+              courier: isCourierShippingMethod(effectiveMethod)
+                ? normalizeCourierCode(courier)
+                : "",
+              trackingNumber: isCourierShippingMethod(effectiveMethod)
+                ? normalizeTrackingNumber(trackingNumber)
+                : "",
             },
-          }),
-        },
-      );
+          },
+        }),
+      });
 
       showSuccessToast(
         isVisitPickup
@@ -260,9 +232,7 @@ export default function ShippingForm({
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="shipping-method">
-              {isVisitPickup ? "수령 방법" : "배송 방법"}
-            </Label>
+            <Label htmlFor="shipping-method">{isVisitPickup ? "수령 방법" : "배송 방법"}</Label>
             {isVisitPickup ? (
               <Input id="shipping-method" value="방문 수령" readOnly disabled />
             ) : (
@@ -312,9 +282,7 @@ export default function ShippingForm({
                 <Input
                   id="tracking-number"
                   value={trackingNumber}
-                  onChange={(e) =>
-                    setTrackingNumber(normalizeTrackingNumber(e.target.value))
-                  }
+                  onChange={(e) => setTrackingNumber(normalizeTrackingNumber(e.target.value))}
                   placeholder="예: 1234567890"
                 />
               </div>

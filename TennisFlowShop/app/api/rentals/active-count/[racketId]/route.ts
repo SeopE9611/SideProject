@@ -3,10 +3,7 @@ import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 
 // 진행 중(active) 대여 개수 조회: paid | out
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ racketId: string }> },
-) {
+export async function GET(_req: Request, { params }: { params: Promise<{ racketId: string }> }) {
   const { racketId } = await params;
 
   // route는 상태코드(400) 규칙을 유지하고,

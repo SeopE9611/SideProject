@@ -1,5 +1,4 @@
-export const basePopoverTooltipClass =
-  "bg-popover text-popover-foreground border-border border";
+export const basePopoverTooltipClass = "bg-popover text-popover-foreground border-border border";
 
 export const adminRichTooltipClass = `${basePopoverTooltipClass} px-5 py-2.5 rounded-lg shadow-lg text-base min-w-[240px]`;
 

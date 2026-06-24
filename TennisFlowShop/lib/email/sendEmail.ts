@@ -8,21 +8,13 @@ type SendEmailArgs = {
   bcc?: string | string[];
 };
 
-export async function sendEmail({
-  to,
-  subject,
-  html,
-  ics,
-  bcc,
-}: SendEmailArgs) {
+export async function sendEmail({ to, subject, html, ics, bcc }: SendEmailArgs) {
   const host = process.env.SMTP_HOST;
   const port = Number(process.env.SMPP_PORT || process.env.SMTP_PORT || 587); // 오타 대비 유지
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
   const from =
-    process.env.SMTP_FROM ||
-    process.env.MAIL_FROM ||
-    "도깨비테니스 <noreply@dokkaebitennis.com>";
+    process.env.SMTP_FROM || process.env.MAIL_FROM || "도깨비테니스 <noreply@dokkaebitennis.com>";
   const replyTo =
     process.env.SMTP_REPLY_TO ||
     process.env.SUPPORT_EMAIL ||

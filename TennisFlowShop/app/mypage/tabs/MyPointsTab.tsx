@@ -63,10 +63,7 @@ const PointsSummarySkeleton = () => (
 const PointsListSkeleton = ({ count = 5 }: { count?: number }) => (
   <div className="space-y-2 px-4 py-4">
     {Array.from({ length: count }).map((_, idx) => (
-      <div
-        key={`points-list-skeleton-${idx}`}
-        className="rounded-lg border border-border/60 p-4"
-      >
+      <div key={`points-list-skeleton-${idx}`} className="rounded-lg border border-border/60 p-4">
         <Skeleton className="h-4 w-1/3" />
         <Skeleton className="mt-2 h-3 w-1/2" />
       </div>
@@ -78,15 +75,14 @@ export default function MyPointsTab() {
   const [page, setPage] = useState(1);
   const limit = 5;
 
-  const { data, error, isLoading, isValidating, mutate } =
-    useSWR<PointsHistoryRes>(
-      `/api/points/me/history?page=${page}&limit=${limit}`,
-      fetcher,
-      {
-        revalidateOnFocus: false,
-        revalidateOnReconnect: false,
-      },
-    );
+  const { data, error, isLoading, isValidating, mutate } = useSWR<PointsHistoryRes>(
+    `/api/points/me/history?page=${page}&limit=${limit}`,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
 
   const { data: allData } = useSWR<PointsHistoryRes>(
     `/api/points/me/history?page=1&limit=10000`,
@@ -100,25 +96,17 @@ export default function MyPointsTab() {
   // 데이터가 성공적으로 확정되었는지/에러인지를 분리해 0/빈값 오판을 방지한다.
   const hasResolvedData = !!data;
   const hasDataError = !!error || (hasResolvedData && data.ok === false);
-  const hasResolvedTotal =
-    hasResolvedData && !hasDataError && typeof data.total === "number";
+  const hasResolvedTotal = hasResolvedData && !hasDataError && typeof data.total === "number";
   const isInitialLoading = isLoading && !data;
   // 페이지 이동 직후 새 페이지 데이터가 아직 확정되지 않은 상태를 빈 상태와 분리한다.
-  const isPageTransitionLoading =
-    !isInitialLoading && isValidating && !hasDataError;
+  const isPageTransitionLoading = !isInitialLoading && isValidating && !hasDataError;
 
   const pointsBalance =
-    hasResolvedData && !hasDataError && typeof data.balance === "number"
-      ? data.balance
-      : null;
+    hasResolvedData && !hasDataError && typeof data.balance === "number" ? data.balance : null;
   const pointsDebt =
-    hasResolvedData && !hasDataError && typeof data.debt === "number"
-      ? data.debt
-      : null;
+    hasResolvedData && !hasDataError && typeof data.debt === "number" ? data.debt : null;
   const pointsItems =
-    hasResolvedData && !hasDataError && Array.isArray(data.items)
-      ? data.items
-      : null;
+    hasResolvedData && !hasDataError && Array.isArray(data.items) ? data.items : null;
   const shouldShowRows = !!pointsItems && pointsItems.length > 0;
   const shouldShowEmptyState = !!pointsItems && pointsItems.length === 0;
 
@@ -191,22 +179,18 @@ export default function MyPointsTab() {
                   )}
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-primary">
-                    보유 포인트
-                  </p>
+                  <p className="text-xs font-medium text-primary">보유 포인트</p>
                   <p className="text-xl bp-sm:text-2xl bp-lg:text-3xl font-black tracking-normal">
                     {pointsBalance === null ? "-" : `${fmt(pointsBalance)}P`}
                   </p>
-                  {typeof pointsDebt === "number" &&
-                    pointsDebt > 0 &&
-                    pointsBalance !== null && (
-                      <p className="text-xs text-primary flex items-center gap-1">
-                        <span>사용 가능:</span>
-                        <span className="font-bold">
-                          {fmt(Math.max(0, pointsBalance - pointsDebt))}P
-                        </span>
-                      </p>
-                    )}
+                  {typeof pointsDebt === "number" && pointsDebt > 0 && pointsBalance !== null && (
+                    <p className="text-xs text-primary flex items-center gap-1">
+                      <span>사용 가능:</span>
+                      <span className="font-bold">
+                        {fmt(Math.max(0, pointsBalance - pointsDebt))}P
+                      </span>
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -264,20 +248,13 @@ export default function MyPointsTab() {
                     <Calendar className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg bp-sm:text-xl">
-                      포인트 내역
-                    </CardTitle>
+                    <CardTitle className="text-lg bp-sm:text-xl">포인트 내역</CardTitle>
                     <p className="text-xs bp-sm:text-sm text-muted-foreground mt-0.5">
                       전체 {hasResolvedTotal ? data.total : "-"}건
                     </p>
                   </div>
                 </div>
-                <Button
-                  onClick={() => mutate()}
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                >
+                <Button onClick={() => mutate()} variant="outline" size="sm" className="gap-2">
                   <RefreshCw className="h-4 w-4" />
                   <span className="hidden bp-sm:inline">새로고침</span>
                 </Button>
@@ -292,9 +269,7 @@ export default function MyPointsTab() {
                   <div className="bg-muted/50 rounded-full p-4 mb-4">
                     <Coins className="h-8 w-8 bp-sm:h-10 bp-sm:w-10 text-muted-foreground" />
                   </div>
-                  <p className="text-base font-medium text-center mb-1">
-                    포인트 내역이 없습니다
-                  </p>
+                  <p className="text-base font-medium text-center mb-1">포인트 내역이 없습니다</p>
                   <p className="text-sm text-muted-foreground text-center">
                     포인트를 적립하거나 사용하면 여기에 표시됩니다
                   </p>
@@ -331,11 +306,7 @@ export default function MyPointsTab() {
                                 {pointTxTypeLabel(it.type)}
                               </Badge>
                               <Badge
-                                variant={
-                                  it.status === "confirmed"
-                                    ? "default"
-                                    : "secondary"
-                                }
+                                variant={it.status === "confirmed" ? "default" : "secondary"}
                                 className="text-xs"
                               >
                                 {pointTxStatusLabel(it.status)}
@@ -343,9 +314,7 @@ export default function MyPointsTab() {
                             </div>
 
                             {it.reason && it.reason.trim().length >= 2 ? (
-                              <p className="text-sm text-foreground line-clamp-1">
-                                {it.reason}
-                              </p>
+                              <p className="text-sm text-foreground line-clamp-1">{it.reason}</p>
                             ) : fallbackReason(it.type) ? (
                               <p className="text-sm text-muted-foreground line-clamp-1">
                                 {fallbackReason(it.type)}
@@ -364,9 +333,7 @@ export default function MyPointsTab() {
                                   >
                                     <span>
                                       주문번호:{" "}
-                                      <span className="font-mono">
-                                        {shortId(ref.orderId)}
-                                      </span>
+                                      <span className="font-mono">{shortId(ref.orderId)}</span>
                                     </span>
                                     <ArrowRight className="h-3 w-3 group-hover/link:translate-x-0.5 transition-transform" />
                                   </Link>
@@ -376,10 +343,7 @@ export default function MyPointsTab() {
                               if (ref.kind === "review") {
                                 return (
                                   <span className="text-xs text-muted-foreground">
-                                    리뷰:{" "}
-                                    <span className="font-mono">
-                                      {shortId(ref.reviewId)}
-                                    </span>
+                                    리뷰: <span className="font-mono">{shortId(ref.reviewId)}</span>
                                   </span>
                                 );
                               }
@@ -406,9 +370,7 @@ export default function MyPointsTab() {
                 <div className="flex items-center justify-between gap-4">
                   <p className="text-sm text-muted-foreground tabular-nums">
                     <span className="hidden bp-sm:inline">페이지 </span>
-                    <span className="font-semibold text-foreground">
-                      {page}
-                    </span>
+                    <span className="font-semibold text-foreground">{page}</span>
                     <span className="mx-1">/</span>
                     <span>{totalPages}</span>
                   </p>
@@ -428,9 +390,7 @@ export default function MyPointsTab() {
                       variant="outline"
                       size="sm"
                       disabled={page >= totalPages}
-                      onClick={() =>
-                        setPage((p) => Math.min(totalPages, p + 1))
-                      }
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       className="gap-1.5"
                     >
                       <span className="hidden bp-sm:inline">다음</span>

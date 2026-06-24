@@ -128,14 +128,9 @@ export async function GET(req: Request) {
     sort = { createdAt: -1, _id: -1 };
   }
 
-  const page =
-    Number.isFinite(pageParam) && pageParam >= 1
-      ? Math.floor(pageParam)
-      : undefined;
+  const page = Number.isFinite(pageParam) && pageParam >= 1 ? Math.floor(pageParam) : undefined;
   const limit =
-    Number.isFinite(limitParam) && limitParam > 0
-      ? Math.min(limitParam, 50)
-      : undefined;
+    Number.isFinite(limitParam) && limitParam > 0 ? Math.min(limitParam, 50) : undefined;
 
   const col = db.collection("used_rackets");
 
@@ -165,9 +160,7 @@ export async function GET(req: Request) {
   const [docs, total] = await perf.measure("query", () =>
     Promise.all([
       perf.measure("rackets.find", () => cursor.toArray()),
-      withTotal
-        ? perf.measure("rackets.count", () => col.countDocuments(q))
-        : Promise.resolve(0),
+      withTotal ? perf.measure("rackets.count", () => col.countDocuments(q)) : Promise.resolve(0),
     ]),
   );
 

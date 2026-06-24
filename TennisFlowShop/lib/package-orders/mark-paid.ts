@@ -13,10 +13,7 @@ function normalizePassStatus(
 }
 
 function getStoredRemainingForResume(passDoc: ServicePass, now: Date): number {
-  if (
-    typeof passDoc.remainingValidityMs === "number" &&
-    passDoc.remainingValidityMs >= 0
-  )
+  if (typeof passDoc.remainingValidityMs === "number" && passDoc.remainingValidityMs >= 0)
     return passDoc.remainingValidityMs;
   if (passDoc.expiresAt instanceof Date)
     return Math.max(0, passDoc.expiresAt.getTime() - now.getTime());
@@ -43,8 +40,7 @@ export async function markPackageOrderPaid(
 
   const now = new Date();
   const prevPayment = pkgOrder.paymentStatus ?? "결제대기";
-  const wasAlreadyPaid =
-    prevPayment === "결제완료" && String(pkgOrder.status ?? "") === "결제완료";
+  const wasAlreadyPaid = prevPayment === "결제완료" && String(pkgOrder.status ?? "") === "결제완료";
   const historyDesc =
     `결제 상태 ${prevPayment} → 결제완료` +
     (params.reason ? ` / 사유: ${params.reason}` : "") +

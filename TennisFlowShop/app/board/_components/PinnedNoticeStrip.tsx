@@ -23,11 +23,7 @@ function fmtDate(value: string | Date) {
     .replace(/\.$/, "");
 }
 
-export default function PinnedNoticeStrip({
-  items,
-}: {
-  items: PinnedNoticeItem[];
-}) {
+export default function PinnedNoticeStrip({ items }: { items: PinnedNoticeItem[] }) {
   if (!items.length) return null;
 
   return (
@@ -40,9 +36,7 @@ export default function PinnedNoticeStrip({
           <Bell className="h-3.5 w-3.5" />
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-foreground">
-            중요 안내 · 공지사항
-          </p>
+          <p className="text-sm font-semibold text-foreground">중요 안내 · 공지사항</p>
           <p className="text-[10px] text-muted-foreground">
             운영팀이 고정한 공지입니다. 게시판 이용 전 한 번 확인해 주세요.
           </p>
@@ -56,16 +50,11 @@ export default function PinnedNoticeStrip({
             href={`/board/notice/${notice._id}`}
             className="group flex items-start gap-2 rounded-md border border-primary/15 bg-background/70 px-2.5 py-1.5 transition-colors hover:bg-primary/[0.07] dark:bg-background/60"
           >
-            <Badge
-              variant="brand"
-              className="mt-0.5 shrink-0 px-1.5 py-0 text-[10px] leading-4"
-            >
+            <Badge variant="brand" className="mt-0.5 shrink-0 px-1.5 py-0 text-[10px] leading-4">
               <Pin className="h-3 w-3" />
             </Badge>
             <div className="min-w-0 flex-1">
-              <p className={pinnedNoticeMobileTitleClampClass}>
-                {notice.title}
-              </p>
+              <p className={pinnedNoticeMobileTitleClampClass}>{notice.title}</p>
               <p className="mt-0 text-[10px] leading-tight text-muted-foreground">
                 {fmtDate(notice.createdAt)}
               </p>

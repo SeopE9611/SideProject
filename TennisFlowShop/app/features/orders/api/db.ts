@@ -2,10 +2,7 @@
 import clientPromise from "@/lib/mongodb";
 import { DBOrder } from "@/lib/types/order-db";
 import { ObjectId } from "mongodb";
-import {
-  normalizeOrderStatus,
-  normalizePaymentStatus,
-} from "@/lib/admin-ops-normalize";
+import { normalizeOrderStatus, normalizePaymentStatus } from "@/lib/admin-ops-normalize";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 
@@ -36,9 +33,7 @@ export async function findUserSnapshot(userId: string) {
   const client = await clientPromise;
   const db = client.db();
 
-  const user = await db
-    .collection("users")
-    .findOne({ _id: new ObjectId(userId) });
+  const user = await db.collection("users").findOne({ _id: new ObjectId(userId) });
   if (!user) return null;
 
   return {
@@ -48,10 +43,7 @@ export async function findUserSnapshot(userId: string) {
 }
 
 // 관리자 주문 목록 조회 + 변환
-export async function fetchCombinedOrders(opts?: {
-  userId?: ObjectId;
-  isAdmin?: boolean;
-}) {
+export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: boolean }) {
   const client = await clientPromise;
   const db = client.db();
 
@@ -95,31 +87,29 @@ export async function fetchCombinedOrders(opts?: {
 
   const orders = await Promise.all(
     rawOrders.map(async (order) => {
-      const customer: { name: string; email: string; phone: string } =
-        order.customer
+      const customer: { name: string; email: string; phone: string } = order.customer
+        ? {
+            name: order.customer.name,
+            email: order.customer.email ?? "-",
+            phone: order.customer.phone ?? "-",
+          }
+        : order.userSnapshot
           ? {
-              name: order.customer.name,
-              email: order.customer.email ?? "-",
-              phone: order.customer.phone ?? "-",
+              name: order.userSnapshot.name,
+              email: order.userSnapshot.email ?? "-",
+              phone: "-",
             }
-          : order.userSnapshot
+          : order.guestInfo
             ? {
-                name: order.userSnapshot.name,
-                email: order.userSnapshot.email ?? "-",
-                phone: "-",
+                name: `${order.guestInfo.name} (비회원)`,
+                email: order.guestInfo.email ?? "-",
+                phone: order.guestInfo.phone ?? "-",
               }
-            : order.guestInfo
-              ? {
-                  name: `${order.guestInfo.name} (비회원)`,
-                  email: order.guestInfo.email ?? "-",
-                  phone: order.guestInfo.phone ?? "-",
-                }
-              : { name: "(고객 정보 없음)", email: "-", phone: "-" };
+            : { name: "(고객 정보 없음)", email: "-", phone: "-" };
 
       // 원본 상태 문자열 (한글/영문 섞여 있을 수 있음)
       const rawCancelStatus = order.cancelRequest?.status as string | undefined;
-      const refundAccount =
-        (order as any)?.cancelRequest?.refundAccount ?? null;
+      const refundAccount = (order as any)?.cancelRequest?.refundAccount ?? null;
 
       // 한글/영문 모두 지원해서 공통 코드로 정규화
       let cancelStatus: "requested" | "approved" | "rejected" | undefined;
@@ -151,18 +141,14 @@ export async function fetchCombinedOrders(opts?: {
       })();
 
       const normalizedFromPickup = (() => {
-        const pickup = (order as any)?.servicePickupMethod as
-          | string
-          | undefined;
+        const pickup = (order as any)?.servicePickupMethod as string | undefined;
         if (pickup === "SHOP_VISIT") return "visit";
-        if (pickup === "COURIER_VISIT" || pickup === "SELF_SEND")
-          return "delivery";
+        if (pickup === "COURIER_VISIT" || pickup === "SELF_SEND") return "delivery";
         return undefined;
       })();
 
       // 결제상태는 order.paymentStatus가 없을 수도 있어서 paymentInfo.status도 fallback(표시용)
-      const paymentStatusRaw =
-        (order as any)?.paymentStatus ?? (order as any)?.paymentInfo?.status;
+      const paymentStatusRaw = (order as any)?.paymentStatus ?? (order as any)?.paymentInfo?.status;
 
       return {
         id: order._id.toString(),
@@ -184,10 +170,7 @@ export async function fetchCombinedOrders(opts?: {
           postalCode: si?.postalCode ?? "-",
           depositor: si?.depositor ?? "-",
           deliveryRequest: si?.deliveryRequest,
-          shippingMethod:
-            si?.shippingMethod ??
-            normalizedFromDelivery ??
-            normalizedFromPickup,
+          shippingMethod: si?.shippingMethod ?? normalizedFromDelivery ?? normalizedFromPickup,
           estimatedDate: si?.estimatedDate,
           withStringService: si?.withStringService ?? false,
           invoice: {
@@ -196,12 +179,8 @@ export async function fetchCombinedOrders(opts?: {
           },
         },
         cancelStatus,
-        refundAccountReady: cancelStatus
-          ? hasRefundAccount(refundAccount)
-          : undefined,
-        refundBankLabel: cancelStatus
-          ? resolveRefundBankLabel(refundAccount)
-          : null,
+        refundAccountReady: cancelStatus ? hasRefundAccount(refundAccount) : undefined,
+        refundBankLabel: cancelStatus ? resolveRefundBankLabel(refundAccount) : null,
       };
     }),
   );
@@ -278,10 +257,7 @@ export async function fetchCombinedOrders(opts?: {
             }
             const prod = await db
               .collection("products")
-              .findOne(
-                { _id: new ObjectId(typeId) },
-                { projection: { name: 1, mountingFee: 1 } },
-              );
+              .findOne({ _id: new ObjectId(typeId) }, { projection: { name: 1, mountingFee: 1 } });
             return {
               id: typeId,
               name: prod?.name ?? "알 수 없는 상품",
@@ -292,9 +268,7 @@ export async function fetchCombinedOrders(opts?: {
         );
         // 총액(문서 저장값 우선, 없으면 계산값)
         const totalFromDoc =
-          typeof (app as any).totalPrice === "number"
-            ? (app as any).totalPrice
-            : null;
+          typeof (app as any).totalPrice === "number" ? (app as any).totalPrice : null;
         const totalCalculated = items.reduce(
           (s, it) => s + (it.price || 0) * (it.quantity || 0),
           0,
@@ -304,10 +278,7 @@ export async function fetchCombinedOrders(opts?: {
         let stringSummary: string | undefined;
         if (items.length > 0) {
           const [first, ...rest] = items;
-          const totalQty = items.reduce(
-            (sum, it) => sum + (it.quantity ?? 1),
-            0,
-          );
+          const totalQty = items.reduce((sum, it) => sum + (it.quantity ?? 1), 0);
 
           if (rest.length === 0) {
             // 상품 1종만 있을 때: "이름 N개"
@@ -319,28 +290,16 @@ export async function fetchCombinedOrders(opts?: {
         }
 
         // 신청서 쪽 원본 상태 문자열
-        const rawAppCancelStatus = (app as any).cancelRequest?.status as
-          | string
-          | undefined;
-        const appRefundAccount =
-          (app as any)?.cancelRequest?.refundAccount ?? null;
+        const rawAppCancelStatus = (app as any).cancelRequest?.status as string | undefined;
+        const appRefundAccount = (app as any)?.cancelRequest?.refundAccount ?? null;
 
         let cancelStatus: "requested" | "approved" | "rejected" | undefined;
 
-        if (
-          rawAppCancelStatus === "requested" ||
-          rawAppCancelStatus === "요청"
-        ) {
+        if (rawAppCancelStatus === "requested" || rawAppCancelStatus === "요청") {
           cancelStatus = "requested";
-        } else if (
-          rawAppCancelStatus === "approved" ||
-          rawAppCancelStatus === "승인"
-        ) {
+        } else if (rawAppCancelStatus === "approved" || rawAppCancelStatus === "승인") {
           cancelStatus = "approved";
-        } else if (
-          rawAppCancelStatus === "rejected" ||
-          rawAppCancelStatus === "거절"
-        ) {
+        } else if (rawAppCancelStatus === "rejected" || rawAppCancelStatus === "거절") {
           cancelStatus = "rejected";
         } else {
           cancelStatus = undefined;
@@ -354,9 +313,7 @@ export async function fetchCombinedOrders(opts?: {
           userId: app.userId ? app.userId.toString() : null, // 비회원 null 허용
           date: app.createdAt,
           status: app.status,
-          paymentStatus: normalizePaymentStatus(
-            app.paymentStatus ?? "결제대기",
-          ),
+          paymentStatus: normalizePaymentStatus(app.paymentStatus ?? "결제대기"),
           type: "서비스",
           total: totalFromDoc ?? totalCalculated,
           items,
@@ -378,12 +335,8 @@ export async function fetchCombinedOrders(opts?: {
             },
           },
           cancelStatus,
-          refundAccountReady: cancelStatus
-            ? hasRefundAccount(appRefundAccount)
-            : undefined,
-          refundBankLabel: cancelStatus
-            ? resolveRefundBankLabel(appRefundAccount)
-            : null,
+          refundAccountReady: cancelStatus ? hasRefundAccount(appRefundAccount) : undefined,
+          refundBankLabel: cancelStatus ? resolveRefundBankLabel(appRefundAccount) : null,
         };
       }),
     )
@@ -429,9 +382,8 @@ export async function fetchCombinedOrders(opts?: {
     (app) => !app?.linkedOrderId || !orderIds.has(app.linkedOrderId),
   );
 
-  const combined = [
-    ...ordersWithLinkedApplications,
-    ...standaloneOrOrphanStringingOrders,
-  ].sort((a: any, b: any) => safeToTime(b?.date) - safeToTime(a?.date));
+  const combined = [...ordersWithLinkedApplications, ...standaloneOrOrphanStringingOrders].sort(
+    (a: any, b: any) => safeToTime(b?.date) - safeToTime(a?.date),
+  );
   return combined;
 }

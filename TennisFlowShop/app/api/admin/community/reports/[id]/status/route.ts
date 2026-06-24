@@ -26,10 +26,7 @@ type ResolveHideTargetResult =
   | {
       ok: false;
       status: 409 | 422;
-      error:
-        | "target_not_found"
-        | "target_already_processed"
-        | "target_update_failed";
+      error: "target_not_found" | "target_already_processed" | "target_update_failed";
       targetBeforeStatus?: string;
       targetAfterStatus?: string;
     };
@@ -71,8 +68,7 @@ async function resolveHideTarget(
       return { ok: false, status: 409, error: "target_not_found" };
     }
 
-    const beforeStatus =
-      typeof post.status === "string" ? post.status : "public";
+    const beforeStatus = typeof post.status === "string" ? post.status : "public";
     if (beforeStatus === "hidden" || beforeStatus === "deleted") {
       return {
         ok: false,
@@ -126,8 +122,7 @@ async function resolveHideTarget(
       return { ok: false, status: 409, error: "target_not_found" };
     }
 
-    const beforeStatus =
-      typeof comment.status === "string" ? comment.status : "active";
+    const beforeStatus = typeof comment.status === "string" ? comment.status : "active";
     if (beforeStatus === "deleted") {
       return {
         ok: false,
@@ -170,10 +165,7 @@ async function resolveHideTarget(
           {
             $set: {
               commentsCount: {
-                $max: [
-                  0,
-                  { $subtract: [{ $ifNull: ["$commentsCount", 0] }, 1] },
-                ],
+                $max: [0, { $subtract: [{ $ifNull: ["$commentsCount", 0] }, 1] }],
               },
               updatedAt: "$$NOW",
             },
@@ -214,10 +206,7 @@ async function resolveHideTarget(
   return { ok: false, status: 422, error: "target_update_failed" };
 }
 
-export async function PATCH(
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -225,8 +214,7 @@ export async function PATCH(
   const { db, admin } = guard;
 
   const { id } = await context.params;
-  if (!ObjectId.isValid(id))
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  if (!ObjectId.isValid(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
   const body = await req.json().catch(() => null);
   const action = String(body?.action ?? "") as Action;
@@ -236,12 +224,10 @@ export async function PATCH(
   }
 
   const reportId = new ObjectId(id);
-  const reportsCol =
-    db.collection<CommunityReportDocument>("community_reports");
+  const reportsCol = db.collection<CommunityReportDocument>("community_reports");
 
   const report = await reportsCol.findOne({ _id: reportId });
-  if (!report)
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!report) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const nextStatus = action === "reject" ? "rejected" : "resolved";
   const transactionSupported = await supportsTransactions(db);
@@ -250,10 +236,7 @@ export async function PATCH(
   const forwardedFor = req.headers.get("x-forwarded-for");
   const requestIp = forwardedFor?.split(",")[0]?.trim() || null;
 
-  const executeStatusUpdate = async (
-    session?: ClientSession,
-    transactionUsed = false,
-  ) => {
+  const executeStatusUpdate = async (session?: ClientSession, transactionUsed = false) => {
     let hideTargetResult: ResolveHideTargetResult | null = null;
 
     // resolve_hide_target는 report 상태를 변경하기 전에 대상 업데이트를 완료해야 한다.
@@ -335,10 +318,7 @@ export async function PATCH(
     }
 
     if (reportUpdateResult.modifiedCount !== 1) {
-      return NextResponse.json(
-        { error: "report_update_failed" },
-        { status: 422 },
-      );
+      return NextResponse.json({ error: "report_update_failed" }, { status: 422 });
     }
 
     await appendAdminAudit(
@@ -391,11 +371,7 @@ export async function PATCH(
         txResponse = await executeStatusUpdate(session, true);
         if (!txResponse || txResponse.status !== 200) {
           throw new TransactionBusinessError(
-            txResponse ??
-              NextResponse.json(
-                { error: "transaction_failed" },
-                { status: 422 },
-              ),
+            txResponse ?? NextResponse.json({ error: "transaction_failed" }, { status: 422 }),
           );
         }
       });

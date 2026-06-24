@@ -9,5 +9,6 @@ export {
 
 import { COURIER_CATALOG } from "./courier-catalog";
 
-export const COURIER_DISPLAY_NAME_MAP: Record<string, string> =
-  Object.fromEntries(COURIER_CATALOG.map((item) => [item.code, item.label]));
+export const COURIER_DISPLAY_NAME_MAP: Record<string, string> = Object.fromEntries(
+  COURIER_CATALOG.map((item) => [item.code, item.label]),
+);

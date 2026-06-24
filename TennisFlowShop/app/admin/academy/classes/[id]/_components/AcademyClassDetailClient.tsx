@@ -10,13 +10,7 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -48,9 +42,7 @@ function getClassStatusTone(status: AcademyClassStatus): BadgeSemanticTone {
   return "neutral";
 }
 
-function getApplicationStatusTone(
-  status: AcademyLessonApplicationStatus,
-): BadgeSemanticTone {
+function getApplicationStatusTone(status: AcademyLessonApplicationStatus): BadgeSemanticTone {
   if (status === "submitted") return "warning";
   if (status === "reviewing") return "info";
   if (status === "contacted") return "brand";
@@ -67,11 +59,7 @@ function AcademyClassStatusBadge({ status }: { status: AcademyClassStatus }) {
   );
 }
 
-function AcademyApplicationStatusBadge({
-  status,
-}: {
-  status: AcademyLessonApplicationStatus;
-}) {
+function AcademyApplicationStatusBadge({ status }: { status: AcademyLessonApplicationStatus }) {
   return (
     <Badge variant={badgeToneVariant(getApplicationStatusTone(status))}>
       {getAcademyApplicationStatusLabel(status)}
@@ -120,13 +108,7 @@ function formatCapacity(value: number | null | undefined) {
   return `정원 ${value.toLocaleString("ko-KR")}명`;
 }
 
-function InfoRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number | null | undefined;
-}) {
+function InfoRow({ label, value }: { label: string; value: string | number | null | undefined }) {
   return (
     <div className="grid min-w-0 gap-1 border-b border-border/60 py-3 last:border-b-0 sm:grid-cols-[120px_1fr]">
       <div className="text-sm font-medium text-muted-foreground">{label}</div>
@@ -244,9 +226,8 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
         <CardHeader>
           <CardTitle className="text-base">등록 현황</CardTitle>
           <CardDescription>
-            신청 상태 기준으로 집계하며 클래스 저장값은 변경하지 않습니다.
-            취소되지 않은 신청 내역이 1건 이상 있으면 영구 삭제는 차단되며, 취소
-            내역만 남은 클래스는 영구 삭제할 수 있습니다.
+            신청 상태 기준으로 집계하며 클래스 저장값은 변경하지 않습니다. 취소되지 않은 신청 내역이
+            1건 이상 있으면 영구 삭제는 차단되며, 취소 내역만 남은 클래스는 영구 삭제할 수 있습니다.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -271,24 +252,16 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
       <Card className={cn(adminSurface.card, "min-w-0")}>
         <CardHeader>
           <CardTitle className="text-base">클래스 기본 정보</CardTitle>
-          <CardDescription>
-            고객에게 노출되는 클래스 운영 정보를 확인합니다.
-          </CardDescription>
+          <CardDescription>고객에게 노출되는 클래스 운영 정보를 확인합니다.</CardDescription>
         </CardHeader>
         <CardContent>
           <InfoRow label="클래스명" value={item.name} />
           <InfoRow label="설명" value={item.description} />
           <InfoRow
             label="수업 유형"
-            value={
-              item.lessonTypeLabel ??
-              getAcademyClassLessonTypeLabel(item.lessonType)
-            }
+            value={item.lessonTypeLabel ?? getAcademyClassLessonTypeLabel(item.lessonType)}
           />
-          <InfoRow
-            label="레벨"
-            value={item.levelLabel ?? getAcademyClassLevelLabel(item.level)}
-          />
+          <InfoRow label="레벨" value={item.levelLabel ?? getAcademyClassLevelLabel(item.level)} />
           <InfoRow label="강사" value={item.instructorName} />
           <InfoRow label="장소" value={item.location} />
           <InfoRow label="일정" value={item.scheduleText} />
@@ -315,22 +288,12 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
             <Table>
               <TableHeader className={adminSurface.tableHeader}>
                 <TableRow>
-                  <TableHead className="whitespace-nowrap px-3">
-                    신청일
-                  </TableHead>
-                  <TableHead className="whitespace-nowrap px-3">
-                    신청자
-                  </TableHead>
-                  <TableHead className="whitespace-nowrap px-3">
-                    희망 정보
-                  </TableHead>
-                  <TableHead className="whitespace-nowrap px-3">
-                    선호 일정
-                  </TableHead>
+                  <TableHead className="whitespace-nowrap px-3">신청일</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">신청자</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">희망 정보</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">선호 일정</TableHead>
                   <TableHead className="whitespace-nowrap px-3">상태</TableHead>
-                  <TableHead className="whitespace-nowrap px-3 text-right">
-                    상세
-                  </TableHead>
+                  <TableHead className="whitespace-nowrap px-3 text-right">상세</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -344,16 +307,13 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
                         아직 이 클래스에 접수된 신청이 없습니다.
                       </div>
                       <div className="mt-1 text-xs text-muted-foreground">
-                        고객이 아카데미 페이지에서 이 클래스를 선택해 신청하면
-                        이곳에 표시됩니다.
+                        고객이 아카데미 페이지에서 이 클래스를 선택해 신청하면 이곳에 표시됩니다.
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : null}
                 {applications.map((application) => {
-                  const createdAt = formatAdminDateTimeParts(
-                    application.createdAt,
-                  );
+                  const createdAt = formatAdminDateTimeParts(application.createdAt);
 
                   return (
                     <TableRow
@@ -362,17 +322,11 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
                       tabIndex={0}
                       className="cursor-pointer hover:bg-muted/50"
                       onClick={() => goToApplicationDetail(application._id)}
-                      onKeyDown={(event) =>
-                        handleApplicationRowKeyDown(event, application._id)
-                      }
+                      onKeyDown={(event) => handleApplicationRowKeyDown(event, application._id)}
                     >
                       <TableCell className="whitespace-nowrap px-3 py-3 text-xs">
-                        <div className="font-medium text-foreground">
-                          {createdAt.date}
-                        </div>
-                        <div className="text-muted-foreground">
-                          {createdAt.time}
-                        </div>
+                        <div className="font-medium text-foreground">{createdAt.date}</div>
+                        <div className="text-muted-foreground">{createdAt.time}</div>
                       </TableCell>
                       <TableCell className="min-w-0 px-3 py-3">
                         <div className="font-medium text-foreground">
@@ -388,15 +342,11 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
                       <TableCell className="whitespace-nowrap px-3 py-3 text-sm">
                         <div>
                           {application.desiredLessonTypeLabel ||
-                            getAcademyLessonTypeLabel(
-                              application.desiredLessonType,
-                            )}
+                            getAcademyLessonTypeLabel(application.desiredLessonType)}
                         </div>
                         <div className="text-xs text-muted-foreground">
                           {application.currentLevelLabel ||
-                            getAcademyCurrentLevelLabel(
-                              application.currentLevel,
-                            )}
+                            getAcademyCurrentLevelLabel(application.currentLevel)}
                         </div>
                       </TableCell>
                       <TableCell className="px-3 py-3 text-sm">
@@ -410,18 +360,14 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
                         </div>
                       </TableCell>
                       <TableCell className="px-3 py-3">
-                        <AcademyApplicationStatusBadge
-                          status={application.status}
-                        />
+                        <AcademyApplicationStatusBadge status={application.status} />
                       </TableCell>
                       <TableCell
                         className="px-3 py-3 text-right"
                         onClick={(event) => event.stopPropagation()}
                       >
                         <Button asChild variant="outline" size="sm">
-                          <Link
-                            href={`/admin/academy/applications/${application._id}`}
-                          >
+                          <Link href={`/admin/academy/applications/${application._id}`}>
                             <Eye className="mr-2 h-4 w-4" />
                             상세
                           </Link>

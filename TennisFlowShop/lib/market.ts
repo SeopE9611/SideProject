@@ -82,14 +82,7 @@ export const MARKET_RACKET_PATTERN_OPTIONS = [
   "18x19",
   "기타",
 ] as const;
-export const MARKET_RACKET_GRIP_SIZE_OPTIONS = [
-  "L0",
-  "L1",
-  "L2",
-  "L3",
-  "L4",
-  "L5",
-] as const;
+export const MARKET_RACKET_GRIP_SIZE_OPTIONS = ["L0", "L1", "L2", "L3", "L4", "L5"] as const;
 
 export const MARKET_STRING_MATERIAL_OPTIONS = [
   "poly",
@@ -123,27 +116,18 @@ export const MARKET_STRING_COLOR_OPTIONS = [
   "purple",
   "기타",
 ] as const;
-export const MARKET_STRING_LENGTH_OPTIONS = [
-  "12m",
-  "12.2m",
-  "200m",
-  "220m",
-  "기타",
-] as const;
+export const MARKET_STRING_LENGTH_OPTIONS = ["12m", "12.2m", "200m", "220m", "기타"] as const;
 
-export const MARKET_BRAND_LABEL_MAP: Record<string, string> =
-  Object.fromEntries([
-    ...MARKET_BRANDS_BY_CATEGORY.racket.map((o) => [o.value, o.label] as const),
-    ...MARKET_BRANDS_BY_CATEGORY.string.map((o) => [o.value, o.label] as const),
-  ]);
-export const MARKET_SALE_STATUS_LABEL_MAP: Record<SaleStatus, string> =
-  Object.fromEntries(
-    MARKET_SALE_STATUS_OPTIONS.map((o) => [o.value, o.label]),
-  ) as Record<SaleStatus, string>;
-export const MARKET_CONDITION_GRADE_LABEL_MAP: Record<ConditionGrade, string> =
-  Object.fromEntries(
-    MARKET_CONDITION_GRADE_OPTIONS.map((o) => [o.value, o.label]),
-  ) as Record<ConditionGrade, string>;
+export const MARKET_BRAND_LABEL_MAP: Record<string, string> = Object.fromEntries([
+  ...MARKET_BRANDS_BY_CATEGORY.racket.map((o) => [o.value, o.label] as const),
+  ...MARKET_BRANDS_BY_CATEGORY.string.map((o) => [o.value, o.label] as const),
+]);
+export const MARKET_SALE_STATUS_LABEL_MAP: Record<SaleStatus, string> = Object.fromEntries(
+  MARKET_SALE_STATUS_OPTIONS.map((o) => [o.value, o.label]),
+) as Record<SaleStatus, string>;
+export const MARKET_CONDITION_GRADE_LABEL_MAP: Record<ConditionGrade, string> = Object.fromEntries(
+  MARKET_CONDITION_GRADE_OPTIONS.map((o) => [o.value, o.label]),
+) as Record<ConditionGrade, string>;
 export const MARKET_STRING_MATERIAL_LABEL_MAP: Record<string, string> = {
   poly: "폴리",
   "poly-rough": "폴리 러프",
@@ -198,9 +182,7 @@ export const MARKET_RACKET_FIELD_LABEL_MAP: Record<
   gripSize: "그립 사이즈",
 };
 
-export function getMarketBrandOptions(
-  category: MarketCategory | "all" | null | undefined,
-) {
+export function getMarketBrandOptions(category: MarketCategory | "all" | null | undefined) {
   if (category === "racket") return MARKET_BRANDS_BY_CATEGORY.racket;
   if (category === "string") return MARKET_BRANDS_BY_CATEGORY.string;
   return [];
@@ -236,9 +218,7 @@ export function getMarketStringLengthLabel(length?: string | null) {
   return MARKET_STRING_LENGTH_LABEL_MAP[length] ?? length;
 }
 
-export function getMarketRacketFieldLabel(
-  field: keyof typeof MARKET_RACKET_FIELD_LABEL_MAP,
-) {
+export function getMarketRacketFieldLabel(field: keyof typeof MARKET_RACKET_FIELD_LABEL_MAP) {
   return MARKET_RACKET_FIELD_LABEL_MAP[field] ?? field;
 }
 
@@ -248,10 +228,7 @@ export function isMarketBrandCategory(
   return category === "racket" || category === "string";
 }
 
-export function isValidMarketBrandForCategory(
-  category: MarketCategory,
-  brand: string,
-) {
+export function isValidMarketBrandForCategory(category: MarketCategory, brand: string) {
   return getMarketBrandOptions(category)
     .map((o) => o.value)
     .includes(brand as any);
@@ -276,13 +253,7 @@ export function normalizeMarketMeta(
   const price = toSafeNumber(meta.price);
   const saleStatus = meta.saleStatus;
   const conditionGrade = meta.conditionGrade;
-  if (
-    !(
-      saleStatus === "selling" ||
-      saleStatus === "reserved" ||
-      saleStatus === "sold"
-    )
-  )
+  if (!(saleStatus === "selling" || saleStatus === "reserved" || saleStatus === "sold"))
     return null;
   if (
     !(
@@ -299,18 +270,12 @@ export function normalizeMarketMeta(
     saleStatus,
     conditionGrade,
     conditionNote:
-      typeof meta.conditionNote === "string"
-        ? meta.conditionNote.trim() || null
-        : null,
+      typeof meta.conditionNote === "string" ? meta.conditionNote.trim() || null : null,
     racketSpec: null,
     stringSpec: null,
   };
 
-  if (
-    category === "racket" &&
-    meta.racketSpec &&
-    typeof meta.racketSpec === "object"
-  ) {
+  if (category === "racket" && meta.racketSpec && typeof meta.racketSpec === "object") {
     const modelName = String(meta.racketSpec.modelName ?? "").trim();
     base.racketSpec = {
       modelName,
@@ -322,23 +287,15 @@ export function normalizeMarketMeta(
       swingWeight: toSafeNumber(meta.racketSpec.swingWeight),
       stiffnessRa: toSafeNumber(meta.racketSpec.stiffnessRa),
       pattern: meta.racketSpec.pattern ? String(meta.racketSpec.pattern) : null,
-      gripSize: meta.racketSpec.gripSize
-        ? String(meta.racketSpec.gripSize)
-        : null,
+      gripSize: meta.racketSpec.gripSize ? String(meta.racketSpec.gripSize) : null,
     };
   }
 
-  if (
-    category === "string" &&
-    meta.stringSpec &&
-    typeof meta.stringSpec === "object"
-  ) {
+  if (category === "string" && meta.stringSpec && typeof meta.stringSpec === "object") {
     const modelName = String(meta.stringSpec.modelName ?? "").trim();
     base.stringSpec = {
       modelName,
-      material: meta.stringSpec.material
-        ? String(meta.stringSpec.material)
-        : null,
+      material: meta.stringSpec.material ? String(meta.stringSpec.material) : null,
       gauge: meta.stringSpec.gauge ? String(meta.stringSpec.gauge) : null,
       color: meta.stringSpec.color ? String(meta.stringSpec.color) : null,
       length: meta.stringSpec.length ? String(meta.stringSpec.length) : null,

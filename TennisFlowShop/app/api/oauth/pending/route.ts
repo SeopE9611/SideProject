@@ -22,9 +22,7 @@ export async function GET(req: NextRequest) {
   }
 
   const db = await getDb();
-  const pendings = db.collection(
-    "oauth_pending_signups",
-  ) as Collection<PendingDoc>;
+  const pendings = db.collection("oauth_pending_signups") as Collection<PendingDoc>;
   const doc = await pendings.findOne({ _id: token });
 
   if (!doc) {

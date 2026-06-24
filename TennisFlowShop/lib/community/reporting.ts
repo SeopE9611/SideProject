@@ -16,9 +16,7 @@ function toEmailLocalPart(email?: string | null) {
 
 function pickFirstLabel(...candidates: Array<string | null | undefined>) {
   return (
-    candidates
-      .map((value) => String(value ?? "").trim())
-      .find((value) => value.length > 0) ?? ""
+    candidates.map((value) => String(value ?? "").trim()).find((value) => value.length > 0) ?? ""
   );
 }
 
@@ -33,10 +31,7 @@ function pickFirstLabel(...candidates: Array<string | null | undefined>) {
  *
  * 위 정책을 게시글/댓글 신고 라우트에서 공통으로 사용해 저장 기준을 통일한다.
  */
-export async function resolveReporterSnapshot(
-  db: Db,
-  payload: ReporterPayload,
-) {
+export async function resolveReporterSnapshot(db: Db, payload: ReporterPayload) {
   const reporterUserId = String(payload?.sub ?? "");
 
   let dbNickname = "";

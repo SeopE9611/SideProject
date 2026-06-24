@@ -83,23 +83,20 @@ const parseApiMessage = async (res: Response, fallback: string) => {
 
   if (contentType.includes("application/json")) {
     const data = await res.json().catch(() => null);
-    if (data && typeof data.message === "string" && data.message.trim())
-      return data.message;
-    if (data && typeof data.error === "string" && data.error.trim())
-      return data.error;
+    if (data && typeof data.message === "string" && data.message.trim()) return data.message;
+    if (data && typeof data.error === "string" && data.error.trim()) return data.error;
   }
 
   const text = await res.text().catch(() => "");
   return text.trim() || fallback;
 };
 
-const getOrderHistoryKey =
-  (orderId?: string) => (pageIndex: number, prev: any) => {
-    // orderId가 없으면 요청 중단
-    if (!orderId) return null;
-    if (prev && prev.history.length === 0) return null;
-    return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
-  };
+const getOrderHistoryKey = (orderId?: string) => (pageIndex: number, prev: any) => {
+  // orderId가 없으면 요청 중단
+  if (!orderId) return null;
+  if (prev && prev.history.length === 0) return null;
+  return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
+};
 
 interface OrderItem {
   id: string;
@@ -257,10 +254,7 @@ type OrderTrackingResponse =
 const getTrackingFailureMessage = (
   tracking: Extract<OrderTrackingResponse, { success: false }>,
 ) => {
-  if (
-    tracking.errorCode === "UNAUTHENTICATED" ||
-    tracking.errorCode === "FORBIDDEN"
-  ) {
+  if (tracking.errorCode === "UNAUTHENTICATED" || tracking.errorCode === "FORBIDDEN") {
     return "배송조회 서비스 설정을 확인해주세요.";
   }
   if (tracking.errorCode === "BAD_REQUEST") {
@@ -277,8 +271,7 @@ const getTrackingErrorMessage = (
     return trackingData.message;
   }
 
-  const message = (trackingError as TrackingSWRFetcherError | undefined)
-    ?.message;
+  const message = (trackingError as TrackingSWRFetcherError | undefined)?.message;
   return message || "배송조회 정보를 불러오지 못했습니다.";
 };
 
@@ -346,13 +339,9 @@ export default function OrderDetailClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const resolvedBackUrl = backUrl ?? "/mypage?tab=orders";
-  const resolvedBackQuery = new URLSearchParams(
-    resolvedBackUrl.split("?")[1] ?? "",
-  );
+  const resolvedBackQuery = new URLSearchParams(resolvedBackUrl.split("?")[1] ?? "");
   const resolvedScope = resolvedBackQuery.get("scope");
-  const flowScopeQuery = resolvedScope
-    ? `&scope=${encodeURIComponent(resolvedScope)}`
-    : "";
+  const flowScopeQuery = resolvedScope ? `&scope=${encodeURIComponent(resolvedScope)}` : "";
 
   // 편집 모드 전체 토글
   const [isEditMode, setIsEditMode] = useState(false);
@@ -362,8 +351,7 @@ export default function OrderDetailClient({
   const [editingRequest, setEditingRequest] = useState(false);
 
   // 취소 철회 로딩
-  const [isWithdrawingCancelRequest, setIsWithdrawingCancelRequest] =
-    useState(false);
+  const [isWithdrawingCancelRequest, setIsWithdrawingCancelRequest] = useState(false);
   const [isConfirmingPurchase, setIsConfirmingPurchase] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
@@ -418,24 +406,18 @@ export default function OrderDetailClient({
 
   // 완료 상태
   const isVisitPickup = isVisitPickupOrder(orderDetail?.shippingInfo);
-  const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(
-    orderDetail?.shippingInfo,
-  );
+  const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(orderDetail?.shippingInfo);
 
   // 관리자 상세와 동일하게 shippingMethod -> deliveryMethod 순으로 읽고
   // 공용 정규화 유틸로 라벨을 만든다.
   const shippingMethodValue =
-    orderDetail?.shippingInfo?.shippingMethod ??
-    (orderDetail?.shippingInfo as any)?.deliveryMethod;
+    orderDetail?.shippingInfo?.shippingMethod ?? (orderDetail?.shippingInfo as any)?.deliveryMethod;
   const shippingMethodLabel = orderShippingMethodLabel(shippingMethodValue);
   const displayOrderStatusLabel = getOrderStatusLabelForDisplay(
-    getCommonOrderStatusLabel(orderDetail?.status ?? "") ??
-      orderDetail?.status ??
-      "",
+    getCommonOrderStatusLabel(orderDetail?.status ?? "") ?? orderDetail?.status ?? "",
     orderDetail?.shippingInfo,
   ).trim();
-  const shouldShowTrackingSummarySkeleton =
-    isTrackingLoading && !trackingData && !trackingError;
+  const shouldShowTrackingSummarySkeleton = isTrackingLoading && !trackingData && !trackingError;
   const shouldShowTrackingStatusNotice = Boolean(
     trackingData &&
     trackingData.success &&
@@ -446,11 +428,8 @@ export default function OrderDetailClient({
 
   const canShowReviewCTA =
     Boolean(orderDetail?.userConfirmedAt) || orderDetail?.status === "구매확정";
-  const canConfirmPurchase =
-    getCommonOrderStatusLabel(orderDetail?.status ?? "") === "배송완료";
-  const reviewsReady = (orderDetail?.items ?? []).every(
-    (it) => it.id in reviewedMap,
-  );
+  const canConfirmPurchase = getCommonOrderStatusLabel(orderDetail?.status ?? "") === "배송완료";
+  const reviewsReady = (orderDetail?.items ?? []).every((it) => it.id in reviewedMap);
 
   useEffect(() => {
     const ids = (orderDetail?.items ?? []).map((it) => it.id).filter(Boolean);
@@ -478,16 +457,13 @@ export default function OrderDetailClient({
   }, [orderDetail?._id]);
 
   const items = orderDetail?.items ?? [];
-  const allReviewed =
-    items.length > 0 && items.every((it) => reviewedMap[it.id]);
+  const allReviewed = items.length > 0 && items.every((it) => reviewedMap[it.id]);
   const firstUnreviewed = items.find((it) => !reviewedMap[it.id]);
   // 편집 가능 상태: 배송 중/완료/환불/취소가 아니어야 함
   const nonEditableStatuses = ["배송중", "배송완료", "환불", "취소"];
   const canUserEdit = !nonEditableStatuses.includes(orderDetail?.status ?? "");
   // 이력 페이지를 합쳐서 하나의 배열로
-  const allHistory: any[] = historyPages
-    ? historyPages.flatMap((page: any) => page.history)
-    : [];
+  const allHistory: any[] = historyPages ? historyPages.flatMap((page: any) => page.history) : [];
 
   // 날짜/금액 포맷 함수
   const formatDate = (dateString: string | null | undefined) => {
@@ -585,14 +561,12 @@ export default function OrderDetailClient({
     .reduce((sum, item) => sum + (item.quantity ?? 1), 0);
 
   // remainingSlots 파생값
-  const totalSlots =
-    orderDetail.stringService?.totalSlots ?? stringServiceItemCount;
+  const totalSlots = orderDetail.stringService?.totalSlots ?? stringServiceItemCount;
   const usedSlots =
     orderDetail.stringService?.usedSlots ??
     totalSlots - (orderDetail.stringService?.remainingSlots ?? 0);
   const remainingSlots =
-    orderDetail.stringService?.remainingSlots ??
-    Math.max(totalSlots - usedSlots, 0);
+    orderDetail.stringService?.remainingSlots ?? Math.max(totalSlots - usedSlots, 0);
 
   // 이 주문과 연결된 신청서 요약 리스트
   const linkedStringingApps = orderDetail?.stringingApplications ?? [];
@@ -602,8 +576,7 @@ export default function OrderDetailClient({
     Boolean(orderDetail?.stringingApplicationId) ||
     orderDetail?.isStringServiceApplied === true;
   const serviceLinkedOrder =
-    Boolean(orderDetail?.shippingInfo?.withStringService) ||
-    hasSubmittedStringingApplication;
+    Boolean(orderDetail?.shippingInfo?.withStringService) || hasSubmittedStringingApplication;
 
   // 리뷰/링크에 사용할 대표 신청 ID
   // - API 계약: stringingApplicationId는 최신 신청서(updatedAt/createdAt desc)
@@ -612,14 +585,11 @@ export default function OrderDetailClient({
     orderDetail?.stringingApplicationId ??
     (hasLinkedStringingApps ? linkedStringingApps[0].id : undefined);
 
-  const primaryStringingApp = hasLinkedStringingApps
-    ? linkedStringingApps[0]
-    : undefined;
+  const primaryStringingApp = hasLinkedStringingApps ? linkedStringingApps[0] : undefined;
   const isOrderCanceled = orderDetail.status === "취소";
   const isPrimaryStringingAppCanceled = primaryStringingApp?.status === "취소";
   const getApplicationHref = (applicationId: string) => {
-    if (linkedApplicationHrefBuilder)
-      return linkedApplicationHrefBuilder(applicationId);
+    if (linkedApplicationHrefBuilder) return linkedApplicationHrefBuilder(applicationId);
     return `/mypage?tab=orders&flowType=application&flowId=${applicationId}&from=orders${flowScopeQuery}`;
   };
   const shouldShowInboundShippingBlock = Boolean(
@@ -645,33 +615,22 @@ export default function OrderDetailClient({
     .toLowerCase();
   const rawPaymentStatus = String(orderDetail?.paymentStatus ?? "").trim();
   const normalizedPaymentStatus = rawPaymentStatus.toLowerCase();
-  const paymentLabel =
-    getCommonOrderStatusLabel(rawPaymentStatus) ?? rawPaymentStatus;
+  const paymentLabel = getCommonOrderStatusLabel(rawPaymentStatus) ?? rawPaymentStatus;
 
   const receivedDone = Boolean(orderDetail?.date);
   const paymentDone = paymentDoneKeywords.some(
-    (keyword) =>
-      normalizedPaymentStatus.includes(keyword) ||
-      paymentLabel.includes(keyword),
+    (keyword) => normalizedPaymentStatus.includes(keyword) || paymentLabel.includes(keyword),
   );
-  const isPreparing = [
-    "processing",
-    "preparing",
-    "배송준비",
-    "배송준비중",
-    "처리중",
-  ].some((keyword) => normalizedStatus.includes(keyword));
-  const isShipped = ["shipped", "배송중"].some((keyword) =>
-    normalizedStatus.includes(keyword),
+  const isPreparing = ["processing", "preparing", "배송준비", "배송준비중", "처리중"].some(
+    (keyword) => normalizedStatus.includes(keyword),
   );
+  const isShipped = ["shipped", "배송중"].some((keyword) => normalizedStatus.includes(keyword));
   const isDelivered = ["delivered", "배송완료"].some((keyword) =>
     normalizedStatus.includes(keyword),
   );
   const isCompleted =
     Boolean(orderDetail?.userConfirmedAt) ||
-    ["confirmed", "completed", "구매확정"].some((keyword) =>
-      normalizedStatus.includes(keyword),
-    );
+    ["confirmed", "completed", "구매확정"].some((keyword) => normalizedStatus.includes(keyword));
 
   const timelineSteps: TimelineStep[] = [
     {
@@ -699,8 +658,7 @@ export default function OrderDetailClient({
       description: isVisitPickup
         ? "매장 수령 준비 상태를 확인해주세요."
         : "배송 정보를 확인해주세요.",
-      state:
-        isDelivered || isCompleted ? "done" : isShipped ? "active" : "waiting",
+      state: isDelivered || isCompleted ? "done" : isShipped ? "active" : "waiting",
     },
     {
       title: "완료/구매확정",
@@ -717,11 +675,7 @@ export default function OrderDetailClient({
   const canWithdrawCancelRequest = cancelStatus === "requested";
   const handleConfirmPurchase = async () => {
     if (!orderDetail?._id || isConfirmingPurchase) return;
-    if (
-      !window.confirm(
-        "구매확정 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.",
-      )
-    ) {
+    if (!window.confirm("구매확정 처리하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.")) {
       return;
     }
 
@@ -733,11 +687,7 @@ export default function OrderDetailClient({
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || data?.ok === false) {
-        showErrorToast(
-          data?.error ||
-            data?.message ||
-            "구매확정 처리 중 오류가 발생했습니다.",
-        );
+        showErrorToast(data?.error || data?.message || "구매확정 처리 중 오류가 발생했습니다.");
         return;
       }
 
@@ -794,21 +744,15 @@ export default function OrderDetailClient({
       setIsWithdrawingCancelRequest(true);
 
       const controller = new AbortController();
-      const timeout = window.setTimeout(
-        () => controller.abort(),
-        WITHDRAW_TIMEOUT_MS,
-      );
+      const timeout = window.setTimeout(() => controller.abort(), WITHDRAW_TIMEOUT_MS);
 
       let res: Response;
       try {
-        res = await fetch(
-          `/api/orders/${orderDetail._id}/cancel-request-withdraw`,
-          {
-            method: "POST",
-            credentials: "include",
-            signal: controller.signal,
-          },
-        );
+        res = await fetch(`/api/orders/${orderDetail._id}/cancel-request-withdraw`, {
+          method: "POST",
+          credentials: "include",
+          signal: controller.signal,
+        });
       } finally {
         window.clearTimeout(timeout);
       }
@@ -822,15 +766,12 @@ export default function OrderDetailClient({
             WITHDRAW_TIMEOUT_MS,
           );
           try {
-            res = await fetch(
-              `/api/orders/${orderDetail._id}/cancel-request-withdraw`,
-              {
-                method: "POST",
-                credentials: "include",
-                headers: { "x-suppress-auth-expired": "1" },
-                signal: retryController.signal,
-              },
-            );
+            res = await fetch(`/api/orders/${orderDetail._id}/cancel-request-withdraw`, {
+              method: "POST",
+              credentials: "include",
+              headers: { "x-suppress-auth-expired": "1" },
+              signal: retryController.signal,
+            });
           } finally {
             window.clearTimeout(retryTimeout);
           }
@@ -838,9 +779,7 @@ export default function OrderDetailClient({
       }
 
       if (!res.ok) {
-        throw new Error(
-          await parseApiMessage(res, "취소 요청 철회 중 오류가 발생했습니다."),
-        );
+        throw new Error(await parseApiMessage(res, "취소 요청 철회 중 오류가 발생했습니다."));
       }
 
       // SWR 캐시 갱신: 상태, 이력, 마이페이지 목록, 상세 모두 재검증
@@ -849,14 +788,12 @@ export default function OrderDetailClient({
         mutateHistory(),
         mutate(
           (key) =>
-            typeof key === "string" &&
-            key.startsWith(`/api/orders/${orderDetail._id}/history`),
+            typeof key === "string" && key.startsWith(`/api/orders/${orderDetail._id}/history`),
           undefined,
           { revalidate: true },
         ),
         mutate(
-          (key) =>
-            typeof key === "string" && key.startsWith("/api/users/me/orders"),
+          (key) => typeof key === "string" && key.startsWith("/api/users/me/orders"),
           undefined,
           { revalidate: true },
         ),
@@ -866,13 +803,9 @@ export default function OrderDetailClient({
     } catch (err) {
       console.error(err);
       if (err instanceof DOMException && err.name === "AbortError") {
-        showErrorToast(
-          "요청 시간이 초과되었습니다. 네트워크 상태를 확인한 뒤 다시 시도해주세요.",
-        );
+        showErrorToast("요청 시간이 초과되었습니다. 네트워크 상태를 확인한 뒤 다시 시도해주세요.");
       } else {
-        showErrorToast(
-          (err as Error).message || "취소 요청 철회 중 오류가 발생했습니다.",
-        );
+        showErrorToast((err as Error).message || "취소 요청 철회 중 오류가 발생했습니다.");
       }
     } finally {
       setIsWithdrawingCancelRequest(false);
@@ -897,12 +830,8 @@ export default function OrderDetailClient({
                 <h1 className="break-keep text-xl font-bold leading-tight text-foreground bp-sm:text-3xl">
                   주문 상세
                 </h1>
-                <p
-                  className="mt-1 break-keep text-sm text-muted-foreground"
-                  title={orderId}
-                >
-                  {hasLinkedStringingApps ||
-                  orderDetail.shippingInfo?.withStringService
+                <p className="mt-1 break-keep text-sm text-muted-foreground" title={orderId}>
+                  {hasLinkedStringingApps || orderDetail.shippingInfo?.withStringService
                     ? "스트링 구매 + 교체서비스"
                     : "상품 주문"}{" "}
                   · 주문번호: #{orderId.slice(-6).toUpperCase()}
@@ -919,9 +848,7 @@ export default function OrderDetailClient({
                 className="h-9 w-full overflow-hidden whitespace-nowrap border-border bg-background hover:border-primary/30 bp-lg:w-auto"
               >
                 <span className="bp-sm:hidden">목록</span>
-                <span className="hidden bp-sm:inline">
-                  주문 목록으로 돌아가기
-                </span>
+                <span className="hidden bp-sm:inline">주문 목록으로 돌아가기</span>
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
 
@@ -958,9 +885,7 @@ export default function OrderDetailClient({
               <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">
-                    주문일시
-                  </span>
+                  <span className="text-sm font-medium text-foreground">주문일시</span>
                 </div>
                 <p className="break-keep text-base font-semibold tabular-nums text-foreground bp-sm:text-lg">
                   {formatDate(orderDetail.date)}
@@ -970,9 +895,7 @@ export default function OrderDetailClient({
               <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">
-                    총 결제금액
-                  </span>
+                  <span className="text-sm font-medium text-foreground">총 결제금액</span>
                 </div>
                 <p className="break-keep text-base font-semibold tabular-nums text-foreground bp-sm:text-lg">
                   {formatCurrency(orderDetail.total)}
@@ -982,24 +905,18 @@ export default function OrderDetailClient({
               <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
                 <div className="mb-2 flex items-center space-x-2">
                   <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">
-                    대표 상품
-                  </span>
+                  <span className="text-sm font-medium text-foreground">대표 상품</span>
                 </div>
                 <p className="line-clamp-2 min-w-0 break-keep text-base font-semibold text-foreground bp-sm:text-lg">
                   {orderDetail.items?.[0]?.name ?? "주문 상품"}
-                  {orderDetail.items.length > 1
-                    ? ` 외 ${orderDetail.items.length - 1}건`
-                    : ""}
+                  {orderDetail.items.length > 1 ? ` 외 ${orderDetail.items.length - 1}건` : ""}
                 </p>
               </div>
 
               <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <Truck className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">
-                    주문 상태
-                  </span>
+                  <span className="text-sm font-medium text-foreground">주문 상태</span>
                 </div>
                 <OrderStatusBadge
                   orderId={orderId}
@@ -1032,15 +949,12 @@ export default function OrderDetailClient({
                 className="h-9 w-full gap-1.5 overflow-hidden whitespace-nowrap bp-sm:ml-4 bp-sm:w-auto"
               >
                 <Undo2 className="h-4 w-4" />
-                {isWithdrawingCancelRequest
-                  ? "취소 철회 중..."
-                  : "취소 요청 철회"}
+                {isWithdrawingCancelRequest ? "취소 철회 중..." : "취소 요청 철회"}
               </Button>
             )}
           </div>
         )}
-        {(orderDetail.shippingInfo?.withStringService ||
-          hasLinkedStringingApps) && (
+        {(orderDetail.shippingInfo?.withStringService || hasLinkedStringingApps) && (
           <section id="stringing-service" className="scroll-mt-24 space-y-4">
             <Card className="rounded-2xl border border-border bg-card shadow-sm">
               <CardHeader className="border-b border-border/60 bg-muted/30 rounded-t-xl">
@@ -1048,9 +962,8 @@ export default function OrderDetailClient({
                   <div>
                     <CardTitle>교체서비스 정보</CardTitle>
                     <CardDescription>
-                      이 주문과 함께 신청한 교체서비스 정보를 한 페이지에서
-                      확인할 수 있으며, 연결된 교체서비스는 주문 구매확정과 함께
-                      처리됩니다.
+                      이 주문과 함께 신청한 교체서비스 정보를 한 페이지에서 확인할 수 있으며, 연결된
+                      교체서비스는 주문 구매확정과 함께 처리됩니다.
                     </CardDescription>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -1071,8 +984,7 @@ export default function OrderDetailClient({
                     const appHasTracking = Boolean(appSelfShipInfo?.trackingNo);
                     const isApplicationCanceled = app.status === "취소";
                     const appNeedsTracking =
-                      !isApplicationCanceled &&
-                      app.needsInboundTracking === true;
+                      !isApplicationCanceled && app.needsInboundTracking === true;
                     const appShippingHref = `/services/applications/${app.id}/shipping?${new URLSearchParams({ return: `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders${flowScopeQuery}&focus=stringing` }).toString()}`;
                     const lines = app.lines ?? [];
                     const fallbackLine = {
@@ -1087,8 +999,7 @@ export default function OrderDetailClient({
                       colorLabel: null,
                       note: app.requirements ?? null,
                     };
-                    const displayLines =
-                      lines.length > 0 ? lines : [fallbackLine];
+                    const displayLines = lines.length > 0 ? lines : [fallbackLine];
                     const isMultipleLines = displayLines.length > 1;
                     const reservationLabel =
                       app.reservationLabel ??
@@ -1105,9 +1016,7 @@ export default function OrderDetailClient({
                           <div className="min-w-0 space-y-2">
                             <div className="flex flex-wrap items-center gap-2">
                               <Badge
-                                variant={badgeToneVariant(
-                                  getApplicationStatusTone(app.status),
-                                )}
+                                variant={badgeToneVariant(getApplicationStatusTone(app.status))}
                                 className="px-2 py-0.5 text-xs font-medium"
                               >
                                 {app.status ?? "상태 미정"}
@@ -1123,32 +1032,22 @@ export default function OrderDetailClient({
                             </div>
                             <div className="grid gap-2 text-sm text-foreground bp-sm:grid-cols-2">
                               <p>
-                                <span className="text-muted-foreground">
-                                  희망 일시:
-                                </span>{" "}
+                                <span className="text-muted-foreground">희망 일시:</span>{" "}
                                 {reservationLabel}
                               </p>
                               <p>
-                                <span className="text-muted-foreground">
-                                  라켓 수:
-                                </span>{" "}
+                                <span className="text-muted-foreground">라켓 수:</span>{" "}
                                 {app.racketCount ?? displayLines.length}자루
                               </p>
                               <p>
-                                <span className="text-muted-foreground">
-                                  신청 금액:
-                                </span>{" "}
+                                <span className="text-muted-foreground">신청 금액:</span>{" "}
                                 {typeof app.totalPrice === "number"
                                   ? formatCurrency(app.totalPrice)
                                   : "확인 중"}
                               </p>
                               <p>
-                                <span className="text-muted-foreground">
-                                  최근 업데이트:
-                                </span>{" "}
-                                {app.updatedAt
-                                  ? formatDate(app.updatedAt)
-                                  : "-"}
+                                <span className="text-muted-foreground">최근 업데이트:</span>{" "}
+                                {app.updatedAt ? formatDate(app.updatedAt) : "-"}
                               </p>
                             </div>
                           </div>
@@ -1167,31 +1066,21 @@ export default function OrderDetailClient({
                         </div>
 
                         <div className="mt-4 space-y-3">
-                          <p className="text-sm font-semibold text-foreground">
-                            라켓 정보
-                          </p>
+                          <p className="text-sm font-semibold text-foreground">라켓 정보</p>
                           <div className="grid gap-3 bp-md:grid-cols-2">
                             {displayLines.map((line, lineIndex) => {
                               const racketLabel =
-                                line.racketLabel ||
-                                line.racketType ||
-                                "라켓명 미입력";
+                                line.racketLabel || line.racketType || "라켓명 미입력";
                               const normalizedRacketLabel =
-                                racketLabel && racketLabel !== "라켓명 미입력"
-                                  ? racketLabel
-                                  : null;
-                              const racketCardTitle =
-                                normalizedRacketLabel ?? "라켓 정보";
+                                racketLabel && racketLabel !== "라켓명 미입력" ? racketLabel : null;
+                              const racketCardTitle = normalizedRacketLabel ?? "라켓 정보";
                               const stringName =
                                 line.stringName ||
                                 app.stringNames?.join(", ") ||
                                 "스트링명 확인 중";
-                              const tensionMain =
-                                line.tensionMain || app.tensionSummary || "-";
-                              const tensionCross =
-                                line.tensionCross || line.tensionMain || null;
-                              const requestNote =
-                                line.note || app.requirements || null;
+                              const tensionMain = line.tensionMain || app.tensionSummary || "-";
+                              const tensionCross = line.tensionCross || line.tensionMain || null;
+                              const requestNote = line.note || app.requirements || null;
                               return (
                                 <div
                                   key={line.id ?? `${app.id}-${lineIndex}`}
@@ -1220,21 +1109,15 @@ export default function OrderDetailClient({
                                       <dt className="w-20 shrink-0 text-muted-foreground">
                                         라켓명
                                       </dt>
-                                      <dd className="min-w-0 break-words">
-                                        {racketLabel}
-                                      </dd>
+                                      <dd className="min-w-0 break-words">{racketLabel}</dd>
                                     </div>
                                     <div className="flex gap-2">
                                       <dt className="w-20 shrink-0 text-muted-foreground">
                                         스트링
                                       </dt>
-                                      <dd className="min-w-0 break-words">
-                                        {stringName}
-                                      </dd>
+                                      <dd className="min-w-0 break-words">{stringName}</dd>
                                     </div>
-                                    {line.gauge ||
-                                    line.colorLabel ||
-                                    line.color ? (
+                                    {line.gauge || line.colorLabel || line.color ? (
                                       <div className="flex gap-2">
                                         <dt className="w-20 shrink-0 text-muted-foreground">
                                           옵션
@@ -1249,14 +1132,10 @@ export default function OrderDetailClient({
                                       </div>
                                     ) : null}
                                     <div className="flex gap-2">
-                                      <dt className="w-20 shrink-0 text-muted-foreground">
-                                        텐션
-                                      </dt>
+                                      <dt className="w-20 shrink-0 text-muted-foreground">텐션</dt>
                                       <dd>
                                         메인 {tensionMain}
-                                        {tensionCross
-                                          ? ` / 크로스 ${tensionCross}`
-                                          : ""}
+                                        {tensionCross ? ` / 크로스 ${tensionCross}` : ""}
                                       </dd>
                                     </div>
                                     {requestNote ? (
@@ -1280,12 +1159,9 @@ export default function OrderDetailClient({
                           <div className="mt-4 rounded-lg border border-border bg-primary/5 p-3 text-sm dark:bg-primary/10">
                             <div className="flex flex-wrap items-start justify-between gap-3">
                               <div>
-                                <p className="font-semibold text-foreground">
-                                  라켓 발송
-                                </p>
+                                <p className="font-semibold text-foreground">라켓 발송</p>
                                 <p className="mt-1 text-muted-foreground">
-                                  상태:{" "}
-                                  {appHasTracking ? "등록 완료" : "미등록"}
+                                  상태: {appHasTracking ? "등록 완료" : "미등록"}
                                 </p>
                               </div>
                               <Button
@@ -1295,43 +1171,30 @@ export default function OrderDetailClient({
                                 className="h-8 w-full bp-sm:w-auto"
                               >
                                 <Link href={appShippingHref}>
-                                  {appHasTracking
-                                    ? "운송장 수정"
-                                    : "운송장 등록"}
+                                  {appHasTracking ? "운송장 수정" : "운송장 등록"}
                                 </Link>
                               </Button>
                             </div>
                             <div className="mt-3 grid gap-2 bp-sm:grid-cols-2">
                               <p>
-                                <span className="text-muted-foreground">
-                                  택배사:
-                                </span>{" "}
+                                <span className="text-muted-foreground">택배사:</span>{" "}
                                 {appSelfShipInfo?.courier?.trim()
-                                  ? getCourierDisplayName(
-                                      appSelfShipInfo.courier,
-                                    )
+                                  ? getCourierDisplayName(appSelfShipInfo.courier)
                                   : "미등록"}
                               </p>
                               <p>
-                                <span className="text-muted-foreground">
-                                  운송장 번호:
-                                </span>{" "}
-                                {appSelfShipInfo?.trackingNo?.trim() ||
-                                  "미등록"}
+                                <span className="text-muted-foreground">운송장 번호:</span>{" "}
+                                {appSelfShipInfo?.trackingNo?.trim() || "미등록"}
                               </p>
                               <p>
-                                <span className="text-muted-foreground">
-                                  발송일:
-                                </span>{" "}
+                                <span className="text-muted-foreground">발송일:</span>{" "}
                                 {appSelfShipInfo?.shippedAt
                                   ? formatDate(appSelfShipInfo.shippedAt)
                                   : "미등록"}
                               </p>
                               {appSelfShipInfo?.note ? (
                                 <p>
-                                  <span className="text-muted-foreground">
-                                    메모:
-                                  </span>{" "}
+                                  <span className="text-muted-foreground">메모:</span>{" "}
                                   {appSelfShipInfo.note}
                                 </p>
                               ) : null}
@@ -1352,13 +1215,10 @@ export default function OrderDetailClient({
                   })
                 ) : !isOrderCanceled && totalSlots > 0 && remainingSlots > 0 ? (
                   <div className="rounded-xl border border-warning/30 bg-warning/10 p-4 text-warning dark:bg-warning/15">
-                    <p className="font-semibold">
-                      이 주문은 교체서비스 신청 대상입니다.
-                    </p>
+                    <p className="font-semibold">이 주문은 교체서비스 신청 대상입니다.</p>
                     <p className="mt-1 text-sm">
-                      총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를
-                      사용했으며, 남은 교체 가능 스트링은{" "}
-                      <strong>{remainingSlots}</strong>개입니다.
+                      총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를 사용했으며, 남은 교체
+                      가능 스트링은 <strong>{remainingSlots}</strong>개입니다.
                     </p>
                     <Button asChild className="mt-4 w-full bp-sm:w-auto">
                       <Link href={`/services/apply?orderId=${orderDetail._id}`}>
@@ -1377,9 +1237,7 @@ export default function OrderDetailClient({
                 {primaryStringingAppId ? (
                   <ServiceReviewCTA
                     applicationId={primaryStringingAppId}
-                    userConfirmedAt={
-                      primaryStringingApp?.userConfirmedAt ?? null
-                    }
+                    userConfirmedAt={primaryStringingApp?.userConfirmedAt ?? null}
                   />
                 ) : null}
               </CardContent>
@@ -1390,20 +1248,15 @@ export default function OrderDetailClient({
         <div id="reviews-cta" className="mt-4">
           {serviceLinkedOrder ? (
             <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
-              이 이용 건은 교체서비스 이용 경험에 대한 서비스 리뷰를 작성할 수
-              있습니다.
+              이 이용 건은 교체서비스 이용 경험에 대한 서비스 리뷰를 작성할 수 있습니다.
             </div>
           ) : allReviewed ? (
             <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/10 p-4 shadow-sm dark:bg-primary/20 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-6">
               <div className="flex items-center gap-3 text-primary">
                 <CheckCircle className="h-6 w-6" />
                 <div>
-                  <p className="font-semibold text-foreground">
-                    이 주문은 리뷰를 작성하였습니다.
-                  </p>
-                  <p className="text-sm text-foreground">
-                    내가 작성한 리뷰를 확인할 수 있어요.
-                  </p>
+                  <p className="font-semibold text-foreground">이 주문은 리뷰를 작성하였습니다.</p>
+                  <p className="text-sm text-foreground">내가 작성한 리뷰를 확인할 수 있어요.</p>
                 </div>
               </div>
               <Button
@@ -1437,9 +1290,7 @@ export default function OrderDetailClient({
               <OrderReviewCTA
                 orderId={orderDetail._id as string}
                 reviewAllDone={allReviewed}
-                unreviewedCount={
-                  items.filter((it) => !reviewedMap[it.id]).length
-                }
+                unreviewedCount={items.filter((it) => !reviewedMap[it.id]).length}
                 reviewNextTargetProductId={firstUnreviewed?.id ?? null}
                 orderStatus={orderDetail.status}
                 userConfirmedAt={orderDetail.userConfirmedAt ?? null}
@@ -1509,8 +1360,7 @@ export default function OrderDetailClient({
                     <div>
                       <p className="text-sm text-foreground/80">전화번호</p>
                       <p className="font-semibold text-foreground">
-                        {formatKoreanPhone(orderDetail.customer.phone) ||
-                          "전화번호 없음"}
+                        {formatKoreanPhone(orderDetail.customer.phone) || "전화번호 없음"}
                       </p>
                     </div>
                   </div>
@@ -1555,17 +1405,14 @@ export default function OrderDetailClient({
             <CardHeader className="border-b border-border/60 bg-muted/30 rounded-t-xl">
               <CardTitle>주문 진행 타임라인</CardTitle>
               <CardDescription>
-                주문 접수부터 결제, 준비, 배송/수령, 완료까지의 흐름을 확인할 수
-                있습니다.
+                주문 접수부터 결제, 준비, 배송/수령, 완료까지의 흐름을 확인할 수 있습니다.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 pt-5">
               {timelineSteps.map((step, index) => {
                 const tone = getTimelineStepTone(step.state);
                 const Icon =
-                  step.state === "active" &&
-                  !isVisitPickup &&
-                  step.title.includes("배송")
+                  step.state === "active" && !isVisitPickup && step.title.includes("배송")
                     ? Truck
                     : tone.Icon;
                 return (
@@ -1587,15 +1434,11 @@ export default function OrderDetailClient({
                           <p className="font-medium text-foreground">
                             {index + 1}. {step.title}
                           </p>
-                          <Badge
-                            className={cn("px-2 py-0.5 text-xs", tone.badge)}
-                          >
+                          <Badge className={cn("px-2 py-0.5 text-xs", tone.badge)}>
                             {getTimelineStateLabel(step.state)}
                           </Badge>
                         </div>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {step.description}
-                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">{step.description}</p>
                       </div>
                     </div>
                   </div>
@@ -1620,9 +1463,7 @@ export default function OrderDetailClient({
             <CardHeader variant="sectionGradient">
               <CardTitle className="flex items-center space-x-2">
                 <Truck className="h-5 w-5 text-success" />
-                <span>
-                  {getOrderDeliveryInfoTitle(orderDetail.shippingInfo)}
-                </span>
+                <span>{getOrderDeliveryInfoTitle(orderDetail.shippingInfo)}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 bp-lg:p-6">
@@ -1633,9 +1474,7 @@ export default function OrderDetailClient({
                     <p className="text-sm text-foreground/80">
                       {isVisitPickup ? "수령 방법" : "배송 방법"}
                     </p>
-                    <p className="font-semibold text-foreground">
-                      {shippingMethodLabel}
-                    </p>
+                    <p className="font-semibold text-foreground">{shippingMethodLabel}</p>
                   </div>
                 </div>
 
@@ -1657,113 +1496,92 @@ export default function OrderDetailClient({
                   </p>
                 )}
 
-                {showDeliveryOnlyFields &&
-                  orderDetail.shippingInfo.invoice?.trackingNumber && (
-                    <>
-                      <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
-                        <div>
-                          <p className="text-sm text-foreground/80">택배사</p>
-                          <p className="font-semibold text-foreground">
-                            {getCourierDisplayName(
-                              orderDetail.shippingInfo.invoice.courier,
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
-                        <div>
-                          <p className="text-sm text-foreground/80">
-                            운송장 번호
-                          </p>
-                          <p className="break-words font-semibold text-foreground">
-                            {orderDetail.shippingInfo.invoice.trackingNumber}
-                          </p>
-                        </div>
-                      </div>
-                      {shouldShowTrackingSummarySkeleton && (
-                        <div className="space-y-2 p-3 bg-muted rounded-lg">
-                          <Skeleton className="h-4 w-40" />
-                          <Skeleton className="h-4 w-32" />
-                          <Skeleton className="h-4 w-36" />
-                          <Skeleton className="h-8 w-24" />
-                        </div>
-                      )}
-                      {!isTrackingLoading && !trackingError && trackingData && (
-                        <div className="space-y-2 p-3 bg-muted rounded-lg text-sm">
-                          {trackingData.success && trackingData.supported ? (
-                            <>
-                              <p className="text-foreground">
-                                <span className="text-muted-foreground">
-                                  실시간 배송 상태:
-                                </span>{" "}
-                                {trackingData.displayStatus}
-                              </p>
-                              {trackingData.lastEvent?.locationName && (
-                                <p className="text-foreground">
-                                  <span className="text-muted-foreground">
-                                    최근 위치:
-                                  </span>{" "}
-                                  {trackingData.lastEvent.locationName}
-                                </p>
-                              )}
-                              {trackingData.lastEvent?.time && (
-                                <p className="text-foreground">
-                                  <span className="text-muted-foreground">
-                                    최근 갱신:
-                                  </span>{" "}
-                                  {formatDateTime(trackingData.lastEvent.time)}
-                                </p>
-                              )}
-                              {shouldShowTrackingStatusNotice && (
-                                <div className="space-y-0.5 rounded-md bg-background/70 px-2.5 py-1.5 text-xs leading-relaxed text-muted-foreground">
-                                  <p>실시간 배송 상태는 택배사 기준이며,</p>
-                                  <p>주문 상태와 다를 수 있습니다.</p>
-                                </div>
-                              )}
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() =>
-                                  window.open(
-                                    trackingData.linkUrl,
-                                    "_blank",
-                                    "noopener,noreferrer",
-                                  )
-                                }
-                              >
-                                배송조회
-                              </Button>
-                            </>
-                          ) : trackingData.success &&
-                            !trackingData.supported ? (
-                            <p className="text-muted-foreground">
-                              {trackingData.message}
-                            </p>
-                          ) : (
-                            <p className="text-destructive">
-                              {getTrackingFailureMessage(trackingData)}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                      {trackingError && (
-                        <p className="text-sm text-destructive">
-                          {getTrackingErrorMessage(trackingData, trackingError)}
+                {showDeliveryOnlyFields && orderDetail.shippingInfo.invoice?.trackingNumber && (
+                  <>
+                    <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
+                      <div>
+                        <p className="text-sm text-foreground/80">택배사</p>
+                        <p className="font-semibold text-foreground">
+                          {getCourierDisplayName(orderDetail.shippingInfo.invoice.courier)}
                         </p>
-                      )}
-                    </>
-                  )}
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
+                      <div>
+                        <p className="text-sm text-foreground/80">운송장 번호</p>
+                        <p className="break-words font-semibold text-foreground">
+                          {orderDetail.shippingInfo.invoice.trackingNumber}
+                        </p>
+                      </div>
+                    </div>
+                    {shouldShowTrackingSummarySkeleton && (
+                      <div className="space-y-2 p-3 bg-muted rounded-lg">
+                        <Skeleton className="h-4 w-40" />
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-4 w-36" />
+                        <Skeleton className="h-8 w-24" />
+                      </div>
+                    )}
+                    {!isTrackingLoading && !trackingError && trackingData && (
+                      <div className="space-y-2 p-3 bg-muted rounded-lg text-sm">
+                        {trackingData.success && trackingData.supported ? (
+                          <>
+                            <p className="text-foreground">
+                              <span className="text-muted-foreground">실시간 배송 상태:</span>{" "}
+                              {trackingData.displayStatus}
+                            </p>
+                            {trackingData.lastEvent?.locationName && (
+                              <p className="text-foreground">
+                                <span className="text-muted-foreground">최근 위치:</span>{" "}
+                                {trackingData.lastEvent.locationName}
+                              </p>
+                            )}
+                            {trackingData.lastEvent?.time && (
+                              <p className="text-foreground">
+                                <span className="text-muted-foreground">최근 갱신:</span>{" "}
+                                {formatDateTime(trackingData.lastEvent.time)}
+                              </p>
+                            )}
+                            {shouldShowTrackingStatusNotice && (
+                              <div className="space-y-0.5 rounded-md bg-background/70 px-2.5 py-1.5 text-xs leading-relaxed text-muted-foreground">
+                                <p>실시간 배송 상태는 택배사 기준이며,</p>
+                                <p>주문 상태와 다를 수 있습니다.</p>
+                              </div>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                window.open(trackingData.linkUrl, "_blank", "noopener,noreferrer")
+                              }
+                            >
+                              배송조회
+                            </Button>
+                          </>
+                        ) : trackingData.success && !trackingData.supported ? (
+                          <p className="text-muted-foreground">{trackingData.message}</p>
+                        ) : (
+                          <p className="text-destructive">
+                            {getTrackingFailureMessage(trackingData)}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    {trackingError && (
+                      <p className="text-sm text-destructive">
+                        {getTrackingErrorMessage(trackingData, trackingError)}
+                      </p>
+                    )}
+                  </>
+                )}
 
                 {shouldShowInboundShippingBlock && !hasLinkedStringingApps && (
                   <div className="rounded-lg border border-border bg-primary/5 p-3 dark:bg-primary/10">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-foreground">
-                          라켓 발송 정보
-                        </p>
+                        <p className="text-sm font-semibold text-foreground">라켓 발송 정보</p>
                         <p className="text-xs text-foreground/75">
-                          매장으로 보내는 라켓의 택배 등록 상태를 확인할 수
-                          있어요.
+                          매장으로 보내는 라켓의 택배 등록 상태를 확인할 수 있어요.
                         </p>
                       </div>
                       <Button
@@ -1773,33 +1591,26 @@ export default function OrderDetailClient({
                         className="h-8 w-full bp-sm:w-auto"
                       >
                         <Link href={inboundShippingHref ?? "#"}>
-                          {hasSelfShipTracking
-                            ? "라켓 발송 수정"
-                            : "라켓 발송 등록"}
+                          {hasSelfShipTracking ? "라켓 발송 수정" : "라켓 발송 등록"}
                         </Link>
                       </Button>
                     </div>
 
                     <div className="mt-3 grid gap-2 text-sm text-foreground bp-sm:grid-cols-2">
                       <p>
-                        <span className="text-muted-foreground">상태:</span>{" "}
-                        {selfShipStatusLabel}
+                        <span className="text-muted-foreground">상태:</span> {selfShipStatusLabel}
                       </p>
                       <p>
                         <span className="text-muted-foreground">택배사:</span>{" "}
                         {selfShipCourierLabel}
                       </p>
                       <p>
-                        <span className="text-muted-foreground">
-                          운송장 번호:
-                        </span>{" "}
+                        <span className="text-muted-foreground">운송장 번호:</span>{" "}
                         {selfShipTrackingNoLabel}
                       </p>
                       <p>
                         <span className="text-muted-foreground">발송일:</span>{" "}
-                        {selfShipInfo?.shippedAt
-                          ? formatDate(selfShipInfo.shippedAt)
-                          : "미등록"}
+                        {selfShipInfo?.shippedAt ? formatDate(selfShipInfo.shippedAt) : "미등록"}
                       </p>
                     </div>
                   </div>
@@ -1822,14 +1633,9 @@ export default function OrderDetailClient({
                   <div>
                     <p className="text-sm text-foreground/80">결제 상태</p>
                     {(() => {
-                      const pay = getPaymentStatusBadgeSpec(
-                        orderDetail.paymentStatus,
-                      );
+                      const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
                       return (
-                        <Badge
-                          variant={pay.variant}
-                          className={cn(badgeBase, badgeSizeSm)}
-                        >
+                        <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
                           {orderDetail.paymentStatus}
                         </Badge>
                       );
@@ -1917,9 +1723,7 @@ export default function OrderDetailClient({
                               aria-hidden="true"
                             />
                           )}
-                          <span>
-                            {item.selectedColorLabel || item.selectedColor}
-                          </span>
+                          <span>{item.selectedColorLabel || item.selectedColor}</span>
                         </p>
                       )}
                     </div>
@@ -1929,18 +1733,16 @@ export default function OrderDetailClient({
                       <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
                         가격: {formatCurrency(item.price)}
                       </p>
-                      {typeof item.stringPrice === "number" &&
-                        item.stringPrice > 0 && (
-                          <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
-                            스트링 가격: {formatCurrency(item.stringPrice)}
-                          </p>
-                        )}
-                      {typeof item.mountingFee === "number" &&
-                        item.mountingFee > 0 && (
-                          <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
-                            장착비: {formatCurrency(item.mountingFee)}
-                          </p>
-                        )}
+                      {typeof item.stringPrice === "number" && item.stringPrice > 0 && (
+                        <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
+                          스트링 가격: {formatCurrency(item.stringPrice)}
+                        </p>
+                      )}
+                      {typeof item.mountingFee === "number" && item.mountingFee > 0 && (
+                        <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
+                          장착비: {formatCurrency(item.mountingFee)}
+                        </p>
+                      )}
                       <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
                         상품 소계: {formatCurrency(item.price * item.quantity)}
                       </p>
@@ -1953,9 +1755,7 @@ export default function OrderDetailClient({
                               variant="secondary"
                               className="w-full bp-sm:w-auto"
                             >
-                              <Link href={`/products/${item.id}?tab=reviews`}>
-                                리뷰 상세 보기
-                              </Link>
+                              <Link href={`/products/${item.id}?tab=reviews`}>리뷰 상세 보기</Link>
                             </Button>
                           ) : (
                             <Button
@@ -1985,9 +1785,7 @@ export default function OrderDetailClient({
           <Card variant="elevatedGradient">
             <CardHeader variant="sectionGradient">
               <CardTitle>배송 요청사항</CardTitle>
-              <CardDescription>
-                결제 시 입력한 배송 관련 요청사항입니다.
-              </CardDescription>
+              <CardDescription>결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>
             </CardHeader>
             {editingRequest ? (
               <CardContent className="p-4 bp-lg:p-6">
@@ -2011,9 +1809,7 @@ export default function OrderDetailClient({
                     </p>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground italic">
-                    요청사항이 입력되지 않았습니다.
-                  </p>
+                  <p className="text-muted-foreground italic">요청사항이 입력되지 않았습니다.</p>
                 )}
               </CardContent>
             )}

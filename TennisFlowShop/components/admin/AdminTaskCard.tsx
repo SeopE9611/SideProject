@@ -77,14 +77,10 @@ export default function AdminTaskCard({
                 <Icon className="h-4 w-4" />
               </span>
             ) : null}
-            <CardTitle className="min-w-0 break-words text-sm font-semibold">
-              {title}
-            </CardTitle>
+            <CardTitle className="min-w-0 break-words text-sm font-semibold">{title}</CardTitle>
           </div>
           <span className="shrink-0 whitespace-nowrap text-xl font-bold tabular-nums text-foreground">
-            {typeof count === "number"
-              ? `${count.toLocaleString("ko-KR")}건`
-              : count}
+            {typeof count === "number" ? `${count.toLocaleString("ko-KR")}건` : count}
           </span>
         </div>
         <p className="min-h-[44px] break-words text-sm leading-relaxed text-foreground/80">

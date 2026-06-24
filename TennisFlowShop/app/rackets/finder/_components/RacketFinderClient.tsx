@@ -53,8 +53,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 
-const fetcher = (url: string) =>
-  fetch(url, { credentials: "include" }).then((r) => r.json());
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
 type Range = [number, number];
 type SortKey =
@@ -362,16 +361,8 @@ export default function RacketFinderClient() {
     next.weight = readRange("minWeight", "maxWeight", next.weight);
     next.balance = readRange("minBalance", "maxBalance", next.balance);
     next.lengthIn = readRange("minLengthIn", "maxLengthIn", next.lengthIn);
-    next.stiffnessRa = readRange(
-      "minStiffnessRa",
-      "maxStiffnessRa",
-      next.stiffnessRa,
-    );
-    next.swingWeight = readRange(
-      "minSwingWeight",
-      "maxSwingWeight",
-      next.swingWeight,
-    );
+    next.stiffnessRa = readRange("minStiffnessRa", "maxStiffnessRa", next.stiffnessRa);
+    next.swingWeight = readRange("minSwingWeight", "maxSwingWeight", next.swingWeight);
 
     const p = readNum("page");
     const nextPage = p && p > 0 ? Math.floor(p) : 1;
@@ -390,26 +381,20 @@ export default function RacketFinderClient() {
     writeFinderState({ draft, applied, page, hasSearched });
   }, [draft, applied, page, hasSearched]);
 
-  const qs = useMemo(
-    () => buildQuery(applied, page, pageSize),
-    [applied, page, pageSize],
-  );
+  const qs = useMemo(() => buildQuery(applied, page, pageSize), [applied, page, pageSize]);
   const swrKey = hasSearched ? `/api/rackets/finder?${qs}` : null;
   const { data, error, isLoading } = useSWR(swrKey, fetcher);
 
   // 검색 이후에도 loading/error/success를 분리해서 헤더 요약이 0개/1페이지로 먼저 보이지 않게 처리
   const hasDataError = hasSearched && Boolean(error);
-  const hasResolvedData =
-    hasSearched && !isLoading && !hasDataError && Boolean(data);
+  const hasResolvedData = hasSearched && !isLoading && !hasDataError && Boolean(data);
   const hasResolvedTotal = hasResolvedData && typeof data?.total === "number";
   const hasResolvedTotalPages = hasResolvedTotal;
 
   const items = (hasResolvedData ? (data?.items ?? []) : []) as FinderRacket[];
   const total = hasResolvedTotal ? Number(data?.total ?? 0) : null;
   // total이 확정되지 않은 상태에서는 내부 보수값(1)만 사용하고, UI 표기는 분기해서 '-' 처리
-  const totalPages = hasResolvedTotalPages
-    ? Math.max(1, Math.ceil((total ?? 0) / pageSize))
-    : 1;
+  const totalPages = hasResolvedTotalPages ? Math.max(1, Math.ceil((total ?? 0) / pageSize)) : 1;
 
   const apply = () => {
     const next = draft;
@@ -444,8 +429,7 @@ export default function RacketFinderClient() {
     if (!hasSearched) return [];
 
     const rangeEq = (a: Range, b: Range) => a[0] === b[0] && a[1] === b[1];
-    const fmtNum = (n: number) =>
-      Number.isInteger(n) ? String(n) : String(Number(n.toFixed(1)));
+    const fmtNum = (n: number) => (Number.isInteger(n) ? String(n) : String(Number(n.toFixed(1))));
     const fmtWon = (n: number) => `${n.toLocaleString()}원`;
 
     const list: { id: string; text: string; onRemove: () => void }[] = [];
@@ -453,8 +437,7 @@ export default function RacketFinderClient() {
       list.push({ id, text, onRemove: () => applyNow(next) });
     };
 
-    if (applied.q.trim())
-      add("q", `키워드: ${applied.q.trim()}`, { ...applied, q: "" });
+    if (applied.q.trim()) add("q", `키워드: ${applied.q.trim()}`, { ...applied, q: "" });
     if (applied.brand)
       add("brand", `브랜드: ${racketBrandLabel(applied.brand)}`, {
         ...applied,
@@ -465,68 +448,43 @@ export default function RacketFinderClient() {
         ...applied,
         condition: "",
       });
-    if (applied.strict)
-      add("strict", "정확도 모드: ON", { ...applied, strict: false });
+    if (applied.strict) add("strict", "정확도 모드: ON", { ...applied, strict: false });
 
     if (!rangeEq(applied.price, DEFAULT.price))
-      add(
-        "price",
-        `가격: ${fmtWon(applied.price[0])} ~ ${fmtWon(applied.price[1])}`,
-        {
-          ...applied,
-          price: DEFAULT.price,
-        },
-      );
+      add("price", `가격: ${fmtWon(applied.price[0])} ~ ${fmtWon(applied.price[1])}`, {
+        ...applied,
+        price: DEFAULT.price,
+      });
     if (!rangeEq(applied.headSize, DEFAULT.headSize))
-      add(
-        "head",
-        `헤드: ${applied.headSize[0]} ~ ${applied.headSize[1]} sq.in`,
-        {
-          ...applied,
-          headSize: DEFAULT.headSize,
-        },
-      );
+      add("head", `헤드: ${applied.headSize[0]} ~ ${applied.headSize[1]} sq.in`, {
+        ...applied,
+        headSize: DEFAULT.headSize,
+      });
     if (!rangeEq(applied.weight, DEFAULT.weight))
       add("weight", `무게: ${applied.weight[0]} ~ ${applied.weight[1]} g`, {
         ...applied,
         weight: DEFAULT.weight,
       });
     if (!rangeEq(applied.balance, DEFAULT.balance))
-      add(
-        "balance",
-        `밸런스: ${applied.balance[0]} ~ ${applied.balance[1]} mm`,
-        {
-          ...applied,
-          balance: DEFAULT.balance,
-        },
-      );
+      add("balance", `밸런스: ${applied.balance[0]} ~ ${applied.balance[1]} mm`, {
+        ...applied,
+        balance: DEFAULT.balance,
+      });
     if (!rangeEq(applied.lengthIn, DEFAULT.lengthIn))
-      add(
-        "length",
-        `길이: ${fmtNum(applied.lengthIn[0])} ~ ${fmtNum(applied.lengthIn[1])} in`,
-        {
-          ...applied,
-          lengthIn: DEFAULT.lengthIn,
-        },
-      );
+      add("length", `길이: ${fmtNum(applied.lengthIn[0])} ~ ${fmtNum(applied.lengthIn[1])} in`, {
+        ...applied,
+        lengthIn: DEFAULT.lengthIn,
+      });
     if (!rangeEq(applied.stiffnessRa, DEFAULT.stiffnessRa))
-      add(
-        "ra",
-        `강성(RA): ${applied.stiffnessRa[0]} ~ ${applied.stiffnessRa[1]}`,
-        {
-          ...applied,
-          stiffnessRa: DEFAULT.stiffnessRa,
-        },
-      );
+      add("ra", `강성(RA): ${applied.stiffnessRa[0]} ~ ${applied.stiffnessRa[1]}`, {
+        ...applied,
+        stiffnessRa: DEFAULT.stiffnessRa,
+      });
     if (!rangeEq(applied.swingWeight, DEFAULT.swingWeight))
-      add(
-        "sw",
-        `스윙웨이트(SW): ${applied.swingWeight[0]} ~ ${applied.swingWeight[1]}`,
-        {
-          ...applied,
-          swingWeight: DEFAULT.swingWeight,
-        },
-      );
+      add("sw", `스윙웨이트(SW): ${applied.swingWeight[0]} ~ ${applied.swingWeight[1]}`, {
+        ...applied,
+        swingWeight: DEFAULT.swingWeight,
+      });
 
     for (const p of applied.patterns) {
       const display = stringPatternLabel(p);
@@ -568,9 +526,7 @@ export default function RacketFinderClient() {
         <div className="grid grid-cols-2 gap-3">
           <Select
             value={draft.brand || undefined}
-            onValueChange={(v) =>
-              setDraft((p) => ({ ...p, brand: v === ALL ? "" : v }))
-            }
+            onValueChange={(v) => setDraft((p) => ({ ...p, brand: v === ALL ? "" : v }))}
           >
             <SelectTrigger className="bg-background/50 dark:bg-background/30 focus:ring-primary/50">
               <SelectValue placeholder="전체 브랜드" />
@@ -586,9 +542,7 @@ export default function RacketFinderClient() {
           </Select>
           <Select
             value={draft.condition || undefined}
-            onValueChange={(v) =>
-              setDraft((p) => ({ ...p, condition: v === ALL ? "" : v }))
-            }
+            onValueChange={(v) => setDraft((p) => ({ ...p, condition: v === ALL ? "" : v }))}
           >
             <SelectTrigger className="bg-background/50 dark:bg-background/30 focus:ring-primary/50">
               <SelectValue placeholder="전체 컨디션" />
@@ -701,17 +655,10 @@ export default function RacketFinderClient() {
                     });
                   }}
                 />
-                <span
-                  className={cn(
-                    "min-w-0 leading-snug",
-                    checked && "font-medium text-primary",
-                  )}
-                >
+                <span className={cn("min-w-0 leading-snug", checked && "font-medium text-primary")}>
                   {patternOption.label.includes("(") ? (
                     <>
-                      <span className="block">
-                        {patternOption.label.split(" (")[0]}
-                      </span>
+                      <span className="block">{patternOption.label.split(" (")[0]}</span>
                       <span className="block text-xs text-muted-foreground">
                         {patternOption.label.split(" (")[1]?.replace(")", "")}
                       </span>
@@ -782,17 +729,10 @@ export default function RacketFinderClient() {
             onCheckedChange={(v) => setDraft((p) => ({ ...p, strict: !!v }))}
           />
           <div className="flex-1">
-            <div
-              className={cn(
-                "text-sm font-medium",
-                draft.strict && "text-primary",
-              )}
-            >
+            <div className={cn("text-sm font-medium", draft.strict && "text-primary")}>
               정확도 모드
             </div>
-            <div className="text-xs text-muted-foreground">
-              스펙 누락 상품 제외
-            </div>
+            <div className="text-xs text-muted-foreground">스펙 누락 상품 제외</div>
           </div>
           {draft.strict && <Sparkles className="h-4 w-4 text-primary" />}
         </label>
@@ -814,9 +754,7 @@ export default function RacketFinderClient() {
             <Search className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-normal text-foreground">
-              라켓 검색
-            </h1>
+            <h1 className="text-2xl font-bold tracking-normal text-foreground">라켓 검색</h1>
             <p className="text-sm text-muted-foreground">
               스펙 범위로 원하는 중고 라켓을 빠르게 찾아보세요
             </p>
@@ -871,9 +809,7 @@ export default function RacketFinderClient() {
                       원하는 스펙을 조정한 뒤 검색하기를 눌러 결과에 반영하세요.
                     </SheetDescription>
                   </SheetHeader>
-                  <div className="flex-1 overflow-y-auto px-4 py-5">
-                    {renderFilterControls()}
-                  </div>
+                  <div className="flex-1 overflow-y-auto px-4 py-5">{renderFilterControls()}</div>
                 </SheetContent>
               </Sheet>
 
@@ -890,9 +826,7 @@ export default function RacketFinderClient() {
                 <Select
                   value={applied.sort}
                   onValueChange={(v) => {
-                    const ok = SORT_OPTIONS.some(
-                      (o) => o.value === (v as SortKey),
-                    );
+                    const ok = SORT_OPTIONS.some((o) => o.value === (v as SortKey));
                     if (!ok) return;
                     applyNow({ ...applied, sort: v as SortKey });
                   }}
@@ -940,11 +874,7 @@ export default function RacketFinderClient() {
                   variant="ghost"
                   size="icon"
                   disabled={
-                    !hasSearched ||
-                    isLoading ||
-                    hasDataError ||
-                    !hasResolvedTotalPages ||
-                    page <= 1
+                    !hasSearched || isLoading || hasDataError || !hasResolvedTotalPages || page <= 1
                   }
                   onClick={() => {
                     const nextPage = Math.max(1, page - 1);
@@ -1033,9 +963,7 @@ export default function RacketFinderClient() {
                 <Select
                   value={applied.sort}
                   onValueChange={(v) => {
-                    const ok = SORT_OPTIONS.some(
-                      (o) => o.value === (v as SortKey),
-                    );
+                    const ok = SORT_OPTIONS.some((o) => o.value === (v as SortKey));
                     if (!ok) return;
                     applyNow({ ...applied, sort: v as SortKey });
                   }}
@@ -1057,11 +985,7 @@ export default function RacketFinderClient() {
                   variant="ghost"
                   size="icon"
                   disabled={
-                    !hasSearched ||
-                    isLoading ||
-                    hasDataError ||
-                    !hasResolvedTotalPages ||
-                    page <= 1
+                    !hasSearched || isLoading || hasDataError || !hasResolvedTotalPages || page <= 1
                   }
                   onClick={() => {
                     const nextPage = Math.max(1, page - 1);
@@ -1106,23 +1030,17 @@ export default function RacketFinderClient() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary">
                 <Search className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                검색을 시작해보세요
-              </h3>
+              <h3 className="text-lg font-semibold text-foreground mb-2">검색을 시작해보세요</h3>
               <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
                 왼쪽 필터에서 원하는 스펙 범위를 설정하고{" "}
-                <span className="font-medium text-foreground">검색하기</span>{" "}
-                버튼을 눌러주세요. 정확도 모드를 활성화하면 스펙 정보가 누락된
-                라켓은 제외됩니다.
+                <span className="font-medium text-foreground">검색하기</span> 버튼을 눌러주세요.
+                정확도 모드를 활성화하면 스펙 정보가 누락된 라켓은 제외됩니다.
               </p>
             </div>
           ) : isLoading ? (
             <div className="space-y-4">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="rounded-2xl bg-muted/30 dark:bg-muted/10 p-4"
-                >
+                <div key={i} className="rounded-2xl bg-muted/30 dark:bg-muted/10 p-4">
                   <div className="flex gap-4">
                     <Skeleton className="h-28 w-28 rounded-xl" />
                     <div className="flex-1 space-y-3">
@@ -1146,8 +1064,7 @@ export default function RacketFinderClient() {
           ) : error ? (
             <div className="rounded-2xl bg-destructive/10 p-6 text-center dark:bg-destructive/15">
               <p className="text-sm text-destructive">
-                데이터를 불러오지 못했습니다. 콘솔/네트워크 탭에서 응답을
-                확인해주세요.
+                데이터를 불러오지 못했습니다. 콘솔/네트워크 탭에서 응답을 확인해주세요.
               </p>
             </div>
           ) : items.length === 0 ? (
@@ -1155,12 +1072,10 @@ export default function RacketFinderClient() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
                 <Search className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                검색 결과 없음
-              </h3>
+              <h3 className="text-lg font-semibold text-foreground mb-2">검색 결과 없음</h3>
               <p className="text-sm text-muted-foreground">
-                조건에 맞는 라켓이 없습니다. 필터 범위를 완화하거나 정확도
-                모드를 끄고 다시 시도해보세요.
+                조건에 맞는 라켓이 없습니다. 필터 범위를 완화하거나 정확도 모드를 끄고 다시
+                시도해보세요.
               </p>
             </div>
           ) : (

@@ -14,19 +14,13 @@ type BoardDetailActionsProps = {
   currentStatus: "public" | "published" | "hidden" | "deleted" | string;
 };
 
-const AdminConfirmDialog = dynamic(
-  () => import("@/components/admin/AdminConfirmDialog"),
-  { loading: () => null },
-);
+const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirmDialog"), {
+  loading: () => null,
+});
 
-export default function BoardDetailActions({
-  postId,
-  currentStatus,
-}: BoardDetailActionsProps) {
+export default function BoardDetailActions({ postId, currentStatus }: BoardDetailActionsProps) {
   const router = useRouter();
-  const [pendingAction, setPendingAction] = useState<
-    "publish" | "hide" | "delete" | null
-  >(null);
+  const [pendingAction, setPendingAction] = useState<"publish" | "hide" | "delete" | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const runStatusChange = async (nextStatus: "public" | "hidden") => {
@@ -43,9 +37,7 @@ export default function BoardDetailActions({
         },
       );
 
-      toast.success(
-        `게시물을 ${nextStatus === "public" ? "공개" : "숨김"} 처리했습니다.`,
-      );
+      toast.success(`게시물을 ${nextStatus === "public" ? "공개" : "숨김"} 처리했습니다.`);
       router.refresh();
     } catch (error) {
       toast.error(getAdminErrorMessage(error));

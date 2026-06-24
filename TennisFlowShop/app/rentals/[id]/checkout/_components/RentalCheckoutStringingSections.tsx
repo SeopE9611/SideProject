@@ -3,12 +3,7 @@
 import type useRentalCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useRentalCheckoutStringingServiceAdapter";
 import RentalCheckoutStringingCompactEditor from "@/app/rentals/[id]/checkout/_components/RentalCheckoutStringingCompactEditor";
 import RentalCheckoutStringingSummaryCard from "@/app/rentals/[id]/checkout/_components/RentalCheckoutStringingSummaryCard";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Wrench } from "lucide-react";
 
 type RentalCheckoutStringingServiceAdapter = ReturnType<
@@ -20,10 +15,7 @@ type Props = {
   adapter: RentalCheckoutStringingServiceAdapter;
 };
 
-export default function RentalCheckoutStringingSections({
-  withStringService,
-  adapter,
-}: Props) {
+export default function RentalCheckoutStringingSections({ withStringService, adapter }: Props) {
   if (!withStringService) return null;
 
   return (
@@ -36,8 +28,8 @@ export default function RentalCheckoutStringingSections({
           교체서비스 상세 설정
         </CardTitle>
         <CardDescription className="mt-2">
-          대여할 라켓에 장착할 스트링 텐션과 요청사항을 입력하세요. 라켓 정보는
-          대여 상품 기준으로 자동 반영됩니다.
+          대여할 라켓에 장착할 스트링 텐션과 요청사항을 입력하세요. 라켓 정보는 대여 상품 기준으로
+          자동 반영됩니다.
         </CardDescription>
       </div>
       <CardContent className="space-y-4 p-4 md:space-y-6 md:p-6">

@@ -24,9 +24,7 @@ export default function SessionWatcher() {
       showErrorToast("세션이 만료되었습니다. 다시 로그인해 주세요.");
 
       const redirectTo =
-        typeof window !== "undefined"
-          ? window.location.pathname + window.location.search
-          : "/";
+        typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
       router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
 
       setTimeout(() => {

@@ -19,8 +19,6 @@ export function getDepositBanner(opts: {
   return {
     tone: "info" as const,
     title: "반납 확인됨 · 보증금 환불 대기",
-    desc: returnedAt
-      ? `반납 시각: ${new Date(returnedAt).toLocaleString()}`
-      : undefined,
+    desc: returnedAt ? `반납 시각: ${new Date(returnedAt).toLocaleString()}` : undefined,
   };
 }

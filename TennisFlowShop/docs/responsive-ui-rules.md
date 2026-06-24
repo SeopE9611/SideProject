@@ -83,9 +83,7 @@
 권장 예:
 
 ```tsx
-<Badge className="max-w-full whitespace-normal break-keep text-xs">
-  확인이 필요한 레거시 신청
-</Badge>
+<Badge className="max-w-full whitespace-normal break-keep text-xs">확인이 필요한 레거시 신청</Badge>
 ```
 
 ## 6. 관리자 화면 규칙

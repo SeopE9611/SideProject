@@ -53,10 +53,7 @@ export function buildCancelRefundSubject(params: {
  * 취소/환불 리스크 시그널 적재.
  * 실패해도 본 처리 플로우를 절대 막지 않기 위해 내부에서 예외를 삼킨다.
  */
-export async function recordCancelRefundSignal(
-  db: Db,
-  input: CancelRefundRiskSignalInput,
-) {
+export async function recordCancelRefundSignal(db: Db, input: CancelRefundRiskSignalInput) {
   try {
     const now = new Date();
 

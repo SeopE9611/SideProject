@@ -47,9 +47,7 @@ export default function CustomerEditForm({
     try {
       await loadDaumPostcode();
     } catch {
-      showErrorToast(
-        "주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
-      );
+      showErrorToast("주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
       return;
     }
     if (!(window as any).daum?.Postcode) return;
@@ -88,13 +86,8 @@ export default function CustomerEditForm({
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
         <Label htmlFor="name">이름</Label>
-        <Input
-          id="name"
-          {...register("name", { required: "필수 입력입니다." })}
-        />
-        {errors.name && (
-          <p className="text-destructive text-xs">{errors.name.message}</p>
-        )}
+        <Input id="name" {...register("name", { required: "필수 입력입니다." })} />
+        {errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>}
       </div>
 
       <div>
@@ -109,20 +102,13 @@ export default function CustomerEditForm({
             },
           })}
         />
-        {errors.email && (
-          <p className="text-destructive text-xs">{errors.email.message}</p>
-        )}
+        {errors.email && <p className="text-destructive text-xs">{errors.email.message}</p>}
       </div>
 
       <div>
         <Label htmlFor="phone">전화번호</Label>
-        <Input
-          id="phone"
-          {...register("phone", { required: "필수 입력입니다." })}
-        />
-        {errors.phone && (
-          <p className="text-destructive text-xs">{errors.phone.message}</p>
-        )}
+        <Input id="phone" {...register("phone", { required: "필수 입력입니다." })} />
+        {errors.phone && <p className="text-destructive text-xs">{errors.phone.message}</p>}
       </div>
 
       <div>
@@ -138,9 +124,7 @@ export default function CustomerEditForm({
           </Button>
         </div>
         {errors.postalCode && (
-          <p className="text-destructive text-xs">
-            {errors.postalCode.message}
-          </p>
+          <p className="text-destructive text-xs">{errors.postalCode.message}</p>
         )}
       </div>
 
@@ -152,9 +136,7 @@ export default function CustomerEditForm({
           {...register("address", { required: "필수 입력입니다." })}
           rows={2}
         />
-        {errors.address && (
-          <p className="text-destructive text-xs">{errors.address.message}</p>
-        )}
+        {errors.address && <p className="text-destructive text-xs">{errors.address.message}</p>}
       </div>
       <div>
         <Label htmlFor="addressDetail">상세주소</Label>
@@ -162,12 +144,7 @@ export default function CustomerEditForm({
       </div>
 
       <div className="flex justify-end space-x-2">
-        <Button
-          variant="outline"
-          type="button"
-          onClick={onCancel}
-          disabled={isSubmitting}
-        >
+        <Button variant="outline" type="button" onClick={onCancel} disabled={isSubmitting}>
           취소
         </Button>
         <Button type="submit" disabled={isSubmitting}>

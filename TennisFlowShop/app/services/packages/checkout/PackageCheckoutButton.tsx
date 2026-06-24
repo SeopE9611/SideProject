@@ -35,15 +35,11 @@ const getOrCreateIdemKey = (sig: string) => {
         sig?: string;
         ts?: number;
       };
-      const fresh =
-        typeof parsed.ts === "number" && Date.now() - parsed.ts < IDEM_TTL_MS;
+      const fresh = typeof parsed.ts === "number" && Date.now() - parsed.ts < IDEM_TTL_MS;
       if (fresh && parsed.sig === sig && parsed.key) return parsed.key;
     }
     const key = crypto.randomUUID();
-    window.sessionStorage.setItem(
-      IDEM_STORE_KEY,
-      JSON.stringify({ key, sig, ts: Date.now() }),
-    );
+    window.sessionStorage.setItem(IDEM_STORE_KEY, JSON.stringify({ key, sig, ts: Date.now() }));
     return key;
   } catch {
     return crypto.randomUUID();
@@ -119,9 +115,7 @@ export default function PackageCheckoutButton({
     // 1) disabled 우회 방지: devtools로 버튼 활성화/직접 호출해도 여기서 막힘
     //    - disabled에는 약관 동의 + 필수값 검증(canSubmit)이 들어가 있음
     if (disabled) {
-      showErrorToast(
-        ownershipBlockedMessage ?? "필수 입력값/약관 동의를 확인해주세요.",
-      );
+      showErrorToast(ownershipBlockedMessage ?? "필수 입력값/약관 동의를 확인해주세요.");
       return;
     }
 
@@ -218,10 +212,7 @@ export default function PackageCheckoutButton({
       // 서버가 실패를 반환했으면 즉시 종료
       if (!res.ok) {
         if (res.status === 409 && data?.code === "PACKAGE_ALREADY_OWNED") {
-          showErrorToast(
-            data?.error ??
-              "이미 보유 중인 패키지가 있어 추가 구매할 수 없습니다.",
-          );
+          showErrorToast(data?.error ?? "이미 보유 중인 패키지가 있어 추가 구매할 수 없습니다.");
           return;
         }
         showErrorToast(data?.error ?? "패키지 주문 실패: 서버 오류");
@@ -255,9 +246,7 @@ export default function PackageCheckoutButton({
         success = true; // 성공했으므로 현재 페이지에서 로딩을 풀지 않음
         onBeforeSuccessNavigation?.();
         try {
-          router.push(
-            `/services/packages/success?packageOrderId=${data.packageOrderId}`,
-          );
+          router.push(`/services/packages/success?packageOrderId=${data.packageOrderId}`);
         } catch {
           onSuccessNavigationAbort?.();
           throw new Error("success navigation failed");

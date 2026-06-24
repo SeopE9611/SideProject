@@ -2,9 +2,7 @@ import type { ObjectId } from "mongodb";
 
 export type CommunityReportTargetType = "post" | "comment";
 export type CommunityReportStatus = "pending" | "resolved" | "rejected";
-export type CommunityReportModerationTargetOutcome =
-  | "updated"
-  | "no_target_change";
+export type CommunityReportModerationTargetOutcome = "updated" | "no_target_change";
 
 /**
  * 관리자 신고 목록 검색에서 사용하는 필드.
@@ -18,8 +16,7 @@ export const COMMUNITY_REPORT_SEARCHABLE_FIELDS = [
   "reporterEmail",
 ] as const;
 
-export type CommunityReportSearchableField =
-  (typeof COMMUNITY_REPORT_SEARCHABLE_FIELDS)[number];
+export type CommunityReportSearchableField = (typeof COMMUNITY_REPORT_SEARCHABLE_FIELDS)[number];
 
 /** community_reports 컬렉션 저장 문서 타입 */
 export interface CommunityReportDocument {

@@ -9,12 +9,7 @@ import {
   rebuildProductRatingSummary,
 } from "@/lib/reviews.maintenance";
 
-type MaintAction =
-  | "createIndexes"
-  | "dedup"
-  | "rebuildSummary"
-  | "all"
-  | undefined;
+type MaintAction = "createIndexes" | "dedup" | "rebuildSummary" | "all" | undefined;
 
 // 공통: 관리자 토큰 체크
 export async function POST(req: Request) {
@@ -34,10 +29,7 @@ export async function POST(req: Request) {
     const res = await locks.updateOne(
       {
         key: "reviews_maintenance",
-        $or: [
-          { lockedUntil: { $lte: now } },
-          { lockedUntil: { $exists: false } },
-        ],
+        $or: [{ lockedUntil: { $lte: now } }, { lockedUntil: { $exists: false } }],
       },
       {
         $setOnInsert: { key: "reviews_maintenance" },
@@ -60,12 +52,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const action = body?.action as
-      | "createIndexes"
-      | "dedup"
-      | "rebuildSummary"
-      | "all"
-      | undefined;
+    const action = body?.action as "createIndexes" | "dedup" | "rebuildSummary" | "all" | undefined;
 
     const result: any = {};
     if (!action || action === "createIndexes" || action === "all") {
@@ -79,8 +66,7 @@ export async function POST(req: Request) {
       result.rebuildSummary = await rebuildProductRatingSummary(db);
     }
 
-    const dedupResult =
-      result.dedup && typeof result.dedup === "object" ? result.dedup : {};
+    const dedupResult = result.dedup && typeof result.dedup === "object" ? result.dedup : {};
     const rebuildResult =
       result.rebuildSummary && typeof result.rebuildSummary === "object"
         ? result.rebuildSummary
@@ -125,10 +111,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, result });
   } catch (e: any) {
-    return NextResponse.json(
-      { ok: false, error: e?.message ?? "unknown" },
-      { status: 500 },
-    );
+    return NextResponse.json({ ok: false, error: e?.message ?? "unknown" }, { status: 500 });
   } finally {
     // 3) 락 해제
     await locks.updateOne(
@@ -170,10 +153,7 @@ export async function DELETE(req: Request) {
 
   const db = await getDb();
   const locks = db.collection("admin_locks");
-  await locks.updateOne(
-    { key: "reviews_maintenance" },
-    { $set: { lockedUntil: new Date(0) } },
-  );
+  await locks.updateOne({ key: "reviews_maintenance" }, { $set: { lockedUntil: new Date(0) } });
   await appendAdminAudit(
     guard.db,
     {

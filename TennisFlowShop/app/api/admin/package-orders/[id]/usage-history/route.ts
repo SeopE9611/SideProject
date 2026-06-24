@@ -12,9 +12,7 @@ function encodeCursor(item: { usedAt: Date; _id: ObjectId }) {
   ).toString("base64");
 }
 
-function decodeCursor(
-  cursor?: string | null,
-): { usedAt: Date; id: ObjectId } | null {
+function decodeCursor(cursor?: string | null): { usedAt: Date; id: ObjectId } | null {
   if (!cursor) return null;
   try {
     const parsed = JSON.parse(Buffer.from(cursor, "base64").toString("utf8"));
@@ -25,10 +23,7 @@ function decodeCursor(
   }
 }
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(request);
   if (!guard.ok) return guard.res;
 
@@ -39,10 +34,7 @@ export async function GET(
     }
 
     const url = new URL(request.url);
-    const limit = Math.min(
-      50,
-      Math.max(1, Number(url.searchParams.get("limit") || "10")),
-    );
+    const limit = Math.min(50, Math.max(1, Number(url.searchParams.get("limit") || "10")));
     const cursor = decodeCursor(url.searchParams.get("cursor"));
 
     const db = (await clientPromise).db();
@@ -121,10 +113,7 @@ export async function GET(
                   {
                     $cond: [
                       {
-                        $gt: [
-                          { $strLenCP: { $ifNull: ["$app.status", ""] } },
-                          0,
-                        ],
+                        $gt: [{ $strLenCP: { $ifNull: ["$app.status", ""] } }, 0],
                       },
                       { $concat: [" · ", "$app.status"] },
                       "",
@@ -139,9 +128,7 @@ export async function GET(
           },
         ])
         .toArray(),
-      db
-        .collection("service_pass_consumptions")
-        .countDocuments({ passId: pass._id }),
+      db.collection("service_pass_consumptions").countDocuments({ passId: pass._id }),
     ]);
 
     const hasMore = rows.length > limit;
@@ -161,10 +148,7 @@ export async function GET(
           : null,
     });
   } catch (e) {
-    console.error(
-      "[GET /api/admin/package-orders/[id]/usage-history] error",
-      e,
-    );
+    console.error("[GET /api/admin/package-orders/[id]/usage-history] error", e);
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });
   }
 }

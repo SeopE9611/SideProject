@@ -31,9 +31,7 @@ export interface Props {
 }
 
 const isVisitContext = (app?: Application): boolean => {
-  const collection = String(
-    app?.collectionMethod ?? app?.shippingInfo?.collectionMethod ?? "",
-  )
+  const collection = String(app?.collectionMethod ?? app?.shippingInfo?.collectionMethod ?? "")
     .trim()
     .toLowerCase();
   if (collection === "visit") return true;
@@ -43,15 +41,11 @@ const isVisitContext = (app?: Application): boolean => {
     .toLowerCase();
   if (linkedPickup === "visit") return true;
 
-  const shippingMethod =
-    app?.shippingInfo?.shippingMethod ?? app?.shippingInfo?.deliveryMethod;
+  const shippingMethod = app?.shippingInfo?.shippingMethod ?? app?.shippingInfo?.deliveryMethod;
   return isVisitPickupOrder({ shippingMethod });
 };
 
-export default function ShippingFormClient({
-  applicationId,
-  onSuccess,
-}: Props) {
+export default function ShippingFormClient({ applicationId, onSuccess }: Props) {
   const { data, error, isLoading, mutate } = useSWR<Application>(
     `/api/admin/applications/stringing/${applicationId}`,
     authenticatedSWRFetcher,
@@ -65,8 +59,7 @@ export default function ShippingFormClient({
   const invoice = shippingInfo.invoice ?? {};
 
   // 기존 배송정보가 하나라도 있으면 "수정", 아무것도 없으면 "등록"
-  const rawMethod =
-    shippingInfo.shippingMethod ?? shippingInfo.deliveryMethod ?? "";
+  const rawMethod = shippingInfo.shippingMethod ?? shippingInfo.deliveryMethod ?? "";
   const method = String(rawMethod).trim();
   const date = String(shippingInfo.estimatedDate ?? "").trim();
   const courier = String(invoice.courier ?? "").trim();
@@ -107,9 +100,7 @@ export default function ShippingFormClient({
               <Truck className="h-8 w-8 text-primary mx-auto" />
             )}
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            {pageTitle}
-          </h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">{pageTitle}</h1>
           <p className="text-muted-foreground">{pageDesc}</p>
         </div>
         {isInitialLoading ? (
@@ -120,9 +111,7 @@ export default function ShippingFormClient({
                 <Skeleton className="h-10 w-full" />
               </div>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground">
-                  예상 수령일
-                </p>
+                <p className="text-sm font-medium text-foreground">예상 수령일</p>
                 <Skeleton className="h-10 w-full" />
               </div>
               <div className="space-y-2">
@@ -130,9 +119,7 @@ export default function ShippingFormClient({
                 <Skeleton className="h-10 w-full" />
               </div>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground">
-                  운송장 번호
-                </p>
+                <p className="text-sm font-medium text-foreground">운송장 번호</p>
                 <Skeleton className="h-10 w-full" />
               </div>
               <div className="pt-2">

@@ -4,10 +4,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAudit } from "@/lib/audit";
-import {
-  adminValidationError,
-  zodIssuesToDetails,
-} from "@/lib/admin/adminApiError";
+import { adminValidationError, zodIssuesToDetails } from "@/lib/admin/adminApiError";
 import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
 
 const userIdParamsSchema = z.object({
@@ -30,26 +27,10 @@ const userPatchSchema = z
       .email("유효한 이메일 주소를 입력해주세요.")
       .max(254, "이메일이 너무 깁니다.")
       .optional(),
-    phone: z
-      .string()
-      .trim()
-      .max(30, "전화번호는 30자 이내여야 합니다.")
-      .optional(),
-    address: z
-      .string()
-      .trim()
-      .max(200, "주소는 200자 이내여야 합니다.")
-      .optional(),
-    addressDetail: z
-      .string()
-      .trim()
-      .max(100, "상세주소는 100자 이내여야 합니다.")
-      .optional(),
-    postalCode: z
-      .string()
-      .trim()
-      .max(12, "우편번호는 12자 이내여야 합니다.")
-      .optional(),
+    phone: z.string().trim().max(30, "전화번호는 30자 이내여야 합니다.").optional(),
+    address: z.string().trim().max(200, "주소는 200자 이내여야 합니다.").optional(),
+    addressDetail: z.string().trim().max(100, "상세주소는 100자 이내여야 합니다.").optional(),
+    postalCode: z.string().trim().max(12, "우편번호는 12자 이내여야 합니다.").optional(),
     role: z.enum(["user", "admin"]).optional(),
     isSuspended: z.boolean().optional(),
     isDeleted: z.boolean().optional(),
@@ -78,19 +59,14 @@ function parseUserIdParams(params: { id: string }) {
   };
 }
 
-export async function GET(
-  req: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const { db } = guard;
   const parsedParams = parseUserIdParams(await ctx.params);
   if (!parsedParams.ok) return parsedParams.res;
 
-  const doc = await db
-    .collection("users")
-    .findOne({ _id: parsedParams._id }, userProjection);
+  const doc = await db.collection("users").findOne({ _id: parsedParams._id }, userProjection);
 
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
@@ -103,10 +79,7 @@ export async function GET(
   });
 }
 
-export async function PATCH(
-  req: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -161,17 +134,11 @@ export async function PATCH(
   const current = await db
     .collection("users")
     .findOne({ _id }, { projection: { _id: 1, role: 1 } });
-  if (!current)
-    return NextResponse.json({ message: "not found" }, { status: 404 });
+  if (!current) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   const currentRole = (current as any).role === "admin" ? "admin" : "user";
   const nextRole = payload.role;
-  if (
-    nextRole &&
-    nextRole !== currentRole &&
-    currentRole === "admin" &&
-    nextRole !== "admin"
-  ) {
+  if (nextRole && nextRole !== currentRole && currentRole === "admin" && nextRole !== "admin") {
     if (String(admin._id) === String(_id)) {
       return NextResponse.json(
         {
@@ -203,8 +170,7 @@ export async function PATCH(
     .collection("users")
     .updateOne({ _id }, { $set, $currentDate: { updatedAt: true } });
 
-  if (!r.matchedCount)
-    return NextResponse.json({ message: "not found" }, { status: 404 });
+  if (!r.matchedCount) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   const v = await db.collection("users").findOne({ _id }, userProjection);
 
@@ -234,10 +200,7 @@ export async function PATCH(
   });
 }
 
-export async function DELETE(
-  req: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -259,8 +222,7 @@ export async function DELETE(
       },
     },
   ]);
-  if (!r.matchedCount)
-    return NextResponse.json({ message: "not found" }, { status: 404 });
+  if (!r.matchedCount) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   // DELETE 성공: 감사 로그 추가 (핸들러 내부)
   await appendAudit(

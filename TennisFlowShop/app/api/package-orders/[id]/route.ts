@@ -17,18 +17,12 @@ function redirectToAdmin(req: Request, adminPath: string) {
   return res;
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   return redirectToAdmin(request, `/api/admin/package-orders/${id}`);
 }
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   return redirectToAdmin(request, `/api/admin/package-orders/${id}`);
 }

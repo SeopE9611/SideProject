@@ -132,9 +132,7 @@ export default function useStringingApplySharedState({
     selectedColor: "",
   });
 
-  const [visitDurationMinutesUi, setVisitDurationMinutesUi] = useState<
-    number | null
-  >(null);
+  const [visitDurationMinutesUi, setVisitDurationMinutesUi] = useState<number | null>(null);
 
   const orderRemainingSlots =
     typeof (order as any)?.stringService?.remainingSlots === "number"
@@ -145,9 +143,7 @@ export default function useStringingApplySharedState({
     if (!orderId || !order) return false;
     const items = (order as any)?.items;
     if (!Array.isArray(items)) return false;
-    const hasRacket = items.some(
-      (it: any) => it?.kind === "racket" || it?.kind === "used_racket",
-    );
+    const hasRacket = items.some((it: any) => it?.kind === "racket" || it?.kind === "used_racket");
     const hasMountableString = items.some(
       (it: any) => it?.kind === "product" && isMountableStringItem(it),
     );
@@ -160,11 +156,7 @@ export default function useStringingApplySharedState({
     const candidates: number[] = [];
     if (typeof lockedStringStock === "number" && lockedStringStock > 0)
       candidates.push(lockedStringStock);
-    if (
-      isRentalBased &&
-      typeof lockedRacketQuantity === "number" &&
-      lockedRacketQuantity > 0
-    )
+    if (isRentalBased && typeof lockedRacketQuantity === "number" && lockedRacketQuantity > 0)
       candidates.push(lockedRacketQuantity);
 
     if (!candidates.length) return null;
@@ -176,9 +168,7 @@ export default function useStringingApplySharedState({
       const { name } = e.target;
       const rawValue = e.target.value;
       const value =
-        name === "phone" || name === "shippingPhone"
-          ? formatPhoneForDisplay(rawValue)
-          : rawValue;
+        name === "phone" || name === "shippingPhone" ? formatPhoneForDisplay(rawValue) : rawValue;
 
       setFormData((prev) => {
         const next: any = { ...prev, [name]: value };
@@ -211,15 +201,12 @@ export default function useStringingApplySharedState({
 
         if (orderId && order) {
           let remaining: number | undefined =
-            typeof orderRemainingSlots === "number"
-              ? orderRemainingSlots
-              : undefined;
+            typeof orderRemainingSlots === "number" ? orderRemainingSlots : undefined;
 
           ids.forEach((id) => {
             if (id === "custom") {
               if (nextUseCounts[id] == null) {
-                const base =
-                  remaining != null ? Math.min(1, Math.max(remaining, 0)) : 1;
+                const base = remaining != null ? Math.min(1, Math.max(remaining, 0)) : 1;
                 nextUseCounts[id] = base;
                 if (remaining != null) remaining -= base;
               }
@@ -234,10 +221,7 @@ export default function useStringingApplySharedState({
               let base = orderQty;
 
               if (remaining != null) {
-                const allowedForThis = Math.min(
-                  orderQty,
-                  Math.max(remaining, 0),
-                );
+                const allowedForThis = Math.min(orderQty, Math.max(remaining, 0));
                 base = allowedForThis;
                 remaining -= allowedForThis;
               }
@@ -357,8 +341,7 @@ export default function useStringingApplySharedState({
         );
         if (racketItems.length === 1) {
           const r = racketItems[0] as any;
-          racketNameFromOrder =
-            (r.name ?? r.productName ?? "").trim() || undefined;
+          racketNameFromOrder = (r.name ?? r.productName ?? "").trim() || undefined;
         }
       }
     }
@@ -393,8 +376,7 @@ export default function useStringingApplySharedState({
         const useQty = formData.stringUseCounts[prodId] ?? orderQty;
 
         for (let i = 0; i < useQty; i++) {
-          const alias =
-            (formData.racketType || "").trim() || racketNameFromOrder || "";
+          const alias = (formData.racketType || "").trim() || racketNameFromOrder || "";
 
           lines.push({
             id: `${prodId}-${i}`,
@@ -438,20 +420,13 @@ export default function useStringingApplySharedState({
     pdpMountingFee,
   ]);
 
-  const lineCount =
-    linesForSubmit.length || (formData.stringTypes.length ? 1 : 0);
+  const lineCount = linesForSubmit.length || (formData.stringTypes.length ? 1 : 0);
 
   const handleLineFieldChange = useCallback(
-    <K extends keyof ApplicationLine>(
-      index: number,
-      field: K,
-      value: ApplicationLine[K],
-    ) => {
+    <K extends keyof ApplicationLine>(index: number, field: K, value: ApplicationLine[K]) => {
       setFormData((prev) => {
         const baseLines =
-          Array.isArray(prev.lines) && prev.lines.length > 0
-            ? prev.lines
-            : (linesForSubmit ?? []);
+          Array.isArray(prev.lines) && prev.lines.length > 0 ? prev.lines : (linesForSubmit ?? []);
 
         const nextLines = baseLines.map((line, i) =>
           i === index ? { ...line, [field]: value } : line,
@@ -459,8 +434,7 @@ export default function useStringingApplySharedState({
 
         const next: ApplyFormData = { ...prev, lines: nextLines };
         if (field === "stringName" && prev.stringTypes.includes("custom")) {
-          next.customStringType =
-            nextLines[0]?.stringName?.trim() || "보유 스트링";
+          next.customStringType = nextLines[0]?.stringName?.trim() || "보유 스트링";
         }
         if (index === 0 && field === "tensionMain") {
           next.defaultMainTension = String(value ?? "");
@@ -479,9 +453,7 @@ export default function useStringingApplySharedState({
       if (orderId && order && isCombinedPdpMode) {
         if (typeof orderRemainingSlots !== "number") return;
 
-        const ids = (formData.stringTypes ?? []).filter(
-          (t) => t && t !== "custom",
-        );
+        const ids = (formData.stringTypes ?? []).filter((t) => t && t !== "custom");
         const sumOrderQty = ids.reduce((sum, sid) => {
           const found = order.items.find((it: any) => it.id === sid);
           const q = Number((found as any)?.quantity ?? 0);

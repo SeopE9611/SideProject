@@ -46,10 +46,7 @@ function externalFailureResponse(result: DeliveryTrackerSummaryFailure) {
   );
 }
 
-export async function GET(
-  _: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     if (getGuestOrderMode() === "off") {
       return NextResponse.json(
@@ -60,16 +57,11 @@ export async function GET(
 
     const { id } = await params;
     if (!ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { success: false, message: "BAD_ID" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, message: "BAD_ID" }, { status: 400 });
     }
 
     const db = (await clientPromise).db();
-    const order = await db
-      .collection("orders")
-      .findOne({ _id: new ObjectId(id) });
+    const order = await db.collection("orders").findOne({ _id: new ObjectId(id) });
 
     if (!order) {
       return NextResponse.json(
@@ -84,21 +76,13 @@ export async function GET(
 
     if (order.userId) {
       if (!payload || payload.sub !== order.userId.toString()) {
-        return NextResponse.json(
-          { success: false, error: "권한이 없습니다." },
-          { status: 403 },
-        );
+        return NextResponse.json({ success: false, error: "권한이 없습니다." }, { status: 403 });
       }
     } else {
       const orderAccessToken = cookieStore.get("orderAccessToken")?.value;
-      const orderClaims = orderAccessToken
-        ? verifyOrderAccessToken(orderAccessToken)
-        : null;
+      const orderClaims = orderAccessToken ? verifyOrderAccessToken(orderAccessToken) : null;
       if (getOrderIdClaim(orderClaims) !== String(order._id)) {
-        return NextResponse.json(
-          { success: false, error: "권한이 없습니다." },
-          { status: 403 },
-        );
+        return NextResponse.json({ success: false, error: "권한이 없습니다." }, { status: 403 });
       }
     }
 
@@ -116,8 +100,7 @@ export async function GET(
 
     const courierItem = findCourierCatalogItem(courier);
     const carrierId = mapCourierCodeToCarrierId(courier);
-    const carrierDisplayName =
-      courierItem?.label ?? getCourierDisplayName(courier);
+    const carrierDisplayName = courierItem?.label ?? getCourierDisplayName(courier);
     if (!courierItem?.supportsTracking || !carrierId) {
       return NextResponse.json({
         success: true,
@@ -169,8 +152,7 @@ export async function GET(
     return NextResponse.json(
       {
         success: false,
-        message:
-          "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
+        message: "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
       },
       { status: 503 },
     );

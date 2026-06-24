@@ -1,14 +1,8 @@
 import { canAccessStringingApplicationById } from "@/app/api/applications/stringing/_helpers/access-gate";
 import clientPromise from "@/lib/mongodb";
-import {
-  buildNiceOrderName,
-  createNiceOrderId,
-} from "@/lib/payments/nice/server";
+import { buildNiceOrderName, createNiceOrderId } from "@/lib/payments/nice/server";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
-import {
-  ensureTossPaymentSessionIndexes,
-  tossPaymentSessions,
-} from "@/lib/payments/toss/session";
+import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 
@@ -16,9 +10,7 @@ export const runtime = "nodejs";
 export const preferredRegion = ["icn1", "hnd1"];
 
 function resolveClientId() {
-  return String(
-    process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "",
-  ).trim();
+  return String(process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "").trim();
 }
 
 function resolveAppUrl() {
@@ -81,9 +73,7 @@ export async function POST(req: Request) {
     }
 
     const niceOrderId = createNiceOrderId();
-    const goodsName = buildNiceOrderName([
-      { name: "스트링 장착 서비스", quantity: 1 },
-    ]);
+    const goodsName = buildNiceOrderName([{ name: "스트링 장착 서비스", quantity: 1 }]);
     const returnUrl = `${resolveAppUrl()}/api/payments/nice/stringing/return`;
     const now = new Date();
 

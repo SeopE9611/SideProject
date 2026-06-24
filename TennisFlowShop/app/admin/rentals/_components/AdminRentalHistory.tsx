@@ -6,15 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import AsyncState from "@/components/system/AsyncState";
-import {
-  CreditCard,
-  Play,
-  Truck,
-  RotateCcw,
-  XCircle,
-  Undo2,
-  Clock,
-} from "lucide-react";
+import { CreditCard, Play, Truck, RotateCcw, XCircle, Undo2, Clock } from "lucide-react";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 
@@ -51,12 +43,7 @@ const ACTIONS = [
 ] as const;
 
 type ActionFilter = (typeof ACTIONS)[number];
-type ServicePickupMethod =
-  | "SELF_SEND"
-  | "COURIER_VISIT"
-  | "SHOP_VISIT"
-  | null
-  | undefined;
+type ServicePickupMethod = "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT" | null | undefined;
 
 const FILTER_LABELS: Record<ActionFilter, string> = {
   all: "전체",
@@ -77,8 +64,7 @@ function getActionMeta(action: HistoryItem["action"], isVisitPickup: boolean) {
       return {
         label: "결제 확인",
         Icon: CreditCard,
-        wrapperClasses:
-          "border border-primary/20 bg-primary/10 dark:bg-primary/20",
+        wrapperClasses: "border border-primary/20 bg-primary/10 dark:bg-primary/20",
         iconClasses: "text-primary",
       };
     case "out":
@@ -91,10 +77,7 @@ function getActionMeta(action: HistoryItem["action"], isVisitPickup: boolean) {
     case "outbound-shipping-set":
     case "outbound-shipping-updated":
       return {
-        label:
-          action === "outbound-shipping-set"
-            ? "출고 운송장 등록"
-            : "출고 운송장 수정",
+        label: action === "outbound-shipping-set" ? "출고 운송장 등록" : "출고 운송장 수정",
         Icon: Truck,
         wrapperClasses: "border border-border bg-muted dark:bg-card",
         iconClasses: "text-foreground",
@@ -117,8 +100,7 @@ function getActionMeta(action: HistoryItem["action"], isVisitPickup: boolean) {
       return {
         label: "취소 승인",
         Icon: XCircle,
-        wrapperClasses:
-          "border border-destructive/30 bg-destructive/10 dark:bg-destructive/15",
+        wrapperClasses: "border border-destructive/30 bg-destructive/10 dark:bg-destructive/15",
         iconClasses: "text-destructive",
       };
     case "cancel-rejected":
@@ -247,9 +229,7 @@ export default function AdminRentalHistory({ id, servicePickupMethod }: Props) {
   const shouldShowHistoryEmpty = hasResolvedData && items.length === 0;
   const shouldShowHistoryRows = hasResolvedData && items.length > 0;
 
-  const totalPages = hasResolvedData
-    ? Math.max(1, Math.ceil(data.total / data.pageSize))
-    : null;
+  const totalPages = hasResolvedData ? Math.max(1, Math.ceil(data.total / data.pageSize)) : null;
 
   return (
     <Card className="mt-8 border-0 shadow-xl ring-1 ring-ring bg-muted/30">
@@ -258,9 +238,7 @@ export default function AdminRentalHistory({ id, servicePickupMethod }: Props) {
           <Clock className="h-5 w-5 text-foreground" />
           <span>처리 이력</span>
         </CardTitle>
-        <p className="mt-1 text-xs text-muted-foreground">
-          최신 변경이 맨 위에 표시됩니다.
-        </p>
+        <p className="mt-1 text-xs text-muted-foreground">최신 변경이 맨 위에 표시됩니다.</p>
       </CardHeader>
 
       <CardContent className="pt-2">
@@ -319,10 +297,7 @@ export default function AdminRentalHistory({ id, servicePickupMethod }: Props) {
               }).format(new Date(h.at));
 
               return (
-                <div
-                  key={h._id}
-                  className="flex space-x-4 py-3 border-b last:border-none"
-                >
+                <div key={h._id} className="flex space-x-4 py-3 border-b last:border-none">
                   <div
                     className={`h-10 w-10 flex items-center justify-center rounded-full border ${meta.wrapperClasses}`}
                   >
@@ -331,9 +306,7 @@ export default function AdminRentalHistory({ id, servicePickupMethod }: Props) {
                   <div className="flex-1">
                     <div className="flex justify-between gap-4">
                       <span className="font-semibold">{meta.label}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {dateStr}
-                      </span>
+                      <span className="text-xs text-muted-foreground">{dateStr}</span>
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {getDescription(h, isVisitPickup)}

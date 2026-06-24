@@ -2,12 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type Props = {
@@ -17,21 +12,13 @@ type Props = {
   initialIndex?: number;
 };
 
-export default function ReviewPhotoDialog({
-  open,
-  onOpenChange,
-  photos,
-  initialIndex = 0,
-}: Props) {
+export default function ReviewPhotoDialog({ open, onOpenChange, photos, initialIndex = 0 }: Props) {
   const [idx, setIdx] = useState(initialIndex);
 
   // 다이얼로그 열릴 때마다 시작 인덱스 맞춰줌
   useEffect(() => {
     if (!open) return;
-    const safe = Math.min(
-      Math.max(initialIndex, 0),
-      Math.max(photos.length - 1, 0),
-    );
+    const safe = Math.min(Math.max(initialIndex, 0), Math.max(photos.length - 1, 0));
     setIdx(safe);
   }, [open, initialIndex, photos.length]);
 

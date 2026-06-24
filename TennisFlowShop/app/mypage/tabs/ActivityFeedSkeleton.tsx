@@ -56,10 +56,7 @@ export default function ActivityFeedSkeleton() {
 
                   <div className="flex flex-wrap gap-2">
                     {Array.from({ length: 3 }).map((_, j) => (
-                      <div
-                        key={j}
-                        className="h-7 w-20 rounded-lg bg-muted/80 dark:bg-muted"
-                      />
+                      <div key={j} className="h-7 w-20 rounded-lg bg-muted/80 dark:bg-muted" />
                     ))}
                   </div>
 

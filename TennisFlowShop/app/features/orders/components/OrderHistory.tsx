@@ -17,10 +17,7 @@ import {
   Store,
   Handshake,
 } from "lucide-react";
-import {
-  getOrderStatusLabelForDisplay,
-  isVisitPickupOrder,
-} from "@/lib/order-shipping";
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 
 export const getOrderHistoryKey =
@@ -48,8 +45,7 @@ function getIconProps(status: string, isVisitPickup: boolean) {
     case "배송중":
       return {
         Icon: isVisitPickup ? Store : Truck,
-        wrapperClasses:
-          "border border-primary/20 bg-primary/10 dark:bg-primary/20",
+        wrapperClasses: "border border-primary/20 bg-primary/10 dark:bg-primary/20",
         iconClasses: "text-foreground",
       };
     case "배송완료":
@@ -61,15 +57,13 @@ function getIconProps(status: string, isVisitPickup: boolean) {
     case "환불":
       return {
         Icon: RotateCcw,
-        wrapperClasses:
-          "border border-destructive/30 bg-destructive/10 dark:bg-destructive/15",
+        wrapperClasses: "border border-destructive/30 bg-destructive/10 dark:bg-destructive/15",
         iconClasses: "text-destructive",
       };
     case "취소":
       return {
         Icon: XCircle,
-        wrapperClasses:
-          "border border-destructive/30 bg-destructive/10 dark:bg-destructive/15",
+        wrapperClasses: "border border-destructive/30 bg-destructive/10 dark:bg-destructive/15",
         iconClasses: "text-destructive",
       };
     case "배송정보변경":
@@ -110,11 +104,10 @@ export default function OrderHistory({
   const [page, setPage] = useState(1);
 
   // getKey: pageIndex마다 서버에 page=pageIndex+1 요청
-  const getKey =
-    (orderId: string) => (pageIndex: number, prev: HistoryResponse | null) => {
-      if (prev && prev.history.length === 0) return null; // 더 이상 페이지 없으면 중단
-      return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
-    };
+  const getKey = (orderId: string) => (pageIndex: number, prev: HistoryResponse | null) => {
+    if (prev && prev.history.length === 0) return null; // 더 이상 페이지 없으면 중단
+    return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
+  };
   // useSWRInfinite 훅: pages[0]은 page=1 응답, pages[1]은 page=2 응답...
   const {
     data: pages,
@@ -148,15 +141,11 @@ export default function OrderHistory({
   const pageData = pages?.[page - 1];
   const hasDataError = !!error;
   const isInitialLoading = pages === undefined && !hasDataError;
-  const isPageTransitionLoading =
-    !isInitialLoading && !hasDataError && (page > size || !pageData);
+  const isPageTransitionLoading = !isInitialLoading && !hasDataError && (page > size || !pageData);
   const hasResolvedPageData = !!pageData && !hasDataError;
   const pageHistory =
-    hasResolvedPageData && Array.isArray(pageData.history)
-      ? pageData.history
-      : null;
-  const hasResolvedTotal =
-    hasResolvedPageData && typeof pageData.total === "number";
+    hasResolvedPageData && Array.isArray(pageData.history) ? pageData.history : null;
+  const hasResolvedTotal = hasResolvedPageData && typeof pageData.total === "number";
 
   // 내림차순 정렬 (최신 먼저)
   const toTime = (raw: string) => {
@@ -168,9 +157,7 @@ export default function OrderHistory({
     ? [...pageHistory].sort((a, b) => toTime(b.date) - toTime(a.date))
     : [];
 
-  const totalPages = hasResolvedTotal
-    ? Math.max(1, Math.ceil(pageData.total / LIMIT))
-    : 1;
+  const totalPages = hasResolvedTotal ? Math.max(1, Math.ceil(pageData.total / LIMIT)) : 1;
   const shouldShowRows = hasResolvedPageData && pageItems.length > 0;
   const shouldShowEmptyState = hasResolvedPageData && pageItems.length === 0;
 
@@ -204,9 +191,7 @@ export default function OrderHistory({
   return (
     <Card className="md:col-span-3 rounded-xl border border-border bg-card text-card-foreground shadow-md dark:bg-card">
       <CardHeader className="border-b border-border/60 bg-muted/30 pb-3 dark:bg-card rounded-t-xl">
-        <CardTitle className="text-lg font-semibold bp-sm:text-xl">
-          처리 이력
-        </CardTitle>
+        <CardTitle className="text-lg font-semibold bp-sm:text-xl">처리 이력</CardTitle>
         <p className="text-xs text-muted-foreground bp-sm:shrink-0 bp-sm:text-sm">
           최신 변경이 맨 위에 표시됩니다.
         </p>
@@ -235,37 +220,22 @@ export default function OrderHistory({
           />
         ) : /* 빈 상태일 때 메시지 */
         shouldShowEmptyState ? (
-          <AsyncState
-            kind="empty"
-            variant="card"
-            tone="admin"
-            resourceName="주문 처리 이력"
-          />
+          <AsyncState kind="empty" variant="card" tone="admin" resourceName="주문 처리 이력" />
         ) : shouldShowRows ? (
           /* 실제 데이터 렌더 */
           pageItems.map((item, idx) => {
-            const displayStatus = getOrderStatusLabelForDisplay(
-              item.status,
-              shippingMethod,
-            );
-            const { Icon, wrapperClasses, iconClasses } = getIconProps(
-              item.status,
-              isVisitPickup,
-            );
+            const displayStatus = getOrderStatusLabelForDisplay(item.status, shippingMethod);
+            const { Icon, wrapperClasses, iconClasses } = getIconProps(item.status, isVisitPickup);
             return (
               <div key={idx} className="flex gap-3 py-3 bp-sm:gap-4">
                 <div
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border bp-sm:h-10 bp-sm:w-10 ${wrapperClasses}`}
                 >
-                  <Icon
-                    className={`h-5 w-5 bp-sm:h-6 bp-sm:w-6 ${iconClasses}`}
-                  />
+                  <Icon className={`h-5 w-5 bp-sm:h-6 bp-sm:w-6 ${iconClasses}`} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-col gap-1 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between bp-sm:gap-3">
-                    <span className="break-keep font-semibold leading-snug">
-                      {displayStatus}
-                    </span>
+                    <span className="break-keep font-semibold leading-snug">{displayStatus}</span>
                     <span className="text-xs text-muted-foreground bp-sm:shrink-0 bp-sm:text-sm">
                       {formatHistoryDate(item.date)}
                     </span>

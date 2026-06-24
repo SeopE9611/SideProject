@@ -34,9 +34,7 @@ export function AdminBadgeRow({ items, maxVisible = 3, className }: Props) {
   const hidden = items.slice(maxVisible);
 
   // 접힌 뱃지들을 title에 요약해두면, Tooltip 없이도 hover로 의미 확인 가능(구조 단순/안정)
-  const hiddenTitle = hidden
-    .map((b) => (b.title ? `${b.label} — ${b.title}` : b.label))
-    .join("\n");
+  const hiddenTitle = hidden.map((b) => (b.title ? `${b.label} — ${b.title}` : b.label)).join("\n");
 
   return (
     <div className={cn("flex flex-wrap gap-1", className)}>

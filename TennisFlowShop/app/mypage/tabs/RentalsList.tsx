@@ -75,8 +75,7 @@ const getStatusBadgeVariant = (status: string) => {
 
 const getStatusLabel = (status: string, hasOutboundShipping = false) => {
   if (status === "pending") return "입금 확인 대기";
-  if (status === "paid")
-    return hasOutboundShipping ? "출고됨 · 수령 확인 대기" : "출고 준비 중";
+  if (status === "paid") return hasOutboundShipping ? "출고됨 · 수령 확인 대기" : "출고 준비 중";
   const baseLabel = getMypageUserStatusLabel(status);
   if (baseLabel === "취소") return "취소됨";
   return baseLabel;
@@ -92,18 +91,12 @@ const formatDate = (dateString: string) => {
 };
 
 export default function RentalsList() {
-  const [cancelRentalDialogId, setCancelRentalDialogId] = useState<
-    string | null
-  >(null);
+  const [cancelRentalDialogId, setCancelRentalDialogId] = useState<string | null>(null);
 
-  const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite(
-    getKey,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    },
-  );
+  const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite(getKey, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   const handleWithdrawCancelRequest = async (rentalId: string) => {
     if (!confirm("대여 취소 요청을 철회하시겠습니까?")) return;
@@ -115,8 +108,7 @@ export default function RentalsList() {
 
       if (!res.ok) {
         const body = await res.json().catch(() => null);
-        const msg =
-          body?.message || "대여 취소 요청 철회 중 오류가 발생했습니다.";
+        const msg = body?.message || "대여 취소 요청 철회 중 오류가 발생했습니다.";
         showErrorToast(msg);
         return;
       }
@@ -131,10 +123,7 @@ export default function RentalsList() {
     }
   };
 
-  const flat = useMemo(
-    () => (data ?? []).flatMap((d: any) => d.items ?? []),
-    [data],
-  );
+  const flat = useMemo(() => (data ?? []).flatMap((d: any) => d.items ?? []), [data]);
 
   const hasMore = useMemo(() => {
     if (!data || data.length === 0) return false;
@@ -144,12 +133,7 @@ export default function RentalsList() {
 
   if (error) {
     return (
-      <AsyncState
-        kind="error"
-        variant="card"
-        resourceName="대여 내역"
-        onAction={() => mutate()}
-      />
+      <AsyncState kind="error" variant="card" resourceName="대여 내역" onAction={() => mutate()} />
     );
   }
 
@@ -162,9 +146,7 @@ export default function RentalsList() {
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-border bg-secondary md:mb-6">
             <Briefcase className="h-10 w-10 text-foreground" />
           </div>
-          <h3 className="mb-2 text-xl font-semibold text-foreground">
-            대여 내역이 없습니다
-          </h3>
+          <h3 className="mb-2 text-xl font-semibold text-foreground">대여 내역이 없습니다</h3>
           <p className="text-muted-foreground">
             아직 대여하신 라켓이 없습니다. 지금 바로 라켓을 대여해보세요!
           </p>
@@ -193,11 +175,9 @@ export default function RentalsList() {
         const deposit = r.amount?.deposit ?? 0;
         const stringPrice = r.amount?.stringPrice ?? 0;
         const stringingFee = r.amount?.stringingFee ?? 0;
-        const total =
-          r.amount?.total ?? fee + deposit + stringPrice + stringingFee;
+        const total = r.amount?.total ?? fee + deposit + stringPrice + stringingFee;
 
-        const rentalTitle =
-          `${racketBrandLabel(r.brand)} ${r.model ?? ""}`.trim() || "라켓 대여";
+        const rentalTitle = `${racketBrandLabel(r.brand)} ${r.model ?? ""}`.trim() || "라켓 대여";
         const rentalMetaDate = r.updatedAt || r.createdAt;
 
         return (
@@ -220,9 +200,7 @@ export default function RentalsList() {
                   </h3>
                   <p className="mt-1 text-xs tabular-nums text-muted-foreground">
                     대여 기간 {r.days}일
-                    {rentalMetaDate
-                      ? ` · 최근 업데이트 ${formatDate(rentalMetaDate)}`
-                      : ""}
+                    {rentalMetaDate ? ` · 최근 업데이트 ${formatDate(rentalMetaDate)}` : ""}
                   </p>
                 </div>
 
@@ -237,10 +215,7 @@ export default function RentalsList() {
                       : getStatusLabel(r.status, r.hasOutboundShipping)}
                   </Badge>
                   {r.cancelStatus === "requested" ? (
-                    <Badge
-                      variant="warning"
-                      className="shrink-0 whitespace-nowrap"
-                    >
+                    <Badge variant="warning" className="shrink-0 whitespace-nowrap">
                       취소 요청됨
                     </Badge>
                   ) : null}
@@ -249,25 +224,17 @@ export default function RentalsList() {
 
               <div className="flex flex-nowrap items-center gap-2 overflow-x-auto text-xs">
                 {r.stringingApplicationId ? (
-                  <Badge
-                    variant="outline"
-                    className="shrink-0 whitespace-nowrap"
-                  >
+                  <Badge variant="outline" className="shrink-0 whitespace-nowrap">
                     교체서비스 신청서 연결됨
                   </Badge>
                 ) : null}
                 {!r.stringingApplicationId && r.withStringService ? (
-                  <Badge
-                    variant="outline"
-                    className="shrink-0 whitespace-nowrap"
-                  >
+                  <Badge variant="outline" className="shrink-0 whitespace-nowrap">
                     교체서비스 포함
                   </Badge>
                 ) : null}
                 <Badge variant="outline" className="shrink-0 whitespace-nowrap">
-                  {r.hasReturnShipping
-                    ? "반납 운송장 등록됨"
-                    : "반납 운송장 미등록"}
+                  {r.hasReturnShipping ? "반납 운송장 등록됨" : "반납 운송장 미등록"}
                 </Badge>
               </div>
 
@@ -338,12 +305,7 @@ export default function RentalsList() {
               </div>
 
               <div className="grid grid-cols-1 gap-2 border-t border-border/60 pt-3 bp-sm:flex bp-sm:flex-wrap bp-sm:items-center md:pt-4 [&_button]:w-full bp-sm:[&_button]:w-auto">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  asChild
-                  className="bg-transparent"
-                >
+                <Button size="sm" variant="outline" asChild className="bg-transparent">
                   <Link
                     href={`/mypage?tab=orders&flowType=rental&flowId=${r.id}&from=orders`}
                     className="inline-flex items-center gap-1"
@@ -354,12 +316,7 @@ export default function RentalsList() {
                 </Button>
 
                 {r.stringingApplicationId ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    asChild
-                    className="bg-transparent"
-                  >
+                  <Button size="sm" variant="outline" asChild className="bg-transparent">
                     <Link
                       href={`/mypage?tab=orders&flowType=application&flowId=${r.stringingApplicationId}&from=orders`}
                       className="inline-flex items-center gap-1"
@@ -369,12 +326,7 @@ export default function RentalsList() {
                     </Link>
                   </Button>
                 ) : r.withStringService ? (
-                  <Button
-                    size="sm"
-                    variant="default"
-                    className="shadow-sm"
-                    asChild
-                  >
+                  <Button size="sm" variant="default" className="shadow-sm" asChild>
                     <Link
                       href={`/services/apply?rentalId=${r.id}`}
                       className="inline-flex items-center gap-1"
@@ -425,9 +377,7 @@ export default function RentalsList() {
             더 보기
           </Button>
         ) : flat.length ? (
-          <span className="text-sm text-foreground/80">
-            마지막 페이지입니다
-          </span>
+          <span className="text-sm text-foreground/80">마지막 페이지입니다</span>
         ) : null}
       </div>
 

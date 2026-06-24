@@ -13,10 +13,7 @@ export async function GET() {
   // 자주 호출되는 공통 경로에서 users.findOne() 1회를 줄이면 누적 지연이 줄어듭니다.
   const userId = await getCurrentUserId();
   if (!userId) {
-    return NextResponse.json(
-      { ok: false, error: "Unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -36,9 +33,6 @@ export async function GET() {
     return NextResponse.json({ ok: true, count });
   } catch (e) {
     console.error("[messages/unread-count] error", e);
-    return NextResponse.json(
-      { ok: false, error: "DB unavailable" },
-      { status: 503 },
-    );
+    return NextResponse.json({ ok: false, error: "DB unavailable" }, { status: 503 });
   }
 }

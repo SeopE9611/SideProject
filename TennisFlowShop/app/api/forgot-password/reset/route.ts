@@ -40,20 +40,14 @@ export async function POST(req: Request) {
     try {
       body = await req.json();
     } catch {
-      return NextResponse.json(
-        { message: "요청 형식이 올바르지 않습니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "요청 형식이 올바르지 않습니다." }, { status: 400 });
     }
 
     const token = String(body?.token ?? "");
     const newPassword = String(body?.newPassword ?? "");
 
     if (!token) {
-      return NextResponse.json(
-        { message: "재설정 토큰이 필요합니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "재설정 토큰이 필요합니다." }, { status: 400 });
     }
 
     if (!isPasswordValid(newPassword)) {
@@ -63,8 +57,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const tokenPolicy =
-      AUTH_RATE_LIMIT_POLICIES.forgot_password_reset.identifier;
+    const tokenPolicy = AUTH_RATE_LIMIT_POLICIES.forgot_password_reset.identifier;
     if (!tokenPolicy) {
       console.error("[forgot-password/reset] token rate limit policy missing");
       return NextResponse.json(
@@ -83,9 +76,7 @@ export async function POST(req: Request) {
     if (tokenRateLimited) return tokenRateLimited;
 
     if (!isRecoveryTokenSecretConfigured()) {
-      console.error(
-        "[forgot-password/reset] RECOVERY_TOKEN_SECRET is not configured",
-      );
+      console.error("[forgot-password/reset] RECOVERY_TOKEN_SECRET is not configured");
       return NextResponse.json(
         { message: "비밀번호 재설정 중 오류가 발생했습니다." },
         { status: 500 },
@@ -122,10 +113,7 @@ export async function POST(req: Request) {
 
     // 토큰 payload에 담긴 이메일과 실제 사용자 이메일이 다르면 거부
     // JWT 자체는 유효하더라도 다른 계정에 잘못 적용되는 걸 한 번 더 방지합니다.
-    if (
-      String(user.email ?? "").toLowerCase() !==
-      String(payload.email ?? "").toLowerCase()
-    ) {
+    if (String(user.email ?? "").toLowerCase() !== String(payload.email ?? "").toLowerCase()) {
       return NextResponse.json(
         { message: "유효하지 않거나 만료된 비밀번호 재설정 링크입니다." },
         { status: 400 },
@@ -143,10 +131,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (
-      !user.passwordResetExpires ||
-      new Date(user.passwordResetExpires).getTime() < Date.now()
-    ) {
+    if (!user.passwordResetExpires || new Date(user.passwordResetExpires).getTime() < Date.now()) {
       return NextResponse.json(
         { message: "비밀번호 재설정 링크가 만료되었습니다." },
         { status: 400 },

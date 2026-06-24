@@ -8,10 +8,7 @@ export const PRODUCT_FEATURE_ITEMS = [
 
 export type ProductFeatureKey = (typeof PRODUCT_FEATURE_ITEMS)[number]["key"];
 
-export function normalizeFeatureScoreTo100(
-  value: unknown,
-  fallback = 60,
-): number {
+export function normalizeFeatureScoreTo100(value: unknown, fallback = 60): number {
   const n = Number(value);
 
   if (!Number.isFinite(n) || n <= 0) return fallback;
@@ -26,25 +23,10 @@ export function normalizeFeatureScoresTo100(
   fallback = 60,
 ): Record<ProductFeatureKey, number> {
   return {
-    power: normalizeFeatureScoreTo100(
-      features?.power ?? features?.["반발력"],
-      fallback,
-    ),
-    control: normalizeFeatureScoreTo100(
-      features?.control ?? features?.["컨트롤"],
-      fallback,
-    ),
-    spin: normalizeFeatureScoreTo100(
-      features?.spin ?? features?.["스핀"],
-      fallback,
-    ),
-    durability: normalizeFeatureScoreTo100(
-      features?.durability ?? features?.["내구성"],
-      fallback,
-    ),
-    comfort: normalizeFeatureScoreTo100(
-      features?.comfort ?? features?.["편안함"],
-      fallback,
-    ),
+    power: normalizeFeatureScoreTo100(features?.power ?? features?.["반발력"], fallback),
+    control: normalizeFeatureScoreTo100(features?.control ?? features?.["컨트롤"], fallback),
+    spin: normalizeFeatureScoreTo100(features?.spin ?? features?.["스핀"], fallback),
+    durability: normalizeFeatureScoreTo100(features?.durability ?? features?.["내구성"], fallback),
+    comfort: normalizeFeatureScoreTo100(features?.comfort ?? features?.["편안함"], fallback),
   };
 }

@@ -1,7 +1,4 @@
-import {
-  MARKET_BRANDS_BY_CATEGORY,
-  MARKET_BRAND_LABEL_MAP,
-} from "@/lib/market";
+import { MARKET_BRANDS_BY_CATEGORY, MARKET_BRAND_LABEL_MAP } from "@/lib/market";
 
 export type BoardType = "free" | "market" | "gear";
 
@@ -17,10 +14,7 @@ export type BoardTypeConfig = {
   emptyDescription: string;
   categories: Array<{ value: string; label: string }>;
   categoryMap: Record<string, CategoryConfig>;
-  brandOptionsByCategory?: Record<
-    string,
-    ReadonlyArray<{ value: string; label: string }>
-  >;
+  brandOptionsByCategory?: Record<string, ReadonlyArray<{ value: string; label: string }>>;
   brandLabelMap?: Record<string, string>;
 };
 
@@ -29,19 +23,15 @@ export function getCategoryBadgeText(category: CategoryConfig) {
 }
 
 function createCategoryMap(categories: CategoryConfig[]) {
-  return Object.fromEntries(
-    categories.map((category) => [category.value, category]),
-  );
+  return Object.fromEntries(categories.map((category) => [category.value, category]));
 }
 
 export const FREE_BOARD_CONFIG: BoardTypeConfig = {
   boardType: "free",
   routePrefix: "/board/free",
   boardTitle: "자유 게시판",
-  boardDescription:
-    "테니스 관련 질문, 정보 공유, 일상 이야기를 자유롭게 나눌 수 있는 공간입니다.",
-  cardDescription:
-    "질문, 정보 공유, 후기, 잡담 등 다양한 이야기를 자유롭게 남겨 보세요.",
+  boardDescription: "테니스 관련 질문, 정보 공유, 일상 이야기를 자유롭게 나눌 수 있는 공간입니다.",
+  cardDescription: "질문, 정보 공유, 후기, 잡담 등 다양한 이야기를 자유롭게 남겨 보세요.",
   errorMessage: "자유 게시판을 불러오는 중 오류가 발생했습니다.",
   emptyDescription: "자유 게시판의 첫 번째 글을 작성해 보세요.",
   categories: [
@@ -86,10 +76,8 @@ export const GEAR_BOARD_CONFIG: BoardTypeConfig = {
   boardType: "gear",
   routePrefix: "/board/gear",
   boardTitle: "장비 사용기",
-  boardDescription:
-    "직접 사용해본 라켓과 스트링, 테니스 장비 경험을 공유하는 커뮤니티 공간입니다.",
-  cardDescription:
-    "라켓, 스트링, 테니스화 등 장비 사용 경험을 자유롭게 공유해 보세요.",
+  boardDescription: "직접 사용해본 라켓과 스트링, 테니스 장비 경험을 공유하는 커뮤니티 공간입니다.",
+  cardDescription: "라켓, 스트링, 테니스화 등 장비 사용 경험을 자유롭게 공유해 보세요.",
   errorMessage: "장비 사용기 게시판을 불러오는 중 오류가 발생했습니다.",
   emptyDescription: "첫 번째 글을 작성해 보세요.",
   categories: [

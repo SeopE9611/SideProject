@@ -2,9 +2,7 @@
 
 import useSWR from "swr";
 
-type UnreadCountRes =
-  | { ok: true; count: number }
-  | { ok: false; error: string };
+type UnreadCountRes = { ok: true; count: number } | { ok: false; error: string };
 
 const fetcher = async (url: string): Promise<UnreadCountRes> => {
   const res = await fetch(url, { credentials: "include" });

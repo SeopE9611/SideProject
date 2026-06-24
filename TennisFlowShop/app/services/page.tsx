@@ -34,7 +34,11 @@ export const metadata: Metadata = {
   title: "장착 서비스",
 };
 
-const formatPriceRange = (min: number | null | undefined, max: number | null | undefined, emptyLabel = "-") => {
+const formatPriceRange = (
+  min: number | null | undefined,
+  max: number | null | undefined,
+  emptyLabel = "-",
+) => {
   if (min == null && max == null) return emptyLabel;
   if (min != null && max != null) {
     return min === max
@@ -54,7 +58,12 @@ export default async function ServicesPage() {
       id: 1,
       title: "파워형 스트링",
       description: "강력한 파워와 반발력을 제공하는 스트링",
-      features: ["최대한의 파워 제공", "부드러운 타구감", "관절에 부담이 적음", "낮은 장력에서도 충분한 반발력"],
+      features: [
+        "최대한의 파워 제공",
+        "부드러운 타구감",
+        "관절에 부담이 적음",
+        "낮은 장력에서도 충분한 반발력",
+      ],
       recommended: [
         "파워 중심의 플레이 스타일",
         "어깨나 팔꿈치에 부담을 줄이고 싶은 분",
@@ -69,14 +78,25 @@ export default async function ServicesPage() {
       id: 2,
       title: "스핀형 스트링",
       description: "정확한 컨트롤과 스핀을 위한 스트링",
-      features: ["최대한의 스핀 생성", "정확한 볼 컨트롤", "내구성이 우수함", "중상급자용 하드 히팅에 적합"],
+      features: [
+        "최대한의 스핀 생성",
+        "정확한 볼 컨트롤",
+        "내구성이 우수함",
+        "중상급자용 하드 히팅에 적합",
+      ],
       recommended: [
         "컨트롤과 스핀 중심의 플레이 스타일",
         "강한 스트로크로 공격하는 플레이어",
         "중급자 및 상급자",
         "정확한 샷 배치를 중요시하는 분",
       ],
-      examples: ["볼키 사이클론", "탑스핀 센서스로테이션", "요넥스 폴리투어스핀", "Msv포커스헥스", "솔린코 하이퍼지"],
+      examples: [
+        "볼키 사이클론",
+        "탑스핀 센서스로테이션",
+        "요넥스 폴리투어스핀",
+        "Msv포커스헥스",
+        "솔린코 하이퍼지",
+      ],
       icon: <RotateCw className="h-8 w-8" />,
       performance: { power: 75, control: 95, spin: 90, durability: 85 },
     },
@@ -96,7 +116,12 @@ export default async function ServicesPage() {
         "파워와 컨트롤 모두 중요시하는 분",
         "모든 수준의 플레이어",
       ],
-      examples: ["핀포인트 엑스펜타", "탑스핀 사이버플래쉬", "요넥스 폴리투어프로", "솔린코 투어바이트소프트"],
+      examples: [
+        "핀포인트 엑스펜타",
+        "탑스핀 사이버플래쉬",
+        "요넥스 폴리투어프로",
+        "솔린코 투어바이트소프트",
+      ],
       icon: <Shield className="h-8 w-8" />,
       performance: { power: 85, control: 85, spin: 80, durability: 90 },
     },
@@ -297,7 +322,9 @@ export default async function ServicesPage() {
 
                     <PublicSurface variant="muted" padding="sm" className="mt-4">
                       <p className="text-ui-caption font-medium text-primary">진행 순서</p>
-                      <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground">{item.steps}</p>
+                      <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground">
+                        {item.steps}
+                      </p>
                     </PublicSurface>
 
                     <div className="mt-auto pt-5">
@@ -321,14 +348,19 @@ export default async function ServicesPage() {
                     </h3>
                     <p className="text-ui-body-sm leading-relaxed text-muted-foreground">
                       추천 도우미, 가격 안내, FAQ, 전화 상담을 한{"\u00A0"}
-                      곳에 모았습니다. 테니스 스트링 쇼핑은 첫 번째 신청 카드에서 바로 이어갈 수 있어요.
+                      곳에 모았습니다. 테니스 스트링 쇼핑은 첫 번째 신청 카드에서 바로 이어갈 수
+                      있어요.
                     </p>
                   </div>
                   <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
                     {serviceNoticeChips.map((notice) => (
                       <PublicSurface key={notice.title} padding="sm">
-                        <p className="text-ui-body-sm font-medium text-foreground">{notice.title}</p>
-                        <p className="mt-1 text-ui-label leading-relaxed text-muted-foreground">{notice.description}</p>
+                        <p className="text-ui-body-sm font-medium text-foreground">
+                          {notice.title}
+                        </p>
+                        <p className="mt-1 text-ui-label leading-relaxed text-muted-foreground">
+                          {notice.description}
+                        </p>
                       </PublicSurface>
                     ))}
                   </div>
@@ -391,12 +423,20 @@ export default async function ServicesPage() {
 
                 {/* 성능 차트 */}
                 <PublicSurface variant="muted" padding="sm">
-                  <h4 className="mb-3 text-center text-ui-label font-medium text-foreground">성능 특성</h4>
+                  <h4 className="mb-3 text-center text-ui-label font-medium text-foreground">
+                    성능 특성
+                  </h4>
                   <div className="space-y-2">
                     {Object.entries(type.performance).map(([key, value]) => (
                       <div key={key} className="flex items-center justify-between">
                         <span className="text-ui-label capitalize text-muted-foreground">
-                          {key === "power" ? "파워" : key === "control" ? "컨트롤" : key === "spin" ? "스핀" : "내구성"}
+                          {key === "power"
+                            ? "파워"
+                            : key === "control"
+                              ? "컨트롤"
+                              : key === "spin"
+                                ? "스핀"
+                                : "내구성"}
                         </span>
                         <div className="mx-3 h-2 flex-1 rounded-full bg-muted">
                           <div
@@ -418,7 +458,10 @@ export default async function ServicesPage() {
                   </h4>
                   <ul className="space-y-2">
                     {type.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start text-ui-body-sm text-muted-foreground">
+                      <li
+                        key={idx}
+                        className="flex items-start text-ui-body-sm text-muted-foreground"
+                      >
                         <div className="mr-3 mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-muted-foreground/70"></div>
                         <span className="min-w-0 break-words">{feature}</span>
                       </li>
@@ -434,7 +477,10 @@ export default async function ServicesPage() {
                   </h4>
                   <ul className="space-y-2">
                     {type.recommended.slice(0, 2).map((rec, idx) => (
-                      <li key={idx} className="flex items-start text-ui-body-sm text-muted-foreground">
+                      <li
+                        key={idx}
+                        className="flex items-start text-ui-body-sm text-muted-foreground"
+                      >
                         <ArrowRight className="mr-2 mt-1 h-3 w-3 flex-shrink-0 text-muted-foreground" />
                         <span className="min-w-0 break-words">{rec}</span>
                       </li>
@@ -447,7 +493,11 @@ export default async function ServicesPage() {
                   <h4 className="mb-3 text-ui-body-sm font-medium text-foreground">대표 제품</h4>
                   <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                     {type.examples.map((example, idx) => (
-                      <Badge key={idx} variant="secondary" className="max-w-full whitespace-normal break-keep">
+                      <Badge
+                        key={idx}
+                        variant="secondary"
+                        className="max-w-full whitespace-normal break-keep"
+                      >
                         {example}
                       </Badge>
                     ))}
@@ -460,7 +510,10 @@ export default async function ServicesPage() {
       </section>
 
       {/* 가격 안내 섹션 */}
-      <section className="bg-background py-12 scroll-mt-24 bp-md:scroll-mt-28 bp-md:py-16 bp-lg:py-20" id="pricing">
+      <section
+        className="bg-background py-12 scroll-mt-24 bp-md:scroll-mt-28 bp-md:py-16 bp-lg:py-20"
+        id="pricing"
+      >
         <SiteContainer>
           <SectionHeader
             align="center"
@@ -493,8 +546,12 @@ export default async function ServicesPage() {
                   <div className="whitespace-nowrap tabular-nums text-ui-price-lg font-semibold text-foreground bp-sm:text-ui-page-title">
                     {item.priceLabel}
                   </div>
-                  <div className="text-ui-body-sm text-muted-foreground">소요시간: {item.duration}</div>
-                  <p className="mt-4 text-ui-body-sm leading-relaxed text-muted-foreground">{item.description}</p>
+                  <div className="text-ui-body-sm text-muted-foreground">
+                    소요시간: {item.duration}
+                  </div>
+                  <p className="mt-4 text-ui-body-sm leading-relaxed text-muted-foreground">
+                    {item.description}
+                  </p>
                 </div>
               </PublicSurface>
             ))}
@@ -518,7 +575,9 @@ export default async function ServicesPage() {
                 하이브리드 조합 안내
               </h3>
               <div className="space-y-1 text-ui-body-sm text-muted-foreground">
-                <p>하이브리드는 단일 재질이 아닌 조합 방식으로, 단일 재질 가격대와 분리해 안내합니다.</p>
+                <p>
+                  하이브리드는 단일 재질이 아닌 조합 방식으로, 단일 재질 가격대와 분리해 안내합니다.
+                </p>
                 <p className="whitespace-nowrap tabular-nums">
                   등록된 하이브리드 상품: {hybridGuide.count.toLocaleString()}개
                 </p>
@@ -539,7 +598,9 @@ export default async function ServicesPage() {
                       <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center text-muted-foreground mr-3">
                         {service.icon}
                       </div>
-                      <h4 className="text-ui-body-sm font-medium text-foreground">{service.title}</h4>
+                      <h4 className="text-ui-body-sm font-medium text-foreground">
+                        {service.title}
+                      </h4>
                     </div>
                     {service.free ? (
                       <Badge variant="info">무료</Badge>
@@ -584,7 +645,9 @@ export default async function ServicesPage() {
                       {step.step}
                     </div>
                   </div>
-                  <h3 className="mb-3 text-ui-card-title-lg font-semibold text-foreground bp-md:mb-4">{step.title}</h3>
+                  <h3 className="mb-3 text-ui-card-title-lg font-semibold text-foreground bp-md:mb-4">
+                    {step.title}
+                  </h3>
                   <p className="text-ui-body-sm leading-relaxed text-muted-foreground bp-md:text-ui-body">
                     {step.description}
                   </p>

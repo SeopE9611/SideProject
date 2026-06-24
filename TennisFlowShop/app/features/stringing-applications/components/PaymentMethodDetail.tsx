@@ -29,19 +29,13 @@ const EASY_PAY_PROVIDER_LABEL_MAP: Record<string, string> = {
   LGPAY: "LG페이",
 };
 
-function getTossMethodLabel(
-  method?: string | null,
-  easyPayProvider?: string | null,
-) {
+function getTossMethodLabel(method?: string | null, easyPayProvider?: string | null) {
   const normalized = String(method ?? "")
     .trim()
     .toUpperCase();
   const hasEasyPayProvider = Boolean(String(easyPayProvider ?? "").trim());
 
-  if (
-    normalized.includes("CARD") &&
-    (normalized.includes("EASY") || hasEasyPayProvider)
-  ) {
+  if (normalized.includes("CARD") && (normalized.includes("EASY") || hasEasyPayProvider)) {
     return "카드/간편결제";
   }
   if (normalized.includes("EASY") || hasEasyPayProvider) {
@@ -53,19 +47,13 @@ function getTossMethodLabel(
   return "카드/간편결제";
 }
 
-function getNiceMethodLabel(
-  method?: string | null,
-  easyPayProvider?: string | null,
-) {
+function getNiceMethodLabel(method?: string | null, easyPayProvider?: string | null) {
   const normalized = String(method ?? "")
     .trim()
     .toUpperCase();
   const hasEasyPayProvider = Boolean(String(easyPayProvider ?? "").trim());
 
-  if (
-    normalized.includes("CARD") &&
-    (normalized.includes("EASY") || hasEasyPayProvider)
-  ) {
+  if (normalized.includes("CARD") && (normalized.includes("EASY") || hasEasyPayProvider)) {
     return "카드/간편결제";
   }
   if (normalized.includes("EASY") || hasEasyPayProvider) {
@@ -153,11 +141,8 @@ export default function PaymentMethodDetail({
     paymentCardCompany,
   });
   const approvedAtLabel = formatApprovedAt(approvedAt);
-  const resolvedMethodLabel = isPackagePayment
-    ? "패키지 사용"
-    : String(method ?? "").trim();
-  const shouldShowBankBox =
-    !isPackagePayment && !isTossPayment && !isNicePayment && !!bankInfo;
+  const resolvedMethodLabel = isPackagePayment ? "패키지 사용" : String(method ?? "").trim();
+  const shouldShowBankBox = !isPackagePayment && !isTossPayment && !isNicePayment && !!bankInfo;
 
   return (
     <div className="space-y-2">
@@ -167,62 +152,38 @@ export default function PaymentMethodDetail({
           <div className="mt-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground/90 leading-relaxed space-y-1">
             <div className="font-semibold text-foreground">패키지 사용</div>
             {paymentStatus && (
-              <div className="text-sm text-muted-foreground">
-                결제 상태: {paymentStatus}
-              </div>
+              <div className="text-sm text-muted-foreground">결제 상태: {paymentStatus}</div>
             )}
           </div>
         ) : isTossPayment ? (
           <div className="mt-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground/90 leading-relaxed space-y-1">
-            <div className="font-semibold text-foreground">
-              {tossMethodLabel}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              결제 제공사: Toss Payments
-            </div>
+            <div className="font-semibold text-foreground">{tossMethodLabel}</div>
+            <div className="text-sm text-muted-foreground">결제 제공사: Toss Payments</div>
             {easyPayProviderLabel && (
-              <div className="text-sm text-muted-foreground">
-                간편결제: {easyPayProviderLabel}
-              </div>
+              <div className="text-sm text-muted-foreground">간편결제: {easyPayProviderLabel}</div>
             )}
             {paymentStatus && (
-              <div className="text-sm text-muted-foreground">
-                결제 상태: {paymentStatus}
-              </div>
+              <div className="text-sm text-muted-foreground">결제 상태: {paymentStatus}</div>
             )}
             {approvedAtLabel && (
-              <div className="text-sm text-muted-foreground">
-                승인 시각: {approvedAtLabel}
-              </div>
+              <div className="text-sm text-muted-foreground">승인 시각: {approvedAtLabel}</div>
             )}
           </div>
         ) : isNicePayment ? (
           <div className="mt-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground/90 leading-relaxed space-y-1">
-            <div className="font-semibold text-foreground">
-              {niceMethodLabel}
-            </div>
+            <div className="font-semibold text-foreground">{niceMethodLabel}</div>
             {cardDisplayName && (
-              <div className="text-sm text-muted-foreground">
-                카드사: {cardDisplayName}
-              </div>
+              <div className="text-sm text-muted-foreground">카드사: {cardDisplayName}</div>
             )}
-            <div className="text-sm text-muted-foreground">
-              결제수단: 카드/간편결제
-            </div>
+            <div className="text-sm text-muted-foreground">결제수단: 카드/간편결제</div>
             {paymentStatus && (
-              <div className="text-sm text-muted-foreground">
-                결제 상태: {paymentStatus}
-              </div>
+              <div className="text-sm text-muted-foreground">결제 상태: {paymentStatus}</div>
             )}
             {paymentTid && (
-              <div className="text-sm text-muted-foreground">
-                거래 TID: {paymentTid}
-              </div>
+              <div className="text-sm text-muted-foreground">거래 TID: {paymentTid}</div>
             )}
             {approvedAtLabel && (
-              <div className="text-sm text-muted-foreground">
-                승인 시각: {approvedAtLabel}
-              </div>
+              <div className="text-sm text-muted-foreground">승인 시각: {approvedAtLabel}</div>
             )}
             {paymentNiceSync?.pgStatus && (
               <div className="text-sm text-muted-foreground">
@@ -231,8 +192,7 @@ export default function PaymentMethodDetail({
             )}
             {paymentNiceSync?.lastSyncedAt && (
               <div className="text-sm text-muted-foreground">
-                최근 동기화:{" "}
-                {new Date(paymentNiceSync.lastSyncedAt).toLocaleString("ko-KR")}
+                최근 동기화: {new Date(paymentNiceSync.lastSyncedAt).toLocaleString("ko-KR")}
               </div>
             )}
           </div>
@@ -243,12 +203,8 @@ export default function PaymentMethodDetail({
               {resolvedMethodLabel || "무통장입금"}
             </div>
             <div className="font-medium text-foreground">{bankInfo.label}</div>
-            <div className="font-mono tracking-wide text-foreground">
-              {bankInfo.account}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              예금주: {bankInfo.holder}
-            </div>
+            <div className="font-mono tracking-wide text-foreground">{bankInfo.account}</div>
+            <div className="text-sm text-muted-foreground">예금주: {bankInfo.holder}</div>
           </div>
         )}
         {!isPackagePayment && !isTossPayment && !isNicePayment && !bankInfo && (
@@ -256,11 +212,9 @@ export default function PaymentMethodDetail({
             {resolvedMethodLabel || "결제 정보 확인 필요"}
           </div>
         )}
-        {!isPackagePayment &&
-          !isTossPayment &&
-          !isNicePayment &&
-          !bankInfo &&
-          bankKey && <div className="text-sm">{bankKey}</div>}
+        {!isPackagePayment && !isTossPayment && !isNicePayment && !bankInfo && bankKey && (
+          <div className="text-sm">{bankKey}</div>
+        )}
         {!isPackagePayment && !isTossPayment && !isNicePayment && depositor && (
           <div>
             <div className="text-sm font-medium">입금자명</div>

@@ -9,10 +9,7 @@ export async function POST(req: Request) {
     const real = process.env.AUTH_PASSWORD;
 
     if (!real) {
-      return NextResponse.json(
-        { ok: false, message: "서버 비번 미설정" },
-        { status: 500 },
-      );
+      return NextResponse.json({ ok: false, message: "서버 비번 미설정" }, { status: 500 });
     }
     if (password !== real) {
       return NextResponse.json(
@@ -45,9 +42,6 @@ export async function POST(req: Request) {
 
     return res;
   } catch {
-    return NextResponse.json(
-      { ok: false, message: "요청 형식 오류" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, message: "요청 형식 오류" }, { status: 400 });
   }
 }

@@ -13,15 +13,12 @@ function toBoolean(value: unknown): boolean | undefined {
 }
 
 function toOptionalFiniteNumber(value: unknown): number | undefined {
-  return typeof value === "number" && Number.isFinite(value)
-    ? value
-    : undefined;
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
 
 function pickImage(raw: Record<string, unknown>): string | undefined {
   if (typeof raw.image === "string" && raw.image) return raw.image;
-  if (Array.isArray(raw.images) && typeof raw.images[0] === "string")
-    return raw.images[0];
+  if (Array.isArray(raw.images) && typeof raw.images[0] === "string") return raw.images[0];
   return undefined;
 }
 
@@ -44,11 +41,9 @@ export function normalizeRecommendableProduct(
           ).trim() || undefined
         : undefined;
 
-  const featuresRaw =
-    (raw.features as Record<string, unknown> | undefined) ?? {};
+  const featuresRaw = (raw.features as Record<string, unknown> | undefined) ?? {};
   const tagsRaw = (raw.tags as Record<string, unknown> | undefined) ?? {};
-  const inventoryRaw =
-    (raw.inventory as Record<string, unknown> | undefined) ?? {};
+  const inventoryRaw = (raw.inventory as Record<string, unknown> | undefined) ?? {};
 
   return {
     id,
@@ -61,19 +56,13 @@ export function normalizeRecommendableProduct(
     gaugeOptions: Array.isArray(raw.gaugeOptions)
       ? raw.gaugeOptions.map(String).filter(Boolean)
       : undefined,
-    gaugeInventories: Array.isArray(raw.gaugeInventories)
-      ? raw.gaugeInventories
-      : undefined,
+    gaugeInventories: Array.isArray(raw.gaugeInventories) ? raw.gaugeInventories : undefined,
     color: typeof raw.color === "string" ? raw.color : undefined,
     colorOptions: Array.isArray(raw.colorOptions)
       ? raw.colorOptions.map(String).filter(Boolean)
       : undefined,
-    colorInventories: Array.isArray(raw.colorInventories)
-      ? raw.colorInventories
-      : undefined,
-    variantInventories: Array.isArray(raw.variantInventories)
-      ? raw.variantInventories
-      : undefined,
+    colorInventories: Array.isArray(raw.colorInventories) ? raw.colorInventories : undefined,
+    variantInventories: Array.isArray(raw.variantInventories) ? raw.variantInventories : undefined,
     mountingFee: toOptionalFiniteNumber(raw.mountingFee),
     shippingFee: toNumber(raw.shippingFee, 0),
     features: {
@@ -94,10 +83,7 @@ export function normalizeRecommendableProduct(
     },
     inventory: {
       stock: toNumber(inventoryRaw.stock, 0),
-      status:
-        typeof inventoryRaw.status === "string"
-          ? inventoryRaw.status
-          : undefined,
+      status: typeof inventoryRaw.status === "string" ? inventoryRaw.status : undefined,
       manageStock: toBoolean(inventoryRaw.manageStock),
       allowBackorder: toBoolean(inventoryRaw.allowBackorder),
       isSale: toBoolean(inventoryRaw.isSale),

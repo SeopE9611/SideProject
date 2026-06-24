@@ -15,14 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ChangeEvent,
-  FormEvent,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   getMarketBrandOptions,
@@ -61,21 +54,16 @@ const TITLE_MAX = 80;
 const CONTENT_MIN = 10;
 const CONTENT_MAX = 5000;
 const hasHtmlLike = (s: string) => /<[^>]+>/.test(s); // 최소 수준 태그 감지
-const hasScriptLike = (s: string) =>
-  /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
+const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
 
 // marketMeta 내부 값이 하나라도 채워졌는지 확인
 // - 기본값(selling/B 등)만 있는 상태는 dirty로 보지 않고,
 // - 가격/메모/스펙 입력이 시작되면 즉시 dirty 처리합니다.
-const hasMarketMetaInput = (
-  category: CategoryValue,
-  marketMeta: MarketMeta,
-) => {
+const hasMarketMetaInput = (category: CategoryValue, marketMeta: MarketMeta) => {
   const normalized = normalizeMarketMeta(category, marketMeta);
   if (!normalized) return false;
 
-  if (typeof normalized.price === "number" && Number.isFinite(normalized.price))
-    return true;
+  if (typeof normalized.price === "number" && Number.isFinite(normalized.price)) return true;
   if ((normalized.conditionNote ?? "").trim()) return true;
 
   if (category === "racket") {
@@ -110,14 +98,7 @@ const hasMarketMetaInput = (
   return false;
 };
 
-type FieldKey =
-  | "category"
-  | "brand"
-  | "price"
-  | "modelName"
-  | "title"
-  | "content"
-  | "attachments";
+type FieldKey = "category" | "brand" | "price" | "modelName" | "title" | "content" | "attachments";
 type FieldErrors = Partial<Record<FieldKey, string>>;
 const scrollIntoViewOpts: ScrollIntoViewOptions = {
   behavior: "smooth",
@@ -181,15 +162,7 @@ export default function FreeBoardWriteClient() {
     if (selectedFiles.length > 0) return true;
     if (hasMarketMetaInput(category, marketMeta)) return true;
     return false;
-  }, [
-    title,
-    content,
-    category,
-    brand,
-    images.length,
-    selectedFiles.length,
-    marketMeta,
-  ]);
+  }, [title, content, category, brand, images.length, selectedFiles.length, marketMeta]);
 
   // 탭 닫기/새로고침/주소 직접 변경 등 “브라우저 이탈” 경고
   useUnsavedChangesGuard(isDirty && !isSubmitting);
@@ -246,11 +219,7 @@ export default function FreeBoardWriteClient() {
   };
 
   // 클라(제출 전) 유효성: 토스트 없이 "필드별 인라인 + 상단 메시지"로만 안내 (중복 UX 방지)
-  const setInlineError = (
-    key: FieldKey,
-    msg: string,
-    formMsg = "입력값을 확인해 주세요.",
-  ) => {
+  const setInlineError = (key: FieldKey, msg: string, formMsg = "입력값을 확인해 주세요.") => {
     setFieldErrors((prev) => ({ ...prev, [key]: msg }));
     setErrorMsg(formMsg);
     requestAnimationFrame(() => focusField(key));
@@ -273,10 +242,8 @@ export default function FreeBoardWriteClient() {
 
   // 카테고리 전환 시 불필요한 spec은 즉시 정리
   useEffect(() => {
-    if (category === "racket")
-      setMarketMeta((prev) => ({ ...prev, stringSpec: null }));
-    else if (category === "string")
-      setMarketMeta((prev) => ({ ...prev, racketSpec: null }));
+    if (category === "racket") setMarketMeta((prev) => ({ ...prev, stringSpec: null }));
+    else if (category === "string") setMarketMeta((prev) => ({ ...prev, racketSpec: null }));
     else
       setMarketMeta((prev) => ({
         ...prev,
@@ -293,11 +260,7 @@ export default function FreeBoardWriteClient() {
       price: undefined,
       modelName: undefined,
     }));
-  }, [
-    marketMeta.price,
-    marketMeta.racketSpec?.modelName,
-    marketMeta.stringSpec?.modelName,
-  ]);
+  }, [marketMeta.price, marketMeta.racketSpec?.modelName, marketMeta.stringSpec?.modelName]);
 
   // 제출 직전 최종 유효성 검증(우회 방지)
   const validateBeforeSubmit = (): FieldErrors => {
@@ -317,20 +280,11 @@ export default function FreeBoardWriteClient() {
       else if (!isValidMarketBrandForCategory(category, brand))
         errs.brand = "선택한 브랜드가 분류에 맞지 않습니다.";
     }
-    if (
-      !Number.isFinite(Number(marketMeta.price)) ||
-      Number(marketMeta.price) <= 0
-    )
+    if (!Number.isFinite(Number(marketMeta.price)) || Number(marketMeta.price) <= 0)
       errs.price = "판매가는 1원 이상 입력해 주세요.";
-    if (
-      category === "racket" &&
-      !(marketMeta.racketSpec?.modelName ?? "").trim()
-    )
+    if (category === "racket" && !(marketMeta.racketSpec?.modelName ?? "").trim())
       errs.modelName = "라켓 모델명을 입력해 주세요.";
-    if (
-      category === "string" &&
-      !(marketMeta.stringSpec?.modelName ?? "").trim()
-    )
+    if (category === "string" && !(marketMeta.stringSpec?.modelName ?? "").trim())
       errs.modelName = "스트링 모델명을 입력해 주세요.";
 
     // 제목/내용 기본 + min/max 길이
@@ -338,14 +292,11 @@ export default function FreeBoardWriteClient() {
     if (!c) errs.content = "내용을 입력해 주세요.";
 
     if (!errs.title) {
-      if (t.length < TITLE_MIN)
-        errs.title = `제목은 ${TITLE_MIN}자 이상 입력해 주세요.`;
-      else if (t.length > TITLE_MAX)
-        errs.title = `제목은 ${TITLE_MAX}자 이내로 입력해 주세요.`;
+      if (t.length < TITLE_MIN) errs.title = `제목은 ${TITLE_MIN}자 이상 입력해 주세요.`;
+      else if (t.length > TITLE_MAX) errs.title = `제목은 ${TITLE_MAX}자 이내로 입력해 주세요.`;
     }
     if (!errs.content) {
-      if (c.length < CONTENT_MIN)
-        errs.content = `내용은 ${CONTENT_MIN}자 이상 입력해 주세요.`;
+      if (c.length < CONTENT_MIN) errs.content = `내용은 ${CONTENT_MIN}자 이상 입력해 주세요.`;
       else if (c.length > CONTENT_MAX)
         errs.content = `내용은 ${CONTENT_MAX}자 이내로 입력해 주세요.`;
     }
@@ -355,14 +306,11 @@ export default function FreeBoardWriteClient() {
       errs.title = "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.";
     if (!errs.content && hasScriptLike(c))
       errs.content = "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.";
-    if (!errs.title && hasHtmlLike(t))
-      errs.title = "HTML 태그는 사용할 수 없습니다.";
-    if (!errs.content && hasHtmlLike(c))
-      errs.content = "HTML 태그는 사용할 수 없습니다.";
+    if (!errs.title && hasHtmlLike(t)) errs.title = "HTML 태그는 사용할 수 없습니다.";
+    if (!errs.content && hasHtmlLike(c)) errs.content = "HTML 태그는 사용할 수 없습니다.";
 
     // 업로드 제한은 UI에서 막아도 devtools/드롭으로 우회될 수 있어 제출 직전 1회 더 방어
-    if (images.length > 5)
-      errs.attachments = "이미지는 최대 5장까지만 업로드할 수 있어요.";
+    if (images.length > 5) errs.attachments = "이미지는 최대 5장까지만 업로드할 수 있어요.";
     if (selectedFiles.length > MAX_FILES)
       errs.attachments = `파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`;
 
@@ -399,9 +347,7 @@ export default function FreeBoardWriteClient() {
 
     // 이미지 파일 방지 (이미지는 이미지 탭에서만)
     const isImageExt = (name: string) => /\.(jpe?g|png|gif|webp)$/i.test(name);
-    const hasImage = files.some(
-      (f) => f.type?.startsWith("image/") || isImageExt(f.name),
-    );
+    const hasImage = files.some((f) => f.type?.startsWith("image/") || isImageExt(f.name));
     if (hasImage) {
       setInlineError(
         "attachments",
@@ -412,8 +358,7 @@ export default function FreeBoardWriteClient() {
     }
 
     // 드롭 업로드는 accept를 우회할 수 있으므로, 문서 allowlist를 추가로 방어
-    const extOk = (name: string) =>
-      /\.(pdf|docx?|xlsx?|xls|pptx?|ppt|hwp|hwpx|txt)$/i.test(name);
+    const extOk = (name: string) => /\.(pdf|docx?|xlsx?|xls|pptx?|ppt|hwp|hwpx|txt)$/i.test(name);
     const ALLOWED_MIME = new Set<string>([
       "application/pdf",
       "application/msword",
@@ -425,9 +370,7 @@ export default function FreeBoardWriteClient() {
       "text/plain",
       // HWP/HWPX는 브라우저/OS별로 mime이 비어있거나 제각각이라 확장자 기반을 주로 사용
     ]);
-    const invalid = files.find(
-      (f) => !(ALLOWED_MIME.has(f.type) || extOk(f.name)),
-    );
+    const invalid = files.find((f) => !(ALLOWED_MIME.has(f.type) || extOk(f.name)));
     if (invalid) {
       setInlineError(
         "attachments",
@@ -438,8 +381,7 @@ export default function FreeBoardWriteClient() {
     }
 
     // 성공 케이스: 첨부 관련 에러/폼 에러는 해제
-    if (fieldErrors.attachments)
-      setFieldErrors((prev) => ({ ...prev, attachments: undefined }));
+    if (fieldErrors.attachments) setFieldErrors((prev) => ({ ...prev, attachments: undefined }));
     if (errorMsg) setErrorMsg(null);
 
     setSelectedFiles((prev) => [...prev, ...files]);
@@ -524,9 +466,7 @@ export default function FreeBoardWriteClient() {
       submitRef.current = true;
       setIsSubmitting(true);
 
-      let attachments:
-        | { name: string; url: string; size?: number }[]
-        | undefined;
+      let attachments: { name: string; url: string; size?: number }[] | undefined;
 
       if (selectedFiles.length > 0) {
         setIsUploadingFiles(true);
@@ -582,9 +522,7 @@ export default function FreeBoardWriteClient() {
       router.refresh();
     } catch (err) {
       console.error(err);
-      emitServerError(
-        "글 작성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-      );
+      emitServerError("글 작성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
     } finally {
       setIsSubmitting(false);
       submitRef.current = false;
@@ -592,11 +530,9 @@ export default function FreeBoardWriteClient() {
   };
 
   /* ── 요약 카드에 표시할 파생값 ── */
-  const categoryLabel =
-    CATEGORY_OPTIONS.find((o) => o.value === category)?.label ?? "-";
+  const categoryLabel = CATEGORY_OPTIONS.find((o) => o.value === category)?.label ?? "-";
   const brandLabel = brand
-    ? (getMarketBrandOptions(category).find((o) => o.value === brand)?.label ??
-      brand)
+    ? (getMarketBrandOptions(category).find((o) => o.value === brand)?.label ?? brand)
     : "-";
   const priceLabel =
     typeof marketMeta.price === "number" && marketMeta.price > 0
@@ -677,12 +613,7 @@ export default function FreeBoardWriteClient() {
             </p>
           </div>
           <div className="flex w-full gap-2 sm:w-auto">
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="w-full gap-1 sm:w-auto"
-            >
+            <Button asChild variant="outline" size="sm" className="w-full gap-1 sm:w-auto">
               <Link href="/board/market" onClick={guardLeave}>
                 <ArrowLeft className="h-4 w-4" />
                 <span>목록으로</span>
@@ -703,9 +634,7 @@ export default function FreeBoardWriteClient() {
                     <Tag className="h-4 w-4" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-foreground">
-                      상품 기본 정보
-                    </h2>
+                    <h2 className="text-sm font-semibold text-foreground">상품 기본 정보</h2>
                     <p className="text-sm text-foreground/75">
                       판매할 상품의 분류와 브랜드를 선택하세요.
                     </p>
@@ -747,9 +676,7 @@ export default function FreeBoardWriteClient() {
                       ))}
                     </div>
                     {fieldErrors.category ? (
-                      <p className="text-xs text-destructive">
-                        {fieldErrors.category}
-                      </p>
+                      <p className="text-xs text-destructive">{fieldErrors.category}</p>
                     ) : null}
                   </div>
 
@@ -772,9 +699,7 @@ export default function FreeBoardWriteClient() {
                         disabled={isSubmitting}
                         className={cn(
                           selectCls,
-                          fieldErrors.brand
-                            ? "border-destructive focus:border-destructive"
-                            : "",
+                          fieldErrors.brand ? "border-destructive focus:border-destructive" : "",
                         )}
                       >
                         <option value="">브랜드를 선택해 주세요</option>
@@ -785,9 +710,7 @@ export default function FreeBoardWriteClient() {
                         ))}
                       </select>
                       {fieldErrors.brand ? (
-                        <p className="text-xs text-destructive">
-                          {fieldErrors.brand}
-                        </p>
+                        <p className="text-xs text-destructive">{fieldErrors.brand}</p>
                       ) : null}
                       <p className="text-sm text-foreground/75">
                         라켓/스트링 글은 브랜드 선택이 필수입니다.
@@ -818,12 +741,8 @@ export default function FreeBoardWriteClient() {
                     <FileText className="h-4 w-4" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-foreground">
-                      게시글 내용
-                    </h2>
-                    <p className="text-sm text-foreground/75">
-                      제목과 상세 설명을 작성하세요.
-                    </p>
+                    <h2 className="text-sm font-semibold text-foreground">게시글 내용</h2>
+                    <p className="text-sm text-foreground/75">제목과 상세 설명을 작성하세요.</p>
                   </div>
                 </div>
                 <div className="px-5 py-5 md:px-6 space-y-5">
@@ -859,9 +778,7 @@ export default function FreeBoardWriteClient() {
                         {title.trim().length}/{TITLE_MAX}
                       </span>
                       {fieldErrors.title ? (
-                        <p className="text-xs text-destructive">
-                          {fieldErrors.title}
-                        </p>
+                        <p className="text-xs text-destructive">{fieldErrors.title}</p>
                       ) : null}
                     </div>
                   </div>
@@ -900,9 +817,7 @@ export default function FreeBoardWriteClient() {
                         {content.trim().length}/{CONTENT_MAX}
                       </span>
                       {fieldErrors.content ? (
-                        <p className="text-xs text-destructive">
-                          {fieldErrors.content}
-                        </p>
+                        <p className="text-xs text-destructive">{fieldErrors.content}</p>
                       ) : null}
                     </div>
                   </div>
@@ -919,9 +834,7 @@ export default function FreeBoardWriteClient() {
                     <ImageIcon className="h-4 w-4" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-foreground">
-                      판매 이미지 / 파일
-                    </h2>
+                    <h2 className="text-sm font-semibold text-foreground">판매 이미지 / 파일</h2>
                     <p className="text-sm text-foreground/75">
                       실물 사진을 첨부하면 거래 성사율이 높아집니다.
                     </p>
@@ -929,9 +842,7 @@ export default function FreeBoardWriteClient() {
                 </div>
                 <div className="px-5 py-5 md:px-6 space-y-4">
                   {fieldErrors.attachments ? (
-                    <p className="text-xs text-destructive">
-                      {fieldErrors.attachments}
-                    </p>
+                    <p className="text-xs text-destructive">{fieldErrors.attachments}</p>
                   ) : null}
 
                   <Tabs defaultValue="image" className="w-full">
@@ -952,8 +863,7 @@ export default function FreeBoardWriteClient() {
                         <span className="font-medium text-foreground">
                           첫 번째 이미지가 대표 이미지
                         </span>
-                        로 사용됩니다. 최소 1장 이상 첨부를 권장합니다. (최대
-                        5장)
+                        로 사용됩니다. 최소 1장 이상 첨부를 권장합니다. (최대 5장)
                       </div>
                       <ImageUploader
                         value={images}
@@ -975,8 +885,7 @@ export default function FreeBoardWriteClient() {
                           fileInputRef.current?.click();
                         }}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ")
-                            fileInputRef.current?.click();
+                          if (e.key === "Enter" || e.key === " ") fileInputRef.current?.click();
                         }}
                         onDragOver={(e) => e.preventDefault()}
                         onDrop={(e) => {
@@ -989,8 +898,7 @@ export default function FreeBoardWriteClient() {
                           파일을 드래그하거나 클릭하여 업로드
                         </p>
                         <p className="mt-1 text-sm text-foreground/75">
-                          문서 파일만 가능 (파일당 최대 {MAX_SIZE_MB}MB, 최대{" "}
-                          {MAX_FILES}개)
+                          문서 파일만 가능 (파일당 최대 {MAX_SIZE_MB}MB, 최대 {MAX_FILES}개)
                         </p>
                         <Button
                           type="button"
@@ -1059,9 +967,7 @@ export default function FreeBoardWriteClient() {
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={
-                    isSubmitting || isUploadingImages || isUploadingFiles
-                  }
+                  disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                   onClick={handleCancel}
                 >
                   취소
@@ -1069,9 +975,7 @@ export default function FreeBoardWriteClient() {
                 <Button
                   type="submit"
                   className="gap-2 px-6"
-                  disabled={
-                    isSubmitting || isUploadingImages || isUploadingFiles
-                  }
+                  disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                 >
                   {isSubmitting ? (
                     <>
@@ -1096,9 +1000,7 @@ export default function FreeBoardWriteClient() {
                       isCompactSticky && "px-4 py-2.5",
                     )}
                   >
-                    <h3 className="text-sm font-semibold text-foreground">
-                      등록 요약
-                    </h3>
+                    <h3 className="text-sm font-semibold text-foreground">등록 요약</h3>
                   </div>
                   <div
                     className={cn(
@@ -1108,36 +1010,26 @@ export default function FreeBoardWriteClient() {
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">분류</span>
-                      <span className="font-medium text-foreground">
-                        {categoryLabel}
-                      </span>
+                      <span className="font-medium text-foreground">{categoryLabel}</span>
                     </div>
                     {isMarketBrandCategory(category) && (
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">브랜드</span>
-                        <span className="font-medium text-foreground">
-                          {brandLabel}
-                        </span>
+                        <span className="font-medium text-foreground">{brandLabel}</span>
                       </div>
                     )}
                     <div className="border-t border-border" />
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">판매가</span>
-                      <span className="font-semibold text-foreground">
-                        {priceLabel}
-                      </span>
+                      <span className="font-semibold text-foreground">{priceLabel}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">판매 상태</span>
-                      <span className="font-medium text-foreground">
-                        {saleStatusLabel}
-                      </span>
+                      <span className="font-medium text-foreground">{saleStatusLabel}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">상태 등급</span>
-                      <span className="font-medium text-foreground">
-                        {gradeLabel}
-                      </span>
+                      <span className="font-medium text-foreground">{gradeLabel}</span>
                     </div>
                     <div className="border-t border-border" />
                     <div className="flex items-center justify-between">
@@ -1148,28 +1040,20 @@ export default function FreeBoardWriteClient() {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">이미지</span>
-                      <span className="font-medium text-foreground">
-                        {images.length}장
-                      </span>
+                      <span className="font-medium text-foreground">{images.length}장</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">파일</span>
-                      <span className="font-medium text-foreground">
-                        {selectedFiles.length}개
-                      </span>
+                      <span className="font-medium text-foreground">{selectedFiles.length}개</span>
                     </div>
                   </div>
                 </div>
 
-                <div
-                  className={cn("space-y-2", isCompactSticky && "space-y-1.5")}
-                >
+                <div className={cn("space-y-2", isCompactSticky && "space-y-1.5")}>
                   <Button
                     type="submit"
                     className={cn("w-full gap-2", isCompactSticky && "h-10")}
-                    disabled={
-                      isSubmitting || isUploadingImages || isUploadingFiles
-                    }
+                    disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                   >
                     {isSubmitting ? (
                       <>
@@ -1187,9 +1071,7 @@ export default function FreeBoardWriteClient() {
                     type="button"
                     variant="outline"
                     className={cn("w-full", isCompactSticky && "h-10")}
-                    disabled={
-                      isSubmitting || isUploadingImages || isUploadingFiles
-                    }
+                    disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                     onClick={handleCancel}
                   >
                     취소
@@ -1214,9 +1096,7 @@ export default function FreeBoardWriteClient() {
                       isCompactSticky && "px-4 py-2.5",
                     )}
                   >
-                    <h3 className="text-sm font-semibold text-foreground">
-                      등록 전 확인
-                    </h3>
+                    <h3 className="text-sm font-semibold text-foreground">등록 전 확인</h3>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span>
                         {checklistDoneCount}/{checklist.length} 완료
@@ -1233,15 +1113,11 @@ export default function FreeBoardWriteClient() {
                     <div
                       className={cn(
                         "px-5 py-4 space-y-2",
-                        isCompactSticky &&
-                          "grid grid-cols-2 gap-x-3 gap-y-2 px-4 py-3",
+                        isCompactSticky && "grid grid-cols-2 gap-x-3 gap-y-2 px-4 py-3",
                       )}
                     >
                       {checklist.map((item) => (
-                        <div
-                          key={item.label}
-                          className="flex items-center gap-2 text-sm"
-                        >
+                        <div key={item.label} className="flex items-center gap-2 text-sm">
                           <div
                             className={cn(
                               "flex h-4 w-4 items-center justify-center rounded-full",
@@ -1254,9 +1130,7 @@ export default function FreeBoardWriteClient() {
                           </div>
                           <span
                             className={cn(
-                              item.ok
-                                ? "text-foreground"
-                                : "text-muted-foreground",
+                              item.ok ? "text-foreground" : "text-muted-foreground",
                               isCompactSticky && "text-[13px]",
                             )}
                           >

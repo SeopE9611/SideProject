@@ -12,11 +12,7 @@ export type StepIndicatorProps = {
   className?: string;
 };
 
-export function StepIndicator({
-  steps,
-  currentStep,
-  className,
-}: StepIndicatorProps) {
+export function StepIndicator({ steps, currentStep, className }: StepIndicatorProps) {
   const currentIndex = steps.findIndex((step) => step.id === currentStep);
   const safeCurrentIndex = currentIndex >= 0 ? currentIndex : 0;
   const safeCurrentStepId = steps[safeCurrentIndex]?.id;
@@ -41,8 +37,7 @@ export function StepIndicator({
               <span
                 className={cn(
                   "flex size-6 shrink-0 items-center justify-center rounded-full border border-border text-ui-caption font-medium text-muted-foreground",
-                  isCurrent &&
-                    "border-primary bg-primary text-primary-foreground",
+                  isCurrent && "border-primary bg-primary text-primary-foreground",
                   isComplete && "border-primary text-primary",
                 )}
                 aria-hidden="true"

@@ -39,11 +39,7 @@ export default function SocialAuthButtons({
       </Button>
 
       {onNaverClick ? (
-        <Button
-          type="button"
-          onClick={onNaverClick}
-          className={baseButtonClass}
-        >
+        <Button type="button" onClick={onNaverClick} className={baseButtonClass}>
           <span className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-secondary text-foreground">
             <svg
               width="16"
@@ -63,11 +59,7 @@ export default function SocialAuthButtons({
       ) : null}
 
       {onGoogleClick ? (
-        <Button
-          type="button"
-          onClick={onGoogleClick}
-          className={baseButtonClass}
-        >
+        <Button type="button" onClick={onGoogleClick} className={baseButtonClass}>
           <span className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-secondary text-foreground">
             <svg
               width="16"

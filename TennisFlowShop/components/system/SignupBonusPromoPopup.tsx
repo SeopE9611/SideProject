@@ -27,10 +27,7 @@ type Props = {
 // 24시간 동안 다시 안 뜨게
 const DISMISS_HOURS = 24;
 
-export default function SignupBonusPromoPopup({
-  promo,
-  onPrimaryClick,
-}: Props) {
+export default function SignupBonusPromoPopup({ promo, onPrimaryClick }: Props) {
   const [open, setOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
 
@@ -121,9 +118,7 @@ export default function SignupBonusPromoPopup({
               회원가입 시 {promo.amount.toLocaleString("ko-KR")}P 지급
             </div>
             <div className="mt-2 text-sm text-muted-foreground">
-              {periodText
-                ? `기간: ${periodText}`
-                : "지금 가입하면 자동으로 지급됩니다."}
+              {periodText ? `기간: ${periodText}` : "지금 가입하면 자동으로 지급됩니다."}
             </div>
           </div>
         </div>
@@ -148,11 +143,7 @@ export default function SignupBonusPromoPopup({
             >
               회원가입하고 받기
             </Button>
-            <Button
-              variant="secondary"
-              className="w-full sm:w-auto"
-              onClick={dismiss}
-            >
+            <Button variant="secondary" className="w-full sm:w-auto" onClick={dismiss}>
               나중에 보기
             </Button>
           </DialogFooter>

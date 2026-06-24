@@ -101,8 +101,7 @@ export default function MessageComposeDialog({
       const data = await res.json().catch(() => null);
 
       if (!res.ok || !data?.ok) {
-        const msg =
-          (data?.error as string | undefined) ?? "쪽지 전송에 실패했습니다.";
+        const msg = (data?.error as string | undefined) ?? "쪽지 전송에 실패했습니다.";
         showErrorToast(msg);
         return;
       }
@@ -130,10 +129,7 @@ export default function MessageComposeDialog({
               <DialogDescription className="flex items-center gap-1.5 text-sm mt-1">
                 <User className="h-3.5 w-3.5" />
                 <span>
-                  받는 사람:{" "}
-                  <span className="font-medium text-foreground">
-                    {receiverLabel}
-                  </span>
+                  받는 사람: <span className="font-medium text-foreground">{receiverLabel}</span>
                 </span>
               </DialogDescription>
             </div>
@@ -142,10 +138,7 @@ export default function MessageComposeDialog({
 
         <div className="grid gap-5 py-4">
           <div className="grid gap-2.5">
-            <label
-              htmlFor="message-title"
-              className="text-sm font-semibold text-foreground"
-            >
+            <label htmlFor="message-title" className="text-sm font-semibold text-foreground">
               제목
             </label>
             <Input
@@ -158,10 +151,7 @@ export default function MessageComposeDialog({
           </div>
 
           <div className="grid gap-2.5">
-            <label
-              htmlFor="message-body"
-              className="text-sm font-semibold text-foreground"
-            >
+            <label htmlFor="message-body" className="text-sm font-semibold text-foreground">
               내용
             </label>
             <Textarea

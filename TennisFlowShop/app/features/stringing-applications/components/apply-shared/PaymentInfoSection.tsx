@@ -81,11 +81,7 @@ export default function PaymentInfoSection({
                   패키지 자동 적용
                 </h3>
                 <Badge variant={packageInsufficient ? "danger" : "info"}>
-                  {packageInsufficient
-                    ? "적용 불가"
-                    : usingPackage
-                      ? "사용 중"
-                      : "사용 가능"}
+                  {packageInsufficient ? "적용 불가" : usingPackage ? "사용 중" : "사용 가능"}
                 </Badge>
               </div>
 
@@ -95,31 +91,24 @@ export default function PaymentInfoSection({
                   현재 패키지 남은 횟수는{" "}
                   <span className="font-semibold">{packageRemaining}회</span>
                   로, 이번 교체에 필요한 횟수(
-                  <span className="font-semibold text-destructive">
-                    {requiredPassCount}회
-                  </span>
+                  <span className="font-semibold text-destructive">{requiredPassCount}회</span>
                   )보다 적어 자동 적용되지 않습니다.
                   <br />
                   이번 신청은{" "}
-                  <span className="font-semibold text-destructive">
-                    일반 교체비 결제
-                  </span>
-                  로 진행됩니다.
+                  <span className="font-semibold text-destructive">일반 교체비 결제</span>로
+                  진행됩니다.
                 </p>
               ) : usingPackage ? (
                 <p className="mt-2 text-sm text-foreground leading-relaxed">
                   이번 신청에는 패키지가 자동으로 적용됩니다.{" "}
-                  <span className="font-semibold text-primary">
-                    교체비는 0원
-                  </span>
+                  <span className="font-semibold text-primary">교체비는 0원</span>
                   으로 처리되며, 패키지에서{" "}
-                  <span className="font-semibold">{requiredPassCount}회</span>가
-                  차감됩니다.
+                  <span className="font-semibold">{requiredPassCount}회</span>가 차감됩니다.
                 </p>
               ) : (
                 <p className="mt-2 text-sm text-foreground leading-relaxed">
-                  패키지로 결제할 수 있는 상태입니다. 필요하다면 아래 옵션을
-                  해제하여 이번 신청에도 패키지를 사용할 수 있습니다.
+                  패키지로 결제할 수 있는 상태입니다. 필요하다면 아래 옵션을 해제하여 이번 신청에도
+                  패키지를 사용할 수 있습니다.
                 </p>
               )}
 
@@ -129,10 +118,7 @@ export default function PaymentInfoSection({
                 <Badge variant="info">잔여 {packagePreview.remaining}회</Badge>
                 {packagePreview.expiresAt && (
                   <Badge variant="neutral">
-                    만료일{" "}
-                    {new Date(packagePreview.expiresAt).toLocaleDateString(
-                      "ko-KR",
-                    )}
+                    만료일 {new Date(packagePreview.expiresAt).toLocaleDateString("ko-KR")}
                   </Badge>
                 )}
               </div>
@@ -142,9 +128,7 @@ export default function PaymentInfoSection({
                 const total = packagePreview.packageSize ?? 0;
                 const remaining = packagePreview.remaining ?? 0;
                 const used = total ? Math.max(0, total - remaining) : 0;
-                const remainPct = total
-                  ? Math.round((remaining / total) * 100)
-                  : 0;
+                const remainPct = total ? Math.round((remaining / total) * 100) : 0;
 
                 if (!total) return null;
 
@@ -152,19 +136,13 @@ export default function PaymentInfoSection({
                   <div className="mt-4">
                     <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
                       <span>
-                        총 {total}회 중{" "}
-                        <span className="font-medium text-foreground">
-                          {used}
-                        </span>
+                        총 {total}회 중 <span className="font-medium text-foreground">{used}</span>
                         회 사용
                       </span>
                       <span className="tabular-nums">{remainPct}%</span>
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full bg-primary"
-                        style={{ width: `${remainPct}%` }}
-                      />
+                      <div className="h-full bg-primary" style={{ width: `${remainPct}%` }} />
                     </div>
                   </div>
                 );
@@ -190,8 +168,7 @@ export default function PaymentInfoSection({
                       : "cursor-pointer text-xs text-foreground"
                   }
                 >
-                  이번 신청에는 패키지{" "}
-                  <span className="font-medium">사용 안 함</span>
+                  이번 신청에는 패키지 <span className="font-medium">사용 안 함</span>
                 </Label>
               </div>
             </div>
@@ -232,9 +209,7 @@ export default function PaymentInfoSection({
                 name="paymentMethod"
                 value="bank_transfer"
                 checked={formData.paymentMethod === "bank_transfer"}
-                onChange={() =>
-                  setFormData({ ...formData, paymentMethod: "bank_transfer" })
-                }
+                onChange={() => setFormData({ ...formData, paymentMethod: "bank_transfer" })}
               />
               <span className="font-medium">무통장입금</span>
             </label>
@@ -251,9 +226,7 @@ export default function PaymentInfoSection({
                   name="paymentMethod"
                   value="nicepay"
                   checked={formData.paymentMethod === "nicepay"}
-                  onChange={() =>
-                    setFormData({ ...formData, paymentMethod: "nicepay" })
-                  }
+                  onChange={() => setFormData({ ...formData, paymentMethod: "nicepay" })}
                 />
                 <span className="font-medium">카드/간편결제</span>
               </label>
@@ -270,9 +243,7 @@ export default function PaymentInfoSection({
                   id="shippingBank"
                   name="shippingBank"
                   value={formData.shippingBank}
-                  onChange={(e) =>
-                    setFormData({ ...formData, shippingBank: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, shippingBank: e.target.value })}
                   className="w-full rounded-md border border-border bg-card px-3 py-2 text-foreground transition-colors focus:border-transparent focus:ring-2 focus:ring-ring"
                 >
                   <option value="" disabled hidden>
@@ -282,8 +253,7 @@ export default function PaymentInfoSection({
                 </select>
               </div>
 
-              {formData.shippingBank &&
-              (bankLabelMap as any)[formData.shippingBank] ? (
+              {formData.shippingBank && (bankLabelMap as any)[formData.shippingBank] ? (
                 <PublicSurface variant="muted" padding="sm">
                   <h3 className="mb-4 flex items-center font-semibold text-primary">
                     <CreditCard className="mr-2 h-5 w-5 shrink-0" />
@@ -294,9 +264,7 @@ export default function PaymentInfoSection({
                       padding="sm"
                       className="flex flex-wrap items-center justify-between gap-2 rounded-lg p-3"
                     >
-                      <span className="text-sm text-muted-foreground">
-                        은행
-                      </span>
+                      <span className="text-sm text-muted-foreground">은행</span>
                       <span className="font-medium text-foreground">
                         {(bankLabelMap as any)[formData.shippingBank].label}
                       </span>
@@ -305,9 +273,7 @@ export default function PaymentInfoSection({
                       padding="sm"
                       className="flex flex-wrap items-center justify-between gap-2 rounded-lg p-3"
                     >
-                      <span className="text-sm text-muted-foreground">
-                        계좌번호
-                      </span>
+                      <span className="text-sm text-muted-foreground">계좌번호</span>
                       <span className="break-all font-mono font-medium tabular-nums text-foreground">
                         {(bankLabelMap as any)[formData.shippingBank].account}
                       </span>
@@ -316,9 +282,7 @@ export default function PaymentInfoSection({
                       padding="sm"
                       className="flex flex-wrap items-center justify-between gap-2 rounded-lg p-3"
                     >
-                      <span className="text-sm text-muted-foreground">
-                        예금주
-                      </span>
+                      <span className="text-sm text-muted-foreground">예금주</span>
                       <span className="font-medium text-foreground">
                         {(bankLabelMap as any)[formData.shippingBank].holder}
                       </span>
@@ -328,10 +292,7 @@ export default function PaymentInfoSection({
               ) : null}
 
               <div className="space-y-2">
-                <Label
-                  htmlFor="shippingDepositor"
-                  className="text-sm font-medium"
-                >
+                <Label htmlFor="shippingDepositor" className="text-sm font-medium">
                   입금자명 <span className="text-destructive">*</span>
                 </Label>
                 <Input

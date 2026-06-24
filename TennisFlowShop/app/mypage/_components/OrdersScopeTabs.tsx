@@ -3,12 +3,7 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
-export type OrdersFlowScope =
-  | "all"
-  | "todo"
-  | "order"
-  | "application"
-  | "rental";
+export type OrdersFlowScope = "all" | "todo" | "order" | "application" | "rental";
 
 const SCOPE_ITEMS: Array<{
   value: OrdersFlowScope;
@@ -26,15 +21,8 @@ const SCOPE_ITEMS: Array<{
   { value: "rental", label: "대여", href: "/mypage?tab=orders&scope=rental" },
 ];
 
-export const parseOrdersScope = (
-  value: string | null,
-): OrdersFlowScope | null => {
-  if (
-    value === "todo" ||
-    value === "order" ||
-    value === "application" ||
-    value === "rental"
-  )
+export const parseOrdersScope = (value: string | null): OrdersFlowScope | null => {
+  if (value === "todo" || value === "order" || value === "application" || value === "rental")
     return value;
   if (value === "all") return "all";
   return null;
@@ -56,10 +44,7 @@ type OrdersScopeTabsProps = {
   className?: string;
 };
 
-export default function OrdersScopeTabs({
-  activeScope,
-  className,
-}: OrdersScopeTabsProps) {
+export default function OrdersScopeTabs({ activeScope, className }: OrdersScopeTabsProps) {
   return (
     <nav
       className={cn("relative border-b border-border", className)}

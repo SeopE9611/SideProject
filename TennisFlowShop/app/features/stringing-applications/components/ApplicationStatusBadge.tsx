@@ -1,11 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import {
-  badgeBase,
-  badgeSizeSm,
-  getApplicationStatusBadgeSpec,
-} from "@/lib/badge-style";
+import { badgeBase, badgeSizeSm, getApplicationStatusBadgeSpec } from "@/lib/badge-style";
 import { cn } from "@/lib/utils";
 
 interface Props {

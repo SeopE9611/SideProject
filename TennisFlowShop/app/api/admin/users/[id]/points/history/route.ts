@@ -11,8 +11,7 @@ function parseListQuery(req: Request) {
   const limitRaw = parseInt(searchParams.get("limit") ?? "20", 10);
 
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
-  const limit =
-    Number.isFinite(limitRaw) && limitRaw > 0 && limitRaw <= 50 ? limitRaw : 20;
+  const limit = Number.isFinite(limitRaw) && limitRaw > 0 && limitRaw <= 50 ? limitRaw : 20;
 
   return { page, limit };
 }
@@ -38,10 +37,7 @@ function mapTx(d: any): PointTransactionListItem {
   };
 }
 
-export async function GET(
-  req: Request,
-  context: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
 
@@ -50,10 +46,7 @@ export async function GET(
   const { id } = await context.params;
 
   if (!id || !ObjectId.isValid(id)) {
-    return NextResponse.json(
-      { ok: false, error: "INVALID_USER_ID" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "INVALID_USER_ID" }, { status: 400 });
   }
 
   const { page, limit } = parseListQuery(req);
@@ -64,18 +57,13 @@ export async function GET(
   // 잔액 캐시(users.pointsBalance)
   const user = await db
     .collection("users")
-    .findOne(
-      { _id: userId },
-      { projection: { pointsBalance: 1, pointsDebt: 1 } as any },
-    );
+    .findOne({ _id: userId }, { projection: { pointsBalance: 1, pointsDebt: 1 } as any });
   const balance =
-    typeof (user as any)?.pointsBalance === "number" &&
-    Number.isFinite((user as any).pointsBalance)
+    typeof (user as any)?.pointsBalance === "number" && Number.isFinite((user as any).pointsBalance)
       ? (user as any).pointsBalance
       : 0;
   const debt =
-    typeof (user as any)?.pointsDebt === "number" &&
-    Number.isFinite((user as any).pointsDebt)
+    typeof (user as any)?.pointsDebt === "number" && Number.isFinite((user as any).pointsDebt)
       ? (user as any).pointsDebt
       : 0;
 

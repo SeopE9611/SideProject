@@ -10,14 +10,8 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
-import {
-  normalizeOrderStatus,
-  normalizePaymentStatus,
-} from "@/lib/admin-ops-normalize";
-import {
-  findCourierCatalogItem,
-  normalizeCourierCode,
-} from "@/lib/shipping/courier-map";
+import { normalizeOrderStatus, normalizePaymentStatus } from "@/lib/admin-ops-normalize";
+import { findCourierCatalogItem, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 
 const shippingMethodMap: Record<string, string> = {
@@ -36,19 +30,10 @@ const BodySchema = z
   })
   .passthrough();
 
-const ORDER_TERMINAL_STATUSES = new Set([
-  "취소",
-  "결제취소",
-  "환불",
-  "구매확정",
-  "완료",
-]);
+const ORDER_TERMINAL_STATUSES = new Set(["취소", "결제취소", "환불", "구매확정", "완료"]);
 const ORDER_SHIPPING_PHASE_STATUSES = new Set(["배송중", "배송완료"]);
 
-export async function PATCH(
-  req: Request,
-  context: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -56,8 +41,7 @@ export async function PATCH(
 
   try {
     const { id } = await context.params;
-    if (!ObjectId.isValid(id))
-      return NextResponse.json({ message: "BAD_ID" }, { status: 400 });
+    if (!ObjectId.isValid(id)) return NextResponse.json({ message: "BAD_ID" }, { status: 400 });
 
     let body: any;
     try {
@@ -66,21 +50,15 @@ export async function PATCH(
       return NextResponse.json({ message: "INVALID_JSON" }, { status: 400 });
     }
     const parsed = BodySchema.safeParse(body);
-    if (!parsed.success)
-      return NextResponse.json({ message: "INVALID_BODY" }, { status: 400 });
+    if (!parsed.success) return NextResponse.json({ message: "INVALID_BODY" }, { status: 400 });
 
     const db = (await clientPromise).db();
     const orderId = new ObjectId(id);
-    const { shippingMethod, estimatedDate, courier, trackingNumber } =
-      parsed.data;
+    const { shippingMethod, estimatedDate, courier, trackingNumber } = parsed.data;
     const normalizedMethod = normalizeOrderShippingMethod(shippingMethod);
 
     const order: any = await db.collection("orders").findOne({ _id: orderId });
-    if (!order)
-      return NextResponse.json(
-        { error: "주문을 찾을 수 없습니다." },
-        { status: 404 },
-      );
+    if (!order) return NextResponse.json({ error: "주문을 찾을 수 없습니다." }, { status: 404 });
     if (["취소", "결제취소"].includes(order.status)) {
       return NextResponse.json(
         { ok: false, message: "취소된 주문은 배송 정보를 수정할 수 없습니다." },
@@ -127,15 +105,10 @@ export async function PATCH(
 
     const isCourier = normalizedMethod === "courier";
     const normalizedCourier = isCourier ? normalizeCourierCode(courier) : "";
-    const courierItem = isCourier
-      ? findCourierCatalogItem(normalizedCourier)
-      : null;
+    const courierItem = isCourier ? findCourierCatalogItem(normalizedCourier) : null;
     if (isCourier) {
       if (!courierItem)
-        return NextResponse.json(
-          { success: false, message: "INVALID_COURIER" },
-          { status: 400 },
-        );
+        return NextResponse.json({ success: false, message: "INVALID_COURIER" }, { status: 400 });
       if (courierItem.code === "ems")
         return NextResponse.json(
           {
@@ -150,10 +123,7 @@ export async function PATCH(
           { success: false, message: "운송장 번호를 입력해주세요." },
           { status: 400 },
         );
-      if (
-        normalizedTrackingNumber.length < 9 ||
-        normalizedTrackingNumber.length > 20
-      )
+      if (normalizedTrackingNumber.length < 9 || normalizedTrackingNumber.length > 20)
         return NextResponse.json(
           {
             success: false,
@@ -171,20 +141,16 @@ export async function PATCH(
     const nextMethod = String(normalizedMethod ?? shippingMethod ?? "").trim();
     const nextEstimatedDate = String(estimatedDate ?? "").trim();
     const nextCourier = normalizedCourier;
-    const nextTracking = isCourier
-      ? normalizeTrackingNumber(trackingNumber)
-      : "";
+    const nextTracking = isCourier ? normalizeTrackingNumber(trackingNumber) : "";
     const isFirstShippingRegistration =
-      !isRegistered &&
-      Boolean(nextMethod || nextEstimatedDate || nextCourier || nextTracking);
+      !isRegistered && Boolean(nextMethod || nextEstimatedDate || nextCourier || nextTracking);
 
     const currentStatusRaw = String(order?.status ?? "").trim();
     const currentStatus = normalizeOrderStatus(currentStatusRaw);
     const paymentStatus = normalizePaymentStatus(
       String(order?.paymentStatus ?? order?.paymentInfo?.status ?? "").trim(),
     );
-    const isPaymentCompleted =
-      paymentStatus === "결제완료" || currentStatus === "결제완료";
+    const isPaymentCompleted = paymentStatus === "결제완료" || currentStatus === "결제완료";
     const shouldAutoTransitToShipping =
       !isOriginalVisitPickup &&
       isFirstShippingRegistration &&
@@ -286,9 +252,6 @@ export async function PATCH(
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[ADMIN_ORDER_SHIPPING_PATCH]", error);
-    return NextResponse.json(
-      { error: "배송 정보 업데이트에 실패했습니다." },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "배송 정보 업데이트에 실패했습니다." }, { status: 500 });
   }
 }

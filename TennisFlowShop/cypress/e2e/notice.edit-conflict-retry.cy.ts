@@ -37,9 +37,7 @@ describe("공지사항 수정 동시 수정 충돌(409) 재시도 UX", () => {
     cy.get("#title").clear().type("동시 수정 충돌 테스트 제목");
     cy.get("#content")
       .clear()
-      .type(
-        "동시 수정 충돌 테스트 본문입니다. 재시도 UX를 확인하기 위한 충분한 길이입니다.",
-      );
+      .type("동시 수정 충돌 테스트 본문입니다. 재시도 UX를 확인하기 위한 충분한 길이입니다.");
 
     cy.contains("button", "공지사항 수정").click();
     cy.wait("@patchConflict");

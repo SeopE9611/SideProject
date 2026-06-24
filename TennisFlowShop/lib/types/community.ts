@@ -5,12 +5,7 @@ import type { MarketMeta } from "@/lib/market";
 export type CommunityStatus = "public" | "hidden" | "deleted";
 
 /** 커뮤니티 게시판 종류 목록 */
-export const COMMUNITY_BOARD_TYPES = [
-  "free",
-  "brand",
-  "market",
-  "gear",
-] as const;
+export const COMMUNITY_BOARD_TYPES = ["free", "brand", "market", "gear"] as const;
 
 /** 커뮤니티 게시판 종류 타입 */
 export type CommunityBoardType = (typeof COMMUNITY_BOARD_TYPES)[number];
@@ -46,13 +41,7 @@ export type CommunityAttachment = BoardAttachment;
  */
 export interface CommunityPost extends Omit<
   BoardPostBase,
-  | "kind"
-  | "_id"
-  | "createdAt"
-  | "updatedAt"
-  | "attachments"
-  | "authorId"
-  | "viewCount"
+  "kind" | "_id" | "createdAt" | "updatedAt" | "attachments" | "authorId" | "viewCount"
 > {
   /** MongoDB _id 문자열 */
   id: string;

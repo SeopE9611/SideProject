@@ -10,10 +10,7 @@ import { requireAdmin } from "@/lib/admin.guard";
 const answerSchema = z.object({ content: z.string().trim().min(1).max(20000) });
 
 // POST
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const csrf = verifyCommunityCsrf(req);
   if (!csrf.ok) {
     return csrf.response;
@@ -23,10 +20,7 @@ export async function POST(
 
   const { id } = await params;
   if (!ObjectId.isValid(id))
-    return NextResponse.json(
-      { ok: false, version: API_VERSION, error: "bad_id" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, version: API_VERSION, error: "bad_id" }, { status: 400 });
   const postId = new ObjectId(id);
 
   let bodyRaw: unknown;
@@ -74,10 +68,7 @@ export async function POST(
 }
 
 // PATCH
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const csrf = verifyCommunityCsrf(req);
   if (!csrf.ok) {
     return csrf.response;
@@ -87,10 +78,7 @@ export async function PATCH(
 
   const { id } = await params;
   if (!ObjectId.isValid(id))
-    return NextResponse.json(
-      { ok: false, version: API_VERSION, error: "bad_id" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, version: API_VERSION, error: "bad_id" }, { status: 400 });
   const postId = new ObjectId(id);
 
   let bodyRaw: unknown;
@@ -124,10 +112,7 @@ export async function PATCH(
   return NextResponse.json({ ok: true, version: API_VERSION });
 }
 
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const csrf = verifyCommunityCsrf(_req);
   if (!csrf.ok) {
     return csrf.response;
@@ -137,10 +122,7 @@ export async function DELETE(
   const db = await getDb();
   const { id } = await params;
   if (!ObjectId.isValid(id))
-    return NextResponse.json(
-      { ok: false, version: API_VERSION, error: "bad_id" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, version: API_VERSION, error: "bad_id" }, { status: 400 });
   await db
     .collection("board_posts")
     .updateOne(

@@ -16,7 +16,6 @@ export function isMountableStringItem(item: unknown): boolean {
 
   return (
     maybeItem.isMountableString === true ||
-    (maybeItem.isMountableString !== false &&
-      isMountableStringByFee(maybeItem.mountingFee))
+    (maybeItem.isMountableString !== false && isMountableStringByFee(maybeItem.mountingFee))
   );
 }

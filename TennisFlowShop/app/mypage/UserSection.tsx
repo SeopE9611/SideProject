@@ -63,10 +63,7 @@ export default function UserSection({ user }: Props) {
             )}
 
             {!hasKakao && !hasNaver && (
-              <Badge
-                variant="secondary"
-                className="h-6 whitespace-nowrap px-2 text-xs font-medium"
-              >
+              <Badge variant="secondary" className="h-6 whitespace-nowrap px-2 text-xs font-medium">
                 이메일 계정
               </Badge>
             )}
@@ -74,9 +71,7 @@ export default function UserSection({ user }: Props) {
 
           <p className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
             <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            <span className="min-w-0 break-all">
-              {user.email || "이메일 없음"}
-            </span>
+            <span className="min-w-0 break-all">{user.email || "이메일 없음"}</span>
           </p>
         </div>
       </div>

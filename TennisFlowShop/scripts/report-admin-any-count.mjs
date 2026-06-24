@@ -1,11 +1,6 @@
 import { execSync } from "node:child_process";
 
-const TARGETS = [
-  "app/admin",
-  "app/api/admin",
-  "components/admin",
-  "lib/admin.guard.ts",
-];
+const TARGETS = ["app/admin", "app/api/admin", "components/admin", "lib/admin.guard.ts"];
 const CRITICAL_KEYWORDS =
   /(payment|settlement|정산|status|상태|refund|cancel|취소|shipping|배송|deposit|operations?)/i;
 
@@ -16,11 +11,8 @@ function run(command) {
 function classify(file, lineText = "") {
   const isApi = file.startsWith("app/api/admin/");
   const isCriticalPath =
-    /app\/api\/admin\/(operations|dashboard\/metrics|settlements?|payments?)/.test(
-      file,
-    );
-  if (isApi && (isCriticalPath || CRITICAL_KEYWORDS.test(lineText)))
-    return "P0";
+    /app\/api\/admin\/(operations|dashboard\/metrics|settlements?|payments?)/.test(file);
+  if (isApi && (isCriticalPath || CRITICAL_KEYWORDS.test(lineText))) return "P0";
   if (isApi) return "P1";
   return "P2";
 }

@@ -14,21 +14,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  getOrderStatusBadgeSpec,
-  getWorkflowMetaBadgeSpec,
-} from "@/lib/badge-style";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { getOrderStatusBadgeSpec, getWorkflowMetaBadgeSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import {
-  getOrderStatusLabelForDisplay,
-  isVisitPickupOrder,
-} from "@/lib/order-shipping";
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   ArrowRight,
@@ -185,23 +174,22 @@ export default function OrderList() {
     return `/api/users/me/orders?${params.toString()}`;
   };
 
-  const { data, size, setSize, isValidating, error, mutate } =
-    useSWRInfinite<OrderResponse>(getKey, fetcher, {
+  const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite<OrderResponse>(
+    getKey,
+    fetcher,
+    {
       revalidateFirstPage: true,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-    });
+    },
+  );
 
   // 구매확정 처리 중인 주문 id (중복 클릭 방지)
-  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(
-    null,
-  );
+  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
 
   // 모바일 드롭다운 open 상태를 "주문 단위"로 제어
   const [openMenuOrderId, setOpenMenuOrderId] = useState<string | null>(null);
-  const [cancelDialogOrderId, setCancelDialogOrderId] = useState<string | null>(
-    null,
-  );
+  const [cancelDialogOrderId, setCancelDialogOrderId] = useState<string | null>(null);
 
   /**
    * 구매확정
@@ -228,17 +216,13 @@ export default function OrderList() {
 
       // 서버가 실패를 내려주면 그 메시지를 그대로 토스트로 노출
       if (!res.ok) {
-        const msg =
-          data?.error ||
-          data?.message ||
-          "구매확정 처리 중 오류가 발생했습니다.";
+        const msg = data?.error || data?.message || "구매확정 처리 중 오류가 발생했습니다.";
         showErrorToast(msg);
         return;
       }
 
       // alreadyConfirmed 케이스도 서버 응답에 따라 처리
-      if (data?.alreadyConfirmed)
-        showSuccessToast("이미 구매확정된 주문입니다.");
+      if (data?.alreadyConfirmed) showSuccessToast("이미 구매확정된 주문입니다.");
       else showSuccessToast("구매확정이 완료되었습니다.");
 
       // 주문 목록 재조회 (상태 뱃지/버튼 상태 즉시 반영)
@@ -262,13 +246,10 @@ export default function OrderList() {
     if (!confirm("이 주문의 취소 요청을 철회하시겠습니까?")) return;
 
     try {
-      const res = await fetch(
-        `/api/orders/${orderId}/cancel-request-withdraw`,
-        {
-          method: "POST",
-          credentials: "include",
-        },
-      );
+      const res = await fetch(`/api/orders/${orderId}/cancel-request-withdraw`, {
+        method: "POST",
+        credentials: "include",
+      });
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
@@ -288,10 +269,7 @@ export default function OrderList() {
   };
 
   // 누적 아이템
-  const items = useMemo(
-    () => (data ? data.flatMap((d) => d.items) : []),
-    [data],
-  );
+  const items = useMemo(() => (data ? data.flatMap((d) => d.items) : []), [data]);
 
   // 더 보기 여부: 마지막 페이지의 items 길이가 LIMIT와 같으면 더 있음
   const hasMore = useMemo(() => {
@@ -303,12 +281,7 @@ export default function OrderList() {
   // 에러 처리
   if (error) {
     return (
-      <AsyncState
-        kind="error"
-        variant="card"
-        resourceName="주문 내역"
-        onAction={() => mutate()}
-      />
+      <AsyncState kind="error" variant="card" resourceName="주문 내역" onAction={() => mutate()} />
     );
   }
 
@@ -322,9 +295,7 @@ export default function OrderList() {
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 shadow-lg">
             <ShoppingBag className="h-10 w-10 text-primary" />
           </div>
-          <h3 className="mb-2 text-xl font-semibold text-foreground">
-            주문 내역이 없습니다
-          </h3>
+          <h3 className="mb-2 text-xl font-semibold text-foreground">주문 내역이 없습니다</h3>
           <p className="text-muted-foreground">
             아직 주문하신 상품이 없습니다. 지금 바로 쇼핑을 시작해보세요!
           </p>
@@ -371,25 +342,18 @@ export default function OrderList() {
           ? `/mypage?tab=orders&flowType=application&flowId=${order.stringingApplicationId}&from=orders`
           : detailHref;
 
-        const primaryDetailLabel = hasLinkedApplication
-          ? "교체서비스 상세 보기"
-          : "주문 상세 보기";
+        const primaryDetailLabel = hasLinkedApplication ? "교체서비스 상세 보기" : "주문 상세 보기";
 
         const showConfirm = order.status !== "취소" && order.status !== "환불";
 
         const canConfirm =
-          showConfirm &&
-          isDelivered &&
-          !isConfirmed &&
-          confirmingOrderId !== order.id;
+          showConfirm && isDelivered && !isConfirmed && confirmingOrderId !== order.id;
         // 신청서 연결 여부(있으면 "교체 신청" 대신 "교체서비스 보기"로 유도)
         const totalSlots = order.stringService?.totalSlots ?? 0;
         const usedSlots = order.stringService?.usedSlots ?? 0;
         const remainingSlots =
-          order.stringService?.remainingSlots ??
-          Math.max(totalSlots - usedSlots, 0);
-        const isOrderTerminalCanceled =
-          order.status === "취소" || order.status === "환불";
+          order.stringService?.remainingSlots ?? Math.max(totalSlots - usedSlots, 0);
+        const isOrderTerminalCanceled = order.status === "취소" || order.status === "환불";
         const canApplyMoreStringService =
           !isOrderTerminalCanceled &&
           (order.canApplyMoreStringService ??
@@ -397,9 +361,7 @@ export default function OrderList() {
               totalSlots > 0 &&
               remainingSlots > 0));
         const hasSubmittedStringingApplication =
-          hasLinkedApplication ||
-          order.isStringServiceApplied === true ||
-          usedSlots > 0;
+          hasLinkedApplication || order.isStringServiceApplied === true || usedSlots > 0;
 
         const stringServiceCTAKind: "apply" | "add" | "done" | null =
           isOrderTerminalCanceled || !order.shippingInfo?.withStringService
@@ -450,9 +412,7 @@ export default function OrderList() {
                       <span className="rounded-md bg-muted/60 px-2 py-1 font-medium text-foreground">
                         주문
                       </span>
-                      <span className="break-all tabular-nums">
-                        주문번호 {order.id}
-                      </span>
+                      <span className="break-all tabular-nums">주문번호 {order.id}</span>
                     </div>
                     <h3 className="line-clamp-2 break-keep text-base font-semibold leading-snug text-foreground bp-sm:text-lg">
                       {getOrderCompositionTitle(order)}
@@ -466,26 +426,18 @@ export default function OrderList() {
 
                 {/* 상태/취소 관련 영역 */}
                 <div className="flex flex-wrap items-center gap-2 md:max-w-[45%] md:shrink-0 md:justify-end">
-                  {getStatusIcon(
-                    order.status,
-                    isVisitPickupOrder(order.shippingInfo),
-                  )}
+                  {getStatusIcon(order.status, isVisitPickupOrder(order.shippingInfo))}
                   <Badge
                     variant={getOrderStatusBadgeSpec(order.status).variant}
                     className="shrink-0 whitespace-nowrap rounded-md px-3 py-1 text-xs font-medium"
                   >
-                    {getOrderStatusLabelForDisplay(
-                      order.status,
-                      order.shippingInfo,
-                    )}
+                    {getOrderStatusLabelForDisplay(order.status, order.shippingInfo)}
                   </Badge>
 
                   {/* 신청서가 연결된 주문임을 한눈에 표시(탭 분리로 인한 혼란 완화) */}
                   {order.stringingApplicationId ? (
                     <Badge
-                      variant={
-                        getWorkflowMetaBadgeSpec("application_linked").variant
-                      }
+                      variant={getWorkflowMetaBadgeSpec("application_linked").variant}
                       className="shrink-0 rounded-md px-2 py-0.5 text-[11px] font-semibold"
                     >
                       신청서 연결됨
@@ -495,9 +447,7 @@ export default function OrderList() {
                   {/* 취소 요청이 들어간 주문이면 뱃지 표시 */}
                   {order.cancelStatus === "requested" && (
                     <Badge
-                      variant={
-                        getWorkflowMetaBadgeSpec("cancel_requested").variant
-                      }
+                      variant={getWorkflowMetaBadgeSpec("cancel_requested").variant}
                       className="shrink-0 whitespace-nowrap rounded-md text-[11px] font-medium"
                     >
                       취소 요청됨
@@ -511,12 +461,8 @@ export default function OrderList() {
                 <div className="mb-4 flex items-center gap-3 rounded-xl border border-border/60 bg-muted/30 p-3">
                   <User className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="text-xs text-foreground/75 uppercase tracking-wide">
-                      주문자
-                    </div>
-                    <div className="font-medium text-foreground">
-                      {order.userSnapshot.name}
-                    </div>
+                    <div className="text-xs text-foreground/75 uppercase tracking-wide">주문자</div>
+                    <div className="font-medium text-foreground">{order.userSnapshot.name}</div>
                   </div>
                 </div>
               )}
@@ -525,9 +471,7 @@ export default function OrderList() {
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">
                   <Package className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">
-                    주문 상품
-                  </span>
+                  <span className="text-sm font-medium text-foreground">주문 상품</span>
                 </div>
                 <div className="space-y-2">
                   {order.items.map((item, index) => (
@@ -556,9 +500,7 @@ export default function OrderList() {
                             {(item.price ?? 0).toLocaleString()}원
                           </span>
                           <span className="text-muted-foreground">×</span>
-                          <span className="whitespace-nowrap">
-                            {item.quantity}개
-                          </span>
+                          <span className="whitespace-nowrap">{item.quantity}개</span>
                         </div>
                         {(() => {
                           const gauge = String(item.selectedGauge ?? "").trim();
@@ -580,9 +522,7 @@ export default function OrderList() {
 
               <div className="mb-4 grid grid-cols-2 gap-2 rounded-xl border border-border/60 bg-muted/20 p-2 bp-md:grid-cols-4">
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                  <p className="text-[11px] font-medium text-muted-foreground">
-                    결제 금액
-                  </p>
+                  <p className="text-[11px] font-medium text-muted-foreground">결제 금액</p>
                   <p className="mt-1 truncate text-sm font-semibold tabular-nums text-foreground">
                     {typeof order.totalPrice === "number"
                       ? `${order.totalPrice.toLocaleString()}원`
@@ -590,32 +530,21 @@ export default function OrderList() {
                   </p>
                 </div>
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                  <p className="text-[11px] font-medium text-muted-foreground">
-                    주문 상태
-                  </p>
+                  <p className="text-[11px] font-medium text-muted-foreground">주문 상태</p>
                   <p className="mt-1 truncate text-sm font-semibold text-foreground">
-                    {getOrderStatusLabelForDisplay(
-                      order.status,
-                      order.shippingInfo,
-                    )}
+                    {getOrderStatusLabelForDisplay(order.status, order.shippingInfo)}
                   </p>
                 </div>
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                  <p className="text-[11px] font-medium text-muted-foreground">
-                    교체서비스
-                  </p>
+                  <p className="text-[11px] font-medium text-muted-foreground">교체서비스</p>
                   <p className="mt-1 truncate text-sm font-semibold text-foreground">
                     {order.shippingInfo?.withStringService ? "포함" : "미포함"}
                   </p>
                 </div>
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                  <p className="text-[11px] font-medium text-muted-foreground">
-                    수령 방법
-                  </p>
+                  <p className="text-[11px] font-medium text-muted-foreground">수령 방법</p>
                   <p className="mt-1 truncate text-sm font-semibold text-foreground">
-                    {isVisitPickupOrder(order.shippingInfo)
-                      ? "방문 수령"
-                      : "배송"}
+                    {isVisitPickupOrder(order.shippingInfo) ? "방문 수령" : "배송"}
                   </p>
                 </div>
               </div>
@@ -634,10 +563,7 @@ export default function OrderList() {
                     asChild
                     className="h-9 rounded-lg border-border bg-transparent hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20"
                   >
-                    <Link
-                      href={primaryDetailHref}
-                      className="inline-flex items-center gap-1"
-                    >
+                    <Link href={primaryDetailHref} className="inline-flex items-center gap-1">
                       {primaryDetailLabel}
                       <ArrowRight className="h-3 w-3" />
                     </Link>
@@ -663,9 +589,7 @@ export default function OrderList() {
                               variant="outline"
                               className="h-9 rounded-lg border-border bg-transparent hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20"
                               disabled={
-                                !isDelivered ||
-                                isConfirmed ||
-                                confirmingOrderId === order.id
+                                !isDelivered || isConfirmed || confirmingOrderId === order.id
                               }
                               onClick={() => handleConfirmPurchase(order.id)}
                             >
@@ -697,14 +621,12 @@ export default function OrderList() {
                         <Button
                           size="sm"
                           variant={
-                            stringServiceCTAKind === "apply" ||
-                            stringServiceCTAKind === "add"
+                            stringServiceCTAKind === "apply" || stringServiceCTAKind === "add"
                               ? "default"
                               : "outline"
                           }
                           className={
-                            stringServiceCTAKind === "apply" ||
-                            stringServiceCTAKind === "add"
+                            stringServiceCTAKind === "apply" || stringServiceCTAKind === "add"
                               ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg transition-[box-shadow,border-color,background-color,color,opacity] duration-200"
                               : "border-border hover:border-border hover:bg-primary/10 dark:border-border dark:hover:border-border dark:hover:bg-primary/20 bg-transparent"
                           }
@@ -764,10 +686,7 @@ export default function OrderList() {
                     asChild
                     className={`${showMobileSecondCTA ? "col-span-5" : "col-span-10"} w-full whitespace-nowrap border-border hover:border-border hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent`}
                   >
-                    <Link
-                      href={primaryDetailHref}
-                      className="inline-flex items-center gap-1"
-                    >
+                    <Link href={primaryDetailHref} className="inline-flex items-center gap-1">
                       {primaryDetailLabel}
                       <ArrowRight className="h-3 w-3" />
                     </Link>
@@ -789,9 +708,7 @@ export default function OrderList() {
                   ) : null}
                   <DropdownMenu
                     open={openMenuOrderId === order.id}
-                    onOpenChange={(open) =>
-                      setOpenMenuOrderId(open ? order.id : null)
-                    }
+                    onOpenChange={(open) => setOpenMenuOrderId(open ? order.id : null)}
                   >
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -808,13 +725,9 @@ export default function OrderList() {
                       <DropdownMenuSeparator />
 
                       {/* 리뷰 CTA: 구매확정 이후에만 노출 */}
-                      {(Boolean(order.userConfirmedAt) ||
-                        order.status === "구매확정") && (
+                      {(Boolean(order.userConfirmedAt) || order.status === "구매확정") && (
                         <DropdownMenuItem asChild>
-                          <Link
-                            href={detailHref}
-                            className="flex items-center gap-2"
-                          >
+                          <Link href={detailHref} className="flex items-center gap-2">
                             <MessageSquarePlus className="h-4 w-4" />
                             리뷰 작성하기
                           </Link>
@@ -837,20 +750,14 @@ export default function OrderList() {
                       {order.shippingInfo?.withStringService ? (
                         stringServiceCTAHref ? (
                           <DropdownMenuItem asChild>
-                            <Link
-                              href={stringServiceCTAHref}
-                              className="flex items-center gap-2"
-                            >
+                            <Link href={stringServiceCTAHref} className="flex items-center gap-2">
                               <ArrowRight className="h-4 w-4" />
                               {stringServiceCTALabel}
                             </Link>
                           </DropdownMenuItem>
                         ) : stringServiceCTAKind === "done" ? (
                           // (안전장치) 신청 완료 상태인데 ID가 없으면 완료만 표시
-                          <DropdownMenuItem
-                            disabled
-                            className="flex items-center gap-2"
-                          >
+                          <DropdownMenuItem disabled className="flex items-center gap-2">
                             <CheckCircle className="h-4 w-4" />
                             {stringServiceCTALabel}
                           </DropdownMenuItem>
@@ -928,9 +835,7 @@ export default function OrderList() {
             더 보기
           </Button>
         ) : items.length ? (
-          <span className="text-sm text-foreground/80">
-            마지막 페이지입니다
-          </span>
+          <span className="text-sm text-foreground/80">마지막 페이지입니다</span>
         ) : null}
       </div>
 

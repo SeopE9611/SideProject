@@ -1,10 +1,6 @@
 export type UserRoleFilter = "all" | "user" | "admin";
 export type UserStatusFilter = "all" | "active" | "deleted" | "suspended";
-export type UserSortFilter =
-  | "created_desc"
-  | "created_asc"
-  | "name_asc"
-  | "name_desc";
+export type UserSortFilter = "created_desc" | "created_asc" | "name_asc" | "name_desc";
 export type UserSignupFilter = "all" | "local" | "kakao" | "naver";
 export type UserLoginFilter = "all" | "nologin" | "recent30" | "recent90";
 

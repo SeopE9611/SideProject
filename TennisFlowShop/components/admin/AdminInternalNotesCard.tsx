@@ -2,13 +2,7 @@
 
 import { useMemo, useState } from "react";
 import useSWR from "swr";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -151,9 +145,7 @@ export default function AdminInternalNotesCard({
     <Card className={cn("border-0 bg-muted/30 shadow-xl", className)}>
       <CardHeader>
         <CardTitle>관리자 내부 메모</CardTitle>
-        <CardDescription>
-          고객에게 노출되지 않는 운영자 전용 메모입니다.
-        </CardDescription>
+        <CardDescription>고객에게 노출되지 않는 운영자 전용 메모입니다.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -193,17 +185,13 @@ export default function AdminInternalNotesCard({
         </div>
 
         {error ? (
-          <p className="text-sm text-destructive">
-            내부 메모를 불러오지 못했습니다.
-          </p>
+          <p className="text-sm text-destructive">내부 메모를 불러오지 못했습니다.</p>
         ) : null}
         {!error && !data && isValidating ? (
           <p className="text-sm text-muted-foreground">불러오는 중...</p>
         ) : null}
         {data && data.items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            아직 등록된 내부 메모가 없습니다.
-          </p>
+          <p className="text-sm text-muted-foreground">아직 등록된 내부 메모가 없습니다.</p>
         ) : null}
         <div className="space-y-3">
           {data?.items.map((note) => (
@@ -242,9 +230,7 @@ export default function AdminInternalNotesCard({
                   <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                     <span>
                       {note.createdByName || note.createdByEmail || "관리자"} ·{" "}
-                      {note.createdAt
-                        ? new Date(note.createdAt).toLocaleString("ko-KR")
-                        : "-"}
+                      {note.createdAt ? new Date(note.createdAt).toLocaleString("ko-KR") : "-"}
                     </span>
                     <div className="flex gap-2">
                       <Button
@@ -289,9 +275,7 @@ export default function AdminInternalNotesCard({
             <Button
               variant="outline"
               size="sm"
-              onClick={() =>
-                setPage((prev) => Math.min(data.totalPages, prev + 1))
-              }
+              onClick={() => setPage((prev) => Math.min(data.totalPages, prev + 1))}
               disabled={page >= data.totalPages || isValidating}
             >
               다음

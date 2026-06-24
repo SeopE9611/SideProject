@@ -3,8 +3,7 @@ import { requireAdmin } from "@/lib/admin.guard";
 import { sanitizeCustomer } from "@/lib/offline/offline.repository";
 import { normalizePhone, normalizeEmail } from "@/lib/offline/normalizers";
 
-const escapeRegex = (value: string) =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 export async function GET(req: Request) {
   const guard = await requireAdmin(req);
@@ -28,10 +27,7 @@ export async function GET(req: Request) {
     userAnd.push(
       normalizedPhone
         ? {
-            $or: [
-              { phone: phoneRegex },
-              { phone: new RegExp(normalizedPhone) },
-            ],
+            $or: [{ phone: phoneRegex }, { phone: new RegExp(normalizedPhone) }],
           }
         : { phone: phoneRegex },
     );
@@ -40,8 +36,7 @@ export async function GET(req: Request) {
 
   const offlineAnd: Record<string, unknown>[] = [];
   if (name) offlineAnd.push({ name: new RegExp(escapeRegex(name), "i") });
-  if (normalizedPhone)
-    offlineAnd.push({ phoneNormalized: { $regex: normalizedPhone } });
+  if (normalizedPhone) offlineAnd.push({ phoneNormalized: { $regex: normalizedPhone } });
   if (emailLower)
     offlineAnd.push({
       emailLower: { $regex: escapeRegex(emailLower), $options: "i" },
@@ -79,8 +74,6 @@ export async function GET(req: Request) {
       email: u.email || null,
       phone: u.phone || "",
     })),
-    offlineCustomers: offlineCustomers.map((c) =>
-      sanitizeCustomer(c as any, true),
-    ),
+    offlineCustomers: offlineCustomers.map((c) => sanitizeCustomer(c as any, true)),
   });
 }

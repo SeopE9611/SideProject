@@ -64,8 +64,7 @@ export default function TossPaymentWidget({
 
       const clientKey = process.env.NEXT_PUBLIC_TOSS_WIDGET_CLIENT_KEY;
       if (!clientKey) throw new Error("WIDGET_CLIENT_KEY_MISSING");
-      if (!window.PaymentWidget || !mounted)
-        throw new Error("WIDGET_RENDER_FAILED");
+      if (!window.PaymentWidget || !mounted) throw new Error("WIDGET_RENDER_FAILED");
 
       const paymentWidget = window.PaymentWidget(clientKey, customerKey);
 
@@ -95,14 +94,10 @@ export default function TossPaymentWidget({
         return;
       }
       if (code === "WIDGET_SCRIPT_LOAD_FAILED") {
-        setLoadError(
-          "결제위젯을 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.",
-        );
+        setLoadError("결제위젯을 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.");
         return;
       }
-      setLoadError(
-        "결제위젯 초기화 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
-      );
+      setLoadError("결제위젯 초기화 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
     });
     return () => {
       mounted = false;
@@ -127,9 +122,7 @@ export default function TossPaymentWidget({
   return (
     <div className="space-y-3">
       {!ready && !loadError && (
-        <p className="text-sm text-muted-foreground">
-          결제위젯을 불러오는 중입니다…
-        </p>
+        <p className="text-sm text-muted-foreground">결제위젯을 불러오는 중입니다…</p>
       )}
       {loadError && <p className="text-sm text-destructive">{loadError}</p>}
       <div id="toss-payment-widget" className="min-h-20" />

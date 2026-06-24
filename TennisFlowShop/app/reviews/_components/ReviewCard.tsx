@@ -37,20 +37,15 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRef, useState } from "react";
 
-const ReviewPhotoDialog = dynamic(
-  () => import("@/app/reviews/_components/ReviewPhotoDialog"),
-  { loading: () => null },
-);
-const PhotosUploader = dynamic(
-  () => import("@/components/reviews/PhotosUploader"),
-  {
-    loading: () => null,
-  },
-);
-const PhotosReorderGrid = dynamic(
-  () => import("@/components/reviews/PhotosReorderGrid"),
-  { loading: () => null },
-);
+const ReviewPhotoDialog = dynamic(() => import("@/app/reviews/_components/ReviewPhotoDialog"), {
+  loading: () => null,
+});
+const PhotosUploader = dynamic(() => import("@/components/reviews/PhotosUploader"), {
+  loading: () => null,
+});
+const PhotosReorderGrid = dynamic(() => import("@/components/reviews/PhotosReorderGrid"), {
+  loading: () => null,
+});
 
 /* 날짜 YYYY-MM-DD 포맷 */
 function fmt(dateStr?: string) {
@@ -135,8 +130,7 @@ export default function ReviewCard({
       : (item.userName ?? "익명");
 
   // 마스킹 여부(서버가 내려준 masked를 우선 사용, 없으면 폴백)
-  const isMasked =
-    item.masked ?? (item.status === "hidden" && !(item.ownedByMe || isAdmin));
+  const isMasked = item.masked ?? (item.status === "hidden" && !(item.ownedByMe || isAdmin));
 
   // 카드 제목(상품/서비스 공용)
   // - 상품: productName
@@ -289,8 +283,7 @@ export default function ReviewCard({
                       e.stopPropagation();
                       try {
                         setBusy(true);
-                        const next =
-                          item.status === "visible" ? "hidden" : "visible";
+                        const next = item.status === "visible" ? "hidden" : "visible";
                         const res = await fetch(`/api/reviews/${item._id}`, {
                           method: "PATCH",
                           credentials: "include",
@@ -299,9 +292,7 @@ export default function ReviewCard({
                         });
                         if (!res.ok) throw new Error("상태 변경 실패");
                         showSuccessToast(
-                          next === "hidden"
-                            ? "비공개로 전환했습니다."
-                            : "공개로 전환했습니다.",
+                          next === "hidden" ? "비공개로 전환했습니다." : "공개로 전환했습니다.",
                         );
                         onMutate?.(); // 리스트 재검증
                       } catch (err: any) {
@@ -370,13 +361,9 @@ export default function ReviewCard({
         {/* Author info with tennis styling */}
         <div className="flex items-center gap-2 text-xs">
           <div className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-secondary text-foreground">
-            <span className="font-bold text-[10px]">
-              {displayName.charAt(0).toUpperCase()}
-            </span>
+            <span className="font-bold text-[10px]">{displayName.charAt(0).toUpperCase()}</span>
           </div>
-          <span className="font-medium text-muted-foreground">
-            {displayName}
-          </span>
+          <span className="font-medium text-muted-foreground">{displayName}</span>
         </div>
 
         {/* Rating with tennis court styling */}
@@ -389,9 +376,7 @@ export default function ReviewCard({
               />
             ))}
           </div>
-          <span className="ml-1 text-sm font-bold text-foreground">
-            {item.rating}/5
-          </span>
+          <span className="ml-1 text-sm font-bold text-foreground">{item.rating}/5</span>
         </div>
 
         {/* Content */}
@@ -478,10 +463,7 @@ export default function ReviewCard({
         />
       )}
 
-      <Dialog
-        open={editOpen}
-        onOpenChange={(v) => (v ? setEditOpen(true) : closeEdit())}
-      >
+      <Dialog open={editOpen} onOpenChange={(v) => (v ? setEditOpen(true) : closeEdit())}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>리뷰 수정</DialogTitle>
@@ -495,8 +477,7 @@ export default function ReviewCard({
                 aria-label="평점 선택"
                 className="flex items-center gap-1"
                 onKeyDown={(e) => {
-                  const curr =
-                    typeof editForm.rating === "number" ? editForm.rating : 0;
+                  const curr = typeof editForm.rating === "number" ? editForm.rating : 0;
                   if (e.key === "ArrowRight") {
                     const next = Math.min(5, curr + 1 || 1);
                     setEditForm((s) => ({ ...s, rating: next }));
@@ -510,8 +491,7 @@ export default function ReviewCard({
                 }}
               >
                 {[1, 2, 3, 4, 5].map((i) => {
-                  const current =
-                    typeof editForm.rating === "number" ? editForm.rating : 0;
+                  const current = typeof editForm.rating === "number" ? editForm.rating : 0;
                   const filled = (hoverRating ?? current) >= i;
                   return (
                     <button
@@ -543,27 +523,21 @@ export default function ReviewCard({
                 id="content"
                 rows={6}
                 value={editForm.content}
-                onChange={(e) =>
-                  setEditForm((s) => ({ ...s, content: e.target.value }))
-                }
+                onChange={(e) => setEditForm((s) => ({ ...s, content: e.target.value }))}
                 placeholder="리뷰 내용을 입력하세요."
               />
               <div className="mt-3">
                 <Label>사진 (선택, 최대 5장)</Label>
                 <PhotosUploader
                   value={editForm.photos}
-                  onChange={(arr) =>
-                    setEditForm((s) => ({ ...s, photos: arr }))
-                  }
+                  onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))}
                   max={5}
                   previewMode="queue"
                 />
 
                 <PhotosReorderGrid
                   value={editForm.photos}
-                  onChange={(arr) =>
-                    setEditForm((s) => ({ ...s, photos: arr }))
-                  }
+                  onChange={(arr) => setEditForm((s) => ({ ...s, photos: arr }))}
                 />
               </div>
             </div>

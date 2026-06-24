@@ -2,14 +2,11 @@
 
 import useSWR from "swr";
 
-type UnreadNotificationCountRes =
-  | { ok: true; count: number }
-  | { ok: false; error: string };
+type UnreadNotificationCountRes = { ok: true; count: number } | { ok: false; error: string };
 
 const fetcher = async (url: string): Promise<UnreadNotificationCountRes> => {
   const res = await fetch(url, { credentials: "include" });
-  if (!res.ok)
-    throw new Error(`notification unread-count fetch failed: ${res.status}`);
+  if (!res.ok) throw new Error(`notification unread-count fetch failed: ${res.status}`);
   return res.json();
 };
 

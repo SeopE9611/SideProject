@@ -1,10 +1,6 @@
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 
-export type AdminCancelRequestViewStatus =
-  | "none"
-  | "requested"
-  | "approved"
-  | "rejected";
+export type AdminCancelRequestViewStatus = "none" | "requested" | "approved" | "rejected";
 export type AdminCancelRequestSubject = "order" | "rental" | "application";
 
 export type AdminCancelRequestView = {

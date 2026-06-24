@@ -11,9 +11,7 @@ describe("관리자 리뷰 - 다중 상태 일괄 변경", () => {
         name: "Admin",
       },
     }).as("me");
-    cy.intercept("POST", "/api/refresh", { statusCode: 200, body: {} }).as(
-      "refresh",
-    );
+    cy.intercept("POST", "/api/refresh", { statusCode: 200, body: {} }).as("refresh");
     cy.intercept("POST", "/api/claims/auto-link", {
       statusCode: 200,
       body: { success: true },

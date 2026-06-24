@@ -38,8 +38,7 @@ export default function Error({
                 <span className="text-destructive">문제</span>가 발생했어요
               </h1>
               <p className="text-muted-foreground">
-                페이지를 불러오는 중 오류가 발생했습니다. 아래 버튼으로 다시
-                시도해보세요.
+                페이지를 불러오는 중 오류가 발생했습니다. 아래 버튼으로 다시 시도해보세요.
               </p>
 
               {isDev && (
@@ -64,11 +63,7 @@ export default function Error({
                   <RefreshCw className="mr-2 h-4 w-4" />
                   다시 시도
                 </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="border-border bg-transparent"
-                >
+                <Button asChild variant="outline" className="border-border bg-transparent">
                   <Link href="/">
                     <Home className="mr-2 h-4 w-4" />
                     홈으로 이동

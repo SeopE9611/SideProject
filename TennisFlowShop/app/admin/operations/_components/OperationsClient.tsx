@@ -22,22 +22,12 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
 import AdminTaskCard from "@/components/admin/AdminTaskCard";
-import {
-  Section,
-  SectionBody,
-  SectionHeader,
-} from "@/components/admin/Section";
+import { Section, SectionBody, SectionHeader } from "@/components/admin/Section";
 import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -55,12 +45,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { opsKindLabel } from "@/lib/admin-ops-taxonomy";
 import { inferNextActionForOperationGroup } from "@/lib/admin/next-action-guidance";
 import {
@@ -95,17 +80,11 @@ import {
   initOperationsStateFromQuery,
   useSyncOperationsQuery,
 } from "./hooks/useOperationsQueryState";
-import {
-  formatKST,
-  type OpItem,
-  type ReviewLevel,
-} from "./table/operationsTableUtils";
+import { formatKST, type OpItem, type ReviewLevel } from "./table/operationsTableUtils";
 
 const won = (n: number) => (n || 0).toLocaleString("ko-KR") + "원";
 
-type NavigationBadgeCounts = Partial<
-  Record<"offline" | "academyApplications", number>
->;
+type NavigationBadgeCounts = Partial<Record<"offline" | "academyApplications", number>>;
 
 type NavigationSummaryResponse = {
   counts?: NavigationBadgeCounts;
@@ -116,9 +95,7 @@ function amountMeaningText(item: OpItem) {
   const bits: string[] = [];
   if (item.amountNote) bits.push(item.amountNote);
   if (typeof item.amountReference === "number" && item.amountReference > 0) {
-    bits.push(
-      `${item.amountReferenceLabel ?? "기준금액"} ${won(item.amountReference)}`,
-    );
+    bits.push(`${item.amountReferenceLabel ?? "기준금액"} ${won(item.amountReference)}`);
   }
   return bits.join(" · ");
 }
@@ -137,13 +114,11 @@ const PAGE_COPY = {
   actions: [
     {
       title: "주의(오류) 우선 처리",
-      description:
-        "데이터 연결/무결성 오류 신호를 먼저 점검해 운영 리스크를 줄입니다.",
+      description: "데이터 연결/무결성 오류 신호를 먼저 점검해 운영 리스크를 줄입니다.",
     },
     {
       title: "확인 필요 항목 점검",
-      description:
-        "오류는 아니지만 운영 확인이 필요한 건의 검수 사유를 빠르게 확인합니다.",
+      description: "오류는 아니지만 운영 확인이 필요한 건의 검수 사유를 빠르게 확인합니다.",
     },
     {
       title: "상세 이동",
@@ -215,11 +190,7 @@ function summarizeReasonText(text?: string | null) {
   if (normalized.includes("주문 정보") || normalized.includes("파생")) {
     return "주문 정보 기준으로 표시 중";
   }
-  if (
-    normalized.includes("연결") ||
-    normalized.includes("문서") ||
-    normalized.includes("누락")
-  ) {
+  if (normalized.includes("연결") || normalized.includes("문서") || normalized.includes("누락")) {
     return "연결 문서 확인 필요";
   }
 
@@ -233,9 +204,7 @@ function summarizeReasonText(text?: string | null) {
 function isLowTensionNextAction(nextAction: string) {
   const normalized = nextAction.trim();
   if (!normalized) return true;
-  return (
-    normalized.includes("후속 조치 없음") || normalized.includes("모니터링")
-  );
+  return normalized.includes("후속 조치 없음") || normalized.includes("모니터링");
 }
 
 function flowLabelText(item: OpItem) {
@@ -285,28 +254,22 @@ function getOperationPriorityMeta(input: {
 }
 
 function statusHeadlineOf(item: OpItem) {
-  const status =
-    item.statusDisplayLabel?.trim() || item.statusLabel?.trim() || "";
+  const status = item.statusDisplayLabel?.trim() || item.statusLabel?.trim() || "";
   const flowLabel = flowLabelText(item);
   const lowerStatus = status.toLowerCase();
   const hasRelated = Boolean(item.related);
-  const integratedApplication =
-    item.kind === "stringing_application" && hasRelated;
-  const standaloneApplication =
-    item.kind === "stringing_application" && !hasRelated;
+  const integratedApplication = item.kind === "stringing_application" && hasRelated;
+  const standaloneApplication = item.kind === "stringing_application" && !hasRelated;
   const isCancelRequested = item.cancel?.status === "requested";
-  const isCancelDone =
-    item.cancel?.status === "approved" || item.cancel?.status === "rejected";
+  const isCancelDone = item.cancel?.status === "approved" || item.cancel?.status === "rejected";
 
   if (item.kind === "order") {
     if (isCancelRequested) return "취소 요청 접수 주문";
-    if (isCancelDone || lowerStatus.includes("환불"))
-      return "취소/환불 처리 주문";
+    if (isCancelDone || lowerStatus.includes("환불")) return "취소/환불 처리 주문";
     if (lowerStatus.includes("구매확정")) return "구매확정 주문";
     if (lowerStatus.includes("배송완료") || lowerStatus.includes("delivered"))
       return "배송 완료 주문";
-    if (lowerStatus.includes("배송중") || lowerStatus.includes("shipped"))
-      return "배송 중 주문";
+    if (lowerStatus.includes("배송중") || lowerStatus.includes("shipped")) return "배송 중 주문";
     if (lowerStatus.includes("결제")) return "결제 대기 주문";
     return status ? `${status} 주문` : "처리 대기 주문";
   }
@@ -314,8 +277,7 @@ function statusHeadlineOf(item: OpItem) {
   if (item.kind === "rental") {
     if (isCancelRequested) return "취소 요청 접수 대여 건";
     if (lowerStatus.includes("반납완료")) return "대여 완료 건";
-    if (lowerStatus.includes("대여중") || lowerStatus.includes("out"))
-      return "대여 진행 건";
+    if (lowerStatus.includes("대여중") || lowerStatus.includes("out")) return "대여 진행 건";
     if (lowerStatus.includes("대기") || lowerStatus.includes("결제완료"))
       return "대여 시작 전 준비 필요";
     return status ? `${status} 대여 건` : "대여 상태 확인 건";
@@ -324,22 +286,16 @@ function statusHeadlineOf(item: OpItem) {
   if (isCancelRequested) return "취소 요청 접수 신청 건";
   if (lowerStatus.includes("교체완료")) {
     if (flowLabel.includes("신청")) return "신청서 교체 완료 건";
-    return standaloneApplication
-      ? "단독 교체 신청 완료 건"
-      : "연결 교체 신청 완료 건";
+    return standaloneApplication ? "단독 교체 신청 완료 건" : "연결 교체 신청 완료 건";
   }
   if (lowerStatus.includes("검토")) {
-    return standaloneApplication
-      ? "단독 교체 신청 검토 건"
-      : "연결 교체 신청 검토 건";
+    return standaloneApplication ? "단독 교체 신청 검토 건" : "연결 교체 신청 검토 건";
   }
   if (lowerStatus.includes("접수")) {
     return standaloneApplication ? "신청 접수 완료 건" : "연결 신청 접수 건";
   }
   if (lowerStatus.includes("작업")) {
-    return standaloneApplication
-      ? "단독 교체 신청 작업 건"
-      : "연결 교체 신청 작업 건";
+    return standaloneApplication ? "단독 교체 신청 작업 건" : "연결 교체 신청 작업 건";
   }
   if (integratedApplication) return "연결 교체 신청 건";
   if (standaloneApplication) return "단독 교체 신청 건";
@@ -398,10 +354,7 @@ function normalizeText(value?: string | null) {
   return (value ?? "").toLowerCase().trim();
 }
 
-function appendQuickViewParam(
-  params: URLSearchParams,
-  view: OperationsQuickView,
-) {
+function appendQuickViewParam(params: URLSearchParams, view: OperationsQuickView) {
   if (view === "all") {
     params.delete("view");
     return;
@@ -431,20 +384,14 @@ function hasPaymentCheckNeeded(group: { items: OpItem[] }) {
     const statusText = `${item.statusDisplayLabel ?? ""} ${item.statusLabel ?? ""}`;
     if (excludeKeywords.some((word) => statusText.includes(word))) return false;
     const paymentStatus = normalizeText(item.stage);
-    if (paymentStatus.includes("pending") || paymentStatus.includes("unpaid"))
-      return true;
+    if (paymentStatus.includes("pending") || paymentStatus.includes("unpaid")) return true;
     const combined = `${item.paymentLabel ?? ""} ${statusText} ${item.nextAction ?? ""}`;
     return includeKeywords.some((word) => combined.includes(word));
   });
 }
 
 function hasShippingMissing(group: { items: OpItem[] }) {
-  const excludeKeywords = [
-    "배송완료",
-    "수령완료",
-    "방문 수령 완료",
-    "반납완료",
-  ];
+  const excludeKeywords = ["배송완료", "수령완료", "방문 수령 완료", "반납완료"];
   const includeKeywords = [
     "운송장",
     "배송 등록",
@@ -460,34 +407,16 @@ function hasShippingMissing(group: { items: OpItem[] }) {
     const warnText = (item.warnReasons ?? []).join(" ");
     const nextActionText = item.nextAction ?? "";
     const combined = `${statusText} ${warnText} ${nextActionText}`;
-    const needsTracking =
-      item.hasShippingInfo === false || item.hasOutboundTracking === false;
-    if (
-      needsTracking &&
-      includeKeywords.some((word) => combined.includes(word))
-    )
-      return true;
-    return includeKeywords.some(
-      (word) => warnText.includes(word) || nextActionText.includes(word),
-    );
+    const needsTracking = item.hasShippingInfo === false || item.hasOutboundTracking === false;
+    if (needsTracking && includeKeywords.some((word) => combined.includes(word))) return true;
+    return includeKeywords.some((word) => warnText.includes(word) || nextActionText.includes(word));
   });
 }
 
 function hasRentalDue(group: { items: OpItem[] }) {
-  const includeStageKeywords = [
-    "overdue",
-    "duesoon",
-    "returndue",
-    "active",
-    "ongoing",
-  ];
+  const includeStageKeywords = ["overdue", "duesoon", "returndue", "active", "ongoing"];
   const includeStatusKeywords = ["대여중", "반납대기", "반납예정"];
-  const includeActionKeywords = [
-    "반납 확인",
-    "반납확인",
-    "반납 예정",
-    "반납 필요",
-  ];
+  const includeActionKeywords = ["반납 확인", "반납확인", "반납 예정", "반납 필요"];
   const excludeKeywords = ["반납완료", "완료", "환불완료"];
   return group.items.some((item) => {
     if (item.kind !== "rental") return false;
@@ -495,18 +424,13 @@ function hasRentalDue(group: { items: OpItem[] }) {
     if (excludeKeywords.some((word) => combined.includes(word))) return false;
     const stage = normalizeText(item.stage);
     if (includeStageKeywords.some((word) => stage.includes(word))) return true;
-    if (includeStatusKeywords.some((word) => combined.includes(word)))
-      return true;
-    return includeActionKeywords.some((word) =>
-      (item.nextAction ?? "").includes(word),
-    );
+    if (includeStatusKeywords.some((word) => combined.includes(word))) return true;
+    return includeActionKeywords.some((word) => (item.nextAction ?? "").includes(word));
   });
 }
 
 function isLinkedWorkGroup(group: { items: OpItem[] }) {
-  return (
-    group.items.some((item) => Boolean(item.related)) || group.items.length > 1
-  );
+  return group.items.some((item) => Boolean(item.related)) || group.items.length > 1;
 }
 
 const PRESET_CONFIG: Record<
@@ -544,10 +468,8 @@ const PRESET_CONFIG: Record<
   integratedReview: {
     label: "연결 주문 확인",
     helperText: "주문/대여와 신청서가 연결된 통합 건만 모아 확인합니다.",
-    priorityReason:
-      "연결 구조가 복잡해 문서 누락/상태 불일치가 가장 자주 발생합니다.",
-    nextAction:
-      "앵커 문서 기준으로 연결 문서의 상태·금액·정산 대상 월을 차례대로 검수하세요.",
+    priorityReason: "연결 구조가 복잡해 문서 누락/상태 불일치가 가장 자주 발생합니다.",
+    nextAction: "앵커 문서 기준으로 연결 문서의 상태·금액·정산 대상 월을 차례대로 검수하세요.",
     params: { integrated: "1", flow: "all", kind: "all", warn: false },
     isActive: ({ integrated, flow, kind, onlyWarn }) =>
       integrated === "1" && flow === "all" && kind === "all" && !onlyWarn,
@@ -557,8 +479,7 @@ const PRESET_CONFIG: Record<
     helperText: "연결되지 않은 교체서비스 신청서만 빠르게 처리합니다.",
     priorityReason:
       "단독 신청서는 후속 주문/대여 연결이 없어 처리 누락 시 장기 미처리로 남기 쉽습니다.",
-    nextAction:
-      "미처리 사유를 우선 확인하고 담당자 배정 또는 상태 업데이트를 즉시 진행하세요.",
+    nextAction: "미처리 사유를 우선 확인하고 담당자 배정 또는 상태 업데이트를 즉시 진행하세요.",
     params: {
       integrated: "0",
       flow: "3",
@@ -566,10 +487,7 @@ const PRESET_CONFIG: Record<
       warn: false,
     },
     isActive: ({ integrated, flow, kind, onlyWarn }) =>
-      integrated === "0" &&
-      flow === "3" &&
-      kind === "stringing_application" &&
-      !onlyWarn,
+      integrated === "0" && flow === "3" && kind === "stringing_application" && !onlyWarn,
   },
 };
 
@@ -613,29 +531,22 @@ function pickOnePerKind(items: OpItem[]) {
     const t2 = it.createdAt ? new Date(it.createdAt).getTime() : 0;
     if (t2 >= t1) byKind.set(it.kind, it);
   }
-  return (
-    ["order", "rental", "stringing_application", "package_purchase"] as Kind[]
-  )
+  return (["order", "rental", "stringing_application", "package_purchase"] as Kind[])
     .map((k) => byKind.get(k))
     .filter(Boolean) as OpItem[];
 }
 
 function isWarnGroup(g: { items: OpItem[] }) {
-  return (g.items ?? []).some(
-    (it) => it.warn === true || (it.warnReasons?.length ?? 0) > 0,
-  );
+  return (g.items ?? []).some((it) => it.warn === true || (it.warnReasons?.length ?? 0) > 0);
 }
 
-function cancelBadgeSpec(
-  status?: "none" | "requested" | "approved" | "rejected",
-) {
+function cancelBadgeSpec(status?: "none" | "requested" | "approved" | "rejected") {
   if (status === "requested")
     return {
       label: "취소요청",
       spec: getWorkflowMetaBadgeSpec("cancel_requested"),
     };
-  if (status === "approved")
-    return { label: "취소승인", spec: getPaymentStatusBadgeSpec("환불") };
+  if (status === "approved") return { label: "취소승인", spec: getPaymentStatusBadgeSpec("환불") };
   if (status === "rejected")
     return { label: "취소거절", spec: getPaymentStatusBadgeSpec("결제대기") };
   return null;
@@ -672,8 +583,7 @@ function resolvePrimaryActionTarget(group: {
 }): PrimaryActionTarget {
   const { anchor, items } = group;
   const isIntegratedOrder =
-    anchor.kind === "order" &&
-    items.some((item) => item.kind === "stringing_application");
+    anchor.kind === "order" && items.some((item) => item.kind === "stringing_application");
 
   if (isIntegratedOrder) {
     return { href: anchor.href, label: "통합 주문 관리" };
@@ -709,9 +619,7 @@ function stringSummaryText(item?: OpItem) {
     summary.name ?? "스트링 선택됨",
     summary.price ? `요금 ${won(summary.price)}` : null,
     summary.mountingFee ? `교체비 ${won(summary.mountingFee)}` : null,
-    summary.applicationStatus
-      ? `신청 ${summary.applicationStatus}`
-      : "신청 상태 확인",
+    summary.applicationStatus ? `신청 ${summary.applicationStatus}` : "신청 상태 확인",
   ]
     .filter(Boolean)
     .join(" / ");
@@ -758,27 +666,20 @@ export default function OperationsClient() {
   const [q, setQ] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [kind, setKind] = useState<"all" | Kind>("all");
-  const [flow, setFlow] = useState<
-    "all" | "1" | "2" | "3" | "4" | "5" | "6" | "7"
-  >("all");
+  const [flow, setFlow] = useState<"all" | "1" | "2" | "3" | "4" | "5" | "6" | "7">("all");
   const [integrated, setIntegrated] = useState<"all" | "1" | "0">("all"); // 1=통합만, 0=단독만
   const [onlyWarn, setOnlyWarn] = useState(false);
   const [warnFilter, setWarnFilter] = useState<
     "all" | "warn" | "caution" | "review" | "pending" | "clean"
   >("all");
-  const [warnSort, setWarnSort] = useState<
-    "default" | "warn_first" | "safe_first"
-  >("default");
+  const [warnSort, setWarnSort] = useState<"default" | "warn_first" | "safe_first">("default");
   const [page, setPage] = useState(1);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [openReasons, setOpenReasons] = useState<Record<string, boolean>>({});
   const [showActionsGuide, setShowActionsGuide] = useState(false);
   const [isFilterScrolled, setIsFilterScrolled] = useState(false);
-  const [displayDensity, setDisplayDensity] = useState<"default" | "compact">(
-    "default",
-  );
-  const [activeQuickView, setActiveQuickView] =
-    useState<OperationsQuickView>("all");
+  const [displayDensity, setDisplayDensity] = useState<"default" | "compact">("default");
+  const [activeQuickView, setActiveQuickView] = useState<OperationsQuickView>("all");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const replaceSyncedOperationsUrl = useCallback(
@@ -887,12 +788,15 @@ export default function OperationsClient() {
     | NavigationSummaryResponse
     | undefined;
 
-  const { data, isLoading, error, mutate } =
-    useSWR<AdminOperationsListResponseDto>(key, authenticatedSWRFetcher, {
+  const { data, isLoading, error, mutate } = useSWR<AdminOperationsListResponseDto>(
+    key,
+    authenticatedSWRFetcher,
+    {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
       keepPreviousData: true,
-    });
+    },
+  );
   const { data: navigationSummary } = useSWR<NavigationSummaryResponse>(
     navigationSummaryKey,
     authenticatedSWRFetcher,
@@ -917,9 +821,7 @@ export default function OperationsClient() {
   const totalGroups = data?.pagination?.totalGroups;
   const pageSize = data?.pagination?.pageSize ?? effectivePageSize;
   const totalPages =
-    typeof totalGroups === "number"
-      ? Math.max(1, Math.ceil(totalGroups / pageSize))
-      : null;
+    typeof totalGroups === "number" ? Math.max(1, Math.ceil(totalGroups / pageSize)) : null;
 
   // 서버 groups를 단일 source of truth로 사용한다.
   const groups = useMemo(() => {
@@ -929,8 +831,7 @@ export default function OperationsClient() {
       .map((group) => {
         const anchor =
           group.items.find(
-            (item) =>
-              item.id === group.anchorId && item.kind === group.anchorKind,
+            (item) => item.id === group.anchorId && item.kind === group.anchorKind,
           ) ?? group.items[0]!;
         const kinds = Array.from(new Set(group.items.map((x) => x.kind))).sort(
           (a, b) => KIND_PRIORITY[a] - KIND_PRIORITY[b],
@@ -983,8 +884,7 @@ export default function OperationsClient() {
       }
     });
   }, [activeQuickView, groupsToRender]);
-  const shouldShowEmptyState =
-    hasResolvedGroups && quickViewFilteredGroups.length === 0;
+  const shouldShowEmptyState = hasResolvedGroups && quickViewFilteredGroups.length === 0;
   const shouldShowGlobalError = Boolean(error) && !Array.isArray(data?.groups);
 
   const todayTodoCount: AdminOperationsSummary | null =
@@ -992,15 +892,11 @@ export default function OperationsClient() {
 
   // 펼칠 수 있는 그룹(통합 묶음)만 추림
   const expandableGroupKeys = useMemo(
-    () =>
-      quickViewFilteredGroups
-        .filter((g) => g.items.length > 1)
-        .map((g) => g.key),
+    () => quickViewFilteredGroups.filter((g) => g.items.length > 1).map((g) => g.key),
     [quickViewFilteredGroups],
   );
   const hasExpandableGroups = expandableGroupKeys.length > 0;
-  const isAllExpanded =
-    hasExpandableGroups && expandableGroupKeys.every((k) => !!openGroups[k]);
+  const isAllExpanded = hasExpandableGroups && expandableGroupKeys.every((k) => !!openGroups[k]);
   const shareViewHref = useMemo(() => {
     const qs = buildOperationsViewQueryString({
       q,
@@ -1016,18 +912,7 @@ export default function OperationsClient() {
     appendQuickViewParam(params, activeQuickView);
     const nextQs = params.toString();
     return nextQs ? `${pathname}?${nextQs}` : pathname;
-  }, [
-    activeQuickView,
-    flow,
-    integrated,
-    kind,
-    onlyWarn,
-    page,
-    pathname,
-    q,
-    warnFilter,
-    warnSort,
-  ]);
+  }, [activeQuickView, flow, integrated, kind, onlyWarn, page, pathname, q, warnFilter, warnSort]);
   const shareViewFullHref = useMemo(() => {
     if (typeof window === "undefined") return shareViewHref;
     return `${window.location.origin}${shareViewHref}`;
@@ -1126,11 +1011,7 @@ export default function OperationsClient() {
     if (presetActive.integratedReview) return "integratedReview" as const;
     if (presetActive.singleApplication) return "singleApplication" as const;
     return null;
-  }, [
-    presetActive.integratedReview,
-    presetActive.paymentMismatch,
-    presetActive.singleApplication,
-  ]);
+  }, [presetActive.integratedReview, presetActive.paymentMismatch, presetActive.singleApplication]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -1144,9 +1025,7 @@ export default function OperationsClient() {
     return count;
   }, [flow, integrated, kind, onlyWarn, q, warnFilter, warnSort]);
   const activeQuickViewMeta = useMemo(
-    () =>
-      QUICK_VIEWS.find((view) => view.key === activeQuickView) ??
-      QUICK_VIEWS[0],
+    () => QUICK_VIEWS.find((view) => view.key === activeQuickView) ?? QUICK_VIEWS[0],
     [activeQuickView],
   );
 
@@ -1171,8 +1050,7 @@ export default function OperationsClient() {
       {
         title: "결제 확인",
         count: taskCounts?.paymentCheck ?? 0,
-        description:
-          "입금/결제 대기 또는 동기화 확인이 필요한 건을 먼저 확인하세요.",
+        description: "입금/결제 대기 또는 동기화 확인이 필요한 건을 먼저 확인하세요.",
         action: "바로 처리",
         onClick: () => applyQuickView("paymentCheck"),
         tone: "warning" as const,
@@ -1190,8 +1068,7 @@ export default function OperationsClient() {
       {
         title: "배송/출고 누락",
         count: taskCounts?.shippingMissing ?? 0,
-        description:
-          "배송지와 수령 방식을 확인하고 운송장 또는 방문 수령 정보를 정리하세요.",
+        description: "배송지와 수령 방식을 확인하고 운송장 또는 방문 수령 정보를 정리하세요.",
         action: "바로 처리",
         onClick: () => applyQuickView("shippingMissing"),
         tone: "warning" as const,
@@ -1211,8 +1088,7 @@ export default function OperationsClient() {
       {
         title: "대여 반납",
         count: taskCounts?.rentalDue ?? 0,
-        description:
-          "반납 예정/연체 라켓의 운송장, 라켓 상태, 보증금 환불 여부를 확인하세요.",
+        description: "반납 예정/연체 라켓의 운송장, 라켓 상태, 보증금 환불 여부를 확인하세요.",
         action: "바로 처리",
         onClick: () => applyQuickView("rentalDue"),
         tone: "warning" as const,
@@ -1220,8 +1096,7 @@ export default function OperationsClient() {
       {
         title: "연결 오류/확인 필요",
         count: taskCounts?.linkedReview ?? 0,
-        description:
-          "주문·교체서비스·대여 연결 문서와 표시된 확인 사유를 점검하세요.",
+        description: "주문·교체서비스·대여 연결 문서와 표시된 확인 사유를 점검하세요.",
         action: "바로 처리",
         onClick: () => applyQuickView("linkedReview"),
         tone: "warning" as const,
@@ -1377,8 +1252,7 @@ export default function OperationsClient() {
             description="건수가 있는 항목부터 열어 처리하면 됩니다."
             aside={
               <p className="max-w-full break-words text-sm leading-relaxed text-muted-foreground sm:max-w-[360px] sm:text-right">
-                전체 처리 필요 기준입니다. 검색과 필터는 아래 목록에만
-                적용됩니다.
+                전체 처리 필요 기준입니다. 검색과 필터는 아래 목록에만 적용됩니다.
               </p>
             }
           />
@@ -1418,9 +1292,7 @@ export default function OperationsClient() {
           <summary className="cursor-pointer font-semibold text-foreground">
             <span className="inline-flex items-center gap-2">
               <span>오늘 업무 처리 순서</span>
-              <Badge
-                className={cn(badgeBase, badgeSizeSm, badgeToneClass("brand"))}
-              >
+              <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass("brand"))}>
                 권장 처리 순서
               </Badge>
             </span>
@@ -1442,9 +1314,7 @@ export default function OperationsClient() {
         <section className="mt-4 rounded-xl border border-border bg-card p-4 shadow-sm">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-base font-semibold text-foreground">
-                오늘 업무 마감 요약
-              </h2>
+              <h2 className="text-base font-semibold text-foreground">오늘 업무 마감 요약</h2>
               <p className="text-xs text-muted-foreground">
                 오늘 처리한 업무와 남은 업무를 간단히 확인합니다.
               </p>
@@ -1455,9 +1325,7 @@ export default function OperationsClient() {
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             <Card className="border-border bg-background/70 shadow-none">
               <CardHeader className="p-3 pb-2">
-                <CardTitle className="text-sm font-semibold">
-                  오늘 처리
-                </CardTitle>
+                <CardTitle className="text-sm font-semibold">오늘 처리</CardTitle>
                 <CardDescription className="text-2xl font-bold text-foreground">
                   {dailySummaryValue(dailySummary?.completedToday.total)}
                 </CardDescription>
@@ -1465,22 +1333,13 @@ export default function OperationsClient() {
               <CardContent className="p-3 pt-0 text-xs leading-relaxed text-muted-foreground">
                 {dailySummary
                   ? [
-                      dailySummaryInlineValue(
-                        "주문",
-                        dailySummary.completedToday.orders,
-                      ),
+                      dailySummaryInlineValue("주문", dailySummary.completedToday.orders),
                       dailySummaryInlineValue(
                         "교체",
                         dailySummary.completedToday.stringingApplications,
                       ),
-                      dailySummaryInlineValue(
-                        "대여",
-                        dailySummary.completedToday.rentals,
-                      ),
-                      dailySummaryInlineValue(
-                        "오프라인",
-                        dailySummary.completedToday.offline,
-                      ),
+                      dailySummaryInlineValue("대여", dailySummary.completedToday.rentals),
+                      dailySummaryInlineValue("오프라인", dailySummary.completedToday.offline),
                       dailySummaryInlineValue(
                         "아카데미",
                         dailySummary.completedToday.academyApplications,
@@ -1494,9 +1353,7 @@ export default function OperationsClient() {
 
             <Card className="border-border bg-background/70 shadow-none">
               <CardHeader className="p-3 pb-2">
-                <CardTitle className="text-sm font-semibold">
-                  남은 업무
-                </CardTitle>
+                <CardTitle className="text-sm font-semibold">남은 업무</CardTitle>
                 <CardDescription className="text-2xl font-bold text-foreground">
                   {dailySummaryValue(dailySummary?.remaining.total)}
                 </CardDescription>
@@ -1504,30 +1361,12 @@ export default function OperationsClient() {
               <CardContent className="p-3 pt-0 text-xs leading-relaxed text-muted-foreground">
                 {dailySummary
                   ? [
-                      dailySummaryInlineValue(
-                        "취소",
-                        dailySummary.remaining.cancelRequests,
-                      ),
-                      dailySummaryInlineValue(
-                        "결제",
-                        dailySummary.remaining.paymentCheck,
-                      ),
-                      dailySummaryInlineValue(
-                        "패키지",
-                        dailySummary.remaining.packagePaymentCheck,
-                      ),
-                      dailySummaryInlineValue(
-                        "배송",
-                        dailySummary.remaining.shippingMissing,
-                      ),
-                      dailySummaryInlineValue(
-                        "교체",
-                        dailySummary.remaining.stringingWork,
-                      ),
-                      dailySummaryInlineValue(
-                        "반납",
-                        dailySummary.remaining.rentalDue,
-                      ),
+                      dailySummaryInlineValue("취소", dailySummary.remaining.cancelRequests),
+                      dailySummaryInlineValue("결제", dailySummary.remaining.paymentCheck),
+                      dailySummaryInlineValue("패키지", dailySummary.remaining.packagePaymentCheck),
+                      dailySummaryInlineValue("배송", dailySummary.remaining.shippingMissing),
+                      dailySummaryInlineValue("교체", dailySummary.remaining.stringingWork),
+                      dailySummaryInlineValue("반납", dailySummary.remaining.rentalDue),
                     ].join(" · ")
                   : dailySummaryError
                     ? "요약을 불러오지 못했습니다."
@@ -1537,13 +1376,9 @@ export default function OperationsClient() {
 
             <Card className="border-border bg-background/70 shadow-none">
               <CardHeader className="p-3 pb-2">
-                <CardTitle className="text-sm font-semibold">
-                  마감 전 확인
-                </CardTitle>
+                <CardTitle className="text-sm font-semibold">마감 전 확인</CardTitle>
                 <CardDescription className="text-base font-bold text-foreground">
-                  긴급{" "}
-                  {dailySummaryValue(dailySummary?.attention.urgentRemaining)} /
-                  확인{" "}
+                  긴급 {dailySummaryValue(dailySummary?.attention.urgentRemaining)} / 확인{" "}
                   {dailySummaryValue(dailySummary?.attention.watchRemaining)}
                 </CardDescription>
               </CardHeader>
@@ -1551,9 +1386,7 @@ export default function OperationsClient() {
                 <p
                   className={cn(
                     "text-xs leading-relaxed",
-                    dailySummaryError
-                      ? "text-warning"
-                      : "text-muted-foreground",
+                    dailySummaryError ? "text-warning" : "text-muted-foreground",
                   )}
                 >
                   {dailySummaryStatusMessage}
@@ -1601,27 +1434,21 @@ export default function OperationsClient() {
           >
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <p className="text-sm font-semibold text-foreground">
-                  빠른 보기
-                </p>
+                <p className="text-sm font-semibold text-foreground">빠른 보기</p>
                 <Badge variant="outline">{activeQuickViewMeta.label}</Badge>
               </div>
               <p className="mt-1 text-xs leading-relaxed text-foreground/75">
-                {activeQuickViewMeta.description} 자주 처리하는 업무 유형을 한
-                번에 전환할 수 있습니다.
+                {activeQuickViewMeta.description} 자주 처리하는 업무 유형을 한 번에 전환할 수
+                있습니다.
               </p>
             </div>
           </AdminFilterBar>
           <p className="mb-1 text-xs text-muted-foreground">
-            일반 업무는 업무 큐로 전환하고, 특정 이슈 집중 점검은 정밀 검수
-            모드를 사용하세요.
+            일반 업무는 업무 큐로 전환하고, 특정 이슈 집중 점검은 정밀 검수 모드를 사용하세요.
           </p>
-          <p className="text-sm font-semibold text-foreground">
-            정밀 검수 모드
-          </p>
+          <p className="text-sm font-semibold text-foreground">정밀 검수 모드</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            결제 불일치, 연결 검수, 단독 신청처럼 특정 운영 이슈를 집중
-            점검합니다.
+            결제 불일치, 연결 검수, 단독 신청처럼 특정 운영 이슈를 집중 점검합니다.
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
             <Button
@@ -1659,9 +1486,7 @@ export default function OperationsClient() {
               variant={presetActive.singleApplication ? "default" : "outline"}
               size="sm"
               aria-pressed={presetActive.singleApplication}
-              onClick={() =>
-                applyPreset(PRESET_CONFIG.singleApplication.params)
-              }
+              onClick={() => applyPreset(PRESET_CONFIG.singleApplication.params)}
               className={cn(
                 "h-9 min-h-9 px-3 text-xs font-semibold",
                 presetActive.singleApplication
@@ -1704,24 +1529,18 @@ export default function OperationsClient() {
             <div>
               <CardTitle>고급 필터</CardTitle>
               <CardDescription className="mt-1 text-xs">
-                고급 필터는 특정 고객, 문서 ID, 운영 흐름, 문제 유형을 직접 좁힐
-                때 사용합니다. 일반 처리는 위의 업무 큐를 먼저 사용하세요.
+                고급 필터는 특정 고객, 문서 ID, 운영 흐름, 문제 유형을 직접 좁힐 때 사용합니다. 일반
+                처리는 위의 업무 큐를 먼저 사용하세요.
               </CardDescription>
               {error && !shouldShowGlobalError && (
                 <p className="mt-1 text-[11px] text-warning">
-                  검색 결과를 새로 불러오지 못해 이전 결과를 유지 중입니다. 잠시
-                  후 다시 시도해 주세요.
+                  검색 결과를 새로 불러오지 못해 이전 결과를 유지 중입니다. 잠시 후 다시 시도해
+                  주세요.
                 </p>
               )}
               {activeFilterCount > 0 && (
                 <>
-                  <Badge
-                    className={cn(
-                      badgeBase,
-                      badgeSizeSm,
-                      "mt-2 " + badgeToneClass("brand"),
-                    )}
-                  >
+                  <Badge className={cn(badgeBase, badgeSizeSm, "mt-2 " + badgeToneClass("brand"))}>
                     적용된 필터 {activeFilterCount}개
                   </Badge>
                   <p className="mt-1 text-[11px] text-muted-foreground">
@@ -1773,11 +1592,7 @@ export default function OperationsClient() {
                   type="button"
                   variant={onlyWarn ? "default" : "outline"}
                   size="sm"
-                  title={
-                    onlyWarn
-                      ? "주의(오류) 항목만 조회 중"
-                      : "주의(오류) 항목만 모아보기"
-                  }
+                  title={onlyWarn ? "주의(오류) 항목만 조회 중" : "주의(오류) 항목만 모아보기"}
                   className={cn("h-9", !onlyWarn && "bg-transparent")}
                   onClick={() => {
                     setOnlyWarn((v) => {
@@ -1802,12 +1617,7 @@ export default function OperationsClient() {
                   {shareLinkCopied ? "링크 복사됨" : "현재 뷰 링크 복사"}
                 </Button>
 
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="h-9 bg-transparent"
-                >
+                <Button asChild variant="outline" size="sm" className="h-9 bg-transparent">
                   <Link href={settlementsHref}>정산 관리</Link>
                 </Button>
               </div>
@@ -1827,13 +1637,9 @@ export default function OperationsClient() {
                   <SelectContent>
                     <SelectItem value="all">종류(전체)</SelectItem>
                     <SelectItem value="order">주문</SelectItem>
-                    <SelectItem value="stringing_application">
-                      신청서
-                    </SelectItem>
+                    <SelectItem value="stringing_application">신청서</SelectItem>
                     <SelectItem value="rental">대여</SelectItem>
-                    <SelectItem value="package_purchase">
-                      패키지 구매
-                    </SelectItem>
+                    <SelectItem value="package_purchase">패키지 구매</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -1850,9 +1656,7 @@ export default function OperationsClient() {
                   <SelectContent>
                     <SelectItem value="all">운영 흐름(전체)</SelectItem>
                     <SelectItem value="1">레거시 · 스트링 단품 구매</SelectItem>
-                    <SelectItem value="2">
-                      스트링 구매 + 교체서비스 신청(통합)
-                    </SelectItem>
+                    <SelectItem value="2">스트링 구매 + 교체서비스 신청(통합)</SelectItem>
                     <SelectItem value="3">교체서비스 단일 신청</SelectItem>
                     <SelectItem value="4">레거시 · 라켓 단품 구매</SelectItem>
                     <SelectItem value="5">
@@ -1866,8 +1670,7 @@ export default function OperationsClient() {
                   </SelectContent>
                 </Select>
                 <p className="w-full text-[11px] leading-relaxed text-muted-foreground bp-sm:col-span-2 bp-md:col-span-3 bp-lg:col-span-5">
-                  레거시 유형은 기존 데이터 확인용이며 신규 접수 흐름은 현재
-                  운영하지 않습니다.
+                  레거시 유형은 기존 데이터 확인용이며 신규 접수 흐름은 현재 운영하지 않습니다.
                 </p>
 
                 <Select
@@ -1916,10 +1719,7 @@ export default function OperationsClient() {
                   </SelectContent>
                 </Select>
 
-                <Select
-                  value={warnSort}
-                  onValueChange={(v: any) => setWarnSort(v)}
-                >
+                <Select value={warnSort} onValueChange={(v: any) => setWarnSort(v)}>
                   <SelectTrigger className="w-full min-w-0 text-left">
                     <SelectValue placeholder="우선순위 정렬" />
                   </SelectTrigger>
@@ -1934,9 +1734,7 @@ export default function OperationsClient() {
               {activePresetKey && (
                 <div className="mt-1 grid gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs text-muted-foreground bp-sm:grid-cols-3">
                   <div>
-                    <p className="mb-1 text-[11px] font-semibold text-primary">
-                      현재 결과
-                    </p>
+                    <p className="mb-1 text-[11px] font-semibold text-primary">현재 결과</p>
                     <p className="text-sm font-medium text-foreground">
                       {typeof totalGroups === "number"
                         ? `${totalGroups.toLocaleString("ko-KR")}건`
@@ -1944,15 +1742,11 @@ export default function OperationsClient() {
                     </p>
                   </div>
                   <div>
-                    <p className="mb-1 text-[11px] font-semibold text-primary">
-                      우선 처리 이유
-                    </p>
+                    <p className="mb-1 text-[11px] font-semibold text-primary">우선 처리 이유</p>
                     <p>{PRESET_CONFIG[activePresetKey].helperText}</p>
                   </div>
                   <div>
-                    <p className="mb-1 text-[11px] font-semibold text-primary">
-                      다음 처리
-                    </p>
+                    <p className="mb-1 text-[11px] font-semibold text-primary">다음 처리</p>
                     <p>{PRESET_CONFIG[activePresetKey].nextAction}</p>
                   </div>
                 </div>
@@ -1961,8 +1755,8 @@ export default function OperationsClient() {
                 <div className="flex items-center gap-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-1.5 text-[11px] leading-tight text-muted-foreground/90">
                   <AlertTriangle className="h-3.5 w-3.5 text-warning" />
                   <span>
-                    상태 배지는 목록에 보이는 <strong>주의 / 확인 필요</strong>
-                    만 사용합니다. 운영 흐름은 각 행 텍스트를 직접 확인하세요.
+                    상태 배지는 목록에 보이는 <strong>주의 / 확인 필요</strong>만 사용합니다. 운영
+                    흐름은 각 행 텍스트를 직접 확인하세요.
                   </span>
                 </div>
               </div>
@@ -1978,13 +1772,7 @@ export default function OperationsClient() {
             <div className="flex items-center gap-2">
               <CardTitle className="text-base font-medium">업무 목록</CardTitle>
               {activePresetKey && (
-                <Badge
-                  className={cn(
-                    badgeBase,
-                    badgeSizeSm,
-                    badgeToneClass("brand"),
-                  )}
-                >
+                <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass("brand"))}>
                   {PRESET_CONFIG[activePresetKey].label}
                 </Badge>
               )}
@@ -2047,9 +1835,7 @@ export default function OperationsClient() {
           </div>
           <div className="flex items-center gap-2 pt-2">
             <div className="text-xs text-muted-foreground">
-              {totalPages
-                ? `${page} / ${totalPages} 페이지`
-                : "페이지 계산 중…"}
+              {totalPages ? `${page} / ${totalPages} 페이지` : "페이지 계산 중…"}
             </div>
             <Button
               type="button"
@@ -2081,18 +1867,10 @@ export default function OperationsClient() {
                       <TableHead className={cn(thClasses, "w-[42%]")}>
                         <Skeleton className="h-4 w-36" />
                       </TableHead>
-                      <TableHead
-                        className={cn(thClasses, "w-[18%] text-right")}
-                      >
+                      <TableHead className={cn(thClasses, "w-[18%] text-right")}>
                         <Skeleton className="ml-auto h-4 w-16" />
                       </TableHead>
-                      <TableHead
-                        className={cn(
-                          thClasses,
-                          stickyActionHeadClass,
-                          "w-[16%]",
-                        )}
-                      >
+                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[16%]")}>
                         <Skeleton className="ml-auto h-4 w-16" />
                       </TableHead>
                     </TableRow>
@@ -2125,10 +1903,7 @@ export default function OperationsClient() {
               </div>
               <div className="bp-lg:hidden space-y-3">
                 {Array.from({ length: 5 }).map((_, idx) => (
-                  <div
-                    key={idx}
-                    className="rounded-lg border border-border bg-card p-4 space-y-3"
-                  >
+                  <div key={idx} className="rounded-lg border border-border bg-card p-4 space-y-3">
                     <Skeleton className="h-5 w-1/2" />
                     <Skeleton className="h-4 w-full" />
                     <Skeleton className="h-4 w-4/5" />
@@ -2142,25 +1917,13 @@ export default function OperationsClient() {
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-transparent border-b border-border">
-                      <TableHead className={cn(thClasses, "w-[24%]")}>
-                        처리 상태
-                      </TableHead>
+                      <TableHead className={cn(thClasses, "w-[24%]")}>처리 상태</TableHead>
                       <TableHead className={cn(thClasses, "w-[42%]")}>
                         대상 · 운영 흐름 · 처리
                       </TableHead>
-                      <TableHead
-                        className={cn(thClasses, "w-[18%] text-right")}
-                      >
-                        금액
-                      </TableHead>
+                      <TableHead className={cn(thClasses, "w-[18%] text-right")}>금액</TableHead>
                       {/* <TableHead className={cn(thClasses, 'sticky right-0 z-20 bg-card text-right shadow-[-8px_0_12px_-12px_hsl(var(--border))]')}>액션</TableHead> */}
-                      <TableHead
-                        className={cn(
-                          thClasses,
-                          stickyActionHeadClass,
-                          "w-[16%]",
-                        )}
-                      >
+                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[16%]")}>
                         액션
                       </TableHead>
                     </TableRow>
@@ -2170,13 +1933,9 @@ export default function OperationsClient() {
                       const isGroup = g.items.length > 1;
                       const isOpen = !!openGroups[g.key];
                       const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
-                      const children = g.items.filter(
-                        (x) => `${x.kind}:${x.id}` !== anchorKey,
-                      );
+                      const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
                       const reviewReasons = collectReviewReasons(g);
-                      const groupGuide = inferNextActionForOperationGroup(
-                        g.items,
-                      );
+                      const groupGuide = inferNextActionForOperationGroup(g.items);
                       const warn = g.warn;
                       const reasonSummary = summarizeReasonText(
                         g.primarySignal?.description ?? reviewReasons[0],
@@ -2198,33 +1957,23 @@ export default function OperationsClient() {
                         reviewLevel: g.reviewLevel,
                       });
                       const reasonNeedsAttention =
-                        warn ||
-                        g.reviewLevel === "action" ||
-                        groupCancelRequested;
+                        warn || g.reviewLevel === "action" || groupCancelRequested;
                       const hasReasonCard =
                         reasonNeedsAttention ||
-                        (reasonBullets.length > 0 &&
-                          !isLowTensionNextAction(nextActionText)) ||
+                        (reasonBullets.length > 0 && !isLowTensionNextAction(nextActionText)) ||
                         (Boolean(g.primarySignal?.title) &&
                           !isLowTensionNextAction(nextActionText));
                       const shouldShowReasonBullets =
                         reasonBullets.length > 0 && reasonNeedsAttention;
                       const reasonBulletCount = reasonBullets.length;
                       const isReasonOpen = !!openReasons[g.key];
-                      const customerName =
-                        g.anchor.customer?.name?.trim() || "";
-                      const customerEmail =
-                        g.anchor.customer?.email?.trim() || "";
-                      const customerPrimary =
-                        customerName || customerEmail || "-";
+                      const customerName = g.anchor.customer?.name?.trim() || "";
+                      const customerEmail = g.anchor.customer?.email?.trim() || "";
+                      const customerPrimary = customerName || customerEmail || "-";
                       const docLabel = `${opsKindLabel(g.anchor.kind)} · ${shortenId(g.anchor.id)}`;
                       const scenarioLabel = flowLabelText(g.anchor);
-                      const createdAtLabel = formatKST(
-                        g.anchor.createdAt ?? g.createdAt,
-                      );
-                      const elapsedHours = getElapsedHours(
-                        g.createdAt ?? g.anchor.createdAt,
-                      );
+                      const createdAtLabel = formatKST(g.anchor.createdAt ?? g.createdAt);
+                      const elapsedHours = getElapsedHours(g.createdAt ?? g.anchor.createdAt);
                       const elapsedText = formatElapsedText(elapsedHours);
                       const slaLevel = resolveOperationsSlaLevel({
                         groupQueueBucket: g.groupQueueBucket,
@@ -2240,9 +1989,7 @@ export default function OperationsClient() {
                         anchor: g.anchor,
                         items: g.items,
                       });
-                      const anchorCancelQuickSignal = cancelQuickSignalSpec(
-                        g.anchor.cancel,
-                      );
+                      const anchorCancelQuickSignal = cancelQuickSignalSpec(g.anchor.cancel);
                       const linkedDocsForAnchor = isGroup
                         ? children.map((x) => ({
                             kind: x.kind,
@@ -2253,10 +2000,8 @@ export default function OperationsClient() {
                           ? [g.anchor.related]
                           : [];
 
-                      const rowDensityClass =
-                        displayDensity === "compact" ? "py-1.5" : "py-2.5";
-                      const rowBaseToneClass =
-                        idx % 2 === 0 ? "bg-background" : "bg-muted/[0.18]";
+                      const rowDensityClass = displayDensity === "compact" ? "py-1.5" : "py-2.5";
+                      const rowBaseToneClass = idx % 2 === 0 ? "bg-background" : "bg-muted/[0.18]";
                       const warnEmphasisClass = warn
                         ? "border-l-2 border-l-warning/60 bg-warning/[0.08]"
                         : "border-l-2 border-l-transparent";
@@ -2272,9 +2017,7 @@ export default function OperationsClient() {
                               warnEmphasisClass,
                             )}
                           >
-                            <TableCell
-                              className={cn(tdClasses, rowDensityClass)}
-                            >
+                            <TableCell className={cn(tdClasses, rowDensityClass)}>
                               <div className="space-y-1.5">
                                 <div className="flex flex-wrap items-center gap-1.5">
                                   <Badge
@@ -2290,15 +2033,11 @@ export default function OperationsClient() {
                                     {priorityMeta.description}
                                   </span>
                                   <span className="text-xs text-foreground/80">
-                                    {isGroup
-                                      ? `${g.items.length}건 그룹`
-                                      : "단일 건"}
+                                    {isGroup ? `${g.items.length}건 그룹` : "단일 건"}
                                   </span>
                                 </div>
                                 <div className="flex min-w-0 items-center gap-1.5 text-xs text-foreground/75">
-                                  <span className="truncate font-mono">
-                                    {docLabel}
-                                  </span>
+                                  <span className="truncate font-mono">{docLabel}</span>
                                   <Button
                                     size="sm"
                                     variant="ghost"
@@ -2317,11 +2056,7 @@ export default function OperationsClient() {
                                   <Badge
                                     title="접수 시점 기준 경과 시간입니다. 긴급/확인은 운영 우선순위 기준으로 표시됩니다."
                                     variant="outline"
-                                    className={cn(
-                                      badgeBase,
-                                      badgeSizeSm,
-                                      slaMeta.className,
-                                    )}
+                                    className={cn(badgeBase, badgeSizeSm, slaMeta.className)}
                                   >
                                     {slaMeta.label}
                                   </Badge>
@@ -2329,9 +2064,7 @@ export default function OperationsClient() {
                               </div>
                             </TableCell>
 
-                            <TableCell
-                              className={cn(tdClasses, rowDensityClass)}
-                            >
+                            <TableCell className={cn(tdClasses, rowDensityClass)}>
                               <div className="space-y-1.5">
                                 <div className="flex items-start gap-2">
                                   {isGroup && (
@@ -2341,11 +2074,7 @@ export default function OperationsClient() {
                                       variant="ghost"
                                       className="mt-0.5 h-6 w-6 p-0"
                                       onClick={() => toggleGroup(g.key)}
-                                      title={
-                                        isOpen
-                                          ? "운영 참고 접기"
-                                          : "운영 참고 펼치기"
-                                      }
+                                      title={isOpen ? "운영 참고 접기" : "운영 참고 펼치기"}
                                     >
                                       {isOpen ? (
                                         <ChevronDown className="h-3.5 w-3.5" />
@@ -2372,9 +2101,7 @@ export default function OperationsClient() {
                                   {headline}
                                 </p>
                                 <p className="text-[12px] text-foreground/95 line-clamp-1">
-                                  <span className="font-semibold text-primary/90">
-                                    다음 처리:
-                                  </span>{" "}
+                                  <span className="font-semibold text-primary/90">다음 처리:</span>{" "}
                                   {nextActionText}
                                 </p>
                                 {g.linkedFlowStatusIssue && (
@@ -2417,16 +2144,14 @@ export default function OperationsClient() {
                                         </p>
                                         {shouldShowReasonBullets && (
                                           <ul className="mt-0.5 space-y-0.5">
-                                            {reasonBullets
-                                              .slice(0, 3)
-                                              .map((reason) => (
-                                                <li
-                                                  key={`reason:${g.key}:${reason}`}
-                                                  className="list-inside list-disc text-xs text-foreground/85 line-clamp-1"
-                                                >
-                                                  {reason}
-                                                </li>
-                                              ))}
+                                            {reasonBullets.slice(0, 3).map((reason) => (
+                                              <li
+                                                key={`reason:${g.key}:${reason}`}
+                                                className="list-inside list-disc text-xs text-foreground/85 line-clamp-1"
+                                              >
+                                                {reason}
+                                              </li>
+                                            ))}
                                           </ul>
                                         )}
                                       </div>
@@ -2437,27 +2162,19 @@ export default function OperationsClient() {
                             </TableCell>
 
                             <TableCell
-                              className={cn(
-                                tdClasses,
-                                rowDensityClass,
-                                "font-semibold text-right",
-                              )}
+                              className={cn(tdClasses, rowDensityClass, "font-semibold text-right")}
                             >
                               <div className="flex flex-col items-end gap-1.5">
                                 <div className="text-right">
                                   <span className="whitespace-nowrap text-xs text-foreground/75">
-                                    {isGroup
-                                      ? "대표 문서 금액"
-                                      : opsKindLabel(g.anchor.kind)}
+                                    {isGroup ? "대표 문서 금액" : opsKindLabel(g.anchor.kind)}
                                   </span>
                                   <p className="text-lg font-extrabold whitespace-nowrap tracking-normal">
                                     {won(g.anchor.amount)}
                                   </p>
                                 </div>
                                 {(() => {
-                                  const cancelBadge = cancelBadgeSpec(
-                                    g.anchor.cancel?.status,
-                                  );
+                                  const cancelBadge = cancelBadgeSpec(g.anchor.cancel?.status);
                                   return cancelBadge ? (
                                     <Badge
                                       variant={cancelBadge.spec.variant}
@@ -2475,9 +2192,7 @@ export default function OperationsClient() {
                                           className={cn(
                                             badgeBase,
                                             badgeSizeSm,
-                                            badgeToneClass(
-                                              anchorCancelQuickSignal.tone,
-                                            ),
+                                            badgeToneClass(anchorCancelQuickSignal.tone),
                                             "cursor-help",
                                           )}
                                         >
@@ -2494,14 +2209,11 @@ export default function OperationsClient() {
                                           취소 요청이 접수된 항목입니다.
                                         </p>
                                         <p className="mt-1 text-xs text-muted-foreground">
-                                          {toOperatorSentence(
-                                            anchorCancelQuickSignal.tooltipCopy,
-                                          )}
+                                          {toOperatorSentence(anchorCancelQuickSignal.tooltipCopy)}
                                         </p>
                                         {g.anchor.cancel?.refundBankLabel && (
                                           <p className="mt-1 text-xs text-muted-foreground">
-                                            환불 은행:{" "}
-                                            {g.anchor.cancel.refundBankLabel}
+                                            환불 은행: {g.anchor.cancel.refundBankLabel}
                                           </p>
                                         )}
                                       </TooltipContent>
@@ -2531,15 +2243,9 @@ export default function OperationsClient() {
                                     size="sm"
                                     variant="default"
                                     className="h-8 min-w-[96px] justify-center px-2.5 text-xs font-semibold shadow-sm"
-                                    title={
-                                      groupGuide.nextAction ??
-                                      primaryActionTarget.label
-                                    }
+                                    title={groupGuide.nextAction ?? primaryActionTarget.label}
                                   >
-                                    <Link
-                                      href={primaryActionTarget.href}
-                                      className="text-xs"
-                                    >
+                                    <Link href={primaryActionTarget.href} className="text-xs">
                                       {primaryActionTarget.label}
                                     </Link>
                                   </Button>
@@ -2590,39 +2296,31 @@ export default function OperationsClient() {
                                                 href={item.href}
                                                 className="font-medium text-foreground hover:underline"
                                               >
-                                                {opsKindLabel(item.kind)} ·{" "}
-                                                {shortenId(item.id)}
+                                                {opsKindLabel(item.kind)} · {shortenId(item.id)}
                                               </Link>
                                               <Button
                                                 type="button"
                                                 size="sm"
                                                 variant="ghost"
                                                 className="h-5 w-5 p-0 text-muted-foreground"
-                                                onClick={() =>
-                                                  copyToClipboard(item.id)
-                                                }
-                                                aria-label={
-                                                  ROW_ACTION_LABELS.copyId
-                                                }
+                                                onClick={() => copyToClipboard(item.id)}
+                                                aria-label={ROW_ACTION_LABELS.copyId}
                                               >
                                                 <Copy className="h-3 w-3" />
                                               </Button>
                                             </div>
                                             <p className="text-muted-foreground">
-                                              {item.statusDisplayLabel ??
-                                                item.statusLabel}
+                                              {item.statusDisplayLabel ?? item.statusLabel}
                                             </p>
                                           </div>
                                           <div>
                                             <p className="text-foreground">
                                               {toOperatorSentence(
-                                                item.nextAction ??
-                                                  groupGuide.nextAction,
+                                                item.nextAction ?? groupGuide.nextAction,
                                               )}
                                             </p>
                                             <p className="text-xs text-foreground/75">
-                                              결제 상태:{" "}
-                                              {item.paymentLabel || "정보 없음"}
+                                              결제 상태: {item.paymentLabel || "정보 없음"}
                                             </p>
                                             <p className="text-xs text-foreground/75">
                                               {formatKST(item.createdAt)}
@@ -2633,8 +2331,7 @@ export default function OperationsClient() {
                                               {won(item.amount)}
                                             </p>
                                             <p className="text-xs text-foreground/75">
-                                              {item.kind ===
-                                              "stringing_application"
+                                              {item.kind === "stringing_application"
                                                 ? "신청서"
                                                 : item.kind === "rental"
                                                   ? "대여"
@@ -2647,35 +2344,25 @@ export default function OperationsClient() {
                                             ) : null}
                                           </div>
                                           <div className="text-muted-foreground">
-                                            {toOperatorSentence(
-                                              item.stage ?? groupGuide.stage,
-                                            )}
+                                            {toOperatorSentence(item.stage ?? groupGuide.stage)}
                                           </div>
                                         </div>
                                       ))}
                                     </div>
                                     <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] leading-tight text-muted-foreground/90">
                                       <span>
-                                        기준 시각{" "}
-                                        {formatKST(
-                                          g.createdAt ?? g.anchor.createdAt,
-                                        )}
+                                        기준 시각 {formatKST(g.createdAt ?? g.anchor.createdAt)}
                                       </span>
                                       {g.anchor.flow === 7 && (
                                         <span>
                                           스트링 요약:{" "}
                                           {stringSummaryText(
-                                            g.items.find(
-                                              (it) => it.kind === "rental",
-                                            ),
+                                            g.items.find((it) => it.kind === "rental"),
                                           ) ?? "정보 없음"}
                                         </span>
                                       )}
                                       {linkedDocsForAnchor.length > 0 && (
-                                        <span>
-                                          연결 문서 {linkedDocsForAnchor.length}
-                                          건
-                                        </span>
+                                        <span>연결 문서 {linkedDocsForAnchor.length}건</span>
                                       )}
                                     </div>
                                   </div>
@@ -2701,8 +2388,7 @@ export default function OperationsClient() {
                             </p>
                             {activeQuickView !== "all" && (
                               <p className="text-xs text-muted-foreground/80">
-                                다른 빠른 보기를 선택하거나 전체 보기로
-                                돌아가세요.
+                                다른 빠른 보기를 선택하거나 전체 보기로 돌아가세요.
                               </p>
                             )}
                             {activeQuickView !== "all" && (
@@ -2738,19 +2424,13 @@ export default function OperationsClient() {
                   const customerEmail = g.anchor.customer?.email?.trim() || "";
                   const customerPrimary = customerName || customerEmail || "-";
                   const scenarioLabel = flowLabelText(g.anchor);
-                  const createdAtLabel = formatKST(
-                    g.anchor.createdAt ?? g.createdAt,
-                  );
-                  const elapsedHours = getElapsedHours(
-                    g.createdAt ?? g.anchor.createdAt,
-                  );
+                  const createdAtLabel = formatKST(g.anchor.createdAt ?? g.createdAt);
+                  const elapsedHours = getElapsedHours(g.createdAt ?? g.anchor.createdAt);
                   const elapsedText = formatElapsedText(elapsedHours);
                   const slaLevel = resolveOperationsSlaLevel({
                     groupQueueBucket: g.groupQueueBucket,
                     createdAt: g.createdAt ?? g.anchor.createdAt,
-                    hasCancel: g.items.some(
-                      (it) => it.cancel?.status === "requested",
-                    ),
+                    hasCancel: g.items.some((it) => it.cancel?.status === "requested"),
                     hasPayment: hasPaymentCheckNeeded(g),
                     hasShipping: hasShippingMissing(g),
                     hasRental: hasRentalDue(g),
@@ -2778,22 +2458,14 @@ export default function OperationsClient() {
                     warn || g.reviewLevel === "action" || groupCancelRequested;
                   const hasReasonCard =
                     reasonNeedsAttention ||
-                    (reasonBullets.length > 0 &&
-                      !isLowTensionNextAction(nextActionText)) ||
-                    (Boolean(g.primarySignal?.title) &&
-                      !isLowTensionNextAction(nextActionText));
-                  const shouldShowReasonBullets =
-                    reasonNeedsAttention && reasonBullets.length > 0;
+                    (reasonBullets.length > 0 && !isLowTensionNextAction(nextActionText)) ||
+                    (Boolean(g.primarySignal?.title) && !isLowTensionNextAction(nextActionText));
+                  const shouldShowReasonBullets = reasonNeedsAttention && reasonBullets.length > 0;
                   const reasonBulletCount = reasonBullets.length;
                   const isReasonOpen = !!openReasons[g.key];
-                  const anchorCancelQuickSignal = cancelQuickSignalSpec(
-                    g.anchor.cancel,
-                  );
+                  const anchorCancelQuickSignal = cancelQuickSignalSpec(g.anchor.cancel);
                   return (
-                    <Card
-                      key={`m:${g.key}`}
-                      className="border-border shadow-sm"
-                    >
+                    <Card key={`m:${g.key}`} className="border-border shadow-sm">
                       <CardContent className="space-y-1.5 p-1.5">
                         <div className="space-y-0.5">
                           <div className="flex flex-wrap items-center gap-1.5">
@@ -2810,15 +2482,12 @@ export default function OperationsClient() {
                               {priorityMeta.description}
                             </span>
                             <span className="text-[11px] leading-tight text-muted-foreground/90">
-                              {g.items.length > 1
-                                ? `${g.items.length}건 그룹`
-                                : "단일 건"}
+                              {g.items.length > 1 ? `${g.items.length}건 그룹` : "단일 건"}
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5 text-xs leading-snug text-foreground/75">
                             <span>
-                              {opsKindLabel(g.anchor.kind)} ·{" "}
-                              {shortenId(g.anchor.id)}
+                              {opsKindLabel(g.anchor.kind)} · {shortenId(g.anchor.id)}
                             </span>
                             <Button
                               size="sm"
@@ -2837,11 +2506,7 @@ export default function OperationsClient() {
                             <Badge
                               title="접수 시점 기준 경과 시간입니다. 긴급/확인은 운영 우선순위 기준으로 표시됩니다."
                               variant="outline"
-                              className={cn(
-                                badgeBase,
-                                badgeSizeSm,
-                                slaMeta.className,
-                              )}
+                              className={cn(badgeBase, badgeSizeSm, slaMeta.className)}
                             >
                               {slaMeta.label}
                             </Badge>
@@ -2864,9 +2529,7 @@ export default function OperationsClient() {
                           </div>
                           <div className="text-right">
                             <p className="text-xs leading-snug text-foreground/75">
-                              {g.items.length > 1
-                                ? "대표 문서 금액"
-                                : opsKindLabel(g.anchor.kind)}
+                              {g.items.length > 1 ? "대표 문서 금액" : opsKindLabel(g.anchor.kind)}
                             </p>
                             <span className="text-base font-extrabold tracking-normal text-foreground">
                               {won(g.anchor.amount)}
@@ -2878,9 +2541,7 @@ export default function OperationsClient() {
                           {headline}
                         </p>
                         <p className="text-[12px] text-foreground line-clamp-1">
-                          <span className="mr-1 font-semibold text-primary">
-                            다음 처리:
-                          </span>
+                          <span className="mr-1 font-semibold text-primary">다음 처리:</span>
                           {nextActionText}
                         </p>
                         {g.linkedFlowStatusIssue && (
@@ -2945,9 +2606,7 @@ export default function OperationsClient() {
                             variant="default"
                             className="h-8 min-w-[96px] px-2.5 text-xs font-semibold shadow-sm"
                           >
-                            <Link href={primaryActionTarget.href}>
-                              {primaryActionTarget.label}
-                            </Link>
+                            <Link href={primaryActionTarget.href}>{primaryActionTarget.label}</Link>
                           </Button>
                           {g.items.length > 1 && (
                             <Button
@@ -2965,16 +2624,13 @@ export default function OperationsClient() {
                         <div
                           className={cn(
                             "grid transition-all duration-200 ease-out",
-                            isOpen
-                              ? "grid-rows-[1fr] opacity-100"
-                              : "grid-rows-[0fr] opacity-0",
+                            isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
                           )}
                         >
                           <div className="overflow-hidden">
                             <div className="space-y-0.5 border-t border-border/50 pt-0.5">
                               <p className="text-xs leading-snug text-foreground/75">
-                                기준 시각:{" "}
-                                {formatKST(g.createdAt ?? g.anchor.createdAt)}
+                                기준 시각: {formatKST(g.createdAt ?? g.anchor.createdAt)}
                               </p>
                               <div className="border border-border/50 bg-background/20">
                                 <div className="grid grid-cols-[1fr_auto] gap-1 border-b border-border/50 bg-muted/10 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
@@ -2993,31 +2649,24 @@ export default function OperationsClient() {
                                             href={item.href}
                                             className="font-medium text-foreground hover:underline"
                                           >
-                                            {opsKindLabel(item.kind)} ·{" "}
-                                            {shortenId(item.id)}
+                                            {opsKindLabel(item.kind)} · {shortenId(item.id)}
                                           </Link>
                                           <Button
                                             type="button"
                                             size="sm"
                                             variant="ghost"
                                             className="h-5 w-5 p-0 text-muted-foreground"
-                                            onClick={() =>
-                                              copyToClipboard(item.id)
-                                            }
-                                            aria-label={
-                                              ROW_ACTION_LABELS.copyId
-                                            }
+                                            onClick={() => copyToClipboard(item.id)}
+                                            aria-label={ROW_ACTION_LABELS.copyId}
                                           >
                                             <Copy className="h-3 w-3" />
                                           </Button>
                                         </div>
                                         <p className="text-muted-foreground">
-                                          {item.statusDisplayLabel ??
-                                            item.statusLabel}
+                                          {item.statusDisplayLabel ?? item.statusLabel}
                                         </p>
                                         <p className="text-muted-foreground/90">
-                                          결제 상태:{" "}
-                                          {item.paymentLabel || "정보 없음"}
+                                          결제 상태: {item.paymentLabel || "정보 없음"}
                                         </p>
                                       </div>
                                       <div className="text-right">
@@ -3047,17 +2696,15 @@ export default function OperationsClient() {
                                 <p className="text-[11px] leading-tight text-muted-foreground/85">
                                   참고:{" "}
                                   {toOperatorSentence(
-                                    g.primarySignal.description ??
-                                      g.primarySignal.title,
+                                    g.primarySignal.description ?? g.primarySignal.title,
                                   )}
                                 </p>
                               )}
                               {g.anchor.flow === 7 && (
                                 <p className="text-xs text-muted-foreground">
                                   스트링 요약:{" "}
-                                  {stringSummaryText(
-                                    g.items.find((it) => it.kind === "rental"),
-                                  ) ?? "정보 없음"}
+                                  {stringSummaryText(g.items.find((it) => it.kind === "rental")) ??
+                                    "정보 없음"}
                                 </p>
                               )}
                             </div>
@@ -3100,8 +2747,7 @@ export default function OperationsClient() {
           {totalPages && totalPages > 1 && (
             <div className="flex items-center justify-between border-t border-border px-4 pt-4 mt-4">
               <p className="text-xs text-muted-foreground">
-                {page} / {totalPages} 페이지 (총{" "}
-                {(totalGroups ?? 0).toLocaleString("ko-KR")}그룹)
+                {page} / {totalPages} 페이지 (총 {(totalGroups ?? 0).toLocaleString("ko-KR")}그룹)
               </p>
               <div className="flex items-center gap-1">
                 <Button

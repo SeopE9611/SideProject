@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 
 // 모든 폼에서 공통으로 쓰는 기본 경고 문구 (페이지별 변수 선언 없이 사용)
-export const UNSAVED_CHANGES_MESSAGE =
-  "이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다.";
+export const UNSAVED_CHANGES_MESSAGE = "이 페이지를 벗어날 경우 입력한 정보는 초기화됩니다.";
 
 /**
  * 전역(singleton) 가드 관리자
@@ -31,8 +30,7 @@ function __uninstallGuard() {
   if (!__installed) return;
   __installed = false;
 
-  if (__onBeforeUnload)
-    window.removeEventListener("beforeunload", __onBeforeUnload);
+  if (__onBeforeUnload) window.removeEventListener("beforeunload", __onBeforeUnload);
 
   __onBeforeUnload = null;
 }

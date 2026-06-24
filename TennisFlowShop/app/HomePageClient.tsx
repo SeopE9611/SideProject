@@ -191,8 +191,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   const racketBrandRailRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const rails = [stringBrandRailRef.current, racketBrandRailRef.current].filter((rail): rail is HTMLDivElement =>
-      Boolean(rail),
+    const rails = [stringBrandRailRef.current, racketBrandRailRef.current].filter(
+      (rail): rail is HTMLDivElement => Boolean(rail),
     );
 
     const handleWheel = (event: WheelEvent) => {
@@ -326,9 +326,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       { root: null, rootMargin: "900px 0px", threshold: 0.01 },
     );
 
-    const targets = [communitySectionRef.current, stringsSectionRef.current, racketsSectionRef.current].filter(
-      (v): v is HTMLElement => Boolean(v),
-    );
+    const targets = [
+      communitySectionRef.current,
+      stringsSectionRef.current,
+      racketsSectionRef.current,
+    ].filter((v): v is HTMLElement => Boolean(v));
     targets.forEach((target) => observer.observe(target));
 
     return () => observer.disconnect();
@@ -354,7 +356,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   // 전체 상품 + 로딩
   // 홈 공개 미리보기 데이터는 사용자별 데이터가 아니므로 서버 initialData로 먼저 렌더링해
   // 초기 빈 화면/스켈레톤 시간을 줄이고, 클라이언트 fetch는 실패/재시도 fallback으로 유지한다.
-  const [allProducts, setAllProducts] = useState<ApiProduct[]>(initialHomeData?.products?.items ?? []);
+  const [allProducts, setAllProducts] = useState<ApiProduct[]>(
+    initialHomeData?.products?.items ?? [],
+  );
   const [loading, setLoading] = useState(!hasInitialProducts);
   const [productsError, setProductsError] = useState(false);
 
@@ -431,7 +435,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
 
       const json = await res.json();
       const items: ApiProduct[] = json.products ?? json.items ?? [];
-      const total = typeof json?.pagination?.total === "number" ? json.pagination.total : items.length;
+      const total =
+        typeof json?.pagination?.total === "number" ? json.pagination.total : items.length;
       setAllProducts(items);
       setAllProductsTotal(total);
     } catch {
@@ -448,11 +453,14 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
     setStringsLoadingByBrand((prev) => ({ ...prev, [brand]: true }));
     setStringsErrorByBrand((prev) => ({ ...prev, [brand]: false }));
     try {
-      const res = await fetch(`/api/products?brand=${brand}&sort=createdAt_desc&limit=10`, { credentials: "include" });
+      const res = await fetch(`/api/products?brand=${brand}&sort=createdAt_desc&limit=10`, {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       const items: ApiProduct[] = json.products ?? json.items ?? [];
-      const total = typeof json?.pagination?.total === "number" ? json.pagination.total : items.length;
+      const total =
+        typeof json?.pagination?.total === "number" ? json.pagination.total : items.length;
       setStringByBrand((prev) => ({ ...prev, [brand]: items }));
       setStringTotalsByBrand((prev) => ({ ...prev, [brand]: total }));
     } catch {
@@ -547,7 +555,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   }, [rackByBrand, activeBrand]);
 
   const stringTotal =
-    activeStringBrand === "all" ? allProductsTotal : (stringTotalsByBrand[activeStringBrand] ?? premiumItems.length);
+    activeStringBrand === "all"
+      ? allProductsTotal
+      : (stringTotalsByBrand[activeStringBrand] ?? premiumItems.length);
   const hasMoreStringProducts = stringTotal > premiumItems.length;
 
   const usedRacketsLoading = Boolean(racketsLoadingByBrand[activeBrand]);
@@ -605,7 +615,12 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
 
                   if (b.href?.startsWith("/")) {
                     return (
-                      <Link key={b.key} href={b.href} className={promoBannerClass} aria-label={title}>
+                      <Link
+                        key={b.key}
+                        href={b.href}
+                        className={promoBannerClass}
+                        aria-label={title}
+                      >
                         {inner}
                       </Link>
                     );
@@ -695,7 +710,10 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </div>
             </InteractiveCard>
 
-            <InteractiveCard href="/academy" className="group flex h-full flex-col gap-4 bp-sm:p-6 bp-md:p-7">
+            <InteractiveCard
+              href="/academy"
+              className="group flex h-full flex-col gap-4 bp-sm:p-6 bp-md:p-7"
+            >
               <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
@@ -709,7 +727,10 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </div>
             </InteractiveCard>
 
-            <InteractiveCard href="/academy" className="group flex h-full flex-col gap-4 bp-sm:p-6 bp-md:p-7">
+            <InteractiveCard
+              href="/academy"
+              className="group flex h-full flex-col gap-4 bp-sm:p-6 bp-md:p-7"
+            >
               <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <Search className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
@@ -725,7 +746,10 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </div>
             </InteractiveCard>
 
-            <InteractiveCard href="/rackets/finder" className="group flex h-full flex-col gap-4 bp-sm:p-6 bp-md:p-7">
+            <InteractiveCard
+              href="/rackets/finder"
+              className="group flex h-full flex-col gap-4 bp-sm:p-6 bp-md:p-7"
+            >
               <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
                 <MdSportsTennis className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
               </div>
@@ -851,8 +875,16 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </>
             ) : (
               <>
-                <PublicSurface variant="muted" padding="none" className="h-[300px] animate-pulse border-border/60" />
-                <PublicSurface variant="muted" padding="none" className="h-[300px] animate-pulse border-border/60" />
+                <PublicSurface
+                  variant="muted"
+                  padding="none"
+                  className="h-[300px] animate-pulse border-border/60"
+                />
+                <PublicSurface
+                  variant="muted"
+                  padding="none"
+                  className="h-[300px] animate-pulse border-border/60"
+                />
               </>
             )}
           </div>
@@ -868,7 +900,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             align="center"
             className="mb-8 bp-sm:mb-10"
           />
-          <PublicSurface variant="muted" padding="sm" className="mb-8 border-border/60 bg-muted/20 bp-sm:mb-10">
+          <PublicSurface
+            variant="muted"
+            padding="sm"
+            className="mb-8 border-border/60 bg-muted/20 bp-sm:mb-10"
+          >
             <div className="flex justify-center">
               <div ref={stringBrandRailRef} className={brandRailClass}>
                 <button
@@ -895,13 +931,23 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
 
           <HorizontalProducts
             title="스트링"
-            subtitle={activeStringBrand === "all" ? "브랜드로 골라보기" : `${stringBrandLabel(activeStringBrand)} 추천`}
+            subtitle={
+              activeStringBrand === "all"
+                ? "브랜드로 골라보기"
+                : `${stringBrandLabel(activeStringBrand)} 추천`
+            }
             items={premiumItems.slice(0, 10)}
             showMoreCard={hasMoreStringProducts}
-            moreHref={activeStringBrand === "all" ? "/products" : `/products?brand=${activeStringBrand}`}
+            moreHref={
+              activeStringBrand === "all" ? "/products" : `/products?brand=${activeStringBrand}`
+            }
             firstPageSlots={4}
             moveMoreToSecondWhen5Plus={true}
-            error={activeStringBrand === "all" ? productsError : Boolean(stringsErrorByBrand[activeStringBrand])}
+            error={
+              activeStringBrand === "all"
+                ? productsError
+                : Boolean(stringsErrorByBrand[activeStringBrand])
+            }
             onRetry={() => {
               if (activeStringBrand === "all") {
                 void fetchHomeProducts();
@@ -909,16 +955,24 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               }
               void loadStringBrand(activeStringBrand);
             }}
-            emptyTitle={activeStringBrand === "all" ? "등록된 스트링이 없습니다" : "해당 브랜드 스트링이 없습니다"}
+            emptyTitle={
+              activeStringBrand === "all"
+                ? "등록된 스트링이 없습니다"
+                : "해당 브랜드 스트링이 없습니다"
+            }
             emptyDescription={
-              activeStringBrand === "all" ? "곧 상품이 업데이트됩니다." : "다른 브랜드를 선택해 보세요."
+              activeStringBrand === "all"
+                ? "곧 상품이 업데이트됩니다."
+                : "다른 브랜드를 선택해 보세요."
             }
             errorTitle="스트링을 불러오지 못했어요"
             errorDescription="네트워크/서버 상태를 확인 후 다시 시도해 주세요."
             showHeader={false}
             loading={
               !shouldLoadStrings ||
-              (activeStringBrand === "all" ? loading : Boolean(stringsLoadingByBrand[activeStringBrand]))
+              (activeStringBrand === "all"
+                ? loading
+                : Boolean(stringsLoadingByBrand[activeStringBrand]))
             }
           />
         </SiteContainer>
@@ -933,10 +987,17 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             align="center"
             className="mb-8 bp-sm:mb-10"
           />
-          <PublicSurface variant="muted" padding="sm" className="mb-8 border-border/60 bg-muted/20 bp-sm:mb-10">
+          <PublicSurface
+            variant="muted"
+            padding="sm"
+            className="mb-8 border-border/60 bg-muted/20 bp-sm:mb-10"
+          >
             <div className="flex justify-center">
               <div ref={racketBrandRailRef} className={brandRailClass}>
-                <button onClick={() => setActiveBrand("all")} className={getBrandTabClass(activeBrand === "all")}>
+                <button
+                  onClick={() => setActiveBrand("all")}
+                  className={getBrandTabClass(activeBrand === "all")}
+                >
                   전체
                 </button>
                 {RACKET_BRANDS.map((b) => (
@@ -956,7 +1017,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           </PublicSurface>
           <HorizontalProducts
             title="중고 라켓"
-            subtitle={activeBrand === "all" ? "도깨비테니스 중고" : `${racketBrandLabel(activeBrand)} 중고`}
+            subtitle={
+              activeBrand === "all" ? "도깨비테니스 중고" : `${racketBrandLabel(activeBrand)} 중고`
+            }
             items={usedRacketsItems.slice(0, 10)}
             showMoreCard={hasMoreRacketProducts}
             moreHref={activeBrand === "all" ? "/rackets" : `/rackets?brand=${activeBrand}`}
@@ -965,8 +1028,14 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             loading={!shouldLoadRackets || usedRacketsLoading}
             error={usedRacketsError}
             onRetry={() => loadUsedRackets(activeBrand)}
-            emptyTitle={activeBrand === "all" ? "등록된 중고 라켓이 없습니다" : "해당 브랜드 중고 라켓이 없습니다"}
-            emptyDescription={activeBrand === "all" ? "곧 상품이 업데이트됩니다." : "다른 브랜드를 선택해 보세요."}
+            emptyTitle={
+              activeBrand === "all"
+                ? "등록된 중고 라켓이 없습니다"
+                : "해당 브랜드 중고 라켓이 없습니다"
+            }
+            emptyDescription={
+              activeBrand === "all" ? "곧 상품이 업데이트됩니다." : "다른 브랜드를 선택해 보세요."
+            }
             errorTitle="중고 라켓을 불러오지 못했어요"
             errorDescription="네트워크/서버 상태를 확인 후 다시 시도해 주세요."
             showHeader={false}

@@ -2,10 +2,7 @@ import { getRecommendedTensionRange } from "@/app/products/recommend/_lib/tensio
 import { stringMaterialLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { getEffectiveProductPrice } from "@/lib/product-pricing";
-import {
-  hasPaidMountingFee,
-  isMountableStringByFee,
-} from "@/lib/orders/string-mounting-policy";
+import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { hasSelectableStringStock } from "@/lib/products/string-stock";
 import type {
   CompletedStringRecommendAnswers,
@@ -64,8 +61,7 @@ function getSecondaryFeatureKey(
 
   const features = product.features ?? {};
   return (["spin", "power", "comfort", "durability"] as FeatureKey[]).sort(
-    (a, b) =>
-      normalizeFeatureScore(features[b]) - normalizeFeatureScore(features[a]),
+    (a, b) => normalizeFeatureScore(features[b]) - normalizeFeatureScore(features[a]),
   )[0];
 }
 
@@ -84,22 +80,17 @@ function getGaugeNumber(product: RecommendableProduct): number | null {
 
 function getMaterialGaugeLabel(product: RecommendableProduct): string {
   const material = stringMaterialLabel(product.material) || "소재 정보 없음";
-  const gauge =
-    formatGaugeLabel(getPrimaryGauge(product)) || "게이지 정보 없음";
+  const gauge = formatGaugeLabel(getPrimaryGauge(product)) || "게이지 정보 없음";
   return `${material} · ${gauge}`;
 }
 
-function getBudgetLabel(
-  budget: CompletedStringRecommendAnswers["budget"],
-): string {
+function getBudgetLabel(budget: CompletedStringRecommendAnswers["budget"]): string {
   if (budget === "value") return "가성비";
   if (budget === "premium") return "프리미엄";
   return "중간";
 }
 
-function getFrequencyLabel(
-  freq: CompletedStringRecommendAnswers["freq"],
-): string {
+function getFrequencyLabel(freq: CompletedStringRecommendAnswers["freq"]): string {
   if (freq === "monthly") return "월 1~2회";
   if (freq === "weekly") return "주 1회";
   if (freq === "biweekly_plus") return "주 2~3회";
@@ -150,12 +141,10 @@ function scoreProduct(
 
   // 할인 상품은 추천 순위가 실제 구매 부담에 맞도록 실판매가 기준으로 예산 점수를 계산한다.
   const price = getEffectiveProductPrice(product);
-  if (answers.budget === "value")
-    score += price <= 15000 ? 10 : price <= 30000 ? 4 : 0;
+  if (answers.budget === "value") score += price <= 15000 ? 10 : price <= 30000 ? 4 : 0;
   if (answers.budget === "mid")
     score += price > 15000 && price <= 30000 ? 10 : price <= 40000 ? 5 : 1;
-  if (answers.budget === "premium")
-    score += price > 30000 ? 10 : price > 20000 ? 4 : 1;
+  if (answers.budget === "premium") score += price > 30000 ? 10 : price > 20000 ? 4 : 1;
 
   if (hasPaidMountingFee(product.mountingFee)) score += 3;
   if (!isSoldOut(product)) score += 2;
@@ -195,9 +184,7 @@ function buildReasons(
       `${formatGaugeLabel(String(gauge))} 게이지라 반발과 스핀 감각을 살리되 컨트롤 변화를 확인해 보세요.`,
     );
   } else if (material) {
-    reasons.push(
-      `${material} 소재 특성을 고려해 현재 플레이 성향과 균형을 맞췄습니다.`,
-    );
+    reasons.push(`${material} 소재 특성을 고려해 현재 플레이 성향과 균형을 맞췄습니다.`);
   }
 
   const budgetLabel = getBudgetLabel(answers.budget);

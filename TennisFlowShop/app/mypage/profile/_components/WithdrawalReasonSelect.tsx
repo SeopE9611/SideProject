@@ -17,9 +17,7 @@ interface WithdrawalReasonSelectProps {
   onSubmit: (reason: string, detail?: string | null) => void; // 최종 사유를 상위 컴포넌트로 전달하는 콜백
 }
 
-export default function WithdrawalReasonSelect({
-  onSubmit,
-}: WithdrawalReasonSelectProps) {
+export default function WithdrawalReasonSelect({ onSubmit }: WithdrawalReasonSelectProps) {
   // 선택한 사유를 저장하는 상태
   const [selectedReason, setSelectedReason] = useState<string>("");
   // '기타'를 선택했을 경우 텍스트 입력 필드를 제어할 상태
@@ -44,9 +42,7 @@ export default function WithdrawalReasonSelect({
       if (selectedReason === "기타") {
         const detail = customReason.trim();
         // detail이 비어 있으면 null 전달
-        await Promise.resolve(
-          onSubmit(selectedReason, detail === "" ? null : detail),
-        );
+        await Promise.resolve(onSubmit(selectedReason, detail === "" ? null : detail));
       } else {
         // 기타가 아니면 detail은 undefined로 넘김
         await Promise.resolve(onSubmit(selectedReason, undefined));
@@ -62,18 +58,13 @@ export default function WithdrawalReasonSelect({
       <Label>탈퇴 사유 (선택)</Label>
 
       {/* 셀렉트 박스 */}
-      <Select
-        value={selectedReason}
-        onValueChange={(value) => setSelectedReason(value)}
-      >
+      <Select value={selectedReason} onValueChange={(value) => setSelectedReason(value)}>
         <SelectTrigger>
           <SelectValue placeholder="사유 선택" />
         </SelectTrigger>
         <SelectContent>
           {/* 항목 목록 */}
-          <SelectItem value="서비스 사용이 불편해서">
-            서비스 사용이 불편해서
-          </SelectItem>
+          <SelectItem value="서비스 사용이 불편해서">서비스 사용이 불편해서</SelectItem>
           <SelectItem value="재가입 예정">재가입 예정</SelectItem>
           <SelectItem value="개인정보 걱정">개인정보 걱정</SelectItem>
           <SelectItem value="상품이 너무 별로여서">상품이 별로여서</SelectItem>

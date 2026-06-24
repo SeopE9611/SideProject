@@ -11,18 +11,15 @@ export const metadata: Metadata = {
 const reviewGuideItems = [
   {
     title: "리뷰 목록 관리",
-    description:
-      "공개 상태, 상품 연결, 작성 내용을 목록에서 빠르게 확인합니다.",
+    description: "공개 상태, 상품 연결, 작성 내용을 목록에서 빠르게 확인합니다.",
   },
   {
     title: "유지보수 작업",
-    description:
-      "데이터 정비성 작업은 영향 범위를 확인한 뒤 유지보수 탭에서 신중히 진행하세요.",
+    description: "데이터 정비성 작업은 영향 범위를 확인한 뒤 유지보수 탭에서 신중히 진행하세요.",
   },
   {
     title: "신고/문제 리뷰 확인",
-    description:
-      "문제가 있는 리뷰는 내용과 주문·상품 연결 정보를 먼저 점검한 뒤 조치합니다.",
+    description: "문제가 있는 리뷰는 내용과 주문·상품 연결 정보를 먼저 점검한 뒤 조치합니다.",
   },
 ];
 
@@ -30,16 +27,13 @@ export default function ReviewsPage() {
   return (
     <div className="space-y-5 p-6">
       <section className="space-y-2 rounded-lg border bg-card p-4 sm:p-5">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          리뷰 관리 안내
-        </h1>
+        <h1 className="text-xl font-semibold tracking-tight text-foreground">리뷰 관리 안내</h1>
         <p className="text-sm leading-relaxed break-keep text-muted-foreground">
-          상품 리뷰의 공개 상태, 연결 정보, 유지보수 작업을 한 곳에서
-          확인합니다.
+          상품 리뷰의 공개 상태, 연결 정보, 유지보수 작업을 한 곳에서 확인합니다.
         </p>
         <p className="text-sm leading-relaxed break-keep text-muted-foreground">
-          일반 리뷰 관리는 목록 탭에서 처리하고, 데이터 정비성 작업은 유지보수
-          탭에서 신중히 진행하세요.
+          일반 리뷰 관리는 목록 탭에서 처리하고, 데이터 정비성 작업은 유지보수 탭에서 신중히
+          진행하세요.
         </p>
       </section>
 

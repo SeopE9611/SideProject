@@ -41,9 +41,7 @@ export function SectionHeader({
         </h2>
 
         {description && (
-          <div className="text-ui-body-sm text-muted-foreground sm:text-ui-body">
-            {description}
-          </div>
+          <div className="text-ui-body-sm text-muted-foreground sm:text-ui-body">{description}</div>
         )}
       </div>
       {actions && (

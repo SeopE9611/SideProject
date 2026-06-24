@@ -4,12 +4,8 @@ type OrderLike = {
   shippingInfo?: { withStringService?: unknown } | null;
 };
 
-export function hasStringingApplicationLink(
-  order: OrderLike | null | undefined,
-) {
-  return Boolean(
-    order?.stringingApplicationId || order?.shippingInfo?.withStringService,
-  );
+export function hasStringingApplicationLink(order: OrderLike | null | undefined) {
+  return Boolean(order?.stringingApplicationId || order?.shippingInfo?.withStringService);
 }
 
 export function isOrderLinkedToStringing(
@@ -26,10 +22,7 @@ export async function isOrderServiceReviewOnly(
   if (hasStringingApplicationLink(order)) return true;
   if (!order?._id) return false;
 
-  const orderIds =
-    typeof order._id === "string"
-      ? [order._id]
-      : [order._id, String(order._id)];
+  const orderIds = typeof order._id === "string" ? [order._id] : [order._id, String(order._id)];
   const linkedApplication = await db
     .collection("stringing_applications")
     .findOne({ orderId: { $in: orderIds } }, { projection: { _id: 1 } });
@@ -51,7 +44,5 @@ export function isStringingReviewBlockedStatus(status: unknown) {
   const normalized = String(status ?? "")
     .trim()
     .toLowerCase();
-  return BLOCKED_STRINGING_REVIEW_STATUS_TOKENS.some((token) =>
-    normalized.includes(token),
-  );
+  return BLOCKED_STRINGING_REVIEW_STATUS_TOKENS.some((token) => normalized.includes(token));
 }

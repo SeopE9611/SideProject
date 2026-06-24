@@ -1,9 +1,6 @@
 import RacketDetailClient from "@/app/rackets/[id]/_components/RacketDetailClient";
 import SiteContainer from "@/components/layout/SiteContainer";
-import {
-  getRacketActiveCountPayload,
-  getRacketDetailPayload,
-} from "@/lib/racket-detail.server";
+import { getRacketActiveCountPayload, getRacketDetailPayload } from "@/lib/racket-detail.server";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -12,11 +9,7 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function RacketDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function RacketDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   // 성능 최적화 핵심:
@@ -34,9 +27,7 @@ export default async function RacketDetailPage({
       <div className="min-h-screen bg-muted/30">
         <SiteContainer variant="wide" className="py-12">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-foreground">
-              존재하지 않는 라켓입니다.
-            </h1>
+            <h1 className="text-2xl font-bold text-foreground">존재하지 않는 라켓입니다.</h1>
           </div>
         </SiteContainer>
       </div>
@@ -44,14 +35,7 @@ export default async function RacketDetailPage({
   }
 
   const qty = Number(stock?.quantity ?? 1);
-  const avail = Number.isFinite(stock?.available)
-    ? Math.max(0, Number(stock?.available))
-    : 0;
+  const avail = Number.isFinite(stock?.available) ? Math.max(0, Number(stock?.available)) : 0;
 
-  return (
-    <RacketDetailClient
-      racket={doc}
-      stock={{ quantity: qty, available: avail }}
-    />
-  );
+  return <RacketDetailClient racket={doc} stock={{ quantity: qty, available: avail }} />;
 }

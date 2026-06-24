@@ -83,14 +83,11 @@ function serializeAcademyClass(doc: Document): PublicAcademyClass {
     levelLabel: getAcademyClassLevelLabel(level),
     lessonType,
     lessonTypeLabel: getAcademyClassLessonTypeLabel(lessonType),
-    instructorName:
-      typeof doc.instructorName === "string" ? doc.instructorName : null,
+    instructorName: typeof doc.instructorName === "string" ? doc.instructorName : null,
     location: typeof doc.location === "string" ? doc.location : null,
-    scheduleText:
-      typeof doc.scheduleText === "string" ? doc.scheduleText : null,
+    scheduleText: typeof doc.scheduleText === "string" ? doc.scheduleText : null,
     capacity: typeof doc.capacity === "number" ? doc.capacity : null,
-    enrolledCount:
-      typeof doc.enrolledCount === "number" ? doc.enrolledCount : 0,
+    enrolledCount: typeof doc.enrolledCount === "number" ? doc.enrolledCount : 0,
     price: typeof doc.price === "number" ? doc.price : null,
     status,
     statusLabel: getAcademyClassStatusLabel(status),
@@ -99,16 +96,9 @@ function serializeAcademyClass(doc: Document): PublicAcademyClass {
   };
 }
 
-const ACTIVE_APPLICATION_STATUSES = [
-  "submitted",
-  "reviewing",
-  "contacted",
-  "confirmed",
-] as const;
+const ACTIVE_APPLICATION_STATUSES = ["submitted", "reviewing", "contacted", "confirmed"] as const;
 
-function serializeActiveApplication(
-  doc: Document,
-): AcademyActiveApplicationSummary {
+function serializeActiveApplication(doc: Document): AcademyActiveApplicationSummary {
   const classSnapshot =
     doc.classSnapshot && typeof doc.classSnapshot === "object"
       ? (doc.classSnapshot as { name?: unknown })
@@ -117,17 +107,12 @@ function serializeActiveApplication(
   return {
     id: serializeObjectId(doc._id),
     classId: typeof doc.classId === "string" ? doc.classId : null,
-    className:
-      typeof classSnapshot?.name === "string" ? classSnapshot.name : null,
+    className: typeof classSnapshot?.name === "string" ? classSnapshot.name : null,
     preferredDays: Array.isArray(doc.preferredDays)
-      ? doc.preferredDays.filter(
-          (day): day is string => typeof day === "string",
-        )
+      ? doc.preferredDays.filter((day): day is string => typeof day === "string")
       : [],
     status:
-      doc.status === "reviewing" ||
-      doc.status === "contacted" ||
-      doc.status === "confirmed"
+      doc.status === "reviewing" || doc.status === "contacted" || doc.status === "confirmed"
         ? doc.status
         : "submitted",
   };
@@ -205,8 +190,7 @@ function formatClassPrice(price: number | null) {
 const lessonPrograms = [
   {
     category: "평일 레슨",
-    description:
-      "주중 일정에 맞춰 꾸준히 기본기와 랠리 감각을 쌓는 과정입니다.",
+    description: "주중 일정에 맞춰 꾸준히 기본기와 랠리 감각을 쌓는 과정입니다.",
     badge: "평일",
     icon: Calendar,
     items: [
@@ -228,8 +212,7 @@ const lessonPrograms = [
   },
   {
     category: "쿠폰 레슨",
-    description:
-      "정기 일정이 어렵거나 필요한 횟수만 선택하고 싶은 분께 적합합니다.",
+    description: "정기 일정이 어렵거나 필요한 횟수만 선택하고 싶은 분께 적합합니다.",
     badge: "쿠폰",
     icon: Wallet,
     items: [
@@ -247,8 +230,7 @@ const academyContacts = [
 const faqs = [
   {
     question: "테니스를 처음 배워도 가능한가요?",
-    answer:
-      "가능합니다. 입문자는 그립, 준비 자세, 기본 스윙처럼 꼭 필요한 기초부터 안내합니다.",
+    answer: "가능합니다. 입문자는 그립, 준비 자세, 기본 스윙처럼 꼭 필요한 기초부터 안내합니다.",
   },
   {
     question: "라켓이 없어도 상담할 수 있나요?",
@@ -289,8 +271,8 @@ export default async function AcademyPage() {
         title="도깨비테니스 아카데미"
         description={
           <p className="break-keep leading-relaxed">
-            입문자부터 실전 플레이어까지, 목표와 레벨에 맞춘 레슨 방향을
-            상담하고 신청할 수 있는 아카데미 안내 페이지입니다.
+            입문자부터 실전 플레이어까지, 목표와 레벨에 맞춘 레슨 방향을 상담하고 신청할 수 있는
+            아카데미 안내 페이지입니다.
           </p>
         }
         actions={
@@ -303,9 +285,7 @@ export default async function AcademyPage() {
             >
               <Link
                 href={
-                  userId
-                    ? "/academy/apply"
-                    : `/login?next=${encodeURIComponent("/academy/apply")}`
+                  userId ? "/academy/apply" : `/login?next=${encodeURIComponent("/academy/apply")}`
                 }
               >
                 <GraduationCap className="mr-2 h-5 w-5" />
@@ -328,35 +308,27 @@ export default async function AcademyPage() {
         }
       >
         <div className="grid gap-4 bp-sm:grid-cols-3">
-          {["1:1 맞춤 레슨", "유연한 일정 조율", "레벨별 맞춤 커리큘럼"].map(
-            (item) => (
-              <div
-                key={item}
-                className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-foreground shadow-sm"
-              >
-                {item}
-              </div>
-            ),
-          )}
+          {["1:1 맞춤 레슨", "유연한 일정 조율", "레벨별 맞춤 커리큘럼"].map((item) => (
+            <div
+              key={item}
+              className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-foreground shadow-sm"
+            >
+              {item}
+            </div>
+          ))}
         </div>
       </PublicPageHero>
 
-      <SiteContainer
-        variant="default"
-        className="space-y-12 py-10 md:space-y-16 md:py-14"
-      >
+      <SiteContainer variant="default" className="space-y-12 py-10 md:space-y-16 md:py-14">
         {/* Lesson Programs Section */}
         <section className="space-y-6" aria-labelledby="lesson-fees-heading">
           <SectionHeader
             eyebrow="Lesson Program"
-            title={
-              <span id="lesson-fees-heading">레슨 프로그램 & 기준 수강료</span>
-            }
+            title={<span id="lesson-fees-heading">레슨 프로그램 & 기준 수강료</span>}
             description={
               <p className="break-keep leading-relaxed">
-                레슨 유형과 횟수별 기준 수강료를 카드형 안내로 정리했습니다.
-                수강료는 레슨 유형과 일정에 따라 상담 후 최종 확인될 수
-                있습니다.
+                레슨 유형과 횟수별 기준 수강료를 카드형 안내로 정리했습니다. 수강료는 레슨 유형과
+                일정에 따라 상담 후 최종 확인될 수 있습니다.
               </p>
             }
           />
@@ -379,9 +351,7 @@ export default async function AcademyPage() {
                       </Badge>
                     </div>
                     <div className="space-y-2">
-                      <CardTitle className="text-xl">
-                        {program.category}
-                      </CardTitle>
+                      <CardTitle className="text-xl">{program.category}</CardTitle>
                       <p className="break-keep text-sm leading-relaxed text-muted-foreground">
                         {program.description}
                       </p>
@@ -395,9 +365,7 @@ export default async function AcademyPage() {
                       >
                         <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
                           <div className="min-w-0">
-                            <p className="break-keep font-semibold text-foreground">
-                              {item.title}
-                            </p>
+                            <p className="break-keep font-semibold text-foreground">{item.title}</p>
                             <p className="break-keep break-words text-sm leading-relaxed text-muted-foreground">
                               {item.detail}
                             </p>
@@ -416,14 +384,9 @@ export default async function AcademyPage() {
         </section>
 
         {/* Contact Section */}
-        <section
-          className="space-y-6"
-          aria-labelledby="academy-contact-heading"
-        >
+        <section className="space-y-6" aria-labelledby="academy-contact-heading">
           <div className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-wider text-primary">
-              Contact
-            </p>
+            <p className="text-sm font-semibold uppercase tracking-wider text-primary">Contact</p>
             <h2
               id="academy-contact-heading"
               className="text-2xl font-bold tracking-tight text-foreground md:text-3xl"
@@ -431,9 +394,8 @@ export default async function AcademyPage() {
               상담 문의
             </h2>
             <p className="max-w-2xl break-words text-base leading-relaxed text-muted-foreground">
-              레슨 유형, 시간표, 수강 시작 가능일이 궁금하다면 담당자에게 문의해
-              주세요. 상담 후 등록이 확정되면 첫 방문 시 현장에서 결제를
-              안내합니다.
+              레슨 유형, 시간표, 수강 시작 가능일이 궁금하다면 담당자에게 문의해 주세요. 상담 후
+              등록이 확정되면 첫 방문 시 현장에서 결제를 안내합니다.
             </p>
           </div>
 
@@ -468,9 +430,7 @@ export default async function AcademyPage() {
                     size="lg"
                     className="w-full shrink-0 whitespace-normal break-keep sm:w-auto"
                   >
-                    <Link href={`tel:${contact.phone.replaceAll("-", "")}`}>
-                      전화하기
-                    </Link>
+                    <Link href={`tel:${contact.phone.replaceAll("-", "")}`}>전화하기</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -485,8 +445,8 @@ export default async function AcademyPage() {
             title="현재 모집 중인 클래스"
             description={
               <p className="break-keep leading-relaxed">
-                목적과 경험에 맞춰 상담 후 적합한 수업 방향을 안내합니다. 선택한
-                클래스는 상담 신청 기준으로 사용됩니다.
+                목적과 경험에 맞춰 상담 후 적합한 수업 방향을 안내합니다. 선택한 클래스는 상담 신청
+                기준으로 사용됩니다.
               </p>
             }
           />
@@ -495,14 +455,10 @@ export default async function AcademyPage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {academyClasses.map((academyClass) => {
                 const isClosed = academyClass.status === "closed";
-                const existingApplication = activeApplicationByClassId.get(
-                  academyClass._id,
-                );
+                const existingApplication = activeApplicationByClassId.get(academyClass._id);
                 const applyHref = `/academy/apply?classId=${academyClass._id}`;
                 const loginHref = `/login?next=${encodeURIComponent(applyHref)}`;
-                const scheduleDisplay = getAcademyScheduleDisplay(
-                  academyClass.scheduleText,
-                );
+                const scheduleDisplay = getAcademyScheduleDisplay(academyClass.scheduleText);
 
                 return (
                   <Card
@@ -513,9 +469,7 @@ export default async function AcademyPage() {
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
                         <Badge
                           variant={isClosed ? "secondary" : "default"}
-                          className={
-                            isClosed ? "" : "bg-primary text-primary-foreground"
-                          }
+                          className={isClosed ? "" : "bg-primary text-primary-foreground"}
                         >
                           {academyClass.statusLabel}
                         </Badge>
@@ -577,8 +531,7 @@ export default async function AcademyPage() {
                             정원
                           </span>
                           <span className="min-w-0 whitespace-normal break-keep break-words text-muted-foreground tabular-nums">
-                            {typeof academyClass.capacity === "number" &&
-                            academyClass.capacity > 0
+                            {typeof academyClass.capacity === "number" && academyClass.capacity > 0
                               ? `${academyClass.capacity}명`
                               : "상담 후 안내"}
                           </span>
@@ -602,20 +555,14 @@ export default async function AcademyPage() {
                             wrap="responsive"
                             className="h-11 w-full border-primary/30 bg-primary/5 text-primary hover:border-primary/50 hover:bg-primary/10"
                           >
-                            <Link
-                              href={`/mypage/academy-applications/${existingApplication.id}`}
-                            >
+                            <Link href={`/mypage/academy-applications/${existingApplication.id}`}>
                               <CheckCircle2 className="mr-2 h-4 w-4" />
                               신청 완료
                             </Link>
                           </Button>
                         ) : isClosed ? (
                           <div className="flex flex-col gap-2 bp-sm:flex-row">
-                            <Button
-                              disabled
-                              variant="secondary"
-                              className="h-11 flex-1"
-                            >
+                            <Button disabled variant="secondary" className="h-11 flex-1">
                               모집 마감
                             </Button>
                             <Button
@@ -624,17 +571,11 @@ export default async function AcademyPage() {
                               wrap="responsive"
                               className="h-11 flex-1"
                             >
-                              <Link href="/board/qna/write?category=academy">
-                                문의하기
-                              </Link>
+                              <Link href="/board/qna/write?category=academy">문의하기</Link>
                             </Button>
                           </div>
                         ) : (
-                          <Button
-                            asChild
-                            wrap="responsive"
-                            className="h-11 w-full"
-                          >
+                          <Button asChild wrap="responsive" className="h-11 w-full">
                             <Link href={userId ? applyHref : loginHref}>
                               {userId ? "레슨 신청하기" : "로그인 후 신청"}
                             </Link>
@@ -664,9 +605,7 @@ export default async function AcademyPage() {
         {/* FAQ Section */}
         <section className="space-y-8">
           <div className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-wider text-primary">
-              FAQ
-            </p>
+            <p className="text-sm font-semibold uppercase tracking-wider text-primary">FAQ</p>
             <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
               자주 묻는 질문
             </h2>
@@ -686,9 +625,7 @@ export default async function AcademyPage() {
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
                       {index + 1}
                     </span>
-                    <span className="text-balance leading-relaxed">
-                      {faq.question}
-                    </span>
+                    <span className="text-balance leading-relaxed">{faq.question}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
@@ -711,16 +648,11 @@ export default async function AcademyPage() {
               나에게 맞는 레슨이 궁금하다면 문의해 주세요
             </h2>
             <p className="text-pretty text-sm leading-relaxed text-muted-foreground bp-sm:text-base">
-              도깨비테니스 아카데미가 레벨, 목표, 가능한 일정을 확인해 상담을
-              도와드리고, 등록 확정 후 현장에서 결제를 안내해드립니다.
+              도깨비테니스 아카데미가 레벨, 목표, 가능한 일정을 확인해 상담을 도와드리고, 등록 확정
+              후 현장에서 결제를 안내해드립니다.
             </p>
             <div className="flex flex-col justify-center gap-3 pt-2 sm:flex-row">
-              <Button
-                asChild
-                size="lg"
-                wrap="responsive"
-                className="h-12 w-full px-8 sm:w-auto"
-              >
+              <Button asChild size="lg" wrap="responsive" className="h-12 w-full px-8 sm:w-auto">
                 <Link
                   href={
                     userId
@@ -738,9 +670,7 @@ export default async function AcademyPage() {
                 wrap="responsive"
                 className="h-12 w-full px-8 sm:w-auto"
               >
-                <Link href="/board/qna/write?category=academy">
-                  문의글 작성하기
-                </Link>
+                <Link href="/board/qna/write?category=academy">문의글 작성하기</Link>
               </Button>
             </div>
           </div>

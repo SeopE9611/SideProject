@@ -3,10 +3,7 @@ import { ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 
-export async function DELETE(
-  req: NextRequest,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -14,10 +11,7 @@ export async function DELETE(
 
   const { id } = await ctx.params;
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json(
-      { ok: false, error: "invalid_id" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "invalid_id" }, { status: 400 });
   }
 
   const { db } = guard;
@@ -28,10 +22,7 @@ export async function DELETE(
 
   const existing = await commentsCol.findOne({ _id: commentObjectId });
   if (!existing) {
-    return NextResponse.json(
-      { ok: false, error: "not_found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
 
   const targetIds = [commentObjectId];

@@ -1,5 +1,4 @@
-const isTruthySaleFlag = (value: unknown) =>
-  value === true || value === "true" || value === 1;
+const isTruthySaleFlag = (value: unknown) => value === true || value === "true" || value === 1;
 
 const toSafePrice = (value: unknown) => {
   const numberValue = Number(value);
@@ -18,10 +17,7 @@ export function getEffectiveProductPrice(product: unknown): number {
   const regularPrice = toSafePrice(productRecord?.price);
   const salePrice = toSafePrice(inventory?.salePrice);
 
-  const isSale =
-    isTruthySaleFlag(inventory?.isSale) &&
-    salePrice > 0 &&
-    salePrice < regularPrice;
+  const isSale = isTruthySaleFlag(inventory?.isSale) && salePrice > 0 && salePrice < regularPrice;
 
   return isSale ? salePrice : regularPrice;
 }
@@ -55,8 +51,5 @@ export function buildPriceDisplayMeta(
 
 export function getProductPriceDisplayMeta(product: unknown): PriceDisplayMeta {
   const productRecord = asRecord(product);
-  return buildPriceDisplayMeta(
-    productRecord?.price,
-    getEffectiveProductPrice(product),
-  );
+  return buildPriceDisplayMeta(productRecord?.price, getEffectiveProductPrice(product));
 }

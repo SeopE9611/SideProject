@@ -39,12 +39,8 @@ import { useState } from "react";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => v.replace(/\D/g, "");
-const isValidKoreanPhoneDigits = (digits: string) =>
-  digits.length === 10 || digits.length === 11;
-type LookupNotice =
-  | { type: "error"; message: string }
-  | { type: "empty"; message: string }
-  | null;
+const isValidKoreanPhoneDigits = (digits: string) => digits.length === 10 || digits.length === 11;
+type LookupNotice = { type: "error"; message: string } | { type: "empty"; message: string } | null;
 
 export default function OrderLookupPage() {
   const router = useRouter();
@@ -64,16 +60,11 @@ export default function OrderLookupPage() {
   // 비회원 주문 조회(게스트) UI 노출 여부(클라)
   // - NEXT_PUBLIC_GUEST_ORDER_MODE=off 면: 입력 폼부터 막고 LoginGate로 유도
   // - legacy/on 면: 조회 UI 유지
-  const guestModeRaw = (
-    process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? "legacy"
-  ).trim();
+  const guestModeRaw = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? "legacy").trim();
   const allowGuestLookup = guestModeRaw !== "off";
 
   // 입력이 한 글자라도 있으면 dirty로 간주(프리필/초기값 없음)
-  const isDirty =
-    !!formData.name.trim() ||
-    !!formData.email.trim() ||
-    !!formData.phone.trim();
+  const isDirty = !!formData.name.trim() || !!formData.email.trim() || !!formData.phone.trim();
 
   // 새로고침/탭 닫기/브라우저 뒤로가기(주소창) 등 브라우저 레벨 이탈 경고
   // - router.push(조회 성공 후 결과 페이지 이동)는 의도된 이동이라 guard 불필요
@@ -89,8 +80,7 @@ export default function OrderLookupPage() {
     }
   };
 
-  if (!allowGuestLookup)
-    return <LoginGate next="/mypage" variant="orderLookup" />;
+  if (!allowGuestLookup) return <LoginGate next="/mypage" variant="orderLookup" />;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -191,8 +181,7 @@ export default function OrderLookupPage() {
       if (!res.ok || !data?.success) {
         setLookupNotice({
           type: "error",
-          message:
-            data?.error ?? "입력하신 정보를 확인한 뒤 다시 조회해주세요.",
+          message: data?.error ?? "입력하신 정보를 확인한 뒤 다시 조회해주세요.",
         });
         return;
       }
@@ -255,9 +244,8 @@ export default function OrderLookupPage() {
             title="조회 후 확인할 수 있는 정보"
           >
             <p>
-              현재 상태, 다음 해야 할 일, 문의가 필요한 경우의 안내를 함께
-              보여드립니다. 회원가입하면 다음부터 마이페이지에서 더 쉽게 관리할
-              수 있어요.
+              현재 상태, 다음 해야 할 일, 문의가 필요한 경우의 안내를 함께 보여드립니다.
+              회원가입하면 다음부터 마이페이지에서 더 쉽게 관리할 수 있어요.
             </p>
           </SummaryCard>
 
@@ -268,9 +256,7 @@ export default function OrderLookupPage() {
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-secondary rounded-full mb-4 mx-auto border border-border/60">
                   <Package className="w-6 h-6 text-foreground" />
                 </div>
-                <CardTitle className="text-2xl font-bold text-foreground">
-                  주문 정보 입력
-                </CardTitle>
+                <CardTitle className="text-2xl font-bold text-foreground">주문 정보 입력</CardTitle>
                 <CardDescription className="text-base text-muted-foreground">
                   주문 시 입력하신 정보를 통해 주문 내역을 확인하실 수 있습니다
                 </CardDescription>
@@ -282,10 +268,7 @@ export default function OrderLookupPage() {
                 <CardContent className="space-y-4 md:space-y-6 pt-6 md:pt-8">
                   {/* Name Field */}
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="name"
-                      className="text-sm font-medium flex items-center gap-2"
-                    >
+                    <Label htmlFor="name" className="text-sm font-medium flex items-center gap-2">
                       <User className="w-4 h-4 text-primary" />
                       이름 <span className="text-destructive">*</span>
                     </Label>
@@ -311,10 +294,7 @@ export default function OrderLookupPage() {
 
                   {/* Email Field */}
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="email"
-                      className="text-sm font-medium flex items-center gap-2"
-                    >
+                    <Label htmlFor="email" className="text-sm font-medium flex items-center gap-2">
                       <Mail className="w-4 h-4 text-primary" />
                       이메일 <span className="text-destructive">*</span>
                     </Label>
@@ -341,10 +321,7 @@ export default function OrderLookupPage() {
 
                   {/* Phone Field */}
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="phone"
-                      className="text-sm font-medium flex items-center gap-2"
-                    >
+                    <Label htmlFor="phone" className="text-sm font-medium flex items-center gap-2">
                       <Phone className="w-4 h-4 text-primary" />
                       전화번호 (선택)
                     </Label>
@@ -379,32 +356,25 @@ export default function OrderLookupPage() {
                         <Clock className="w-5 h-5 text-primary mt-0.5" />
                       </div>
                       <div className="text-sm">
-                        <p className="font-medium text-foreground mb-1">
-                          조회 가능한 주문
-                        </p>
+                        <p className="font-medium text-foreground mb-1">조회 가능한 주문</p>
                         <p className="text-muted-foreground">
                           최근 6개월 이내의 주문 내역을 조회하실 수 있습니다.
                         </p>
                       </div>
                     </div>
                     <div className="mt-4 border-t border-border pt-4 text-sm">
-                      <p className="font-medium text-foreground mb-2">
-                        조회 전 확인해주세요
-                      </p>
+                      <p className="font-medium text-foreground mb-2">조회 전 확인해주세요</p>
                       <ul className="space-y-1.5 text-muted-foreground">
                         <li className="flex items-start gap-2">
                           <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
                           <span>
-                            비회원 주문은 주문 시 입력한 이름과 이메일이 정확히
-                            일치해야 조회할 수 있습니다.
+                            비회원 주문은 주문 시 입력한 이름과 이메일이 정확히 일치해야 조회할 수
+                            있습니다.
                           </span>
                         </li>
                         <li className="flex items-start gap-2">
                           <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
-                          <span>
-                            전화번호를 입력한 경우 주문 시 전화번호와도 일치해야
-                            합니다.
-                          </span>
+                          <span>전화번호를 입력한 경우 주문 시 전화번호와도 일치해야 합니다.</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
@@ -412,14 +382,9 @@ export default function OrderLookupPage() {
                         </li>
                       </ul>
                       <ul className="mt-3 space-y-1.5 text-muted-foreground">
-                        <li>
-                          • 주문자 이름에 띄어쓰기나 오타가 없는지 확인해주세요.
-                        </li>
+                        <li>• 주문자 이름에 띄어쓰기나 오타가 없는지 확인해주세요.</li>
                         <li>• 주문 당시 사용한 이메일 주소를 입력해주세요.</li>
-                        <li>
-                          • 전화번호는 입력했다면 숫자만 10~11자리로
-                          입력해주세요.
-                        </li>
+                        <li>• 전화번호는 입력했다면 숫자만 10~11자리로 입력해주세요.</li>
                         <li>• 주문 완료 직후라면 잠시 후 다시 조회해주세요.</li>
                       </ul>
                     </div>
@@ -446,17 +411,9 @@ export default function OrderLookupPage() {
                       {lookupNotice.type === "empty" && (
                         <>
                           <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
-                            <li>
-                              • 주문자 이름에 띄어쓰기나 오타가 없는지
-                              확인해주세요.
-                            </li>
-                            <li>
-                              • 주문 당시 사용한 이메일 주소인지 확인해주세요.
-                            </li>
-                            <li>
-                              • 전화번호를 입력했다면 주문 당시 번호와 같은지
-                              확인해주세요.
-                            </li>
+                            <li>• 주문자 이름에 띄어쓰기나 오타가 없는지 확인해주세요.</li>
+                            <li>• 주문 당시 사용한 이메일 주소인지 확인해주세요.</li>
+                            <li>• 전화번호를 입력했다면 주문 당시 번호와 같은지 확인해주세요.</li>
                             <li>• 최근 6개월 이내 주문인지 확인해주세요.</li>
                           </ul>
                           <p className="mt-3 text-sm text-muted-foreground">
@@ -493,10 +450,7 @@ export default function OrderLookupPage() {
 
                   <p className="text-xs text-center text-muted-foreground">
                     회원이신가요?{" "}
-                    <Link
-                      href="/login"
-                      className="text-primary hover:text-primary font-medium"
-                    >
+                    <Link href="/login" className="text-primary hover:text-primary font-medium">
                       로그인하기
                     </Link>
                   </p>
@@ -510,9 +464,7 @@ export default function OrderLookupPage() {
                 <div className="inline-flex items-center justify-center w-12 h-12 border border-border bg-secondary text-foreground rounded-full mb-4">
                   <Shield className="w-6 h-6 text-primary" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">
-                  안전한 조회
-                </h3>
+                <h3 className="font-semibold text-foreground mb-2">안전한 조회</h3>
                 <p className="text-sm text-muted-foreground">
                   개인정보 보호를 위한 안전한 주문 조회 시스템
                 </p>
@@ -522,9 +474,7 @@ export default function OrderLookupPage() {
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-success/10 rounded-full mb-4 dark:bg-success/15">
                   <Clock className="w-6 h-6 text-success" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">
-                  실시간 조회
-                </h3>
+                <h3 className="font-semibold text-foreground mb-2">실시간 조회</h3>
                 <p className="text-sm text-muted-foreground">
                   최신 주문 상태를 실시간으로 확인 가능
                 </p>
@@ -534,12 +484,8 @@ export default function OrderLookupPage() {
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-muted rounded-full mb-4">
                   <Package className="w-6 h-6 text-foreground" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">
-                  상세 정보
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  배송 추적부터 결제 정보까지 한눈에
-                </p>
+                <h3 className="font-semibold text-foreground mb-2">상세 정보</h3>
+                <p className="text-sm text-muted-foreground">배송 추적부터 결제 정보까지 한눈에</p>
               </div>
             </div>
           </div>

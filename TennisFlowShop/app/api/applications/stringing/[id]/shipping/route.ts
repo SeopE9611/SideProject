@@ -1,10 +1,7 @@
 import { handleUpdateShippingInfo } from "@/app/features/stringing-applications/api/handlers";
 import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 import { getDb } from "@/lib/mongodb";
-import {
-  findCourierCatalogItem,
-  normalizeCourierCode,
-} from "@/lib/shipping/courier-map";
+import { findCourierCatalogItem, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -21,10 +18,7 @@ import { NextResponse } from "next/server";
  * 허용 바디(사용자 화면)
  * - { shippingInfo: { selfShip: { courier, trackingNo, shippedAt?, note? } } }
  */
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   // id 검증
@@ -42,19 +36,13 @@ export async function PATCH(
     );
 
   if (!app) {
-    return NextResponse.json(
-      { ok: false, message: "NOT_FOUND" },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, message: "NOT_FOUND" }, { status: 404 });
   }
 
   // 종료 상태에서는 수정 금지 — 프론트에서 막아도 서버에서 한 번 더 방어
   const CLOSED = ["작업 중", "교체완료"];
   if (CLOSED.includes(String((app as any).status ?? ""))) {
-    return NextResponse.json(
-      { ok: false, message: "CLOSED_APPLICATION" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, message: "CLOSED_APPLICATION" }, { status: 400 });
   }
 
   // 쿠키 기반 권한 체크
@@ -74,15 +62,11 @@ export async function PATCH(
   }
 
   const isOwner =
-    !!userId &&
-    !!(app as any).userId &&
-    String((app as any).userId) === String(userId);
+    !!userId && !!(app as any).userId && String((app as any).userId) === String(userId);
 
   const guestClaims = oax ? verifyOrderAccessToken(oax) : null;
   const guestOrderId =
-    guestClaims &&
-    "orderId" in guestClaims &&
-    typeof guestClaims.orderId === "string"
+    guestClaims && "orderId" in guestClaims && typeof guestClaims.orderId === "string"
       ? guestClaims.orderId
       : null;
   const guestOwns =
@@ -91,10 +75,7 @@ export async function PATCH(
     String(guestOrderId) === String((app as any).orderId);
 
   if (!isOwner && !isAdmin && !guestOwns) {
-    return NextResponse.json(
-      { ok: false, message: "Forbidden" },
-      { status: 403 },
-    );
+    return NextResponse.json({ ok: false, message: "Forbidden" }, { status: 403 });
   }
 
   // 바디 파싱 + 사용자용 필드만 허용(selfShip만)
@@ -102,23 +83,15 @@ export async function PATCH(
   const incoming = body?.shippingInfo?.selfShip ?? null;
 
   const courier =
-    typeof incoming?.courier === "string"
-      ? normalizeCourierCode(incoming.courier)
-      : "";
+    typeof incoming?.courier === "string" ? normalizeCourierCode(incoming.courier) : "";
   const trackingNo =
-    typeof incoming?.trackingNo === "string"
-      ? normalizeTrackingNumber(incoming.trackingNo)
-      : "";
-  const shippedAt =
-    typeof incoming?.shippedAt === "string" ? incoming.shippedAt.trim() : "";
+    typeof incoming?.trackingNo === "string" ? normalizeTrackingNumber(incoming.trackingNo) : "";
+  const shippedAt = typeof incoming?.shippedAt === "string" ? incoming.shippedAt.trim() : "";
   const note = typeof incoming?.note === "string" ? incoming.note.trim() : "";
 
   const courierItem = findCourierCatalogItem(courier);
   if (!courierItem) {
-    return NextResponse.json(
-      { ok: false, message: "INVALID_COURIER" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, message: "INVALID_COURIER" }, { status: 400 });
   }
   if (courierItem.code === "ems") {
     return NextResponse.json(
@@ -127,16 +100,10 @@ export async function PATCH(
     );
   }
   if (!trackingNo) {
-    return NextResponse.json(
-      { ok: false, message: "INVALID_SELF_SHIP" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, message: "INVALID_SELF_SHIP" }, { status: 400 });
   }
   if (trackingNo.length < 9 || trackingNo.length > 20) {
-    return NextResponse.json(
-      { ok: false, message: "INVALID_TRACKING_NUMBER" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, message: "INVALID_TRACKING_NUMBER" }, { status: 400 });
   }
 
   const safeBody = {

@@ -7,31 +7,15 @@ import { badgeToneVariant } from "@/lib/badge-style";
 
 type Status = "active" | "suspended" | "deleted";
 
-export default function StatusBadge({
-  status,
-  className,
-}: {
-  status: Status;
-  className?: string;
-}) {
-  const tone =
-    status === "active"
-      ? "success"
-      : status === "suspended"
-        ? "neutral"
-        : "danger";
+export default function StatusBadge({ status, className }: { status: Status; className?: string }) {
+  const tone = status === "active" ? "success" : status === "suspended" ? "neutral" : "danger";
 
-  const label =
-    status === "active" ? "활성" : status === "suspended" ? "비활성" : "삭제됨";
+  const label = status === "active" ? "활성" : status === "suspended" ? "비활성" : "삭제됨";
 
   return (
     <Badge
       variant={badgeToneVariant(tone)}
-      className={cn(
-        "px-2.5 py-0.5 font-medium shadow-sm",
-        adminTypography.badgeLabel,
-        className,
-      )}
+      className={cn("px-2.5 py-0.5 font-medium shadow-sm", adminTypography.badgeLabel, className)}
     >
       {label}
     </Badge>

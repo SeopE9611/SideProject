@@ -43,8 +43,7 @@ export async function GET(req: NextRequest) {
   const q = (searchParams.get("q") ?? "").trim();
 
   const sortKey = (searchParams.get("sort") ?? "createdAt").trim(); // createdAt|views|likes|comments
-  const dir: SortDirection =
-    searchParams.get("dir")?.toLowerCase() === "asc" ? 1 : -1;
+  const dir: SortDirection = searchParams.get("dir")?.toLowerCase() === "asc" ? 1 : -1;
 
   const filter: Filter<PostDoc> = {};
   if (type !== "all") filter.type = type;
@@ -102,9 +101,7 @@ export async function GET(req: NextRequest) {
         nickname: d.nickname ?? "",
         status: d.status ?? "public",
         createdAt:
-          d.createdAt instanceof Date
-            ? d.createdAt.toISOString()
-            : new Date().toISOString(),
+          d.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
         views,
         likes,
         commentsCount: d.commentsCount ?? 0,

@@ -1,13 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -23,10 +17,7 @@ import {
   hasAnyRegisteredFulfillmentField,
   normalizeOrderShippingMethod,
 } from "@/lib/order-shipping";
-import {
-  getSelectableCourierCatalog,
-  normalizeCourierCode,
-} from "@/lib/shipping/courier-map";
+import { getSelectableCourierCatalog, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { Loader2 } from "lucide-react";
@@ -65,9 +56,7 @@ export default function ShippingForm({
   const fixedVisitMethod = "visit";
 
   const [shippingMethod, setShippingMethod] = useState<string>(
-    isVisitPickupOrder
-      ? fixedVisitMethod
-      : normalizedInitialShippingMethod || "",
+    isVisitPickupOrder ? fixedVisitMethod : normalizedInitialShippingMethod || "",
   );
   // prop 변경에 반응하도록
   useEffect(() => {
@@ -78,9 +67,7 @@ export default function ShippingForm({
   }, [initialShippingMethod, isVisitPickupOrder]);
 
   const [estimatedDelivery, setEstimatedDelivery] = useState<string>(
-    initialEstimatedDelivery
-      ? new Date(initialEstimatedDelivery).toISOString().split("T")[0]
-      : "",
+    initialEstimatedDelivery ? new Date(initialEstimatedDelivery).toISOString().split("T")[0] : "",
   );
   const [courier, setCourier] = useState("");
   const [trackingNumber, setTrackingNumber] = useState("");
@@ -138,9 +125,7 @@ export default function ShippingForm({
     const normalizedBaseMethod =
       normalizeOrderShippingMethod(initialShippingMethod) ??
       String(initialShippingMethod ?? "").trim();
-    const baseMethod = isVisitPickupOrder
-      ? fixedVisitMethod
-      : normalizedBaseMethod;
+    const baseMethod = isVisitPickupOrder ? fixedVisitMethod : normalizedBaseMethod;
     const baseEstimated = initialEstimatedDelivery
       ? new Date(initialEstimatedDelivery).toISOString().split("T")[0]
       : "";
@@ -168,12 +153,8 @@ export default function ShippingForm({
   ]);
 
   const isDirty = useMemo(() => {
-    const currentMethod = isVisitPickupOrder
-      ? fixedVisitMethod
-      : shippingMethod;
-    const curCourier = isCourierShippingMethod(currentMethod)
-      ? normalizeCourierCode(courier)
-      : "";
+    const currentMethod = isVisitPickupOrder ? fixedVisitMethod : shippingMethod;
+    const curCourier = isCourierShippingMethod(currentMethod) ? normalizeCourierCode(courier) : "";
     const curTracking = isCourierShippingMethod(currentMethod)
       ? normalizeTrackingNumber(trackingNumber)
       : "";
@@ -184,14 +165,7 @@ export default function ShippingForm({
       baseline.courier !== curCourier ||
       baseline.trackingNumber !== curTracking
     );
-  }, [
-    baseline,
-    shippingMethod,
-    estimatedDelivery,
-    courier,
-    trackingNumber,
-    isVisitPickupOrder,
-  ]);
+  }, [baseline, shippingMethod, estimatedDelivery, courier, trackingNumber, isVisitPickupOrder]);
 
   // 저장 중에는 굳이 경고 띄우지 않도록(UX)
   useUnsavedChangesGuard(isDirty && !isSubmitting);
@@ -209,9 +183,7 @@ export default function ShippingForm({
       return;
     }
 
-    const effectiveMethod = isVisitPickupOrder
-      ? fixedVisitMethod
-      : shippingMethod;
+    const effectiveMethod = isVisitPickupOrder ? fixedVisitMethod : shippingMethod;
 
     if (isCourierShippingMethod(effectiveMethod)) {
       if (!courier) {
@@ -223,10 +195,7 @@ export default function ShippingForm({
         showErrorToast("운송장 번호를 입력해주세요");
         return;
       }
-      if (
-        normalizedTrackingNumber.length < 9 ||
-        normalizedTrackingNumber.length > 20
-      ) {
+      if (normalizedTrackingNumber.length < 9 || normalizedTrackingNumber.length > 20) {
         showErrorToast("운송장 번호는 숫자 9~20자리로 입력해주세요");
         return;
       }
@@ -337,9 +306,7 @@ export default function ShippingForm({
                 <Input
                   id="tracking-number"
                   value={trackingNumber}
-                  onChange={(e) =>
-                    setTrackingNumber(normalizeTrackingNumber(e.target.value))
-                  }
+                  onChange={(e) => setTrackingNumber(normalizeTrackingNumber(e.target.value))}
                   placeholder="예: 1234567890"
                 />
               </div>

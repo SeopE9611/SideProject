@@ -25,9 +25,7 @@ export function adminValidationError(
   );
 }
 
-export function zodIssuesToDetails(
-  issues: z.ZodIssue[],
-): AdminApiValidationDetail[] {
+export function zodIssuesToDetails(issues: z.ZodIssue[]): AdminApiValidationDetail[] {
   return issues.map((issue) => ({
     code: issue.code,
     message: issue.message,

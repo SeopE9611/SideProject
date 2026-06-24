@@ -4,10 +4,7 @@ import { ObjectId } from "mongodb";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
-import {
-  adminValidationError,
-  zodIssuesToDetails,
-} from "@/lib/admin/adminApiError";
+import { adminValidationError, zodIssuesToDetails } from "@/lib/admin/adminApiError";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
 const MAX_BULK_IDS = 200;
@@ -17,18 +14,14 @@ const bulkBodySchema = z
     op: z.enum(["suspend", "unsuspend", "softDelete", "restore"]),
     ids: z
       .array(z.string())
-      .max(
-        MAX_BULK_IDS,
-        `ids는 최대 ${MAX_BULK_IDS}개까지 요청할 수 있습니다.`,
-      ),
+      .max(MAX_BULK_IDS, `ids는 최대 ${MAX_BULK_IDS}개까지 요청할 수 있습니다.`),
   })
   .strict();
 
 function normalizeIds(rawIds: string[]) {
   const deduped: string[] = [];
   const seen = new Set<string>();
-  const invalidObjectIds: { index: number; value: string; reason: string }[] =
-    [];
+  const invalidObjectIds: { index: number; value: string; reason: string }[] = [];
 
   for (let index = 0; index < rawIds.length; index += 1) {
     const normalized = rawIds[index].trim();
@@ -77,9 +70,7 @@ export async function POST(req: Request) {
     return adminValidationError(
       "ids에 유효하지 않은 ObjectId가 포함되어 있습니다.",
       {
-        ids: invalidObjectIds.map(
-          (item) => `index ${item.index}: ${item.value} (${item.reason})`,
-        ),
+        ids: invalidObjectIds.map((item) => `index ${item.index}: ${item.value} (${item.reason})`),
       },
       invalidObjectIds.map((item) => ({
         code: "INVALID_OBJECT_ID",
@@ -102,10 +93,7 @@ export async function POST(req: Request) {
 
   // 4) 현재 상태 미리 조회하여 분류(eligible / already / incompatible)
   const docs = await col
-    .find(
-      { _id: { $in: _ids } },
-      { projection: { _id: 1, isSuspended: 1, isDeleted: 1 } },
-    )
+    .find({ _id: { $in: _ids } }, { projection: { _id: 1, isSuspended: 1, isDeleted: 1 } })
     .toArray();
 
   const eligible: ObjectId[] = []; // 실제 업데이트할 대상

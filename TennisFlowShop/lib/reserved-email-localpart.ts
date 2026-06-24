@@ -100,26 +100,18 @@ export function isReservedEmailLocalPart(email: string): boolean {
 
   if (!normalized) return false;
 
-  if (
-    EMAIL_LOCALPART_EXACT.has(normalized) ||
-    EMAIL_LOCALPART_EXACT.has(compact)
-  ) {
+  if (EMAIL_LOCALPART_EXACT.has(normalized) || EMAIL_LOCALPART_EXACT.has(compact)) {
     return true;
   }
 
   return EMAIL_LOCALPART_PREFIX.some((keyword) => {
     const normalizedKeyword = normalizeEmailLocalPartInput(keyword);
     const compactKeyword = normalizeEmailLocalPartForComparison(keyword);
-    return (
-      normalized.startsWith(normalizedKeyword) ||
-      compact.startsWith(compactKeyword)
-    );
+    return normalized.startsWith(normalizedKeyword) || compact.startsWith(compactKeyword);
   });
 }
 
-export function getReservedEmailLocalPartErrorMessage(
-  email: string,
-): string | null {
+export function getReservedEmailLocalPartErrorMessage(email: string): string | null {
   if (!isReservedEmailLocalPart(email)) return null;
   return RESERVED_EMAIL_LOCALPART_MESSAGE;
 }

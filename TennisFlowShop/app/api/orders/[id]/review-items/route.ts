@@ -6,20 +6,13 @@ import { verifyAccessToken } from "@/lib/auth.utils";
 import { racketBrandLabel } from "@/lib/constants";
 import { isOrderServiceReviewOnly } from "@/lib/reviews/review-policy";
 
-export async function GET(
-  _req: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   const orderId = id;
 
   // 인증
   const token = (await cookies()).get("accessToken")?.value;
-  if (!token)
-    return NextResponse.json(
-      { ok: false, error: "unauthorized" },
-      { status: 401 },
-    );
+  if (!token) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
 
   // accessToken이 깨져 verifyAccessToken이 throw 되어도 500이 아니라 401로 정리
   let payload: any = null;
@@ -30,10 +23,7 @@ export async function GET(
   }
   const userIdStr = typeof payload?.sub === "string" ? payload.sub : "";
   if (!userIdStr || !ObjectId.isValid(userIdStr))
-    return NextResponse.json(
-      { ok: false, error: "unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
 
   // 파라미터 검증
   if (!ObjectId.isValid(orderId)) {
@@ -45,14 +35,9 @@ export async function GET(
   const orderIdObj = new ObjectId(orderId);
 
   // 내 주문인지 확인 + 주문 항목 확보
-  const order = await db
-    .collection("orders")
-    .findOne({ _id: orderIdObj, userId });
+  const order = await db.collection("orders").findOne({ _id: orderIdObj, userId });
   if (!order) {
-    return NextResponse.json(
-      { ok: false, error: "orderNotFound" },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, error: "orderNotFound" }, { status: 404 });
   }
 
   if (await isOrderServiceReviewOnly(db, order)) {
@@ -68,8 +53,7 @@ export async function GET(
   }
 
   const isOrderConfirmed =
-    Boolean((order as any).userConfirmedAt) ||
-    String((order as any).status ?? "") === "구매확정";
+    Boolean((order as any).userConfirmedAt) || String((order as any).status ?? "") === "구매확정";
   if (!isOrderConfirmed) {
     return NextResponse.json(
       { ok: false, error: "notConfirmed", reason: "notConfirmed" },
@@ -142,11 +126,7 @@ export async function GET(
       const prev = metaFromOrder.get(pid) || {};
       metaFromOrder.set(pid, {
         name: prev.name ?? p.name ?? p.title,
-        image:
-          prev.image ??
-          p.thumbnail ??
-          (Array.isArray(p.images) && p.images[0]) ??
-          undefined,
+        image: prev.image ?? p.thumbnail ?? (Array.isArray(p.images) && p.images[0]) ?? undefined,
       });
     }
   }
@@ -168,12 +148,9 @@ export async function GET(
       const pid = String(r._id);
       const prev = metaFromOrder.get(pid) || {};
 
-      const brand =
-        typeof (r as any).brand === "string" ? (r as any).brand : "";
-      const model =
-        typeof (r as any).model === "string" ? (r as any).model : "";
-      const computedName =
-        `${racketBrandLabel(brand)} ${model}`.trim() || "라켓";
+      const brand = typeof (r as any).brand === "string" ? (r as any).brand : "";
+      const model = typeof (r as any).model === "string" ? (r as any).model : "";
+      const computedName = `${racketBrandLabel(brand)} ${model}`.trim() || "라켓";
       const computedImage =
         Array.isArray((r as any).images) && (r as any).images.length
           ? (r as any).images[0]

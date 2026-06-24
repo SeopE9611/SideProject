@@ -13,9 +13,7 @@ describe("관리자 회원 KPI 노출", () => {
         name: "Admin",
       },
     }).as("me");
-    cy.intercept("POST", "/api/refresh", { statusCode: 200, body: {} }).as(
-      "refresh",
-    );
+    cy.intercept("POST", "/api/refresh", { statusCode: 200, body: {} }).as("refresh");
     cy.intercept("POST", "/api/claims/auto-link", {
       statusCode: 200,
       body: { success: true },

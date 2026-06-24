@@ -63,5 +63,4 @@ export const ADMIN_EXPENSIVE_ENDPOINT_POLICIES = {
   },
 } satisfies Record<string, AdminEndpointCostPolicy>;
 
-export type AdminExpensiveEndpointPolicyKey =
-  keyof typeof ADMIN_EXPENSIVE_ENDPOINT_POLICIES;
+export type AdminExpensiveEndpointPolicyKey = keyof typeof ADMIN_EXPENSIVE_ENDPOINT_POLICIES;

@@ -3,19 +3,11 @@ import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { createUserNotifications } from "@/lib/notifications/user-notification.service";
-import {
-  mapMessageListItem,
-  notExpiredClause,
-  parseListQuery,
-} from "../_utils";
+import { mapMessageListItem, notExpiredClause, parseListQuery } from "../_utils";
 
 export async function GET(req: NextRequest) {
   const me = await getCurrentUser();
-  if (!me)
-    return NextResponse.json(
-      { ok: false, error: "Unauthorized" },
-      { status: 401 },
-    );
+  if (!me) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
   const { page, limit } = parseListQuery(req);
   const skip = (page - 1) * limit;
@@ -62,16 +54,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const me = await getCurrentUser();
-  if (!me)
-    return NextResponse.json(
-      { ok: false, error: "Unauthorized" },
-      { status: 401 },
-    );
+  if (!me) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   if (me.role !== "admin")
-    return NextResponse.json(
-      { ok: false, error: "Forbidden" },
-      { status: 403 },
-    );
+    return NextResponse.json({ ok: false, error: "Forbidden" }, { status: 403 });
 
   const payload = (await req.json().catch(() => null)) as null | {
     title?: unknown;
@@ -83,23 +68,13 @@ export async function POST(req: NextRequest) {
   const title = typeof payload?.title === "string" ? payload.title.trim() : "";
   const body = typeof payload?.body === "string" ? payload.body.trim() : "";
   const expireDaysRaw =
-    typeof payload?.expireDays === "number"
-      ? payload.expireDays
-      : Number(payload?.expireDays);
-  const expireDays = Number.isFinite(expireDaysRaw)
-    ? Math.floor(expireDaysRaw)
-    : 0;
+    typeof payload?.expireDays === "number" ? payload.expireDays : Number(payload?.expireDays);
+  const expireDays = Number.isFinite(expireDaysRaw) ? Math.floor(expireDaysRaw) : 0;
 
   if (!title)
-    return NextResponse.json(
-      { ok: false, error: "제목을 입력해주세요." },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "제목을 입력해주세요." }, { status: 400 });
   if (!body)
-    return NextResponse.json(
-      { ok: false, error: "내용을 입력해주세요." },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "내용을 입력해주세요." }, { status: 400 });
 
   const db = await getDb();
 
@@ -127,9 +102,7 @@ export async function POST(req: NextRequest) {
   const now = new Date();
   const broadcastId = new ObjectId();
   const expiresAt =
-    expireDays > 0
-      ? new Date(now.getTime() + expireDays * 24 * 60 * 60 * 1000)
-      : undefined;
+    expireDays > 0 ? new Date(now.getTime() + expireDays * 24 * 60 * 60 * 1000) : undefined;
 
   const fromOid = new ObjectId(me.id);
 
@@ -151,9 +124,7 @@ export async function POST(req: NextRequest) {
     ...(expiresAt ? { expiresAt } : {}),
   }));
 
-  const res = await db
-    .collection("messages")
-    .insertMany(docs, { ordered: false });
+  const res = await db.collection("messages").insertMany(docs, { ordered: false });
 
   try {
     const bodyPreview = title || body.slice(0, 80);

@@ -1,12 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 
@@ -46,11 +41,7 @@ export default function ReviewImageViewerDialog({
             </div>
 
             <div className="flex items-center justify-between gap-2">
-              <Button
-                variant="outline"
-                onClick={onPrev}
-                disabled={images.length <= 1}
-              >
+              <Button variant="outline" onClick={onPrev} disabled={images.length <= 1}>
                 <ChevronLeft className="mr-1 h-4 w-4" />
                 이전
               </Button>
@@ -59,11 +50,7 @@ export default function ReviewImageViewerDialog({
                 {index + 1} / {images.length}
               </div>
 
-              <Button
-                variant="outline"
-                onClick={onNext}
-                disabled={images.length <= 1}
-              >
+              <Button variant="outline" onClick={onNext} disabled={images.length <= 1}>
                 다음
                 <ChevronRight className="ml-1 h-4 w-4" />
               </Button>

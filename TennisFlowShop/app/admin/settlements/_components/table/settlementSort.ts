@@ -1,12 +1,6 @@
 import type { SettlementSnapshot } from "@/types/admin/settlements";
 
-export type SortField =
-  | "paid"
-  | "refund"
-  | "net"
-  | "orders"
-  | "applications"
-  | "packages";
+export type SortField = "paid" | "refund" | "net" | "orders" | "applications" | "packages";
 export type SortDirection = "asc" | "desc" | null;
 
 export function sortSettlementRows(

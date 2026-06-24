@@ -14,9 +14,7 @@ export function FullPageSpinner({
   minHeightClassName = "min-h-[100svh]",
 }: FullPageSpinnerProps) {
   return (
-    <div
-      className={cn("grid place-items-center", minHeightClassName, className)}
-    >
+    <div className={cn("grid place-items-center", minHeightClassName, className)}>
       <div className="flex flex-col items-center gap-3">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
         <p className="text-sm text-muted-foreground">{label}</p>
@@ -31,11 +29,7 @@ type ListSkeletonProps = {
   withHeader?: boolean;
 };
 
-export function ListPageSkeleton({
-  className,
-  rows = 8,
-  withHeader = true,
-}: ListSkeletonProps) {
+export function ListPageSkeleton({ className, rows = 8, withHeader = true }: ListSkeletonProps) {
   return (
     <div className={cn("mx-auto w-full max-w-5xl px-4 py-10", className)}>
       {withHeader && (
@@ -48,10 +42,7 @@ export function ListPageSkeleton({
 
       <div className="space-y-3">
         {Array.from({ length: rows }).map((_, i) => (
-          <div
-            key={i}
-            className="rounded-xl border border-border/40 bg-background/60 p-4"
-          >
+          <div key={i} className="rounded-xl border border-border/40 bg-background/60 p-4">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1 space-y-2">
                 <Skeleton className="h-4 w-24" />

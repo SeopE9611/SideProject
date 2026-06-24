@@ -51,12 +51,7 @@ const RENTAL_HISTORY_COMPLETED_ACTION_VALUES = [
   "cancel-rejected",
   "cancel-withdrawn",
 ];
-const ACADEMY_COMPLETED_TODAY_STATUS_VALUES = [
-  "reviewing",
-  "contacted",
-  "confirmed",
-  "cancelled",
-];
+const ACADEMY_COMPLETED_TODAY_STATUS_VALUES = ["reviewing", "contacted", "confirmed", "cancelled"];
 
 function getKstDayRange(date = new Date()) {
   const kstOffsetMs = 9 * 60 * 60 * 1000;
@@ -74,11 +69,7 @@ function getKstDayRange(date = new Date()) {
   };
 }
 
-function dateRangeFilter(
-  field: string,
-  start: Date,
-  end: Date,
-): Filter<Document> {
+function dateRangeFilter(field: string, start: Date, end: Date): Filter<Document> {
   return {
     $or: [
       { [field]: { $gte: start, $lt: end } },
@@ -114,38 +105,22 @@ function offlineCompletedTodayFilter(start: Date, end: Date): Filter<Document> {
   };
 }
 
-function completedStatusFilter(
-  statusValues: string[],
-  start: Date,
-  end: Date,
-): Filter<Document> {
+function completedStatusFilter(statusValues: string[], start: Date, end: Date): Filter<Document> {
   return {
     $and: [
       dateRangeFilter("updatedAt", start, end),
       {
-        $or: [
-          { status: { $in: statusValues } },
-          { orderStatus: { $in: statusValues } },
-        ],
+        $or: [{ status: { $in: statusValues } }, { orderStatus: { $in: statusValues } }],
       },
     ],
   };
 }
 
-async function safeCount(
-  db: Db,
-  collectionName: string,
-  filter: Filter<Document>,
-) {
+async function safeCount(db: Db, collectionName: string, filter: Filter<Document>) {
   try {
-    return await db
-      .collection(collectionName)
-      .countDocuments(filter, { maxTimeMS: 2500 });
+    return await db.collection(collectionName).countDocuments(filter, { maxTimeMS: 2500 });
   } catch (error) {
-    console.error(
-      `[admin/operations/daily-summary] failed to count ${collectionName}`,
-      error,
-    );
+    console.error(`[admin/operations/daily-summary] failed to count ${collectionName}`, error);
     return 0;
   }
 }
@@ -164,11 +139,7 @@ export async function GET(req: Request) {
     academyApplications,
     operationTaskCounts,
   ] = await Promise.all([
-    safeCount(
-      db,
-      "orders",
-      completedStatusFilter(ORDER_COMPLETED_TODAY_STATUS_VALUES, start, end),
-    ),
+    safeCount(db, "orders", completedStatusFilter(ORDER_COMPLETED_TODAY_STATUS_VALUES, start, end)),
     safeCount(db, "stringing_applications", {
       $and: [
         dateRangeFilter("updatedAt", start, end),
@@ -184,17 +155,10 @@ export async function GET(req: Request) {
         ],
       })
       .catch((error) => {
-        console.error(
-          "[admin/operations/daily-summary] failed to count rental_history",
-          error,
-        );
+        console.error("[admin/operations/daily-summary] failed to count rental_history", error);
         return [];
       }),
-    safeCount(
-      db,
-      "offline_service_records",
-      offlineCompletedTodayFilter(start, end),
-    ),
+    safeCount(db, "offline_service_records", offlineCompletedTodayFilter(start, end)),
     safeCount(db, "academy_lesson_applications", {
       $and: [
         dateRangeFilter("updatedAt", start, end),
@@ -205,8 +169,7 @@ export async function GET(req: Request) {
   ]);
 
   const rentals = rentalIds.length;
-  const completedTotal =
-    orders + stringingApplications + rentals + offline + academyApplications;
+  const completedTotal = orders + stringingApplications + rentals + offline + academyApplications;
   const remaining = {
     ...operationTaskCounts,
     total:
@@ -232,8 +195,7 @@ export async function GET(req: Request) {
     remaining.academyApplications;
   let message = "오늘 주요 업무가 안정적으로 정리되었습니다.";
   if (urgentRemaining > 0) {
-    message =
-      "긴급 처리 업무가 남아 있습니다. 취소 요청과 대여 반납/연체를 먼저 확인하세요.";
+    message = "긴급 처리 업무가 남아 있습니다. 취소 요청과 대여 반납/연체를 먼저 확인하세요.";
   } else if (watchRemaining > 0) {
     message =
       "확인 필요한 업무가 남아 있습니다. 결제, 패키지 결제/활성화, 배송, 교체서비스, 상담 대기 건을 점검하세요.";

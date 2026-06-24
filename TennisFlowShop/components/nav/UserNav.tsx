@@ -39,7 +39,8 @@ export function UserNav() {
         variant="ghost"
         size="icon"
         onClick={() => {
-          const redirectTo = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
+          const redirectTo =
+            typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
           router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
         }}
       >
@@ -69,7 +70,10 @@ export function UserNav() {
             </span>
 
             {isAdmin && (
-              <Badge variant="info" className="shrink-0 whitespace-nowrap text-ui-micro font-medium px-1.5 py-[2px]">
+              <Badge
+                variant="info"
+                className="shrink-0 whitespace-nowrap text-ui-micro font-medium px-1.5 py-[2px]"
+              >
                 관리자
               </Badge>
             )}

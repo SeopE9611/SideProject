@@ -149,12 +149,7 @@ export async function POST(req: Request) {
     const packageId = String(packagePayload?.packageId ?? "");
     const serviceInfo = packagePayload?.serviceInfo;
 
-    if (
-      !packageId ||
-      !serviceInfo?.name ||
-      !serviceInfo?.email ||
-      !serviceInfo?.phone
-    ) {
+    if (!packageId || !serviceInfo?.name || !serviceInfo?.email || !serviceInfo?.phone) {
       await col.updateOne(
         { _id: session._id },
         {
@@ -163,8 +158,7 @@ export async function POST(req: Request) {
             paymentKey,
             failureStage: "create_order_after_confirm",
             failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_CONFIRM",
-            failureMessage:
-              "결제 승인 후 패키지 주문 데이터를 복원하지 못했습니다.",
+            failureMessage: "결제 승인 후 패키지 주문 데이터를 복원하지 못했습니다.",
             updatedAt: new Date(),
           },
         },
@@ -256,9 +250,7 @@ export async function POST(req: Request) {
         provider: "tosspayments",
         method: confirmed.method || confirmed.type || "CARD",
         paymentKey: confirmed.paymentKey,
-        approvedAt: confirmed.approvedAt
-          ? new Date(confirmed.approvedAt)
-          : new Date(),
+        approvedAt: confirmed.approvedAt ? new Date(confirmed.approvedAt) : new Date(),
         rawSummary: {
           orderId: confirmed.orderId,
           totalAmount: confirmed.totalAmount ?? amount,
@@ -298,9 +290,7 @@ export async function POST(req: Request) {
           provider: "tosspayments",
           method: confirmed.method || confirmed.type || "CARD",
           paymentKey: confirmed.paymentKey,
-          approvedAt: confirmed.approvedAt
-            ? new Date(confirmed.approvedAt)
-            : new Date(),
+          approvedAt: confirmed.approvedAt ? new Date(confirmed.approvedAt) : new Date(),
           rawSummary: {
             orderId: confirmed.orderId,
             totalAmount: confirmed.totalAmount ?? amount,
@@ -328,9 +318,7 @@ export async function POST(req: Request) {
             paymentKey,
             failureStage: "create_order_after_confirm",
             failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_CONFIRM",
-            failureMessage:
-              error?.message ||
-              "결제 승인 후 패키지 주문 후처리에 실패했습니다.",
+            failureMessage: error?.message || "결제 승인 후 패키지 주문 후처리에 실패했습니다.",
             mongoOrderId: packageOrderId,
             updatedAt: new Date(),
           },
@@ -358,9 +346,7 @@ export async function POST(req: Request) {
             method: confirmed.method,
             type: confirmed.type,
             totalAmount: Number(confirmed.totalAmount ?? amount),
-            approvedAt: confirmed.approvedAt
-              ? new Date(confirmed.approvedAt)
-              : undefined,
+            approvedAt: confirmed.approvedAt ? new Date(confirmed.approvedAt) : undefined,
             card: confirmed.card
               ? {
                   issuerCode: confirmed.card.issuerCode,

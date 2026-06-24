@@ -34,10 +34,7 @@ export async function GET(req: NextRequest) {
   authorizeUrl.searchParams.set("state", state);
 
   // 동의항목에서 account_email을 필수로 해뒀으니 scope에도 포함(권장)
-  authorizeUrl.searchParams.set(
-    "scope",
-    "profile_nickname,profile_image,account_email",
-  );
+  authorizeUrl.searchParams.set("scope", "profile_nickname,profile_image,account_email");
 
   // 카카오로 보내기(redirect)
   const res = NextResponse.redirect(authorizeUrl.toString());

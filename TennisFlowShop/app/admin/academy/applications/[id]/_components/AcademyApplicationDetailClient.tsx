@@ -9,13 +9,7 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -25,11 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  adminFetcher,
-  adminMutator,
-  getAdminErrorMessage,
-} from "@/lib/admin/adminFetcher";
+import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
@@ -78,9 +68,7 @@ type DetailResponse = {
   classAutoClosedCapacity?: number | null;
 };
 
-function getStatusTone(
-  status: AcademyLessonApplicationStatus,
-): BadgeSemanticTone {
+function getStatusTone(status: AcademyLessonApplicationStatus): BadgeSemanticTone {
   if (status === "submitted") return "warning";
   if (status === "reviewing") return "info";
   if (status === "contacted") return "brand";
@@ -89,11 +77,7 @@ function getStatusTone(
   return "neutral";
 }
 
-function AcademyStatusBadge({
-  status,
-}: {
-  status: AcademyLessonApplicationStatus;
-}) {
+function AcademyStatusBadge({ status }: { status: AcademyLessonApplicationStatus }) {
   return (
     <Badge variant={badgeToneVariant(getStatusTone(status))}>
       {getAcademyApplicationStatusLabel(status)}
@@ -138,8 +122,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
   );
   const item = data?.item;
 
-  const [status, setStatus] =
-    useState<AcademyLessonApplicationStatus>("submitted");
+  const [status, setStatus] = useState<AcademyLessonApplicationStatus>("submitted");
   const [reason, setReason] = useState("");
   const [adminMemo, setAdminMemo] = useState("");
   const [customerMessage, setCustomerMessage] = useState("");
@@ -157,10 +140,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
     return [...(item?.history ?? [])].sort((a, b) => {
       const aTime = new Date(a.date).getTime();
       const bTime = new Date(b.date).getTime();
-      return (
-        (Number.isFinite(bTime) ? bTime : 0) -
-        (Number.isFinite(aTime) ? aTime : 0)
-      );
+      return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
     });
   }, [item?.history]);
 
@@ -267,24 +247,14 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               <InfoRow label="이름" value={item.applicantName} />
               <InfoRow label="연락처" value={item.phone} />
               <InfoRow label="이메일" value={item.email ?? "-"} />
-              <InfoRow
-                label="회원 여부"
-                value={item.userId ? "회원 신청" : "비회원 신청"}
-              />
+              <InfoRow label="회원 여부" value={item.userId ? "회원 신청" : "비회원 신청"} />
               <InfoRow label="접수일" value={formatDateTime(item.createdAt)} />
               {item.status === "cancelled" ? (
                 <>
-                  <InfoRow
-                    label="취소일"
-                    value={formatDateTime(item.cancelledAt)}
-                  />
+                  <InfoRow label="취소일" value={formatDateTime(item.cancelledAt)} />
                   <InfoRow
                     label="취소 처리"
-                    value={
-                      item.cancelledBy === "customer"
-                        ? "고객 신청 취소"
-                        : "관리자 취소"
-                    }
+                    value={item.cancelledBy === "customer" ? "고객 신청 취소" : "관리자 취소"}
                   />
                   <InfoRow
                     label="취소 사유"
@@ -303,43 +273,17 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             <Card className={adminSurface.card}>
               <CardHeader>
                 <CardTitle className="text-base">선택 클래스 정보</CardTitle>
-                <CardDescription>
-                  신청 당시 저장된 클래스 스냅샷입니다.
-                </CardDescription>
+                <CardDescription>신청 당시 저장된 클래스 스냅샷입니다.</CardDescription>
               </CardHeader>
               <CardContent>
-                <InfoRow
-                  label="클래스명"
-                  value={item.classSnapshot.name || "-"}
-                />
-                <InfoRow
-                  label="수업 유형"
-                  value={item.classSnapshot.lessonTypeLabel ?? "-"}
-                />
-                <InfoRow
-                  label="레벨"
-                  value={item.classSnapshot.levelLabel ?? "-"}
-                />
-                <InfoRow
-                  label="강사"
-                  value={item.classSnapshot.instructorName ?? "상담 후 안내"}
-                />
-                <InfoRow
-                  label="장소"
-                  value={item.classSnapshot.location ?? "상담 후 안내"}
-                />
-                <InfoRow
-                  label="일정"
-                  value={item.classSnapshot.scheduleText ?? "상담 후 조율"}
-                />
-                <InfoRow
-                  label="기준 수강료"
-                  value={formatPrice(item.classSnapshot.price)}
-                />
-                <InfoRow
-                  label="신청 당시 상태"
-                  value={item.classSnapshot.statusLabel ?? "-"}
-                />
+                <InfoRow label="클래스명" value={item.classSnapshot.name || "-"} />
+                <InfoRow label="수업 유형" value={item.classSnapshot.lessonTypeLabel ?? "-"} />
+                <InfoRow label="레벨" value={item.classSnapshot.levelLabel ?? "-"} />
+                <InfoRow label="강사" value={item.classSnapshot.instructorName ?? "상담 후 안내"} />
+                <InfoRow label="장소" value={item.classSnapshot.location ?? "상담 후 안내"} />
+                <InfoRow label="일정" value={item.classSnapshot.scheduleText ?? "상담 후 조율"} />
+                <InfoRow label="기준 수강료" value={formatPrice(item.classSnapshot.price)} />
+                <InfoRow label="신청 당시 상태" value={item.classSnapshot.statusLabel ?? "-"} />
               </CardContent>
             </Card>
           ) : item.classId ? (
@@ -365,22 +309,12 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                 label="희망 레슨 유형"
                 value={getAcademyLessonTypeLabel(item.desiredLessonType)}
               />
-              <InfoRow
-                label="현재 실력"
-                value={getAcademyCurrentLevelLabel(item.currentLevel)}
-              />
+              <InfoRow label="현재 실력" value={getAcademyCurrentLevelLabel(item.currentLevel)} />
               <InfoRow
                 label="희망 요일"
-                value={
-                  item.preferredDays.length
-                    ? item.preferredDays.join(", ")
-                    : "-"
-                }
+                value={item.preferredDays.length ? item.preferredDays.join(", ") : "-"}
               />
-              <InfoRow
-                label="희망 시간대"
-                value={item.preferredTimeText ?? "-"}
-              />
+              <InfoRow label="희망 시간대" value={item.preferredTimeText ?? "-"} />
               <InfoRow label="레슨 목표" value={item.lessonGoal ?? "-"} />
               <InfoRow label="요청사항" value={item.requestMemo ?? "-"} />
             </CardContent>
@@ -389,9 +323,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           <Card className={adminSurface.card}>
             <CardHeader>
               <CardTitle className="text-base">처리 이력</CardTitle>
-              <CardDescription>
-                상태 변경 및 메모 변경 내역입니다.
-              </CardDescription>
+              <CardDescription>상태 변경 및 메모 변경 내역입니다.</CardDescription>
             </CardHeader>
             <CardContent>
               {sortedHistory.length === 0 ? (
@@ -411,9 +343,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                           {formatDateTime(historyItem.date)}
                         </span>
                       </div>
-                      <p className="mt-2 text-sm text-foreground">
-                        {historyItem.description}
-                      </p>
+                      <p className="mt-2 text-sm text-foreground">{historyItem.description}</p>
                       {historyItem.actorName ? (
                         <p className="mt-1 text-xs text-muted-foreground">
                           처리자: {historyItem.actorName}
@@ -432,8 +362,8 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             <CardHeader>
               <CardTitle className="text-base">상태 관리</CardTitle>
               <CardDescription>
-                상담 진행 상황에 맞게 신청 상태를 변경합니다. 결제 요청이 아니라
-                상담과 등록 확정 흐름을 관리합니다.
+                상담 진행 상황에 맞게 신청 상태를 변경합니다. 결제 요청이 아니라 상담과 등록 확정
+                흐름을 관리합니다.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -443,9 +373,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                 </label>
                 <Select
                   value={status}
-                  onValueChange={(value) =>
-                    setStatus(value as AcademyLessonApplicationStatus)
-                  }
+                  onValueChange={(value) => setStatus(value as AcademyLessonApplicationStatus)}
                 >
                   <SelectTrigger id="academy-status">
                     <SelectValue placeholder="상태 선택" />
@@ -461,8 +389,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium" htmlFor="status-reason">
-                  상태 변경 사유{" "}
-                  <span className="text-muted-foreground">(선택)</span>
+                  상태 변경 사유 <span className="text-muted-foreground">(선택)</span>
                 </label>
                 <Input
                   id="status-reason"
@@ -471,11 +398,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                   placeholder="예: 상담 일정 확인"
                 />
               </div>
-              <Button
-                className="w-full"
-                onClick={saveStatus}
-                disabled={savingStatus}
-              >
+              <Button className="w-full" onClick={saveStatus} disabled={savingStatus}>
                 <Save className="mr-2 h-4 w-4" />
                 {savingStatus ? "저장 중..." : "상태 변경 저장"}
               </Button>
@@ -485,9 +408,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           <Card className={adminSurface.card}>
             <CardHeader>
               <CardTitle className="text-base">관리자 메모</CardTitle>
-              <CardDescription>
-                내부 메모와 고객 안내 메시지를 분리해서 저장합니다.
-              </CardDescription>
+              <CardDescription>내부 메모와 고객 안내 메시지를 분리해서 저장합니다.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -511,15 +432,12 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               </div>
 
               <div className="space-y-2">
-                <label
-                  className="text-sm font-medium"
-                  htmlFor="customer-message"
-                >
+                <label className="text-sm font-medium" htmlFor="customer-message">
                   고객 안내 메시지
                 </label>
                 <p className="text-xs text-muted-foreground">
-                  고객 마이페이지에 표시되는 안내 메시지입니다. 등록 확정, 방문
-                  일정, 현장결제 안내 등을 작성하세요.
+                  고객 마이페이지에 표시되는 안내 메시지입니다. 등록 확정, 방문 일정, 현장결제 안내
+                  등을 작성하세요.
                 </p>
                 <Textarea
                   id="customer-message"
@@ -534,11 +452,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                 </div>
               </div>
 
-              <Button
-                className="w-full"
-                onClick={saveMemo}
-                disabled={savingMemo}
-              >
+              <Button className="w-full" onClick={saveMemo} disabled={savingMemo}>
                 <Save className="mr-2 h-4 w-4" />
                 {savingMemo ? "저장 중..." : "메모 저장"}
               </Button>

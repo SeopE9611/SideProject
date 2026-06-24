@@ -80,37 +80,25 @@ function getIpUaHash(req: NextRequest) {
 }
 
 function resolveViewDedupeTtlSeconds() {
-  const raw = Number(
-    process.env.COMMUNITY_VIEW_DEDUPE_TTL_SECONDS ?? DEFAULT_TTL_SECONDS,
-  );
+  const raw = Number(process.env.COMMUNITY_VIEW_DEDUPE_TTL_SECONDS ?? DEFAULT_TTL_SECONDS);
   if (Number.isNaN(raw) || !Number.isFinite(raw)) return DEFAULT_TTL_SECONDS;
   return Math.max(MIN_TTL_SECONDS, Math.min(MAX_TTL_SECONDS, Math.floor(raw)));
 }
 
 function resolveFirstViewRatioWindowSeconds() {
   const raw = Number(
-    process.env.COMMUNITY_VIEW_FIRST_VIEW_RATIO_WINDOW_SECONDS ??
-      DEFAULT_RATIO_WINDOW_SECONDS,
+    process.env.COMMUNITY_VIEW_FIRST_VIEW_RATIO_WINDOW_SECONDS ?? DEFAULT_RATIO_WINDOW_SECONDS,
   );
-  if (Number.isNaN(raw) || !Number.isFinite(raw))
-    return DEFAULT_RATIO_WINDOW_SECONDS;
-  return Math.max(
-    MIN_RATIO_WINDOW_SECONDS,
-    Math.min(MAX_RATIO_WINDOW_SECONDS, Math.floor(raw)),
-  );
+  if (Number.isNaN(raw) || !Number.isFinite(raw)) return DEFAULT_RATIO_WINDOW_SECONDS;
+  return Math.max(MIN_RATIO_WINDOW_SECONDS, Math.min(MAX_RATIO_WINDOW_SECONDS, Math.floor(raw)));
 }
 
 function resolveFirstViewRatioMinSamples() {
   const raw = Number(
-    process.env.COMMUNITY_VIEW_FIRST_VIEW_RATIO_MIN_SAMPLES ??
-      DEFAULT_RATIO_SAMPLE_COUNT,
+    process.env.COMMUNITY_VIEW_FIRST_VIEW_RATIO_MIN_SAMPLES ?? DEFAULT_RATIO_SAMPLE_COUNT,
   );
-  if (Number.isNaN(raw) || !Number.isFinite(raw))
-    return DEFAULT_RATIO_SAMPLE_COUNT;
-  return Math.max(
-    MIN_RATIO_SAMPLE_COUNT,
-    Math.min(MAX_RATIO_SAMPLE_COUNT, Math.floor(raw)),
-  );
+  if (Number.isNaN(raw) || !Number.isFinite(raw)) return DEFAULT_RATIO_SAMPLE_COUNT;
+  return Math.max(MIN_RATIO_SAMPLE_COUNT, Math.min(MAX_RATIO_SAMPLE_COUNT, Math.floor(raw)));
 }
 
 /**
@@ -118,10 +106,7 @@ function resolveFirstViewRatioMinSamples() {
  * - 비정상 트래픽(예: dedupe 무력화, 봇 반복 호출) 탐지용 보조 지표
  * - 윈도우 종료 시점에만 요약 로그를 남겨 로그 폭증을 방지
  */
-function trackFirstViewRatioLog(
-  acquired: boolean,
-  meta: ReturnType<typeof reqMeta>,
-) {
+function trackFirstViewRatioLog(acquired: boolean, meta: ReturnType<typeof reqMeta>) {
   const windowSeconds = resolveFirstViewRatioWindowSeconds();
   const minSamples = resolveFirstViewRatioMinSamples();
 
@@ -192,10 +177,7 @@ async function tryAcquireViewSlot(
 
 // 조회수 +1 전용 API
 // POST /api/community/posts/:id/view
-export async function POST(
-  req: NextRequest,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const stop = startTimer();
   const meta = reqMeta(req);
 
@@ -226,10 +208,7 @@ export async function POST(
       extra: { id },
       ...meta,
     });
-    return NextResponse.json(
-      { ok: false, error: "not_found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
 
   const _id = new ObjectId(id);
@@ -244,10 +223,7 @@ export async function POST(
       extra: { id },
       ...meta,
     });
-    return NextResponse.json(
-      { ok: false, error: "not_found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
 
   // 로그인 사용자 여부 확인
@@ -294,10 +270,7 @@ export async function POST(
   // 서버에서 디듀프 슬롯 획득 시에만 실제 조회수 +1 (클라이언트 localStorage는 UX 최적화 용도)
   const acquired = await tryAcquireViewSlot(db, _id, viewerKey, ttlSeconds);
   if (acquired) {
-    await col.updateOne(
-      { _id },
-      { $inc: { views: 1 }, $set: { updatedAt: new Date() } },
-    );
+    await col.updateOne({ _id }, { $inc: { views: 1 }, $set: { updatedAt: new Date() } });
   }
 
   // 최신 조회수 다시 읽기

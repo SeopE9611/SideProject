@@ -14,9 +14,7 @@ type IndexSpec = {
  * - contains 자유검색(title 등)은 범위 밖이므로 포함하지 않는다.
  * - stringingApplicationId / orderId / rentalId 같은 식별자성 필드만 우선 보장한다.
  */
-const ADMIN_OPERATIONS_INDEX_SPECS: Readonly<
-  Record<string, readonly IndexSpec[]>
-> = {
+const ADMIN_OPERATIONS_INDEX_SPECS: Readonly<Record<string, readonly IndexSpec[]>> = {
   orders: [
     {
       name: "ops_orders_stringingApplicationId_idx",
@@ -66,9 +64,7 @@ async function ensureCollectionIndexes(
 }
 
 export async function ensureAdminOperationsIndexes(db: Db) {
-  for (const [collectionName, specs] of Object.entries(
-    ADMIN_OPERATIONS_INDEX_SPECS,
-  )) {
+  for (const [collectionName, specs] of Object.entries(ADMIN_OPERATIONS_INDEX_SPECS)) {
     await ensureCollectionIndexes(db, collectionName, specs);
   }
 }

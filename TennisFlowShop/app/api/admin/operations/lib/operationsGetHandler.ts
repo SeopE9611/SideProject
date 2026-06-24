@@ -32,15 +32,9 @@ import type {
 import { enforceAdminRateLimit } from "@/lib/admin/adminRateLimit";
 import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from "@/lib/admin/adminEndpointCostPolicy";
 import { inferNextActionForOperationItem } from "@/lib/admin/next-action-guidance";
-import {
-  getOrderStatusLabelForDisplay,
-  isVisitPickupOrder,
-} from "@/lib/order-shipping";
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
-import {
-  isLikelyEmailQuery,
-  normalizeEmailForSearch,
-} from "@/lib/search-email";
+import { isLikelyEmailQuery, normalizeEmailForSearch } from "@/lib/search-email";
 /** Responsibility: admin operations 목록 조회의 query/transform/response 조합. */
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -67,9 +61,7 @@ type UnknownDoc = Record<string, unknown>;
 type UnknownArray = UnknownDoc[];
 
 function asDoc(value: unknown): UnknownDoc | null {
-  return typeof value === "object" && value !== null
-    ? (value as UnknownDoc)
-    : null;
+  return typeof value === "object" && value !== null ? (value as UnknownDoc) : null;
 }
 
 function asDocArray(value: unknown): UnknownArray {
@@ -80,8 +72,7 @@ function asDocArray(value: unknown): UnknownArray {
 
 function getString(value: unknown): string | null {
   if (typeof value === "string") return value;
-  if (typeof value === "number" || typeof value === "boolean")
-    return String(value);
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
   return null;
 }
 
@@ -155,19 +146,13 @@ function normalizeCancelRequest(doc: UnknownDoc): NormalizedCancel {
   const cancel = asDoc(doc?.cancelRequest);
   const status = normalizeCancelStatus(cancel?.status);
   const requestedAt = toISO(cancel?.requestedAt ?? cancel?.createdAt ?? null);
-  const handledAt = toISO(
-    cancel?.processedAt ?? cancel?.approvedAt ?? cancel?.rejectedAt ?? null,
-  );
+  const handledAt = toISO(cancel?.processedAt ?? cancel?.approvedAt ?? cancel?.rejectedAt ?? null);
   const reasonCode = getString(cancel?.reasonCode);
-  const reasonText =
-    getString(cancel?.reasonText) ?? getString(cancel?.rejectReason);
-  const reason =
-    [reasonCode, reasonText].filter(Boolean).join(" · ") || undefined;
+  const reasonText = getString(cancel?.reasonText) ?? getString(cancel?.rejectReason);
+  const reason = [reasonCode, reasonText].filter(Boolean).join(" · ") || undefined;
   const refundAccount = asDoc(cancel?.refundAccount);
-  const refundAccountReady =
-    status === "none" ? undefined : hasRefundAccount(refundAccount);
-  const refundBankLabel =
-    status === "none" ? null : resolveRefundBankLabel(refundAccount);
+  const refundAccountReady = status === "none" ? undefined : hasRefundAccount(refundAccount);
+  const refundBankLabel = status === "none" ? null : resolveRefundBankLabel(refundAccount);
   return {
     status,
     requestedAt,
@@ -179,9 +164,7 @@ function normalizeCancelRequest(doc: UnknownDoc): NormalizedCancel {
 }
 
 function hasRacketItems(items: unknown) {
-  return asDocArray(items).some(
-    (it) => it.kind === "racket" || it.kind === "used_racket",
-  );
+  return asDocArray(items).some((it) => it.kind === "racket" || it.kind === "used_racket");
 }
 
 function hasOrderShippingInfo(order: UnknownDoc) {
@@ -189,8 +172,7 @@ function hasOrderShippingInfo(order: UnknownDoc) {
   if (!shippingInfo) return false;
 
   const shippingMethod =
-    getString(shippingInfo.shippingMethod) ??
-    getString(shippingInfo.deliveryMethod);
+    getString(shippingInfo.shippingMethod) ?? getString(shippingInfo.deliveryMethod);
   const estimatedDate = getString(shippingInfo.estimatedDate);
   const invoice = asDoc(shippingInfo.invoice);
   const invoiceCourier = getString(invoice?.courier);
@@ -291,9 +273,7 @@ function normalizeLinkedStatus(value: string | undefined) {
     .replace(/\s+/g, "");
 }
 
-function getLinkedOrderStringingStatusIssue(
-  items: OpItem[],
-): LinkedFlowStatusIssue | null {
+function getLinkedOrderStringingStatusIssue(items: OpItem[]): LinkedFlowStatusIssue | null {
   const order = items.find((item) => item.kind === "order");
   const application = items
     .filter(
@@ -311,15 +291,14 @@ function getLinkedOrderStringingStatusIssue(
   const integrityReason = items
     .flatMap((item) => item.warnReasons ?? [])
     .find((reason) =>
-      ["찾지 못했습니다", "DB에 없습니다", "불일치", "역방향 링크"].some(
-        (keyword) => reason.includes(keyword),
+      ["찾지 못했습니다", "DB에 없습니다", "불일치", "역방향 링크"].some((keyword) =>
+        reason.includes(keyword),
       ),
     );
 
   if (integrityReason && (order || application)) {
     const missing =
-      integrityReason.includes("찾지 못했습니다") ||
-      integrityReason.includes("DB에 없습니다");
+      integrityReason.includes("찾지 못했습니다") || integrityReason.includes("DB에 없습니다");
     const target = order ?? application!;
     return {
       severity: "warning",
@@ -341,8 +320,8 @@ function getLinkedOrderStringingStatusIssue(
   if (VALID_LINKED_ORDER_STRINGING_STATUS_PAIRS.has(statusPair)) return null;
 
   const isClosed = (status: string) =>
-    ["취소", "환불", "구매확정", "cancel", "refund", "confirmed"].some(
-      (keyword) => status.toLowerCase().includes(keyword.toLowerCase()),
+    ["취소", "환불", "구매확정", "cancel", "refund", "confirmed"].some((keyword) =>
+      status.toLowerCase().includes(keyword.toLowerCase()),
     );
   if (isClosed(orderStatus) || isClosed(applicationStatus)) return null;
 
@@ -375,14 +354,7 @@ function isWarnGroup(g: OpGroup) {
 function deriveStringingPaymentLabel(app: UnknownDoc): {
   paymentLabel: string;
   derived: boolean;
-  source:
-    | "explicit"
-    | "package"
-    | "order"
-    | "rental"
-    | "service_paid"
-    | "pending"
-    | "unknown";
+  source: "explicit" | "package" | "order" | "rental" | "service_paid" | "pending" | "unknown";
 } {
   const rawPaymentStatus = getString(app?.paymentStatus);
   if (rawPaymentStatus && rawPaymentStatus.trim()) {
@@ -430,9 +402,7 @@ function filterWarnGroups(list: OpItem[]): OpItem[] {
   const groups: OpGroup[] = Array.from(map.entries()).map(([key, items]) => {
     items.sort((a, b) => KIND_PRIORITY[a.kind] - KIND_PRIORITY[b.kind]);
     const anchor = pickAnchor(items);
-    const ts = Math.max(
-      ...items.map((x) => (x.createdAt ? new Date(x.createdAt).getTime() : 0)),
-    );
+    const ts = Math.max(...items.map((x) => (x.createdAt ? new Date(x.createdAt).getTime() : 0)));
     const createdAt = ts ? new Date(ts).toISOString() : null;
     return { key, anchor, createdAt, items };
   });
@@ -492,8 +462,7 @@ function buildItemSignals(item: OpItem): OperationSignal[] {
       sourceId: item.id,
       title: "미처리 업무",
       description: reason,
-      nextAction:
-        item.nextAction ?? "상세 문서로 이동해 미처리 상태를 해소하세요.",
+      nextAction: item.nextAction ?? "상세 문서로 이동해 미처리 상태를 해소하세요.",
     });
   }
   if ((item.cancel?.status ?? "none") === "requested") {
@@ -538,8 +507,7 @@ function reviewLevelPriority(level: AdminOperationReviewLevel) {
 }
 
 function isCompatiblePaymentContext(anchorPay: string, childPay: string) {
-  if (!anchorPay || !childPay || anchorPay === "-" || childPay === "-")
-    return false;
+  if (!anchorPay || !childPay || anchorPay === "-" || childPay === "-") return false;
   if (anchorPay === childPay) return true;
 
   const pair = new Set([anchorPay, childPay]);
@@ -564,44 +532,28 @@ function summarizeDistinctLabelsByKind(
   return map;
 }
 
-function computeGroupReviewLevel(
-  group: AdminOperationsGroup,
-): AdminOperationReviewLevel {
+function computeGroupReviewLevel(group: AdminOperationsGroup): AdminOperationReviewLevel {
   let level: AdminOperationReviewLevel = "none";
   for (const item of group.items ?? []) {
     const itemLevel: AdminOperationReviewLevel =
       item.reviewLevel ??
-      (item.needsReview
-        ? "action"
-        : (item.reviewReasons?.length ?? 0) > 0
-          ? "info"
-          : "none");
-    if (reviewLevelPriority(itemLevel) > reviewLevelPriority(level))
-      level = itemLevel;
+      (item.needsReview ? "action" : (item.reviewReasons?.length ?? 0) > 0 ? "info" : "none");
+    if (reviewLevelPriority(itemLevel) > reviewLevelPriority(level)) level = itemLevel;
   }
 
   if (!group.items || group.items.length <= 1) return level;
 
   const anchor =
-    group.items.find(
-      (item) => item.kind === group.anchorKind && item.id === group.anchorId,
-    ) ?? group.items[0];
+    group.items.find((item) => item.kind === group.anchorKind && item.id === group.anchorId) ??
+    group.items[0];
   if (!anchor) return level;
 
   const anchorKey = `${anchor.kind}:${anchor.id}`;
-  const children = group.items.filter(
-    (item) => `${item.kind}:${item.id}` !== anchorKey,
-  );
+  const children = group.items.filter((item) => `${item.kind}:${item.id}` !== anchorKey);
   if (children.length === 0) return level;
 
-  const childStatusMap = summarizeDistinctLabelsByKind(
-    children,
-    (item) => item.statusLabel,
-  );
-  const childPaymentMap = summarizeDistinctLabelsByKind(
-    children,
-    (item) => item.paymentLabel,
-  );
+  const childStatusMap = summarizeDistinctLabelsByKind(children, (item) => item.statusLabel);
+  const childPaymentMap = summarizeDistinctLabelsByKind(children, (item) => item.paymentLabel);
   const hasMixed =
     Array.from(childStatusMap.values()).some((labels) => labels.size > 1) ||
     Array.from(childPaymentMap.values()).some((labels) => labels.size > 1);
@@ -638,9 +590,7 @@ function buildGroups(list: OpItem[]): AdminOperationsGroup[] {
     const items = map.get(key)!;
     items.sort((a, b) => KIND_PRIORITY[a.kind] - KIND_PRIORITY[b.kind]);
     const anchor = pickAnchor(items);
-    const ts = Math.max(
-      ...items.map((x) => (x.createdAt ? new Date(x.createdAt).getTime() : 0)),
-    );
+    const ts = Math.max(...items.map((x) => (x.createdAt ? new Date(x.createdAt).getTime() : 0)));
     const createdAt = ts ? new Date(ts).toISOString() : null;
     const signals = items.flatMap((it) => it.signals ?? []);
     const primarySignal = pickPrimarySignal(signals);
@@ -674,34 +624,20 @@ function parseFlow(v: string | null): Flow | null {
   return n as Flow;
 }
 
-function parseIntParam(
-  v: string | null,
-  opts: { defaultValue: number; min: number; max: number },
-) {
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
 }
 
 function parseKind(v: string | null): Kind | "all" {
-  if (
-    v === "order" ||
-    v === "rental" ||
-    v === "stringing_application" ||
-    v === "package_purchase"
-  )
+  if (v === "order" || v === "rental" || v === "stringing_application" || v === "package_purchase")
     return v;
   return "all";
 }
 
 function parseWarnFilter(v: string | null): AdminOperationsWarnFilter {
-  if (
-    v === "warn" ||
-    v === "caution" ||
-    v === "review" ||
-    v === "pending" ||
-    v === "clean"
-  )
+  if (v === "warn" || v === "caution" || v === "review" || v === "pending" || v === "clean")
     return v;
   return "all";
 }
@@ -763,8 +699,7 @@ function isMatchedByDbCandidate(
 ) {
   if (item.kind === "order") return matchedIds.order.has(item.id);
   if (item.kind === "rental") return matchedIds.rental.has(item.id);
-  if (item.kind === "package_purchase")
-    return matchedIds.packagePurchase.has(item.id);
+  if (item.kind === "package_purchase") return matchedIds.packagePurchase.has(item.id);
   return matchedIds.application.has(item.id);
 }
 
@@ -797,26 +732,14 @@ export async function handleAdminOperationsGet(req: Request) {
 
   const url = new URL(req.url);
   const requestDto = parseOperationsListRequest(url);
-  const {
-    page,
-    pageSize,
-    kind,
-    q,
-    warn,
-    flow,
-    integrated,
-    warnFilter,
-    warnSort,
-  } = requestDto;
+  const { page, pageSize, kind, q, warn, flow, integrated, warnFilter, warnSort } = requestDto;
   const fetchLimit = q ? SEARCH_FETCH_EACH : MAX_FETCH_EACH;
   const qRegex = q ? buildSearchRegex(q) : null;
   const qPrefixRegex = q ? buildPrefixRegex(q) : null;
   const isEmailSearch = q ? isLikelyEmailQuery(q) : false;
   const qEmailNormalized = q ? normalizeEmailForSearch(q) : null;
   const qEmailPrefixRegex =
-    isEmailSearch && qEmailNormalized
-      ? buildCaseSensitivePrefixRegex(qEmailNormalized)
-      : null;
+    isEmailSearch && qEmailNormalized ? buildCaseSensitivePrefixRegex(qEmailNormalized) : null;
   const idCandidates = q ? buildIdCandidates(q) : [];
   const rentalUserIdCandidates: Array<string | ObjectId> = [];
 
@@ -846,9 +769,7 @@ export async function handleAdminOperationsGet(req: Request) {
       for (const user of matchedUsers) {
         const uid = getIdString(user?._id);
         if (!uid) continue;
-        rentalUserIdCandidates.push(
-          ObjectId.isValid(uid) ? new ObjectId(uid) : uid,
-        );
+        rentalUserIdCandidates.push(ObjectId.isValid(uid) ? new ObjectId(uid) : uid);
       }
     } else {
       const matchedUsers = await db
@@ -862,9 +783,7 @@ export async function handleAdminOperationsGet(req: Request) {
       for (const user of matchedUsers) {
         const uid = getIdString(user?._id);
         if (!uid) continue;
-        rentalUserIdCandidates.push(
-          ObjectId.isValid(uid) ? new ObjectId(uid) : uid,
-        );
+        rentalUserIdCandidates.push(ObjectId.isValid(uid) ? new ObjectId(uid) : uid);
       }
     }
   }
@@ -951,10 +870,7 @@ export async function handleAdminOperationsGet(req: Request) {
     } else {
       orderQuery.$or = [
         ...(idCandidates.length > 0
-          ? [
-              { _id: { $in: idCandidates } },
-              { stringingApplicationId: { $in: idCandidates } },
-            ]
+          ? [{ _id: { $in: idCandidates } }, { stringingApplicationId: { $in: idCandidates } }]
           : []),
         ...(qPrefixRegex ? [{ stringingApplicationId: qPrefixRegex }] : []),
         { "customer.name": qRegex },
@@ -975,9 +891,7 @@ export async function handleAdminOperationsGet(req: Request) {
   if (qRegex) {
     if (isEmailSearch && qEmailNormalized) {
       rentalQuery.$or = [
-        ...(rentalUserIdCandidates.length > 0
-          ? [{ userId: { $in: rentalUserIdCandidates } }]
-          : []),
+        ...(rentalUserIdCandidates.length > 0 ? [{ userId: { $in: rentalUserIdCandidates } }] : []),
         { "guest.email": qEmailNormalized },
         ...(qEmailPrefixRegex ? [{ "guest.email": qEmailPrefixRegex }] : []),
       ];
@@ -994,9 +908,7 @@ export async function handleAdminOperationsGet(req: Request) {
         ...(qPrefixRegex
           ? [{ stringingApplicationId: qPrefixRegex }, { userId: qPrefixRegex }]
           : []),
-        ...(rentalUserIdCandidates.length > 0
-          ? [{ userId: { $in: rentalUserIdCandidates } }]
-          : []),
+        ...(rentalUserIdCandidates.length > 0 ? [{ userId: { $in: rentalUserIdCandidates } }] : []),
         { "guest.name": qRegex },
         { "guest.email": qRegex },
         { brand: qRegex },
@@ -1286,25 +1198,19 @@ export async function handleAdminOperationsGet(req: Request) {
     }
   }
 
-  const userIds = Array.from(
-    new Set(rawRentals.map((r) => r?.userId).filter(Boolean)),
-  );
+  const userIds = Array.from(new Set(rawRentals.map((r) => r?.userId).filter(Boolean)));
   const userMap = new Map<string, { name?: string; email?: string }>();
   if (userIds.length > 0) {
     const users = await db
       .collection("users")
       .find({
         _id: {
-          $in: userIds.map((id) =>
-            ObjectId.isValid(String(id)) ? new ObjectId(String(id)) : id,
-          ),
+          $in: userIds.map((id) => (ObjectId.isValid(String(id)) ? new ObjectId(String(id)) : id)),
         },
       })
       .project({ name: 1, email: 1 })
       .toArray();
-    users.forEach((u) =>
-      userMap.set(String(u._id), { name: u.name, email: u.email }),
-    );
+    users.forEach((u) => userMap.set(String(u._id), { name: u.name, email: u.email }));
   }
 
   // 주문 아이템에서 '라켓 포함 여부'를 미리 계산해두면,
@@ -1315,9 +1221,7 @@ export async function handleAdminOperationsGet(req: Request) {
   }
 
   // 3) 연결 무결성(양방향 링크) 경고 사유 계산
-  const appById = new Map<string, UnknownDoc>(
-    asDocArray(rawApps).map((a) => [String(a._id), a]),
-  );
+  const appById = new Map<string, UnknownDoc>(asDocArray(rawApps).map((a) => [String(a._id), a]));
   const warnByKey = new Map<string, string[]>();
   const pushWarn = (kind: Kind, id: string, reason: string) => {
     const key = `${kind}:${id}`;
@@ -1341,17 +1245,13 @@ export async function handleAdminOperationsGet(req: Request) {
   {
     const candidateIds = new Set<string>();
     for (const o of rawOrders) {
-      if (o?.stringingApplicationId)
-        candidateIds.add(String(o.stringingApplicationId));
+      if (o?.stringingApplicationId) candidateIds.add(String(o.stringingApplicationId));
     }
     for (const r of rawRentals) {
-      if (r?.stringingApplicationId)
-        candidateIds.add(String(r.stringingApplicationId));
+      if (r?.stringingApplicationId) candidateIds.add(String(r.stringingApplicationId));
     }
 
-    const missingIds = Array.from(candidateIds).filter(
-      (id) => !appById.has(id),
-    );
+    const missingIds = Array.from(candidateIds).filter((id) => !appById.has(id));
     if (missingIds.length > 0) {
       const objectIds = missingIds
         .filter((id) => ObjectId.isValid(id))
@@ -1374,9 +1274,7 @@ export async function handleAdminOperationsGet(req: Request) {
   for (const o of rawOrders) {
     const oid = String(o._id);
     const appIdsFromApps = orderToAppIds.get(oid) ?? [];
-    const appIdInOrder = o?.stringingApplicationId
-      ? String(o.stringingApplicationId)
-      : null;
+    const appIdInOrder = o?.stringingApplicationId ? String(o.stringingApplicationId) : null;
 
     if (appIdsFromApps.length > 1) {
       pushWarn(
@@ -1398,11 +1296,7 @@ export async function handleAdminOperationsGet(req: Request) {
       if (!a) {
         const d = draftById.get(appIdInOrder);
         if (d) {
-          pushPending(
-            "order",
-            oid,
-            "교체서비스 신청서가 초안(draft) 상태입니다(작성대기).",
-          );
+          pushPending("order", oid, "교체서비스 신청서가 초안(draft) 상태입니다(작성대기).");
         } else {
           // 사용자가 신청을 "아예 진행하지 않은/완료하지 않은" 케이스까지 무조건 오류로 잡으면 오탐.
           // - 주문이 "신청 완료" 상태라고 명시(isStringServiceApplied=true)했거나
@@ -1453,9 +1347,7 @@ export async function handleAdminOperationsGet(req: Request) {
   for (const r of rawRentals) {
     const rid = String(r._id);
     const appIdsFromApps = rentalToAppIds.get(rid) ?? [];
-    const appIdInRental = r?.stringingApplicationId
-      ? String(r.stringingApplicationId)
-      : null;
+    const appIdInRental = r?.stringingApplicationId ? String(r.stringingApplicationId) : null;
 
     if (appIdsFromApps.length > 1) {
       pushWarn(
@@ -1477,11 +1369,7 @@ export async function handleAdminOperationsGet(req: Request) {
       if (!a) {
         const d = draftById.get(appIdInRental);
         if (d) {
-          pushPending(
-            "rental",
-            rid,
-            "교체서비스 신청서가 초안(draft) 상태입니다(작성대기).",
-          );
+          pushPending("rental", rid, "교체서비스 신청서가 초안(draft) 상태입니다(작성대기).");
         } else {
           const rentalClaimsApplied = Boolean(r?.isStringServiceApplied);
           if (!rentalClaimsApplied && appIdsFromApps.length === 0) {
@@ -1513,10 +1401,7 @@ export async function handleAdminOperationsGet(req: Request) {
           );
         }
       }
-      if (
-        appIdsFromApps.length > 0 &&
-        !appIdsFromApps.includes(appIdInRental)
-      ) {
+      if (appIdsFromApps.length > 0 && !appIdsFromApps.includes(appIdInRental)) {
         pushWarn(
           "rental",
           rid,
@@ -1534,15 +1419,9 @@ export async function handleAdminOperationsGet(req: Request) {
     if (oid) {
       const o = rawOrders.find((x) => String(x._id) === oid);
       if (!o) {
-        pushWarn(
-          "stringing_application",
-          aid,
-          "신청서.orderId가 가리키는 주문이 DB에 없습니다.",
-        );
+        pushWarn("stringing_application", aid, "신청서.orderId가 가리키는 주문이 DB에 없습니다.");
       } else {
-        const back = o?.stringingApplicationId
-          ? String(o.stringingApplicationId)
-          : null;
+        const back = o?.stringingApplicationId ? String(o.stringingApplicationId) : null;
         if (!back) {
           pushWarn(
             "stringing_application",
@@ -1563,15 +1442,9 @@ export async function handleAdminOperationsGet(req: Request) {
     if (rid) {
       const r = rawRentals.find((x) => String(x._id) === rid);
       if (!r) {
-        pushWarn(
-          "stringing_application",
-          aid,
-          "신청서.rentalId가 가리키는 대여가 DB에 없습니다.",
-        );
+        pushWarn("stringing_application", aid, "신청서.rentalId가 가리키는 대여가 DB에 없습니다.");
       } else {
-        const back = r?.stringingApplicationId
-          ? String(r.stringingApplicationId)
-          : null;
+        const back = r?.stringingApplicationId ? String(r.stringingApplicationId) : null;
         if (!back) {
           pushWarn(
             "stringing_application",
@@ -1624,9 +1497,7 @@ export async function handleAdminOperationsGet(req: Request) {
       amount: Number(o.totalPrice ?? 0),
       shippingMethod,
       flow: orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated),
-      flowLabel: flowLabelOf(
-        orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated),
-      ),
+      flowLabel: flowLabelOf(orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated)),
       settlementAnchor: "order",
       settlementLabel: settlementLabelOf("order"),
       href: `/admin/orders/${id}`,
@@ -1729,8 +1600,7 @@ export async function handleAdminOperationsGet(req: Request) {
       reviewInfoReasons.push(
         "대여 기반 신청서인데 paymentSource/paymentStatus가 비어 있어 결제대기로 해석되었습니다.",
       );
-    if (a?.packageApplied === true)
-      reviewInfoReasons.push("패키지 차감 기반 신청서입니다.");
+    if (a?.packageApplied === true) reviewInfoReasons.push("패키지 차감 기반 신청서입니다.");
     if (paymentSource.startsWith("order:"))
       reviewInfoReasons.push("결제 소스가 주문(order:)을 가리킵니다.");
     if (paymentSource.startsWith("rental:"))
@@ -1738,24 +1608,16 @@ export async function handleAdminOperationsGet(req: Request) {
     if (paymentDerived.derived)
       reviewInfoReasons.push("신청서 결제상태를 정책 규칙으로 파생했습니다.");
     if (paymentDerived.source === "unknown")
-      reviewActionReasons.push(
-        "신청서 결제소스를 판별할 수 없어 확인이 필요합니다.",
-      );
+      reviewActionReasons.push("신청서 결제소스를 판별할 수 없어 확인이 필요합니다.");
     reviewReasons.push(...reviewActionReasons, ...reviewInfoReasons);
     const reviewLevel: AdminOperationReviewLevel =
-      reviewActionReasons.length > 0
-        ? "action"
-        : reviewInfoReasons.length > 0
-          ? "info"
-          : "none";
+      reviewActionReasons.length > 0 ? "action" : reviewInfoReasons.length > 0 ? "info" : "none";
 
     const amountNote = (() => {
       if (amount !== 0) return undefined;
       if (a?.packageApplied === true) return "패키지차감";
-      if (paymentSource.startsWith("order:") || linkedOrderId)
-        return "주문결제포함";
-      if (paymentSource.startsWith("rental:") || linkedRentalId)
-        return "대여결제포함";
+      if (paymentSource.startsWith("order:") || linkedOrderId) return "주문결제포함";
+      if (paymentSource.startsWith("rental:") || linkedRentalId) return "대여결제포함";
       if (paymentDerived.source === "unknown") return "확인필요";
       return "별도청구없음";
     })();
@@ -1770,17 +1632,12 @@ export async function handleAdminOperationsGet(req: Request) {
       paymentLabel: paymentDerived.paymentLabel,
       amount,
       amountNote,
-      amountReference:
-        amount === 0 && serviceFeeBefore > 0 ? serviceFeeBefore : undefined,
-      amountReferenceLabel:
-        amount === 0 && serviceFeeBefore > 0 ? "기준금액" : undefined,
+      amountReference: amount === 0 && serviceFeeBefore > 0 ? serviceFeeBefore : undefined,
+      amountReferenceLabel: amount === 0 && serviceFeeBefore > 0 ? "기준금액" : undefined,
       flow: (() => {
         if (!isIntegrated) return 3 as Flow;
         if (related?.kind === "order")
-          return orderFlowByHasRacket(
-            orderHasRacket.get(String(related.id)) ?? false,
-            true,
-          );
+          return orderFlowByHasRacket(orderHasRacket.get(String(related.id)) ?? false, true);
         if (related?.kind === "rental") return 7 as Flow;
         return 3 as Flow;
       })(),
@@ -1788,10 +1645,7 @@ export async function handleAdminOperationsGet(req: Request) {
         const f = (() => {
           if (!isIntegrated) return 3 as Flow;
           if (related?.kind === "order")
-            return orderFlowByHasRacket(
-              orderHasRacket.get(String(related.id)) ?? false,
-              true,
-            );
+            return orderFlowByHasRacket(orderHasRacket.get(String(related.id)) ?? false, true);
           if (related?.kind === "rental") return 7 as Flow;
           return 3 as Flow;
         })();
@@ -1856,9 +1710,7 @@ export async function handleAdminOperationsGet(req: Request) {
     const stringingApplicationId = rawAppId ? getIdString(rawAppId) : null;
     const appId = stringingApplicationId || (rentalToApp.get(id) ?? null);
     const withStringService =
-      Boolean(r?.stringing?.requested) ||
-      Boolean(r?.isStringServiceApplied) ||
-      Boolean(appId);
+      Boolean(r?.stringing?.requested) || Boolean(r?.isStringServiceApplied) || Boolean(appId);
     const isIntegrated = Boolean(appId);
     const days = Number(r?.days ?? r?.period ?? 0);
     const amount = normalizeRentalAmountTotal(r);
@@ -1871,20 +1723,13 @@ export async function handleAdminOperationsGet(req: Request) {
     const stringingDoc = asDoc(r?.stringing);
     const stringingName = getString(stringingDoc?.name);
     const stringPrice = Number(
-      r?.amount?.stringPrice ??
-        (stringingDoc?.requested ? stringingDoc?.price : 0) ??
-        0,
+      r?.amount?.stringPrice ?? (stringingDoc?.requested ? stringingDoc?.price : 0) ?? 0,
     );
     const mountingFee = Number(
-      r?.amount?.stringingFee ??
-        (stringingDoc?.requested ? stringingDoc?.mountingFee : 0) ??
-        0,
+      r?.amount?.stringingFee ?? (stringingDoc?.requested ? stringingDoc?.mountingFee : 0) ?? 0,
     );
     const requested =
-      Boolean(stringingDoc?.requested) ||
-      stringPrice > 0 ||
-      mountingFee > 0 ||
-      Boolean(appId);
+      Boolean(stringingDoc?.requested) || stringPrice > 0 || mountingFee > 0 || Boolean(appId);
     const reviewLevel: AdminOperationReviewLevel =
       rentalPaymentMeta.source === "derived" ? "info" : "none";
     const cancel = normalizeCancelRequest(r);
@@ -1895,8 +1740,7 @@ export async function handleAdminOperationsGet(req: Request) {
       createdAt: toISO(r.createdAt),
       customer: cust,
       title:
-        `${String(r?.brand ?? "")} ${String(r?.model ?? "")}`.trim() +
-        (days ? ` (${days}일)` : ""),
+        `${String(r?.brand ?? "")} ${String(r?.model ?? "")}`.trim() + (days ? ` (${days}일)` : ""),
       statusLabel: normalizeRentalStatus(r?.status),
       paymentLabel: rentalPaymentMeta.label,
       amount,
@@ -1921,13 +1765,10 @@ export async function handleAdminOperationsGet(req: Request) {
       warn: (warnByKey.get(`rental:${id}`)?.length ?? 0) > 0,
       needsReview: false,
       reviewLevel,
-      reviewTitle:
-        reviewLevel === "info" ? "정상 파생(조치 필요 없음)" : undefined,
+      reviewTitle: reviewLevel === "info" ? "정상 파생(조치 필요 없음)" : undefined,
       reviewReasons:
         reviewLevel === "info"
-          ? [
-              "대여 결제상태 필드가 비어 있어 대여 상태/paidAt 기준으로 결제상태를 파생했습니다.",
-            ]
+          ? ["대여 결제상태 필드가 비어 있어 대여 상태/paidAt 기준으로 결제상태를 파생했습니다."]
           : [],
       stringingSummary: requested
         ? {
@@ -1935,8 +1776,7 @@ export async function handleAdminOperationsGet(req: Request) {
             name: stringingName ?? undefined,
             price: stringPrice > 0 ? stringPrice : undefined,
             mountingFee: mountingFee > 0 ? mountingFee : undefined,
-            applicationStatus:
-              getString(linkedApplication?.status) ?? undefined,
+            applicationStatus: getString(linkedApplication?.status) ?? undefined,
           }
         : undefined,
       hasOutboundTracking,
@@ -1961,8 +1801,7 @@ export async function handleAdminOperationsGet(req: Request) {
     const packageInfo = asDoc(purchase.packageInfo);
     const sessions = Number(packageInfo?.sessions ?? 0);
     const packageTitle =
-      getString(packageInfo?.title) ??
-      (sessions > 0 ? `${sessions}회권` : "패키지");
+      getString(packageInfo?.title) ?? (sessions > 0 ? `${sessions}회권` : "패키지");
     const statusLabel = getString(purchase.status) ?? "주문접수";
     const paymentLabel = getString(purchase.paymentStatus) ?? "결제대기";
     const serviceInfo = asDoc(purchase.serviceInfo);
@@ -1992,22 +1831,18 @@ export async function handleAdminOperationsGet(req: Request) {
       related: null,
       isIntegrated: false,
       pendingReasons: ["새 패키지 구매가 접수되었습니다."],
-      nextAction:
-        "패키지 구매를 확인하고 결제 상태와 이용권 활성화 상태를 확인하세요.",
+      nextAction: "패키지 구매를 확인하고 결제 상태와 이용권 활성화 상태를 확인하세요.",
     };
   });
 
   // 5) 병합 → 최신순 정렬 → kind/q 필터
-  let merged: OpItem[] = [
-    ...orderItems,
-    ...appItems,
-    ...rentalItems,
-    ...packagePurchaseItems,
-  ].sort((a, b) => {
-    const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-    const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-    return tb - ta;
-  });
+  let merged: OpItem[] = [...orderItems, ...appItems, ...rentalItems, ...packagePurchaseItems].sort(
+    (a, b) => {
+      const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return tb - ta;
+    },
+  );
 
   if (kind !== "all") merged = merged.filter((x) => x.kind === kind);
 
@@ -2030,8 +1865,7 @@ export async function handleAdminOperationsGet(req: Request) {
     };
     merged = merged.filter(
       (item) =>
-        isMatchedByDbCandidate(item, dbMatchedIds) ||
-        matchesResidualMemoryFallback(item, q),
+        isMatchedByDbCandidate(item, dbMatchedIds) || matchesResidualMemoryFallback(item, q),
     );
   }
 
@@ -2095,8 +1929,7 @@ export async function handleAdminOperationsGet(req: Request) {
   const hasRoutineNextAction = (group: AdminOperationsGroup) =>
     group.items.some(
       (item) =>
-        Boolean(item.nextAction?.trim()) &&
-        !String(item.nextAction).includes("후속 조치 없음"),
+        Boolean(item.nextAction?.trim()) && !String(item.nextAction).includes("후속 조치 없음"),
     );
   const hasCancelRequested = (group: AdminOperationsGroup) =>
     group.items.some((item) => item.cancel?.status === "requested");
@@ -2104,17 +1937,12 @@ export async function handleAdminOperationsGet(req: Request) {
   const groupsWithQueue = groups.map((group) => {
     const groupReviewLevel = computeGroupReviewLevel(group);
     const groupNeedsReview =
-      groupReviewLevel === "action" ||
-      group.linkedFlowStatusIssue?.severity === "warning";
-    const queueBucket: AdminOperationsGroup["groupQueueBucket"] = isGroupWarn(
-      group,
-    )
+      groupReviewLevel === "action" || group.linkedFlowStatusIssue?.severity === "warning";
+    const queueBucket: AdminOperationsGroup["groupQueueBucket"] = isGroupWarn(group)
       ? "urgent"
       : groupNeedsReview || hasCancelRequested(group) || hasPaymentRisk(group)
         ? "caution"
-        : isGroupPending(group) ||
-            hasPaymentPending(group) ||
-            hasRoutineNextAction(group)
+        : isGroupPending(group) || hasPaymentPending(group) || hasRoutineNextAction(group)
           ? "pending"
           : "clean";
     return {
@@ -2126,14 +1954,10 @@ export async function handleAdminOperationsGet(req: Request) {
   });
   const allGroups = groupsWithQueue;
 
-  const isCautionQueueGroup = (group: AdminOperationsGroup) =>
-    group.groupQueueBucket === "caution";
-  const isPendingQueueGroup = (group: AdminOperationsGroup) =>
-    group.groupQueueBucket === "pending";
-  const isCleanGroup = (group: AdminOperationsGroup) =>
-    group.groupQueueBucket === "clean";
-  const isGroupReview = (group: AdminOperationsGroup) =>
-    group.groupNeedsReview === true;
+  const isCautionQueueGroup = (group: AdminOperationsGroup) => group.groupQueueBucket === "caution";
+  const isPendingQueueGroup = (group: AdminOperationsGroup) => group.groupQueueBucket === "pending";
+  const isCleanGroup = (group: AdminOperationsGroup) => group.groupQueueBucket === "clean";
+  const isGroupReview = (group: AdminOperationsGroup) => group.groupNeedsReview === true;
 
   const summaryAll: AdminOperationsSummary = allGroups.reduce(
     (acc, group) => {
@@ -2147,18 +1971,12 @@ export async function handleAdminOperationsGet(req: Request) {
 
   groups = allGroups;
 
-  if (warnFilter === "warn")
-    groups = groups.filter((group) => isGroupWarn(group));
-  if (warnFilter === "caution")
-    groups = groups.filter((group) => isCautionQueueGroup(group));
+  if (warnFilter === "warn") groups = groups.filter((group) => isGroupWarn(group));
+  if (warnFilter === "caution") groups = groups.filter((group) => isCautionQueueGroup(group));
   if (warnFilter === "review")
-    groups = groups.filter(
-      (group) => !isGroupWarn(group) && isGroupReview(group),
-    );
-  if (warnFilter === "pending")
-    groups = groups.filter((group) => isPendingQueueGroup(group));
-  if (warnFilter === "clean")
-    groups = groups.filter((group) => isCleanGroup(group));
+    groups = groups.filter((group) => !isGroupWarn(group) && isGroupReview(group));
+  if (warnFilter === "pending") groups = groups.filter((group) => isPendingQueueGroup(group));
+  if (warnFilter === "clean") groups = groups.filter((group) => isCleanGroup(group));
 
   if (warnSort !== "default") {
     groups = [...groups].sort((a, b) => {

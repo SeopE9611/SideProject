@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  ADMIN_CSRF_COOKIE_KEY,
-  ADMIN_CSRF_HEADER_KEY,
-} from "@/lib/admin/adminCsrf";
+import { ADMIN_CSRF_COOKIE_KEY, ADMIN_CSRF_HEADER_KEY } from "@/lib/admin/adminCsrf";
 
 type CsrfOk = { ok: true };
 type CsrfFail = { ok: false; res: NextResponse };
@@ -24,10 +21,9 @@ function buildOriginAllowlist(): Set<string> {
   }
 
   // 2) 운영/개발에서 자주 쓰는 기본 origin도 함께 허용
-  const envOrigins = [
-    process.env.NEXT_PUBLIC_SITE_URL,
-    process.env.NEXT_PUBLIC_BASE_URL,
-  ].filter(Boolean) as string[];
+  const envOrigins = [process.env.NEXT_PUBLIC_SITE_URL, process.env.NEXT_PUBLIC_BASE_URL].filter(
+    Boolean,
+  ) as string[];
   for (const origin of [...envOrigins, ...DEFAULT_DEV_ORIGINS]) {
     try {
       allowlist.add(new URL(origin).origin);

@@ -15,26 +15,15 @@ function normalized(source) {
 test("관리자 게시판 목록 계약: boardLabel은 brand 키를 표준으로 사용한다", () => {
   const source = normalized(read("app/admin/boards/BoardsClient.tsx"));
 
-  assert.ok(
-    source.includes("brand: '브랜드'"),
-    "boardLabel은 brand 키를 포함해야 합니다.",
-  );
-  assert.ok(
-    !source.includes("brands: '브랜드'"),
-    "boardLabel에서 brands 키는 제거되어야 합니다.",
-  );
+  assert.ok(source.includes("brand: '브랜드'"), "boardLabel은 brand 키를 포함해야 합니다.");
+  assert.ok(!source.includes("brands: '브랜드'"), "boardLabel에서 brands 키는 제거되어야 합니다.");
 });
 
 test("관리자 게시판 목록 계약: 레거시 brands 데이터는 별칭으로 라벨 배지에 매핑된다", () => {
   const source = normalized(read("app/admin/boards/BoardsClient.tsx"));
 
-  assert.ok(
-    source.includes("const legacyBoardTypeAlias: Record<string, string> = {"),
-  );
-  assert.ok(
-    source.includes("brands: 'brand'"),
-    "레거시 brands -> brand 별칭이 필요합니다.",
-  );
+  assert.ok(source.includes("const legacyBoardTypeAlias: Record<string, string> = {"));
+  assert.ok(source.includes("brands: 'brand'"), "레거시 brands -> brand 별칭이 필요합니다.");
   assert.ok(
     source.includes("resolveBoardLabel(p.type)"),
     "게시글 타입 배지는 정규화 라벨 함수를 사용해야 합니다.",

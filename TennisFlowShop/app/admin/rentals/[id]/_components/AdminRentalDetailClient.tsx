@@ -1,10 +1,7 @@
 "use client";
 
 import AdminRentalHistory from "@/app/admin/rentals/_components/AdminRentalHistory";
-import {
-  derivePaymentStatus,
-  deriveShippingStatus,
-} from "@/app/features/rentals/utils/status";
+import { derivePaymentStatus, deriveShippingStatus } from "@/app/features/rentals/utils/status";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 import { adminSurface } from "@/components/admin/admin-typography";
@@ -28,11 +25,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import AsyncState from "@/components/system/AsyncState";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
-import {
-  adminFetcher,
-  adminMutator,
-  ensureAdminMutationSucceeded,
-} from "@/lib/admin/adminFetcher";
+import { adminFetcher, adminMutator, ensureAdminMutationSucceeded } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import {
   badgeBase,
@@ -46,17 +39,11 @@ import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 import { racketBrandLabel, stringColorLabel } from "@/lib/constants";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
-import {
-  APPLICATION_STATUSES,
-  type ApplicationStatus,
-} from "@/lib/application-status";
+import { APPLICATION_STATUSES, type ApplicationStatus } from "@/lib/application-status";
 import { shortenId } from "@/lib/shorten";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import {
-  hasRentalStringingService,
-  isRentalStringingComplete,
-} from "@/lib/rental-stringing-flow";
+import { hasRentalStringingService, isRentalStringingComplete } from "@/lib/rental-stringing-flow";
 import {
   ArrowLeft,
   Calendar,
@@ -86,19 +73,16 @@ const rentalStatusLabels: Record<string, string> = {
 };
 
 const courierTrackUrl: Record<string, (no: string) => string> = {
-  cj: (no) =>
-    `https://trace.cjlogistics.com/web/detail.jsp?slipno=${encodeURIComponent(no)}`,
+  cj: (no) => `https://trace.cjlogistics.com/web/detail.jsp?slipno=${encodeURIComponent(no)}`,
   post: (no) =>
     `https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1=${encodeURIComponent(no)}`,
-  logen: (no) =>
-    `https://www.ilogen.com/m/personal/trace/${encodeURIComponent(no)}`,
+  logen: (no) => `https://www.ilogen.com/m/personal/trace/${encodeURIComponent(no)}`,
   hanjin: (no) =>
     `https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnum=${encodeURIComponent(no)}`,
 };
 
 // 날짜 포맷 보조
-const fmt = (v?: string | Date | null) =>
-  v ? new Date(v).toLocaleString() : "-";
+const fmt = (v?: string | Date | null) => (v ? new Date(v).toLocaleString() : "-");
 
 const rentalHistoryActionLabels: Record<string, string> = {
   paid: "결제 확인",
@@ -110,9 +94,7 @@ const rentalHistoryActionLabels: Record<string, string> = {
   "cancel-withdrawn": "취소 철회",
 };
 
-function getRentalHistoryActorLabel(
-  actor?: { role?: string; id?: string } | null,
-) {
+function getRentalHistoryActorLabel(actor?: { role?: string; id?: string } | null) {
   if (!actor?.role) return "이력에 처리자 정보 없음";
   if (actor.role === "admin") return "관리자";
   if (actor.role === "user") return "고객";
@@ -122,10 +104,9 @@ function getRentalHistoryActorLabel(
 
 const fetcher = (url: string) => authenticatedSWRFetcher<any>(url);
 
-const AdminConfirmDialog = dynamic(
-  () => import("@/components/admin/AdminConfirmDialog"),
-  { loading: () => null },
-);
+const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirmDialog"), {
+  loading: () => null,
+});
 
 type RentalPendingAction =
   | "approveCancel"
@@ -159,8 +140,7 @@ export default function AdminRentalDetailClient() {
   const [selectedApplicationStatus, setSelectedApplicationStatus] = useState<
     ApplicationStatus | ""
   >("");
-  const [isUpdatingApplicationStatus, setIsUpdatingApplicationStatus] =
-    useState(false);
+  const [isUpdatingApplicationStatus, setIsUpdatingApplicationStatus] = useState(false);
 
   const { data, error, isLoading, mutate } = useSWR(
     id ? `/api/admin/rentals/${id}` : null,
@@ -172,11 +152,8 @@ export default function AdminRentalDetailClient() {
   );
   const isVisitPickup = data?.servicePickupMethod === "SHOP_VISIT";
 
-  const [busyAction, setBusyAction] = useState<RentalPendingAction | null>(
-    null,
-  );
-  const [pendingAction, setPendingAction] =
-    useState<RentalPendingAction | null>(null);
+  const [busyAction, setBusyAction] = useState<RentalPendingAction | null>(null);
+  const [pendingAction, setPendingAction] = useState<RentalPendingAction | null>(null);
 
   const isBusy = busyAction !== null;
   // 무통장 결제완료 처리: created → paid 전이
@@ -219,9 +196,7 @@ export default function AdminRentalDetailClient() {
         ensureAdminMutationSucceeded(json, "처리 실패");
         return json;
       },
-      successMessage: mark
-        ? "보증금 환불 처리 완료"
-        : "보증금 환불 처리 해제 완료",
+      successMessage: mark ? "보증금 환불 처리 완료" : "보증금 환불 처리 해제 완료",
       fallbackErrorMessage: "처리 실패",
     });
     if (result) await mutate();
@@ -229,11 +204,8 @@ export default function AdminRentalDetailClient() {
 
   const onOut = async () => {
     const result = await runAdminActionWithToast({
-      action: () =>
-        adminMutator(`/api/admin/rentals/${id}/out`, { method: "POST" }),
-      successMessage: isVisitPickup
-        ? "방문 수령 처리 완료"
-        : "대여 시작 처리 완료",
+      action: () => adminMutator(`/api/admin/rentals/${id}/out`, { method: "POST" }),
+      successMessage: isVisitPickup ? "방문 수령 처리 완료" : "대여 시작 처리 완료",
       fallbackErrorMessage: "처리 실패",
     });
     if (result) await mutate();
@@ -241,8 +213,7 @@ export default function AdminRentalDetailClient() {
 
   const onReturn = async () => {
     const result = await runAdminActionWithToast({
-      action: () =>
-        adminMutator(`/api/admin/rentals/${id}/return`, { method: "POST" }),
+      action: () => adminMutator(`/api/admin/rentals/${id}/return`, { method: "POST" }),
       successMessage: "반납 처리 완료",
       fallbackErrorMessage: "처리 실패",
     });
@@ -289,9 +260,7 @@ export default function AdminRentalDetailClient() {
       await mutate();
       showSuccessToast("NicePay 상태 재동기화를 완료했습니다.");
     } catch (error: any) {
-      showErrorToast(
-        error?.message || "PG 상태 재동기화 중 오류가 발생했습니다.",
-      );
+      showErrorToast(error?.message || "PG 상태 재동기화 중 오류가 발생했습니다.");
     } finally {
       setIsSyncingNice(false);
     }
@@ -392,15 +361,11 @@ export default function AdminRentalDetailClient() {
             }
           : pendingAction === "out"
             ? {
-                title: isVisitPickup
-                  ? "방문 수령 처리할까요?"
-                  : "수령 확인 후 대여를 시작할까요?",
+                title: isVisitPickup ? "방문 수령 처리할까요?" : "수령 확인 후 대여를 시작할까요?",
                 description: isVisitPickup
                   ? "방문 수령 확인 시점부터 대여 기간과 반납 예정일이 계산됩니다."
                   : "고객 수령 확인 시점부터 대여 기간과 반납 예정일이 계산됩니다.",
-                confirmText: isVisitPickup
-                  ? "방문 수령 처리"
-                  : "수령 확인 / 대여 시작",
+                confirmText: isVisitPickup ? "방문 수령 처리" : "수령 확인 / 대여 시작",
                 eventKey: "admin-rental-detail-out-confirm",
                 eventMeta: { rentalId: id, currentStatus: data?.status },
               }
@@ -432,9 +397,7 @@ export default function AdminRentalDetailClient() {
                     }
                   : null;
 
-  const getPendingActionSeverity = (
-    action: RentalPendingAction | null,
-  ): "default" | "danger" => {
+  const getPendingActionSeverity = (action: RentalPendingAction | null): "default" | "danger" => {
     switch (action) {
       case "approveCancel":
       case "refundMark":
@@ -543,8 +506,7 @@ export default function AdminRentalDetailClient() {
   const Outbound = data?.shipping?.outbound;
   const ReturnShip = data?.shipping?.return;
   const canConfirmPayment =
-    data.status === "pending" &&
-    (!data.cancelRequest || data.cancelRequest.status === "rejected");
+    data.status === "pending" && (!data.cancelRequest || data.cancelRequest.status === "rejected");
 
   // 취소 요청 상태 정보
   const cancelInfo = buildAdminCancelRequestView(data?.cancelRequest, "rental");
@@ -563,9 +525,7 @@ export default function AdminRentalDetailClient() {
     linkedApplication?.status ?? data?.stringingApplicationStatus ?? "",
   ).trim();
   const hasLinkedApplication = hasRentalStringingService(data);
-  const isStringingComplete = isRentalStringingComplete(
-    linkedApplicationStatus,
-  );
+  const isStringingComplete = isRentalStringingComplete(linkedApplicationStatus);
   const hasStatusOrderMismatch =
     hasLinkedApplication &&
     ["out", "returned"].includes(String(data?.status ?? "")) &&
@@ -574,23 +534,18 @@ export default function AdminRentalDetailClient() {
     String(data?.shipping?.outbound?.trackingNumber ?? "").trim(),
   );
   const blockRentalStart =
-    (hasLinkedApplication && !isStringingComplete) ||
-    (!isVisitPickup && !hasOutboundTracking);
+    (hasLinkedApplication && !isStringingComplete) || (!isVisitPickup && !hasOutboundTracking);
 
   const paymentLabel =
-    data?.paymentStatusLabel ??
-    (derivePaymentStatus(data) === "paid" ? "결제완료" : "결제대기");
+    data?.paymentStatusLabel ?? (derivePaymentStatus(data) === "paid" ? "결제완료" : "결제대기");
   const paymentSource = data?.paymentStatusSource ?? "derived";
   const isNicePayment =
     String(data?.paymentProvider ?? "")
       .trim()
       .toLowerCase() === "nicepay";
-  const stringingName = data?.stringing?.name
-    ? String(data.stringing.name)
-    : null;
+  const stringingName = data?.stringing?.name ? String(data.stringing.name) : null;
   const stringPrice = Number(
-    data?.amount?.stringPrice ??
-      (data?.stringing?.requested ? (data?.stringing?.price ?? 0) : 0),
+    data?.amount?.stringPrice ?? (data?.stringing?.requested ? (data?.stringing?.price ?? 0) : 0),
   );
   const stringingFee = Number(
     data?.amount?.stringingFee ??
@@ -619,13 +574,9 @@ export default function AdminRentalDetailClient() {
     lowerPayment.includes("미입금") ||
     lowerPayment.includes("pending");
   const isBeforeOut = lowerStatus === "pending" || lowerStatus === "paid";
-  const hasReturnTracking = Boolean(
-    String(data?.shipping?.return?.trackingNumber ?? "").trim(),
-  );
-  const needsReturnCheck =
-    lowerStatus === "out" && (Boolean(data?.dueAt) || hasReturnTracking);
-  const needsDepositRefund =
-    lowerStatus === "returned" && data?.depositRefunded !== true;
+  const hasReturnTracking = Boolean(String(data?.shipping?.return?.trackingNumber ?? "").trim());
+  const needsReturnCheck = lowerStatus === "out" && (Boolean(data?.dueAt) || hasReturnTracking);
+  const needsDepositRefund = lowerStatus === "returned" && data?.depositRefunded !== true;
   const nextActionGuide: AdminNextActionGuide = hasCancelRequested
     ? {
         tone: "urgent",
@@ -643,15 +594,13 @@ export default function AdminRentalDetailClient() {
         ? {
             tone: "warning",
             title: "결제 상태 확인 필요",
-            description:
-              "입금/결제 반영 여부를 확인한 뒤 출고 여부를 판단하세요.",
+            description: "입금/결제 반영 여부를 확인한 뒤 출고 여부를 판단하세요.",
           }
         : isBeforeOut && hasLinkedApplication && !isStringingComplete
           ? {
               tone: "warning",
               title: "교체서비스 작업 완료 필요",
-              description:
-                "교체서비스가 완료된 뒤 출고 또는 대여 시작을 진행하세요.",
+              description: "교체서비스가 완료된 뒤 출고 또는 대여 시작을 진행하세요.",
             }
           : isBeforeOut && !isVisitPickup && hasOutboundTracking
             ? {
@@ -662,25 +611,18 @@ export default function AdminRentalDetailClient() {
             : isBeforeOut
               ? {
                   tone: "warning",
-                  title: isVisitPickup
-                    ? "방문 수령 처리 필요"
-                    : "출고 운송장 등록 필요",
+                  title: isVisitPickup ? "방문 수령 처리 필요" : "출고 운송장 등록 필요",
                   description: isVisitPickup
                     ? "고객 방문 수령을 확인한 뒤 대여를 시작하세요."
                     : "교체서비스 완료 상태를 확인한 뒤 출고 운송장을 등록하세요.",
-                  actionLabel: isVisitPickup
-                    ? undefined
-                    : "출고 운송장 등록/수정",
-                  actionHref: isVisitPickup
-                    ? undefined
-                    : `/admin/rentals/${id}/shipping-update`,
+                  actionLabel: isVisitPickup ? undefined : "출고 운송장 등록/수정",
+                  actionHref: isVisitPickup ? undefined : `/admin/rentals/${id}/shipping-update`,
                 }
               : needsReturnCheck
                 ? {
                     tone: "info",
                     title: "반납 확인 필요",
-                    description:
-                      "반납 운송장과 라켓 상태를 확인한 뒤 반납 처리를 진행하세요.",
+                    description: "반납 운송장과 라켓 상태를 확인한 뒤 반납 처리를 진행하세요.",
                   }
                 : needsDepositRefund
                   ? {
@@ -699,8 +641,7 @@ export default function AdminRentalDetailClient() {
                     : {
                         tone: "success",
                         title: "추가 조치 필요 없음",
-                        description:
-                          "현재 기준으로 즉시 필요한 추가 조치는 없습니다.",
+                        description: "현재 기준으로 즉시 필요한 추가 조치는 없습니다.",
                       };
   const recommendedActions = [
     { label: "결제 정보 확인", href: "#admin-rental-payment", show: true },
@@ -731,32 +672,22 @@ export default function AdminRentalDetailClient() {
       String(latestProcessingHistory.action))
     : "기록 없음";
 
-  const latestProcessingActor = getRentalHistoryActorLabel(
-    latestProcessingHistory?.actor,
-  );
+  const latestProcessingActor = getRentalHistoryActorLabel(latestProcessingHistory?.actor);
 
   const latestProcessingDate = fmt(latestProcessingHistory?.at);
-  const effectiveStockDeduction =
-    data?.stockDeduction ?? data?.stringing?.stockDeduction ?? null;
-  const effectiveStockRestore =
-    data?.stockRestore ?? data?.stringing?.stockRestore ?? null;
+  const effectiveStockDeduction = data?.stockDeduction ?? data?.stringing?.stockDeduction ?? null;
+  const effectiveStockRestore = data?.stockRestore ?? data?.stringing?.stockRestore ?? null;
   const isVariantStockMode = effectiveStockDeduction?.mode === "variant";
-  const isCanceledState =
-    data?.status === "canceled" || data?.status === "cancelled";
-  const selectedApplicationStatusValue =
-    selectedApplicationStatus || linkedApplicationStatus;
-  const applicationStatusBadge = getApplicationStatusBadgeSpec(
-    linkedApplicationStatus,
-  );
+  const isCanceledState = data?.status === "canceled" || data?.status === "cancelled";
+  const selectedApplicationStatusValue = selectedApplicationStatus || linkedApplicationStatus;
+  const applicationStatusBadge = getApplicationStatusBadgeSpec(linkedApplicationStatus);
   const canUpdateLinkedApplication = data?.status === "paid";
   const linkedApplicationLines = Array.isArray(linkedApplication?.lines)
     ? linkedApplication.lines
     : [];
   const linkedApplicationNotes = Array.from(
     new Set(
-      linkedApplicationLines
-        .map((line: any) => String(line?.note ?? "").trim())
-        .filter(Boolean),
+      linkedApplicationLines.map((line: any) => String(line?.note ?? "").trim()).filter(Boolean),
     ),
   );
   const linkedApplicationStrings = Array.from(
@@ -778,9 +709,7 @@ export default function AdminRentalDetailClient() {
           </div>
         ) : null}
         <div className="mx-auto w-full max-w-[1500px] space-y-6 lg:space-y-8">
-          <div
-            className={cn("mb-6 p-5 lg:mb-8 lg:p-6", adminSurface.cardMuted)}
-          >
+          <div className={cn("mb-6 p-5 lg:mb-8 lg:p-6", adminSurface.cardMuted)}>
             <div className="mb-5 flex flex-col gap-3 lg:mb-6 lg:gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-4">
                 <div className="bg-card rounded-full p-3 shadow-md">
@@ -829,12 +758,7 @@ export default function AdminRentalDetailClient() {
                 {data?.status !== "canceled" &&
                   !isVisitPickup &&
                   (blockRentalStart ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled
-                      className="h-8 whitespace-nowrap"
-                    >
+                    <Button variant="outline" size="sm" disabled className="h-8 whitespace-nowrap">
                       <Truck className="mr-2 h-4 w-4" />
                       {hasLinkedApplication && !isStringingComplete
                         ? "교체서비스 완료 후 출고 가능"
@@ -862,17 +786,12 @@ export default function AdminRentalDetailClient() {
               <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
                 <div className="mb-2 flex items-center space-x-2">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">
-                    결제 상태
-                  </span>
+                  <span className="text-sm font-medium text-foreground">결제 상태</span>
                 </div>
                 {(() => {
                   const pay = getPaymentStatusBadgeSpec(paymentLabel);
                   return (
-                    <Badge
-                      variant={pay.variant}
-                      className={cn(badgeBase, badgeSizeSm)}
-                    >
+                    <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
                       {paymentLabel}
                     </Badge>
                   );
@@ -885,9 +804,7 @@ export default function AdminRentalDetailClient() {
               <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
                 <div className="mb-2 flex items-center space-x-2">
                   <Package className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">
-                    대여 상태
-                  </span>
+                  <span className="text-sm font-medium text-foreground">대여 상태</span>
                 </div>
                 {(() => {
                   const rentalLabel =
@@ -896,10 +813,7 @@ export default function AdminRentalDetailClient() {
                       : rentalStatusLabels[data.status] || data.status;
                   const rentalSpec = getRentalStatusBadgeSpec(data.status);
                   return (
-                    <Badge
-                      variant={rentalSpec.variant}
-                      className={cn(badgeBase, badgeSizeSm)}
-                    >
+                    <Badge variant={rentalSpec.variant} className={cn(badgeBase, badgeSizeSm)}>
                       {rentalLabel}
                     </Badge>
                   );
@@ -909,27 +823,21 @@ export default function AdminRentalDetailClient() {
               <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
                 <div className="mb-2 flex items-center space-x-2">
                   <Wrench className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">
-                    교체서비스
-                  </span>
+                  <span className="text-sm font-medium text-foreground">교체서비스</span>
                 </div>
                 <Badge
                   variant={applicationStatusBadge.variant}
                   className={cn(badgeBase, badgeSizeSm)}
                 >
                   {linkedApplicationStatus ||
-                    (hasStringingSummary
-                      ? "교체서비스 검토 중"
-                      : "교체서비스 없음")}
+                    (hasStringingSummary ? "교체서비스 검토 중" : "교체서비스 없음")}
                 </Badge>
               </div>
 
               <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
                 <div className="mb-2 flex items-center space-x-2">
                   <Truck className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">
-                    출고/반납
-                  </span>
+                  <span className="text-sm font-medium text-foreground">출고/반납</span>
                 </div>
                 <p className="text-sm font-semibold text-foreground">
                   {data.status === "returned"
@@ -940,9 +848,7 @@ export default function AdminRentalDetailClient() {
                         ? "출고 완료"
                         : "출고 전"}
                 </p>
-                <p className="mt-2 text-xs text-foreground/75">
-                  {pickupMethodLabel}
-                </p>
+                <p className="mt-2 text-xs text-foreground/75">{pickupMethodLabel}</p>
               </div>
             </div>
           </div>
@@ -951,9 +857,7 @@ export default function AdminRentalDetailClient() {
             <CardHeader className="pb-3">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <CardTitle className="text-base font-semibold">
-                    우선 처리 안내
-                  </CardTitle>
+                  <CardTitle className="text-base font-semibold">우선 처리 안내</CardTitle>
                   <CardDescription className="mt-1 text-sm text-foreground/75">
                     {nextActionGuide.title}
                   </CardDescription>
@@ -974,18 +878,14 @@ export default function AdminRentalDetailClient() {
                 {nextActionGuide.description}
               </p>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold text-foreground">
-                  권장 작업
-                </p>
+                <p className="text-sm font-semibold text-foreground">권장 작업</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   현재 상태에서 관리자가 먼저 확인하면 좋은 작업입니다.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
                     <Button asChild size="sm">
-                      <Link href={nextActionGuide.actionHref}>
-                        {nextActionGuide.actionLabel}
-                      </Link>
+                      <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
                     </Button>
                   ) : null}
                   {recommendedActions.map((action) => (
@@ -1002,52 +902,34 @@ export default function AdminRentalDetailClient() {
                 </div>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold text-foreground">
-                  처리 정보
-                </p>
+                <p className="text-sm font-semibold text-foreground">처리 정보</p>
                 <div className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
                   <p>
-                    <span className="font-medium text-foreground">
-                      마지막 처리자:
-                    </span>{" "}
+                    <span className="font-medium text-foreground">마지막 처리자:</span>{" "}
                     {latestProcessingActor}
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">
-                      마지막 처리:
-                    </span>{" "}
+                    <span className="font-medium text-foreground">마지막 처리:</span>{" "}
                     {latestProcessingAction}
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">
-                      처리 시각:
-                    </span>{" "}
+                    <span className="font-medium text-foreground">처리 시각:</span>{" "}
                     {latestProcessingDate}
                   </p>
-                  {latestProcessingHistory?.from ||
-                  latestProcessingHistory?.to ? (
+                  {latestProcessingHistory?.from || latestProcessingHistory?.to ? (
                     <p className="sm:col-span-2">
-                      <span className="font-medium text-foreground">
-                        상태 변화:
-                      </span>{" "}
-                      {latestProcessingHistory?.from ?? "-"} →{" "}
-                      {latestProcessingHistory?.to ?? "-"}
+                      <span className="font-medium text-foreground">상태 변화:</span>{" "}
+                      {latestProcessingHistory?.from ?? "-"} → {latestProcessingHistory?.to ?? "-"}
                     </p>
                   ) : null}
                 </div>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold text-foreground">
-                  재고 운영 정보
-                </p>
+                <p className="text-sm font-semibold text-foreground">재고 운영 정보</p>
                 <div className="mt-2 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
                   <p>
-                    <span className="font-medium text-foreground">
-                      재고 차감 방식:
-                    </span>{" "}
-                    {isVariantStockMode
-                      ? "색상×게이지 조합 재고"
-                      : "기존 재고 방식"}
+                    <span className="font-medium text-foreground">재고 차감 방식:</span>{" "}
+                    {isVariantStockMode ? "색상×게이지 조합 재고" : "기존 재고 방식"}
                   </p>
                   <p>
                     {isVariantStockMode
@@ -1055,12 +937,8 @@ export default function AdminRentalDetailClient() {
                       : "기존 색상/게이지 재고 기준으로 처리된 대여입니다."}
                   </p>
                   <p>
-                    <span className="font-medium text-foreground">
-                      조합 재고 복구:
-                    </span>{" "}
-                    {effectiveStockRestore?.variantStockRestoredAt
-                      ? "복구 완료"
-                      : "복구 정보 없음"}
+                    <span className="font-medium text-foreground">조합 재고 복구:</span>{" "}
+                    {effectiveStockRestore?.variantStockRestoredAt ? "복구 완료" : "복구 정보 없음"}
                   </p>
                   {effectiveStockRestore?.variantStockRestoredAt ? (
                     <p>
@@ -1071,16 +949,13 @@ export default function AdminRentalDetailClient() {
                     </p>
                   ) : isVariantStockMode && isCanceledState ? (
                     <p className="text-muted-foreground/80">
-                      취소 처리 데이터에서 조합 재고 복구 시각이 확인되지
-                      않았습니다.
+                      취소 처리 데이터에서 조합 재고 복구 시각이 확인되지 않았습니다.
                     </p>
                   ) : null}
                 </div>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold text-foreground">
-                  라켓 대여 처리 체크리스트
-                </p>
+                <p className="text-sm font-semibold text-foreground">라켓 대여 처리 체크리스트</p>
                 <ul className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
                   <li>□ 결제 상태 확인</li>
                   <li>□ 출고 운송장 또는 방문 수령 정보 확인</li>
@@ -1097,10 +972,7 @@ export default function AdminRentalDetailClient() {
           {cancelInfo && (
             <div id="admin-rental-cancel">
               <AdminCancelRequestCard
-                className={cn(
-                  "mt-0",
-                  hasCancelRequested && "border-warning/50 bg-warning/5",
-                )}
+                className={cn("mt-0", hasCancelRequested && "border-warning/50 bg-warning/5")}
                 badgeLabel={cancelInfo.badgeLabel}
                 description={cancelInfo.description}
                 reasonSummary={cancelInfo.reasonSummary}
@@ -1118,9 +990,7 @@ export default function AdminRentalDetailClient() {
                         setPendingAction("approveCancel");
                       }}
                     >
-                      {busyAction === "approveCancel"
-                        ? "승인 처리중…"
-                        : "요청 승인"}
+                      {busyAction === "approveCancel" ? "승인 처리중…" : "요청 승인"}
                     </Button>
 
                     <Button
@@ -1133,9 +1003,7 @@ export default function AdminRentalDetailClient() {
                         setPendingAction("rejectCancel");
                       }}
                     >
-                      {busyAction === "rejectCancel"
-                        ? "거절 처리중…"
-                        : "요청 거절"}
+                      {busyAction === "rejectCancel" ? "거절 처리중…" : "요청 거절"}
                     </Button>
                   </div>
                 )}
@@ -1146,12 +1014,9 @@ export default function AdminRentalDetailClient() {
           {hasStringingSummary && !linkedApplication && (
             <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">
-                  스트링/교체서비스 요약
-                </CardTitle>
+                <CardTitle className="text-base">스트링/교체서비스 요약</CardTitle>
                 <CardDescription>
-                  스트링 선택 정보와 교체서비스 신청 진행 상태를 한 번에
-                  확인합니다.
+                  스트링 선택 정보와 교체서비스 신청 진행 상태를 한 번에 확인합니다.
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-2 text-sm">
@@ -1200,15 +1065,14 @@ export default function AdminRentalDetailClient() {
                           </span>
                         </p>
                       )}
-                    {Array.isArray(data?.stringingNames) &&
-                      data.stringingNames.length > 0 && (
-                        <p className="text-muted-foreground">
-                          스트링 선택:{" "}
-                          <span className="font-medium text-foreground">
-                            {data.stringingNames.join(", ")}
-                          </span>
-                        </p>
-                      )}
+                    {Array.isArray(data?.stringingNames) && data.stringingNames.length > 0 && (
+                      <p className="text-muted-foreground">
+                        스트링 선택:{" "}
+                        <span className="font-medium text-foreground">
+                          {data.stringingNames.join(", ")}
+                        </span>
+                      </p>
+                    )}
                     {data?.stringingTensionSummary && (
                       <p className="text-muted-foreground">
                         텐션:{" "}
@@ -1250,14 +1114,11 @@ export default function AdminRentalDetailClient() {
               <CardHeader className="border-b bg-muted/30 pb-3">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <CardTitle className="text-base">
-                      대여 라켓 장착 정보
-                    </CardTitle>
+                    <CardTitle className="text-base">대여 라켓 장착 정보</CardTitle>
                     <CardDescription className="mt-1 max-w-3xl leading-relaxed">
-                      대여 라켓에 장착할 스트링, 게이지, 색상, 텐션, 요청사항과
-                      작업 상태를 한곳에서 확인합니다. 매장 보유 대여 라켓에
-                      장착하는 대여 기반 교체서비스이며, 출고 운송장과 반납
-                      운송장은 아래 대여 정보에서 분리해 관리합니다.
+                      대여 라켓에 장착할 스트링, 게이지, 색상, 텐션, 요청사항과 작업 상태를 한곳에서
+                      확인합니다. 매장 보유 대여 라켓에 장착하는 대여 기반 교체서비스이며, 출고
+                      운송장과 반납 운송장은 아래 대여 정보에서 분리해 관리합니다.
                     </CardDescription>
                   </div>
                   <Badge
@@ -1284,18 +1145,13 @@ export default function AdminRentalDetailClient() {
                           ? data.stringingNames.join(", ")
                           : "") ||
                         stringingName ||
-                        (stringPrice > 0 || stringingFee > 0
-                          ? "관리자 확인 필요"
-                          : "정보 없음")}
+                        (stringPrice > 0 || stringingFee > 0 ? "관리자 확인 필요" : "정보 없음")}
                     </span>
                   </p>
                   <p className="text-muted-foreground">
                     게이지/색상:{" "}
                     <span className="font-medium text-foreground">
-                      {[
-                        linkedApplication.selectedGauge,
-                        linkedApplication.selectedColor,
-                      ]
+                      {[linkedApplication.selectedGauge, linkedApplication.selectedColor]
                         .filter(Boolean)
                         .join(" / ") || "정보 없음"}
                     </span>
@@ -1309,10 +1165,7 @@ export default function AdminRentalDetailClient() {
                   <p className="text-muted-foreground sm:col-span-2">
                     요청사항:{" "}
                     <span className="font-medium text-foreground">
-                      {[
-                        linkedApplication.requirements,
-                        ...linkedApplicationNotes,
-                      ]
+                      {[linkedApplication.requirements, ...linkedApplicationNotes]
                         .filter(Boolean)
                         .join(" / ") || "요청사항 없음"}
                     </span>
@@ -1322,8 +1175,7 @@ export default function AdminRentalDetailClient() {
                     <span className="font-medium text-foreground">
                       {linkedApplicationPaymentIncluded
                         ? "대여 주문에 포함됨"
-                        : linkedApplication.paymentSource ||
-                          "연결 정보 확인 필요"}
+                        : linkedApplication.paymentSource || "연결 정보 확인 필요"}
                     </span>
                   </p>
                 </div>
@@ -1339,46 +1191,36 @@ export default function AdminRentalDetailClient() {
                   <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">
                     결제 확인 후 교체서비스 작업 상태를 변경하세요.
                   </p>
-                ) : data.status === "paid" &&
-                  linkedApplicationStatus === "검토 중" ? (
+                ) : data.status === "paid" && linkedApplicationStatus === "검토 중" ? (
                   <p className="rounded-md border border-info/40 bg-info/10 px-3 py-2 text-sm text-foreground">
                     결제가 확인되었습니다. 교체서비스 작업 접수가 필요합니다.
                   </p>
-                ) : data.status === "paid" &&
-                  linkedApplicationStatus === "작업 중" ? (
+                ) : data.status === "paid" && linkedApplicationStatus === "작업 중" ? (
                   <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">
-                    현재 장착 작업 중입니다. 교체완료 후 출고 또는 대여 시작을
-                    진행하세요.
+                    현재 장착 작업 중입니다. 교체완료 후 출고 또는 대여 시작을 진행하세요.
                   </p>
-                ) : data.status === "paid" &&
-                  linkedApplicationStatus === "교체완료" ? (
+                ) : data.status === "paid" && linkedApplicationStatus === "교체완료" ? (
                   <p className="rounded-md border border-info/40 bg-info/10 px-3 py-2 text-sm text-foreground">
-                    장착 작업이 완료되었습니다. 출고정보 등록 또는 대여 시작
-                    단계를 진행할 수 있습니다.
+                    장착 작업이 완료되었습니다. 출고정보 등록 또는 대여 시작 단계를 진행할 수
+                    있습니다.
                   </p>
                 ) : ["out", "returned"].includes(data.status) &&
                   linkedApplicationStatus !== "교체완료" ? (
                   <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">
-                    상태 순서 확인 필요: 교체서비스가 완료되지 않았는데 대여가
-                    출고 또는 반납 단계로 진행되었습니다. 교체서비스 상태와 처리
-                    이력을 확인하세요.
+                    상태 순서 확인 필요: 교체서비스가 완료되지 않았는데 대여가 출고 또는 반납 단계로
+                    진행되었습니다. 교체서비스 상태와 처리 이력을 확인하세요.
                   </p>
                 ) : null}
 
                 <div className="flex flex-col gap-3 rounded-lg border border-border/70 p-3 sm:flex-row sm:items-end sm:justify-between">
                   <div className="space-y-2">
-                    <p className="text-sm font-semibold text-foreground">
-                      변경할 작업 상태
-                    </p>
+                    <p className="text-sm font-semibold text-foreground">변경할 작업 상태</p>
                     <Select
                       value={selectedApplicationStatusValue}
                       onValueChange={(value) =>
                         setSelectedApplicationStatus(value as ApplicationStatus)
                       }
-                      disabled={
-                        !canUpdateLinkedApplication ||
-                        isUpdatingApplicationStatus
-                      }
+                      disabled={!canUpdateLinkedApplication || isUpdatingApplicationStatus}
                     >
                       <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="상태 선택" />
@@ -1393,8 +1235,7 @@ export default function AdminRentalDetailClient() {
                     </Select>
                     <p className="text-xs text-muted-foreground">
                       저장 시 {linkedApplicationStatus || "현재 상태"} →{" "}
-                      {selectedApplicationStatusValue || "선택 상태"}(으)로
-                      변경됩니다.
+                      {selectedApplicationStatusValue || "선택 상태"}(으)로 변경됩니다.
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -1411,29 +1252,22 @@ export default function AdminRentalDetailClient() {
                         !canUpdateLinkedApplication ||
                         isUpdatingApplicationStatus ||
                         !selectedApplicationStatusValue ||
-                        selectedApplicationStatusValue ===
-                          linkedApplicationStatus
+                        selectedApplicationStatusValue === linkedApplicationStatus
                       }
                       onClick={onUpdateApplicationStatus}
                     >
-                      {isUpdatingApplicationStatus
-                        ? "저장 중…"
-                        : "작업 상태 저장"}
+                      {isUpdatingApplicationStatus ? "저장 중…" : "작업 상태 저장"}
                     </Button>
                   </div>
                 </div>
                 <div className="space-y-1 text-xs leading-relaxed text-muted-foreground">
                   <p>
-                    이 작업은 연결된 교체서비스 신청서의 작업 상태만 변경합니다.
-                    대여 결제, 출고 운송장 등록, 대여 시작, 반납 처리는 기존
-                    대여 액션에서 별도로 진행하세요.
+                    이 작업은 연결된 교체서비스 신청서의 작업 상태만 변경합니다. 대여 결제, 출고
+                    운송장 등록, 대여 시작, 반납 처리는 기존 대여 액션에서 별도로 진행하세요.
                   </p>
                   <p>접수완료: 결제 확인 후 작업 접수 상태로 표시합니다.</p>
                   <p>작업 중: 실제 스트링 장착 작업이 시작된 상태입니다.</p>
-                  <p>
-                    교체완료: 장착 작업이 완료되어 출고 또는 수령 준비가 가능한
-                    상태입니다.
-                  </p>
+                  <p>교체완료: 장착 작업이 완료되어 출고 또는 수령 준비가 가능한 상태입니다.</p>
                   {!canUpdateLinkedApplication && (
                     <p className="font-medium text-foreground">
                       {data.status === "returned"
@@ -1448,15 +1282,12 @@ export default function AdminRentalDetailClient() {
             </Card>
           )}
 
-          <Card
-            id="admin-rental-return"
-            className={cn(adminSurface.card, "overflow-hidden")}
-          >
+          <Card id="admin-rental-return" className={cn(adminSurface.card, "overflow-hidden")}>
             <CardHeader className="bg-muted/30 border-b pb-3">
               <CardTitle>대여 상태 관리</CardTitle>
               <CardDescription>
-                처리 전 결제 상태, 라켓 반납 상태, 보증금 환불 정보를
-                확인하세요. 모든 상태 변경은 처리 이력에 남습니다.
+                처리 전 결제 상태, 라켓 반납 상태, 보증금 환불 정보를 확인하세요. 모든 상태 변경은
+                처리 이력에 남습니다.
               </CardDescription>
             </CardHeader>
             <CardFooter className="pt-4">
@@ -1487,9 +1318,7 @@ export default function AdminRentalDetailClient() {
                 <Button
                   size="sm"
                   className="h-9 bg-muted hover:bg-muted"
-                  disabled={
-                    isBusy || data.status !== "paid" || blockRentalStart
-                  }
+                  disabled={isBusy || data.status !== "paid" || blockRentalStart}
                   onClick={() => {
                     if (isBusy) return;
                     setPendingAction("out");
@@ -1539,9 +1368,7 @@ export default function AdminRentalDetailClient() {
                         setPendingAction("refundClear");
                       }}
                     >
-                      {busyAction === "refundClear"
-                        ? "환불 해제 중…"
-                        : "환불 해제"}
+                      {busyAction === "refundClear" ? "환불 해제 중…" : "환불 해제"}
                     </Button>
                   ) : (
                     <Button
@@ -1553,9 +1380,7 @@ export default function AdminRentalDetailClient() {
                         setPendingAction("refundMark");
                       }}
                     >
-                      {busyAction === "refundMark"
-                        ? "환불 처리 중…"
-                        : "환불 처리"}
+                      {busyAction === "refundMark" ? "환불 처리 중…" : "환불 처리"}
                     </Button>
                   ))}
               </div>
@@ -1625,17 +1450,13 @@ export default function AdminRentalDetailClient() {
                   <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
                       <p className="text-sm text-foreground/80">모델</p>
-                      <p className="font-semibold text-foreground">
-                        {data.model}
-                      </p>
+                      <p className="font-semibold text-foreground">{data.model}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
                       <p className="text-sm text-foreground/80">대여 기간</p>
-                      <p className="font-semibold text-foreground">
-                        {data.days}일
-                      </p>
+                      <p className="font-semibold text-foreground">{data.days}일</p>
                     </div>
                   </div>
                 </div>
@@ -1655,18 +1476,13 @@ export default function AdminRentalDetailClient() {
                   {(() => {
                     const pay = getPaymentStatusBadgeSpec(paymentLabel);
                     return (
-                      <Badge
-                        variant={pay.variant}
-                        className={cn(badgeBase, badgeSizeSm)}
-                      >
+                      <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
                         {paymentLabel}
                       </Badge>
                     );
                   })()}
                   {paymentSource === "derived" && (
-                    <span className="text-xs text-foreground/75">
-                      대여 상태 기준 파생
-                    </span>
+                    <span className="text-xs text-foreground/75">대여 상태 기준 파생</span>
                   )}
                   {isNicePayment && (
                     <Button
@@ -1692,17 +1508,13 @@ export default function AdminRentalDetailClient() {
                   <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
                       <p className="text-sm text-foreground/80">대여 수수료</p>
-                      <p className="font-semibold text-foreground">
-                        {won(data.amount?.fee)}
-                      </p>
+                      <p className="font-semibold text-foreground">{won(data.amount?.fee)}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                     <div>
                       <p className="text-sm text-foreground/80">보증금</p>
-                      <p className="font-semibold text-foreground">
-                        {won(data.amount?.deposit)}
-                      </p>
+                      <p className="font-semibold text-foreground">{won(data.amount?.deposit)}</p>
                     </div>
                   </div>
                   {/* 스트링 상품 금액: 있을 때만 표시 */}
@@ -1710,9 +1522,7 @@ export default function AdminRentalDetailClient() {
                     <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                       <Package className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm text-foreground/80">
-                          스트링 상품
-                        </p>
+                        <p className="text-sm text-foreground/80">스트링 상품</p>
                         <p className="font-semibold text-foreground">
                           {won(data.amount?.stringPrice ?? 0)}
                         </p>
@@ -1725,9 +1535,7 @@ export default function AdminRentalDetailClient() {
                     <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
                       <Wrench className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="text-sm text-foreground/80">
-                          교체 서비스비
-                        </p>
+                        <p className="text-sm text-foreground/80">교체 서비스비</p>
                         <p className="font-semibold text-foreground">
                           {won(data.amount?.stringingFee ?? 0)}
                         </p>
@@ -1744,9 +1552,7 @@ export default function AdminRentalDetailClient() {
                   </div>
                   {(hasCancelRefundAccount || hasLegacyRefundAccount) && (
                     <div className="space-y-3">
-                      <p className="text-sm font-medium text-muted-foreground">
-                        보증금 환급 정보
-                      </p>
+                      <p className="text-sm font-medium text-muted-foreground">보증금 환급 정보</p>
                       {hasCancelRefundAccount && (
                         <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
                           <div className="flex items-start justify-between gap-3">
@@ -1755,30 +1561,21 @@ export default function AdminRentalDetailClient() {
                                 취소 요청 시 제출한 환불 계좌
                               </p>
                               <p className="mt-1 text-xs text-foreground/75">
-                                취소 요청 시 고객이 제출한 환불 계좌입니다. 환불
-                                처리 전 이 계좌를 우선 검토하세요.
+                                취소 요청 시 고객이 제출한 환불 계좌입니다. 환불 처리 전 이 계좌를
+                                우선 검토하세요.
                               </p>
                             </div>
-                            <Badge
-                              variant="outline"
-                              className="border-primary/40 text-primary"
-                            >
+                            <Badge variant="outline" className="border-primary/40 text-primary">
                               우선 검토
                             </Badge>
                           </div>
                           <dl className="mt-3 space-y-1 text-sm text-foreground">
                             <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                              <dt className="text-muted-foreground">
-                                환급 은행
-                              </dt>
-                              <dd>
-                                {cancelRefundAccount?.bankLabel || "미입력"}
-                              </dd>
+                              <dt className="text-muted-foreground">환급 은행</dt>
+                              <dd>{cancelRefundAccount?.bankLabel || "미입력"}</dd>
                             </div>
                             <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                              <dt className="text-muted-foreground">
-                                계좌번호
-                              </dt>
+                              <dt className="text-muted-foreground">계좌번호</dt>
                               <dd className="font-mono">
                                 {cancelRefundAccount?.account || "미입력"}
                               </dd>
@@ -1795,16 +1592,10 @@ export default function AdminRentalDetailClient() {
                               className="mt-3"
                               onClick={async () => {
                                 try {
-                                  await navigator.clipboard.writeText(
-                                    cancelRefundAccount.account,
-                                  );
-                                  showSuccessToast(
-                                    "취소 요청 환불 계좌번호를 복사했습니다",
-                                  );
+                                  await navigator.clipboard.writeText(cancelRefundAccount.account);
+                                  showSuccessToast("취소 요청 환불 계좌번호를 복사했습니다");
                                 } catch {
-                                  showErrorToast(
-                                    "계좌번호 복사에 실패했습니다",
-                                  );
+                                  showErrorToast("계좌번호 복사에 실패했습니다");
                                 }
                               }}
                             >
@@ -1824,33 +1615,22 @@ export default function AdminRentalDetailClient() {
                               : "border-border bg-muted/60 dark:bg-card/70",
                           )}
                         >
-                          <p className="text-sm font-medium text-foreground">
-                            보증금 환불 계좌
-                          </p>
+                          <p className="text-sm font-medium text-foreground">보증금 환불 계좌</p>
                           <p className="mt-1 text-xs text-foreground/75">
-                            기존에 등록된 보증금 환불 계좌입니다. 취소 요청
-                            계좌가 없을 때 참고용으로 확인하세요.
+                            기존에 등록된 보증금 환불 계좌입니다. 취소 요청 계좌가 없을 때
+                            참고용으로 확인하세요.
                           </p>
                           <dl className="mt-3 space-y-1 text-sm text-foreground">
                             <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                              <dt className="text-muted-foreground">
-                                환급 은행
-                              </dt>
-                              <dd>
-                                {getRefundBankLabel(data.refundAccount.bank) ||
-                                  "미입력"}
-                              </dd>
+                              <dt className="text-muted-foreground">환급 은행</dt>
+                              <dd>{getRefundBankLabel(data.refundAccount.bank) || "미입력"}</dd>
                             </div>
                             <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
                               <dt className="text-muted-foreground">예금주</dt>
-                              <dd>
-                                {data.refundAccount.holderMasked || "미입력"}
-                              </dd>
+                              <dd>{data.refundAccount.holderMasked || "미입력"}</dd>
                             </div>
                             <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                              <dt className="text-muted-foreground">
-                                계좌번호
-                              </dt>
+                              <dt className="text-muted-foreground">계좌번호</dt>
                               <dd className="font-mono">
                                 {data.refundAccount.accountMasked || "미입력"}
                               </dd>
@@ -1871,9 +1651,7 @@ export default function AdminRentalDetailClient() {
                                 });
                                 const text = `[${j.bank}] ${j.holder} / ${j.account}`;
                                 await navigator.clipboard.writeText(text);
-                                showSuccessToast(
-                                  "보증금 환불 계좌 정보를 복사했습니다",
-                                );
+                                showSuccessToast("보증금 환불 계좌 정보를 복사했습니다");
                               } catch {
                                 showErrorToast("네트워크 오류");
                               }
@@ -1943,8 +1721,7 @@ export default function AdminRentalDetailClient() {
                         수령 방법: <b>{pickupMethodLabel}</b>
                       </div>
                       <div>
-                        방문 수령 처리일:{" "}
-                        <b>{data.outAt ? fmtDateOnly(data.outAt) : "-"}</b>
+                        방문 수령 처리일: <b>{data.outAt ? fmtDateOnly(data.outAt) : "-"}</b>
                       </div>
                     </div>
                   ) : data?.shipping?.outbound?.trackingNumber ? (
@@ -1953,9 +1730,7 @@ export default function AdminRentalDetailClient() {
                         택배사:{" "}
                         <b>
                           {data.shipping.outbound.courier
-                            ? getCourierDisplayName(
-                                data.shipping.outbound.courier,
-                              )
+                            ? getCourierDisplayName(data.shipping.outbound.courier)
                             : "-"}
                         </b>
                       </div>
@@ -1975,8 +1750,7 @@ export default function AdminRentalDetailClient() {
                         </a>
                       </div>
                       <div>
-                        출고일:{" "}
-                        <b>{fmtDateOnly(data.shipping.outbound.shippedAt)}</b>
+                        출고일: <b>{fmtDateOnly(data.shipping.outbound.shippedAt)}</b>
                       </div>
                     </div>
                   ) : (
@@ -1985,18 +1759,14 @@ export default function AdminRentalDetailClient() {
                 </div>
                 {/* 반납 */}
                 <div className="p-4 rounded-lg border bg-muted/60 dark:bg-card/70">
-                  <p className="text-sm font-medium text-muted-foreground mb-2">
-                    반납
-                  </p>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">반납</p>
                   {data?.shipping?.return?.trackingNumber ? (
                     <div className="space-y-1 text-sm">
                       <div>
                         택배사:{" "}
                         <b>
                           {data.shipping.return.courier
-                            ? getCourierDisplayName(
-                                data.shipping.return.courier,
-                              )
+                            ? getCourierDisplayName(data.shipping.return.courier)
                             : "-"}
                         </b>
                       </div>
@@ -2016,8 +1786,7 @@ export default function AdminRentalDetailClient() {
                         </a>
                       </div>
                       <div>
-                        발송일:{" "}
-                        <b>{fmtDateOnly(data.shipping.return.shippedAt)}</b>
+                        발송일: <b>{fmtDateOnly(data.shipping.return.shippedAt)}</b>
                       </div>
                     </div>
                   ) : (
@@ -2044,9 +1813,7 @@ export default function AdminRentalDetailClient() {
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-foreground/80">
-                      {isVisitPickup
-                        ? "방문 수령 처리"
-                        : "수령 확인 / 대여 시작"}
+                      {isVisitPickup ? "방문 수령 처리" : "수령 확인 / 대여 시작"}
                     </p>
                     <p className="font-semibold text-foreground">
                       {data.outAt ? formatDate(data.outAt) : "-"}
@@ -2058,9 +1825,7 @@ export default function AdminRentalDetailClient() {
                   <div>
                     <p className="text-sm text-foreground/80">반납 예정</p>
                     <p className="font-semibold text-foreground">
-                      {data.dueAt
-                        ? formatDate(data.dueAt)
-                        : "수령 확인 후 계산"}
+                      {data.dueAt ? formatDate(data.dueAt) : "수령 확인 후 계산"}
                     </p>
                   </div>
                 </div>
@@ -2078,23 +1843,16 @@ export default function AdminRentalDetailClient() {
                   <div>
                     <p className="text-sm text-foreground/80">보증금 환불</p>
                     <p className="font-semibold text-foreground">
-                      {data.depositRefundedAt
-                        ? formatDate(data.depositRefundedAt)
-                        : "-"}
+                      {data.depositRefundedAt ? formatDate(data.depositRefundedAt) : "-"}
                     </p>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-          {data?.id ? (
-            <AdminInternalNotesCard targetType="rental" targetId={data.id} />
-          ) : null}
+          {data?.id ? <AdminInternalNotesCard targetType="rental" targetId={data.id} /> : null}
           <div id="admin-rental-history">
-            <AdminRentalHistory
-              id={id}
-              servicePickupMethod={servicePickupMethod}
-            />
+            <AdminRentalHistory id={id} servicePickupMethod={servicePickupMethod} />
           </div>
         </div>
       </div>

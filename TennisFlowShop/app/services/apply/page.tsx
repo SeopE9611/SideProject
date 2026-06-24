@@ -66,8 +66,7 @@ const Step3PaymentInfo = dynamic(
   { loading: () => <StepFormSkeleton /> },
 );
 const Step3PaymentInfoRentalReadonly = dynamic(
-  () =>
-    import("@/app/services/apply/_components/steps/Step3PaymentInfoRentalReadonly"),
+  () => import("@/app/services/apply/_components/steps/Step3PaymentInfoRentalReadonly"),
   { loading: () => <StepFormSkeleton /> },
 );
 const Step4FinalRequest = dynamic(
@@ -93,8 +92,7 @@ export default function StringServiceApplyPage() {
   const rawOrderId = searchParams.get("orderId");
   const rawRentalId = searchParams.get("rentalId");
   const orderId = rawOrderId && rawOrderId.trim() ? rawOrderId.trim() : null;
-  const rentalId =
-    rawRentalId && rawRentalId.trim() ? rawRentalId.trim() : null;
+  const rentalId = rawRentalId && rawRentalId.trim() ? rawRentalId.trim() : null;
   const mode = searchParams.get("mode");
   const paymentError = searchParams.get("paymentError");
   const paymentErrorMessage = searchParams.get("message");
@@ -108,12 +106,8 @@ export default function StringServiceApplyPage() {
   // (비-주문 기반: PDP/대여) 수량 상한 계산에 필요한 실제 데이터
   // - lockedStringStock: 상품(스트링) 재고
   // - lockedRacketQuantity: 라켓 보유 수량(대여 기반에서 의미)
-  const [lockedStringStock, setLockedStringStock] = useState<number | null>(
-    null,
-  );
-  const [lockedRacketQuantity, setLockedRacketQuantity] = useState<
-    number | null
-  >(null);
+  const [lockedStringStock, setLockedStringStock] = useState<number | null>(null);
+  const [lockedRacketQuantity, setLockedRacketQuantity] = useState<number | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [order, setOrder] = useState<Order | null>(null);
@@ -136,9 +130,7 @@ export default function StringServiceApplyPage() {
   // 비회원 주문/신청 차단 정책(클라)
   // - NEXT_PUBLIC_GUEST_ORDER_MODE: 'off' | 'legacy' | 'on'
   // - 'on' 일 때만 비회원 허용
-  const rawGuestMode = (
-    process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? "legacy"
-  ).trim();
+  const rawGuestMode = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? "legacy").trim();
   const guestOrderMode =
     rawGuestMode === "off" || rawGuestMode === "legacy" || rawGuestMode === "on"
       ? rawGuestMode
@@ -155,8 +147,7 @@ export default function StringServiceApplyPage() {
     return qs ? `/services/apply?${qs}` : "/services/apply";
   }, [searchParams]);
 
-  const blockedByLoginGate =
-    !allowGuestCheckout && authChecked && !isAuthenticated;
+  const blockedByLoginGate = !allowGuestCheckout && authChecked && !isAuthenticated;
   useEffect(() => {
     setEntryGuardReady(true);
   }, []);
@@ -192,20 +183,15 @@ export default function StringServiceApplyPage() {
 
   const isOrderBased = Boolean(orderId);
   const isRentalBased = Boolean(rentalId);
-  const isSingleApplyMode =
-    mode === "single" && !isOrderBased && !isRentalBased;
-  const queryStringProductIdRaw =
-    searchParams.get("productId") ?? searchParams.get("stringId");
+  const isSingleApplyMode = mode === "single" && !isOrderBased && !isRentalBased;
+  const queryStringProductIdRaw = searchParams.get("productId") ?? searchParams.get("stringId");
   const selectedStringProductIdFromQuery =
-    typeof queryStringProductIdRaw === "string" &&
-    queryStringProductIdRaw.trim()
+    typeof queryStringProductIdRaw === "string" && queryStringProductIdRaw.trim()
       ? queryStringProductIdRaw.trim()
       : null;
-  const selectedGaugeParam =
-    searchParams.get("selectedGauge") ?? searchParams.get("gauge") ?? "";
+  const selectedGaugeParam = searchParams.get("selectedGauge") ?? searchParams.get("gauge") ?? "";
   const normalizedSelectedGauge = selectedGaugeParam.trim() || "";
-  const selectedColorParam =
-    searchParams.get("selectedColor") ?? searchParams.get("color") ?? "";
+  const selectedColorParam = searchParams.get("selectedColor") ?? searchParams.get("color") ?? "";
   const normalizedSelectedColor = selectedColorParam.trim() || "";
 
   // 이 주문에 연결된 스트링 서비스 슬롯 정보 (있을 때만 사용)
@@ -223,9 +209,7 @@ export default function StringServiceApplyPage() {
       ? orderStringService.remainingSlots
       : undefined;
   const orderUsedSlots =
-    typeof orderStringService?.usedSlots === "number"
-      ? orderStringService.usedSlots
-      : 0;
+    typeof orderStringService?.usedSlots === "number" ? orderStringService.usedSlots : 0;
   const hasOrderApplicationHistory = orderUsedSlots > 0;
   const isOrderSlotBlocked = !!(
     orderId &&
@@ -234,8 +218,7 @@ export default function StringServiceApplyPage() {
   );
 
   // PDP 연동용 (주의: orderId 기반 진입이면 PDP 파라미터는 무시한다)
-  const pdpProductId =
-    !isOrderBased && !isRentalBased ? selectedStringProductIdFromQuery : null;
+  const pdpProductId = !isOrderBased && !isRentalBased ? selectedStringProductIdFromQuery : null;
 
   /**
    * 옵션 A: 교체 서비스 신청은 "주문(orderId)" 기반으로만 진행합니다.
@@ -260,9 +243,7 @@ export default function StringServiceApplyPage() {
       search: typeof window !== "undefined" ? window.location.search : null,
     });
 
-    showErrorToast(
-      "교체 서비스 신청은 결제(주문) 이후 진행됩니다. 상품 페이지로 이동합니다.",
-    );
+    showErrorToast("교체 서비스 신청은 결제(주문) 이후 진행됩니다. 상품 페이지로 이동합니다.");
     router.replace(`/products/${encodeURIComponent(String(pdpProductId))}`);
   }, [
     entryGuardReady,
@@ -278,9 +259,7 @@ export default function StringServiceApplyPage() {
   ]);
 
   // null 또는 빈문자열("")이면 NaN 처리, 그 외에는 Number 변환
-  const mountingFeeParam = isOrderBased
-    ? null
-    : searchParams.get("mountingFee");
+  const mountingFeeParam = isOrderBased ? null : searchParams.get("mountingFee");
   const pdpMountingFee =
     mountingFeeParam === null || mountingFeeParam.trim() === ""
       ? Number.NaN
@@ -373,13 +352,10 @@ export default function StringServiceApplyPage() {
     if (!rentalId) return;
     (async () => {
       try {
-        const res = await fetch(
-          `/api/applications/stringing/by-rental/${rentalId}`,
-          {
-            cache: "no-store",
-            credentials: "include",
-          },
-        );
+        const res = await fetch(`/api/applications/stringing/by-rental/${rentalId}`, {
+          cache: "no-store",
+          credentials: "include",
+        });
         if (!res.ok) return; // 404면(초안 없음) → 대여 생성 단계(2단계) 점검 필요
         const data = await res.json();
         if (data?.found) {
@@ -419,9 +395,7 @@ export default function StringServiceApplyPage() {
 
           // 현재 가용 재고(관리자 설정 stock) 기억
           // - manageStock=false면 서버에서 null로 내려주도록(아래 mini API diff 참고)
-          setLockedStringStock(
-            typeof data.stock === "number" ? data.stock : null,
-          );
+          setLockedStringStock(typeof data.stock === "number" ? data.stock : null);
 
           // mountingFee를 formData에 저장
           if (typeof data.mountingFee === "number") {
@@ -450,9 +424,7 @@ export default function StringServiceApplyPage() {
 
   // PDP에서 넘어오면 STEP2 자동 선택 + 장착비 기억 + 플래그 on
   useEffect(() => {
-    const autoSelectedProductId = isOrderBased
-      ? selectedStringProductIdFromQuery
-      : pdpProductId;
+    const autoSelectedProductId = isOrderBased ? selectedStringProductIdFromQuery : pdpProductId;
 
     if (!autoSelectedProductId) return;
     if (isRentalBased) return;
@@ -482,12 +454,9 @@ export default function StringServiceApplyPage() {
         stringTypes: [autoSelectedProductId], // 무조건 선택
         stringUseCounts: {
           ...(prev.stringUseCounts ?? {}),
-          [autoSelectedProductId]:
-            prev.stringUseCounts?.[autoSelectedProductId] ?? 1,
+          [autoSelectedProductId]: prev.stringUseCounts?.[autoSelectedProductId] ?? 1,
         },
-        pdpMountingFee: Number.isFinite(pdpMountingFee)
-          ? pdpMountingFee
-          : undefined,
+        pdpMountingFee: Number.isFinite(pdpMountingFee) ? pdpMountingFee : undefined,
         selectedGauge:
           isOrderBased && selectedStringProductIdFromQuery
             ? normalizedSelectedGauge || prev.selectedGauge || ""
@@ -538,12 +507,7 @@ export default function StringServiceApplyPage() {
           body: JSON.stringify({ orderId: orderId || undefined }), // 서버 멱등성 유지
           cache: "no-store",
         });
-        console.debug(
-          "[draft bootstrap] POST",
-          draftUrl,
-          "status=",
-          resp.status,
-        );
+        console.debug("[draft bootstrap] POST", draftUrl, "status=", resp.status);
         if (!resp.ok) {
           shouldFallbackByOrderLookup = true;
         } else {
@@ -568,13 +532,10 @@ export default function StringServiceApplyPage() {
       // POST 실패/응답 비정상일 때만 최소 fallback으로 by-order 재조회
       if (shouldFallbackByOrderLookup && orderId) {
         try {
-          const r = await fetch(
-            `/api/applications/stringing/by-order/${orderId}`,
-            {
-              cache: "no-store",
-              credentials: "include",
-            },
-          );
+          const r = await fetch(`/api/applications/stringing/by-order/${orderId}`, {
+            cache: "no-store",
+            credentials: "include",
+          });
           if (r.ok) {
             const j = await r.json();
             if (j?.found) setApplicationId(j.applicationId);
@@ -591,24 +552,15 @@ export default function StringServiceApplyPage() {
     };
 
     if (step === 1) {
-      if (!formData.name.trim())
-        return (toast("신청인 이름을 입력해주세요."), false);
-      if (!formData.email.trim())
-        return (toast("이메일을 입력해주세요."), false);
-      if (!formData.phone.trim())
-        return (toast("연락처를 입력해주세요."), false);
+      if (!formData.name.trim()) return (toast("신청인 이름을 입력해주세요."), false);
+      if (!formData.email.trim()) return (toast("이메일을 입력해주세요."), false);
+      if (!formData.phone.trim()) return (toast("연락처를 입력해주세요."), false);
       if (!isValidPhone(formData.phone))
-        return (
-          toast("올바른 연락처 형식(01012345678)으로 입력해주세요."),
-          false
-        );
+        return (toast("올바른 연락처 형식(01012345678)으로 입력해주세요."), false);
 
-      if (!formData.collectionMethod)
-        return (toast("수거 방식을 선택해주세요."), false);
+      if (!formData.collectionMethod) return (toast("수거 방식을 선택해주세요."), false);
 
-      const normalizedCollection = normalizeCollection(
-        formData.collectionMethod,
-      );
+      const normalizedCollection = normalizeCollection(formData.collectionMethod);
       if (normalizedCollection !== "visit") {
         if (!formData.shippingPostcode.trim())
           return (toast("우편번호 찾기를 통해 주소를 등록해주세요."), false);
@@ -616,10 +568,8 @@ export default function StringServiceApplyPage() {
           return (toast("우편번호 찾기를 통해 주소를 등록해주세요."), false);
       }
       if (formData.collectionMethod === "courier_pickup") {
-        if (!formData.pickupDate)
-          return (toast("수거 희망일을 입력해주세요."), false);
-        if (!formData.pickupTime)
-          return (toast("수거 시간대를 입력해주세요."), false);
+        if (!formData.pickupDate) return (toast("수거 희망일을 입력해주세요."), false);
+        if (!formData.pickupTime) return (toast("수거 시간대를 입력해주세요."), false);
       }
       return true;
     }
@@ -637,8 +587,7 @@ export default function StringServiceApplyPage() {
         return (toast("직접 입력한 스트링명을 적어주세요."), false);
       }
 
-      const isVisit =
-        normalizeCollection(formData.collectionMethod) === "visit";
+      const isVisit = normalizeCollection(formData.collectionMethod) === "visit";
       if (isVisit) {
         if (!formData.preferredDate) {
           return (toast("장착 희망일을 선택해주세요."), false);
@@ -672,32 +621,15 @@ export default function StringServiceApplyPage() {
 
           if (isSingleApplyMode) {
             if (!stringName)
-              return (
-                toast(`${i + 1}번 작업 항목의 스트링명을 입력해주세요.`),
-                false
-              );
+              return (toast(`${i + 1}번 작업 항목의 스트링명을 입력해주세요.`), false);
             if (!racketName)
-              return (
-                toast(`${i + 1}번 작업 항목의 라켓 이름을 입력해주세요.`),
-                false
-              );
+              return (toast(`${i + 1}번 작업 항목의 라켓 이름을 입력해주세요.`), false);
             if (!tensionMain)
-              return (
-                toast(`${i + 1}번 작업 항목의 메인 텐션을 입력해주세요.`),
-                false
-              );
+              return (toast(`${i + 1}번 작업 항목의 메인 텐션을 입력해주세요.`), false);
             if (!tensionCross)
-              return (
-                toast(`${i + 1}번 작업 항목의 크로스 텐션을 입력해주세요.`),
-                false
-              );
+              return (toast(`${i + 1}번 작업 항목의 크로스 텐션을 입력해주세요.`), false);
           } else if (!racketName || !tensionMain || !tensionCross) {
-            return (
-              toast(
-                `라켓 ${i + 1}의 이름과 메인/크로스 텐션을 모두 입력해주세요.`,
-              ),
-              false
-            );
+            return (toast(`라켓 ${i + 1}의 이름과 메인/크로스 텐션을 모두 입력해주세요.`), false);
           }
         }
       }
@@ -710,10 +642,8 @@ export default function StringServiceApplyPage() {
       // → 구매 UX처럼 결제 스텝은 유지하되, 입력 검증은 생략
       if (isRentalBased) return true;
       if (!usingPackage && formData.paymentMethod === "bank_transfer") {
-        if (!formData.shippingBank)
-          return (toast("은행을 선택해주세요."), false);
-        if (!formData.shippingDepositor.trim())
-          return (toast("입금자명을 입력해주세요."), false);
+        if (!formData.shippingBank) return (toast("은행을 선택해주세요."), false);
+        if (!formData.shippingDepositor.trim()) return (toast("입금자명을 입력해주세요."), false);
       }
       return true;
     }
@@ -744,8 +674,7 @@ export default function StringServiceApplyPage() {
       if (!el) return false;
       // 숨김/비활성 요소는 스킵
       const rects = (el as any).getClientRects?.() as DOMRectList | undefined;
-      const isHidden =
-        (el as any).offsetParent === null && (!rects || rects.length === 0);
+      const isHidden = (el as any).offsetParent === null && (!rects || rects.length === 0);
       if (isHidden) return false;
       focusEl(el);
       return true;
@@ -766,17 +695,12 @@ export default function StringServiceApplyPage() {
         if (!formData.phone.trim()) return { id: "phone" };
         if (!isValidPhone(formData.phone)) return { id: "phone" };
 
-        if (!formData.collectionMethod)
-          return { selector: 'input[name="collectionMethod"]' };
+        if (!formData.collectionMethod) return { selector: 'input[name="collectionMethod"]' };
 
-        const normalizedCollection = normalizeCollection(
-          formData.collectionMethod,
-        );
+        const normalizedCollection = normalizeCollection(formData.collectionMethod);
         if (normalizedCollection !== "visit") {
-          if (!formData.shippingPostcode.trim())
-            return { id: "shippingPostcode" };
-          if (!formData.shippingAddress.trim())
-            return { id: "shippingPostcode" };
+          if (!formData.shippingPostcode.trim()) return { id: "shippingPostcode" };
+          if (!formData.shippingAddress.trim()) return { id: "shippingPostcode" };
         }
 
         if (formData.collectionMethod === "courier_pickup") {
@@ -798,8 +722,7 @@ export default function StringServiceApplyPage() {
           return { selector: 'input[placeholder="직접 입력한 스트링 이름"]' };
         }
 
-        const isVisit =
-          normalizeCollection(formData.collectionMethod) === "visit";
+        const isVisit = normalizeCollection(formData.collectionMethod) === "visit";
         if (isVisit) {
           if (!formData.preferredDate) return { id: "preferredDate" };
           if (!formData.preferredTime) {
@@ -828,8 +751,7 @@ export default function StringServiceApplyPage() {
             }
             if (!racketName || !tensionMain || !tensionCross) {
               return {
-                selector:
-                  'input[placeholder^="예: 윌슨"], input[placeholder="예: 라켓1"]',
+                selector: 'input[placeholder^="예: 윌슨"], input[placeholder="예: 라켓1"]',
               };
             }
           }
@@ -841,8 +763,7 @@ export default function StringServiceApplyPage() {
         if (isRentalBased) return null;
         if (!usingPackage && formData.paymentMethod === "bank_transfer") {
           if (!formData.shippingBank) return { id: "shippingBank" };
-          if (!formData.shippingDepositor.trim())
-            return { id: "shippingDepositor" };
+          if (!formData.shippingDepositor.trim()) return { id: "shippingDepositor" };
         }
         return null;
       }
@@ -902,8 +823,7 @@ export default function StringServiceApplyPage() {
     if (!allowGuestCheckout && !authChecked) return false;
     if (isUserLoading) return false;
     if (isLoadingPdpProduct) return false;
-    if (fromPDP && pdpProductId)
-      return formData.stringTypes.includes(pdpProductId);
+    if (fromPDP && pdpProductId) return formData.stringTypes.includes(pdpProductId);
     return true;
   }, [
     blockedByLoginGate,
@@ -953,10 +873,7 @@ export default function StringServiceApplyPage() {
     let cancelled = false;
     let timerId: number | null = null;
     const win = window as Window & {
-      requestIdleCallback?: (
-        callback: IdleRequestCallback,
-        options?: IdleRequestOptions,
-      ) => number;
+      requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
       cancelIdleCallback?: (handle: number) => void;
     };
 
@@ -976,8 +893,7 @@ export default function StringServiceApplyPage() {
               new Date(p.expiresAt).getTime() >= Date.now(),
           );
           items.sort(
-            (a: any, b: any) =>
-              new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime(),
+            (a: any, b: any) => new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime(),
           );
           if (items.length > 0) {
             const p = items[0];
@@ -1081,11 +997,7 @@ export default function StringServiceApplyPage() {
   );
 
   // 실제로 이번 신청에서 패키지를 사용하는지 여부(옵트아웃까지 반영)
-  const usingPackage = !!(
-    !isRentalBased &&
-    canApplyPackage &&
-    !formData.packageOptOut
-  );
+  const usingPackage = !!(!isRentalBased && canApplyPackage && !formData.packageOptOut);
 
   // 재고/수량 정보가 로딩된 뒤, 현재 입력값이 상한을 넘으면 강제로 보정(clamp)
   useEffect(() => {
@@ -1178,9 +1090,7 @@ export default function StringServiceApplyPage() {
     return found ?? null;
   }, [orderId, order, formData.stringTypes]);
   const selectedColorDisplayLabel =
-    selectedOrderItem?.selectedColorLabel?.trim() ||
-    formData.selectedColor ||
-    "";
+    selectedOrderItem?.selectedColorLabel?.trim() || formData.selectedColor || "";
 
   // 4. 디버깅 콘솔 로그 (개발 환경에서만)
   useEffect(() => {
@@ -1198,21 +1108,11 @@ export default function StringServiceApplyPage() {
       stringTypes: formData.stringTypes,
       selectedGauge: formData.selectedGauge || undefined,
       selectedColor:
-        formData.stringTypes.length > 0
-          ? formData.selectedColor || undefined
-          : undefined,
+        formData.stringTypes.length > 0 ? formData.selectedColor || undefined : undefined,
       linesCount: linesForSubmit.length,
       fromPDP,
     });
-  }, [
-    pdpProductId,
-    pdpMountingFee,
-    orderId,
-    order,
-    formData.stringTypes,
-    linesForSubmit,
-    fromPDP,
-  ]);
+  }, [pdpProductId, pdpMountingFee, orderId, order, formData.stringTypes, linesForSubmit, fromPDP]);
 
   // 라켓 금액: orderId 기반 주문에서 가져오기
   const racketPrice = useMemo(() => {
@@ -1222,9 +1122,7 @@ export default function StringServiceApplyPage() {
     const items = (order as any)?.items;
     if (Array.isArray(items)) {
       return items
-        .filter(
-          (it: any) => it?.kind === "racket" || it?.kind === "used_racket",
-        )
+        .filter((it: any) => it?.kind === "racket" || it?.kind === "used_racket")
         .reduce((sum: number, it: any) => {
           const unit = Number(it?.price ?? 0);
           const qty = Number(it?.quantity ?? 1);
@@ -1267,12 +1165,9 @@ export default function StringServiceApplyPage() {
     if (!orderId || !order) return false;
     const items = (order as any)?.items;
     if (!Array.isArray(items)) return false;
-    const hasRacket = items.some(
-      (it: any) => it?.kind === "racket" || it?.kind === "used_racket",
-    );
+    const hasRacket = items.some((it: any) => it?.kind === "racket" || it?.kind === "used_racket");
     const hasMountableString = items.some(
-      (it: any) =>
-        it?.kind === "product" && isMountableStringByFee(it?.mountingFee),
+      (it: any) => it?.kind === "product" && isMountableStringByFee(it?.mountingFee),
     );
     return hasRacket && hasMountableString;
   }, [orderId, order]);
@@ -1319,11 +1214,7 @@ export default function StringServiceApplyPage() {
   }, [isRentalBased, rentalRacketPrice, rentalStringPrice, rentalStringingFee]);
 
   // racketPrice: 주문 기반일 때만 의미가 있으니 그대로 사용(이미 0/양수로 잘 계산됨)
-  const summaryRacketPrice = isOrderBased
-    ? racketPrice
-    : isRentalBased
-      ? rentalRacketPrice
-      : 0;
+  const summaryRacketPrice = isOrderBased ? racketPrice : isRentalBased ? rentalRacketPrice : 0;
 
   // 라벨도 케이스별로
   const totalLabel = isOrderBased
@@ -1336,9 +1227,7 @@ export default function StringServiceApplyPage() {
 
   /** PDP에서 넘어온 스트링 상품 금액 (없으면 0원) */
   const pdpStringPrice =
-    isCombinedPdpMode && pdpProduct && typeof pdpProduct.price === "number"
-      ? pdpProduct.price
-      : 0;
+    isCombinedPdpMode && pdpProduct && typeof pdpProduct.price === "number" ? pdpProduct.price : 0;
   // stringPrice: 주문 기반이면 주문에서, 아니면 PDP에서(기존 유지)
   const summaryStringPrice = isOrderBased
     ? orderStringPrice
@@ -1461,18 +1350,13 @@ export default function StringServiceApplyPage() {
   ]);
 
   const shouldShowEntryBanner =
-    isRentalBased ||
-    Boolean(orderId) ||
-    isOrderSlotBlocked ||
-    hasOrderApplicationHistory;
+    isRentalBased || Boolean(orderId) || isOrderSlotBlocked || hasOrderApplicationHistory;
 
   const handleOpenPostcode = async () => {
     try {
       await loadDaumPostcode();
     } catch {
-      showErrorToast(
-        "주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
-      );
+      showErrorToast("주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
       return;
     }
 
@@ -1538,21 +1422,13 @@ export default function StringServiceApplyPage() {
 
     // shippingInfo 정합성 보장: 비어 있으면 신청자 정보로 fallback
     const shippingName = (formData.shippingName || formData.name || "").trim();
-    const shippingEmail = (
-      formData.shippingEmail ||
-      formData.email ||
-      ""
-    ).trim();
-    const shippingPhone = normalizePhone(
-      formData.shippingPhone || formData.phone,
-    );
+    const shippingEmail = (formData.shippingEmail || formData.email || "").trim();
+    const shippingPhone = normalizePhone(formData.shippingPhone || formData.phone);
 
     setIsSubmitting(true);
     // 이하 payload 생성/POST 로직은 그대로 유지
 
-    const normalizedCollectionMethod = normalizeCollection(
-      formData.collectionMethod,
-    );
+    const normalizedCollectionMethod = normalizeCollection(formData.collectionMethod);
     const isVisitCollection = normalizedCollectionMethod === "visit";
 
     const payload = {
@@ -1570,12 +1446,8 @@ export default function StringServiceApplyPage() {
       stringTypes: formData.stringTypes,
       selectedGauge: formData.selectedGauge || undefined,
       selectedColor:
-        formData.stringTypes.length > 0
-          ? formData.selectedColor || undefined
-          : undefined,
-      customStringName: formData.stringTypes.includes("custom")
-        ? formData.customStringType
-        : null,
+        formData.stringTypes.length > 0 ? formData.selectedColor || undefined : undefined,
+      customStringName: formData.stringTypes.includes("custom") ? formData.customStringType : null,
       preferredDate: formData.preferredDate,
       preferredTime: formData.preferredTime,
       requirements: formData.requirements,
@@ -1628,9 +1500,7 @@ export default function StringServiceApplyPage() {
           return null;
         }
         // 그 외 일반 오류
-        const { message } = await res
-          .json()
-          .catch(() => ({ message: "신청 실패" }));
+        const { message } = await res.json().catch(() => ({ message: "신청 실패" }));
         throw new Error(message || "신청 실패");
       }
       const result = await res.json();
@@ -1648,9 +1518,7 @@ export default function StringServiceApplyPage() {
 
       if (navigateOnSuccess) {
         showSuccessToast("신청이 완료되었습니다!");
-        router.push(
-          `/services/success?applicationId=${encodeURIComponent(result.applicationId)}`,
-        );
+        router.push(`/services/success?applicationId=${encodeURIComponent(result.applicationId)}`);
       }
       return result.applicationId;
     } catch (error) {
@@ -1808,8 +1676,7 @@ export default function StringServiceApplyPage() {
               </p>
             </div>
             <p className="mt-3 text-sm text-muted-foreground">
-              잠시만 기다려주세요. 확인이 끝나면 신청 화면 또는 로그인 안내로
-              자동 이동합니다.
+              잠시만 기다려주세요. 확인이 끝나면 신청 화면 또는 로그인 안내로 자동 이동합니다.
             </p>
           </div>
         </div>
@@ -1846,8 +1713,7 @@ export default function StringServiceApplyPage() {
                 stepLabel: "선택 01",
                 icon: <Grid2X2 className="h-7 w-7" />,
                 title: "스트링 구매 후 장착",
-                target:
-                  "새 스트링을 고른 뒤 보유 라켓에 장착 신청까지 이어갑니다.",
+                target: "새 스트링을 고른 뒤 보유 라켓에 장착 신청까지 이어갑니다.",
                 steps: "스트링 선택 → 결제/장착 정보 입력",
                 cta: "스트링 고르고 신청하기",
                 href: "/products?from=apply",
@@ -1894,18 +1760,14 @@ export default function StringServiceApplyPage() {
                   </div>
                 </div>
                 <div className="rounded-xl border border-border bg-muted/30 p-3">
-                  <p className="text-xs font-semibold text-primary">
-                    다음 진행
-                  </p>
+                  <p className="text-xs font-semibold text-primary">다음 진행</p>
                   <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">
                     {item.steps}
                   </p>
                 </div>
                 <div className="mt-auto pt-4">
                   <span className="inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-center text-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
-                    <span className="break-keep whitespace-normal">
-                      {item.cta}
-                    </span>
+                    <span className="break-keep whitespace-normal">{item.cta}</span>
                     <svg
                       className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1"
                       fill="none"
@@ -1933,8 +1795,8 @@ export default function StringServiceApplyPage() {
                     이미 구매하거나 대여한 내역이 있나요?
                   </p>
                   <p className="text-sm text-muted-foreground leading-relaxed break-keep">
-                    마이페이지 주문/대여 내역에서 신청 가능한 항목을 선택해
-                    교체서비스를 이어서 신청할 수 있습니다.
+                    마이페이지 주문/대여 내역에서 신청 가능한 항목을 선택해 교체서비스를 이어서
+                    신청할 수 있습니다.
                   </p>
                 </div>
                 <div className="mt-auto flex flex-col gap-2 bp-sm:flex-row">
@@ -1965,8 +1827,7 @@ export default function StringServiceApplyPage() {
                     어떤 스트링을 골라야 할지 고민된다면
                   </p>
                   <p className="text-sm text-muted-foreground leading-relaxed break-keep">
-                    스트링 선택이 어렵다면 플레이 성향에 맞는 추천을 먼저
-                    확인해보세요.
+                    스트링 선택이 어렵다면 플레이 성향에 맞는 추천을 먼저 확인해보세요.
                   </p>
                 </div>
                 <Button
@@ -2004,18 +1865,14 @@ export default function StringServiceApplyPage() {
                   className="mb-4 border-destructive/30 bg-destructive/10 text-sm text-destructive"
                   padding="sm"
                 >
-                  <p className="font-semibold">
-                    카드/간편결제가 완료되지 않았습니다.
-                  </p>
+                  <p className="font-semibold">카드/간편결제가 완료되지 않았습니다.</p>
                   <p className="mt-1">
                     {failedPaymentApplicationId
                       ? "신청서는 저장되었으며, 결제만 다시 진행하거나 매장에 문의해 주세요."
                       : "결제 상태를 확인할 수 없습니다. 다시 시도하거나 매장에 문의해 주세요."}
                   </p>
                   {paymentErrorMessage ? (
-                    <p className="mt-1 text-xs opacity-80">
-                      {paymentErrorMessage}
-                    </p>
+                    <p className="mt-1 text-xs opacity-80">{paymentErrorMessage}</p>
                   ) : null}
                 </PublicSurface>
               ) : null}
@@ -2055,9 +1912,7 @@ export default function StringServiceApplyPage() {
                       padding="sm"
                     >
                       게이지: {formatGaugeLabel(formData.selectedGauge)}
-                      {selectedColorDisplayLabel
-                        ? ` · 색상: ${selectedColorDisplayLabel}`
-                        : ""}
+                      {selectedColorDisplayLabel ? ` · 색상: ${selectedColorDisplayLabel}` : ""}
                     </PublicSurface>
                   ) : null}
 
@@ -2068,29 +1923,17 @@ export default function StringServiceApplyPage() {
                     <ApplyPriceSummaryMobile
                       preferredDate={formData.preferredDate ?? undefined}
                       preferredTime={formData.preferredTime ?? undefined}
-                      collectionMethod={
-                        formData.collectionMethod as CollectionMethod
-                      }
+                      collectionMethod={formData.collectionMethod as CollectionMethod}
                       stringTypes={formData.stringTypes}
                       stringIncluded={stringIncludedForCard}
                       headerHint={headerHintForCard}
-                      usingPackage={
-                        isRentalBased ? false : priceView.usingPackage
-                      }
+                      usingPackage={isRentalBased ? false : priceView.usingPackage}
                       base={summaryBaseForCard}
                       pickupFee={priceView.pickupFee}
                       total={checkoutTotal}
                       racketPrice={isRentalBased ? 0 : summaryRacketPrice}
-                      rentalDeposit={
-                        isRentalBased
-                          ? Number(rentalAmount?.deposit ?? 0)
-                          : undefined
-                      }
-                      rentalFee={
-                        isRentalBased
-                          ? Number(rentalAmount?.fee ?? 0)
-                          : undefined
-                      }
+                      rentalDeposit={isRentalBased ? Number(rentalAmount?.deposit ?? 0) : undefined}
+                      rentalFee={isRentalBased ? Number(rentalAmount?.fee ?? 0) : undefined}
                       stringPrice={summaryStringPrice}
                       totalLabel={totalLabel}
                       summaryTitle={
@@ -2105,9 +1948,7 @@ export default function StringServiceApplyPage() {
                     <ApplyStepFooter
                       currentStep={currentStep}
                       totalSteps={totalSteps}
-                      onPrev={() =>
-                        setCurrentStep(Math.max(1, currentStep - 1))
-                      }
+                      onPrev={() => setCurrentStep(Math.max(1, currentStep - 1))}
                       onNext={handleNext}
                       isStepValid={isStepValid}
                       isSubmitting={isSubmitting}
@@ -2144,18 +1985,12 @@ export default function StringServiceApplyPage() {
               pickupFee={priceView.pickupFee}
               total={checkoutTotal}
               racketPrice={isRentalBased ? 0 : summaryRacketPrice}
-              rentalDeposit={
-                isRentalBased ? Number(rentalAmount?.deposit ?? 0) : undefined
-              }
-              rentalFee={
-                isRentalBased ? Number(rentalAmount?.fee ?? 0) : undefined
-              }
+              rentalDeposit={isRentalBased ? Number(rentalAmount?.deposit ?? 0) : undefined}
+              rentalFee={isRentalBased ? Number(rentalAmount?.fee ?? 0) : undefined}
               stringPrice={summaryStringPrice}
               totalLabel={totalLabel}
               summaryTitle={
-                isSingleApplyMode && linesForSubmit.length > 0
-                  ? "작업 신청 요약"
-                  : undefined
+                isSingleApplyMode && linesForSubmit.length > 0 ? "작업 신청 요약" : undefined
               }
               workLines={isSingleApplyMode ? linesForSubmit : undefined}
             />

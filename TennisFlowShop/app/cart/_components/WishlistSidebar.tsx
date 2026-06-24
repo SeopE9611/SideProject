@@ -16,12 +16,8 @@ type Props = {
   variant?: "sidebar" | "inline"; // inline: 장바구니 목록 아래에 붙는 모드
 };
 
-export default function WishlistSidebar({
-  className,
-  variant = "sidebar",
-}: Props) {
-  const { items, clear, remove, isLoading, hasDataError, hasResolvedData } =
-    useWishlist();
+export default function WishlistSidebar({ className, variant = "sidebar" }: Props) {
+  const { items, clear, remove, isLoading, hasDataError, hasResolvedData } = useWishlist();
   const router = useRouter();
   const add = useCartStore((s) => s.addItem);
   const [removingId, setRemovingId] = useState<string | null>(null);
@@ -39,13 +35,7 @@ export default function WishlistSidebar({
 
   const resolvedItems = items ?? [];
   // 사이드바 숨김은 실제 빈 데이터가 확정된 경우에만 허용한다.
-  if (
-    !isLoading &&
-    !hasDataError &&
-    hasResolvedData &&
-    resolvedItems.length === 0
-  )
-    return null;
+  if (!isLoading && !hasDataError && hasResolvedData && resolvedItems.length === 0) return null;
 
   if (hasDataError) {
     return (
@@ -72,16 +62,12 @@ export default function WishlistSidebar({
 
   function handleAddToCart(it: (typeof resolvedItems)[number]) {
     if (it.requiresOption && !it.hasSelectedOption) {
-      showErrorToast(
-        "색상/게이지 선택이 필요합니다. 상세페이지에서 옵션을 선택해주세요.",
-      );
+      showErrorToast("색상/게이지 선택이 필요합니다. 상세페이지에서 옵션을 선택해주세요.");
       router.push(`/products/${it.id}`);
       return;
     }
     if (it.requiresOption && !it.optionAvailable) {
-      showErrorToast(
-        "찜한 옵션이 현재 품절되었습니다. 다른 옵션을 선택해주세요.",
-      );
+      showErrorToast("찜한 옵션이 현재 품절되었습니다. 다른 옵션을 선택해주세요.");
       return;
     }
 
@@ -111,8 +97,7 @@ export default function WishlistSidebar({
       <CardHeader
         className={clsx(
           "rounded-t-lg",
-          variant === "inline" &&
-            "bg-muted/50 dark:bg-card/40 border-b border-border",
+          variant === "inline" && "bg-muted/50 dark:bg-card/40 border-b border-border",
         )}
       >
         <div className="flex flex-col items-start gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
@@ -162,27 +147,19 @@ export default function WishlistSidebar({
                 >
                   {it.name}
                 </Link>
-                <div className="text-sm text-muted-foreground">
-                  {it.price.toLocaleString()}원
-                </div>
+                <div className="text-sm text-muted-foreground">{it.price.toLocaleString()}원</div>
                 <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
                   {it.hasSelectedOption ? (
                     <>
-                      {it.selectedColorLabel && (
-                        <div>색상: {it.selectedColorLabel}</div>
-                      )}
-                      {it.selectedGauge && (
-                        <div>게이지: {it.selectedGauge}</div>
-                      )}
+                      {it.selectedColorLabel && <div>색상: {it.selectedColorLabel}</div>}
+                      {it.selectedGauge && <div>게이지: {it.selectedGauge}</div>}
                       {typeof it.optionStock === "number" && (
                         <div>현재 재고: {it.optionStock}개</div>
                       )}
                     </>
                   ) : it.requiresOption ? (
                     <>
-                      <div className="font-medium text-warning">
-                        옵션 미선택
-                      </div>
+                      <div className="font-medium text-warning">옵션 미선택</div>
                       <div>상세페이지에서 색상/게이지를 선택해주세요.</div>
                     </>
                   ) : null}
@@ -199,20 +176,12 @@ export default function WishlistSidebar({
                   variant="outline"
                   className="h-9 w-9 border-border bg-transparent p-0 hover:bg-primary/10 dark:hover:bg-primary/20"
                   onClick={() => handleAddToCart(it)}
-                  disabled={
-                    it.requiresOption &&
-                    it.hasSelectedOption &&
-                    !it.optionAvailable
-                  }
+                  disabled={it.requiresOption && it.hasSelectedOption && !it.optionAvailable}
                   aria-label={
-                    it.requiresOption && !it.hasSelectedOption
-                      ? "옵션 선택"
-                      : "장바구니에 담기"
+                    it.requiresOption && !it.hasSelectedOption ? "옵션 선택" : "장바구니에 담기"
                   }
                   title={
-                    it.requiresOption && !it.hasSelectedOption
-                      ? "옵션 선택"
-                      : "장바구니에 담기"
+                    it.requiresOption && !it.hasSelectedOption ? "옵션 선택" : "장바구니에 담기"
                   }
                   // remove(it.id); -> 자동삭제 전용 (지워서 활성화 시켜도됨)
                 >

@@ -26,16 +26,14 @@ function getPerformanceLevel(value: number): {
       color: "text-destructive",
       bgColor: "bg-destructive",
     };
-  if (value <= 40)
-    return { label: "낮음", color: "text-warning", bgColor: "bg-warning" };
+  if (value <= 40) return { label: "낮음", color: "text-warning", bgColor: "bg-warning" };
   if (value <= 60)
     return {
       label: "보통",
       color: "text-muted-foreground",
       bgColor: "bg-muted-foreground",
     };
-  if (value <= 80)
-    return { label: "높음", color: "text-info", bgColor: "bg-info" };
+  if (value <= 80) return { label: "높음", color: "text-info", bgColor: "bg-info" };
   return { label: "매우 높음", color: "text-success", bgColor: "bg-success" };
 }
 
@@ -59,9 +57,7 @@ export function PerformanceSlider({
           {label}
         </Label>
         <div className="flex items-center gap-2">
-          <span className={cn("text-xs font-medium", level.color)}>
-            {level.label}
-          </span>
+          <span className={cn("text-xs font-medium", level.color)}>{level.label}</span>
           <span className="min-w-[3rem] rounded-md bg-primary/10 px-2 py-1 text-center text-sm font-bold text-primary">
             {value}
           </span>
@@ -114,10 +110,7 @@ interface PerformanceSummaryProps {
   className?: string;
 }
 
-export function PerformanceSummary({
-  features,
-  className,
-}: PerformanceSummaryProps) {
+export function PerformanceSummary({ features, className }: PerformanceSummaryProps) {
   const items = [
     { key: "power", label: "반발력", value: features.power },
     { key: "control", label: "컨트롤", value: features.control },
@@ -126,17 +119,10 @@ export function PerformanceSummary({
     { key: "comfort", label: "편안함", value: features.comfort },
   ];
 
-  const average = Math.round(
-    items.reduce((sum, item) => sum + item.value, 0) / items.length,
-  );
+  const average = Math.round(items.reduce((sum, item) => sum + item.value, 0) / items.length);
 
   return (
-    <div
-      className={cn(
-        "rounded-lg border border-border/60 bg-muted/20 p-4",
-        className,
-      )}
-    >
+    <div className={cn("rounded-lg border border-border/60 bg-muted/20 p-4", className)}>
       <div className="mb-4 flex items-center justify-between">
         <h4 className="text-sm font-semibold text-foreground">성능 요약</h4>
         <div className="flex items-center gap-2">
@@ -152,21 +138,14 @@ export function PerformanceSummary({
           const level = getPerformanceLevel(item.value);
           return (
             <div key={item.key} className="flex items-center gap-3">
-              <span className="w-16 text-xs text-muted-foreground">
-                {item.label}
-              </span>
+              <span className="w-16 text-xs text-muted-foreground">{item.label}</span>
               <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-muted">
                 <div
-                  className={cn(
-                    "h-full rounded-full transition-all duration-300",
-                    level.bgColor,
-                  )}
+                  className={cn("h-full rounded-full transition-all duration-300", level.bgColor)}
                   style={{ width: `${item.value}%`, opacity: 0.7 }}
                 />
               </div>
-              <span className="w-8 text-right text-xs font-medium">
-                {item.value}
-              </span>
+              <span className="w-8 text-right text-xs font-medium">{item.value}</span>
             </div>
           );
         })}

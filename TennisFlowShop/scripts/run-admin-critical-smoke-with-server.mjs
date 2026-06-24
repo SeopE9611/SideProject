@@ -17,19 +17,13 @@ const waitForHealth = async () => {
     try {
       const res = await fetch(HEALTH_URL);
       if (res.ok) {
-        console.log(
-          `[admin-critical-wrapper] server is healthy: ${HEALTH_URL}`,
-        );
+        console.log(`[admin-critical-wrapper] server is healthy: ${HEALTH_URL}`);
         return;
       }
-      console.log(
-        `[admin-critical-wrapper] health check retry ${i}/${MAX_RETRIES}: ${res.status}`,
-      );
+      console.log(`[admin-critical-wrapper] health check retry ${i}/${MAX_RETRIES}: ${res.status}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.log(
-        `[admin-critical-wrapper] health check retry ${i}/${MAX_RETRIES}: ${message}`,
-      );
+      console.log(`[admin-critical-wrapper] health check retry ${i}/${MAX_RETRIES}: ${message}`);
     }
     await delay(RETRY_DELAY_MS);
   }
@@ -40,9 +34,7 @@ const waitForHealth = async () => {
 };
 
 const run = async () => {
-  console.log(
-    `[admin-critical-wrapper] starting server: ${START_CMD} ${START_ARGS.join(" ")}`,
-  );
+  console.log(`[admin-critical-wrapper] starting server: ${START_CMD} ${START_ARGS.join(" ")}`);
 
   const server = spawn(START_CMD, START_ARGS, {
     env: process.env,
@@ -77,9 +69,7 @@ const run = async () => {
           return;
         }
         reject(
-          new Error(
-            `[admin-critical-wrapper] smoke failed with exit code ${code ?? "unknown"}`,
-          ),
+          new Error(`[admin-critical-wrapper] smoke failed with exit code ${code ?? "unknown"}`),
         );
       });
 

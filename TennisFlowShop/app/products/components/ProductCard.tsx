@@ -65,13 +65,7 @@ const keyMap: Record<string, string> = {
   comfort: "편안함",
 };
 
-const FEATURE_ORDER = [
-  "power",
-  "control",
-  "spin",
-  "durability",
-  "comfort",
-] as const;
+const FEATURE_ORDER = ["power", "control", "spin", "durability", "comfort"] as const;
 
 function getFeatureEntries(features?: Record<string, number>) {
   return FEATURE_ORDER.map((key) => {
@@ -81,11 +75,7 @@ function getFeatureEntries(features?: Record<string, number>) {
   }).filter((item) => item.value > 0);
 }
 
-function PerformanceSummary({
-  entries,
-}: {
-  entries: ReturnType<typeof getFeatureEntries>;
-}) {
+function PerformanceSummary({ entries }: { entries: ReturnType<typeof getFeatureEntries> }) {
   if (entries.length === 0) return null;
 
   return (
@@ -99,14 +89,11 @@ function PerformanceSummary({
             key={feature.key}
             className={cn(
               "flex min-w-0 items-baseline justify-between gap-1 border-b border-border/40 pb-1",
-              index >= entries.length - (entries.length % 2 === 0 ? 2 : 1) &&
-                "border-b-0 pb-0",
+              index >= entries.length - (entries.length % 2 === 0 ? 2 : 1) && "border-b-0 pb-0",
             )}
           >
             <span className="text-muted-foreground">{feature.label}</span>
-            <strong className="tabular-nums text-foreground">
-              {feature.value}
-            </strong>
+            <strong className="tabular-nums text-foreground">{feature.value}</strong>
           </div>
         ))}
         {entries.length % 2 === 1 && <div aria-hidden="true" />}
@@ -128,10 +115,8 @@ function WishButton({
   onToggle: (e: React.MouseEvent) => void;
   size?: "sm" | "md";
 }) {
-  const dim =
-    size === "sm" ? "h-8 w-8 sm:h-9 sm:w-9" : "h-9 w-9 sm:h-10 sm:w-10";
-  const iconDim =
-    size === "sm" ? "w-3.5 h-3.5 sm:w-4 sm:h-4" : "w-3.5 h-3.5 sm:w-4 sm:h-4";
+  const dim = size === "sm" ? "h-8 w-8 sm:h-9 sm:w-9" : "h-9 w-9 sm:h-10 sm:w-10";
+  const iconDim = size === "sm" ? "w-3.5 h-3.5 sm:w-4 sm:h-4" : "w-3.5 h-3.5 sm:w-4 sm:h-4";
 
   return (
     <button
@@ -141,11 +126,7 @@ function WishButton({
       aria-disabled={disabled}
       aria-label={inWish ? "위시리스트에서 제거" : "위시리스트에 추가"}
       title={
-        disabled
-          ? "위시리스트 상태 확인 중"
-          : inWish
-            ? "위시리스트에서 제거"
-            : "위시리스트에 추가"
+        disabled ? "위시리스트 상태 확인 중" : inWish ? "위시리스트에서 제거" : "위시리스트에 추가"
       }
       className={cn(
         dim,
@@ -178,13 +159,7 @@ function WishButton({
   );
 }
 
-function RatingStars({
-  avg,
-  starClassName = "w-3 h-3",
-}: {
-  avg: number;
-  starClassName?: string;
-}) {
+function RatingStars({ avg, starClassName = "w-3 h-3" }: { avg: number; starClassName?: string }) {
   const safe = Math.max(0, Math.min(5, Number(avg) || 0));
   return (
     <div className="flex items-center">
@@ -193,10 +168,7 @@ function RatingStars({
         return (
           <span key={i} className={`relative inline-block ${starClassName}`}>
             <Star className={`${starClassName} text-warning`} />
-            <span
-              className="absolute inset-0 overflow-hidden"
-              style={{ width: `${fill * 100}%` }}
-            >
+            <span className="absolute inset-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
               <Star className={`${starClassName} text-warning fill-current`} />
             </span>
           </span>
@@ -219,12 +191,7 @@ type Props = {
 };
 
 const ProductCard = React.memo(
-  function ProductCard({
-    product,
-    viewMode,
-    brandLabel,
-    isApplyFlow = false,
-  }: Props) {
+  function ProductCard({ product, viewMode, brandLabel, isApplyFlow = false }: Props) {
     const router = useRouter();
     const ratingAvg = Number(product.ratingAvg ?? product.ratingAverage ?? 0);
     const ratingCount = Number(product.ratingCount ?? 0);
@@ -238,17 +205,12 @@ const ProductCard = React.memo(
     const regularPrice = Number(product.price ?? 0);
     const salePrice = Number(inventory?.salePrice ?? 0);
     const isSale =
-      (inventory?.isSale === true ||
-        inventory?.isSale === "true" ||
-        inventory?.isSale === 1) &&
+      (inventory?.isSale === true || inventory?.isSale === "true" || inventory?.isSale === 1) &&
       salePrice > 0 &&
       salePrice < regularPrice;
     const displayPrice = isSale ? salePrice : regularPrice;
-    const saleRate = isSale
-      ? Math.round(((regularPrice - salePrice) / regularPrice) * 100)
-      : 0;
-    const stockRaw =
-      typeof inventory?.stock === "number" ? inventory.stock : null;
+    const saleRate = isSale ? Math.round(((regularPrice - salePrice) / regularPrice) * 100) : 0;
+    const stockRaw = typeof inventory?.stock === "number" ? inventory.stock : null;
     const manageStock = inventory?.manageStock === true;
     const allowBackorder = inventory?.allowBackorder === true;
     const status = String(inventory?.status ?? "");
@@ -296,12 +258,7 @@ const ProductCard = React.memo(
       >
         {isSale ? (
           <>
-            <div
-              className={cn(
-                "flex items-baseline gap-1.5",
-                align === "right" && "justify-end",
-              )}
-            >
+            <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
               <span className="text-[11px] text-muted-foreground">할인가</span>
               <span className="whitespace-nowrap text-lg font-bold text-foreground bp-sm:text-xl">
                 {displayPrice.toLocaleString()}원
@@ -319,22 +276,14 @@ const ProductCard = React.memo(
               </span>
               <Badge
                 variant="outline"
-                className={cn(
-                  "shrink-0 whitespace-nowrap text-xs",
-                  badgeToneClass("danger"),
-                )}
+                className={cn("shrink-0 whitespace-nowrap text-xs", badgeToneClass("danger"))}
               >
                 {saleRate}% OFF
               </Badge>
             </div>
           </>
         ) : (
-          <div
-            className={cn(
-              "flex items-baseline gap-1.5",
-              align === "right" && "justify-end",
-            )}
-          >
+          <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
             <span className="text-[11px] text-muted-foreground">판매가</span>
             <span className="whitespace-nowrap text-lg font-bold text-foreground bp-sm:text-xl">
               {displayPrice.toLocaleString()}원
@@ -439,15 +388,11 @@ const ProductCard = React.memo(
                     try {
                       await toggle(product._id);
                       showSuccessToast(
-                        inWish
-                          ? "위시리스트에서 제거했습니다."
-                          : "위시리스트에 추가했습니다.",
+                        inWish ? "위시리스트에서 제거했습니다." : "위시리스트에 추가했습니다.",
                       );
                     } catch (e: any) {
                       if (e?.message === "unauthorized") {
-                        router.push(
-                          `/login?next=${encodeURIComponent(detailHref)}`,
-                        );
+                        router.push(`/login?next=${encodeURIComponent(detailHref)}`);
                       } else {
                         showErrorToast("처리 중 오류가 발생했습니다.");
                       }
@@ -473,10 +418,7 @@ const ProductCard = React.memo(
                     {product.name}
                   </h3>
                   <div className="flex items-center gap-2">
-                    <RatingStars
-                      avg={ratingAvg}
-                      starClassName="w-3 h-3 sm:w-4 sm:h-4"
-                    />
+                    <RatingStars avg={ratingAvg} starClassName="w-3 h-3 sm:w-4 sm:h-4" />
                     <span className="text-xs text-muted-foreground sm:text-sm">
                       ({ratingCount})
                     </span>
@@ -579,9 +521,7 @@ const ProductCard = React.memo(
                 try {
                   await toggle(product._id);
                   showSuccessToast(
-                    inWish
-                      ? "위시리스트에서 제거했습니다."
-                      : "위시리스트에 추가했습니다.",
+                    inWish ? "위시리스트에서 제거했습니다." : "위시리스트에 추가했습니다.",
                   );
                 } catch {
                   showErrorToast("처리 중 오류가 발생했습니다.");
@@ -615,18 +555,14 @@ const ProductCard = React.memo(
 
             <div className="mb-3 flex items-center gap-1.5">
               <RatingStars avg={ratingAvg} starClassName="w-3 h-3" />
-              <span className="text-xs text-muted-foreground">
-                ({ratingCount})
-              </span>
+              <span className="text-xs text-muted-foreground">({ratingCount})</span>
             </div>
 
             <div className="mb-4">
               <PerformanceSummary entries={featureEntries} />
             </div>
 
-            <div className="mt-auto flex justify-end pt-4">
-              {priceBlock("right")}
-            </div>
+            <div className="mt-auto flex justify-end pt-4">{priceBlock("right")}</div>
           </Link>
         </CardContent>
 

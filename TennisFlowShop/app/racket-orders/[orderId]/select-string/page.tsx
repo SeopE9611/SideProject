@@ -57,18 +57,15 @@ export default async function SelectStringPage({ params }: PageProps) {
   if (!order) notFound();
 
   const hasRacket =
-    Array.isArray(order.items) &&
-    order.items.some((it: any) => it?.kind === "racket");
+    Array.isArray(order.items) && order.items.some((it: any) => it?.kind === "racket");
 
   // 라켓 구매 주문이 아니면 선택 모드로 올 수 없음
   if (!hasRacket) notFound();
 
   const racketItem = order.items.find((it: any) => it?.kind === "racket");
   const racketName = String(racketItem?.name ?? "주문 라켓");
-  const racketQuantity =
-    typeof racketItem?.quantity === "number" ? racketItem.quantity : undefined;
-  const racketPrice =
-    typeof racketItem?.price === "number" ? racketItem.price : undefined;
+  const racketQuantity = typeof racketItem?.quantity === "number" ? racketItem.quantity : undefined;
+  const racketPrice = typeof racketItem?.price === "number" ? racketItem.price : undefined;
 
   // 통과: 기존 화면 렌더
   return (
@@ -82,17 +79,14 @@ export default async function SelectStringPage({ params }: PageProps) {
             주문 라켓에 장착할 스트링을 선택하세요
           </h1>
           <p className="break-keep text-sm leading-relaxed text-muted-foreground">
-            기존 라켓 주문에 연결할 스트링과 옵션을 선택한 뒤 장착 정보 입력
-            단계로 진행합니다.
+            기존 라켓 주문에 연결할 스트링과 옵션을 선택한 뒤 장착 정보 입력 단계로 진행합니다.
           </p>
         </div>
 
         <section className="rounded-2xl border border-border bg-card p-4 shadow-sm md:p-5">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div className="min-w-0 space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">
-                주문 라켓
-              </p>
+              <p className="text-xs font-medium text-muted-foreground">주문 라켓</p>
               <h2 className="break-keep text-base font-semibold text-foreground md:text-lg">
                 {racketName}
               </h2>
@@ -120,8 +114,7 @@ export default async function SelectStringPage({ params }: PageProps) {
             </div>
           </div>
           <div className="mt-4 rounded-xl border border-border bg-muted/20 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
-            선택한 스트링은 위 주문 라켓과 연결되어 교체서비스 신청에
-            사용됩니다.
+            선택한 스트링은 위 주문 라켓과 연결되어 교체서비스 신청에 사용됩니다.
           </div>
         </section>
       </div>

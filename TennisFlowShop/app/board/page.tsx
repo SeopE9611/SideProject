@@ -139,23 +139,13 @@ function CommunityLatestCard({
             </span>
           </div>
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-              className="min-h-10 whitespace-nowrap"
-            >
+            <Button asChild variant="ghost" size="sm" className="min-h-10 whitespace-nowrap">
               <Link href={writeHref}>
                 <Plus className="h-4 w-4 mr-1" />
                 글쓰기
               </Link>
             </Button>
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-              className="min-h-10 whitespace-nowrap"
-            >
+            <Button asChild variant="ghost" size="sm" className="min-h-10 whitespace-nowrap">
               <Link href={listHref}>
                 전체보기 <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
@@ -167,10 +157,7 @@ function CommunityLatestCard({
       <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
-            <ErrorBox
-              message={`${title} 불러오기에 실패했습니다.`}
-              onRetry={onRetry}
-            />
+            <ErrorBox message={`${title} 불러오기에 실패했습니다.`} onRetry={onRetry} />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
@@ -179,10 +166,7 @@ function CommunityLatestCard({
             </div>
           ) : (
             items.map((post) => (
-              <div
-                key={post.id}
-                className="border-b border-border last:border-0 pb-4 last:pb-0"
-              >
+              <div key={post.id} className="border-b border-border last:border-0 pb-4 last:pb-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1 min-w-0">
@@ -234,10 +218,7 @@ function FiveLineSkeleton() {
   return (
     <div className="space-y-4">
       {[...Array(5)].map((_, i) => (
-        <div
-          key={i}
-          className="border-b border-border last:border-0 pb-4 last:pb-0"
-        >
+        <div key={i} className="border-b border-border last:border-0 pb-4 last:pb-0">
           <div className="space-y-2">
             <Skeleton className="h-5 w-3/4" />
             <div className="flex items-center space-x-4">
@@ -258,14 +239,7 @@ function ErrorBox({
   message?: string;
   onRetry?: () => void;
 }) {
-  return (
-    <AsyncState
-      kind="error"
-      variant="inline"
-      title={message}
-      onAction={onRetry}
-    />
-  );
+  return <AsyncState kind="error" variant="inline" title={message} onAction={onRetry} />;
 }
 
 type NoticeItem = {
@@ -387,10 +361,7 @@ function NoticeCard({
       <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
-            <ErrorBox
-              message="공지 불러오기에 실패했습니다."
-              onRetry={onRetry}
-            />
+            <ErrorBox message="공지 불러오기에 실패했습니다." onRetry={onRetry} />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
@@ -402,10 +373,7 @@ function NoticeCard({
             />
           ) : (
             items.map((notice) => (
-              <div
-                key={notice._id}
-                className="border-b border-border last:border-0 pb-4 last:pb-0"
-              >
+              <div key={notice._id} className="border-b border-border last:border-0 pb-4 last:pb-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1 min-w-0">
@@ -413,10 +381,7 @@ function NoticeCard({
                         {/* 카테고리 */}
                         {!!notice.category && (
                           <Badge
-                            variant={
-                              getNoticeCategoryBadgeSpec(notice.category)
-                                .variant
-                            }
+                            variant={getNoticeCategoryBadgeSpec(notice.category).variant}
                             className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}
                             title={notice.category ?? undefined}
                           >
@@ -495,9 +460,7 @@ function NoticeCard({
                     </div>
 
                     {!!notice.excerpt && (
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {notice.excerpt}
-                      </p>
+                      <p className="text-sm text-muted-foreground mb-2">{notice.excerpt}</p>
                     )}
                     <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                       <span>{fmt(notice.createdAt)}</span>
@@ -556,10 +519,7 @@ function QnaCard({
       <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
-            <ErrorBox
-              message="Q&A 불러오기에 실패했습니다."
-              onRetry={onRetry}
-            />
+            <ErrorBox message="Q&A 불러오기에 실패했습니다." onRetry={onRetry} />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
@@ -571,10 +531,7 @@ function QnaCard({
             />
           ) : (
             items.map((qna) => (
-              <div
-                key={qna._id}
-                className="border-b border-border last:border-0 pb-4 last:pb-0"
-              >
+              <div key={qna._id} className="border-b border-border last:border-0 pb-4 last:pb-0">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     {/* 제목 줄: 왼쪽(카테고리/제목) · 오른쪽(답변상태) */}
@@ -583,9 +540,7 @@ function QnaCard({
                       <div className="flex items-center gap-2 flex-wrap min-w-0">
                         {/* 카테고리 먼저 */}
                         <Badge
-                          variant={
-                            getQnaCategoryBadgeSpec(qna.category).variant
-                          }
+                          variant={getQnaCategoryBadgeSpec(qna.category).variant}
                           className={`${badgeBaseOutlined} ${badgeSizeSm} shrink-0`}
                           title={qna.category ?? undefined}
                         >
@@ -604,9 +559,7 @@ function QnaCard({
                       {/* 오른쪽: 답변 상태 */}
                       <div className="shrink-0">
                         <Badge
-                          variant={
-                            getAnswerStatusBadgeSpec(!!qna.answer).variant
-                          }
+                          variant={getAnswerStatusBadgeSpec(!!qna.answer).variant}
                           className={`${badgeBaseOutlined} ${badgeSizeSm}`}
                           title={qna.answer ? "답변 완료" : "답변 대기"}
                         >
@@ -673,10 +626,7 @@ function ReviewCard({
       <CardContent className="p-4 md:p-6">
         <div className="space-y-4">
           {error ? (
-            <ErrorBox
-              message="리뷰 불러오기에 실패했습니다."
-              onRetry={onRetry}
-            />
+            <ErrorBox message="리뷰 불러오기에 실패했습니다." onRetry={onRetry} />
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
@@ -685,10 +635,7 @@ function ReviewCard({
             </div>
           ) : (
             items.map((review) => (
-              <div
-                key={review._id}
-                className="border-b border-border last:border-0 pb-4 last:pb-0"
-              >
+              <div key={review._id} className="border-b border-border last:border-0 pb-4 last:pb-0">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2 mb-1 min-w-0">
@@ -743,54 +690,31 @@ function CommunityIntroCard() {
       </CardHeader>
 
       <CardContent className="p-4 md:p-6 space-y-4 text-sm text-muted-foreground">
-        <p>
-          자유게시판, 중고거래, 장비 사용기, 구매·서비스 후기를 한 곳에서 둘러볼
-          수 있어요.
-        </p>
+        <p>자유게시판, 중고거래, 장비 사용기, 구매·서비스 후기를 한 곳에서 둘러볼 수 있어요.</p>
 
         <div className="grid gap-2 sm:grid-cols-4">
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="w-full justify-between"
-          >
+          <Button asChild variant="outline" size="sm" className="w-full justify-between">
             <Link href="/reviews">
               <span>구매·서비스 후기</span>
               <ArrowRight className="h-3 w-3 ml-1" />
             </Link>
           </Button>
 
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="w-full justify-between"
-          >
+          <Button asChild variant="outline" size="sm" className="w-full justify-between">
             <Link href="/board/free">
               <span>자유게시판</span>
               <ArrowRight className="h-3 w-3 ml-1" />
             </Link>
           </Button>
 
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="w-full justify-between"
-          >
+          <Button asChild variant="outline" size="sm" className="w-full justify-between">
             <Link href="/board/market">
               <span>중고거래</span>
               <ArrowRight className="h-3 w-3 ml-1" />
             </Link>
           </Button>
 
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="w-full justify-between"
-          >
+          <Button asChild variant="outline" size="sm" className="w-full justify-between">
             <Link href="/board/gear">
               <span>장비 사용기</span>
               <ArrowRight className="h-3 w-3 ml-1" />
@@ -827,14 +751,9 @@ export default function BoardPage() {
     error: rError,
     isLoading: rLoading,
     mutate: mutateReviews,
-  } = useSWR(
-    "/api/reviews?type=all&withHidden=mask&sort=latest&limit=5",
-    fetcher,
-  );
+  } = useSWR("/api/reviews?type=all&withHidden=mask&sort=latest&limit=5", fetcher);
 
-  const reviews = Array.isArray(rData?.items)
-    ? (rData.items as ReviewItem[])
-    : [];
+  const reviews = Array.isArray(rData?.items) ? (rData.items as ReviewItem[]) : [];
   // 자유/중고/사용기 최신글 5개
   const {
     data: fData,
@@ -855,15 +774,9 @@ export default function BoardPage() {
     mutate: mutateGear,
   } = useSWR("/api/boards?kind=gear&sort=latest&limit=5&page=1", fetcher);
 
-  const freePosts = Array.isArray(fData?.items)
-    ? (fData.items as CommunityListItem[])
-    : [];
-  const marketPosts = Array.isArray(mData?.items)
-    ? (mData.items as CommunityListItem[])
-    : [];
-  const gearPosts = Array.isArray(gData?.items)
-    ? (gData.items as CommunityListItem[])
-    : [];
+  const freePosts = Array.isArray(fData?.items) ? (fData.items as CommunityListItem[]) : [];
+  const marketPosts = Array.isArray(mData?.items) ? (mData.items as CommunityListItem[]) : [];
+  const gearPosts = Array.isArray(gData?.items) ? (gData.items as CommunityListItem[]) : [];
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -882,9 +795,8 @@ export default function BoardPage() {
             </h1>
           </div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            커뮤니티는 자유게시판, 중고거래, 장비 사용기, 리뷰처럼 이용자끼리
-            정보를 나누는 공간입니다. 주문/서비스 문의는 고객센터를
-            이용해주세요.
+            커뮤니티는 자유게시판, 중고거래, 장비 사용기, 리뷰처럼 이용자끼리 정보를 나누는
+            공간입니다. 주문/서비스 문의는 고객센터를 이용해주세요.
           </p>
         </div>
 

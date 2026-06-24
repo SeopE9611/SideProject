@@ -3,17 +3,13 @@ import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 
-export async function GET(
-  req: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const guard = await requireAdmin(req);
     if (!guard.ok) return guard.res;
 
     const { id } = await ctx.params;
-    if (!ObjectId.isValid(id))
-      return NextResponse.json({ message: "invalid id" }, { status: 400 });
+    if (!ObjectId.isValid(id)) return NextResponse.json({ message: "invalid id" }, { status: 400 });
 
     const db = await getDb();
     const userIdObj = new ObjectId(id);

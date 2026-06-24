@@ -44,9 +44,7 @@ export default function RacketCompareTray() {
                   <div>
                     <div className="text-sm font-semibold">
                       라켓 비교
-                      <span className="ml-1.5 text-primary">
-                        ({items.length}/4)
-                      </span>
+                      <span className="ml-1.5 text-primary">({items.length}/4)</span>
                     </div>
                     <div className="text-xs text-muted-foreground hidden bp-sm:block">
                       최소 2개부터 비교 가능
@@ -128,9 +126,7 @@ export default function RacketCompareTray() {
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-xs font-medium">
-                          {title}
-                        </div>
+                        <div className="truncate text-xs font-medium">{title}</div>
                         <div className="truncate text-[11px] text-muted-foreground">
                           {brandText}
                         </div>

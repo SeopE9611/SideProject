@@ -48,16 +48,14 @@ export function calcOrderShippingFeeWithBundlePolicy(args: {
   if (items.length === 0) return 0;
 
   const hasRacket = items.some((item) => item?.kind === "racket");
-  const shouldExcludeMountableString =
-    Boolean(args.withStringService) && hasRacket;
+  const shouldExcludeMountableString = Boolean(args.withStringService) && hasRacket;
 
   const candidates = shouldExcludeMountableString
     ? items.filter((item) => {
         const isMountableString =
           item?.kind === "product" &&
           (item?.isMountableString === true ||
-            (item?.isMountableString !== false &&
-              isMountableStringByFee(item?.mountingFee)));
+            (item?.isMountableString !== false && isMountableStringByFee(item?.mountingFee)));
         return !isMountableString;
       })
     : items;
@@ -73,10 +71,7 @@ export function calcOrderShippingFeeWithBundlePolicy(args: {
 /**
  * @deprecated subtotal 기반 정책(3만원 이상 무료배송)은 더 이상 사용하지 마세요.
  */
-export function calcShippingFee(args: {
-  subtotal: number;
-  isVisitPickup?: boolean;
-}): number {
+export function calcShippingFee(args: { subtotal: number; isVisitPickup?: boolean }): number {
   const subtotal = Number(args.subtotal || 0);
   const isVisit = Boolean(args.isVisitPickup);
 

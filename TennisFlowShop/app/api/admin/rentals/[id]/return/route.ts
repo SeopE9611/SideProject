@@ -8,29 +8,20 @@ import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
   if (!csrf.ok) return csrf.res;
 
   const { id: rentalId } = await params;
-  if (!ObjectId.isValid(rentalId))
-    return NextResponse.json({ message: "BAD_ID" }, { status: 400 });
+  if (!ObjectId.isValid(rentalId)) return NextResponse.json({ message: "BAD_ID" }, { status: 400 });
 
   const _id = new ObjectId(rentalId);
   const rental = await guard.db.collection("rental_orders").findOne({ _id });
-  if (!rental)
-    return NextResponse.json({ message: "Not Found" }, { status: 404 });
-  if ((rental.status ?? "pending") === "returned")
-    return NextResponse.json({ ok: true });
-  if (
-    !canTransitIdempotent(rental.status ?? "pending", "returned") ||
-    rental.status !== "out"
-  ) {
+  if (!rental) return NextResponse.json({ message: "Not Found" }, { status: 404 });
+  if ((rental.status ?? "pending") === "returned") return NextResponse.json({ ok: true });
+  if (!canTransitIdempotent(rental.status ?? "pending", "returned") || rental.status !== "out") {
     return NextResponse.json(
       { ok: false, code: "INVALID_STATE", message: "반납 불가 상태" },
       { status: 409 },
@@ -48,10 +39,7 @@ export async function POST(
     },
   );
   if (updated.matchedCount === 0)
-    return NextResponse.json(
-      { ok: false, code: "INVALID_STATE" },
-      { status: 409 },
-    );
+    return NextResponse.json({ ok: false, code: "INVALID_STATE" }, { status: 409 });
 
   await appendAdminAudit(
     guard.db,
@@ -83,10 +71,7 @@ export async function POST(
       if (qty <= 1)
         await guard.db
           .collection("used_rackets")
-          .updateOne(
-            { _id: rid },
-            { $set: { status: "available", updatedAt: new Date() } },
-          );
+          .updateOne({ _id: rid }, { $set: { status: "available", updatedAt: new Date() } });
     }
   }
 

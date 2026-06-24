@@ -2,18 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 
-export async function GET(
-  req: NextRequest,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
 
   // ObjectId 유효성 검사
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json(
-      { ok: false, error: "invalid_author_id" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "invalid_author_id" }, { status: 400 });
   }
 
   const authorObjectId = new ObjectId(id);
@@ -50,10 +44,7 @@ export async function GET(
   const recentPosts = recentDocs.map((d) => ({
     id: String(d._id),
     title: d.title ?? "",
-    createdAt:
-      d.createdAt instanceof Date
-        ? d.createdAt.toISOString()
-        : String(d.createdAt),
+    createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : String(d.createdAt),
     views: d.views ?? 0,
     likes: d.likes ?? 0,
     commentsCount: d.commentsCount ?? 0,
@@ -109,9 +100,7 @@ export async function GET(
           mainString: profileDoc.mainString ?? {},
           note: profileDoc.note ?? "",
           updatedAt:
-            profileDoc.updatedAt instanceof Date
-              ? profileDoc.updatedAt.toISOString()
-              : null,
+            profileDoc.updatedAt instanceof Date ? profileDoc.updatedAt.toISOString() : null,
         }
       : null;
   return NextResponse.json({

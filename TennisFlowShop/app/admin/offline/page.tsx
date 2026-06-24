@@ -10,23 +10,19 @@ export const metadata: Metadata = { title: "오프라인 관리" };
 const QUICK_GUIDES = [
   {
     title: "미결제 작업 확인",
-    description:
-      "오늘 접수된 작업 중 미결제 항목을 먼저 확인해 결제 누락을 줄이세요.",
+    description: "오늘 접수된 작업 중 미결제 항목을 먼저 확인해 결제 누락을 줄이세요.",
   },
   {
     title: "작업·결제 내역 점검",
-    description:
-      "작업 상태와 결제 상태가 일치하는지 최근 기록을 기준으로 빠르게 점검하세요.",
+    description: "작업 상태와 결제 상태가 일치하는지 최근 기록을 기준으로 빠르게 점검하세요.",
   },
   {
     title: "보정 필요 항목 확인",
-    description:
-      "패키지 발급 실패 및 보정 필요 건을 확인해 당일 정산 오류를 예방하세요.",
+    description: "패키지 발급 실패 및 보정 필요 건을 확인해 당일 정산 오류를 예방하세요.",
   },
   {
     title: "매출 리포트 연계 확인",
-    description:
-      "완료 내역은 매출 리포트와 함께 검토해 월간 집계 흐름을 맞춰주세요.",
+    description: "완료 내역은 매출 리포트와 함께 검토해 월간 집계 흐름을 맞춰주세요.",
   },
 ] as const;
 
@@ -52,9 +48,7 @@ export default function OfflinePage() {
           className="mb-6 rounded-xl border border-border/70 bg-muted/20 p-4"
         >
           <div className="mb-3 flex items-center justify-between gap-2">
-            <h2 className="text-sm font-semibold text-foreground">
-              오늘 확인할 일
-            </h2>
+            <h2 className="text-sm font-semibold text-foreground">오늘 확인할 일</h2>
             <Link
               href="/admin/reports/revenue"
               className="text-xs font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
@@ -68,9 +62,7 @@ export default function OfflinePage() {
                 key={item.title}
                 className="rounded-lg border border-border/70 bg-background px-3 py-3"
               >
-                <p className="text-sm font-medium text-foreground">
-                  {item.title}
-                </p>
+                <p className="text-sm font-medium text-foreground">{item.title}</p>
                 <p className="mt-1 text-sm leading-relaxed break-keep text-muted-foreground">
                   {item.description}
                 </p>

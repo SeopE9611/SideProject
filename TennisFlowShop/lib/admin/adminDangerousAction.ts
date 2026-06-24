@@ -1,8 +1,6 @@
 import { createHash } from "node:crypto";
 
-export type AdminDangerousActionKey =
-  | "admin.system.cleanup"
-  | "admin.system.purge";
+export type AdminDangerousActionKey = "admin.system.cleanup" | "admin.system.purge";
 
 const ADMIN_RECONFIRM_TEXT: Record<AdminDangerousActionKey, string> = {
   "admin.system.cleanup": "7일 삭제 확인",
@@ -10,9 +8,7 @@ const ADMIN_RECONFIRM_TEXT: Record<AdminDangerousActionKey, string> = {
 };
 
 function normalizeIds(ids: string[]): string[] {
-  return Array.from(
-    new Set(ids.map((id) => String(id).trim()).filter(Boolean)),
-  ).sort();
+  return Array.from(new Set(ids.map((id) => String(id).trim()).filter(Boolean))).sort();
 }
 
 export function createDangerousActionHash(
@@ -31,14 +27,10 @@ export function buildDangerousActionToken(
   adminId: string,
   previewHash: string,
 ): string {
-  return Buffer.from(`${actionKey}:${adminId}:${previewHash}`, "utf8").toString(
-    "base64url",
-  );
+  return Buffer.from(`${actionKey}:${adminId}:${previewHash}`, "utf8").toString("base64url");
 }
 
-export function getDangerousActionReconfirmText(
-  actionKey: AdminDangerousActionKey,
-): string {
+export function getDangerousActionReconfirmText(actionKey: AdminDangerousActionKey): string {
   return ADMIN_RECONFIRM_TEXT[actionKey];
 }
 

@@ -43,11 +43,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  adminFetcher,
-  adminMutator,
-  getAdminErrorMessage,
-} from "@/lib/admin/adminFetcher";
+import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -96,9 +92,7 @@ type ApplicationsResponse = {
   counts: Record<AcademyLessonApplicationStatus | "all", number>;
 };
 
-function getStatusTone(
-  status: AcademyLessonApplicationStatus,
-): BadgeSemanticTone {
+function getStatusTone(status: AcademyLessonApplicationStatus): BadgeSemanticTone {
   if (status === "submitted") return "warning";
   if (status === "reviewing") return "info";
   if (status === "contacted") return "brand";
@@ -107,16 +101,9 @@ function getStatusTone(
   return "neutral";
 }
 
-function AcademyStatusBadge({
-  status,
-}: {
-  status: AcademyLessonApplicationStatus;
-}) {
+function AcademyStatusBadge({ status }: { status: AcademyLessonApplicationStatus }) {
   return (
-    <Badge
-      variant={badgeToneVariant(getStatusTone(status))}
-      className="shrink-0 whitespace-nowrap"
-    >
+    <Badge variant={badgeToneVariant(getStatusTone(status))} className="shrink-0 whitespace-nowrap">
       {getAcademyApplicationStatusLabel(status)}
     </Badge>
   );
@@ -131,9 +118,7 @@ function SelectedClassCell({
     return (
       <div className="min-w-0 max-w-[220px]">
         <div className="font-medium text-muted-foreground">클래스 미선택</div>
-        <div className="truncate text-xs text-muted-foreground">
-          일반 레슨 신청
-        </div>
+        <div className="truncate text-xs text-muted-foreground">일반 레슨 신청</div>
       </div>
     );
   }
@@ -187,9 +172,7 @@ function formatAdminDateTimeParts(value: string | null) {
 export default function AcademyApplicationsClient() {
   const router = useRouter();
   const [page, setPage] = useState(1);
-  const [status, setStatus] = useState<AcademyLessonApplicationStatus | "all">(
-    "all",
-  );
+  const [status, setStatus] = useState<AcademyLessonApplicationStatus | "all">("all");
   const [keywordInput, setKeywordInput] = useState("");
   const [keyword, setKeyword] = useState("");
 
@@ -203,13 +186,9 @@ export default function AcademyApplicationsClient() {
     return `/api/admin/academy/applications?${params.toString()}`;
   }, [keyword, page, status]);
 
-  const { data, error, isLoading, mutate } = useSWR<ApplicationsResponse>(
-    query,
-    adminFetcher,
-  );
+  const { data, error, isLoading, mutate } = useSWR<ApplicationsResponse>(query, adminFetcher);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [pendingDelete, setPendingDelete] =
-    useState<AcademyApplicationListItem | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<AcademyApplicationListItem | null>(null);
 
   const counts = data?.counts ?? {
     all: 0,
@@ -247,10 +226,7 @@ export default function AcademyApplicationsClient() {
     router.push(`/admin/academy/applications/${id}`);
   }
 
-  function handleRowKeyDown(
-    event: KeyboardEvent<HTMLTableRowElement>,
-    id: string,
-  ) {
+  function handleRowKeyDown(event: KeyboardEvent<HTMLTableRowElement>, id: string) {
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
     goToDetail(id);
@@ -305,11 +281,7 @@ export default function AcademyApplicationsClient() {
       </Card>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
-        <SummaryCard
-          label="전체"
-          value={counts.all}
-          active={status === "all"}
-        />
+        <SummaryCard label="전체" value={counts.all} active={status === "all"} />
         {ACADEMY_APPLICATION_STATUSES.map((item) => (
           <SummaryCard
             key={item}
@@ -355,11 +327,7 @@ export default function AcademyApplicationsClient() {
                 onChange={(event) => setKeywordInput(event.target.value)}
                 placeholder="이름, 연락처, 이메일, 목표, 클래스명 검색"
               />
-              <Button
-                type="submit"
-                variant="outline"
-                className="w-full sm:w-auto"
-              >
+              <Button type="submit" variant="outline" className="w-full sm:w-auto">
                 <Search className="mr-2 h-4 w-4" />
                 검색
               </Button>
@@ -376,25 +344,13 @@ export default function AcademyApplicationsClient() {
             <Table className="min-w-[940px]">
               <TableHeader className={adminSurface.tableHeader}>
                 <TableRow>
-                  <TableHead className="whitespace-nowrap px-3">
-                    접수일
-                  </TableHead>
-                  <TableHead className="whitespace-nowrap px-3">
-                    신청자
-                  </TableHead>
-                  <TableHead className="whitespace-nowrap px-3">
-                    선택 클래스
-                  </TableHead>
-                  <TableHead className="whitespace-nowrap px-3">
-                    희망 정보
-                  </TableHead>
-                  <TableHead className="whitespace-nowrap px-3">
-                    선호 일정
-                  </TableHead>
+                  <TableHead className="whitespace-nowrap px-3">접수일</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">신청자</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">선택 클래스</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">희망 정보</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">선호 일정</TableHead>
                   <TableHead className="whitespace-nowrap px-3">상태</TableHead>
-                  <TableHead className="whitespace-nowrap px-3 text-right">
-                    관리
-                  </TableHead>
+                  <TableHead className="whitespace-nowrap px-3 text-right">관리</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -431,12 +387,8 @@ export default function AcademyApplicationsClient() {
                       onKeyDown={(event) => handleRowKeyDown(event, item._id)}
                     >
                       <TableCell className="whitespace-nowrap px-3 py-3 text-xs">
-                        <div className="font-medium text-foreground">
-                          {createdAt.date}
-                        </div>
-                        <div className="text-muted-foreground">
-                          {createdAt.time}
-                        </div>
+                        <div className="font-medium text-foreground">{createdAt.date}</div>
+                        <div className="text-muted-foreground">{createdAt.time}</div>
                       </TableCell>
                       <TableCell className="min-w-0 px-3 py-3">
                         <div
@@ -459,9 +411,7 @@ export default function AcademyApplicationsClient() {
                         <SelectedClassCell classSnapshot={item.classSnapshot} />
                       </TableCell>
                       <TableCell className="whitespace-nowrap px-3 py-3 text-sm">
-                        <div>
-                          {getAcademyLessonTypeLabel(item.desiredLessonType)}
-                        </div>
+                        <div>{getAcademyLessonTypeLabel(item.desiredLessonType)}</div>
                         <div className="text-xs text-muted-foreground">
                           {getAcademyCurrentLevelLabel(item.currentLevel)}
                         </div>
@@ -469,15 +419,9 @@ export default function AcademyApplicationsClient() {
                       <TableCell className="whitespace-nowrap px-3 py-3 text-sm">
                         <div
                           className="max-w-[160px] truncate"
-                          title={
-                            item.preferredDays.length
-                              ? item.preferredDays.join(", ")
-                              : "-"
-                          }
+                          title={item.preferredDays.length ? item.preferredDays.join(", ") : "-"}
                         >
-                          {item.preferredDays.length
-                            ? item.preferredDays.join(", ")
-                            : "-"}
+                          {item.preferredDays.length ? item.preferredDays.join(", ") : "-"}
                         </div>
                         <div
                           className="max-w-[160px] truncate text-xs text-muted-foreground"
@@ -504,10 +448,7 @@ export default function AcademyApplicationsClient() {
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent
-                            align="end"
-                            className="min-w-max"
-                          >
+                          <DropdownMenuContent align="end" className="min-w-max">
                             <DropdownMenuItem
                               className="whitespace-nowrap"
                               onSelect={(event) => {
@@ -528,9 +469,7 @@ export default function AcademyApplicationsClient() {
                                 }}
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                {deletingId === item._id
-                                  ? "삭제 중..."
-                                  : "삭제"}
+                                {deletingId === item._id ? "삭제 중..." : "삭제"}
                               </DropdownMenuItem>
                             ) : null}
                           </DropdownMenuContent>
@@ -545,8 +484,7 @@ export default function AcademyApplicationsClient() {
 
           <div className="flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
             <span>
-              {data?.pagination.page ?? page} /{" "}
-              {data?.pagination.totalPages ?? 1} 페이지 · 총{" "}
+              {data?.pagination.page ?? page} / {data?.pagination.totalPages ?? 1} 페이지 · 총{" "}
               {data?.pagination.total ?? 0}건
             </span>
             <div className="flex gap-2">
@@ -581,14 +519,12 @@ export default function AcademyApplicationsClient() {
           <AlertDialogHeader>
             <AlertDialogTitle>취소 신청 내역을 삭제할까요?</AlertDialogTitle>
             <AlertDialogDescription>
-              삭제하면 관리자 목록과 고객 마이페이지에서 보이지 않습니다. 진행
-              중 신청은 삭제할 수 없습니다.
+              삭제하면 관리자 목록과 고객 마이페이지에서 보이지 않습니다. 진행 중 신청은 삭제할 수
+              없습니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={Boolean(deletingId)}>
-              취소
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={Boolean(deletingId)}>취소</AlertDialogCancel>
             <AlertDialogAction
               disabled={Boolean(deletingId) || !pendingDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -607,22 +543,9 @@ export default function AcademyApplicationsClient() {
   );
 }
 
-function SummaryCard({
-  label,
-  value,
-  active,
-}: {
-  label: string;
-  value: number;
-  active: boolean;
-}) {
+function SummaryCard({ label, value, active }: { label: string; value: number; active: boolean }) {
   return (
-    <div
-      className={cn(
-        adminSurface.kpiCard,
-        active ? "border-primary/40 bg-primary/5" : "",
-      )}
-    >
+    <div className={cn(adminSurface.kpiCard, active ? "border-primary/40 bg-primary/5" : "")}>
       <div className="text-xs text-muted-foreground">{label}</div>
       <div className="mt-2 text-2xl font-semibold text-foreground">{value}</div>
     </div>

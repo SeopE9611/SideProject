@@ -12,9 +12,7 @@ export function useInitialYyyymmFromQuery(
     if (didInitFromQuery.current) return;
     didInitFromQuery.current = true;
 
-    const q = getValidatedQueryParam(searchParams, "yyyymm", (value) =>
-      /^\d{6}$/.test(value),
-    );
+    const q = getValidatedQueryParam(searchParams, "yyyymm", (value) => /^\d{6}$/.test(value));
     if (q) {
       setYyyymm(q);
     }

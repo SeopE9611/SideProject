@@ -9,13 +9,7 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import { SummaryCard } from "@/components/public/SummaryCard";
 import { TabPanelSkeleton } from "@/components/system/loading";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -45,17 +39,15 @@ const RentalsDetailClient = dynamic(
   () => import("@/app/mypage/rentals/_components/RentalsDetailClient"),
   { loading: () => <TabPanelSkeleton rowCount={3} /> },
 );
-const AcademyApplicationsTab = dynamic(
-  () => import("@/app/mypage/tabs/AcademyApplicationsTab"),
-  { loading: () => <TabPanelSkeleton rowCount={4} /> },
-);
+const AcademyApplicationsTab = dynamic(() => import("@/app/mypage/tabs/AcademyApplicationsTab"), {
+  loading: () => <TabPanelSkeleton rowCount={4} />,
+});
 const MyPointsTab = dynamic(() => import("@/app/mypage/tabs/MyPointsTab"), {
   loading: () => <TabPanelSkeleton rowCount={4} />,
 });
-const TransactionFlowList = dynamic(
-  () => import("@/app/mypage/tabs/TransactionFlowList"),
-  { loading: () => <TabPanelSkeleton rowCount={5} /> },
-);
+const TransactionFlowList = dynamic(() => import("@/app/mypage/tabs/TransactionFlowList"), {
+  loading: () => <TabPanelSkeleton rowCount={5} />,
+});
 const PassList = dynamic(() => import("@/app/mypage/tabs/PassList"), {
   loading: () => <TabPanelSkeleton rowCount={4} />,
 });
@@ -201,9 +193,7 @@ export default function MypageClient({ user }: Props) {
   }
 
   const tabParam = searchParams.get("tab");
-  const currentTab = MYPAGE_TABS.includes(
-    tabParam as (typeof MYPAGE_TABS)[number],
-  )
+  const currentTab = MYPAGE_TABS.includes(tabParam as (typeof MYPAGE_TABS)[number])
     ? tabParam!
     : "orders";
 
@@ -238,33 +228,24 @@ export default function MypageClient({ user }: Props) {
   const flowFromQuery = buildFlowFromQuery(from, scope);
   const ordersFlowFromQuery = buildFlowFromQuery("orders", scope);
   const isOrdersTab = currentTab === "orders";
-  const hasOrderFlowDetail = Boolean(
-    (flowType === "order" && flowId) || orderId,
-  );
+  const hasOrderFlowDetail = Boolean((flowType === "order" && flowId) || orderId);
   const hasApplicationFlowDetail = Boolean(
     (flowType === "application" && flowId) || selectedApplicationId,
   );
-  const hasRentalFlowDetail = Boolean(
-    (flowType === "rental" && flowId) || selectedRentalId,
-  );
+  const hasRentalFlowDetail = Boolean((flowType === "rental" && flowId) || selectedRentalId);
   const isOrdersDetailView =
-    isOrdersTab &&
-    (hasOrderFlowDetail || hasApplicationFlowDetail || hasRentalFlowDetail);
+    isOrdersTab && (hasOrderFlowDetail || hasApplicationFlowDetail || hasRentalFlowDetail);
   const detailScopeFallback = hasApplicationFlowDetail
     ? "application"
     : hasRentalFlowDetail
       ? "rental"
       : "order";
-  const activeOrdersScope = resolveOrdersScopeContext(
-    flowBackUrl,
-    detailScopeFallback,
-  );
+  const activeOrdersScope = resolveOrdersScopeContext(flowBackUrl, detailScopeFallback);
 
   // 페이지 톤 클래스 분류(대시보드 카드, 탭 헤더, 아이콘 배경)
   const pageTone = {
     dashboardPanel: "border-b border-border bg-background",
-    sectionHeader:
-      "border-b border-border bg-card px-4 py-3 bp-sm:px-5 bp-sm:py-4",
+    sectionHeader: "border-b border-border bg-card px-4 py-3 bp-sm:px-5 bp-sm:py-4",
     iconSurface: "rounded-lg border border-border bg-muted/50 p-2",
   };
   const todoCount = summary?.todoCount ?? 0;
@@ -302,10 +283,7 @@ export default function MypageClient({ user }: Props) {
           <UserSection user={user} />
 
           <div className="grid gap-3 bp-lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
-            <SummaryCard
-              className="transition-colors hover:bg-muted/30"
-              contentClassName="p-0"
-            >
+            <SummaryCard className="transition-colors hover:bg-muted/30" contentClassName="p-0">
               <button
                 type="button"
                 onClick={() =>
@@ -352,9 +330,7 @@ export default function MypageClient({ user }: Props) {
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-sm font-semibold text-foreground">내 활동</p>
                 {hasSummaryError ? (
-                  <span className="text-xs text-muted-foreground">
-                    일부 지표 오류
-                  </span>
+                  <span className="text-xs text-muted-foreground">일부 지표 오류</span>
                 ) : null}
               </div>
 
@@ -408,9 +384,7 @@ export default function MypageClient({ user }: Props) {
                         <ClipboardList className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-md:text-sm">
                           <span className="bp-lg:hidden">거래/이용</span>
-                          <span className="hidden bp-lg:inline">
-                            거래/이용 내역
-                          </span>
+                          <span className="hidden bp-lg:inline">거래/이용 내역</span>
                         </span>
                       </TabsTrigger>
 
@@ -421,9 +395,7 @@ export default function MypageClient({ user }: Props) {
                         <GraduationCap className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-md:text-sm">
                           <span className="bp-lg:hidden">클래스</span>
-                          <span className="hidden bp-lg:inline">
-                            클래스 신청
-                          </span>
+                          <span className="hidden bp-lg:inline">클래스 신청</span>
                         </span>
                       </TabsTrigger>
 
@@ -477,9 +449,7 @@ export default function MypageClient({ user }: Props) {
                         <ReceiptCent className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-xs font-medium leading-tight break-keep bp-md:text-sm">
                           <span className="bp-lg:hidden">포인트</span>
-                          <span className="hidden bp-lg:inline">
-                            적립 포인트
-                          </span>
+                          <span className="hidden bp-lg:inline">적립 포인트</span>
                         </span>
                       </TabsTrigger>
                     </TabsList>
@@ -530,15 +500,9 @@ export default function MypageClient({ user }: Props) {
                         }
                       />
                     ) : isOrdersTab && selectedApplicationId ? (
-                      <ApplicationDetail
-                        id={selectedApplicationId}
-                        backUrl={flowBackUrl}
-                      />
+                      <ApplicationDetail id={selectedApplicationId} backUrl={flowBackUrl} />
                     ) : isOrdersTab && selectedRentalId ? (
-                      <RentalsDetailClient
-                        id={selectedRentalId}
-                        backUrl={flowBackUrl}
-                      />
+                      <RentalsDetailClient id={selectedRentalId} backUrl={flowBackUrl} />
                     ) : isOrdersTab ? (
                       <TransactionFlowList />
                     ) : null}
@@ -565,9 +529,7 @@ export default function MypageClient({ user }: Props) {
                     </div>
                   </CardHeader>
                   <CardContent className="p-3 bp-sm:p-6">
-                    {currentTab === "academy" ? (
-                      <AcademyApplicationsTab />
-                    ) : null}
+                    {currentTab === "academy" ? <AcademyApplicationsTab /> : null}
                   </CardContent>
                 </Card>
               </TabsContent>

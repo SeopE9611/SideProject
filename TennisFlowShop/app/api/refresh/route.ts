@@ -23,18 +23,13 @@ export async function POST() {
   try {
     decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET) as jwt.JwtPayload;
   } catch {
-    return NextResponse.json(
-      { error: "Refresh Token 만료 또는 변조됨" },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: "Refresh Token 만료 또는 변조됨" }, { status: 403 });
   }
 
   // DB에서 실제 유저 정보 조회
   const client = await clientPromise;
   const db = client.db();
-  const user = await db
-    .collection("users")
-    .findOne({ _id: new ObjectId(decoded.sub) });
+  const user = await db.collection("users").findOne({ _id: new ObjectId(decoded.sub) });
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
@@ -93,8 +88,7 @@ export async function POST() {
 
   // 관리자 refresh에는 CSRF 쿠키를 함께 재발급하고, 일반 유저는 기존 값을 제거한다.
   if (user.role === "admin") {
-    const adminCsrfToken =
-      `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, "");
+    const adminCsrfToken = `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, "");
     res.cookies.set(ADMIN_CSRF_COOKIE_KEY, adminCsrfToken, {
       ...baseCookie,
       httpOnly: false,

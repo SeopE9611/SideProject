@@ -47,10 +47,7 @@ test("일반글은 누구에게나 원본 제목을 유지한다", () => {
     }),
     true,
   );
-  assert.equal(
-    maskSecretTitle(normalPost, { viewerId: null, isAdmin: false }).title,
-    "일반 제목",
-  );
+  assert.equal(maskSecretTitle(normalPost, { viewerId: null, isAdmin: false }).title, "일반 제목");
 });
 
 test("accessToken 파싱과 사용자 role 조회를 함께 사용해 관리자 여부를 계산한다", async () => {

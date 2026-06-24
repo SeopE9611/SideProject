@@ -3,10 +3,7 @@ import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
-import {
-  findCourierCatalogItem,
-  normalizeCourierCode,
-} from "@/lib/shipping/courier-map";
+import { findCourierCatalogItem, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { z } from "zod";
 
@@ -24,9 +21,7 @@ function badRequest(error: string, fieldErrors?: Record<string, string[]>) {
   );
 }
 
-function parseShippedAt(
-  input?: unknown,
-): { ok: true; value: Date } | { ok: false; error: string } {
+function parseShippedAt(input?: unknown): { ok: true; value: Date } | { ok: false; error: string } {
   if (!input) return { ok: true, value: new Date() };
 
   const s = String(input).trim();
@@ -36,22 +31,17 @@ function parseShippedAt(
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
     const [yy, mm, dd] = s.split("-").map((n) => Number(n));
     const d = new Date(Date.UTC(yy, mm - 1, dd, 12, 0, 0));
-    if (Number.isNaN(d.getTime()))
-      return { ok: false, error: "발송일이 올바르지 않습니다." };
+    if (Number.isNaN(d.getTime())) return { ok: false, error: "발송일이 올바르지 않습니다." };
     return { ok: true, value: d };
   }
 
   // 그 외 ISO/date-time 문자열
   const d = new Date(s);
-  if (Number.isNaN(d.getTime()))
-    return { ok: false, error: "발송일이 올바르지 않습니다." };
+  if (Number.isNaN(d.getTime())) return { ok: false, error: "발송일이 올바르지 않습니다." };
   return { ok: true, value: d };
 }
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -59,8 +49,7 @@ export async function POST(
 
   // 파라미터/바디 검증
   const { id } = await params;
-  if (!ObjectId.isValid(id))
-    return NextResponse.json({ message: "BAD_ID" }, { status: 400 });
+  if (!ObjectId.isValid(id)) return NextResponse.json({ message: "BAD_ID" }, { status: 400 });
   const body = await req.json().catch(() => ({}));
   const schema = z.object({
     courier: z.string(),
@@ -71,19 +60,13 @@ export async function POST(
 
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
-    return badRequest(
-      "요청 값이 올바르지 않습니다.",
-      parsed.error.flatten().fieldErrors as any,
-    );
+    return badRequest("요청 값이 올바르지 않습니다.", parsed.error.flatten().fieldErrors as any);
   }
 
   const courier = normalizeCourierCode(parsed.data.courier);
   const courierItem = findCourierCatalogItem(courier);
   if (!courierItem) {
-    return NextResponse.json(
-      { ok: false, message: "INVALID_COURIER" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, message: "INVALID_COURIER" }, { status: 400 });
   }
   if (courierItem.code === "ems") {
     return badRequest("EMS는 현재 운송장 등록을 지원하지 않습니다.", {
@@ -127,8 +110,7 @@ export async function POST(
   const db = (await clientPromise).db();
   const _id = new ObjectId(id);
   const mine = await db.collection("rental_orders").findOne({ _id });
-  if (!mine)
-    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+  if (!mine) return NextResponse.json({ message: "Forbidden" }, { status: 403 });
 
   // 저장
   await db.collection("rental_orders").updateOne(

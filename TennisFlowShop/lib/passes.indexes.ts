@@ -40,8 +40,7 @@ async function ensureIndex(
     const keyEntries = Object.entries(key);
     // 키 개수 동일 + 모든 키의 방향이 동일하면 "같은 인덱스"로 간주
     const sameLength = keyEntries.length === wantKeyEntries.length;
-    const samePairs =
-      sameLength && wantKeyEntries.every(([name, dir]) => key[name] === dir);
+    const samePairs = sameLength && wantKeyEntries.every(([name, dir]) => key[name] === dir);
 
     // unique 옵션이 필요한 경우, 기존 인덱스도 unique 여야 동일하다고 인정
     const uniqueOk = options.unique ? idx.unique === true : true;

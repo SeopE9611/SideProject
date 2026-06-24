@@ -37,10 +37,7 @@ const HIDE_SIDEMENU_EXACT_PATHS = new Set([
   "/rackets/toss/success",
 ]);
 
-const HIDE_SIDEMENU_PATTERNS = [
-  /^\/rentals\/[^/]+\/checkout$/,
-  /^\/rackets\/[^/]+\/purchase$/,
-];
+const HIDE_SIDEMENU_PATTERNS = [/^\/rentals\/[^/]+\/checkout$/, /^\/rackets\/[^/]+\/purchase$/];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -58,11 +55,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <>
       {showSideMenu && <SideMenu />}
 
-      <main
-        id="main"
-        className="flex-1"
-        style={{ paddingTop: "var(--header-h, 0px)" }}
-      >
+      <main id="main" className="flex-1" style={{ paddingTop: "var(--header-h, 0px)" }}>
         <div
           className={cn(
             "w-full px-0 bp-lg:pr-8 xl:pr-12 2xl:pr-16",

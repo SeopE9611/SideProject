@@ -109,12 +109,7 @@ export default function RacketFilterPanel({
             </div>
             <div className="flex gap-2">
               {activeFiltersCount > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onReset}
-                  className="text-xs"
-                >
+                <Button variant="ghost" size="sm" onClick={onReset} className="text-xs">
                   초기화 ({activeFiltersCount})
                 </Button>
               )}
@@ -151,9 +146,7 @@ export default function RacketFilterPanel({
                   onClick={() => {
                     setSearchQuery("");
                     onClearInput?.();
-                    const el = document.getElementById(
-                      "search",
-                    ) as HTMLInputElement | null;
+                    const el = document.getElementById("search") as HTMLInputElement | null;
                     el?.focus();
                   }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
@@ -162,28 +155,18 @@ export default function RacketFilterPanel({
                 </button>
               )}
             </div>
-            <Button
-              type="submit"
-              size="sm"
-              variant="default"
-              className="h-10 px-4"
-            >
+            <Button type="submit" size="sm" variant="default" className="h-10 px-4">
               검색
             </Button>
           </form>
 
           {/* 브랜드 */}
           <div className="mb-5 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
-            <Label
-              htmlFor="brand"
-              className="block text-sm font-medium text-foreground"
-            >
+            <Label htmlFor="brand" className="block text-sm font-medium text-foreground">
               브랜드
             </Label>
             <Select
-              onValueChange={(value) =>
-                setSelectedBrand(value === "all" ? null : value)
-              }
+              onValueChange={(value) => setSelectedBrand(value === "all" ? null : value)}
               value={selectedBrand ?? "all"}
             >
               <SelectTrigger className="h-10 rounded-lg border border-input bg-background">
@@ -202,18 +185,14 @@ export default function RacketFilterPanel({
 
           {/* 상태 등급 */}
           <div className="mb-5 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
-            <Label className="text-sm font-medium text-foreground">
-              상태 등급
-            </Label>
+            <Label className="text-sm font-medium text-foreground">상태 등급</Label>
             <p className="text-xs text-muted-foreground leading-relaxed break-keep">
-              A는 사용감이 적은 최상급, B는 일반 사용감이 있는 양호, C는
-              사용감이 비교적 있는 보통 상태입니다.
+              A는 사용감이 적은 최상급, B는 일반 사용감이 있는 양호, C는 사용감이 비교적 있는 보통
+              상태입니다.
             </p>
             <Select
               value={selectedCondition ?? "all"}
-              onValueChange={(v) =>
-                setSelectedCondition(v === "all" ? null : v)
-              }
+              onValueChange={(v) => setSelectedCondition(v === "all" ? null : v)}
             >
               <SelectTrigger className="h-10 rounded-lg border border-input bg-background">
                 <SelectValue placeholder="전체" />
@@ -229,9 +208,7 @@ export default function RacketFilterPanel({
 
           {/* 이용 유형 */}
           <div className="mb-5 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
-            <Label className="text-sm font-medium text-foreground">
-              이용 유형
-            </Label>
+            <Label className="text-sm font-medium text-foreground">이용 유형</Label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -284,9 +261,7 @@ export default function RacketFilterPanel({
                     onClick={() =>
                       onExposureChange(
                         isActive
-                          ? exposureFilter.filter(
-                              (value) => value !== option.value,
-                            )
+                          ? exposureFilter.filter((value) => value !== option.value)
                           : [...exposureFilter, option.value],
                       )
                     }
@@ -302,16 +277,13 @@ export default function RacketFilterPanel({
 
           {/* 가격대 */}
           <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-3">
-            <Label className="text-sm font-medium text-foreground">
-              가격대
-            </Label>
+            <Label className="text-sm font-medium text-foreground">가격대</Label>
             <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-3">
               {RACKET_PRICE_PRESETS.map((preset) => {
                 const effectiveMin = priceMin ?? 0;
                 const effectiveMax = priceMax ?? 10000000;
                 const isActive =
-                  effectiveMin === preset.range[0] &&
-                  effectiveMax === preset.range[1];
+                  effectiveMin === preset.range[0] && effectiveMax === preset.range[1];
 
                 return (
                   <button
@@ -349,11 +321,7 @@ export default function RacketFilterPanel({
               >
                 초기화
               </Button>
-              <Button
-                type="button"
-                className="flex-1 whitespace-nowrap"
-                onClick={onSearchSubmit}
-              >
+              <Button type="button" className="flex-1 whitespace-nowrap" onClick={onSearchSubmit}>
                 필터 적용
               </Button>
             </div>

@@ -42,9 +42,7 @@ export function UserSettingsTab({
           <CardDescription>회원 가입/인증 정책을 관리합니다.</CardDescription>
         </CardHeader>
         {error.message && (
-          <div className="mx-6 rounded border px-3 py-2 text-sm">
-            {error.message}
-          </div>
+          <div className="mx-6 rounded border px-3 py-2 text-sm">{error.message}</div>
         )}
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
@@ -73,11 +71,9 @@ export function UserSettingsTab({
               <Select
                 value={form.watch("defaultUserRole")}
                 onValueChange={(v) =>
-                  form.setValue(
-                    "defaultUserRole",
-                    v as UserSettings["defaultUserRole"],
-                    { shouldDirty: true },
-                  )
+                  form.setValue("defaultUserRole", v as UserSettings["defaultUserRole"], {
+                    shouldDirty: true,
+                  })
                 }
               >
                 <SelectTrigger>

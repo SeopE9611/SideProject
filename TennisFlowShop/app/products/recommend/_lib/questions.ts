@@ -85,8 +85,7 @@ export const RECOMMEND_QUESTIONS: RecommendQuestion[] = [
   {
     id: "freq",
     title: "얼마나 자주 플레이하시나요?",
-    description:
-      "사용 빈도에 따라 내구성과 편안함의 우선순위가 달라질 수 있어요.",
+    description: "사용 빈도에 따라 내구성과 편안함의 우선순위가 달라질 수 있어요.",
     options: [
       {
         label: "월 1~2회",

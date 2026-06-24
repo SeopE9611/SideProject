@@ -30,10 +30,7 @@ export async function loadDaumPostcode(): Promise<void> {
       return;
     }
 
-    if (
-      (window as any).daum?.Postcode ||
-      (existingScript as any).readyState === "complete"
-    ) {
+    if ((window as any).daum?.Postcode || (existingScript as any).readyState === "complete") {
       resolve();
     }
   });

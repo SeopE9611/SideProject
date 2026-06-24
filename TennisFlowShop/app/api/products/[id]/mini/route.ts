@@ -3,22 +3,13 @@ import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
-import {
-  hasPaidMountingFee,
-  isMountableStringByFee,
-} from "@/lib/orders/string-mounting-policy";
+import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { getEffectiveProductPrice } from "@/lib/product-pricing";
 import { getEffectiveRacketPrice } from "@/lib/racket-pricing";
-import {
-  productVisibilityFilterFor,
-  racketVisibilityFilterFor,
-} from "@/lib/public-visibility";
+import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 
-export async function GET(
-  _req: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
 
   if (!ObjectId.isValid(id)) {
@@ -47,23 +38,19 @@ export async function GET(
   };
 
   // 1) products 먼저
-  const prod = await db
-    .collection("products")
-    .findOne(
-      {
-        ...idFilter,
-        ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
-      },
-      { projection },
-    );
+  const prod = await db.collection("products").findOne(
+    {
+      ...idFilter,
+      ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+    },
+    { projection },
+  );
 
   if (prod) {
     const rawMountingFee = (prod as any).mountingFee;
     const rawShippingFee = (prod as any).shippingFee;
 
-    const safeMountingFee = hasPaidMountingFee(rawMountingFee)
-      ? rawMountingFee
-      : 0;
+    const safeMountingFee = hasPaidMountingFee(rawMountingFee) ? rawMountingFee : 0;
     const isMountableString = isMountableStringByFee(rawMountingFee);
     const safePrice = getEffectiveProductPrice(
       prod as {
@@ -78,10 +65,7 @@ export async function GET(
         kind: "product" as const,
         href: `/products/${id}`,
         name: prod.name ?? prod.title ?? "상품",
-        image:
-          prod.thumbnail ||
-          (Array.isArray(prod.images) && prod.images[0]) ||
-          null,
+        image: prod.thumbnail || (Array.isArray(prod.images) && prod.images[0]) || null,
         mountingFee: safeMountingFee,
         isMountableString,
         price: safePrice,
@@ -92,15 +76,13 @@ export async function GET(
   }
 
   // 2) 없으면 used_rackets도 조회
-  const racket = await db
-    .collection("used_rackets")
-    .findOne(
-      {
-        ...idFilter,
-        ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()),
-      },
-      { projection },
-    );
+  const racket = await db.collection("used_rackets").findOne(
+    {
+      ...idFilter,
+      ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+    },
+    { projection },
+  );
 
   if (racket) {
     const rawShippingFee = (racket as any).shippingFee;
@@ -115,14 +97,11 @@ export async function GET(
           const brand = String((racket as any).brand ?? "").trim();
           const model = String((racket as any).model ?? "").trim();
           const computed = `${racketBrandLabel(brand)} ${model}`.trim();
-          return (
-            computed || (racket as any).name || (racket as any).title || "라켓"
-          );
+          return computed || (racket as any).name || (racket as any).title || "라켓";
         })(),
         image:
           (racket as any).thumbnail ||
-          (Array.isArray((racket as any).images) &&
-            (racket as any).images[0]) ||
+          (Array.isArray((racket as any).images) && (racket as any).images[0]) ||
           null,
         mountingFee: 0, // 라켓은 장착비 개념 없음(필요하면 정책에 맞게)
         isMountableString: false,

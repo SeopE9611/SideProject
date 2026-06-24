@@ -103,20 +103,8 @@ const QNA_CATEGORY_CODES = [
 ] as const;
 
 // Notice 카테고리 라벨/코드
-const NOTICE_CATEGORY_LABELS = [
-  "일반",
-  "이벤트",
-  "아카데미",
-  "점검",
-  "긴급",
-] as const;
-const NOTICE_CATEGORY_CODES = [
-  "general",
-  "event",
-  "academy",
-  "maintenance",
-  "urgent",
-] as const;
+const NOTICE_CATEGORY_LABELS = ["일반", "이벤트", "아카데미", "점검", "긴급"] as const;
+const NOTICE_CATEGORY_CODES = ["general", "event", "academy", "maintenance", "urgent"] as const;
 
 // 공통 category 스키마
 const categorySchema = z
@@ -155,10 +143,7 @@ const updateSchema = z.object({
     .optional(),
 });
 
-function canEdit(
-  { viewerId, isAdmin }: { viewerId?: string | null; isAdmin: boolean },
-  post: any,
-) {
+function canEdit({ viewerId, isAdmin }: { viewerId?: string | null; isAdmin: boolean }, post: any) {
   const isOwner = String(viewerId || "") === String(post.authorId || "");
   return isAdmin || isOwner;
 }
@@ -242,10 +227,7 @@ const BoardRepo = {
   },
 };
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const stop = startTimer();
   const meta = reqMeta(req);
   const db = await getDb();
@@ -281,8 +263,7 @@ export async function GET(
   });
   const payload = viewer.payload;
   const isAdmin = viewer.isAdmin;
-  const isOwner =
-    viewer.viewerId && String(viewer.viewerId) === String(post.authorId);
+  const isOwner = viewer.viewerId && String(viewer.viewerId) === String(post.authorId);
 
   // 비밀글: 권한 없으면 401/403로 명확하게 반환
   if (post.isSecret) {
@@ -340,10 +321,7 @@ export async function GET(
   return response;
 }
 
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const csrf = verifyCommunityCsrf(req);
   if (!csrf.ok) {
     return csrf.response;
@@ -453,17 +431,12 @@ export async function PATCH(
       extra: { issues: parsed.error.issues },
       ...meta,
     });
-    return NextResponse.json(
-      { ok: false, error: parsed.error.flatten() },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: parsed.error.flatten() }, { status: 400 });
   }
 
   // 클라이언트가 보낸 removedPaths(옵션) 분리
   const removedPaths: string[] = Array.isArray((bodyRaw as any).removedPaths)
-    ? (bodyRaw as any).removedPaths.filter(
-        (p: any) => typeof p === "string" && p,
-      )
+    ? (bodyRaw as any).removedPaths.filter((p: any) => typeof p === "string" && p)
     : [];
 
   const auditContextRaw = (bodyRaw as any)?.auditContext;
@@ -488,11 +461,8 @@ export async function PATCH(
   // removedPaths 반영을 "먼저" 해서, 이후 분리에도 동일하게 적용
   if (removedPaths.length > 0 && Array.isArray(normalizedAttachments)) {
     const rm = new Set(removedPaths);
-    const toPath = (a: any) =>
-      a?.storagePath || toStoragePathFromPublicUrl(String(a?.url || ""));
-    normalizedAttachments = normalizedAttachments.filter(
-      (a: any) => !rm.has(toPath(a)),
-    );
+    const toPath = (a: any) => a?.storagePath || toStoragePathFromPublicUrl(String(a?.url || ""));
+    normalizedAttachments = normalizedAttachments.filter((a: any) => !rm.has(toPath(a)));
   }
 
   // 이미지/문서 분리
@@ -519,11 +489,8 @@ export async function PATCH(
   // removedPaths가 오면 patch.attachments에서 해당 항목 제거(이중 안전망)
   if (removedPaths.length > 0 && Array.isArray(patch.attachments)) {
     const rm = new Set(removedPaths);
-    const toPath = (a: any) =>
-      a?.storagePath || toStoragePathFromPublicUrl(String(a?.url || ""));
-    patch.attachments = patch.attachments.filter(
-      (a: any) => !rm.has(toPath(a)),
-    );
+    const toPath = (a: any) => a?.storagePath || toStoragePathFromPublicUrl(String(a?.url || ""));
+    patch.attachments = patch.attachments.filter((a: any) => !rm.has(toPath(a)));
   }
 
   // 타입별 제약
@@ -546,9 +513,7 @@ export async function PATCH(
 
   // 스토리지 파일 삭제 (옵션)
   if (removedPaths.length > 0) {
-    const { error: delErr } = await supabaseAdmin.storage
-      .from(STORAGE_BUCKET)
-      .remove(removedPaths);
+    const { error: delErr } = await supabaseAdmin.storage.from(STORAGE_BUCKET).remove(removedPaths);
 
     if (delErr) {
       // 실패해도 DB 업데이트는 진행할지 여부는 정책 결정
@@ -576,10 +541,7 @@ export async function PATCH(
   const clientSeenDateBody = (bodyRaw as any)?.clientSeenDate;
   const ifUnmodifiedSinceBody = (bodyRaw as any)?.ifUnmodifiedSince;
   const clientSeenAtRaw =
-    clientSeenDateBody ??
-    ifUnmodifiedSinceBody ??
-    ifUnmodifiedSinceHeader ??
-    null;
+    clientSeenDateBody ?? ifUnmodifiedSinceBody ?? ifUnmodifiedSinceHeader ?? null;
 
   let clientSeenDate: Date | null = null;
   if (typeof clientSeenAtRaw === "string") {
@@ -619,10 +581,7 @@ export async function PATCH(
 
   // 4) 여전히 실패면: 실제 삭제(not_found)와 동시 수정(conflict) 분기
   if (!r.matchedCount) {
-    const postStillExists = !!(await BoardRepo.findOneById(
-      db,
-      String(post._id),
-    ));
+    const postStillExists = !!(await BoardRepo.findOneById(db, String(post._id)));
     const failure = classifyBoardPatchFailure({
       hasClientSeenDate: !!clientSeenDate,
       postStillExists,
@@ -709,10 +668,7 @@ export async function PATCH(
 }
 // ===================================================================
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const csrf = verifyCommunityCsrf(req);
   if (!csrf.ok) {
     return csrf.response;
@@ -766,15 +722,10 @@ export async function DELETE(
   // 첨부가 있으면 스토리지에서 먼저 삭제
   if (Array.isArray(post.attachments) && post.attachments.length > 0) {
     const paths = post.attachments
-      .map(
-        (a: any) =>
-          a?.storagePath || toStoragePathFromPublicUrl(String(a?.url || "")),
-      )
+      .map((a: any) => a?.storagePath || toStoragePathFromPublicUrl(String(a?.url || "")))
       .filter((p: string) => !!p);
     if (paths.length > 0) {
-      const { error: delErr } = await supabaseAdmin.storage
-        .from(STORAGE_BUCKET)
-        .remove(paths);
+      const { error: delErr } = await supabaseAdmin.storage.from(STORAGE_BUCKET).remove(paths);
       if (delErr)
         logError({
           msg: "boards:delete:storage_remove_failed",
@@ -792,8 +743,7 @@ export async function DELETE(
   await BoardRepo.deleteOneById(db, id);
 
   const deleteAuditSource =
-    req.headers.get("x-admin-audit-source")?.trim().slice(0, 120) ||
-    "boards_delete_api";
+    req.headers.get("x-admin-audit-source")?.trim().slice(0, 120) || "boards_delete_api";
   const deleteAuditAction =
     req.headers.get("x-admin-audit-action")?.trim().slice(0, 120) || "delete";
 

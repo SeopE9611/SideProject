@@ -24,12 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { Switch } from "@/components/ui/switch";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
@@ -37,10 +32,7 @@ import { adminSurface } from "@/components/admin/admin-typography";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import type {
-  AdminReviewListItemDto,
-  AdminReviewsListResponseDto,
-} from "@/types/admin/reviews";
+import type { AdminReviewListItemDto, AdminReviewsListResponseDto } from "@/types/admin/reviews";
 import {
   Award,
   Calendar,
@@ -59,14 +51,12 @@ import Image from "next/image";
 
 type Row = AdminReviewListItemDto;
 type Page = AdminReviewsListResponseDto;
-const ReviewPhotoDialog = dynamic(
-  () => import("@/app/reviews/_components/ReviewPhotoDialog"),
-  { loading: () => null },
-);
-const AdminConfirmDialog = dynamic(
-  () => import("@/components/admin/AdminConfirmDialog"),
-  { loading: () => null },
-);
+const ReviewPhotoDialog = dynamic(() => import("@/app/reviews/_components/ReviewPhotoDialog"), {
+  loading: () => null,
+});
+const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirmDialog"), {
+  loading: () => null,
+});
 
 function mapApiToViewModel(page: Page | null): Page | null {
   if (!page) return null;
@@ -147,16 +137,10 @@ export default function AdminReviewListClient() {
     revalidateOnReconnect: false,
   });
   const data = useMemo(
-    () =>
-      rawData
-        ? rawData.map((page) => mapApiToViewModel(page) as Page)
-        : undefined,
+    () => (rawData ? rawData.map((page) => mapApiToViewModel(page) as Page) : undefined),
     [rawData],
   );
-  const rows = useMemo(
-    () => (data ? data.flatMap((d) => d.items) : []),
-    [data],
-  );
+  const rows = useMemo(() => (data ? data.flatMap((d) => d.items) : []), [data]);
   const hasMore = useMemo(
     () => (data?.length ? data[data.length - 1].items.length === LIMIT : false),
     [data],
@@ -205,9 +189,7 @@ export default function AdminReviewListClient() {
   }, [detail]);
 
   // ---- 정렬 ----
-  const [sortBy, setSortBy] = useState<
-    "latest" | "oldest" | "rating" | "helpful"
-  >("latest");
+  const [sortBy, setSortBy] = useState<"latest" | "oldest" | "rating" | "helpful">("latest");
   const sortedRows = useMemo(() => {
     const arr = rows.slice();
     switch (sortBy) {
@@ -228,16 +210,11 @@ export default function AdminReviewListClient() {
 
   // ---- 선택/삭제 ----
   const [selected, setSelected] = useState<string[]>([]);
-  const [pendingDeleteReviewId, setPendingDeleteReviewId] = useState<
-    string | null
-  >(null);
+  const [pendingDeleteReviewId, setPendingDeleteReviewId] = useState<string | null>(null);
   const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState(false);
-  const toggleSelectAll = (checked: boolean) =>
-    setSelected(checked ? rows.map((r) => r._id) : []);
+  const toggleSelectAll = (checked: boolean) => setSelected(checked ? rows.map((r) => r._id) : []);
   const toggleSelectOne = (id: string, checked: boolean) =>
-    setSelected((prev) =>
-      checked ? [...prev, id] : prev.filter((x) => x !== id),
-    );
+    setSelected((prev) => (checked ? [...prev, id] : prev.filter((x) => x !== id)));
 
   // rows 변경 시 화면에 없는 선택 해제
   useEffect(() => {
@@ -290,9 +267,7 @@ export default function AdminReviewListClient() {
         ),
       );
 
-      const failedIds = targetIds.filter(
-        (_id, index) => results[index]?.status === "rejected",
-      );
+      const failedIds = targetIds.filter((_id, index) => results[index]?.status === "rejected");
       const failedCount = failedIds.length;
 
       if (failedCount === 0) {
@@ -309,9 +284,7 @@ export default function AdminReviewListClient() {
         return;
       }
 
-      showErrorToast(
-        "일부 리뷰 삭제에 실패했습니다. 목록을 다시 불러왔습니다.",
-      );
+      showErrorToast("일부 리뷰 삭제에 실패했습니다. 목록을 다시 불러왔습니다.");
     } catch {
       await mutate(() => snapshot, false);
       showErrorToast("일부 항목 삭제에 실패했습니다.");
@@ -329,9 +302,7 @@ export default function AdminReviewListClient() {
         pages
           ? pages.map((p) => ({
               ...p,
-              items: p.items.map((r) =>
-                selected.includes(r._id) ? { ...r, status: next } : r,
-              ),
+              items: p.items.map((r) => (selected.includes(r._id) ? { ...r, status: next } : r)),
             }))
           : pages,
       false,
@@ -374,9 +345,7 @@ export default function AdminReviewListClient() {
         pages
           ? pages.map((p) => ({
               ...p,
-              items: p.items.map((r) =>
-                r._id === it._id ? { ...r, status: next } : r,
-              ),
+              items: p.items.map((r) => (r._id === it._id ? { ...r, status: next } : r)),
             }))
           : pages,
       false,
@@ -388,9 +357,7 @@ export default function AdminReviewListClient() {
         body: JSON.stringify({ status: next }),
       });
       showSuccessToast(
-        next === "hidden"
-          ? "리뷰를 비공개로 변경했습니다."
-          : "리뷰를 공개로 변경했습니다.",
+        next === "hidden" ? "리뷰를 비공개로 변경했습니다." : "리뷰를 공개로 변경했습니다.",
       );
     } catch {
       await mutate(() => snapshot, false);
@@ -434,8 +401,7 @@ export default function AdminReviewListClient() {
     t === "product"
       ? "bg-muted text-foreground hover:bg-muted"
       : "bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20";
-  const typeLabel = (t: Row["type"]) =>
-    t === "product" ? "상품 리뷰" : "서비스 리뷰";
+  const typeLabel = (t: Row["type"]) => (t === "product" ? "상품 리뷰" : "서비스 리뷰");
 
   const GRID =
     "lg:grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px]";
@@ -470,9 +436,7 @@ export default function AdminReviewListClient() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">평균 평점</p>
-                <p className="text-2xl font-bold">
-                  {(metrics?.avg ?? 0).toFixed(1)}
-                </p>
+                <p className="text-2xl font-bold">{(metrics?.avg ?? 0).toFixed(1)}</p>
               </div>
               <div className="rounded-md p-2 bg-warning/10 dark:bg-warning/15">
                 <Star className="h-5 w-5 text-warning" />
@@ -498,9 +462,7 @@ export default function AdminReviewListClient() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">서비스 리뷰</p>
-                <p className="text-2xl font-bold">
-                  {metrics?.byType?.service ?? 0}
-                </p>
+                <p className="text-2xl font-bold">{metrics?.byType?.service ?? 0}</p>
               </div>
               <div className="rounded-md p-2 bg-muted">
                 <TrendingUp className="h-5 w-5 text-foreground" />
@@ -513,9 +475,7 @@ export default function AdminReviewListClient() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">상품 리뷰</p>
-                <p className="text-2xl font-bold">
-                  {metrics?.byType?.product ?? 0}
-                </p>
+                <p className="text-2xl font-bold">{metrics?.byType?.product ?? 0}</p>
               </div>
               <div className="rounded-md p-2 bg-muted">
                 <TrendingUp className="h-5 w-5 text-foreground" />
@@ -556,18 +516,11 @@ export default function AdminReviewListClient() {
               onCheckedChange={(v) => setShowDeleted(!!v)}
               className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
-            <label
-              htmlFor="show-deleted"
-              className="text-xs text-muted-foreground"
-            >
+            <label htmlFor="show-deleted" className="text-xs text-muted-foreground">
               삭제 포함 보기
             </label>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setCompact((v) => !v)}
-          >
+          <Button size="sm" variant="outline" onClick={() => setCompact((v) => !v)}>
             {compact ? "코지" : "컴팩트"}
           </Button>
           <DropdownMenu>
@@ -582,18 +535,12 @@ export default function AdminReviewListClient() {
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => e.stopPropagation()}
             >
-              <DropdownMenuItem onClick={() => setSortBy("latest")}>
-                최신순
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy("rating")}>
-                평점 높은순
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy("latest")}>최신순</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy("rating")}>평점 높은순</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSortBy("helpful")}>
                 도움돼요 많은순
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy("oldest")}>
-                오래된순
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy("oldest")}>오래된순</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -617,9 +564,7 @@ export default function AdminReviewListClient() {
           </div>
 
           {error ? (
-            <div className="p-8 text-center text-destructive">
-              목록을 불러오지 못했습니다.
-            </div>
+            <div className="p-8 text-center text-destructive">목록을 불러오지 못했습니다.</div>
           ) : !data && isValidating ? (
             <div className="space-y-3 p-4">
               {Array.from({ length: 6 }).map((_, index) => (
@@ -642,9 +587,7 @@ export default function AdminReviewListClient() {
               ))}
             </div>
           ) : rows.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">
-              불러올 리뷰가 없습니다.
-            </div>
+            <div className="p-8 text-center text-muted-foreground">불러올 리뷰가 없습니다.</div>
           ) : (
             sortedRows.map((r) => {
               const isSel = selected.includes(r._id);
@@ -663,9 +606,7 @@ export default function AdminReviewListClient() {
                     "transition-colors cursor-pointer",
                     "even:bg-background hover:bg-primary/10",
                     "dark:even:bg-card dark:hover:bg-primary/20",
-                    isSel
-                      ? "border-l-4 border-primary bg-primary/10 dark:bg-primary/20"
-                      : "",
+                    isSel ? "border-l-4 border-primary bg-primary/10 dark:bg-primary/20" : "",
                   ].join(" ")}
                 >
                   {/* 체크박스 */}
@@ -698,10 +639,7 @@ export default function AdminReviewListClient() {
                     )}
                     {r.isDeleted && (
                       <div className="mt-0.5">
-                        <Badge
-                          variant="secondary"
-                          className="h-5 shrink-0 whitespace-nowrap"
-                        >
+                        <Badge variant="secondary" className="h-5 shrink-0 whitespace-nowrap">
                           삭제됨
                         </Badge>
                       </div>
@@ -716,9 +654,7 @@ export default function AdminReviewListClient() {
                           <p
                             className={[
                               "text-sm leading-5",
-                              expanded[r._id]
-                                ? "whitespace-pre-wrap"
-                                : "line-clamp-2",
+                              expanded[r._id] ? "whitespace-pre-wrap" : "line-clamp-2",
                               "break-keep",
                             ].join(" ")}
                           >
@@ -752,9 +688,7 @@ export default function AdminReviewListClient() {
                   <div className={`min-w-0 ${dim}`}>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                       {renderStars(r.rating)}
-                      <span className="text-[13px] text-foreground">
-                        {r.rating}/5
-                      </span>
+                      <span className="text-[13px] text-foreground">{r.rating}/5</span>
                       <span className="inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-[11px] leading-none bg-card text-foreground border-border">
                         <ThumbsUp className="h-3 w-3" />
                         {r.helpfulCount ?? 0}
@@ -765,21 +699,14 @@ export default function AdminReviewListClient() {
                   {/* 작성일 */}
                   <div className={`min-w-0 ${dim}`}>
                     <div className="text-foreground text-[13px]">{date}</div>
-                    <div className="text-[12px] text-muted-foreground">
-                      {time}
-                    </div>
+                    <div className="text-[12px] text-muted-foreground">{time}</div>
                   </div>
 
                   {/* 타입 */}
-                  <div
-                    className={`min-w-0 ${dim} flex items-center gap-3 whitespace-nowrap`}
-                  >
+                  <div className={`min-w-0 ${dim} flex items-center gap-3 whitespace-nowrap`}>
                     <Badge
                       variant="outline"
-                      className={
-                        typeBadgeClass(r.type) +
-                        " ring-1 ring-inset ring-ring shrink-0"
-                      }
+                      className={typeBadgeClass(r.type) + " ring-1 ring-inset ring-ring shrink-0"}
                     >
                       {typeLabel(r.type)}
                     </Badge>
@@ -805,10 +732,7 @@ export default function AdminReviewListClient() {
                   {/* 액션 */}
                   <div className="justify-self-end pl-1">
                     <DropdownMenu>
-                      <DropdownMenuTrigger
-                        asChild
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -871,12 +795,7 @@ export default function AdminReviewListClient() {
         >
           <div className="w-full border-t border-border bg-primary/10 dark:bg-primary/20 px-4 py-2 flex items-center justify-between rounded-b-lg text-foreground">
             <span className="inline-flex items-center gap-2">
-              <svg
-                className="h-4 w-4"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden
-              >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                 <path d="M9 16.2l-3.5-3.5 1.4-1.4L9 13.4l7.1-7.1 1.4 1.4z" />
               </svg>
               <span className="inline-flex items-center rounded-full bg-card ring-1 ring-ring text-primary font-semibold text-xs px-2 py-0.5">
@@ -902,12 +821,7 @@ export default function AdminReviewListClient() {
                 aria-label="선택 공개로 변경"
                 title="선택한 리뷰를 공개로 변경"
               >
-                <svg
-                  className="h-4 w-4 mr-1"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  aria-hidden
-                >
+                <svg className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                   <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 11a4 4 0 110-8 4 4 0 010 8z" />
                 </svg>
                 선택 공개
@@ -921,12 +835,7 @@ export default function AdminReviewListClient() {
                 aria-label="선택 비공개로 변경"
                 title="선택한 리뷰를 비공개로 변경"
               >
-                <svg
-                  className="h-4 w-4 mr-1"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  aria-hidden
-                >
+                <svg className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                   <path d="M2 12s3-7 10-7a9.9 9.9 0 018.06 4.09l1.41-1.41 1.41 1.41-19 19-1.41-1.41L4.1 19.94A12.14 12.14 0 012 12zm10 5a5 5 0 005-5 4.93 4.93 0 00-.79-2.69l-6.9 6.9A4.93 4.93 0 0012 17z" />
                 </svg>
                 선택 비공개
@@ -955,17 +864,11 @@ export default function AdminReviewListClient() {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
                   variant="outline"
-                  className={
-                    typeBadgeClass(detail.type) + " ring-1 ring-inset ring-ring"
-                  }
+                  className={typeBadgeClass(detail.type) + " ring-1 ring-inset ring-ring"}
                 >
                   {typeLabel(detail.type)}
                 </Badge>
-                <Badge
-                  variant={
-                    detail.status === "visible" ? "default" : "secondary"
-                  }
-                >
+                <Badge variant={detail.status === "visible" ? "default" : "secondary"}>
                   {detail.status === "visible" ? "공개" : "비공개"}
                 </Badge>
                 {(() => {
@@ -987,10 +890,7 @@ export default function AdminReviewListClient() {
               <div className="mt-2">
                 {/* 로딩 스켈레톤: 상세를 불러오는 동안 자리 고정 */}
                 {loadingPhotos && (
-                  <div
-                    aria-hidden
-                    className="flex flex-wrap gap-2 min-h-[72px]"
-                  >
+                  <div aria-hidden className="flex flex-wrap gap-2 min-h-[72px]">
                     {Array.from({ length: 4 }).map((_, i) => (
                       <div
                         key={i}
@@ -1031,12 +931,8 @@ export default function AdminReviewListClient() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <div className="text-sm text-muted-foreground mb-1">
-                    작성자
-                  </div>
-                  <div className="font-medium">
-                    {detail.userName || detail.userEmail || "-"}
-                  </div>
+                  <div className="text-sm text-muted-foreground mb-1">작성자</div>
+                  <div className="font-medium">{detail.userName || detail.userEmail || "-"}</div>
                   {detail.userName && (
                     <div className="text-xs text-muted-foreground break-all">
                       {detail.userEmail}
@@ -1044,18 +940,14 @@ export default function AdminReviewListClient() {
                   )}
                 </div>
                 <div>
-                  <div className="text-sm text-muted-foreground mb-1">
-                    리뷰 대상
-                  </div>
+                  <div className="text-sm text-muted-foreground mb-1">리뷰 대상</div>
                   <div className="font-medium">{detail.subject || "-"}</div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground mb-1">평점</div>
                   <div className="flex items-center gap-2">
                     {renderStars(detail.rating)}
-                    <span className="text-sm text-foreground">
-                      {detail.rating}/5
-                    </span>
+                    <span className="text-sm text-foreground">{detail.rating}/5</span>
                   </div>
                 </div>
               </div>
@@ -1116,11 +1008,7 @@ export default function AdminReviewListClient() {
       <div className="flex justify-center">
         {rows.length > 0 &&
           (hasMore ? (
-            <Button
-              variant="outline"
-              onClick={() => setSize(size + 1)}
-              disabled={isValidating}
-            >
+            <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating}>
               {isValidating ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -1131,9 +1019,7 @@ export default function AdminReviewListClient() {
               )}
             </Button>
           ) : (
-            <span className="text-sm text-muted-foreground">
-              마지막 페이지입니다
-            </span>
+            <span className="text-sm text-muted-foreground">마지막 페이지입니다</span>
           ))}
       </div>
       {rows.length > 0 && isValidating && (

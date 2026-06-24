@@ -16,13 +16,7 @@ import {
 
 // shadcn/ui
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -129,14 +123,10 @@ export default function StringingSettingsPage() {
     error,
     isLoading: loading,
     mutate,
-  } = useSWR<StringingSettings | null>(
-    "/api/admin/settings/stringing",
-    authenticatedSWRFetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    },
-  );
+  } = useSWR<StringingSettings | null>("/api/admin/settings/stringing", authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   // 현재 상태 시그니처
   const currentSig = useMemo(
@@ -151,16 +141,7 @@ export default function StringingSettingsPage() {
         holidays,
         exceptions,
       }),
-    [
-      capacity,
-      start,
-      end,
-      interval,
-      bookingWindowDays,
-      businessDays,
-      holidays,
-      exceptions,
-    ],
+    [capacity, start, end, interval, bookingWindowDays, businessDays, holidays, exceptions],
   );
 
   const isDirty = Boolean(initialSig) && currentSig !== initialSig;
@@ -178,13 +159,9 @@ export default function StringingSettingsPage() {
       businessDays: Array.isArray(serverSettings.businessDays)
         ? serverSettings.businessDays
         : [1, 2, 3, 4, 5],
-      holidays: Array.isArray(serverSettings.holidays)
-        ? serverSettings.holidays
-        : [],
+      holidays: Array.isArray(serverSettings.holidays) ? serverSettings.holidays : [],
       bookingWindowDays: Number(serverSettings.bookingWindowDays ?? 30),
-      exceptions: Array.isArray(serverSettings.exceptions)
-        ? serverSettings.exceptions
-        : [],
+      exceptions: Array.isArray(serverSettings.exceptions) ? serverSettings.exceptions : [],
     };
 
     setCapacity(next.capacity);
@@ -324,53 +301,42 @@ export default function StringingSettingsPage() {
               </div>
               <div className="flex-1 text-sm leading-relaxed text-muted-foreground">
                 <p className="font-semibold text-foreground mb-2">
-                  운영 정책 변경은 예약에 큰 영향을 줍니다. 변경 전
-                  개발자/운영팀과 상의하세요.
+                  운영 정책 변경은 예약에 큰 영향을 줍니다. 변경 전 개발자/운영팀과 상의하세요.
                 </p>
                 <ul className="space-y-1.5">
                   <li className="flex items-start gap-2">
                     <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
                     <span>
-                      <strong className="font-medium text-foreground">
-                        동시 수용량:
-                      </strong>{" "}
-                      같은 시간대 동시 접수 가능한 신청 수
+                      <strong className="font-medium text-foreground">동시 수용량:</strong> 같은
+                      시간대 동시 접수 가능한 신청 수
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
                     <span>
-                      <strong className="font-medium text-foreground">
-                        영업 시간/간격:
-                      </strong>{" "}
+                      <strong className="font-medium text-foreground">영업 시간/간격:</strong>{" "}
                       슬롯의 시작·종료 시각과 간격
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
                     <span>
-                      <strong className="font-medium text-foreground">
-                        영업 요일:
-                      </strong>{" "}
-                      기본 영업 요일
+                      <strong className="font-medium text-foreground">영업 요일:</strong> 기본 영업
+                      요일
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
                     <span>
-                      <strong className="font-medium text-foreground">
-                        휴무일:
-                      </strong>{" "}
-                      특정 날짜를 휴무로 지정
+                      <strong className="font-medium text-foreground">휴무일:</strong> 특정 날짜를
+                      휴무로 지정
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-muted flex-shrink-0" />
                     <span>
-                      <strong className="font-medium text-foreground">
-                        예외일:
-                      </strong>{" "}
-                      특정 날짜만 영업/시간·간격·수용량을 오버라이드
+                      <strong className="font-medium text-foreground">예외일:</strong> 특정 날짜만
+                      영업/시간·간격·수용량을 오버라이드
                     </span>
                   </li>
                 </ul>
@@ -400,26 +366,21 @@ export default function StringingSettingsPage() {
                   </div>
                   <Slider
                     value={[capacity]}
-                    onValueChange={(v) =>
-                      setCapacity(Math.max(1, Math.min(10, v?.[0] ?? 1)))
-                    }
+                    onValueChange={(v) => setCapacity(Math.max(1, Math.min(10, v?.[0] ?? 1)))}
                     min={1}
                     max={10}
                     step={1}
                     className="mt-3"
                   />
                   <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-                    {/* was: text-muted-foreground */}예) 2로 저장하면 동일
-                    시간대 최대 2건까지 접수됩니다.
+                    {/* was: text-muted-foreground */}예) 2로 저장하면 동일 시간대 최대 2건까지
+                    접수됩니다.
                   </p>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="start"
-                      className="text-sm font-medium text-foreground"
-                    >
+                    <Label htmlFor="start" className="text-sm font-medium text-foreground">
                       영업 시작
                     </Label>
                     <Input
@@ -431,10 +392,7 @@ export default function StringingSettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="end"
-                      className="text-sm font-medium text-foreground"
-                    >
+                    <Label htmlFor="end" className="text-sm font-medium text-foreground">
                       영업 종료
                     </Label>
                     <Input
@@ -448,10 +406,7 @@ export default function StringingSettingsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="interval"
-                    className="text-sm font-medium text-foreground"
-                  >
+                  <Label htmlFor="interval" className="text-sm font-medium text-foreground">
                     간격 (5~240분)
                   </Label>
                   <div className="mt-2 flex items-center gap-3">
@@ -463,8 +418,7 @@ export default function StringingSettingsPage() {
                       value={interval}
                       onChange={(e) => {
                         const v = Number(e.target.value || 30);
-                        if (Number.isFinite(v))
-                          setInterval(Math.max(5, Math.min(240, v)));
+                        if (Number.isFinite(v)) setInterval(Math.max(5, Math.min(240, v)));
                       }}
                       className="w-32 border-border focus:border-border focus:ring-ring"
                     />
@@ -494,8 +448,7 @@ export default function StringingSettingsPage() {
                       value={bookingWindowDays}
                       onChange={(e) => {
                         const v = Number(e.target.value || 30);
-                        if (Number.isFinite(v))
-                          setBookingWindowDays(Math.max(1, Math.min(180, v)));
+                        if (Number.isFinite(v)) setBookingWindowDays(Math.max(1, Math.min(180, v)));
                       }}
                       className="w-32 border-border focus:border-border focus:ring-ring"
                     />
@@ -539,9 +492,7 @@ export default function StringingSettingsPage() {
                           }
                           onClick={() =>
                             setBusinessDays((prev) =>
-                              prev.includes(i)
-                                ? prev.filter((d) => d !== i)
-                                : [...prev, i].sort(),
+                              prev.includes(i) ? prev.filter((d) => d !== i) : [...prev, i].sort(),
                             )
                           }
                         >
@@ -551,17 +502,14 @@ export default function StringingSettingsPage() {
                     })}
                   </div>
                   <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-                    예외일로 별도 지정한 날짜는 이 요일 설정과 무관하게
-                    동작합니다.
+                    예외일로 별도 지정한 날짜는 이 요일 설정과 무관하게 동작합니다.
                   </p>
                 </div>
 
                 <Separator className="bg-border" />
 
                 <div>
-                  <Label className="mb-3 block text-sm font-medium text-foreground">
-                    휴무일
-                  </Label>
+                  <Label className="mb-3 block text-sm font-medium text-foreground">휴무일</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       type="date"
@@ -590,17 +538,13 @@ export default function StringingSettingsPage() {
                           key={h}
                           className="flex items-center justify-between px-4 py-3 text-sm hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-colors"
                         >
-                          <span className="font-medium text-foreground">
-                            {h}
-                          </span>
+                          <span className="font-medium text-foreground">{h}</span>
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
                             className="hover:bg-destructive/10 dark:hover:bg-destructive/15 text-destructive hover:text-destructive"
-                            onClick={() =>
-                              setHolidays((prev) => prev.filter((x) => x !== h))
-                            }
+                            onClick={() => setHolidays((prev) => prev.filter((x) => x !== h))}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -608,9 +552,7 @@ export default function StringingSettingsPage() {
                       ))}
                     </ul>
                   ) : (
-                    <p className="mt-3 text-xs text-muted-foreground">
-                      등록된 휴무일이 없습니다.
-                    </p>
+                    <p className="mt-3 text-xs text-muted-foreground">등록된 휴무일이 없습니다.</p>
                   )}
                 </div>
               </CardContent>
@@ -631,15 +573,11 @@ export default function StringingSettingsPage() {
               <div className="rounded-2xl border border-border bg-muted/50 p-5">
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
                   <div className="lg:col-span-2 space-y-2">
-                    <Label className="text-xs font-medium text-foreground">
-                      날짜
-                    </Label>
+                    <Label className="text-xs font-medium text-foreground">날짜</Label>
                     <Input
                       type="date"
                       value={exInput.date || ""}
-                      onChange={(e) =>
-                        setExInput({ ...exInput, date: e.target.value })
-                      }
+                      onChange={(e) => setExInput({ ...exInput, date: e.target.value })}
                       className="border-border bg-card focus:border-border focus:ring-ring"
                     />
                   </div>
@@ -647,49 +585,34 @@ export default function StringingSettingsPage() {
                   <div className="flex items-center gap-2 pt-7">
                     <Switch
                       checked={!!exInput.closed}
-                      onCheckedChange={(v) =>
-                        setExInput({ ...exInput, closed: v })
-                      }
+                      onCheckedChange={(v) => setExInput({ ...exInput, closed: v })}
                       id="ex-closed"
                     />
-                    <Label
-                      htmlFor="ex-closed"
-                      className="text-sm font-medium text-foreground"
-                    >
+                    <Label htmlFor="ex-closed" className="text-sm font-medium text-foreground">
                       해당 날짜 휴무
                     </Label>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-xs font-medium text-foreground">
-                      시작
-                    </Label>
+                    <Label className="text-xs font-medium text-foreground">시작</Label>
                     <Input
                       type="time"
                       value={exInput.start || ""}
-                      onChange={(e) =>
-                        setExInput({ ...exInput, start: e.target.value })
-                      }
+                      onChange={(e) => setExInput({ ...exInput, start: e.target.value })}
                       className="border-border bg-card focus:border-border focus:ring-ring"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs font-medium text-foreground">
-                      종료
-                    </Label>
+                    <Label className="text-xs font-medium text-foreground">종료</Label>
                     <Input
                       type="time"
                       value={exInput.end || ""}
-                      onChange={(e) =>
-                        setExInput({ ...exInput, end: e.target.value })
-                      }
+                      onChange={(e) => setExInput({ ...exInput, end: e.target.value })}
                       className="border-border bg-card focus:border-border focus:ring-ring"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs font-medium text-foreground">
-                      간격(분)
-                    </Label>
+                    <Label className="text-xs font-medium text-foreground">간격(분)</Label>
                     <Input
                       type="number"
                       min={5}
@@ -705,9 +628,7 @@ export default function StringingSettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs font-medium text-foreground">
-                      수용량
-                    </Label>
+                    <Label className="text-xs font-medium text-foreground">수용량</Label>
                     <Input
                       type="number"
                       min={1}
@@ -742,9 +663,7 @@ export default function StringingSettingsPage() {
                       }
 
                       setExceptions((prev) => {
-                        const rest = prev.filter(
-                          (x) => x.date !== sanitized.date,
-                        );
+                        const rest = prev.filter((x) => x.date !== sanitized.date);
                         return [...rest, sanitized];
                       });
                       setExInput({ date: "" });
@@ -772,9 +691,7 @@ export default function StringingSettingsPage() {
                       className="flex items-start justify-between gap-4 px-5 py-4 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground transition-colors"
                     >
                       <div className="flex-1">
-                        <div className="font-semibold text-foreground mb-1">
-                          {ex.date}
-                        </div>
+                        <div className="font-semibold text-foreground mb-1">{ex.date}</div>
                         {ex.closed ? (
                           <Badge variant="destructive">휴무</Badge>
                         ) : (
@@ -822,9 +739,7 @@ export default function StringingSettingsPage() {
                           variant="ghost"
                           className="hover:bg-destructive/10 dark:hover:bg-destructive/15 text-destructive"
                           onClick={() =>
-                            setExceptions((prev) =>
-                              prev.filter((x) => x.date !== ex.date),
-                            )
+                            setExceptions((prev) => prev.filter((x) => x.date !== ex.date))
                           }
                         >
                           <Trash2 className="h-4 w-4" />
@@ -835,9 +750,7 @@ export default function StringingSettingsPage() {
                 </ul>
               ) : (
                 <div className="rounded-2xl border border-dashed border-border bg-muted/50 p-8 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    등록된 예외일이 없습니다.
-                  </p>
+                  <p className="text-sm text-muted-foreground">등록된 예외일이 없습니다.</p>
                 </div>
               )}
             </CardContent>

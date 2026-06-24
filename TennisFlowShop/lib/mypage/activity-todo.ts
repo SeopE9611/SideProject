@@ -28,16 +28,11 @@ function isTerminalCanceledTodoStatus(status?: string | null): boolean {
   const normalized = normalizeMypageTodoStatus(status);
 
   return (
-    normalized === "취소" ||
-    normalized === "환불" ||
-    normalized === "거절" ||
-    normalized === "반려"
+    normalized === "취소" || normalized === "환불" || normalized === "거절" || normalized === "반려"
   );
 }
 
-export function isApplicationTodoActionable(
-  app?: ActivityTodoApplicationLike | null,
-): boolean {
+export function isApplicationTodoActionable(app?: ActivityTodoApplicationLike | null): boolean {
   if (!app) return false;
 
   const status = normalizeMypageTodoStatus(app.status);
@@ -57,9 +52,7 @@ export function isApplicationServiceReviewTodoPending(
   return Boolean(app.serviceReviewPending);
 }
 
-function isApplicationTrackingTodoActionable(
-  app?: ActivityTodoApplicationLike | null,
-): boolean {
+function isApplicationTrackingTodoActionable(app?: ActivityTodoApplicationLike | null): boolean {
   if (!app || isTerminalCanceledTodoStatus(app.status)) return false;
   return Boolean(app.needsInboundTracking && !app.hasTracking);
 }
@@ -78,9 +71,7 @@ export function isOrderTodoActionable(params: {
   const isConfirmed = Boolean(params.userConfirmedAt) || status === "구매확정";
   const hasPendingReview = (params.reviewPendingCount ?? 0) > 0;
   const hasActionableLinkedApplication = (params.linkedApplications ?? []).some(
-    (app) =>
-      isApplicationTrackingTodoActionable(app) ||
-      isApplicationServiceReviewTodoPending(app),
+    (app) => isApplicationTrackingTodoActionable(app) || isApplicationServiceReviewTodoPending(app),
   );
 
   return Boolean(
@@ -104,9 +95,7 @@ export function isRentalTodoActionable(params: {
   if (isTerminalCanceledTodoStatus(status)) return false;
 
   const hasActionableLinkedApplication = (params.linkedApplications ?? []).some(
-    (app) =>
-      isApplicationTrackingTodoActionable(app) ||
-      isApplicationServiceReviewTodoPending(app),
+    (app) => isApplicationTrackingTodoActionable(app) || isApplicationServiceReviewTodoPending(app),
   );
   return Boolean(
     (status === "반납완료" && !params.userConfirmedAt) ||

@@ -28,11 +28,8 @@ export default function GlobalTokenGuard() {
       // "user가 있다"는 이유만으로 동기화를 건너뛰면 안 된다.
       const hasHydratedUser = Boolean(latestUser.current);
       const hasDetailedUserShape =
-        hasHydratedUser &&
-        Array.isArray((latestUser.current as any)?.socialProviders);
-      needsDetailedSync.current = Boolean(
-        hasHydratedUser && !hasDetailedUserShape,
-      );
+        hasHydratedUser && Array.isArray((latestUser.current as any)?.socialProviders);
+      needsDetailedSync.current = Boolean(hasHydratedUser && !hasDetailedUserShape);
 
       // 상세 동기화가 이미 끝난 사용자라면 기존처럼 즉시 인증확인 완료 처리
       if (hasHydratedUser && !needsDetailedSync.current) {

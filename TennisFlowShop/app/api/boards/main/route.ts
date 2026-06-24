@@ -4,10 +4,7 @@ import { getDb } from "@/lib/mongodb";
 import { API_VERSION } from "@/lib/board.repository";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { ObjectId } from "mongodb";
-import {
-  maskSecretTitle,
-  resolveBoardViewerContext,
-} from "@/lib/board-secret-policy";
+import { maskSecretTitle, resolveBoardViewerContext } from "@/lib/board-secret-policy";
 
 export const dynamic = "force-dynamic";
 

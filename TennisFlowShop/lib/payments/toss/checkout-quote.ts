@@ -1,13 +1,7 @@
-import {
-  productVisibilityFilterFor,
-  racketVisibilityFilterFor,
-} from "@/lib/public-visibility";
+import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import { ObjectId, type Db } from "mongodb";
-import {
-  calcOrderShippingFeeWithBundlePolicy,
-  normalizeItemShippingFee,
-} from "@/lib/shipping-fee";
+import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import {
   applyPackageToServiceFee,
   resolvePackageUsage,
@@ -36,28 +30,17 @@ export async function calculateCheckoutPayableAmount(params: {
   pointsToUse?: number;
   stringingApplicationInput?: StringingApplicationInput;
 }) {
-  const {
-    db,
-    userId,
-    items,
-    shippingInfo,
-    pointsToUse = 0,
-    stringingApplicationInput,
-  } = params;
+  const { db, userId, items, shippingInfo, pointsToUse = 0, stringingApplicationInput } = params;
 
   const itemsWithSnapshot = await Promise.all(
     items.map(async (it) => {
       const kind = it.kind ?? "product";
       const quantity = Number(it.quantity ?? 0);
       if (kind === "product") {
-        const prod = await db
-          .collection("products")
-          .findOne({
-            _id: new ObjectId(it.productId),
-            ...productVisibilityFilterFor(
-              await getVisibilityViewerFromCookies(),
-            ),
-          });
+        const prod = await db.collection("products").findOne({
+          _id: new ObjectId(it.productId),
+          ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+        });
         if (!prod) throw new Error("PRODUCT_NOT_AVAILABLE");
         return {
           name: prod?.name ?? "알 수 없는 상품",
@@ -71,12 +54,10 @@ export async function calculateCheckoutPayableAmount(params: {
           shippingFee: normalizeItemShippingFee((prod as any)?.shippingFee),
         };
       }
-      const racket = await db
-        .collection("used_rackets")
-        .findOne({
-          _id: new ObjectId(it.productId),
-          ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()),
-        });
+      const racket = await db.collection("used_rackets").findOne({
+        _id: new ObjectId(it.productId),
+        ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+      });
       if (!racket) throw new Error("RACKET_NOT_AVAILABLE");
       return {
         name: racket
@@ -95,14 +76,8 @@ export async function calculateCheckoutPayableAmount(params: {
     const serviceItems = itemsWithSnapshot.filter(
       (it) => it.kind === "product" && (it as any).isMountableString === true,
     );
-    const racketQty = racketItems.reduce(
-      (sum, it) => sum + (Number(it.quantity) || 0),
-      0,
-    );
-    const serviceQty = serviceItems.reduce(
-      (sum, it) => sum + (Number(it.quantity) || 0),
-      0,
-    );
+    const racketQty = racketItems.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
+    const serviceQty = serviceItems.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
     if (racketQty > 0) {
       if (racketItems.length !== 1 || serviceItems.length !== 1) {
         throw new Error("INVALID_COMPOSITION");
@@ -149,37 +124,25 @@ export async function calculateCheckoutPayableAmount(params: {
   const computedShippingFee = calcOrderShippingFeeWithBundlePolicy({
     items: itemsWithSnapshot,
     isVisitPickup:
-      shippingInfo?.deliveryMethod === "방문수령" ||
-      shippingInfo?.shippingMethod === "visit",
+      shippingInfo?.deliveryMethod === "방문수령" || shippingInfo?.shippingMethod === "visit",
     withStringService: !!shippingInfo?.withStringService,
   });
 
-  const computedTotalPrice =
-    computedSubtotal + computedServiceFee + computedShippingFee;
+  const computedTotalPrice = computedSubtotal + computedServiceFee + computedShippingFee;
 
   const POINT_UNIT = 100;
   const normalizedRequestedPointsToUse =
-    Math.floor(Math.max(0, Math.floor(Number(pointsToUse) || 0)) / POINT_UNIT) *
-    POINT_UNIT;
+    Math.floor(Math.max(0, Math.floor(Number(pointsToUse) || 0)) / POINT_UNIT) * POINT_UNIT;
 
   let serverPointsToUse = 0;
-  const maxPointsByPolicy = Math.max(
-    0,
-    computedTotalPrice - computedShippingFee,
-  );
+  const maxPointsByPolicy = Math.max(0, computedTotalPrice - computedShippingFee);
 
   if (userId && normalizedRequestedPointsToUse > 0 && maxPointsByPolicy > 0) {
     const u = await db
       .collection("users")
-      .findOne(
-        { _id: new ObjectId(userId) },
-        { projection: { pointsBalance: 1, pointsDebt: 1 } },
-      );
+      .findOne({ _id: new ObjectId(userId) }, { projection: { pointsBalance: 1, pointsDebt: 1 } });
 
-    const balance = Math.max(
-      0,
-      Math.floor(Number((u as any)?.pointsBalance ?? 0)),
-    );
+    const balance = Math.max(0, Math.floor(Number((u as any)?.pointsBalance ?? 0)));
     const debt = Math.max(0, Math.floor(Number((u as any)?.pointsDebt ?? 0)));
     const available = Math.max(0, balance - debt);
     serverPointsToUse = Math.min(

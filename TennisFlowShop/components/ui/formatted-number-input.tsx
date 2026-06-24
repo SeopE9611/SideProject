@@ -18,8 +18,7 @@ type FormattedNumberInputProps = Omit<
   normalizeToStepOnBlur?: boolean;
 };
 
-const toDigits = (value: string) =>
-  value.replace(/[^\d]/g, "").replace(/^0+(?=\d)/, "");
+const toDigits = (value: string) => value.replace(/[^\d]/g, "").replace(/^0+(?=\d)/, "");
 
 const formatNumber = (value: number | null | undefined) => {
   if (value == null) return "";
@@ -30,10 +29,7 @@ const formatNumber = (value: number | null | undefined) => {
   return Math.max(0, Math.floor(numeric)).toLocaleString("ko-KR");
 };
 
-const FormattedNumberInput = React.forwardRef<
-  HTMLInputElement,
-  FormattedNumberInputProps
->(
+const FormattedNumberInput = React.forwardRef<HTMLInputElement, FormattedNumberInputProps>(
   (
     {
       value,
@@ -65,12 +61,7 @@ const FormattedNumberInput = React.forwardRef<
         if (typeof min === "number") next = Math.max(min, next);
         if (typeof max === "number") next = Math.min(max, next);
 
-        if (
-          applyStep &&
-          normalizeToStepOnBlur &&
-          typeof step === "number" &&
-          step > 0
-        ) {
+        if (applyStep && normalizeToStepOnBlur && typeof step === "number" && step > 0) {
           next = Math.floor(next / step) * step;
           if (typeof min === "number") next = Math.max(min, next);
           if (typeof max === "number") next = Math.min(max, next);
@@ -116,9 +107,7 @@ const FormattedNumberInput = React.forwardRef<
           setIsFocused(false);
 
           const digits = toDigits(event.currentTarget.value);
-          const next = digits
-            ? normalize(Number(digits), true)
-            : normalize(emptyValue, true);
+          const next = digits ? normalize(Number(digits), true) : normalize(emptyValue, true);
 
           setText(formatNumber(next));
           onValueChange(next);

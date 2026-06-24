@@ -6,10 +6,7 @@ import { getDb } from "@/lib/mongodb";
 
 const NO_STORE = { "Cache-Control": "no-store, no-cache, must-revalidate" };
 
-export async function PATCH(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const userId = await getCurrentUserId();
   const { id } = await params;
   if (!userId || !ObjectId.isValid(userId)) {

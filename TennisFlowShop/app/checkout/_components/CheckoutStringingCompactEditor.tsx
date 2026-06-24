@@ -18,17 +18,14 @@ import { cn } from "@/lib/utils";
 import { useCallback, useState } from "react";
 
 const toNumberText = (raw: string) => raw.replace(/[^0-9.]/g, "").slice(0, 4);
-const formatWon = (value: number) =>
-  `${Number(value || 0).toLocaleString("ko-KR")}원`;
+const formatWon = (value: number) => `${Number(value || 0).toLocaleString("ko-KR")}원`;
 const previewText = (value: string, fallback: string) => {
   const trimmed = value.trim();
   if (!trimmed) return fallback;
   return trimmed.length > 28 ? `${trimmed.slice(0, 28)}…` : trimmed;
 };
 
-type CheckoutStringingServiceAdapter = ReturnType<
-  typeof useCheckoutStringingServiceAdapter
->;
+type CheckoutStringingServiceAdapter = ReturnType<typeof useCheckoutStringingServiceAdapter>;
 
 type LineValidationField = "racketType" | "tensionMain" | "tensionCross";
 
@@ -71,22 +68,19 @@ export default function CheckoutStringingCompactEditor({
     Record<string, Partial<Record<LineValidationField, boolean>>>
   >({});
 
-  const touchLineField = useCallback(
-    (lineKey: string, field: LineValidationField) => {
-      setTouchedLineFields((prev) => {
-        if (prev[lineKey]?.[field]) return prev;
+  const touchLineField = useCallback((lineKey: string, field: LineValidationField) => {
+    setTouchedLineFields((prev) => {
+      if (prev[lineKey]?.[field]) return prev;
 
-        return {
-          ...prev,
-          [lineKey]: {
-            ...(prev[lineKey] ?? {}),
-            [field]: true,
-          },
-        };
-      });
-    },
-    [],
-  );
+      return {
+        ...prev,
+        [lineKey]: {
+          ...(prev[lineKey] ?? {}),
+          [field]: true,
+        },
+      };
+    });
+  }, []);
 
   const applyBulkToAllLines = useCallback(
     (opts?: { main?: string; cross?: string; note?: string }) => {
@@ -97,9 +91,7 @@ export default function CheckoutStringingCompactEditor({
 
       setFormData((prev) => {
         const baseLines =
-          Array.isArray(prev?.lines) && prev.lines.length > 0
-            ? prev.lines
-            : (linesForSubmit ?? []);
+          Array.isArray(prev?.lines) && prev.lines.length > 0 ? prev.lines : (linesForSubmit ?? []);
         if (!Array.isArray(baseLines) || baseLines.length === 0) return prev;
 
         const nextLines = baseLines.map((line) => ({
@@ -117,13 +109,7 @@ export default function CheckoutStringingCompactEditor({
         };
       });
     },
-    [
-      bulkTensionCross,
-      bulkTensionMain,
-      bulkLineNote,
-      linesForSubmit,
-      setFormData,
-    ],
+    [bulkTensionCross, bulkTensionMain, bulkLineNote, linesForSubmit, setFormData],
   );
 
   const applyFirstLineTensionToAll = useCallback(() => {
@@ -208,8 +194,7 @@ export default function CheckoutStringingCompactEditor({
                     onSelect={(value) =>
                       setFormData((prev) => ({
                         ...prev,
-                        preferredTime:
-                          prev.preferredTime === value ? "" : value,
+                        preferredTime: prev.preferredTime === value ? "" : value,
                       }))
                     }
                     times={timeSlots}
@@ -245,17 +230,12 @@ export default function CheckoutStringingCompactEditor({
           <section className="space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground">
-                  라켓 작업 정보
-                </p>
+                <p className="text-sm font-semibold text-foreground">라켓 작업 정보</p>
                 <p className="break-keep text-xs text-muted-foreground">
                   라켓명, 메인/크로스 텐션을 입력하세요.
                 </p>
               </div>
-              <Badge
-                variant="outline"
-                className="shrink-0 border-border text-[11px]"
-              >
+              <Badge variant="outline" className="shrink-0 border-border text-[11px]">
                 {lineCount}자루
               </Badge>
             </div>
@@ -296,17 +276,13 @@ export default function CheckoutStringingCompactEditor({
                   <Input
                     className="h-9 px-3 text-sm"
                     value={bulkTensionMain}
-                    onChange={(e) =>
-                      setBulkTensionMain(toNumberText(e.target.value))
-                    }
+                    onChange={(e) => setBulkTensionMain(toNumberText(e.target.value))}
                     placeholder="공통 메인 텐션"
                   />
                   <Input
                     className="h-9 px-3 text-sm"
                     value={bulkTensionCross}
-                    onChange={(e) =>
-                      setBulkTensionCross(toNumberText(e.target.value))
-                    }
+                    onChange={(e) => setBulkTensionCross(toNumberText(e.target.value))}
                     placeholder="공통 크로스 텐션"
                   />
                   <div className="bp-sm:col-span-2">
@@ -337,18 +313,15 @@ export default function CheckoutStringingCompactEditor({
                 const lineTouched = touchedLineFields[lineKey] ?? {};
                 const visibleLineErrors = {
                   racketType:
-                    (showValidationErrors || lineTouched.racketType) &&
-                    lineErrors.racketType
+                    (showValidationErrors || lineTouched.racketType) && lineErrors.racketType
                       ? lineErrors.racketType
                       : "",
                   tensionMain:
-                    (showValidationErrors || lineTouched.tensionMain) &&
-                    lineErrors.tensionMain
+                    (showValidationErrors || lineTouched.tensionMain) && lineErrors.tensionMain
                       ? lineErrors.tensionMain
                       : "",
                   tensionCross:
-                    (showValidationErrors || lineTouched.tensionCross) &&
-                    lineErrors.tensionCross
+                    (showValidationErrors || lineTouched.tensionCross) && lineErrors.tensionCross
                       ? lineErrors.tensionCross
                       : "",
                 };
@@ -356,8 +329,7 @@ export default function CheckoutStringingCompactEditor({
                   !!visibleLineErrors.racketType ||
                   !!visibleLineErrors.tensionMain ||
                   !!visibleLineErrors.tensionCross;
-                const isComplete =
-                  !!racketName && !!mainTension && !!crossTension;
+                const isComplete = !!racketName && !!mainTension && !!crossTension;
                 const tensionSummary =
                   mainTension && crossTension
                     ? crossTension !== mainTension
@@ -405,11 +377,7 @@ export default function CheckoutStringingCompactEditor({
                     </div>
 
                     <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground [&>span]:break-keep">
-                      <span>
-                        {racketName
-                          ? previewText(racketName, "")
-                          : "라켓명 입력 필요"}
-                      </span>
+                      <span>{racketName ? previewText(racketName, "") : "라켓명 입력 필요"}</span>
                       <span>{tensionSummary}</span>
                       {note && <span>요청 {previewText(note, "")}</span>}
                     </div>
@@ -431,19 +399,13 @@ export default function CheckoutStringingCompactEditor({
                           )}
                           value={line.racketType ?? ""}
                           onChange={(e) =>
-                            handleLineFieldChange(
-                              index,
-                              "racketType",
-                              e.target.value,
-                            )
+                            handleLineFieldChange(index, "racketType", e.target.value)
                           }
                           placeholder="예: 윌슨 블레이드 98"
                           onBlur={() => touchLineField(lineKey, "racketType")}
                         />
                         {visibleLineErrors.racketType && (
-                          <p className="text-xs text-destructive">
-                            {visibleLineErrors.racketType}
-                          </p>
+                          <p className="text-xs text-destructive">{visibleLineErrors.racketType}</p>
                         )}
                       </div>
 
@@ -453,8 +415,7 @@ export default function CheckoutStringingCompactEditor({
                             htmlFor={`checkout-tension-main-${line.id}`}
                             className="text-xs font-medium text-foreground"
                           >
-                            메인 텐션{" "}
-                            <span className="text-destructive">*</span>
+                            메인 텐션 <span className="text-destructive">*</span>
                           </Label>
                           <Input
                             id={`checkout-tension-main-${line.id}`}
@@ -473,9 +434,7 @@ export default function CheckoutStringingCompactEditor({
                             }
                             placeholder="예: 52"
                             inputMode="decimal"
-                            onBlur={() =>
-                              touchLineField(lineKey, "tensionMain")
-                            }
+                            onBlur={() => touchLineField(lineKey, "tensionMain")}
                           />
                           {visibleLineErrors.tensionMain && (
                             <p className="text-xs text-destructive">
@@ -488,8 +447,7 @@ export default function CheckoutStringingCompactEditor({
                             htmlFor={`checkout-tension-cross-${line.id}`}
                             className="text-xs font-medium text-foreground"
                           >
-                            크로스 텐션{" "}
-                            <span className="text-destructive">*</span>
+                            크로스 텐션 <span className="text-destructive">*</span>
                           </Label>
                           <Input
                             id={`checkout-tension-cross-${line.id}`}
@@ -508,9 +466,7 @@ export default function CheckoutStringingCompactEditor({
                             }
                             placeholder="예: 50"
                             inputMode="decimal"
-                            onBlur={() =>
-                              touchLineField(lineKey, "tensionCross")
-                            }
+                            onBlur={() => touchLineField(lineKey, "tensionCross")}
                           />
                           {visibleLineErrors.tensionCross && (
                             <p className="text-xs text-destructive">
@@ -525,15 +481,12 @@ export default function CheckoutStringingCompactEditor({
                           htmlFor={`checkout-line-note-${line.id}`}
                           className="text-xs font-medium text-foreground"
                         >
-                          작업 요청사항{" "}
-                          <span className="text-muted-foreground">선택</span>
+                          작업 요청사항 <span className="text-muted-foreground">선택</span>
                         </Label>
                         <Textarea
                           id={`checkout-line-note-${line.id}`}
                           value={line.note ?? ""}
-                          onChange={(e) =>
-                            handleLineFieldChange(index, "note", e.target.value)
-                          }
+                          onChange={(e) => handleLineFieldChange(index, "note", e.target.value)}
                           placeholder="예: 손목 부담이 적게, 컨트롤 위주로 부탁드립니다."
                           className="min-h-[76px] px-3 py-2.5"
                         />

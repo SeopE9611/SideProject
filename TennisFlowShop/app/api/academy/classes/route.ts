@@ -15,10 +15,7 @@ import {
 } from "@/lib/types/academy";
 
 const COLLECTION_NAME = "academy_classes";
-const PUBLIC_STATUSES = [
-  "visible",
-  "closed",
-] as const satisfies readonly AcademyClassStatus[];
+const PUBLIC_STATUSES = ["visible", "closed"] as const satisfies readonly AcademyClassStatus[];
 
 function serializeValue(value: unknown): string | null {
   if (value instanceof Date) return value.toISOString();
@@ -57,14 +54,11 @@ function serializePublicClass(doc: Document): PublicAcademyClass {
     levelLabel: getAcademyClassLevelLabel(level),
     lessonType,
     lessonTypeLabel: getAcademyClassLessonTypeLabel(lessonType),
-    instructorName:
-      typeof doc.instructorName === "string" ? doc.instructorName : null,
+    instructorName: typeof doc.instructorName === "string" ? doc.instructorName : null,
     location: typeof doc.location === "string" ? doc.location : null,
-    scheduleText:
-      typeof doc.scheduleText === "string" ? doc.scheduleText : null,
+    scheduleText: typeof doc.scheduleText === "string" ? doc.scheduleText : null,
     capacity: typeof doc.capacity === "number" ? doc.capacity : null,
-    enrolledCount:
-      typeof doc.enrolledCount === "number" ? doc.enrolledCount : 0,
+    enrolledCount: typeof doc.enrolledCount === "number" ? doc.enrolledCount : 0,
     price: typeof doc.price === "number" ? doc.price : null,
     status,
     statusLabel: getAcademyClassStatusLabel(status),

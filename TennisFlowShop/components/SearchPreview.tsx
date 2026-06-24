@@ -27,9 +27,7 @@ export default function SearchPreview({
     timeoutRef.current = setTimeout(async () => {
       try {
         // 통합 검색 API (스트링 + 중고 라켓)
-        const res = await fetch(
-          `/api/search?query=${encodeURIComponent(query)}`,
-        );
+        const res = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
         const data = await res.json();
         setResults(data);
         setIsOpen(true);
@@ -77,9 +75,7 @@ export default function SearchPreview({
             results.map((item) => {
               // type 에 따라 이동 경로 분기
               const href =
-                item.type === "racket"
-                  ? `/rackets/${item._id}`
-                  : `/products/${item._id}`;
+                item.type === "racket" ? `/rackets/${item._id}` : `/products/${item._id}`;
 
               return (
                 <Link
@@ -111,9 +107,7 @@ export default function SearchPreview({
                         {item.type === "racket" ? "중고 라켓" : "스트링"}
                       </span>
                       {typeof item.price === "number" && item.price > 0 && (
-                        <span className="text-foreground">
-                          {item.price.toLocaleString()}원
-                        </span>
+                        <span className="text-foreground">{item.price.toLocaleString()}원</span>
                       )}
                     </div>
                   </div>

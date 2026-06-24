@@ -28,27 +28,15 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import {
-  Award,
-  Calendar,
-  Edit3,
-  Eye,
-  EyeOff,
-  Loader2,
-  Package,
-  Star,
-  Trash2,
-} from "lucide-react";
+import { Award, Calendar, Edit3, Eye, EyeOff, Loader2, Package, Star, Trash2 } from "lucide-react";
 
-const PhotosUploader = dynamic(
-  () => import("@/components/reviews/PhotosUploader"),
-  { loading: () => null },
-);
+const PhotosUploader = dynamic(() => import("@/components/reviews/PhotosUploader"), {
+  loading: () => null,
+});
 
-const PhotosReorderGrid = dynamic(
-  () => import("@/components/reviews/PhotosReorderGrid"),
-  { loading: () => null },
-);
+const PhotosReorderGrid = dynamic(() => import("@/components/reviews/PhotosReorderGrid"), {
+  loading: () => null,
+});
 
 /*  API 타입 */
 type ApiMineItem = {
@@ -118,13 +106,7 @@ const Stars = ({ rating }: { rating: number }) => (
 );
 
 // 별점 입력 (수정 모달 용)
-const StarsInput = ({
-  value,
-  onChange,
-}: {
-  value: number;
-  onChange: (v: number) => void;
-}) => {
+const StarsInput = ({ value, onChange }: { value: number; onChange: (v: number) => void }) => {
   return (
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((n) => (
@@ -145,37 +127,31 @@ const StarsInput = ({
 // 메인 컴포넌트
 export default function ReviewList({ reviews = [] }: ReviewListProps) {
   // 내 리뷰 목록 불러오기 (커서 기반 SWR)
-  const getKey = useCallback(
-    (pageIdx: number, prev: ApiMineResponse | null) => {
-      if (prev && !prev.nextCursor) return null; // 마지막 페이지 (떠 없음)
-      const cursor =
-        pageIdx && prev?.nextCursor
-          ? `&cursor=${encodeURIComponent(prev.nextCursor)}`
-          : "";
-      return `/api/reviews/mine?limit=10${cursor}`;
-    },
-    [],
-  );
+  const getKey = useCallback((pageIdx: number, prev: ApiMineResponse | null) => {
+    if (prev && !prev.nextCursor) return null; // 마지막 페이지 (떠 없음)
+    const cursor =
+      pageIdx && prev?.nextCursor ? `&cursor=${encodeURIComponent(prev.nextCursor)}` : "";
+    return `/api/reviews/mine?limit=10${cursor}`;
+  }, []);
 
-  const { data, size, setSize, isValidating, mutate, error } =
-    useSWRInfinite<ApiMineResponse>(getKey, fetcher, {
+  const { data, size, setSize, isValidating, mutate, error } = useSWRInfinite<ApiMineResponse>(
+    getKey,
+    fetcher,
+    {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-    });
+    },
+  );
 
   // API -> UI 매핑
-  const apiItems: ApiMineItem[] = useMemo(
-    () => (data ? data.flatMap((p) => p.items) : []),
-    [data],
-  );
+  const apiItems: ApiMineItem[] = useMemo(() => (data ? data.flatMap((p) => p.items) : []), [data]);
 
   const swrItems: UiItem[] = useMemo(
     () =>
       apiItems.map((a) => ({
         _id: a._id,
         type: a.target?.type ?? (a.productId ? "product" : "service"),
-        title:
-          a.target?.name ?? (a.productId ? "상품 후기" : "교체서비스 후기"),
+        title: a.target?.name ?? (a.productId ? "상품 후기" : "교체서비스 후기"),
         rating: a.rating,
         content: a.content ?? "",
         status: a.status,
@@ -230,12 +206,10 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     setSaving(true);
     // 변경된 필드만 payload에 담기
     const payload: Record<string, any> = {};
-    const changedContent =
-      !originalEdit || editContent !== originalEdit.content;
+    const changedContent = !originalEdit || editContent !== originalEdit.content;
     const changedRating = !originalEdit || editRating !== originalEdit.rating;
     const changedPhotos =
-      !originalEdit ||
-      JSON.stringify(editPhotos) !== JSON.stringify(originalEdit.photos);
+      !originalEdit || JSON.stringify(editPhotos) !== JSON.stringify(originalEdit.photos);
 
     // 프론트 5자 검증: content가 "변경된 경우에만" 체크
     if (changedContent) {
@@ -270,15 +244,9 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                 ? a
                 : {
                     ...a,
-                    ...(payload.content !== undefined
-                      ? { content: payload.content }
-                      : {}),
-                    ...(payload.rating !== undefined
-                      ? { rating: payload.rating }
-                      : {}),
-                    ...(payload.photos !== undefined
-                      ? { photos: payload.photos }
-                      : {}),
+                    ...(payload.content !== undefined ? { content: payload.content } : {}),
+                    ...(payload.rating !== undefined ? { rating: payload.rating } : {}),
+                    ...(payload.photos !== undefined ? { photos: payload.photos } : {}),
                   },
           ),
         }),
@@ -309,23 +277,13 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
     } finally {
       setSaving(false);
     }
-  }, [
-    data,
-    editing,
-    editContent,
-    editRating,
-    editPhotos,
-    originalEdit,
-    mutate,
-    closeEdit,
-  ]);
+  }, [data, editing, editContent, editRating, editPhotos, originalEdit, mutate, closeEdit]);
 
   // 공개/비공개 토글
   const [busyId, setBusyId] = useState<string | null>(null);
   const toggleVisibility = useCallback(
     async (it: UiItem) => {
-      const nextStatus: "visible" | "hidden" =
-        it.status === "visible" ? "hidden" : "visible";
+      const nextStatus: "visible" | "hidden" = it.status === "visible" ? "hidden" : "visible";
       const snapshot = data;
 
       await mutate((pages?: ApiMineResponse[]) => {
@@ -333,9 +291,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         return pages.map((p) => ({
           ...p,
           items: p.items.map((a) =>
-            a._id === it._id
-              ? ({ ...a, status: nextStatus } as ApiMineItem)
-              : a,
+            a._id === it._id ? ({ ...a, status: nextStatus } as ApiMineItem) : a,
           ),
         }));
       }, false);
@@ -349,9 +305,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         });
         if (!res.ok) throw new Error("상태 변경에 실패했습니다.");
         showSuccessToast(
-          nextStatus === "visible"
-            ? "리뷰가 공개되었습니다."
-            : "리뷰가 비공개로 전환되었습니다.",
+          nextStatus === "visible" ? "리뷰가 공개되었습니다." : "리뷰가 비공개로 전환되었습니다.",
         );
         await mutate();
       } catch (e: any) {
@@ -364,8 +318,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
   // 삭제
   const removeReview = useCallback(
     async (it: UiItem) => {
-      if (!confirm("정말 삭제하시겠어요? 삭제 후에는 복구할 수 없습니다."))
-        return;
+      if (!confirm("정말 삭제하시겠어요? 삭제 후에는 복구할 수 없습니다.")) return;
 
       const snapshot = data;
 
@@ -393,12 +346,8 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
   );
 
   // 필터
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "visible" | "hidden"
-  >("all");
-  const [typeFilter, setTypeFilter] = useState<"all" | "product" | "service">(
-    "all",
-  );
+  const [statusFilter, setStatusFilter] = useState<"all" | "visible" | "hidden">("all");
+  const [typeFilter, setTypeFilter] = useState<"all" | "product" | "service">("all");
 
   const itemsToRender: UiItem[] = useMemo(() => {
     const base: UiItem[] = swrItems.length
@@ -416,21 +365,14 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
         }));
 
     return base
-      .filter((it) =>
-        statusFilter === "all" ? true : it.status === statusFilter,
-      )
+      .filter((it) => (statusFilter === "all" ? true : it.status === statusFilter))
       .filter((it) => (typeFilter === "all" ? true : it.type === typeFilter));
   }, [swrItems, reviews, statusFilter, typeFilter]);
 
   // 에러 카드
   if (error) {
     return (
-      <AsyncState
-        kind="error"
-        variant="card"
-        resourceName="리뷰 내역"
-        onAction={() => mutate()}
-      />
+      <AsyncState kind="error" variant="card" resourceName="리뷰 내역" onAction={() => mutate()} />
     );
   }
 
@@ -457,10 +399,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       ) : null}
       {/* 필터 */}
       <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-        <Select
-          value={statusFilter}
-          onValueChange={(v) => setStatusFilter(v as any)}
-        >
+        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
           <SelectTrigger className="h-9 w-full sm:w-36">
             <SelectValue placeholder="상태" />
           </SelectTrigger>
@@ -471,10 +410,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
           </SelectContent>
         </Select>
 
-        <Select
-          value={typeFilter}
-          onValueChange={(v) => setTypeFilter(v as any)}
-        >
+        <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as any)}>
           <SelectTrigger className="h-9 w-full sm:w-32">
             <SelectValue placeholder="유형" />
           </SelectTrigger>
@@ -564,11 +500,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                       </>
                     )}
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => openEdit(it)}
-                  >
+                  <Button size="sm" variant="outline" onClick={() => openEdit(it)}>
                     <Edit3 className="h-3.5 w-3.5 mr-1" />
                     수정
                   </Button>
@@ -622,9 +554,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                 </div>
                 <div className="flex items-center gap-1 text-xs text-foreground/75">
                   <Package className="h-3.5 w-3.5" />
-                  <span>
-                    {it.type === "product" ? "상품 후기" : "교체서비스 후기"}
-                  </span>
+                  <span>{it.type === "product" ? "상품 후기" : "교체서비스 후기"}</span>
                 </div>
               </div>
             </CardContent>
@@ -637,9 +567,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
               <Star className="h-6 w-6 text-warning" />
             </div>
             <h3 className="mb-2 text-lg font-semibold text-foreground">
-              {swrItems.length > 0
-                ? "조건에 맞는 리뷰가 없습니다"
-                : "작성한 리뷰가 없습니다"}
+              {swrItems.length > 0 ? "조건에 맞는 리뷰가 없습니다" : "작성한 리뷰가 없습니다"}
             </h3>
             <p className="mb-4 md:mb-6 text-muted-foreground">
               {swrItems.length > 0
@@ -653,17 +581,11 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       {/* 더 보기 */}
       <div className="flex justify-center pt-2">
         {itemsToRender.length && hasMore ? (
-          <Button
-            variant="outline"
-            onClick={() => setSize(size + 1)}
-            disabled={isValidating}
-          >
+          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating}>
             더 보기
           </Button>
         ) : itemsToRender.length ? (
-          <span className="text-sm text-foreground/80">
-            마지막 페이지입니다
-          </span>
+          <span className="text-sm text-foreground/80">마지막 페이지입니다</span>
         ) : null}
       </div>
 

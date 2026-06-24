@@ -27,9 +27,7 @@ describe("리뷰 작성(상품) - 사진 정렬 → 제출 해피패스", () => 
     }).as("reviewItems");
 
     // 백그라운드 새션 리프레시가 있다면 무시
-    cy.intercept("POST", "/api/refresh", { statusCode: 200, body: {} }).as(
-      "refresh",
-    );
+    cy.intercept("POST", "/api/refresh", { statusCode: 200, body: {} }).as("refresh");
 
     // 제출 시 서버로 가는 본 요청 검증
     // beforeEach 안의 create 인터셉트 콜백
@@ -57,9 +55,7 @@ describe("리뷰 작성(상품) - 사진 정렬 → 제출 해피패스", () => 
     const getSrcs = () =>
       cy
         .get("[data-cy=photo-card] img")
-        .then(($imgs) =>
-          $imgs.toArray().map((img) => img.getAttribute("src") || ""),
-        );
+        .then(($imgs) => $imgs.toArray().map((img) => img.getAttribute("src") || ""));
 
     let before: string[] = [];
     getSrcs().then((arr) => (before = arr));
@@ -85,8 +81,7 @@ describe("리뷰 작성(상품) - 사진 정렬 → 제출 해피패스", () => 
 
     // 방어: 혹시 페이지 이동 중 서버가 다른 이유로 예외를 던져도 테스트를 깨지 않게
     cy.on("uncaught:exception", (err) => {
-      if (/BSONError: input must be a 24 character hex/.test(err.message))
-        return false;
+      if (/BSONError: input must be a 24 character hex/.test(err.message)) return false;
     });
   });
 });

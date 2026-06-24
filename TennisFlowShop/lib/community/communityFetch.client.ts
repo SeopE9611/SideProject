@@ -29,18 +29,12 @@ function readCookie(name: string): string {
   return "";
 }
 
-function writeCookie(
-  name: string,
-  value: string,
-  maxAgeSec = 60 * 60 * 24 * 30,
-) {
+function writeCookie(name: string, value: string, maxAgeSec = 60 * 60 * 24 * 30) {
   if (typeof document === "undefined") return;
 
   // localhost(http)에서도 동작해야 하므로 https일 때만 Secure
   const secure =
-    typeof location !== "undefined" && location.protocol === "https:"
-      ? "; Secure"
-      : "";
+    typeof location !== "undefined" && location.protocol === "https:" ? "; Secure" : "";
   document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAgeSec}; SameSite=Lax${secure}`;
 }
 
@@ -64,10 +58,7 @@ function isMutatingMethod(method?: string) {
   return m !== "GET" && m !== "HEAD" && m !== "OPTIONS";
 }
 
-export async function communityFetch(
-  input: RequestInfo | URL,
-  init: RequestInit = {},
-) {
+export async function communityFetch(input: RequestInfo | URL, init: RequestInit = {}) {
   const headers = new Headers(init.headers ?? undefined);
 
   // mutating 요청에만 CSRF 헤더 주입

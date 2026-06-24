@@ -9,10 +9,7 @@ function toInt(v: string | null, fallback: number, min: number, max: number) {
   return Math.min(max, Math.max(min, i));
 }
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const db = await getDb();
   const url = new URL(req.url);
   const page = toInt(url.searchParams.get("page"), 1, 1, 100000);

@@ -20,17 +20,11 @@ export function useMessageList(
   limit: number,
   enabled: boolean,
 ) {
-  const key = enabled
-    ? `/api/messages/${box}?page=${page}&limit=${limit}`
-    : null;
-  const { data, error, isLoading, mutate } = useSWR<Res>(
-    key,
-    authenticatedSWRFetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    },
-  );
+  const key = enabled ? `/api/messages/${box}?page=${page}&limit=${limit}` : null;
+  const { data, error, isLoading, mutate } = useSWR<Res>(key, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   // 조회 실패/미확정 상태를 실제 빈 목록(0개)과 혼동하지 않기 위해 상태를 분리한다.
   const hasResolvedData = Boolean(data && data.ok);

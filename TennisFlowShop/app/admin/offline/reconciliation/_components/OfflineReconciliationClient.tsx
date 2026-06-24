@@ -121,14 +121,10 @@ function SummaryCard({
       onClick={onClick}
       className={cn(
         "rounded-xl border p-4 text-left transition-colors",
-        tone === "danger" &&
-          "border-destructive/30 bg-destructive/10 hover:bg-destructive/15",
-        tone === "warning" &&
-          "border-warning/30 bg-warning/10 hover:bg-warning/15",
-        tone === "success" &&
-          "border-success/30 bg-success/10 hover:bg-success/15",
-        (!tone || tone === "muted") &&
-          "border-border/60 bg-muted/20 hover:bg-muted/30",
+        tone === "danger" && "border-destructive/30 bg-destructive/10 hover:bg-destructive/15",
+        tone === "warning" && "border-warning/30 bg-warning/10 hover:bg-warning/15",
+        tone === "success" && "border-success/30 bg-success/10 hover:bg-success/15",
+        (!tone || tone === "muted") && "border-border/60 bg-muted/20 hover:bg-muted/30",
         active && "ring-2 ring-primary/30",
       )}
     >
@@ -245,8 +241,10 @@ export default function OfflineReconciliationClient() {
     return `/api/admin/offline/reconciliation?${params.toString()}`;
   }, [submitted, page]);
 
-  const { data, isLoading, error, mutate } =
-    useSWR<OfflineReconciliationResponse>(query, authenticatedSWRFetcher, {
+  const { data, isLoading, error, mutate } = useSWR<OfflineReconciliationResponse>(
+    query,
+    authenticatedSWRFetcher,
+    {
       onSuccess(payload) {
         setNotes((prev) => {
           const next = { ...prev };
@@ -256,7 +254,8 @@ export default function OfflineReconciliationClient() {
           return next;
         });
       },
-    });
+    },
+  );
 
   function applyQuickFilter(next: Partial<typeof filters>) {
     const merged = {
@@ -302,14 +301,11 @@ export default function OfflineReconciliationClient() {
     setUpdatingId(item.id);
     setMessage(null);
     try {
-      await adminMutator(
-        `/api/admin/offline/reconciliation/${item.type}/${item.id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status, note }),
-        },
-      );
+      await adminMutator(`/api/admin/offline/reconciliation/${item.type}/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status, note }),
+      });
       setMessage(
         "보정 항목 상태/메모를 저장했습니다. 실제 원장·발급·사용 데이터는 자동 변경되지 않습니다.",
       );
@@ -330,10 +326,7 @@ export default function OfflineReconciliationClient() {
   };
 
   const currentViewLabel =
-    submitted.status === "open" &&
-    submitted.type === "all" &&
-    !submitted.from &&
-    !submitted.to
+    submitted.status === "open" && submitted.type === "all" && !submitted.from && !submitted.to
       ? "전체 미처리"
       : submitted.status === "open" &&
           submitted.type === "package_issue" &&
@@ -370,21 +363,18 @@ export default function OfflineReconciliationClient() {
           <ShieldAlert className="h-5 w-5 shrink-0 text-warning" />
           <div>
             <p className="font-semibold text-foreground">
-              보정 필요 항목은 자동 처리 실패 또는 운영자 확인이 필요한
-              항목입니다.
+              보정 필요 항목은 자동 처리 실패 또는 운영자 확인이 필요한 항목입니다.
             </p>
             <p className="text-xs text-muted-foreground">
-              확인 완료 처리는 실제 데이터 복구를 의미하지 않습니다. 자동
-              재발급/자동 환불은 이번 화면에서 수행하지 않습니다.
+              확인 완료 처리는 실제 데이터 복구를 의미하지 않습니다. 자동 재발급/자동 환불은 이번
+              화면에서 수행하지 않습니다.
             </p>
           </div>
         </CardContent>
       </Card>
 
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border/60 bg-muted/20 p-3">
-        <span className="mr-1 text-xs font-semibold text-muted-foreground">
-          빠른 보기
-        </span>
+        <span className="mr-1 text-xs font-semibold text-muted-foreground">빠른 보기</span>
 
         <Button
           type="button"
@@ -398,12 +388,8 @@ export default function OfflineReconciliationClient() {
         <Button
           type="button"
           size="sm"
-          variant={
-            currentViewLabel === "패키지 발급 실패" ? "default" : "outline"
-          }
-          onClick={() =>
-            applyQuickFilter({ type: "package_issue", status: "open" })
-          }
+          variant={currentViewLabel === "패키지 발급 실패" ? "default" : "outline"}
+          onClick={() => applyQuickFilter({ type: "package_issue", status: "open" })}
         >
           발급 실패
         </Button>
@@ -411,12 +397,8 @@ export default function OfflineReconciliationClient() {
         <Button
           type="button"
           size="sm"
-          variant={
-            currentViewLabel === "패키지 사용 연결 누락" ? "default" : "outline"
-          }
-          onClick={() =>
-            applyQuickFilter({ type: "package_usage", status: "open" })
-          }
+          variant={currentViewLabel === "패키지 사용 연결 누락" ? "default" : "outline"}
+          onClick={() => applyQuickFilter({ type: "package_usage", status: "open" })}
         >
           사용 연결 누락
         </Button>
@@ -440,25 +422,17 @@ export default function OfflineReconciliationClient() {
         </Button>
       </div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-border/60 bg-background px-4 py-3 text-sm">
-        <p className="font-semibold text-foreground">
-          현재 보기: {currentViewLabel}
-        </p>
+        <p className="font-semibold text-foreground">현재 보기: {currentViewLabel}</p>
 
         {submitted.from || submitted.to ? (
           <p className="text-muted-foreground">
-            기간: {submitted.from || "시작일 없음"} ~{" "}
-            {submitted.to || "종료일 없음"}
+            기간: {submitted.from || "시작일 없음"} ~ {submitted.to || "종료일 없음"}
           </p>
         ) : null}
 
         <div className="ml-auto flex flex-wrap items-center gap-2">
           {hasCustomFilters && (
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={resetFilters}
-            >
+            <Button type="button" size="sm" variant="ghost" onClick={resetFilters}>
               필터 초기화
             </Button>
           )}
@@ -518,9 +492,7 @@ export default function OfflineReconciliationClient() {
                 id="from"
                 type="date"
                 value={filters.from}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, from: e.target.value }))
-                }
+                onChange={(e) => setFilters((prev) => ({ ...prev, from: e.target.value }))}
               />
             </div>
             <div className="space-y-1.5">
@@ -529,9 +501,7 @@ export default function OfflineReconciliationClient() {
                 id="to"
                 type="date"
                 value={filters.to}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, to: e.target.value }))
-                }
+                onChange={(e) => setFilters((prev) => ({ ...prev, to: e.target.value }))}
               />
             </div>
             <div className="flex items-end gap-2">
@@ -570,9 +540,7 @@ export default function OfflineReconciliationClient() {
           value={summary.packageIssue}
           tone="danger"
           active={currentViewLabel === "패키지 발급 실패"}
-          onClick={() =>
-            applyQuickFilter({ type: "package_issue", status: "open" })
-          }
+          onClick={() => applyQuickFilter({ type: "package_issue", status: "open" })}
         />
 
         <SummaryCard
@@ -580,9 +548,7 @@ export default function OfflineReconciliationClient() {
           value={summary.packageUsage}
           tone="warning"
           active={currentViewLabel === "패키지 사용 연결 누락"}
-          onClick={() =>
-            applyQuickFilter({ type: "package_usage", status: "open" })
-          }
+          onClick={() => applyQuickFilter({ type: "package_usage", status: "open" })}
         />
 
         <SummaryCard
@@ -671,9 +637,7 @@ export default function OfflineReconciliationClient() {
                         <td className="py-4 pr-3 text-muted-foreground">
                           {formatDate(
                             stringValue(
-                              item.metadata.failedAt ??
-                                item.metadata.occurredAt ??
-                                item.updatedAt,
+                              item.metadata.failedAt ?? item.metadata.occurredAt ?? item.updatedAt,
                               "",
                             ),
                           )}
@@ -706,9 +670,7 @@ export default function OfflineReconciliationClient() {
                         </td>
                         <td className="max-w-[240px] py-4 pr-3 text-xs text-muted-foreground">
                           {stringValue(
-                            item.metadata.error ??
-                              item.metadata.memo ??
-                              "consumptionId 연결 없음",
+                            item.metadata.error ?? item.metadata.memo ?? "consumptionId 연결 없음",
                           )}
                         </td>
                         <td className="py-4">
@@ -733,8 +695,8 @@ export default function OfflineReconciliationClient() {
           )}
           <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
             <span>
-              총 {(data?.total ?? 0).toLocaleString("ko-KR")}건 ·{" "}
-              {data?.page ?? page}/{Math.max(data?.totalPages ?? 0, 1)}페이지
+              총 {(data?.total ?? 0).toLocaleString("ko-KR")}건 · {data?.page ?? page}/
+              {Math.max(data?.totalPages ?? 0, 1)}페이지
             </span>
             <div className="flex gap-2">
               <Button

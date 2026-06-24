@@ -18,45 +18,29 @@ function sanitizeLinkedUser(user: any) {
     : null;
 }
 
-export async function POST(
-  req: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
   if (!csrf.ok) return csrf.res;
 
   const _id = oid((await ctx.params).id);
-  if (!_id)
-    return NextResponse.json(
-      { message: "invalid customer id" },
-      { status: 400 },
-    );
+  if (!_id) return NextResponse.json({ message: "invalid customer id" }, { status: 400 });
 
   const body = (await req.json().catch(() => null)) as {
     userId?: unknown;
   } | null;
   const userId = typeof body?.userId === "string" ? oid(body.userId) : null;
-  if (!userId)
-    return NextResponse.json({ message: "invalid userId" }, { status: 400 });
+  if (!userId) return NextResponse.json({ message: "invalid userId" }, { status: 400 });
 
   const [customer, user] = await Promise.all([
     guard.db.collection("offline_customers").findOne({ _id }),
     guard.db
       .collection("users")
-      .findOne(
-        { _id: userId },
-        { projection: { name: 1, email: 1, phone: 1 } },
-      ),
+      .findOne({ _id: userId }, { projection: { name: 1, email: 1, phone: 1 } }),
   ]);
-  if (!customer)
-    return NextResponse.json(
-      { message: "customer not found" },
-      { status: 404 },
-    );
-  if (!user)
-    return NextResponse.json({ message: "user not found" }, { status: 404 });
+  if (!customer) return NextResponse.json({ message: "customer not found" }, { status: 404 });
+  if (!user) return NextResponse.json({ message: "user not found" }, { status: 404 });
 
   const previousLinkedUserId =
     customer.linkedUserId instanceof ObjectId ? customer.linkedUserId : null;
@@ -69,10 +53,7 @@ export async function POST(
 
   const duplicatedCustomer = await guard.db
     .collection("offline_customers")
-    .findOne(
-      { _id: { $ne: _id }, linkedUserId: userId },
-      { projection: { _id: 1 } },
-    );
+    .findOne({ _id: { $ne: _id }, linkedUserId: userId }, { projection: { _id: 1 } });
   if (duplicatedCustomer) {
     return NextResponse.json(
       {
@@ -93,14 +74,8 @@ export async function POST(
       },
     },
   );
-  const updated = await guard.db
-    .collection("offline_customers")
-    .findOne({ _id });
-  if (!updated)
-    return NextResponse.json(
-      { message: "customer not found" },
-      { status: 404 },
-    );
+  const updated = await guard.db.collection("offline_customers").findOne({ _id });
+  if (!updated) return NextResponse.json({ message: "customer not found" }, { status: 404 });
 
   await appendAudit(
     guard.db,
@@ -112,9 +87,7 @@ export async function POST(
       diff: {
         offlineCustomerId: String(_id),
         userId: String(userId),
-        previousLinkedUserId: previousLinkedUserId
-          ? String(previousLinkedUserId)
-          : null,
+        previousLinkedUserId: previousLinkedUserId ? String(previousLinkedUserId) : null,
         nextLinkedUserId: String(userId),
       },
     },
@@ -127,30 +100,17 @@ export async function POST(
   });
 }
 
-export async function DELETE(
-  req: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
   if (!csrf.ok) return csrf.res;
 
   const _id = oid((await ctx.params).id);
-  if (!_id)
-    return NextResponse.json(
-      { message: "invalid customer id" },
-      { status: 400 },
-    );
+  if (!_id) return NextResponse.json({ message: "invalid customer id" }, { status: 400 });
 
-  const customer = await guard.db
-    .collection("offline_customers")
-    .findOne({ _id });
-  if (!customer)
-    return NextResponse.json(
-      { message: "customer not found" },
-      { status: 404 },
-    );
+  const customer = await guard.db.collection("offline_customers").findOne({ _id });
+  if (!customer) return NextResponse.json({ message: "customer not found" }, { status: 404 });
 
   const previousLinkedUserId =
     customer.linkedUserId instanceof ObjectId ? customer.linkedUserId : null;
@@ -164,14 +124,8 @@ export async function DELETE(
       },
     },
   );
-  const updated = await guard.db
-    .collection("offline_customers")
-    .findOne({ _id });
-  if (!updated)
-    return NextResponse.json(
-      { message: "customer not found" },
-      { status: 404 },
-    );
+  const updated = await guard.db.collection("offline_customers").findOne({ _id });
+  if (!updated) return NextResponse.json({ message: "customer not found" }, { status: 404 });
 
   await appendAudit(
     guard.db,
@@ -183,9 +137,7 @@ export async function DELETE(
       diff: {
         offlineCustomerId: String(_id),
         userId: previousLinkedUserId ? String(previousLinkedUserId) : null,
-        previousLinkedUserId: previousLinkedUserId
-          ? String(previousLinkedUserId)
-          : null,
+        previousLinkedUserId: previousLinkedUserId ? String(previousLinkedUserId) : null,
         nextLinkedUserId: null,
       },
     },

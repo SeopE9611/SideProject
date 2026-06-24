@@ -62,13 +62,8 @@ type SelectableStringProduct = {
 
 const PLACEHOLDER_IMAGE = "https://placehold.co/40x40?text=%20";
 
-function normalizeGaugeRows(
-  product: SelectableStringProduct,
-): GaugeInventoryRow[] {
-  if (
-    Array.isArray(product.gaugeInventories) &&
-    product.gaugeInventories.length > 0
-  )
+function normalizeGaugeRows(product: SelectableStringProduct): GaugeInventoryRow[] {
+  if (Array.isArray(product.gaugeInventories) && product.gaugeInventories.length > 0)
     return product.gaugeInventories
       .map((row) => ({
         value: String(row?.value ?? "").trim(),
@@ -78,10 +73,7 @@ function normalizeGaugeRows(
       }))
       .filter((row) => row.value);
   if (Array.isArray(product.gaugeOptions) && product.gaugeOptions.length > 0) {
-    const fallbackStock = Math.max(
-      0,
-      Number(product.inventory?.stock ?? 0) || 0,
-    );
+    const fallbackStock = Math.max(0, Number(product.inventory?.stock ?? 0) || 0);
     return product.gaugeOptions
       .map((value) => String(value ?? "").trim())
       .filter(Boolean)
@@ -89,29 +81,20 @@ function normalizeGaugeRows(
   }
   return [];
 }
-function normalizeColorRows(
-  product: SelectableStringProduct,
-): ColorInventoryRow[] {
-  if (
-    Array.isArray(product.colorInventories) &&
-    product.colorInventories.length > 0
-  )
+function normalizeColorRows(product: SelectableStringProduct): ColorInventoryRow[] {
+  if (Array.isArray(product.colorInventories) && product.colorInventories.length > 0)
     return product.colorInventories
       .map((row) => ({
         value: String(row?.value ?? "").trim(),
         label: typeof row?.label === "string" ? row.label.trim() : undefined,
-        colorHex:
-          typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined,
+        colorHex: typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined,
         image: typeof row?.image === "string" ? row.image.trim() : undefined,
         stock: Math.max(0, Number(row?.stock ?? 0) || 0),
         isSoldOut: row?.isSoldOut === true,
       }))
       .filter((row) => row.value);
   if (Array.isArray(product.colorOptions) && product.colorOptions.length > 0) {
-    const fallbackStock = Math.max(
-      0,
-      Number(product.inventory?.stock ?? 0) || 0,
-    );
+    const fallbackStock = Math.max(0, Number(product.inventory?.stock ?? 0) || 0);
     return product.colorOptions
       .map((value: unknown) => String(value ?? "").trim())
       .filter(Boolean)
@@ -123,10 +106,7 @@ function normalizeColorRows(
       }));
   }
   if (typeof product.color === "string" && product.color.trim()) {
-    const fallbackStock = Math.max(
-      0,
-      Number(product.inventory?.stock ?? 0) || 0,
-    );
+    const fallbackStock = Math.max(0, Number(product.inventory?.stock ?? 0) || 0);
     return [
       {
         value: product.color.trim(),
@@ -138,22 +118,16 @@ function normalizeColorRows(
   }
   return [];
 }
-function normalizeVariantRows(
-  product: SelectableStringProduct,
-): VariantInventoryRow[] {
+function normalizeVariantRows(product: SelectableStringProduct): VariantInventoryRow[] {
   if (!Array.isArray((product as any)?.variantInventories)) return [];
   return (product as any).variantInventories
     .map((row: any) => ({
       colorValue: String(row?.colorValue ?? "").trim(),
-      colorLabel:
-        typeof row?.colorLabel === "string" ? row.colorLabel.trim() : undefined,
-      colorHex:
-        typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined,
-      colorImage:
-        typeof row?.colorImage === "string" ? row.colorImage.trim() : undefined,
+      colorLabel: typeof row?.colorLabel === "string" ? row.colorLabel.trim() : undefined,
+      colorHex: typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined,
+      colorImage: typeof row?.colorImage === "string" ? row.colorImage.trim() : undefined,
       gaugeValue: String(row?.gaugeValue ?? "").trim(),
-      gaugeLabel:
-        typeof row?.gaugeLabel === "string" ? row.gaugeLabel.trim() : undefined,
+      gaugeLabel: typeof row?.gaugeLabel === "string" ? row.gaugeLabel.trim() : undefined,
       stock: Math.max(0, Number(row?.stock ?? 0) || 0),
       isSoldOut: row?.isSoldOut === true,
       showWhenSoldOut: row?.showWhenSoldOut ?? null,
@@ -161,18 +135,13 @@ function normalizeVariantRows(
     .filter((row: VariantInventoryRow) => row.colorValue && row.gaugeValue);
 }
 
-const isSellableVariant = (row: VariantInventoryRow) =>
-  row.isSoldOut !== true && row.stock > 0;
+const isSellableVariant = (row: VariantInventoryRow) => row.isSoldOut !== true && row.stock > 0;
 const isSoldOutVariant = (row: VariantInventoryRow) =>
   row.isSoldOut === true || Number(row.stock ?? 0) <= 0;
 const isHiddenSoldOutVariant = (row: VariantInventoryRow) =>
   isSoldOutVariant(row) && row.showWhenSoldOut === false;
-const isVisibleVariant = (row: VariantInventoryRow) =>
-  !isHiddenSoldOutVariant(row);
-const getVariantsByColor = (
-  product: SelectableStringProduct,
-  colorValue: string,
-) =>
+const isVisibleVariant = (row: VariantInventoryRow) => !isHiddenSoldOutVariant(row);
+const getVariantsByColor = (product: SelectableStringProduct, colorValue: string) =>
   normalizeVariantRows(product).filter((row) => row.colorValue === colorValue);
 const getVariantBySelection = (
   product: SelectableStringProduct,
@@ -190,26 +159,19 @@ const getColorLabel = (row: ColorInventoryRow) => {
   const raw = String(row.label || row.value || "").trim();
   return stringColorLabel(raw) || raw || "-";
 };
-const isColorSoldOut = (row: ColorInventoryRow) =>
-  row.isSoldOut === true || row.stock <= 0;
+const isColorSoldOut = (row: ColorInventoryRow) => row.isSoldOut === true || row.stock <= 0;
 
 export default function SelectStringClient({ orderId }: { orderId: string }) {
   const router = useRouter();
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
-  const [selectedGaugeByProductId, setSelectedGaugeByProductId] = useState<
-    Record<string, string>
-  >({});
-  const [selectedColorByProductId, setSelectedColorByProductId] = useState<
-    Record<string, string>
-  >({});
-  const {
-    products,
-    isLoadingInitial,
-    isFetchingMore,
-    hasMore,
-    loadMore,
-    error,
-  } = useInfiniteProducts({ limit: 6, purpose: "stringing" });
+  const [selectedGaugeByProductId, setSelectedGaugeByProductId] = useState<Record<string, string>>(
+    {},
+  );
+  const [selectedColorByProductId, setSelectedColorByProductId] = useState<Record<string, string>>(
+    {},
+  );
+  const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore, error } =
+    useInfiniteProducts({ limit: 6, purpose: "stringing" });
   const mountableProducts = products.filter(
     (product) =>
       typeof (product as SelectableStringProduct).mountingFee === "number" &&
@@ -227,21 +189,15 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
           const visibleVariantRows = variants.filter(isVisibleVariant);
           const colorRows = normalizeColorRows(p);
           const visibleVariantColorValues = Array.from(
-            new Set(
-              visibleVariantRows.map((v) => v.colorValue).filter(Boolean),
-            ),
+            new Set(visibleVariantRows.map((v) => v.colorValue).filter(Boolean)),
           );
           const visibleColorRows = colorRows.filter((row) =>
             visibleVariantColorValues.includes(row.value),
           );
-          const visibleColorValueSet = new Set(
-            visibleColorRows.map((row) => row.value),
-          );
+          const visibleColorValueSet = new Set(visibleColorRows.map((row) => row.value));
           const variantOnlyVisibleColorRows = visibleVariantRows
             .filter(
-              (variant) =>
-                variant.colorValue &&
-                !visibleColorValueSet.has(variant.colorValue),
+              (variant) => variant.colorValue && !visibleColorValueSet.has(variant.colorValue),
             )
             .map((variant) => ({
               value: variant.colorValue,
@@ -250,14 +206,9 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
               image: variant.colorImage,
             }));
           const dedupedVariantOnlyRows = Array.from(
-            new Map(
-              variantOnlyVisibleColorRows.map((row) => [row.value, row]),
-            ).values(),
+            new Map(variantOnlyVisibleColorRows.map((row) => [row.value, row])).values(),
           );
-          const effectiveColorRows = [
-            ...visibleColorRows,
-            ...dedupedVariantOnlyRows,
-          ];
+          const effectiveColorRows = [...visibleColorRows, ...dedupedVariantOnlyRows];
           const current = next[p._id] ?? "";
           if (!effectiveColorRows.length) {
             if (current !== "") {
@@ -301,9 +252,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
           (row) => row.colorValue === color,
         );
         const current = next[p._id] ?? "";
-        const keep = variantsForSelectedColor.some(
-          (row) => row.gaugeValue === current,
-        );
+        const keep = variantsForSelectedColor.some((row) => row.gaugeValue === current);
         const fallback =
           variantsForSelectedColor.find(isSellableVariant)?.gaugeValue ??
           variantsForSelectedColor[0]?.gaugeValue ??
@@ -343,11 +292,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
         setAddingProductId(null);
         return;
       }
-      const selectedVariant = getVariantBySelection(
-        product,
-        normalizedColor,
-        normalizedGauge,
-      );
+      const selectedVariant = getVariantBySelection(product, normalizedColor, normalizedGauge);
       if (!selectedVariant || !isVisibleVariant(selectedVariant)) {
         showErrorToast("선택한 색상/게이지 조합을 찾을 수 없습니다.");
         setAddingProductId(null);
@@ -410,12 +355,9 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
       <div className="rounded-2xl border border-border bg-muted/30 px-4 py-3">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-base font-semibold text-foreground">
-              장착할 스트링 선택
-            </h2>
+            <h2 className="text-base font-semibold text-foreground">장착할 스트링 선택</h2>
             <p className="break-keep text-sm text-muted-foreground">
-              색상과 게이지를 확인한 뒤 원하는 스트링으로 다음 단계에
-              진행하세요.
+              색상과 게이지를 확인한 뒤 원하는 스트링으로 다음 단계에 진행하세요.
             </p>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -442,21 +384,15 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
           const visibleVariantRows = variants.filter(isVisibleVariant);
           const colorRows = normalizeColorRows(p);
           const visibleVariantColorValues = Array.from(
-            new Set(
-              visibleVariantRows.map((v) => v.colorValue).filter(Boolean),
-            ),
+            new Set(visibleVariantRows.map((v) => v.colorValue).filter(Boolean)),
           );
           const visibleColorRows = colorRows.filter((row) =>
             visibleVariantColorValues.includes(row.value),
           );
-          const visibleColorValueSet = new Set(
-            visibleColorRows.map((row) => row.value),
-          );
+          const visibleColorValueSet = new Set(visibleColorRows.map((row) => row.value));
           const variantOnlyVisibleColorRows = visibleVariantRows
             .filter(
-              (variant) =>
-                variant.colorValue &&
-                !visibleColorValueSet.has(variant.colorValue),
+              (variant) => variant.colorValue && !visibleColorValueSet.has(variant.colorValue),
             )
             .map((variant) => ({
               value: variant.colorValue,
@@ -467,9 +403,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
               isSoldOut: variant.isSoldOut,
             }));
           const dedupedVariantOnlyRows = Array.from(
-            new Map(
-              variantOnlyVisibleColorRows.map((row) => [row.value, row]),
-            ).values(),
+            new Map(variantOnlyVisibleColorRows.map((row) => [row.value, row])).values(),
           );
           const effectiveColorRows = hasVariantInventories
             ? [...visibleColorRows, ...dedupedVariantOnlyRows]
@@ -488,9 +422,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
           const selectedGauge = selectedGaugeByProductId[p._id] ?? "";
           const selectedVariant = hasVariantInventories
             ? visibleVariantRows.find(
-                (row) =>
-                  row.colorValue === selectedColor &&
-                  row.gaugeValue === selectedGauge,
+                (row) => row.colorValue === selectedColor && row.gaugeValue === selectedGauge,
               )
             : undefined;
           const variantBlocked =
@@ -504,16 +436,11 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
           const legacyGaugeBlocked =
             !hasVariantInventories && gaugeRows.length > 0 && !selectedGauge;
           const disableSelectButton =
-            !!addingProductId ||
-            variantBlocked ||
-            legacyColorBlocked ||
-            legacyGaugeBlocked;
+            !!addingProductId || variantBlocked || legacyColorBlocked || legacyGaugeBlocked;
           const selectedColorLabel =
-            effectiveColorRows.find((row) => row.value === selectedColor)
-              ?.label ?? selectedColor;
+            effectiveColorRows.find((row) => row.value === selectedColor)?.label ?? selectedColor;
           const selectedGaugeLabel =
-            gaugeRows.find((row) => row.value === selectedGauge)?.label ??
-            selectedGauge;
+            gaugeRows.find((row) => row.value === selectedGauge)?.label ?? selectedGauge;
           return (
             <div
               key={p._id}
@@ -524,9 +451,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                   {p.name}
                 </h3>
                 <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    스트링 금액
-                  </span>
+                  <span className="text-xs font-medium text-muted-foreground">스트링 금액</span>
                   <span className="font-semibold tabular-nums text-foreground">
                     {typeof p.price === "number"
                       ? `${p.price.toLocaleString()}원`
@@ -536,9 +461,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                 {typeof p.mountingFee === "number" && (
                   <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs text-muted-foreground">
                     <span>장착비</span>
-                    <span className="tabular-nums">
-                      {p.mountingFee.toLocaleString()}원
-                    </span>
+                    <span className="tabular-nums">{p.mountingFee.toLocaleString()}원</span>
                   </div>
                 )}
               </div>
@@ -560,27 +483,20 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                           (v) => v.colorValue === colorValue && v.colorImage,
                         )?.colorImage;
                         const image =
-                          colorRow.image ||
-                          variantImage ||
-                          p.images?.[0] ||
-                          PLACEHOLDER_IMAGE;
+                          colorRow.image || variantImage || p.images?.[0] || PLACEHOLDER_IMAGE;
                         const sellable = visibleVariantRows.some(
-                          (v) =>
-                            v.colorValue === colorValue && isSellableVariant(v),
+                          (v) => v.colorValue === colorValue && isSellableVariant(v),
                         );
                         const label =
                           stringColorLabel(
                             colorRow.label ||
-                              visibleVariantRows.find(
-                                (v) => v.colorValue === colorValue,
-                              )?.colorLabel ||
+                              visibleVariantRows.find((v) => v.colorValue === colorValue)
+                                ?.colorLabel ||
                               colorValue,
                           ) || colorValue;
                         const colorHex =
                           colorRow.colorHex ||
-                          visibleVariantRows.find(
-                            (v) => v.colorValue === colorValue,
-                          )?.colorHex;
+                          visibleVariantRows.find((v) => v.colorValue === colorValue)?.colorHex;
                         return {
                           value: colorValue,
                           label,
@@ -628,9 +544,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                         />
                       ) : null}
                       <span>{row.label}</span>
-                      {row.disabled ? (
-                        <span className="text-destructive">품절</span>
-                      ) : null}
+                      {row.disabled ? <span className="text-destructive">품절</span> : null}
                     </button>
                   ))}
                 </div>
@@ -682,9 +596,8 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                 <div className="flex items-center justify-between gap-3">
                   <span>선택한 옵션</span>
                   <span className="min-w-0 truncate text-right text-foreground">
-                    {[selectedColorLabel, selectedGaugeLabel]
-                      .filter(Boolean)
-                      .join(" · ") || "옵션 선택 필요"}
+                    {[selectedColorLabel, selectedGaugeLabel].filter(Boolean).join(" · ") ||
+                      "옵션 선택 필요"}
                   </span>
                 </div>
               </div>
@@ -692,13 +605,9 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                 type="button"
                 className="mt-4 h-10 w-full rounded-xl break-keep"
                 disabled={disableSelectButton}
-                onClick={() =>
-                  handleSelectString(p, selectedGauge, selectedColor)
-                }
+                onClick={() => handleSelectString(p, selectedGauge, selectedColor)}
               >
-                {addingProductId === p._id
-                  ? "이동 중…"
-                  : "이 스트링 선택하고 신청 계속하기"}
+                {addingProductId === p._id ? "이동 중…" : "이 스트링 선택하고 신청 계속하기"}
               </Button>
             </div>
           );

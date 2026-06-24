@@ -69,9 +69,7 @@ export type ProductEditHydbridState = {
   hybridCross: HybridCrossSpec;
 };
 
-export function normalizeHybridState(
-  product: ProductDetail,
-): ProductEditHydbridState {
+export function normalizeHybridState(product: ProductDetail): ProductEditHydbridState {
   return {
     hybridMain: product?.specifications?.hybrid
       ? {
@@ -94,14 +92,11 @@ export function normalizeHybridState(
   };
 }
 
-export function buildProductEditInitialSnapshot(
-  product: ProductDetail,
-): string {
+export function buildProductEditInitialSnapshot(product: ProductDetail): string {
   const hybridState = normalizeHybridState(product);
 
   const colorInventories =
-    Array.isArray(product.colorInventories) &&
-    product.colorInventories.length > 0
+    Array.isArray(product.colorInventories) && product.colorInventories.length > 0
       ? product.colorInventories
       : Array.isArray(product.colorOptions) && product.colorOptions.length > 0
         ? product.colorOptions.map((value) => ({
@@ -174,16 +169,11 @@ export function buildProductEditInitialSnapshot(
   });
 }
 
-export function buildProductEditSnapshot(
-  input: ProductEditSnapshotInput,
-): string {
+export function buildProductEditSnapshot(input: ProductEditSnapshotInput): string {
   return JSON.stringify(input);
 }
 
-export function sanitizeUploadFileName(
-  fileName: string,
-  timestamp = Date.now(),
-): string {
+export function sanitizeUploadFileName(fileName: string, timestamp = Date.now()): string {
   const extension = fileName.split(".").pop();
   const base = fileName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "");
 

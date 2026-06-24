@@ -35,27 +35,18 @@ function serializeClassSnapshot(value: unknown) {
         ? record.classId
         : String(serializeValue(record.classId) ?? ""),
     name: typeof record.name === "string" ? record.name : "",
-    description:
-      typeof record.description === "string" ? record.description : null,
+    description: typeof record.description === "string" ? record.description : null,
     level: typeof record.level === "string" ? record.level : null,
-    levelLabel:
-      typeof record.levelLabel === "string" ? record.levelLabel : null,
-    lessonType:
-      typeof record.lessonType === "string" ? record.lessonType : null,
-    lessonTypeLabel:
-      typeof record.lessonTypeLabel === "string"
-        ? record.lessonTypeLabel
-        : null,
-    instructorName:
-      typeof record.instructorName === "string" ? record.instructorName : null,
+    levelLabel: typeof record.levelLabel === "string" ? record.levelLabel : null,
+    lessonType: typeof record.lessonType === "string" ? record.lessonType : null,
+    lessonTypeLabel: typeof record.lessonTypeLabel === "string" ? record.lessonTypeLabel : null,
+    instructorName: typeof record.instructorName === "string" ? record.instructorName : null,
     location: typeof record.location === "string" ? record.location : null,
-    scheduleText:
-      typeof record.scheduleText === "string" ? record.scheduleText : null,
+    scheduleText: typeof record.scheduleText === "string" ? record.scheduleText : null,
     capacity: typeof record.capacity === "number" ? record.capacity : null,
     price: typeof record.price === "number" ? record.price : null,
     status: typeof record.status === "string" ? record.status : null,
-    statusLabel:
-      typeof record.statusLabel === "string" ? record.statusLabel : null,
+    statusLabel: typeof record.statusLabel === "string" ? record.statusLabel : null,
   };
 }
 
@@ -65,17 +56,10 @@ function serializeHistory(history: unknown) {
     const record = item && typeof item === "object" ? (item as Document) : {};
     return {
       status: typeof record.status === "string" ? record.status : "submitted",
-      date:
-        typeof record.date === "string"
-          ? record.date
-          : serializeValue(record.date),
-      description:
-        typeof record.description === "string" ? record.description : "",
-      actorId: record.actorId
-        ? String(serializeValue(record.actorId))
-        : undefined,
-      actorName:
-        typeof record.actorName === "string" ? record.actorName : undefined,
+      date: typeof record.date === "string" ? record.date : serializeValue(record.date),
+      description: typeof record.description === "string" ? record.description : "",
+      actorId: record.actorId ? String(serializeValue(record.actorId)) : undefined,
+      actorName: typeof record.actorName === "string" ? record.actorName : undefined,
     };
   });
 }
@@ -83,22 +67,18 @@ function serializeHistory(history: unknown) {
 function serializeApplication(doc: Document) {
   return {
     _id: String(serializeValue(doc._id)),
-    applicantName:
-      typeof doc.applicantName === "string" ? doc.applicantName : "",
+    applicantName: typeof doc.applicantName === "string" ? doc.applicantName : "",
     phone: typeof doc.phone === "string" ? doc.phone : "",
     email: typeof doc.email === "string" ? doc.email : null,
-    desiredLessonType:
-      typeof doc.desiredLessonType === "string" ? doc.desiredLessonType : "",
+    desiredLessonType: typeof doc.desiredLessonType === "string" ? doc.desiredLessonType : "",
     currentLevel: typeof doc.currentLevel === "string" ? doc.currentLevel : "",
     preferredDays: Array.isArray(doc.preferredDays) ? doc.preferredDays : [],
-    preferredTimeText:
-      typeof doc.preferredTimeText === "string" ? doc.preferredTimeText : null,
+    preferredTimeText: typeof doc.preferredTimeText === "string" ? doc.preferredTimeText : null,
     lessonGoal: typeof doc.lessonGoal === "string" ? doc.lessonGoal : null,
     requestMemo: typeof doc.requestMemo === "string" ? doc.requestMemo : null,
     status: typeof doc.status === "string" ? doc.status : "submitted",
     adminMemo: typeof doc.adminMemo === "string" ? doc.adminMemo : null,
-    customerMessage:
-      typeof doc.customerMessage === "string" ? doc.customerMessage : null,
+    customerMessage: typeof doc.customerMessage === "string" ? doc.customerMessage : null,
     history: serializeHistory(doc.history),
     createdAt: serializeValue(doc.createdAt) ?? null,
     updatedAt: serializeValue(doc.updatedAt) ?? null,
@@ -130,8 +110,7 @@ function getApplicationClassIdCandidates(application: Document) {
   const candidates = new Set<string>();
   if (application.classId) {
     const serialized = serializeValue(application.classId);
-    const classId =
-      typeof serialized === "string" ? serialized : String(serialized ?? "");
+    const classId = typeof serialized === "string" ? serialized : String(serialized ?? "");
     if (classId) candidates.add(classId);
   }
 
@@ -141,10 +120,7 @@ function getApplicationClassIdCandidates(application: Document) {
   return [...candidates];
 }
 
-async function autoCloseClassWhenConfirmedCapacityReached(
-  db: Db,
-  application: Document,
-) {
+async function autoCloseClassWhenConfirmedCapacityReached(db: Db, application: Document) {
   const classIdCandidates = getApplicationClassIdCandidates(application);
   const objectIdCandidates = classIdCandidates
     .filter((classId) => ObjectId.isValid(classId))
@@ -167,9 +143,7 @@ async function autoCloseClassWhenConfirmedCapacityReached(
 
   const classId = String(serializeValue(academyClass._id));
   const capacity =
-    typeof academyClass.capacity === "number"
-      ? Math.trunc(academyClass.capacity)
-      : null;
+    typeof academyClass.capacity === "number" ? Math.trunc(academyClass.capacity) : null;
 
   if (!capacity || capacity <= 0) {
     return { classAutoClosed: false, confirmedCount: null, capacity };
@@ -211,10 +185,7 @@ function getStatusHistoryDescription(status: AcademyLessonApplicationStatus) {
   return `${getAcademyApplicationStatusLabel(status)} 상태로 변경되었습니다.`;
 }
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -229,8 +200,7 @@ export async function PATCH(
   }
 
   const body = (await req.json().catch(() => null)) as unknown;
-  const payload =
-    body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
   const status = payload.status;
   const reason = trimString(payload.reason, 500);
 
@@ -266,9 +236,7 @@ export async function PATCH(
   const update: Document = { $set: { status, updatedAt: now } };
 
   if (current.status !== status) {
-    const description = `${getStatusHistoryDescription(status)}${
-      reason ? ` 사유: ${reason}` : ""
-    }`;
+    const description = `${getStatusHistoryDescription(status)}${reason ? ` 사유: ${reason}` : ""}`;
     update.$push = {
       history: {
         status,
@@ -304,16 +272,12 @@ export async function PATCH(
         cancelled: "레슨 신청이 취소 처리되었습니다.",
       };
       const className =
-        typeof updated.classSnapshot?.name === "string"
-          ? updated.classSnapshot.name
-          : "";
+        typeof updated.classSnapshot?.name === "string" ? updated.classSnapshot.name : "";
       await createUserNotification(guard.db, {
         userId: updated.userId,
         type: "academy_status",
         title: titleByStatus[status] ?? "레슨 신청 상태가 변경되었습니다.",
-        body: className
-          ? `${className} 신청 상태가 변경되었습니다.`
-          : undefined,
+        body: className ? `${className} 신청 상태가 변경되었습니다.` : undefined,
         href: "/mypage",
         source: {
           collection: "academy_lesson_applications",
@@ -323,27 +287,18 @@ export async function PATCH(
         dedupeKey: `academy:${_id.toString()}:status:${status}`,
       });
     } catch (error) {
-      console.error(
-        "[admin academy application status] create notification failed",
-        error,
-      );
+      console.error("[admin academy application status] create notification failed", error);
     }
   }
 
   if (status === "confirmed") {
     try {
-      const autoCloseResult = await autoCloseClassWhenConfirmedCapacityReached(
-        guard.db,
-        updated,
-      );
+      const autoCloseResult = await autoCloseClassWhenConfirmedCapacityReached(guard.db, updated);
       classAutoClosed = autoCloseResult.classAutoClosed;
       classAutoClosedConfirmedCount = autoCloseResult.confirmedCount;
       classAutoClosedCapacity = autoCloseResult.capacity;
     } catch (error) {
-      console.error(
-        "[admin academy application status] auto close failed",
-        error,
-      );
+      console.error("[admin academy application status] auto close failed", error);
     }
   }
 

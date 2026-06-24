@@ -63,10 +63,7 @@ export async function DELETE(req: Request) {
   const mode = body.mode === "execute" ? "execute" : "dry-run";
 
   const { cutoff, candidateIds } = await listCleanupCandidates(guard.db);
-  const previewHash = createDangerousActionHash(
-    "admin.system.cleanup",
-    candidateIds,
-  );
+  const previewHash = createDangerousActionHash("admin.system.cleanup", candidateIds);
 
   // [안전 3/4] 고위험 작업은 기본 dry-run 응답을 우선 반환해 대상 검증을 강제한다.
   if (mode !== "execute") {
@@ -98,8 +95,7 @@ export async function DELETE(req: Request) {
         ok: false,
         error: {
           code: "preview_hash_mismatch",
-          message:
-            "미리보기 대상이 변경되었습니다. 최신 미리보기를 다시 확인해 주세요.",
+          message: "미리보기 대상이 변경되었습니다. 최신 미리보기를 다시 확인해 주세요.",
         },
       },
       { status: 409 },
@@ -141,8 +137,7 @@ export async function DELETE(req: Request) {
         ok: false,
         error: {
           code: "execution_locked",
-          message:
-            "동일 정리 작업이 이미 실행 중입니다. 잠시 후 다시 시도해 주세요.",
+          message: "동일 정리 작업이 이미 실행 중입니다. 잠시 후 다시 시도해 주세요.",
         },
       },
       { status: 409 },
@@ -175,10 +170,6 @@ export async function DELETE(req: Request) {
     console.error("[ADMIN_SYSTEM_CLEANUP_DELETE]", error);
     return NextResponse.json({ error: "서버 오류" }, { status: 500 });
   } finally {
-    await releaseAdminExecutionLock(
-      guard.db,
-      "admin.system.cleanup",
-      lockOwner,
-    );
+    await releaseAdminExecutionLock(guard.db, "admin.system.cleanup", lockOwner);
   }
 }

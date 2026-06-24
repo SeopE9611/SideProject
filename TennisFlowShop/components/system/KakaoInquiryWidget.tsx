@@ -33,8 +33,7 @@ function normalizeChannelPublicId(raw: string) {
  */
 export default function KakaoInquiryWidget() {
   const pathname = usePathname();
-  const isMypageRoute =
-    pathname === "/mypage" || pathname.startsWith("/mypage/");
+  const isMypageRoute = pathname === "/mypage" || pathname.startsWith("/mypage/");
   // 어떤 패널이 열려있는지(중복 오픈 방지)
   const [panel, setPanel] = useState<"guide" | "inquiry" | "bug" | null>(null);
 
@@ -52,14 +51,11 @@ export default function KakaoInquiryWidget() {
 
   // 클라이언트 노출 가능한 env만 사용 (NEXT_PUBLIC_*)
   const jsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY ?? "";
-  const rawChannelPublicId =
-    process.env.NEXT_PUBLIC_KAKAO_CHANNEL_PUBLIC_ID ?? "";
+  const rawChannelPublicId = process.env.NEXT_PUBLIC_KAKAO_CHANNEL_PUBLIC_ID ?? "";
   const channelPublicId = normalizeChannelPublicId(rawChannelPublicId);
 
   // 버그 제보: 카카오 오픈채팅 URL (예: https://open.kakao.com/o/xxxx)
-  const bugOpenChatUrl = (
-    process.env.NEXT_PUBLIC_KAKAO_BUG_OPENCHAT_URL ?? ""
-  ).trim();
+  const bugOpenChatUrl = (process.env.NEXT_PUBLIC_KAKAO_BUG_OPENCHAT_URL ?? "").trim();
 
   // 훅 개수 불일치 방지 - "숨김 여부"는 계산만 하고, return은 마지막에만 처리
   const hideAll = pathname?.startsWith("/admin");
@@ -140,14 +136,12 @@ export default function KakaoInquiryWidget() {
     let ro: ResizeObserver | null = null;
 
     const pickTargets = (): HTMLElement[] => {
-      const marked = Array.from(
-        document.querySelectorAll<HTMLElement>('[data-bottom-sticky="1"]'),
-      );
+      const marked = Array.from(document.querySelectorAll<HTMLElement>('[data-bottom-sticky="1"]'));
       if (marked.length) return marked.filter((el) => !isWidgetOverlay(el));
       // (예비) 혹시 마킹을 빠뜨린 경우를 대비한 fallback
-      return Array.from(
-        document.querySelectorAll<HTMLElement>(".fixed.inset-x-0.bottom-0"),
-      ).filter((el) => !isWidgetOverlay(el));
+      return Array.from(document.querySelectorAll<HTMLElement>(".fixed.inset-x-0.bottom-0")).filter(
+        (el) => !isWidgetOverlay(el),
+      );
     };
 
     const isWidgetOverlay = (el: HTMLElement) =>
@@ -155,12 +149,12 @@ export default function KakaoInquiryWidget() {
       Boolean(el.closest('[data-kakao-widget-hide="1"], [role="dialog"]'));
 
     const hasBlockingOverlay = () =>
-      Array.from(
-        document.querySelectorAll<HTMLElement>('[data-kakao-widget-hide="1"]'),
-      ).some((el) => {
-        const rect = el.getBoundingClientRect();
-        return rect.width > 0 && rect.height > 0;
-      });
+      Array.from(document.querySelectorAll<HTMLElement>('[data-kakao-widget-hide="1"]')).some(
+        (el) => {
+          const rect = el.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0;
+        },
+      );
 
     const schedule = () => {
       cancelAnimationFrame(raf);
@@ -239,8 +233,7 @@ export default function KakaoInquiryWidget() {
 
     // 캡처 단계로 잡으면(= true) 다른 UI 핸들러보다 먼저 안정적으로 닫힘 처리 가능
     document.addEventListener("pointerdown", onPointerDown, true);
-    return () =>
-      document.removeEventListener("pointerdown", onPointerDown, true);
+    return () => document.removeEventListener("pointerdown", onPointerDown, true);
   }, [panel]);
 
   const openKakaoChat = () => {
@@ -258,11 +251,7 @@ export default function KakaoInquiryWidget() {
     }
 
     // 2) fallback: 채널 채팅 URL로 이동(최소 동작 보장)
-    window.open(
-      `https://pf.kakao.com/${channelPublicId}/chat`,
-      "_blank",
-      "noopener,noreferrer",
-    );
+    window.open(`https://pf.kakao.com/${channelPublicId}/chat`, "_blank", "noopener,noreferrer");
     setPanel(null);
   };
 
@@ -299,9 +288,7 @@ export default function KakaoInquiryWidget() {
               <div ref={guidePanelRef} className="relative">
                 <Card className="relative w-[min(320px,calc(100vw-2rem))] border-border shadow-xl bp-sm:w-[340px]">
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-semibold">
-                      무엇을 하러 오셨나요?
-                    </CardTitle>
+                    <CardTitle className="text-sm font-semibold">무엇을 하러 오셨나요?</CardTitle>
                     <button
                       type="button"
                       aria-label="닫기"
@@ -314,17 +301,12 @@ export default function KakaoInquiryWidget() {
 
                   <CardContent className="space-y-2.5 bp-sm:space-y-3">
                     <p className="text-sm text-muted-foreground">
-                      원하는 목적을 선택하면 필요한 단계로 바로 이동할 수
-                      있어요.
+                      원하는 목적을 선택하면 필요한 단계로 바로 이동할 수 있어요.
                     </p>
                     <div className="grid gap-2">
                       {[
                         ["스트링 교체 신청하기", "/services/apply", ""],
-                        [
-                          "새 스트링 고르고 장착 신청",
-                          "/products?from=apply",
-                          "",
-                        ],
+                        ["새 스트링 고르고 장착 신청", "/products?from=apply", ""],
                         ["라켓 구매/대여 + 장착", "/rackets?from=apply", ""],
                         ["아카데미 신청", "/academy", ""],
                         ["주문/신청 상태 확인", "/mypage"],
@@ -335,9 +317,7 @@ export default function KakaoInquiryWidget() {
                           className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold transition-colors hover:bg-muted bp-sm:py-2.5"
                           onClick={() => setPanel(null)}
                         >
-                          <span className="block whitespace-nowrap text-foreground">
-                            {label}
-                          </span>
+                          <span className="block whitespace-nowrap text-foreground">{label}</span>
                           {description ? (
                             <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
                               {description}
@@ -363,9 +343,7 @@ export default function KakaoInquiryWidget() {
               type="button"
               ref={guideTriggerRef}
               aria-label="목적 선택"
-              onClick={() =>
-                setPanel((cur) => (cur === "guide" ? null : "guide"))
-              }
+              onClick={() => setPanel((cur) => (cur === "guide" ? null : "guide"))}
               className={[
                 "h-12 w-12 rounded-full shadow-xl bp-sm:h-14 bp-sm:w-14",
                 "bg-primary text-primary-foreground",
@@ -400,9 +378,7 @@ export default function KakaoInquiryWidget() {
                   ].join(" ")}
                 >
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-semibold">
-                      버그 제보
-                    </CardTitle>
+                    <CardTitle className="text-sm font-semibold">버그 제보</CardTitle>
                     <button
                       type="button"
                       aria-label="닫기"
@@ -415,8 +391,8 @@ export default function KakaoInquiryWidget() {
 
                   <CardContent className="space-y-2.5 bp-sm:space-y-3">
                     <p className="text-sm text-muted-foreground">
-                      사이트 이용 중 문제가 생겼거나 버그를 발견하셨나요? 아래
-                      개발자의 오픈채팅으로 제보해주시면 빠르게 확인할게요.
+                      사이트 이용 중 문제가 생겼거나 버그를 발견하셨나요? 아래 개발자의 오픈채팅으로
+                      제보해주시면 빠르게 확인할게요.
                     </p>
 
                     <div className="rounded-md bg-muted/60 p-3 text-xs text-muted-foreground">
@@ -512,8 +488,7 @@ export default function KakaoInquiryWidget() {
 
                   <CardContent className="space-y-2.5 bp-sm:space-y-3">
                     <p className="text-sm text-muted-foreground">
-                      카카오톡 채널로 1:1 문의를 남겨주세요. 운영시간 외에는
-                      답변이 늦을 수 있어요.
+                      카카오톡 채널로 1:1 문의를 남겨주세요. 운영시간 외에는 답변이 늦을 수 있어요.
                     </p>
 
                     <button
@@ -546,9 +521,7 @@ export default function KakaoInquiryWidget() {
               type="button"
               ref={inquiryTriggerRef}
               aria-label="카카오톡 문의"
-              onClick={() =>
-                setPanel((cur) => (cur === "inquiry" ? null : "inquiry"))
-              }
+              onClick={() => setPanel((cur) => (cur === "inquiry" ? null : "inquiry"))}
               className={[
                 isMypageRoute
                   ? "h-11 w-11 rounded-full shadow-lg"
@@ -560,9 +533,7 @@ export default function KakaoInquiryWidget() {
               ].join(" ")}
             >
               <MessageCircle
-                className={
-                  isMypageRoute ? "h-5 w-5" : "h-6 w-6 bp-sm:h-7 bp-sm:w-7"
-                }
+                className={isMypageRoute ? "h-5 w-5" : "h-6 w-6 bp-sm:h-7 bp-sm:w-7"}
               />
             </button>
           </div>

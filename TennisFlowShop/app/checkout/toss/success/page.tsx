@@ -15,9 +15,7 @@ export default function TossCheckoutSuccessPage() {
     const amount = Number(sp.get("amount") || 0);
 
     if (!paymentKey || !orderId || !Number.isFinite(amount)) {
-      router.replace(
-        "/checkout/toss/fail?code=INVALID_QUERY&message=잘못된 결제 결과입니다.",
-      );
+      router.replace("/checkout/toss/fail?code=INVALID_QUERY&message=잘못된 결제 결과입니다.");
       return;
     }
 
@@ -38,9 +36,7 @@ export default function TossCheckoutSuccessPage() {
           );
           return;
         }
-        router.replace(
-          `/checkout/success?orderId=${encodeURIComponent(json.mongoOrderId)}`,
-        );
+        router.replace(`/checkout/success?orderId=${encodeURIComponent(json.mongoOrderId)}`);
       })
       .catch((error: any) => {
         router.replace(

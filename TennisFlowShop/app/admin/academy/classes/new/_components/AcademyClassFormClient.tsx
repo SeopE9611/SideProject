@@ -12,7 +12,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -89,7 +95,9 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
 
   const isEdit = mode === "edit";
   const endpoint =
-    isEdit && initialItem?._id ? `/api/admin/academy/classes/${initialItem._id}` : "/api/admin/academy/classes";
+    isEdit && initialItem?._id
+      ? `/api/admin/academy/classes/${initialItem._id}`
+      : "/api/admin/academy/classes";
 
   const title = isEdit ? "클래스 수정" : "새 클래스 등록";
   const description = isEdit
@@ -222,7 +230,9 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
                 <Label>수업 유형</Label>
                 <Select
                   value={form.lessonType}
-                  onValueChange={(value) => updateField("lessonType", value as AcademyClassLessonType)}
+                  onValueChange={(value) =>
+                    updateField("lessonType", value as AcademyClassLessonType)
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="수업 유형 선택" />
@@ -239,7 +249,10 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
 
               <div className="space-y-2">
                 <Label>레벨</Label>
-                <Select value={form.level} onValueChange={(value) => updateField("level", value as AcademyClassLevel)}>
+                <Select
+                  value={form.level}
+                  onValueChange={(value) => updateField("level", value as AcademyClassLevel)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="레벨 선택" />
                   </SelectTrigger>

@@ -61,10 +61,7 @@ export async function DELETE(req: Request) {
   const mode = body.mode === "execute" ? "execute" : "dry-run";
 
   const { cutoff, candidateIds } = await listPurgeCandidates(guard.db);
-  const previewHash = createDangerousActionHash(
-    "admin.system.purge",
-    candidateIds,
-  );
+  const previewHash = createDangerousActionHash("admin.system.purge", candidateIds);
 
   if (mode !== "execute") {
     return NextResponse.json({
@@ -94,8 +91,7 @@ export async function DELETE(req: Request) {
         ok: false,
         error: {
           code: "preview_hash_mismatch",
-          message:
-            "미리보기 대상이 변경되었습니다. 최신 미리보기를 다시 확인해 주세요.",
+          message: "미리보기 대상이 변경되었습니다. 최신 미리보기를 다시 확인해 주세요.",
         },
       },
       { status: 409 },

@@ -44,12 +44,7 @@ const STATIC_PACKAGES: PackageCardData[] = [
     originalPrice: 360000,
     discount: 17,
     popular: true,
-    features: [
-      "30회 스트링 교체",
-      "무료 장력 상담",
-      "프리미엄 스트링 선택",
-      "우선 예약",
-    ],
+    features: ["30회 스트링 교체", "무료 장력 상담", "프리미엄 스트링 선택", "우선 예약"],
     benefits: ["6만원 절약", "우선 예약 혜택"],
     variant: "accent" as PackageVariant,
     description: "정기적으로 테니스를 즐기는 분들을 위한 추천 패키지",
@@ -118,9 +113,7 @@ async function getInitialPackages(): Promise<PackageCardData[]> {
     return activePackages.map((pkg, index) => {
       const sessions = Number(pkg.sessions || 0);
       const price = Number(pkg.price || 0);
-      const originalPrice = Number(
-        pkg.originalPrice != null ? pkg.originalPrice : pkg.price || 0,
-      );
+      const originalPrice = Number(pkg.originalPrice != null ? pkg.originalPrice : pkg.price || 0);
 
       const variant = toPackageVariant(
         undefined,

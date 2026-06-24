@@ -42,30 +42,22 @@ function serializeClassSnapshot(value: unknown) {
         ? record.classId
         : String(serializeValue(record.classId) ?? ""),
     name: typeof record.name === "string" ? record.name : "",
-    levelLabel:
-      typeof record.levelLabel === "string" ? record.levelLabel : null,
-    lessonTypeLabel:
-      typeof record.lessonTypeLabel === "string"
-        ? record.lessonTypeLabel
-        : null,
-    scheduleText:
-      typeof record.scheduleText === "string" ? record.scheduleText : null,
+    levelLabel: typeof record.levelLabel === "string" ? record.levelLabel : null,
+    lessonTypeLabel: typeof record.lessonTypeLabel === "string" ? record.lessonTypeLabel : null,
+    scheduleText: typeof record.scheduleText === "string" ? record.scheduleText : null,
   };
 }
 
 function serializeApplication(doc: Document) {
   return {
     _id: String(serializeValue(doc._id)),
-    applicantName:
-      typeof doc.applicantName === "string" ? doc.applicantName : "",
+    applicantName: typeof doc.applicantName === "string" ? doc.applicantName : "",
     phone: typeof doc.phone === "string" ? doc.phone : "",
     email: typeof doc.email === "string" ? doc.email : null,
-    desiredLessonType:
-      typeof doc.desiredLessonType === "string" ? doc.desiredLessonType : "",
+    desiredLessonType: typeof doc.desiredLessonType === "string" ? doc.desiredLessonType : "",
     currentLevel: typeof doc.currentLevel === "string" ? doc.currentLevel : "",
     preferredDays: Array.isArray(doc.preferredDays) ? doc.preferredDays : [],
-    preferredTimeText:
-      typeof doc.preferredTimeText === "string" ? doc.preferredTimeText : null,
+    preferredTimeText: typeof doc.preferredTimeText === "string" ? doc.preferredTimeText : null,
     status: typeof doc.status === "string" ? doc.status : "submitted",
     createdAt: serializeValue(doc.createdAt) ?? null,
     updatedAt: serializeValue(doc.updatedAt) ?? null,
@@ -117,10 +109,7 @@ export async function GET(req: Request) {
     ];
   }
 
-  const sortSpec =
-    sort === "oldest"
-      ? ({ createdAt: 1 } as const)
-      : ({ createdAt: -1 } as const);
+  const sortSpec = sort === "oldest" ? ({ createdAt: 1 } as const) : ({ createdAt: -1 } as const);
   const collection = guard.db.collection(COLLECTION_NAME);
 
   const [itemsRaw, total, countRows] = await Promise.all([

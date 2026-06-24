@@ -110,9 +110,7 @@ export default function AdminBoardEditClient({ postId }: { postId: string }) {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="text-2xl">관리자 게시글 수정</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              상태: {statusText || "-"}
-            </p>
+            <p className="text-sm text-muted-foreground">상태: {statusText || "-"}</p>
           </div>
           <Button variant="outline" asChild>
             <Link href={`/admin/boards/${postId}`}>

@@ -96,10 +96,8 @@ const STYLE_LABEL: Record<string, string> = {
   other: "기타",
 };
 // 작성하지 않은 프로필 정보 - 처리
-const v = (x: any) =>
-  x === null || x === undefined || String(x).trim() === "" ? "-" : String(x);
-const label = (map: Record<string, string>, v?: string) =>
-  v ? (map[v] ?? v) : "-";
+const v = (x: any) => (x === null || x === undefined || String(x).trim() === "" ? "-" : String(x));
+const label = (map: Record<string, string>, v?: string) => (v ? (map[v] ?? v) : "-");
 const marketText = (value?: string | null) =>
   typeof value === "string" && value.trim() ? value : "-";
 const marketNumberText = (value?: number | null, unit?: string) => {
@@ -111,9 +109,7 @@ type Props = {
   id: string;
 };
 
-type DetailResponse =
-  | { ok: true; item: CommunityPost }
-  | { ok: false; error: string };
+type DetailResponse = { ok: true; item: CommunityPost } | { ok: false; error: string };
 type CommunityNavListResponse = {
   ok: true;
   items: Array<{ id: string; title: string }>;
@@ -213,8 +209,7 @@ function CommentItem({
   onCancelEditReply,
   onSaveEdit,
 }: CommentItemProps) {
-  const isCommentAuthor =
-    !!userId && !!comment.userId && userId === comment.userId;
+  const isCommentAuthor = !!userId && !!comment.userId && userId === comment.userId;
   const isEditingComment = !isReply && editingCommentId === comment.id;
   const isEditingReply = isReply && editingReplyId === comment.id;
   const isEditing = isEditingComment || isEditingReply;
@@ -245,9 +240,7 @@ function CommentItem({
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-44">
-                  <DropdownMenuItem
-                    onClick={() => onNavigateAuthorPosts(comment)}
-                  >
+                  <DropdownMenuItem onClick={() => onNavigateAuthorPosts(comment)}>
                     이 작성자의 글 보기
                   </DropdownMenuItem>
                   <DropdownMenuItem
@@ -260,9 +253,7 @@ function CommentItem({
                   >
                     쪽지 보내기
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => onOpenAuthorProfile(comment)}
-                  >
+                  <DropdownMenuItem onClick={() => onOpenAuthorProfile(comment)}>
                     작성자 테니스 프로필
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -287,9 +278,7 @@ function CommentItem({
                   type="button"
                   className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-foreground"
                   onClick={() =>
-                    isReply
-                      ? onStartEditReply(comment)
-                      : onStartEditComment(comment.id)
+                    isReply ? onStartEditReply(comment) : onStartEditComment(comment.id)
                   }
                 >
                   수정
@@ -316,9 +305,7 @@ function CommentItem({
         )}
       </div>
       {isDeleted ? (
-        <p className="text-sm italic text-muted-foreground">
-          삭제된 댓글입니다.
-        </p>
+        <p className="text-sm italic text-muted-foreground">삭제된 댓글입니다.</p>
       ) : isEditing ? (
         <div className="space-y-2.5">
           <Textarea
@@ -339,9 +326,7 @@ function CommentItem({
               type="button"
               variant="outline"
               size="sm"
-              onClick={() =>
-                isReply ? onCancelEditReply(comment.id) : onCancelEditComment()
-              }
+              onClick={() => (isReply ? onCancelEditReply(comment.id) : onCancelEditComment())}
               disabled={isCommentSubmitting}
               className="h-9 w-full bg-transparent px-4 text-xs sm:w-auto"
             >
@@ -396,15 +381,11 @@ function CommentItem({
             data-reply-composer-id={comment.id}
             className="min-h-[70px] resize-none border-border bg-card text-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring"
             defaultValue={replyDraft}
-            onChange={(e) =>
-              onReplyDraftChange(comment.id, e.currentTarget.value)
-            }
+            onChange={(e) => onReplyDraftChange(comment.id, e.currentTarget.value)}
             disabled={isReplySubmitting}
             placeholder={`@${comment.nickname ?? "회원"} 님께 답글을 남겨 보세요.`}
           />
-          {replyError && (
-            <p className="text-xs text-destructive">{replyError}</p>
-          )}
+          {replyError && <p className="text-xs text-destructive">{replyError}</p>}
           <div className="flex flex-col justify-end gap-2 sm:flex-row">
             <Button
               type="button"
@@ -472,16 +453,11 @@ function DetailSkeleton() {
     </Card>
   );
 }
-export default function BoardDetailClient({
-  id,
-  config,
-}: Props & { config: BoardTypeConfig }) {
+export default function BoardDetailClient({ id, config }: Props & { config: BoardTypeConfig }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const listQuery = searchParams.toString();
-  const listHref = listQuery
-    ? `${config.routePrefix}?${listQuery}`
-    : config.routePrefix;
+  const listHref = listQuery ? `${config.routePrefix}?${listQuery}` : config.routePrefix;
   const navListQuery = useMemo(() => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("openProfile");
@@ -499,9 +475,7 @@ export default function BoardDetailClient({
 
   // 작성자 프로필
   const [isAuthorProfileOpen, setIsAuthorProfileOpen] = useState(false);
-  const [authorOverview, setAuthorOverview] = useState<AuthorOverview | null>(
-    null,
-  );
+  const [authorOverview, setAuthorOverview] = useState<AuthorOverview | null>(null);
   const [isAuthorLoading, setIsAuthorLoading] = useState(false);
   const [authorTarget, setAuthorTarget] = useState<{
     userId: string | null;
@@ -542,8 +516,7 @@ export default function BoardDetailClient({
     if (!item) return;
 
     const targetUserId = target?.userId ?? item.userId ?? null;
-    const targetNickname =
-      (target?.nickname ?? item.nickname ?? "회원").trim() || "회원";
+    const targetNickname = (target?.nickname ?? item.nickname ?? "회원").trim() || "회원";
 
     // 모달 상단/링크 등에 사용할 '대상 작성자'를 고정
     setAuthorTarget({ userId: targetUserId, nickname: targetNickname });
@@ -559,12 +532,9 @@ export default function BoardDetailClient({
     setIsAuthorLoading(true);
 
     try {
-      const res = await fetch(
-        `/api/community/authors/${targetUserId}/overview`,
-        {
-          credentials: "include",
-        },
-      );
+      const res = await fetch(`/api/community/authors/${targetUserId}/overview`, {
+        credentials: "include",
+      });
 
       if (!res.ok) {
         showErrorToast("작성자 정보를 불러오지 못했습니다.");
@@ -590,14 +560,11 @@ export default function BoardDetailClient({
   const [openCommentReport, setOpenCommentReport] = useState(false); // 모달 오픈 여부
   const [commentReportReason, setCommentReportReason] = useState(""); // 신고 사유
   const [isCommentReporting, setIsCommentReporting] = useState(false); // 처리 중 플래그
-  const [targetComment, setTargetComment] = useState<CommunityComment | null>(
-    null,
-  ); // 신고 대상 댓글
+  const [targetComment, setTargetComment] = useState<CommunityComment | null>(null); // 신고 대상 댓글
 
   // 댓글 신고 닫기(입력 유실 방지)
   const closeCommentReport = () => {
-    if (commentReportReason.trim() && !window.confirm(UNSAVED_CHANGES_MESSAGE))
-      return;
+    if (commentReportReason.trim() && !window.confirm(UNSAVED_CHANGES_MESSAGE)) return;
     setOpenCommentReport(false);
     setTargetComment(null);
     setCommentReportReason("");
@@ -653,15 +620,11 @@ export default function BoardDetailClient({
   }, [item, shouldLoadNavList]);
 
   const { prevPost, nextPost } = useMemo(() => {
-    if (!item || !navListData?.items?.length)
-      return { prevPost: null, nextPost: null };
-    const idx = navListData.items.findIndex(
-      (candidate) => candidate.id === item.id,
-    );
+    if (!item || !navListData?.items?.length) return { prevPost: null, nextPost: null };
+    const idx = navListData.items.findIndex((candidate) => candidate.id === item.id);
     if (idx < 0) return { prevPost: null, nextPost: null };
     return {
-      prevPost:
-        idx < navListData.items.length - 1 ? navListData.items[idx + 1] : null,
+      prevPost: idx < navListData.items.length - 1 ? navListData.items[idx + 1] : null,
       nextPost: idx > 0 ? navListData.items[idx - 1] : null,
     };
   }, [item, navListData]);
@@ -709,12 +672,9 @@ export default function BoardDetailClient({
         // TTL이 지났거나 기록이 없으면 /view 호출
         (async () => {
           try {
-            const res = await communityFetch(
-              `/api/community/posts/${item.id}/view`,
-              {
-                method: "POST",
-              },
-            );
+            const res = await communityFetch(`/api/community/posts/${item.id}/view`, {
+              method: "POST",
+            });
 
             const json = await res.json().catch(() => null);
 
@@ -749,12 +709,9 @@ export default function BoardDetailClient({
     // 항상 /view 호출 → 서버에서 userId 기준으로 중복 방지
     (async () => {
       try {
-        const res = await communityFetch(
-          `/api/community/posts/${item.id}/view`,
-          {
-            method: "POST",
-          },
-        );
+        const res = await communityFetch(`/api/community/posts/${item.id}/view`, {
+          method: "POST",
+        });
 
         const json = await res.json().catch(() => null);
 
@@ -800,12 +757,8 @@ export default function BoardDetailClient({
   const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
 
   // 댓글/답글 수정 입력값(unsaved changes 감지용)
-  const [commentEditDrafts, setCommentEditDrafts] = useState<
-    Record<string, string>
-  >({});
-  const [replyEditDrafts, setReplyEditDrafts] = useState<
-    Record<string, string>
-  >({});
+  const [commentEditDrafts, setCommentEditDrafts] = useState<Record<string, string>>({});
+  const [replyEditDrafts, setReplyEditDrafts] = useState<Record<string, string>>({});
 
   // 대댓글 입력 상태
   // - replyingToId: 현재 어느 댓글에 답글 폼이 열려 있는지
@@ -816,9 +769,7 @@ export default function BoardDetailClient({
   const [replyError, setReplyError] = useState<string | null>(null);
 
   // 루트 댓글별 전체 답글 펼침 상태
-  const [expandedRootIds, setExpandedRootIds] = useState<Set<string>>(
-    new Set(),
-  );
+  const [expandedRootIds, setExpandedRootIds] = useState<Set<string>>(new Set());
   // 특정 루트 댓글의 답글 접기/펼치기 토글
   const toggleRootReplies = (commentId: string) => {
     setExpandedRootIds((prev) => {
@@ -840,16 +791,12 @@ export default function BoardDetailClient({
     data: commentsData,
     isLoading: isCommentsLoading,
     mutate: mutateComments,
-  } = useSWR<CommentsResponse>(commentsKey, (url: string) =>
-    boardFetcher<CommentsResponse>(url),
-  );
+  } = useSWR<CommentsResponse>(commentsKey, (url: string) => boardFetcher<CommentsResponse>(url));
   const comments = commentsData && commentsData.ok ? commentsData.items : [];
 
   // 전체 댓글 수(루트 + 대댓글) → 상단 뱃지 표시용
   const totalComments =
-    commentsData && commentsData.ok
-      ? commentsData.total
-      : (item?.commentsCount ?? 0);
+    commentsData && commentsData.ok ? commentsData.total : (item?.commentsCount ?? 0);
 
   // 루트 댓글 수 → 실제 페이지 수 계산용
   const totalRootComments =
@@ -857,24 +804,18 @@ export default function BoardDetailClient({
       ? (commentsData.rootTotal ?? totalComments) // rootTotal 없으면 total로 fallback
       : totalComments;
 
-  const totalCommentPages = Math.max(
-    1,
-    Math.ceil(totalRootComments / COMMENT_LIMIT),
-  );
+  const totalCommentPages = Math.max(1, Math.ceil(totalRootComments / COMMENT_LIMIT));
 
   // 루트 댓글과 대댓글 분리
   const rootComments = comments.filter((c) => !c.parentId);
 
-  const repliesByParentId = comments.reduce<Record<string, CommunityComment[]>>(
-    (acc, c) => {
-      if (c.parentId) {
-        if (!acc[c.parentId]) acc[c.parentId] = [];
-        acc[c.parentId].push(c);
-      }
-      return acc;
-    },
-    {},
-  );
+  const repliesByParentId = comments.reduce<Record<string, CommunityComment[]>>((acc, c) => {
+    if (c.parentId) {
+      if (!acc[c.parentId]) acc[c.parentId] = [];
+      acc[c.parentId].push(c);
+    }
+    return acc;
+  }, {});
 
   const sortRepliesAsc = (replies: CommunityComment[]) =>
     [...replies].sort((a, b) => {
@@ -894,22 +835,16 @@ export default function BoardDetailClient({
 
   const isDirtyAny = useMemo(() => {
     const hasCommentDraft = commentContent.trim().length > 0;
-    const hasReplyDraft = Object.values(replyDrafts).some(
-      (v) => v.trim().length > 0,
-    );
+    const hasReplyDraft = Object.values(replyDrafts).some((v) => v.trim().length > 0);
 
     const hasEditDraft = (() => {
       if (!editingCommentId) return false;
-      const cur = (
-        commentEditDrafts[editingCommentId] ?? originalEditingContent
-      ).trim();
+      const cur = (commentEditDrafts[editingCommentId] ?? originalEditingContent).trim();
       return cur !== originalEditingContent.trim();
     })();
     const hasReplyEditDraft = (() => {
       if (!editingReplyId) return false;
-      const cur = (
-        replyEditDrafts[editingReplyId] ?? originalEditingReplyContent
-      ).trim();
+      const cur = (replyEditDrafts[editingReplyId] ?? originalEditingReplyContent).trim();
       return cur !== originalEditingReplyContent.trim();
     })();
 
@@ -962,12 +897,7 @@ export default function BoardDetailClient({
 
   useEffect(() => {
     // 로딩 끝, 2페이지 이상인데, 컨텐츠는 없고, 루트 댓글 수는 0이 아님 → 한 페이지 뒤로 밀기
-    if (
-      !isCommentsLoading &&
-      commentPage > 1 &&
-      comments.length === 0 &&
-      totalRootComments > 0
-    ) {
+    if (!isCommentsLoading && commentPage > 1 && comments.length === 0 && totalRootComments > 0) {
       setCommentPage((prev) => Math.max(1, prev - 1));
     }
   }, [isCommentsLoading, commentPage, comments.length, totalRootComments]);
@@ -1004,10 +934,7 @@ export default function BoardDetailClient({
     } catch (err) {
       console.error(err);
       setCommentError(
-        parseApiError(
-          err,
-          "댓글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.",
-        ).message,
+        parseApiError(err, "댓글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.").message,
       );
     } finally {
       setIsCommentSubmitting(false);
@@ -1015,10 +942,7 @@ export default function BoardDetailClient({
   };
 
   // 대댓글 작성 핸들러
-  const handleSubmitReply = async (
-    parentId: string,
-    contentOverride?: string,
-  ) => {
+  const handleSubmitReply = async (parentId: string, contentOverride?: string) => {
     if (!item) return;
 
     if (!user) {
@@ -1056,10 +980,7 @@ export default function BoardDetailClient({
     } catch (err) {
       console.error(err);
       setReplyError(
-        parseApiError(
-          err,
-          "답글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.",
-        ).message,
+        parseApiError(err, "답글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.").message,
       );
     } finally {
       setIsReplySubmitting(false);
@@ -1173,10 +1094,7 @@ export default function BoardDetailClient({
     } catch (err) {
       console.error(err);
       setCommentError(
-        parseApiError(
-          err,
-          "댓글 수정에 실패했습니다. 잠시 후 다시 시도해 주세요.",
-        ).message,
+        parseApiError(err, "댓글 수정에 실패했습니다. 잠시 후 다시 시도해 주세요.").message,
       );
     } finally {
       setIsCommentSubmitting(false);
@@ -1185,11 +1103,7 @@ export default function BoardDetailClient({
 
   // 댓글 삭제
   const handleDeleteComment = async (commentId: string) => {
-    if (
-      !window.confirm(
-        "이 댓글을 삭제하시겠습니까? 삭제 후에는 되돌릴 수 없습니다.",
-      )
-    ) {
+    if (!window.confirm("이 댓글을 삭제하시겠습니까? 삭제 후에는 되돌릴 수 없습니다.")) {
       return;
     }
 
@@ -1206,10 +1120,7 @@ export default function BoardDetailClient({
     } catch (err) {
       console.error(err);
       setCommentError(
-        parseApiError(
-          err,
-          "댓글 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.",
-        ).message,
+        parseApiError(err, "댓글 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.").message,
       );
     } finally {
       setIsCommentSubmitting(false);
@@ -1246,12 +1157,7 @@ export default function BoardDetailClient({
       router.refresh();
     } catch (err) {
       console.error(err);
-      alert(
-        parseApiError(
-          err,
-          "글 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.",
-        ).message,
-      );
+      alert(parseApiError(err, "글 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.").message);
     } finally {
       setIsDeleting(false);
     }
@@ -1283,9 +1189,7 @@ export default function BoardDetailClient({
         | null;
 
       if (!res.ok || !json || !("ok" in json) || !json.ok) {
-        const msg =
-          (json as any)?.error ??
-          "추천 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+        const msg = (json as any)?.error ?? "추천 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.";
         alert(msg);
         return;
       }
@@ -1307,12 +1211,7 @@ export default function BoardDetailClient({
       );
     } catch (err) {
       console.error(err);
-      alert(
-        parseApiError(
-          err,
-          "추천 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.",
-        ).message,
-      );
+      alert(parseApiError(err, "추천 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.").message);
     } finally {
       setIsLiking(false);
     }
@@ -1329,14 +1228,11 @@ export default function BoardDetailClient({
     try {
       setIsReporting(true);
 
-      const res = await communityFetch(
-        `/api/community/posts/${item.id}/report`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reason }),
-        },
-      );
+      const res = await communityFetch(`/api/community/posts/${item.id}/report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
@@ -1402,14 +1298,11 @@ export default function BoardDetailClient({
     try {
       setIsCommentReporting(true);
 
-      const res = await communityFetch(
-        `/api/community/comments/${targetComment.id}/report`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reason: commentReportReason }),
-        },
-      );
+      const res = await communityFetch(`/api/community/comments/${targetComment.id}/report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: commentReportReason }),
+      });
 
       if (!res.ok) {
         if (res.status === 401) {
@@ -1417,9 +1310,7 @@ export default function BoardDetailClient({
           return;
         }
         if (res.status === 429) {
-          showErrorToast(
-            "이미 최근에 신고한 댓글입니다. 잠시 후 다시 시도해 주세요.",
-          );
+          showErrorToast("이미 최근에 신고한 댓글입니다. 잠시 후 다시 시도해 주세요.");
           return;
         }
 
@@ -1428,9 +1319,7 @@ export default function BoardDetailClient({
           return;
         }
 
-        showErrorToast(
-          "알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-        );
+        showErrorToast("알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
         return;
       }
 
@@ -1479,11 +1368,7 @@ export default function BoardDetailClient({
     );
   };
 
-  const handleCommentSave = (
-    commentId: string,
-    content: string,
-    _isReplyEdit: boolean,
-  ) => {
+  const handleCommentSave = (commentId: string, content: string, _isReplyEdit: boolean) => {
     if (!content.trim()) {
       setCommentError("댓글 내용을 입력해 주세요.");
       return;
@@ -1572,12 +1457,7 @@ export default function BoardDetailClient({
               <ArrowLeft className="h-4 w-4" />
               <span>이전으로</span>
             </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="w-full sm:w-auto"
-            >
+            <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
               <Link href={listHref}>목록으로</Link>
             </Button>
           </div>
@@ -1603,9 +1483,7 @@ export default function BoardDetailClient({
                   <Link href={listHref}>목록으로</Link>
                 </Button>
                 <Button asChild size="sm">
-                  <Link href={`${config.routePrefix}/write`}>
-                    새 글 작성하기
-                  </Link>
+                  <Link href={`${config.routePrefix}/write`}>새 글 작성하기</Link>
                 </Button>
               </div>
             </CardContent>
@@ -1626,21 +1504,15 @@ export default function BoardDetailClient({
 
                     {/* 카테고리 뱃지 */}
                     <Badge
-                      variant={getBoardCategoryTone(
-                        config.boardType,
-                        item.category,
-                      )}
+                      variant={getBoardCategoryTone(config.boardType, item.category)}
                       className={`mr-2 ${badgeSizeSm} shrink-0 whitespace-nowrap`}
                     >
                       {config.categoryMap[item.category ?? ""]
-                        ? getCategoryBadgeText(
-                            config.categoryMap[item.category ?? ""],
-                          )
+                        ? getCategoryBadgeText(config.categoryMap[item.category ?? ""])
                         : "분류 없음"}
                     </Badge>
 
-                    {config.brandOptionsByCategory?.[item.category ?? ""] &&
-                    item.brand ? (
+                    {config.brandOptionsByCategory?.[item.category ?? ""] && item.brand ? (
                       <span className="mr-2 inline-flex max-w-[10rem] shrink-0 items-center truncate whitespace-nowrap rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground dark:text-muted">
                         {config.brandLabelMap?.[item.brand] ?? item.brand}
                       </span>
@@ -1685,13 +1557,10 @@ export default function BoardDetailClient({
                               if (!user) {
                                 const redirectTo =
                                   typeof window !== "undefined"
-                                    ? window.location.pathname +
-                                      window.location.search
+                                    ? window.location.pathname + window.location.search
                                     : `${config.routePrefix}/${id}`;
                                 if (!confirmLeaveIfDirty()) return;
-                                router.push(
-                                  `/login?next=${encodeURIComponent(redirectTo)}`,
-                                );
+                                router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
                                 return;
                               }
 
@@ -1775,11 +1644,7 @@ export default function BoardDetailClient({
                         className="gap-2 text-destructive focus:text-destructive"
                       >
                         <Trash2 className="h-4 w-4" />
-                        {isDeleting
-                          ? "삭제 중..."
-                          : isAdmin && !isAuthor
-                            ? "관리자 삭제"
-                            : "삭제"}
+                        {isDeleting ? "삭제 중..." : isAdmin && !isAuthor ? "관리자 삭제" : "삭제"}
                       </DropdownMenuItem>
                     )}
                     {canDeletePost && <DropdownMenuSeparator />}
@@ -1808,9 +1673,7 @@ export default function BoardDetailClient({
                   <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
                     {/* 가격 헤더 영역 */}
                     <div className="border-b border-border bg-muted/40 px-5 py-4 md:px-6">
-                      <p className="mb-1 text-xs font-medium text-muted-foreground">
-                        판매 가격
-                      </p>
+                      <p className="mb-1 text-xs font-medium text-muted-foreground">판매 가격</p>
                       <p className="text-3xl font-extrabold tracking-normal text-foreground">
                         {item.marketMeta.price?.toLocaleString?.() ?? "-"}
                         <span className="ml-0.5 text-lg font-semibold">원</span>
@@ -1819,8 +1682,7 @@ export default function BoardDetailClient({
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         {(() => {
                           const status = item.marketMeta.saleStatus;
-                          const statusLabel =
-                            getMarketSaleStatusLabel(status) || "-";
+                          const statusLabel = getMarketSaleStatusLabel(status) || "-";
                           const variant =
                             status === "selling"
                               ? "success"
@@ -1830,18 +1692,14 @@ export default function BoardDetailClient({
                                   ? "neutral"
                                   : "outline";
                           return (
-                            <Badge
-                              variant={variant as any}
-                              className={badgeSizeSm}
-                            >
+                            <Badge variant={variant as any} className={badgeSizeSm}>
                               {statusLabel}
                             </Badge>
                           );
                         })()}
                         {(() => {
                           const grade = item.marketMeta.conditionGrade;
-                          const gradeLabel =
-                            getMarketConditionGradeLabel(grade) || "-";
+                          const gradeLabel = getMarketConditionGradeLabel(grade) || "-";
                           const variant =
                             grade === "S"
                               ? "info"
@@ -1851,10 +1709,7 @@ export default function BoardDetailClient({
                                   ? "warning"
                                   : "neutral";
                           return (
-                            <Badge
-                              variant={variant as any}
-                              className={badgeSizeSm}
-                            >
+                            <Badge variant={variant as any} className={badgeSizeSm}>
                               {gradeLabel}
                             </Badge>
                           );
@@ -1864,17 +1719,13 @@ export default function BoardDetailClient({
                     {/* 보조 메타 정보 2열 그리드 */}
                     <div className="grid grid-cols-2 divide-x divide-border text-sm md:grid-cols-4">
                       <div className="px-4 py-3 md:px-5">
-                        <p className="mb-0.5 text-sm text-foreground/75">
-                          브랜드
-                        </p>
+                        <p className="mb-0.5 text-sm text-foreground/75">브랜드</p>
                         <p className="font-semibold text-foreground">
                           {getMarketBrandLabel(item.brand) || "-"}
                         </p>
                       </div>
                       <div className="px-4 py-3 md:px-5">
-                        <p className="mb-0.5 text-sm text-foreground/75">
-                          모델명
-                        </p>
+                        <p className="mb-0.5 text-sm text-foreground/75">모델명</p>
                         <p className="font-semibold text-foreground">
                           {marketText(
                             item.marketMeta.racketSpec?.modelName ??
@@ -1883,21 +1734,15 @@ export default function BoardDetailClient({
                         </p>
                       </div>
                       <div className="px-4 py-3 md:px-5 border-t border-border md:border-t-0">
-                        <p className="mb-0.5 text-sm text-foreground/75">
-                          카테고리
-                        </p>
+                        <p className="mb-0.5 text-sm text-foreground/75">카테고리</p>
                         <p className="font-semibold text-foreground">
                           {config.categoryMap[item.category ?? ""]
-                            ? getCategoryBadgeText(
-                                config.categoryMap[item.category ?? ""],
-                              )
+                            ? getCategoryBadgeText(config.categoryMap[item.category ?? ""])
                             : "-"}
                         </p>
                       </div>
                       <div className="px-4 py-3 md:px-5 border-t border-border md:border-t-0">
-                        <p className="mb-0.5 text-sm text-foreground/75">
-                          등록일
-                        </p>
+                        <p className="mb-0.5 text-sm text-foreground/75">등록일</p>
                         <p className="font-semibold text-foreground">
                           {fmtDateTime(item.createdAt)}
                         </p>
@@ -1909,9 +1754,7 @@ export default function BoardDetailClient({
                   {item.marketMeta.conditionNote ? (
                     <div className="rounded-xl border border-border bg-card px-5 py-4 shadow-sm md:px-6">
                       <div className="mb-2 flex items-center gap-2">
-                        <span className="text-sm font-semibold text-foreground">
-                          상태 설명
-                        </span>
+                        <span className="text-sm font-semibold text-foreground">상태 설명</span>
                         <span className="text-sm text-foreground/75">
                           판매자가 작성한 실물 컨디션 메모입니다.
                         </span>
@@ -1923,12 +1766,9 @@ export default function BoardDetailClient({
                   ) : null}
 
                   {/* ── 3. 세부 스펙 (타일 그리드) ── */}
-                  {(item.category === "racket" ||
-                    item.category === "string") && (
+                  {(item.category === "racket" || item.category === "string") && (
                     <div className="rounded-xl border border-border bg-card px-5 py-4 shadow-sm md:px-6">
-                      <p className="mb-4 text-sm font-semibold text-foreground">
-                        세부 스펙
-                      </p>
+                      <p className="mb-4 text-sm font-semibold text-foreground">세부 스펙</p>
 
                       {item.category === "racket" ? (
                         <div className="space-y-4">
@@ -1954,10 +1794,7 @@ export default function BoardDetailClient({
                                     {getMarketRacketFieldLabel(key)}
                                   </p>
                                   <p className="mt-0.5 text-sm font-semibold text-foreground">
-                                    {marketNumberText(
-                                      item.marketMeta!.racketSpec?.[key],
-                                      unit,
-                                    )}
+                                    {marketNumberText(item.marketMeta!.racketSpec?.[key], unit)}
                                   </p>
                                 </div>
                               ))}
@@ -1986,10 +1823,7 @@ export default function BoardDetailClient({
                                     {getMarketRacketFieldLabel(key)}
                                   </p>
                                   <p className="mt-0.5 text-sm font-semibold text-foreground">
-                                    {marketNumberText(
-                                      item.marketMeta!.racketSpec?.[key],
-                                      unit,
-                                    )}
+                                    {marketNumberText(item.marketMeta!.racketSpec?.[key], unit)}
                                   </p>
                                 </div>
                               ))}
@@ -1998,9 +1832,7 @@ export default function BoardDetailClient({
                                   {getMarketRacketFieldLabel("pattern")}
                                 </p>
                                 <p className="mt-0.5 text-sm font-semibold text-foreground">
-                                  {marketText(
-                                    item.marketMeta.racketSpec?.pattern,
-                                  )}
+                                  {marketText(item.marketMeta.racketSpec?.pattern)}
                                 </p>
                               </div>
                               <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
@@ -2008,9 +1840,7 @@ export default function BoardDetailClient({
                                   {getMarketRacketFieldLabel("gripSize")}
                                 </p>
                                 <p className="mt-0.5 text-sm font-semibold text-foreground">
-                                  {marketText(
-                                    item.marketMeta.racketSpec?.gripSize,
-                                  )}
+                                  {marketText(item.marketMeta.racketSpec?.gripSize)}
                                 </p>
                               </div>
                             </div>
@@ -2022,9 +1852,8 @@ export default function BoardDetailClient({
                           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
                             <p className="text-sm text-foreground/75">재질</p>
                             <p className="mt-0.5 text-sm font-semibold text-foreground">
-                              {getMarketStringMaterialLabel(
-                                item.marketMeta.stringSpec?.material,
-                              ) || "-"}
+                              {getMarketStringMaterialLabel(item.marketMeta.stringSpec?.material) ||
+                                "-"}
                             </p>
                           </div>
                           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
@@ -2036,17 +1865,14 @@ export default function BoardDetailClient({
                           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
                             <p className="text-sm text-foreground/75">색상</p>
                             <p className="mt-0.5 text-sm font-semibold text-foreground">
-                              {getMarketStringColorLabel(
-                                item.marketMeta.stringSpec?.color,
-                              ) || "-"}
+                              {getMarketStringColorLabel(item.marketMeta.stringSpec?.color) || "-"}
                             </p>
                           </div>
                           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
                             <p className="text-sm text-foreground/75">길이</p>
                             <p className="mt-0.5 text-sm font-semibold text-foreground">
-                              {getMarketStringLengthLabel(
-                                item.marketMeta.stringSpec?.length,
-                              ) || "-"}
+                              {getMarketStringLengthLabel(item.marketMeta.stringSpec?.length) ||
+                                "-"}
                             </p>
                           </div>
                         </div>
@@ -2062,9 +1888,7 @@ export default function BoardDetailClient({
                     <div key={url + idx} className="flex justify-center">
                       <button
                         type="button"
-                        onClick={() =>
-                          window.open(url, "_blank", "noopener,noreferrer")
-                        }
+                        onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
                         className="relative block w-full max-w-3xl overflow-hidden rounded-xl bg-card dark:bg-muted hover:bg-card transition"
                       >
                         <Image
@@ -2090,12 +1914,8 @@ export default function BoardDetailClient({
                 <div className="mt-8 space-y-3 border-t border-border pt-4">
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-semibold text-foreground">
-                      첨부파일
-                    </span>
-                    <span className="text-xs text-foreground/75">
-                      {attachments.length}개
-                    </span>
+                    <span className="text-sm font-semibold text-foreground">첨부파일</span>
+                    <span className="text-xs text-foreground/75">{attachments.length}개</span>
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -2122,17 +1942,10 @@ export default function BoardDetailClient({
                               <FileText className="h-4 w-4 text-primary" />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <div
-                                className="truncate font-medium text-foreground"
-                                title={name}
-                              >
+                              <div className="truncate font-medium text-foreground" title={name}>
                                 {name}
                               </div>
-                              {size && (
-                                <div className="text-sm text-foreground/75">
-                                  {size}
-                                </div>
-                              )}
+                              {size && <div className="text-sm text-foreground/75">{size}</div>}
                             </div>
                           </div>
 
@@ -2188,9 +2001,7 @@ export default function BoardDetailClient({
                           <div className="flex w-full items-start gap-3">
                             <Icon className="mt-0.5 h-4 w-4 shrink-0" />
                             <div className="min-w-0">
-                              <p className="text-xs text-foreground/75">
-                                {label}
-                              </p>
+                              <p className="text-xs text-foreground/75">{label}</p>
                               <p className="line-clamp-2 break-keep text-sm font-medium text-foreground">
                                 {target.title}
                               </p>
@@ -2215,8 +2026,8 @@ export default function BoardDetailClient({
 
               {/* 안내 문구 */}
               <p className="mt-6 text-xs text-foreground/75">
-                게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는
-                경우 글이 숨김 처리될 수 있습니다.
+                게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는 경우 글이 숨김
+                처리될 수 있습니다.
               </p>
 
               {/* 게시글 신고 다이얼로그 */}
@@ -2234,8 +2045,7 @@ export default function BoardDetailClient({
                   <DialogHeader>
                     <DialogTitle>이 게시글을 신고하시겠습니까?</DialogTitle>
                     <p className="text-sm text-foreground/80">
-                      허위 신고 또는 악의적 신고는 이용 제한 대상이 될 수
-                      있습니다.
+                      허위 신고 또는 악의적 신고는 이용 제한 대상이 될 수 있습니다.
                     </p>
                   </DialogHeader>
 
@@ -2282,8 +2092,7 @@ export default function BoardDetailClient({
                   <DialogHeader>
                     <DialogTitle>댓글 신고하기</DialogTitle>
                     <DialogDescription>
-                      신고 사유를 자세히 작성해 주세요. 운영자가 검토 후 필요한
-                      조치를 진행합니다.
+                      신고 사유를 자세히 작성해 주세요. 운영자가 검토 후 필요한 조치를 진행합니다.
                     </DialogDescription>
                   </DialogHeader>
 
@@ -2311,11 +2120,7 @@ export default function BoardDetailClient({
                   </div>
 
                   <DialogFooter>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={closeCommentReport}
-                    >
+                    <Button type="button" variant="outline" onClick={closeCommentReport}>
                       취소
                     </Button>
                     <Button
@@ -2367,10 +2172,7 @@ export default function BoardDetailClient({
                       size="sm"
                       className="h-10 w-full text-sm sm:w-auto sm:min-w-[100px]"
                     >
-                      <Link
-                        href={`${config.routePrefix}/write`}
-                        onClick={onNavLinkClick}
-                      >
+                      <Link href={`${config.routePrefix}/write`} onClick={onNavLinkClick}>
                         새 글 작성
                       </Link>
                     </Button>
@@ -2405,9 +2207,7 @@ export default function BoardDetailClient({
                       onChange={(e) => setCommentContent(e.target.value)}
                       disabled={isCommentSubmitting}
                     />
-                    {commentError && (
-                      <p className="text-xs text-destructive">{commentError}</p>
-                    )}
+                    {commentError && <p className="text-xs text-destructive">{commentError}</p>}
                     <div className="flex justify-end">
                       <Button
                         type="button"
@@ -2469,9 +2269,7 @@ export default function BoardDetailClient({
                 {!isCommentsLoading && comments.length > 0 && (
                   <ul className="space-y-3">
                     {rootComments.map((c) => {
-                      const replies = sortRepliesAsc(
-                        repliesByParentId[c.id] ?? [],
-                      );
+                      const replies = sortRepliesAsc(repliesByParentId[c.id] ?? []);
                       const isExpanded = expandedRootIds.has(c.id);
 
                       const MAX_COLLAPSED_REPLIES = 3;
@@ -2567,15 +2365,10 @@ export default function BoardDetailClient({
                                     isReplySubmitting={isReplySubmitting}
                                     replyDraft={replyDrafts[reply.id] ?? ""}
                                     replyError={replyError}
-                                    onNavigateAuthorPosts={
-                                      handleNavigateAuthorPosts
-                                    }
+                                    onNavigateAuthorPosts={handleNavigateAuthorPosts}
                                     onSendMessage={(comment) => {
                                       if (!comment.userId) return;
-                                      openCompose(
-                                        comment.userId,
-                                        comment.nickname,
-                                      );
+                                      openCompose(comment.userId, comment.nickname);
                                     }}
                                     onOpenAuthorProfile={(comment) =>
                                       handleOpenAuthorProfile({
@@ -2586,9 +2379,7 @@ export default function BoardDetailClient({
                                     onStartEditComment={startEditComment}
                                     onStartEditReply={startEditReply}
                                     onDeleteComment={handleDeleteComment}
-                                    onOpenCommentReport={
-                                      openCommentReportDialog
-                                    }
+                                    onOpenCommentReport={openCommentReportDialog}
                                     onReplyDraftChange={(commentId, value) =>
                                       setReplyDrafts((prev) => ({
                                         ...prev,
@@ -2606,30 +2397,19 @@ export default function BoardDetailClient({
                                     }}
                                     onSubmitReply={(commentId, content) => {
                                       if (!content.trim()) {
-                                        setReplyError(
-                                          "답글 내용을 입력해 주세요.",
-                                        );
+                                        setReplyError("답글 내용을 입력해 주세요.");
                                         return;
                                       }
-                                      void handleSubmitReply(
-                                        commentId,
-                                        content,
-                                      );
+                                      void handleSubmitReply(commentId, content);
                                     }}
                                     onStartReply={handleStartReply}
-                                    onCommentEditDraftChange={(
-                                      commentId,
-                                      value,
-                                    ) =>
+                                    onCommentEditDraftChange={(commentId, value) =>
                                       setCommentEditDrafts((prev) => ({
                                         ...prev,
                                         [commentId]: value,
                                       }))
                                     }
-                                    onReplyEditDraftChange={(
-                                      commentId,
-                                      value,
-                                    ) =>
+                                    onReplyEditDraftChange={(commentId, value) =>
                                       setReplyEditDrafts((prev) => ({
                                         ...prev,
                                         [commentId]: value,
@@ -2677,9 +2457,7 @@ export default function BoardDetailClient({
                         variant="outline"
                         size="sm"
                         disabled={commentPage <= 1}
-                        onClick={() =>
-                          setCommentPage((p) => Math.max(1, p - 1))
-                        }
+                        onClick={() => setCommentPage((p) => Math.max(1, p - 1))}
                         className="h-8 px-4 text-xs"
                       >
                         이전
@@ -2689,11 +2467,7 @@ export default function BoardDetailClient({
                         variant="outline"
                         size="sm"
                         disabled={commentPage >= totalCommentPages}
-                        onClick={() =>
-                          setCommentPage((p) =>
-                            Math.min(totalCommentPages, p + 1),
-                          )
-                        }
+                        onClick={() => setCommentPage((p) => Math.min(totalCommentPages, p + 1))}
                         className="h-8 px-4 text-xs"
                       >
                         다음
@@ -2756,10 +2530,7 @@ export default function BoardDetailClient({
                   </TabsList>
 
                   {/* 작성자(커뮤니티) 탭 */}
-                  <TabsContent
-                    value="community"
-                    className="mt-5 md:mt-6 space-y-4 md:space-y-6"
-                  >
+                  <TabsContent value="community" className="mt-5 md:mt-6 space-y-4 md:space-y-6">
                     {/* 기본 정보 */}
                     <div className="space-y-3">
                       <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">
@@ -2767,22 +2538,16 @@ export default function BoardDetailClient({
                       </h3>
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground w-20">
-                            이름
-                          </span>
+                          <span className="text-muted-foreground w-20">이름</span>
                           <span className="text-sm font-medium">
                             {authorTarget?.nickname ?? "회원"}
                           </span>
                         </div>
                         {authorOverview?.firstActivityAt && (
                           <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground w-20">
-                              첫 활동일
-                            </span>
+                            <span className="text-muted-foreground w-20">첫 활동일</span>
                             <span className="text-foreground">
-                              {new Date(
-                                authorOverview.firstActivityAt,
-                              ).toLocaleDateString("ko-KR")}
+                              {new Date(authorOverview.firstActivityAt).toLocaleDateString("ko-KR")}
                             </span>
                           </div>
                         )}
@@ -2797,17 +2562,13 @@ export default function BoardDetailClient({
                         </h3>
                         <div className="flex gap-4 md:gap-6">
                           <div className="flex-1 rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
-                            <div className="text-xs text-foreground/75 mb-1">
-                              작성 글
-                            </div>
+                            <div className="text-xs text-foreground/75 mb-1">작성 글</div>
                             <div className="text-2xl font-semibold text-foreground">
                               {authorOverview.stats.posts}
                             </div>
                           </div>
                           <div className="flex-1 rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
-                            <div className="text-xs text-foreground/75 mb-1">
-                              작성댓글
-                            </div>
+                            <div className="text-xs text-foreground/75 mb-1">작성댓글</div>
                             <div className="text-2xl font-semibold text-foreground">
                               {authorOverview.stats.comments}
                             </div>
@@ -2835,9 +2596,7 @@ export default function BoardDetailClient({
                                 {p.title || "(제목 없음)"}
                               </Link>
                               <span className="shrink-0 text-xs text-foreground/75">
-                                {new Date(p.createdAt).toLocaleDateString(
-                                  "ko-KR",
-                                )}
+                                {new Date(p.createdAt).toLocaleDateString("ko-KR")}
                               </span>
                             </li>
                           ))}
@@ -2865,36 +2624,21 @@ export default function BoardDetailClient({
                           </h3>
                           <div className="grid grid-cols-3 gap-4">
                             <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
-                              <div className="text-xs text-foreground/75 mb-1">
-                                실력
-                              </div>
+                              <div className="text-xs text-foreground/75 mb-1">실력</div>
                               <div className="text-sm font-medium text-foreground">
-                                {label(
-                                  LEVEL_LABEL,
-                                  authorOverview.tennisProfile.level,
-                                )}
+                                {label(LEVEL_LABEL, authorOverview.tennisProfile.level)}
                               </div>
                             </div>
                             <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
-                              <div className="text-xs text-foreground/75 mb-1">
-                                사용 손
-                              </div>
+                              <div className="text-xs text-foreground/75 mb-1">사용 손</div>
                               <div className="text-sm font-medium text-foreground">
-                                {label(
-                                  HAND_LABEL,
-                                  authorOverview.tennisProfile.hand,
-                                )}
+                                {label(HAND_LABEL, authorOverview.tennisProfile.hand)}
                               </div>
                             </div>
                             <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
-                              <div className="text-xs text-foreground/75 mb-1">
-                                스타일
-                              </div>
+                              <div className="text-xs text-foreground/75 mb-1">스타일</div>
                               <div className="text-sm font-medium text-foreground">
-                                {label(
-                                  STYLE_LABEL,
-                                  authorOverview.tennisProfile.playStyle,
-                                )}
+                                {label(STYLE_LABEL, authorOverview.tennisProfile.playStyle)}
                               </div>
                             </div>
                           </div>
@@ -2908,47 +2652,27 @@ export default function BoardDetailClient({
                           <div className="rounded-lg border border-border p-4">
                             <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-16">
-                                  브랜드
-                                </span>
+                                <span className="text-muted-foreground w-16">브랜드</span>
                                 <span className="text-foreground font-medium">
-                                  {v(
-                                    authorOverview.tennisProfile.mainRacket
-                                      ?.brand,
-                                  )}
+                                  {v(authorOverview.tennisProfile.mainRacket?.brand)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-16">
-                                  모델
-                                </span>
+                                <span className="text-muted-foreground w-16">모델</span>
                                 <span className="text-foreground font-medium">
-                                  {v(
-                                    authorOverview.tennisProfile.mainRacket
-                                      ?.model,
-                                  )}
+                                  {v(authorOverview.tennisProfile.mainRacket?.model)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-16">
-                                  무게
-                                </span>
+                                <span className="text-muted-foreground w-16">무게</span>
                                 <span className="text-foreground">
-                                  {v(
-                                    authorOverview.tennisProfile.mainRacket
-                                      ?.weight,
-                                  )}
+                                  {v(authorOverview.tennisProfile.mainRacket?.weight)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-16">
-                                  밸런스
-                                </span>
+                                <span className="text-muted-foreground w-16">밸런스</span>
                                 <span className="text-foreground">
-                                  {v(
-                                    authorOverview.tennisProfile.mainRacket
-                                      ?.balance,
-                                  )}
+                                  {v(authorOverview.tennisProfile.mainRacket?.balance)}
                                 </span>
                               </div>
                             </div>
@@ -2963,67 +2687,41 @@ export default function BoardDetailClient({
                           <div className="rounded-lg border border-border p-4">
                             <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-20">
-                                  브랜드
-                                </span>
+                                <span className="text-muted-foreground w-20">브랜드</span>
                                 <span className="text-foreground font-medium">
-                                  {v(
-                                    authorOverview.tennisProfile.mainString
-                                      ?.brand,
-                                  )}
+                                  {v(authorOverview.tennisProfile.mainString?.brand)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-20">
-                                  모델
-                                </span>
+                                <span className="text-muted-foreground w-20">모델</span>
                                 <span className="text-foreground font-medium">
-                                  {v(
-                                    authorOverview.tennisProfile.mainString
-                                      ?.model,
-                                  )}
+                                  {v(authorOverview.tennisProfile.mainString?.model)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-20">
-                                  게이지
-                                </span>
+                                <span className="text-muted-foreground w-20">게이지</span>
                                 <span className="text-foreground">
-                                  {v(
-                                    authorOverview.tennisProfile.mainString
-                                      ?.gauge,
-                                  )}
+                                  {v(authorOverview.tennisProfile.mainString?.gauge)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-20">
-                                  재질
-                                </span>
+                                <span className="text-muted-foreground w-20">재질</span>
                                 <span className="text-foreground">
-                                  {v(
-                                    authorOverview.tennisProfile.mainString
-                                      ?.material,
-                                  )}
+                                  {v(authorOverview.tennisProfile.mainString?.material)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-20">
-                                  메인 텐션
-                                </span>
+                                <span className="text-muted-foreground w-20">메인 텐션</span>
                                 <span className="text-foreground">
-                                  {authorOverview.tennisProfile.mainString
-                                    ?.tensionMain
+                                  {authorOverview.tennisProfile.mainString?.tensionMain
                                     ? `${authorOverview.tennisProfile.mainString.tensionMain}LB`
                                     : "-"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground w-20">
-                                  크로스 텐션
-                                </span>
+                                <span className="text-muted-foreground w-20">크로스 텐션</span>
                                 <span className="text-foreground">
-                                  {authorOverview.tennisProfile.mainString
-                                    ?.tensionCross
+                                  {authorOverview.tennisProfile.mainString?.tensionCross
                                     ? `${authorOverview.tennisProfile.mainString.tensionCross}LB`
                                     : "-"}
                                 </span>

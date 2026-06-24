@@ -44,9 +44,7 @@ export default function RentalCheckoutStringingSummaryCard({ adapter }: Props) {
         </div>
         <div>
           <dt className="text-xs text-muted-foreground">교체서비스 비용</dt>
-          <dd className="mt-1 font-medium text-foreground">
-            {summary.priceLabel}
-          </dd>
+          <dd className="mt-1 font-medium text-foreground">{summary.priceLabel}</dd>
         </div>
       </dl>
     </section>

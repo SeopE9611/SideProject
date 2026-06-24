@@ -29,26 +29,21 @@ function getTrackingNoFromShippingInfo(shippingInfo: any): string | null {
 
 function isOrderHasRacketItem(order: any): boolean {
   const items = Array.isArray(order?.items) ? order.items : [];
-  return items.some(
-    (it: any) => it?.kind === "racket" || it?.kind === "used_racket",
-  );
+  return items.some((it: any) => it?.kind === "racket" || it?.kind === "used_racket");
 }
 
 function getOrderReviewTargetProductIds(order: any): string[] {
   const items = Array.isArray(order?.items) ? order.items : [];
   const ids = items
     .map((it: any) => (it?.productId ? String(it.productId) : null))
-    .filter(
-      (id: string | null): id is string => id !== null && ObjectId.isValid(id),
-    );
+    .filter((id: string | null): id is string => id !== null && ObjectId.isValid(id));
   return [...new Set<string>(ids)];
 }
 
 export async function GET() {
   const jar = await cookies();
   const at = jar.get("accessToken")?.value;
-  if (!at)
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  if (!at) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
   let payload: any;
   try {
@@ -65,12 +60,7 @@ export async function GET() {
   const userId = new ObjectId(subStr);
   const db = (await clientPromise).db();
 
-  const academyActiveStatuses = [
-    "submitted",
-    "reviewing",
-    "contacted",
-    "confirmed",
-  ];
+  const academyActiveStatuses = ["submitted", "reviewing", "contacted", "confirmed"];
   const academyUserIds = [userId, userId.toHexString()];
 
   const [
@@ -82,9 +72,7 @@ export async function GET() {
     standaloneApps,
   ] = await Promise.all([
     db.collection("orders").countDocuments({ userId }),
-    db
-      .collection("stringing_applications")
-      .countDocuments({ userId, status: { $ne: "draft" } }),
+    db.collection("stringing_applications").countDocuments({ userId, status: { $ne: "draft" } }),
     db.collection("academy_lesson_applications").countDocuments({
       userId: { $in: academyUserIds },
       status: { $in: academyActiveStatuses },
@@ -139,8 +127,7 @@ export async function GET() {
       )
       .toArray(),
   ]);
-  const activityFlowCount =
-    orders.length + rentals.length + standaloneApps.length;
+  const activityFlowCount = orders.length + rentals.length + standaloneApps.length;
 
   const orderHasRacketById = new Map<string, boolean>();
   const orderReviewProductIdsById = new Map<string, string[]>();
@@ -155,13 +142,10 @@ export async function GET() {
     orderReviewProductIdsById.set(orderId, reviewTargetProductIds);
 
     const status = normalizeMypageTodoStatus(order?.status);
-    const isConfirmed =
-      Boolean(order?.userConfirmedAt) || status === "구매확정";
+    const isConfirmed = Boolean(order?.userConfirmedAt) || status === "구매확정";
     if (isConfirmed && reviewTargetProductIds.length > 0) {
       confirmedOrderIds.push(new ObjectId(orderId));
-      reviewTargetProductIds.forEach((productId) =>
-        reviewProductIdsPool.add(productId),
-      );
+      reviewTargetProductIds.forEach((productId) => reviewProductIdsPool.add(productId));
     }
   }
 
@@ -185,18 +169,14 @@ export async function GET() {
     for (const reviewed of reviewedDocs as any[]) {
       const orderId = String(reviewed.orderId);
       const productId = String(reviewed.productId);
-      const bucket =
-        reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
+      const bucket = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
       bucket.add(productId);
       reviewedProductIdsByOrderId.set(orderId, bucket);
     }
   }
 
   const orderIdsAny = (orders as any[]).flatMap((o) => [o._id, String(o._id)]);
-  const rentalIdsAny = (rentals as any[]).flatMap((r) => [
-    r._id,
-    String(r._id),
-  ]);
+  const rentalIdsAny = (rentals as any[]).flatMap((r) => [r._id, String(r._id)]);
 
   const linkedApps = await db
     .collection("stringing_applications")
@@ -204,10 +184,7 @@ export async function GET() {
       {
         userId,
         status: { $ne: "draft" },
-        $or: [
-          { orderId: { $in: orderIdsAny } },
-          { rentalId: { $in: rentalIdsAny } },
-        ],
+        $or: [{ orderId: { $in: orderIdsAny } }, { rentalId: { $in: rentalIdsAny } }],
       },
       {
         projection: {
@@ -226,9 +203,7 @@ export async function GET() {
   const serviceReviewCandidateIds = [...linkedApps, ...standaloneApps]
     .filter((app: any) => {
       const userConfirmedAt = app?.userConfirmedAt;
-      return (
-        Boolean(userConfirmedAt) && !isStringingReviewBlockedStatus(app?.status)
-      );
+      return Boolean(userConfirmedAt) && !isStringingReviewBlockedStatus(app?.status);
     })
     .map((app: any) => String(app._id))
     .filter((id) => ObjectId.isValid(id));
@@ -243,10 +218,7 @@ export async function GET() {
           userId,
           service: "stringing",
           serviceApplicationId: {
-            $in: serviceReviewCandidateIds.flatMap((id) => [
-              new ObjectId(id),
-              id,
-            ]),
+            $in: serviceReviewCandidateIds.flatMap((id) => [new ObjectId(id), id]),
           },
           isDeleted: { $ne: true },
         },
@@ -273,9 +245,7 @@ export async function GET() {
     const shipping = doc.shippingInfo ?? {};
     const hasTracking = Boolean(getTrackingNoFromShippingInfo(shipping));
     const collectionMethod = normalizeCollection(
-      (shipping as any)?.collectionMethod ??
-        (doc as any)?.collectionMethod ??
-        "self_ship",
+      (shipping as any)?.collectionMethod ?? (doc as any)?.collectionMethod ?? "self_ship",
     );
     const orderIdStr = doc.orderId ? String(doc.orderId) : null;
     const inboundRequired = doc.rentalId
@@ -283,8 +253,7 @@ export async function GET() {
       : orderIdStr && orderHasRacketById.get(orderIdStr)
         ? false
         : true;
-    const needsInboundTracking =
-      inboundRequired && collectionMethod === "self_ship";
+    const needsInboundTracking = inboundRequired && collectionMethod === "self_ship";
 
     const isActionable = isApplicationTodoActionable({
       status: doc.status,
@@ -321,8 +290,7 @@ export async function GET() {
   for (const order of orders as any[]) {
     const orderId = String(order._id);
     const reviewTargetProductIds = orderReviewProductIdsById.get(orderId) ?? [];
-    const reviewedProductIds =
-      reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
+    const reviewedProductIds = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
     const reviewPendingCount = reviewTargetProductIds.filter(
       (productId) => !reviewedProductIds.has(productId),
     ).length;
@@ -356,8 +324,7 @@ export async function GET() {
   for (const rental of rentals as any[]) {
     const rentalId = String(rental._id);
     const withStringService =
-      Boolean(rental?.stringing?.requested) ||
-      Boolean(rental?.stringingApplicationId);
+      Boolean(rental?.stringing?.requested) || Boolean(rental?.stringingApplicationId);
 
     const needsAction = isRentalTodoActionable({
       linkedApplications:
@@ -385,9 +352,7 @@ export async function GET() {
     const shipping = app.shippingInfo ?? {};
     const hasTracking = Boolean(getTrackingNoFromShippingInfo(shipping));
     const collectionMethod = normalizeCollection(
-      (shipping as any)?.collectionMethod ??
-        app?.collectionMethod ??
-        "self_ship",
+      (shipping as any)?.collectionMethod ?? app?.collectionMethod ?? "self_ship",
     );
     const needsInboundTracking = collectionMethod === "self_ship";
 

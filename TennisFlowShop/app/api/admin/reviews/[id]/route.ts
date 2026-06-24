@@ -45,22 +45,15 @@ async function updateProductRatingSummary(db: DbAny, productId: ObjectId) {
   else
     await db
       .collection("products")
-      .updateOne(
-        { _id: productId },
-        { $set: { ratingAvg: 0, ratingCount: 0 } },
-      );
+      .updateOne({ _id: productId }, { $set: { ratingAvg: 0, ratingCount: 0 } });
 }
 
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
 
   const { id } = await params;
-  if (!ObjectId.isValid(id))
-    return NextResponse.json({ message: "invalid id" }, { status: 400 });
+  if (!ObjectId.isValid(id)) return NextResponse.json({ message: "invalid id" }, { status: 400 });
 
   const db = await getDb();
   const _id = new ObjectId(id);
@@ -79,8 +72,7 @@ export async function GET(
       },
     },
   );
-  if (!review)
-    return NextResponse.json({ message: "not found" }, { status: 404 });
+  if (!review) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   const user = await db
     .collection("users")
@@ -99,18 +91,14 @@ export async function GET(
   });
 }
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
   if (!csrf.ok) return csrf.res;
 
   const { id } = await params;
-  if (!ObjectId.isValid(id))
-    return NextResponse.json({ message: "invalid id" }, { status: 400 });
+  if (!ObjectId.isValid(id)) return NextResponse.json({ message: "invalid id" }, { status: 400 });
 
   const PatchSchema = z.object({
     content: z.string().trim().min(5).max(2000).optional(),
@@ -148,34 +136,23 @@ export async function PATCH(
   const _id = new ObjectId(id);
   const doc = await db
     .collection("reviews")
-    .findOne(
-      { _id, isDeleted: { $ne: true } },
-      { projection: { userId: 1, productId: 1 } },
-    );
+    .findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1 } });
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   const $set: any = { updatedAt: new Date() };
   if (typeof body.content === "string") $set.content = body.content.trim();
-  if (typeof body.rating === "number")
-    $set.rating = Math.max(1, Math.min(5, body.rating));
-  if (body.status === "visible" || body.status === "hidden")
-    $set.status = body.status;
-  if (body.visibility)
-    $set.status = body.visibility === "public" ? "visible" : "hidden";
+  if (typeof body.rating === "number") $set.rating = Math.max(1, Math.min(5, body.rating));
+  if (body.status === "visible" || body.status === "hidden") $set.status = body.status;
+  if (body.visibility) $set.status = body.visibility === "public" ? "visible" : "hidden";
   if (Array.isArray(body.photos))
     $set.photos = Array.from(
-      new Set<string>(
-        body.photos.filter(isAllowedHttpUrl).map((s) => s.trim()),
-      ),
+      new Set<string>(body.photos.filter(isAllowedHttpUrl).map((s) => s.trim())),
     ).slice(0, 5);
   if (Object.keys($set).length === 1)
     return NextResponse.json({ message: "no changes" }, { status: 400 });
 
   await db.collection("reviews").updateOne({ _id }, { $set });
-  if (
-    doc.productId &&
-    (body.rating !== undefined || body.status || body.visibility)
-  )
+  if (doc.productId && (body.rating !== undefined || body.status || body.visibility))
     await updateProductRatingSummary(db, doc.productId);
 
   await appendAdminAudit(
@@ -192,35 +169,25 @@ export async function PATCH(
   return NextResponse.json({ ok: true });
 }
 
-export async function DELETE(
-  req: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
   if (!csrf.ok) return csrf.res;
 
   const { id } = await ctx.params;
-  if (!ObjectId.isValid(id))
-    return NextResponse.json({ message: "invalid id" }, { status: 400 });
+  if (!ObjectId.isValid(id)) return NextResponse.json({ message: "invalid id" }, { status: 400 });
 
   const db = await getDb();
   const _id = new ObjectId(id);
   const doc = await db
     .collection("reviews")
-    .findOne(
-      { _id, isDeleted: { $ne: true } },
-      { projection: { userId: 1, productId: 1 } },
-    );
+    .findOne({ _id, isDeleted: { $ne: true } }, { projection: { userId: 1, productId: 1 } });
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   await db
     .collection("reviews")
-    .updateOne(
-      { _id },
-      { $set: { isDeleted: true, deletedAt: new Date(), status: "hidden" } },
-    );
+    .updateOne({ _id }, { $set: { isDeleted: true, deletedAt: new Date(), status: "hidden" } });
 
   try {
     const earnRefKey = `review:${id}`;

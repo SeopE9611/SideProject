@@ -15,13 +15,7 @@ export function buildQueryString(
 ): string {
   const qs = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
-    if (
-      value === undefined ||
-      value === null ||
-      value === "" ||
-      value === "all" ||
-      value === false
-    )
+    if (value === undefined || value === null || value === "" || value === "all" || value === false)
       return;
     qs.set(key, String(value));
   });

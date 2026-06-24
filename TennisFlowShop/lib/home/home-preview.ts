@@ -1,16 +1,10 @@
-import {
-  productVisibilityFilterFor,
-  racketVisibilityFilterFor,
-} from "@/lib/public-visibility";
+import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
 import "server-only";
 
 import { ObjectId, type Filter, type Sort } from "mongodb";
 
 import { getBoardList } from "@/lib/boards.queries";
-import {
-  buildCommunityListMongoFilter,
-  getCommunitySortOption,
-} from "@/lib/community-list-query";
+import { buildCommunityListMongoFilter, getCommunitySortOption } from "@/lib/community-list-query";
 import { getDb } from "@/lib/mongodb";
 
 export type HomePreviewProduct = {
@@ -99,9 +93,7 @@ type RacketDoc = {
 
 const normalizeRacketMarketing = (value: unknown) => {
   const marketing =
-    value && typeof value === "object"
-      ? (value as HomePreviewRacket["marketing"])
-      : undefined;
+    value && typeof value === "object" ? (value as HomePreviewRacket["marketing"]) : undefined;
 
   return {
     isFeatured: marketing?.isFeatured === true,
@@ -140,11 +132,7 @@ async function loadProducts() {
   };
   const [total, docs] = await Promise.all([
     collection.countDocuments(filter),
-    collection
-      .find(filter, { projection })
-      .sort({ _id: -1 })
-      .limit(10)
-      .toArray(),
+    collection.find(filter, { projection }).sort({ _id: -1 }).limit(10).toArray(),
   ]);
 
   return {
@@ -265,10 +253,7 @@ async function safe<T>(source: string, loader: () => Promise<T>) {
   try {
     return await loader();
   } catch (error) {
-    console.error(
-      `[home-preview] failed to load initial data: ${source}`,
-      error,
-    );
+    console.error(`[home-preview] failed to load initial data: ${source}`, error);
     return undefined;
   }
 }

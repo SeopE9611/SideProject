@@ -13,10 +13,8 @@ function parseListQuery(req: NextRequest) {
 
   const pageRaw = Number(searchParams.get("page") ?? "1");
   const limitRaw = Number(searchParams.get("limit") ?? "20");
-  const pageInt =
-    Number.isFinite(pageRaw) && pageRaw > 0 ? Math.trunc(pageRaw) : 1;
-  const limitInt =
-    Number.isFinite(limitRaw) && limitRaw > 0 ? Math.trunc(limitRaw) : 20;
+  const pageInt = Number.isFinite(pageRaw) && pageRaw > 0 ? Math.trunc(pageRaw) : 1;
+  const limitInt = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.trunc(limitRaw) : 20;
 
   return {
     page: Math.min(10_000, Math.max(1, pageInt)),
@@ -29,20 +27,14 @@ function getTimeValue(value: unknown) {
   return Number.isFinite(time) ? time : 0;
 }
 
-export async function GET(
-  req: NextRequest,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const { db } = guard;
 
   const { id } = await ctx.params;
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json(
-      { ok: false, error: "invalid_id" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "invalid_id" }, { status: 400 });
   }
 
   const { page, limit } = parseListQuery(req);
@@ -82,16 +74,13 @@ export async function GET(
           .toArray()
       : [];
 
-  const replyDocsByParentId = replyDocs.reduce<Map<string, any[]>>(
-    (acc, doc: any) => {
-      const parentId = doc.parentId ? String(doc.parentId) : "";
-      if (!parentId) return acc;
-      if (!acc.has(parentId)) acc.set(parentId, []);
-      acc.get(parentId)!.push(doc);
-      return acc;
-    },
-    new Map(),
-  );
+  const replyDocsByParentId = replyDocs.reduce<Map<string, any[]>>((acc, doc: any) => {
+    const parentId = doc.parentId ? String(doc.parentId) : "";
+    if (!parentId) return acc;
+    if (!acc.has(parentId)) acc.set(parentId, []);
+    acc.get(parentId)!.push(doc);
+    return acc;
+  }, new Map());
 
   for (const [, replies] of replyDocsByParentId) {
     replies.sort((a, b) => {
@@ -106,16 +95,11 @@ export async function GET(
   );
   const docs = [...rootDocs, ...sortedReplyDocs];
 
-  const userObjectIds = getValidCommunityUserObjectIds(
-    docs.map((doc: any) => doc.userId ?? null),
-  );
+  const userObjectIds = getValidCommunityUserObjectIds(docs.map((doc: any) => doc.userId ?? null));
   const users = userObjectIds.length
     ? await db
         .collection("users")
-        .find(
-          { _id: { $in: userObjectIds } },
-          { projection: { name: 1, nickname: 1 } },
-        )
+        .find({ _id: { $in: userObjectIds } }, { projection: { name: 1, nickname: 1 } })
         .toArray()
     : [];
   const userMap = new Map(
@@ -138,8 +122,7 @@ export async function GET(
 
     return {
       id: String(d._id),
-      postId:
-        d.postId instanceof ObjectId ? d.postId.toString() : String(d.postId),
+      postId: d.postId instanceof ObjectId ? d.postId.toString() : String(d.postId),
       parentId:
         d.parentId instanceof ObjectId
           ? d.parentId.toString()
@@ -152,10 +135,7 @@ export async function GET(
       authorEmail: d.authorEmail,
       content: d.content ?? "",
       status: d.status ?? "public",
-      createdAt:
-        d.createdAt instanceof Date
-          ? d.createdAt.toISOString()
-          : String(d.createdAt),
+      createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : String(d.createdAt),
       updatedAt:
         d.updatedAt instanceof Date
           ? d.updatedAt.toISOString()

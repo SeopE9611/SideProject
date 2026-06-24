@@ -13,8 +13,7 @@ function parseBoolean(raw: string | undefined, fallback: boolean): boolean {
   return ENABLED_TOKENS.has(raw.trim().toLowerCase());
 }
 
-export const RENTAL_CLEANUP_CREATED_DISABLED_MESSAGE =
-  "정리 기능이 비활성화되었습니다";
+export const RENTAL_CLEANUP_CREATED_DISABLED_MESSAGE = "정리 기능이 비활성화되었습니다";
 
 /**
  * 관리자 API(서버) 기준 기능 활성 여부.
@@ -32,7 +31,4 @@ export const isRentalCleanupCreatedEnabledForServer = (): boolean =>
  * 브라우저 번들에서 접근 가능한 NEXT_PUBLIC 변수만 사용한다.
  */
 export const isRentalCleanupCreatedEnabledForClient = (): boolean =>
-  parseBoolean(
-    process.env.NEXT_PUBLIC_ADMIN_RENTALS_CLEANUP_CREATED_ENABLED,
-    false,
-  );
+  parseBoolean(process.env.NEXT_PUBLIC_ADMIN_RENTALS_CLEANUP_CREATED_ENABLED, false);

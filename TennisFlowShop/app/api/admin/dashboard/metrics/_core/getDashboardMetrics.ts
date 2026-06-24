@@ -325,16 +325,8 @@ export async function getDashboardMetrics(db: Db) {
 
   // 그래프(최근 30일)
   const CHART_DAYS = 30;
-  const {
-    startKst: chartStartKst,
-    endKst: chartEndKst,
-    ymds,
-  } = buildYmdRange(now, CHART_DAYS);
-  const chartStartUtc = kstDayStartUtc(
-    chartStartKst.y,
-    chartStartKst.m,
-    chartStartKst.d,
-  );
+  const { startKst: chartStartKst, endKst: chartEndKst, ymds } = buildYmdRange(now, CHART_DAYS);
+  const chartStartUtc = kstDayStartUtc(chartStartKst.y, chartStartKst.m, chartStartKst.d);
 
   // 7일 KPI
   const since7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -455,10 +447,7 @@ export async function getDashboardMetrics(db: Db) {
           qty: { $sum: { $ifNull: ["$items.quantity", 0] } },
           revenue: {
             $sum: {
-              $multiply: [
-                { $ifNull: ["$items.price", 0] },
-                { $ifNull: ["$items.quantity", 0] },
-              ],
+              $multiply: [{ $ifNull: ["$items.price", 0] }, { $ifNull: ["$items.quantity", 0] }],
             },
           },
         },
@@ -488,10 +477,7 @@ export async function getDashboardMetrics(db: Db) {
           qty: { $sum: { $ifNull: ["$items.quantity", 0] } },
           revenue: {
             $sum: {
-              $multiply: [
-                { $ifNull: ["$items.price", 0] },
-                { $ifNull: ["$items.quantity", 0] },
-              ],
+              $multiply: [{ $ifNull: ["$items.price", 0] }, { $ifNull: ["$items.quantity", 0] }],
             },
           },
         },
@@ -1273,10 +1259,7 @@ export async function getDashboardMetrics(db: Db) {
     EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
   );
   const newPackageOrders7dP = packageOrdersCol.countDocuments({
-    $and: [
-      EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER,
-      { createdAt: { $gte: since7d } },
-    ],
+    $and: [EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER, { createdAt: { $gte: since7d } }],
   });
 
   const paidPackageOrders7dP = packageOrdersCol.countDocuments({
@@ -1347,9 +1330,7 @@ export async function getDashboardMetrics(db: Db) {
     ],
   });
 
-  const packagePaymentCheckP = packageOrdersCol.countDocuments(
-    packagePaymentCheckFilter,
-  );
+  const packagePaymentCheckP = packageOrdersCol.countDocuments(packagePaymentCheckFilter);
   const offlinePackageIssueOpenP = packageOrdersCol.countDocuments({
     $and: [
       OFFLINE_PACKAGE_ORDER_FILTER,
@@ -1875,9 +1856,7 @@ export async function getDashboardMetrics(db: Db) {
 
   const revenueApps7d = Number(revenueApps7dRows?.[0]?.v || 0);
   const revenueRentals7d = Number(revenueRentals7dRows?.[0]?.v || 0);
-  const revenuePackageOrders7d = Number(
-    revenuePackageOrders7dRows?.[0]?.v || 0,
-  );
+  const revenuePackageOrders7d = Number(revenuePackageOrders7dRows?.[0]?.v || 0);
 
   const pointsIssued7d = Number(pointsIssued7dRows?.[0]?.v || 0);
   const pointsSpent7d = Number(pointsSpent7dRows?.[0]?.v || 0);
@@ -1955,9 +1934,7 @@ export async function getDashboardMetrics(db: Db) {
   const calcDueInHours = (dueAt: unknown) => {
     const t = toTimeMs(dueAt);
     // ceil: 1분 남아도 "1시간"처럼 보이게(운영자가 놓치지 않도록)
-    return Number.isFinite(t)
-      ? Math.max(0, Math.ceil((t - now.getTime()) / (60 * 60 * 1000)))
-      : 0;
+    return Number.isFinite(t) ? Math.max(0, Math.ceil((t - now.getTime()) / (60 * 60 * 1000))) : 0;
   };
 
   const mapCancelRefundSignal = (doc: UnknownDoc) => {
@@ -2005,10 +1982,7 @@ export async function getDashboardMetrics(db: Db) {
       id: String(d?._id),
       createdAt: toIso(d?.createdAt),
       name: String(asDoc(d.guest)?.name || "고객"),
-      amount: getNumber(
-        asDoc(d.amount)?.total,
-        getNumber(d.fee) + getNumber(d.deposit),
-      ),
+      amount: getNumber(asDoc(d.amount)?.total, getNumber(d.fee) + getNumber(d.deposit)),
       status: String(d?.status || ""),
       ...mapCancelRefundSignal(d),
       href: `/admin/rentals/${String(d?._id)}`,
@@ -2106,10 +2080,7 @@ export async function getDashboardMetrics(db: Db) {
     id: String(d?._id),
     dueAt: toIsoAny(d?.dueAt),
     name: pickRentalName(d),
-    amount: getNumber(
-      asDoc(d.amount)?.total,
-      getNumber(d.fee) + getNumber(d.deposit),
-    ),
+    amount: getNumber(asDoc(d.amount)?.total, getNumber(d.fee) + getNumber(d.deposit)),
     overdueDays: calcOverdueDays(d?.dueAt),
     href: `/admin/rentals/${String(d?._id)}`,
   }));
@@ -2118,10 +2089,7 @@ export async function getDashboardMetrics(db: Db) {
     id: String(d?._id),
     dueAt: toIsoAny(d?.dueAt),
     name: pickRentalName(d),
-    amount: getNumber(
-      asDoc(d.amount)?.total,
-      getNumber(d.fee) + getNumber(d.deposit),
-    ),
+    amount: getNumber(asDoc(d.amount)?.total, getNumber(d.fee) + getNumber(d.deposit)),
     dueInHours: calcDueInHours(d?.dueAt),
     href: `/admin/rentals/${String(d?._id)}`,
   }));
@@ -2150,9 +2118,7 @@ export async function getDashboardMetrics(db: Db) {
     name: pickPassName(d),
     remainingCount: Number(d?.remainingCount || 0),
     daysLeft: calcDaysLeft(d?.expiresAt),
-    href: d?.orderId
-      ? `/admin/packages/${String(d.orderId)}`
-      : "/admin/packages",
+    href: d?.orderId ? `/admin/packages/${String(d.orderId)}` : "/admin/packages",
   }));
 
   const stringingAging = asDocArray(stringingAgingList).map((d) => ({
@@ -2174,18 +2140,13 @@ export async function getDashboardMetrics(db: Db) {
     const lower = raw.toLowerCase();
 
     // NOTE: PAYMENT_*_VALUES는 이미 'paid/pending' + '결제완료/결제대기'를 포함하도록 구성되어 있음
-    if (PAYMENT_PAID_VALUES.some((x) => String(x).toLowerCase() === lower))
-      return "결제완료";
-    if (PAYMENT_PENDING_VALUES.some((x) => String(x).toLowerCase() === lower))
-      return "결제대기";
+    if (PAYMENT_PAID_VALUES.some((x) => String(x).toLowerCase() === lower)) return "결제완료";
+    if (PAYMENT_PENDING_VALUES.some((x) => String(x).toLowerCase() === lower)) return "결제대기";
 
     return raw || "기타";
   }
 
-  const mergeDistByLabel = (
-    rows: UnknownDoc[],
-    normalize: (v: unknown) => string,
-  ) => {
+  const mergeDistByLabel = (rows: UnknownDoc[], normalize: (v: unknown) => string) => {
     const acc = new Map<string, number>();
     for (const r of rows ?? []) {
       const label = normalize(r?._id);
@@ -2223,12 +2184,8 @@ export async function getDashboardMetrics(db: Db) {
   const prevYyyymm = shiftYyyymm(currentYyyymm, -1);
 
   const [currSnap, prevSnap, latestSnap] = await Promise.all([
-    db
-      .collection("settlements")
-      .findOne({ yyyymm: currentYyyymm }, { projection: { _id: 1 } }),
-    db
-      .collection("settlements")
-      .findOne({ yyyymm: prevYyyymm }, { projection: { _id: 1 } }),
+    db.collection("settlements").findOne({ yyyymm: currentYyyymm }, { projection: { _id: 1 } }),
+    db.collection("settlements").findOne({ yyyymm: prevYyyymm }, { projection: { _id: 1 } }),
     db.collection("settlements").findOne(
       {},
       {
@@ -2267,8 +2224,7 @@ export async function getDashboardMetrics(db: Db) {
         delta7d: newOrders7d,
         paid7d: paidOrders7d,
         revenue7d: revenueOrders7d,
-        aov7d:
-          paidOrders7d > 0 ? Math.round(revenueOrders7d / paidOrders7d) : 0,
+        aov7d: paidOrders7d > 0 ? Math.round(revenueOrders7d / paidOrders7d) : 0,
       },
 
       applications: {
@@ -2340,15 +2296,13 @@ export async function getDashboardMetrics(db: Db) {
           Number(orderCancelRequestsReadyForReview || 0) +
           Number(rentalCancelRequestsReadyForReview || 0) +
           Number(appCancelRequestsReadyForReview || 0),
-        shippingPending:
-          Number(shippingPending || 0) + Number(shippingPendingApps || 0),
+        shippingPending: Number(shippingPending || 0) + Number(shippingPendingApps || 0),
         paymentPending24h,
         packagePaymentCheck: Number(packagePaymentCheck || 0),
         offlinePackageIssueOpen: Number(offlinePackageIssueOpen || 0),
         offlinePackageUsageOpen: Number(offlinePackageUsageOpen || 0),
         offlineReconciliationOpen:
-          Number(offlinePackageIssueOpen || 0) +
-          Number(offlinePackageUsageOpen || 0),
+          Number(offlinePackageIssueOpen || 0) + Number(offlinePackageUsageOpen || 0),
         rentalOverdue: Number(overdueRentals || 0),
         rentalDueSoon: Number(dueSoonRentals || 0),
         passExpiringSoon: Number(passExpiringSoon || 0),
@@ -2373,9 +2327,7 @@ export async function getDashboardMetrics(db: Db) {
         stock: getNumber(asDoc(d.inventory)?.stock),
         lowStock: (() => {
           const lowStock = asDoc(d.inventory)?.lowStock;
-          return lowStock === null || lowStock === undefined
-            ? null
-            : getNumber(lowStock);
+          return lowStock === null || lowStock === undefined ? null : getNumber(lowStock);
         })(),
       })),
       outOfStock: asDocArray(outOfStockListDocs).map((d) => ({
@@ -2426,9 +2378,7 @@ export async function getDashboardMetrics(db: Db) {
             lastGeneratedAt: latestSnap.lastGeneratedAt
               ? new Date(latestSnap.lastGeneratedAt).toISOString()
               : null,
-            lastGeneratedBy: latestSnap.lastGeneratedBy
-              ? String(latestSnap.lastGeneratedBy)
-              : null,
+            lastGeneratedBy: latestSnap.lastGeneratedBy ? String(latestSnap.lastGeneratedBy) : null,
           }
         : null,
     },
@@ -2437,47 +2387,27 @@ export async function getDashboardMetrics(db: Db) {
       orders: asDocArray(recentOrders).map((d) => ({
         id: String(d?._id),
         createdAt:
-          d?.createdAt instanceof Date
-            ? d.createdAt.toISOString()
-            : new Date().toISOString(),
-        name: String(
-          asDoc(d.shippingInfo)?.name ||
-            asDoc(d.shippingInfo)?.receiverName ||
-            "고객",
-        ),
+          d?.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
+        name: String(asDoc(d.shippingInfo)?.name || asDoc(d.shippingInfo)?.receiverName || "고객"),
         totalPrice: Number(d?.totalPrice || 0),
         status: String(d?.status || "대기중"),
-        paymentStatus: normalizePaymentStatusLabel(
-          d?.paymentStatus || "결제대기",
-        ),
+        paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus || "결제대기"),
         shippingMethod:
-          getString(asDoc(d.shippingInfo)?.shippingMethod) ||
-          getString(d?.deliveryMethod) ||
-          null,
+          getString(asDoc(d.shippingInfo)?.shippingMethod) || getString(d?.deliveryMethod) || null,
       })),
       applications: asDocArray(recentApps).map((d) => ({
         id: String(d?._id),
         createdAt:
-          d?.createdAt instanceof Date
-            ? d.createdAt.toISOString()
-            : new Date().toISOString(),
-        name: String(
-          asDoc(d.shippingInfo)?.name ||
-            asDoc(d.shippingInfo)?.receiverName ||
-            "고객",
-        ),
+          d?.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
+        name: String(asDoc(d.shippingInfo)?.name || asDoc(d.shippingInfo)?.receiverName || "고객"),
         totalPrice: Number(d?.totalPrice || 0),
         status: String(d?.status || "접수완료"),
-        paymentStatus: normalizePaymentStatusLabel(
-          d?.paymentStatus || "결제대기",
-        ),
+        paymentStatus: normalizePaymentStatusLabel(d?.paymentStatus || "결제대기"),
       })),
       rentals: asDocArray(recentRentals).map((d) => ({
         id: String(d?._id),
         createdAt:
-          d?.createdAt instanceof Date
-            ? d.createdAt.toISOString()
-            : new Date().toISOString(),
+          d?.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
         name: String(d?.userEmail || "고객"),
         total: getNumber(asDoc(d.amount)?.total),
         status: String(d?.status || "pending"),
@@ -2485,9 +2415,7 @@ export async function getDashboardMetrics(db: Db) {
       reports: asDocArray(recentReports).map((d) => ({
         id: String(d?._id),
         createdAt:
-          d?.createdAt instanceof Date
-            ? d.createdAt.toISOString()
-            : new Date().toISOString(),
+          d?.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
         kind: d?.commentId ? "comment" : "post",
         reason: String(d?.reason || "").slice(0, 120),
       })),

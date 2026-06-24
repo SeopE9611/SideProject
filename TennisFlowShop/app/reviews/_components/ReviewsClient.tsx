@@ -44,8 +44,7 @@ type Item = {
   votedByMe?: boolean;
 };
 
-const fetcher = (url: string) =>
-  fetch(url, { credentials: "include" }).then((r) => r.json());
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
 export default function ReviewsClient() {
   /* 컨트롤 상태 */
@@ -58,8 +57,7 @@ export default function ReviewsClient() {
   const getKey = useCallback(
     (pageIndex: number, prev: any) => {
       if (prev && !prev.nextCursor) return null;
-      const cursor =
-        pageIndex === 0 ? "" : `&cursor=${encodeURIComponent(prev.nextCursor)}`;
+      const cursor = pageIndex === 0 ? "" : `&cursor=${encodeURIComponent(prev.nextCursor)}`;
       const q = [
         `type=${tab}`,
         "withHidden=mask",
@@ -96,24 +94,17 @@ export default function ReviewsClient() {
         setIsLoggedIn(false);
       });
   }, []);
-  const { data, size, setSize, isValidating, mutate } = useSWRInfinite(
-    getKey,
-    fetcher,
-    {
-      revalidateFirstPage: false,
-      persistSize: true,
-    },
-  );
+  const { data, size, setSize, isValidating, mutate } = useSWRInfinite(getKey, fetcher, {
+    revalidateFirstPage: false,
+    persistSize: true,
+  });
 
   /* 파생 상태 */
   const items = useMemo<Item[]>(
     () => (data ? data.flatMap((d: any) => d.items as Item[]) : []),
     [data],
   );
-  const hasMore = useMemo(
-    () => (data ? Boolean(data[data.length - 1]?.nextCursor) : true),
-    [data],
-  );
+  const hasMore = useMemo(() => (data ? Boolean(data[data.length - 1]?.nextCursor) : true), [data]);
   const isFirstLoading = !data && isValidating;
 
   /* 필터 요약 칩 표시용 텍스트 */
@@ -139,10 +130,7 @@ export default function ReviewsClient() {
   return (
     <div className="relative min-h-screen bg-background">
       {/* Tennis court background pattern */}
-      <HeroCourtBackdrop
-        opacity="soft"
-        className="h-full w-full text-muted-foreground"
-      />
+      <HeroCourtBackdrop opacity="soft" className="h-full w-full text-muted-foreground" />
 
       <div className="relative z-10 container mx-auto max-w-5xl space-y-5 px-4 py-6 md:space-y-6 md:py-8">
         {/* Header with tennis theme */}
@@ -151,13 +139,11 @@ export default function ReviewsClient() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card shadow-sm">
               <Trophy className="h-5 w-5 text-primary" />
             </div>
-            <h1 className="break-keep text-2xl font-bold text-foreground md:text-3xl">
-              고객 리뷰
-            </h1>
+            <h1 className="break-keep text-2xl font-bold text-foreground md:text-3xl">고객 리뷰</h1>
           </div>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            장비 사용 후기와 교체서비스 경험을 확인하세요. 문의가 필요하다면
-            고객센터 Q&A를 이용해주세요.
+            장비 사용 후기와 교체서비스 경험을 확인하세요. 문의가 필요하다면 고객센터 Q&A를
+            이용해주세요.
           </p>
         </div>
 
@@ -207,10 +193,7 @@ export default function ReviewsClient() {
               </Select>
 
               {/* Rating filter */}
-              <Select
-                value={rating}
-                onValueChange={(v) => setRating(v as RatingFilter)}
-              >
+              <Select value={rating} onValueChange={(v) => setRating(v as RatingFilter)}>
                 <SelectTrigger className="h-9 w-full border-border bg-background sm:w-[130px]">
                   <SelectValue placeholder="전체 별점" />
                 </SelectTrigger>
@@ -289,9 +272,7 @@ export default function ReviewsClient() {
                   <MessageSquareText className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-lg font-semibold text-foreground">
-                    리뷰가 없습니다
-                  </h3>
+                  <h3 className="text-lg font-semibold text-foreground">리뷰가 없습니다</h3>
                   <p className="text-sm text-muted-foreground">
                     조건에 맞는 리뷰를 찾을 수 없습니다.
                   </p>

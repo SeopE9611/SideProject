@@ -31,8 +31,7 @@ import {
 import Link from "next/link";
 
 const rentalStatusLabel = (status: string, isBankTransfer: boolean) => {
-  if (status === "pending")
-    return isBankTransfer ? "입금 확인 대기" : "접수 완료";
+  if (status === "pending") return isBankTransfer ? "입금 확인 대기" : "접수 완료";
   if (status === "paid") return "결제 확인 완료";
   if (status === "out") return "대여 중";
   if (status === "returned") return "반납 완료";
@@ -114,14 +113,10 @@ export default function RentalsSuccessClient({ data }: Props) {
   const dbWithService = Boolean(data.withStringService);
   const dbStringingApplied = Boolean(data.isStringServiceApplied);
   const dbStringingApplicationId =
-    typeof data.stringingApplicationId === "string"
-      ? data.stringingApplicationId
-      : "";
+    typeof data.stringingApplicationId === "string" ? data.stringingApplicationId : "";
 
   const hintedWithService =
-    typeof data.queryHint?.withService === "boolean"
-      ? data.queryHint.withService
-      : null;
+    typeof data.queryHint?.withService === "boolean" ? data.queryHint.withService : null;
   const hintedStringingSubmitted =
     typeof data.queryHint?.stringingSubmitted === "boolean"
       ? data.queryHint.stringingSubmitted
@@ -137,8 +132,7 @@ export default function RentalsSuccessClient({ data }: Props) {
 
   const hasStateMismatch =
     (hintedWithService !== null && hintedWithService !== dbWithService) ||
-    (hintedStringingSubmitted !== null &&
-      hintedStringingSubmitted !== dbStringingApplied) ||
+    (hintedStringingSubmitted !== null && hintedStringingSubmitted !== dbStringingApplied) ||
     (Boolean(hintedStringingApplicationId) &&
       hintedStringingApplicationId !== dbStringingApplicationId);
 
@@ -150,46 +144,32 @@ export default function RentalsSuccessClient({ data }: Props) {
   const total =
     typeof data.total === "number"
       ? data.total
-      : data.fee +
-        data.deposit +
-        (data.stringPrice ?? 0) +
-        (data.stringingFee ?? 0);
+      : data.fee + data.deposit + (data.stringPrice ?? 0) + (data.stringingFee ?? 0);
   const bankKeyFromServer = data.payment?.bank || "";
   const depositorFromServer = data.payment?.depositor || "";
   const bankKeyFallback =
-    (typeof window !== "undefined" &&
-      sessionStorage.getItem("rentals-last-bank")) ||
-    "";
+    (typeof window !== "undefined" && sessionStorage.getItem("rentals-last-bank")) || "";
   const depositorFallback =
-    (typeof window !== "undefined" &&
-      sessionStorage.getItem("rentals-last-depositor")) ||
-    "";
+    (typeof window !== "undefined" && sessionStorage.getItem("rentals-last-depositor")) || "";
   const bankKey = bankKeyFromServer || bankKeyFallback;
   const depositor = depositorFromServer || depositorFallback;
   const bankInfo = bankKey ? (bankLabelMap as any)[bankKey] : null;
 
   const refundBankKey =
     data.refundAccount?.bank ||
-    (typeof window !== "undefined" &&
-      sessionStorage.getItem("rentals-refund-bank")) ||
+    (typeof window !== "undefined" && sessionStorage.getItem("rentals-refund-bank")) ||
     "";
   const refundAccount =
     data.refundAccount?.account ||
-    (typeof window !== "undefined" &&
-      sessionStorage.getItem("rentals-refund-account")) ||
+    (typeof window !== "undefined" && sessionStorage.getItem("rentals-refund-account")) ||
     "";
   const refundHolder =
     data.refundAccount?.holder ||
-    (typeof window !== "undefined" &&
-      sessionStorage.getItem("rentals-refund-holder")) ||
+    (typeof window !== "undefined" && sessionStorage.getItem("rentals-refund-holder")) ||
     "";
-  const refundBankLabel = refundBankKey
-    ? getRefundBankLabel(refundBankKey)
-    : null;
+  const refundBankLabel = refundBankKey ? getRefundBankLabel(refundBankKey) : null;
 
-  const isNicePaid =
-    data.paymentInfo?.provider === "nicepay" ||
-    data.payment?.method === "nicepay";
+  const isNicePaid = data.paymentInfo?.provider === "nicepay" || data.payment?.method === "nicepay";
   const paymentMethodLabel = isNicePaid
     ? data.paymentInfo?.easyPayProvider
       ? `카드/간편결제 (${data.paymentInfo.easyPayProvider})`
@@ -212,12 +192,10 @@ export default function RentalsSuccessClient({ data }: Props) {
           {hasStateMismatch && (
             <Card className="border border-warning/40 bg-warning/10 shadow-sm">
               <CardHeader className="bg-warning/10">
-                <CardTitle className="text-base text-warning">
-                  접수 상태 확인 중
-                </CardTitle>
+                <CardTitle className="text-base text-warning">접수 상태 확인 중</CardTitle>
                 <CardDescription className="text-warning/90">
-                  최신 상태 동기화 중입니다. 잠시 후 새로고침하거나
-                  마이페이지에서 최종 상태를 확인해 주세요.
+                  최신 상태 동기화 중입니다. 잠시 후 새로고침하거나 마이페이지에서 최종 상태를
+                  확인해 주세요.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -252,9 +230,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 </p>
                 {withService && stringingApplicationId && (
                   <p>
-                    <span className="text-muted-foreground">
-                      교체서비스 접수번호:
-                    </span>{" "}
+                    <span className="text-muted-foreground">교체서비스 접수번호:</span>{" "}
                     <span className="font-mono font-semibold text-foreground">
                       {shortenId(stringingApplicationId)}
                     </span>
@@ -263,22 +239,15 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <p>
                   <span className="text-muted-foreground">대여 상태:</span>{" "}
                   <span className="font-semibold text-foreground">
-                    {rentalStatusLabel(
-                      data.status,
-                      data.payment?.method === "bank_transfer",
-                    )}
+                    {rentalStatusLabel(data.status, data.payment?.method === "bank_transfer")}
                   </span>
                 </p>
                 {withService && (
                   <p>
-                    <span className="text-muted-foreground">
-                      교체서비스 상태:
-                    </span>{" "}
+                    <span className="text-muted-foreground">교체서비스 상태:</span>{" "}
                     <span className="font-semibold text-foreground">
                       {stringingApplied
-                        ? stringingStatusLabel(
-                            data.applicationSummary?.status || "접수완료",
-                          )
+                        ? stringingStatusLabel(data.applicationSummary?.status || "접수완료")
                         : "접수 확인 중"}
                     </span>
                   </p>
@@ -312,10 +281,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                           : "라켓 정보 없음"}
                       </p>
                       <div className="mt-1 flex items-center gap-2">
-                        <Badge
-                          variant={badgeToneVariant("brand")}
-                          className="px-2 py-0.5 text-xs"
-                        >
+                        <Badge variant={badgeToneVariant("brand")} className="px-2 py-0.5 text-xs">
                           상태 {data.racket?.condition}
                         </Badge>
                         <span className="text-sm text-muted-foreground">
@@ -331,14 +297,10 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <>
                   <Separator className="my-4 md:my-6" />
                   <div className="space-y-3">
-                    <h3 className="text-lg font-bold text-foreground">
-                      교체서비스 정보
-                    </h3>
+                    <h3 className="text-lg font-bold text-foreground">교체서비스 정보</h3>
                     <div className="space-y-2 rounded-lg border border-border bg-background p-4 text-sm">
                       <p>
-                        <span className="text-muted-foreground">
-                          접수 방식:
-                        </span>{" "}
+                        <span className="text-muted-foreground">접수 방식:</span>{" "}
                         <span className="font-semibold text-foreground">
                           {data.applicationSummary.receptionLabel}
                         </span>
@@ -351,9 +313,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                       </p>
                       {data.applicationSummary.stringNames.length > 0 && (
                         <p>
-                          <span className="text-muted-foreground">
-                            선택 스트링:
-                          </span>{" "}
+                          <span className="text-muted-foreground">선택 스트링:</span>{" "}
                           <span className="font-semibold text-foreground">
                             {data.applicationSummary.stringNames.join(", ")}
                           </span>
@@ -369,9 +329,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                       )}
                       {data.applicationSummary.reservationLabel && (
                         <p>
-                          <span className="text-muted-foreground">
-                            방문 예약:
-                          </span>{" "}
+                          <span className="text-muted-foreground">방문 예약:</span>{" "}
                           <span className="font-semibold text-foreground">
                             {data.applicationSummary.reservationLabel}
                           </span>
@@ -388,15 +346,11 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <h3 className="text-lg font-bold text-foreground">금액 정보</h3>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">대여 수수료</span>
-                  <span className="text-lg font-semibold">
-                    {data.fee.toLocaleString()}원
-                  </span>
+                  <span className="text-lg font-semibold">{data.fee.toLocaleString()}원</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">보증금</span>
-                  <span className="text-lg font-semibold">
-                    {data.deposit.toLocaleString()}원
-                  </span>
+                  <span className="text-lg font-semibold">{data.deposit.toLocaleString()}원</span>
                 </div>
                 {data.stringPrice > 0 && (
                   <div className="flex items-center justify-between">
@@ -418,9 +372,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <div className="rounded-xl border border-border bg-muted/30 p-4 md:p-6">
                   <div className="flex items-center justify-between text-2xl font-bold">
                     <span className="text-foreground">총 결제 금액</span>
-                    <span className="text-primary">
-                      {total.toLocaleString()}원
-                    </span>
+                    <span className="text-primary">{total.toLocaleString()}원</span>
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">
                     * 반납 완료 후 보증금 환불 (연체/파손 시 차감)
@@ -434,20 +386,14 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <h3 className="text-lg font-bold text-foreground">결제 정보</h3>
                 {isNicePaid ? (
                   <div className="rounded-lg border border-border bg-background p-4 text-sm space-y-1">
-                    <p className="text-muted-foreground">
-                      결제가 완료되었습니다.
-                    </p>
+                    <p className="text-muted-foreground">결제가 완료되었습니다.</p>
                     <div>
                       결제수단: <b>{paymentMethodLabel}</b>
                     </div>
                     {data.paymentInfo?.approvedAt && (
                       <div>
                         승인시각:{" "}
-                        <b>
-                          {new Date(data.paymentInfo.approvedAt).toLocaleString(
-                            "ko-KR",
-                          )}
-                        </b>
+                        <b>{new Date(data.paymentInfo.approvedAt).toLocaleString("ko-KR")}</b>
                       </div>
                     )}
                     {data.paymentInfo?.cardCompany && (
@@ -464,8 +410,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 ) : (
                   <div className="rounded-lg border border-border bg-background p-4 text-sm">
                     <p className="text-muted-foreground">
-                      아래 계좌로 입금해 주세요. 입금 확인 후 결제완료로 상태가
-                      변경됩니다.
+                      아래 계좌로 입금해 주세요. 입금 확인 후 결제완료로 상태가 변경됩니다.
                     </p>
                     {bankInfo && (
                       <div className="mt-4 space-y-1">
@@ -500,55 +445,39 @@ export default function RentalsSuccessClient({ data }: Props) {
                   {isPickup ? (
                     <>
                       <p>
-                        <span className="text-muted-foreground">
-                          수령 방식:
-                        </span>{" "}
+                        <span className="text-muted-foreground">수령 방식:</span>{" "}
                         <span className="font-semibold">방문 수령 선택됨</span>
                       </p>
                       <p>
                         <span className="text-muted-foreground">이름:</span>{" "}
-                        <span className="font-semibold">
-                          {data.shipping?.name || "-"}
-                        </span>
+                        <span className="font-semibold">{data.shipping?.name || "-"}</span>
                       </p>
                       <p>
                         <span className="text-muted-foreground">연락처:</span>{" "}
-                        <span className="font-semibold">
-                          {data.shipping?.phone || "-"}
-                        </span>
+                        <span className="font-semibold">{data.shipping?.phone || "-"}</span>
                       </p>
                     </>
                   ) : (
                     <>
                       <p>
                         <span className="text-muted-foreground">이름:</span>{" "}
-                        <span className="font-semibold">
-                          {data.shipping?.name || "-"}
-                        </span>
+                        <span className="font-semibold">{data.shipping?.name || "-"}</span>
                       </p>
                       <p>
                         <span className="text-muted-foreground">연락처:</span>{" "}
-                        <span className="font-semibold">
-                          {data.shipping?.phone || "-"}
-                        </span>
+                        <span className="font-semibold">{data.shipping?.phone || "-"}</span>
                       </p>
                       <p>
                         <span className="text-muted-foreground">우편번호:</span>{" "}
-                        <span className="font-semibold">
-                          {data.shipping?.postalCode || "-"}
-                        </span>
+                        <span className="font-semibold">{data.shipping?.postalCode || "-"}</span>
                       </p>
                       <p>
                         <span className="text-muted-foreground">주소:</span>{" "}
-                        <span className="font-semibold">
-                          {data.shipping?.address || "-"}
-                        </span>
+                        <span className="font-semibold">{data.shipping?.address || "-"}</span>
                       </p>
                       <p>
                         <span className="text-muted-foreground">상세주소:</span>{" "}
-                        <span className="font-semibold">
-                          {data.shipping?.addressDetail || "-"}
-                        </span>
+                        <span className="font-semibold">{data.shipping?.addressDetail || "-"}</span>
                       </p>
                       <p>
                         <span className="text-muted-foreground">요청사항:</span>{" "}
@@ -599,10 +528,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                   className="h-12 flex-1 shadow-sm transition-[box-shadow,background-color,color] duration-200 hover:shadow-md"
                   asChild
                 >
-                  <Link
-                    href="/mypage?tab=orders&scope=rental"
-                    className="flex items-center gap-2"
-                  >
+                  <Link href="/mypage?tab=orders&scope=rental" className="flex items-center gap-2">
                     <Package className="h-5 w-5" />
                     대여 내역 확인
                     <ArrowRight className="h-4 w-4" />
@@ -614,10 +540,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                     className="h-12 flex-1 shadow-sm transition-[box-shadow,background-color,color] duration-200 hover:shadow-md"
                     asChild
                   >
-                    <Link
-                      href={stringingApplicationHref}
-                      className="flex items-center gap-2"
-                    >
+                    <Link href={stringingApplicationHref} className="flex items-center gap-2">
                       교체서비스 신청 내역 보기
                       <ArrowRight className="h-4 w-4" />
                     </Link>
@@ -663,12 +586,9 @@ export default function RentalsSuccessClient({ data }: Props) {
                   <div className="flex items-start gap-3 rounded-lg bg-muted/30 p-4">
                     <Clock className="mt-0.5 h-5 w-5 text-muted-foreground" />
                     <div>
-                      <h4 className="mb-1 font-semibold text-foreground">
-                        대여 기간
-                      </h4>
+                      <h4 className="mb-1 font-semibold text-foreground">대여 기간</h4>
                       <p className="text-sm text-muted-foreground">
-                        대여 기간은 {data.period}일입니다. 반납 기한을 꼭
-                        지켜주세요.
+                        대여 기간은 {data.period}일입니다. 반납 기한을 꼭 지켜주세요.
                       </p>
                     </div>
                   </div>
@@ -677,24 +597,18 @@ export default function RentalsSuccessClient({ data }: Props) {
                   <div className="flex items-start gap-3 rounded-lg bg-muted/30 p-4">
                     <Shield className="mt-0.5 h-5 w-5 text-foreground" />
                     <div>
-                      <h4 className="mb-1 font-semibold text-foreground">
-                        보증금 환불
-                      </h4>
+                      <h4 className="mb-1 font-semibold text-foreground">보증금 환불</h4>
                       <p className="text-sm text-muted-foreground">
-                        반납 완료 시 보증금이 환불됩니다. 연체 또는 파손 시
-                        차감될 수 있습니다.
+                        반납 완료 시 보증금이 환불됩니다. 연체 또는 파손 시 차감될 수 있습니다.
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 rounded-lg bg-muted/30 p-4">
                     <Phone className="mt-0.5 h-5 w-5 text-muted-foreground" />
                     <div>
-                      <h4 className="mb-1 font-semibold text-foreground">
-                        고객 지원
-                      </h4>
+                      <h4 className="mb-1 font-semibold text-foreground">고객 지원</h4>
                       <p className="text-sm text-muted-foreground">
-                        대여 관련 문의사항은 고객센터(010-5218-5248)로
-                        연락주세요.
+                        대여 관련 문의사항은 고객센터(010-5218-5248)로 연락주세요.
                       </p>
                     </div>
                   </div>

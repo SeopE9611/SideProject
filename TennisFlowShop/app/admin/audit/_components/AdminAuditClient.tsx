@@ -72,8 +72,7 @@ export default function AdminAuditClient() {
     parse: (params, defaults) => ({
       page: Math.max(
         1,
-        Number.parseInt(params.get("page") || String(defaults.page), 10) ||
-          defaults.page,
+        Number.parseInt(params.get("page") || String(defaults.page), 10) || defaults.page,
       ),
       q: params.get("q") || defaults.q,
       type: params.get("type") || defaults.type,
@@ -96,14 +95,10 @@ export default function AdminAuditClient() {
     return `/api/admin/audit?${qs.toString()}`;
   }, [state.page, state.q, state.type]);
 
-  const { data, error, isValidating } = useSWR<AuditListResponse>(
-    key,
-    authenticatedSWRFetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    },
-  );
+  const { data, error, isValidating } = useSWR<AuditListResponse>(key, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   const [draftQ, setDraftQ] = useState(state.q);
   const [draftType, setDraftType] = useState(state.type);
@@ -168,9 +163,7 @@ export default function AdminAuditClient() {
 
       {!error && !data && (
         <Card>
-          <CardContent className="py-6 text-sm text-muted-foreground">
-            불러오는 중...
-          </CardContent>
+          <CardContent className="py-6 text-sm text-muted-foreground">불러오는 중...</CardContent>
         </Card>
       )}
 
@@ -192,24 +185,16 @@ export default function AdminAuditClient() {
                     {item.type}
                   </Badge>
                   {NOTE_TYPE_LABEL[item.type] ? (
-                    <Badge variant="outline">
-                      {NOTE_TYPE_LABEL[item.type]}
-                    </Badge>
+                    <Badge variant="outline">{NOTE_TYPE_LABEL[item.type]}</Badge>
                   ) : null}
                   <span>{formatDateTime(item.createdAt)}</span>
-                  {item.requestId ? (
-                    <span className="font-mono">req: {item.requestId}</span>
-                  ) : null}
+                  {item.requestId ? <span className="font-mono">req: {item.requestId}</span> : null}
                 </div>
-                <p className="text-sm font-medium">
-                  {item.message || "메시지 없음"}
-                </p>
+                <p className="text-sm font-medium">{item.message || "메시지 없음"}</p>
                 <div className="text-sm text-muted-foreground">
                   <span title={item.actorTitle}>{item.actor}</span>
                   <span className="mx-2">·</span>
-                  <span title={item.targetId || undefined}>
-                    target: {item.targetId || "없음"}
-                  </span>
+                  <span title={item.targetId || undefined}>target: {item.targetId || "없음"}</span>
                 </div>
                 {item.diffSummary && item.diffSummary.length > 0 ? (
                   <ul className="list-disc space-y-1 pl-5 text-xs text-muted-foreground">

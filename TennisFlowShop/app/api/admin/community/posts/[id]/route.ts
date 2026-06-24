@@ -3,11 +3,7 @@ import { ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
-import {
-  normalizeSanitizedContent,
-  sanitizeHtml,
-  validateSanitizedLength,
-} from "@/lib/sanitize";
+import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from "@/lib/sanitize";
 
 type EditableCommunityPost = {
   _id: ObjectId;
@@ -31,10 +27,7 @@ function summarizeCommunityPost(doc: EditableCommunityPost | null) {
     type: typeof safe.type === "string" ? safe.type : undefined,
     category: typeof safe.category === "string" ? safe.category : undefined,
     status: typeof safe.status === "string" ? safe.status : undefined,
-    isPinned:
-      typeof (safe as any).isPinned === "boolean"
-        ? (safe as any).isPinned
-        : undefined,
+    isPinned: typeof (safe as any).isPinned === "boolean" ? (safe as any).isPinned : undefined,
     authorId: safe.userId ? String(safe.userId) : undefined,
     attachmentCount: Array.isArray((safe as any).attachments)
       ? (safe as any).attachments.length
@@ -47,17 +40,13 @@ function summarizeCommunityPost(doc: EditableCommunityPost | null) {
  * - 관리자 상세/수정 화면에서 동일 데이터소스(community_posts)를 직접 조회한다.
  * - 일반 사용자 API 스키마와 분리해, 관리자 플로우 계약을 고정한다.
  */
-export async function GET(
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const { db } = guard;
 
   const { id } = await context.params;
-  if (!ObjectId.isValid(id))
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  if (!ObjectId.isValid(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
   const col = db.collection<EditableCommunityPost>("community_posts");
   const doc = await col.findOne(
@@ -109,10 +98,7 @@ export async function GET(
  * - requireAdmin + verifyAdminCsrf를 강제해 관리자 전용 수정 경로를 보장한다.
  * - 저장 대상은 community_posts 컬렉션으로 고정한다.
  */
-export async function PATCH(
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -120,8 +106,7 @@ export async function PATCH(
   const { db } = guard;
 
   const { id } = await context.params;
-  if (!ObjectId.isValid(id))
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  if (!ObjectId.isValid(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
   const body = await req.json().catch(() => null);
   const title = String(body?.title ?? "").trim();
@@ -129,20 +114,12 @@ export async function PATCH(
   const rawContent = String(body?.content ?? "");
 
   if (!title) {
-    return NextResponse.json(
-      { error: "제목을 입력해 주세요." },
-      { status: 422 },
-    );
+    return NextResponse.json({ error: "제목을 입력해 주세요." }, { status: 422 });
   }
 
-  const sanitizedContent = normalizeSanitizedContent(
-    await sanitizeHtml(rawContent),
-  );
+  const sanitizedContent = normalizeSanitizedContent(await sanitizeHtml(rawContent));
   if (!sanitizedContent.trim()) {
-    return NextResponse.json(
-      { error: "내용을 입력해 주세요." },
-      { status: 422 },
-    );
+    return NextResponse.json({ error: "내용을 입력해 주세요." }, { status: 422 });
   }
 
   const lengthValidation = validateSanitizedLength(sanitizedContent, {
@@ -150,16 +127,10 @@ export async function PATCH(
     max: 5000,
   });
   if (lengthValidation === "too_short") {
-    return NextResponse.json(
-      { error: "내용을 입력해 주세요." },
-      { status: 422 },
-    );
+    return NextResponse.json({ error: "내용을 입력해 주세요." }, { status: 422 });
   }
   if (lengthValidation === "too_long") {
-    return NextResponse.json(
-      { error: "내용은 5,000자 이하로 입력해 주세요." },
-      { status: 422 },
-    );
+    return NextResponse.json({ error: "내용은 5,000자 이하로 입력해 주세요." }, { status: 422 });
   }
 
   const col = db.collection<EditableCommunityPost>("community_posts");
@@ -236,10 +207,7 @@ export async function PATCH(
   return NextResponse.json({ ok: true, id: String(result._id) });
 }
 
-export async function DELETE(
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -247,8 +215,7 @@ export async function DELETE(
   const { db } = guard;
 
   const { id } = await context.params;
-  if (!ObjectId.isValid(id))
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  if (!ObjectId.isValid(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
   const col = db.collection("community_posts");
   const commentsCol = db.collection("community_comments");

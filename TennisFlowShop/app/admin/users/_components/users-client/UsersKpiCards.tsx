@@ -30,17 +30,9 @@ const KPI_ITEMS: Array<{
   { key: "admins", label: "관리자 수", valueClassName: "text-foreground" },
 ];
 
-export function UsersKpiCards({
-  status,
-  values,
-  activeKey,
-  onSelect,
-}: UsersKpiCardsProps) {
+export function UsersKpiCards({ status, values, activeKey, onSelect }: UsersKpiCardsProps) {
   return (
-    <div
-      className="mb-6 grid gap-4 md:grid-cols-3 lg:grid-cols-5"
-      aria-live="polite"
-    >
+    <div className="mb-6 grid gap-4 md:grid-cols-3 lg:grid-cols-5" aria-live="polite">
       {KPI_ITEMS.map((item) => (
         <button
           key={item.key}
@@ -56,16 +48,10 @@ export function UsersKpiCards({
           <p className="text-sm text-muted-foreground">{item.label}</p>
 
           {status === "loading" ? (
-            <Skeleton
-              className="mt-2 h-10 w-16"
-              role="status"
-              aria-label={`${item.label} 로딩`}
-            />
+            <Skeleton className="mt-2 h-10 w-16" role="status" aria-label={`${item.label} 로딩`} />
           ) : (
             <p className={`mt-1 text-3xl font-bold ${item.valueClassName}`}>
-              {status === "error"
-                ? "-"
-                : values[item.key].toLocaleString("ko-KR")}
+              {status === "error" ? "-" : values[item.key].toLocaleString("ko-KR")}
             </p>
           )}
         </button>

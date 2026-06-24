@@ -42,14 +42,10 @@ type Res = { items: PassItem[] };
 const fetcher = (url: string) => authenticatedSWRFetcher<Res>(url);
 
 export default function PassList() {
-  const { data, isLoading, error, mutate } = useSWR<Res>(
-    "/api/passes/me",
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    },
-  );
+  const { data, isLoading, error, mutate } = useSWR<Res>("/api/passes/me", fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
   const [now, setNow] = useState(0);
 
   useEffect(() => {
@@ -72,13 +68,9 @@ export default function PassList() {
   const items = data?.items ?? [];
   const activeItems = items.filter((p) => p.status === "active");
   const waitingItems = items.filter((p) =>
-    ["pending_payment", "pending_activation", "suspended", "paused"].includes(
-      p.status,
-    ),
+    ["pending_payment", "pending_activation", "suspended", "paused"].includes(p.status),
   );
-  const historyItems = items.filter((p) =>
-    ["ended", "expired", "cancelled"].includes(p.status),
-  );
+  const historyItems = items.filter((p) => ["ended", "expired", "cancelled"].includes(p.status));
 
   const hasNoHistory = !isInitialLoading && items.length === 0;
 
@@ -106,20 +98,15 @@ export default function PassList() {
       return <Badge variant="outline">{statusLabel(p.status)}</Badge>;
     if (p.status === "suspended" || p.status === "paused")
       return <Badge variant="secondary">{statusLabel(p.status)}</Badge>;
-    if (p.status === "expired")
-      return <Badge variant="outline">{statusLabel(p.status)}</Badge>;
+    if (p.status === "expired") return <Badge variant="outline">{statusLabel(p.status)}</Badge>;
     return <Badge variant="outline">{statusLabel(p.status)}</Badge>;
   };
 
   const renderCard = (p: PassItem) => {
     const remainPct =
-      p.packageSize > 0
-        ? Math.max(0, Math.min(100, (p.remainingCount / p.packageSize) * 100))
-        : 0;
+      p.packageSize > 0 ? Math.max(0, Math.min(100, (p.remainingCount / p.packageSize) * 100)) : 0;
     const dday =
-      now && p.expiresAt
-        ? Math.ceil((new Date(p.expiresAt).getTime() - now) / 86400000)
-        : null;
+      now && p.expiresAt ? Math.ceil((new Date(p.expiresAt).getTime() - now) / 86400000) : null;
 
     return (
       <div
@@ -141,8 +128,8 @@ export default function PassList() {
               {/* 대기/종료 상태에서 오해를 줄이기 위한 안내 문구 */}
               {p.status === "pending_activation" && (
                 <div className="text-sm text-muted-foreground">
-                  구매하신 패키지는 현재 활성화 대기 중입니다. 처리 완료 후 사용
-                  가능한 상태로 표시됩니다.
+                  구매하신 패키지는 현재 활성화 대기 중입니다. 처리 완료 후 사용 가능한 상태로
+                  표시됩니다.
                 </div>
               )}
               {p.status === "pending_payment" && (
@@ -150,9 +137,7 @@ export default function PassList() {
                   구매하신 패키지가 입금 확인 중입니다.
                 </div>
               )}
-              {(p.status === "ended" ||
-                p.status === "expired" ||
-                p.status === "cancelled") && (
+              {(p.status === "ended" || p.status === "expired" || p.status === "cancelled") && (
                 <div className="text-sm text-muted-foreground">
                   현재는 사용이 종료된 패키지입니다.
                 </div>
@@ -185,8 +170,7 @@ export default function PassList() {
                 />
               </div>
               <div className="mt-2 text-sm tabular-nums text-muted-foreground">
-                사용 {p.usedCount} / 총 {p.packageSize} · 잔여{" "}
-                {p.remainingCount}
+                사용 {p.usedCount} / 총 {p.packageSize} · 잔여 {p.remainingCount}
               </div>
             </div>
 
@@ -233,9 +217,7 @@ export default function PassList() {
         )}
         {activeItems.map(renderCard)}
         {activeItems.length === 0 && waitingItems.map(renderCard)}
-        {activeItems.length === 0 &&
-          waitingItems.length === 0 &&
-          historyItems.map(renderCard)}
+        {activeItems.length === 0 && waitingItems.length === 0 && historyItems.map(renderCard)}
       </CardContent>
     </Card>
   );

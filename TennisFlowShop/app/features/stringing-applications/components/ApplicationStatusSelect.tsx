@@ -42,15 +42,12 @@ export function ApplicationStatusSelect({
     setSelectedStatus(newStatus);
     startTransition(async () => {
       try {
-        const res = await fetch(
-          `/api/applications/stringing/${applicationId}/status`,
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ status: newStatus }),
-            credentials: "include",
-          },
-        );
+        const res = await fetch(`/api/applications/stringing/${applicationId}/status`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+          credentials: "include",
+        });
 
         if (!res.ok) throw new Error("상태 변경 실패");
 
@@ -65,16 +62,10 @@ export function ApplicationStatusSelect({
   };
 
   return (
-    <Select
-      value={selectedStatus}
-      onValueChange={handleChange}
-      disabled={isDisabled}
-    >
+    <Select value={selectedStatus} onValueChange={handleChange} disabled={isDisabled}>
       <SelectTrigger className="w-[140px]">
         {isCancelled ? (
-          <span className="text-muted-foreground">
-            {selectedStatus} (변경 불가)
-          </span>
+          <span className="text-muted-foreground">{selectedStatus} (변경 불가)</span>
         ) : (
           <SelectValue placeholder="상태 선택" />
         )}

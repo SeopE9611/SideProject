@@ -4,15 +4,7 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 const TARGET_DIRS = ["app", "components", "lib"];
-const EXTENSIONS = new Set([
-  ".ts",
-  ".tsx",
-  ".js",
-  ".jsx",
-  ".mjs",
-  ".cjs",
-  ".css",
-]);
+const EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".css"]);
 const TOKEN_DEFINITION_ALLOWLIST = new Set(["app/globals.css"]);
 const BRAND_EXCEPTION_WHITELIST = new Set([
   "app/login/_components/SocialAuthButtons.tsx",
@@ -20,10 +12,7 @@ const BRAND_EXCEPTION_WHITELIST = new Set([
   "app/admin/users/_components/UsersClient.tsx",
   "lib/badge-style.ts",
 ]);
-const BASELINE_PATH = path.join(
-  ROOT,
-  "scripts/token-palette-blue-baseline.json",
-);
+const BASELINE_PATH = path.join(ROOT, "scripts/token-palette-blue-baseline.json");
 
 const PRIMARY_BACKGROUND_REDEFINE = /--(?:primary|background)\s*:/g;
 const BLUE_REGRESSION =
@@ -34,12 +23,7 @@ function walk(dir, result = []) {
   if (!fs.existsSync(absDir)) return result;
 
   for (const entry of fs.readdirSync(absDir, { withFileTypes: true })) {
-    if (
-      entry.name === "node_modules" ||
-      entry.name === ".next" ||
-      entry.name === ".git"
-    )
-      continue;
+    if (entry.name === "node_modules" || entry.name === ".next" || entry.name === ".git") continue;
 
     const absPath = path.join(absDir, entry.name);
     const relPath = path.relative(ROOT, absPath).replaceAll("\\", "/");
@@ -91,12 +75,8 @@ for (const file of files) {
 
 const baseline = JSON.parse(fs.readFileSync(BASELINE_PATH, "utf8"));
 const baselineSet = new Set(baseline.blueFindings);
-const currentSignatures = blueFindings.map(
-  (issue) => `${issue.file}:${issue.line}:${issue.token}`,
-);
-const newBlueRegressions = currentSignatures.filter(
-  (sig) => !baselineSet.has(sig),
-);
+const currentSignatures = blueFindings.map((issue) => `${issue.file}:${issue.line}:${issue.token}`);
+const newBlueRegressions = currentSignatures.filter((sig) => !baselineSet.has(sig));
 
 if (redefineViolations.length === 0 && newBlueRegressions.length === 0) {
   console.log("✅ token palette consistency check: 위반 없음");
@@ -107,9 +87,7 @@ console.error("❌ token palette consistency check: 토큰 규칙 위반 발견"
 for (const issue of redefineViolations.sort((a, b) =>
   `${a.file}:${a.line}`.localeCompare(`${b.file}:${b.line}`),
 )) {
-  console.error(
-    `- [token-redefine] ${issue.file}:${issue.line} -> ${issue.token}`,
-  );
+  console.error(`- [token-redefine] ${issue.file}:${issue.line} -> ${issue.token}`);
 }
 for (const sig of newBlueRegressions.sort()) {
   console.error(`- [new-blue-regression] ${sig}`);

@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { buildRevenueReportSnapshotCsv } from "../../_lib/revenueReportCsv";
 import { requireAdmin } from "@/lib/admin.guard";
-import type {
-  RevenueReportResponse,
-  RevenueReportSnapshotStatus,
-} from "@/types/admin/reports";
+import type { RevenueReportResponse, RevenueReportSnapshotStatus } from "@/types/admin/reports";
 
 const COLLECTION = "revenue_report_snapshots";
 const YYYY_MM_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
@@ -27,9 +24,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object";
 }
 
-function isRevenueReportResponse(
-  value: unknown,
-): value is RevenueReportResponse {
+function isRevenueReportResponse(value: unknown): value is RevenueReportResponse {
   if (!isRecord(value)) return false;
   const { range, online, offline, combinedPreview, series } = value;
   return (
@@ -60,16 +55,10 @@ export async function GET(req: Request) {
     .collection<RevenueReportSnapshotExportDoc>(COLLECTION)
     .findOne({ yyyymm });
   if (!snapshot) {
-    return NextResponse.json(
-      { message: "snapshot not found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ message: "snapshot not found" }, { status: 404 });
   }
   if (!isRevenueReportResponse(snapshot.report)) {
-    return NextResponse.json(
-      { message: "invalid snapshot report" },
-      { status: 400 },
-    );
+    return NextResponse.json({ message: "invalid snapshot report" }, { status: 400 });
   }
 
   return new Response(

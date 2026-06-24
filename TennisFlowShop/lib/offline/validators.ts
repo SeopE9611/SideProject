@@ -21,12 +21,7 @@ export const offlineCustomerCreateSchema = z.object({
 export const offlineCustomerPatchSchema = offlineCustomerCreateSchema.partial();
 
 const dateInputSchema = z.union([
-  z
-    .string()
-    .refine(
-      (value) => !Number.isNaN(new Date(value).getTime()),
-      "invalid date",
-    ),
+  z.string().refine((value) => !Number.isNaN(new Date(value).getTime()), "invalid date"),
   z.date(),
 ]);
 
@@ -64,13 +59,7 @@ export const offlineRecordCreateSchema = z.object({
   userId: z.string().optional().nullable(),
   kind: z.enum(["stringing", "package_sale", "etc"]),
   occurredAt: dateInputSchema.optional(),
-  status: z.enum([
-    "received",
-    "in_progress",
-    "completed",
-    "picked_up",
-    "canceled",
-  ]),
+  status: z.enum(["received", "in_progress", "completed", "picked_up", "canceled"]),
   lines: z
     .array(
       z.object({
@@ -119,9 +108,7 @@ export const offlineRecordPatchSchema = z
     userId: z.string().optional().nullable(),
     kind: z.enum(["stringing", "package_sale", "etc"]).optional(),
     occurredAt: dateInputSchema.optional(),
-    status: z
-      .enum(["received", "in_progress", "completed", "picked_up", "canceled"])
-      .optional(),
+    status: z.enum(["received", "in_progress", "completed", "picked_up", "canceled"]).optional(),
     lines: z
       .array(
         z.object({

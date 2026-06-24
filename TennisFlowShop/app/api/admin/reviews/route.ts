@@ -3,15 +3,9 @@ import { z } from "zod";
 
 import { getDb } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
-import type {
-  AdminReviewListItemDto,
-  AdminReviewsListResponseDto,
-} from "@/types/admin/reviews";
+import type { AdminReviewListItemDto, AdminReviewsListResponseDto } from "@/types/admin/reviews";
 
-function parseIntParam(
-  v: string | null,
-  opts: { defaultValue: number; min: number; max: number },
-) {
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
@@ -72,10 +66,7 @@ export async function GET(req: Request) {
     match.$or = [
       { type: "service" },
       {
-        $and: [
-          { productId: { $exists: false } },
-          { product_id: { $exists: false } },
-        ],
+        $and: [{ productId: { $exists: false } }, { product_id: { $exists: false } }],
       },
     ];
   }
@@ -142,10 +133,7 @@ export async function GET(req: Request) {
               $ifNull: [
                 { $arrayElemAt: ["$_product.name", 0] },
                 {
-                  $ifNull: [
-                    { $arrayElemAt: ["$_product.title", 0] },
-                    "$productName",
-                  ],
+                  $ifNull: [{ $arrayElemAt: ["$_product.title", 0] }, "$productName"],
                 },
               ],
             },
@@ -155,10 +143,7 @@ export async function GET(req: Request) {
           $cond: [
             { $or: [{ $eq: ["$resolvedType", "product"] }, "$hasProductId"] },
             {
-              $ifNull: [
-                "$subject",
-                { $ifNull: ["$productNameResolved", "상품 리뷰"] },
-              ],
+              $ifNull: ["$subject", { $ifNull: ["$productNameResolved", "상품 리뷰"] }],
             },
             { $ifNull: ["$subject", "서비스 리뷰"] },
           ],

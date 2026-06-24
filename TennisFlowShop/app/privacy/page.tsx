@@ -197,8 +197,8 @@ export default function PrivacyPage() {
               개인정보처리방침
             </h1>
             <p className="max-w-3xl break-keep text-muted-foreground leading-relaxed">
-              도깨비테니스(이하 '회사')는 이용자의 개인정보를 중요시하며,
-              「개인정보 보호법」을 준수하기 위하여 노력하고 있습니다.
+              도깨비테니스(이하 '회사')는 이용자의 개인정보를 중요시하며, 「개인정보 보호법」을
+              준수하기 위하여 노력하고 있습니다.
             </p>
             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               <RefreshCw className="h-4 w-4" />
@@ -213,15 +213,13 @@ export default function PrivacyPage() {
           {/* Introduction */}
           <PublicSurface className="space-y-4">
             <p className="break-keep text-foreground/80 leading-relaxed">
-              회사는 개인정보처리방침을 통하여 회사가 이용자로부터 수집하는
-              개인정보의 항목, 개인정보의 수집 및 이용목적, 개인정보의 보유 및
-              이용기간, 개인정보의 제3자 제공 및 취급위탁에 관한 사항을
-              알려드립니다.
+              회사는 개인정보처리방침을 통하여 회사가 이용자로부터 수집하는 개인정보의 항목,
+              개인정보의 수집 및 이용목적, 개인정보의 보유 및 이용기간, 개인정보의 제3자 제공 및
+              취급위탁에 관한 사항을 알려드립니다.
             </p>
             <p className="break-keep text-foreground/80 leading-relaxed">
-              본 개인정보처리방침은 관련 법령 및 지침의 변경이나 회사의 내부
-              방침 변경 등으로 인하여 변경될 수 있으며, 변경 시에는 회사
-              홈페이지를 통하여 공지하도록 하겠습니다.
+              본 개인정보처리방침은 관련 법령 및 지침의 변경이나 회사의 내부 방침 변경 등으로 인하여
+              변경될 수 있으며, 변경 시에는 회사 홈페이지를 통하여 공지하도록 하겠습니다.
             </p>
           </PublicSurface>
 
@@ -229,11 +227,7 @@ export default function PrivacyPage() {
           {privacySections.map((section) => {
             const Icon = section.icon;
             return (
-              <PublicSurface
-                key={section.id}
-                id={section.id}
-                className="scroll-mt-20 space-y-4"
-              >
+              <PublicSurface key={section.id} id={section.id} className="scroll-mt-20 space-y-4">
                 <div className="flex items-start gap-3">
                   <Icon className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
                   <h2 className="break-keep text-xl font-semibold tracking-tight md:text-2xl">
@@ -259,16 +253,12 @@ export default function PrivacyPage() {
             </div>
             <div className="min-w-0 space-y-3 md:pl-8">
               <p className="break-keep text-foreground/80 leading-relaxed">
-                개인정보 보호 관련 문의사항이 있으시면 개인정보 보호책임자에게
-                연락해 주시기 바랍니다. 회사는 이용자의 개인정보를 보호하기 위해
-                최선을 다하겠습니다.
+                개인정보 보호 관련 문의사항이 있으시면 개인정보 보호책임자에게 연락해 주시기
+                바랍니다. 회사는 이용자의 개인정보를 보호하기 위해 최선을 다하겠습니다.
               </p>
               <p className="break-keep text-foreground/80">
                 더 자세한 문의는{" "}
-                <Link
-                  href="/board/qna/write"
-                  className="text-primary hover:underline"
-                >
+                <Link href="/board/qna/write" className="text-primary hover:underline">
                   고객센터
                 </Link>
                 를 통해 문의해 주시기 바랍니다.
@@ -281,15 +271,9 @@ export default function PrivacyPage() {
       <div className="mt-10 border-t">
         <SiteContainer className="max-w-4xl bp-lg:max-w-4xl py-8 md:py-10">
           <div className="flex flex-col items-start justify-between gap-4 text-sm text-muted-foreground sm:flex-row sm:items-center">
-            <p>
-              &copy; {new Date().getFullYear()} 도깨비테니스. All rights
-              reserved.
-            </p>
+            <p>&copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.</p>
             <div className="flex items-center gap-4">
-              <Link
-                href="/terms"
-                className="hover:text-foreground transition-colors"
-              >
+              <Link href="/terms" className="hover:text-foreground transition-colors">
                 이용약관
               </Link>
               <span>·</span>

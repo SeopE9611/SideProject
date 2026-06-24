@@ -5,10 +5,7 @@ import LoginGate from "@/components/system/LoginGate";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { racketBrandLabel } from "@/lib/constants";
 import clientPromise from "@/lib/mongodb";
-import {
-  getEffectiveRacketPrice,
-  getRacketDiscountRate,
-} from "@/lib/racket-pricing";
+import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import RacketSelectStringClient from "./RacketSelectStringClient";
@@ -78,14 +75,11 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   // (가드) 라켓 구매 가능 여부: 대여중(판매 불가) / 판매완료 상태를 선택 단계에서 1차 차단
   // - createOrder(서버) 검증이 최종이지만, UX 상 여기서 먼저 막아주면 '장바구니/결제'까지 헛걸음을 줄임
   const rawQtyField = (doc as any).quantity;
-  const hasStockQty =
-    typeof rawQtyField === "number" && Number.isFinite(rawQtyField);
-  const activeRentalCount = await db
-    .collection("rental_orders")
-    .countDocuments({
-      racketId: racketObjectId,
-      status: { $in: ["paid", "out"] },
-    });
+  const hasStockQty = typeof rawQtyField === "number" && Number.isFinite(rawQtyField);
+  const activeRentalCount = await db.collection("rental_orders").countDocuments({
+    racketId: racketObjectId,
+    status: { $in: ["paid", "out"] },
+  });
   const baseQty = hasStockQty
     ? Math.max(0, Math.trunc(rawQtyField))
     : doc.status === "available"
@@ -100,9 +94,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         : "현재 판매 가능한 상태가 아닙니다.";
     return (
       <SiteContainer variant="wide" className="py-10 space-y-2">
-        <h1 className="text-lg font-semibold">
-          현재 구매할 수 없는 라켓입니다.
-        </h1>
+        <h1 className="text-lg font-semibold">현재 구매할 수 없는 라켓입니다.</h1>
         <p className="text-sm text-muted-foreground">{reasonLabel}</p>
         <a className="text-sm underline" href={`/rackets/${id}`}>
           상세로 돌아가기

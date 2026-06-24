@@ -54,9 +54,7 @@ const CancelOrderDialog = ({
     .trim()
     .toLowerCase();
   const needsRefundAccount =
-    normalizedPaymentProvider === "nicepay"
-      ? false
-      : paymentStatus === "결제완료";
+    normalizedPaymentProvider === "nicepay" ? false : paymentStatus === "결제완료";
 
   /**
    * 이 컴포넌트는
@@ -100,9 +98,7 @@ const CancelOrderDialog = ({
     (selectedReason !== undefined ||
       otherReason.trim().length > 0 ||
       (needsRefundAccount &&
-        (refundBank !== "" ||
-          refundAccount.trim().length > 0 ||
-          refundHolder.trim().length > 0)) ||
+        (refundBank !== "" || refundAccount.trim().length > 0 || refundHolder.trim().length > 0)) ||
       confirmWithStringing ||
       linkedCount !== null);
   useUnsavedChangesGuard(isDirty);
@@ -161,8 +157,7 @@ const CancelOrderDialog = ({
           // reasonCode: 셀렉트 박스 라벨(예: '단순 변심', '다른 상품으로 대체')
           reasonCode: finalReason,
           // 기타 사유 텍스트
-          reasonText:
-            selectedReason === "기타" ? otherReason.trim() : undefined,
+          reasonText: selectedReason === "기타" ? otherReason.trim() : undefined,
           // 연결된 교체 서비스 신청도 함께 취소되도록 요청하는지 여부
           withStringing: confirmWithStringing ? true : false,
           ...(needsRefundAccount && refundValidation?.ok
@@ -179,10 +174,7 @@ const CancelOrderDialog = ({
 
       // 409: 비즈니스 룰 위반 (연결된 신청 존재 등)
       if (!res.ok && res.status === 409) {
-        const parsed = await readCancelRequestError(
-          res,
-          "취소 요청 처리 중 오류가 발생했습니다.",
-        );
+        const parsed = await readCancelRequestError(res, "취소 요청 처리 중 오류가 발생했습니다.");
 
         if (parsed.errorCode === "STRINGING_IN_PROGRESS") {
           // 이미 작업 중/완료라 취소 요청 자체가 불가한 경우
@@ -210,17 +202,13 @@ const CancelOrderDialog = ({
         }
 
         // 그 외 409는 일반 에러로 처리
-        throw new Error(
-          parsed.message || "취소 요청 처리 중 오류가 발생했습니다.",
-        );
+        throw new Error(parsed.message || "취소 요청 처리 중 오류가 발생했습니다.");
       }
 
       // 409 외 일반 에러
       if (!res.ok) {
         const parsed = await readCancelRequestError(res);
-        throw new Error(
-          parsed.message || "취소 요청 처리 중 오류가 발생했습니다.",
-        );
+        throw new Error(parsed.message || "취소 요청 처리 중 오류가 발생했습니다.");
       }
 
       // 여기까지 왔으면:
@@ -280,18 +268,12 @@ const CancelOrderDialog = ({
           {/* 연결된 교체 서비스 신청 경고 메시지 */}
           {confirmWithStringing && (
             <div className="mb-2 rounded-md border border-border bg-muted px-3 py-2 text-xs text-foreground">
-              <div className="mb-1 font-semibold">
-                교체 서비스 신청도 함께 취소됩니다.
-              </div>
+              <div className="mb-1 font-semibold">교체 서비스 신청도 함께 취소됩니다.</div>
               <p>
                 이 주문으로 접수된 교체 서비스 신청
-                {linkedCount && linkedCount > 1
-                  ? ` ${linkedCount}건`
-                  : "이"}{" "}
-                있습니다.
+                {linkedCount && linkedCount > 1 ? ` ${linkedCount}건` : "이"} 있습니다.
                 <br />
-                계속 진행하면 해당 신청도 함께 취소되도록 요청됩니다. 정말
-                진행하시겠습니까?
+                계속 진행하면 해당 신청도 함께 취소되도록 요청됩니다. 정말 진행하시겠습니까?
               </p>
             </div>
           )}
@@ -305,9 +287,7 @@ const CancelOrderDialog = ({
               <SelectItem value="단순 변심">단순 변심</SelectItem>
               <SelectItem value="상품 정보와 다름">상품 정보와 다름</SelectItem>
               <SelectItem value="배송 지연">배송 지연</SelectItem>
-              <SelectItem value="다른 상품으로 대체">
-                다른 상품으로 대체
-              </SelectItem>
+              <SelectItem value="다른 상품으로 대체">다른 상품으로 대체</SelectItem>
               <SelectItem value="기타">기타</SelectItem>
             </SelectContent>
           </Select>
@@ -341,11 +321,7 @@ const CancelOrderDialog = ({
 
         {/*  제출 버튼 */}
         <DialogFooter>
-          <Button
-            variant="destructive"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-          >
+          <Button variant="destructive" onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? "요청 처리 중..." : "취소 요청하기"}
           </Button>
         </DialogFooter>

@@ -12,7 +12,11 @@ import { getKstMonthRange, getKstTodayRange, toKstYmd } from "@/lib/date/kst";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { maskPhone } from "@/lib/offline/normalizers";
 import { cn } from "@/lib/utils";
-import type { OfflineCustomerDto, OfflinePaymentMethod, OfflineRevenueSummary } from "@/types/admin/offline";
+import type {
+  OfflineCustomerDto,
+  OfflinePaymentMethod,
+  OfflineRevenueSummary,
+} from "@/types/admin/offline";
 import {
   AlertCircle,
   Check,
@@ -202,7 +206,12 @@ function formatLineSummary(
             ? `스트링 ${mainString}`
             : "";
 
-      return [lines.length > 1 ? `라켓 ${index + 1}` : "", String(line.racketName ?? "").trim(), stringSummary, tension]
+      return [
+        lines.length > 1 ? `라켓 ${index + 1}` : "",
+        String(line.racketName ?? "").trim(),
+        stringSummary,
+        tension,
+      ]
         .filter(Boolean)
         .join(" · ");
     })
@@ -336,7 +345,13 @@ function StatusBadge({ status, type }: { status: string; type: "record" | "payme
 }
 
 // Message Component
-function Message({ type, children }: { type: "success" | "error" | "info"; children: React.ReactNode }) {
+function Message({
+  type,
+  children,
+}: {
+  type: "success" | "error" | "info";
+  children: React.ReactNode;
+}) {
   const styles = {
     success: "bg-success/10 text-success dark:text-success border-success/20",
     error: "bg-destructive/10 text-destructive border-destructive/20",
@@ -350,7 +365,9 @@ function Message({ type, children }: { type: "success" | "error" | "info"; child
   const Icon = icons[type];
 
   return (
-    <div className={cn("flex items-center gap-2 rounded-lg border px-3 py-2 text-sm", styles[type])}>
+    <div
+      className={cn("flex items-center gap-2 rounded-lg border px-3 py-2 text-sm", styles[type])}
+    >
       <Icon className="h-4 w-4 shrink-0" />
       <span>{children}</span>
     </div>
@@ -462,7 +479,9 @@ export default function OfflineAdminClient() {
     mutate: mutateSummary,
   } = useSWR<OfflineRevenueSummary>(summaryKey, authenticatedSWRFetcher);
   async function selectOfflineCustomer(id: string) {
-    const res = (await authenticatedSWRFetcher(`/api/admin/offline/customers/${id}`)) as { item: OfflineCustomerDto };
+    const res = (await authenticatedSWRFetcher(`/api/admin/offline/customers/${id}`)) as {
+      item: OfflineCustomerDto;
+    };
     setSelected({
       source: "offline",
       offlineCustomerId: res.item.id,
@@ -477,20 +496,27 @@ export default function OfflineAdminClient() {
   const offlineItems = data?.offlineCustomers ?? [];
   const hasSearchResult = onlineItems.length > 0 || offlineItems.length > 0;
   const recordsTotal = records?.total ?? records?.items?.length ?? 0;
-  const recordsTotalPages = records?.totalPages ?? (recordsTotal > 0 ? Math.ceil(recordsTotal / RECORDS_LIMIT) : 0);
+  const recordsTotalPages =
+    records?.totalPages ?? (recordsTotal > 0 ? Math.ceil(recordsTotal / RECORDS_LIMIT) : 0);
   const currentRecordsPage = records?.page ?? recordsPage;
-  const currentPageRecordIds = (records?.items ?? []).map((record: any) => String(record.id ?? "")).filter(Boolean);
+  const currentPageRecordIds = (records?.items ?? [])
+    .map((record: any) => String(record.id ?? ""))
+    .filter(Boolean);
 
   const isCurrentPageAllRecordsSelected =
-    currentPageRecordIds.length > 0 && currentPageRecordIds.every((id) => selectedRecordIds.includes(id));
+    currentPageRecordIds.length > 0 &&
+    currentPageRecordIds.every((id) => selectedRecordIds.includes(id));
 
   const isCurrentPagePartiallySelected =
-    currentPageRecordIds.some((id) => selectedRecordIds.includes(id)) && !isCurrentPageAllRecordsSelected;
+    currentPageRecordIds.some((id) => selectedRecordIds.includes(id)) &&
+    !isCurrentPageAllRecordsSelected;
 
   // 최근 작업/매출 기록에 실제 적용된 필터가 있는지 확인합니다.
   // 주의: recordFilters는 입력 중인 값이고,
   // submittedRecordFilters가 실제 API 조회에 사용되는 값입니다.
-  const hasSubmittedRecordFilters = Object.values(submittedRecordFilters).some((value) => value.trim().length > 0);
+  const hasSubmittedRecordFilters = Object.values(submittedRecordFilters).some(
+    (value) => value.trim().length > 0,
+  );
 
   // 현재 적용된 필터를 운영자가 읽기 쉬운 한글 라벨로 변환합니다.
   const submittedRecordFilterLabels = [
@@ -811,7 +837,8 @@ export default function OfflineAdminClient() {
           )}
           {summaryError && !summaryLoading && (
             <Message type="error">
-              오프라인 매출 요약을 불러오지 못했습니다. 기존 고객/기록 관리는 계속 사용할 수 있습니다.
+              오프라인 매출 요약을 불러오지 못했습니다. 기존 고객/기록 관리는 계속 사용할 수
+              있습니다.
             </Message>
           )}
           {summary && !summaryError && (
@@ -819,8 +846,12 @@ export default function OfflineAdminClient() {
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                 <div className="rounded-xl border border-border/60 bg-primary/5 p-4">
                   <p className="text-xs font-medium text-muted-foreground">오프라인 총 매출</p>
-                  <p className="mt-2 text-2xl font-bold tabular-nums">{formatCurrency(summary.total.paidAmount)}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">순매출 {formatCurrency(summary.total.netAmount)}</p>
+                  <p className="mt-2 text-2xl font-bold tabular-nums">
+                    {formatCurrency(summary.total.paidAmount)}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    순매출 {formatCurrency(summary.total.netAmount)}
+                  </p>
                 </div>
                 <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
                   <p className="text-xs font-medium text-muted-foreground">작업/매출 기록</p>
@@ -861,14 +892,20 @@ export default function OfflineAdminClient() {
               </div>
               <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
                 <div className="rounded-xl border border-border/60 p-4">
-                  <p className="mb-3 text-sm font-semibold text-foreground">결제수단별 결제완료 매출</p>
+                  <p className="mb-3 text-sm font-semibold text-foreground">
+                    결제수단별 결제완료 매출
+                  </p>
                   <div className="grid gap-2 sm:grid-cols-4">
-                    {(Object.keys(PAYMENT_METHOD_LABELS) as OfflinePaymentMethod[]).map((method) => (
-                      <div key={method} className="rounded-lg bg-muted/30 px-3 py-2">
-                        <p className="text-xs text-muted-foreground">{methodLabel(method)}</p>
-                        <p className="font-semibold tabular-nums">{formatCurrency(summary.total.byMethod[method])}</p>
-                      </div>
-                    ))}
+                    {(Object.keys(PAYMENT_METHOD_LABELS) as OfflinePaymentMethod[]).map(
+                      (method) => (
+                        <div key={method} className="rounded-lg bg-muted/30 px-3 py-2">
+                          <p className="text-xs text-muted-foreground">{methodLabel(method)}</p>
+                          <p className="font-semibold tabular-nums">
+                            {formatCurrency(summary.total.byMethod[method])}
+                          </p>
+                        </div>
+                      ),
+                    )}
                   </div>
                 </div>
                 <div className="rounded-xl border border-border/60 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
@@ -913,7 +950,10 @@ export default function OfflineAdminClient() {
               <div className="min-w-0">
                 <p className="mb-1 text-xs font-semibold text-primary">현재 선택 고객</p>
                 <div className="flex min-w-0 flex-wrap items-center gap-2">
-                  <span className="line-clamp-2 break-keep text-lg font-semibold" title={selected.name}>
+                  <span
+                    className="line-clamp-2 break-keep text-lg font-semibold"
+                    title={selected.name}
+                  >
                     {selected.name}
                   </span>
                   <Badge variant="secondary" className="shrink-0 whitespace-nowrap text-xs">
@@ -1036,7 +1076,9 @@ export default function OfflineAdminClient() {
                 </div>
               )}
               {submittedQuery && !searchLoading && !hasSearchResult && (
-                <Message type="info">검색 결과가 없습니다. 신규 고객으로 등록할 수 있습니다.</Message>
+                <Message type="info">
+                  검색 결과가 없습니다. 신규 고객으로 등록할 수 있습니다.
+                </Message>
               )}
 
               {submittedQuery && !searchLoading && hasSearchResult && (
@@ -1061,7 +1103,9 @@ export default function OfflineAdminClient() {
                                 <User className="h-4 w-4" />
                               </div>
                               <div className="min-w-0">
-                                <p className="truncate text-sm font-medium">{u.name || "이름 없음"}</p>
+                                <p className="truncate text-sm font-medium">
+                                  {u.name || "이름 없음"}
+                                </p>
                                 <p
                                   className="truncate text-xs text-muted-foreground"
                                   title={u.phone ? maskPhone(u.phone) : u.email || "정보 없음"}
@@ -1113,7 +1157,9 @@ export default function OfflineAdminClient() {
                                 <User className="h-4 w-4" />
                               </div>
                               <div className="min-w-0">
-                                <p className="truncate text-sm font-medium">{c.name || "이름 없음"}</p>
+                                <p className="truncate text-sm font-medium">
+                                  {c.name || "이름 없음"}
+                                </p>
                                 <p className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
                                   {c.phoneMasked}
                                 </p>
@@ -1205,7 +1251,9 @@ export default function OfflineAdminClient() {
                 </FormField>
               </div>
               {registerMessage && (
-                <Message type={registerMessage.includes("완료") ? "success" : "error"}>{registerMessage}</Message>
+                <Message type={registerMessage.includes("완료") ? "success" : "error"}>
+                  {registerMessage}
+                </Message>
               )}
               <Button
                 variant="secondary"
@@ -1284,10 +1332,12 @@ export default function OfflineAdminClient() {
                   <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <p className="text-sm font-semibold text-foreground">선택 고객 기준으로 기록합니다</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          선택 고객 기준으로 기록합니다
+                        </p>
                         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                          작업 저장 전 고객명과 휴대폰 번호를 한 번 더 확인하세요. 저장 후 최근 작업/매출 목록에서
-                          수정할 수 있습니다.
+                          작업 저장 전 고객명과 휴대폰 번호를 한 번 더 확인하세요. 저장 후 최근
+                          작업/매출 목록에서 수정할 수 있습니다.
                         </p>
                       </div>
                       <Badge variant="secondary" className="w-fit shrink-0">
@@ -1347,9 +1397,14 @@ export default function OfflineAdminClient() {
                       </div>
 
                       {form.lines.map((line, index) => (
-                        <div key={line.id} className="rounded-xl border border-border/60 bg-background p-4">
+                        <div
+                          key={line.id}
+                          className="rounded-xl border border-border/60 bg-background p-4"
+                        >
                           <div className="mb-3 flex items-center justify-between gap-2">
-                            <p className="text-sm font-semibold text-foreground">라켓 {index + 1}</p>
+                            <p className="text-sm font-semibold text-foreground">
+                              라켓 {index + 1}
+                            </p>
 
                             {form.lines.length > 1 ? (
                               <Button
@@ -1537,7 +1592,9 @@ export default function OfflineAdminClient() {
                     <div className="rounded-xl border border-border/60 bg-background px-4 py-3">
                       <div className="grid gap-3 sm:grid-cols-3">
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground">라켓별 금액 합계</p>
+                          <p className="text-xs font-medium text-muted-foreground">
+                            라켓별 금액 합계
+                          </p>
                           <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">
                             {formatCurrency(workLineTotalAmount)}
                           </p>
@@ -1555,7 +1612,9 @@ export default function OfflineAdminClient() {
                           <p
                             className={cn(
                               "mt-1 text-sm font-semibold tabular-nums",
-                              workPaymentDifference === 0 ? "text-muted-foreground" : "text-warning",
+                              workPaymentDifference === 0
+                                ? "text-muted-foreground"
+                                : "text-warning",
                             )}
                           >
                             {formatCurrency(workPaymentDifference)}
@@ -1564,8 +1623,8 @@ export default function OfflineAdminClient() {
                       </div>
 
                       <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                        전체 결제금액은 라켓별 합계와 다를 수 있습니다. 할인, 추가비, 현장 조정 금액이 있으면 차액으로
-                        확인하세요.
+                        전체 결제금액은 라켓별 합계와 다를 수 있습니다. 할인, 추가비, 현장 조정
+                        금액이 있으면 차액으로 확인하세요.
                       </p>
                     </div>
                   </div>
@@ -1584,15 +1643,20 @@ export default function OfflineAdminClient() {
                           setSaveMessage(null);
                           setSaveMessageType(null);
                           let offlineCustomerId =
-                            selected.source === "offline" ? selected.offlineCustomerId : selected.offlineCustomerId;
+                            selected.source === "offline"
+                              ? selected.offlineCustomerId
+                              : selected.offlineCustomerId;
                           if (selected.source === "online" && !offlineCustomerId) {
-                            const ensured = (await adminMutator("/api/admin/offline/customers/ensure", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({
-                                userId: selected.userId,
-                              }),
-                            })) as {
+                            const ensured = (await adminMutator(
+                              "/api/admin/offline/customers/ensure",
+                              {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                  userId: selected.userId,
+                                }),
+                              },
+                            )) as {
                               item: OfflineCustomerDto;
                             };
                             offlineCustomerId = ensured.item.id;
@@ -1608,7 +1672,10 @@ export default function OfflineAdminClient() {
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
                               offlineCustomerId,
-                              userId: selected.source === "online" ? selected.userId : selected.userId || null,
+                              userId:
+                                selected.source === "online"
+                                  ? selected.userId
+                                  : selected.userId || null,
                               kind: form.kind,
                               status: form.status,
                               lines: form.lines
@@ -1621,7 +1688,9 @@ export default function OfflineAdminClient() {
 
                                     // 기존 화면/과거 코드 호환용 대표 스트링명입니다.
                                     stringName:
-                                      mainStringName && crossStringName && mainStringName !== crossStringName
+                                      mainStringName &&
+                                      crossStringName &&
+                                      mainStringName !== crossStringName
                                         ? `${mainStringName} / ${crossStringName}`
                                         : mainStringName || crossStringName,
 
@@ -1648,7 +1717,8 @@ export default function OfflineAdminClient() {
                                       line.tensionMain,
                                       line.tensionCross,
                                       line.note,
-                                    ].some((value) => String(value ?? "").trim().length > 0) || Number(line.amount) > 0,
+                                    ].some((value) => String(value ?? "").trim().length > 0) ||
+                                    Number(line.amount) > 0,
                                 ),
                               payment: {
                                 status: form.payStatus,
@@ -1673,7 +1743,9 @@ export default function OfflineAdminClient() {
                         } catch (e: any) {
                           const message = String(e?.message || "");
                           if (message.includes("휴대폰 번호"))
-                            setSaveMessage("온라인 회원에 휴대폰 번호가 없어 오프라인 명부 연결이 필요합니다.");
+                            setSaveMessage(
+                              "온라인 회원에 휴대폰 번호가 없어 오프라인 명부 연결이 필요합니다.",
+                            );
                           else setSaveMessage(message || "오프라인 작업 저장에 실패했습니다.");
                           setSaveMessageType("error");
                         } finally {
@@ -1710,7 +1782,12 @@ export default function OfflineAdminClient() {
               title="최근 오프라인 작업/매출"
               description="등록된 기록을 조회하고 관리합니다"
             />
-            <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+              className="shrink-0"
+            >
               {showFilters ? <X className="mr-2 h-4 w-4" /> : <Search className="mr-2 h-4 w-4" />}
               {showFilters ? "필터 닫기" : "필터 열기"}
             </Button>
@@ -1815,7 +1892,9 @@ export default function OfflineAdminClient() {
             {/* 좌측: 현재 뷰 및 필터 상태 */}
             <p className="font-semibold text-foreground">현재 보기: {currentRecordViewLabel}</p>
             {submittedRecordFilterLabels.length > 0 && (
-              <p className="text-muted-foreground">필터: {submittedRecordFilterLabels.join(" / ")}</p>
+              <p className="text-muted-foreground">
+                필터: {submittedRecordFilterLabels.join(" / ")}
+              </p>
             )}
 
             {/* 우측: 수량 정보 및 액션 버튼 */}
@@ -1828,9 +1907,13 @@ export default function OfflineAdminClient() {
 
               {/* 총 수량 및 선택 수량 그룹화 */}
               <div className="flex items-center gap-2 text-sm">
-                <span className="font-medium text-foreground">총 {recordsTotal.toLocaleString("ko-KR")}건</span>
+                <span className="font-medium text-foreground">
+                  총 {recordsTotal.toLocaleString("ko-KR")}건
+                </span>
                 <span className="text-muted-foreground/50">|</span> {/* 구분선 추가 */}
-                <span className="text-muted-foreground">선택 {selectedRecordIds.length.toLocaleString("ko-KR")}개</span>
+                <span className="text-muted-foreground">
+                  선택 {selectedRecordIds.length.toLocaleString("ko-KR")}개
+                </span>
               </div>
 
               <Button
@@ -1846,7 +1929,9 @@ export default function OfflineAdminClient() {
               </Button>
             </div>
           </div>
-          {recordsMessage && <Message type={recordsMessageType || "info"}>{recordsMessage}</Message>}
+          {recordsMessage && (
+            <Message type={recordsMessageType || "info"}>{recordsMessage}</Message>
+          )}
           {/* Filter Section */}
           {showFilters && (
             <form
@@ -2029,7 +2114,9 @@ export default function OfflineAdminClient() {
                             isCurrentPageAllRecordsSelected ||
                             (isCurrentPagePartiallySelected ? "indeterminate" : false)
                           }
-                          onCheckedChange={(checked) => toggleSelectAllCurrentRecords(Boolean(checked))}
+                          onCheckedChange={(checked) =>
+                            toggleSelectAllCurrentRecords(Boolean(checked))
+                          }
                           aria-label="현재 페이지 전체 선택"
                         />
                       </th>
@@ -2045,7 +2132,9 @@ export default function OfflineAdminClient() {
                         유형
                       </th>
 
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">작업 내용</th>
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                        작업 내용
+                      </th>
 
                       <th className="w-[110px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">
                         금액
@@ -2070,7 +2159,9 @@ export default function OfflineAdminClient() {
                         <td className="px-4 py-3">
                           <Checkbox
                             checked={selectedRecordIds.includes(String(r.id))}
-                            onCheckedChange={(checked) => toggleRecordSelection(String(r.id), Boolean(checked))}
+                            onCheckedChange={(checked) =>
+                              toggleRecordSelection(String(r.id), Boolean(checked))
+                            }
                             aria-label={`${r.customerName ?? "오프라인 기록"} 선택`}
                           />
                         </td>
@@ -2082,7 +2173,10 @@ export default function OfflineAdminClient() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="min-w-0 max-w-[180px]">
-                            <p className="line-clamp-2 break-words font-medium" title={r.customerName}>
+                            <p
+                              className="line-clamp-2 break-words font-medium"
+                              title={r.customerName}
+                            >
                               {r.offlineCustomerId ? (
                                 <Link
                                   className="hover:text-primary transition-colors"
@@ -2124,7 +2218,12 @@ export default function OfflineAdminClient() {
                         <td className="px-4 py-3 whitespace-nowrap">
                           <div className="flex shrink-0 items-center gap-1">
                             {r.offlineCustomerId && (
-                              <Button asChild size="sm" variant="ghost" className="h-8 w-8 shrink-0 p-0">
+                              <Button
+                                asChild
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 shrink-0 p-0"
+                              >
                                 <Link href={`/admin/offline/customers/${r.offlineCustomerId}`}>
                                   <ExternalLink className="h-3.5 w-3.5" />
                                 </Link>
@@ -2135,7 +2234,8 @@ export default function OfflineAdminClient() {
                               variant="ghost"
                               className="h-8 w-8 shrink-0 p-0"
                               onClick={() => {
-                                const existingLines = Array.isArray(r.lines) && r.lines.length > 0 ? r.lines : [{}];
+                                const existingLines =
+                                  Array.isArray(r.lines) && r.lines.length > 0 ? r.lines : [{}];
 
                                 setEditingRecord(r);
                                 setEditForm({
@@ -2148,7 +2248,9 @@ export default function OfflineAdminClient() {
                                     return {
                                       id: `edit-line-${r.id}-${index}`,
                                       racketName: String(line.racketName ?? ""),
-                                      mainStringName: String(line.mainStringName ?? fallbackStringName),
+                                      mainStringName: String(
+                                        line.mainStringName ?? fallbackStringName,
+                                      ),
                                       crossStringName: String(line.crossStringName ?? ""),
                                       tensionMain: String(line.tensionMain ?? ""),
                                       tensionCross: String(line.tensionCross ?? ""),
@@ -2184,7 +2286,11 @@ export default function OfflineAdminClient() {
               <span className="font-medium text-foreground">{currentRecordsPage}</span> /{" "}
               {Math.max(recordsTotalPages, 1)} 페이지
               <span className="mx-2">·</span>
-              전체 <span className="font-medium text-foreground">{recordsTotal.toLocaleString("ko-KR")}</span>건
+              전체{" "}
+              <span className="font-medium text-foreground">
+                {recordsTotal.toLocaleString("ko-KR")}
+              </span>
+              건
             </p>
             <div className="flex gap-2">
               <Button
@@ -2201,7 +2307,11 @@ export default function OfflineAdminClient() {
                 type="button"
                 size="sm"
                 variant="outline"
-                disabled={recordsLoading || recordsTotalPages <= 1 || currentRecordsPage >= recordsTotalPages}
+                disabled={
+                  recordsLoading ||
+                  recordsTotalPages <= 1 ||
+                  currentRecordsPage >= recordsTotalPages
+                }
                 onClick={() => setRecordsPage((page) => page + 1)}
               >
                 다음
@@ -2250,12 +2360,17 @@ export default function OfflineAdminClient() {
                     <User className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="line-clamp-2 break-words font-medium" title={editingRecord.customerName}>
+                    <p
+                      className="line-clamp-2 break-words font-medium"
+                      title={editingRecord.customerName}
+                    >
                       {editingRecord.customerName}
                     </p>
                     <p className="line-clamp-2 break-keep text-xs text-muted-foreground">
-                      <span className="whitespace-nowrap tabular-nums">{editingRecord.customerPhoneMasked}</span> ·{" "}
-                      {formatLineSummary(editingRecord.lines)}
+                      <span className="whitespace-nowrap tabular-nums">
+                        {editingRecord.customerPhoneMasked}
+                      </span>{" "}
+                      · {formatLineSummary(editingRecord.lines)}
                     </p>
                   </div>
                 </div>
@@ -2307,7 +2422,10 @@ export default function OfflineAdminClient() {
                 </div>
 
                 {editForm.lines.map((line, index) => (
-                  <div key={line.id} className="rounded-xl border border-border/60 bg-background p-4">
+                  <div
+                    key={line.id}
+                    className="rounded-xl border border-border/60 bg-background p-4"
+                  >
                     <div className="mb-3 flex items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-foreground">라켓 {index + 1}</p>
 
@@ -2523,8 +2641,8 @@ export default function OfflineAdminClient() {
                 </div>
 
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                  수정 시에도 전체 결제금액은 라켓별 합계와 별도로 저장됩니다. 현장 할인이나 추가비가 있으면 차액으로
-                  관리하세요.
+                  수정 시에도 전체 결제금액은 라켓별 합계와 별도로 저장됩니다. 현장 할인이나
+                  추가비가 있으면 차액으로 관리하세요.
                 </p>
               </div>
               {/* Memo */}
@@ -2575,7 +2693,9 @@ export default function OfflineAdminClient() {
 
                                 // 기존 화면/과거 코드 호환용 대표 스트링명입니다.
                                 stringName:
-                                  mainStringName && crossStringName && mainStringName !== crossStringName
+                                  mainStringName &&
+                                  crossStringName &&
+                                  mainStringName !== crossStringName
                                     ? `${mainStringName} / ${crossStringName}`
                                     : mainStringName || crossStringName,
 
@@ -2599,7 +2719,8 @@ export default function OfflineAdminClient() {
                                   line.tensionMain,
                                   line.tensionCross,
                                   line.note,
-                                ].some((value) => String(value ?? "").trim().length > 0) || Number(line.amount) > 0,
+                                ].some((value) => String(value ?? "").trim().length > 0) ||
+                                Number(line.amount) > 0,
                             ),
                           payment: {
                             status: editForm.paymentStatus,

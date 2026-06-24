@@ -45,9 +45,7 @@ async function main() {
     const db = client.db(dbName);
 
     for (const spec of indexSpecs) {
-      const result = await db
-        .collection(spec.collection)
-        .createIndex(spec.keys, spec.options);
+      const result = await db.collection(spec.collection).createIndex(spec.keys, spec.options);
       console.log(`[ok] ${spec.collection}: ${result}`);
     }
 

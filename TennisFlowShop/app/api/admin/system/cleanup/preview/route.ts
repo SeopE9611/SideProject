@@ -34,13 +34,8 @@ export async function GET(req: Request) {
       .project({ hashedPassword: 0, password: 0 })
       .toArray();
 
-    const candidateIds = users
-      .map((user) => String(user?._id ?? ""))
-      .filter(Boolean);
-    const previewHash = createDangerousActionHash(
-      "admin.system.cleanup",
-      candidateIds,
-    );
+    const candidateIds = users.map((user) => String(user?._id ?? "")).filter(Boolean);
+    const previewHash = createDangerousActionHash("admin.system.cleanup", candidateIds);
     const confirmationToken = buildDangerousActionToken(
       "admin.system.cleanup",
       String(guard.admin._id),

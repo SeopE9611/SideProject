@@ -7,10 +7,7 @@
  */
 const normalizeStatusInput = (raw?: string | null) => String(raw ?? "").trim();
 
-const getMappedLabel = (
-  raw: string,
-  map: Record<string, string>,
-): string | null => {
+const getMappedLabel = (raw: string, map: Record<string, string>): string | null => {
   if (!raw) return null;
   const lowered = raw.toLowerCase();
   return map[lowered] ?? null;
@@ -52,19 +49,12 @@ export function getCommonOrderStatusLabel(raw?: string | null): string | null {
   return getMappedLabel(normalizeStatusInput(raw), ORDER_STATUS_LABEL_MAP);
 }
 
-export function getCommonPaymentStatusLabel(
-  raw?: string | null,
-): string | null {
+export function getCommonPaymentStatusLabel(raw?: string | null): string | null {
   return getMappedLabel(normalizeStatusInput(raw), PAYMENT_STATUS_LABEL_MAP);
 }
 
-export function getCommonApplicationStatusLabel(
-  raw?: string | null,
-): string | null {
-  return getMappedLabel(
-    normalizeStatusInput(raw),
-    APPLICATION_STATUS_LABEL_MAP,
-  );
+export function getCommonApplicationStatusLabel(raw?: string | null): string | null {
+  return getMappedLabel(normalizeStatusInput(raw), APPLICATION_STATUS_LABEL_MAP);
 }
 
 export function getCommonRentalStatusLabel(raw?: string | null): string | null {

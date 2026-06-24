@@ -3,13 +3,7 @@
 import { UserSidebar } from "@/app/mypage/orders/_components/UserSidebar";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
@@ -99,10 +93,7 @@ type Props = {
   children: ReactNode;
 };
 
-export default function AcademyApplicationMypageShell({
-  user,
-  children,
-}: Props) {
+export default function AcademyApplicationMypageShell({ user, children }: Props) {
   const router = useRouter();
   const {
     data: summary,
@@ -114,9 +105,7 @@ export default function AcademyApplicationMypageShell({
 
   const todoCount = summary?.todoCount ?? 0;
   const hasTodoItems = !summaryLoading && todoCount > 0;
-  const todoCardDescription = hasTodoItems
-    ? "확인하고 바로 처리하기"
-    : "현재 추가 작업 없음";
+  const todoCardDescription = hasTodoItems ? "확인하고 바로 처리하기" : "현재 추가 작업 없음";
 
   return (
     <div className="relative min-h-full bg-background">
@@ -126,23 +115,14 @@ export default function AcademyApplicationMypageShell({
       />
 
       <div className="relative overflow-hidden border-b border-border bg-card">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-muted/40"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bp-xs:hidden"
-        >
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-muted/40" />
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bp-xs:hidden">
           <div className="absolute top-10 left-10 w-20 h-20 bg-card/10 rounded-full animate-pulse" />
           <div className="absolute top-32 right-20 w-16 h-16 bg-card/5 rounded-full" />
           <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-card/10 rounded-full animate-pulse" />
         </div>
 
-        <SiteContainer
-          variant="wide"
-          className="relative py-6 bp-sm:py-10 bp-lg:py-16"
-        >
+        <SiteContainer variant="wide" className="relative py-6 bp-sm:py-10 bp-lg:py-16">
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center gap-4 mb-6 bp-sm:mb-8">
               <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 ring-1 ring-ring/20">
@@ -168,9 +148,7 @@ export default function AcademyApplicationMypageShell({
                     (summary?.activityFlowCount ?? "-")
                   )}
                 </div>
-                <div className="text-xs bp-sm:text-sm text-muted-foreground">
-                  전체 이용 내역
-                </div>
+                <div className="text-xs bp-sm:text-sm text-muted-foreground">전체 이용 내역</div>
               </div>
               <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                 <Target className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
@@ -181,9 +159,7 @@ export default function AcademyApplicationMypageShell({
                     (summary?.applicationsCount ?? "-")
                   )}
                 </div>
-                <div className="text-xs bp-sm:text-sm text-muted-foreground">
-                  교체서비스 신청
-                </div>
+                <div className="text-xs bp-sm:text-sm text-muted-foreground">교체서비스 신청</div>
               </div>
               <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                 <ClipboardList className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
@@ -194,9 +170,7 @@ export default function AcademyApplicationMypageShell({
                     (summary?.ordersCount ?? "-")
                   )}
                 </div>
-                <div className="text-xs bp-sm:text-sm text-muted-foreground">
-                  상품 주문
-                </div>
+                <div className="text-xs bp-sm:text-sm text-muted-foreground">상품 주문</div>
               </div>
               <button
                 type="button"
@@ -234,8 +208,8 @@ export default function AcademyApplicationMypageShell({
             </div>
             {summaryError ? (
               <p className="mt-3 text-xs text-muted-foreground">
-                일부 지표를 불러오지 못해 숫자를 &quot;-&quot;로 표시하고
-                있어요. 잠시 후 다시 확인해 주세요.
+                일부 지표를 불러오지 못해 숫자를 &quot;-&quot;로 표시하고 있어요. 잠시 후 다시
+                확인해 주세요.
               </p>
             ) : null}
           </div>
@@ -253,20 +227,14 @@ export default function AcademyApplicationMypageShell({
                       <User className="h-6 w-6 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg truncate">
-                        {user.name}
-                      </CardTitle>
+                      <CardTitle className="text-lg truncate">{user.name}</CardTitle>
                       <div className="flex items-center gap-2 flex-wrap mt-1">
-                        <span className="text-sm text-foreground truncate">
-                          {user.email}
-                        </span>
+                        <span className="text-sm text-foreground truncate">{user.email}</span>
                         {user.oauthProviders?.length ? (
                           <>
                             {user.oauthProviders.includes("kakao") && (
                               <Badge
-                                variant={
-                                  getSocialProviderBadgeSpec("kakao").variant
-                                }
+                                variant={getSocialProviderBadgeSpec("kakao").variant}
                                 className="text-xs py-0 px-2 h-5"
                               >
                                 카카오
@@ -274,9 +242,7 @@ export default function AcademyApplicationMypageShell({
                             )}
                             {user.oauthProviders.includes("naver") && (
                               <Badge
-                                variant={
-                                  getSocialProviderBadgeSpec("naver").variant
-                                }
+                                variant={getSocialProviderBadgeSpec("naver").variant}
                                 className="text-xs py-0 px-2 h-5"
                               >
                                 네이버
@@ -284,9 +250,7 @@ export default function AcademyApplicationMypageShell({
                             )}
                           </>
                         ) : (
-                          <span className="text-xs text-muted-foreground">
-                            일반 계정
-                          </span>
+                          <span className="text-xs text-muted-foreground">일반 계정</span>
                         )}
                       </div>
                     </div>
@@ -330,12 +294,9 @@ export default function AcademyApplicationMypageShell({
                       <GraduationCap className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg bp-sm:text-xl">
-                        클래스 신청
-                      </CardTitle>
+                      <CardTitle className="text-lg bp-sm:text-xl">클래스 신청</CardTitle>
                       <CardDescription className="text-sm text-foreground/80">
-                        도깨비테니스 아카데미 클래스 신청 상세와 진행 상태를
-                        확인하세요.
+                        도깨비테니스 아카데미 클래스 신청 상세와 진행 상태를 확인하세요.
                       </CardDescription>
                     </div>
                   </div>

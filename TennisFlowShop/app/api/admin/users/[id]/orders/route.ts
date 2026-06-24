@@ -3,19 +3,13 @@ import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 
-function parseIntParam(
-  v: string | null,
-  opts: { defaultValue: number; min: number; max: number },
-) {
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
 }
 
-export async function GET(
-  req: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     const guard = await requireAdmin(req);
     if (!guard.ok) return guard.res;
@@ -27,8 +21,7 @@ export async function GET(
       max: 50,
     });
     const { id } = await ctx.params;
-    if (!ObjectId.isValid(id))
-      return NextResponse.json({ message: "invalid id" }, { status: 400 });
+    if (!ObjectId.isValid(id)) return NextResponse.json({ message: "invalid id" }, { status: 400 });
 
     const db = await getDb();
     const userIdObj = new ObjectId(id);
@@ -50,10 +43,7 @@ export async function GET(
       .limit(limit)
       .toArray();
 
-    return NextResponse.json(
-      { items, total },
-      { headers: { "Cache-Control": "no-store" } },
-    );
+    return NextResponse.json({ items, total }, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     console.error("[admin/users/:id/orders] error", e);
     return NextResponse.json({ message: "internal error" }, { status: 500 });

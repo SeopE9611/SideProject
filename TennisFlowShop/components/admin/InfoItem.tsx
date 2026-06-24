@@ -24,9 +24,7 @@ export function InfoItem({
         {icon}
         <span>{label}</span>
       </div>
-      <div className={cn("flex-1 text-sm", mono && "tabular-nums")}>
-        {value}
-      </div>
+      <div className={cn("flex-1 text-sm", mono && "tabular-nums")}>{value}</div>
       {onCopy && (
         <button
           onClick={onCopy}

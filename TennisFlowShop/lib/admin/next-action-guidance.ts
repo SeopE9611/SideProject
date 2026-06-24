@@ -35,15 +35,9 @@ export type NextActionGuide = {
 
 const doneLike = (v?: string | null) => {
   const s = String(v ?? "").toLowerCase();
-  return [
-    "완료",
-    "paid",
-    "결제완료",
-    "교체완료",
-    "반납완료",
-    "returned",
-    "delivered",
-  ].some((k) => s.includes(k.toLowerCase()));
+  return ["완료", "paid", "결제완료", "교체완료", "반납완료", "returned", "delivered"].some((k) =>
+    s.includes(k.toLowerCase()),
+  );
 };
 
 const isRentalPending = (status?: string | null) => {
@@ -85,11 +79,7 @@ const isRentalDueSoon = (dueAt?: string | null) => {
 
 const hasIncludedPaymentContext = (paymentLabel?: string | null) => {
   const s = String(paymentLabel ?? "").toLowerCase();
-  return (
-    s.includes("패키지차감") ||
-    s.includes("주문결제포함") ||
-    s.includes("대여결제포함")
-  );
+  return s.includes("패키지차감") || s.includes("주문결제포함") || s.includes("대여결제포함");
 };
 
 const isOrderShipped = (status?: string | null) => {
@@ -129,9 +119,7 @@ const isVisitPickupItem = (item: OpsLikeItem) => {
   // API에서 배송 상태를 방문 수령 문맥으로 치환해 내려온 경우(예: 수령 준비중/방문 수령 완료)
   // shippingMethod가 누락돼도 운영센터 문맥을 방문 수령으로 유지한다.
   return (
-    display.includes("방문 수령") ||
-    display.includes("수령 준비") ||
-    display.includes("방문수령")
+    display.includes("방문 수령") || display.includes("수령 준비") || display.includes("방문수령")
   );
 };
 
@@ -146,10 +134,8 @@ function getEffectiveCancelStatus(item: OpsLikeItem) {
 }
 
 function getEffectiveRefundAccountReady(item: OpsLikeItem) {
-  if (typeof item.cancel?.refundAccountReady === "boolean")
-    return item.cancel.refundAccountReady;
-  if (typeof item.refundAccountReady === "boolean")
-    return item.refundAccountReady;
+  if (typeof item.cancel?.refundAccountReady === "boolean") return item.cancel.refundAccountReady;
+  if (typeof item.refundAccountReady === "boolean") return item.refundAccountReady;
   return false;
 }
 
@@ -204,9 +190,7 @@ function inferStandaloneOrderGuide(item: OpsLikeItem): NextActionGuide {
   return { stage: "배송 준비 단계", nextAction: "배송중 처리 필요" };
 }
 
-export function inferNextActionForOperationItem(
-  item: OpsLikeItem,
-): NextActionGuide {
+export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGuide {
   if (isCancelRequested(item)) {
     if (getEffectiveRefundAccountReady(item)) {
       return {
@@ -235,9 +219,7 @@ export function inferNextActionForOperationItem(
     if (isRentalReturned(item.statusLabel)) {
       return {
         stage: "대여 반납 완료 단계",
-        nextAction: item.depositRefundedAt
-          ? "후속 조치 없음"
-          : "보증금 환급 확인 필요",
+        nextAction: item.depositRefundedAt ? "후속 조치 없음" : "보증금 환급 확인 필요",
       };
     }
     if (isRentalPending(item.statusLabel) || !doneLike(item.paymentLabel)) {
@@ -247,10 +229,7 @@ export function inferNextActionForOperationItem(
       };
     }
     if (isRentalPaid(item.statusLabel) && !isRentalOut(item.statusLabel)) {
-      if (
-        item.linkedApplicationStatus &&
-        !isAppDone(item.linkedApplicationStatus)
-      ) {
+      if (item.linkedApplicationStatus && !isAppDone(item.linkedApplicationStatus)) {
         return {
           stage: "교체서비스 작업 단계",
           nextAction: "교체서비스 작업 완료 필요",
@@ -279,14 +258,10 @@ export function inferNextActionForOperationItem(
   }
 
   if (item.kind === "stringing_application") {
-    if (
-      hasIncludedPaymentContext(item.paymentLabel) &&
-      isAppWaiting(item.statusLabel)
-    ) {
+    if (hasIncludedPaymentContext(item.paymentLabel) && isAppWaiting(item.statusLabel)) {
       return {
         stage: "신청서 결제 문맥 검수 단계",
-        nextAction:
-          "결제 문맥(패키지/주문/대여 포함) 확인 후 신청서 작업 상태 확인 필요",
+        nextAction: "결제 문맥(패키지/주문/대여 포함) 확인 후 신청서 작업 상태 확인 필요",
       };
     }
     if (isAppWaiting(item.statusLabel)) {
@@ -319,8 +294,7 @@ export function inferNextActionForOperationItem(
       }
       return {
         stage: "주문 후속 처리 단계",
-        nextAction:
-          "수령/배송 상태를 확인하고 연결 신청서 진행 상태를 점검하세요",
+        nextAction: "수령/배송 상태를 확인하고 연결 신청서 진행 상태를 점검하세요",
       };
     }
     return inferStandaloneOrderGuide(item);
@@ -332,9 +306,7 @@ export function inferNextActionForOperationItem(
   };
 }
 
-export function inferNextActionForOperationGroup(
-  items: OpsLikeItem[],
-): NextActionGuide {
+export function inferNextActionForOperationGroup(items: OpsLikeItem[]): NextActionGuide {
   const requestedCancels = items.filter((it) => isCancelRequested(it));
   if (requestedCancels.length > 0) {
     const hasRefundAccountPending = requestedCancels.some(
@@ -422,8 +394,7 @@ export function inferNextActionForOperationGroup(
     }
   }
 
-  if (rental && isRentalOut(rental.statusLabel))
-    return inferNextActionForOperationItem(rental);
+  if (rental && isRentalOut(rental.statusLabel)) return inferNextActionForOperationItem(rental);
   if (app) return inferNextActionForOperationItem(app);
   if (rental) return inferNextActionForOperationItem(rental);
   return inferNextActionForOperationItem(items[0] ?? { kind: "order" });

@@ -19,10 +19,7 @@ export async function GET(req: NextRequest) {
 
   const searchParams = req.nextUrl.searchParams;
   const rawLimit = Number(searchParams.get("limit") ?? 10);
-  const limit = Math.min(
-    30,
-    Math.max(1, Number.isFinite(rawLimit) ? Math.floor(rawLimit) : 10),
-  );
+  const limit = Math.min(30, Math.max(1, Number.isFinite(rawLimit) ? Math.floor(rawLimit) : 10));
   const cursor = searchParams.get("cursor");
   const userObjectId = new ObjectId(userId);
   const filter: Record<string, unknown> = {
@@ -61,9 +58,7 @@ export async function GET(req: NextRequest) {
       items: items.map(serializeUserNotification),
       unreadCount,
       hasMore,
-      nextCursor: hasMore
-        ? (items[items.length - 1]?.createdAt.toISOString() ?? null)
-        : null,
+      nextCursor: hasMore ? (items[items.length - 1]?.createdAt.toISOString() ?? null) : null,
     },
     { headers: NO_STORE },
   );

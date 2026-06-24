@@ -46,8 +46,7 @@ function safeVerifyOrderAccessToken(token?: string) {
 
 function getApplicationLines(stringDetails: any): any[] {
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
-  if (Array.isArray(stringDetails?.racketLines))
-    return stringDetails.racketLines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
   return [];
 }
 
@@ -80,11 +79,7 @@ async function getData(db: any, id: string, r: any) {
     if (app) {
       const lines = getApplicationLines((app as any).stringDetails);
       const stringNames = Array.from(
-        new Set(
-          lines
-            .map((line: any) => String(line?.stringName ?? "").trim())
-            .filter(Boolean),
-        ),
+        new Set(lines.map((line: any) => String(line?.stringName ?? "").trim()).filter(Boolean)),
       );
       const tensionSet = Array.from(
         new Set(
@@ -93,19 +88,13 @@ async function getData(db: any, id: string, r: any) {
               const main = String(line?.tensionMain ?? "").trim();
               const cross = String(line?.tensionCross ?? "").trim();
               if (!main && !cross) return "";
-              return cross && cross !== main
-                ? `${main}/${cross}`
-                : main || cross;
+              return cross && cross !== main ? `${main}/${cross}` : main || cross;
             })
             .filter(Boolean),
         ),
       );
-      const preferredDate = String(
-        (app as any)?.stringDetails?.preferredDate ?? "",
-      ).trim();
-      const preferredTime = String(
-        (app as any)?.stringDetails?.preferredTime ?? "",
-      ).trim();
+      const preferredDate = String((app as any)?.stringDetails?.preferredDate ?? "").trim();
+      const preferredTime = String((app as any)?.stringDetails?.preferredTime ?? "").trim();
 
       applicationSummary = {
         status: String((app as any)?.status ?? "접수완료"),
@@ -114,9 +103,7 @@ async function getData(db: any, id: string, r: any) {
         tensionSummary: tensionSet.length ? tensionSet.join(", ") : null,
         receptionLabel: getReceptionLabel((app as any).collectionMethod),
         reservationLabel:
-          preferredDate && preferredTime
-            ? `${preferredDate} ${preferredTime}`
-            : null,
+          preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
       };
     }
   }
@@ -137,9 +124,7 @@ async function getData(db: any, id: string, r: any) {
     isStringServiceApplied: Boolean((r as any)?.isStringServiceApplied),
     stringingApplicationId: appId,
     applicationSummary,
-    racket: rk
-      ? { brand: rk.brand, model: rk.model, condition: rk.condition }
-      : null,
+    racket: rk ? { brand: rk.brand, model: rk.model, condition: rk.condition } : null,
     payment: r.payment
       ? {
           method: r.payment.method || "bank",
@@ -152,26 +137,18 @@ async function getData(db: any, id: string, r: any) {
     paymentInfo: r.paymentInfo
       ? {
           status: r.paymentInfo.status ? String(r.paymentInfo.status) : null,
-          provider: r.paymentInfo.provider
-            ? String(r.paymentInfo.provider)
-            : null,
+          provider: r.paymentInfo.provider ? String(r.paymentInfo.provider) : null,
           method: r.paymentInfo.method ? String(r.paymentInfo.method) : null,
           tid: r.paymentInfo.tid ? String(r.paymentInfo.tid) : null,
-          approvedAt: r.paymentInfo.approvedAt
-            ? String(r.paymentInfo.approvedAt)
-            : null,
+          approvedAt: r.paymentInfo.approvedAt ? String(r.paymentInfo.approvedAt) : null,
           easyPayProvider: r.paymentInfo.easyPayProvider
             ? String(r.paymentInfo.easyPayProvider)
             : null,
           cardDisplayName: r.paymentInfo.cardDisplayName
             ? String(r.paymentInfo.cardDisplayName)
             : null,
-          cardCompany: r.paymentInfo.cardCompany
-            ? String(r.paymentInfo.cardCompany)
-            : null,
-          cardLabel: r.paymentInfo.cardLabel
-            ? String(r.paymentInfo.cardLabel)
-            : null,
+          cardCompany: r.paymentInfo.cardCompany ? String(r.paymentInfo.cardCompany) : null,
+          cardLabel: r.paymentInfo.cardLabel ? String(r.paymentInfo.cardLabel) : null,
         }
       : null,
     shipping: r.shipping
@@ -208,8 +185,7 @@ export default async function Page({
 }: {
   searchParams: Promise<SuccessSearchParams>;
 }) {
-  const { id, withService, stringingSubmitted, stringingApplicationId } =
-    await searchParams;
+  const { id, withService, stringingSubmitted, stringingApplicationId } = await searchParams;
   if (!id || !ObjectId.isValid(id)) return notFound();
 
   // 비회원 주문(대여) 차단 모드면, success 페이지도 로그인 필수로 막는다.
@@ -232,33 +208,22 @@ export default async function Page({
     }
   }
   const db = (await clientPromise).db();
-  const rental = await db
-    .collection("rental_orders")
-    .findOne({ _id: new ObjectId(id) });
+  const rental = await db.collection("rental_orders").findOne({ _id: new ObjectId(id) });
   if (!rental) return notFound();
 
   const cookieStore = await cookies();
-  const accessPayload = safeVerifyAccessToken(
-    cookieStore.get("accessToken")?.value,
-  );
-  const orderAccessPayload = safeVerifyOrderAccessToken(
-    cookieStore.get("orderAccessToken")?.value,
-  );
+  const accessPayload = safeVerifyAccessToken(cookieStore.get("accessToken")?.value);
+  const orderAccessPayload = safeVerifyOrderAccessToken(cookieStore.get("orderAccessToken")?.value);
 
   const ownerUserId = rental.userId ? String(rental.userId) : null;
   const rentalOrderId = rental.orderId ? String(rental.orderId) : null;
-  const isMemberOwner = !!(
-    accessPayload?.sub &&
-    ownerUserId &&
-    accessPayload.sub === ownerUserId
-  );
+  const isMemberOwner = !!(accessPayload?.sub && ownerUserId && accessPayload.sub === ownerUserId);
   const isGuestOwner = !!(
     orderAccessPayload &&
     ((orderAccessPayload.orderId &&
       (orderAccessPayload.orderId === rentalOrderId ||
         orderAccessPayload.orderId === String(rental._id))) ||
-      (orderAccessPayload.rentalId &&
-        orderAccessPayload.rentalId === String(rental._id)))
+      (orderAccessPayload.rentalId && orderAccessPayload.rentalId === String(rental._id)))
   );
 
   if (!isMemberOwner && !isGuestOwner) return notFound();
@@ -273,9 +238,7 @@ export default async function Page({
           queryHint: {
             withService: parseBooleanHint(withService),
             stringingSubmitted: parseBooleanHint(stringingSubmitted),
-            stringingApplicationId: stringingApplicationId
-              ? String(stringingApplicationId)
-              : null,
+            stringingApplicationId: stringingApplicationId ? String(stringingApplicationId) : null,
           },
         }}
       />

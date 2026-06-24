@@ -37,16 +37,11 @@ function nowYyyymmKST() {
     year: "numeric",
     month: "2-digit",
   });
-  const parts = Object.fromEntries(
-    fmt.formatToParts(new Date()).map((p) => [p.type, p.value]),
-  );
+  const parts = Object.fromEntries(fmt.formatToParts(new Date()).map((p) => [p.type, p.value]));
   return `${parts.year}${parts.month}`;
 }
 
-export async function POST(
-  _req: Request,
-  ctx: { params: Promise<{ yyyymm: string }> },
-) {
+export async function POST(_req: Request, ctx: { params: Promise<{ yyyymm: string }> }) {
   const origin = _req.headers.get("origin") || "";
   const allow = process.env.NEXT_PUBLIC_SITE_URL;
   if (allow && origin && !origin.startsWith(allow)) {
@@ -76,20 +71,14 @@ export async function POST(
 
     const createdBy = g.admin.email ?? String(g.admin._id);
     if (!/^\d{6}$/.test(yyyymm)) {
-      return NextResponse.json(
-        { message: "YYYYMM 형식이 아닙니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "YYYYMM 형식이 아닙니다." }, { status: 400 });
     }
 
     // 01~12 월만 허용
     const y = Number(yyyymm.slice(0, 4));
     const m = Number(yyyymm.slice(4, 6));
     if (m < 1 || m > 12) {
-      return NextResponse.json(
-        { message: "월은 01~12만 가능합니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "월은 01~12만 가능합니다." }, { status: 400 });
     }
 
     // 미래월 금지(KST 기준)
@@ -187,10 +176,7 @@ export async function POST(
       .collection("rental_orders")
       .find(
         {
-          $and: [
-            { createdAt: { $gte: start, $lt: end } },
-            buildRentalPaidMatch(),
-          ],
+          $and: [{ createdAt: { $gte: start, $lt: end } }, buildRentalPaidMatch()],
         },
         {
           projection: {
@@ -204,45 +190,19 @@ export async function POST(
       )
       .toArray();
 
-    const standaloneApps = apps.filter((a: any) =>
-      isStandaloneStringingApplication(a),
-    );
+    const standaloneApps = apps.filter((a: any) => isStandaloneStringingApplication(a));
 
-    const paidOrders = orders.reduce(
-      (s: number, o: any) => s + orderPaidAmount(o),
-      0,
-    );
-    const paidApps = standaloneApps.reduce(
-      (s: number, a: any) => s + applicationPaidAmount(a),
-      0,
-    );
-    const paidPackages = packages.reduce(
-      (s: number, p: any) => s + orderPaidAmount(p),
-      0,
-    );
-    const paidRentals = rentals.reduce(
-      (s: number, r: any) => s + rentalPaidAmount(r),
-      0,
-    );
-    const rentalDeposit = rentals.reduce(
-      (s: number, r: any) => s + rentalDepositAmount(r),
-      0,
-    );
+    const paidOrders = orders.reduce((s: number, o: any) => s + orderPaidAmount(o), 0);
+    const paidApps = standaloneApps.reduce((s: number, a: any) => s + applicationPaidAmount(a), 0);
+    const paidPackages = packages.reduce((s: number, p: any) => s + orderPaidAmount(p), 0);
+    const paidRentals = rentals.reduce((s: number, r: any) => s + rentalPaidAmount(r), 0);
+    const rentalDeposit = rentals.reduce((s: number, r: any) => s + rentalDepositAmount(r), 0);
 
     const paid = paidOrders + paidApps + paidPackages + paidRentals;
 
-    const refundOrders = orders.reduce(
-      (s: number, o: any) => s + refundsAmount(o),
-      0,
-    );
-    const refundApps = standaloneApps.reduce(
-      (s: number, a: any) => s + refundsAmount(a),
-      0,
-    );
-    const refundPackages = packages.reduce(
-      (s: number, p: any) => s + refundsAmount(p),
-      0,
-    );
+    const refundOrders = orders.reduce((s: number, o: any) => s + refundsAmount(o), 0);
+    const refundApps = standaloneApps.reduce((s: number, a: any) => s + refundsAmount(a), 0);
+    const refundPackages = packages.reduce((s: number, p: any) => s + refundsAmount(p), 0);
     const refund = refundOrders + refundApps + refundPackages;
     const net = paid - refund;
     const offline = await buildOfflineSettlementReference(db, {
@@ -312,10 +272,7 @@ export async function POST(
 }
 
 // 스냅샷 삭제 API
-export async function DELETE(
-  _req: Request,
-  ctx: { params: Promise<{ yyyymm: string }> },
-) {
+export async function DELETE(_req: Request, ctx: { params: Promise<{ yyyymm: string }> }) {
   const origin = _req.headers.get("origin") || "";
   const allow = process.env.NEXT_PUBLIC_SITE_URL;
   if (allow && origin && !origin.startsWith(allow)) {

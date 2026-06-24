@@ -49,17 +49,13 @@ export default function RentalSelectStringClient({
     if (selectedGauge) params.set("selectedGauge", selectedGauge);
     if (selectedColor) params.set("selectedColor", selectedColor);
 
-    router.push(
-      `/rentals/${encodeURIComponent(racket.id)}/checkout?${params.toString()}`,
-    );
+    router.push(`/rentals/${encodeURIComponent(racket.id)}/checkout?${params.toString()}`);
   };
 
   // Navigate to checkout without string
   const handleSkipString = () => {
     const params = new URLSearchParams(`period=${period}`);
-    router.push(
-      `/rentals/${encodeURIComponent(racket.id)}/checkout?${params.toString()}`,
-    );
+    router.push(`/rentals/${encodeURIComponent(racket.id)}/checkout?${params.toString()}`);
   };
 
   return (

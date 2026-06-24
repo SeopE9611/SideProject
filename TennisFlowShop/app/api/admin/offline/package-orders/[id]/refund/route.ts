@@ -59,10 +59,7 @@ function serializePass(pass: ServicePass) {
   };
 }
 
-export async function POST(
-  req: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -70,10 +67,7 @@ export async function POST(
 
   const packageOrderId = toObjectId((await ctx.params).id);
   if (!packageOrderId)
-    return NextResponse.json(
-      { message: "invalid package order id" },
-      { status: 400 },
-    );
+    return NextResponse.json({ message: "invalid package order id" }, { status: 400 });
 
   const body = await req.json().catch(() => null);
   const parsed = refundSchema.safeParse(body);
@@ -84,14 +78,9 @@ export async function POST(
     );
 
   const reason = parsed.data.reason;
-  const refundedAt = parsed.data.refundedAt
-    ? new Date(parsed.data.refundedAt)
-    : new Date();
+  const refundedAt = parsed.data.refundedAt ? new Date(parsed.data.refundedAt) : new Date();
   if (Number.isNaN(refundedAt.getTime()))
-    return NextResponse.json(
-      { message: "invalid refundedAt" },
-      { status: 400 },
-    );
+    return NextResponse.json({ message: "invalid refundedAt" }, { status: 400 });
 
   const packageOrders = guard.db.collection<
     PackageOrder & {
@@ -102,9 +91,7 @@ export async function POST(
     }
   >("packageOrders");
   const passes = guard.db.collection<ServicePass>("service_passes");
-  const consumptions = guard.db.collection<ServicePassConsumption>(
-    "service_pass_consumptions",
-  );
+  const consumptions = guard.db.collection<ServicePassConsumption>("service_pass_consumptions");
   const session = guard.db.client.startSession();
 
   let updatedOrder: any = null;
@@ -116,40 +103,21 @@ export async function POST(
 
   try {
     await session.withTransaction(async () => {
-      const order = await packageOrders.findOne(
-        { _id: packageOrderId },
-        { session },
-      );
-      if (!order)
-        throw new OfflinePackageRefundError(404, "package order not found");
+      const order = await packageOrders.findOne({ _id: packageOrderId }, { session });
+      if (!order) throw new OfflinePackageRefundError(404, "package order not found");
       if (!isOfflinePackageOrder(order))
-        throw new OfflinePackageRefundError(
-          400,
-          "offline package order required",
-        );
+        throw new OfflinePackageRefundError(400, "offline package order required");
       if (isRefundedPackageOrder(order as any))
-        throw new OfflinePackageRefundError(
-          409,
-          "package order already refunded",
-        );
+        throw new OfflinePackageRefundError(409, "package order already refunded");
 
       refundAmount = toAmount(order.totalPrice ?? order.packageInfo?.price);
       const requestedRefundAmount = parsed.data.refundAmount;
-      if (
-        requestedRefundAmount !== undefined &&
-        requestedRefundAmount !== refundAmount
-      ) {
-        throw new OfflinePackageRefundError(
-          400,
-          "refund amount must equal paid amount",
-        );
+      if (requestedRefundAmount !== undefined && requestedRefundAmount !== refundAmount) {
+        throw new OfflinePackageRefundError(400, "refund amount must equal paid amount");
       }
 
-      const passDocs = await passes
-        .find({ orderId: packageOrderId }, { session })
-        .toArray();
-      if (passDocs.length === 0)
-        throw new OfflinePackageRefundError(404, "service pass not found");
+      const passDocs = await passes.find({ orderId: packageOrderId }, { session }).toArray();
+      if (passDocs.length === 0) throw new OfflinePackageRefundError(404, "service pass not found");
       if (passDocs.some(isPassUsed))
         throw new OfflinePackageRefundError(409, "package already used");
 
@@ -166,9 +134,7 @@ export async function POST(
         throw new OfflinePackageRefundError(409, "package already used");
 
       offlineCustomerId =
-        typeof order.meta?.offlineCustomerId === "string"
-          ? order.meta.offlineCustomerId
-          : null;
+        typeof order.meta?.offlineCustomerId === "string" ? order.meta.offlineCustomerId : null;
       linkedUserId = order.userId ? String(order.userId) : null;
       const adminId = String(guard.admin._id);
       const now = new Date();
@@ -214,20 +180,12 @@ export async function POST(
         { session },
       );
 
-      updatedOrder = await packageOrders.findOne(
-        { _id: packageOrderId },
-        { session },
-      );
-      updatedPasses = await passes
-        .find({ _id: { $in: passIds } }, { session })
-        .toArray();
+      updatedOrder = await packageOrders.findOne({ _id: packageOrderId }, { session });
+      updatedPasses = await passes.find({ _id: { $in: passIds } }, { session }).toArray();
     });
   } catch (error) {
     if (error instanceof OfflinePackageRefundError) {
-      return NextResponse.json(
-        { message: error.message },
-        { status: error.status },
-      );
+      return NextResponse.json({ message: error.message }, { status: error.status });
     }
     console.error("[offline package refund] failed", error);
     return NextResponse.json({ message: "refund failed" }, { status: 500 });

@@ -18,7 +18,10 @@ import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { getMerchandisingBadgeSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import {
+  UNSAVED_CHANGES_MESSAGE,
+  useUnsavedChangesGuard,
+} from "@/lib/hooks/useUnsavedChangesGuard";
 import {
   type GeneralSettings,
   type PackageConfig,
@@ -50,7 +53,9 @@ type PackageSettingsResponse = {
   generalSettings?: Partial<GeneralSettings>;
 };
 
-const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirmDialog"), { loading: () => null });
+const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirmDialog"), {
+  loading: () => null,
+});
 
 const PACKAGE_SETTINGS_GUIDES = [
   {
@@ -85,7 +90,10 @@ function isNonNegativeNumber(value: unknown): boolean {
   return Number.isFinite(numberValue) && numberValue >= 0;
 }
 
-function buildPackageSettingsValidation(packageConfigs: PackageConfig[], generalSettings: GeneralSettings) {
+function buildPackageSettingsValidation(
+  packageConfigs: PackageConfig[],
+  generalSettings: GeneralSettings,
+) {
   const packageErrors: Record<string, string[]> = {};
   const generalErrors: string[] = [];
 
@@ -104,11 +112,19 @@ function buildPackageSettingsValidation(packageConfigs: PackageConfig[], general
       errors.push("판매 가격은 1원 이상이어야 합니다.");
     }
 
-    if (pkg.originalPrice !== undefined && pkg.originalPrice !== null && !isNonNegativeNumber(pkg.originalPrice)) {
+    if (
+      pkg.originalPrice !== undefined &&
+      pkg.originalPrice !== null &&
+      !isNonNegativeNumber(pkg.originalPrice)
+    ) {
       errors.push("정가는 0원 이상이어야 합니다.");
     }
 
-    if (typeof pkg.originalPrice === "number" && pkg.originalPrice > 0 && pkg.originalPrice < Number(pkg.price)) {
+    if (
+      typeof pkg.originalPrice === "number" &&
+      pkg.originalPrice > 0 &&
+      pkg.originalPrice < Number(pkg.price)
+    ) {
       errors.push("정가가 판매 가격보다 낮습니다. 할인 표시가 잘못될 수 있습니다.");
     }
 
@@ -197,7 +213,8 @@ export default function PackageSettingsClient() {
     if (isHydratedFromServer && baselineRef.current === null) baselineRef.current = snapshot;
   }, [isHydratedFromServer, snapshot]);
 
-  const isDirty = isHydratedFromServer && baselineRef.current !== null && baselineRef.current !== snapshot;
+  const isDirty =
+    isHydratedFromServer && baselineRef.current !== null && baselineRef.current !== snapshot;
   useUnsavedChangesGuard(isDirty && !isSaving);
 
   const confirmLeave = (e: React.MouseEvent) => {
@@ -380,7 +397,10 @@ export default function PackageSettingsClient() {
     const newFeature = prompt("새로운 특징을 입력하세요:");
     if (newFeature?.trim()) {
       updatePackage(packageId, {
-        features: [...(packageConfigs.find((p) => p.id === packageId)?.features || []), newFeature.trim()],
+        features: [
+          ...(packageConfigs.find((p) => p.id === packageId)?.features || []),
+          newFeature.trim(),
+        ],
       });
     }
   };
@@ -503,7 +523,12 @@ export default function PackageSettingsClient() {
             scope="범위: 패키지 상품 구성"
             helperText="구매된 이용권과 사용 이력은 패키지 관리에서 확인합니다."
             actions={
-              <Button variant="outline" size="sm" className="bg-card border-border hover:bg-muted" asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-card border-border hover:bg-muted"
+                asChild
+              >
                 <Link href="/admin/packages">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   패키지 관리로 돌아가기
@@ -521,7 +546,9 @@ export default function PackageSettingsClient() {
                     </div>
                     <p className="text-sm font-semibold text-foreground">{title}</p>
                   </div>
-                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{description}</p>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    {description}
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -558,7 +585,9 @@ export default function PackageSettingsClient() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">{label}</p>
-                      <p className="text-3xl font-bold text-foreground">{value.toLocaleString("ko-KR")}</p>
+                      <p className="text-3xl font-bold text-foreground">
+                        {value.toLocaleString("ko-KR")}
+                      </p>
                     </div>
                     <div className={cn(tone, "rounded-xl border border-border p-3")}>
                       <Icon className="h-5 w-5 text-foreground" />
@@ -586,7 +615,9 @@ export default function PackageSettingsClient() {
                 </Badge>
               </div>
 
-              <p className="text-xs text-muted-foreground">저장 후 고객 판매 페이지와 패키지 운영 정책에 반영됩니다.</p>
+              <p className="text-xs text-muted-foreground">
+                저장 후 고객 판매 페이지와 패키지 운영 정책에 반영됩니다.
+              </p>
             </div>
           </div>
           {validation.hasErrors && (
@@ -594,7 +625,9 @@ export default function PackageSettingsClient() {
               <div className="flex items-start gap-3">
                 <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
                 <div>
-                  <p className="text-sm font-semibold text-destructive">저장 전 확인이 필요한 설정이 있습니다.</p>
+                  <p className="text-sm font-semibold text-destructive">
+                    저장 전 확인이 필요한 설정이 있습니다.
+                  </p>
 
                   <ul className="mt-2 space-y-1 text-xs text-destructive">
                     {validation.messages.slice(0, 5).map((message) => (
@@ -615,18 +648,31 @@ export default function PackageSettingsClient() {
             <div className="sticky top-20 z-20 mb-6 rounded-2xl border border-primary/20 bg-card/95 p-4 shadow-sm backdrop-blur">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-foreground">저장되지 않은 변경사항이 있습니다.</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    저장되지 않은 변경사항이 있습니다.
+                  </p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     저장해야 고객 판매 페이지와 패키지 운영 정책에 반영됩니다.
                   </p>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <Button type="button" variant="outline" size="sm" onClick={resetLocalChanges} disabled={isSaving}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={resetLocalChanges}
+                    disabled={isSaving}
+                  >
                     변경사항 되돌리기
                   </Button>
 
-                  <Button type="button" size="sm" onClick={handleSavePackages} disabled={isSaving || !canSaveSettings}>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleSavePackages}
+                    disabled={isSaving || !canSaveSettings}
+                  >
                     <Save className="mr-2 h-4 w-4" />
                     {isSaving ? "저장 중..." : "변경사항 저장"}
                   </Button>
@@ -666,7 +712,10 @@ export default function PackageSettingsClient() {
                       고객 판매 페이지에 노출되는 패키지명, 횟수, 가격, 혜택을 관리합니다.
                     </p>
                   </div>
-                  <Button onClick={addNewPackage} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Button
+                    onClick={addNewPackage}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
                     <Plus className="mr-2 h-4 w-4" />새 패키지 추가
                   </Button>
                 </div>
@@ -683,7 +732,9 @@ export default function PackageSettingsClient() {
                             </div>
                             <div className="mt-2 flex flex-wrap gap-1.5">
                               {pkg.isPopular && (
-                                <Badge variant={getMerchandisingBadgeSpec("popular").variant}>추천</Badge>
+                                <Badge variant={getMerchandisingBadgeSpec("popular").variant}>
+                                  추천
+                                </Badge>
                               )}
                               {!pkg.isActive && <Badge variant="secondary">비활성</Badge>}
                             </div>
@@ -692,7 +743,9 @@ export default function PackageSettingsClient() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => setEditingPackage(editingPackage === pkg.id ? null : pkg.id)}
+                              onClick={() =>
+                                setEditingPackage(editingPackage === pkg.id ? null : pkg.id)
+                              }
                             >
                               <Edit3 className="h-4 w-4" />
                             </Button>
@@ -711,10 +764,13 @@ export default function PackageSettingsClient() {
                         {editingPackage === pkg.id ? (
                           <div className="space-y-4">
                             <div className="rounded-xl border border-warning/30 bg-warning/10 p-4">
-                              <p className="text-sm font-semibold text-foreground">판매 페이지 반영 설정입니다</p>
+                              <p className="text-sm font-semibold text-foreground">
+                                판매 페이지 반영 설정입니다
+                              </p>
                               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                                패키지명, 이용 횟수, 판매 가격, 정가, 유효기간은 고객 판매 페이지와 주문 금액에 직접
-                                반영됩니다. 저장 전 실제 노출될 가격과 할인율을 확인하세요.
+                                패키지명, 이용 횟수, 판매 가격, 정가, 유효기간은 고객 판매 페이지와
+                                주문 금액에 직접 반영됩니다. 저장 전 실제 노출될 가격과 할인율을
+                                확인하세요.
                               </p>
                             </div>
                             {validation.packageErrors[pkg.id]?.length > 0 && (
@@ -730,9 +786,12 @@ export default function PackageSettingsClient() {
                               </div>
                             )}
                             <div className="rounded-xl border border-border/60 bg-card p-4">
-                              <p className="text-sm font-semibold text-foreground">기본 판매 정보</p>
+                              <p className="text-sm font-semibold text-foreground">
+                                기본 판매 정보
+                              </p>
                               <p className="mt-1 text-xs text-muted-foreground">
-                                고객에게 표시될 패키지명, 이용 횟수, 판매 가격, 유효기간을 설정합니다.
+                                고객에게 표시될 패키지명, 이용 횟수, 판매 가격, 유효기간을
+                                설정합니다.
                               </p>
 
                               <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -767,8 +826,8 @@ export default function PackageSettingsClient() {
                               </div>
 
                               <p className="mt-3 text-xs text-muted-foreground">
-                                할인율과 절감액은 정가와 판매 가격을 기준으로 자동 계산되며, 할인율은 소수점 첫째
-                                자리까지 표시됩니다.
+                                할인율과 절감액은 정가와 판매 가격을 기준으로 자동 계산되며,
+                                할인율은 소수점 첫째 자리까지 표시됩니다.
                               </p>
 
                               <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -796,7 +855,8 @@ export default function PackageSettingsClient() {
                                     value={pkg.originalPrice ?? null}
                                     onValueChange={(originalPrice) =>
                                       updatePackage(pkg.id, {
-                                        originalPrice: originalPrice > 0 ? originalPrice : undefined,
+                                        originalPrice:
+                                          originalPrice > 0 ? originalPrice : undefined,
                                       })
                                     }
                                     placeholder="할인 표시용 (선택사항)"
@@ -838,7 +898,11 @@ export default function PackageSettingsClient() {
                             <div>
                               <div className="flex items-center justify-between mb-2">
                                 <Label>패키지 특징</Label>
-                                <Button variant="outline" size="sm" onClick={() => addFeature(pkg.id)}>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => addFeature(pkg.id)}
+                                >
                                   <Plus className="h-3 w-3 mr-1" />
                                   추가
                                 </Button>
@@ -872,12 +936,16 @@ export default function PackageSettingsClient() {
                             <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
                               <p className="text-sm font-semibold text-foreground">노출 설정</p>
                               <p className="mt-1 text-xs text-muted-foreground">
-                                활성화 여부와 추천 패키지 표시는 고객 판매 페이지 노출에 영향을 줍니다.
+                                활성화 여부와 추천 패키지 표시는 고객 판매 페이지 노출에 영향을
+                                줍니다.
                               </p>
 
                               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                                 <div className="flex items-center justify-between rounded-lg border border-border/60 bg-background p-3">
-                                  <Label htmlFor={`active-${pkg.id}`} className="text-sm font-medium">
+                                  <Label
+                                    htmlFor={`active-${pkg.id}`}
+                                    className="text-sm font-medium"
+                                  >
                                     활성화
                                   </Label>
                                   <Switch
@@ -892,7 +960,10 @@ export default function PackageSettingsClient() {
                                 </div>
 
                                 <div className="flex items-center justify-between rounded-lg border border-border/60 bg-background p-3">
-                                  <Label htmlFor={`popular-${pkg.id}`} className="text-sm font-medium">
+                                  <Label
+                                    htmlFor={`popular-${pkg.id}`}
+                                    className="text-sm font-medium"
+                                  >
                                     추천 패키지
                                   </Label>
                                   <Switch
@@ -918,7 +989,9 @@ export default function PackageSettingsClient() {
                                   <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
                                     <div className="flex items-start justify-between gap-3">
                                       <div>
-                                        <p className="text-xs font-medium text-muted-foreground">판매 가격</p>
+                                        <p className="text-xs font-medium text-muted-foreground">
+                                          판매 가격
+                                        </p>
                                         <p className="mt-1 text-2xl font-bold text-foreground">
                                           {formatCurrency(pkg.price)}
                                         </p>
@@ -930,9 +1003,15 @@ export default function PackageSettingsClient() {
                                       </div>
 
                                       <div className="text-right">
-                                        <p className="text-xs font-medium text-muted-foreground">이용 구성</p>
-                                        <p className="mt-1 text-xl font-semibold text-primary">{pkg.sessions}회</p>
-                                        <p className="text-xs text-muted-foreground">{pkg.validityDays}일 유효</p>
+                                        <p className="text-xs font-medium text-muted-foreground">
+                                          이용 구성
+                                        </p>
+                                        <p className="mt-1 text-xl font-semibold text-primary">
+                                          {pkg.sessions}회
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                          {pkg.validityDays}일 유효
+                                        </p>
                                       </div>
                                     </div>
                                   </div>
@@ -948,21 +1027,25 @@ export default function PackageSettingsClient() {
                                     <div className="rounded-lg border border-border/60 bg-card p-3 text-center">
                                       <p className="text-xs text-muted-foreground">할인율</p>
                                       <p className="mt-1 text-sm font-semibold text-foreground">
-                                        {meta.discountRate > 0 ? `${meta.discountRate.toFixed(1)}%` : "-"}
+                                        {meta.discountRate > 0
+                                          ? `${meta.discountRate.toFixed(1)}%`
+                                          : "-"}
                                       </p>
                                     </div>
 
                                     <div className="rounded-lg border border-border/60 bg-card p-3 text-center">
                                       <p className="text-xs text-muted-foreground">절감액</p>
                                       <p className="mt-1 text-sm font-semibold text-foreground">
-                                        {meta.savingAmount > 0 ? formatCurrency(meta.savingAmount) : "-"}
+                                        {meta.savingAmount > 0
+                                          ? formatCurrency(meta.savingAmount)
+                                          : "-"}
                                       </p>
                                     </div>
                                   </div>
 
                                   <p className="text-xs leading-relaxed text-muted-foreground">
-                                    회당 금액은 판매 가격 ÷ 이용 횟수, 할인율은 정가 대비 판매 가격 기준으로 자동
-                                    계산됩니다.
+                                    회당 금액은 판매 가격 ÷ 이용 횟수, 할인율은 정가 대비 판매 가격
+                                    기준으로 자동 계산됩니다.
                                   </p>
                                 </>
                               );
@@ -993,7 +1076,9 @@ export default function PackageSettingsClient() {
                                   ))}
                                 </ul>
                               ) : (
-                                <p className="text-sm text-muted-foreground">등록된 혜택이 없습니다.</p>
+                                <p className="text-sm text-muted-foreground">
+                                  등록된 혜택이 없습니다.
+                                </p>
                               )}
                             </div>
                           </div>
@@ -1032,15 +1117,20 @@ export default function PackageSettingsClient() {
                 </CardHeader>
                 <CardContent className="p-6 space-y-6">
                   <div className="rounded-xl border border-warning/30 bg-warning/10 p-4">
-                    <p className="text-sm font-semibold text-foreground">패키지 운영 정책 설정입니다</p>
+                    <p className="text-sm font-semibold text-foreground">
+                      패키지 운영 정책 설정입니다
+                    </p>
                     <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                      패키지 시스템 활성화, 연장 허용, 유효기간, 최소·최대 이용 횟수는 전체 패키지 운영 방식에 영향을
-                      줍니다. 운영 중인 패키지가 있는 경우 변경 전 적용 범위를 확인하세요.
+                      패키지 시스템 활성화, 연장 허용, 유효기간, 최소·최대 이용 횟수는 전체 패키지
+                      운영 방식에 영향을 줍니다. 운영 중인 패키지가 있는 경우 변경 전 적용 범위를
+                      확인하세요.
                     </p>
                   </div>
                   {validation.generalErrors.length > 0 && (
                     <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4">
-                      <p className="text-sm font-semibold text-destructive">일반 설정에서 수정이 필요한 항목</p>
+                      <p className="text-sm font-semibold text-destructive">
+                        일반 설정에서 수정이 필요한 항목
+                      </p>
                       <ul className="mt-2 space-y-1 text-xs text-destructive">
                         {validation.generalErrors.map((error) => (
                           <li key={error}>- {error}</li>
@@ -1084,11 +1174,14 @@ export default function PackageSettingsClient() {
                             onChange={(e) =>
                               setGeneralSettings((prev) => ({
                                 ...prev,
-                                autoExpireNotificationDays: Number.parseInt(e.target.value, 10) || 0,
+                                autoExpireNotificationDays:
+                                  Number.parseInt(e.target.value, 10) || 0,
                               }))
                             }
                           />
-                          <p className="text-sm text-muted-foreground">만료 며칠 전에 고객에게 알림을 보낼지 설정</p>
+                          <p className="text-sm text-muted-foreground">
+                            만료 며칠 전에 고객에게 알림을 보낼지 설정
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -1149,7 +1242,9 @@ export default function PackageSettingsClient() {
                               }))
                             }
                           />
-                          <p className="text-sm text-muted-foreground">패키지 연장 시 부과할 수수료 비율</p>
+                          <p className="text-sm text-muted-foreground">
+                            패키지 연장 시 부과할 수수료 비율
+                          </p>
                         </div>
                       </div>
                     </div>

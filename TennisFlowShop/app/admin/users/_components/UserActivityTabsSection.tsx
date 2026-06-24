@@ -42,9 +42,7 @@ export function UserActivityTabsSection({
               title={o?.title || o?.number || `주문 #${o?._id || o?.id || "-"}`}
               subtitle={o?.status || o?.computedStatus || "—"}
               right={o?.totalPrice ? `${o.totalPrice.toLocaleString()}원` : ""}
-              href={
-                o?._id || o?.id ? `/admin/orders/${o._id || o.id}` : undefined
-              }
+              href={o?._id || o?.id ? `/admin/orders/${o._id || o.id}` : undefined}
             />
           )}
         />
@@ -57,17 +55,11 @@ export function UserActivityTabsSection({
           render={(a: any) => (
             <Row
               title={
-                a?.racketType ||
-                a?.stringTypes?.join(", ") ||
-                `신청 #${a?._id || a?.id || "-"}`
+                a?.racketType || a?.stringTypes?.join(", ") || `신청 #${a?._id || a?.id || "-"}`
               }
               subtitle={a?.status || a?.applicationStatus || "—"}
               right={a?.price ? `${a.price.toLocaleString()}원` : ""}
-              href={
-                a?._id || a?.id
-                  ? `/admin/applications/stringing/${a._id || a.id}`
-                  : undefined
-              }
+              href={a?._id || a?.id ? `/admin/applications/stringing/${a._id || a.id}` : undefined}
             />
           )}
         />
@@ -81,12 +73,9 @@ export function UserActivityTabsSection({
             <Row
               title={r?.title || `리뷰 #${r?._id || r?.id || "-"}`}
               subtitle={
-                (r?.rating ? `★ ${r.rating}` : "") +
-                (r?.isPublic === false ? " · 비공개" : "")
+                (r?.rating ? `★ ${r.rating}` : "") + (r?.isPublic === false ? " · 비공개" : "")
               }
-              right={
-                r?.createdAt ? new Date(r.createdAt).toLocaleDateString() : ""
-              }
+              right={r?.createdAt ? new Date(r.createdAt).toLocaleDateString() : ""}
               href="/admin/reviews"
             />
           )}

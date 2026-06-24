@@ -34,19 +34,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
-import {
-  buildAdminBoardDetailUrl,
-  buildBoardPublicUrl,
-} from "@/lib/board-public-url-policy";
+import { buildAdminBoardDetailUrl, buildBoardPublicUrl } from "@/lib/board-public-url-policy";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import {
   adminPostVisibilityBadgeVariant,
@@ -209,33 +201,24 @@ export default function BoardsClient() {
     error: postsErr,
     isLoading: postsLoading,
     mutate: mutatePosts,
-  } = useSWR<PostsResponse>(
-    tab === "posts" ? postsUrl : null,
-    authenticatedSWRFetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    },
-  );
+  } = useSWR<PostsResponse>(tab === "posts" ? postsUrl : null, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   const {
     data: reportsData,
     error: reportsErr,
     isLoading: reportsLoading,
     mutate: mutateReports,
-  } = useSWR<ReportsResponse>(
-    tab === "reports" ? reportsUrl : null,
-    authenticatedSWRFetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    },
-  );
+  } = useSWR<ReportsResponse>(tab === "reports" ? reportsUrl : null, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   const hasResolvedPostsData = !!postsData;
   const hasPostsDataError = !!postsErr;
-  const hasResolvedPostsTotal =
-    hasResolvedPostsData && typeof postsData?.total === "number";
+  const hasResolvedPostsTotal = hasResolvedPostsData && typeof postsData?.total === "number";
   const postsRaw: PostItem[] | null = hasResolvedPostsData
     ? Array.isArray(postsData?.items)
       ? postsData.items
@@ -257,53 +240,36 @@ export default function BoardsClient() {
       } as PostItem;
     });
   }, [postsRaw]);
-  const postsTotal: number | null = hasResolvedPostsTotal
-    ? (postsData?.total ?? 0)
-    : null;
-  const postsTotalPages =
-    postsTotal === null ? null : Math.max(1, Math.ceil(postsTotal / LIMIT));
+  const postsTotal: number | null = hasResolvedPostsTotal ? (postsData?.total ?? 0) : null;
+  const postsTotalPages = postsTotal === null ? null : Math.max(1, Math.ceil(postsTotal / LIMIT));
 
   const hasResolvedReportsData = !!reportsData;
   const hasReportsDataError = !!reportsErr;
-  const hasResolvedReportsTotal =
-    hasResolvedReportsData && typeof reportsData?.total === "number";
+  const hasResolvedReportsTotal = hasResolvedReportsData && typeof reportsData?.total === "number";
   const reports: ReportItem[] | null = hasResolvedReportsData
     ? Array.isArray(reportsData?.items)
       ? reportsData.items
       : []
     : null;
-  const reportsTotal: number | null = hasResolvedReportsTotal
-    ? (reportsData?.total ?? 0)
-    : null;
+  const reportsTotal: number | null = hasResolvedReportsTotal ? (reportsData?.total ?? 0) : null;
   const reportsTotalPages =
     reportsTotal === null ? null : Math.max(1, Math.ceil(reportsTotal / LIMIT));
 
-  const postsPublicCount = postsRaw
-    ? posts.filter((p) => p.status === "public").length
-    : null;
-  const postsHiddenCount = postsRaw
-    ? posts.filter((p) => p.status === "hidden").length
-    : null;
-  const reportsPendingCount = reports
-    ? reports.filter((r) => r.status === "pending").length
-    : null;
+  const postsPublicCount = postsRaw ? posts.filter((p) => p.status === "public").length : null;
+  const postsHiddenCount = postsRaw ? posts.filter((p) => p.status === "hidden").length : null;
+  const reportsPendingCount = reports ? reports.filter((r) => r.status === "pending").length : null;
 
   const hasPostFilterApplied =
     postType !== "all" || postStatus !== "all" || postQ.trim().length > 0;
   const [selectedPostIds, setSelectedPostIds] = useState<string[]>([]);
 
   const currentPagePostIds = useMemo(() => posts.map((p) => p.id), [posts]);
-  const currentPagePostIdSet = useMemo(
-    () => new Set(currentPagePostIds),
-    [currentPagePostIds],
-  );
+  const currentPagePostIdSet = useMemo(() => new Set(currentPagePostIds), [currentPagePostIds]);
 
   useEffect(() => {
     setSelectedPostIds((prev) => {
       const next = prev.filter((id) => currentPagePostIdSet.has(id));
-      const isSame =
-        next.length === prev.length &&
-        next.every((id, index) => id === prev[index]);
+      const isSame = next.length === prev.length && next.every((id, index) => id === prev[index]);
 
       return isSame ? prev : next;
     });
@@ -314,9 +280,7 @@ export default function BoardsClient() {
 
   const togglePostSelect = (postId: string) => {
     setSelectedPostIds((prev) =>
-      prev.includes(postId)
-        ? prev.filter((id) => id !== postId)
-        : [...prev, postId],
+      prev.includes(postId) ? prev.filter((id) => id !== postId) : [...prev, postId],
     );
   };
 
@@ -346,20 +310,12 @@ export default function BoardsClient() {
   };
 
   const shouldShowPostsEmptyState =
-    hasResolvedPostsData &&
-    !hasPostsDataError &&
-    !!postsRaw &&
-    postsRaw.length === 0;
-  const isPostsActualEmptyState =
-    shouldShowPostsEmptyState && !hasPostFilterApplied;
-  const isPostsSearchEmptyState =
-    shouldShowPostsEmptyState && hasPostFilterApplied;
+    hasResolvedPostsData && !hasPostsDataError && !!postsRaw && postsRaw.length === 0;
+  const isPostsActualEmptyState = shouldShowPostsEmptyState && !hasPostFilterApplied;
+  const isPostsSearchEmptyState = shouldShowPostsEmptyState && hasPostFilterApplied;
 
   const shouldShowReportsEmptyState =
-    hasResolvedReportsData &&
-    !hasReportsDataError &&
-    !!reports &&
-    reports.length === 0;
+    hasResolvedReportsData && !hasReportsDataError && !!reports && reports.length === 0;
 
   const switchTab = (next: "posts" | "reports") => {
     const qs = new URLSearchParams(sp.toString());
@@ -377,9 +333,7 @@ export default function BoardsClient() {
         body: JSON.stringify({ status: next }),
       });
       showSuccessToast(
-        next === "hidden"
-          ? "게시글을 숨김 처리했습니다."
-          : "게시글을 공개 처리했습니다.",
+        next === "hidden" ? "게시글을 숨김 처리했습니다." : "게시글을 공개 처리했습니다.",
       );
       mutatePosts();
     } catch (e: any) {
@@ -442,9 +396,7 @@ export default function BoardsClient() {
                 <div>
                   <p className="text-sm text-muted-foreground">공개 게시글</p>
                   <p className="text-2xl font-bold">
-                    {postsPublicCount === null
-                      ? "-"
-                      : postsPublicCount.toLocaleString()}
+                    {postsPublicCount === null ? "-" : postsPublicCount.toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -460,9 +412,7 @@ export default function BoardsClient() {
                 <div>
                   <p className="text-sm text-muted-foreground">대기 중 신고</p>
                   <p className="text-2xl font-bold">
-                    {reportsPendingCount === null
-                      ? "-"
-                      : reportsPendingCount.toLocaleString()}
+                    {reportsPendingCount === null ? "-" : reportsPendingCount.toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -478,9 +428,7 @@ export default function BoardsClient() {
                 <div>
                   <p className="text-sm text-muted-foreground">숨김 게시글</p>
                   <p className="text-2xl font-bold">
-                    {postsHiddenCount === null
-                      ? "-"
-                      : postsHiddenCount.toLocaleString()}
+                    {postsHiddenCount === null ? "-" : postsHiddenCount.toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -492,9 +440,7 @@ export default function BoardsClient() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
             <div>
               <CardTitle className="text-2xl">게시글·신고 목록</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                커뮤니티 게시글 및 신고 관리
-              </p>
+              <p className="text-sm text-muted-foreground mt-1">커뮤니티 게시글 및 신고 관리</p>
             </div>
 
             <Tabs value={tab} onValueChange={(v) => switchTab(v as any)}>
@@ -515,10 +461,7 @@ export default function BoardsClient() {
             {tab === "posts" && (
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-3 p-4 rounded-lg border border-border/40 bg-muted/30">
-                  <Select
-                    value={postType}
-                    onValueChange={(v) => (setPostPage(1), setPostType(v))}
-                  >
+                  <Select value={postType} onValueChange={(v) => (setPostPage(1), setPostType(v))}>
                     <SelectTrigger className="w-[140px] bg-background/50">
                       <SelectValue placeholder="게시판" />
                     </SelectTrigger>
@@ -575,9 +518,7 @@ export default function BoardsClient() {
                       <Trash2 className="h-4 w-4" /> 선택 삭제
                     </Button>
                     <div className="text-sm font-medium">
-                      총{" "}
-                      {postsTotal === null ? "-" : postsTotal.toLocaleString()}
-                      건
+                      총 {postsTotal === null ? "-" : postsTotal.toLocaleString()}건
                     </div>
                   </div>
                 </div>
@@ -592,8 +533,7 @@ export default function BoardsClient() {
 
                 {hasPostsDataError && (
                   <div className="p-4 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-sm dark:bg-destructive/15">
-                    게시글 목록 로드 실패:{" "}
-                    {(postsErr as any)?.message ?? "error"}
+                    게시글 목록 로드 실패: {(postsErr as any)?.message ?? "error"}
                   </div>
                 )}
 
@@ -607,17 +547,12 @@ export default function BoardsClient() {
                             toggleSelectAllCurrentPage(Boolean(checked))
                           }
                         />
-                        <span className="text-sm text-muted-foreground">
-                          현재 페이지 전체 선택
-                        </span>
+                        <span className="text-sm text-muted-foreground">현재 페이지 전체 선택</span>
                       </div>
                     )}
                     <div className="space-y-3">
                       {(posts ?? []).map((p) => (
-                        <Card
-                          key={p.id}
-                          className={cn("group", adminSurface.tableCard)}
-                        >
+                        <Card key={p.id} className={cn("group", adminSurface.tableCard)}>
                           <CardContent className="p-5">
                             {/**
                              * 게시글 카드 링크 생성 규칙
@@ -635,12 +570,8 @@ export default function BoardsClient() {
                               const fallbackLink = buildAdminBoardDetailUrl({
                                 id: p.id,
                               });
-                              const href = publicLink.ok
-                                ? publicLink.url
-                                : fallbackLink;
-                              const linkBlockedReason = publicLink.ok
-                                ? null
-                                : publicLink.reason;
+                              const href = publicLink.ok ? publicLink.url : fallbackLink;
+                              const linkBlockedReason = publicLink.ok ? null : publicLink.reason;
                               const tooltipMessage = linkBlockedReason
                                 ? getBoardLinkBlockedReason(
                                     linkBlockedReason,
@@ -652,36 +583,23 @@ export default function BoardsClient() {
                                 <div className="flex items-start justify-between gap-4">
                                   <Checkbox
                                     checked={selectedPostIds.includes(p.id)}
-                                    onCheckedChange={() =>
-                                      togglePostSelect(p.id)
-                                    }
+                                    onCheckedChange={() => togglePostSelect(p.id)}
                                     className="mt-1"
                                   />
                                   <div className="flex-1 space-y-2">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                      <Badge
-                                        variant="outline"
-                                        className="font-medium"
-                                      >
+                                      <Badge variant="outline" className="font-medium">
                                         {resolveBoardLabel(p.type)}
                                       </Badge>
                                       <span className="text-sm text-muted-foreground">
                                         #{p.postNo ?? "-"}
                                       </span>
                                       {p.status === "public" ? (
-                                        <Badge
-                                          variant={adminPostVisibilityBadgeVariant(
-                                            "public",
-                                          )}
-                                        >
+                                        <Badge variant={adminPostVisibilityBadgeVariant("public")}>
                                           공개
                                         </Badge>
                                       ) : (
-                                        <Badge
-                                          variant={adminPostVisibilityBadgeVariant(
-                                            "hidden",
-                                          )}
-                                        >
+                                        <Badge variant={adminPostVisibilityBadgeVariant("hidden")}>
                                           숨김
                                         </Badge>
                                       )}
@@ -703,9 +621,7 @@ export default function BoardsClient() {
                                           </Link>
                                         </TooltipTrigger>
                                         {tooltipMessage && (
-                                          <TooltipContent>
-                                            {tooltipMessage}
-                                          </TooltipContent>
+                                          <TooltipContent>{tooltipMessage}</TooltipContent>
                                         )}
                                       </Tooltip>
                                     ) : (
@@ -720,39 +636,28 @@ export default function BoardsClient() {
                                           </span>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                          {getBoardLinkBlockedReason(
-                                            linkBlockedReason,
-                                            false,
-                                          )}
+                                          {getBoardLinkBlockedReason(linkBlockedReason, false)}
                                         </TooltipContent>
                                       </Tooltip>
                                     )}
 
                                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                      <span className="font-medium">
-                                        {p.nickname || "-"}
-                                      </span>
+                                      <span className="font-medium">{p.nickname || "-"}</span>
                                       <span>{fmt(p.createdAt)}</span>
                                     </div>
 
                                     <div className="flex items-center gap-4 text-sm">
                                       <div className="flex items-center gap-1.5">
                                         <BarChart3 className="h-4 w-4 text-primary" />
-                                        <span className="font-medium">
-                                          {p.views}
-                                        </span>
+                                        <span className="font-medium">{p.views}</span>
                                       </div>
                                       <div className="flex items-center gap-1.5">
                                         <ThumbsUp className="h-4 w-4 text-primary" />
-                                        <span className="font-medium">
-                                          {p.likes}
-                                        </span>
+                                        <span className="font-medium">{p.likes}</span>
                                       </div>
                                       <div className="flex items-center gap-1.5">
                                         <MessageSquare className="h-4 w-4 text-foreground" />
-                                        <span className="font-medium">
-                                          {p.commentsCount}
-                                        </span>
+                                        <span className="font-medium">{p.commentsCount}</span>
                                       </div>
                                     </div>
                                   </div>
@@ -789,8 +694,7 @@ export default function BoardsClient() {
                             <p className="text-sm text-muted-foreground">
                               {isPostsActualEmptyState
                                 ? "등록된 게시글이 없습니다."
-                                : isPostsSearchEmptyState &&
-                                    hasPostFilterApplied
+                                : isPostsSearchEmptyState && hasPostFilterApplied
                                   ? "검색/필터 조건에 맞는 게시글이 없습니다."
                                   : "표시할 게시글이 없습니다."}
                             </p>
@@ -805,23 +709,16 @@ export default function BoardsClient() {
                       postsTotalPages !== null && (
                         <div className="flex flex-col items-center justify-between gap-3 border-t border-border/40 pt-5 sm:flex-row">
                           <div className="text-sm text-muted-foreground">
-                            총{" "}
-                            <span className="font-semibold text-foreground">
-                              {postsTotal}
-                            </span>
-                            건 · 페이지{" "}
-                            <span className="font-semibold text-foreground">
-                              {postPage}
-                            </span>{" "}
-                            / {postsTotalPages}
+                            총 <span className="font-semibold text-foreground">{postsTotal}</span>건
+                            · 페이지{" "}
+                            <span className="font-semibold text-foreground">{postPage}</span> /{" "}
+                            {postsTotalPages}
                           </div>
                           <div className="flex items-center gap-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() =>
-                                setPostPage((p) => Math.max(1, p - 1))
-                              }
+                              onClick={() => setPostPage((p) => Math.max(1, p - 1))}
                               disabled={postPage <= 1}
                               className="border-border/40 hover:border-border/60"
                             >
@@ -833,11 +730,7 @@ export default function BoardsClient() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() =>
-                                setPostPage((p) =>
-                                  Math.min(postsTotalPages, p + 1),
-                                )
-                              }
+                              onClick={() => setPostPage((p) => Math.min(postsTotalPages, p + 1))}
                               disabled={postPage >= postsTotalPages}
                               className="border-border/40 hover:border-border/60"
                             >
@@ -873,10 +766,7 @@ export default function BoardsClient() {
 
                   <Select
                     value={reportStatus}
-                    onValueChange={(v) => (
-                      setReportPage(1),
-                      setReportStatus(v)
-                    )}
+                    onValueChange={(v) => (setReportPage(1), setReportStatus(v))}
                   >
                     <SelectTrigger className="w-[140px] bg-background/50">
                       <SelectValue placeholder="상태" />
@@ -905,11 +795,7 @@ export default function BoardsClient() {
                   </Button>
 
                   <div className="ml-auto text-sm font-medium">
-                    총{" "}
-                    {reportsTotal === null
-                      ? "-"
-                      : reportsTotal.toLocaleString()}
-                    건
+                    총 {reportsTotal === null ? "-" : reportsTotal.toLocaleString()}건
                   </div>
                 </div>
 
@@ -923,8 +809,7 @@ export default function BoardsClient() {
 
                 {hasReportsDataError && (
                   <div className="p-4 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-sm dark:bg-destructive/15">
-                    신고 목록 로드 실패:{" "}
-                    {(reportsErr as any)?.message ?? "error"}
+                    신고 목록 로드 실패: {(reportsErr as any)?.message ?? "error"}
                   </div>
                 )}
 
@@ -943,12 +828,8 @@ export default function BoardsClient() {
                         const fallbackLink = buildAdminBoardDetailUrl({
                           id: r.post?.id,
                         });
-                        const postHref = publicLink.ok
-                          ? publicLink.url
-                          : fallbackLink;
-                        const postLinkReason = publicLink.ok
-                          ? null
-                          : publicLink.reason;
+                        const postHref = publicLink.ok ? publicLink.url : fallbackLink;
+                        const postLinkReason = publicLink.ok ? null : publicLink.reason;
 
                         return (
                           <Card
@@ -956,9 +837,7 @@ export default function BoardsClient() {
                             className={cn(
                               "group",
                               adminSurface.tableCard,
-                              isPending
-                                ? "border-warning/50 bg-warning/10 dark:bg-warning/15"
-                                : "",
+                              isPending ? "border-warning/50 bg-warning/10 dark:bg-warning/15" : "",
                             )}
                           >
                             <CardContent className="p-5">
@@ -967,52 +846,29 @@ export default function BoardsClient() {
                                   <div className="flex-1 space-y-2">
                                     <div className="flex items-center gap-2 flex-wrap">
                                       {r.targetType === "post" ? (
-                                        <Badge
-                                          variant={adminReportTargetBadgeVariant(
-                                            "post",
-                                          )}
-                                        >
+                                        <Badge variant={adminReportTargetBadgeVariant("post")}>
                                           게시글
                                         </Badge>
                                       ) : (
-                                        <Badge
-                                          variant={adminReportTargetBadgeVariant(
-                                            "comment",
-                                          )}
-                                        >
+                                        <Badge variant={adminReportTargetBadgeVariant("comment")}>
                                           댓글
                                         </Badge>
                                       )}
-                                      <Badge
-                                        variant="outline"
-                                        className="font-medium"
-                                      >
+                                      <Badge variant="outline" className="font-medium">
                                         {resolveBoardLabel(r.boardType)}
                                       </Badge>
                                       {r.status === "pending" && (
-                                        <Badge
-                                          variant={adminReportStatusBadgeVariant(
-                                            "pending",
-                                          )}
-                                        >
+                                        <Badge variant={adminReportStatusBadgeVariant("pending")}>
                                           대기
                                         </Badge>
                                       )}
                                       {r.status === "resolved" && (
-                                        <Badge
-                                          variant={adminReportStatusBadgeVariant(
-                                            "resolved",
-                                          )}
-                                        >
+                                        <Badge variant={adminReportStatusBadgeVariant("resolved")}>
                                           완료
                                         </Badge>
                                       )}
                                       {r.status === "rejected" && (
-                                        <Badge
-                                          variant={adminReportStatusBadgeVariant(
-                                            "rejected",
-                                          )}
-                                        >
+                                        <Badge variant={adminReportStatusBadgeVariant("rejected")}>
                                           반려
                                         </Badge>
                                       )}
@@ -1022,9 +878,7 @@ export default function BoardsClient() {
                                       <p className="text-sm text-muted-foreground mb-1">
                                         신고 사유
                                       </p>
-                                      <p className="text-base font-medium">
-                                        {r.reason}
-                                      </p>
+                                      <p className="text-base font-medium">{r.reason}</p>
                                     </div>
 
                                     <div>
@@ -1060,16 +914,12 @@ export default function BoardsClient() {
                                               className="inline-flex cursor-not-allowed items-center gap-2 text-base text-muted-foreground"
                                               aria-disabled="true"
                                             >
-                                              {r.post?.title ??
-                                                "(대상 글 정보 없음)"}
+                                              {r.post?.title ?? "(대상 글 정보 없음)"}
                                               <ExternalLink className="h-4 w-4 opacity-60" />
                                             </span>
                                           </TooltipTrigger>
                                           <TooltipContent>
-                                            {getBoardLinkBlockedReason(
-                                              postLinkReason,
-                                              false,
-                                            )}
+                                            {getBoardLinkBlockedReason(postLinkReason, false)}
                                           </TooltipContent>
                                         </Tooltip>
                                       )}
@@ -1079,9 +929,7 @@ export default function BoardsClient() {
                                       <span>
                                         신고자:{" "}
                                         <span className="font-medium">
-                                          {r.reporterDisplay ||
-                                            r.reporterNickname ||
-                                            "-"}
+                                          {r.reporterDisplay || r.reporterNickname || "-"}
                                         </span>
                                       </span>
                                       <span>{fmt(r.createdAt)}</span>
@@ -1115,9 +963,7 @@ export default function BoardsClient() {
                                   <Button
                                     size="sm"
                                     disabled={!isPending}
-                                    onClick={() =>
-                                      processReport(r, "resolve_hide_target")
-                                    }
+                                    onClick={() => processReport(r, "resolve_hide_target")}
                                     className="gap-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                                   >
                                     <ShieldAlert className="h-4 w-4" />
@@ -1148,23 +994,16 @@ export default function BoardsClient() {
                       reportsTotalPages !== null && (
                         <div className="flex flex-col items-center justify-between gap-3 border-t border-border/40 pt-5 sm:flex-row">
                           <div className="text-sm text-muted-foreground">
-                            총{" "}
-                            <span className="font-semibold text-foreground">
-                              {reportsTotal}
-                            </span>
+                            총 <span className="font-semibold text-foreground">{reportsTotal}</span>
                             건 · 페이지{" "}
-                            <span className="font-semibold text-foreground">
-                              {reportPage}
-                            </span>{" "}
-                            / {reportsTotalPages}
+                            <span className="font-semibold text-foreground">{reportPage}</span> /{" "}
+                            {reportsTotalPages}
                           </div>
                           <div className="flex items-center gap-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() =>
-                                setReportPage((p) => Math.max(1, p - 1))
-                              }
+                              onClick={() => setReportPage((p) => Math.max(1, p - 1))}
                               disabled={reportPage <= 1}
                               className="border-border/40 hover:border-border/60"
                             >
@@ -1177,9 +1016,7 @@ export default function BoardsClient() {
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                setReportPage((p) =>
-                                  Math.min(reportsTotalPages, p + 1),
-                                )
+                                setReportPage((p) => Math.min(reportsTotalPages, p + 1))
                               }
                               disabled={reportPage >= reportsTotalPages}
                               className="border-border/40 hover:border-border/60"

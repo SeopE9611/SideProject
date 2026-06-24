@@ -101,8 +101,7 @@ export default function useCheckoutStringingServiceAdapter({
     passId?: string;
     packageSize?: number;
   }>({ has: false });
-  const [packagePreviewLoading, setPackagePreviewLoading] =
-    useState(withStringService);
+  const [packagePreviewLoading, setPackagePreviewLoading] = useState(withStringService);
 
   const previewOrder = useMemo(() => {
     const items = orderItems.map((item) => ({
@@ -168,8 +167,7 @@ export default function useCheckoutStringingServiceAdapter({
             new Date(p.expiresAt).getTime() >= Date.now(),
         );
         items.sort(
-          (a: any, b: any) =>
-            new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime(),
+          (a: any, b: any) => new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime(),
         );
 
         if (items.length === 0) {
@@ -282,8 +280,7 @@ export default function useCheckoutStringingServiceAdapter({
   }, [withStringService, serviceTargetIds, previewOrder.items, setFormData]);
 
   const orderRemainingSlots =
-    (previewOrder.stringService.totalSlots ?? 0) -
-    (previewOrder.stringService.usedSlots ?? 0);
+    (previewOrder.stringService.totalSlots ?? 0) - (previewOrder.stringService.usedSlots ?? 0);
   const requiredPassCount = useMemo(
     () =>
       resolveRequiredPassCountFromInput({
@@ -294,19 +291,13 @@ export default function useCheckoutStringingServiceAdapter({
   );
 
   // 예약 가능한 시간 목록을 실제로 조회
-  const {
-    disabledTimes,
-    reservedTimes,
-    timeSlots,
-    slotsLoading,
-    slotsError,
-    hasCacheForDate,
-  } = useReservedSlots({
-    preferredDate: shared.formData.preferredDate,
-    preferredTime: shared.formData.preferredTime,
-    requiredPassCount,
-    setFormData: shared.setFormData,
-  });
+  const { disabledTimes, reservedTimes, timeSlots, slotsLoading, slotsError, hasCacheForDate } =
+    useReservedSlots({
+      preferredDate: shared.formData.preferredDate,
+      preferredTime: shared.formData.preferredTime,
+      requiredPassCount,
+      setFormData: shared.setFormData,
+    });
 
   // 예약 슬롯 배열에서 간격(예: 30분)을 계산.
   // 예: ["10:00", "10:30", "11:00"] -> 30분
@@ -347,49 +338,33 @@ export default function useCheckoutStringingServiceAdapter({
     }
   }, [packageInsufficient, shared.formData.packageOptOut, shared.setFormData]);
 
-  const base = shared.linesForSubmit.reduce(
-    (sum, line) => sum + Number(line.mountingFee ?? 0),
-    0,
-  );
+  const base = shared.linesForSubmit.reduce((sum, line) => sum + Number(line.mountingFee ?? 0), 0);
   const price = usingPackage ? 0 : base;
   const selectedOrderItem =
-    previewOrder.items.find(
-      (it) => it.id === shared.formData.stringTypes?.[0],
-    ) ?? null;
+    previewOrder.items.find((it) => it.id === shared.formData.stringTypes?.[0]) ?? null;
 
   const lineValidationErrors = useMemo(() => {
     return shared.linesForSubmit.map((line) => ({
-      racketType: String(line.racketType ?? "").trim()
-        ? ""
-        : "라켓명을 입력해 주세요.",
-      tensionMain: String(line.tensionMain ?? "").trim()
-        ? ""
-        : "메인 텐션을 입력해 주세요.",
-      tensionCross: String(line.tensionCross ?? "").trim()
-        ? ""
-        : "크로스 텐션을 입력해 주세요.",
+      racketType: String(line.racketType ?? "").trim() ? "" : "라켓명을 입력해 주세요.",
+      tensionMain: String(line.tensionMain ?? "").trim() ? "" : "메인 텐션을 입력해 주세요.",
+      tensionCross: String(line.tensionCross ?? "").trim() ? "" : "크로스 텐션을 입력해 주세요.",
     }));
   }, [shared.linesForSubmit]);
 
   const hasLineValidationErrors = useMemo(
     () =>
       lineValidationErrors.some(
-        (line) =>
-          !!line.racketType || !!line.tensionMain || !!line.tensionCross,
+        (line) => !!line.racketType || !!line.tensionMain || !!line.tensionCross,
       ),
     [lineValidationErrors],
   );
 
   const summary = useMemo(() => {
-    const collectionLabel = collectionMethodLabel(
-      shared.formData.collectionMethod,
-    );
+    const collectionLabel = collectionMethodLabel(shared.formData.collectionMethod);
     const lineCount = shared.linesForSubmit.length;
     const stringNames = Array.from(
       new Set(
-        shared.linesForSubmit
-          .map((line) => String(line.stringName ?? "").trim())
-          .filter(Boolean),
+        shared.linesForSubmit.map((line) => String(line.stringName ?? "").trim()).filter(Boolean),
       ),
     );
     const tensionSet = Array.from(
@@ -446,13 +421,10 @@ export default function useCheckoutStringingServiceAdapter({
       return !!racketType && !!tensionMain && !!tensionCross;
     }).length;
 
-    const basicConfigured =
-      shared.formData.stringTypes.length > 0 && totalLineCount > 0;
+    const basicConfigured = shared.formData.stringTypes.length > 0 && totalLineCount > 0;
     const needsVisitReservation = shared.formData.collectionMethod === "visit";
-    const hasReservation =
-      !!shared.formData.preferredDate && !!shared.formData.preferredTime;
-    const lineDone =
-      totalLineCount > 0 && lineConfiguredCount === totalLineCount;
+    const hasReservation = !!shared.formData.preferredDate && !!shared.formData.preferredTime;
+    const lineDone = totalLineCount > 0 && lineConfiguredCount === totalLineCount;
 
     const isReadyToSubmit =
       basicConfigured && lineDone && (!needsVisitReservation || hasReservation);

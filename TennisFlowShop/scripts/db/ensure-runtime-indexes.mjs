@@ -53,8 +53,7 @@ function hasMatchingIndex(indexes, spec) {
 
     if (
       typeof spec.options?.unique !== "undefined" &&
-      normalizeBooleanOption(idx.unique) !==
-        normalizeBooleanOption(spec.options.unique)
+      normalizeBooleanOption(idx.unique) !== normalizeBooleanOption(spec.options.unique)
     ) {
       return false;
     }
@@ -66,15 +65,12 @@ function hasMatchingIndex(indexes, spec) {
     }
     if (
       typeof spec.options?.sparse !== "undefined" &&
-      normalizeBooleanOption(idx.sparse) !==
-        normalizeBooleanOption(spec.options.sparse)
+      normalizeBooleanOption(idx.sparse) !== normalizeBooleanOption(spec.options.sparse)
     ) {
       return false;
     }
     if (typeof spec.options?.partialFilterExpression !== "undefined") {
-      const actualPartial = normalizePartialFilterExpression(
-        idx.partialFilterExpression,
-      );
+      const actualPartial = normalizePartialFilterExpression(idx.partialFilterExpression);
       const expectedPartial = normalizePartialFilterExpression(
         spec.options.partialFilterExpression,
       );
@@ -668,31 +664,24 @@ try {
     process.env.COMMUNITY_VIEW_DEDUPE_TTL_SECONDS ?? 60 * 30,
   );
   const communityViewDedupeTtl = Number.isFinite(communityViewDedupeTtlRaw)
-    ? Math.max(
-        60 * 30,
-        Math.min(60 * 60 * 24, Math.floor(communityViewDedupeTtlRaw)),
-      )
+    ? Math.max(60 * 30, Math.min(60 * 60 * 24, Math.floor(communityViewDedupeTtlRaw)))
     : 60 * 30;
 
-  await db
-    .collection("community_post_view_dedupe")
-    .updateMany({ expireAt: { $exists: false } }, [
-      {
-        $set: {
-          expireAt: {
-            $dateAdd: {
-              startDate: "$createdAt",
-              unit: "second",
-              amount: communityViewDedupeTtl,
-            },
+  await db.collection("community_post_view_dedupe").updateMany({ expireAt: { $exists: false } }, [
+    {
+      $set: {
+        expireAt: {
+          $dateAdd: {
+            startDate: "$createdAt",
+            unit: "second",
+            amount: communityViewDedupeTtl,
           },
         },
       },
-    ]);
+    },
+  ]);
 
-  console.log(
-    "[ensure-runtime-indexes] 런타임 및 공개 목록 인덱스 선반영이 완료되었습니다.",
-  );
+  console.log("[ensure-runtime-indexes] 런타임 및 공개 목록 인덱스 선반영이 완료되었습니다.");
 } finally {
   await client.close();
 }

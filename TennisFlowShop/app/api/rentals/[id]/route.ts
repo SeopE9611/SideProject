@@ -15,18 +15,13 @@ function safeVerifyAccessToken(token?: string) {
 
 export const dynamic = "force-dynamic";
 
-export async function GET(
-  _: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const db = (await clientPromise).db();
   if (!ObjectId.isValid(id)) {
     return NextResponse.json({ message: "BAD_ID" }, { status: 400 });
   }
-  const doc = await db
-    .collection("rental_orders")
-    .findOne({ _id: new ObjectId(id) });
+  const doc = await db.collection("rental_orders").findOne({ _id: new ObjectId(id) });
   if (!doc) return NextResponse.json({ message: "Not Found" }, { status: 404 });
 
   /**
@@ -52,11 +47,8 @@ export async function GET(
 
   const userId = doc.userId ? String(doc.userId) : "";
   if (ObjectId.isValid(userId)) {
-    const u = await db
-      .collection("users")
-      .findOne({ _id: new ObjectId(userId) });
-    if (u)
-      user = { name: u.name ?? "", email: u.email ?? "", phone: u.phone ?? "" };
+    const u = await db.collection("users").findOne({ _id: new ObjectId(userId) });
+    if (u) user = { name: u.name ?? "", email: u.email ?? "", phone: u.phone ?? "" };
   }
 
   const cancelReq = doc.cancelRequest ?? null;
@@ -68,8 +60,7 @@ export async function GET(
     brand: doc.brand,
     model: doc.model,
     days: doc.days,
-    status:
-      typeof doc.status === "string" ? doc.status.toLowerCase() : doc.status,
+    status: typeof doc.status === "string" ? doc.status.toLowerCase() : doc.status,
     servicePickupMethod: doc.servicePickupMethod ?? null,
     amount: doc.amount, // { deposit, fee, total }
     // 스트링 교체 요청

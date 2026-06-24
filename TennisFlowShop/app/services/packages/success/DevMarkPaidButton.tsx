@@ -33,12 +33,7 @@ export default function DevMarkPaidButton({ orderId, show = false }: Props) {
   }
 
   return (
-    <Button
-      onClick={markPaid}
-      disabled={loading}
-      className="mt-6"
-      variant="destructive"
-    >
+    <Button onClick={markPaid} disabled={loading} className="mt-6" variant="destructive">
       {loading ? "처리 중…" : "(개발용) 이 주문 결제완료 처리"}
     </Button>
   );

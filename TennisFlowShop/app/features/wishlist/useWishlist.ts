@@ -77,10 +77,7 @@ export function useWishlist() {
     await mutate();
   }
 
-  async function updateOptions(
-    productId: string,
-    options: WishlistOptionPayload,
-  ) {
+  async function updateOptions(productId: string, options: WishlistOptionPayload) {
     const res = await fetch(`/api/wishlist/${productId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },

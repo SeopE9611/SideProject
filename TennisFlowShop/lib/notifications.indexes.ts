@@ -7,10 +7,7 @@ export async function ensureUserNotificationIndexes(db: Db) {
       { userId: 1, readAt: 1, createdAt: -1 },
       { name: "idx_user_notifications_user_read_created" },
     ),
-    col.createIndex(
-      { userId: 1, createdAt: -1 },
-      { name: "idx_user_notifications_user_created" },
-    ),
+    col.createIndex({ userId: 1, createdAt: -1 }, { name: "idx_user_notifications_user_created" }),
     col.createIndex(
       { dedupeKey: 1 },
       {

@@ -36,8 +36,7 @@ function getIconProps(status: string) {
     case "배송중":
       return {
         Icon: Truck,
-        wrapperClasses:
-          "border border-primary/20 bg-primary/10 dark:bg-primary/20",
+        wrapperClasses: "border border-primary/20 bg-primary/10 dark:bg-primary/20",
         iconClasses: "text-primary",
       };
     case "배송완료":
@@ -49,15 +48,13 @@ function getIconProps(status: string) {
     case "환불":
       return {
         Icon: RotateCcw,
-        wrapperClasses:
-          "border border-destructive/30 bg-destructive/10 dark:bg-destructive/15",
+        wrapperClasses: "border border-destructive/30 bg-destructive/10 dark:bg-destructive/15",
         iconClasses: "text-destructive",
       };
     case "취소":
       return {
         Icon: XCircle,
-        wrapperClasses:
-          "border border-destructive/30 bg-destructive/10 dark:bg-destructive/15",
+        wrapperClasses: "border border-destructive/30 bg-destructive/10 dark:bg-destructive/15",
         iconClasses: "text-destructive",
       };
     case "배송정보변경":
@@ -98,11 +95,10 @@ export default function OrderHistory({
   const [page, setPage] = useState(1);
 
   // getKey: pageIndex마다 서버에 page=pageIndex+1 요청
-  const getKey =
-    (orderId: string) => (pageIndex: number, prev: HistoryResponse | null) => {
-      if (prev && prev.history.length === 0) return null; // 더 이상 페이지 없으면 중단
-      return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
-    };
+  const getKey = (orderId: string) => (pageIndex: number, prev: HistoryResponse | null) => {
+    if (prev && prev.history.length === 0) return null; // 더 이상 페이지 없으면 중단
+    return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
+  };
   // useSWRInfinite 훅: pages[0]은 page=1 응답, pages[1]은 page=2 응답...
   const {
     data: pages,
@@ -136,15 +132,11 @@ export default function OrderHistory({
   const pageData = pages?.[page - 1];
   const hasDataError = !!error;
   const isInitialLoading = pages === undefined && !hasDataError;
-  const isPageTransitionLoading =
-    !isInitialLoading && !hasDataError && (page > size || !pageData);
+  const isPageTransitionLoading = !isInitialLoading && !hasDataError && (page > size || !pageData);
   const hasResolvedPageData = !!pageData && !hasDataError;
   const pageHistory =
-    hasResolvedPageData && Array.isArray(pageData.history)
-      ? pageData.history
-      : null;
-  const hasResolvedTotal =
-    hasResolvedPageData && typeof pageData.total === "number";
+    hasResolvedPageData && Array.isArray(pageData.history) ? pageData.history : null;
+  const hasResolvedTotal = hasResolvedPageData && typeof pageData.total === "number";
 
   // 내림차순 정렬 (최신 먼저)
   const toTime = (raw: string) => {
@@ -156,9 +148,7 @@ export default function OrderHistory({
     ? [...pageHistory].sort((a, b) => toTime(b.date) - toTime(a.date))
     : [];
 
-  const totalPages = hasResolvedTotal
-    ? Math.max(1, Math.ceil(pageData.total / LIMIT))
-    : 1;
+  const totalPages = hasResolvedTotal ? Math.max(1, Math.ceil(pageData.total / LIMIT)) : 1;
   const shouldShowRows = hasResolvedPageData && pageItems.length > 0;
   const shouldShowEmptyState = hasResolvedPageData && pageItems.length === 0;
 
@@ -179,9 +169,7 @@ export default function OrderHistory({
     <Card className="md:col-span-3 rounded-xl border-border bg-card shadow-md">
       <CardHeader className="pb-3">
         <CardTitle>처리 이력</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          최신 변경이 맨 위에 표시됩니다.
-        </p>
+        <p className="text-sm text-muted-foreground">최신 변경이 맨 위에 표시됩니다.</p>
       </CardHeader>
       <CardContent>
         {/* 로딩 중일 때 스켈레톤 5줄 */}
@@ -221,9 +209,7 @@ export default function OrderHistory({
             const displayStatus = getOrderStatusLabelForDisplay(item.status, {
               shippingMethod,
             });
-            const { Icon, wrapperClasses, iconClasses } = getIconProps(
-              item.status,
-            );
+            const { Icon, wrapperClasses, iconClasses } = getIconProps(item.status);
             return (
               <div key={idx} className="flex space-x-4 py-3">
                 <div
@@ -238,9 +224,7 @@ export default function OrderHistory({
                       {formatHistoryDate(item.date)}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {item.description}
-                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
                 </div>
               </div>
             );

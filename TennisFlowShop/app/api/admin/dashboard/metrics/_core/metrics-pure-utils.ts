@@ -47,10 +47,7 @@ export function kstDayStartUtc(y: number, m: number, d: number): Date {
   return new Date(Date.UTC(y, m - 1, d, -9, 0, 0, 0));
 }
 
-export function addKstDays(
-  parts: KstDateParts,
-  deltaDays: number,
-): KstDateParts {
+export function addKstDays(parts: KstDateParts, deltaDays: number): KstDateParts {
   const base = new Date(Date.UTC(parts.y, parts.m - 1, parts.d, 0, 0, 0, 0));
   base.setUTCDate(base.getUTCDate() + deltaDays);
   return {
@@ -74,9 +71,7 @@ export function buildYmdRange(
 }
 
 /** 일별 시리즈 (Mongo) -> { 'YYYY-MM-DD': number } 형태로 변환 */
-export function rowsToMap(
-  rows: Array<{ _id: string; v: number }>,
-): Record<string, number> {
+export function rowsToMap(rows: Array<{ _id: string; v: number }>): Record<string, number> {
   const map: Record<string, number> = {};
   for (const r of rows) {
     map[r._id] = Number(r.v || 0);
@@ -95,23 +90,18 @@ export function mergeSeries(
 }
 
 export function asDoc(value: unknown): UnknownDoc | null {
-  return typeof value === "object" && value !== null
-    ? (value as UnknownDoc)
-    : null;
+  return typeof value === "object" && value !== null ? (value as UnknownDoc) : null;
 }
 
 export function asDocArray(value: unknown): UnknownDoc[] {
   return Array.isArray(value)
-    ? value
-        .map((item) => asDoc(item))
-        .filter((item): item is UnknownDoc => item !== null)
+    ? value.map((item) => asDoc(item)).filter((item): item is UnknownDoc => item !== null)
     : [];
 }
 
 export function getString(value: unknown): string | null {
   if (typeof value === "string") return value;
-  if (typeof value === "number" || typeof value === "boolean")
-    return String(value);
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
   return null;
 }
 
@@ -130,8 +120,7 @@ export function toIsoSafe(value: unknown): string {
 
 export function toTimeMs(value: unknown): number {
   if (value instanceof Date) return value.getTime();
-  if (typeof value === "string" || typeof value === "number")
-    return new Date(value).getTime();
+  if (typeof value === "string" || typeof value === "number") return new Date(value).getTime();
   return Number.NaN;
 }
 

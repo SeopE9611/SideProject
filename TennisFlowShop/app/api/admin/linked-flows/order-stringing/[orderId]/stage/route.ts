@@ -66,10 +66,7 @@ async function pickLatestLinkedApplication(
   return rows[0] ?? null;
 }
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ orderId: string }> },
-) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ orderId: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
 
@@ -78,28 +75,19 @@ export async function PATCH(
 
   const { orderId } = await params;
   if (!ObjectId.isValid(orderId)) {
-    return NextResponse.json(
-      { success: false, message: "INVALID_ORDER_ID" },
-      { status: 400 },
-    );
+    return NextResponse.json({ success: false, message: "INVALID_ORDER_ID" }, { status: 400 });
   }
 
   let body: StageBody | null = null;
   try {
     body = (await req.json()) as StageBody;
   } catch {
-    return NextResponse.json(
-      { success: false, message: "INVALID_JSON" },
-      { status: 400 },
-    );
+    return NextResponse.json({ success: false, message: "INVALID_JSON" }, { status: 400 });
   }
 
   const rawStage = body?.stage;
   if (!isLinkedFlowStage(rawStage)) {
-    return NextResponse.json(
-      { success: false, message: "INVALID_STAGE" },
-      { status: 400 },
-    );
+    return NextResponse.json({ success: false, message: "INVALID_STAGE" }, { status: 400 });
   }
 
   const _id = new ObjectId(orderId);
@@ -134,26 +122,16 @@ export async function PATCH(
       }
 
       const previousOrderStatus = String((order as any).status ?? "").trim();
-      if (
-        LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES.includes(
-          previousOrderStatus as any,
-        )
-      ) {
+      if (LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES.includes(previousOrderStatus as any)) {
         throw new Error(`ORDER_STATUS_BLOCKED:${previousOrderStatus}`);
       }
 
-      const app = await pickLatestLinkedApplication(
-        applications,
-        _id,
-        mongoSession,
-      );
+      const app = await pickLatestLinkedApplication(applications, _id, mongoSession);
       if (!app) {
         throw new Error("LINKED_APPLICATION_NOT_FOUND");
       }
 
-      const previousApplicationStatus = String(
-        (app as any).status ?? "",
-      ).trim();
+      const previousApplicationStatus = String((app as any).status ?? "").trim();
       if (
         isApplicationClosedForLinkedAutomation({
           status: previousApplicationStatus,
@@ -166,10 +144,7 @@ export async function PATCH(
       const nextOrderStatus = mapStageToOrderStatus(stage);
       const nextApplicationStatus = mapStageToApplicationStatus(stage);
       const nextPaymentStatus = mapOrderStatusToPaymentStatus(nextOrderStatus);
-      const currentInferred = inferLinkedFlowStage(
-        previousOrderStatus,
-        previousApplicationStatus,
-      );
+      const currentInferred = inferLinkedFlowStage(previousOrderStatus, previousApplicationStatus);
 
       if (
         currentInferred === stage &&
@@ -249,8 +224,7 @@ export async function PATCH(
       }
 
       const becamePaid =
-        (order as any).paymentStatus !== "결제완료" &&
-        nextPaymentStatus === "결제완료";
+        (order as any).paymentStatus !== "결제완료" && nextPaymentStatus === "결제완료";
 
       resultPayload = {
         stage,
@@ -274,10 +248,7 @@ export async function PATCH(
   } catch (e: any) {
     const message = String(e?.message ?? "");
     if (message === "ORDER_NOT_FOUND") {
-      return NextResponse.json(
-        { success: false, message: "ORDER_NOT_FOUND" },
-        { status: 404 },
-      );
+      return NextResponse.json({ success: false, message: "ORDER_NOT_FOUND" }, { status: 404 });
     }
     if (message === "LINKED_APPLICATION_NOT_FOUND") {
       return NextResponse.json(
@@ -290,8 +261,7 @@ export async function PATCH(
       return NextResponse.json(
         {
           success: false,
-          message:
-            "주문이 종료 상태이므로 연결 진행 단계를 변경할 수 없습니다.",
+          message: "주문이 종료 상태이므로 연결 진행 단계를 변경할 수 없습니다.",
           orderStatus,
           blockedStatuses: LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES,
         },
@@ -312,8 +282,7 @@ export async function PATCH(
     return NextResponse.json(
       {
         success: false,
-        message:
-          "연결 진행 단계 변경 처리 중 오류가 발생했습니다. 저장이 완료되지 않았습니다.",
+        message: "연결 진행 단계 변경 처리 중 오류가 발생했습니다. 저장이 완료되지 않았습니다.",
       },
       { status: 500 },
     );
@@ -331,10 +300,7 @@ export async function PATCH(
       }
     }
   } catch (sideEffectError) {
-    console.error(
-      "[admin linked-flow stage] post side-effect failed:",
-      sideEffectError,
-    );
+    console.error("[admin linked-flow stage] post side-effect failed:", sideEffectError);
   }
 
   return NextResponse.json({
@@ -346,9 +312,7 @@ export async function PATCH(
       id: resultPayload.orderId,
       previousStatus: resultPayload.previousOrderStatus,
       nextStatus: resultPayload.nextOrderStatus,
-      paymentStatus: mapOrderStatusToPaymentStatus(
-        resultPayload.nextOrderStatus,
-      ),
+      paymentStatus: mapOrderStatusToPaymentStatus(resultPayload.nextOrderStatus),
     },
     application: {
       id: resultPayload.appId,

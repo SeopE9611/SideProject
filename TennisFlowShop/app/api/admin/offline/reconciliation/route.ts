@@ -32,9 +32,7 @@ function parseDateBoundary(value: string | null, boundary: "from" | "to") {
   const trimmed = value.trim();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return null;
   const date = new Date(
-    boundary === "from"
-      ? `${trimmed}T00:00:00.000Z`
-      : `${trimmed}T23:59:59.999Z`,
+    boundary === "from" ? `${trimmed}T00:00:00.000Z` : `${trimmed}T23:59:59.999Z`,
   );
   return Number.isNaN(date.getTime()) ? null : date;
 }
@@ -51,9 +49,7 @@ function objectIdString(value: unknown): string | null {
   return null;
 }
 
-function reconcileStatus(
-  container: Record<string, any> | null | undefined,
-): ReconcileStatus {
+function reconcileStatus(container: Record<string, any> | null | undefined): ReconcileStatus {
   const status = String(container?.reconcileStatus ?? "open");
   return status === "resolved" || status === "ignored" ? status : "open";
 }
@@ -72,11 +68,7 @@ function buildStatusFilter(path: string, status: string): Filter<Document> {
   return { [`${path}.reconcileStatus`]: status };
 }
 
-function buildDateFilter(
-  path: string,
-  from: Date | null,
-  to: Date | null,
-): Filter<Document> {
+function buildDateFilter(path: string, from: Date | null, to: Date | null): Filter<Document> {
   if (!from && !to) return {};
   const range: Record<string, Date> = {};
   if (from) range.$gte = from;
@@ -101,11 +93,7 @@ function lineSummary(lines: any): string {
   return text || "작업 내용 미입력";
 }
 
-function packageIssueMatch(
-  status: string,
-  from: Date | null,
-  to: Date | null,
-): Filter<Document> {
+function packageIssueMatch(status: string, from: Date | null, to: Date | null): Filter<Document> {
   return {
     $and: [
       OFFLINE_PACKAGE_ORDER_FILTER,
@@ -122,11 +110,7 @@ function packageIssueMatch(
   };
 }
 
-function packageUsageMatch(
-  status: string,
-  from: Date | null,
-  to: Date | null,
-): Filter<Document> {
+function packageUsageMatch(status: string, from: Date | null, to: Date | null): Filter<Document> {
   return {
     $and: [
       { "packageUsage.passId": { $exists: true, $nin: [null, ""] } },
@@ -181,9 +165,7 @@ function serializePackageIssue(doc: Record<string, any>): ReconciliationItem {
     customer: {
       id: customerId,
       name: String(customerName),
-      phoneMasked: doc.offlineCustomer?.phone
-        ? maskPhone(String(doc.offlineCustomer.phone))
-        : null,
+      phoneMasked: doc.offlineCustomer?.phone ? maskPhone(String(doc.offlineCustomer.phone)) : null,
     },
     metadata: {
       error: meta.offlineIssueError ?? null,
@@ -201,9 +183,7 @@ function serializePackageIssue(doc: Record<string, any>): ReconciliationItem {
         : [],
     },
     links: {
-      customerDetailUrl: customerId
-        ? `/admin/offline/customers/${customerId}`
-        : null,
+      customerDetailUrl: customerId ? `/admin/offline/customers/${customerId}` : null,
       packageOrderAdminUrl: `/admin/packages/${String(doc._id)}`,
     },
     note: typeof meta.reconcileNote === "string" ? meta.reconcileNote : null,
@@ -215,10 +195,8 @@ function serializePackageIssue(doc: Record<string, any>): ReconciliationItem {
 function serializePackageUsage(doc: Record<string, any>): ReconciliationItem {
   const usage = doc.packageUsage ?? {};
   const customerId = objectIdString(doc.offlineCustomerId);
-  const customerName =
-    doc.offlineCustomer?.name ?? doc.customerSnapshot?.name ?? "고객 정보 없음";
-  const customerPhone =
-    doc.offlineCustomer?.phone ?? doc.customerSnapshot?.phone ?? null;
+  const customerName = doc.offlineCustomer?.name ?? doc.customerSnapshot?.name ?? "고객 정보 없음";
+  const customerPhone = doc.offlineCustomer?.phone ?? doc.customerSnapshot?.phone ?? null;
   return {
     id: String(doc._id),
     type: "package_usage",
@@ -247,9 +225,7 @@ function serializePackageUsage(doc: Record<string, any>): ReconciliationItem {
       memo: doc.memo ?? null,
     },
     links: {
-      customerDetailUrl: customerId
-        ? `/admin/offline/customers/${customerId}`
-        : null,
+      customerDetailUrl: customerId ? `/admin/offline/customers/${customerId}` : null,
       offlineRecordUrl: customerId
         ? `/admin/offline/customers/${customerId}#record-${String(doc._id)}`
         : "/admin/offline",
@@ -272,10 +248,7 @@ export async function GET(req: Request) {
     : "all";
   const status = STATUSES.includes(statusParam as any) ? statusParam : "open";
   const page = Math.max(1, Number(url.searchParams.get("page") || "1") || 1);
-  const limit = Math.min(
-    100,
-    Math.max(1, Number(url.searchParams.get("limit") || "20") || 20),
-  );
+  const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("limit") || "20") || 20));
   const from = parseDateBoundary(url.searchParams.get("from"), "from");
   const to = parseDateBoundary(url.searchParams.get("to"), "to");
 
@@ -297,9 +270,7 @@ export async function GET(req: Request) {
         { $project: { offlineCustomerDocs: 0 } },
       ])
       .toArray();
-    items.push(
-      ...rows.map((row) => serializePackageIssue(row as Record<string, any>)),
-    );
+    items.push(...rows.map((row) => serializePackageIssue(row as Record<string, any>)));
   }
   if (type === "all" || type === "package_usage") {
     const rows = await guard.db
@@ -318,9 +289,7 @@ export async function GET(req: Request) {
         { $project: { offlineCustomerDocs: 0 } },
       ])
       .toArray();
-    items.push(
-      ...rows.map((row) => serializePackageUsage(row as Record<string, any>)),
-    );
+    items.push(...rows.map((row) => serializePackageUsage(row as Record<string, any>)));
   }
 
   items.sort(

@@ -32,13 +32,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
@@ -64,11 +58,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
-import {
-  adminFetcher,
-  adminMutator,
-  getAdminErrorMessage,
-} from "@/lib/admin/adminFetcher";
+import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { useAdminListQueryState } from "@/lib/admin/useAdminListQueryState";
 import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -131,9 +121,7 @@ interface UsersListPayload {
   counters?: UsersListCounters;
 }
 
-const asPreviewCandidates = (
-  value: unknown,
-): UserCleanupPreviewCandidateDto[] =>
+const asPreviewCandidates = (value: unknown): UserCleanupPreviewCandidateDto[] =>
   Array.isArray(value)
     ? value.map((item) => ({
         _id:
@@ -157,15 +145,13 @@ const asPreviewCandidates = (
       }))
     : [];
 
-const UserPointsDialog = dynamic(
-  () => import("@/app/admin/users/_components/UserPointsDialog"),
-  { loading: () => null },
-);
+const UserPointsDialog = dynamic(() => import("@/app/admin/users/_components/UserPointsDialog"), {
+  loading: () => null,
+});
 
-const AdminConfirmDialog = dynamic(
-  () => import("@/components/admin/AdminConfirmDialog"),
-  { loading: () => null },
-);
+const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirmDialog"), {
+  loading: () => null,
+});
 
 type UserListQueryState = {
   page: number;
@@ -209,33 +195,20 @@ function parseUserListQueryState(
   return {
     page: Math.max(
       1,
-      Number.parseInt(params.get("page") || String(defaults.page), 10) ||
-        defaults.page,
+      Number.parseInt(params.get("page") || String(defaults.page), 10) || defaults.page,
     ),
     searchQuery: params.get("q") || defaults.searchQuery,
-    roleFilter:
-      role === "all" || role === "user" || role === "admin"
-        ? role
-        : defaults.roleFilter,
+    roleFilter: role === "all" || role === "user" || role === "admin" ? role : defaults.roleFilter,
     statusFilter:
-      status === "all" ||
-      status === "active" ||
-      status === "deleted" ||
-      status === "suspended"
+      status === "all" || status === "active" || status === "deleted" || status === "suspended"
         ? status
         : defaults.statusFilter,
     loginFilter:
-      login === "all" ||
-      login === "nologin" ||
-      login === "recent30" ||
-      login === "recent90"
+      login === "all" || login === "nologin" || login === "recent30" || login === "recent90"
         ? login
         : defaults.loginFilter,
     signupFilter:
-      signup === "all" ||
-      signup === "local" ||
-      signup === "kakao" ||
-      signup === "naver"
+      signup === "all" || signup === "local" || signup === "kakao" || signup === "naver"
         ? signup
         : defaults.signupFilter,
     sort:
@@ -267,46 +240,29 @@ export default function UsersClient() {
 
   // 서버 페이징 & 필터
   const [limit] = useState(10);
-  const { state, patchState, setPage } =
-    useAdminListQueryState<UserListQueryState>({
-      pathname: pathname || "/admin/users",
-      searchParams,
-      replace: router.replace,
-      defaults: USER_LIST_DEFAULTS,
-      parse: parseUserListQueryState,
-      toQueryParams: toUserListQueryParams,
-      pageResetKeys: USER_LIST_PAGE_RESET_KEYS,
-    });
-
-  const {
-    page,
-    searchQuery,
-    roleFilter,
-    signupFilter,
-    sort,
-    statusFilter,
-    loginFilter,
-  } = state;
-
-  const {
-    data,
-    isLoading,
-    mutate,
-    rows,
-    total,
-    hasResolvedData,
-    hasDataError,
-    errorMessage,
-  } = useUserList({
-    page,
-    limit,
-    searchQuery,
-    roleFilter,
-    statusFilter,
-    loginFilter,
-    signupFilter,
-    sort,
+  const { state, patchState, setPage } = useAdminListQueryState<UserListQueryState>({
+    pathname: pathname || "/admin/users",
+    searchParams,
+    replace: router.replace,
+    defaults: USER_LIST_DEFAULTS,
+    parse: parseUserListQueryState,
+    toQueryParams: toUserListQueryParams,
+    pageResetKeys: USER_LIST_PAGE_RESET_KEYS,
   });
+
+  const { page, searchQuery, roleFilter, signupFilter, sort, statusFilter, loginFilter } = state;
+
+  const { data, isLoading, mutate, rows, total, hasResolvedData, hasDataError, errorMessage } =
+    useUserList({
+      page,
+      limit,
+      searchQuery,
+      roleFilter,
+      statusFilter,
+      loginFilter,
+      signupFilter,
+      sort,
+    });
 
   // 선택된 사용자 ID 목록 상태
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -332,10 +288,7 @@ export default function UsersClient() {
   const safeRows = rows ?? [];
 
   const selectedRows = useMemo(
-    () =>
-      selectedUsers.length
-        ? safeRows.filter((r) => selectedUsers.includes(r.id))
-        : [],
+    () => (selectedUsers.length ? safeRows.filter((r) => selectedUsers.includes(r.id)) : []),
     [safeRows, selectedUsers],
   );
 
@@ -349,34 +302,22 @@ export default function UsersClient() {
     [selectedRows],
   );
   const hasSelection = selectedUsers.length > 0;
-  const canSoftDelete = useMemo(
-    () => selectedRows.some((u) => !u.isDeleted),
-    [selectedRows],
-  );
+  const canSoftDelete = useMemo(() => selectedRows.some((u) => !u.isDeleted), [selectedRows]);
 
-  const hasResolvedTotal =
-    hasResolvedData && !hasDataError && typeof total === "number";
-  const totalPages = hasResolvedTotal
-    ? Math.max(1, Math.ceil(total / limit))
-    : 1;
+  const hasResolvedTotal = hasResolvedData && !hasDataError && typeof total === "number";
+  const totalPages = hasResolvedTotal ? Math.max(1, Math.ceil(total / limit)) : 1;
   const shouldShowResolvedPagination = hasResolvedTotal && !hasDataError;
-  const pageItems = shouldShowResolvedPagination
-    ? buildPageItems(page, totalPages)
-    : [];
+  const pageItems = shouldShowResolvedPagination ? buildPageItems(page, totalPages) : [];
 
   const kpiValues = useMemo(() => {
     const counters = (data as UsersListPayload | undefined)?.counters;
 
     return {
-      active:
-        counters?.active ??
-        safeRows.filter((u) => !u.isDeleted && !u.isSuspended).length,
+      active: counters?.active ?? safeRows.filter((u) => !u.isDeleted && !u.isSuspended).length,
       deleted: counters?.deleted ?? safeRows.filter((u) => u.isDeleted).length,
-      admins:
-        counters?.admins ?? safeRows.filter((u) => u.role === "admin").length,
+      admins: counters?.admins ?? safeRows.filter((u) => u.role === "admin").length,
       suspended:
-        counters?.suspended ??
-        safeRows.filter((u) => u.isSuspended && !u.isDeleted).length,
+        counters?.suspended ?? safeRows.filter((u) => u.isSuspended && !u.isDeleted).length,
       total: counters?.total ?? (typeof total === "number" ? total : 0),
     };
   }, [data, safeRows, total]);
@@ -484,41 +425,26 @@ export default function UsersClient() {
   const shouldShowLoadingRows = isLoading && !hasResolvedData;
   const shouldShowErrorRow = hasDataError;
   const shouldShowEmptyRow =
-    !shouldShowLoadingRows &&
-    !shouldShowErrorRow &&
-    hasResolvedData &&
-    safeRows.length === 0;
-  const shouldShowDataRows =
-    !shouldShowLoadingRows && !shouldShowErrorRow && safeRows.length > 0;
+    !shouldShowLoadingRows && !shouldShowErrorRow && hasResolvedData && safeRows.length === 0;
+  const shouldShowDataRows = !shouldShowLoadingRows && !shouldShowErrorRow && safeRows.length > 0;
 
   // 선택
-  const isAllSelected =
-    safeRows.length > 0 && selectedUsers.length === safeRows.length;
-  const isPartiallySelected =
-    selectedUsers.length > 0 && selectedUsers.length < safeRows.length;
+  const isAllSelected = safeRows.length > 0 && selectedUsers.length === safeRows.length;
+  const isPartiallySelected = selectedUsers.length > 0 && selectedUsers.length < safeRows.length;
   const allCheckboxRef = useRef<HTMLButtonElement>(null);
 
   // 삭제된 회원이 하나라도 선택
-  const hasDeletedSelected = useMemo(
-    () => selectedRows.some((u) => u.isDeleted),
-    [selectedRows],
-  );
+  const hasDeletedSelected = useMemo(() => selectedRows.some((u) => u.isDeleted), [selectedRows]);
 
   useEffect(() => {
     if (!allCheckboxRef.current) return;
-    const input = allCheckboxRef.current.querySelector(
-      "input[type='checkbox']",
-    );
-    if (input instanceof HTMLInputElement)
-      input.indeterminate = isPartiallySelected;
+    const input = allCheckboxRef.current.querySelector("input[type='checkbox']");
+    if (input instanceof HTMLInputElement) input.indeterminate = isPartiallySelected;
   }, [isPartiallySelected]);
 
-  const handleSelectAll = () =>
-    setSelectedUsers(isAllSelected ? [] : safeRows.map((u) => u.id));
+  const handleSelectAll = () => setSelectedUsers(isAllSelected ? [] : safeRows.map((u) => u.id));
   const handleSelectUser = (id: string) =>
-    setSelectedUsers((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+    setSelectedUsers((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   // 복사 공통
   const copy = async (text: string) => {
@@ -548,35 +474,26 @@ export default function UsersClient() {
   //  비활성화/해제
   const bulkSuspend = async (suspend: boolean) => {
     try {
-      const json = await adminMutator<BulkActionResponse>(
-        "/api/admin/users/bulk",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            op: suspend ? "suspend" : "unsuspend",
-            ids: selectedUsers,
-          }),
-        },
-      );
+      const json = await adminMutator<BulkActionResponse>("/api/admin/users/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          op: suspend ? "suspend" : "unsuspend",
+          ids: selectedUsers,
+        }),
+      });
 
       const modified = Number(json.modifiedCount || 0);
-      const alreadyCnt = Array.isArray(json?.skipped?.already)
-        ? json.skipped.already.length
-        : 0;
+      const alreadyCnt = Array.isArray(json?.skipped?.already) ? json.skipped.already.length : 0;
       const incompatibleCnt = Array.isArray(json?.skipped?.incompatible)
         ? json.skipped.incompatible.length
         : 0;
 
       if (modified > 0) {
-        showSuccessToast(
-          `${suspend ? "비활성화" : "비활성 해제"} ${modified}건 완료`,
-        );
+        showSuccessToast(`${suspend ? "비활성화" : "비활성 해제"} ${modified}건 완료`);
       }
       if (alreadyCnt > 0) {
-        showInfoToast(
-          `${alreadyCnt}건은 이미 ${suspend ? "비활성" : "활성"} 상태여서 건너뜀`,
-        );
+        showInfoToast(`${alreadyCnt}건은 이미 ${suspend ? "비활성" : "활성"} 상태여서 건너뜀`);
       }
       if (incompatibleCnt > 0 && suspend) {
         // 비활성화 시도에서만 안내: 삭제 계정 비활성화 불가
@@ -598,25 +515,18 @@ export default function UsersClient() {
   // 삭제(소프트 삭제)
   const bulkSoftDelete = async () => {
     try {
-      const json = await adminMutator<BulkActionResponse>(
-        "/api/admin/users/bulk",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ op: "softDelete", ids: selectedUsers }),
-        },
-      );
+      const json = await adminMutator<BulkActionResponse>("/api/admin/users/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ op: "softDelete", ids: selectedUsers }),
+      });
 
       const modified = Number(json.modifiedCount || 0);
-      const alreadyCnt = Array.isArray(json?.skipped?.already)
-        ? json.skipped.already.length
-        : 0;
+      const alreadyCnt = Array.isArray(json?.skipped?.already) ? json.skipped.already.length : 0;
 
       if (modified > 0) showSuccessToast(`삭제(탈퇴) ${modified}건 완료`);
-      if (alreadyCnt > 0)
-        showInfoToast(`${alreadyCnt}건은 이미 삭제 상태여서 건너뜀`);
-      if (modified === 0 && alreadyCnt > 0)
-        showInfoToast("변경된 항목이 없습니다.");
+      if (alreadyCnt > 0) showInfoToast(`${alreadyCnt}건은 이미 삭제 상태여서 건너뜀`);
+      if (modified === 0 && alreadyCnt > 0) showInfoToast("변경된 항목이 없습니다.");
 
       setSelectedUsers([]);
       mutate?.();
@@ -628,9 +538,7 @@ export default function UsersClient() {
 
   // --- Cleanup(7일) 모달 상태 ---
   const [cleanupOpen, setCleanupOpen] = useState(false);
-  const [cleanupPreview, setCleanupPreview] = useState<
-    UserCleanupPreviewCandidateDto[]
-  >([]);
+  const [cleanupPreview, setCleanupPreview] = useState<UserCleanupPreviewCandidateDto[]>([]);
   const [cleanupLoading, setCleanupLoading] = useState(false);
   const [cleanupSubmitting, setCleanupSubmitting] = useState(false);
   const [cleanupAck, setCleanupAck] = useState(false);
@@ -642,9 +550,7 @@ export default function UsersClient() {
 
   // --- Purge(1년) 모달 상태 ---
   const [purgeOpen, setPurgeOpen] = useState(false);
-  const [purgePreview, setPurgePreview] = useState<
-    UserCleanupPreviewCandidateDto[]
-  >([]);
+  const [purgePreview, setPurgePreview] = useState<UserCleanupPreviewCandidateDto[]>([]);
   const [purgeLoading, setPurgeLoading] = useState(false);
   const [purgeSubmitting, setPurgeSubmitting] = useState(false);
   const [purgeAck, setPurgeAck] = useState(false);
@@ -662,20 +568,12 @@ export default function UsersClient() {
         "/api/admin/system/cleanup/preview",
       );
       setCleanupPreview(asPreviewCandidates(json?.candidates));
-      setCleanupPreviewHash(
-        typeof json?.previewHash === "string" ? json.previewHash : "",
-      );
-      setCleanupRequestHash(
-        typeof json?.requestHash === "string" ? json.requestHash : "",
-      );
+      setCleanupPreviewHash(typeof json?.previewHash === "string" ? json.previewHash : "");
+      setCleanupRequestHash(typeof json?.requestHash === "string" ? json.requestHash : "");
       setCleanupConfirmationToken(
-        typeof json?.confirmationToken === "string"
-          ? json.confirmationToken
-          : "",
+        typeof json?.confirmationToken === "string" ? json.confirmationToken : "",
       );
-      setCleanupExpectedText(
-        typeof json?.reconfirmText === "string" ? json.reconfirmText : "",
-      );
+      setCleanupExpectedText(typeof json?.reconfirmText === "string" ? json.reconfirmText : "");
     } catch {
       setCleanupPreview([]);
       setCleanupPreviewHash("");
@@ -694,20 +592,12 @@ export default function UsersClient() {
         "/api/admin/system/purge/preview",
       );
       setPurgePreview(asPreviewCandidates(json?.candidates));
-      setPurgePreviewHash(
-        typeof json?.previewHash === "string" ? json.previewHash : "",
-      );
-      setPurgeRequestHash(
-        typeof json?.requestHash === "string" ? json.requestHash : "",
-      );
+      setPurgePreviewHash(typeof json?.previewHash === "string" ? json.previewHash : "");
+      setPurgeRequestHash(typeof json?.requestHash === "string" ? json.requestHash : "");
       setPurgeConfirmationToken(
-        typeof json?.confirmationToken === "string"
-          ? json.confirmationToken
-          : "",
+        typeof json?.confirmationToken === "string" ? json.confirmationToken : "",
       );
-      setPurgeExpectedText(
-        typeof json?.reconfirmText === "string" ? json.reconfirmText : "",
-      );
+      setPurgeExpectedText(typeof json?.reconfirmText === "string" ? json.reconfirmText : "");
     } catch {
       setPurgePreview([]);
       setPurgePreviewHash("");
@@ -745,9 +635,7 @@ export default function UsersClient() {
         dryRun.previewHash !== cleanupPreviewHash ||
         cleanupRequestHash !== cleanupPreviewHash
       ) {
-        showErrorToast(
-          "미리보기 대상이 변경되었습니다. 목록을 새로고침한 뒤 다시 시도해 주세요.",
-        );
+        showErrorToast("미리보기 대상이 변경되었습니다. 목록을 새로고침한 뒤 다시 시도해 주세요.");
         await fetchCleanupPreview();
         return;
       }
@@ -804,9 +692,7 @@ export default function UsersClient() {
         dryRun.previewHash !== purgePreviewHash ||
         purgeRequestHash !== purgePreviewHash
       ) {
-        showErrorToast(
-          "미리보기 대상이 변경되었습니다. 목록을 새로고침한 뒤 다시 시도해 주세요.",
-        );
+        showErrorToast("미리보기 대상이 변경되었습니다. 목록을 새로고침한 뒤 다시 시도해 주세요.");
         await fetchPurgePreview();
         return;
       }
@@ -890,12 +776,7 @@ export default function UsersClient() {
               <Select
                 value={statusFilter}
                 onValueChange={(v) => {
-                  if (
-                    v === "all" ||
-                    v === "active" ||
-                    v === "deleted" ||
-                    v === "suspended"
-                  )
+                  if (v === "all" || v === "active" || v === "deleted" || v === "suspended")
                     patchState({ statusFilter: v });
                 }}
               >
@@ -917,8 +798,7 @@ export default function UsersClient() {
               <Select
                 value={roleFilter}
                 onValueChange={(v) => {
-                  if (v === "all" || v === "user" || v === "admin")
-                    patchState({ roleFilter: v });
+                  if (v === "all" || v === "user" || v === "admin") patchState({ roleFilter: v });
                 }}
               >
                 <SelectTrigger className="w-[110px]">
@@ -956,11 +836,7 @@ export default function UsersClient() {
                 value={loginFilter}
                 onValueChange={(v) => {
                   patchState({
-                    loginFilter: v as
-                      | "all"
-                      | "nologin"
-                      | "recent30"
-                      | "recent90",
+                    loginFilter: v as "all" | "nologin" | "recent30" | "recent90",
                   });
                 }}
               >
@@ -1047,9 +923,7 @@ export default function UsersClient() {
                         variant="outline"
                         size="sm"
                         onClick={() => bulkSuspend(true)}
-                        title={
-                          !hasSelection ? "선택된 회원이 없습니다" : undefined
-                        }
+                        title={!hasSelection ? "선택된 회원이 없습니다" : undefined}
                         disabled={!hasSelection}
                       >
                         <UserX className="mr-2 h-3.5 w-3.5" />
@@ -1063,9 +937,7 @@ export default function UsersClient() {
                         variant="outline"
                         size="sm"
                         onClick={() => bulkSuspend(false)}
-                        title={
-                          !hasSelection ? "선택된 회원이 없습니다" : undefined
-                        }
+                        title={!hasSelection ? "선택된 회원이 없습니다" : undefined}
                         disabled={!hasSelection}
                       >
                         <UserCheck className="mr-2 h-3.5 w-3.5" />
@@ -1111,11 +983,7 @@ export default function UsersClient() {
                   size="sm"
                   onClick={() => setSoftDeleteDialogOpen(true)}
                   disabled={!canSoftDelete}
-                  title={
-                    !canSoftDelete
-                      ? "선택 항목이 이미 삭제 상태입니다"
-                      : undefined
-                  }
+                  title={!canSoftDelete ? "선택 항목이 이미 삭제 상태입니다" : undefined}
                 >
                   <Trash2 className="mr-2 h-3.5 w-3.5" />
                   삭제
@@ -1129,23 +997,13 @@ export default function UsersClient() {
                   <>
                     <Badge variant="info" className="gap-1 px-2 py-1">
                       <UserCheck className="h-3.5 w-3.5" />
-                      활성화 가능{" "}
-                      {
-                        selectedRows.filter(
-                          (u) => !u.isDeleted && u.isSuspended,
-                        ).length
-                      }
+                      활성화 가능 {selectedRows.filter((u) => !u.isDeleted && u.isSuspended).length}
                       건
                     </Badge>
                     <Badge variant="brand" className="gap-1 px-2 py-1">
                       <UserX className="h-3.5 w-3.5" />
                       비활성화 가능{" "}
-                      {
-                        selectedRows.filter(
-                          (u) => !u.isDeleted && !u.isSuspended,
-                        ).length
-                      }
-                      건
+                      {selectedRows.filter((u) => !u.isDeleted && !u.isSuspended).length}건
                     </Badge>
                   </>
                 )}
@@ -1189,9 +1047,7 @@ export default function UsersClient() {
                   <col style={{ width: "64px" }} />
                   <col style={{ width: "44px" }} />
                 </colgroup>
-                <TableHeader
-                  className={cn("sticky top-0 z-10", adminSurface.tableHeader)}
-                >
+                <TableHeader className={cn("sticky top-0 z-10", adminSurface.tableHeader)}>
                   <TableRow>
                     <TableHead className={cn(th, "w-[40px] px-0")}>
                       <Checkbox
@@ -1207,15 +1063,9 @@ export default function UsersClient() {
                     <TableHead className={cn(th, "w-[110px]")}>전화</TableHead>
                     <TableHead className={cn(th, "w-[280px]")}>주소</TableHead>
                     {/* 가입일 + 마지막 로그인 병합 */}
-                    <TableHead className={cn(th, "w-[150px]")}>
-                      활동(가입/로그인)
-                    </TableHead>
-                    <TableHead className={cn(th, "w-[64px] px-0")}>
-                      상태
-                    </TableHead>
-                    <TableHead className={cn(th, "w-[44px] text-center")}>
-                      작업
-                    </TableHead>
+                    <TableHead className={cn(th, "w-[150px]")}>활동(가입/로그인)</TableHead>
+                    <TableHead className={cn(th, "w-[64px] px-0")}>상태</TableHead>
+                    <TableHead className={cn(th, "w-[44px] text-center")}>작업</TableHead>
                   </TableRow>
                 </TableHeader>
 
@@ -1223,10 +1073,7 @@ export default function UsersClient() {
                   {/* 로딩 스켈레톤 */}
                   {shouldShowLoadingRows &&
                     Array.from({ length: 8 }).map((_, i) => (
-                      <TableRow
-                        key={`sk-${i}`}
-                        className="border-b last:border-0"
-                      >
+                      <TableRow key={`sk-${i}`} className="border-b last:border-0">
                         <TableCell className={td}>
                           <div className="h-4 w-4 mx-auto rounded bg-muted" />
                         </TableCell>
@@ -1258,10 +1105,7 @@ export default function UsersClient() {
                   {/* 조회 실패 */}
                   {shouldShowErrorRow && (
                     <TableRow>
-                      <TableCell
-                        colSpan={8}
-                        className={cn(td, "py-6 text-destructive")}
-                      >
+                      <TableCell colSpan={8} className={cn(td, "py-6 text-destructive")}>
                         회원 목록을 불러오지 못했습니다.{" "}
                         {errorMessage || "잠시 후 다시 시도해 주세요."}
                       </TableCell>
@@ -1271,10 +1115,7 @@ export default function UsersClient() {
                   {/* 실제 빈 데이터 */}
                   {shouldShowEmptyRow && (
                     <TableRow>
-                      <TableCell
-                        colSpan={8}
-                        className={cn(td, "py-8 text-muted-foreground")}
-                      >
+                      <TableCell colSpan={8} className={cn(td, "py-8 text-muted-foreground")}>
                         조회된 회원이 없습니다.
                       </TableCell>
                     </TableRow>
@@ -1316,10 +1157,7 @@ export default function UsersClient() {
                                 {u.name || "(이름없음)"}
                               </span>
                               <div className="flex max-w-full min-w-0 items-center gap-1 overflow-hidden text-xs text-foreground/75">
-                                <span
-                                  className="block max-w-[190px] truncate"
-                                  title={u.email}
-                                >
+                                <span className="block max-w-[190px] truncate" title={u.email}>
                                   {u.email}
                                 </span>
                                 <button
@@ -1332,34 +1170,31 @@ export default function UsersClient() {
                                 </button>
                               </div>
                               {/* 소셜 배지: 카카오/네이버 */}
-                              {Array.isArray(u.socialProviders) &&
-                                u.socialProviders.length > 0 && (
-                                  <div className="mt-1 flex items-center gap-1">
-                                    {u.socialProviders.includes("kakao") && (
-                                      <Badge
-                                        variant="warning"
-                                        className="h-5 shrink-0 whitespace-nowrap px-2 text-[10px]"
-                                      >
-                                        카카오
-                                      </Badge>
-                                    )}
-                                    {u.socialProviders.includes("naver") && (
-                                      <Badge
-                                        variant="success"
-                                        className="h-5 shrink-0 whitespace-nowrap px-2 text-[10px]"
-                                      >
-                                        네이버
-                                      </Badge>
-                                    )}
-                                  </div>
-                                )}
+                              {Array.isArray(u.socialProviders) && u.socialProviders.length > 0 && (
+                                <div className="mt-1 flex items-center gap-1">
+                                  {u.socialProviders.includes("kakao") && (
+                                    <Badge
+                                      variant="warning"
+                                      className="h-5 shrink-0 whitespace-nowrap px-2 text-[10px]"
+                                    >
+                                      카카오
+                                    </Badge>
+                                  )}
+                                  {u.socialProviders.includes("naver") && (
+                                    <Badge
+                                      variant="success"
+                                      className="h-5 shrink-0 whitespace-nowrap px-2 text-[10px]"
+                                    >
+                                      네이버
+                                    </Badge>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </TableCell>
 
                           {/* 권한 */}
-                          <TableCell
-                            className={cn(td, "w-[72px] whitespace-nowrap")}
-                          >
+                          <TableCell className={cn(td, "w-[72px] whitespace-nowrap")}>
                             <Badge
                               className={cn(
                                 badgeSm,
@@ -1372,15 +1207,10 @@ export default function UsersClient() {
                           </TableCell>
 
                           {/* 전화 */}
-                          <TableCell
-                            className={cn(td, "w-[110px] whitespace-nowrap")}
-                          >
+                          <TableCell className={cn(td, "w-[110px] whitespace-nowrap")}>
                             {u.phone ? (
                               <div className="flex items-center justify-center gap-1">
-                                <a
-                                  href={`tel:${u.phone}`}
-                                  className="underline decoration-dotted"
-                                >
+                                <a href={`tel:${u.phone}`} className="underline decoration-dotted">
                                   {formatKoreanPhone(u.phone) || u.phone}
                                 </a>
                                 <button
@@ -1400,11 +1230,7 @@ export default function UsersClient() {
                           {/* 주소: 요약 + 복사, 전체는 title로 */}
                           <TableCell
                             className={cn(td, "w-[280px]")}
-                            title={fullAddress(
-                              u.postalCode,
-                              u.address,
-                              u.addressDetail,
-                            )}
+                            title={fullAddress(u.postalCode, u.address, u.addressDetail)}
                           >
                             <div className="flex min-w-0 items-center justify-center gap-1 overflow-hidden">
                               <span className="line-clamp-2 block max-w-[250px] break-words">
@@ -1413,13 +1239,7 @@ export default function UsersClient() {
                               <button
                                 className="shrink-0 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-background"
                                 onClick={() =>
-                                  copy(
-                                    fullAddress(
-                                      u.postalCode,
-                                      u.address,
-                                      u.addressDetail,
-                                    ),
-                                  )
+                                  copy(fullAddress(u.postalCode, u.address, u.addressDetail))
                                 }
                                 title="전체 주소 복사"
                                 aria-label="주소 복사"
@@ -1430,9 +1250,7 @@ export default function UsersClient() {
                           </TableCell>
 
                           {/* 활동(가입/로그인) 한 칼럼 */}
-                          <TableCell
-                            className={cn(td, "w-[150px] whitespace-nowrap")}
-                          >
+                          <TableCell className={cn(td, "w-[150px] whitespace-nowrap")}>
                             <div className="flex flex-col items-center whitespace-nowrap leading-tight">
                               <span className="text-[12px]">{joined.date}</span>
                               <span className="text-xs text-foreground/75">
@@ -1442,12 +1260,7 @@ export default function UsersClient() {
                           </TableCell>
 
                           {/* 상태 */}
-                          <TableCell
-                            className={cn(
-                              td,
-                              "w-[64px] whitespace-nowrap px-0",
-                            )}
-                          >
+                          <TableCell className={cn(td, "w-[64px] whitespace-nowrap px-0")}>
                             <div className="flex justify-center">
                               <Badge
                                 className={cn(
@@ -1469,25 +1282,13 @@ export default function UsersClient() {
                           <TableCell className={cn(td, "w-[44px] p-0")}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7 p-0"
-                                >
+                                <Button variant="ghost" size="icon" className="h-7 w-7 p-0">
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent
-                                align="end"
-                                className="min-w-max"
-                              >
-                                <DropdownMenuItem
-                                  asChild
-                                  className="whitespace-nowrap"
-                                >
-                                  <Link href={`/admin/users/${u.id}`}>
-                                    상세 보기
-                                  </Link>
+                              <DropdownMenuContent align="end" className="min-w-max">
+                                <DropdownMenuItem asChild className="whitespace-nowrap">
+                                  <Link href={`/admin/users/${u.id}`}>상세 보기</Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="whitespace-nowrap"
@@ -1532,9 +1333,7 @@ export default function UsersClient() {
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 {!shouldShowResolvedPagination ? (
-                  <span className="px-2 text-muted-foreground select-none">
-                    -
-                  </span>
+                  <span className="px-2 text-muted-foreground select-none">-</span>
                 ) : (
                   pageItems.map((it, i) =>
                     typeof it === "number" ? (
@@ -1548,10 +1347,7 @@ export default function UsersClient() {
                         {it}
                       </Button>
                     ) : (
-                      <span
-                        key={i}
-                        className="px-2 text-muted-foreground select-none"
-                      >
+                      <span key={i} className="px-2 text-muted-foreground select-none">
                         …
                       </span>
                     ),
@@ -1591,8 +1387,8 @@ export default function UsersClient() {
                 탈퇴 회원 정리 (Danger zone)
               </CardTitle>
               <CardDescription className="text-xs text-muted-foreground">
-                7일 경과 탈퇴 계정은 정리, 1년 경과 탈퇴 계정은 완전 삭제합니다.
-                실행 전 미리보기 목록을 확인하세요.
+                7일 경과 탈퇴 계정은 정리, 1년 경과 탈퇴 계정은 완전 삭제합니다. 실행 전 미리보기
+                목록을 확인하세요.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
@@ -1613,9 +1409,7 @@ export default function UsersClient() {
                 }}
               >
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive">
-                    7일 이상 경과한 탈퇴 회원 자동 삭제 실행
-                  </Button>
+                  <Button variant="destructive">7일 이상 경과한 탈퇴 회원 자동 삭제 실행</Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
@@ -1626,10 +1420,7 @@ export default function UsersClient() {
                   {/* 미리보기 리스트 */}
                   <div className="border rounded-md p-3 max-h-64 overflow-auto">
                     {cleanupLoading ? (
-                      <div
-                        className="space-y-2"
-                        aria-label="탈퇴 회원 미리보기 로딩 중"
-                      >
+                      <div className="space-y-2" aria-label="탈퇴 회원 미리보기 로딩 중">
                         {Array.from({ length: 2 }).map((_, index) => (
                           <div
                             key={`cleanup-preview-skeleton-${index}`}
@@ -1651,12 +1442,8 @@ export default function UsersClient() {
                             key={String(u._id)}
                             className="flex items-center justify-between gap-2"
                           >
-                            <span className="truncate">
-                              {u.name || u.email || u._id}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {u.email}
-                            </span>
+                            <span className="truncate">{u.name || u.email || u._id}</span>
+                            <span className="text-xs text-muted-foreground">{u.email}</span>
                           </li>
                         ))}
                       </ul>
@@ -1670,23 +1457,15 @@ export default function UsersClient() {
                       checked={cleanupAck}
                       onCheckedChange={(v) => setCleanupAck(Boolean(v))}
                     />
-                    <label
-                      htmlFor="cleanup-ack"
-                      className="text-xs text-muted-foreground"
-                    >
+                    <label htmlFor="cleanup-ack" className="text-xs text-muted-foreground">
                       위 목록을 확인했으며, 영구 삭제에 동의합니다.
                     </label>
                   </div>
 
                   <div className="mt-3 space-y-1">
-                    <label
-                      htmlFor="cleanup-reconfirm"
-                      className="text-xs text-muted-foreground"
-                    >
+                    <label htmlFor="cleanup-reconfirm" className="text-xs text-muted-foreground">
                       재확인 문구 입력:{" "}
-                      <span className="font-mono">
-                        {cleanupExpectedText || "-"}
-                      </span>
+                      <span className="font-mono">{cleanupExpectedText || "-"}</span>
                     </label>
                     <Input
                       id="cleanup-reconfirm"
@@ -1698,9 +1477,7 @@ export default function UsersClient() {
                   </div>
 
                   <AlertDialogFooter>
-                    <AlertDialogCancel disabled={cleanupSubmitting}>
-                      취소
-                    </AlertDialogCancel>
+                    <AlertDialogCancel disabled={cleanupSubmitting}>취소</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={confirmCleanup}
                       disabled={
@@ -1713,9 +1490,7 @@ export default function UsersClient() {
                         cleanupConfirmText.trim() !== cleanupExpectedText
                       }
                     >
-                      {cleanupSubmitting && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      )}
+                      {cleanupSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       영구 삭제 실행
                     </AlertDialogAction>
                   </AlertDialogFooter>
@@ -1739,25 +1514,18 @@ export default function UsersClient() {
                 }}
               >
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive">
-                    1년 이상 경과한 탈퇴 회원 완전 삭제
-                  </Button>
+                  <Button variant="destructive">1년 이상 경과한 탈퇴 회원 완전 삭제</Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      탈퇴 1년 경과 계정 완전 삭제
-                    </AlertDialogTitle>
+                    <AlertDialogTitle>탈퇴 1년 경과 계정 완전 삭제</AlertDialogTitle>
                     <AlertDialogDescription>{`영향 개수: ${purgePreview.length}개 계정\n탈퇴 1년 경과 계정을 완전 삭제합니다. 이 작업은 되돌릴 수 없습니다.\n실행 전 재확인 문구("${purgeExpectedText || "-"}")를 정확히 입력해야 합니다.`}</AlertDialogDescription>
                   </AlertDialogHeader>
 
                   {/* 미리보기 리스트 */}
                   <div className="border rounded-md p-3 max-h-64 overflow-auto">
                     {purgeLoading ? (
-                      <div
-                        className="space-y-2"
-                        aria-label="완전 삭제 대상 미리보기 로딩 중"
-                      >
+                      <div className="space-y-2" aria-label="완전 삭제 대상 미리보기 로딩 중">
                         {Array.from({ length: 2 }).map((_, index) => (
                           <div
                             key={`purge-preview-skeleton-${index}`}
@@ -1779,12 +1547,8 @@ export default function UsersClient() {
                             key={String(u._id)}
                             className="flex items-center justify-between gap-2"
                           >
-                            <span className="truncate">
-                              {u.name || u.email || u._id}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {u.email}
-                            </span>
+                            <span className="truncate">{u.name || u.email || u._id}</span>
+                            <span className="text-xs text-muted-foreground">{u.email}</span>
                           </li>
                         ))}
                       </ul>
@@ -1798,23 +1562,15 @@ export default function UsersClient() {
                       checked={purgeAck}
                       onCheckedChange={(v) => setPurgeAck(Boolean(v))}
                     />
-                    <label
-                      htmlFor="purge-ack"
-                      className="text-xs text-muted-foreground"
-                    >
+                    <label htmlFor="purge-ack" className="text-xs text-muted-foreground">
                       위 목록을 확인했으며, 완전 삭제에 동의합니다.
                     </label>
                   </div>
 
                   <div className="mt-3 space-y-1">
-                    <label
-                      htmlFor="purge-reconfirm"
-                      className="text-xs text-muted-foreground"
-                    >
+                    <label htmlFor="purge-reconfirm" className="text-xs text-muted-foreground">
                       재확인 문구 입력:{" "}
-                      <span className="font-mono">
-                        {purgeExpectedText || "-"}
-                      </span>
+                      <span className="font-mono">{purgeExpectedText || "-"}</span>
                     </label>
                     <Input
                       id="purge-reconfirm"
@@ -1826,9 +1582,7 @@ export default function UsersClient() {
                   </div>
 
                   <AlertDialogFooter>
-                    <AlertDialogCancel disabled={purgeSubmitting}>
-                      취소
-                    </AlertDialogCancel>
+                    <AlertDialogCancel disabled={purgeSubmitting}>취소</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={confirmPurge}
                       disabled={
@@ -1841,9 +1595,7 @@ export default function UsersClient() {
                         purgeConfirmText.trim() !== purgeExpectedText
                       }
                     >
-                      {purgeSubmitting && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      )}
+                      {purgeSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       완전 삭제 실행
                     </AlertDialogAction>
                   </AlertDialogFooter>

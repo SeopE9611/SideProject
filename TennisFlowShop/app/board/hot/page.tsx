@@ -26,8 +26,8 @@ export default function HotBoardPage() {
               인기글 모아보기 (준비중)
             </h1>
             <p className="mt-1 text-sm md:text-base text-muted-foreground">
-              조회수, 댓글 수, 공감 수 등을 기준으로 인기 게시글을 큐레이션하는
-              페이지입니다. 현재 기능을 준비하고 있습니다.
+              조회수, 댓글 수, 공감 수 등을 기준으로 인기 게시글을 큐레이션하는 페이지입니다. 현재
+              기능을 준비하고 있습니다.
             </p>
           </div>
         </div>
@@ -55,8 +55,7 @@ export default function HotBoardPage() {
               <li>공감/좋아요 수가 높은 하이라이트 게시글</li>
             </ul>
             <p className="pt-2 text-xs md:text-sm text-muted-foreground">
-              기능 오픈 전까지는 리뷰 게시판에서 인기 있는 후기들을 먼저 확인해
-              보실 수 있습니다.
+              기능 오픈 전까지는 리뷰 게시판에서 인기 있는 후기들을 먼저 확인해 보실 수 있습니다.
             </p>
             <Button asChild size="sm" className="mt-2">
               <Link href="/reviews">리뷰 게시판 둘러보기</Link>

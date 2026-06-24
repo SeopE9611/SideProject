@@ -10,13 +10,7 @@ export type AuthShellProps = {
   className?: string;
 };
 
-export function AuthShell({
-  title,
-  description,
-  children,
-  footer,
-  className,
-}: AuthShellProps) {
+export function AuthShell({ title, description, children, footer, className }: AuthShellProps) {
   const titleId = useId();
 
   return (
@@ -36,9 +30,7 @@ export function AuthShell({
             {title}
           </h1>
           {description && (
-            <div className="text-ui-body-sm text-muted-foreground">
-              {description}
-            </div>
+            <div className="text-ui-body-sm text-muted-foreground">{description}</div>
           )}
         </header>
         {children}

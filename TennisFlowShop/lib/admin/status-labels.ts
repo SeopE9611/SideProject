@@ -25,8 +25,7 @@ export function labelPaymentStatus(raw?: string) {
   if (commonLabel === "환불완료") return "환불";
   if (commonLabel) return commonLabel;
 
-  if (v === "취소" || lower === "canceled" || lower === "cancelled")
-    return "취소";
+  if (v === "취소" || lower === "canceled" || lower === "cancelled") return "취소";
   if (v === "환불" || lower === "refunded" || lower === "refund") return "환불";
   return v;
 }
@@ -36,10 +35,7 @@ export function labelOrderStatus(raw?: string) {
   if (!v) return "대기중";
   const lower = v.toLowerCase();
 
-  if (
-    ["대기중", "배송준비중", "배송중", "배송완료", "취소", "환불"].includes(v)
-  )
-    return v;
+  if (["대기중", "배송준비중", "배송중", "배송완료", "취소", "환불"].includes(v)) return v;
 
   const commonLabel = getCommonOrderStatusLabel(v);
   if (commonLabel) return commonLabel;
@@ -62,8 +58,7 @@ export function labelStringingStatus(raw?: string) {
   if (commonLabel === "거절") return "취소";
 
   if (lower === "pending") return "접수완료";
-  if (lower === "reviewing" || lower === "in_review" || lower === "processing")
-    return "검토중";
+  if (lower === "reviewing" || lower === "in_review" || lower === "processing") return "검토중";
   if (lower === "completed") return "완료";
   if (lower === "canceled" || lower === "cancelled") return "취소";
   return v;

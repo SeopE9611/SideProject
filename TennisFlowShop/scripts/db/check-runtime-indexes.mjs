@@ -593,10 +593,7 @@ function normalizePartialFilterExpression(value) {
 
 function checkOption(indexDoc, optionName, expectedValue) {
   if (optionName === "unique" || optionName === "sparse") {
-    return (
-      normalizeBooleanOption(indexDoc?.[optionName]) ===
-      normalizeBooleanOption(expectedValue)
-    );
+    return normalizeBooleanOption(indexDoc?.[optionName]) === normalizeBooleanOption(expectedValue);
   }
 
   if (optionName === "partialFilterExpression") {
@@ -613,17 +610,9 @@ function indexMatchesSpec(indexDoc, spec) {
   return (
     stableStringify(indexDoc.key) === stableStringify(spec.keys) &&
     checkOption(indexDoc, "unique", spec.options.unique) &&
-    checkOption(
-      indexDoc,
-      "expireAfterSeconds",
-      spec.options.expireAfterSeconds,
-    ) &&
+    checkOption(indexDoc, "expireAfterSeconds", spec.options.expireAfterSeconds) &&
     checkOption(indexDoc, "sparse", spec.options.sparse) &&
-    checkOption(
-      indexDoc,
-      "partialFilterExpression",
-      spec.options.partialFilterExpression,
-    )
+    checkOption(indexDoc, "partialFilterExpression", spec.options.partialFilterExpression)
   );
 }
 
@@ -703,17 +692,13 @@ try {
   );
   if (hasFailure) {
     process.exitCode = 2;
-    console.error(
-      "[check-runtime-indexes] MISSING 또는 MISMATCH가 있어 종료 코드 2를 반환합니다.",
-    );
+    console.error("[check-runtime-indexes] MISSING 또는 MISMATCH가 있어 종료 코드 2를 반환합니다.");
   } else if (summary.NAME_MISMATCH > 0) {
     console.warn(
       "[check-runtime-indexes] 동일 key/options 인덱스가 다른 이름으로 존재합니다. NAME_MISMATCH 자체는 warning이며 종료 코드에 영향을 주지 않습니다.",
     );
   } else {
-    console.log(
-      "[check-runtime-indexes] 모든 런타임 인덱스 상태가 기대값과 일치합니다.",
-    );
+    console.log("[check-runtime-indexes] 모든 런타임 인덱스 상태가 기대값과 일치합니다.");
   }
 } finally {
   await client.close();

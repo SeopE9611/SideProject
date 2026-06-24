@@ -6,8 +6,7 @@ export const BOARD_STATUS_GUIDE: Record<number, string> = {
   500: "서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
 };
 
-const DEFAULT_ERROR_MESSAGE =
-  "요청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+const DEFAULT_ERROR_MESSAGE = "요청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
 
 // ===== Community/Boards CSRF (Double Submit Cookie) =====
 const COMMUNITY_CSRF_COOKIE = "communityCsrfToken";
@@ -36,16 +35,10 @@ function readCookie(name: string): string {
   return "";
 }
 
-function writeCookie(
-  name: string,
-  value: string,
-  maxAgeSec = 60 * 60 * 24 * 30,
-) {
+function writeCookie(name: string, value: string, maxAgeSec = 60 * 60 * 24 * 30) {
   if (typeof document === "undefined") return;
   const secure =
-    typeof location !== "undefined" && location.protocol === "https:"
-      ? "; Secure"
-      : "";
+    typeof location !== "undefined" && location.protocol === "https:" ? "; Secure" : "";
   document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAgeSec}; SameSite=Lax${secure}`;
 }
 
@@ -97,10 +90,8 @@ function pickMessage(payload: unknown): string | null {
 
   const parsed = payload as ApiErrorPayload;
 
-  if (typeof parsed.message === "string" && parsed.message.trim())
-    return parsed.message.trim();
-  if (typeof parsed.error === "string" && parsed.error.trim())
-    return parsed.error.trim();
+  if (typeof parsed.message === "string" && parsed.message.trim()) return parsed.message.trim();
+  if (typeof parsed.error === "string" && parsed.error.trim()) return parsed.error.trim();
 
   if (Array.isArray(parsed.details)) {
     const first = parsed.details.find(
@@ -132,10 +123,7 @@ async function readPayload(response: Response): Promise<unknown> {
   }
 }
 
-export async function boardFetcher<T>(
-  url: string,
-  init: RequestInit = {},
-): Promise<T> {
+export async function boardFetcher<T>(url: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers ?? undefined);
 
   // /api/boards, /api/community + mutating 메서드만 CSRF 헤더 자동 주입
@@ -164,18 +152,11 @@ export async function boardFetcher<T>(
     });
   }
 
-  if (
-    payload &&
-    typeof payload === "object" &&
-    (payload as ApiErrorPayload).ok === false
-  ) {
+  if (payload && typeof payload === "object" && (payload as ApiErrorPayload).ok === false) {
     throw new BoardApiError({
       status,
       payload,
-      message:
-        pickMessage(payload) ??
-        BOARD_STATUS_GUIDE[status] ??
-        DEFAULT_ERROR_MESSAGE,
+      message: pickMessage(payload) ?? BOARD_STATUS_GUIDE[status] ?? DEFAULT_ERROR_MESSAGE,
     });
   }
 
@@ -189,8 +170,7 @@ export function parseApiError(
   if (error instanceof BoardApiError) {
     return {
       status: error.status,
-      message:
-        error.message || BOARD_STATUS_GUIDE[error.status] || fallbackMessage,
+      message: error.message || BOARD_STATUS_GUIDE[error.status] || fallbackMessage,
     };
   }
 

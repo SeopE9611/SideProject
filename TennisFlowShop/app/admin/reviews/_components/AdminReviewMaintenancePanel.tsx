@@ -32,28 +32,27 @@ export default function AdminReviewMaintenancePanel() {
   const [lastResult, setLastResult] = useState<any>(null);
   const [lastRunAt, setLastRunAt] = useState<string | null>(null);
 
-  const { data: lockStatus = { locked: false }, mutate: mutateLockStatus } =
-    useSWR<LockStatus>(
-      "/api/admin/reviews/maintenance",
-      async (url: string) => {
-        const payload = await adminFetcher<{
-          locked?: boolean;
-          lockedUntil?: string;
-          lockedBy?: string | null;
-        }>(url, { method: "GET" });
-        return {
-          locked: !!payload?.locked,
-          lockedUntil: payload?.lockedUntil,
-          lockedBy: payload?.lockedBy ?? null,
-        };
-      },
-      {
-        fallbackData: { locked: false },
-        refreshInterval: loading ? 1500 : 0,
-        revalidateOnFocus: false,
-        shouldRetryOnError: false,
-      },
-    );
+  const { data: lockStatus = { locked: false }, mutate: mutateLockStatus } = useSWR<LockStatus>(
+    "/api/admin/reviews/maintenance",
+    async (url: string) => {
+      const payload = await adminFetcher<{
+        locked?: boolean;
+        lockedUntil?: string;
+        lockedBy?: string | null;
+      }>(url, { method: "GET" });
+      return {
+        locked: !!payload?.locked,
+        lockedUntil: payload?.lockedUntil,
+        lockedBy: payload?.lockedBy ?? null,
+      };
+    },
+    {
+      fallbackData: { locked: false },
+      refreshInterval: loading ? 1500 : 0,
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+    },
+  );
 
   async function run(action: Action) {
     setLoading(action);
@@ -86,8 +85,7 @@ export default function AdminReviewMaintenancePanel() {
   async function forceUnlock() {
     try {
       const result = await runAdminActionWithToast({
-        action: () =>
-          adminMutator("/api/admin/reviews/maintenance", { method: "DELETE" }),
+        action: () => adminMutator("/api/admin/reviews/maintenance", { method: "DELETE" }),
         successMessage: "잠금을 해제했습니다.",
         fallbackErrorMessage: "강제 해제 중 오류",
       });
@@ -108,8 +106,7 @@ export default function AdminReviewMaintenancePanel() {
         </CardTitle>
         <CardContent>
           <span className="font-bold text-foreground">
-            개발자 전용입니다 — 관리자는 해당 기능을 개발자 동의 없이
-            클릭하지마세요!!!{" "}
+            개발자 전용입니다 — 관리자는 해당 기능을 개발자 동의 없이 클릭하지마세요!!!{" "}
           </span>
         </CardContent>
       </CardHeader>
@@ -130,12 +127,7 @@ export default function AdminReviewMaintenancePanel() {
             )}
             인덱스 보장
           </Button>
-          <Button
-            size="sm"
-            onClick={() => run("dedup")}
-            disabled={disabled}
-            variant="outline"
-          >
+          <Button size="sm" onClick={() => run("dedup")} disabled={disabled} variant="outline">
             {loading === "dedup" ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -156,12 +148,7 @@ export default function AdminReviewMaintenancePanel() {
             )}
             평점 재집계
           </Button>
-          <Button
-            size="sm"
-            onClick={() => run("all")}
-            disabled={disabled}
-            variant="default"
-          >
+          <Button size="sm" onClick={() => run("all")} disabled={disabled} variant="default">
             {loading === "all" ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -185,8 +172,7 @@ export default function AdminReviewMaintenancePanel() {
                 다른 유지보수 작업이 실행 중입니다.
                 {lockStatus.lockedUntil && (
                   <span className="text-primary">
-                    해제 예정:{" "}
-                    {new Date(lockStatus.lockedUntil).toLocaleString("ko-KR")}
+                    해제 예정: {new Date(lockStatus.lockedUntil).toLocaleString("ko-KR")}
                   </span>
                 )}
               </div>
@@ -201,13 +187,9 @@ export default function AdminReviewMaintenancePanel() {
               </Button>
             </>
           ) : lastRunAt ? (
-            <div className="text-muted-foreground">
-              마지막 실행: {lastRunAt}
-            </div>
+            <div className="text-muted-foreground">마지막 실행: {lastRunAt}</div>
           ) : (
-            <div className="text-muted-foreground">
-              아직 실행 내역이 없습니다.
-            </div>
+            <div className="text-muted-foreground">아직 실행 내역이 없습니다.</div>
           )}
           {!loading && (
             <Button
@@ -226,25 +208,22 @@ export default function AdminReviewMaintenancePanel() {
           <div className="flex items-start gap-2">
             <Info className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
-              <span className="font-medium">인덱스 보장</span> — 리뷰 컬렉션에
-              필요한 인덱스를 생성/갱신합니다. (예: 활성 리뷰 고유성 및 조회
-              성능용 인덱스)
+              <span className="font-medium">인덱스 보장</span> — 리뷰 컬렉션에 필요한 인덱스를
+              생성/갱신합니다. (예: 활성 리뷰 고유성 및 조회 성능용 인덱스)
             </div>
           </div>
           <div className="flex items-start gap-2">
             <Info className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
-              <span className="font-medium">중복 리뷰 정리</span> — 동일
-              사용자·상품 조합에서 최신 1개만 남기고 나머지는 소프트 삭제하여
-              중복을 제거합니다.
+              <span className="font-medium">중복 리뷰 정리</span> — 동일 사용자·상품 조합에서 최신
+              1개만 남기고 나머지는 소프트 삭제하여 중복을 제거합니다.
             </div>
           </div>
           <div className="flex items-start gap-2">
             <Info className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
-              <span className="font-medium">평점 재집계</span> — 각 상품의 리뷰
-              평점 평균과 개수를 다시 계산하여 상품 문서의 요약 필드를
-              갱신합니다.
+              <span className="font-medium">평점 재집계</span> — 각 상품의 리뷰 평점 평균과 개수를
+              다시 계산하여 상품 문서의 요약 필드를 갱신합니다.
             </div>
           </div>
         </div>

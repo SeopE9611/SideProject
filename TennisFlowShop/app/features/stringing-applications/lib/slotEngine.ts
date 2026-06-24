@@ -27,26 +27,22 @@ const SETTINGS_ID: StringingSettings["_id"] = "stringingSlots";
 /**
  * 1) 설정 로드 + projection
  */
-export async function loadStringingSettings(
-  db: Db,
-): Promise<StringingSettings | null> {
-  const doc = await db
-    .collection<StringingSettings>(SETTINGS_COLLECTION)
-    .findOne(
-      { _id: SETTINGS_ID },
-      {
-        projection: {
-          capacity: 1,
-          businessDays: 1,
-          start: 1,
-          end: 1,
-          interval: 1,
-          holidays: 1,
-          exceptions: 1,
-          bookingWindowDays: 1,
-        },
+export async function loadStringingSettings(db: Db): Promise<StringingSettings | null> {
+  const doc = await db.collection<StringingSettings>(SETTINGS_COLLECTION).findOne(
+    { _id: SETTINGS_ID },
+    {
+      projection: {
+        capacity: 1,
+        businessDays: 1,
+        start: 1,
+        end: 1,
+        interval: 1,
+        holidays: 1,
+        exceptions: 1,
+        bookingWindowDays: 1,
       },
-    );
+    },
+  );
 
   return doc;
 }
@@ -105,17 +101,11 @@ export function resolveDaySchedule(
   let capacity = Math.max(1, Math.min(10, Number(settings?.capacity ?? 1)));
   let start = typeof settings?.start === "string" ? settings.start! : "10:00";
   let end = typeof settings?.end === "string" ? settings.end! : "19:00";
-  let interval = Number.isFinite(settings?.interval)
-    ? Number(settings!.interval)
-    : 30;
+  let interval = Number.isFinite(settings?.interval) ? Number(settings!.interval) : 30;
 
-  const bizDays = Array.isArray(settings?.businessDays)
-    ? settings!.businessDays!
-    : [1, 2, 3, 4, 5];
+  const bizDays = Array.isArray(settings?.businessDays) ? settings!.businessDays! : [1, 2, 3, 4, 5];
   const holidays = Array.isArray(settings?.holidays) ? settings!.holidays! : [];
-  const exceptions = Array.isArray(settings?.exceptions)
-    ? settings!.exceptions!
-    : [];
+  const exceptions = Array.isArray(settings?.exceptions) ? settings!.exceptions! : [];
 
   // 예외일 우선 적용
   const ex = exceptions.find((e) => e.date === date);
@@ -320,10 +310,7 @@ export async function findFullyBookedTimesWithSpan(
     if (!time) continue;
 
     // 슬롯 개수: visitSlotCount 가 있으면 그 값을, 없으면 1 슬롯으로 간주
-    const rawCount =
-      typeof doc.visitSlotCount === "number"
-        ? Math.floor(doc.visitSlotCount)
-        : 1;
+    const rawCount = typeof doc.visitSlotCount === "number" ? Math.floor(doc.visitSlotCount) : 1;
     const slotCount = rawCount > 0 ? rawCount : 1;
 
     // 연속 슬롯(span) 계산
@@ -437,12 +424,7 @@ export async function buildSlotSummaryForDate(
   }
 
   // 5) 마감 시간 계산
-  const reservedTimes = await findFullyBookedTimesWithSpan(
-    db,
-    date,
-    schedule.capacity,
-    allTimes,
-  );
+  const reservedTimes = await findFullyBookedTimesWithSpan(db, date, schedule.capacity, allTimes);
   const reservedSet = new Set(reservedTimes);
 
   // 연속 슬롯(cap) 예약 충돌 방지를 위해, 시작 시각 기준으로 span 확보 가능 여부를 검사한다.

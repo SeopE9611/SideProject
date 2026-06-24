@@ -92,13 +92,9 @@ export default function ApplicationNiceCheckoutButton({
         credentials: "include",
         body: JSON.stringify({ applicationId }),
       });
-      const prepared = (await response
-        .json()
-        .catch(() => null)) as NicePrepareResponse | null;
+      const prepared = (await response.json().catch(() => null)) as NicePrepareResponse | null;
       if (!response.ok || !prepared?.success || !prepared.nice) {
-        throw new Error(
-          prepared?.error || "카드/간편결제 준비에 실패했습니다.",
-        );
+        throw new Error(prepared?.error || "카드/간편결제 준비에 실패했습니다.");
       }
       if (Math.floor(prepared.nice.amount) !== Math.floor(payableAmount)) {
         throw new Error("신청 금액이 변경되었습니다. 다시 확인해주세요.");
@@ -118,11 +114,7 @@ export default function ApplicationNiceCheckoutButton({
         buyerTel: prepared.nice.buyerTel,
         buyerEmail: prepared.nice.buyerEmail,
         fnError: (result: any) => {
-          setInlineError(
-            String(
-              result?.errorMsg || result?.message || "결제가 취소되었습니다.",
-            ),
-          );
+          setInlineError(String(result?.errorMsg || result?.message || "결제가 취소되었습니다."));
           setLoading(false);
         },
       });
@@ -139,9 +131,7 @@ export default function ApplicationNiceCheckoutButton({
         카드/간편결제로 신청 완료
       </Button>
       {!scriptReady && (
-        <p className="text-xs text-muted-foreground">
-          카드/간편결제창을 준비 중입니다.
-        </p>
+        <p className="text-xs text-muted-foreground">카드/간편결제창을 준비 중입니다.</p>
       )}
       {inlineError && <p className="text-xs text-destructive">{inlineError}</p>}
     </div>

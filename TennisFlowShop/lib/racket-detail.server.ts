@@ -38,10 +38,7 @@ export type RacketActiveCountPayload = {
   available: number;
 };
 
-export async function getRacketDetailPayload(
-  id: string,
-  currentUserId?: ObjectId | null,
-) {
+export async function getRacketDetailPayload(id: string, currentUserId?: ObjectId | null) {
   const db = (await clientPromise).db();
   const col = db.collection("used_rackets");
   const viewer = await getVisibilityViewerFromCookies();
@@ -84,11 +81,7 @@ export async function getRacketDetailPayload(
                 $cond: [{ $eq: ["$status", "hidden"] }, null, "$content"],
               },
               photos: {
-                $cond: [
-                  { $eq: ["$status", "hidden"] },
-                  [],
-                  { $ifNull: ["$photos", []] },
-                ],
+                $cond: [{ $eq: ["$status", "hidden"] }, [], { $ifNull: ["$photos", []] }],
               },
               masked: { $eq: ["$status", "hidden"] },
             },
@@ -128,12 +121,8 @@ export async function getRacketDetailPayload(
   return {
     ...doc,
     id: String(doc._id),
-    marketing: normalizeRacketMarketing(
-      (doc as Record<string, unknown>).marketing,
-    ),
-    shippingFee: normalizeItemShippingFee(
-      (doc as Record<string, unknown>).shippingFee,
-    ),
+    marketing: normalizeRacketMarketing((doc as Record<string, unknown>).marketing),
+    shippingFee: normalizeItemShippingFee((doc as Record<string, unknown>).shippingFee),
     _id: undefined,
     reviews: (reviews ?? []).map((r) => ({
       _id: r._id,
@@ -172,15 +161,9 @@ export async function getRacketActiveCountPayload(
   const projRackets = { projection: { quantity: 1 } } as const;
   const used = await db
     .collection("used_rackets")
-    .findOne(
-      { _id: new ObjectId(racketId), ...racketVisibilityFilterFor(viewer) },
-      projUsed,
-    );
+    .findOne({ _id: new ObjectId(racketId), ...racketVisibilityFilterFor(viewer) }, projUsed);
   const rack =
-    used ??
-    (await db
-      .collection("rackets")
-      .findOne({ _id: new ObjectId(racketId) }, projRackets));
+    used ?? (await db.collection("rackets").findOne({ _id: new ObjectId(racketId) }, projRackets));
 
   const rawQty = Number(rack?.quantity ?? 1);
   const baseQty = used

@@ -32,16 +32,12 @@ export async function GET() {
     // sub(= user._id)를 사용
     const t1 = performance.now();
     const decoded = jwt.verify(accessToken, ACCESS_TOKEN_SECRET) as JwtPayload;
-    dbg &&
-      console.log("[me] jwt.verify", (performance.now() - t1).toFixed(1), "ms");
+    dbg && console.log("[me] jwt.verify", (performance.now() - t1).toFixed(1), "ms");
     const sub = decoded?.sub as string | undefined;
     if (!sub) {
       // 구 토큰 등에서 email만 담겼다면 과도기적으로 email fallback을 두어도 됨.
       // 여기서는 정책을 명확히 하기 위해 sub 없으면 401 처리.
-      return NextResponse.json(
-        { error: "Invalid token (no sub)" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Invalid token (no sub)" }, { status: 401 });
     }
 
     const t2 = performance.now();
@@ -71,8 +67,7 @@ export async function GET() {
         },
       ),
     );
-    dbg &&
-      console.log("[me] findOne", (performance.now() - t3).toFixed(1), "ms");
+    dbg && console.log("[me] findOne", (performance.now() - t3).toFixed(1), "ms");
     dbg && console.log("[me] total", (performance.now() - t0).toFixed(1), "ms");
 
     // 1) 존재X
@@ -112,23 +107,15 @@ export async function GET() {
       addressDetail: user.addressDetail ?? null,
       postalCode: user.postalCode ?? null,
       pointsBalance:
-        typeof (user as any).pointsBalance === "number"
-          ? (user as any).pointsBalance
-          : 0, // 마이페이지(적립금 표시)에서 바로 쓰도록 포함
+        typeof (user as any).pointsBalance === "number" ? (user as any).pointsBalance : 0, // 마이페이지(적립금 표시)에서 바로 쓰도록 포함
       socialProviders,
     });
     perf.log();
     return response;
   } catch (err: any) {
     // 토큰 오류(만료/변조)
-    if (
-      err?.name === "JsonWebTokenError" ||
-      err?.name === "TokenExpiredError"
-    ) {
-      return NextResponse.json(
-        { error: "Invalid or expired token" },
-        { status: 401 },
-      );
+    if (err?.name === "JsonWebTokenError" || err?.name === "TokenExpiredError") {
+      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
     // DB/네트워크 오류
     console.error("[API users/me] DB error:", err);
@@ -157,10 +144,7 @@ export async function PATCH(req: NextRequest) {
 
   const sub = payload?.sub as string | undefined;
   if (!sub) {
-    return NextResponse.json(
-      { error: "Invalid token (no sub)" },
-      { status: 401 },
-    );
+    return NextResponse.json({ error: "Invalid token (no sub)" }, { status: 401 });
   }
 
   let body: any = null;
@@ -175,8 +159,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "INVALID_BODY" }, { status: 400 });
   }
 
-  const { name, phone, postalCode, address, addressDetail /*, marketing*/ } =
-    body;
+  const { name, phone, postalCode, address, addressDetail /*, marketing*/ } = body;
 
   // 선택 필드는 값이 들어왔을 때만 타입을 확인합니다.
   if (name != null && typeof name !== "string")
@@ -196,10 +179,7 @@ export async function PATCH(req: NextRequest) {
   if (address != null && typeof address !== "string")
     return NextResponse.json({ error: "INVALID_ADDRESS" }, { status: 400 });
   if (addressDetail != null && typeof addressDetail !== "string")
-    return NextResponse.json(
-      { error: "INVALID_ADDRESS_DETAIL" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "INVALID_ADDRESS_DETAIL" }, { status: 400 });
 
   try {
     const db = await getDb();

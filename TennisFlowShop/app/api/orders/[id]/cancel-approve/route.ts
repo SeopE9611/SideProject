@@ -43,9 +43,7 @@ function safeVerifyAccessToken(token?: string | null) {
   }
 }
 
-function pickStringProductObjectIdFromApplicationDoc(
-  appDoc: any,
-): ObjectId | null {
+function pickStringProductObjectIdFromApplicationDoc(appDoc: any): ObjectId | null {
   const toObjectIdIfValid = (value: unknown): ObjectId | null => {
     if (value == null) return null;
     const str = String(value).trim();
@@ -54,9 +52,7 @@ function pickStringProductObjectIdFromApplicationDoc(
   };
 
   const fromStringTypes = Array.isArray(appDoc?.stringDetails?.stringTypes)
-    ? appDoc.stringDetails.stringTypes.find(
-        (v: unknown) => String(v).trim() !== "custom",
-      )
+    ? appDoc.stringDetails.stringTypes.find((v: unknown) => String(v).trim() !== "custom")
     : null;
   const fromStringTypesObjectId = toObjectIdIfValid(fromStringTypes);
   if (fromStringTypesObjectId) return fromStringTypesObjectId;
@@ -64,11 +60,7 @@ function pickStringProductObjectIdFromApplicationDoc(
   const fromStringItems = Array.isArray(appDoc?.stringItems)
     ? appDoc.stringItems.find((item: any) => {
         const productId = item?.productId ?? item?.id;
-        return (
-          typeof productId === "string" &&
-          productId.trim() &&
-          productId.trim() !== "custom"
-        );
+        return typeof productId === "string" && productId.trim() && productId.trim() !== "custom";
       })
     : null;
   const fromStringItemsObjectId = toObjectIdIfValid(
@@ -93,14 +85,8 @@ function pickStringProductObjectIdFromApplicationDoc(
   return toObjectIdIfValid(appDoc?.meta?.stringProductId);
 }
 
-async function restoreOrderVariantStockIfNeeded(
-  db: any,
-  existing: any,
-  now: Date,
-) {
-  const alreadyRestored = Boolean(
-    existing?.stockRestore?.variantStockRestoredAt,
-  );
+async function restoreOrderVariantStockIfNeeded(db: any, existing: any, now: Date) {
+  const alreadyRestored = Boolean(existing?.stockRestore?.variantStockRestoredAt);
   if (alreadyRestored) {
     return { setFields: {} as Record<string, unknown> };
   }
@@ -119,28 +105,21 @@ async function restoreOrderVariantStockIfNeeded(
     const kind = typeof item?.kind === "string" ? item.kind.trim() : "";
     if (kind && kind !== "product") continue;
     const stockDeductionMode =
-      typeof item?.stockDeductionMode === "string"
-        ? item.stockDeductionMode.trim()
-        : "";
+      typeof item?.stockDeductionMode === "string" ? item.stockDeductionMode.trim() : "";
     const stockDeductionModeFromObject =
-      typeof item?.stockDeduction?.mode === "string"
-        ? item.stockDeduction.mode.trim()
-        : "";
+      typeof item?.stockDeduction?.mode === "string" ? item.stockDeduction.mode.trim() : "";
     const isVariantDeduction =
-      stockDeductionMode === "variant" ||
-      stockDeductionModeFromObject === "variant";
+      stockDeductionMode === "variant" || stockDeductionModeFromObject === "variant";
     if (!isVariantDeduction) continue;
 
     const selectedColor =
-      typeof item?.stockDeduction?.colorValue === "string" &&
-      item.stockDeduction.colorValue.trim()
+      typeof item?.stockDeduction?.colorValue === "string" && item.stockDeduction.colorValue.trim()
         ? item.stockDeduction.colorValue.trim()
         : typeof item?.selectedColor === "string" && item.selectedColor.trim()
           ? item.selectedColor.trim()
           : "";
     const selectedGauge =
-      typeof item?.stockDeduction?.gaugeValue === "string" &&
-      item.stockDeduction.gaugeValue.trim()
+      typeof item?.stockDeduction?.gaugeValue === "string" && item.stockDeduction.gaugeValue.trim()
         ? item.stockDeduction.gaugeValue.trim()
         : typeof item?.selectedGauge === "string" && item.selectedGauge.trim()
           ? item.selectedGauge.trim()
@@ -226,11 +205,7 @@ async function restoreOrderVariantStockIfNeeded(
   };
 }
 
-async function restoreOrderGaugeStockIfNeeded(
-  db: any,
-  existing: any,
-  now: Date,
-) {
+async function restoreOrderGaugeStockIfNeeded(db: any, existing: any, now: Date) {
   const alreadyRestored = Boolean(existing?.stockRestore?.gaugeStockRestoredAt);
   if (alreadyRestored) {
     return { setFields: {} as Record<string, unknown> };
@@ -245,18 +220,10 @@ async function restoreOrderGaugeStockIfNeeded(
     const kind = typeof item?.kind === "string" ? item.kind.trim() : "";
     if (kind && kind !== "product") continue;
     const stockDeductionMode =
-      typeof item?.stockDeductionMode === "string"
-        ? item.stockDeductionMode.trim()
-        : "";
+      typeof item?.stockDeductionMode === "string" ? item.stockDeductionMode.trim() : "";
     const stockDeductionModeFromObject =
-      typeof item?.stockDeduction?.mode === "string"
-        ? item.stockDeduction.mode.trim()
-        : "";
-    if (
-      stockDeductionMode === "variant" ||
-      stockDeductionModeFromObject === "variant"
-    )
-      continue;
+      typeof item?.stockDeduction?.mode === "string" ? item.stockDeduction.mode.trim() : "";
+    if (stockDeductionMode === "variant" || stockDeductionModeFromObject === "variant") continue;
     const selectedGauge =
       typeof item?.selectedGauge === "string" && item.selectedGauge.trim()
         ? item.selectedGauge.trim()
@@ -322,11 +289,7 @@ async function restoreOrderGaugeStockIfNeeded(
   };
 }
 
-async function restoreOrderColorStockIfNeeded(
-  db: any,
-  existing: any,
-  now: Date,
-) {
+async function restoreOrderColorStockIfNeeded(db: any, existing: any, now: Date) {
   const alreadyRestored = Boolean(existing?.stockRestore?.colorStockRestoredAt);
   if (alreadyRestored) {
     return { setFields: {} as Record<string, unknown> };
@@ -346,18 +309,10 @@ async function restoreOrderColorStockIfNeeded(
     const kind = typeof item?.kind === "string" ? item.kind.trim() : "";
     if (kind && kind !== "product") continue;
     const stockDeductionMode =
-      typeof item?.stockDeductionMode === "string"
-        ? item.stockDeductionMode.trim()
-        : "";
+      typeof item?.stockDeductionMode === "string" ? item.stockDeductionMode.trim() : "";
     const stockDeductionModeFromObject =
-      typeof item?.stockDeduction?.mode === "string"
-        ? item.stockDeduction.mode.trim()
-        : "";
-    if (
-      stockDeductionMode === "variant" ||
-      stockDeductionModeFromObject === "variant"
-    )
-      continue;
+      typeof item?.stockDeduction?.mode === "string" ? item.stockDeduction.mode.trim() : "";
+    if (stockDeductionMode === "variant" || stockDeductionModeFromObject === "variant") continue;
     const selectedColor =
       typeof item?.selectedColor === "string" && item.selectedColor.trim()
         ? item.selectedColor.trim()
@@ -455,10 +410,7 @@ async function restoreOrderColorStockIfNeeded(
   };
 }
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
@@ -502,8 +454,7 @@ export async function POST(
       .map((s) => s.trim())
       .filter(Boolean);
 
-    const isAdmin =
-      user.role === "admin" || (user.email && adminList.includes(user.email));
+    const isAdmin = user.role === "admin" || (user.email && adminList.includes(user.email));
 
     if (!isAdmin) {
       return new NextResponse("관리자만 취소를 승인할 수 있습니다.", {
@@ -524,10 +475,9 @@ export async function POST(
       existing.shippingInfo.invoice.trackingNumber.trim().length > 0;
 
     if (hasTrackingNumber) {
-      return new NextResponse(
-        "이미 배송이 진행 중이어서 취소 승인을 할 수 없습니다.",
-        { status: 400 },
-      );
+      return new NextResponse("이미 배송이 진행 중이어서 취소 승인을 할 수 없습니다.", {
+        status: 400,
+      });
     }
 
     // ───────────────── 요청 바디에서 사유 받기 ─────────────────
@@ -545,9 +495,7 @@ export async function POST(
       .toLowerCase();
     const tid = String(existing?.paymentInfo?.tid ?? "").trim();
     const shouldCancelViaNice =
-      normalizedProvider === "nicepay" &&
-      Boolean(tid) &&
-      existing.paymentStatus === "결제완료";
+      normalizedProvider === "nicepay" && Boolean(tid) && existing.paymentStatus === "결제완료";
 
     let nextPaymentInfo: Record<string, any> | null = null;
 
@@ -577,8 +525,7 @@ export async function POST(
           {
             ok: false,
             errorCode: "NICE_ORDER_ID_REQUIRED",
-            message:
-              "NICE 취소에 필요한 주문번호(orderId)가 없어 자동 취소를 진행할 수 없습니다.",
+            message: "NICE 취소에 필요한 주문번호(orderId)가 없어 자동 취소를 진행할 수 없습니다.",
           },
           { status: 400 },
         );
@@ -593,20 +540,15 @@ export async function POST(
           secretKey,
         });
 
-        const resultCode = String(
-          cancelRaw.resultCode ?? cancelRaw.ResultCode ?? "",
-        ).trim();
-        const resultMsg = String(
-          cancelRaw.resultMsg ?? cancelRaw.ResultMsg ?? "",
-        ).trim();
+        const resultCode = String(cancelRaw.resultCode ?? cancelRaw.ResultCode ?? "").trim();
+        const resultMsg = String(cancelRaw.resultMsg ?? cancelRaw.ResultMsg ?? "").trim();
         if (resultCode !== "0000") {
           return NextResponse.json(
             {
               ok: false,
               errorCode: "NICE_CANCEL_FAILED",
               message:
-                resultMsg ||
-                "NICE 결제 취소가 완료되지 않아 주문 취소를 반영할 수 없습니다.",
+                resultMsg || "NICE 결제 취소가 완료되지 않아 주문 취소를 반영할 수 없습니다.",
               data: {
                 resultCode: resultCode || null,
                 resultMsg: resultMsg || null,
@@ -618,13 +560,9 @@ export async function POST(
 
         const canceledAt =
           String(
-            cancelRaw.canceledAt ??
-              cancelRaw.cancelDate ??
-              cancelRaw.CancelDate ??
-              "",
+            cancelRaw.canceledAt ?? cancelRaw.cancelDate ?? cancelRaw.CancelDate ?? "",
           ).trim() || now.toISOString();
-        const pgStatus =
-          String(cancelRaw.status ?? "canceled").trim() || "canceled";
+        const pgStatus = String(cancelRaw.status ?? "canceled").trim() || "canceled";
 
         nextPaymentInfo = {
           ...(existing.paymentInfo ?? {}),
@@ -645,10 +583,7 @@ export async function POST(
           {
             ok: false,
             errorCode: "NICE_CANCEL_FAILED",
-            message:
-              error?.resultMsg ||
-              error?.message ||
-              "NICE 결제 취소 중 오류가 발생했습니다.",
+            message: error?.resultMsg || error?.message || "NICE 결제 취소 중 오류가 발생했습니다.",
           },
           { status: httpStatus >= 400 && httpStatus < 500 ? 400 : 502 },
         );
@@ -677,25 +612,13 @@ export async function POST(
       cancelRequest: updatedCancelRequest,
       ...(nextPaymentInfo ? { paymentInfo: nextPaymentInfo } : {}),
     };
-    const variantRestore = await restoreOrderVariantStockIfNeeded(
-      db,
-      existing,
-      now,
-    );
+    const variantRestore = await restoreOrderVariantStockIfNeeded(db, existing, now);
     if (variantRestore.errorResponse) return variantRestore.errorResponse;
     Object.assign(updateFields, variantRestore.setFields);
-    const gaugeRestore = await restoreOrderGaugeStockIfNeeded(
-      db,
-      existing,
-      now,
-    );
+    const gaugeRestore = await restoreOrderGaugeStockIfNeeded(db, existing, now);
     if (gaugeRestore.errorResponse) return gaugeRestore.errorResponse;
     Object.assign(updateFields, gaugeRestore.setFields);
-    const colorRestore = await restoreOrderColorStockIfNeeded(
-      db,
-      existing,
-      now,
-    );
+    const colorRestore = await restoreOrderColorStockIfNeeded(db, existing, now);
     if (colorRestore.errorResponse) return colorRestore.errorResponse;
     Object.assign(updateFields, colorRestore.setFields);
 
@@ -714,9 +637,7 @@ export async function POST(
         : "관리자가 직접 주문을 취소했습니다.";
 
     const descReason =
-      reasonCode || reasonText
-        ? ` 사유: ${reasonCode}${reasonText ? ` (${reasonText})` : ""}`
-        : "";
+      reasonCode || reasonText ? ` 사유: ${reasonCode}${reasonText ? ` (${reasonText})` : ""}` : "";
 
     const historyEntry = {
       status: "취소",
@@ -757,10 +678,7 @@ export async function POST(
         const amountFromOrder = Number(
           existing.pointsUsed ?? existing.paymentInfo?.pointsUsed ?? 0,
         );
-        const amountToRestore = Math.max(
-          0,
-          Math.trunc(amountFromTx || amountFromOrder || 0),
-        );
+        const amountToRestore = Math.max(0, Math.trunc(amountFromTx || amountFromOrder || 0));
 
         if (amountToRestore > 0) {
           await grantPoints(db, {
@@ -769,8 +687,7 @@ export async function POST(
             type: "reversal",
             status: "confirmed",
             refKey: restoreRefKey,
-            reason:
-              `주문 취소로 사용 포인트 복원 (${existing.orderId ?? ""})`.trim(),
+            reason: `주문 취소로 사용 포인트 복원 (${existing.orderId ?? ""})`.trim(),
             ref: { orderId: existing._id },
           });
         }
@@ -792,8 +709,7 @@ export async function POST(
             type: "reversal",
             status: "confirmed",
             refKey: revokeRefKey,
-            reason:
-              `주문 취소로 적립 포인트 회수 (${existing.orderId ?? ""})`.trim(),
+            reason: `주문 취소로 적립 포인트 회수 (${existing.orderId ?? ""})`.trim(),
             ref: { orderId: existing._id },
             // 적립 포인트를 이미 사용한 상태에서도 취소/환불이 발생할 수 있음 → 음수 허용(정책)
             allowNegativeBalance: true,
@@ -812,9 +728,7 @@ export async function POST(
       const appsCol = db.collection("stringing_applications");
 
       // orderId 기준으로 모든 신청 조회
-      const linkedApps = await appsCol
-        .find({ orderId: existing._id })
-        .toArray();
+      const linkedApps = await appsCol.find({ orderId: existing._id }).toArray();
       linkedApplicationCount = linkedApps.length;
 
       const now = new Date();
@@ -830,10 +744,7 @@ export async function POST(
           try {
             await revertConsumption(db, appDoc.packagePassId, appKey);
           } catch (e) {
-            console.error(
-              "[cancel-approve] revertConsumption error (linked application)",
-              e,
-            );
+            console.error("[cancel-approve] revertConsumption error (linked application)", e);
           }
         }
 
@@ -848,24 +759,14 @@ export async function POST(
           },
         };
         const selectedGauge =
-          typeof appDoc?.meta?.selectedGauge === "string" &&
-          appDoc.meta.selectedGauge.trim()
+          typeof appDoc?.meta?.selectedGauge === "string" && appDoc.meta.selectedGauge.trim()
             ? appDoc.meta.selectedGauge.trim()
             : undefined;
-        const hasDeductedGaugeStock = Boolean(
-          appDoc?.meta?.gaugeStockDeductedAt,
-        );
-        const alreadyRestoredGaugeStock = Boolean(
-          appDoc?.meta?.gaugeStockRestoredAt,
-        );
+        const hasDeductedGaugeStock = Boolean(appDoc?.meta?.gaugeStockDeductedAt);
+        const alreadyRestoredGaugeStock = Boolean(appDoc?.meta?.gaugeStockRestoredAt);
 
-        if (
-          hasDeductedGaugeStock &&
-          selectedGauge &&
-          !alreadyRestoredGaugeStock
-        ) {
-          const stringProductObjectId =
-            pickStringProductObjectIdFromApplicationDoc(appDoc);
+        if (hasDeductedGaugeStock && selectedGauge && !alreadyRestoredGaugeStock) {
+          const stringProductObjectId = pickStringProductObjectIdFromApplicationDoc(appDoc);
           if (!stringProductObjectId) {
             console.error(
               "[cancel-approve] missing linked application string product id for gauge stock restore",
@@ -875,32 +776,26 @@ export async function POST(
               },
             );
           } else {
-            const linkedRestoreResult = await db
-              .collection("products")
-              .updateOne(
-                {
-                  _id: stringProductObjectId,
-                  sold: { $gte: 1 },
-                  "gaugeInventories.value": selectedGauge,
+            const linkedRestoreResult = await db.collection("products").updateOne(
+              {
+                _id: stringProductObjectId,
+                sold: { $gte: 1 },
+                "gaugeInventories.value": selectedGauge,
+              },
+              {
+                $inc: {
+                  "gaugeInventories.$.stock": 1,
+                  "inventory.stock": 1,
+                  sold: -1,
                 },
-                {
-                  $inc: {
-                    "gaugeInventories.$.stock": 1,
-                    "inventory.stock": 1,
-                    sold: -1,
-                  },
-                },
-              );
-            if (
-              !linkedRestoreResult.matchedCount ||
-              !linkedRestoreResult.modifiedCount
-            ) {
+              },
+            );
+            if (!linkedRestoreResult.matchedCount || !linkedRestoreResult.modifiedCount) {
               return NextResponse.json(
                 {
                   ok: false,
                   code: "GAUGE_STOCK_RESTORE_FAILED",
-                  message:
-                    "주문 취소 중 스트링 게이지 재고 복구에 실패했습니다.",
+                  message: "주문 취소 중 스트링 게이지 재고 복구에 실패했습니다.",
                 },
                 { status: 409 },
               );
@@ -919,18 +814,14 @@ export async function POST(
               history: {
                 status: "취소",
                 date: now,
-                description:
-                  "주문 취소 승인에 따라 신청도 함께 취소되었습니다.",
+                description: "주문 취소 승인에 따라 신청도 함께 취소되었습니다.",
               },
             },
           } as any,
         );
       }
     } catch (e) {
-      console.error(
-        "[cancel-approve] linked stringing application cancel error:",
-        e,
-      );
+      console.error("[cancel-approve] linked stringing application cancel error:", e);
     }
 
     await appendAdminAudit(
@@ -950,8 +841,7 @@ export async function POST(
           prevCancelStatus: existingReq.status ?? null,
           nextCancelStatus: updatedCancelRequest.status,
           orderStatus: updateFields.status ?? existing.status ?? null,
-          paymentStatus:
-            updateFields.paymentStatus ?? existing.paymentStatus ?? null,
+          paymentStatus: updateFields.paymentStatus ?? existing.paymentStatus ?? null,
           linkedApplicationCount,
         },
       },

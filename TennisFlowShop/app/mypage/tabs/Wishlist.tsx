@@ -15,8 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const LIMIT = 12;
 
 export default function Wishlist() {
-  const { items, remove, isLoading, hasDataError, hasResolvedData } =
-    useWishlist();
+  const { items, remove, isLoading, hasDataError, hasResolvedData } = useWishlist();
   const router = useRouter();
   const addItem = useCartStore((s) => s.addItem);
 
@@ -24,34 +23,21 @@ export default function Wishlist() {
   const [visible, setVisible] = useState(LIMIT);
 
   const resolvedItems = items ?? [];
-  const hasMore = useMemo(
-    () => resolvedItems.length > visible,
-    [resolvedItems.length, visible],
-  );
-  const visibleItems = useMemo(
-    () => resolvedItems.slice(0, visible),
-    [resolvedItems, visible],
-  );
+  const hasMore = useMemo(() => resolvedItems.length > visible, [resolvedItems.length, visible]);
+  const visibleItems = useMemo(() => resolvedItems.slice(0, visible), [resolvedItems, visible]);
 
   // empty state는 로딩/에러가 아닌 실제 데이터 확정 후 length===0일 때만 노출한다.
   const shouldShowEmptyState =
-    hasResolvedData &&
-    !isLoading &&
-    !hasDataError &&
-    resolvedItems.length === 0;
+    hasResolvedData && !isLoading && !hasDataError && resolvedItems.length === 0;
 
   function handleAddToCart(it: (typeof resolvedItems)[number]) {
     if (it.requiresOption && !it.hasSelectedOption) {
-      showErrorToast(
-        "색상/게이지 선택이 필요합니다. 상세페이지에서 옵션을 선택해주세요.",
-      );
+      showErrorToast("색상/게이지 선택이 필요합니다. 상세페이지에서 옵션을 선택해주세요.");
       router.push(`/products/${it.id}`);
       return;
     }
     if (it.requiresOption && !it.optionAvailable) {
-      showErrorToast(
-        "찜한 옵션이 현재 품절되었습니다. 다른 옵션을 선택해주세요.",
-      );
+      showErrorToast("찜한 옵션이 현재 품절되었습니다. 다른 옵션을 선택해주세요.");
       return;
     }
 
@@ -81,10 +67,7 @@ export default function Wishlist() {
       <Card className="border-border bg-card shadow-sm">
         <CardContent className="space-y-3 p-4 md:p-6">
           {Array.from({ length: 4 }).map((_, idx) => (
-            <div
-              key={`wishlist-loading-${idx}`}
-              className="rounded-lg border border-border/50 p-3"
-            >
+            <div key={`wishlist-loading-${idx}`} className="rounded-lg border border-border/50 p-3">
               <Skeleton className="h-28 w-full rounded-md" />
               <Skeleton className="mt-3 h-4 w-2/3" />
               <Skeleton className="mt-2 h-4 w-1/3" />
@@ -99,9 +82,7 @@ export default function Wishlist() {
     return (
       <Card className="border-border bg-card shadow-sm">
         <CardContent className="p-8 md:p-12 text-center">
-          <h3 className="mb-2 text-xl font-semibold">
-            위시리스트를 불러오지 못했습니다
-          </h3>
+          <h3 className="mb-2 text-xl font-semibold">위시리스트를 불러오지 못했습니다</h3>
           <p className="text-muted-foreground">잠시 후 다시 시도해주세요.</p>
         </CardContent>
       </Card>
@@ -115,17 +96,11 @@ export default function Wishlist() {
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
             <Heart className="h-10 w-10" />
           </div>
-          <h3 className="mb-2 text-xl font-semibold">
-            위시리스트가 비어있습니다
-          </h3>
+          <h3 className="mb-2 text-xl font-semibold">위시리스트가 비어있습니다</h3>
           <p className="mb-6 text-muted-foreground">
             마음에 드는 상품을 위시리스트에 추가해보세요!
           </p>
-          <Button
-            asChild
-            variant="default"
-            className="w-full shadow-sm sm:w-auto"
-          >
+          <Button asChild variant="default" className="w-full shadow-sm sm:w-auto">
             <Link href="/products">상품 둘러보기</Link>
           </Button>
         </CardContent>
@@ -163,21 +138,15 @@ export default function Wishlist() {
                   <div className="mt-2 space-y-0.5 text-xs text-muted-foreground">
                     {it.hasSelectedOption ? (
                       <>
-                        {it.selectedColorLabel && (
-                          <div>색상: {it.selectedColorLabel}</div>
-                        )}
-                        {it.selectedGauge && (
-                          <div>게이지: {it.selectedGauge}</div>
-                        )}
+                        {it.selectedColorLabel && <div>색상: {it.selectedColorLabel}</div>}
+                        {it.selectedGauge && <div>게이지: {it.selectedGauge}</div>}
                         {typeof it.optionStock === "number" && (
                           <div>현재 재고: {it.optionStock}개</div>
                         )}
                       </>
                     ) : it.requiresOption ? (
                       <>
-                        <div className="font-medium text-warning">
-                          옵션 미선택
-                        </div>
+                        <div className="font-medium text-warning">옵션 미선택</div>
                         <div>상세페이지에서 색상/게이지를 선택해주세요.</div>
                       </>
                     ) : null}
@@ -194,16 +163,10 @@ export default function Wishlist() {
                   variant="default"
                   className="w-full min-w-0 whitespace-nowrap px-3 shadow-sm"
                   onClick={() => handleAddToCart(it)}
-                  disabled={
-                    it.requiresOption &&
-                    it.hasSelectedOption &&
-                    !it.optionAvailable
-                  }
+                  disabled={it.requiresOption && it.hasSelectedOption && !it.optionAvailable}
                 >
                   <ShoppingCart className="h-4 w-4 mr-2" />{" "}
-                  {it.requiresOption && !it.hasSelectedOption
-                    ? "옵션 선택"
-                    : "담기"}
+                  {it.requiresOption && !it.hasSelectedOption ? "옵션 선택" : "담기"}
                 </Button>
                 <Button
                   size="sm"
@@ -214,9 +177,7 @@ export default function Wishlist() {
                       showErrorToast("위시리스트 삭제에 실패했습니다.");
                     });
                     // 현재 페이지에서 바로 사라지도록, 노출 개수 보정
-                    setVisible((v) =>
-                      Math.min(v, Math.max(0, resolvedItems.length - 1)),
-                    );
+                    setVisible((v) => Math.min(v, Math.max(0, resolvedItems.length - 1)));
                   }}
                 >
                   <Trash2 className="h-4 w-4 mr-2" /> 삭제
@@ -238,9 +199,7 @@ export default function Wishlist() {
             더 보기
           </Button>
         ) : (
-          <span className="text-sm text-muted-foreground">
-            마지막 페이지입니다
-          </span>
+          <span className="text-sm text-muted-foreground">마지막 페이지입니다</span>
         )}
       </div>
     </div>

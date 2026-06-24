@@ -3,10 +3,7 @@ import { ObjectId, type Document, type Filter } from "mongodb";
 import { z } from "zod";
 
 import { requireAdmin } from "@/lib/admin.guard";
-import type {
-  AdminRentalListItemDto,
-  AdminRentalsListResponseDto,
-} from "@/types/admin/rentals";
+import type { AdminRentalListItemDto, AdminRentalsListResponseDto } from "@/types/admin/rentals";
 import { normalizeRentalPaymentMeta } from "@/lib/admin-ops-normalize";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 
@@ -29,8 +26,7 @@ function resolveRefundBankLabel(account: any): string | null {
 
 function getApplicationLines(stringDetails: any): any[] {
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
-  if (Array.isArray(stringDetails?.racketLines))
-    return stringDetails.racketLines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
   return [];
 }
 
@@ -40,22 +36,17 @@ function getReceptionLabel(collectionMethod?: string | null): string {
   return "발송 접수";
 }
 
-function normalizeServicePickupMethod(
-  v: any,
-): "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT" | null {
+function normalizeServicePickupMethod(v: any): "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT" | null {
   const raw = String(v ?? "")
     .trim()
     .toUpperCase();
-  if (raw === "SELF_SEND" || raw === "COURIER_VISIT" || raw === "SHOP_VISIT")
-    return raw;
+  if (raw === "SELF_SEND" || raw === "COURIER_VISIT" || raw === "SHOP_VISIT") return raw;
   if (raw === "DELIVERY") return "SELF_SEND";
   if (raw === "PICKUP") return "SHOP_VISIT";
   return null;
 }
 
-function getPickupMethodLabel(
-  method: "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT" | null,
-): string {
+function getPickupMethodLabel(method: "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT" | null): string {
   if (method === "SHOP_VISIT") return "방문 수령";
   if (method === "COURIER_VISIT") return "자가 발송(택배)";
   return "택배 발송";
@@ -120,10 +111,7 @@ function getTensionSummary(lines: any[]): string | null {
   return set.length ? set.join(", ") : null;
 }
 
-function parseIntParam(
-  v: string | null,
-  opts: { defaultValue: number; min: number; max: number },
-) {
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
@@ -132,9 +120,7 @@ function parseIntParam(
 const querySchema = z.object({
   q: z.string().default(""),
   pay: z.enum(["all", "paid", "unpaid"]).default("all"),
-  ship: z
-    .enum(["all", "outbound-set", "return-set", "both-set", "none"])
-    .default("all"),
+  ship: z.enum(["all", "outbound-set", "return-set", "both-set", "none"]).default("all"),
   page: z.coerce.number().int().min(1).max(10_000).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
   status: z.string().default(""),
@@ -216,10 +202,8 @@ export async function GET(req: Request) {
   if (parsed.brand) q.brand = { $regex: parsed.brand, $options: "i" };
   if (parsed.from || parsed.to) {
     const createdAtCond: Record<string, Date> = {};
-    if (parsed.from)
-      createdAtCond.$gte = new Date(`${parsed.from}T00:00:00+09:00`);
-    if (parsed.to)
-      createdAtCond.$lte = new Date(`${parsed.to}T23:59:59.999+09:00`);
+    if (parsed.from) createdAtCond.$gte = new Date(`${parsed.from}T00:00:00+09:00`);
+    if (parsed.to) createdAtCond.$lte = new Date(`${parsed.to}T23:59:59.999+09:00`);
     q.createdAt = createdAtCond;
   }
 
@@ -273,9 +257,7 @@ export async function GET(req: Request) {
     .toArray();
   const total = await db.collection("rental_orders").countDocuments(q);
 
-  const userIds = Array.from(
-    new Set(docs.map((d) => d.userId).filter(Boolean)),
-  );
+  const userIds = Array.from(new Set(docs.map((d) => d.userId).filter(Boolean)));
   const userMap = new Map<string, { name?: string; email?: string }>();
 
   if (userIds.length > 0) {
@@ -284,9 +266,7 @@ export async function GET(req: Request) {
       .find({ _id: { $in: userIds } })
       .project({ name: 1, email: 1 })
       .toArray();
-    users.forEach((u) =>
-      userMap.set(String(u._id), { name: u.name, email: u.email }),
-    );
+    users.forEach((u) => userMap.set(String(u._id), { name: u.name, email: u.email }));
   }
 
   // 대여 목록에서 통합 플로우 핵심 요약을 즉시 보여주기 위해 신청서 읽기용 필드를 병합
@@ -333,12 +313,8 @@ export async function GET(req: Request) {
 
     apps.forEach((app: any) => {
       const lines = getApplicationLines(app?.stringDetails);
-      const preferredDate = String(
-        app?.stringDetails?.preferredDate ?? "",
-      ).trim();
-      const preferredTime = String(
-        app?.stringDetails?.preferredTime ?? "",
-      ).trim();
+      const preferredDate = String(app?.stringDetails?.preferredDate ?? "").trim();
+      const preferredTime = String(app?.stringDetails?.preferredTime ?? "").trim();
       appSummaryMap.set(String(app._id), {
         status: String(app?.status ?? "draft"),
         receptionLabel: getReceptionLabel(app?.collectionMethod),
@@ -350,9 +326,7 @@ export async function GET(req: Request) {
           app?.applicationSummary?.stringNames,
         ),
         reservationLabel:
-          preferredDate && preferredTime
-            ? `${preferredDate} ${preferredTime}`
-            : null,
+          preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
       });
     });
   }
@@ -367,17 +341,13 @@ export async function GET(req: Request) {
         : { name: "", email: "" });
 
     const fee = Number(rentalDoc?.amount?.fee ?? rentalDoc?.fee ?? 0);
-    const deposit = Number(
-      rentalDoc?.amount?.deposit ?? rentalDoc?.deposit ?? 0,
-    );
+    const deposit = Number(rentalDoc?.amount?.deposit ?? rentalDoc?.deposit ?? 0);
     const requested = !!rentalDoc?.stringing?.requested;
     const stringPrice = Number(
-      rentalDoc?.amount?.stringPrice ??
-        (requested ? (rentalDoc?.stringing?.price ?? 0) : 0),
+      rentalDoc?.amount?.stringPrice ?? (requested ? (rentalDoc?.stringing?.price ?? 0) : 0),
     );
     const stringingFee = Number(
-      rentalDoc?.amount?.stringingFee ??
-        (requested ? (rentalDoc?.stringing?.mountingFee ?? 0) : 0),
+      rentalDoc?.amount?.stringingFee ?? (requested ? (rentalDoc?.stringing?.mountingFee ?? 0) : 0),
     );
     const totalAmount = Number(
       rentalDoc?.amount?.total ?? fee + deposit + stringPrice + stringingFee,
@@ -396,9 +366,7 @@ export async function GET(req: Request) {
       : null;
 
     const paymentMeta = normalizeRentalPaymentMeta(rentalDoc);
-    const appSummary = stringingApplicationId
-      ? appSummaryMap.get(stringingApplicationId)
-      : null;
+    const appSummary = stringingApplicationId ? appSummaryMap.get(stringingApplicationId) : null;
     const servicePickupMethod = normalizeServicePickupMethod(
       (rentalDoc as any)?.servicePickupMethod,
     );

@@ -19,8 +19,7 @@ function getGuestOrderMode(): GuestOrderMode {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: unknown) => String(v ?? "").replace(/\D/g, "");
-const isValidKoreanPhoneDigits = (digits: string) =>
-  digits.length === 10 || digits.length === 11;
+const isValidKoreanPhoneDigits = (digits: string) => digits.length === 10 || digits.length === 11;
 
 // RegExp injection 방지용(이메일을 case-insensitive exact match로 조회할 때 사용)
 function escapeRegex(s: string) {
@@ -158,16 +157,11 @@ export async function POST(req: Request) {
       const latestApplicationId = orderIdKey
         ? (latestApplicationIdByOrderId.get(orderIdKey) ?? null)
         : null;
-      const fallbackApplicationId = normalizeStringingApplicationId(
-        order?.stringingApplicationId,
-      );
-      const stringingApplicationId =
-        latestApplicationId ?? fallbackApplicationId;
+      const fallbackApplicationId = normalizeStringingApplicationId(order?.stringingApplicationId);
+      const stringingApplicationId = latestApplicationId ?? fallbackApplicationId;
 
       const isStringServiceApplied = hasCompletedStringingApplication({
-        isStringServiceApplied: latestApplicationId
-          ? true
-          : order?.isStringServiceApplied,
+        isStringServiceApplied: latestApplicationId ? true : order?.isStringServiceApplied,
         stringingApplicationId: stringingApplicationId ?? fallbackApplicationId,
       });
 

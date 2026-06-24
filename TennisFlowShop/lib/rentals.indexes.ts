@@ -9,13 +9,7 @@ import { Db } from "mongodb";
 export async function ensureRentalIndexes(db: Db) {
   const collection = db.collection("rental_orders");
 
-  await collection.createIndex(
-    { userId: 1, status: 1 },
-    { name: "user_status" },
-  );
-  await collection.createIndex(
-    { racketId: 1, status: 1 },
-    { name: "racket_status" },
-  );
+  await collection.createIndex({ userId: 1, status: 1 }, { name: "user_status" });
+  await collection.createIndex({ racketId: 1, status: 1 }, { name: "racket_status" });
   await collection.createIndex({ createdAt: -1 }, { name: "createdAt_desc" });
 }

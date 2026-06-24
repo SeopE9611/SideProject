@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
-import {
-  canTransitIdempotent,
-  RentalStatus,
-} from "@/app/features/rentals/utils/status";
+import { canTransitIdempotent, RentalStatus } from "@/app/features/rentals/utils/status";
 import { writeRentalHistory } from "@/app/features/rentals/utils/history";
 import { z } from "zod";
 import { cookies } from "next/headers";
@@ -20,8 +17,7 @@ export const dynamic = "force-dynamic";
 const POSTAL_RE = /^\d{5}$/;
 const PAYMENT_BANKS = new Set(["kakao"] as const);
 
-const toTrimmedString = (v: unknown) =>
-  v === null || v === undefined ? "" : String(v).trim();
+const toTrimmedString = (v: unknown) => (v === null || v === undefined ? "" : String(v).trim());
 const toDigits = (v: unknown) => toTrimmedString(v).replace(/\D/g, "");
 
 // pay에서는 payment/shipping "선택" (안 보내면 기존 값 유지)
@@ -49,19 +45,13 @@ const PayBodySchema = z
   })
   .passthrough();
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: rentalId } = await params;
     const db = (await clientPromise).db();
     // 1) params 유효성: ObjectId 방어 (500 방지)
     if (!ObjectId.isValid(rentalId)) {
-      return NextResponse.json(
-        { ok: false, message: "BAD_ID" },
-        { status: 400 },
-      );
+      return NextResponse.json({ ok: false, message: "BAD_ID" }, { status: 400 });
     }
 
     // 2) body 파싱/검증: 깨진 JSON은 400으로 정리
@@ -71,18 +61,12 @@ export async function POST(
       try {
         body = JSON.parse(raw);
       } catch {
-        return NextResponse.json(
-          { ok: false, message: "INVALID_JSON" },
-          { status: 400 },
-        );
+        return NextResponse.json({ ok: false, message: "INVALID_JSON" }, { status: 400 });
       }
     }
     const parsed = PayBodySchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { ok: false, message: "INVALID_BODY" },
-        { status: 400 },
-      );
+      return NextResponse.json({ ok: false, message: "INVALID_BODY" }, { status: 400 });
     }
     body = parsed.data;
 
@@ -90,10 +74,7 @@ export async function POST(
     const _id = new ObjectId(rentalId);
     const order = await db.collection("rental_orders").findOne({ _id });
     if (!order) {
-      return NextResponse.json(
-        { ok: false, message: "NOT_FOUND" },
-        { status: 404 },
-      );
+      return NextResponse.json({ ok: false, message: "NOT_FOUND" }, { status: 404 });
     }
 
     // 3) 인증/인가: 회원 대여건이면 소유자만 결제 확정 가능 (prepare/cancel-request와 동일 패턴)
@@ -107,10 +88,7 @@ export async function POST(
         payload = null;
       }
       if (!payload || payload.sub !== String((order as any).userId)) {
-        return NextResponse.json(
-          { ok: false, message: "FORBIDDEN" },
-          { status: 403 },
-        );
+        return NextResponse.json({ ok: false, message: "FORBIDDEN" }, { status: 403 });
       }
     }
 
@@ -121,10 +99,7 @@ export async function POST(
 
     // 4) bank allowlist 최종 방어
     if (body?.payment?.bank && !PAYMENT_BANKS.has(body.payment.bank as any)) {
-      return NextResponse.json(
-        { ok: false, message: "INVALID_BANK" },
-        { status: 400 },
-      );
+      return NextResponse.json({ ok: false, message: "INVALID_BANK" }, { status: 400 });
     }
 
     // 금액 무결성 가드: total이 0원이면 결제 차단
@@ -145,10 +120,7 @@ export async function POST(
     const currentStatus = (order.status ?? "pending") as RentalStatus;
 
     // 상태 전이 가능성 선검사(가독용) - 진짜 보호는 조건부 updateOne
-    if (
-      !canTransitIdempotent(currentStatus, "paid") ||
-      currentStatus !== "pending"
-    ) {
+    if (!canTransitIdempotent(currentStatus, "paid") || currentStatus !== "pending") {
       return NextResponse.json(
         {
           ok: false,
@@ -162,13 +134,9 @@ export async function POST(
 
     // pay에서 body를 비워서 보내는 케이스가 많아 "없으면 기존 값 유지"로 스냅샷/저장을 맞춘다.
     const nextPayment =
-      typeof body.payment !== "undefined"
-        ? body.payment
-        : ((order as any).payment ?? null);
+      typeof body.payment !== "undefined" ? body.payment : ((order as any).payment ?? null);
     const nextShipping =
-      typeof body.shipping !== "undefined"
-        ? body.shipping
-        : ((order as any).shipping ?? null);
+      typeof body.shipping !== "undefined" ? body.shipping : ((order as any).shipping ?? null);
 
     // 원자 전이: pending → paid (경합 시 1건만 성공)
     const setDoc: any = {
@@ -190,10 +158,7 @@ export async function POST(
     );
 
     if (u.matchedCount === 0) {
-      return NextResponse.json(
-        { ok: false, code: "INVALID_STATE" },
-        { status: 409 },
-      );
+      return NextResponse.json({ ok: false, code: "INVALID_STATE" }, { status: 409 });
     }
 
     // 처리 이력 기록
@@ -214,10 +179,7 @@ export async function POST(
       }
       const rack = await db
         .collection("used_rackets")
-        .findOne(
-          { _id: new ObjectId(racketIdStr) },
-          { projection: { quantity: 1 } },
-        );
+        .findOne({ _id: new ObjectId(racketIdStr) }, { projection: { quantity: 1 } });
       const qty = Number(rack?.quantity ?? 1);
       if (qty <= 1) {
         await db
@@ -232,9 +194,6 @@ export async function POST(
     return NextResponse.json({ ok: true, id: rentalId });
   } catch (err) {
     console.error("POST /api/rentals/[id]/pay error:", err);
-    return NextResponse.json(
-      { ok: false, message: "SERVER_ERROR" },
-      { status: 500 },
-    );
+    return NextResponse.json({ ok: false, message: "SERVER_ERROR" }, { status: 500 });
   }
 }

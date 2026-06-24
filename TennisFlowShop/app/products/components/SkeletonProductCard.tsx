@@ -43,11 +43,7 @@ function SkeletonLine({
   );
 }
 
-export function SkeletonFilterDetailed({
-  performanceCount = 5,
-}: {
-  performanceCount?: number;
-}) {
+export function SkeletonFilterDetailed({ performanceCount = 5 }: { performanceCount?: number }) {
   return (
     <div className="space-y-6" aria-hidden="true">
       {/* 헤더: 타이틀 + 초기화 버튼 */}

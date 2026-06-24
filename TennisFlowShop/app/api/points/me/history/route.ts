@@ -13,8 +13,7 @@ function parseListQuery(req: NextRequest) {
   const limitRaw = parseInt(searchParams.get("limit") ?? "20", 10);
 
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
-  const limit =
-    Number.isFinite(limitRaw) && limitRaw > 0 && limitRaw <= 50 ? limitRaw : 20;
+  const limit = Number.isFinite(limitRaw) && limitRaw > 0 && limitRaw <= 50 ? limitRaw : 20;
 
   return { page, limit };
 }
@@ -49,11 +48,7 @@ export async function GET(req: NextRequest) {
   } catch {
     me = null;
   }
-  if (!me)
-    return NextResponse.json(
-      { ok: false, error: "Unauthorized" },
-      { status: 401 },
-    );
+  if (!me) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
   const { page, limit } = parseListQuery(req);
   const skip = (page - 1) * limit;
@@ -62,28 +57,20 @@ export async function GET(req: NextRequest) {
   // me.id가 ObjectId 문자열이 아니면 new ObjectId에서 500이 나므로 사전 차단
   const uidStr = String(me?.id ?? "");
   if (!uidStr || !ObjectId.isValid(uidStr)) {
-    return NextResponse.json(
-      { ok: false, error: "Unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
   const userId = new ObjectId(uidStr);
 
   // 현재 잔액(캐시)
   const user = await db
     .collection("users")
-    .findOne(
-      { _id: userId },
-      { projection: { pointsBalance: 1, pointsDebt: 1 } as any },
-    );
+    .findOne({ _id: userId }, { projection: { pointsBalance: 1, pointsDebt: 1 } as any });
   const balance =
-    typeof user?.pointsBalance === "number" &&
-    Number.isFinite(user.pointsBalance)
+    typeof user?.pointsBalance === "number" && Number.isFinite(user.pointsBalance)
       ? user.pointsBalance
       : 0;
   const debt =
-    typeof (user as any)?.pointsDebt === "number" &&
-    Number.isFinite((user as any).pointsDebt)
+    typeof (user as any)?.pointsDebt === "number" && Number.isFinite((user as any).pointsDebt)
       ? (user as any).pointsDebt
       : 0;
 

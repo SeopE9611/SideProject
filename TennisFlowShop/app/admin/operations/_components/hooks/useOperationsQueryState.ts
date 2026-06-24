@@ -17,12 +17,7 @@ type Params = {
   page: number;
 };
 
-const VALID_KINDS: Array<"all" | Kind> = [
-  "all",
-  "order",
-  "stringing_application",
-  "rental",
-];
+const VALID_KINDS: Array<"all" | Kind> = ["all", "order", "stringing_application", "rental"];
 const VALID_FLOWS: FlowValue[] = ["all", "1", "2", "3", "4", "5", "6", "7"];
 const VALID_INTEGRATED: IntegratedValue[] = ["all", "1", "0"];
 const VALID_WARN_FILTERS: Params["warnFilter"][] = [
@@ -33,11 +28,7 @@ const VALID_WARN_FILTERS: Params["warnFilter"][] = [
   "pending",
   "clean",
 ];
-const VALID_WARN_SORTS: Params["warnSort"][] = [
-  "default",
-  "warn_first",
-  "safe_first",
-];
+const VALID_WARN_SORTS: Params["warnSort"][] = ["default", "warn_first", "safe_first"];
 
 function parsePage(value: string | null) {
   if (!value) return 1;
@@ -66,9 +57,7 @@ export function initOperationsStateFromQuery(
     setFlow: (v: FlowValue) => void;
     setIntegrated: (v: IntegratedValue) => void;
     setOnlyWarn: (v: boolean) => void;
-    setWarnFilter: (
-      v: "all" | "warn" | "caution" | "review" | "pending" | "clean",
-    ) => void;
+    setWarnFilter: (v: "all" | "warn" | "caution" | "review" | "pending" | "clean") => void;
     setWarnSort: (v: "default" | "warn_first" | "safe_first") => void;
     setPage: (v: number) => void;
   },
@@ -84,13 +73,9 @@ export function initOperationsStateFromQuery(
 
   const nextKind: "all" | Kind = VALID_KINDS.includes(k) ? k : "all";
   const nextFlow: FlowValue = VALID_FLOWS.includes(f) ? f : "all";
-  const nextIntegrated: IntegratedValue = VALID_INTEGRATED.includes(i)
-    ? i
-    : "all";
+  const nextIntegrated: IntegratedValue = VALID_INTEGRATED.includes(i) ? i : "all";
   const nextOnlyWarn = warn === "1";
-  const nextWarnFilter: Params["warnFilter"] = VALID_WARN_FILTERS.includes(
-    warnFilter,
-  )
+  const nextWarnFilter: Params["warnFilter"] = VALID_WARN_FILTERS.includes(warnFilter)
     ? warnFilter
     : "all";
   const normalizedWarnFilter: Params["warnFilter"] =
@@ -133,8 +118,7 @@ export function useSyncOperationsQuery(
    * - dependency를 "객체"가 아니라 "원시 값"(string/number/boolean)으로 분해해서 걸어둠.
    *   그러면 실제 값이 바뀔 때만 effect가 다시 실행됨.
    */
-  const { q, kind, flow, integrated, onlyWarn, warnFilter, warnSort, page } =
-    params;
+  const { q, kind, flow, integrated, onlyWarn, warnFilter, warnSort, page } = params;
 
   useEffect(() => {
     const queryString = buildOperationsViewQueryString({
@@ -148,16 +132,5 @@ export function useSyncOperationsQuery(
       page,
     });
     replaceQueryUrl(pathname, queryString, replace);
-  }, [
-    q,
-    kind,
-    flow,
-    integrated,
-    onlyWarn,
-    warnFilter,
-    warnSort,
-    page,
-    pathname,
-    replace,
-  ]);
+  }, [q, kind, flow, integrated, onlyWarn, warnFilter, warnSort, page, pathname, replace]);
 }

@@ -60,9 +60,7 @@ function normalizeClassLevel(value: unknown): AcademyClassLevel | null {
   return isAcademyClassLevel(value) ? value : null;
 }
 
-function normalizeClassLessonType(
-  value: unknown,
-): AcademyClassLessonType | null {
+function normalizeClassLessonType(value: unknown): AcademyClassLessonType | null {
   return isAcademyClassLessonType(value) ? value : null;
 }
 
@@ -79,14 +77,10 @@ function createClassSnapshot(doc: Document): AcademyClassSnapshot {
     level,
     levelLabel: level ? getAcademyClassLevelLabel(level) : null,
     lessonType,
-    lessonTypeLabel: lessonType
-      ? getAcademyClassLessonTypeLabel(lessonType)
-      : null,
-    instructorName:
-      typeof doc.instructorName === "string" ? doc.instructorName : null,
+    lessonTypeLabel: lessonType ? getAcademyClassLessonTypeLabel(lessonType) : null,
+    instructorName: typeof doc.instructorName === "string" ? doc.instructorName : null,
     location: typeof doc.location === "string" ? doc.location : null,
-    scheduleText:
-      typeof doc.scheduleText === "string" ? doc.scheduleText : null,
+    scheduleText: typeof doc.scheduleText === "string" ? doc.scheduleText : null,
     capacity: typeof doc.capacity === "number" ? doc.capacity : null,
     price: typeof doc.price === "number" ? doc.price : null,
     status,
@@ -104,11 +98,7 @@ function optionalTrimString(value: unknown, maxLength: number) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-function toErrorResponse(
-  message: string,
-  status = 400,
-  extra?: Record<string, unknown>,
-) {
+function toErrorResponse(message: string, status = 400, extra?: Record<string, unknown>) {
   return NextResponse.json({ success: false, message, ...extra }, { status });
 }
 
@@ -129,8 +119,7 @@ export async function POST(req: Request) {
     return toErrorResponse("요청 본문을 확인해 주세요.");
   }
 
-  const payload =
-    body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
 
   const userId = await getCurrentUserId();
   if (!userId) {
@@ -186,10 +175,7 @@ export async function POST(req: Request) {
 
   const user = await db
     .collection("users")
-    .findOne(
-      { _id: new ObjectId(userId) },
-      { projection: { name: 1, phone: 1, email: 1 } },
-    );
+    .findOne({ _id: new ObjectId(userId) }, { projection: { name: 1, phone: 1, email: 1 } });
 
   const applicantName = trimString(user?.name, 50);
   const phone = trimString(user?.phone, 30);
@@ -247,36 +233,26 @@ export async function POST(req: Request) {
     );
 
     if (duplicateApplication) {
-      return toErrorResponse(
-        "이미 신청한 클래스입니다. 기존 신청 내역을 확인해 주세요.",
-        409,
-        {
-          code: "ACADEMY_DUPLICATE_CLASS",
-          existingApplicationId: serializeObjectId(duplicateApplication._id),
-        },
-      );
+      return toErrorResponse("이미 신청한 클래스입니다. 기존 신청 내역을 확인해 주세요.", 409, {
+        code: "ACADEMY_DUPLICATE_CLASS",
+        existingApplicationId: serializeObjectId(duplicateApplication._id),
+      });
     }
   }
 
   const dayConflict = activeApplications.find((application) => {
     if (classId && application.classId === classId) return false;
     const existingDays = Array.isArray(application.preferredDays)
-      ? application.preferredDays.filter(
-          (day): day is string => typeof day === "string",
-        )
+      ? application.preferredDays.filter((day): day is string => typeof day === "string")
       : [];
     return existingDays.some((day) => preferredDays.includes(day));
   });
 
   if (dayConflict) {
     const existingDays = Array.isArray(dayConflict.preferredDays)
-      ? dayConflict.preferredDays.filter(
-          (day): day is string => typeof day === "string",
-        )
+      ? dayConflict.preferredDays.filter((day): day is string => typeof day === "string")
       : [];
-    const overlapDays = existingDays.filter((day) =>
-      preferredDays.includes(day),
-    );
+    const overlapDays = existingDays.filter((day) => preferredDays.includes(day));
 
     return toErrorResponse("이미 신청한 클래스와 희망 요일이 겹칩니다.", 409, {
       code: "ACADEMY_DAY_CONFLICT",

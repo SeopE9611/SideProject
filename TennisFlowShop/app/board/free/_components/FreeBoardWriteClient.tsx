@@ -39,8 +39,7 @@ const TITLE_MAX = 80;
 const CONTENT_MIN = 10;
 const CONTENT_MAX = 5000;
 const hasHtmlLike = (s: string) => /<[^>]+>/.test(s);
-const hasScriptLike = (s: string) =>
-  /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
+const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
 
 type FieldKey = "category" | "title" | "content" | "attachments";
 type FieldErrors = Partial<Record<FieldKey, string>>;
@@ -136,11 +135,7 @@ export default function FreeBoardWriteClient() {
     }
   };
 
-  const setInlineError = (
-    key: FieldKey,
-    msg: string,
-    formMsg = "입력값을 확인해 주세요.",
-  ) => {
+  const setInlineError = (key: FieldKey, msg: string, formMsg = "입력값을 확인해 주세요.") => {
     setFieldErrors((prev) => ({ ...prev, [key]: msg }));
     setErrorMsg(formMsg);
     requestAnimationFrame(() => focusField(key));
@@ -167,14 +162,11 @@ export default function FreeBoardWriteClient() {
     if (!c) errs.content = "내용을 입력해 주세요.";
 
     if (!errs.title) {
-      if (t.length < TITLE_MIN)
-        errs.title = `제목은 ${TITLE_MIN}자 이상 입력해 주세요.`;
-      else if (t.length > TITLE_MAX)
-        errs.title = `제목은 ${TITLE_MAX}자 이내로 입력해 주세요.`;
+      if (t.length < TITLE_MIN) errs.title = `제목은 ${TITLE_MIN}자 이상 입력해 주세요.`;
+      else if (t.length > TITLE_MAX) errs.title = `제목은 ${TITLE_MAX}자 이내로 입력해 주세요.`;
     }
     if (!errs.content) {
-      if (c.length < CONTENT_MIN)
-        errs.content = `내용은 ${CONTENT_MIN}자 이상 입력해 주세요.`;
+      if (c.length < CONTENT_MIN) errs.content = `내용은 ${CONTENT_MIN}자 이상 입력해 주세요.`;
       else if (c.length > CONTENT_MAX)
         errs.content = `내용은 ${CONTENT_MAX}자 이내로 입력해 주세요.`;
     }
@@ -184,14 +176,11 @@ export default function FreeBoardWriteClient() {
       errs.title = "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.";
     if (!errs.content && hasScriptLike(c))
       errs.content = "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.";
-    if (!errs.title && hasHtmlLike(t))
-      errs.title = "HTML 태그는 사용할 수 없습니다.";
-    if (!errs.content && hasHtmlLike(c))
-      errs.content = "HTML 태그는 사용할 수 없습니다.";
+    if (!errs.title && hasHtmlLike(t)) errs.title = "HTML 태그는 사용할 수 없습니다.";
+    if (!errs.content && hasHtmlLike(c)) errs.content = "HTML 태그는 사용할 수 없습니다.";
 
     // 이미지 업로더 max=5이지만, 제출 직전 한 번 더 방어
-    if (images.length > 5)
-      errs.attachments = "이미지는 최대 5장까지만 업로드할 수 있어요.";
+    if (images.length > 5) errs.attachments = "이미지는 최대 5장까지만 업로드할 수 있어요.";
     if (selectedFiles.length > MAX_FILES)
       errs.attachments = `파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`;
 
@@ -238,8 +227,7 @@ export default function FreeBoardWriteClient() {
     }
 
     // 드롭 업로드는 accept를 우회할 수 있으므로, 문서 allowlist를 추가로 방어
-    const extOk = (name: string) =>
-      /\.(pdf|docx?|xlsx?|xls|pptx?|ppt|hwp|hwpx|txt)$/i.test(name);
+    const extOk = (name: string) => /\.(pdf|docx?|xlsx?|xls|pptx?|ppt|hwp|hwpx|txt)$/i.test(name);
     const ALLOWED_MIME = new Set<string>([
       "application/pdf",
       "application/msword",
@@ -251,9 +239,7 @@ export default function FreeBoardWriteClient() {
       "text/plain",
       // HWP/HWPX는 브라우저/OS별로 mime이 비어있거나 제각각이라 확장자 기반을 주로 사용
     ]);
-    const invalid = files.find(
-      (f) => !(ALLOWED_MIME.has(f.type) || extOk(f.name)),
-    );
+    const invalid = files.find((f) => !(ALLOWED_MIME.has(f.type) || extOk(f.name)));
     if (invalid) {
       setInlineError(
         "attachments",
@@ -340,9 +326,7 @@ export default function FreeBoardWriteClient() {
       submitRef.current = true;
       setIsSubmitting(true);
 
-      let attachments:
-        | { name: string; url: string; size?: number }[]
-        | undefined;
+      let attachments: { name: string; url: string; size?: number }[] | undefined;
 
       if (selectedFiles.length > 0) {
         setIsUploadingFiles(true);
@@ -379,8 +363,7 @@ export default function FreeBoardWriteClient() {
       }
 
       if (!res.ok || !data?.ok) {
-        const msg =
-          data?.error ?? "글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+        const msg = data?.error ?? "글 작성에 실패했습니다. 잠시 후 다시 시도해 주세요.";
         setErrorMsg(msg);
         // 서버/네트워크류는 토스트 유지(UX 일관성)
         showErrorToast(msg);
@@ -393,9 +376,7 @@ export default function FreeBoardWriteClient() {
       router.refresh();
     } catch (err) {
       console.error(err);
-      setErrorMsg(
-        "글 작성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-      );
+      setErrorMsg("글 작성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
     } finally {
       setIsSubmitting(false);
       submitRef.current = false;
@@ -429,19 +410,13 @@ export default function FreeBoardWriteClient() {
               자유 게시판 글쓰기
             </h1>
             <p className="mt-1 text-sm text-muted-foreground md:text-base">
-              테니스 관련 질문, 정보 공유, 후기, 잡담 등 다양한 이야기를
-              자유롭게 남겨 보세요.
+              테니스 관련 질문, 정보 공유, 후기, 잡담 등 다양한 이야기를 자유롭게 남겨 보세요.
             </p>
           </div>
 
           {/* 우측 버튼들: 목록으로 */}
           <div className="flex w-full gap-2 sm:w-auto">
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="w-full gap-1 sm:w-auto"
-            >
+            <Button asChild variant="outline" size="sm" className="w-full gap-1 sm:w-auto">
               <Link href="/board/free" onClick={guardLeave}>
                 <ArrowLeft className="h-4 w-4" />
                 <span>목록으로</span>
@@ -462,8 +437,7 @@ export default function FreeBoardWriteClient() {
                 value={title}
                 onChange={(e) => {
                   setTitle(e.target.value);
-                  if (fieldErrors.title)
-                    setFieldErrors((prev) => ({ ...prev, title: undefined }));
+                  if (fieldErrors.title) setFieldErrors((prev) => ({ ...prev, title: undefined }));
                 }}
                 disabled={isSubmitting}
                 maxLength={TITLE_MAX}
@@ -507,9 +481,7 @@ export default function FreeBoardWriteClient() {
                   ))}
                 </div>
                 {fieldErrors.category ? (
-                  <p className="text-xs text-destructive">
-                    {fieldErrors.category}
-                  </p>
+                  <p className="text-xs text-destructive">{fieldErrors.category}</p>
                 ) : null}
               </div>
 
@@ -533,17 +505,15 @@ export default function FreeBoardWriteClient() {
                   maxLength={CONTENT_MAX}
                 />
                 {fieldErrors.content ? (
-                  <p className="text-xs text-destructive">
-                    {fieldErrors.content}
-                  </p>
+                  <p className="text-xs text-destructive">{fieldErrors.content}</p>
                 ) : null}
                 <p className="text-xs text-muted-foreground">
                   {content.trim().length}/{CONTENT_MAX}
                 </p>
 
                 <p className="mt-1 text-xs text-muted-foreground">
-                  신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A
-                  게시판을 활용해 주세요.
+                  신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해
+                  주세요.
                 </p>
               </div>
 
@@ -551,9 +521,7 @@ export default function FreeBoardWriteClient() {
               <div className="space-y-3" ref={attachmentsRef}>
                 <Label>첨부 (선택)</Label>
                 {fieldErrors.attachments ? (
-                  <p className="text-xs text-destructive">
-                    {fieldErrors.attachments}
-                  </p>
+                  <p className="text-xs text-destructive">{fieldErrors.attachments}</p>
                 ) : null}
                 <Tabs defaultValue="image" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
@@ -564,8 +532,7 @@ export default function FreeBoardWriteClient() {
                   {/* 이미지 업로드 탭 */}
                   <TabsContent value="image" className="pt-4 space-y-2">
                     <p className="text-xs text-muted-foreground">
-                      최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로
-                      사용됩니다.
+                      최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로 사용됩니다.
                     </p>
                     <ImageUploader
                       value={images}
@@ -600,12 +567,11 @@ export default function FreeBoardWriteClient() {
                     >
                       <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                       <p className="text-sm text-muted-foreground">
-                        클릭하여 파일을 선택하거나, 이 영역으로 드래그하여
-                        업로드할 수 있어요.
+                        클릭하여 파일을 선택하거나, 이 영역으로 드래그하여 업로드할 수 있어요.
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당
-                        최대 {MAX_SIZE_MB}MB, 최대 {MAX_FILES}개)
+                        이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당 최대 {MAX_SIZE_MB}MB,
+                        최대 {MAX_FILES}개)
                       </p>
                       <Button
                         type="button"
@@ -643,10 +609,7 @@ export default function FreeBoardWriteClient() {
                               className="group relative flex flex-col justify-between rounded-lg bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
                             >
                               <div className="flex-1 flex flex-col gap-1 text-xs">
-                                <span
-                                  className="font-medium truncate"
-                                  title={file.name}
-                                >
+                                <span className="font-medium truncate" title={file.name}>
                                   {file.name}
                                 </span>
                                 <span className="text-muted-foreground">
@@ -677,9 +640,7 @@ export default function FreeBoardWriteClient() {
                   variant="outline"
                   size="sm"
                   className="w-full sm:w-auto"
-                  disabled={
-                    isSubmitting || isUploadingImages || isUploadingFiles
-                  }
+                  disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                   onClick={handleCancel}
                 >
                   취소
@@ -688,9 +649,7 @@ export default function FreeBoardWriteClient() {
                   type="submit"
                   size="sm"
                   className={cn("w-full gap-2 sm:w-auto")}
-                  disabled={
-                    isSubmitting || isUploadingImages || isUploadingFiles
-                  }
+                  disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                 >
                   {isSubmitting ? (
                     <>

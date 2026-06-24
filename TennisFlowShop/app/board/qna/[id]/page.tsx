@@ -15,12 +15,7 @@ import {
   Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -64,9 +59,7 @@ export default function QnaDetailPage() {
     const okFalse = isRecord(json) && json["ok"] === false;
     if (!res.ok || okFalse) {
       const message =
-        isRecord(json) && typeof json["error"] === "string"
-          ? json["error"]
-          : "request_failed";
+        isRecord(json) && typeof json["error"] === "string" ? json["error"] : "request_failed";
 
       const err: FetchError = new Error(message);
       err.status = res.status;
@@ -76,18 +69,14 @@ export default function QnaDetailPage() {
 
     return json;
   };
-  const { data, error, isLoading, mutate } = useSWR(
-    id ? `/api/boards/${id}` : null,
-    boardFetcher,
-    {
-      // 404/401/403 같은 “회복 불가” 에러에서 불필요한 재시도 차단
-      shouldRetryOnError: false,
-      onErrorRetry: () => {}, // SWR 내부 retry 로직 자체 차단
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      dedupingInterval: 30_000, // 짧은 시간 중복 호출 방지
-    },
-  );
+  const { data, error, isLoading, mutate } = useSWR(id ? `/api/boards/${id}` : null, boardFetcher, {
+    // 404/401/403 같은 “회복 불가” 에러에서 불필요한 재시도 차단
+    shouldRetryOnError: false,
+    onErrorRetry: () => {}, // SWR 내부 retry 로직 자체 차단
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    dedupingInterval: 30_000, // 짧은 시간 중복 호출 방지
+  });
   const qna = data?.item as QnaItem | undefined;
 
   // 조회수는 GET이 아니라 POST /view에서만 증가
@@ -108,9 +97,7 @@ export default function QnaDetailPage() {
       if (res.ok && json?.ok === true && typeof json.viewCount === "number") {
         mutate(
           (prev: any) =>
-            prev?.item
-              ? { ...prev, item: { ...prev.item, viewCount: json.viewCount } }
-              : prev,
+            prev?.item ? { ...prev, item: { ...prev.item, viewCount: json.viewCount } } : prev,
           false,
         );
       }
@@ -142,8 +129,7 @@ export default function QnaDetailPage() {
   listParams.delete("returnTo");
   const listQuery = listParams.toString();
   const listHref = listQuery ? `/board/qna?${listQuery}` : "/board/qna";
-  const supportHref =
-    from === "support" || returnTo === "/support" ? "/support" : "/support";
+  const supportHref = from === "support" || returnTo === "/support" ? "/support" : "/support";
 
   const fmt = (v?: string | Date) =>
     v
@@ -159,10 +145,7 @@ export default function QnaDetailPage() {
   // 로그인 사용자 정보
   const meRes = useSWR(
     `/api/users/me`,
-    (url: string) =>
-      fetch(url, { credentials: "include" }).then((r) =>
-        r.ok ? r.json() : null,
-      ),
+    (url: string) => fetch(url, { credentials: "include" }).then((r) => (r.ok ? r.json() : null)),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
@@ -171,8 +154,7 @@ export default function QnaDetailPage() {
   );
   const me = meRes.data;
   const isAdmin = me?.role === "admin";
-  const isAuthor =
-    me?.sub && qna?.authorId && String(me.sub) === String(qna.authorId);
+  const isAuthor = me?.sub && qna?.authorId && String(me.sub) === String(qna.authorId);
   const [answerText, setAnswerText] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
@@ -182,8 +164,7 @@ export default function QnaDetailPage() {
     // 답변 작성(아직 답변 없음)
     if (isAdmin && qna && !qna.answer) return answerText.trim().length > 0;
     // 답변 수정(편집 모드)
-    if (isAdmin && qna?.answer && isEditing)
-      return answerText !== answerBaseline;
+    if (isAdmin && qna?.answer && isEditing) return answerText !== answerBaseline;
     return false;
   }, [answerText, isAdmin, isEditing, qna, answerBaseline]);
 
@@ -249,8 +230,7 @@ export default function QnaDetailPage() {
                     고객센터 · Q&amp;A
                   </h1>
                   <p className="text-sm sm:text-base text-muted-foreground">
-                    Q&amp;A 목록에서 선택한 상세 문의와 답변을 확인하실 수
-                    있습니다.
+                    Q&amp;A 목록에서 선택한 상세 문의와 답변을 확인하실 수 있습니다.
                   </p>
                 </div>
               </div>
@@ -339,9 +319,7 @@ export default function QnaDetailPage() {
                           {(qna.authorName ?? "익명").slice(0, 1)}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="font-medium">
-                        {qna.authorName ?? "익명"}
-                      </span>
+                      <span className="font-medium">{qna.authorName ?? "익명"}</span>
                     </div>
                     <div className="flex shrink-0 items-center gap-2 whitespace-nowrap">
                       <Calendar className="h-4 w-4" />
@@ -351,9 +329,7 @@ export default function QnaDetailPage() {
                     <div className="flex shrink-0 items-center gap-2 whitespace-nowrap">
                       <Eye className="h-4 w-4" />
                       <span className="font-medium">조회수</span>
-                      <span className="font-semibold text-primary">
-                        {qna.viewCount ?? 0}
-                      </span>
+                      <span className="font-semibold text-primary">{qna.viewCount ?? 0}</span>
                     </div>
                   </div>
                 </>
@@ -394,77 +370,70 @@ export default function QnaDetailPage() {
                   </div>
                 </div>
 
-                {Array.isArray(qna.attachments) &&
-                  qna.attachments.length > 0 && (
-                    <>
-                      <Separator className="my-6" />
-                      <section className="space-y-4">
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-5 w-5 text-primary" />
-                          <h3 className="text-lg font-semibold text-foreground">
-                            첨부파일
-                          </h3>
-                          <Badge variant="secondary">
-                            {qna.attachments.length}개
-                          </Badge>
-                        </div>
+                {Array.isArray(qna.attachments) && qna.attachments.length > 0 && (
+                  <>
+                    <Separator className="my-6" />
+                    <section className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold text-foreground">첨부파일</h3>
+                        <Badge variant="secondary">{qna.attachments.length}개</Badge>
+                      </div>
 
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-3">
-                          {qna.attachments.map((att: any, i: number) => {
-                            const url =
-                              typeof att === "string" ? att : att?.url;
-                            const name =
-                              typeof att === "string"
-                                ? `attachment-${i}`
-                                : att?.name || `attachment-${i}`;
-                            if (!url) return null;
-                            const isImage =
-                              /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(url);
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-3">
+                        {qna.attachments.map((att: any, i: number) => {
+                          const url = typeof att === "string" ? att : att?.url;
+                          const name =
+                            typeof att === "string"
+                              ? `attachment-${i}`
+                              : att?.name || `attachment-${i}`;
+                          if (!url) return null;
+                          const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(url);
 
-                            return isImage ? (
-                              <div key={i} className="relative group">
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    setLightbox({
-                                      open: true,
-                                      src: url,
-                                      alt: name,
-                                    })
-                                  }
-                                  className="relative block w-full rounded-lg overflow-hidden border-2 border-border hover:border-primary transition-all duration-300 shadow-md hover:shadow-lg dark:border-border dark:hover:border-primary"
-                                >
-                                  <img
-                                    src={url || "/placeholder.svg"}
-                                    alt={name}
-                                    className="h-52 w-full object-cover sm:h-48"
-                                  />
-                                  <div className="absolute inset-0 bg-overlay/0 group-hover:bg-overlay/20 transition-colors duration-300 flex items-center justify-center">
-                                    <ExternalLink className="h-5 w-5 text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                  </div>
-                                </button>
-                              </div>
-                            ) : (
-                              <div
-                                key={i}
-                                className="rounded-lg border border-border bg-card p-3 transition-colors duration-200 hover:bg-muted/40 sm:p-4"
+                          return isImage ? (
+                            <div key={i} className="relative group">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setLightbox({
+                                    open: true,
+                                    src: url,
+                                    alt: name,
+                                  })
+                                }
+                                className="relative block w-full rounded-lg overflow-hidden border-2 border-border hover:border-primary transition-all duration-300 shadow-md hover:shadow-lg dark:border-border dark:hover:border-primary"
                               >
-                                <a
-                                  href={url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary"
-                                >
-                                  <FileText className="h-4 w-4 flex-shrink-0" />
-                                  <span className="truncate">{name}</span>
-                                </a>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </section>
-                    </>
-                  )}
+                                <img
+                                  src={url || "/placeholder.svg"}
+                                  alt={name}
+                                  className="h-52 w-full object-cover sm:h-48"
+                                />
+                                <div className="absolute inset-0 bg-overlay/0 group-hover:bg-overlay/20 transition-colors duration-300 flex items-center justify-center">
+                                  <ExternalLink className="h-5 w-5 text-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                </div>
+                              </button>
+                            </div>
+                          ) : (
+                            <div
+                              key={i}
+                              className="rounded-lg border border-border bg-card p-3 transition-colors duration-200 hover:bg-muted/40 sm:p-4"
+                            >
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary"
+                              >
+                                <FileText className="h-4 w-4 flex-shrink-0" />
+                                <span className="truncate">{name}</span>
+                              </a>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  </>
+                )}
               </>
             )}
           </CardContent>
@@ -496,10 +465,7 @@ export default function QnaDetailPage() {
           {(isAuthor || isAdmin) && qna && (
             <CardFooter className="flex flex-wrap justify-end gap-2 border-t border-border bg-muted/50 p-4 md:p-6">
               <Button variant="outline" size="sm" asChild>
-                <Link
-                  href={`/board/qna/write?id=${qna._id}`}
-                  onClick={confirmLeave}
-                >
+                <Link href={`/board/qna/write?id=${qna._id}`} onClick={confirmLeave}>
                   <Pencil className="mr-2 h-4 w-4" />
                   수정
                 </Link>
@@ -517,9 +483,7 @@ export default function QnaDetailPage() {
             <CardHeader className="border-b border-border bg-muted/50">
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-semibold text-foreground">
-                  관리자 답변 작성
-                </h2>
+                <h2 className="text-lg font-semibold text-foreground">관리자 답변 작성</h2>
               </div>
             </CardHeader>
             <CardContent className="p-4 md:p-6 space-y-4">
@@ -532,15 +496,12 @@ export default function QnaDetailPage() {
               <div className="flex justify-end">
                 <Button
                   onClick={async () => {
-                    const res = await communityFetch(
-                      `/api/boards/${qna._id}/answer`,
-                      {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        credentials: "include",
-                        body: JSON.stringify({ content: answerText }),
-                      },
-                    );
+                    const res = await communityFetch(`/api/boards/${qna._id}/answer`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      credentials: "include",
+                      body: JSON.stringify({ content: answerText }),
+                    });
                     const j = await res.json().catch(() => ({}));
                     if (!res.ok || !j?.ok) return alert("등록 실패");
                     setAnswerText("");
@@ -565,9 +526,7 @@ export default function QnaDetailPage() {
                     <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
                       <MessageCircle className="h-4 w-4 text-primary" />
                     </div>
-                    <h2 className="text-xl font-bold text-foreground">
-                      관리자 답변
-                    </h2>
+                    <h2 className="text-xl font-bold text-foreground">관리자 답변</h2>
                     <Badge
                       variant="success"
                       className={`${badgeBaseOutlined} ${badgeSizeSm} ${badgeToneClass("success")}`}
@@ -594,13 +553,10 @@ export default function QnaDetailPage() {
                         variant="destructive"
                         onClick={async () => {
                           if (!confirm("답변을 삭제할까요?")) return;
-                          const res = await communityFetch(
-                            `/api/boards/${qna._id}/answer`,
-                            {
-                              method: "DELETE",
-                              credentials: "include",
-                            },
-                          );
+                          const res = await communityFetch(`/api/boards/${qna._id}/answer`, {
+                            method: "DELETE",
+                            credentials: "include",
+                          });
                           const j = await res.json().catch(() => ({}));
                           if (!res.ok || !j?.ok) return alert("삭제 실패");
                           setAnswerText("");
@@ -622,9 +578,7 @@ export default function QnaDetailPage() {
                         {(qna.answer.authorName ?? "관리자").slice(0, 1)}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="font-medium">
-                      {qna.answer.authorName ?? "관리자"}
-                    </span>
+                    <span className="font-medium">{qna.answer.authorName ?? "관리자"}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
@@ -650,23 +604,17 @@ export default function QnaDetailPage() {
                     className="min-h-[140px] bg-card border-border focus:border-ring focus:ring-ring"
                   />
                   <div className="flex justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsEditing(false)}
-                    >
+                    <Button variant="outline" onClick={() => setIsEditing(false)}>
                       취소
                     </Button>
                     <Button
                       onClick={async () => {
-                        const res = await communityFetch(
-                          `/api/boards/${qna._id}/answer`,
-                          {
-                            method: "PATCH",
-                            headers: { "Content-Type": "application/json" },
-                            credentials: "include",
-                            body: JSON.stringify({ content: answerText }),
-                          },
-                        );
+                        const res = await communityFetch(`/api/boards/${qna._id}/answer`, {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          credentials: "include",
+                          body: JSON.stringify({ content: answerText }),
+                        });
                         const j = await res.json().catch(() => ({}));
                         if (!res.ok || !j?.ok) return alert("수정 실패");
                         setIsEditing(false);
@@ -685,8 +633,8 @@ export default function QnaDetailPage() {
 
         <div className="pt-4 space-y-3 border-t border-border">
           <p className="text-sm text-muted-foreground">
-            Q&amp;A는 비밀글/권한 정책이 있어 이전 글/다음 글 이동 대신 목록
-            중심으로 이동을 제공합니다.
+            Q&amp;A는 비밀글/권한 정책이 있어 이전 글/다음 글 이동 대신 목록 중심으로 이동을
+            제공합니다.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2.5">
             <Button

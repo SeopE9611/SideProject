@@ -6,18 +6,14 @@ import Link from "next/link";
 
 export const metadata = {
   title: "브랜드별 게시판 (준비중)",
-  description:
-    "라켓/스트링 브랜드별 사용 후기를 나누는 게시판입니다. 현재 준비 중입니다.",
+  description: "라켓/스트링 브랜드별 사용 후기를 나누는 게시판입니다. 현재 준비 중입니다.",
   alternates: { canonical: "/board/brands" },
 };
 
 export default function BrandBoardPage() {
   return (
     <div className="min-h-screen bg-muted/30">
-      <SiteContainer
-        variant="wide"
-        className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8"
-      >
+      <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
         {/* 헤더 영역 */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="min-w-0">
@@ -30,8 +26,8 @@ export default function BrandBoardPage() {
               브랜드별 게시판 (준비중)
             </h1>
             <p className="mt-1 text-sm md:text-base text-muted-foreground">
-              윌슨, 바볼랏, 요넥스 등 브랜드별로 라켓/스트링 사용 후기를 모아볼
-              수 있는 공간입니다. 현재 기능을 준비하고 있습니다.
+              윌슨, 바볼랏, 요넥스 등 브랜드별로 라켓/스트링 사용 후기를 모아볼 수 있는 공간입니다.
+              현재 기능을 준비하고 있습니다.
             </p>
           </div>
         </div>
@@ -59,8 +55,7 @@ export default function BrandBoardPage() {
               <li>브랜드별 추천 세팅, 궁합 좋은 조합 논의</li>
             </ul>
             <p className="pt-2 text-xs md:text-sm text-muted-foreground">
-              현재는 상품 상세 페이지와 리뷰 게시판에서 브랜드 후기를 먼저
-              확인해 보실 수 있습니다.
+              현재는 상품 상세 페이지와 리뷰 게시판에서 브랜드 후기를 먼저 확인해 보실 수 있습니다.
             </p>
             <Button asChild size="sm" className="mt-2">
               <Link href="/reviews">리뷰 게시판 둘러보기</Link>

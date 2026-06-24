@@ -13,15 +13,11 @@ const TARGET_COLLECTION_MAP: Record<AllowedTargetType, string> = {
 };
 const MAX_BODY_LENGTH = 2000;
 const parseTargetType = (v: unknown): AllowedTargetType | null =>
-  typeof v === "string" && v in TARGET_COLLECTION_MAP
-    ? (v as AllowedTargetType)
-    : null;
+  typeof v === "string" && v in TARGET_COLLECTION_MAP ? (v as AllowedTargetType) : null;
 const parseObjectId = (v: unknown): ObjectId | null =>
   typeof v === "string" && ObjectId.isValid(v) ? new ObjectId(v) : null;
-const normalizeQueryText = (v: unknown) =>
-  typeof v === "string" ? v.trim().slice(0, 100) : "";
-const escapeRegex = (value: string) =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const normalizeQueryText = (v: unknown) => (typeof v === "string" ? v.trim().slice(0, 100) : "");
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const mapNoteItem = (doc: any) => ({
   id: String(doc._id),
@@ -40,15 +36,10 @@ const mapNoteItem = (doc: any) => ({
 function validateBody(raw: unknown) {
   const body = typeof raw === "string" ? raw.trim() : "";
   if (!body) return { ok: false as const, message: "body required" };
-  if (body.length > MAX_BODY_LENGTH)
-    return { ok: false as const, message: "body too long" };
+  if (body.length > MAX_BODY_LENGTH) return { ok: false as const, message: "body too long" };
   return { ok: true as const, body };
 }
-async function validateTarget(
-  db: Db,
-  targetType: AllowedTargetType,
-  targetId: ObjectId,
-) {
+async function validateTarget(db: Db, targetType: AllowedTargetType, targetId: ObjectId) {
   return Boolean(
     await db
       .collection(TARGET_COLLECTION_MAP[targetType])
@@ -66,16 +57,10 @@ export async function GET(req: Request) {
     return NextResponse.json({ message: "invalid target" }, { status: 400 });
   if (!(await validateTarget(guard.db, targetType, targetId)))
     return NextResponse.json({ message: "target not found" }, { status: 404 });
-  const page = Math.max(
-    1,
-    Number.parseInt(url.searchParams.get("page") || "1", 10) || 1,
-  );
+  const page = Math.max(1, Number.parseInt(url.searchParams.get("page") || "1", 10) || 1);
   const limit = Math.min(
     50,
-    Math.max(
-      1,
-      Number.parseInt(url.searchParams.get("limit") || "20", 10) || 20,
-    ),
+    Math.max(1, Number.parseInt(url.searchParams.get("limit") || "20", 10) || 20),
   );
   const skip = (page - 1) * limit;
   const q = normalizeQueryText(url.searchParams.get("q"));
@@ -87,11 +72,7 @@ export async function GET(req: Request) {
   if (q.length >= 1) {
     const regex = new RegExp(escapeRegex(q), "i");
     andConditions.push({
-      $or: [
-        { body: regex },
-        { createdByEmail: regex },
-        { createdByName: regex },
-      ],
+      $or: [{ body: regex }, { createdByEmail: regex }, { createdByName: regex }],
     });
   }
 
@@ -105,8 +86,7 @@ export async function GET(req: Request) {
     }
   }
 
-  const query =
-    andConditions.length === 1 ? andConditions[0] : { $and: andConditions };
+  const query = andConditions.length === 1 ? andConditions[0] : { $and: andConditions };
   const coll = guard.db.collection("admin_notes");
   const [docs, total] = await Promise.all([
     coll.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
@@ -136,8 +116,7 @@ export async function POST(req: Request) {
   const bodyParsed = validateBody((payload as any).body);
   if (!targetType || !targetId)
     return NextResponse.json({ message: "invalid target" }, { status: 400 });
-  if (!bodyParsed.ok)
-    return NextResponse.json({ message: bodyParsed.message }, { status: 400 });
+  if (!bodyParsed.ok) return NextResponse.json({ message: bodyParsed.message }, { status: 400 });
   if (!(await validateTarget(guard.db, targetType, targetId)))
     return NextResponse.json({ message: "target not found" }, { status: 404 });
   const now = new Date();

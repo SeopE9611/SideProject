@@ -6,7 +6,12 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import { UserNav } from "@/components/nav/UserNav";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -464,7 +469,8 @@ const Header = () => {
   const isActiveMenu = (item: (typeof menuItems)[number]) => {
     const p = pathname ?? "";
     if (item.isServiceMenu) return p === item.href;
-    if (item.isRacketMenu) return p === item.href || (p.startsWith("/rackets/") && !p.startsWith("/rackets/finder"));
+    if (item.isRacketMenu)
+      return p === item.href || (p.startsWith("/rackets/") && !p.startsWith("/rackets/finder"));
     return p.startsWith(item.href);
   };
 
@@ -593,7 +599,12 @@ const Header = () => {
                             <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" sideOffset={8} collisionPadding={12} className="z-[60] w-44">
+                        <DropdownMenuContent
+                          align="end"
+                          sideOffset={8}
+                          collisionPadding={12}
+                          className="z-[60] w-44"
+                        >
                           <DropdownMenuItem
                             className="h-9"
                             onSelect={() => {
@@ -672,7 +683,9 @@ const Header = () => {
                     >
                       <ShoppingCart className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                       <span>장바구니</span>
-                      {cartCount > 0 && <span className="tabular-nums text-primary">{cartBadge}</span>}
+                      {cartCount > 0 && (
+                        <span className="tabular-nums text-primary">{cartBadge}</span>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -712,7 +725,10 @@ const Header = () => {
                   <div className={mobileNestedGroupClass}>
                     <Accordion type="single" className="space-y-1">
                       <AccordionItem value="strings-brand" className="border-none">
-                        <AccordionTrigger value="strings-brand" className={mobileNestedTriggerClass}>
+                        <AccordionTrigger
+                          value="strings-brand"
+                          className={mobileNestedTriggerClass}
+                        >
                           브랜드
                         </AccordionTrigger>
                         <AccordionContent value="strings-brand" className="pb-0 pt-1">
@@ -738,14 +754,19 @@ const Header = () => {
                       router.push("/services/apply");
                     }}
                   >
-                    <span className="min-w-0 truncate font-medium text-primary">교체서비스 시작하기</span>
+                    <span className="min-w-0 truncate font-medium text-primary">
+                      교체서비스 시작하기
+                    </span>
                     <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200" />
                   </Button>
 
                   <div className={mobileNestedGroupClass}>
                     <Accordion type="single" className="space-y-1">
                       <AccordionItem value="strings-service" className="border-none">
-                        <AccordionTrigger value="strings-service" className={mobileNestedTriggerClass}>
+                        <AccordionTrigger
+                          value="strings-service"
+                          className={mobileNestedTriggerClass}
+                        >
                           장착 서비스 안내
                         </AccordionTrigger>
                         <AccordionContent value="strings-service" className="pb-0 pt-1">
@@ -793,7 +814,9 @@ const Header = () => {
                     router.push(NAV_LINKS.academy.href);
                   }}
                 >
-                  <span className="min-w-0 break-keep whitespace-normal text-left">{NAV_LINKS.academy.name}</span>
+                  <span className="min-w-0 break-keep whitespace-normal text-left">
+                    {NAV_LINKS.academy.name}
+                  </span>
                   <ChevronRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-200" />
                 </Button>
               </div>
@@ -828,7 +851,10 @@ const Header = () => {
                   <div className={mobileNestedGroupClass}>
                     <Accordion type="single" className="space-y-1">
                       <AccordionItem value="rackets-brand" className="border-none">
-                        <AccordionTrigger value="rackets-brand" className={mobileNestedTriggerClass}>
+                        <AccordionTrigger
+                          value="rackets-brand"
+                          className={mobileNestedTriggerClass}
+                        >
                           브랜드
                         </AccordionTrigger>
                         <AccordionContent value="rackets-brand" className="pb-0 pt-1">
@@ -923,7 +949,9 @@ const Header = () => {
                     onClick={() => {
                       setOpen(false);
                       const redirectTo =
-                        typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
+                        typeof window !== "undefined"
+                          ? window.location.pathname + window.location.search
+                          : "/";
                       router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
                     }}
                   >
@@ -1039,7 +1067,11 @@ const Header = () => {
             </div>
             <div className="hidden bp-lg:grid w-full min-w-0 grid-cols-[auto_minmax(280px,1fr)_auto] xl:grid-cols-[auto_minmax(360px,640px)_auto] items-center gap-3 xl:gap-6">
               <div className="justify-self-start flex items-center min-w-fit shrink-0 gap-8">
-                <Link href="/" className="flex items-center gap-2 shrink-0 group" aria-label="도깨비테니스 홈">
+                <Link
+                  href="/"
+                  className="flex items-center gap-2 shrink-0 group"
+                  aria-label="도깨비테니스 홈"
+                >
                   <div className="relative h-12 w-12 xl:h-14 xl:w-14 2xl:h-[60px] 2xl:w-[60px] shrink-0 overflow-hidden">
                     <Image
                       src="/brand/symbol-light.png"
@@ -1079,7 +1111,9 @@ const Header = () => {
                       className={`flex w-full min-w-0 items-center gap-1.5 xl:gap-2 whitespace-nowrap ${
                         // 메뉴가 전부 보일 때는 bounded width를 조금 더 줄여
                         // 간격이 과하게 벌어지지 않게 정리합니다.
-                        hasOverflow ? "justify-start" : "mx-auto max-w-[780px] 2xl:max-w-[860px] justify-between"
+                        hasOverflow
+                          ? "justify-start"
+                          : "mx-auto max-w-[780px] 2xl:max-w-[860px] justify-between"
                       }`}
                     >
                       {primaryMenuItems.map((item) => {
@@ -1099,7 +1133,11 @@ const Header = () => {
 
                       {/* bp-lg(1200+)~1580px 미만 구간: 우측 메뉴가 검색 영역에 가려질 수 있어 '더보기'로 이동 */}
                       {overflowMenuItems.length > 0 && (
-                        <DropdownMenu modal={false} open={overflowMenuOpen} onOpenChange={setOverflowMenuOpen}>
+                        <DropdownMenu
+                          modal={false}
+                          open={overflowMenuOpen}
+                          onOpenChange={setOverflowMenuOpen}
+                        >
                           <DropdownMenuTrigger asChild>
                             <button
                               type="button"
@@ -1117,7 +1155,9 @@ const Header = () => {
                               return (
                                 <DropdownMenuItem
                                   key={item.name}
-                                  className={active ? "bg-secondary text-foreground font-medium" : undefined}
+                                  className={
+                                    active ? "bg-secondary text-foreground font-medium" : undefined
+                                  }
                                   onSelect={(e) => {
                                     e.preventDefault();
                                     setOverflowMenuOpen(false);
@@ -1148,8 +1188,14 @@ const Header = () => {
 
               {/* 숨은 측정 DOM: 실제 렌더 폭(텍스트/패딩/아이콘/갭)을 그대로 재기 */}
               {SHOW_DESKTOP_HEADER_NAV ? (
-                <div ref={measureRef} className="absolute -left-[9999px] top-0 opacity-0 pointer-events-none">
-                  <div data-measure-wrap className="flex items-center gap-1.5 xl:gap-2 ml-2 whitespace-nowrap">
+                <div
+                  ref={measureRef}
+                  className="absolute -left-[9999px] top-0 opacity-0 pointer-events-none"
+                >
+                  <div
+                    data-measure-wrap
+                    className="flex items-center gap-1.5 xl:gap-2 ml-2 whitespace-nowrap"
+                  >
                     {menuItems.map((it) => (
                       <span
                         key={`measure-${it.name}`}
@@ -1222,7 +1268,11 @@ const Header = () => {
                 </Link>
 
                 {user && (
-                  <Button variant="ghost" className="h-9 px-2.5 2xl:px-3 rounded-full shrink-0" asChild>
+                  <Button
+                    variant="ghost"
+                    className="h-9 px-2.5 2xl:px-3 rounded-full shrink-0"
+                    asChild
+                  >
                     <Link href="/mypage?tab=points" className="flex items-center gap-2">
                       <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-muted text-ui-caption font-semibold text-muted-foreground">
                         P
@@ -1230,7 +1280,10 @@ const Header = () => {
                       <span className="hidden 2xl:inline-flex min-w-0 items-center gap-1 whitespace-nowrap text-ui-body-sm font-medium tabular-nums">
                         {pointsStatus === "loading" ? (
                           <>
-                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-hidden="true" />
+                            <Loader2
+                              className="h-4 w-4 animate-spin text-muted-foreground"
+                              aria-hidden="true"
+                            />
                             <span className="sr-only">포인트 불러오는 중</span>
                           </>
                         ) : pointsStatus === "error" ? (

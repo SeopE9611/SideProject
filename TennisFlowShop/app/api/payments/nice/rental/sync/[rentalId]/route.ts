@@ -22,8 +22,7 @@ function getNiceCredentials() {
   ).trim();
   const secretKey = String(process.env.NICEPAY_SECRET_KEY ?? "").trim();
   const apiBaseUrl = String(
-    process.env.NICEPAY_APPROVE_API_BASE ||
-      "https://api.nicepay.co.kr/v1/payments",
+    process.env.NICEPAY_APPROVE_API_BASE || "https://api.nicepay.co.kr/v1/payments",
   )
     .trim()
     .replace(/\/+$/, "");
@@ -46,12 +45,8 @@ function mapNicePgStatusToInternalPaymentStatus(params: {
   previousPaymentInfoStatus: string;
 }) {
   const normalizedPgStatus = normalizeNicePgStatus(params.pgStatusRaw);
-  const previousPaymentStatus = String(
-    params.previousPaymentStatus ?? "",
-  ).trim();
-  const previousPaymentInfoStatus = String(
-    params.previousPaymentInfoStatus ?? "",
-  ).trim();
+  const previousPaymentStatus = String(params.previousPaymentStatus ?? "").trim();
+  const previousPaymentInfoStatus = String(params.previousPaymentInfoStatus ?? "").trim();
 
   if (normalizedPgStatus === "paid") {
     return {
@@ -96,10 +91,7 @@ function mapNicePgStatusToInternalPaymentStatus(params: {
   };
 }
 
-export async function POST(
-  _req: Request,
-  { params }: { params: Promise<{ rentalId: string }> },
-) {
+export async function POST(_req: Request, { params }: { params: Promise<{ rentalId: string }> }) {
   try {
     const guard = await requireAdmin(_req);
     if (!guard.ok) return guard.res;
@@ -129,9 +121,7 @@ export async function POST(
     }
 
     const db = guard.db;
-    const rental = await db
-      .collection("rental_orders")
-      .findOne({ _id: new ObjectId(rentalId) });
+    const rental = await db.collection("rental_orders").findOne({ _id: new ObjectId(rentalId) });
     if (!rental) {
       return NextResponse.json(
         {
@@ -183,59 +173,39 @@ export async function POST(
     const pgStatus = pick(pgRaw, "status", "Status");
     const mapped = mapNicePgStatusToInternalPaymentStatus({
       pgStatusRaw: pgStatus,
-      previousPaymentStatus: String(
-        (rental as any)?.paymentStatus ?? "",
-      ).trim(),
-      previousPaymentInfoStatus: String(
-        (rental as any)?.paymentInfo?.status ?? "",
-      ).trim(),
+      previousPaymentStatus: String((rental as any)?.paymentStatus ?? "").trim(),
+      previousPaymentInfoStatus: String((rental as any)?.paymentInfo?.status ?? "").trim(),
     });
 
     const syncCardInfo = extractNiceCardInfo(pgRaw);
     const currentCardDisplayName = String(
       (rental as any)?.paymentInfo?.cardDisplayName ?? "",
     ).trim();
-    const currentCardCompany = String(
-      (rental as any)?.paymentInfo?.cardCompany ?? "",
-    ).trim();
-    const currentCardLabel = String(
-      (rental as any)?.paymentInfo?.cardLabel ?? "",
-    ).trim();
+    const currentCardCompany = String((rental as any)?.paymentInfo?.cardCompany ?? "").trim();
+    const currentCardLabel = String((rental as any)?.paymentInfo?.cardLabel ?? "").trim();
     const currentNiceCard = (rental as any)?.paymentInfo?.niceCard ?? null;
 
-    const nextCardDisplayName =
-      currentCardDisplayName || syncCardInfo?.displayName || "";
-    const nextCardCompany =
-      currentCardCompany || syncCardInfo?.issuerName || "";
+    const nextCardDisplayName = currentCardDisplayName || syncCardInfo?.displayName || "";
+    const nextCardCompany = currentCardCompany || syncCardInfo?.issuerName || "";
     const nextCardLabel = currentCardLabel || syncCardInfo?.cardName || "";
     const nextNiceCard = currentNiceCard || syncCardInfo || null;
 
     const cancelAmount = Math.floor(
       Number(pick(pgRaw, "cancAmt", "cancelAmount", "cancelAmt")) || 0,
     );
-    const canceledAt = pick(
-      pgRaw,
-      "canceledAt",
-      "cancelledAt",
-      "cancelDate",
-      "cancelDt",
-    );
+    const canceledAt = pick(pgRaw, "canceledAt", "cancelledAt", "cancelDate", "cancelDt");
     const nowIso = new Date().toISOString();
     const beforeSummary = {
-      paymentStatus:
-        String((rental as any)?.paymentStatus ?? "").trim() || null,
+      paymentStatus: String((rental as any)?.paymentStatus ?? "").trim() || null,
       status: String((rental as any)?.status ?? "").trim() || null,
       niceSync: {
-        lastSyncedAt:
-          (rental as any)?.paymentInfo?.niceSync?.lastSyncedAt ?? null,
+        lastSyncedAt: (rental as any)?.paymentInfo?.niceSync?.lastSyncedAt ?? null,
         pgStatus: (rental as any)?.paymentInfo?.niceSync?.pgStatus ?? null,
         resultCode: (rental as any)?.paymentInfo?.niceSync?.resultCode ?? null,
       },
       paymentInfo: {
-        provider:
-          String((rental as any)?.paymentInfo?.provider ?? "").trim() || null,
-        method:
-          String((rental as any)?.paymentInfo?.method ?? "").trim() || null,
+        provider: String((rental as any)?.paymentInfo?.provider ?? "").trim() || null,
+        method: String((rental as any)?.paymentInfo?.method ?? "").trim() || null,
         hasTid: Boolean(String((rental as any)?.paymentInfo?.tid ?? "").trim()),
       },
     };
@@ -251,12 +221,8 @@ export async function POST(
         $set: {
           paymentStatus: mapped.nextPaymentStatus,
           "paymentInfo.status": mapped.nextPaymentInfoStatus,
-          ...(nextCardDisplayName
-            ? { "paymentInfo.cardDisplayName": nextCardDisplayName }
-            : {}),
-          ...(nextCardCompany
-            ? { "paymentInfo.cardCompany": nextCardCompany }
-            : {}),
+          ...(nextCardDisplayName ? { "paymentInfo.cardDisplayName": nextCardDisplayName } : {}),
+          ...(nextCardCompany ? { "paymentInfo.cardCompany": nextCardCompany } : {}),
           ...(nextCardLabel ? { "paymentInfo.cardLabel": nextCardLabel } : {}),
           ...(nextNiceCard ? { "paymentInfo.niceCard": nextNiceCard } : {}),
           ...(nextNiceCard
@@ -314,17 +280,12 @@ export async function POST(
               resultCode: resultCode || "0000",
             },
             paymentInfo: {
-              provider:
-                String((rental as any)?.paymentInfo?.provider ?? "").trim() ||
-                null,
-              method:
-                String((rental as any)?.paymentInfo?.method ?? "").trim() ||
-                null,
+              provider: String((rental as any)?.paymentInfo?.provider ?? "").trim() || null,
+              method: String((rental as any)?.paymentInfo?.method ?? "").trim() || null,
               hasTid: Boolean(tid),
             },
           },
-          syncResult:
-            resultCode && resultCode !== "0000" ? "failure" : "success",
+          syncResult: resultCode && resultCode !== "0000" ? "failure" : "success",
           pgResultCode: resultCode || "0000",
           pgStatus: pgStatus || null,
           changed,
@@ -352,8 +313,7 @@ export async function POST(
       {
         success: false,
         code: "NICE_RENTAL_SYNC_ROUTE_ERROR",
-        error:
-          error?.message || "대여 NicePay 상태 동기화 중 오류가 발생했습니다.",
+        error: error?.message || "대여 NicePay 상태 동기화 중 오류가 발생했습니다.",
       },
       { status: 500 },
     );

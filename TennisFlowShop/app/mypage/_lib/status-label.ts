@@ -36,8 +36,7 @@ const MYPAGE_PAYMENT_STATUS_LABEL_MAP: Record<string, string> = {
   refunded: "환불완료",
 };
 
-const normalizeStatusInput = (status?: string | null) =>
-  String(status ?? "").trim();
+const normalizeStatusInput = (status?: string | null) => String(status ?? "").trim();
 
 export function getMypageUserStatusLabel(status?: string | null) {
   const raw = normalizeStatusInput(status);
@@ -61,8 +60,6 @@ export function getMypagePaymentStatusLabel(status?: string | null) {
   if (!raw) return "상태 미정";
 
   return (
-    getCommonPaymentStatusLabel(raw) ??
-    MYPAGE_PAYMENT_STATUS_LABEL_MAP[raw.toLowerCase()] ??
-    raw
+    getCommonPaymentStatusLabel(raw) ?? MYPAGE_PAYMENT_STATUS_LABEL_MAP[raw.toLowerCase()] ?? raw
   );
 }

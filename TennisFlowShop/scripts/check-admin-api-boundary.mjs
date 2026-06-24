@@ -5,17 +5,9 @@ import path from "node:path";
 const ROOT = process.cwd();
 const TARGET_DIR = path.join(ROOT, "app", "admin");
 const LEGACY_API_DIR = path.join(ROOT, "app", "api", "package-orders");
-const ALLOWED_EXTENSIONS = new Set([
-  ".ts",
-  ".tsx",
-  ".js",
-  ".jsx",
-  ".mjs",
-  ".cjs",
-]);
+const ALLOWED_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"]);
 const API_PATTERN = /['"`]\/api\/(?!admin\b)/g;
-const MUTATION_EXPORT_PATTERN =
-  /export\s+async\s+function\s+(POST|PATCH|PUT|DELETE)\s*\(/g;
+const MUTATION_EXPORT_PATTERN = /export\s+async\s+function\s+(POST|PATCH|PUT|DELETE)\s*\(/g;
 
 const ADMIN_DIRECT_FETCH_ALLOWLIST = new Set([
   // TODO(ADMIN-API-BOUNDARY): 2026-03-31까지 마이그레이션 완료 후 제거
@@ -60,8 +52,7 @@ const ADMIN_MUTATION_PROXY_ALLOWLIST = new Set([
 
 function isDeprecationWrapper(source) {
   return (
-    source.includes("NextResponse.redirect(") &&
-    (source.includes("307") || source.includes("410"))
+    source.includes("NextResponse.redirect(") && (source.includes("307") || source.includes("410"))
   );
 }
 
@@ -73,11 +64,7 @@ function walk(dir) {
     const fullPath = path.join(dir, entry.name);
 
     if (entry.isDirectory()) {
-      if (
-        entry.name === "node_modules" ||
-        entry.name === ".next" ||
-        entry.name === ".git"
-      )
+      if (entry.name === "node_modules" || entry.name === ".next" || entry.name === ".git")
         continue;
       files.push(...walk(fullPath));
       continue;
@@ -123,8 +110,7 @@ function findAdminDirectFetchViolations(filePath) {
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
     const normalized = line.replace(/\s+/g, " ");
-    if (!normalized.includes("fetch(") || !normalized.includes("/api/admin"))
-      continue;
+    if (!normalized.includes("fetch(") || !normalized.includes("/api/admin")) continue;
 
     violations.push({
       file: relativePath,
@@ -171,9 +157,9 @@ function findLegacyWrapperBoundaryViolations() {
   for (const fullPath of files) {
     const relativePath = path.relative(ROOT, fullPath).replace(/\\/g, "/");
     const source = fs.readFileSync(fullPath, "utf8");
-    const exportedHandlers = [
-      ...source.matchAll(/export\s+async\s+function\s+([A-Z]+)\s*\(/g),
-    ].map((m) => m[1]);
+    const exportedHandlers = [...source.matchAll(/export\s+async\s+function\s+([A-Z]+)\s*\(/g)].map(
+      (m) => m[1],
+    );
     const hasEndpointHandler = exportedHandlers.length > 0;
 
     if (!hasEndpointHandler) continue;
@@ -212,9 +198,7 @@ function findAdminMutationProxyViolations() {
   const adminApiDir = path.join(ROOT, "app", "api", "admin");
   if (!fs.existsSync(adminApiDir)) return [];
 
-  const files = walk(adminApiDir).filter((fullPath) =>
-    fullPath.endsWith("route.ts"),
-  );
+  const files = walk(adminApiDir).filter((fullPath) => fullPath.endsWith("route.ts"));
   const violations = [];
 
   for (const fullPath of files) {
@@ -226,9 +210,7 @@ function findAdminMutationProxyViolations() {
     if (!hasProxyCall) continue;
 
     const exportedMutations = [
-      ...source.matchAll(
-        /export\s+async\s+function\s+(POST|PATCH|PUT|DELETE)\s*\(/g,
-      ),
+      ...source.matchAll(/export\s+async\s+function\s+(POST|PATCH|PUT|DELETE)\s*\(/g),
     ].map((m) => m[1]);
     if (exportedMutations.length === 0) continue;
 
@@ -249,9 +231,7 @@ try {
 
   const files = walk(TARGET_DIR);
   const allViolations = files.flatMap(findViolations);
-  const adminDirectFetchViolations = files.flatMap(
-    findAdminDirectFetchViolations,
-  );
+  const adminDirectFetchViolations = files.flatMap(findAdminDirectFetchViolations);
   const legacyMutationViolations = findLegacyMutationViolations();
   const legacyWrapperBoundaryViolations = findLegacyWrapperBoundaryViolations();
   const adminMutationProxyViolations = findAdminMutationProxyViolations();
@@ -277,18 +257,14 @@ try {
   }
 
   if (adminDirectFetchViolations.length > 0) {
-    console.error(
-      "❌ app/admin 내 직접 /api/admin fetch 호출이 감지되었습니다.",
-    );
+    console.error("❌ app/admin 내 직접 /api/admin fetch 호출이 감지되었습니다.");
   }
   for (const v of adminDirectFetchViolations) {
     console.error(`${v.file}:${v.line}: ${v.text}`);
   }
 
   if (legacyMutationViolations.length > 0) {
-    console.error(
-      "❌ 관리자 변경성 엔드포인트의 비-admin 경로 잔존이 감지되었습니다.",
-    );
+    console.error("❌ 관리자 변경성 엔드포인트의 비-admin 경로 잔존이 감지되었습니다.");
   }
   for (const v of legacyMutationViolations) {
     console.error(`${v.file}: ${v.reason}`);
@@ -302,9 +278,7 @@ try {
   }
 
   if (adminMutationProxyViolations.length > 0) {
-    console.error(
-      "❌ 변경성 admin 라우트의 proxyToLegacyAdminRoute 잔존이 감지되었습니다.",
-    );
+    console.error("❌ 변경성 admin 라우트의 proxyToLegacyAdminRoute 잔존이 감지되었습니다.");
   }
   for (const v of adminMutationProxyViolations) {
     console.error(`${v.file}: ${v.reason}`);

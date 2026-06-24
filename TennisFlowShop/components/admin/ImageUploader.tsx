@@ -106,17 +106,8 @@ export default function ImageUploader({
     <div className="space-y-2">
       <div className="flex flex-wrap gap-3">
         {value.map((src, i) => (
-          <div
-            key={src + i}
-            className="relative group rounded-md overflow-hidden border"
-          >
-            <Image
-              src={src}
-              alt=""
-              width={160}
-              height={160}
-              className="object-cover w-40 h-40"
-            />
+          <div key={src + i} className="relative group rounded-md overflow-hidden border">
+            <Image src={src} alt="" width={160} height={160} className="object-cover w-40 h-40" />
             {enablePrimary && i === 0 && (
               <span className="absolute left-1 top-1 text-[11px] bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
                 대표
@@ -152,9 +143,7 @@ export default function ImageUploader({
       </div>
 
       {uploading && <p className="text-xs text-muted-foreground">업로드 중…</p>}
-      <div className="text-xs text-muted-foreground">
-        첫 번째 이미지가 대표로 사용됩니다.
-      </div>
+      <div className="text-xs text-muted-foreground">첫 번째 이미지가 대표로 사용됩니다.</div>
       <Button type="button" variant="outline" onClick={pick}>
         이미지 추가
       </Button>

@@ -18,34 +18,25 @@ function createInvalidStringProductError(message: string) {
   return Object.assign(new Error(message), { status: 400 });
 }
 
-async function resolveStringProductMountingFee(
-  db: Db,
-  productId: string,
-): Promise<number> {
+async function resolveStringProductMountingFee(db: Db, productId: string): Promise<number> {
   if (!ObjectId.isValid(productId)) {
-    throw createInvalidStringProductError(
-      "유효하지 않은 스트링 상품 ID입니다.",
-    );
+    throw createInvalidStringProductError("유효하지 않은 스트링 상품 ID입니다.");
   }
 
-  const prod = await db
-    .collection("products")
-    .findOne(
-      {
-        _id: new ObjectId(productId),
-        ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
-      },
-      { projection: { mountingFee: 1 } },
-    );
+  const prod = await db.collection("products").findOne(
+    {
+      _id: new ObjectId(productId),
+      ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+    },
+    { projection: { mountingFee: 1 } },
+  );
   if (!prod) {
     throw createInvalidStringProductError("존재하지 않는 스트링 상품입니다.");
   }
 
   const rawFee = prod.mountingFee;
   if (!isMountableStringByFee(rawFee)) {
-    throw createInvalidStringProductError(
-      "장착 가능한 스트링 상품이 아닙니다.",
-    );
+    throw createInvalidStringProductError("장착 가능한 스트링 상품이 아닙니다.");
   }
 
   return Math.max(0, Math.round(rawFee));

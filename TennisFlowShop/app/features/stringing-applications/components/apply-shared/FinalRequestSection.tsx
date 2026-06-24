@@ -55,18 +55,12 @@ export default function FinalRequestSection({
             <div className="min-w-0 text-sm">
               <p className="mb-1 font-medium text-warning">📢 안내사항</p>
               <p className="break-keep leading-relaxed text-foreground">
-                신청자/배송 정보는{" "}
-                <span className="font-semibold">주문 당시 정보</span>를 기준으로
+                신청자/배송 정보는 <span className="font-semibold">주문 당시 정보</span>를 기준으로
                 작성됩니다. 회원정보를 수정하셨더라도{" "}
-                <span className="font-semibold">
-                  신청서 정보는 자동으로 바뀌지 않습니다.
-                </span>
+                <span className="font-semibold">신청서 정보는 자동으로 바뀌지 않습니다.</span>
                 <br />
                 변경이 필요하면 아래{" "}
-                <span className="font-semibold text-warning">
-                  추가 요청사항
-                </span>
-                에 꼭 남겨주세요.
+                <span className="font-semibold text-warning">추가 요청사항</span>에 꼭 남겨주세요.
               </p>
             </div>
           </div>
@@ -85,14 +79,10 @@ export default function FinalRequestSection({
               <p className="mb-1 font-medium text-foreground">📢 안내사항</p>
               <p className="break-keep leading-relaxed text-foreground">
                 배송/연락처 정보는 상단에서 입력한{" "}
-                <span className="font-semibold">현재 checkout 정보</span>{" "}
-                기준으로 함께 접수됩니다.
+                <span className="font-semibold">현재 checkout 정보</span> 기준으로 함께 접수됩니다.
                 <br />
                 장착 관련 추가 요청사항이 있으면 아래{" "}
-                <span className="font-semibold text-primary">
-                  추가 요청사항
-                </span>
-                에 남겨주세요.
+                <span className="font-semibold text-primary">추가 요청사항</span>에 남겨주세요.
               </p>
             </div>
           </div>
@@ -111,11 +101,7 @@ export default function FinalRequestSection({
                   : "border border-border bg-muted text-foreground dark:bg-card"
             }`}
           >
-            {packageInsufficient
-              ? "패키지 적용 불가"
-              : usingPackage
-                ? "패키지 적용"
-                : "일반 결제"}
+            {packageInsufficient ? "패키지 적용 불가" : usingPackage ? "패키지 적용" : "일반 결제"}
           </Badge>
           <p className="min-w-0 flex-1 break-keep text-sm leading-relaxed text-foreground">
             {packageInsufficient

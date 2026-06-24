@@ -161,9 +161,7 @@ export function isStandaloneStringingApplication(app: any): boolean {
  * - 결제상태가 paymentStatus / paymentInfo.status 등으로 혼재될 수 있어 OR로 커버
  * - '결제 완료'(공백) / paid / confirmed 대소문자 흔들림은 regex로 보강
  */
-export function buildPaidMatch(
-  fields: string[] = ["paymentStatus", "paymentInfo.status"],
-) {
+export function buildPaidMatch(fields: string[] = ["paymentStatus", "paymentInfo.status"]) {
   const ors: any[] = [];
   for (const f of fields) {
     ors.push({ [f]: { $in: PAID_STATUS_VALUES } });
@@ -212,33 +210,23 @@ export function rentalPaidAmount(rental: any) {
    *   2) amount.total은 포인트 차감까지 반영된 값이라 정산 기준으로 가장 안전
    */
   const total = toNumber(
-    rental?.amount?.total ??
-      rental?.paidAmount ??
-      rental?.totalPrice ??
-      rental?.total,
+    rental?.amount?.total ?? rental?.paidAmount ?? rental?.totalPrice ?? rental?.total,
   );
-  const deposit = toNumber(
-    rental?.amount?.deposit ?? rental?.deposit ?? rental?.depositAmount,
-  );
+  const deposit = toNumber(rental?.amount?.deposit ?? rental?.deposit ?? rental?.depositAmount);
   if (total > 0) {
     return Math.max(0, total - deposit);
   }
 
   // 레거시/예외 fallback: total이 비어있다면 (fee + stringPrice + stringingFee) 기반으로 계산(보증금 제외)
   const fee = toNumber(rental?.amount?.fee ?? rental?.fee ?? rental?.rentalFee);
-  const stringPrice = toNumber(
-    rental?.amount?.stringPrice ?? rental?.stringPrice,
-  );
+  const stringPrice = toNumber(rental?.amount?.stringPrice ?? rental?.stringPrice);
   const stringingFee = toNumber(
-    rental?.amount?.stringingFee ??
-      rental?.stringingFee ??
-      rental?.serviceFeeHint,
+    rental?.amount?.stringingFee ?? rental?.stringingFee ?? rental?.serviceFeeHint,
   );
   return Math.max(0, fee + stringPrice + stringingFee);
 }
 
 export function rentalDepositAmount(rental: any) {
-  const deposit =
-    rental?.amount?.deposit ?? rental?.deposit ?? rental?.depositAmount ?? 0;
+  const deposit = rental?.amount?.deposit ?? rental?.deposit ?? rental?.depositAmount ?? 0;
   return toNumber(deposit);
 }

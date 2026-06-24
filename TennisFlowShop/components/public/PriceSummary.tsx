@@ -18,27 +18,15 @@ export type PriceSummaryProps = {
   className?: string;
 };
 
-export function PriceSummary({
-  rows,
-  title,
-  description,
-  footer,
-  className,
-}: PriceSummaryProps) {
+export function PriceSummary({ rows, title, description, footer, className }: PriceSummaryProps) {
   return (
     <div className={cn("space-y-4", className)}>
       {(title || description) && (
         <div className="space-y-1">
-          {title && (
-            <h3 className="text-ui-card-title font-semibold text-foreground">
-              {title}
-            </h3>
-          )}
+          {title && <h3 className="text-ui-card-title font-semibold text-foreground">{title}</h3>}
 
           {description && (
-            <div className="text-ui-body-sm text-muted-foreground">
-              {description}
-            </div>
+            <div className="text-ui-body-sm text-muted-foreground">{description}</div>
           )}
         </div>
       )}
@@ -53,18 +41,14 @@ export function PriceSummary({
             )}
           >
             <dt className="min-w-0 text-muted-foreground">
-              <span className={cn(row.emphasis && "text-foreground")}>
-                {row.label}
-              </span>
+              <span className={cn(row.emphasis && "text-foreground")}>{row.label}</span>
               {row.description && (
                 <span className="mt-1 block text-ui-label text-muted-foreground">
                   {row.description}
                 </span>
               )}
             </dt>
-            <dd className="shrink-0 text-right font-medium text-foreground">
-              {row.value}
-            </dd>
+            <dd className="shrink-0 text-right font-medium text-foreground">{row.value}</dd>
           </div>
         ))}
       </dl>

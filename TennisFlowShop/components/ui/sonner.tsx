@@ -11,13 +11,9 @@ export const Toaster = (props: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       position="top-center"
       toastOptions={{
-        className: [
-          "rounded-lg shadow-lg",
-          "border",
-          "bg-card",
-          "border-border",
-          "py-4 px-6",
-        ].join(" "),
+        className: ["rounded-lg shadow-lg", "border", "bg-card", "border-border", "py-4 px-6"].join(
+          " ",
+        ),
         style: {
           fontSize: "18px",
           whiteSpace: "normal", //  줄바꿈 허용

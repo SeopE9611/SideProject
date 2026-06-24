@@ -102,10 +102,7 @@ const BoardRepo = {
 };
 
 // POST /api/boards/:id/view
-export async function POST(
-  req: NextRequest,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const stop = startTimer();
   const meta = reqMeta(req);
   const { id } = await ctx.params;

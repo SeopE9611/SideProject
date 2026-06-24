@@ -11,14 +11,8 @@ import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
-import {
-  buildTossOrderName,
-  createTossOrderId,
-} from "@/lib/payments/toss/server";
-import {
-  ensureTossPaymentSessionIndexes,
-  tossPaymentSessions,
-} from "@/lib/payments/toss/session";
+import { buildTossOrderName, createTossOrderId } from "@/lib/payments/toss/server";
+import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
 
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: unknown) => String(v ?? "").replace(/\D/g, "");
@@ -45,8 +39,7 @@ export async function POST(req: Request) {
     const racketId = String(body?.racketId ?? "").trim();
 
     const shippingInfo = body?.shippingInfo ?? {};
-    const shippingMethod =
-      shippingInfo?.shippingMethod === "visit" ? "visit" : "courier";
+    const shippingMethod = shippingInfo?.shippingMethod === "visit" ? "visit" : "courier";
 
     const name = String(shippingInfo?.name ?? "").trim();
     const phone = onlyDigits(shippingInfo?.phone ?? "");
@@ -55,11 +48,7 @@ export async function POST(req: Request) {
     const postalCode = onlyDigits(shippingInfo?.postalCode ?? "").trim();
     const deliveryRequest = String(shippingInfo?.deliveryRequest ?? "").trim();
 
-    if (
-      !ObjectId.isValid(racketId) ||
-      name.length < 2 ||
-      !/^010\d{8}$/.test(phone)
-    ) {
+    if (!ObjectId.isValid(racketId) || name.length < 2 || !/^010\d{8}$/.test(phone)) {
       return NextResponse.json(
         { success: false, error: "요청 데이터가 올바르지 않습니다." },
         { status: 400 },
@@ -90,12 +79,10 @@ export async function POST(req: Request) {
     const client = await clientPromise;
     const db = client.db();
     const viewer = await getVisibilityViewerFromCookies();
-    const racket = await db
-      .collection("used_rackets")
-      .findOne({
-        _id: new ObjectId(racketId),
-        ...racketVisibilityFilterFor(viewer),
-      });
+    const racket = await db.collection("used_rackets").findOne({
+      _id: new ObjectId(racketId),
+      ...racketVisibilityFilterFor(viewer),
+    });
 
     if (!racket || racket.status !== "available") {
       return NextResponse.json(
@@ -115,9 +102,7 @@ export async function POST(req: Request) {
     const shippingFee =
       shippingMethod === "visit"
         ? 0
-        : normalizeItemShippingFee(
-            (racket as { shippingFee?: unknown }).shippingFee,
-          );
+        : normalizeItemShippingFee((racket as { shippingFee?: unknown }).shippingFee);
     const totalPrice = racketPrice + shippingFee;
 
     const tossOrderId = createTossOrderId();

@@ -8,13 +8,9 @@ function read(path) {
 
 test("관리자 게시판 화면 메트릭 표시 스냅샷(views/likes/comments)", () => {
   const source = read("app/admin/boards/BoardsClient.tsx");
-  const snapshot = read(
-    "tests/snapshots/admin-boards-metrics-render.snapshot.txt",
-  ).trim();
+  const snapshot = read("tests/snapshots/admin-boards-metrics-render.snapshot.txt").trim();
 
-  const start = source.indexOf(
-    '<div className="flex items-center gap-4 text-sm">',
-  );
+  const start = source.indexOf('<div className="flex items-center gap-4 text-sm">');
   assert.notEqual(start, -1, "메트릭 블록 시작 지점을 찾지 못했습니다.");
 
   const end = source.indexOf("</div>", source.indexOf("commentsCount", start));
@@ -28,7 +24,5 @@ test("관리자 게시판 화면 메트릭 표시 스냅샷(views/likes/comments
   assert.equal(actual, snapshot);
   assert.ok(source.includes("const views = Number(item?.views ?? 0);"));
   assert.ok(source.includes("const likes = Number(item?.likes ?? 0);"));
-  assert.ok(
-    source.includes("const commentsCount = Number(item?.commentsCount ?? 0);"),
-  );
+  assert.ok(source.includes("const commentsCount = Number(item?.commentsCount ?? 0);"));
 });

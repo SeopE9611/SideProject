@@ -11,10 +11,7 @@ interface HistoryEvent {
   description: string;
 }
 
-export async function GET(
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
 
   // id 유효성: new ObjectId(id)에서 throw로 500 나는 것 방지
@@ -30,9 +27,7 @@ export async function GET(
   const pageRaw = parseInt(searchParams.get("page") || "1", 10);
   const limitRaw = parseInt(searchParams.get("limit") || "5", 10);
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
-  const limit = Number.isFinite(limitRaw)
-    ? Math.min(50, Math.max(1, limitRaw))
-    : 5;
+  const limit = Number.isFinite(limitRaw) ? Math.min(50, Math.max(1, limitRaw)) : 5;
   const skip = (page - 1) * limit;
 
   // MongoDB 연결
@@ -73,8 +68,7 @@ export async function GET(
    * => API 응답은 항상 { status, date(ISO string), description }로 통일
    */
   const normalized: HistoryEvent[] = rawHistory.map((h) => {
-    const status =
-      typeof h?.status === "string" && h.status.trim() ? h.status : "기록";
+    const status = typeof h?.status === "string" && h.status.trim() ? h.status : "기록";
 
     // description: 신규(description) 우선, 없으면 레거시(message) fallback
     const description =
@@ -96,18 +90,13 @@ export async function GET(
           : null;
 
     // Invalid Date 방지: 파싱 실패 시 epoch로 강제
-    const iso =
-      d && !Number.isNaN(d.getTime())
-        ? d.toISOString()
-        : new Date(0).toISOString();
+    const iso = d && !Number.isNaN(d.getTime()) ? d.toISOString() : new Date(0).toISOString();
 
     return { status, date: iso, description };
   });
 
   // 날짜 기준 내림차순 정렬 (안전)
-  const sorted = normalized.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-  );
+  const sorted = normalized.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   // 페이징 처리
   const paginated = sorted.slice(skip, skip + limit);

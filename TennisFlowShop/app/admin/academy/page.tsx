@@ -3,13 +3,7 @@ import Link from "next/link";
 import { BookOpenCheck, ClipboardCheck, Compass, Users } from "lucide-react";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata: Metadata = {
   title: "아카데미 관리",
@@ -28,8 +22,7 @@ const guideItems = [
   },
   {
     title: "상담·등록 확정",
-    description:
-      "상담 진행 상황과 등록 확정 단계를 구분해 누락 없이 처리하세요.",
+    description: "상담 진행 상황과 등록 확정 단계를 구분해 누락 없이 처리하세요.",
     icon: Users,
   },
   {
@@ -60,10 +53,7 @@ export default function AcademyHubPage() {
           className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"
         >
           {guideItems.map(({ title, description, icon: Icon }) => (
-            <Card
-              key={title}
-              className="border-border/70 bg-background/90 shadow-none"
-            >
+            <Card key={title} className="border-border/70 bg-background/90 shadow-none">
               <CardHeader className="space-y-2 pb-3">
                 <CardTitle className="flex items-center gap-2 text-sm font-semibold break-keep leading-relaxed">
                   <Icon className="h-4 w-4 text-muted-foreground" />
@@ -79,15 +69,10 @@ export default function AcademyHubPage() {
           ))}
         </section>
 
-        <section
-          aria-label="아카데미 핵심 이동"
-          className="grid grid-cols-1 gap-4 md:grid-cols-2"
-        >
+        <section aria-label="아카데미 핵심 이동" className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base break-keep leading-relaxed">
-                클래스 관리
-              </CardTitle>
+              <CardTitle className="text-base break-keep leading-relaxed">클래스 관리</CardTitle>
               <CardDescription className="text-sm break-keep leading-relaxed">
                 클래스 개설, 노출 상태, 모집 인원과 운영 정보를 관리합니다.
               </CardDescription>
@@ -101,9 +86,7 @@ export default function AcademyHubPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base break-keep leading-relaxed">
-                신청 관리
-              </CardTitle>
+              <CardTitle className="text-base break-keep leading-relaxed">신청 관리</CardTitle>
               <CardDescription className="text-sm break-keep leading-relaxed">
                 수강 신청 접수, 상담 상태, 등록 확정 여부를 확인합니다.
               </CardDescription>

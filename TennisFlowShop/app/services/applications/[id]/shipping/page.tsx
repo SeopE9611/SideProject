@@ -22,11 +22,7 @@ function safeVerifyAccessToken(token?: string) {
 // 캐시 방지(운송장 갱신 직후 새로고침 시 즉시 반영되도록)
 export const dynamic = "force-dynamic";
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const p = await params;
   // 비회원 주문/신청 차단 정책(서버)
   const guestOrderMode = (
@@ -41,12 +37,7 @@ export default async function Page({
     const token = (await cookies()).get("accessToken")?.value;
     const payload = safeVerifyAccessToken(token);
     if (!payload?.sub) {
-      return (
-        <LoginGate
-          next={`/services/applications/${p.id}/shipping`}
-          variant="default"
-        />
-      );
+      return <LoginGate next={`/services/applications/${p.id}/shipping`} variant="default" />;
     }
   }
 

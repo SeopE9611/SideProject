@@ -27,10 +27,7 @@ import {
   getWorkflowMetaBadgeSpec,
 } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import {
-  getOrderStatusLabelForDisplay,
-  isVisitPickupOrder,
-} from "@/lib/order-shipping";
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -124,10 +121,9 @@ type ActivityResponse = {
 };
 
 const LIMIT = 5;
-const OrderShippingInfoDialog = dynamic(
-  () => import("./_components/OrderShippingInfoDialog"),
-  { loading: () => null },
-);
+const OrderShippingInfoDialog = dynamic(() => import("./_components/OrderShippingInfoDialog"), {
+  loading: () => null,
+});
 
 const fetcher = (url: string) => authenticatedSWRFetcher<ActivityResponse>(url);
 
@@ -142,9 +138,7 @@ const formatDate = (iso: string) => {
 
 const formatDayHeader = (dayKey: string) => dayKey.replace(/-/g, ".");
 
-function isApplicationShippingAvailable(
-  app?: ActivityApplicationSummary | null,
-) {
+function isApplicationShippingAvailable(app?: ActivityApplicationSummary | null) {
   if (!app) return false;
   if (isTerminalCanceledStatus(app.status)) return false;
 
@@ -160,10 +154,8 @@ function kindLabel(kind: ActivityKind) {
 }
 
 function kindIcon(kind: ActivityKind) {
-  if (kind === "order")
-    return <ShoppingBag className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />;
-  if (kind === "application")
-    return <Wrench className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />;
+  if (kind === "order") return <ShoppingBag className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />;
+  if (kind === "application") return <Wrench className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />;
   return <Briefcase className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />;
 }
 
@@ -175,9 +167,7 @@ function statusBadgeSpec(g: ActivityGroup) {
   }
 
   if (kind === "application") {
-    return getApplicationStatusBadgeSpec(
-      getMypageUserStatusLabel(g.application?.status),
-    );
+    return getApplicationStatusBadgeSpec(getMypageUserStatusLabel(g.application?.status));
   }
 
   return getRentalStatusBadgeSpec(getMypageUserStatusLabel(g.rental?.status));
@@ -236,15 +226,11 @@ function groupAmount(g: ActivityGroup) {
   if (g.kind === "order")
     return typeof g.order?.totalPrice === "number" ? g.order?.totalPrice : null;
   if (g.kind === "rental")
-    return typeof g.rental?.totalAmount === "number"
-      ? g.rental?.totalAmount
-      : null;
+    return typeof g.rental?.totalAmount === "number" ? g.rental?.totalAmount : null;
   return null;
 }
 
-function linkedApplicationSummaries(
-  g: ActivityGroup,
-): ActivityApplicationSummary[] {
+function linkedApplicationSummaries(g: ActivityGroup): ActivityApplicationSummary[] {
   if (g.kind === "order") return g.order?.applicationSummaries ?? [];
   if (g.kind === "rental") return g.rental?.applicationSummaries ?? [];
   return g.application ? [g.application] : [];
@@ -271,10 +257,7 @@ function isTerminalCanceledStatus(status?: string | null) {
   const normalized = getMypageNormalizedStatus(status);
 
   return (
-    normalized === "취소" ||
-    normalized === "환불" ||
-    normalized === "거절" ||
-    normalized === "반려"
+    normalized === "취소" || normalized === "환불" || normalized === "거절" || normalized === "반려"
   );
 }
 
@@ -282,12 +265,7 @@ function isApplicationTrackingNeeded(app?: ActivityApplicationSummary | null) {
   if (!app) return false;
   if (isTerminalCanceledStatus(app.status)) return false;
 
-  return Boolean(
-    app.needsInboundTracking &&
-    !app.hasTracking &&
-    !app.orderId &&
-    !app.rentalId,
-  );
+  return Boolean(app.needsInboundTracking && !app.hasTracking && !app.orderId && !app.rentalId);
 }
 
 /**
@@ -365,9 +343,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     ) {
       pills.push({
         text: linked.hasTracking ? "운송장 등록" : "운송장 대기",
-        className: linked.hasTracking
-          ? badgeToneClass("success")
-          : badgeToneClass("warning"),
+        className: linked.hasTracking ? badgeToneClass("success") : badgeToneClass("warning"),
       });
     }
   }
@@ -385,9 +361,7 @@ function metaPills(g: ActivityGroup): MetaPill[] {
     ) {
       pills.push({
         text: app.hasTracking ? "운송장 등록" : "운송장 대기",
-        className: app.hasTracking
-          ? badgeToneClass("success")
-          : badgeToneClass("warning"),
+        className: app.hasTracking ? badgeToneClass("success") : badgeToneClass("warning"),
       });
     }
   }
@@ -428,8 +402,7 @@ export default function ActivityFeed() {
     const query = sp.get("q");
 
     if (f === "all" || f === "active" || f === "done") setFilter(f);
-    if (k === "order" || k === "rental" || k === "application")
-      setKindFilter(k);
+    if (k === "order" || k === "rental" || k === "application") setKindFilter(k);
     if (a === "1") setActionOnly(true);
     if (query) setQ(query);
   }, []);
@@ -465,10 +438,7 @@ export default function ActivityFeed() {
     revalidateOnReconnect: false,
   });
 
-  const flat = useMemo(
-    () => (data ?? []).flatMap((d) => d.items ?? []),
-    [data],
-  );
+  const flat = useMemo(() => (data ?? []).flatMap((d) => d.items ?? []), [data]);
   const total = data?.[0]?.total ?? 0;
   const hasMore = flat.length < total;
 
@@ -482,26 +452,14 @@ export default function ActivityFeed() {
   // 교체 서비스(스트링 교체 신청서) CTA 조건
   // - 교체확정: 교체완료 상태이고, 아직 사용자가 확정(userConfirmedAt)하지 않은 경우에만 노출
   // - 리뷰작성: 사용자 확정(userConfirmedAt) 이후에만 노출
-  const canShowStringingConfirmCta = (
-    app?: ActivityApplicationSummary | null,
-  ) =>
-    !!(
-      app &&
-      app.status === "교체완료" &&
-      !app.userConfirmedAt &&
-      !app.orderId &&
-      !app.rentalId
-    );
+  const canShowStringingConfirmCta = (app?: ActivityApplicationSummary | null) =>
+    !!(app && app.status === "교체완료" && !app.userConfirmedAt && !app.orderId && !app.rentalId);
 
   const canShowStringingReviewCta = (app?: ActivityApplicationSummary | null) =>
     Boolean(app?.userConfirmedAt);
 
-  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(
-    null,
-  );
-  const [confirmingApplicationId, setConfirmingApplicationId] = useState<
-    string | null
-  >(null);
+  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
+  const [confirmingApplicationId, setConfirmingApplicationId] = useState<string | null>(null);
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
   const [shippingInfoDialogTarget, setShippingInfoDialogTarget] = useState<{
     orderId: string;
@@ -518,18 +476,14 @@ export default function ActivityFeed() {
       });
 
       const json = await res.json().catch(() => null as any);
-      if (!res.ok)
-        throw new Error(json?.message || "구매 확정에 실패했습니다.");
+      if (!res.ok) throw new Error(json?.message || "구매 확정에 실패했습니다.");
 
       showSuccessToast("구매 확정이 완료되었습니다.");
 
       // Activity 탭 갱신
       await mutateActivity();
       // 주문내역 탭 캐시도 갱신(같은 세션 UX 일관성)
-      globalMutate(
-        (key) =>
-          typeof key === "string" && key.startsWith("/api/users/me/orders"),
-      );
+      globalMutate((key) => typeof key === "string" && key.startsWith("/api/users/me/orders"));
     } catch (e: any) {
       showErrorToast(e?.message || "구매 확정 중 오류가 발생했습니다.");
     } finally {
@@ -540,18 +494,16 @@ export default function ActivityFeed() {
   const handleConfirmStringing = async (applicationId: string) => {
     if (!applicationId) return;
 
-    const ok = confirm(
-      "교체 확정 처리할까요?\n확정 시 포인트가 지급되며 되돌릴 수 없습니다.",
-    );
+    const ok = confirm("교체 확정 처리할까요?\n확정 시 포인트가 지급되며 되돌릴 수 없습니다.");
     if (!ok) return;
 
     setConfirmingApplicationId(applicationId);
 
     try {
-      const res = await fetch(
-        `/api/applications/stringing/${applicationId}/confirm`,
-        { method: "POST", credentials: "include" },
-      );
+      const res = await fetch(`/api/applications/stringing/${applicationId}/confirm`, {
+        method: "POST",
+        credentials: "include",
+      });
       if (!res.ok) {
         const data = await res.json().catch(() => null);
         throw new Error(data?.message || "교체 확정에 실패했습니다.");
@@ -561,8 +513,7 @@ export default function ActivityFeed() {
       // Activity(전체 내역) + 신청 내역 + 포인트 탭까지 함께 최신화
       await mutateActivity();
       await globalMutate(
-        (key) =>
-          typeof key === "string" && key.startsWith("/api/applications/me"),
+        (key) => typeof key === "string" && key.startsWith("/api/applications/me"),
         undefined,
         { revalidate: true },
       );
@@ -612,9 +563,7 @@ export default function ActivityFeed() {
         const linkedRawStatus = linkedApp?.status ?? "";
 
         const orderLabelStatus = getMypageUserStatusLabel(g.order?.status);
-        const orderLabelPaymentStatus = getMypagePaymentStatusLabel(
-          g.order?.paymentStatus,
-        );
+        const orderLabelPaymentStatus = getMypagePaymentStatusLabel(g.order?.paymentStatus);
         const rentalLabelStatus = getMypageUserStatusLabel(g.rental?.status);
         const appLabelStatus = getMypageUserStatusLabel(g.application?.status);
         const linkedLabelStatus = getMypageUserStatusLabel(linkedApp?.status);
@@ -661,11 +610,7 @@ export default function ActivityFeed() {
     const current = window.location.search.replace(/^\?/, "");
 
     if (next !== current) {
-      window.history.replaceState(
-        null,
-        "",
-        `${window.location.pathname}?${next}`,
-      );
+      window.history.replaceState(null, "", `${window.location.pathname}?${next}`);
     }
   }, [filter, kindFilter, actionOnly, debouncedQ]);
 
@@ -744,9 +689,7 @@ export default function ActivityFeed() {
       ? `/services/applications/${appForShipping.id}/shipping?return=${encodeURIComponent("/mypage?tab=orders")}`
       : "#";
     const shippingLabel =
-      appForShipping && appForShipping.hasTracking
-        ? "운송장 수정"
-        : "운송장 등록";
+      appForShipping && appForShipping.hasTracking ? "운송장 수정" : "운송장 등록";
 
     // 주문에 연결된 교체서비스는 주문 상세, 대여에 연결된 교체서비스는 장착 정보로 안내
     const appDetailHref =
@@ -783,13 +726,9 @@ export default function ActivityFeed() {
             <div className="rounded-lg bg-border p-2">
               <Activity className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-muted-foreground" />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-muted-foreground">
-              전체
-            </span>
+            <span className="text-xs bp-sm:text-sm font-medium text-muted-foreground">전체</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-foreground">
-            {counts.all}
-          </div>
+          <div className="text-2xl bp-sm:text-3xl font-bold text-foreground">{counts.all}</div>
         </div>
 
         <div className="rounded-xl bp-sm:rounded-2xl bg-muted/30 p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
@@ -797,13 +736,9 @@ export default function ActivityFeed() {
             <div className="rounded-lg border border-primary/20 bg-primary/10 p-2 dark:bg-primary/20">
               <Clock className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-primary">
-              진행중
-            </span>
+            <span className="text-xs bp-sm:text-sm font-medium text-primary">진행중</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-primary">
-            {counts.active}
-          </div>
+          <div className="text-2xl bp-sm:text-3xl font-bold text-primary">{counts.active}</div>
         </div>
 
         <div className="rounded-xl bp-sm:rounded-2xl bg-muted/30 p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
@@ -811,13 +746,9 @@ export default function ActivityFeed() {
             <div className="rounded-lg bg-success/10 dark:bg-success/15 p-2">
               <CheckCircle2 className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-success" />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-success">
-              완료
-            </span>
+            <span className="text-xs bp-sm:text-sm font-medium text-success">완료</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-success">
-            {counts.done}
-          </div>
+          <div className="text-2xl bp-sm:text-3xl font-bold text-success">{counts.done}</div>
         </div>
 
         <div className="rounded-xl bp-sm:rounded-2xl bg-muted/30 p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
@@ -825,13 +756,9 @@ export default function ActivityFeed() {
             <div className="rounded-lg bg-muted p-2">
               <AlertCircle className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-primary">
-              액션 필요
-            </span>
+            <span className="text-xs bp-sm:text-sm font-medium text-primary">액션 필요</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-primary">
-            {counts.action}
-          </div>
+          <div className="text-2xl bp-sm:text-3xl font-bold text-primary">{counts.action}</div>
         </div>
       </div>
 
@@ -984,23 +911,14 @@ export default function ActivityFeed() {
                   const linkedCount = linkedApplicationSummaries(g).length;
                   const menuKey = `top:${g.key}`;
                   const showMore = Boolean(
-                    appId &&
-                    (canShowStringingReviewCta(app) ||
-                      canShowStringingConfirmCta(app)),
+                    appId && (canShowStringingReviewCta(app) || canShowStringingConfirmCta(app)),
                   );
 
                   const title = groupTitle(g);
                   const date = groupDate(g);
                   const meta = compactPills(metaPills(g), 3);
-                  const {
-                    detailHref,
-                    detailLabel,
-                    shippingHref,
-                    shippingLabel,
-                  } = linksOf(g);
-                  const canShowShipping = Boolean(
-                    appId && isApplicationTrackingNeeded(app),
-                  );
+                  const { detailHref, detailLabel, shippingHref, shippingLabel } = linksOf(g);
+                  const canShowShipping = Boolean(appId && isApplicationTrackingNeeded(app));
 
                   return (
                     <div
@@ -1023,9 +941,8 @@ export default function ActivityFeed() {
                               {g.kind !== "application" && app && (
                                 <Badge
                                   variant={
-                                    getApplicationStatusBadgeSpec(
-                                      applicationStatusLabel(app),
-                                    ).variant
+                                    getApplicationStatusBadgeSpec(applicationStatusLabel(app))
+                                      .variant
                                   }
                                   className="text-xs rounded-md font-medium"
                                 >
@@ -1062,11 +979,7 @@ export default function ActivityFeed() {
                       <div className="flex flex-wrap gap-2">
                         {/* 1) 운송장 등록/수정 */}
                         {canShowShipping ? (
-                          <Button
-                            asChild
-                            size="sm"
-                            className="rounded-lg flex-1 min-w-[160px]"
-                          >
+                          <Button asChild size="sm" className="rounded-lg flex-1 min-w-[160px]">
                             <Link href={shippingHref}>
                               {shippingLabel}
                               <ArrowRight className="ml-2 h-4 w-4" />
@@ -1088,9 +1001,7 @@ export default function ActivityFeed() {
                         {showMore && (
                           <DropdownMenu
                             open={openMenuKey === menuKey}
-                            onOpenChange={(open) =>
-                              setOpenMenuKey(open ? menuKey : null)
-                            }
+                            onOpenChange={(open) => setOpenMenuKey(open ? menuKey : null)}
                           >
                             <DropdownMenuTrigger asChild>
                               <Button
@@ -1150,9 +1061,7 @@ export default function ActivityFeed() {
                     <h3 className="text-base bp-sm:text-lg font-bold text-primary truncate">
                       진행중
                     </h3>
-                    <p className="text-xs text-primary truncate">
-                      {activeTop.length}건의 활동
-                    </p>
+                    <p className="text-xs text-primary truncate">{activeTop.length}건의 활동</p>
                   </div>
                 </div>
                 <Button
@@ -1197,9 +1106,7 @@ export default function ActivityFeed() {
                             {g.kind !== "application" && app && (
                               <Badge
                                 variant={
-                                  getApplicationStatusBadgeSpec(
-                                    applicationStatusLabel(app),
-                                  ).variant
+                                  getApplicationStatusBadgeSpec(applicationStatusLabel(app)).variant
                                 }
                                 className="text-xs rounded-md font-medium"
                               >
@@ -1246,9 +1153,7 @@ export default function ActivityFeed() {
                         </Button>
 
                         {/* 배송중/배송완료/구매확정 상태에서 배송 정보 모달 제공 */}
-                        {order &&
-                        order.id &&
-                        canShowOrderDeliveryInfo(order.status) ? (
+                        {order && order.id && canShowOrderDeliveryInfo(order.status) ? (
                           <Button
                             type="button"
                             size="sm"
@@ -1301,9 +1206,7 @@ export default function ActivityFeed() {
                       <span className="text-sm font-semibold text-foreground">
                         {formatDayHeader(dayKey)}
                       </span>
-                      <span className="text-xs text-foreground/75 ml-2">
-                        {dayItems.length}건
-                      </span>
+                      <span className="text-xs text-foreground/75 ml-2">{dayItems.length}건</span>
                     </div>
                     <div className="h-px flex-1 bg-muted/30" />
                   </div>
@@ -1334,9 +1237,7 @@ export default function ActivityFeed() {
                       const showMore = Boolean(
                         canShowShippingEdit || // 운송장 수정(이미 등록된 경우)만 보조로 내리기
                         (appDetailHref && g.kind !== "application") ||
-                        (g.kind === "order" &&
-                          g.order?.id &&
-                          g.order.status === "배송완료") ||
+                        (g.kind === "order" && g.order?.id && g.order.status === "배송완료") ||
                         (appId && canShowStringingReviewCta(app)) ||
                         (appId && canShowStringingConfirmCta(app)),
                       );
@@ -1370,11 +1271,8 @@ export default function ActivityFeed() {
                                     <span className="rounded-md bg-muted/60 px-2 py-1 font-medium text-foreground">
                                       {kindLabel(g.kind)}
                                     </span>
-                                    <span className="tabular-nums">
-                                      {formatDate(date)}
-                                    </span>
-                                    {g.kind !== "application" &&
-                                    linkedCount > 1 ? (
+                                    <span className="tabular-nums">{formatDate(date)}</span>
+                                    {g.kind !== "application" && linkedCount > 1 ? (
                                       <span className="break-keep">
                                         대표 신청서 외 {linkedCount - 1}건
                                       </span>
@@ -1393,26 +1291,19 @@ export default function ActivityFeed() {
                                   >
                                     {primaryStatusLabel(g)}
                                   </Badge>
-                                  {g.kind === "order" &&
-                                    g.order?.paymentStatus && (
-                                      <Badge
-                                        variant={
-                                          paymentBadgeSpec(g)?.variant ??
-                                          "neutral"
-                                        }
-                                        className="shrink-0 rounded-md text-xs font-medium"
-                                      >
-                                        {getMypagePaymentStatusLabel(
-                                          g.order?.paymentStatus,
-                                        )}
-                                      </Badge>
-                                    )}
+                                  {g.kind === "order" && g.order?.paymentStatus && (
+                                    <Badge
+                                      variant={paymentBadgeSpec(g)?.variant ?? "neutral"}
+                                      className="shrink-0 rounded-md text-xs font-medium"
+                                    >
+                                      {getMypagePaymentStatusLabel(g.order?.paymentStatus)}
+                                    </Badge>
+                                  )}
                                   {g.kind !== "application" && app && (
                                     <Badge
                                       variant={
-                                        getApplicationStatusBadgeSpec(
-                                          applicationStatusLabel(app),
-                                        ).variant
+                                        getApplicationStatusBadgeSpec(applicationStatusLabel(app))
+                                          .variant
                                       }
                                       className="shrink-0 rounded-md text-xs font-medium"
                                     >
@@ -1421,11 +1312,7 @@ export default function ActivityFeed() {
                                   )}
                                   {hasAction && (
                                     <Badge
-                                      variant={
-                                        getWorkflowMetaBadgeSpec(
-                                          "action_required",
-                                        ).variant
-                                      }
+                                      variant={getWorkflowMetaBadgeSpec("action_required").variant}
                                       className="shrink-0 rounded-md text-xs font-medium"
                                     >
                                       액션 필요
@@ -1441,9 +1328,7 @@ export default function ActivityFeed() {
                                       <div className="flex items-center gap-2">
                                         <Badge
                                           variant={
-                                            getWorkflowMetaBadgeSpec(
-                                              "action_required",
-                                            ).variant
+                                            getWorkflowMetaBadgeSpec("action_required").variant
                                           }
                                           className="rounded-md text-[11px] font-medium"
                                         >
@@ -1454,8 +1339,7 @@ export default function ActivityFeed() {
                                         </p>
                                       </div>
                                       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                                        교체서비스 진행을 위해 운송장 정보를
-                                        확인해 주세요.
+                                        교체서비스 진행을 위해 운송장 정보를 확인해 주세요.
                                       </p>
                                     </div>
                                   </div>
@@ -1487,9 +1371,7 @@ export default function ActivityFeed() {
                                   </p>
                                   <p className="mt-1 truncate text-sm font-semibold text-foreground">
                                     {g.kind === "order"
-                                      ? getMypagePaymentStatusLabel(
-                                          g.order?.paymentStatus,
-                                        )
+                                      ? getMypagePaymentStatusLabel(g.order?.paymentStatus)
                                       : "-"}
                                   </p>
                                 </div>
@@ -1500,8 +1382,7 @@ export default function ActivityFeed() {
                                   <p className="mt-1 truncate text-sm font-semibold text-foreground">
                                     {g.kind === "order"
                                       ? isVisitPickupOrder({
-                                          shippingMethod:
-                                            g.order?.shippingMethod,
+                                          shippingMethod: g.order?.shippingMethod,
                                         })
                                         ? "방문 수령"
                                         : "배송"
@@ -1527,27 +1408,19 @@ export default function ActivityFeed() {
                               )}
 
                               <div className="grid grid-cols-1 gap-2 border-t border-border/60 pt-3 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
-                                <Button
-                                  asChild
-                                  size="sm"
-                                  className="w-full rounded-lg sm:w-auto"
-                                >
+                                <Button asChild size="sm" className="w-full rounded-lg sm:w-auto">
                                   <Link href={detailHref}>
                                     {detailLabel}
                                     <ArrowRight className="ml-2 h-4 w-4" />
                                   </Link>
                                 </Button>
                                 {/*배송 정보 모달: 배송중/배송완료/구매확정에서 노출 */}
-                                {order &&
-                                order.id &&
-                                canShowOrderDeliveryInfo(order.status) ? (
+                                {order && order.id && canShowOrderDeliveryInfo(order.status) ? (
                                   <Button
                                     type="button"
                                     size="sm"
                                     variant="outline"
-                                    onClick={() =>
-                                      openShippingInfoDialog(order)
-                                    }
+                                    onClick={() => openShippingInfoDialog(order)}
                                     className="rounded-lg bg-transparent"
                                   >
                                     {isVisitPickupOrder({
@@ -1573,14 +1446,8 @@ export default function ActivityFeed() {
 
                                 {/* 운송장: 액션 필요(미등록)일 때만 ‘강조’(primary)로 노출 */}
                                 {canShowShipping && hasAction ? (
-                                  <Button
-                                    asChild
-                                    size="sm"
-                                    className="w-full rounded-lg sm:w-auto"
-                                  >
-                                    <Link href={shippingHref}>
-                                      {shippingLabel}
-                                    </Link>
+                                  <Button asChild size="sm" className="w-full rounded-lg sm:w-auto">
+                                    <Link href={shippingHref}>{shippingLabel}</Link>
                                   </Button>
                                 ) : null}
 
@@ -1601,9 +1468,7 @@ export default function ActivityFeed() {
                                 {showMore && (
                                   <DropdownMenu
                                     open={openMenuKey === menuKey}
-                                    onOpenChange={(open) =>
-                                      setOpenMenuKey(open ? menuKey : null)
-                                    }
+                                    onOpenChange={(open) => setOpenMenuKey(open ? menuKey : null)}
                                   >
                                     <DropdownMenuTrigger asChild>
                                       <Button
@@ -1614,27 +1479,19 @@ export default function ActivityFeed() {
                                         <MoreVertical className="h-4 w-4" />
                                       </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent
-                                      align="end"
-                                      className="w-56"
-                                    >
-                                      <DropdownMenuLabel>
-                                        더보기
-                                      </DropdownMenuLabel>
+                                    <DropdownMenuContent align="end" className="w-56">
+                                      <DropdownMenuLabel>더보기</DropdownMenuLabel>
                                       <DropdownMenuSeparator />
 
                                       {/* 운송장 수정: 이미 등록된 경우 보조 액션으로 내림 */}
                                       {canShowShippingEdit ? (
                                         <DropdownMenuItem asChild>
-                                          <Link href={shippingHref}>
-                                            {shippingLabel}
-                                          </Link>
+                                          <Link href={shippingHref}>{shippingLabel}</Link>
                                         </DropdownMenuItem>
                                       ) : null}
 
                                       {/* 주문/대여 카드에서 연결 신청서로 바로 이동 */}
-                                      {appDetailHref &&
-                                      g.kind !== "application" ? (
+                                      {appDetailHref && g.kind !== "application" ? (
                                         <DropdownMenuItem asChild>
                                           <Link href={appDetailHref}>
                                             {g.kind === "rental"
@@ -1649,9 +1506,7 @@ export default function ActivityFeed() {
                                       g.order?.id &&
                                       g.order.status === "배송완료" ? (
                                         <DropdownMenuItem
-                                          disabled={
-                                            confirmingOrderId === g.order.id
-                                          }
+                                          disabled={confirmingOrderId === g.order.id}
                                           onSelect={(e) => {
                                             e.preventDefault();
                                             handleConfirmPurchase(g.order!.id);
@@ -1664,8 +1519,7 @@ export default function ActivityFeed() {
                                       ) : null}
 
                                       {/* 교체 서비스 리뷰 */}
-                                      {appId &&
-                                      canShowStringingReviewCta(app) ? (
+                                      {appId && canShowStringingReviewCta(app) ? (
                                         <DropdownMenuItem asChild>
                                           <Link
                                             href={`/reviews/write?service=stringing&applicationId=${appId}`}
@@ -1676,12 +1530,9 @@ export default function ActivityFeed() {
                                       ) : null}
 
                                       {/* 교체확정 */}
-                                      {appId &&
-                                      canShowStringingConfirmCta(app) ? (
+                                      {appId && canShowStringingConfirmCta(app) ? (
                                         <DropdownMenuItem
-                                          disabled={
-                                            confirmingApplicationId === appId
-                                          }
+                                          disabled={confirmingApplicationId === appId}
                                           onSelect={(e) => {
                                             e.preventDefault();
                                             handleConfirmStringing(appId);

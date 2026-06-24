@@ -8,12 +8,7 @@ describe("상품 API 계약 스모크", () => {
       if (res.status === 200) {
         expect(res.body).to.have.property("products");
         expect(res.body).to.have.property("pagination");
-        expect(res.body.pagination).to.include.keys(
-          "page",
-          "limit",
-          "total",
-          "hasMore",
-        );
+        expect(res.body.pagination).to.include.keys("page", "limit", "total", "hasMore");
       }
     });
   });

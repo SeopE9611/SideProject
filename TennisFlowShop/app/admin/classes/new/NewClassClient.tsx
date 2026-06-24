@@ -127,8 +127,7 @@ export default function NewClassClient() {
     );
   };
 
-  const confirmLeaveIfDirty = () =>
-    !isDirty || window.confirm(UNSAVED_CHANGES_MESSAGE);
+  const confirmLeaveIfDirty = () => !isDirty || window.confirm(UNSAVED_CHANGES_MESSAGE);
 
   return (
     <div className="container py-10">
@@ -154,9 +153,7 @@ export default function NewClassClient() {
           <form onSubmit={handleSubmit}>
             <CardHeader>
               <CardTitle className="text-2xl">클래스 등록</CardTitle>
-              <CardDescription>
-                새로운 테니스 클래스 정보를 입력해주세요.
-              </CardDescription>
+              <CardDescription>새로운 테니스 클래스 정보를 입력해주세요.</CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-6">
@@ -255,10 +252,7 @@ export default function NewClassClient() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="중급" id="level-intermediate" />
-                    <Label
-                      htmlFor="level-intermediate"
-                      className="cursor-pointer"
-                    >
+                    <Label htmlFor="level-intermediate" className="cursor-pointer">
                       중급
                     </Label>
                   </div>
@@ -317,17 +311,13 @@ export default function NewClassClient() {
                   <Label htmlFor="status" className="text-sm font-medium">
                     상태
                   </Label>
-                  <p className="text-xs text-muted-foreground">
-                    클래스 모집 상태를 설정합니다.
-                  </p>
+                  <p className="text-xs text-muted-foreground">클래스 모집 상태를 설정합니다.</p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="status"
                     checked={formData.status}
-                    onCheckedChange={(checked: boolean) =>
-                      handleChange("status", checked)
-                    }
+                    onCheckedChange={(checked: boolean) => handleChange("status", checked)}
                   />
                   <Label htmlFor="status" className="cursor-pointer">
                     {formData.status ? "모집 중" : "마감"}

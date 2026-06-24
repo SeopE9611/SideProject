@@ -7,7 +7,14 @@ import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pri
 import { cn } from "@/lib/utils";
 import type { EmblaCarouselType, EmblaOptionsType } from "embla-carousel";
 import useEmblaCarousel from "embla-carousel-react";
-import { AlertTriangle, ArrowRight, ChevronLeft, ChevronRight, Inbox, RefreshCcw } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Inbox,
+  RefreshCcw,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -236,10 +243,14 @@ export default function HorizontalProducts({
     (() => {
       const regularPrice = Number(p.price ?? 0);
       const racketSaleRate = p.marketing ? getRacketDiscountRate(p) : 0;
-      const salePrice = p.marketing ? getEffectiveRacketPrice(p) : Number(p.inventory?.salePrice ?? 0);
+      const salePrice = p.marketing
+        ? getEffectiveRacketPrice(p)
+        : Number(p.inventory?.salePrice ?? 0);
       const isSale = p.marketing
         ? racketSaleRate > 0
-        : (p.inventory?.isSale === true || p.inventory?.isSale === "true" || p.inventory?.isSale === 1) &&
+        : (p.inventory?.isSale === true ||
+            p.inventory?.isSale === "true" ||
+            p.inventory?.isSale === 1) &&
           salePrice > 0 &&
           salePrice < regularPrice;
       const displayPrice = isSale ? salePrice : regularPrice;
@@ -285,7 +296,9 @@ export default function HorizontalProducts({
           </div>
 
           <div className="space-y-2 bp-sm:space-y-2.5 bp-md:space-y-3">
-            <div className="text-ui-body-sm font-medium text-foreground/70 bp-md:text-ui-body">{p.brand}</div>
+            <div className="text-ui-body-sm font-medium text-foreground/70 bp-md:text-ui-body">
+              {p.brand}
+            </div>
             <h3 className="line-clamp-2 min-h-[2.5rem] text-ui-body-sm font-medium leading-snug text-foreground bp-sm:min-h-[3rem] bp-sm:text-ui-card-title bp-md:min-h-[3.5rem] bp-md:text-ui-card-title-lg">
               {p.name}
             </h3>
@@ -296,7 +309,9 @@ export default function HorizontalProducts({
               </div>
               {isSale && (
                 <div className="flex items-center gap-2">
-                  <span className="text-ui-label text-muted-foreground line-through">{regularPrice.toLocaleString()}원</span>
+                  <span className="text-ui-label text-muted-foreground line-through">
+                    {regularPrice.toLocaleString()}원
+                  </span>
                   <Badge
                     variant="outline"
                     className="shrink-0 whitespace-nowrap border-destructive/30 bg-destructive/10 text-ui-caption text-destructive"
@@ -323,8 +338,12 @@ export default function HorizontalProducts({
         <div className="h-12 w-12 rounded-full border border-border/60 bg-card bp-sm:h-14 bp-sm:w-14 bp-md:h-16 bp-md:w-16" />
       </div>
       <div className="text-center space-y-1.5">
-        <div className="text-ui-card-title font-medium text-foreground bp-sm:text-ui-card-title-lg">준비 중</div>
-        <div className="text-ui-body-sm text-muted-foreground bp-md:text-ui-body">곧 상품이 업데이트됩니다.</div>
+        <div className="text-ui-card-title font-medium text-foreground bp-sm:text-ui-card-title-lg">
+          준비 중
+        </div>
+        <div className="text-ui-body-sm text-muted-foreground bp-md:text-ui-body">
+          곧 상품이 업데이트됩니다.
+        </div>
       </div>
     </div>
   );
@@ -364,7 +383,9 @@ export default function HorizontalProducts({
       <div className="text-ui-card-title font-medium text-foreground">
         {emptyTitle ?? "등록된 상품이 없습니다"}
       </div>
-      <div className="mt-1 text-ui-body-sm text-muted-foreground">{emptyDescription ?? "곧 상품이 업데이트됩니다."}</div>
+      <div className="mt-1 text-ui-body-sm text-muted-foreground">
+        {emptyDescription ?? "곧 상품이 업데이트됩니다."}
+      </div>
     </div>
   );
 
@@ -373,12 +394,20 @@ export default function HorizontalProducts({
       <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full border border-border/60 bg-secondary bp-sm:h-16 bp-sm:w-16">
         <AlertTriangle className="h-6 w-6 text-destructive" />
       </div>
-      <div className="text-ui-card-title font-medium text-foreground">{errorTitle ?? "불러오지 못했어요"}</div>
+      <div className="text-ui-card-title font-medium text-foreground">
+        {errorTitle ?? "불러오지 못했어요"}
+      </div>
       <div className="mt-1 text-ui-body-sm text-muted-foreground">
         {errorDescription ?? "네트워크 상태를 확인 후 다시 시도해 주세요."}
       </div>
       {onRetry && (
-        <Button type="button" variant="outline" size="sm" onClick={onRetry} className="mt-3 rounded-full">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onRetry}
+          className="mt-3 rounded-full"
+        >
           <RefreshCcw className="mr-2 h-4 w-4" />
           다시 시도
         </Button>
@@ -482,7 +511,9 @@ export default function HorizontalProducts({
                 </Button>
               </div>
 
-              <p className="hidden text-ui-body-sm text-muted-foreground bp-sm:block">드래그하거나 터치로 넘겨보세요</p>
+              <p className="hidden text-ui-body-sm text-muted-foreground bp-sm:block">
+                드래그하거나 터치로 넘겨보세요
+              </p>
             </div>
           )}
         </div>

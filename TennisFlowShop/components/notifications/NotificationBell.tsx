@@ -6,18 +6,8 @@ import { useRouter } from "next/navigation";
 
 import { NotificationPanel } from "@/components/notifications/NotificationPanel";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useUnreadNotificationCount } from "@/lib/hooks/useUnreadNotificationCount";
 import { cn } from "@/lib/utils";
 
@@ -49,20 +39,13 @@ export function NotificationBell({
       size="icon"
       className={cn(
         "relative shrink-0 rounded-full hover:bg-secondary focus-visible:ring-2 ring-ring",
-        mode === "desktop"
-          ? "h-10 w-10 p-0"
-          : mode === "mobileCard"
-            ? "h-8 w-8 p-0"
-            : "p-2",
+        mode === "desktop" ? "h-10 w-10 p-0" : mode === "mobileCard" ? "h-8 w-8 p-0" : "p-2",
         className,
       )}
       aria-label={unreadCount > 0 ? `읽지 않은 알림 ${unreadCount}개` : "알림"}
       title="알림"
     >
-      <Bell
-        className={cn(mode === "desktop" ? "!h-5 !w-5" : "h-5 w-5")}
-        aria-hidden="true"
-      />
+      <Bell className={cn(mode === "desktop" ? "!h-5 !w-5" : "h-5 w-5")} aria-hidden="true" />
       {unreadCount > 0 && (
         <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
           {badge}
@@ -80,9 +63,7 @@ export function NotificationBell({
           "relative h-8 w-8 shrink-0 rounded-full p-0 hover:bg-secondary focus-visible:ring-2 ring-ring",
           className,
         )}
-        aria-label={
-          unreadCount > 0 ? `읽지 않은 알림 ${unreadCount}개` : "알림"
-        }
+        aria-label={unreadCount > 0 ? `읽지 않은 알림 ${unreadCount}개` : "알림"}
         title="알림"
         onClick={() => {
           onNavigate?.();
@@ -103,10 +84,7 @@ export function NotificationBell({
     return (
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>{trigger}</SheetTrigger>
-        <SheetContent
-          side="right"
-          className="z-[80] flex w-[92vw] max-w-sm flex-col p-0"
-        >
+        <SheetContent side="right" className="z-[80] flex w-[92vw] max-w-sm flex-col p-0">
           <SheetHeader className="sr-only">
             <SheetTitle>알림</SheetTitle>
           </SheetHeader>

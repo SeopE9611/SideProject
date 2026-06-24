@@ -10,11 +10,7 @@ import {
 } from "@/lib/constants";
 import { autoLinkStringingByEmail } from "@/lib/claims";
 import { Collection } from "mongodb";
-import {
-  isSignupBonusActive,
-  SIGNUP_BONUS_POINTS,
-  signupBonusRefKey,
-} from "@/lib/points.policy";
+import { isSignupBonusActive, SIGNUP_BONUS_POINTS, signupBonusRefKey } from "@/lib/points.policy";
 import { grantPoints } from "@/lib/points.service";
 import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
 import { getReservedEmailLocalPartErrorMessage } from "@/lib/reserved-email-localpart";
@@ -61,8 +57,7 @@ export async function POST(req: NextRequest) {
   if (!body?.token) {
     return NextResponse.json({ error: "token is required" }, { status: 400 });
   }
-  const oauthCompleteIdentifierPolicy =
-    AUTH_RATE_LIMIT_POLICIES.oauth_complete.identifier;
+  const oauthCompleteIdentifierPolicy = AUTH_RATE_LIMIT_POLICIES.oauth_complete.identifier;
   if (!oauthCompleteIdentifierPolicy) {
     return NextResponse.json({ error: "server error" }, { status: 500 });
   }
@@ -76,9 +71,7 @@ export async function POST(req: NextRequest) {
   });
   if (tokenRateLimited) return tokenRateLimited;
 
-  const pendings = db.collection(
-    "oauth_pending_signups",
-  ) as Collection<PendingDoc>;
+  const pendings = db.collection("oauth_pending_signups") as Collection<PendingDoc>;
   const pending = await pendings.findOne({ _id: body.token });
 
   if (!pending) {
@@ -103,14 +96,10 @@ export async function POST(req: NextRequest) {
   const pendingEmail = pendingEmailRaw.toLowerCase();
   if (!pendingEmail) {
     await pendings.deleteOne({ _id: pending._id }).catch(() => {});
-    return NextResponse.json(
-      { error: "pending signup invalid (missing email)" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "pending signup invalid (missing email)" }, { status: 400 });
   }
 
-  const reservedEmailError =
-    getReservedEmailLocalPartErrorMessage(pendingEmail);
+  const reservedEmailError = getReservedEmailLocalPartErrorMessage(pendingEmail);
   if (reservedEmailError) {
     await pendings.deleteOne({ _id: pending._id }).catch(() => {});
     return NextResponse.json(
@@ -121,8 +110,7 @@ export async function POST(req: NextRequest) {
 
   //  사용자가 입력한 이름을 우선(없으면 pending.name fallback)
   const incomingName = typeof body.name === "string" ? body.name.trim() : "";
-  const fallbackName =
-    String(pending.name ?? "").trim() || pendingEmail.split("@")[0];
+  const fallbackName = String(pending.name ?? "").trim() || pendingEmail.split("@")[0];
   const finalSignupName = incomingName || fallbackName;
 
   const users = db.collection("users");
@@ -139,22 +127,16 @@ export async function POST(req: NextRequest) {
     const providerLabel = providerKey === "naver" ? "네이버" : "카카오";
     const existingOauthId = (user as any)?.oauth?.[providerKey]?.id ?? null;
 
-    if (
-      existingOauthId &&
-      pending.oauthId &&
-      String(existingOauthId) !== String(pending.oauthId)
-    ) {
+    if (existingOauthId && pending.oauthId && String(existingOauthId) !== String(pending.oauthId)) {
       return NextResponse.json(
         { error: `이미 다른 ${providerLabel} 계정에 연결된 이메일입니다.` },
         { status: 409 },
       );
     }
 
-    const shouldUpdateName =
-      !!incomingName && (!user?.name || String(user.name).trim() === "");
+    const shouldUpdateName = !!incomingName && (!user?.name || String(user.name).trim() === "");
     if (shouldUpdateName) {
-      const reservedNameError =
-        getReservedDisplayNameErrorMessage(incomingName);
+      const reservedNameError = getReservedDisplayNameErrorMessage(incomingName);
       if (reservedNameError) {
         return NextResponse.json(
           { error: reservedNameError, code: "RESERVED_DISPLAY_NAME" },
@@ -181,8 +163,7 @@ export async function POST(req: NextRequest) {
   } else {
     // 2) 신규 생성
     isNewUser = true;
-    const reservedNameError =
-      getReservedDisplayNameErrorMessage(finalSignupName);
+    const reservedNameError = getReservedDisplayNameErrorMessage(finalSignupName);
     if (reservedNameError) {
       return NextResponse.json(
         { error: reservedNameError, code: "RESERVED_DISPLAY_NAME" },
@@ -216,16 +197,11 @@ export async function POST(req: NextRequest) {
     user = await users.findOne({ _id: insertRes.insertedId });
   }
   if (!user) {
-    return NextResponse.json(
-      { error: "user create/link failed" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "user create/link failed" }, { status: 500 });
   }
 
-  if (user.isDeleted)
-    return NextResponse.json({ error: "deleted user" }, { status: 403 });
-  if (user.isSuspended)
-    return NextResponse.json({ error: "suspended user" }, { status: 403 });
+  if (user.isDeleted) return NextResponse.json({ error: "deleted user" }, { status: 403 });
+  if (user.isSuspended) return NextResponse.json({ error: "suspended user" }, { status: 403 });
 
   // (이벤트) 회원가입 보너스 지급: "신규 생성"일 때만
   // - 중복 호출/리트라이가 있어도 refKey(unique)로 멱등 보장
@@ -252,13 +228,9 @@ export async function POST(req: NextRequest) {
     ACCESS_TOKEN_SECRET,
     { expiresIn: ACCESS_TOKEN_EXPIRES_IN },
   );
-  const refreshToken = jwt.sign(
-    { sub: user._id.toString() },
-    REFRESH_TOKEN_SECRET,
-    {
-      expiresIn: REFRESH_TOKEN_EXPIRES_IN,
-    },
-  );
+  const refreshToken = jwt.sign({ sub: user._id.toString() }, REFRESH_TOKEN_SECRET, {
+    expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+  });
 
   // 4) 부가 처리(세션로그/자동연결)
   try {
@@ -276,11 +248,7 @@ export async function POST(req: NextRequest) {
     });
 
     await Promise.all([
-      autoLinkStringingByEmail(
-        db,
-        user._id,
-        String(user.email ?? pendingEmail).toLowerCase(),
-      ),
+      autoLinkStringingByEmail(db, user._id, String(user.email ?? pendingEmail).toLowerCase()),
       users.updateOne({ _id: user._id }, { $set: { lastLoginAt: now } }),
     ]);
   } catch (e) {

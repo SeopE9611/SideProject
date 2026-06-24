@@ -36,10 +36,7 @@ export function getKstMonthRange(date = new Date()): DateRangeYmd {
   };
 }
 
-export function getKstRecentDaysRange(
-  days: number,
-  date = new Date(),
-): DateRangeYmd {
+export function getKstRecentDaysRange(days: number, date = new Date()): DateRangeYmd {
   const safeDays = Math.max(1, Math.floor(days));
   return {
     from: addKstDaysYmd(-(safeDays - 1), date),
@@ -49,8 +46,6 @@ export function getKstRecentDaysRange(
 
 export function getKstPreviousMonthYyyymm(date = new Date()): string {
   const kst = new Date(date.getTime() + KST_OFFSET_MS);
-  const previousMonth = new Date(
-    Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth() - 1, 1),
-  );
+  const previousMonth = new Date(Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth() - 1, 1));
   return `${previousMonth.getUTCFullYear()}-${String(previousMonth.getUTCMonth() + 1).padStart(2, "0")}`;
 }

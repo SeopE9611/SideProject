@@ -50,8 +50,7 @@ const DOC_ID: StringingSettings["_id"] = "stringingSlots";
 /** 관리자 인증/권한 확인 (기존 프로젝트 유틸 그대로 사용) */
 /** 유효성 도우미 */
 const isHHMM = (s: any) => typeof s === "string" && /^\d{2}:\d{2}$/.test(s);
-const isDate = (s: any) =>
-  typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
+const isDate = (s: any) => typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
 
 export async function GET(req: Request) {
   // 관리자 권한 체크
@@ -78,13 +77,9 @@ export async function PATCH(req: Request) {
   if (!csrf.ok) return csrf.res;
 
   // 본문 파싱
-  const body = (await req
-    .json()
-    .catch(() => ({}))) as Partial<StringingSettings>;
+  const body = (await req.json().catch(() => ({}))) as Partial<StringingSettings>;
   const db = await getDb();
-  const current = await db
-    .collection<StringingSettings>(COLLECTION)
-    .findOne({ _id: DOC_ID });
+  const current = await db.collection<StringingSettings>(COLLECTION).findOne({ _id: DOC_ID });
 
   // --- 필드별 정규화/검증 ---
   const update: Partial<StringingSettings> = {};
@@ -92,10 +87,7 @@ export async function PATCH(req: Request) {
   // 동시 수용량: 1~10
   if (body.capacity !== undefined) {
     if (typeof body.capacity !== "number" || !Number.isFinite(body.capacity)) {
-      return NextResponse.json(
-        { message: "동시 수용량은 숫자여야 합니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "동시 수용량은 숫자여야 합니다." }, { status: 400 });
     }
     update.capacity = Math.trunc(body.capacity);
   }
@@ -107,10 +99,7 @@ export async function PATCH(req: Request) {
   // 간격: 5~240 분
   if (body.interval !== undefined) {
     if (typeof body.interval !== "number" || !Number.isFinite(body.interval)) {
-      return NextResponse.json(
-        { message: "간격은 숫자여야 합니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "간격은 숫자여야 합니다." }, { status: 400 });
     }
     update.interval = Math.trunc(body.interval);
   }
@@ -149,19 +138,14 @@ export async function PATCH(req: Request) {
             : undefined,
       }))
       .filter((e) => !!e.date)
-      .map((e) =>
-        sanitizeExceptionInput(e as ExceptionItem),
-      ) as ExceptionItem[];
+      .map((e) => sanitizeExceptionInput(e as ExceptionItem)) as ExceptionItem[];
   }
 
   // 예약 가능 기간(일): 1~180 허용
   if (body.bookingWindowDays !== undefined) {
     const n = Number(body.bookingWindowDays);
     if (!Number.isFinite(n)) {
-      return NextResponse.json(
-        { message: "예약 가능 기간은 숫자여야 합니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "예약 가능 기간은 숫자여야 합니다." }, { status: 400 });
     }
     if (n < 1 || n > 180) {
       return NextResponse.json(
@@ -177,8 +161,7 @@ export async function PATCH(req: Request) {
     start: update.start ?? String(current?.start ?? "10:00"),
     end: update.end ?? String(current?.end ?? "19:00"),
     interval: update.interval ?? Number(current?.interval ?? 30),
-    bookingWindowDays:
-      update.bookingWindowDays ?? Number(current?.bookingWindowDays ?? 30),
+    bookingWindowDays: update.bookingWindowDays ?? Number(current?.bookingWindowDays ?? 30),
   };
 
   const baseError = validateBaseSettings(mergedBase);
@@ -201,11 +184,7 @@ export async function PATCH(req: Request) {
   // upsert: 문서가 없으면 생성, 있으면 업데이트
   await db
     .collection<StringingSettings>(COLLECTION)
-    .updateOne(
-      { _id: DOC_ID },
-      { $setOnInsert: { _id: DOC_ID }, $set: update },
-      { upsert: true },
-    );
+    .updateOne({ _id: DOC_ID }, { $setOnInsert: { _id: DOC_ID }, $set: update }, { upsert: true });
 
   await appendAdminAudit(
     db,
@@ -221,9 +200,7 @@ export async function PATCH(req: Request) {
     req,
   );
 
-  const doc = await db
-    .collection<StringingSettings>(COLLECTION)
-    .findOne({ _id: DOC_ID });
+  const doc = await db.collection<StringingSettings>(COLLECTION).findOne({ _id: DOC_ID });
   return NextResponse.json(doc, {
     status: 200,
     headers: { "Cache-Control": "no-store" },

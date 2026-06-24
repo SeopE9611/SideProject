@@ -4,16 +4,12 @@ type UrlValidationFailureReason =
   | "invalid_host"
   | "invalid_path";
 
-export const BOARD_ASSET_ALLOWED_HOSTS = new Set<string>([
-  "cwzpxxahtayoyqqskmnt.supabase.co",
-]);
+export const BOARD_ASSET_ALLOWED_HOSTS = new Set<string>(["cwzpxxahtayoyqqskmnt.supabase.co"]);
 export const BOARD_ASSET_ALLOWED_PATH_PREFIXES = [
   "/storage/v1/object/public/tennis-images/",
 ] as const;
 
-export type UrlValidationResult =
-  | { ok: true }
-  | { ok: false; reason: UrlValidationFailureReason };
+export type UrlValidationResult = { ok: true } | { ok: false; reason: UrlValidationFailureReason };
 
 /**
  * boards/community 첨부 URL 공통 정책

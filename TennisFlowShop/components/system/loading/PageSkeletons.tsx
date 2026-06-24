@@ -2,11 +2,7 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import {
-  CardGridSkeleton,
-  FullPageSpinner,
-  ListPageSkeleton,
-} from "./BasePageSkeletons";
+import { CardGridSkeleton, FullPageSpinner, ListPageSkeleton } from "./BasePageSkeletons";
 
 export { ListPageSkeleton, CardGridSkeleton, FullPageSpinner };
 
@@ -34,21 +30,13 @@ export function TablePageSkeleton({
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="space-y-2">
           <Skeleton className={cn("h-10 rounded-xl", titleWidthClassName)} />
-          <Skeleton
-            className={cn(
-              "h-4 max-w-full rounded-lg",
-              descriptionWidthClassName,
-            )}
-          />
+          <Skeleton className={cn("h-4 max-w-full rounded-lg", descriptionWidthClassName)} />
         </div>
 
         {statsCount > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: statsCount }).map((_, index) => (
-              <Card
-                key={index}
-                className="rounded-2xl border-border/50 bg-card shadow-sm"
-              >
+              <Card key={index} className="rounded-2xl border-border/50 bg-card shadow-sm">
                 <CardContent className="space-y-3 p-5">
                   <Skeleton className="h-4 w-24" />
                   <Skeleton className="h-8 w-16" />
@@ -99,10 +87,7 @@ export function TablePageSkeleton({
                     }}
                   >
                     {Array.from({ length: columnCount }).map((__, cell) => (
-                      <Skeleton
-                        key={cell}
-                        className="h-4 w-full max-w-[120px]"
-                      />
+                      <Skeleton key={cell} className="h-4 w-full max-w-[120px]" />
                     ))}
                   </div>
                 ))}
@@ -171,10 +156,7 @@ export function DetailPageSkeleton({
               {Array.from({ length: actionButtonCount }).map((_, index) => (
                 <Skeleton
                   key={index}
-                  className={cn(
-                    "h-10",
-                    index === actionButtonCount - 1 ? "w-32" : "w-28",
-                  )}
+                  className={cn("h-10", index === actionButtonCount - 1 ? "w-32" : "w-28")}
                 />
               ))}
             </div>
@@ -186,9 +168,7 @@ export function DetailPageSkeleton({
             <CardContent
               className={cn(
                 "grid gap-4 p-5",
-                summaryCardCount >= 4
-                  ? "md:grid-cols-2 xl:grid-cols-4"
-                  : "md:grid-cols-3",
+                summaryCardCount >= 4 ? "md:grid-cols-2 xl:grid-cols-4" : "md:grid-cols-3",
               )}
             >
               {Array.from({ length: summaryCardCount }).map((_, index) => (
@@ -208,25 +188,17 @@ export function DetailPageSkeleton({
         <div
           className={cn(
             "grid gap-6",
-            resolvedAsideVariant !== "none" &&
-              "xl:grid-cols-[minmax(0,1fr)_320px]",
+            resolvedAsideVariant !== "none" && "xl:grid-cols-[minmax(0,1fr)_320px]",
           )}
         >
           <div className={cn(isDense ? "space-y-3" : "space-y-4")}>
             {Array.from({ length: sectionCount }).map((_, index) => (
-              <Card
-                key={index}
-                className="rounded-2xl border-border/50 bg-card shadow-sm"
-              >
-                <CardHeader
-                  className={cn("space-y-2", isDense ? "pb-2" : "pb-3")}
-                >
+              <Card key={index} className="rounded-2xl border-border/50 bg-card shadow-sm">
+                <CardHeader className={cn("space-y-2", isDense ? "pb-2" : "pb-3")}>
                   <Skeleton className="h-5 w-36" />
                   <Skeleton className="h-4 w-56 max-w-full" />
                 </CardHeader>
-                <CardContent
-                  className={cn(isDense ? "space-y-2 pb-4" : "space-y-3 pb-5")}
-                >
+                <CardContent className={cn(isDense ? "space-y-2 pb-4" : "space-y-3 pb-5")}>
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-[85%]" />
                   <Skeleton className="h-4 w-[70%]" />
@@ -291,10 +263,7 @@ type FormPageSkeletonProps = {
   className?: string;
 };
 
-export function FormPageSkeleton({
-  fields = 6,
-  className,
-}: FormPageSkeletonProps) {
+export function FormPageSkeleton({ fields = 6, className }: FormPageSkeletonProps) {
   return (
     <div className={cn("container py-8", className)}>
       <div className="mx-auto max-w-3xl space-y-6">
@@ -366,10 +335,7 @@ export function CardListPageSkeleton({
 
           <CardContent className={cn("grid gap-3", gridColumnsClassName)}>
             {Array.from({ length: cardCount }).map((_, index) => (
-              <div
-                key={index}
-                className="rounded-xl border border-border/50 bg-background/70 p-4"
-              >
+              <div key={index} className="rounded-xl border border-border/50 bg-background/70 p-4">
                 <div className="space-y-2">
                   <Skeleton className="h-5 w-52 max-w-full" />
                   <Skeleton className="h-4 w-72 max-w-full" />
@@ -447,9 +413,7 @@ export function StackedCardListSkeleton({
           <CardContent className={cardContentClassName}>
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
-                {showLeadingVisual ? (
-                  <Skeleton className={leadingVisualClassName} />
-                ) : null}
+                {showLeadingVisual ? <Skeleton className={leadingVisualClassName} /> : null}
                 <div className="space-y-2">
                   <Skeleton className={cn("h-4", titleLineWidthClassName)} />
                   <Skeleton className={cn("h-5", subtitleLineWidthClassName)} />
@@ -458,21 +422,14 @@ export function StackedCardListSkeleton({
 
               <div className="flex items-center gap-2">
                 {showHeaderBadge ? (
-                  <Skeleton
-                    className={cn("h-7 rounded-full", badgeWidthClassName)}
-                  />
+                  <Skeleton className={cn("h-7 rounded-full", badgeWidthClassName)} />
                 ) : null}
-                {Array.from({ length: headerActionCount }).map(
-                  (__, actionIndex) => (
-                    <Skeleton
-                      key={`${index}-header-action-${actionIndex}`}
-                      className={cn(
-                        "h-9",
-                        resolvedHeaderActionWidths[actionIndex] ?? "w-16",
-                      )}
-                    />
-                  ),
-                )}
+                {Array.from({ length: headerActionCount }).map((__, actionIndex) => (
+                  <Skeleton
+                    key={`${index}-header-action-${actionIndex}`}
+                    className={cn("h-9", resolvedHeaderActionWidths[actionIndex] ?? "w-16")}
+                  />
+                ))}
               </div>
             </div>
 
@@ -491,9 +448,7 @@ export function StackedCardListSkeleton({
               className={cn(
                 "gap-2",
                 showMetaDivider && "border-t border-border/60 pt-4",
-                metaLayout === "twoColumn"
-                  ? "grid grid-cols-1 bp-sm:grid-cols-2"
-                  : "space-y-2",
+                metaLayout === "twoColumn" ? "grid grid-cols-1 bp-sm:grid-cols-2" : "space-y-2",
               )}
             >
               {metaLineWidths.map((widthClassName, metaIndex) => (
@@ -508,10 +463,7 @@ export function StackedCardListSkeleton({
               {Array.from({ length: actionCount }).map((__, actionIndex) => (
                 <Skeleton
                   key={`${index}-action-${actionIndex}`}
-                  className={cn(
-                    "h-9",
-                    resolvedActionWidths[actionIndex] ?? "w-24",
-                  )}
+                  className={cn("h-9", resolvedActionWidths[actionIndex] ?? "w-24")}
                 />
               ))}
             </div>
@@ -561,18 +513,14 @@ export function UsageCardListSkeleton({
           <CardContent className={cardContentClassName}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex items-center gap-3">
-                {showLeadingVisual ? (
-                  <Skeleton className="h-9 w-9 rounded-xl" />
-                ) : null}
+                {showLeadingVisual ? <Skeleton className="h-9 w-9 rounded-xl" /> : null}
                 <div className="space-y-2">
                   <Skeleton className="h-5 w-44 max-w-full" />
                   <Skeleton className="h-4 w-28" />
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {showStatusBadge ? (
-                  <Skeleton className="h-7 w-20 rounded-full" />
-                ) : null}
+                {showStatusBadge ? <Skeleton className="h-7 w-20 rounded-full" /> : null}
                 <Skeleton className="h-4 w-16" />
               </div>
             </div>
@@ -593,19 +541,14 @@ export function UsageCardListSkeleton({
               ))}
             </div>
 
-            {showRecentUsage ? (
-              <Skeleton className="h-4 w-52 max-w-full" />
-            ) : null}
+            {showRecentUsage ? <Skeleton className="h-4 w-52 max-w-full" /> : null}
 
             {actionCount > 0 ? (
               <div className="flex justify-end gap-2">
                 {Array.from({ length: actionCount }).map((__, actionIndex) => (
                   <Skeleton
                     key={`${index}-action-${actionIndex}`}
-                    className={cn(
-                      "h-9",
-                      resolvedActionWidths[actionIndex] ?? "w-24",
-                    )}
+                    className={cn("h-9", resolvedActionWidths[actionIndex] ?? "w-24")}
                   />
                 ))}
               </div>
@@ -671,10 +614,7 @@ export function SelectStringPageSkeleton() {
 
             <div className="grid grid-cols-1 gap-4 bp-sm:grid-cols-2 bp-lg:grid-cols-3 bp-xl:grid-cols-4">
               {Array.from({ length: 8 }).map((_, index) => (
-                <Card
-                  key={index}
-                  className="overflow-hidden rounded-2xl border-border bg-card"
-                >
+                <Card key={index} className="overflow-hidden rounded-2xl border-border bg-card">
                   <Skeleton className="aspect-square w-full" />
                   <CardContent className="flex flex-col p-4">
                     <div className="mb-3 space-y-2">
@@ -686,10 +626,7 @@ export function SelectStringPageSkeleton() {
                       <Skeleton className="h-3 w-14 rounded-lg" />
                       <div className="flex gap-1.5">
                         {Array.from({ length: 4 }).map((__, colorIndex) => (
-                          <Skeleton
-                            key={colorIndex}
-                            className="h-8 w-8 rounded-md"
-                          />
+                          <Skeleton key={colorIndex} className="h-8 w-8 rounded-md" />
                         ))}
                       </div>
                     </div>
@@ -792,10 +729,7 @@ export function SuccessPageSkeleton({
         <Card className="rounded-2xl border-border/50 bg-card shadow-sm">
           <CardContent className="space-y-3 p-5">
             {Array.from({ length: summaryRows }).map((_, index) => (
-              <div
-                key={index}
-                className="rounded-xl border border-border/40 bg-background/70 p-4"
-              >
+              <div key={index} className="rounded-xl border border-border/40 bg-background/70 p-4">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="mt-2 h-5 w-[70%]" />
               </div>
@@ -818,27 +752,16 @@ type TabPanelSkeletonProps = {
   className?: string;
 };
 
-export function TabPanelSkeleton({
-  rowCount = 4,
-  className,
-}: TabPanelSkeletonProps) {
+export function TabPanelSkeleton({ rowCount = 4, className }: TabPanelSkeletonProps) {
   return (
-    <Card
-      className={cn(
-        "rounded-2xl border-border/50 bg-card shadow-sm",
-        className,
-      )}
-    >
+    <Card className={cn("rounded-2xl border-border/50 bg-card shadow-sm", className)}>
       <CardHeader className="space-y-2 bg-muted/40 pb-4">
         <Skeleton className="h-6 w-36" />
         <Skeleton className="h-4 w-56 max-w-full" />
       </CardHeader>
       <CardContent className="space-y-3 p-5">
         {Array.from({ length: rowCount }).map((_, index) => (
-          <div
-            key={index}
-            className="rounded-xl border border-border/40 bg-background/70 p-4"
-          >
+          <div key={index} className="rounded-xl border border-border/40 bg-background/70 p-4">
             <Skeleton className="h-4 w-28" />
             <Skeleton className="mt-2 h-4 w-[80%]" />
           </div>

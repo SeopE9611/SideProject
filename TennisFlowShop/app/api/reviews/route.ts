@@ -37,11 +37,7 @@ const isAllowedHttpUrl = (v: unknown): v is string => {
 };
 
 // 상품 별점/리뷰수 집계 후 products 업데이트
-async function updateProductRatingSummary(
-  db: DbAny,
-  productIdObj: ObjectId,
-  productIdStr: string,
-) {
+async function updateProductRatingSummary(db: DbAny, productIdObj: ObjectId, productIdStr: string) {
   const col = db.collection("reviews");
 
   const cursor = col.aggregate([
@@ -85,8 +81,7 @@ async function updateProductRatingSummary(
 
 export async function POST(req: Request) {
   const token = (await cookies()).get("accessToken")?.value;
-  if (!token)
-    return NextResponse.json({ message: "unauthorized" }, { status: 401 });
+  if (!token) return NextResponse.json({ message: "unauthorized" }, { status: 401 });
 
   // 토큰 파손/만료로 verifyAccessToken이 throw 되어도 500이 아니라 401 처리
   let payload: any = null;
@@ -112,19 +107,14 @@ export async function POST(req: Request) {
   const url = new URL(req.url);
   const queryOrderId = url.searchParams.get("orderId");
   const orderIdRaw = body.orderId ?? queryOrderId ?? null;
-  const orderIdObj =
-    orderIdRaw && ObjectId.isValid(orderIdRaw)
-      ? new ObjectId(orderIdRaw)
-      : null;
+  const orderIdObj = orderIdRaw && ObjectId.isValid(orderIdRaw) ? new ObjectId(orderIdRaw) : null;
 
   const userId = new ObjectId(subStr);
 
   // 유저 이름 스냅샷
   let userName: string | null = null;
   try {
-    const user = await db
-      .collection("users")
-      .findOne({ _id: userId }, { projection: { name: 1 } });
+    const user = await db.collection("users").findOne({ _id: userId }, { projection: { name: 1 } });
     userName = user?.name ?? null;
   } catch {}
 
@@ -133,32 +123,23 @@ export async function POST(req: Request) {
 
   // 사진 정제 (화이트리스트)
   const photosInput = Array.isArray(body.photos) ? body.photos : [];
-  const cleanedList = photosInput
-    .filter(isAllowedHttpUrl)
-    .map((s: string) => s.trim());
+  const cleanedList = photosInput.filter(isAllowedHttpUrl).map((s: string) => s.trim());
   const photosClean = Array.from(new Set<string>(cleanedList)).slice(0, 5);
 
   if (!rating || rating < 1 || rating > 5)
     return NextResponse.json({ message: "invalid rating" }, { status: 400 });
-  if (!content)
-    return NextResponse.json({ message: "empty content" }, { status: 400 });
+  if (!content) return NextResponse.json({ message: "empty content" }, { status: 400 });
 
   // 상품 리뷰
   if (body.productId) {
     const productIdStr = String(body.productId);
     if (!ObjectId.isValid(productIdStr)) {
-      return NextResponse.json(
-        { message: "invalid productId" },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "invalid productId" }, { status: 400 });
     }
     const productIdObj = new ObjectId(productIdStr);
 
     if (!orderIdObj) {
-      return NextResponse.json(
-        { message: "orderId required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "orderId required" }, { status: 400 });
     }
 
     // 구매 이력 검증: orderId가 넘어오면 해당 주문에 그 상품이 포함되어야 함
@@ -167,13 +148,9 @@ export async function POST(req: Request) {
       userId,
       "items.productId": { $in: [productIdStr, productIdObj] },
     });
-    if (!bought)
-      return NextResponse.json({ message: "notPurchased" }, { status: 403 });
+    if (!bought) return NextResponse.json({ message: "notPurchased" }, { status: 403 });
     if (await isOrderServiceReviewOnly(db, bought)) {
-      return NextResponse.json(
-        { message: "serviceLinkedOrder" },
-        { status: 403 },
-      );
+      return NextResponse.json({ message: "serviceLinkedOrder" }, { status: 403 });
     }
     if (!bought.userConfirmedAt && String(bought.status ?? "") !== "구매확정") {
       return NextResponse.json({ message: "notConfirmed" }, { status: 403 });
@@ -191,8 +168,7 @@ export async function POST(req: Request) {
       dupFilter.orderId = { $in: [orderIdObj, orderIdRaw] };
     }
     const already = await db.collection("reviews").findOne(dupFilter);
-    if (already)
-      return NextResponse.json({ message: "already" }, { status: 409 });
+    if (already) return NextResponse.json({ message: "already" }, { status: 409 });
 
     const now = new Date();
     const doc: any = {
@@ -251,22 +227,17 @@ export async function POST(req: Request) {
 
     const appIdStr = String(body.serviceApplicationId || "");
     if (!ObjectId.isValid(appIdStr)) {
-      return NextResponse.json(
-        { message: "serviceApplicationId required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "serviceApplicationId required" }, { status: 400 });
     }
     const appIdObj = new ObjectId(appIdStr);
 
     // 소유권 검증
-    const app = await db
-      .collection("stringing_applications")
-      .findOne(
-        { _id: appIdObj },
-        {
-          projection: { userId: 1, orderId: 1, userConfirmedAt: 1, status: 1 },
-        },
-      );
+    const app = await db.collection("stringing_applications").findOne(
+      { _id: appIdObj },
+      {
+        projection: { userId: 1, orderId: 1, userConfirmedAt: 1, status: 1 },
+      },
+    );
     if (!app || String(app.userId) !== String(userId)) {
       return NextResponse.json({ message: "forbidden" }, { status: 403 });
     }
@@ -281,13 +252,9 @@ export async function POST(req: Request) {
     const already = await db.collection("reviews").findOne({
       userId,
       service: "stringing",
-      $or: [
-        { serviceApplicationId: appIdObj },
-        { serviceApplicationId: appIdStr },
-      ],
+      $or: [{ serviceApplicationId: appIdObj }, { serviceApplicationId: appIdStr }],
     });
-    if (already)
-      return NextResponse.json({ message: "already" }, { status: 409 });
+    if (already) return NextResponse.json({ message: "already" }, { status: 409 });
 
     const now = new Date();
     const insertRes = await db.collection("reviews").insertOne({
@@ -371,21 +338,14 @@ export async function GET(req: Request) {
       (payload as any)?.role === "admin" ||
       (payload as any)?.role === "ADMIN" ||
       (payload as any)?.isAdmin === true ||
-      (Array.isArray((payload as any)?.roles) &&
-        (payload as any).roles.includes("admin"));
+      (Array.isArray((payload as any)?.roles) && (payload as any).roles.includes("admin"));
   }
 
   const url = new URL(req.url);
-  const type = (url.searchParams.get("type") || "all") as
-    | "product"
-    | "service"
-    | "all";
+  const type = (url.searchParams.get("type") || "all") as "product" | "service" | "all";
   const rating = url.searchParams.get("rating");
   const hasPhoto = url.searchParams.get("hasPhoto") === "1";
-  const sort = (url.searchParams.get("sort") || "latest") as
-    | "latest"
-    | "helpful"
-    | "rating";
+  const sort = (url.searchParams.get("sort") || "latest") as "latest" | "helpful" | "rating";
   const limit = toInt(url.searchParams.get("limit"), 10, 1, 50);
   const cursorB64 = url.searchParams.get("cursor");
   const withHidden = url.searchParams.get("withHidden"); // 'mask' | 'all' | null
@@ -395,8 +355,7 @@ export async function GET(req: Request) {
     productFilterId && ObjectId.isValid(productFilterId)
       ? [new ObjectId(productFilterId), productFilterId]
       : null;
-  const needServiceJoin =
-    type === "all" || type === "service" || Boolean(productFilterCandidates);
+  const needServiceJoin = type === "all" || type === "service" || Boolean(productFilterCandidates);
 
   // match 조건 구성
   const match: any = {};
@@ -413,8 +372,7 @@ export async function GET(req: Request) {
     match.productId = { $in: productFilterCandidates };
   }
   if (rating) match.rating = Number(rating);
-  if (hasPhoto)
-    match.$expr = { $gt: [{ $size: { $ifNull: ["$photos", []] } }, 0] };
+  if (hasPhoto) match.$expr = { $gt: [{ $size: { $ifNull: ["$photos", []] } }, 0] };
 
   // 정렬/커서
   const sortSpec: any =
@@ -480,10 +438,7 @@ export async function GET(req: Request) {
         {
           $cond: [
             {
-              $and: [
-                { $ne: ["$racket.model", null] },
-                { $ne: ["$racket.model", ""] },
-              ],
+              $and: [{ $ne: ["$racket.model", null] }, { $ne: ["$racket.model", ""] }],
             },
             {
               $trim: {
@@ -504,16 +459,10 @@ export async function GET(req: Request) {
     productImage: {
       $ifNull: [
         {
-          $ifNull: [
-            "$product.thumbnail",
-            { $arrayElemAt: ["$product.images", 0] },
-          ],
+          $ifNull: ["$product.thumbnail", { $arrayElemAt: ["$product.images", 0] }],
         },
         {
-          $ifNull: [
-            "$racket.thumbnail",
-            { $arrayElemAt: ["$racket.images", 0] },
-          ],
+          $ifNull: ["$racket.thumbnail", { $arrayElemAt: ["$racket.images", 0] }],
         },
       ],
     },
@@ -540,10 +489,7 @@ export async function GET(req: Request) {
   project.ownedByMe = 1;
   if (withHidden === "mask") {
     const hiddenCond = {
-      $and: [
-        { $eq: ["$status", "hidden"] },
-        { $not: [{ $or: ["$ownedByMe", "$adminView"] }] },
-      ],
+      $and: [{ $eq: ["$status", "hidden"] }, { $not: [{ $or: ["$ownedByMe", "$adminView"] }] }],
     };
     project.userName = { $cond: [hiddenCond, null, "$userName"] };
     project.content = { $cond: [hiddenCond, null, "$content"] };
@@ -586,9 +532,7 @@ export async function GET(req: Request) {
         localField: "productIdObj",
         foreignField: "_id",
         as: "product",
-        pipeline: [
-          { $project: { name: 1, title: 1, thumbnail: 1, images: 1 } },
-        ],
+        pipeline: [{ $project: { name: 1, title: 1, thumbnail: 1, images: 1 } }],
       },
     },
     { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
@@ -598,9 +542,7 @@ export async function GET(req: Request) {
         localField: "productIdObj",
         foreignField: "_id",
         as: "racket",
-        pipeline: [
-          { $project: { brand: 1, model: 1, thumbnail: 1, images: 1 } },
-        ],
+        pipeline: [{ $project: { brand: 1, model: 1, thumbnail: 1, images: 1 } }],
       },
     },
     { $unwind: { path: "$racket", preserveNullAndEmptyArrays: true } },
@@ -706,11 +648,7 @@ export async function GET(req: Request) {
                                     $concat: [
                                       "$$value",
                                       {
-                                        $cond: [
-                                          { $eq: ["$$value", ""] },
-                                          "",
-                                          ", ",
-                                        ],
+                                        $cond: [{ $eq: ["$$value", ""] }, "", ", "],
                                       },
                                       "$$this",
                                     ],
@@ -770,11 +708,7 @@ export async function GET(req: Request) {
                 ],
               },
               serviceContextLabel: {
-                $cond: [
-                  { $eq: ["$service", "stringing"] },
-                  "상품+교체서비스 후기",
-                  "서비스 후기",
-                ],
+                $cond: [{ $eq: ["$service", "stringing"] }, "상품+교체서비스 후기", "서비스 후기"],
               },
             },
           },
@@ -822,10 +756,7 @@ export async function GET(req: Request) {
             {
               $match: {
                 $expr: {
-                  $and: [
-                    { $eq: ["$reviewId", "$$rid"] },
-                    { $eq: ["$userId", currentUserId] },
-                  ],
+                  $and: [{ $eq: ["$reviewId", "$$rid"] }, { $eq: ["$userId", currentUserId] }],
                 },
               },
             },
@@ -864,9 +795,7 @@ export async function GET(req: Request) {
         : sort === "rating"
           ? { id: String(last._id), rating: last.rating ?? 0 }
           : { id: String(last._id), createdAt: last.createdAt };
-    nextCursor = Buffer.from(JSON.stringify(payload), "utf-8").toString(
-      "base64",
-    );
+    nextCursor = Buffer.from(JSON.stringify(payload), "utf-8").toString("base64");
   }
 
   // 응답 직전에 라켓 브랜드 라벨 보정
@@ -882,16 +811,10 @@ export async function GET(req: Request) {
       const computed = `${racketBrandLabel(brandStr)} ${modelStr}`.trim();
       const raw = `${brandStr} ${modelStr}`.trim();
 
-      const curName =
-        typeof row?.productName === "string" ? row.productName.trim() : "";
-      if (!curName || curName === raw)
-        row.productName = computed || curName || "라켓";
+      const curName = typeof row?.productName === "string" ? row.productName.trim() : "";
+      if (!curName || curName === raw) row.productName = computed || curName || "라켓";
 
-      if (
-        !row.productImage &&
-        Array.isArray(row?.__racketImages) &&
-        row.__racketImages.length
-      ) {
+      if (!row.productImage && Array.isArray(row?.__racketImages) && row.__racketImages.length) {
         row.productImage = row.__racketImages[0];
       }
     }

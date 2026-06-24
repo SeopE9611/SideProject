@@ -28,29 +28,22 @@ function toAuditProductSnapshot(doc: Record<string, unknown>) {
     brand: typeof doc.brand === "string" ? doc.brand : "",
     price: typeof doc.price === "number" ? doc.price : null,
     salePrice: typeof doc.salePrice === "number" ? doc.salePrice : undefined,
-    discountPrice:
-      typeof doc.discountPrice === "number" ? doc.discountPrice : undefined,
+    discountPrice: typeof doc.discountPrice === "number" ? doc.discountPrice : undefined,
     stock: typeof inventory?.stock === "number" ? inventory.stock : null,
     status: typeof doc.status === "string" ? doc.status : undefined,
     isActive: typeof doc.isActive === "boolean" ? doc.isActive : undefined,
-    isPublished:
-      typeof doc.isPublished === "boolean" ? doc.isPublished : undefined,
+    isPublished: typeof doc.isPublished === "boolean" ? doc.isPublished : undefined,
     imageCount,
     isVisible: doc.isVisible !== false,
   };
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
-  if (typeof value !== "object" || value === null || Array.isArray(value))
-    return null;
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
   return value as Record<string, unknown>;
 }
 
-function parsePositiveInt(
-  value: string | null,
-  fallback: number,
-  max: number,
-): number {
+function parsePositiveInt(value: string | null, fallback: number, max: number): number {
   const n = Number(value);
   if (!Number.isFinite(n)) return fallback;
   const intValue = Math.trunc(n);
@@ -59,8 +52,7 @@ function parsePositiveInt(
 }
 
 function parseStatus(value: string | null): ProductListStatus {
-  if (value === "active" || value === "low_stock" || value === "out_of_stock")
-    return value;
+  if (value === "active" || value === "low_stock" || value === "out_of_stock") return value;
   return "all";
 }
 
@@ -99,11 +91,7 @@ function parseListRequest(url: URL): AdminProductsListRequestDto {
   const sort = parseSort(url.searchParams.get("sort"));
   return {
     page: parsePositiveInt(url.searchParams.get("page"), DEFAULT_PAGE, 100_000),
-    pageSize: parsePositiveInt(
-      url.searchParams.get("pageSize"),
-      DEFAULT_PAGE_SIZE,
-      MAX_PAGE_SIZE,
-    ),
+    pageSize: parsePositiveInt(url.searchParams.get("pageSize"), DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE),
     q: (url.searchParams.get("q") ?? "").trim(),
     brand: url.searchParams.get("brand") ?? "all",
     material: url.searchParams.get("material") ?? "all",
@@ -134,13 +122,11 @@ function parseCreateRequest(raw: unknown): AdminProductCreateRequestDto | null {
 function toProductListItem(doc: ProductDoc): AdminProductListItemDto {
   const inventory = asRecord(doc.inventory);
   const stock = typeof inventory?.stock === "number" ? inventory.stock : 0;
-  const lowStock =
-    typeof inventory?.lowStock === "number" ? inventory.lowStock : null;
+  const lowStock = typeof inventory?.lowStock === "number" ? inventory.lowStock : null;
 
   let computedStatus: AdminProductListItemDto["computedStatus"] = "active";
   if (stock === 0) computedStatus = "out_of_stock";
-  else if (lowStock !== null && stock > 0 && stock <= lowStock)
-    computedStatus = "low_stock";
+  else if (lowStock !== null && stock > 0 && stock <= lowStock) computedStatus = "low_stock";
 
   return {
     ...doc,
@@ -153,12 +139,7 @@ function buildFilter(dto: AdminProductsListRequestDto): Filter<Document> {
 
   if (dto.q) {
     const regex = new RegExp(dto.q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
-    filter.$or = [
-      { name: regex },
-      { sku: regex },
-      { brand: regex },
-      { material: regex },
-    ];
+    filter.$or = [{ name: regex }, { sku: regex }, { brand: regex }, { material: regex }];
   }
 
   if (dto.brand !== "all") filter.brand = dto.brand;
@@ -200,10 +181,7 @@ function buildFilter(dto: AdminProductsListRequestDto): Filter<Document> {
 }
 
 function buildSort(dto: AdminProductsListRequestDto): Sort {
-  const fieldMap: Record<
-    NonNullable<AdminProductsListRequestDto["sortField"]>,
-    string
-  > = {
+  const fieldMap: Record<NonNullable<AdminProductsListRequestDto["sortField"]>, string> = {
     name: "name",
     brand: "brand",
     gauge: "gauge",
@@ -329,10 +307,7 @@ export async function POST(req: NextRequest) {
 
     const requestDto = parseCreateRequest(rawBody);
     if (!requestDto) {
-      return NextResponse.json(
-        { message: "상품명과 가격은 필수입니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "상품명과 가격은 필수입니다." }, { status: 400 });
     }
 
     const db = await getDb();

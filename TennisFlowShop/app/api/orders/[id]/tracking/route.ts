@@ -26,23 +26,15 @@ function externalFailureResponse(result: DeliveryTrackerSummaryFailure) {
   );
 }
 
-export async function GET(
-  _req: Request,
-  context: { params: Promise<{ id: string }> },
-) {
+export async function GET(_req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
     if (!ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { success: false, message: "BAD_ID" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, message: "BAD_ID" }, { status: 400 });
     }
 
     const db = (await clientPromise).db();
-    const order = await db
-      .collection("orders")
-      .findOne({ _id: new ObjectId(id) });
+    const order = await db.collection("orders").findOne({ _id: new ObjectId(id) });
     if (!order) {
       return NextResponse.json(
         { success: false, message: "주문을 찾을 수 없습니다." },
@@ -67,10 +59,7 @@ export async function GET(
     );
 
     if (!isOwner && !isAdmin && !guestOwnsOrder) {
-      return NextResponse.json(
-        { success: false, message: "권한이 없습니다." },
-        { status: 403 },
-      );
+      return NextResponse.json({ success: false, message: "권한이 없습니다." }, { status: 403 });
     }
 
     const courier = normalizeCourierCode(order?.shippingInfo?.invoice?.courier);
@@ -87,8 +76,7 @@ export async function GET(
 
     const courierItem = findCourierCatalogItem(courier);
     const carrierId = mapCourierCodeToCarrierId(courier);
-    const carrierDisplayName =
-      courierItem?.label ?? getCourierDisplayName(courier);
+    const carrierDisplayName = courierItem?.label ?? getCourierDisplayName(courier);
     if (!courierItem?.supportsTracking || !carrierId) {
       return NextResponse.json({
         success: true,
@@ -140,8 +128,7 @@ export async function GET(
     return NextResponse.json(
       {
         success: false,
-        message:
-          "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
+        message: "배송조회 서비스 응답을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.",
       },
       { status: 503 },
     );

@@ -96,23 +96,18 @@ function buildQueryString(filters: Filters, page: number) {
     params.set("power", String(filters.power));
   if (filters.control !== null && filters.control !== undefined)
     params.set("control", String(filters.control));
-  if (filters.spin !== null && filters.spin !== undefined)
-    params.set("spin", String(filters.spin));
+  if (filters.spin !== null && filters.spin !== undefined) params.set("spin", String(filters.spin));
   if (filters.durability !== null && filters.durability !== undefined)
     params.set("durability", String(filters.durability));
   if (filters.comfort !== null && filters.comfort !== undefined)
     params.set("comfort", String(filters.comfort));
   if (filters.q) params.set("q", filters.q);
-  if (filters.sort && filters.sort !== "latest")
-    params.set("sort", filters.sort);
+  if (filters.sort && filters.sort !== "latest") params.set("sort", filters.sort);
   if (filters.limit) params.set("limit", String(filters.limit));
-  if (filters.minPrice !== undefined)
-    params.set("minPrice", String(filters.minPrice));
-  if (filters.maxPrice !== undefined)
-    params.set("maxPrice", String(filters.maxPrice));
+  if (filters.minPrice !== undefined) params.set("minPrice", String(filters.minPrice));
+  if (filters.maxPrice !== undefined) params.set("maxPrice", String(filters.maxPrice));
   if (filters.purpose) params.set("purpose", filters.purpose);
-  if (filters.exposure && filters.exposure !== "all")
-    params.set("exposure", filters.exposure);
+  if (filters.exposure && filters.exposure !== "all") params.set("exposure", filters.exposure);
   params.set("page", String(page));
   return params.toString();
 }
@@ -134,8 +129,7 @@ export function useInfiniteProducts(filters: Filters) {
   // 실제 데이터를 가져오는 함수
   const fetchPage = useCallback(
     async (targetPage: number, replace = false) => {
-      const requestId =
-        targetPage === 1 || replace ? ++requestSeq.current : requestSeq.current;
+      const requestId = targetPage === 1 || replace ? ++requestSeq.current : requestSeq.current;
       try {
         if (targetPage === 1) setIsLoadingInitial(true);
         else setIsFetchingMore(true);
@@ -151,9 +145,7 @@ export function useInfiniteProducts(filters: Filters) {
 
         // 누적 또는 교체
         setProducts((prev) =>
-          targetPage === 1 || replace
-            ? data.products
-            : [...prev, ...data.products],
+          targetPage === 1 || replace ? data.products : [...prev, ...data.products],
         );
         setHasMore(data.pagination.hasMore);
         setPage(data.pagination.page);

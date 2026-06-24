@@ -13,15 +13,7 @@ import {
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import {
-  AlertCircle,
-  Eye,
-  EyeOff,
-  Loader2,
-  Lock,
-  Mail,
-  Shield,
-} from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Loader2, Lock, Mail, Shield } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -63,10 +55,9 @@ function RegisterTabPanelSkeleton() {
   );
 }
 
-const RegisterTabPanel = dynamic(
-  () => import("@/app/login/_components/RegisterTabPanel"),
-  { loading: () => <RegisterTabPanelSkeleton /> },
-);
+const RegisterTabPanel = dynamic(() => import("@/app/login/_components/RegisterTabPanel"), {
+  loading: () => <RegisterTabPanelSkeleton />,
+});
 
 // fetch 응답이 JSON이 아닐 때(res.json() 파싱 실패 등)도 화면/UX가 깨지지 않도록 안전 파싱
 async function readJsonSafe(res: Response): Promise<any | null> {
@@ -134,9 +125,7 @@ export default function LoginPageClient() {
   const [saveEmail, setSaveEmail] = useState(false);
 
   // 로그인: 필드별/공통 에러 UX
-  const [loginFieldErrors, setLoginFieldErrors] = useState<
-    Partial<Record<LoginField, string>>
-  >({});
+  const [loginFieldErrors, setLoginFieldErrors] = useState<Partial<Record<LoginField, string>>>({});
   const [loginFormError, setLoginFormError] = useState<string>("");
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -185,9 +174,7 @@ export default function LoginPageClient() {
   useEffect(() => {
     const savedEmail = localStorage.getItem("saved-email");
     if (savedEmail) {
-      const emailInput = document.getElementById(
-        "email",
-      ) as HTMLInputElement | null;
+      const emailInput = document.getElementById("email") as HTMLInputElement | null;
       if (emailInput) emailInput.value = savedEmail;
       setSaveEmail(true);
     }
@@ -200,32 +187,23 @@ export default function LoginPageClient() {
     setLoginFieldErrors({});
 
     // 로그인 폼은 기존 UI를 유지하기 위해 uncontrolled input(id 기반) 접근을 사용합니다.
-    const emailInput = document.getElementById(
-      "email",
-    ) as HTMLInputElement | null;
-    const pwInput = document.getElementById(
-      "password",
-    ) as HTMLInputElement | null;
+    const emailInput = document.getElementById("email") as HTMLInputElement | null;
+    const pwInput = document.getElementById("password") as HTMLInputElement | null;
 
     const emailVal = (emailInput?.value ?? "").trim();
     const pwVal = pwInput?.value ?? "";
 
     const nextErrors: Partial<Record<LoginField, string>> = {};
     if (!emailVal) nextErrors.email = "이메일을 입력해주세요.";
-    else if (!emailRegex.test(emailVal))
-      nextErrors.email = "유효한 이메일 형식이 아닙니다.";
+    else if (!emailRegex.test(emailVal)) nextErrors.email = "유효한 이메일 형식이 아닙니다.";
     if (!pwVal) nextErrors.password = "비밀번호를 입력해주세요.";
 
     if (Object.keys(nextErrors).length > 0) {
-      const firstMsg =
-        nextErrors.email || nextErrors.password || "입력값을 확인해주세요.";
+      const firstMsg = nextErrors.email || nextErrors.password || "입력값을 확인해주세요.";
       setLoginFieldErrors(nextErrors);
       setLoginFormError(firstMsg);
       focusFirst(
-        [
-          nextErrors.email ? "email" : "",
-          nextErrors.password ? "password" : "",
-        ].filter(Boolean),
+        [nextErrors.email ? "email" : "", nextErrors.password ? "password" : ""].filter(Boolean),
       );
       return;
     }
@@ -260,10 +238,7 @@ export default function LoginPageClient() {
       const meUser = (meData as any)?.user ?? meData;
 
       if (!meRes.ok || !meUser?.id) {
-        const msg =
-          (meData as any)?.error ||
-          (meData as any)?.message ||
-          "로그인에 실패했습니다.";
+        const msg = (meData as any)?.error || (meData as any)?.message || "로그인에 실패했습니다.";
         setLoginFormError(msg);
         showErrorToast(msg);
         return;
@@ -272,20 +247,15 @@ export default function LoginPageClient() {
       setUser(meUser);
       showSuccessToast("로그인되었습니다.");
 
-      const redirectToRaw =
-        params.get("next") || params.get("redirectTo") || "/";
+      const redirectToRaw = params.get("next") || params.get("redirectTo") || "/";
       const redirectTo = safeRedirectTarget(redirectToRaw);
 
       // 로그인 페이지로 "뒤로가기" 했을 때 다시 로그인 폼이 보이지 않도록 replace가 더 안전
       router.replace(redirectTo);
       router.refresh();
     } catch (err) {
-      setLoginFormError(
-        "네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
-      );
-      showErrorToast(
-        "네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
-      );
+      setLoginFormError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      showErrorToast("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
 
       return;
     } finally {
@@ -296,26 +266,20 @@ export default function LoginPageClient() {
   const handleKakaoOAuth = () => {
     if (!confirmLeaveIfDirty()) return;
     const from = new URLSearchParams(window.location.search).get("from");
-    const url = from
-      ? `/api/oauth/kakao?from=${encodeURIComponent(from)}`
-      : "/api/oauth/kakao";
+    const url = from ? `/api/oauth/kakao?from=${encodeURIComponent(from)}` : "/api/oauth/kakao";
     window.location.href = url;
   };
 
   const handleNaverOAuth = () => {
     if (!confirmLeaveIfDirty()) return;
     const from = new URLSearchParams(window.location.search).get("from");
-    const url = from
-      ? `/api/oauth/naver?from=${encodeURIComponent(from)}`
-      : "/api/oauth/naver";
+    const url = from ? `/api/oauth/naver?from=${encodeURIComponent(from)}` : "/api/oauth/naver";
     window.location.href = url;
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8 md:py-12">
-      <div
-        className={`mx-auto w-full ${activeTab === "register" ? "max-w-2xl" : "max-w-md"}`}
-      >
+      <div className={`mx-auto w-full ${activeTab === "register" ? "max-w-2xl" : "max-w-md"}`}>
         <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300">
           <div className="border-b border-border bg-muted/30 p-4 text-foreground md:p-5">
             <div className="text-center">
@@ -347,11 +311,7 @@ export default function LoginPageClient() {
             </div>
           </div>
 
-          <Tabs
-            value={activeTab}
-            onValueChange={handleTabChange}
-            className="w-full"
-          >
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <div className="border-b border-border px-4 py-3 md:px-5">
               <TabsList className="grid h-11 w-full grid-cols-2">
                 <TabsTrigger value="login">로그인</TabsTrigger>
@@ -362,18 +322,14 @@ export default function LoginPageClient() {
               <TabsContent value="login" forceMount className="mt-0 p-4 md:p-5">
                 <div className="space-y-4">
                   <div className="text-center">
-                    <h2 className="text-2xl font-bold text-foreground">
-                      로그인
-                    </h2>
+                    <h2 className="text-2xl font-bold text-foreground">로그인</h2>
                     <p className="mt-2 break-keep text-sm leading-relaxed text-muted-foreground">
                       간편 로그인 또는 이메일로 계속 진행하세요.
                     </p>
                   </div>
 
                   <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
-                    <p className="text-sm font-semibold text-foreground text-center">
-                      간편 로그인
-                    </p>
+                    <p className="text-sm font-semibold text-foreground text-center">간편 로그인</p>
                     <SocialAuthButtons
                       onKakaoClick={handleKakaoOAuth}
                       onNaverClick={handleNaverOAuth}
@@ -402,16 +358,11 @@ export default function LoginPageClient() {
                     {loginFormError && (
                       <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
                         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                        <div className="whitespace-pre-line break-keep">
-                          {loginFormError}
-                        </div>
+                        <div className="whitespace-pre-line break-keep">{loginFormError}</div>
                       </div>
                     )}
                     <div className="space-y-2">
-                      <Label
-                        htmlFor="email"
-                        className="text-foreground font-medium"
-                      >
+                      <Label htmlFor="email" className="text-foreground font-medium">
                         이메일
                       </Label>
                       <div className="relative">
@@ -428,14 +379,9 @@ export default function LoginPageClient() {
                             }));
                             setLoginFormError("");
                             const pwVal =
-                              (
-                                document.getElementById(
-                                  "password",
-                                ) as HTMLInputElement | null
-                              )?.value ?? "";
-                            setLoginDirty(
-                              !!e.currentTarget.value.trim() || !!pwVal,
-                            );
+                              (document.getElementById("password") as HTMLInputElement | null)
+                                ?.value ?? "";
+                            setLoginDirty(!!e.currentTarget.value.trim() || !!pwVal);
                           }}
                           className="pl-10 h-12 border-border focus:border-border focus:ring-ring dark:focus:border-border"
                         />
@@ -443,18 +389,13 @@ export default function LoginPageClient() {
                       {loginFieldErrors.email && (
                         <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
                           <AlertCircle className="h-4 w-4" />
-                          <span className="whitespace-pre-line">
-                            {loginFieldErrors.email}
-                          </span>
+                          <span className="whitespace-pre-line">{loginFieldErrors.email}</span>
                         </div>
                       )}
                     </div>
 
                     <div className="space-y-2">
-                      <Label
-                        htmlFor="password"
-                        className="text-foreground font-medium"
-                      >
+                      <Label htmlFor="password" className="text-foreground font-medium">
                         비밀번호
                       </Label>
                       <div className="relative">
@@ -471,14 +412,9 @@ export default function LoginPageClient() {
                             }));
                             setLoginFormError("");
                             const emailVal =
-                              (
-                                document.getElementById(
-                                  "email",
-                                ) as HTMLInputElement | null
-                              )?.value ?? "";
-                            setLoginDirty(
-                              !!emailVal.trim() || !!e.currentTarget.value,
-                            );
+                              (document.getElementById("email") as HTMLInputElement | null)
+                                ?.value ?? "";
+                            setLoginDirty(!!emailVal.trim() || !!e.currentTarget.value);
                           }}
                           className="pl-10 pr-10 h-12 border-border focus:border-border focus:ring-ring dark:focus:border-border"
                         />
@@ -499,9 +435,7 @@ export default function LoginPageClient() {
                       {loginFieldErrors.password && (
                         <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
                           <AlertCircle className="h-4 w-4" />
-                          <span className="whitespace-pre-line">
-                            {loginFieldErrors.password}
-                          </span>
+                          <span className="whitespace-pre-line">{loginFieldErrors.password}</span>
                         </div>
                       )}
                     </div>

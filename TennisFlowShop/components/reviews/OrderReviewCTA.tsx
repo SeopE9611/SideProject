@@ -77,9 +77,7 @@ export default function OrderReviewCTA({
     return (
       <div className={`inline-flex items-center gap-2 ${className ?? ""}`}>
         <Button size={size} asChild variant="default" className="shadow-sm">
-          <Link
-            href={`/reviews/write?productId=${reviewNextTargetProductId}&orderId=${orderId}`}
-          >
+          <Link href={`/reviews/write?productId=${reviewNextTargetProductId}&orderId=${orderId}`}>
             <MessageSquarePlus className="mr-1 h-4 w-4" />
             후기 작성
           </Link>

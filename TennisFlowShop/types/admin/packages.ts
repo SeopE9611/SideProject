@@ -1,15 +1,7 @@
 export type AdminPackageType = "10회권" | "30회권" | "50회권" | "100회권";
 export type AdminPackageServiceType = "방문" | "출장";
-export type AdminPackagePassStatus =
-  | "비활성"
-  | "활성"
-  | "종료"
-  | "만료"
-  | "취소";
-export type AdminPackagePassStatusDetail =
-  | "대기"
-  | "일시정지"
-  | AdminPackagePassStatus;
+export type AdminPackagePassStatus = "비활성" | "활성" | "종료" | "만료" | "취소";
+export type AdminPackagePassStatusDetail = "대기" | "일시정지" | AdminPackagePassStatus;
 export type AdminPackagePaymentStatus = "결제완료" | "결제대기" | "결제취소";
 
 export interface AdminPackageCustomerDto {

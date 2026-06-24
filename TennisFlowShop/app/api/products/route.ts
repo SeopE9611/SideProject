@@ -97,11 +97,7 @@ export async function GET(req: NextRequest) {
         // isDeleted 플래그가 true인 문서는 제외
         if (!query) {
           return collection
-            .find(
-              productVisibilityFilterFor(
-                await getVisibilityViewerFromCookies(),
-              ),
-            )
+            .find(productVisibilityFilterFor(await getVisibilityViewerFromCookies()))
             .project(previewProjection)
             .sort({ _id: -1 })
             .limit(10)
@@ -111,9 +107,7 @@ export async function GET(req: NextRequest) {
         if (!isChosungOnly) {
           return collection
             .find({
-              ...productVisibilityFilterFor(
-                await getVisibilityViewerFromCookies(),
-              ),
+              ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
               name: { $regex: escapeRegExp(query), $options: "i" },
             })
             .project(previewProjection)
@@ -123,18 +117,14 @@ export async function GET(req: NextRequest) {
 
         const initialsQuery = getHangulInitials(query);
         const candidates = await collection
-          .find(
-            productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
-          )
+          .find(productVisibilityFilterFor(await getVisibilityViewerFromCookies()))
           .project(previewProjection)
           .sort({ _id: -1 })
           .limit(500)
           .toArray();
 
         return candidates
-          .filter((product) =>
-            getHangulInitials(product.name ?? "").includes(initialsQuery),
-          )
+          .filter((product) => getHangulInitials(product.name ?? "").includes(initialsQuery))
           .slice(0, 10);
       });
 
@@ -181,16 +171,13 @@ export async function GET(req: NextRequest) {
     const powerScore = normalizeFeatureFilterParam(power);
     if (powerScore !== null) filter["features.power"] = { $gte: powerScore };
     const controlScore = normalizeFeatureFilterParam(control);
-    if (controlScore !== null)
-      filter["features.control"] = { $gte: controlScore };
+    if (controlScore !== null) filter["features.control"] = { $gte: controlScore };
     const spinScore = normalizeFeatureFilterParam(spin);
     if (spinScore !== null) filter["features.spin"] = { $gte: spinScore };
     const durabilityScore = normalizeFeatureFilterParam(durability);
-    if (durabilityScore !== null)
-      filter["features.durability"] = { $gte: durabilityScore };
+    if (durabilityScore !== null) filter["features.durability"] = { $gte: durabilityScore };
     const comfortScore = normalizeFeatureFilterParam(comfort);
-    if (comfortScore !== null)
-      filter["features.comfort"] = { $gte: comfortScore };
+    if (comfortScore !== null) filter["features.comfort"] = { $gte: comfortScore };
     if (q) filter.name = { $regex: escapeRegExp(q), $options: "i" };
     if (material) filter.material = material;
     if (isFeatured === "true") filter["inventory.isFeatured"] = true;
@@ -201,10 +188,7 @@ export async function GET(req: NextRequest) {
         if (item === "new") return { "inventory.isNew": true };
         return { "inventory.isSale": true };
       });
-      (filter as any).$and = [
-        ...(((filter as any).$and as any[]) ?? []),
-        { $or: exposureOr },
-      ];
+      (filter as any).$and = [...(((filter as any).$and as any[]) ?? []), { $or: exposureOr }];
     }
 
     // 가격 범위 필터(기존 훅(useInfiniteProducts)에서 이미 사용중인 파라미터를 서버에서 반영)
@@ -234,20 +218,15 @@ export async function GET(req: NextRequest) {
 
     if (sort === "price-low") sortObj = { price: 1 };
     else if (sort === "price-high") sortObj = { price: -1 };
-    else if (sort === "reviews-desc")
-      sortObj = { ratingCount: -1, ratingAvg: -1, _id: -1 };
+    else if (sort === "reviews-desc") sortObj = { ratingCount: -1, ratingAvg: -1, _id: -1 };
 
     const idFilter =
-      exclude && ObjectId.isValid(exclude)
-        ? { _id: { $ne: new ObjectId(exclude) } }
-        : {};
+      exclude && ObjectId.isValid(exclude) ? { _id: { $ne: new ObjectId(exclude) } } : {};
     const composed = { ...filter, ...idFilter };
 
     const [total, itemsRaw] = await perf.measure("query", () =>
       Promise.all([
-        perf.measure("products.count", () =>
-          collection.countDocuments(composed),
-        ),
+        perf.measure("products.count", () => collection.countDocuments(composed)),
         perf.measure("products.find", () =>
           collection
             .find(composed)

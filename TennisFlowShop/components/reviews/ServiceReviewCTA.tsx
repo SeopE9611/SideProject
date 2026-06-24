@@ -12,8 +12,7 @@ type Props = {
   className?: string;
 };
 
-const fetcher = (url: string) =>
-  fetch(url, { credentials: "include" }).then((r) => r.json());
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
 export default function ServiceReviewCTA({
   applicationId,
@@ -23,19 +22,14 @@ export default function ServiceReviewCTA({
 }: Props) {
   void status;
   // 서비스 리뷰는 사용자 확정 이후에만 허용
-  const allowFetchByConfirmation = applicationId
-    ? Boolean(userConfirmedAt)
-    : true;
+  const allowFetchByConfirmation = applicationId ? Boolean(userConfirmedAt) : true;
 
   // applicationId 유무에 따라 eligibility URL 분기
   const url = applicationId
     ? `/api/reviews/eligibility?service=stringing&applicationId=${applicationId}`
     : `/api/reviews/eligibility?service=stringing`;
 
-  const { data, isLoading } = useSWR(
-    allowFetchByConfirmation ? url : null,
-    fetcher,
-  );
+  const { data, isLoading } = useSWR(allowFetchByConfirmation ? url : null, fetcher);
 
   if (!allowFetchByConfirmation) return null;
   if (isLoading) {

@@ -19,9 +19,7 @@ import { useStringingStore } from "@/app/store/stringingStore";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
-import LinkedDocsCard, {
-  LinkedDocItem,
-} from "@/components/admin/LinkedDocsCard";
+import LinkedDocsCard, { LinkedDocItem } from "@/components/admin/LinkedDocsCard";
 import SiteContainer from "@/components/layout/SiteContainer";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
@@ -43,12 +41,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { inferNextActionForOperationItem } from "@/lib/admin/next-action-guidance";
 import { adminSurface } from "@/components/admin/admin-typography";
 import {
@@ -299,10 +292,7 @@ const getNextActionCardClass = (tone: AdminNextActionTone) => {
 // 스트링 교체 서비스용 운송장 조회 URL 헬퍼
 // 코드 + 운송장번호 → 조회 URL
 // 코드/라벨 모두 대응하는 운송장 조회 URL 헬퍼
-const buildTrackingUrl = (
-  courier?: string | null,
-  trackingNumber?: string | null,
-) => {
+const buildTrackingUrl = (courier?: string | null, trackingNumber?: string | null) => {
   if (!trackingNumber) return null;
   const no = trackingNumber.trim();
   if (!no) return null;
@@ -371,12 +361,7 @@ const formatVisitTimeRange = (
   const m = Number(mm);
 
   // 시간이 이상하거나 duration이 없으면 그냥 "날짜 + 시작시간"만
-  if (
-    !Number.isFinite(h) ||
-    !Number.isFinite(m) ||
-    !durationMinutes ||
-    durationMinutes <= 0
-  ) {
+  if (!Number.isFinite(h) || !Number.isFinite(m) || !durationMinutes || durationMinutes <= 0) {
     return `${preferredDate} ${preferredTime}`;
   }
 
@@ -423,8 +408,7 @@ export default function StringingApplicationDetailClient({
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 
   // 관리자: 취소 요청 거절 모달 상태
-  const [isApproveCancelDialogOpen, setIsApproveCancelDialogOpen] =
-    useState(false);
+  const [isApproveCancelDialogOpen, setIsApproveCancelDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [isRejectSubmitting, setIsRejectSubmitting] = useState(false);
@@ -456,19 +440,16 @@ export default function StringingApplicationDetailClient({
 
     startTransition(async () => {
       try {
-        const res = await fetch(
-          `/api/applications/stringing/${applicationId}/cancel-request`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              reasonCode,
-              reasonText,
-              ...(refundAccount ? { refundAccount } : {}),
-            }),
-            credentials: "include",
-          },
-        );
+        const res = await fetch(`/api/applications/stringing/${applicationId}/cancel-request`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            reasonCode,
+            reasonText,
+            ...(refundAccount ? { refundAccount } : {}),
+          }),
+          credentials: "include",
+        });
 
         if (!res.ok) {
           const parsed = await readCancelRequestError(res, "취소 요청 실패");
@@ -486,11 +467,7 @@ export default function StringingApplicationDetailClient({
         setIsCancelDialogOpen(false);
       } catch (err) {
         console.error(err);
-        showErrorToast(
-          err instanceof Error
-            ? err.message
-            : "취소 요청 중 오류가 발생했습니다.",
-        );
+        showErrorToast(err instanceof Error ? err.message : "취소 요청 중 오류가 발생했습니다.");
       }
     });
   };
@@ -506,13 +483,10 @@ export default function StringingApplicationDetailClient({
     try {
       setIsWithdrawingCancel(true);
 
-      const res = await fetch(
-        `/api/applications/${data.id}/cancel-request-withdraw`,
-        {
-          method: "POST",
-          credentials: "include",
-        },
-      );
+      const res = await fetch(`/api/applications/${data.id}/cancel-request-withdraw`, {
+        method: "POST",
+        credentials: "include",
+      });
 
       if (!res.ok) {
         const msg = await res.text().catch(() => "");
@@ -539,13 +513,10 @@ export default function StringingApplicationDetailClient({
   const handleAdminApproveCancel = () => {
     startTransition(async () => {
       try {
-        const res = await fetch(
-          `/api/applications/stringing/${applicationId}/cancel-approve`,
-          {
-            method: "POST",
-            credentials: "include",
-          },
-        );
+        const res = await fetch(`/api/applications/stringing/${applicationId}/cancel-approve`, {
+          method: "POST",
+          credentials: "include",
+        });
 
         if (!res.ok) {
           const msg = await res.text().catch(() => "");
@@ -582,15 +553,12 @@ export default function StringingApplicationDetailClient({
       try {
         setIsRejectSubmitting(true);
 
-        const res = await fetch(
-          `/api/applications/stringing/${applicationId}/cancel-reject`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reason }),
-            credentials: "include",
-          },
-        );
+        const res = await fetch(`/api/applications/stringing/${applicationId}/cancel-reject`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reason }),
+          credentials: "include",
+        });
 
         if (!res.ok) {
           const msg = await res.text().catch(() => "");
@@ -619,23 +587,15 @@ export default function StringingApplicationDetailClient({
   const handleConfirmExchange = async () => {
     if (!canConfirmExchange || isConfirmSubmitting) return;
 
-    if (
-      !window.confirm(
-        "교체 작업을 확정하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.",
-      )
-    )
-      return;
+    if (!window.confirm("교체 작업을 확정하시겠습니까?\n확정 후에는 되돌릴 수 없습니다.")) return;
 
     try {
       setIsConfirmSubmitting(true);
 
-      const res = await fetch(
-        `${baseUrl}/api/applications/stringing/${applicationId}/confirm`,
-        {
-          method: "POST",
-          credentials: "include",
-        },
-      );
+      const res = await fetch(`${baseUrl}/api/applications/stringing/${applicationId}/confirm`, {
+        method: "POST",
+        credentials: "include",
+      });
 
       if (!res.ok) {
         const msg = await res.text().catch(() => "");
@@ -666,9 +626,7 @@ export default function StringingApplicationDetailClient({
     useStringingStore.setState({ selectedApplicationId: id });
   }, [id]);
   const { data, error, isLoading, mutate } = useSWR<ApplicationDetail>(
-    applicationId
-      ? `${baseUrl}/api/applications/stringing/${applicationId}`
-      : null,
+    applicationId ? `${baseUrl}/api/applications/stringing/${applicationId}` : null,
     authenticatedSWRFetcher,
     {
       revalidateOnFocus: false,
@@ -681,12 +639,7 @@ export default function StringingApplicationDetailClient({
   }, [applicationId, data?.lines]);
 
   const renderInitialLoading = () => (
-    <main
-      className={cn(
-        "w-full",
-        isAdmin && "min-h-screen bg-muted/30 dark:bg-muted/30",
-      )}
-    >
+    <main className={cn("w-full", isAdmin && "min-h-screen bg-muted/30 dark:bg-muted/30")}>
       <div className={cn(isAdmin && "container py-6 lg:py-8")}>
         <SiteContainer
           variant={isAdmin ? "full" : "wide"}
@@ -696,12 +649,7 @@ export default function StringingApplicationDetailClient({
               : "py-6 space-y-6 bp-sm:py-8 bp-sm:space-y-8 px-0 bp-sm:px-4 bp-lg:px-6",
           )}
         >
-          <div
-            className={cn(
-              "mx-auto w-full",
-              isAdmin ? "max-w-[1500px]" : "max-w-6xl",
-            )}
-          >
+          <div className={cn("mx-auto w-full", isAdmin ? "max-w-[1500px]" : "max-w-6xl")}>
             <div className="mb-6 rounded-2xl border border-border bg-muted/30 p-4 shadow-lg bp-sm:mb-8 bp-sm:p-6 bp-md:p-8 lg:p-6">
               <div className="space-y-3">
                 <Skeleton className="h-8 w-52" />
@@ -713,12 +661,7 @@ export default function StringingApplicationDetailClient({
               </div>
             </div>
 
-            <div
-              className={cn(
-                "grid gap-4 md:grid-cols-2",
-                isAdmin && "xl:grid-cols-12",
-              )}
-            >
+            <div className={cn("grid gap-4 md:grid-cols-2", isAdmin && "xl:grid-cols-12")}>
               <Card
                 className={cn(
                   "overflow-hidden shadow-xl",
@@ -810,11 +753,9 @@ export default function StringingApplicationDetailClient({
       .trim()
       .startsWith("rental:"),
   );
-  const isLinkedApplication =
-    isOrderLinkedApplication || isRentalLinkedApplication;
+  const isLinkedApplication = isOrderLinkedApplication || isRentalLinkedApplication;
   const isEditableAllowed =
-    !isRentalLinkedApplication &&
-    (isAdmin || userEditableStatuses.includes(data.status));
+    !isRentalLinkedApplication && (isAdmin || userEditableStatuses.includes(data.status));
 
   // 요약 표시용 파생 값
   const stringTypeCount = data.stringDetails?.stringTypes?.length ?? 0;
@@ -828,9 +769,7 @@ export default function StringingApplicationDetailClient({
     Array.isArray(data.lines) && data.lines.length > 0
       ? data.lines.length
       : data.stringDetails?.racketType
-        ? data.stringDetails.racketType
-            .split(",")
-            .filter((s) => s.trim().length > 0).length
+        ? data.stringDetails.racketType.split(",").filter((s) => s.trim().length > 0).length
         : 1;
 
   // 총 장착비 (백엔드 totalPrice 신뢰)
@@ -864,15 +803,11 @@ export default function StringingApplicationDetailClient({
     ...it,
     subtotal: it.price * it.quantity,
   }));
-  const linkedOrderItems = Array.isArray(data.linkedOrderItems)
-    ? data.linkedOrderItems
-    : [];
+  const linkedOrderItems = Array.isArray(data.linkedOrderItems) ? data.linkedOrderItems : [];
 
   const lineSummaryLines = Array.isArray(data.lines) ? data.lines : [];
   const lineSummaryStringKinds = new Set(
-    lineSummaryLines
-      .map((line) => String(line.stringName ?? "").trim())
-      .filter(Boolean),
+    lineSummaryLines.map((line) => String(line.stringName ?? "").trim()).filter(Boolean),
   );
   const lineSummary = {
     racketCount: lineSummaryLines.length,
@@ -882,18 +817,14 @@ export default function StringingApplicationDetailClient({
         String(line.tensionMain ?? "").trim().length > 0 ||
         String(line.tensionCross ?? "").trim().length > 0,
     ).length,
-    notedCount: lineSummaryLines.filter(
-      (line) => String(line.note ?? "").trim().length > 0,
-    ).length,
+    notedCount: lineSummaryLines.filter((line) => String(line.note ?? "").trim().length > 0).length,
   };
 
   const isCancelled = data.status === "취소";
   const paymentSourceRaw = String(data.paymentSource ?? "").trim();
   const linkedRentalId =
     data.rentalId ??
-    (paymentSourceRaw.startsWith("rental:")
-      ? paymentSourceRaw.slice("rental:".length)
-      : null);
+    (paymentSourceRaw.startsWith("rental:") ? paymentSourceRaw.slice("rental:".length) : null);
   const linkedAdminHref = data.orderId
     ? `/admin/orders/${data.orderId}`
     : linkedRentalId
@@ -904,8 +835,7 @@ export default function StringingApplicationDetailClient({
     ? {
         label: "대여 기반 교체서비스",
         title: "대여 라켓 장착 작업",
-        description:
-          "이 신청서는 매장 보유 대여 라켓에 스트링을 장착하는 작업입니다.",
+        description: "이 신청서는 매장 보유 대여 라켓에 스트링을 장착하는 작업입니다.",
         payment: "결제는 연결 대여에서 처리되었습니다.",
       }
     : isOrderLinkedApplication
@@ -929,8 +859,7 @@ export default function StringingApplicationDetailClient({
     (data as any).selectedString?.stockDeduction ??
     (data as any).stringProduct?.stockDeduction ??
     null;
-  const effectiveStockRestore =
-    data.stockRestore ?? (data as any).stringing?.stockRestore ?? null;
+  const effectiveStockRestore = data.stockRestore ?? (data as any).stringing?.stockRestore ?? null;
   const isVariantStockMode = effectiveStockDeduction?.mode === "variant";
   const linkedPayment = data.linkedPayment ?? null;
   const packageApplied = Boolean(data.packageInfo?.applied);
@@ -948,18 +877,13 @@ export default function StringingApplicationDetailClient({
   const paymentStatus = packageApplied
     ? (linkedPayment?.status ?? "패키지 적용 완료")
     : hasOrderLinkedPayment || hasRentalLinkedPayment
-      ? (linkedPayment?.status ??
-        data.orderPaymentStatus ??
-        data.paymentStatus ??
-        "결제대기")
+      ? (linkedPayment?.status ?? data.orderPaymentStatus ?? data.paymentStatus ?? "결제대기")
       : (data.paymentStatus ?? "결제대기");
   const normalizedPaymentProvider = String(linkedPayment?.provider ?? "")
     .trim()
     .toLowerCase();
   const needsCancelRefundAccount =
-    !packageApplied &&
-    paymentStatus === "결제완료" &&
-    normalizedPaymentProvider !== "nicepay";
+    !packageApplied && paymentStatus === "결제완료" && normalizedPaymentProvider !== "nicepay";
   const noCancelRefundAccountMessage = packageApplied
     ? "패키지 사용 신청은 환불계좌 입력 없이 취소 요청할 수 있습니다. 승인 시 사용 회차 복원 기준으로 처리됩니다."
     : normalizedPaymentProvider === "nicepay"
@@ -985,8 +909,7 @@ export default function StringingApplicationDetailClient({
     !isCancelRequested &&
     !isUserConfirmed &&
     confirmableStatuses.includes(data.status);
-  const showConfirmExchangeButton =
-    !isLinkedApplication && (canConfirmExchange || isUserConfirmed);
+  const showConfirmExchangeButton = !isLinkedApplication && (canConfirmExchange || isUserConfirmed);
   const userProgressSteps = [
     { key: "접수완료", label: "접수 완료" },
     { key: "검토 중", label: "검토 중" },
@@ -995,27 +918,21 @@ export default function StringingApplicationDetailClient({
     { key: "반송완료", label: "반송 완료" },
     { key: "완료", label: "확정 완료" },
   ];
-  const currentStepIndex = userProgressSteps.findIndex(
-    (step) => step.key === data.status,
-  );
+  const currentStepIndex = userProgressSteps.findIndex((step) => step.key === data.status);
 
   // 라켓 종류 요약 문자열 (라인 기반 집계 우선)
   const racketTypeCountMap = new Map<string, number>();
   for (const line of Array.isArray(data.lines) ? data.lines : []) {
     const racketName = String(line.racketType ?? line.racketLabel ?? "").trim();
     if (!racketName) continue;
-    racketTypeCountMap.set(
-      racketName,
-      (racketTypeCountMap.get(racketName) ?? 0) + 1,
-    );
+    racketTypeCountMap.set(racketName, (racketTypeCountMap.get(racketName) ?? 0) + 1);
   }
   const racketTypeSummaryFromLines = Array.from(racketTypeCountMap.entries())
     .map(([name, count]) => `${name} ${count}자루`)
     .join(", ");
   const racketTypeSummary =
     racketTypeSummaryFromLines ||
-    (data.stringDetails?.racketType &&
-    data.stringDetails.racketType.trim().length > 0
+    (data.stringDetails?.racketType && data.stringDetails.racketType.trim().length > 0
       ? data.stringDetails.racketType.trim()
       : "입력된 라켓 정보 없음");
 
@@ -1071,10 +988,7 @@ export default function StringingApplicationDetailClient({
       : (linkedPayment?.method ?? "무통장입금");
 
   // 관리자용 취소 요청 정보 (주문 상세와 동일 패턴)
-  const cancelInfo = buildAdminCancelRequestView(
-    data.cancelRequest,
-    "application",
-  );
+  const cancelInfo = buildAdminCancelRequestView(data.cancelRequest, "application");
   // 자가발송/운송장 등록 여부 계산
   // "고객→매장" 기준은 collectionMethod만 사용
   const collectionMethodRaw = data.shippingInfo?.collectionMethod ?? null;
@@ -1094,8 +1008,7 @@ export default function StringingApplicationDetailClient({
   // 서버에서 내려준 값 우선 사용 (라켓 구매/대여 연결이면 false로 내려옴)
   const inboundRequired = data.inboundRequired ?? true;
   const needsInboundTracking =
-    !isLinkedApplication &&
-    (data.needsInboundTracking ?? (inboundRequired && isSelfShip));
+    !isLinkedApplication && (data.needsInboundTracking ?? (inboundRequired && isSelfShip));
 
   // "매장→고객" 배송은 shippingMethod로 별도 유지
   const shippingMethod = data.shippingInfo?.shippingMethod;
@@ -1130,19 +1043,14 @@ export default function StringingApplicationDetailClient({
 
   const selfShip = data.shippingInfo?.selfShip;
   const hasTracking = Boolean(selfShip?.trackingNo);
-  const inboundTrackingHref = `/services/applications/${data.id}/shipping?${new URLSearchParams(
-    {
-      return: `/mypage?tab=orders&flowType=application&flowId=${data.id}&${flowQuery.toString()}`,
-    },
-  ).toString()}`;
+  const inboundTrackingHref = `/services/applications/${data.id}/shipping?${new URLSearchParams({
+    return: `/mypage?tab=orders&flowType=application&flowId=${data.id}&${flowQuery.toString()}`,
+  }).toString()}`;
   const invoice = data.shippingInfo?.invoice;
-  const isCourierShipping =
-    normalizeOrderShippingMethod(shippingMethod) === "courier";
+  const isCourierShipping = normalizeOrderShippingMethod(shippingMethod) === "courier";
 
   const hasStoreShippingInfo =
-    Boolean(shippingMethod) ||
-    Boolean(invoice?.trackingNumber) ||
-    Boolean(invoice?.shippedAt);
+    Boolean(shippingMethod) || Boolean(invoice?.trackingNumber) || Boolean(invoice?.shippedAt);
 
   const appGuide = inferNextActionForOperationItem({
     kind: "stringing_application",
@@ -1152,60 +1060,51 @@ export default function StringingApplicationDetailClient({
   });
   const lowerStatus = String(data.status ?? "").toLowerCase();
   const hasCancelRequest =
-    normalizeAdminCancelRequestStatus(data.cancelRequest?.status) ===
-    "requested";
+    normalizeAdminCancelRequestStatus(data.cancelRequest?.status) === "requested";
   const hasLinkedDocs = linkedDocs.length > 0;
-  const needsShippingCheck =
-    !isLinkedApplication && isCourierShipping && !invoice?.trackingNumber;
+  const needsShippingCheck = !isLinkedApplication && isCourierShipping && !invoice?.trackingNumber;
   const nextActionGuide: AdminNextActionGuide = hasCancelRequest
     ? {
         tone: "urgent",
         title: "취소 요청 검토 필요",
-        description:
-          "취소 요청 카드 기준으로 승인/거절 여부를 먼저 판단하세요.",
+        description: "취소 요청 카드 기준으로 승인/거절 여부를 먼저 판단하세요.",
       }
     : hasLinkedDocs
       ? {
           tone: "info",
           title: "연결 문서 먼저 확인",
-          description:
-            "연결 문서의 결제/배송 흐름을 확인한 뒤 상태를 변경하세요.",
+          description: "연결 문서의 결제/배송 흐름을 확인한 뒤 상태를 변경하세요.",
         }
       : lowerStatus.includes("접수") || lowerStatus.includes("검토")
         ? {
             tone: "warning",
             title: "신청 내용 검토 필요",
-            description:
-              "요청 스트링/장력/수령 방식을 확인한 뒤 작업 단계를 진행하세요.",
+            description: "요청 스트링/장력/수령 방식을 확인한 뒤 작업 단계를 진행하세요.",
           }
         : lowerStatus.includes("작업")
           ? {
               tone: "info",
               title: "교체 진행 상태 확인",
-              description:
-                "작업 진행 상태와 수령/배송 준비 상태를 함께 점검하세요.",
+              description: "작업 진행 상태와 수령/배송 준비 상태를 함께 점검하세요.",
             }
           : lowerStatus.includes("교체완료") || lowerStatus === "완료"
             ? {
                 tone: "success",
                 title: "완료 처리 및 이력 확인",
-                description:
-                  "완료 처리 후 연결 문서 반영 여부와 변경 이력을 확인하세요.",
+                description: "완료 처리 후 연결 문서 반영 여부와 변경 이력을 확인하세요.",
               }
             : needsShippingCheck
               ? {
                   tone: "warning",
                   title: "배송 정보 확인",
-                  description:
-                    "고객 반환 배송에 필요한 운송장 정보 입력 여부를 확인하세요.",
+                  description: "고객 반환 배송에 필요한 운송장 정보 입력 여부를 확인하세요.",
                   actionLabel: "배송 정보 등록/수정",
                   actionHref: `/admin/applications/stringing/${data.id}/shipping-update`,
                 }
               : {
                   tone: "success",
                   title: "추가 조치 필요 없음",
-                  description:
-                    "현재 기준으로 즉시 필요한 추가 조치는 없습니다.",
+                  description: "현재 기준으로 즉시 필요한 추가 조치는 없습니다.",
                 };
   const recommendedActions = [
     { label: "결제 정보 확인", href: "#admin-stringing-payment", show: true },
@@ -1231,10 +1130,7 @@ export default function StringingApplicationDetailClient({
     ? ([...data.history].sort((a, b) => {
         const aTime = new Date(a.date).getTime();
         const bTime = new Date(b.date).getTime();
-        return (
-          (Number.isFinite(bTime) ? bTime : 0) -
-          (Number.isFinite(aTime) ? aTime : 0)
-        );
+        return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
       })[0] ?? null)
     : null;
 
@@ -1249,19 +1145,11 @@ export default function StringingApplicationDetailClient({
       : "단독 신청 업무";
 
   // 일반 사용자도 편집 가능 상태일 때만 노출하고, 완료/취소 등엔 비활성화
-  const completedLikeStatuses = [
-    "교체완료",
-    "반송완료",
-    "완료",
-    "DONE",
-    "취소",
-  ];
+  const completedLikeStatuses = ["교체완료", "반송완료", "완료", "DONE", "취소"];
   const canEditSelfShip =
     (isAdmin || (userEditableStatuses ?? []).includes(data.status)) &&
     !completedLikeStatuses.includes(data.status);
-  const shouldShowReturnMethod = !(
-    data.orderId && data.orderHasRacket === true
-  );
+  const shouldShowReturnMethod = !(data.orderId && data.orderHasRacket === true);
   const userNextTodo =
     !isAdmin && needsInboundTracking
       ? {
@@ -1269,10 +1157,7 @@ export default function StringingApplicationDetailClient({
           ctaLabel: hasTracking ? "라켓 발송 수정" : "라켓 발송 등록",
           ctaHref: inboundTrackingHref,
         }
-      : !isAdmin &&
-          !isLinkedApplication &&
-          showConfirmExchangeButton &&
-          canConfirmExchange
+      : !isAdmin && !isLinkedApplication && showConfirmExchangeButton && canConfirmExchange
         ? {
             label: "교체서비스 확정",
             ctaLabel: "교체서비스 확정",
@@ -1282,11 +1167,7 @@ export default function StringingApplicationDetailClient({
 
   const summaryCardClass =
     "flex min-h-[108px] flex-col items-start justify-between gap-2 rounded-xl border border-border/70 bg-background/80 p-4 shadow-sm";
-  const summaryBadgeClass = cn(
-    badgeBase,
-    badgeSizeSm,
-    "inline-flex w-fit self-start",
-  );
+  const summaryBadgeClass = cn(badgeBase, badgeSizeSm, "inline-flex w-fit self-start");
   const detailGridClass = isAdmin
     ? "grid gap-4 xl:grid-cols-12"
     : "grid gap-3 bp-sm:gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.8fr)] lg:items-start";
@@ -1297,12 +1178,7 @@ export default function StringingApplicationDetailClient({
     ? "border-b border-border/70 bg-muted/30 pb-3"
     : "border-b border-border bg-muted/30 px-4 py-3 bp-lg:px-6";
   return (
-    <main
-      className={cn(
-        "w-full",
-        isAdmin && "min-h-screen bg-muted/30 dark:bg-muted/30",
-      )}
-    >
+    <main className={cn("w-full", isAdmin && "min-h-screen bg-muted/30 dark:bg-muted/30")}>
       <div className={cn(isAdmin && "container py-6 lg:py-8")}>
         <SiteContainer
           variant={isAdmin ? "full" : "wide"}
@@ -1317,12 +1193,7 @@ export default function StringingApplicationDetailClient({
               최신 상태를 확인하고 있습니다...
             </div>
           ) : null}
-          <div
-            className={cn(
-              "mx-auto w-full",
-              isAdmin ? "max-w-[1500px]" : "max-w-6xl",
-            )}
-          >
+          <div className={cn("mx-auto w-full", isAdmin ? "max-w-[1500px]" : "max-w-6xl")}>
             {/* 헤더 */}
             <div
               className={cn(
@@ -1357,19 +1228,14 @@ export default function StringingApplicationDetailClient({
                           : "text-xl font-bold sm:text-2xl bp-sm:text-3xl",
                       )}
                     >
-                      {isAdmin
-                        ? "교체서비스 신청 상세 관리"
-                        : "교체서비스 신청 상세"}
+                      {isAdmin ? "교체서비스 신청 상세 관리" : "교체서비스 신청 상세"}
                     </h1>
                     {isAdmin ? (
                       <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-foreground/75">
                         <span className="font-medium text-foreground/90">
                           신청 ID: #{toShortApplicationId(data.id)}
                         </span>
-                        <span
-                          className="max-w-full truncate font-mono text-xs"
-                          title={data.id}
-                        >
+                        <span className="max-w-full truncate font-mono text-xs" title={data.id}>
                           {data.id}
                         </span>
                         <Button
@@ -1381,9 +1247,7 @@ export default function StringingApplicationDetailClient({
                           onClick={() => {
                             void navigator.clipboard
                               .writeText(data.id)
-                              .then(() =>
-                                showSuccessToast("신청 ID가 복사되었습니다."),
-                              )
+                              .then(() => showSuccessToast("신청 ID가 복사되었습니다."))
                               .catch(() => {});
                           }}
                         >
@@ -1394,18 +1258,14 @@ export default function StringingApplicationDetailClient({
                     ) : (
                       <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2 text-sm text-muted-foreground">
                         <ApplicationStatusBadge status={data.status} />
-                        <Badge
-                          variant="outline"
-                          className={cn(badgeBase, badgeSizeSm, "bg-card")}
-                        >
+                        <Badge variant="outline" className={cn(badgeBase, badgeSizeSm, "bg-card")}>
                           {applicationContext.label}
                         </Badge>
                         <span className="break-all font-medium">
                           신청번호: #{toShortApplicationId(data.id)}
                         </span>
                         <span className="tabular-nums">
-                          신청일{" "}
-                          {new Date(data.requestedAt).toLocaleDateString()}
+                          신청일 {new Date(data.requestedAt).toLocaleDateString()}
                         </span>
                       </div>
                     )}
@@ -1429,9 +1289,7 @@ export default function StringingApplicationDetailClient({
                     >
                       <Link href={backUrl}>
                         <span className="sm:hidden">목록</span>
-                        <span className="hidden sm:inline">
-                          신청 목록으로 돌아가기
-                        </span>
+                        <span className="hidden sm:inline">신청 목록으로 돌아가기</span>
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
@@ -1459,13 +1317,9 @@ export default function StringingApplicationDetailClient({
                         size="sm"
                         className="h-9 w-full whitespace-nowrap border-border bg-card hover:bg-muted bp-lg:w-auto"
                       >
-                        <Link
-                          href={`/admin/applications/stringing/${data.id}/shipping-update`}
-                        >
+                        <Link href={`/admin/applications/stringing/${data.id}/shipping-update`}>
                           <Truck className="mr-1 h-4 w-4" />
-                          {invoice?.trackingNumber
-                            ? "반송 운송장 수정"
-                            : "반송 운송장 등록"}
+                          {invoice?.trackingNumber ? "반송 운송장 수정" : "반송 운송장 등록"}
                         </Link>
                       </Button>
                     )}
@@ -1496,9 +1350,7 @@ export default function StringingApplicationDetailClient({
                         </span>
                       </TooltipTrigger>
                       {!isEditableAllowed && (
-                        <TooltipContent>
-                          현재 상태에서는 편집할 수 없습니다.
-                        </TooltipContent>
+                        <TooltipContent>현재 상태에서는 편집할 수 없습니다.</TooltipContent>
                       )}
                     </Tooltip>
 
@@ -1513,24 +1365,22 @@ export default function StringingApplicationDetailClient({
                     )}
 
                     {/* 사용자: 교체확정 버튼(확정 가능 시, 또는 이미 확정된 경우에만 노출) */}
-                    {!isAdmin &&
-                      !isLinkedApplication &&
-                      showConfirmExchangeButton && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={!canConfirmExchange || isConfirmSubmitting}
-                          onClick={handleConfirmExchange}
-                          className="h-8 w-full overflow-hidden whitespace-nowrap border-primary/30 text-primary hover:bg-primary/10 bp-lg:h-9 bp-lg:w-auto"
-                        >
-                          <CheckCircle2 className="w-4 h-4 mr-2" />
-                          {isConfirmSubmitting
-                            ? "확정 중..."
-                            : isUserConfirmed
-                              ? "교체서비스 확정 완료"
-                              : "교체서비스 확정"}
-                        </Button>
-                      )}
+                    {!isAdmin && !isLinkedApplication && showConfirmExchangeButton && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={!canConfirmExchange || isConfirmSubmitting}
+                        onClick={handleConfirmExchange}
+                        className="h-8 w-full overflow-hidden whitespace-nowrap border-primary/30 text-primary hover:bg-primary/10 bp-lg:h-9 bp-lg:w-auto"
+                      >
+                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                        {isConfirmSubmitting
+                          ? "확정 중..."
+                          : isUserConfirmed
+                            ? "교체서비스 확정 완료"
+                            : "교체서비스 확정"}
+                      </Button>
+                    )}
                   </div>
                 </TooltipProvider>
               </div>
@@ -1689,10 +1539,7 @@ export default function StringingApplicationDetailClient({
                     (() => {
                       const pay = getPaymentStatusBadgeSpec(paymentStatus);
                       return (
-                        <Badge
-                          variant={pay.variant}
-                          className={summaryBadgeClass}
-                        >
+                        <Badge variant={pay.variant} className={summaryBadgeClass}>
                           {paymentStatus}
                         </Badge>
                       );
@@ -1708,9 +1555,7 @@ export default function StringingApplicationDetailClient({
                   <div className={summaryCardClass}>
                     <div className="mb-2 flex items-center space-x-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium text-muted-foreground">
-                        희망 일시
-                      </span>
+                      <span className="text-sm font-medium text-muted-foreground">희망 일시</span>
                     </div>
                     <p className="break-words text-base font-semibold tabular-nums text-foreground bp-sm:text-lg">
                       {visitTimeLabel}
@@ -1721,9 +1566,7 @@ export default function StringingApplicationDetailClient({
                   <div className={summaryCardClass}>
                     <div className="flex items-center space-x-2">
                       <Truck className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium text-muted-foreground">
-                        입고 / 반환
-                      </span>
+                      <span className="text-sm font-medium text-muted-foreground">입고 / 반환</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       <Badge variant="neutral" className={summaryBadgeClass}>
@@ -1732,12 +1575,7 @@ export default function StringingApplicationDetailClient({
                           : "별도 입고 불필요"}
                       </Badge>
                       {shouldShowReturnMethod && (
-                        <Badge
-                          className={cn(
-                            summaryBadgeClass,
-                            shippingMethodBadge.color,
-                          )}
-                        >
+                        <Badge className={cn(summaryBadgeClass, shippingMethodBadge.color)}>
                           반환 {shippingMethodBadge.label}
                         </Badge>
                       )}
@@ -1765,16 +1603,10 @@ export default function StringingApplicationDetailClient({
                     <div className="flex flex-wrap items-center gap-2">
                       <Ticket className="h-4 w-4 text-muted-foreground" />
                       <span className="font-medium">신청 요약</span>
-                      <Badge
-                        variant="neutral"
-                        className={cn(badgeBase, badgeSizeSm)}
-                      >
+                      <Badge variant="neutral" className={cn(badgeBase, badgeSizeSm)}>
                         스트링 {stringTypeCount}종
                       </Badge>
-                      <Badge
-                        variant="neutral"
-                        className={cn(badgeBase, badgeSizeSm)}
-                      >
+                      <Badge variant="neutral" className={cn(badgeBase, badgeSizeSm)}>
                         라켓 {racketCount}자루
                       </Badge>
                     </div>
@@ -1783,9 +1615,7 @@ export default function StringingApplicationDetailClient({
                 {data.orderId && (
                   <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm text-foreground">
                     <Truck className="h-4 w-4 text-muted-foreground" />
-                    <span className="shrink-0 break-keep font-medium">
-                      주문 수령 방식
-                    </span>
+                    <span className="shrink-0 break-keep font-medium">주문 수령 방식</span>
                     <Badge
                       className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${linkedOrderPickupBadge?.color ?? badgeToneClass("danger")}`}
                     >
@@ -1797,9 +1627,7 @@ export default function StringingApplicationDetailClient({
                 {shouldShowReturnMethod && (
                   <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm text-foreground">
                     <Truck className="h-4 w-4 text-muted-foreground" />
-                    <span className="shrink-0 break-keep font-medium">
-                      반환 방식
-                    </span>
+                    <span className="shrink-0 break-keep font-medium">반환 방식</span>
                     <Badge
                       className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${shippingMethodBadge.color}`}
                     >
@@ -1818,17 +1646,15 @@ export default function StringingApplicationDetailClient({
                 <div className="mt-4 rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm text-foreground shadow-sm">
                   <p className="font-semibold">취소 요청 처리 중</p>
                   <p className="mt-1 text-foreground/80">
-                    관리자 확인 후 결과가 반영됩니다. 필요하면 아래 신청 상태
-                    카드에서 취소 요청을 철회할 수 있습니다.
+                    관리자 확인 후 결과가 반영됩니다. 필요하면 아래 신청 상태 카드에서 취소 요청을
+                    철회할 수 있습니다.
                   </p>
                 </div>
               )}
 
               {!isAdmin && (
                 <div className="mt-4 rounded-xl border border-border bg-card p-4 shadow-sm">
-                  <p className="text-sm font-semibold text-foreground">
-                    진행 단계
-                  </p>
+                  <p className="text-sm font-semibold text-foreground">진행 단계</p>
                   <p className="mt-1 text-xs text-foreground/75">
                     현재 단계:{" "}
                     <span className="font-medium text-foreground">
@@ -1850,10 +1676,7 @@ export default function StringingApplicationDetailClient({
               )}
               {/* 취소 요청 상태 안내 (관리자용) */}
               {isAdmin && cancelInfo && (
-                <div
-                  id="admin-stringing-cancel-request"
-                  className="scroll-mt-6"
-                >
+                <div id="admin-stringing-cancel-request" className="scroll-mt-6">
                   <AdminCancelRequestCard
                     badgeLabel={cancelInfo.badgeLabel}
                     description={cancelInfo.description}
@@ -1862,43 +1685,28 @@ export default function StringingApplicationDetailClient({
                     className="border-solid border-border/80 bg-background/90 shadow-sm"
                     rightSlot={
                       <div className="rounded-md border border-border/60 bg-background/70 px-3 py-2">
-                        <p className="text-xs font-medium text-muted-foreground">
-                          환불 계좌 정보
-                        </p>
-                        {needsCancelRefundAccount ||
-                        cancelInfo.refundAccount ? (
+                        <p className="text-xs font-medium text-muted-foreground">환불 계좌 정보</p>
+                        {needsCancelRefundAccount || cancelInfo.refundAccount ? (
                           <dl className="mt-2 space-y-1 text-xs text-foreground">
                             <div className="grid gap-1 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-2">
-                              <dt className="break-keep text-muted-foreground">
-                                환불 은행
-                              </dt>
-                              <dd>
-                                {cancelInfo.refundAccount?.bankLabel ||
-                                  "미입력"}
-                              </dd>
+                              <dt className="break-keep text-muted-foreground">환불 은행</dt>
+                              <dd>{cancelInfo.refundAccount?.bankLabel || "미입력"}</dd>
                             </div>
                             <div className="grid gap-1 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-2">
-                              <dt className="break-keep text-muted-foreground">
-                                계좌번호
-                              </dt>
+                              <dt className="break-keep text-muted-foreground">계좌번호</dt>
                               <dd className="break-words font-mono">
                                 {cancelInfo.refundAccount?.account || "미입력"}
                               </dd>
                             </div>
                             <div className="grid gap-1 sm:grid-cols-[72px_minmax(0,1fr)] sm:gap-2">
-                              <dt className="break-keep text-muted-foreground">
-                                예금주
-                              </dt>
-                              <dd>
-                                {cancelInfo.refundAccount?.holder || "미입력"}
-                              </dd>
+                              <dt className="break-keep text-muted-foreground">예금주</dt>
+                              <dd>{cancelInfo.refundAccount?.holder || "미입력"}</dd>
                             </div>
                           </dl>
                         ) : (
                           <p className="mt-2 text-xs text-muted-foreground">
-                            이 취소 요청은 환불계좌 입력 대상이 아닙니다. 카드
-                            결제/패키지/결제대기 건은 별도 계좌 정보 없이
-                            처리됩니다.
+                            이 취소 요청은 환불계좌 입력 대상이 아닙니다. 카드 결제/패키지/결제대기
+                            건은 별도 계좌 정보 없이 처리됩니다.
                           </p>
                         )}
                       </div>
@@ -1909,18 +1717,11 @@ export default function StringingApplicationDetailClient({
             </div>
 
             {isAdmin && (
-              <Card
-                className={cn(
-                  "mb-6",
-                  getNextActionCardClass(nextActionGuide.tone),
-                )}
-              >
+              <Card className={cn("mb-6", getNextActionCardClass(nextActionGuide.tone))}>
                 <CardHeader className="pb-3">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <CardTitle className="text-base font-semibold">
-                        우선 처리 안내
-                      </CardTitle>
+                      <CardTitle className="text-base font-semibold">우선 처리 안내</CardTitle>
                       <CardDescription className="mt-1 text-sm text-foreground/75">
                         {nextActionGuide.title}
                       </CardDescription>
@@ -1941,15 +1742,12 @@ export default function StringingApplicationDetailClient({
                     {nextActionGuide.description}
                   </p>
                   <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                    <p className="text-sm font-semibold text-foreground">
-                      권장 작업
-                    </p>
+                    <p className="text-sm font-semibold text-foreground">권장 작업</p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       현재 상태에서 관리자가 먼저 확인하면 좋은 작업입니다.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {nextActionGuide.actionHref &&
-                      nextActionGuide.actionLabel ? (
+                      {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
                         <Button asChild size="sm">
                           <Link href={nextActionGuide.actionHref}>
                             {nextActionGuide.actionLabel}
@@ -1970,27 +1768,19 @@ export default function StringingApplicationDetailClient({
                     </div>
                   </div>
                   <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                    <p className="text-sm font-semibold text-foreground">
-                      최근 처리 이력
-                    </p>
+                    <p className="text-sm font-semibold text-foreground">최근 처리 이력</p>
                     <div className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
                       <p>
-                        <span className="font-medium text-foreground">
-                          마지막 처리:
-                        </span>{" "}
+                        <span className="font-medium text-foreground">마지막 처리:</span>{" "}
                         {latestProcessingHistory?.status ?? "기록 없음"}
                       </p>
                       <p>
-                        <span className="font-medium text-foreground">
-                          처리 시각:
-                        </span>{" "}
+                        <span className="font-medium text-foreground">처리 시각:</span>{" "}
                         {latestProcessingDate}
                       </p>
                       {latestProcessingHistory?.description ? (
                         <p className="sm:col-span-2">
-                          <span className="font-medium text-foreground">
-                            내용:
-                          </span>{" "}
+                          <span className="font-medium text-foreground">내용:</span>{" "}
                           {latestProcessingHistory.description}
                         </p>
                       ) : null}
@@ -2023,16 +1813,10 @@ export default function StringingApplicationDetailClient({
                 <CardHeader className="pb-3">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <CardTitle className="text-base">
-                        {applicationContext.title}
-                      </CardTitle>
+                      <CardTitle className="text-base">{applicationContext.title}</CardTitle>
                       <CardDescription className="mt-1 space-y-1 leading-relaxed">
-                        <span className="block">
-                          {applicationContext.description}
-                        </span>
-                        <span className="block">
-                          {applicationContext.payment}
-                        </span>
+                        <span className="block">{applicationContext.description}</span>
+                        <span className="block">{applicationContext.payment}</span>
                       </CardDescription>
                     </div>
                     <Badge
@@ -2060,41 +1844,29 @@ export default function StringingApplicationDetailClient({
             {isAdmin && (data.orderId || data.rentalId) && (
               <Card className="mb-8 border border-primary/20 bg-primary/5">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base">
-                    연결 업무 기준 관리자 할 일
-                  </CardTitle>
+                  <CardTitle className="text-base">연결 업무 기준 관리자 할 일</CardTitle>
                   <CardDescription>
-                    {linkedContextLabel} 문맥에서 현재 단계와 다음 액션을
-                    안내합니다.
+                    {linkedContextLabel} 문맥에서 현재 단계와 다음 액션을 안내합니다.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-1 text-sm">
-                  <p className="text-muted-foreground">
-                    현재 단계: {appGuide.stage}
-                  </p>
-                  <p className="font-medium">
-                    다음 할 일: {appGuide.nextAction}
-                  </p>
+                  <p className="text-muted-foreground">현재 단계: {appGuide.stage}</p>
+                  <p className="font-medium">다음 할 일: {appGuide.nextAction}</p>
                 </CardContent>
               </Card>
             )}
 
             {/* 상태 카드 */}
-            <Card
-              id="admin-stringing-cancel"
-              className={cn(detailCardClass, "mb-6 bp-sm:mb-8")}
-            >
+            <Card id="admin-stringing-cancel" className={cn(detailCardClass, "mb-6 bp-sm:mb-8")}>
               <CardHeader className={detailCardHeaderClass}>
                 <div className="flex items-center justify-between gap-3">
-                  <CardTitle>
-                    {isAdmin ? "신청 상태 관리" : "신청 상태"}
-                  </CardTitle>
+                  <CardTitle>{isAdmin ? "신청 상태 관리" : "신청 상태"}</CardTitle>
                   <ApplicationStatusBadge status={data.status} />
                 </div>
                 {isAdmin && (
                   <CardDescription>
-                    연결된 주문·대여의 진행 단계와 취소 요청은 해당 상세에서
-                    처리합니다. 단독 신청서만 이 화면에서 직접 조정하세요.
+                    연결된 주문·대여의 진행 단계와 취소 요청은 해당 상세에서 처리합니다. 단독
+                    신청서만 이 화면에서 직접 조정하세요.
                   </CardDescription>
                 )}
               </CardHeader>
@@ -2104,12 +1876,9 @@ export default function StringingApplicationDetailClient({
                     <div className="rounded-xl border border-border/60 bg-card/70 p-4">
                       <div className="space-y-3">
                         <div>
-                          <p className="text-sm font-semibold text-foreground">
-                            신청 진행 상태
-                          </p>
+                          <p className="text-sm font-semibold text-foreground">신청 진행 상태</p>
                           <p className="mt-1 text-xs text-foreground/75">
-                            현재 신청서의 진행 단계를 확인하고 필요한 경우
-                            상태를 변경합니다.
+                            현재 신청서의 진행 단계를 확인하고 필요한 경우 상태를 변경합니다.
                           </p>
                         </div>
 
@@ -2134,37 +1903,22 @@ export default function StringingApplicationDetailClient({
                                 ? "이 신청서는 대여 주문과 연결되어 있습니다. 작업 상태 변경은 대여 상세의 ‘교체서비스 작업 상태 관리’에서 처리하세요."
                                 : "이 신청서는 주문과 연결되어 있습니다. 상태 변경은 연결된 주문 상세의 통합 진행 단계에서 처리하세요."}
                             </p>
-                            <Button
-                              asChild
-                              size="sm"
-                              variant="outline"
-                              className="mt-2"
-                            >
-                              <Link href={linkedAdminHref}>
-                                {linkedAdminLabel}
-                              </Link>
+                            <Button asChild size="sm" variant="outline" className="mt-2">
+                              <Link href={linkedAdminHref}>{linkedAdminLabel}</Link>
                             </Button>
                           </div>
                         )}
 
                         <div className="text-xs text-foreground/75 space-y-1">
                           {isCancelled ? (
-                            <p>
-                              취소된 신청서입니다. 상태 변경 및 추가 운영 액션이
-                              제한됩니다.
-                            </p>
+                            <p>취소된 신청서입니다. 상태 변경 및 추가 운영 액션이 제한됩니다.</p>
                           ) : isCancelRequested ? (
-                            <p>
-                              취소 요청 처리 중입니다. 승인 또는 거절 후 이력에
-                              반영됩니다.
-                            </p>
+                            <p>취소 요청 처리 중입니다. 승인 또는 거절 후 이력에 반영됩니다.</p>
                           ) : (
                             <>
                               <p>
-                                {new Date(
-                                  data.requestedAt,
-                                ).toLocaleDateString()}
-                                에 접수된 신청입니다.
+                                {new Date(data.requestedAt).toLocaleDateString()}에 접수된
+                                신청입니다.
                               </p>
                               <p>
                                 {isOrderLinkedApplication
@@ -2182,13 +1936,10 @@ export default function StringingApplicationDetailClient({
                     <div className="rounded-xl border border-border/60 bg-card/70 p-4">
                       <div className="space-y-3">
                         <div>
-                          <p className="text-sm font-semibold text-foreground">
-                            운영 액션
-                          </p>
+                          <p className="text-sm font-semibold text-foreground">운영 액션</p>
                           <p className="mt-1 text-xs text-foreground/75">
-                            고객 취소 요청 승인/거절을 처리합니다. 처리 후 신청
-                            상태와 연결 주문·패키지 이력이 변경될 수 있으니 처리
-                            전 확인해주세요.
+                            고객 취소 요청 승인/거절을 처리합니다. 처리 후 신청 상태와 연결
+                            주문·패키지 이력이 변경될 수 있으니 처리 전 확인해주세요.
                           </p>
                         </div>
 
@@ -2204,9 +1955,7 @@ export default function StringingApplicationDetailClient({
                               <Button
                                 size="sm"
                                 variant="destructive"
-                                onClick={() =>
-                                  setIsApproveCancelDialogOpen(true)
-                                }
+                                onClick={() => setIsApproveCancelDialogOpen(true)}
                                 disabled={isPending}
                               >
                                 <XCircle className="mr-1 h-4 w-4" />
@@ -2234,9 +1983,8 @@ export default function StringingApplicationDetailClient({
 
                         {hasOrderCancelRequested && !isCancelled && (
                           <p className="text-xs text-destructive">
-                            이 신청이 연결된 주문에 이미 취소 요청이 걸려
-                            있습니다. 최종 취소 승인/거절은 주문 상세 화면에서
-                            처리해 주세요.
+                            이 신청이 연결된 주문에 이미 취소 요청이 걸려 있습니다. 최종 취소
+                            승인/거절은 주문 상세 화면에서 처리해 주세요.
                           </p>
                         )}
                       </div>
@@ -2254,15 +2002,13 @@ export default function StringingApplicationDetailClient({
 
                       {!isCancelled && isCancelRequested && (
                         <span className="italic">
-                          취소 요청 처리 중입니다. 관리자 확인 후 결과가
-                          반영됩니다.
+                          취소 요청 처리 중입니다. 관리자 확인 후 결과가 반영됩니다.
                         </span>
                       )}
 
                       {!isCancelled && !isCancelRequested && (
                         <span>
-                          {new Date(data.requestedAt).toLocaleDateString()}에
-                          접수된 신청입니다.
+                          {new Date(data.requestedAt).toLocaleDateString()}에 접수된 신청입니다.
                         </span>
                       )}
                       {!isCancelled &&
@@ -2278,15 +2024,13 @@ export default function StringingApplicationDetailClient({
 
                     {!isAdmin && isOrderLinkedApplication && (
                       <p className="max-w-xl text-sm text-muted-foreground">
-                        이 교체서비스는 연결된 주문의 구매확정과 함께
-                        처리됩니다.
+                        이 교체서비스는 연결된 주문의 구매확정과 함께 처리됩니다.
                       </p>
                     )}
 
                     {!isAdmin && isRentalLinkedApplication && (
                       <p className="max-w-xl text-sm text-muted-foreground">
-                        이 교체서비스는 연결된 대여의 수령확인과 함께
-                        처리됩니다.
+                        이 교체서비스는 연결된 대여의 수령확인과 함께 처리됩니다.
                       </p>
                     )}
 
@@ -2319,9 +2063,7 @@ export default function StringingApplicationDetailClient({
                             disabled={isWithdrawingCancel}
                             className="w-full border-border text-primary hover:bg-muted hover:text-primary"
                           >
-                            {isWithdrawingCancel
-                              ? "취소 요청 철회 중..."
-                              : "취소 요청 철회"}
+                            {isWithdrawingCancel ? "취소 요청 철회 중..." : "취소 요청 철회"}
                           </Button>
                         )}
                     </div>
@@ -2343,9 +2085,7 @@ export default function StringingApplicationDetailClient({
               <Card
                 className={cn(
                   detailCardClass,
-                  isAdmin
-                    ? "xl:col-span-6"
-                    : "order-4 lg:col-start-2 lg:row-start-2",
+                  isAdmin ? "xl:col-span-6" : "order-4 lg:col-start-2 lg:row-start-2",
                 )}
               >
                 <CardHeader className={detailCardHeaderClass}>
@@ -2354,14 +2094,10 @@ export default function StringingApplicationDetailClient({
                       <User className="h-5 w-5 text-primary" />
                       <span>{isAdmin ? "고객 정보" : "신청자 정보"}</span>
                     </div>
-                    {isEditMode && (
-                      <Edit3 className="h-4 w-4 text-muted-foreground" />
-                    )}
+                    {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
                   </CardTitle>
                 </CardHeader>
-                <CardContent
-                  className={cn("p-4 bp-lg:p-6", !isAdmin && "py-3 bp-lg:py-5")}
-                >
+                <CardContent className={cn("p-4 bp-lg:p-6", !isAdmin && "py-3 bp-lg:py-5")}>
                   {editingCustomer ? (
                     <CustomerEditForm
                       initialData={{
@@ -2369,10 +2105,8 @@ export default function StringingApplicationDetailClient({
                         email: data.customer.email ?? "이메일 미입력",
                         phone: data.customer?.phone ?? "전화번호 미입력",
                         address: data.customer?.address ?? "주소 미입력",
-                        addressDetail:
-                          data.customer?.addressDetail ?? "상세 주소 미입력",
-                        postalCode:
-                          data.customer?.postalCode ?? "우편번호 미입력",
+                        addressDetail: data.customer?.addressDetail ?? "상세 주소 미입력",
+                        postalCode: data.customer?.postalCode ?? "우편번호 미입력",
                       }}
                       resourcePath={`${baseUrl}/api/applications/stringing`}
                       entityId={data.id}
@@ -2418,9 +2152,7 @@ export default function StringingApplicationDetailClient({
                       <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                         <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
                         <div className="min-w-0">
-                          <p className="text-sm text-foreground/80">
-                            {customerAddressLabel}
-                          </p>
+                          <p className="text-sm text-foreground/80">{customerAddressLabel}</p>
                           <p className="break-words font-semibold text-foreground">
                             {customerAddressValue}
                           </p>
@@ -2431,8 +2163,7 @@ export default function StringingApplicationDetailClient({
                           )}
                           {customerAddressSubValue && (
                             <p className="text-sm text-foreground/80">
-                              {customerAddressSubLabel}:{" "}
-                              {customerAddressSubValue}
+                              {customerAddressSubLabel}: {customerAddressSubValue}
                             </p>
                           )}
                         </div>
@@ -2460,9 +2191,7 @@ export default function StringingApplicationDetailClient({
                 id="admin-stringing-payment"
                 className={cn(
                   detailCardClass,
-                  isAdmin
-                    ? "xl:col-span-6"
-                    : "order-3 lg:col-start-2 lg:row-start-1",
+                  isAdmin ? "xl:col-span-6" : "order-3 lg:col-start-2 lg:row-start-1",
                 )}
               >
                 <CardHeader
@@ -2473,30 +2202,22 @@ export default function StringingApplicationDetailClient({
                   )}
                 >
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <CreditCard className="w-5 h-5 text-primary" /> 결제/패키지
-                    정보
+                    <CreditCard className="w-5 h-5 text-primary" /> 결제/패키지 정보
                   </CardTitle>
                   <div className="flex items-center space-x-2">
                     {(() => {
                       const pay = getPaymentStatusBadgeSpec(paymentStatus);
                       return (
-                        <Badge
-                          variant={pay.variant}
-                          className={cn(badgeBase, badgeSizeSm)}
-                        >
+                        <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
                           {paymentStatus}
                         </Badge>
                       );
                     })()}
-                    {isEditMode && (
-                      <Edit3 className="h-4 w-4 text-muted-foreground" />
-                    )}
+                    {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
                   </div>
                 </CardHeader>
 
-                <CardContent
-                  className={cn("p-4 bp-lg:p-6", !isAdmin && "py-3 bp-lg:py-5")}
-                >
+                <CardContent className={cn("p-4 bp-lg:p-6", !isAdmin && "py-3 bp-lg:py-5")}>
                   {editingPayment ? (
                     <PaymentEditForm
                       initialData={{
@@ -2518,9 +2239,7 @@ export default function StringingApplicationDetailClient({
                           method={paymentMethodRaw}
                           bankKey={
                             useStandaloneBankFallback
-                              ? (linkedPayment?.bank ??
-                                data.shippingInfo?.bank ??
-                                undefined)
+                              ? (linkedPayment?.bank ?? data.shippingInfo?.bank ?? undefined)
                               : (linkedPayment?.bank ?? undefined)
                           }
                           depositor={
@@ -2535,9 +2254,7 @@ export default function StringingApplicationDetailClient({
                           easyPayProvider={linkedPayment?.easyPayProvider}
                           paymentStatus={paymentStatus}
                           paymentTid={linkedPayment?.tid}
-                          paymentCardDisplayName={
-                            linkedPayment?.cardDisplayName
-                          }
+                          paymentCardDisplayName={linkedPayment?.cardDisplayName}
                           paymentCardCompany={linkedPayment?.cardCompany}
                           paymentCardLabel={linkedPayment?.cardLabel}
                           approvedAt={linkedPayment?.approvedAt ?? null}
@@ -2545,8 +2262,8 @@ export default function StringingApplicationDetailClient({
                         />
                         {isOrderLinkedApplication && (
                           <p className="mt-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs leading-relaxed text-foreground/80">
-                            결제는 연결 주문에서 처리되었습니다. 주문 결제에
-                            포함된 교체서비스입니다.
+                            결제는 연결 주문에서 처리되었습니다. 주문 결제에 포함된
+                            교체서비스입니다.
                           </p>
                         )}
                       </div>
@@ -2598,8 +2315,7 @@ export default function StringingApplicationDetailClient({
                                   <span className="font-semibold">
                                     {data.packageInfo.useCount}회
                                   </span>
-                                  에 해당하지만, 실제로 패키지는 사용되지
-                                  않았습니다.
+                                  에 해당하지만, 실제로 패키지는 사용되지 않았습니다.
                                 </p>
                               )}
 
@@ -2611,30 +2327,21 @@ export default function StringingApplicationDetailClient({
                                       {data.packageInfo.passTitle}
                                     </span>
                                   )}
-                                  {typeof data.packageInfo.packageSize ===
-                                    "number" && (
-                                    <span>
-                                      총 {data.packageInfo.packageSize}회
-                                    </span>
+                                  {typeof data.packageInfo.packageSize === "number" && (
+                                    <span>총 {data.packageInfo.packageSize}회</span>
                                   )}
-                                  {typeof data.packageInfo.usedCount ===
-                                    "number" && (
-                                    <span>
-                                      사용 {data.packageInfo.usedCount}회
-                                    </span>
+                                  {typeof data.packageInfo.usedCount === "number" && (
+                                    <span>사용 {data.packageInfo.usedCount}회</span>
                                   )}
-                                  {typeof data.packageInfo.remainingCount ===
-                                    "number" && (
-                                    <span>
-                                      잔여 {data.packageInfo.remainingCount}회
-                                    </span>
+                                  {typeof data.packageInfo.remainingCount === "number" && (
+                                    <span>잔여 {data.packageInfo.remainingCount}회</span>
                                   )}
                                   {data.packageInfo.expiresAt && (
                                     <span>
                                       만료일{" "}
-                                      {new Date(
-                                        data.packageInfo.expiresAt,
-                                      ).toLocaleDateString("ko-KR")}
+                                      {new Date(data.packageInfo.expiresAt).toLocaleDateString(
+                                        "ko-KR",
+                                      )}
                                     </span>
                                   )}
                                 </div>
@@ -2645,54 +2352,44 @@ export default function StringingApplicationDetailClient({
                       )}
 
                       {/* 패키지 사용 카드 아래에 차감 이력 표시 */}
-                      {data.packageConsumptions &&
-                        data.packageConsumptions.length > 0 && (
-                          <div className="mt-3 rounded-lg border border-dashed border-border bg-muted px-3 py-2 text-xs text-foreground/60 dark:bg-muted">
-                            <div className="mb-1 flex flex-col gap-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                              <div className="flex items-center gap-1 break-keep">
-                                <Clock className="h-3.5 w-3.5 text-foreground" />
-                                <span className="font-semibold">
-                                  패키지 차감 이력
-                                </span>
-                              </div>
-                              <span className="text-sm text-foreground/75">
-                                총 {totalPackageConsumed}회
-                              </span>
+                      {data.packageConsumptions && data.packageConsumptions.length > 0 && (
+                        <div className="mt-3 rounded-lg border border-dashed border-border bg-muted px-3 py-2 text-xs text-foreground/60 dark:bg-muted">
+                          <div className="mb-1 flex flex-col gap-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                            <div className="flex items-center gap-1 break-keep">
+                              <Clock className="h-3.5 w-3.5 text-foreground" />
+                              <span className="font-semibold">패키지 차감 이력</span>
                             </div>
-                            <ul className="space-y-1.5">
-                              {data.packageConsumptions.map((c) => (
-                                <li
-                                  key={c.id}
-                                  className="flex flex-col gap-0.5 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between"
-                                >
-                                  <span className="text-sm text-foreground/75">
-                                    {new Date(c.usedAt).toLocaleString(
-                                      "ko-KR",
-                                      {
-                                        dateStyle: "short",
-                                        timeStyle: "short",
-                                      },
-                                    )}
-                                  </span>
-                                  <span className="text-[11px] font-medium text-primary">
-                                    {c.count ?? 1}회 사용
-                                    {c.reverted && (
-                                      <span className="ml-1 text-xs text-destructive">
-                                        (복원됨)
-                                      </span>
-                                    )}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
+                            <span className="text-sm text-foreground/75">
+                              총 {totalPackageConsumed}회
+                            </span>
                           </div>
-                        )}
+                          <ul className="space-y-1.5">
+                            {data.packageConsumptions.map((c) => (
+                              <li
+                                key={c.id}
+                                className="flex flex-col gap-0.5 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between"
+                              >
+                                <span className="text-sm text-foreground/75">
+                                  {new Date(c.usedAt).toLocaleString("ko-KR", {
+                                    dateStyle: "short",
+                                    timeStyle: "short",
+                                  })}
+                                </span>
+                                <span className="text-[11px] font-medium text-primary">
+                                  {c.count ?? 1}회 사용
+                                  {c.reverted && (
+                                    <span className="ml-1 text-xs text-destructive">(복원됨)</span>
+                                  )}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
 
                       <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/10 p-3 dark:bg-primary/20">
                         <div>
-                          <p className="text-sm text-foreground/80">
-                            결제 금액
-                          </p>
+                          <p className="text-sm text-foreground/80">결제 금액</p>
                           <p className="whitespace-nowrap text-lg font-bold text-primary dark:text-foreground bp-sm:text-xl">
                             {data.totalPrice.toLocaleString()}원
                           </p>
@@ -2735,14 +2432,9 @@ export default function StringingApplicationDetailClient({
                   )}
                 >
                   <ShoppingCart
-                    className={cn(
-                      "text-foreground",
-                      isAdmin ? "h-5 w-5" : "w-6 h-6",
-                    )}
+                    className={cn("text-foreground", isAdmin ? "h-5 w-5" : "w-6 h-6")}
                   />
-                  <CardTitle
-                    className={cn("text-lg font-semibold", !isAdmin && "mt-2")}
-                  >
+                  <CardTitle className={cn("text-lg font-semibold", !isAdmin && "mt-2")}>
                     {isAdmin ? "신청 스트링 정보" : "라켓·스트링별 작업 정보"}
                   </CardTitle>
                 </CardHeader>
@@ -2750,16 +2442,10 @@ export default function StringingApplicationDetailClient({
                 <div className="mx-4 mb-3 mt-3 rounded-xl border border-border/80 bg-muted/80 px-3 py-3 dark:bg-background/70 bp-sm:mx-6 bp-sm:mt-4 bp-sm:px-4">
                   <div className="flex flex-col gap-3 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between">
                     <div className="flex flex-wrap gap-2">
-                      <Badge
-                        variant="neutral"
-                        className="px-3 py-1 text-xs sm:text-sm font-medium"
-                      >
+                      <Badge variant="neutral" className="px-3 py-1 text-xs sm:text-sm font-medium">
                         스트링 {stringTypeCount}종
                       </Badge>
-                      <Badge
-                        variant="neutral"
-                        className="px-3 py-1 text-xs sm:text-sm font-medium"
-                      >
+                      <Badge variant="neutral" className="px-3 py-1 text-xs sm:text-sm font-medium">
                         라켓 {racketCount}자루
                       </Badge>
                     </div>
@@ -2814,8 +2500,7 @@ export default function StringingApplicationDetailClient({
                         </div>
                         <div className="space-y-2">
                           {linkedOrderItems.map((item, index) => {
-                            const colorLabel =
-                              item.selectedColorLabel || item.selectedColor;
+                            const colorLabel = item.selectedColorLabel || item.selectedColor;
                             return (
                               <div
                                 key={`${item.id}-${index}`}
@@ -2837,28 +2522,16 @@ export default function StringingApplicationDetailClient({
                                   </span>
                                 </div>
                                 <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-foreground/75">
-                                  {item.selectedGauge && (
-                                    <span>게이지: {item.selectedGauge}</span>
-                                  )}
-                                  {colorLabel && (
-                                    <span>색상: {colorLabel}</span>
-                                  )}
+                                  {item.selectedGauge && <span>게이지: {item.selectedGauge}</span>}
+                                  {colorLabel && <span>색상: {colorLabel}</span>}
                                   {typeof item.price === "number" && (
-                                    <span>
-                                      상품가: {item.price.toLocaleString()}원
-                                    </span>
+                                    <span>상품가: {item.price.toLocaleString()}원</span>
                                   )}
                                   {typeof item.stringPrice === "number" && (
-                                    <span>
-                                      스트링 가격:{" "}
-                                      {item.stringPrice.toLocaleString()}원
-                                    </span>
+                                    <span>스트링 가격: {item.stringPrice.toLocaleString()}원</span>
                                   )}
                                   {typeof item.stringingFee === "number" && (
-                                    <span>
-                                      장착비:{" "}
-                                      {item.stringingFee.toLocaleString()}원
-                                    </span>
+                                    <span>장착비: {item.stringingFee.toLocaleString()}원</span>
                                   )}
                                 </div>
                               </div>
@@ -2875,12 +2548,8 @@ export default function StringingApplicationDetailClient({
                         </div>
                         <div className="space-y-1.5 text-sm text-foreground/80">
                           <p>
-                            <span className="font-medium text-foreground">
-                              재고 차감 방식:
-                            </span>{" "}
-                            {isVariantStockMode
-                              ? "색상×게이지 조합 재고"
-                              : "기존 재고 방식"}
+                            <span className="font-medium text-foreground">재고 차감 방식:</span>{" "}
+                            {isVariantStockMode ? "색상×게이지 조합 재고" : "기존 재고 방식"}
                           </p>
                           <p>
                             {isVariantStockMode
@@ -2888,9 +2557,7 @@ export default function StringingApplicationDetailClient({
                               : "기존 색상/게이지 재고 기준으로 처리된 신청서입니다."}
                           </p>
                           <p>
-                            <span className="font-medium text-foreground">
-                              조합 재고 복구:
-                            </span>{" "}
+                            <span className="font-medium text-foreground">조합 재고 복구:</span>{" "}
                             {effectiveStockRestore?.variantStockRestoredAt
                               ? "복구 완료"
                               : "복구 정보 없음"}
@@ -2906,8 +2573,7 @@ export default function StringingApplicationDetailClient({
                             </p>
                           ) : isVariantStockMode && isCancelled ? (
                             <p className="text-muted-foreground">
-                              취소 처리 데이터에서 조합 재고 복구 시각이
-                              확인되지 않았습니다.
+                              취소 처리 데이터에서 조합 재고 복구 시각이 확인되지 않았습니다.
                             </p>
                           ) : null}
                         </div>
@@ -2919,17 +2585,13 @@ export default function StringingApplicationDetailClient({
                       <section className="space-y-2.5">
                         <div className="flex items-center gap-2 text-foreground">
                           <Target className="w-5 h-5" />
-                          <span className="font-medium">
-                            라켓·스트링별 작업 정보
-                          </span>
+                          <span className="font-medium">라켓·스트링별 작업 정보</span>
                         </div>
                         <div className="space-y-2.5 rounded-xl border border-border/70 bg-muted/40 p-3">
                           <div className="grid grid-cols-1 gap-2 text-xs text-foreground/75 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
                             <p>라켓 {lineSummary.racketCount}자루</p>
                             <p>스트링 {lineSummary.stringTypeCount}종</p>
-                            <p>
-                              텐션 입력 {lineSummary.tensionFilledCount}자루
-                            </p>
+                            <p>텐션 입력 {lineSummary.tensionFilledCount}자루</p>
                             <p>메모 {lineSummary.notedCount}자루</p>
                           </div>
                           <Button
@@ -2937,9 +2599,7 @@ export default function StringingApplicationDetailClient({
                             variant="outline"
                             size="sm"
                             className="h-8 w-full bp-sm:w-auto"
-                            onClick={() =>
-                              setIsLineDetailsExpanded((prev) => !prev)
-                            }
+                            onClick={() => setIsLineDetailsExpanded((prev) => !prev)}
                           >
                             {isLineDetailsExpanded
                               ? "작업 상세 접기"
@@ -2958,23 +2618,15 @@ export default function StringingApplicationDetailClient({
                                 <div className="mb-2 flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                                   <p className="min-w-0 break-words font-medium text-foreground">
                                     라켓 {index + 1}
-                                    {line.racketType
-                                      ? ` · ${line.racketType}`
-                                      : ""}
+                                    {line.racketType ? ` · ${line.racketType}` : ""}
                                   </p>
                                   {(line.tensionMain || line.tensionCross) && (
                                     <Badge
                                       variant="info"
                                       className="whitespace-normal break-keep px-2 py-1 text-left text-xs"
                                     >
-                                      텐션{" "}
-                                      {line.tensionMain
-                                        ? `${line.tensionMain}LB`
-                                        : "-"}{" "}
-                                      /{" "}
-                                      {line.tensionCross
-                                        ? `${line.tensionCross}LB`
-                                        : "-"}
+                                      텐션 {line.tensionMain ? `${line.tensionMain}LB` : "-"} /{" "}
+                                      {line.tensionCross ? `${line.tensionCross}LB` : "-"}
                                     </Badge>
                                   )}
                                 </div>
@@ -2982,10 +2634,7 @@ export default function StringingApplicationDetailClient({
                                 {/* 스트링 이름 */}
                                 {line.stringName && (
                                   <p className="min-w-0 break-words text-xs text-foreground">
-                                    스트링:{" "}
-                                    <span className="font-medium">
-                                      {line.stringName}
-                                    </span>
+                                    스트링: <span className="font-medium">{line.stringName}</span>
                                   </p>
                                 )}
 
@@ -3007,9 +2656,7 @@ export default function StringingApplicationDetailClient({
                       <section className="space-y-2">
                         <div className="flex items-center gap-2 text-foreground">
                           <ShoppingCart className="w-5 h-5" />
-                          <span className="break-keep font-medium">
-                            장착 상품 정보
-                          </span>
+                          <span className="break-keep font-medium">장착 상품 정보</span>
                         </div>
 
                         <div className="hidden overflow-hidden rounded-xl ring-1 ring-ring bg-card/80 dark:ring-ring dark:bg-background/60 bp-lg:block">
@@ -3061,25 +2708,19 @@ export default function StringingApplicationDetailClient({
                               </div>
                               <div className="mt-3 space-y-1.5 rounded-lg bg-muted/50 p-3 text-sm text-foreground/80">
                                 <p className="break-keep">
-                                  <span className="text-muted-foreground">
-                                    수량:
-                                  </span>{" "}
+                                  <span className="text-muted-foreground">수량:</span>{" "}
                                   <span className="font-medium text-foreground">
                                     {item.quantity}개
                                   </span>
                                 </p>
                                 <p className="break-keep">
-                                  <span className="text-muted-foreground">
-                                    단가:
-                                  </span>{" "}
+                                  <span className="text-muted-foreground">단가:</span>{" "}
                                   <span className="font-medium text-foreground">
                                     {item.price.toLocaleString()}원
                                   </span>
                                 </p>
                                 <p className="break-keep">
-                                  <span className="text-muted-foreground">
-                                    소계:
-                                  </span>{" "}
+                                  <span className="text-muted-foreground">소계:</span>{" "}
                                   <span className="font-semibold text-primary">
                                     {item.subtotal.toLocaleString()}원
                                   </span>
@@ -3118,10 +2759,7 @@ export default function StringingApplicationDetailClient({
                   </CardFooter>
                 )}
 
-                <Dialog
-                  open={isStringModalOpen}
-                  onOpenChange={setIsStringModalOpen}
-                >
+                <Dialog open={isStringModalOpen} onOpenChange={setIsStringModalOpen}>
                   <DialogTrigger asChild></DialogTrigger>
                   <DialogContent className="max-w-lg">
                     <DialogTitle className="text-xl font-semibold mb-4">
@@ -3131,8 +2769,7 @@ export default function StringingApplicationDetailClient({
                       id={data.id}
                       initial={{
                         desiredDateTime:
-                          data.stringDetails.preferredDate &&
-                          data.stringDetails.preferredTime
+                          data.stringDetails.preferredDate && data.stringDetails.preferredTime
                             ? `${data.stringDetails.preferredDate}T${data.stringDetails.preferredTime}`
                             : "",
                         stringTypes: data.stringDetails.stringTypes,
@@ -3170,9 +2807,7 @@ export default function StringingApplicationDetailClient({
                 <CardHeader className={detailCardHeaderClass}>
                   <CardTitle className="flex items-center justify-between">
                     <span>요청사항</span>
-                    {isEditMode && (
-                      <Edit3 className="h-4 w-4 text-muted-foreground" />
-                    )}
+                    {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 bp-lg:p-6">
@@ -3195,9 +2830,7 @@ export default function StringingApplicationDetailClient({
                       </p>
                     </div>
                   ) : (
-                    <p className="text-muted-foreground italic">
-                      요청사항이 없습니다.
-                    </p>
+                    <p className="text-muted-foreground italic">요청사항이 없습니다.</p>
                   )}
                 </CardContent>
                 {!editingRequirements && isEditMode && (
@@ -3223,15 +2856,11 @@ export default function StringingApplicationDetailClient({
                       <Truck className="h-5 w-5 text-primary" />
                       입고/수령/배송 정보
                     </CardTitle>
-                    <CardDescription>
-                      입고와 반환 정보를 구분해 확인하세요.
-                    </CardDescription>
+                    <CardDescription>입고와 반환 정보를 구분해 확인하세요.</CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-3 p-3 md:grid-cols-2 bp-sm:p-5">
                     <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
-                      <p className="text-sm font-semibold text-foreground">
-                        고객→매장 입고
-                      </p>
+                      <p className="text-sm font-semibold text-foreground">고객→매장 입고</p>
                       <p className="mt-1 text-xs text-foreground/75">
                         {inboundRequired
                           ? isVisit
@@ -3251,9 +2880,7 @@ export default function StringingApplicationDetailClient({
                         {isVisit && (
                           <p>
                             방문 예약:{" "}
-                            <span className="font-medium text-foreground">
-                              {visitTimeLabel}
-                            </span>
+                            <span className="font-medium text-foreground">{visitTimeLabel}</span>
                           </p>
                         )}
                         {isSelfShip &&
@@ -3263,10 +2890,7 @@ export default function StringingApplicationDetailClient({
                               운송장:{" "}
                               <a
                                 href={
-                                  buildTrackingUrl(
-                                    selfShip?.courier,
-                                    selfShip?.trackingNo,
-                                  ) ?? "#"
+                                  buildTrackingUrl(selfShip?.courier, selfShip?.trackingNo) ?? "#"
                                 }
                                 target="_blank"
                                 rel="noreferrer"
@@ -3280,11 +2904,7 @@ export default function StringingApplicationDetailClient({
                           ))}
                       </div>
                       {needsInboundTracking && (
-                        <Button
-                          asChild
-                          size="sm"
-                          className="mt-3 w-full bp-sm:w-auto"
-                        >
+                        <Button asChild size="sm" className="mt-3 w-full bp-sm:w-auto">
                           <Link href={inboundTrackingHref}>
                             {hasTracking ? "라켓 발송 수정" : "라켓 발송 등록"}
                           </Link>
@@ -3293,9 +2913,7 @@ export default function StringingApplicationDetailClient({
                     </div>
 
                     <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
-                      <p className="text-sm font-semibold text-foreground">
-                        매장→고객 반환
-                      </p>
+                      <p className="text-sm font-semibold text-foreground">매장→고객 반환</p>
                       <p className="mt-1 text-xs text-foreground/75">
                         작업 완료 후 수령/배송 정보를 확인합니다.
                       </p>
@@ -3313,10 +2931,8 @@ export default function StringingApplicationDetailClient({
                             반송 운송장:{" "}
                             <a
                               href={
-                                buildTrackingUrl(
-                                  invoice.courier,
-                                  invoice.trackingNumber,
-                                ) ?? undefined
+                                buildTrackingUrl(invoice.courier, invoice.trackingNumber) ??
+                                undefined
                               }
                               target="_blank"
                               rel="noreferrer"
@@ -3329,9 +2945,9 @@ export default function StringingApplicationDetailClient({
                           <p>
                             예정일:{" "}
                             {data.shippingInfo?.estimatedDate
-                              ? new Date(
-                                  data.shippingInfo.estimatedDate,
-                                ).toLocaleDateString("ko-KR")
+                              ? new Date(data.shippingInfo.estimatedDate).toLocaleDateString(
+                                  "ko-KR",
+                                )
                               : "-"}
                           </p>
                         ) : (
@@ -3344,39 +2960,24 @@ export default function StringingApplicationDetailClient({
               )}
 
               {isAdmin && !isLinkedApplication && (
-                <Card
-                  id="admin-stringing-shipping"
-                  className={cn(detailCardClass, "mb-8")}
-                >
+                <Card id="admin-stringing-shipping" className={cn(detailCardClass, "mb-8")}>
                   <CardHeader
-                    className={cn(
-                      detailCardHeaderClass,
-                      "flex flex-row items-center gap-2",
-                    )}
+                    className={cn(detailCardHeaderClass, "flex flex-row items-center gap-2")}
                   >
                     <Truck className="h-5 w-5 text-foreground" />
-                    <CardTitle className="text-lg font-semibold">
-                      배송 방향별 운송 정보
-                    </CardTitle>
+                    <CardTitle className="text-lg font-semibold">배송 방향별 운송 정보</CardTitle>
                   </CardHeader>
 
                   <CardContent className="grid gap-4 p-4 md:grid-cols-2 bp-sm:p-6">
                     {/* 자가 발송(사용자 → 매장) */}
                     <div className="rounded-lg border border-dashed border-border bg-background/60 p-4">
-                      <p className="text-sm font-semibold text-foreground">
-                        라켓 발송 정보
-                      </p>
+                      <p className="text-sm font-semibold text-foreground">라켓 발송 정보</p>
                       <p className="mt-1 text-xs text-foreground/75">
                         매장으로 보내는 라켓의 택배 정보를 확인합니다.
                       </p>
                       {data.shippingInfo?.selfShip?.trackingNo ? (
                         <div className="mt-2 space-y-1 text-sm text-foreground">
-                          <p>
-                            택배사:{" "}
-                            {getCourierLabel(
-                              data.shippingInfo.selfShip.courier,
-                            )}
-                          </p>
+                          <p>택배사: {getCourierLabel(data.shippingInfo.selfShip.courier)}</p>
                           <p>
                             운송장:
                             <a
@@ -3396,9 +2997,9 @@ export default function StringingApplicationDetailClient({
                           <p>
                             발송일:{" "}
                             {data.shippingInfo.selfShip.shippedAt
-                              ? new Date(
-                                  data.shippingInfo.selfShip.shippedAt,
-                                ).toLocaleDateString("ko-KR")
+                              ? new Date(data.shippingInfo.selfShip.shippedAt).toLocaleDateString(
+                                  "ko-KR",
+                                )
                               : "-"}
                           </p>
                         </div>
@@ -3411,9 +3012,7 @@ export default function StringingApplicationDetailClient({
 
                     {/* 매장 발송(매장 → 사용자) */}
                     <div className="rounded-lg border border-dashed border-border bg-background/60 p-4">
-                      <p className="text-sm font-semibold text-foreground">
-                        반송 정보
-                      </p>
+                      <p className="text-sm font-semibold text-foreground">반송 정보</p>
                       {hasStoreShippingInfo ? (
                         <div className="mt-2 space-y-1 text-sm text-foreground">
                           {isCourierShipping && invoice?.trackingNumber ? (
@@ -3423,10 +3022,8 @@ export default function StringingApplicationDetailClient({
                                 운송장:
                                 <a
                                   href={
-                                    buildTrackingUrl(
-                                      invoice.courier,
-                                      invoice.trackingNumber,
-                                    ) ?? undefined
+                                    buildTrackingUrl(invoice.courier, invoice.trackingNumber) ??
+                                    undefined
                                   }
                                   target="_blank"
                                   rel="noreferrer"
@@ -3438,9 +3035,7 @@ export default function StringingApplicationDetailClient({
                               <p>
                                 발송일:{" "}
                                 {invoice.shippedAt
-                                  ? new Date(
-                                      invoice.shippedAt,
-                                    ).toLocaleDateString("ko-KR")
+                                  ? new Date(invoice.shippedAt).toLocaleDateString("ko-KR")
                                   : "-"}
                               </p>
                             </>
@@ -3455,9 +3050,9 @@ export default function StringingApplicationDetailClient({
                               <p>
                                 예정일:{" "}
                                 {data.shippingInfo?.estimatedDate
-                                  ? new Date(
-                                      data.shippingInfo.estimatedDate,
-                                    ).toLocaleDateString("ko-KR")
+                                  ? new Date(data.shippingInfo.estimatedDate).toLocaleDateString(
+                                      "ko-KR",
+                                    )
                                   : "-"}
                               </p>
                               <p className="text-xs text-foreground/75">
@@ -3485,8 +3080,7 @@ export default function StringingApplicationDetailClient({
                       <span>신청 타임라인</span>
                     </CardTitle>
                     <CardDescription>
-                      접수, 작업, 반송, 확정까지의 진행 흐름을 확인할 수
-                      있습니다.
+                      접수, 작업, 반송, 확정까지의 진행 흐름을 확인할 수 있습니다.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-4 bp-lg:p-6">
@@ -3497,14 +3091,10 @@ export default function StringingApplicationDetailClient({
                           <Clock className="h-5 w-5 text-primary" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-foreground">
-                            신청 접수
-                          </p>
+                          <p className="text-sm font-medium text-foreground">신청 접수</p>
                           <p className="text-sm text-foreground/80">
                             {data?.requestedAt
-                              ? new Date(data.requestedAt).toLocaleString(
-                                  "ko-KR",
-                                )
+                              ? new Date(data.requestedAt).toLocaleString("ko-KR")
                               : "-"}
                           </p>
                         </div>
@@ -3517,15 +3107,11 @@ export default function StringingApplicationDetailClient({
                             <Truck className="h-5 w-5 text-foreground" />
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-foreground">
-                              라켓 발송 완료
-                            </p>
+                            <p className="text-sm font-medium text-foreground">라켓 발송 완료</p>
                             {/* 날짜 */}
                             <p className="mt-1 text-sm text-foreground/80">
                               {selfShip.shippedAt
-                                ? new Date(
-                                    selfShip.shippedAt,
-                                  ).toLocaleDateString("ko-KR")
+                                ? new Date(selfShip.shippedAt).toLocaleDateString("ko-KR")
                                 : "운송장 번호가 등록되었습니다."}
                             </p>
                             {/* 택배사 + 운송장번호 + 조회 링크 */}
@@ -3533,10 +3119,7 @@ export default function StringingApplicationDetailClient({
                               {getCourierLabel(selfShip.courier) + " · "}
                               <a
                                 href={
-                                  buildTrackingUrl(
-                                    selfShip.courier,
-                                    selfShip.trackingNo,
-                                  ) ?? "#"
+                                  buildTrackingUrl(selfShip.courier, selfShip.trackingNo) ?? "#"
                                 }
                                 target="_blank"
                                 rel="noreferrer"
@@ -3555,24 +3138,17 @@ export default function StringingApplicationDetailClient({
                             <Truck className="h-5 w-5 text-primary dark:text-foreground" />
                           </div>
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-foreground">
-                              반송 운송장 등록
-                            </p>
+                            <p className="text-sm font-medium text-foreground">반송 운송장 등록</p>
                             <p className="mt-1 text-sm text-foreground/80">
                               {invoice.shippedAt
-                                ? new Date(
-                                    invoice.shippedAt,
-                                  ).toLocaleDateString("ko-KR")
+                                ? new Date(invoice.shippedAt).toLocaleDateString("ko-KR")
                                 : "고객에게 발송을 위한 운송장 번호가 등록되었습니다."}
                             </p>
                             <p className="mt-1 break-words text-sm text-foreground/80">
                               {getCourierLabel(invoice.courier) + " · "}
                               <a
                                 href={
-                                  buildTrackingUrl(
-                                    invoice.courier,
-                                    invoice.trackingNumber,
-                                  ) ?? "#"
+                                  buildTrackingUrl(invoice.courier, invoice.trackingNumber) ?? "#"
                                 }
                                 target="_blank"
                                 rel="noreferrer"
@@ -3591,18 +3167,13 @@ export default function StringingApplicationDetailClient({
                           <CheckCircle2 className="h-5 w-5 text-foreground" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-foreground">
-                            현재 상태
-                          </p>
+                          <p className="text-sm font-medium text-foreground">현재 상태</p>
                           <p className="text-sm text-foreground/80">
-                            {data?.status
-                              ? `현재 상태: ${data.status}`
-                              : "상태 정보가 없습니다."}
+                            {data?.status ? `현재 상태: ${data.status}` : "상태 정보가 없습니다."}
                           </p>
                           {data?.updatedAt && (
                             <p className="mt-1 text-xs text-foreground/75">
-                              마지막 변경:{" "}
-                              {new Date(data.updatedAt).toLocaleString("ko-KR")}
+                              마지막 변경: {new Date(data.updatedAt).toLocaleString("ko-KR")}
                             </p>
                           )}
                         </div>
@@ -3667,13 +3238,10 @@ export default function StringingApplicationDetailClient({
           }}
         >
           <DialogContent className="max-w-md">
-            <DialogTitle className="text-lg font-semibold">
-              취소 요청을 거절할까요?
-            </DialogTitle>
+            <DialogTitle className="text-lg font-semibold">취소 요청을 거절할까요?</DialogTitle>
             <p className="mt-2 text-sm text-foreground/80">
-              고객의 교체서비스 신청 취소 요청을 거절합니다. 신청은 기존 처리
-              흐름을 유지하며, 필요한 경우 거절 사유를 남겨 처리 이력으로 관리할
-              수 있습니다.
+              고객의 교체서비스 신청 취소 요청을 거절합니다. 신청은 기존 처리 흐름을 유지하며,
+              필요한 경우 거절 사유를 남겨 처리 이력으로 관리할 수 있습니다.
             </p>
 
             <div className="mt-4 space-y-2">

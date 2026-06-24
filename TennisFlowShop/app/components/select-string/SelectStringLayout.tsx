@@ -118,19 +118,18 @@ export default function SelectStringLayout({
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [stockFilter, setStockFilter] = useState<"all" | "available">("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [selectedGaugeByStringId, setSelectedGaugeByStringId] = useState<
-    Record<string, string>
-  >({});
-  const [selectedColorByStringId, setSelectedColorByStringId] = useState<
-    Record<string, string>
-  >({});
+  const [selectedGaugeByStringId, setSelectedGaugeByStringId] = useState<Record<string, string>>(
+    {},
+  );
+  const [selectedColorByStringId, setSelectedColorByStringId] = useState<Record<string, string>>(
+    {},
+  );
 
   // Fetch strings
-  const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore } =
-    useInfiniteProducts({
-      limit: 12,
-      purpose: "stringing",
-    });
+  const { products, isLoadingInitial, isFetchingMore, hasMore, loadMore } = useInfiniteProducts({
+    limit: 12,
+    purpose: "stringing",
+  });
 
   // Max quantity based on racket
   const maxQty = racket.maxQty ?? 99;
@@ -156,10 +155,7 @@ export default function SelectStringLayout({
         .map((value) => String(value ?? "").toLowerCase())
         .join(" ");
       const matchesQuery = !query || haystack.includes(query);
-      return (
-        matchesQuery &&
-        (stockFilter === "all" || hasSelectableStringStock(product))
-      );
+      return matchesQuery && (stockFilter === "all" || hasSelectableStringStock(product));
     });
   }, [debouncedSearchQuery, products, stockFilter]);
 
@@ -175,8 +171,7 @@ export default function SelectStringLayout({
         const colorRows = getVisibleColorRows(product);
         if (!colorRows.length) return;
         const firstAvailable =
-          colorRows.find((row) => row.stock > 0 && !row.isSoldOut) ??
-          colorRows[0];
+          colorRows.find((row) => row.stock > 0 && !row.isSoldOut) ?? colorRows[0];
         if (firstAvailable?.value) {
           next[id] = firstAvailable.value;
           changed = true;
@@ -196,8 +191,7 @@ export default function SelectStringLayout({
         const id = String(product?._id ?? "");
         if (!id) return;
         const hasVariantInventories =
-          Array.isArray(product?.variantInventories) &&
-          product.variantInventories.length > 0;
+          Array.isArray(product?.variantInventories) && product.variantInventories.length > 0;
         const selectedColor = selectedColorByStringId[id] ?? "";
 
         if (hasVariantInventories) {
@@ -206,13 +200,8 @@ export default function SelectStringLayout({
             (v) => v.gaugeValue === next[id] && isSellableVariant(v),
           );
           if (!currentIsValid) {
-            const firstSellable = variantsForColor.find((v) =>
-              isSellableVariant(v),
-            );
-            const nextGauge =
-              firstSellable?.gaugeValue ??
-              variantsForColor[0]?.gaugeValue ??
-              "";
+            const firstSellable = variantsForColor.find((v) => isSellableVariant(v));
+            const nextGauge = firstSellable?.gaugeValue ?? variantsForColor[0]?.gaugeValue ?? "";
             if ((next[id] ?? "") !== nextGauge) {
               next[id] = nextGauge;
               changed = true;
@@ -222,8 +211,7 @@ export default function SelectStringLayout({
           const gaugeRows = normalizeGaugeRows(product);
           if (gaugeRows.length > 0 && !next[id]) {
             const firstAvailable =
-              gaugeRows.find((row) => !row.isSoldOut && row.stock > 0) ??
-              gaugeRows[0];
+              gaugeRows.find((row) => !row.isSoldOut && row.stock > 0) ?? gaugeRows[0];
             if (firstAvailable?.value) {
               next[id] = firstAvailable.value;
               changed = true;
@@ -238,15 +226,11 @@ export default function SelectStringLayout({
   // Initialize from cart edit mode
   useEffect(() => {
     if (!isCartEditMode || !currentStringId || !products?.length) return;
-    const target = products.find(
-      (item: any) => String(item?._id) === currentStringId,
-    );
+    const target = products.find((item: any) => String(item?._id) === currentStringId);
     if (!target) return;
 
     if (initialSelectedGauge) {
-      const hasGauge = normalizeGaugeRows(target).some(
-        (row) => row.value === initialSelectedGauge,
-      );
+      const hasGauge = normalizeGaugeRows(target).some((row) => row.value === initialSelectedGauge);
       if (hasGauge) {
         setSelectedGaugeByStringId((prev) => ({
           ...prev,
@@ -255,9 +239,7 @@ export default function SelectStringLayout({
       }
     }
     if (initialSelectedColor) {
-      const hasColor = normalizeColorRows(target).some(
-        (row) => row.value === initialSelectedColor,
-      );
+      const hasColor = normalizeColorRows(target).some((row) => row.value === initialSelectedColor);
       if (hasColor) {
         setSelectedColorByStringId((prev) => ({
           ...prev,
@@ -265,13 +247,7 @@ export default function SelectStringLayout({
         }));
       }
     }
-  }, [
-    isCartEditMode,
-    currentStringId,
-    initialSelectedGauge,
-    initialSelectedColor,
-    products,
-  ]);
+  }, [isCartEditMode, currentStringId, initialSelectedGauge, initialSelectedColor, products]);
 
   // Handle string selection
   const handleSelectString = (product: any) => {
@@ -394,12 +370,8 @@ export default function SelectStringLayout({
         {showQuantityControls && (
           <div className="mt-5 rounded-xl border border-border bg-secondary/30 p-4">
             <div className="mb-3 flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground">
-                번들 수량
-              </span>
-              <span className="text-xs text-muted-foreground">
-                최대 {maxQty}개
-              </span>
+              <span className="text-sm font-medium text-foreground">번들 수량</span>
+              <span className="text-xs text-muted-foreground">최대 {maxQty}개</span>
             </div>
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs text-muted-foreground leading-relaxed">
@@ -411,9 +383,7 @@ export default function SelectStringLayout({
                   variant="outline"
                   size="icon"
                   className="h-8 w-8"
-                  onClick={() =>
-                    setWorkCount((prev) => clampWorkCount(prev - 1))
-                  }
+                  onClick={() => setWorkCount((prev) => clampWorkCount(prev - 1))}
                   disabled={workCount <= 1}
                 >
                   <Minus className="h-3.5 w-3.5" />
@@ -424,9 +394,7 @@ export default function SelectStringLayout({
                   min={1}
                   max={maxQty}
                   value={workCount}
-                  onChange={(e) =>
-                    setWorkCount(clampWorkCount(Number(e.target.value)))
-                  }
+                  onChange={(e) => setWorkCount(clampWorkCount(Number(e.target.value)))}
                   className="h-8 w-14 text-center text-sm"
                 />
                 <Button
@@ -434,9 +402,7 @@ export default function SelectStringLayout({
                   variant="outline"
                   size="icon"
                   className="h-8 w-8"
-                  onClick={() =>
-                    setWorkCount((prev) => clampWorkCount(prev + 1))
-                  }
+                  onClick={() => setWorkCount((prev) => clampWorkCount(prev + 1))}
                   disabled={workCount >= maxQty}
                 >
                   <Plus className="h-3.5 w-3.5" />
@@ -500,9 +466,7 @@ export default function SelectStringLayout({
 
           <div
             className={cn(
-              isRacketPurchaseDesign || isRentalDesign
-                ? "mt-3 space-y-3"
-                : "space-y-4",
+              isRacketPurchaseDesign || isRentalDesign ? "mt-3 space-y-3" : "space-y-4",
             )}
           >
             <div className="flex flex-wrap items-center gap-2">
@@ -566,9 +530,7 @@ export default function SelectStringLayout({
               <div className="flex w-full items-center gap-2 bp-sm:w-auto">
                 <Select
                   value={stockFilter}
-                  onValueChange={(v) =>
-                    setStockFilter(v as "all" | "available")
-                  }
+                  onValueChange={(v) => setStockFilter(v as "all" | "available")}
                 >
                   <SelectTrigger className="h-10 w-full bp-sm:w-[180px]">
                     <Filter className="mr-2 h-4 w-4" />
@@ -620,9 +582,7 @@ export default function SelectStringLayout({
               ) : (
                 <span>
                   총{" "}
-                  <span className="font-semibold text-foreground">
-                    {filteredProducts.length}
-                  </span>
+                  <span className="font-semibold text-foreground">{filteredProducts.length}</span>
                   개의 스트링
                 </span>
               )}
@@ -644,10 +604,7 @@ export default function SelectStringLayout({
                 )}
               >
                 {Array.from({ length: 8 }).map((_, idx) => (
-                  <div
-                    key={idx}
-                    className="rounded-2xl border border-border bg-card p-4 shadow-sm"
-                  >
+                  <div key={idx} className="rounded-2xl border border-border bg-card p-4 shadow-sm">
                     <Skeleton className="aspect-square w-full rounded-xl" />
                     <Skeleton className="mt-4 h-4 w-3/4" />
                     <Skeleton className="mt-2 h-4 w-1/2" />

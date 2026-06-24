@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo,
-  useLayoutEffect,
-} from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -101,17 +94,11 @@ export default function FilterableRacketList({
   const [sortOption, setSortOption] = useState("latest");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isFilterSheetViewport, setIsFilterSheetViewport] = useState(false);
-  const [rentOnly, setRentOnly] = useState(
-    () => searchParams.get("rentOnly") === "1",
-  );
+  const [rentOnly, setRentOnly] = useState(() => searchParams.get("rentOnly") === "1");
 
   // 필터 상태들
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(
-    initialBrand,
-  );
-  const [selectedCondition, setSelectedCondition] = useState<string | null>(
-    initialCondition,
-  );
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(initialBrand);
+  const [selectedCondition, setSelectedCondition] = useState<string | null>(initialCondition);
   const [priceMin, setPriceMin] = useState<number | null>(null);
   const [priceMax, setPriceMax] = useState<number | null>(null);
   const [exposureFilter, setExposureFilter] = useState<string[]>([]);
@@ -124,16 +111,12 @@ export default function FilterableRacketList({
   // - Sheet에서 선택해도 즉시 SWR 재요청이 일어나지 않게 함
   // - "검색/적용" 버튼에서만 selectedXXX로 커밋
   const [draftBrand, setDraftBrand] = useState<string | null>(initialBrand);
-  const [draftCondition, setDraftCondition] = useState<string | null>(
-    initialCondition,
-  );
+  const [draftCondition, setDraftCondition] = useState<string | null>(initialCondition);
   const [draftPriceMin, setDraftPriceMin] = useState<number | null>(null);
   const [draftPriceMax, setDraftPriceMax] = useState<number | null>(null);
   const [draftExposureFilter, setDraftExposureFilter] = useState<string[]>([]);
   const [draftSearchQuery, setDraftSearchQuery] = useState("");
-  const [draftRentOnly, setDraftRentOnly] = useState(
-    () => searchParams.get("rentOnly") === "1",
-  );
+  const [draftRentOnly, setDraftRentOnly] = useState(() => searchParams.get("rentOnly") === "1");
   const [draftResetKey, setDraftResetKey] = useState(0);
 
   // 토글 (모바일용)
@@ -183,8 +166,7 @@ export default function FilterableRacketList({
     if ((brand || null) !== selectedBrand) setSelectedBrand(brand || null);
 
     const cond = searchParams.get("cond");
-    if ((cond || null) !== selectedCondition)
-      setSelectedCondition(cond || null);
+    if ((cond || null) !== selectedCondition) setSelectedCondition(cond || null);
 
     const minPrice = searchParams.get("minPrice");
     const maxPrice = searchParams.get("maxPrice");
@@ -194,8 +176,7 @@ export default function FilterableRacketList({
     if (nextMax !== priceMax) setPriceMax(nextMax);
 
     const nextExposure = parseBenefitFilters(searchParams.get("exposure"));
-    if (nextExposure.join(",") !== exposureFilter.join(","))
-      setExposureFilter(nextExposure);
+    if (nextExposure.join(",") !== exposureFilter.join(",")) setExposureFilter(nextExposure);
     const sort = searchParams.get("sort") || "latest";
     if (sort !== sortOption) setSortOption(sort);
 
@@ -221,10 +202,7 @@ export default function FilterableRacketList({
     if (serializedExposure) query.set("exposure", serializedExposure);
   }
   query.set("sort", sortOption || "latest");
-  const getKey = (
-    pageIndex: number,
-    previousPageData: RacketsApiResponse | null,
-  ) => {
+  const getKey = (pageIndex: number, previousPageData: RacketsApiResponse | null) => {
     if (previousPageData && previousPageData.items.length === 0) return null;
 
     const pageQuery = new URLSearchParams(query);
@@ -301,10 +279,7 @@ export default function FilterableRacketList({
   const isInitialLikeLoading = showInlineLoadingSkeleton;
   const isBackgroundRefreshing = !!data && (isValidating || isUiTransitioning);
 
-  const products = useMemo(
-    () => data?.flatMap((page) => page.items ?? []) ?? [],
-    [data],
-  );
+  const products = useMemo(() => data?.flatMap((page) => page.items ?? []) ?? [], [data]);
   const total = Number(data?.[0]?.total ?? 0);
   const visibleProducts = products;
   const hasMore = products.length < total;
@@ -363,9 +338,7 @@ export default function FilterableRacketList({
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
-  const effectiveViewMode: "grid" | "list" = isFilterSheetViewport
-    ? "grid"
-    : viewMode;
+  const effectiveViewMode: "grid" | "list" = isFilterSheetViewport ? "grid" : viewMode;
 
   // draft를 현재 applied(selected) 값으로 동기화 (Sheet 열 때/취소할 때)
   const syncDraftFromApplied = useCallback(() => {
@@ -376,15 +349,7 @@ export default function FilterableRacketList({
     setDraftExposureFilter(exposureFilter);
     setDraftSearchQuery(searchQuery);
     setDraftRentOnly(rentOnly);
-  }, [
-    selectedBrand,
-    selectedCondition,
-    priceMin,
-    priceMax,
-    exposureFilter,
-    searchQuery,
-    rentOnly,
-  ]);
+  }, [selectedBrand, selectedCondition, priceMin, priceMax, exposureFilter, searchQuery, rentOnly]);
 
   // Sheet 열기: 열릴 때마다 draft를 applied로 맞춰서 "현재 상태"를 보여줌
   const openFiltersSheet = useCallback(() => {
@@ -498,10 +463,7 @@ export default function FilterableRacketList({
     setOrDelete("brand", selectedBrand);
     setOrDelete("cond", selectedCondition);
     setOrDelete("q", submittedQuery ? submittedQuery : null);
-    setOrDelete(
-      "sort",
-      sortOption && sortOption !== "latest" ? sortOption : null,
-    );
+    setOrDelete("sort", sortOption && sortOption !== "latest" ? sortOption : null);
     setOrDelete("view", viewMode !== "grid" ? viewMode : null);
     setOrDelete("minPrice", priceMin !== null ? String(priceMin) : null);
     setOrDelete("maxPrice", priceMax !== null ? String(priceMax) : null);
@@ -600,9 +562,7 @@ export default function FilterableRacketList({
           }
         >
           <RacketFilterPanel
-            {...(isFilterSheetViewport
-              ? mobileFilterPanelProps
-              : desktopFilterPanelProps)}
+            {...(isFilterSheetViewport ? mobileFilterPanelProps : desktopFilterPanelProps)}
           />
         </SheetContent>
       </Sheet>
@@ -636,9 +596,7 @@ export default function FilterableRacketList({
                   </span>
                 )}
                 {isBackgroundRefreshing ? (
-                  <span className="ml-2 text-xs font-medium text-muted-foreground">
-                    조회 중...
-                  </span>
+                  <span className="ml-2 text-xs font-medium text-muted-foreground">조회 중...</span>
                 ) : null}
               </div>
 
@@ -663,9 +621,7 @@ export default function FilterableRacketList({
                     <div className="flex shrink-0 items-center rounded-lg border border-border bg-card p-1">
                       <Button
                         type="button"
-                        variant={
-                          effectiveViewMode === "grid" ? "default" : "ghost"
-                        }
+                        variant={effectiveViewMode === "grid" ? "default" : "ghost"}
                         size="sm"
                         onClick={() => setViewMode("grid")}
                         className="h-8 w-9 p-0"
@@ -677,9 +633,7 @@ export default function FilterableRacketList({
 
                       <Button
                         type="button"
-                        variant={
-                          effectiveViewMode === "list" ? "default" : "ghost"
-                        }
+                        variant={effectiveViewMode === "list" ? "default" : "ghost"}
                         size="sm"
                         onClick={() => setViewMode("list")}
                         className="h-8 w-9 p-0"
@@ -699,9 +653,7 @@ export default function FilterableRacketList({
                       <SelectContent className="dark:border-border dark:bg-card">
                         <SelectItem value="latest">최신순</SelectItem>
                         <SelectItem value="sales-desc">구매 많은순</SelectItem>
-                        <SelectItem value="reviews-desc">
-                          리뷰 많은순
-                        </SelectItem>
+                        <SelectItem value="reviews-desc">리뷰 많은순</SelectItem>
                         <SelectItem value="price-low">가격 낮은순</SelectItem>
                         <SelectItem value="price-high">가격 높은순</SelectItem>
                       </SelectContent>
@@ -715,9 +667,7 @@ export default function FilterableRacketList({
               <div className="rounded-2xl border border-border bg-card p-3 shadow-sm">
                 <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                   {submittedQuery && (
-                    <span className={activeFilterChipClass}>
-                      검색어 “{submittedQuery}”
-                    </span>
+                    <span className={activeFilterChipClass}>검색어 “{submittedQuery}”</span>
                   )}
                   {selectedBrand && (
                     <span className={activeFilterChipClass}>
@@ -725,30 +675,16 @@ export default function FilterableRacketList({
                     </span>
                   )}
                   {selectedCondition && (
-                    <span className={activeFilterChipClass}>
-                      상태 {selectedCondition}
-                    </span>
+                    <span className={activeFilterChipClass}>상태 {selectedCondition}</span>
                   )}
                   {priceChanged && (
                     <span className={activeFilterChipClass}>
-                      가격{" "}
-                      {priceMin !== null
-                        ? `${priceMin.toLocaleString()}원`
-                        : "0원"}
-                      ~
-                      {priceMax !== null
-                        ? `${priceMax.toLocaleString()}원`
-                        : "제한 없음"}
+                      가격 {priceMin !== null ? `${priceMin.toLocaleString()}원` : "0원"}~
+                      {priceMax !== null ? `${priceMax.toLocaleString()}원` : "제한 없음"}
                     </span>
                   )}
-                  {exposureLabel && (
-                    <span className={activeFilterChipClass}>
-                      {exposureLabel}
-                    </span>
-                  )}
-                  {rentOnly && (
-                    <span className={activeFilterChipClass}>대여 가능</span>
-                  )}
+                  {exposureLabel && <span className={activeFilterChipClass}>{exposureLabel}</span>}
+                  {rentOnly && <span className={activeFilterChipClass}>대여 가능</span>}
                   <Button
                     type="button"
                     variant="ghost"

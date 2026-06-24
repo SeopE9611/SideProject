@@ -16,13 +16,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -112,9 +106,7 @@ export default function ProfileClient({ user }: Props) {
   });
 
   // 소셜 로그인 제공자(표시용): /api/users/me에서 내려주는 oauthProviders
-  const [socialProviders, setSocialProviders] = useState<
-    Array<"kakao" | "naver">
-  >([]);
+  const [socialProviders, setSocialProviders] = useState<Array<"kakao" | "naver">>([]);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -126,25 +118,18 @@ export default function ProfileClient({ user }: Props) {
   const [showWithdrawalForm, setShowWithdrawalForm] = useState(false);
 
   // 현재 입력 상태 시그니처(편집 가능한 핵심 필드만 비교)
-  const currentProfileSig = useMemo(
-    () => profileDirtySignature(profileData),
-    [profileData],
-  );
-  const isProfileDirty =
-    Boolean(initialProfileSig) && currentProfileSig !== initialProfileSig;
+  const currentProfileSig = useMemo(() => profileDirtySignature(profileData), [profileData]);
+  const isProfileDirty = Boolean(initialProfileSig) && currentProfileSig !== initialProfileSig;
 
   // 비밀번호 탭: 입력 중이면 dirty (서버 baseline 필요 없음)
   const isPasswordDirty = Boolean(
-    passwordData.currentPassword ||
-    passwordData.newPassword ||
-    passwordData.confirmPassword,
+    passwordData.currentPassword || passwordData.newPassword || passwordData.confirmPassword,
   );
   const isDirty = isProfileDirty || isPasswordDirty;
 
   // 최종 dirty (프로필/주소/마케팅 변경 OR 비밀번호 입력 중)
   useUnsavedChangesGuard(isDirty);
-  const confirmLeaveIfDirty = () =>
-    !isDirty || window.confirm(UNSAVED_CHANGES_MESSAGE);
+  const confirmLeaveIfDirty = () => !isDirty || window.confirm(UNSAVED_CHANGES_MESSAGE);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -160,9 +145,7 @@ export default function ProfileClient({ user }: Props) {
 
         const user = await res.json();
         setSocialProviders(
-          Array.isArray((user as any).oauthProviders)
-            ? (user as any).oauthProviders
-            : [],
+          Array.isArray((user as any).oauthProviders) ? (user as any).oauthProviders : [],
         );
 
         const { address, postalCode, addressDetail, ...rest } = user;
@@ -196,9 +179,7 @@ export default function ProfileClient({ user }: Props) {
     try {
       await loadDaumPostcode();
     } catch {
-      showErrorToast(
-        "주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
-      );
+      showErrorToast("주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
       return;
     }
     if (!window?.daum?.Postcode) return;
@@ -250,9 +231,7 @@ export default function ProfileClient({ user }: Props) {
     const basicAddress = String(profileData.address?.address1 ?? "").trim();
     const detailedAddress = String(profileData.address?.address2 ?? "").trim();
     const postalCode = String(profileData.address?.postalCode ?? "").trim();
-    const hasAnyAddress = Boolean(
-      basicAddress || detailedAddress || postalCode,
-    );
+    const hasAnyAddress = Boolean(basicAddress || detailedAddress || postalCode);
     if (hasAnyAddress && (!postalCode || !POSTAL_RE.test(postalCode))) {
       showErrorToast("우편번호(5자리)를 확인해주세요.");
       return;
@@ -362,10 +341,7 @@ export default function ProfileClient({ user }: Props) {
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-overlay/10"
         ></div>
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-        >
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
           <div className="absolute top-10 left-10 w-20 h-20 bg-card/10 rounded-full animate-pulse" />
           <div className="absolute top-32 right-20 w-16 h-16 bg-card/5 rounded-full" />
           <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-card/10 rounded-full animate-pulse" />
@@ -395,9 +371,7 @@ export default function ProfileClient({ user }: Props) {
                 <h1 className="text-4xl md:text-5xl font-black mb-2 text-foreground">
                   회원정보 수정
                 </h1>
-                <p className="text-xl text-muted-foreground">
-                  개인정보를 안전하게 관리하세요
-                </p>
+                <p className="text-xl text-muted-foreground">개인정보를 안전하게 관리하세요</p>
               </div>
             </div>
           </div>
@@ -458,19 +432,14 @@ export default function ProfileClient({ user }: Props) {
                     </div>
                     <div>
                       <CardTitle className="text-xl">기본정보</CardTitle>
-                      <CardDescription>
-                        개인정보를 수정할 수 있습니다.
-                      </CardDescription>
+                      <CardDescription>개인정보를 수정할 수 있습니다.</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="p-4 md:p-8 space-y-6 md:space-y-8">
                   <div className="flex items-center gap-4 md:gap-6">
                     <Avatar className="h-24 w-24 border-2 border-border shadow-sm">
-                      <AvatarImage
-                        src="/placeholder.svg?height=96&width=96"
-                        alt="프로필 이미지"
-                      />
+                      <AvatarImage src="/placeholder.svg?height=96&width=96" alt="프로필 이미지" />
                       <AvatarFallback className="text-2xl bg-secondary text-foreground">
                         {profileData.name.charAt(0)}
                       </AvatarFallback>
@@ -479,9 +448,7 @@ export default function ProfileClient({ user }: Props) {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() =>
-                          showInfoToast("해당 기능은 준비 중입니다.")
-                        }
+                        onClick={() => showInfoToast("해당 기능은 준비 중입니다.")}
                         className="mb-2 border-border hover:bg-secondary"
                       >
                         <Camera className="mr-2 h-4 w-4" />
@@ -495,10 +462,7 @@ export default function ProfileClient({ user }: Props) {
 
                   <div className="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label
-                        htmlFor="name"
-                        className="flex items-center gap-2 text-foreground"
-                      >
+                      <Label htmlFor="name" className="flex items-center gap-2 text-foreground">
                         <User className="h-4 w-4" />
                         이름 *
                       </Label>
@@ -520,20 +484,12 @@ export default function ProfileClient({ user }: Props) {
                         {socialProviders.length ? (
                           <>
                             {socialProviders.includes("kakao") && (
-                              <Badge
-                                variant={
-                                  getSocialProviderBadgeSpec("kakao").variant
-                                }
-                              >
+                              <Badge variant={getSocialProviderBadgeSpec("kakao").variant}>
                                 카카오
                               </Badge>
                             )}
                             {socialProviders.includes("naver") && (
-                              <Badge
-                                variant={
-                                  getSocialProviderBadgeSpec("naver").variant
-                                }
-                              >
+                              <Badge variant={getSocialProviderBadgeSpec("naver").variant}>
                                 네이버
                               </Badge>
                             )}
@@ -544,10 +500,7 @@ export default function ProfileClient({ user }: Props) {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label
-                        htmlFor="email"
-                        className="flex items-center gap-2 text-foreground"
-                      >
+                      <Label htmlFor="email" className="flex items-center gap-2 text-foreground">
                         <Mail className="h-4 w-4" />
                         이메일 *
                       </Label>
@@ -566,10 +519,7 @@ export default function ProfileClient({ user }: Props) {
                       />
                     </div>
                     <div className="space-y-2 md:col-span-2">
-                      <Label
-                        htmlFor="phone"
-                        className="flex items-center gap-2 text-foreground"
-                      >
+                      <Label htmlFor="phone" className="flex items-center gap-2 text-foreground">
                         <Phone className="h-4 w-4" />
                         전화번호
                       </Label>
@@ -619,10 +569,7 @@ export default function ProfileClient({ user }: Props) {
                 </CardHeader>
                 <CardContent className="p-4 md:p-8 space-y-4 md:space-y-6">
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="currentPassword"
-                      className="text-foreground"
-                    >
+                    <Label htmlFor="currentPassword" className="text-foreground">
                       현재 비밀번호 *
                     </Label>
                     <Input
@@ -655,15 +602,11 @@ export default function ProfileClient({ user }: Props) {
                       className="h-12 border-border focus:border-border dark:focus:border-border"
                     />
                     <p className="text-sm text-muted-foreground">
-                      8자 이상, 영문/숫자 조합으로 입력해주세요. (특수문자는
-                      선택)
+                      8자 이상, 영문/숫자 조합으로 입력해주세요. (특수문자는 선택)
                     </p>
                   </div>
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="confirmPassword"
-                      className="text-foreground"
-                    >
+                    <Label htmlFor="confirmPassword" className="text-foreground">
                       새 비밀번호 확인 *
                     </Label>
                     <Input
@@ -703,9 +646,7 @@ export default function ProfileClient({ user }: Props) {
                     </div>
                     <div>
                       <CardTitle className="text-xl">배송지 관리</CardTitle>
-                      <CardDescription>
-                        기본 배송지 정보를 관리할 수 있습니다.
-                      </CardDescription>
+                      <CardDescription>기본 배송지 정보를 관리할 수 있습니다.</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
@@ -794,9 +735,7 @@ export default function ProfileClient({ user }: Props) {
                         <Bell className="h-6 w-6 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-xl">
-                          마케팅 수신 동의
-                        </CardTitle>
+                        <CardTitle className="text-xl">마케팅 수신 동의</CardTitle>
                         <CardDescription>
                           마케팅 정보 수신 방법을 선택할 수 있습니다.
                         </CardDescription>
@@ -806,10 +745,7 @@ export default function ProfileClient({ user }: Props) {
                   <CardContent className="p-4 md:p-8 space-y-4 md:space-y-6">
                     <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
                       <div>
-                        <Label
-                          htmlFor="email-marketing"
-                          className="font-medium text-foreground"
-                        >
+                        <Label htmlFor="email-marketing" className="font-medium text-foreground">
                           이메일 수신
                         </Label>
                         <p className="text-sm text-muted-foreground">
@@ -833,10 +769,7 @@ export default function ProfileClient({ user }: Props) {
                     <Separator />
                     <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
                       <div>
-                        <Label
-                          htmlFor="sms-marketing"
-                          className="font-medium text-foreground"
-                        >
+                        <Label htmlFor="sms-marketing" className="font-medium text-foreground">
                           SMS 수신
                         </Label>
                         <p className="text-sm text-muted-foreground">
@@ -860,10 +793,7 @@ export default function ProfileClient({ user }: Props) {
                     <Separator />
                     <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
                       <div>
-                        <Label
-                          htmlFor="push-marketing"
-                          className="font-medium text-foreground"
-                        >
+                        <Label htmlFor="push-marketing" className="font-medium text-foreground">
                           앱 푸시 알림
                         </Label>
                         <p className="text-sm text-muted-foreground">
@@ -905,9 +835,7 @@ export default function ProfileClient({ user }: Props) {
                         <AlertTriangle className="h-6 w-6 text-destructive" />
                       </div>
                       <div>
-                        <CardTitle className="text-xl text-destructive">
-                          회원 탈퇴
-                        </CardTitle>
+                        <CardTitle className="text-xl text-destructive">회원 탈퇴</CardTitle>
                         <CardDescription>
                           계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.
                         </CardDescription>
@@ -940,10 +868,7 @@ export default function ProfileClient({ user }: Props) {
 
                             // 탈퇴 성공 흐름
                           } catch (error: any) {
-                            showErrorToast(
-                              error.message ||
-                                "회원 탈퇴 중 오류가 발생했습니다.",
-                            );
+                            showErrorToast(error.message || "회원 탈퇴 중 오류가 발생했습니다.");
                           }
                         }}
                       />
@@ -955,8 +880,7 @@ export default function ProfileClient({ user }: Props) {
                             정말로 탈퇴하시겠습니까?
                           </h3>
                           <p className="text-sm text-muted-foreground">
-                            탈퇴 시 모든 개인정보와 이용기록이 삭제되며, 복구할
-                            수 없습니다.
+                            탈퇴 시 모든 개인정보와 이용기록이 삭제되며, 복구할 수 없습니다.
                           </p>
                         </div>
                         <Button

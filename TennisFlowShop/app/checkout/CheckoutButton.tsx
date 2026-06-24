@@ -14,11 +14,7 @@ import type { StringingApplicationInput } from "@/app/features/stringing-applica
 type Bank = "kakao" | "shinhan" | "kookmin" | "woori";
 const ALLOWED_BANKS = new Set<Bank>(["kakao", "shinhan", "kookmin", "woori"]);
 const ALLOWED_DELIVERY = new Set(["택배수령", "방문수령"] as const);
-const ALLOWED_SERVICE_PICKUP = new Set([
-  "SELF_SEND",
-  "COURIER_VISIT",
-  "SHOP_VISIT",
-] as const);
+const ALLOWED_SERVICE_PICKUP = new Set(["SELF_SEND", "COURIER_VISIT", "SHOP_VISIT"] as const);
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
@@ -45,9 +41,7 @@ const focusFirst = (ids: string[]) => {
       el.scrollIntoView?.({ block: "center" });
       return;
     }
-    const inner = el.querySelector?.(
-      "input,textarea,select,button",
-    ) as HTMLElement | null;
+    const inner = el.querySelector?.("input,textarea,select,button") as HTMLElement | null;
     if (inner) {
       (inner as any).focus?.();
       inner.scrollIntoView?.({ block: "center" });
@@ -95,21 +89,12 @@ const getOrCreateIdemKey = (sig: string) => {
         sig?: string;
         ts?: number;
       };
-      const fresh =
-        typeof parsed.ts === "number" && Date.now() - parsed.ts < IDEM_TTL_MS;
-      if (
-        fresh &&
-        parsed.sig === sig &&
-        typeof parsed.key === "string" &&
-        parsed.key
-      )
+      const fresh = typeof parsed.ts === "number" && Date.now() - parsed.ts < IDEM_TTL_MS;
+      if (fresh && parsed.sig === sig && typeof parsed.key === "string" && parsed.key)
         return parsed.key;
     }
     const key = crypto.randomUUID();
-    window.sessionStorage.setItem(
-      IDEM_STORE_KEY,
-      JSON.stringify({ key, sig, ts: Date.now() }),
-    );
+    window.sessionStorage.setItem(IDEM_STORE_KEY, JSON.stringify({ key, sig, ts: Date.now() }));
     return key;
   } catch {
     // sessionStorage/JSON 에러가 나도 주문은 진행 가능해야 함
@@ -204,11 +189,7 @@ export default function CheckoutButton({
     // 번들(라켓+교체서비스) 수량 불일치 선제 차단
     // - 라켓 수량과 “장착비 대상 스트링” 수량이 다르면, 서버에서도 BUNDLE_QTY_MISMATCH로 거절
     // - 여기서는 사용자에게 즉시 원인을 알려주고 결제를 중단.
-    if (
-      withStringService &&
-      Array.isArray(serviceTargetIds) &&
-      serviceTargetIds.length > 0
-    ) {
+    if (withStringService && Array.isArray(serviceTargetIds) && serviceTargetIds.length > 0) {
       const racketQty = items.reduce(
         (sum, it) => (it.kind === "racket" ? sum + (it.quantity ?? 0) : sum),
         0,
@@ -331,13 +312,8 @@ export default function CheckoutButton({
       }
 
       // 서비스 픽업 방식 값 방어(서비스 ON일 때만)
-      if (
-        withStringService &&
-        !ALLOWED_SERVICE_PICKUP.has(servicePickupMethod)
-      ) {
-        showErrorToast(
-          "교체 서비스 수거 방식 값이 올바르지 않습니다. 다시 선택해주세요.",
-        );
+      if (withStringService && !ALLOWED_SERVICE_PICKUP.has(servicePickupMethod)) {
+        showErrorToast("교체 서비스 수거 방식 값이 올바르지 않습니다. 다시 선택해주세요.");
         return;
       }
 
@@ -356,9 +332,7 @@ export default function CheckoutButton({
 
       const expectedPayableAmount = normalizeWonAmount(payableAmount);
       if (!Number.isFinite(expectedPayableAmount)) {
-        showErrorToast(
-          "결제 금액을 확인할 수 없습니다. 주문 정보를 다시 확인해주세요.",
-        );
+        showErrorToast("결제 금액을 확인할 수 없습니다. 주문 정보를 다시 확인해주세요.");
         return;
       }
 
@@ -404,15 +378,11 @@ export default function CheckoutButton({
         serviceFee,
         pointsToUse: safePointsToUse,
         expectedPayableAmount,
-        guestInfo: !user
-          ? { name: nameTrim, phone: phoneDigits, email: emailTrim }
-          : undefined,
+        guestInfo: !user ? { name: nameTrim, phone: phoneDigits, email: emailTrim } : undefined,
         isStringServiceApplied: withStringService,
         servicePickupMethod,
         stringingApplicationInput:
-          withStringService && stringingApplicationInput
-            ? stringingApplicationInput
-            : undefined,
+          withStringService && stringingApplicationInput ? stringingApplicationInput : undefined,
       };
 
       const sig = cartSignature(items);
@@ -439,10 +409,7 @@ export default function CheckoutButton({
         return;
       }
 
-      if (
-        data?.error === "PAYMENT_AMOUNT_MISMATCH" ||
-        data?.code === "PAYMENT_AMOUNT_MISMATCH"
-      ) {
+      if (data?.error === "PAYMENT_AMOUNT_MISMATCH" || data?.code === "PAYMENT_AMOUNT_MISMATCH") {
         console.warn("[checkout] payment amount mismatch", {
           clientAmount: data?.clientAmount,
           serverAmount: data?.serverAmount,
@@ -502,8 +469,7 @@ export default function CheckoutButton({
           <div>
             <p>라켓 수량과 스트링(장착) 수량이 일치하지 않습니다.</p>
             <p>
-              라켓: {data?.racketQty ?? "-"}개, 스트링/교체:{" "}
-              {data?.serviceQty ?? "-"}개
+              라켓: {data?.racketQty ?? "-"}개, 스트링/교체: {data?.serviceQty ?? "-"}개
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
               이전 단계(스트링 선택)에서 ‘번들 수량’을 다시 맞춰주세요.

@@ -89,11 +89,7 @@ export default function ForceChangePasswordClient() {
       const href = anchor.getAttribute("href");
       if (!href) return;
       // 새 탭/다운로드/외부 링크 등은 건너뜀
-      if (
-        anchor.getAttribute("target") &&
-        anchor.getAttribute("target") !== "_self"
-      )
-        return;
+      if (anchor.getAttribute("target") && anchor.getAttribute("target") !== "_self") return;
       if (anchor.hasAttribute("download")) return;
       const url = new URL(href, window.location.href);
       if (url.origin !== window.location.origin) return; // 외부 링크면 건너뜀
@@ -114,8 +110,7 @@ export default function ForceChangePasswordClient() {
     document.addEventListener("click", onClickCapture, true); // 캡처 단계!
 
     // 3) 뒤로 가기: 현재 히스토리 위에 "잠금 스냅샷"을 한 번 더 쌓아두고 popstate에서 복귀
-    const pushLock = () =>
-      history.pushState({ pwdChangeLock: true }, "", window.location.href);
+    const pushLock = () => history.pushState({ pwdChangeLock: true }, "", window.location.href);
     pushLock();
     const onPopState = async () => {
       if (!confirmLeave()) {
@@ -146,8 +141,7 @@ export default function ForceChangePasswordClient() {
     if (!pw) {
       nextErrors.newPassword = "새 비밀번호를 입력해주세요.";
     } else if (!PASSWORD_POLICY_RE.test(pw)) {
-      nextErrors.newPassword =
-        "비밀번호는 8자 이상이며 영문과 숫자를 포함해야 합니다.";
+      nextErrors.newPassword = "비밀번호는 8자 이상이며 영문과 숫자를 포함해야 합니다.";
     }
 
     if (!cf) {
@@ -225,9 +219,7 @@ export default function ForceChangePasswordClient() {
                 : ""
             }
           />
-          <p className="min-h-[18px] text-sm text-destructive">
-            {fieldErrors.newPassword ?? ""}
-          </p>
+          <p className="min-h-[18px] text-sm text-destructive">{fieldErrors.newPassword ?? ""}</p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="confirmPassword" className="text-sm font-medium">
@@ -253,9 +245,7 @@ export default function ForceChangePasswordClient() {
                 : ""
             }
           />
-          <p className="min-h-[18px] text-sm text-destructive">
-            {fieldErrors.confirm ?? ""}
-          </p>
+          <p className="min-h-[18px] text-sm text-destructive">{fieldErrors.confirm ?? ""}</p>
         </div>
         <Button
           type="submit"

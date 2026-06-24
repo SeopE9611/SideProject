@@ -13,13 +13,7 @@ import {
   Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,12 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 
 // 리뷰 데이터 타입 정의
@@ -72,8 +61,7 @@ const sampleReviews: Review[] = [
     id: "rev_002",
     authorName: "김재민",
     authorEmail: "tennis@example.com",
-    content:
-      "스트링 장력이 제가 원하는 대로 정확하게 맞춰주셨어요. 타구감이 확실히 좋아졌습니다.",
+    content: "스트링 장력이 제가 원하는 대로 정확하게 맞춰주셨어요. 타구감이 확실히 좋아졌습니다.",
     rating: 4,
     createdAt: "2025-01-01T09:30:00Z",
     type: "stringing",
@@ -160,9 +148,7 @@ export default function ReviewsClient() {
             className={`h-4 w-4 ${index < rating ? "text-warning fill-current" : "text-muted-foreground"}`}
           />
         ))}
-        <span className="ml-2 text-sm font-medium text-foreground">
-          {rating}/5
-        </span>
+        <span className="ml-2 text-sm font-medium text-foreground">{rating}/5</span>
       </div>
     );
   };
@@ -210,14 +196,9 @@ export default function ReviewsClient() {
   // 통계 계산
   const totalReviews = sampleReviews.length;
   const averageRating =
-    sampleReviews.reduce((sum, review) => sum + review.rating, 0) /
-    totalReviews;
-  const fiveStarReviews = sampleReviews.filter(
-    (review) => review.rating === 5,
-  ).length;
-  const lessonReviews = sampleReviews.filter(
-    (review) => review.type === "lesson",
-  ).length;
+    sampleReviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews;
+  const fiveStarReviews = sampleReviews.filter((review) => review.rating === 5).length;
+  const lessonReviews = sampleReviews.filter((review) => review.type === "lesson").length;
 
   return (
     <div className="p-6 space-y-8">
@@ -244,12 +225,8 @@ export default function ReviewsClient() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  전체 리뷰
-                </p>
-                <p className="text-3xl font-bold text-foreground">
-                  {totalReviews}
-                </p>
+                <p className="text-sm font-medium text-muted-foreground">전체 리뷰</p>
+                <p className="text-3xl font-bold text-foreground">{totalReviews}</p>
               </div>
               <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-foreground dark:bg-primary/20">
                 <MessageSquare className="h-6 w-6" />
@@ -262,12 +239,8 @@ export default function ReviewsClient() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  평균 평점
-                </p>
-                <p className="text-3xl font-bold text-foreground">
-                  {averageRating.toFixed(1)}
-                </p>
+                <p className="text-sm font-medium text-muted-foreground">평균 평점</p>
+                <p className="text-3xl font-bold text-foreground">{averageRating.toFixed(1)}</p>
               </div>
               <div className="bg-warning/10 rounded-xl p-3 dark:bg-warning/15">
                 <Star className="h-6 w-6 text-warning" />
@@ -280,12 +253,8 @@ export default function ReviewsClient() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  5점 리뷰
-                </p>
-                <p className="text-3xl font-bold text-foreground">
-                  {fiveStarReviews}
-                </p>
+                <p className="text-sm font-medium text-muted-foreground">5점 리뷰</p>
+                <p className="text-3xl font-bold text-foreground">{fiveStarReviews}</p>
               </div>
               <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-foreground dark:bg-primary/20">
                 <Award className="h-6 w-6" />
@@ -298,12 +267,8 @@ export default function ReviewsClient() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  레슨 리뷰
-                </p>
-                <p className="text-3xl font-bold text-foreground">
-                  {lessonReviews}
-                </p>
+                <p className="text-sm font-medium text-muted-foreground">레슨 리뷰</p>
+                <p className="text-3xl font-bold text-foreground">{lessonReviews}</p>
               </div>
               <div className="bg-muted rounded-xl p-3">
                 <TrendingUp className="h-6 w-6 text-foreground" />
@@ -327,9 +292,7 @@ export default function ReviewsClient() {
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl font-semibold text-foreground">
-                리뷰 목록
-              </CardTitle>
+              <CardTitle className="text-xl font-semibold text-foreground">리뷰 목록</CardTitle>
               <CardDescription className="text-muted-foreground">
                 총 {filteredReviews.length}개의 리뷰가 있습니다.
               </CardDescription>
@@ -381,59 +344,39 @@ export default function ReviewsClient() {
                       aria-label="전체 선택"
                     />
                   </TableHead>
-                  <TableHead className="font-semibold text-foreground w-[180px]">
-                    작성자
-                  </TableHead>
+                  <TableHead className="font-semibold text-foreground w-[180px]">작성자</TableHead>
                   <TableHead className="font-semibold text-foreground hidden md:table-cell">
                     리뷰 내용
                   </TableHead>
-                  <TableHead className="font-semibold text-foreground w-[120px]">
-                    평점
-                  </TableHead>
+                  <TableHead className="font-semibold text-foreground w-[120px]">평점</TableHead>
                   <TableHead className="font-semibold text-foreground hidden md:table-cell w-[180px]">
                     작성일
                   </TableHead>
-                  <TableHead className="font-semibold text-foreground w-[140px]">
-                    타입
-                  </TableHead>
-                  <TableHead className="font-semibold text-foreground w-[70px]">
-                    액션
-                  </TableHead>
+                  <TableHead className="font-semibold text-foreground w-[140px]">타입</TableHead>
+                  <TableHead className="font-semibold text-foreground w-[70px]">액션</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredReviews.length === 0 ? (
                   <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="h-24 text-center text-muted-foreground"
-                    >
+                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                       검색 결과가 없습니다.
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredReviews.map((review) => (
-                    <TableRow
-                      key={review.id}
-                      className="hover:bg-background transition-colors"
-                    >
+                    <TableRow key={review.id} className="hover:bg-background transition-colors">
                       <TableCell>
                         <Checkbox
                           checked={selectedReviews.includes(review.id)}
-                          onCheckedChange={(checked) =>
-                            handleSelectOne(review.id, !!checked)
-                          }
+                          onCheckedChange={(checked) => handleSelectOne(review.id, !!checked)}
                           aria-label={`${review.authorName} 리뷰 선택`}
                         />
                       </TableCell>
                       <TableCell className="font-medium">
                         <div className="space-y-1">
-                          <div className="text-foreground">
-                            {review.authorName}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {review.authorEmail}
-                          </div>
+                          <div className="text-foreground">{review.authorName}</div>
+                          <div className="text-xs text-muted-foreground">{review.authorEmail}</div>
                         </div>
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
@@ -455,10 +398,7 @@ export default function ReviewsClient() {
                         {formatDate(review.createdAt)}
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={getReviewTypeBadge(review.type)}
-                        >
+                        <Badge variant="outline" className={getReviewTypeBadge(review.type)}>
                           {getReviewTypeLabel(review.type, review.productName)}
                         </Badge>
                       </TableCell>
@@ -475,10 +415,7 @@ export default function ReviewsClient() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem
-                              asChild
-                              className="cursor-pointer"
-                            >
+                            <DropdownMenuItem asChild className="cursor-pointer">
                               <Link href={`/admin/reviews/${review.id}`}>
                                 <Eye className="mr-2 h-4 w-4" />
                                 <span>상세 보기</span>

@@ -4,31 +4,22 @@ import clientPromise from "@/lib/mongodb";
 import { cookies } from "next/headers";
 import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 
-export async function GET(
-  _req: Request,
-  context: { params: Promise<{ orderId: string }> },
-) {
+export async function GET(_req: Request, context: { params: Promise<{ orderId: string }> }) {
   try {
     const db = (await clientPromise).db();
     const { orderId } = await context.params;
 
     if (!ObjectId.isValid(orderId)) {
-      return new NextResponse(
-        JSON.stringify({ message: "유효하지 않은 주문 ID입니다." }),
-        {
-          status: 400,
-          headers: { "Cache-Control": "no-store" },
-        },
-      );
+      return new NextResponse(JSON.stringify({ message: "유효하지 않은 주문 ID입니다." }), {
+        status: 400,
+        headers: { "Cache-Control": "no-store" },
+      });
     }
 
     const orderObjectId = new ObjectId(orderId);
     const order = await db
       .collection("orders")
-      .findOne(
-        { _id: orderObjectId },
-        { projection: { _id: 1, userId: 1, guest: 1 } },
-      );
+      .findOne({ _id: orderObjectId }, { projection: { _id: 1, userId: 1, guest: 1 } });
     if (!order) {
       return new NextResponse(JSON.stringify({ found: false }), {
         status: 404,

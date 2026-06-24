@@ -20,9 +20,7 @@ function toInt(v: string | null, fallback: number, min: number, max: number) {
   return Math.min(max, Math.max(min, i));
 }
 
-function isCommunityReportStatus(
-  value: unknown,
-): value is CommunityReportStatus {
+function isCommunityReportStatus(value: unknown): value is CommunityReportStatus {
   return value === "pending" || value === "resolved" || value === "rejected";
 }
 
@@ -32,9 +30,7 @@ function parseCommunityReportStatus(value: unknown) {
   return isCommunityReportStatus(normalized) ? normalized : null;
 }
 
-function isCommunityReportTargetType(
-  value: unknown,
-): value is CommunityReportTargetType {
+function isCommunityReportTargetType(value: unknown): value is CommunityReportTargetType {
   return value === "post" || value === "comment";
 }
 
@@ -62,9 +58,7 @@ function normalizeReporterUserId(value: unknown) {
   return ObjectId.isValid(asStr) ? asStr : null;
 }
 
-function pickDisplayName(
-  user?: { nickname?: string; name?: string; email?: string } | null,
-) {
+function pickDisplayName(user?: { nickname?: string; name?: string; email?: string } | null) {
   if (!user) return "";
   return user.nickname?.trim() || user.name?.trim() || "";
 }
@@ -80,9 +74,7 @@ export async function GET(req: NextRequest) {
   const skip = (page - 1) * limit;
 
   const status = parseCommunityReportStatus(searchParams.get("status"));
-  const targetType = parseCommunityReportTargetType(
-    searchParams.get("targetType"),
-  );
+  const targetType = parseCommunityReportTargetType(searchParams.get("targetType"));
   const boardType = (searchParams.get("boardType") ?? "all").trim(); // all|free|market...
   const q = (searchParams.get("q") ?? "").trim();
 
@@ -167,10 +159,7 @@ export async function GET(req: NextRequest) {
     ),
   );
 
-  const fallbackUserMap = new Map<
-    string,
-    { nickname?: string; name?: string; email?: string }
-  >();
+  const fallbackUserMap = new Map<string, { nickname?: string; name?: string; email?: string }>();
   if (fallbackUserIds.length > 0) {
     const users = (await db
       .collection("users")
@@ -197,9 +186,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     items: items.map((d: any) => {
       const reporterUserId = normalizeReporterUserId(d?.reporterUserId);
-      const fallbackUser = reporterUserId
-        ? fallbackUserMap.get(reporterUserId)
-        : undefined;
+      const fallbackUser = reporterUserId ? fallbackUserMap.get(reporterUserId) : undefined;
       const reporterDisplay =
         String(d?.reporterNickname ?? "").trim() ||
         pickDisplayName(fallbackUser) ||
@@ -216,11 +203,8 @@ export async function GET(req: NextRequest) {
         reporterDisplay,
         reporterNickname: String(d?.reporterNickname ?? "").trim(),
         createdAt:
-          d.createdAt instanceof Date
-            ? d.createdAt.toISOString()
-            : new Date().toISOString(),
-        resolvedAt:
-          d.resolvedAt instanceof Date ? d.resolvedAt.toISOString() : null,
+          d.createdAt instanceof Date ? d.createdAt.toISOString() : new Date().toISOString(),
+        resolvedAt: d.resolvedAt instanceof Date ? d.resolvedAt.toISOString() : null,
         post: d.post
           ? {
               id: d.post._id?.toString?.() ?? null,

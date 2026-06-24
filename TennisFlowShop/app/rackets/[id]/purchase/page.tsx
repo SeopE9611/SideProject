@@ -6,11 +6,7 @@ export const metadata: Metadata = {
   title: "라켓 구매",
 };
 
-export default async function RacketPurchasePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function RacketPurchasePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   redirect(`/rackets/${id}/select-string`);
 }

@@ -40,10 +40,7 @@ export default function PhotosReorderGrid({
   const colsClass = columns === 4 ? "grid-cols-4" : "grid-cols-5";
 
   return (
-    <ul
-      className={`grid ${colsClass} gap-2 mt-2 ${className ?? ""}`}
-      data-cy="photos-grid"
-    >
+    <ul className={`grid ${colsClass} gap-2 mt-2 ${className ?? ""}`} data-cy="photos-grid">
       {value.map((src, idx) => (
         <li
           data-cy="photo-card"
@@ -67,9 +64,7 @@ export default function PhotosReorderGrid({
           className={`group relative aspect-square rounded-md overflow-hidden ring-1 ring-border/10 ${disabled ? "opacity-60 cursor-not-allowed" : "cursor-move"}`}
           aria-label={`사진을 위치 ${idx + 1}로 이동`}
           title={
-            disabled
-              ? "지금은 정렬할 수 없습니다"
-              : "썸네일을 드래그하여 순서를 바꿀 수 있어요"
+            disabled ? "지금은 정렬할 수 없습니다" : "썸네일을 드래그하여 순서를 바꿀 수 있어요"
           }
         >
           <img

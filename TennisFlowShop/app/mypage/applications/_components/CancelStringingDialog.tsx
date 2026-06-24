@@ -60,9 +60,7 @@ const CancelStringingDialog = ({
 
   // 입력/선택이 있는 상태에서 이탈(뒤로가기/링크/탭닫기) 방지
   const hasRefundAccountInput =
-    refundBank !== "" ||
-    refundAccount.trim().length > 0 ||
-    refundHolder.trim().length > 0;
+    refundBank !== "" || refundAccount.trim().length > 0 || refundHolder.trim().length > 0;
   const isDirty =
     open &&
     (selectedReason !== undefined ||
@@ -146,9 +144,7 @@ const CancelStringingDialog = ({
               <SelectItem value="단순 변심">단순 변심</SelectItem>
               <SelectItem value="상품 정보와 다름">상품 정보와 다름</SelectItem>
               <SelectItem value="배송 지연">배송 지연</SelectItem>
-              <SelectItem value="다른 상품으로 대체">
-                다른 상품으로 대체
-              </SelectItem>
+              <SelectItem value="다른 상품으로 대체">다른 상품으로 대체</SelectItem>
               <SelectItem value="기타">기타</SelectItem>
             </SelectContent>
           </Select>
@@ -180,18 +176,10 @@ const CancelStringingDialog = ({
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => handleOpenChange(false)}
-            disabled={isSubmitting}
-          >
+          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSubmitting}>
             닫기
           </Button>
-          <Button
-            variant="destructive"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-          >
+          <Button variant="destructive" onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? "요청 처리 중..." : "취소 요청하기"}
           </Button>
         </DialogFooter>

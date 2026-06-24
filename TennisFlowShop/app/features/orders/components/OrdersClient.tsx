@@ -15,13 +15,7 @@ import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,12 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   badgeBase,
   badgeSizeSm,
@@ -59,10 +48,7 @@ import {
   kindBadgeClass,
   linkBadgeClass,
 } from "@/lib/badge-style";
-import {
-  getOrderStatusLabelForDisplay,
-  isVisitPickupOrder,
-} from "@/lib/order-shipping";
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { shortenId } from "@/lib/shorten";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { adminRichTooltipClass } from "@/lib/tooltip-style";
@@ -90,9 +76,7 @@ export default function OrdersClient() {
     selectedColorLabel?: string | null;
     selectedColor?: string | null;
   }) {
-    return String(
-      value?.selectedColorLabel ?? value?.selectedColor ?? "",
-    ).trim();
+    return String(value?.selectedColorLabel ?? value?.selectedColor ?? "").trim();
   }
 
   function getMetaSelectedColorLabel(
@@ -135,9 +119,9 @@ export default function OrdersClient() {
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [shippingFilter, setShippingFilter] = useState("all");
   const [customerTypeFilter, setCustomerTypeFilter] = useState("all");
-  const [cancelFilter, setCancelFilter] = useState<
-    "all" | "requested" | "approved" | "rejected"
-  >("all");
+  const [cancelFilter, setCancelFilter] = useState<"all" | "requested" | "approved" | "rejected">(
+    "all",
+  );
 
   // 고급 검색 토글 상태
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -173,8 +157,7 @@ export default function OrdersClient() {
     if (typeFilter !== "all") sp.set("type", typeFilter);
     if (paymentFilter !== "all") sp.set("payment", paymentFilter);
     if (shippingFilter !== "all") sp.set("shipping", shippingFilter);
-    if (customerTypeFilter !== "all")
-      sp.set("customerType", customerTypeFilter);
+    if (customerTypeFilter !== "all") sp.set("customerType", customerTypeFilter);
     if (cancelFilter !== "all") sp.set("cancel", cancelFilter);
     sp.set("sort", serverSort);
 
@@ -249,11 +232,7 @@ export default function OrdersClient() {
   const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / limit));
 
   // 제한형 페이지 네이션
-  function getPaginationItems(
-    page: number,
-    totalPages: number,
-    delta = 2,
-  ): (number | string)[] {
+  function getPaginationItems(page: number, totalPages: number, delta = 2): (number | string)[] {
     // 한 페이지만 있으면 그냥 1만 반환
     if (totalPages <= 1) return [1];
 
@@ -345,10 +324,7 @@ export default function OrdersClient() {
     // 런타임 데이터 기준으로 안전하게 any로 검사한다.
     return (
       Array.isArray(items) &&
-      items.some(
-        (it) =>
-          (it as any)?.kind === "racket" || (it as any)?.kind === "used_racket",
-      )
+      items.some((it) => (it as any)?.kind === "racket" || (it as any)?.kind === "used_racket")
     );
   }
 
@@ -374,10 +350,7 @@ export default function OrdersClient() {
     if (order.__type === "stringing_application") {
       flow = isIntegratedApp ? orderFlowByHasRacket(anchorHasRacket, true) : 3;
     } else {
-      flow = orderFlowByHasRacket(
-        hasRacketItems((order as any)?.items),
-        isLinkedProductOrder,
-      );
+      flow = orderFlowByHasRacket(hasRacketItems((order as any)?.items), isLinkedProductOrder);
     }
 
     return {
@@ -388,10 +361,7 @@ export default function OrdersClient() {
     };
   }
 
-  function getSettlementBadge(
-    order: OrderWithType,
-    ctx: { isIntegratedApp: boolean },
-  ) {
+  function getSettlementBadge(order: OrderWithType, ctx: { isIntegratedApp: boolean }) {
     // /admin/orders 화면 기준 정산 앵커:
     // - 주문 행: 항상 주문 앵커
     // - 신청서 행: 통합이면 주문 앵커 / 단독이면 신청서 앵커
@@ -408,15 +378,12 @@ export default function OrdersClient() {
 
   // 연결 신청서는 "최신 수정/생성 시각" 기준으로 1건을 선택해 요약에 사용
   function getLatestStringingApplicationInGroup(group: OrderWithType[]) {
-    const apps = group.filter(
-      (o) => o.__type === "stringing_application",
-    ) as Array<OrderWithType & { updatedAt?: string; createdAt?: string }>;
+    const apps = group.filter((o) => o.__type === "stringing_application") as Array<
+      OrderWithType & { updatedAt?: string; createdAt?: string }
+    >;
     if (apps.length === 0) return null;
 
-    const getStamp = (
-      app: { updatedAt?: string; createdAt?: string },
-      idx: number,
-    ) => {
+    const getStamp = (app: { updatedAt?: string; createdAt?: string }, idx: number) => {
       const raw = app.updatedAt ?? app.createdAt;
       const ts = raw ? new Date(raw).getTime() : Number.NaN;
       return Number.isFinite(ts) ? ts : -idx;
@@ -483,10 +450,7 @@ export default function OrdersClient() {
   };
 
   const hasQuickViewModifiers = Boolean(
-    searchTerm.trim() ||
-    selectedDate ||
-    sortBy !== "date" ||
-    sortDirection !== "desc",
+    searchTerm.trim() || selectedDate || sortBy !== "date" || sortDirection !== "desc",
   );
 
   const activeQuickView = hasQuickViewModifiers
@@ -555,11 +519,7 @@ export default function OrdersClient() {
     typeFilter !== "all" ? typeFilter : null,
     paymentFilter !== "all" ? paymentFilter : null,
     shippingFilter !== "all" ? `배송 ${shippingFilter}` : null,
-    customerTypeFilter === "member"
-      ? "회원"
-      : customerTypeFilter === "guest"
-        ? "비회원"
-        : null,
+    customerTypeFilter === "member" ? "회원" : customerTypeFilter === "guest" ? "비회원" : null,
     cancelFilter === "requested"
       ? "취소 요청"
       : cancelFilter === "approved"
@@ -607,14 +567,12 @@ export default function OrdersClient() {
       // 운송장/배송정보는 "신청서"에서만 관리하도록 강제한다.
       // - 따라서 신청서 배송등록 페이지로 자동 이동
       const appIdFromList =
-        Array.isArray(order.stringingApplications) &&
-        order.stringingApplications.length > 0
+        Array.isArray(order.stringingApplications) && order.stringingApplications.length > 0
           ? order.stringingApplications
               .filter((a: any) => a?.id)
               .sort(
                 (a: any, b: any) =>
-                  new Date(b.createdAt ?? 0).getTime() -
-                  new Date(a.createdAt ?? 0).getTime(),
+                  new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime(),
               )[0]?.id
           : null;
       const appId = appIdFromList ?? order.stringingApplicationId ?? null;
@@ -696,9 +654,8 @@ export default function OrdersClient() {
               업무 가이드 · 우선 처리 기준 보기
             </summary>
             <p className="mt-2 max-w-4xl text-sm leading-relaxed text-muted-foreground break-keep">
-              결제 대기와 배송 미등록 건을 먼저 확인하고, 취소 요청은 환불 계좌
-              준비 여부를 함께 검토하세요. 통합 주문의 배송 정보는 연결된
-              교체서비스 신청서에서 관리합니다.
+              결제 대기와 배송 미등록 건을 먼저 확인하고, 취소 요청은 환불 계좌 준비 여부를 함께
+              검토하세요. 통합 주문의 배송 정보는 연결된 교체서비스 신청서에서 관리합니다.
             </p>
           </details>
           <Link
@@ -721,9 +678,7 @@ export default function OrdersClient() {
         <CardContent className="pt-1">
           <div className="flex flex-col gap-4">
             <div>
-              <p className="mb-2 text-xs font-medium text-foreground/80">
-                빠른 보기
-              </p>
+              <p className="mb-2 text-xs font-medium text-foreground/80">빠른 보기</p>
               <div className="flex flex-wrap gap-2">
                 {[
                   ["all", "전체"],
@@ -740,13 +695,7 @@ export default function OrdersClient() {
                     variant={activeQuickView === value ? "default" : "outline"}
                     onClick={() =>
                       applyQuickFilter(
-                        value as
-                          | "all"
-                          | "payment"
-                          | "cancel"
-                          | "shipping"
-                          | "service"
-                          | "product",
+                        value as "all" | "payment" | "cancel" | "shipping" | "service" | "product",
                       )
                     }
                     className="h-8"
@@ -784,22 +733,10 @@ export default function OrdersClient() {
 
             {/* 필터 컴포넌트들 */}
             <div className="grid w-full gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-              <CustomerTypeFilter
-                value={customerTypeFilter}
-                onChange={setCustomerTypeFilter}
-              />
-              <OrderStatusFilter
-                value={statusFilter}
-                onChange={setStatusFilter}
-              />
-              <PaymentStatusFilter
-                value={paymentFilter}
-                onChange={setPaymentFilter}
-              />
-              <ShippingStatusFilter
-                value={shippingFilter}
-                onChange={setShippingFilter}
-              />
+              <CustomerTypeFilter value={customerTypeFilter} onChange={setCustomerTypeFilter} />
+              <OrderStatusFilter value={statusFilter} onChange={setStatusFilter} />
+              <PaymentStatusFilter value={paymentFilter} onChange={setPaymentFilter} />
+              <ShippingStatusFilter value={shippingFilter} onChange={setShippingFilter} />
               <OrderTypeFilter value={typeFilter} onChange={setTypeFilter} />
               <Button
                 variant="outline"
@@ -816,18 +753,12 @@ export default function OrdersClient() {
 
       <div className="mb-4 flex flex-col gap-2 rounded-xl border border-border/70 bg-card px-4 py-3 text-sm shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="font-semibold text-foreground">
-            현재 보기: {quickViewLabel}
-          </span>
+          <span className="font-semibold text-foreground">현재 보기: {quickViewLabel}</span>
           {searchTerm.trim() ? (
-            <span className="text-foreground/75">
-              검색어: {searchTerm.trim()}
-            </span>
+            <span className="text-foreground/75">검색어: {searchTerm.trim()}</span>
           ) : null}
           {appliedFilterLabels.length > 0 ? (
-            <span className="text-foreground/75">
-              필터: {appliedFilterLabels.join(" / ")}
-            </span>
+            <span className="text-foreground/75">필터: {appliedFilterLabels.join(" / ")}</span>
           ) : null}
           <span className="text-foreground/75">
             {data ? `총 ${data.total.toLocaleString("ko-KR")}건` : "조회 중…"}
@@ -903,47 +834,32 @@ export default function OrdersClient() {
                 <div className="mt-2 rounded-lg border border-border/60 bg-muted/20 p-3 text-xs leading-5 text-muted-foreground">
                   <ul className="space-y-1">
                     <li>
-                      <strong className="font-medium text-foreground">
-                        주문:
-                      </strong>{" "}
-                      상품 구매, 스트링 구매, 라켓 구매 등 결제 주문입니다.
+                      <strong className="font-medium text-foreground">주문:</strong> 상품 구매,
+                      스트링 구매, 라켓 구매 등 결제 주문입니다.
                     </li>
                     <li>
-                      <strong className="font-medium text-foreground">
-                        신청서:
-                      </strong>{" "}
-                      교체서비스 작업 정보를 관리하는 신청 문서입니다.
+                      <strong className="font-medium text-foreground">신청서:</strong> 교체서비스
+                      작업 정보를 관리하는 신청 문서입니다.
                     </li>
                     <li>
-                      <strong className="font-medium text-foreground">
-                        통합:
-                      </strong>{" "}
-                      주문과 교체서비스 신청이 연결된 고객 흐름입니다.
+                      <strong className="font-medium text-foreground">통합:</strong> 주문과
+                      교체서비스 신청이 연결된 고객 흐름입니다.
                     </li>
                     <li>
-                      <strong className="font-medium text-foreground">
-                        단독:
-                      </strong>{" "}
-                      주문 또는 신청서가 단독으로 접수된 항목입니다.
+                      <strong className="font-medium text-foreground">단독:</strong> 주문 또는
+                      신청서가 단독으로 접수된 항목입니다.
                     </li>
                     <li>
-                      <strong className="font-medium text-foreground">
-                        연결 묶음:
-                      </strong>{" "}
-                      같은 묶음으로 정렬된 주문·신청입니다.
+                      <strong className="font-medium text-foreground">연결 묶음:</strong> 같은
+                      묶음으로 정렬된 주문·신청입니다.
                     </li>
                     <li>
-                      <strong className="font-medium text-foreground">
-                        신청서에서 관리:
-                      </strong>{" "}
+                      <strong className="font-medium text-foreground">신청서에서 관리:</strong>{" "}
                       배송/운송장 정보가 신청서 상세에서 관리되는 항목입니다.
                     </li>
                     <li>
-                      <strong className="font-medium text-foreground">
-                        대여 주문:
-                      </strong>{" "}
-                      라켓 대여 관련 업무는 “라켓 대여 처리” 화면에서
-                      관리합니다.
+                      <strong className="font-medium text-foreground">대여 주문:</strong> 라켓 대여
+                      관련 업무는 “라켓 대여 처리” 화면에서 관리합니다.
                     </li>
                   </ul>
                 </div>
@@ -953,16 +869,10 @@ export default function OrdersClient() {
         </CardHeader>
         <CardContent className="relative min-h-[420px] overflow-x-auto scrollbar-hidden pr-2">
           <Table className="min-w-[1040px] table-fixed border-separate text-xs [border-spacing-block:0.4rem] [border-spacing-inline:0]">
-            <TableHeader
-              className={cn("sticky top-0", adminSurface.tableHeader)}
-            >
+            <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
-                <TableHead className={cn(thClasses, "w-[150px]")}>
-                  주문 ID
-                </TableHead>
-                <TableHead className={cn(thClasses, "w-[190px] text-center")}>
-                  고객
-                </TableHead>
+                <TableHead className={cn(thClasses, "w-[150px]")}>주문 ID</TableHead>
+                <TableHead className={cn(thClasses, "w-[190px] text-center")}>고객</TableHead>
                 <TableHead className={cn(thClasses, "w-36")}>
                   <div className="flex items-center justify-center gap-2">
                     <span
@@ -976,33 +886,18 @@ export default function OrdersClient() {
                       <ChevronDown
                         className={cn(
                           "w-3 h-3 transition-transform",
-                          sortBy === "date" &&
-                            sortDirection === "desc" &&
-                            "rotate-180",
+                          sortBy === "date" && sortDirection === "desc" && "rotate-180",
                         )}
                       />
                     </span>
-                    <DateFilter
-                      date={selectedDate}
-                      onChange={setSelectedDate}
-                    />
+                    <DateFilter date={selectedDate} onChange={setSelectedDate} />
                   </div>
                 </TableHead>
-                <TableHead className={cn(thClasses, "w-[112px] text-center")}>
-                  상태
-                </TableHead>
-                <TableHead className={cn(thClasses, "w-[96px] text-center")}>
-                  결제
-                </TableHead>
-                <TableHead className={cn(thClasses, "w-[100px] text-center")}>
-                  수령방식
-                </TableHead>
-                <TableHead className={cn(thClasses, "w-[120px] text-center")}>
-                  운송장
-                </TableHead>
-                <TableHead className={cn(thClasses, "w-[88px] text-center")}>
-                  유형
-                </TableHead>
+                <TableHead className={cn(thClasses, "w-[112px] text-center")}>상태</TableHead>
+                <TableHead className={cn(thClasses, "w-[96px] text-center")}>결제</TableHead>
+                <TableHead className={cn(thClasses, "w-[100px] text-center")}>수령방식</TableHead>
+                <TableHead className={cn(thClasses, "w-[120px] text-center")}>운송장</TableHead>
+                <TableHead className={cn(thClasses, "w-[88px] text-center")}>유형</TableHead>
                 <TableHead
                   onClick={() => handleSort("total")}
                   className={cn(
@@ -1015,15 +910,11 @@ export default function OrdersClient() {
                   <ChevronDown
                     className={cn(
                       "inline ml-1 w-3 h-3 text-muted-foreground transition-transform",
-                      sortBy === "total" &&
-                        sortDirection === "desc" &&
-                        "rotate-180",
+                      sortBy === "total" && sortDirection === "desc" && "rotate-180",
                     )}
                   />
                 </TableHead>
-                <TableHead className={cn(thClasses, "w-[48px] text-center")}>
-                  …
-                </TableHead>
+                <TableHead className={cn(thClasses, "w-[48px] text-center")}>…</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -1086,15 +977,11 @@ export default function OrdersClient() {
                     "border-border",
                     "border-border",
                   ];
-                  const borderColor =
-                    borderColors[groupIdx % borderColors.length];
+                  const borderColor = borderColors[groupIdx % borderColors.length];
                   const isGrouped = group.length > 1;
 
-                  const anchorOrder =
-                    group.find((o) => o.__type === "order") ?? null;
-                  const anchorHasRacket = hasRacketItems(
-                    (anchorOrder as any)?.items,
-                  );
+                  const anchorOrder = group.find((o) => o.__type === "order") ?? null;
+                  const anchorHasRacket = hasRacketItems((anchorOrder as any)?.items);
 
                   return group.map((order) => {
                     // 통합 주문 행에서도 연결 신청서 핵심 정보를 빠르게 읽기 위한 참조
@@ -1104,8 +991,7 @@ export default function OrdersClient() {
                       null;
                     const isLinkedProductOrder =
                       order.__type === "order" &&
-                      (hasStringingAppInGroup ||
-                        (order as any).hasStringingApplication === true);
+                      (hasStringingAppInGroup || (order as any).hasStringingApplication === true);
                     const isIntegratedApp =
                       order.__type === "stringing_application" &&
                       !!order.linkedOrderId &&
@@ -1114,8 +1000,7 @@ export default function OrdersClient() {
                       order.cancelStatus === "requested" ||
                       linkedApplication?.cancelStatus === "requested";
                     const linkedReceptionLabel = getReceptionLabel(
-                      (linkedApplication as any)?.shippingInfo
-                        ?.shippingMethod ??
+                      (linkedApplication as any)?.shippingInfo?.shippingMethod ??
                         (linkedApplication as any)?.collectionMethod,
                     );
 
@@ -1134,18 +1019,13 @@ export default function OrdersClient() {
                         ? ((order as any)?.shippingInfo?.shippingMethod ??
                           (order as any)?.collectionMethod)
                         : (order as any)?.shippingInfo;
-                    const shippingActionLabel = isVisitPickupOrder(
-                      actionMethodSource,
-                    )
+                    const shippingActionLabel = isVisitPickupOrder(actionMethodSource)
                       ? "수령 정보 등록"
                       : "배송 정보 등록";
                     const cancelQuickSignal = getCancelQuickSignal(order);
 
                     return (
-                      <TableRow
-                        key={order.id}
-                        className="hover:bg-muted/50 transition-colors"
-                      >
+                      <TableRow key={order.id} className="hover:bg-muted/50 transition-colors">
                         <TableCell
                           className={cn(
                             tdClasses,
@@ -1207,16 +1087,13 @@ export default function OrdersClient() {
                                         ? [
                                             {
                                               label:
-                                                order.cancelStatus ===
-                                                "requested"
+                                                order.cancelStatus === "requested"
                                                   ? "취소요청"
-                                                  : order.cancelStatus ===
-                                                      "approved"
+                                                  : order.cancelStatus === "approved"
                                                     ? "취소승인"
                                                     : "취소거절",
                                               className:
-                                                order.cancelStatus ===
-                                                "requested"
+                                                order.cancelStatus === "requested"
                                                   ? "bg-destructive/10 text-destructive border border-destructive/30"
                                                   : "bg-muted text-muted-foreground border border-border",
                                               title: "취소 요청 상태",
@@ -1227,20 +1104,18 @@ export default function OrdersClient() {
                                         ? [
                                             {
                                               label: cancelQuickSignal.label,
-                                              className:
-                                                cancelQuickSignal.className,
+                                              className: cancelQuickSignal.className,
                                               title: "환불 계좌 준비 상태",
                                             },
                                           ]
                                         : []),
                                     ]}
                                   />
-                                  {isLinkedProductOrder &&
-                                    linkedApplication && (
-                                      <p className="text-sm text-foreground/75">
-                                        신청 상태: {linkedApplication.status}
-                                      </p>
-                                    )}
+                                  {isLinkedProductOrder && linkedApplication && (
+                                    <p className="text-sm text-foreground/75">
+                                      신청 상태: {linkedApplication.status}
+                                    </p>
+                                  )}
                                 </div>
                               </TooltipTrigger>
 
@@ -1252,18 +1127,14 @@ export default function OrdersClient() {
                               >
                                 <div>
                                   <div className="flex items-center gap-2">
-                                    <span className="font-mono">
-                                      {order.id}
-                                    </span>
+                                    <span className="font-mono">{order.id}</span>
                                     <Button
                                       size="icon"
                                       variant="ghost"
                                       className="h-6 w-6"
                                       onClick={() => {
                                         navigator.clipboard.writeText(order.id);
-                                        showSuccessToast(
-                                          "주문 ID가 클립보드에 복사되었습니다.",
-                                        );
+                                        showSuccessToast("주문 ID가 클립보드에 복사되었습니다.");
                                       }}
                                     >
                                       <Copy className="w-4 h-4" />
@@ -1283,12 +1154,11 @@ export default function OrdersClient() {
                                         : "환불 계좌 확인이 필요합니다."}
                                     </p>
                                   )}
-                                  {cancelQuickSignal &&
-                                    order.refundBankLabel && (
-                                      <p className="mt-1 text-sm text-foreground/75">
-                                        환불 은행: {order.refundBankLabel}
-                                      </p>
-                                    )}
+                                  {cancelQuickSignal && order.refundBankLabel && (
+                                    <p className="mt-1 text-sm text-foreground/75">
+                                      환불 은행: {order.refundBankLabel}
+                                    </p>
+                                  )}
                                   {order.__type === "stringing_application" &&
                                     order.stringSummary && (
                                       <p className="mt-1 text-sm text-foreground/75">
@@ -1298,11 +1168,8 @@ export default function OrdersClient() {
                                   {order.__type === "stringing_application" &&
                                     (() => {
                                       const meta = (order as any).meta;
-                                      const gauge = String(
-                                        meta?.selectedGauge ?? "",
-                                      ).trim();
-                                      const color =
-                                        getMetaSelectedColorLabel(meta);
+                                      const gauge = String(meta?.selectedGauge ?? "").trim();
+                                      const color = getMetaSelectedColorLabel(meta);
                                       if (!gauge && !color) return null;
                                       return (
                                         <p className="mt-1 text-sm text-foreground/75">
@@ -1328,67 +1195,50 @@ export default function OrdersClient() {
 
                                   {isLinkedProductOrder && (
                                     <p className="mt-2 text-sm text-foreground/75">
-                                      연결: 교체서비스 신청서와 통합 처리(같은
-                                      테두리 색)
+                                      연결: 교체서비스 신청서와 통합 처리(같은 테두리 색)
                                     </p>
                                   )}
-                                  {isLinkedProductOrder &&
-                                    linkedApplication && (
-                                      <>
-                                        {linkedReceptionLabel && (
+                                  {isLinkedProductOrder && linkedApplication && (
+                                    <>
+                                      {linkedReceptionLabel && (
+                                        <p className="mt-1 text-sm text-foreground/75">
+                                          접수 방식: {linkedReceptionLabel}
+                                        </p>
+                                      )}
+                                      {linkedApplication.stringSummary && (
+                                        <p className="mt-1 text-sm text-foreground/75">
+                                          스트링: {linkedApplication.stringSummary}
+                                        </p>
+                                      )}
+                                      {(() => {
+                                        const gauge = String(
+                                          (linkedApplication as any)?.meta?.selectedGauge ?? "",
+                                        ).trim();
+                                        const color =
+                                          getMetaSelectedColorLabel(
+                                            (linkedApplication as any)?.meta,
+                                          ) || getSelectedColorLabel(linkedApplication as any);
+                                        if (!gauge && !color) return null;
+                                        return (
                                           <p className="mt-1 text-sm text-foreground/75">
-                                            접수 방식: {linkedReceptionLabel}
+                                            {gauge && `게이지 ${gauge}`}
+                                            {gauge && color ? " · " : ""}
+                                            {color && `색상 ${color}`}
                                           </p>
-                                        )}
-                                        {linkedApplication.stringSummary && (
-                                          <p className="mt-1 text-sm text-foreground/75">
-                                            스트링:{" "}
-                                            {linkedApplication.stringSummary}
-                                          </p>
-                                        )}
-                                        {(() => {
-                                          const gauge = String(
-                                            (linkedApplication as any)?.meta
-                                              ?.selectedGauge ?? "",
-                                          ).trim();
-                                          const color =
-                                            getMetaSelectedColorLabel(
-                                              (linkedApplication as any)?.meta,
-                                            ) ||
-                                            getSelectedColorLabel(
-                                              linkedApplication as any,
-                                            );
-                                          if (!gauge && !color) return null;
-                                          return (
-                                            <p className="mt-1 text-sm text-foreground/75">
-                                              {gauge && `게이지 ${gauge}`}
-                                              {gauge && color ? " · " : ""}
-                                              {color && `색상 ${color}`}
-                                            </p>
-                                          );
-                                        })()}
-                                        {(linkedApplication as any)
-                                          ?.tensionSummary && (
-                                          <p className="mt-1 text-sm text-foreground/75">
-                                            텐션:{" "}
-                                            {
-                                              (linkedApplication as any)
-                                                .tensionSummary
-                                            }
-                                          </p>
-                                        )}
-                                        {(linkedApplication as any)
-                                          ?.reservationLabel && (
-                                          <p className="mt-1 text-sm text-foreground/75">
-                                            예약:{" "}
-                                            {
-                                              (linkedApplication as any)
-                                                .reservationLabel
-                                            }
-                                          </p>
-                                        )}
-                                      </>
-                                    )}
+                                        );
+                                      })()}
+                                      {(linkedApplication as any)?.tensionSummary && (
+                                        <p className="mt-1 text-sm text-foreground/75">
+                                          텐션: {(linkedApplication as any).tensionSummary}
+                                        </p>
+                                      )}
+                                      {(linkedApplication as any)?.reservationLabel && (
+                                        <p className="mt-1 text-sm text-foreground/75">
+                                          예약: {(linkedApplication as any).reservationLabel}
+                                        </p>
+                                      )}
+                                    </>
+                                  )}
                                   {order.__type === "stringing_application" &&
                                     order.linkedOrderId && (
                                       <p className="mt-1 text-sm text-foreground/75">
@@ -1492,17 +1342,11 @@ export default function OrdersClient() {
                         {/* 결제 상태 셀 */}
                         <TableCell className={tdClasses}>
                           {(() => {
-                            const pay = getPaymentStatusBadgeSpec(
-                              order.paymentStatus,
-                            );
+                            const pay = getPaymentStatusBadgeSpec(order.paymentStatus);
                             return (
                               <Badge
                                 variant={pay.variant}
-                                className={cn(
-                                  badgeBase,
-                                  badgeSizeSm,
-                                  "whitespace-nowrap shrink-0",
-                                )}
+                                className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}
                               >
                                 {order.paymentStatus}
                               </Badge>
@@ -1524,11 +1368,7 @@ export default function OrdersClient() {
                             return (
                               <Badge
                                 variant={m.variant}
-                                className={cn(
-                                  badgeBase,
-                                  badgeSizeSm,
-                                  "whitespace-nowrap shrink-0",
-                                )}
+                                className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}
                                 title={`수령방식 코드: ${String(m.code ?? "null")}`}
                               >
                                 {m.label}
@@ -1560,11 +1400,7 @@ export default function OrdersClient() {
                             return (
                               <Badge
                                 variant={t.variant}
-                                className={cn(
-                                  badgeBase,
-                                  badgeSizeSm,
-                                  "whitespace-nowrap shrink-0",
-                                )}
+                                className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}
                                 title="택배인 경우만 운송장 등록/미등록 의미가 있습니다."
                               >
                                 {t.label}
@@ -1576,25 +1412,16 @@ export default function OrdersClient() {
                         <TableCell className={tdClasses}>
                           <Badge
                             variant={badgeToneVariant(
-                              order.__type === "stringing_application"
-                                ? "brand"
-                                : "info",
+                              order.__type === "stringing_application" ? "brand" : "info",
                             )}
-                            className={cn(
-                              badgeBase,
-                              badgeSizeSm,
-                              "whitespace-nowrap shrink-0",
-                            )}
+                            className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}
                           >
                             {order.type}
                           </Badge>
                         </TableCell>
                         {/* 금액 셀 */}
                         <TableCell
-                          className={cn(
-                            tdClasses,
-                            "whitespace-nowrap text-right tabular-nums",
-                          )}
+                          className={cn(tdClasses, "whitespace-nowrap text-right tabular-nums")}
                         >
                           {formatCurrency(order.total)}
                         </TableCell>
@@ -1608,20 +1435,12 @@ export default function OrdersClient() {
                                 className="h-7 w-7 border border-border/60 bg-background"
                               >
                                 <MoreHorizontal className="h-3.5 w-3.5" />
-                                <span className="sr-only">
-                                  주문 작업 메뉴 열기
-                                </span>
+                                <span className="sr-only">주문 작업 메뉴 열기</span>
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              align="end"
-                              className="min-w-max"
-                            >
+                            <DropdownMenuContent align="end" className="min-w-max">
                               <DropdownMenuLabel>작업</DropdownMenuLabel>
-                              <DropdownMenuItem
-                                asChild
-                                className="whitespace-nowrap"
-                              >
+                              <DropdownMenuItem asChild className="whitespace-nowrap">
                                 <Link
                                   href={
                                     order.__type === "stringing_application"
@@ -1629,16 +1448,12 @@ export default function OrdersClient() {
                                       : `/admin/orders/${order.id}`
                                   }
                                   onClick={() => {
-                                    if (
-                                      order.__type === "stringing_application"
-                                    ) {
+                                    if (order.__type === "stringing_application") {
                                       useStringingStore
                                         .getState()
                                         .setSelectedApplicationId(order.id);
                                     } else {
-                                      useOrderStore
-                                        .getState()
-                                        .setSelectedOrderId(order.id);
+                                      useOrderStore.getState().setSelectedOrderId(order.id);
                                     }
                                   }}
                                 >
@@ -1651,9 +1466,7 @@ export default function OrdersClient() {
                                 className="whitespace-nowrap"
                                 onClick={() => {
                                   // 신청서 행이면 신청서 배송등록으로 바로 이동
-                                  if (
-                                    order.__type === "stringing_application"
-                                  ) {
+                                  if (order.__type === "stringing_application") {
                                     router.push(
                                       `/admin/applications/stringing/${order.id}/shipping-update`,
                                     );
@@ -1663,8 +1476,7 @@ export default function OrdersClient() {
                                   handleShippingUpdate(order.id);
                                 }}
                               >
-                                <Truck className="mr-2 h-4 w-4" />{" "}
-                                {shippingActionLabel}
+                                <Truck className="mr-2 h-4 w-4" /> {shippingActionLabel}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -1700,10 +1512,7 @@ export default function OrdersClient() {
                     {it}
                   </Button>
                 ) : (
-                  <span
-                    key={`dots-${idx}`}
-                    className="px-2 text-muted-foreground"
-                  >
+                  <span key={`dots-${idx}`} className="px-2 text-muted-foreground">
                     …
                   </span>
                 ),

@@ -18,26 +18,19 @@ export async function POST(req: Request) {
 
   const user = await guard.db
     .collection("users")
-    .findOne(
-      { _id: new ObjectId(userId) },
-      { projection: { name: 1, email: 1, phone: 1 } },
-    );
-  if (!user)
-    return NextResponse.json({ message: "user not found" }, { status: 404 });
+    .findOne({ _id: new ObjectId(userId) }, { projection: { name: 1, email: 1, phone: 1 } });
+  if (!user) return NextResponse.json({ message: "user not found" }, { status: 404 });
   const phone = String(user.phone || "").trim();
   if (!phone)
     return NextResponse.json(
       {
-        message:
-          "온라인 회원에 휴대폰 번호가 없어 오프라인 명부 연결이 필요합니다.",
+        message: "온라인 회원에 휴대폰 번호가 없어 오프라인 명부 연결이 필요합니다.",
       },
       { status: 400 },
     );
 
   const linkedId = new ObjectId(userId);
-  let customer = await guard.db
-    .collection("offline_customers")
-    .findOne({ linkedUserId: linkedId });
+  let customer = await guard.db.collection("offline_customers").findOne({ linkedUserId: linkedId });
   if (!customer) {
     const phoneNormalized = normalizePhone(phone);
     customer = await guard.db
@@ -54,9 +47,7 @@ export async function POST(req: Request) {
           },
         },
       );
-      customer = await guard.db
-        .collection("offline_customers")
-        .findOne({ _id: customer._id });
+      customer = await guard.db.collection("offline_customers").findOne({ _id: customer._id });
     }
   }
 

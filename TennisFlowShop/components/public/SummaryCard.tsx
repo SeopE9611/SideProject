@@ -40,26 +40,18 @@ export function SummaryCard({
             )}
 
             {title && (
-              <h2 className="text-ui-card-title-lg font-semibold text-foreground">
-                {title}
-              </h2>
+              <h2 className="text-ui-card-title-lg font-semibold text-foreground">{title}</h2>
             )}
 
             {description && (
-              <div className="text-ui-body-sm text-muted-foreground">
-                {description}
-              </div>
+              <div className="text-ui-body-sm text-muted-foreground">{description}</div>
             )}
           </div>
           {action && <div className="shrink-0">{action}</div>}
         </div>
       )}
-      {children && (
-        <div className={cn("p-5 sm:p-6", contentClassName)}>{children}</div>
-      )}
-      {footer && (
-        <div className="border-t border-border p-5 sm:p-6">{footer}</div>
-      )}
+      {children && <div className={cn("p-5 sm:p-6", contentClassName)}>{children}</div>}
+      {footer && <div className="border-t border-border p-5 sm:p-6">{footer}</div>}
     </section>
   );
 }

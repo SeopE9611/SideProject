@@ -16,10 +16,7 @@ function getGuestOrderMode(): GuestOrderMode {
 
 // POST /api/rentals/:id/guest-token
 // - 게스트 대여에 한해, 해당 대여로 접근 가능한 HttpOnly 쿠키를 심어준다.
-export async function POST(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     if (getGuestOrderMode() !== "on") {
       return NextResponse.json({ message: "not found" }, { status: 404 });
@@ -27,32 +24,20 @@ export async function POST(
 
     const { id } = await params;
     if (!ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { message: "invalid rental id" },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "invalid rental id" }, { status: 400 });
     }
 
     const db = await getDb();
     const rental = await db
       .collection("rental_orders")
-      .findOne(
-        { _id: new ObjectId(id) },
-        { projection: { _id: 1, userId: 1 } },
-      );
+      .findOne({ _id: new ObjectId(id) }, { projection: { _id: 1, userId: 1 } });
     if (!rental) {
-      return NextResponse.json(
-        { message: "rental not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ message: "rental not found" }, { status: 404 });
     }
 
     const isGuestRental = !rental.userId;
     if (!isGuestRental) {
-      return NextResponse.json(
-        { message: "not a guest rental" },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "not a guest rental" }, { status: 400 });
     }
 
     const token = signOrderAccessToken({ rentalId: String(rental._id) });

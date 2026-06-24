@@ -7,10 +7,7 @@ type Props = {
   backUrl?: string;
 };
 
-export default function ApplicationDetail({
-  id,
-  backUrl = "/mypage?tab=orders",
-}: Props) {
+export default function ApplicationDetail({ id, backUrl = "/mypage?tab=orders" }: Props) {
   return (
     <StringingApplicationDetailClient
       id={id}

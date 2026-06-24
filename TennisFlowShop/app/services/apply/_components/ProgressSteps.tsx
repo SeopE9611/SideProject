@@ -29,10 +29,7 @@ export default function ProgressSteps({ steps, currentStep }: Props) {
           const compactTitle = compactTitleMap[step.title] ?? step.title;
 
           return (
-            <div
-              key={step.id}
-              className="relative flex min-w-0 flex-col items-center"
-            >
+            <div key={step.id} className="relative flex min-w-0 flex-col items-center">
               {index < steps.length - 1 && (
                 <div
                   className={`absolute left-1/2 top-5 h-0.5 w-full translate-x-5 transition-all duration-300 sm:top-6 sm:translate-x-6 ${currentStep > step.id ? "bg-primary/30" : "bg-muted"}`}

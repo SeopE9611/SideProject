@@ -59,14 +59,10 @@ export function PaymentSettingsTab({
       <Card>
         <CardHeader>
           <CardTitle>결제 설정</CardTitle>
-          <CardDescription>
-            현재 운영 결제 연동은 NICEPay 기준으로 관리됩니다.
-          </CardDescription>
+          <CardDescription>현재 운영 결제 연동은 NICEPay 기준으로 관리됩니다.</CardDescription>
         </CardHeader>
         {error.message && (
-          <div className="mx-6 rounded border px-3 py-2 text-sm">
-            {error.message}
-          </div>
+          <div className="mx-6 rounded border px-3 py-2 text-sm">{error.message}</div>
         )}
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
@@ -106,16 +102,13 @@ export function PaymentSettingsTab({
               <p className="text-sm">결제 기능 상태: {nicepayStatus}</p>
               <p className="text-sm">결제 모드: {nicepayModeLabel}</p>
               <p className="text-sm break-all">
-                승인 API Base URL:{" "}
-                {paymentMeta.nicepay.approveApiBase ?? "미설정"}
+                승인 API Base URL: {paymentMeta.nicepay.approveApiBase ?? "미설정"}
               </p>
               <p className="text-sm">
-                Client ID 설정 여부:{" "}
-                {paymentMeta.nicepay.hasClientId ? "설정됨" : "미설정"}
+                Client ID 설정 여부: {paymentMeta.nicepay.hasClientId ? "설정됨" : "미설정"}
               </p>
               <p className="text-sm">
-                Secret Key 설정 여부:{" "}
-                {paymentMeta.nicepay.hasSecretKey ? "설정됨" : "미설정"}
+                Secret Key 설정 여부: {paymentMeta.nicepay.hasSecretKey ? "설정됨" : "미설정"}
               </p>
             </div>
 
@@ -128,8 +121,7 @@ export function PaymentSettingsTab({
                 주문/대여/패키지 결제 동기화는 각 상세 페이지에서 수행됩니다.
               </p>
               <p className="text-sm text-muted-foreground">
-                실제 결제 취소/환불은 각 도메인 상세 페이지의 승인 흐름에서
-                처리됩니다.
+                실제 결제 취소/환불은 각 도메인 상세 페이지의 승인 흐름에서 처리됩니다.
               </p>
             </div>
           </CardContent>

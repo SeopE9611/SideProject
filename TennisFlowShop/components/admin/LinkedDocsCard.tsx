@@ -3,13 +3,7 @@
 import Link from "next/link";
 import { Copy, ExternalLink, Link2 } from "lucide-react";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { shortenId } from "@/lib/shorten";
@@ -94,9 +88,7 @@ function getDocLabel(kind: LinkedDocKind) {
 
 function sortDocs(docs: LinkedDocItem[]) {
   // 운영 관점에서 “정산/기준 문서”를 먼저 보게: 주문 → 대여 → 신청서
-  return [...docs].sort(
-    (a, b) => KIND_PRIORITY[a.kind] - KIND_PRIORITY[b.kind],
-  );
+  return [...docs].sort((a, b) => KIND_PRIORITY[a.kind] - KIND_PRIORITY[b.kind]);
 }
 
 async function copyToClipboard(text: string) {
@@ -125,9 +117,7 @@ export default function LinkedDocsCard({
         </CardTitle>
         <CardDescription>
           {description ??
-            (list.length > 0
-              ? `연결 문서 ${list.length}개`
-              : "연결된 문서가 없습니다.")}
+            (list.length > 0 ? `연결 문서 ${list.length}개` : "연결된 문서가 없습니다.")}
         </CardDescription>
       </CardHeader>
 
@@ -151,10 +141,7 @@ export default function LinkedDocsCard({
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <Badge
-                        variant={badgeVariant}
-                        className={`${badgeBase} ${badgeSizeSm}`}
-                      >
+                      <Badge variant={badgeVariant} className={`${badgeBase} ${badgeSizeSm}`}>
                         {kindLabel}
                       </Badge>
                       <p className="text-sm text-muted-foreground">

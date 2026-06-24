@@ -39,8 +39,7 @@ function getIconProps(status: string) {
     case "검토 중":
       return {
         Icon: Search,
-        wrapperClasses:
-          "border border-primary/20 bg-primary/10 dark:bg-primary/20",
+        wrapperClasses: "border border-primary/20 bg-primary/10 dark:bg-primary/20",
         iconClasses: "text-primary",
       };
     case "작업 중":
@@ -59,8 +58,7 @@ function getIconProps(status: string) {
     case "취소":
       return {
         Icon: XCircle,
-        wrapperClasses:
-          "border border-destructive/30 bg-destructive/10 dark:bg-destructive/15",
+        wrapperClasses: "border border-destructive/30 bg-destructive/10 dark:bg-destructive/15",
         iconClasses: "text-destructive",
       };
 
@@ -81,8 +79,7 @@ function getIconProps(status: string) {
     case "스트링 정보 수정":
       return {
         Icon: Edit2,
-        wrapperClasses:
-          "border border-primary/20 bg-primary/10 dark:bg-primary/20",
+        wrapperClasses: "border border-primary/20 bg-primary/10 dark:bg-primary/20",
         iconClasses: "text-primary",
       };
     case "결제 금액 자동 업데이트":
@@ -106,8 +103,7 @@ function getIconProps(status: string) {
     case "매장 발송 운송장 수정":
       return {
         Icon: Package,
-        wrapperClasses:
-          "border border-primary/20 bg-primary/10 dark:bg-primary/20",
+        wrapperClasses: "border border-primary/20 bg-primary/10 dark:bg-primary/20",
         iconClasses: "text-primary",
       };
     // 매장 발송 정보(방식/예정일/운송장 통합 로그)
@@ -172,19 +168,13 @@ export default function StringingApplicationHistory({
   const isLoading = !res && isValidating && !hasDataError;
   const isPageTransitionLoading = !isLoading && isValidating && !hasDataError;
   const history =
-    hasResolvedData && !hasDataError && Array.isArray(res.history)
-      ? res.history
-      : null;
+    hasResolvedData && !hasDataError && Array.isArray(res.history) ? res.history : null;
   const total =
-    hasResolvedData && !hasDataError && typeof res.total === "number"
-      ? res.total
-      : null;
+    hasResolvedData && !hasDataError && typeof res.total === "number" ? res.total : null;
   const totalPages = total === null ? 1 : Math.max(1, Math.ceil(total / LIMIT));
 
   const historyItems = history
-    ? [...history].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-      )
+    ? [...history].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     : [];
   const shouldShowRows = !!history && historyItems.length > 0;
   const shouldShowEmptyState = !!history && historyItems.length === 0;
@@ -194,9 +184,7 @@ export default function StringingApplicationHistory({
       <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-card rounded-t-xl">
         <div className="flex items-center gap-2">
           <Calendar className="h-5 w-5 text-foreground" />
-          <CardTitle className="text-lg font-semibold bp-sm:text-xl">
-            처리 이력
-          </CardTitle>
+          <CardTitle className="text-lg font-semibold bp-sm:text-xl">처리 이력</CardTitle>
         </div>
 
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-words">
@@ -226,16 +214,10 @@ export default function StringingApplicationHistory({
             }}
           />
         ) : shouldShowEmptyState ? (
-          <AsyncState
-            kind="empty"
-            variant="card"
-            resourceName="신청 처리 이력"
-          />
+          <AsyncState kind="empty" variant="card" resourceName="신청 처리 이력" />
         ) : shouldShowRows ? (
           historyItems.map((log, idx) => {
-            const { Icon, wrapperClasses, iconClasses } = getIconProps(
-              log.status,
-            );
+            const { Icon, wrapperClasses, iconClasses } = getIconProps(log.status);
             return (
               <div
                 key={idx}
@@ -244,15 +226,11 @@ export default function StringingApplicationHistory({
                 <div
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border bp-sm:h-10 bp-sm:w-10 ${wrapperClasses}`}
                 >
-                  <Icon
-                    className={`h-5 w-5 bp-sm:h-6 bp-sm:w-6 ${iconClasses}`}
-                  />
+                  <Icon className={`h-5 w-5 bp-sm:h-6 bp-sm:w-6 ${iconClasses}`} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-col gap-1 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between bp-sm:gap-3">
-                    <span className="break-keep font-semibold leading-snug">
-                      {log.status}
-                    </span>
+                    <span className="break-keep font-semibold leading-snug">{log.status}</span>
                     <span className="text-xs text-muted-foreground bp-sm:shrink-0 bp-sm:text-sm">
                       {new Intl.DateTimeFormat("ko-KR", {
                         year: "numeric",
@@ -265,21 +243,14 @@ export default function StringingApplicationHistory({
                   </div>
                   {(() => {
                     // "문장 (추가정보...)" 형태를 앞/뒤로 나누기
-                    const [main, detailWithParen] = log.description.split(
-                      "(",
-                      2,
-                    );
-                    const detail = detailWithParen
-                      ? detailWithParen.replace(/\)$/, "")
-                      : "";
+                    const [main, detailWithParen] = log.description.split("(", 2);
+                    const detail = detailWithParen ? detailWithParen.replace(/\)$/, "") : "";
 
                     return (
                       <p className="mt-1 text-sm leading-relaxed text-foreground break-words">
                         {main?.trim()}
                         {detail && (
-                          <span className="ml-1 font-medium text-primary">
-                            ({detail})
-                          </span>
+                          <span className="ml-1 font-medium text-primary">({detail})</span>
                         )}
                       </p>
                     );

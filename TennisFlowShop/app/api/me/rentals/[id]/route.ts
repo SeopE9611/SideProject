@@ -9,8 +9,7 @@ export const dynamic = "force-dynamic";
 
 function getApplicationLines(stringDetails: any): any[] {
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
-  if (Array.isArray(stringDetails?.racketLines))
-    return stringDetails.racketLines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
   return [];
 }
 
@@ -49,14 +48,10 @@ function getTensionSummary(lines: any[]): string | null {
   return tensionSet.length ? tensionSet.join(", ") : null;
 }
 
-export async function GET(
-  _: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function GET(_: Request, ctx: { params: Promise<{ id: string }> }) {
   // 인증
   const at = (await cookies()).get("accessToken")?.value;
-  if (!at)
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  if (!at) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
   let payload: any;
   try {
@@ -72,8 +67,7 @@ export async function GET(
 
   // 파라미터
   const { id } = await ctx.params;
-  if (!ObjectId.isValid(id))
-    return NextResponse.json({ message: "Bad Request" }, { status: 400 });
+  if (!ObjectId.isValid(id)) return NextResponse.json({ message: "Bad Request" }, { status: 400 });
 
   const db = (await clientPromise).db();
   const doc = await db.collection("rental_orders").findOne({
@@ -114,18 +108,10 @@ export async function GET(
     if (app) {
       const lines = getApplicationLines((app as any).stringDetails);
       const tensionSummary = getTensionSummary(lines);
-      const preferredDate = String(
-        (app as any)?.stringDetails?.preferredDate ?? "",
-      ).trim();
-      const preferredTime = String(
-        (app as any)?.stringDetails?.preferredTime ?? "",
-      ).trim();
+      const preferredDate = String((app as any)?.stringDetails?.preferredDate ?? "").trim();
+      const preferredTime = String((app as any)?.stringDetails?.preferredTime ?? "").trim();
       const stringNames = Array.from(
-        new Set(
-          lines
-            .map((line: any) => String(line?.stringName ?? "").trim())
-            .filter(Boolean),
-        ),
+        new Set(lines.map((line: any) => String(line?.stringName ?? "").trim()).filter(Boolean)),
       );
       applicationSummary = {
         status: String((app as any)?.status ?? "접수완료"),
@@ -134,24 +120,18 @@ export async function GET(
         tensionSummary,
         receptionLabel: getReceptionLabel((app as any).collectionMethod),
         reservationLabel:
-          preferredDate && preferredTime
-            ? `${preferredDate} ${preferredTime}`
-            : null,
+          preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
       };
 
       const collectionMethodRaw = String(
-        (app as any)?.collectionMethod ??
-          (app as any)?.shippingInfo?.collectionMethod ??
-          "",
+        (app as any)?.collectionMethod ?? (app as any)?.shippingInfo?.collectionMethod ?? "",
       ).trim();
       const collectionMethod =
         collectionMethodRaw === "SHOP_VISIT" || collectionMethodRaw === "visit"
           ? "visit"
-          : collectionMethodRaw === "COURIER_VISIT" ||
-              collectionMethodRaw === "courier_pickup"
+          : collectionMethodRaw === "COURIER_VISIT" || collectionMethodRaw === "courier_pickup"
             ? "courier_pickup"
-            : collectionMethodRaw === "SELF_SEND" ||
-                collectionMethodRaw === "self_ship"
+            : collectionMethodRaw === "SELF_SEND" || collectionMethodRaw === "self_ship"
               ? "self_ship"
               : collectionMethodRaw;
       const selfShip = (app as any)?.shippingInfo?.selfShip ?? null;
@@ -159,8 +139,7 @@ export async function GET(
       const normalizedLines = lines.map((line: any, index: number) => ({
         id: nullableTrim(line?.id) ?? String(index),
         racketType: nullableTrim(line?.racketType),
-        racketLabel:
-          nullableTrim(line?.racketLabel) ?? nullableTrim(line?.racketType),
+        racketLabel: nullableTrim(line?.racketLabel) ?? nullableTrim(line?.racketType),
         stringName: nullableTrim(line?.stringName),
         tensionMain: nullableTrim(line?.tensionMain),
         tensionCross: nullableTrim(line?.tensionCross),
@@ -179,24 +158,17 @@ export async function GET(
         preferredDate: preferredDate || null,
         preferredTime: preferredTime || null,
         reservationLabel:
-          preferredDate && preferredTime
-            ? `${preferredDate} ${preferredTime}`
-            : null,
+          preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
         requirements: nullableTrim((app as any)?.stringDetails?.requirements),
         lineCount: lines.length,
         stringNames,
         tensionSummary,
-        totalPrice:
-          typeof (app as any)?.totalPrice === "number"
-            ? (app as any).totalPrice
-            : null,
+        totalPrice: typeof (app as any)?.totalPrice === "number" ? (app as any).totalPrice : null,
         lines: normalizedLines,
         needsInboundTracking,
         shippingInfo: {
           collectionMethod: collectionMethod || null,
-          deliveryRequest: nullableTrim(
-            (app as any)?.shippingInfo?.deliveryRequest,
-          ),
+          deliveryRequest: nullableTrim((app as any)?.shippingInfo?.deliveryRequest),
           selfShip: selfShip
             ? {
                 courier: nullableTrim(selfShip.courier),
@@ -217,8 +189,7 @@ export async function GET(
     brand: doc.brand,
     model: doc.model,
     days: doc.days,
-    status:
-      typeof doc.status === "string" ? doc.status.toLowerCase() : doc.status, // pending | paid | out | returned
+    status: typeof doc.status === "string" ? doc.status.toLowerCase() : doc.status, // pending | paid | out | returned
     amount: doc.amount, // { fee, deposit, stringPrice?, stringingFee?, total }
     createdAt: doc.createdAt,
     outAt: doc.outAt ?? null, // 출고 시각
@@ -252,14 +223,10 @@ export async function GET(
   });
 }
 
-export async function DELETE(
-  _: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(_: Request, ctx: { params: Promise<{ id: string }> }) {
   // 인증
   const at = (await cookies()).get("accessToken")?.value;
-  if (!at)
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  if (!at) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
   let payload: any;
   try {
@@ -275,8 +242,7 @@ export async function DELETE(
 
   // 파라미터
   const { id } = await ctx.params;
-  if (!ObjectId.isValid(id))
-    return NextResponse.json({ message: "Bad Request" }, { status: 400 });
+  if (!ObjectId.isValid(id)) return NextResponse.json({ message: "Bad Request" }, { status: 400 });
 
   // 본인 소유 대여건 조회
   const db = (await clientPromise).db();

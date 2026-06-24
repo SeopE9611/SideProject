@@ -73,24 +73,18 @@ function serializeValue(value: unknown): unknown {
   return value;
 }
 
-function serializeClass(
-  doc: Document,
-  applicationStats = createEmptyApplicationStats(),
-) {
+function serializeClass(doc: Document, applicationStats = createEmptyApplicationStats()) {
   return {
     _id: String(serializeValue(doc._id)),
     name: typeof doc.name === "string" ? doc.name : "",
     description: typeof doc.description === "string" ? doc.description : null,
     level: typeof doc.level === "string" ? doc.level : "all",
     lessonType: typeof doc.lessonType === "string" ? doc.lessonType : "group",
-    instructorName:
-      typeof doc.instructorName === "string" ? doc.instructorName : null,
+    instructorName: typeof doc.instructorName === "string" ? doc.instructorName : null,
     location: typeof doc.location === "string" ? doc.location : null,
-    scheduleText:
-      typeof doc.scheduleText === "string" ? doc.scheduleText : null,
+    scheduleText: typeof doc.scheduleText === "string" ? doc.scheduleText : null,
     capacity: typeof doc.capacity === "number" ? doc.capacity : null,
-    enrolledCount:
-      typeof doc.enrolledCount === "number" ? doc.enrolledCount : 0,
+    enrolledCount: typeof doc.enrolledCount === "number" ? doc.enrolledCount : 0,
     price: typeof doc.price === "number" ? doc.price : null,
     status: typeof doc.status === "string" ? doc.status : "draft",
     createdAt: serializeValue(doc.createdAt) ?? null,
@@ -117,8 +111,7 @@ function parseOptionalNonNegativeNumber(
   value: unknown,
   fieldLabel: string,
 ): { value: number | null } | { error: string } {
-  if (value === null || value === undefined || value === "")
-    return { value: null };
+  if (value === null || value === undefined || value === "") return { value: null };
   const numeric = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(numeric) || numeric < 0) {
     return { error: `${fieldLabel}은 0 이상의 숫자로 입력해 주세요.` };
@@ -136,10 +129,7 @@ function validateClassPayload(
   }
 
   const description = normalizeOptionalText(payload.description, 1000);
-  if (
-    typeof payload.description === "string" &&
-    payload.description.trim().length > 1000
-  ) {
+  if (typeof payload.description === "string" && payload.description.trim().length > 1000) {
     return { ok: false, message: "설명은 1000자 이하로 입력해 주세요." };
   }
 
@@ -154,35 +144,22 @@ function validateClassPayload(
   }
 
   const instructorName = normalizeOptionalText(payload.instructorName, 50);
-  if (
-    typeof payload.instructorName === "string" &&
-    payload.instructorName.trim().length > 50
-  ) {
+  if (typeof payload.instructorName === "string" && payload.instructorName.trim().length > 50) {
     return { ok: false, message: "강사명은 50자 이하로 입력해 주세요." };
   }
 
   const location = normalizeOptionalText(payload.location, 100);
-  if (
-    typeof payload.location === "string" &&
-    payload.location.trim().length > 100
-  ) {
+  if (typeof payload.location === "string" && payload.location.trim().length > 100) {
     return { ok: false, message: "장소는 100자 이하로 입력해 주세요." };
   }
 
   const scheduleText = normalizeOptionalText(payload.scheduleText, 200);
-  if (
-    typeof payload.scheduleText === "string" &&
-    payload.scheduleText.trim().length > 200
-  ) {
+  if (typeof payload.scheduleText === "string" && payload.scheduleText.trim().length > 200) {
     return { ok: false, message: "일정 안내는 200자 이하로 입력해 주세요." };
   }
 
-  const capacityResult = parseOptionalNonNegativeNumber(
-    payload.capacity,
-    "정원",
-  );
-  if ("error" in capacityResult)
-    return { ok: false, message: capacityResult.error };
+  const capacityResult = parseOptionalNonNegativeNumber(payload.capacity, "정원");
+  if ("error" in capacityResult) return { ok: false, message: capacityResult.error };
 
   const priceResult = parseOptionalNonNegativeNumber(payload.price, "가격");
   if ("error" in priceResult) return { ok: false, message: priceResult.error };
@@ -210,9 +187,7 @@ function validateClassPayload(
 }
 
 async function getApplicationStatsByClassId(db: Db, classes: Document[]) {
-  const classIdStrings = classes
-    .map((item) => String(serializeValue(item._id)))
-    .filter(Boolean);
+  const classIdStrings = classes.map((item) => String(serializeValue(item._id))).filter(Boolean);
   const statsByClassId = new Map<string, ApplicationStats>();
   for (const classId of classIdStrings) {
     statsByClassId.set(classId, createEmptyApplicationStats());
@@ -254,11 +229,7 @@ async function getApplicationStatsByClassId(db: Db, classes: Document[]) {
       application.classSnapshot &&
       typeof application.classSnapshot === "object" &&
       "classId" in application.classSnapshot
-        ? String(
-            serializeValue(
-              (application.classSnapshot as { classId?: unknown }).classId,
-            ) ?? "",
-          )
+        ? String(serializeValue((application.classSnapshot as { classId?: unknown }).classId) ?? "")
         : "";
     if (snapshotClassId) matchedClassIds.add(snapshotClassId);
 
@@ -316,10 +287,7 @@ export async function GET(req: Request) {
     ];
   }
 
-  const sortSpec =
-    sort === "oldest"
-      ? ({ createdAt: 1 } as const)
-      : ({ createdAt: -1 } as const);
+  const sortSpec = sort === "oldest" ? ({ createdAt: 1 } as const) : ({ createdAt: -1 } as const);
   const collection = guard.db.collection(COLLECTION_NAME);
 
   const [itemsRaw, total, countRows] = await Promise.all([
@@ -360,8 +328,7 @@ export async function GET(req: Request) {
     items: itemsRaw.map((item) =>
       serializeClass(
         item,
-        statsByClassId.get(String(serializeValue(item._id))) ??
-          createEmptyApplicationStats(),
+        statsByClassId.get(String(serializeValue(item._id))) ?? createEmptyApplicationStats(),
       ),
     ),
     pagination: {
@@ -383,14 +350,10 @@ export async function POST(req: Request) {
   if (!csrf.ok) return csrf.res;
 
   const body = (await req.json().catch(() => null)) as unknown;
-  const payload =
-    body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
   const validation = validateClassPayload(payload);
   if (!validation.ok) {
-    return NextResponse.json(
-      { success: false, message: validation.message },
-      { status: 400 },
-    );
+    return NextResponse.json({ success: false, message: validation.message }, { status: 400 });
   }
 
   const now = new Date().toISOString();

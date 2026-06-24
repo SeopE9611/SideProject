@@ -5,9 +5,7 @@ const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB || "tennis_academy";
 
 if (!uri) {
-  console.error(
-    "[explain-admin-operations-search] MONGODB_URI 환경 변수가 필요합니다.",
-  );
+  console.error("[explain-admin-operations-search] MONGODB_URI 환경 변수가 필요합니다.");
   process.exit(1);
 }
 
@@ -130,9 +128,7 @@ async function run() {
   const qRegex = buildSearchRegex(q);
   const qPrefixRegex = buildPrefixRegex(q);
   const isEmailSearch = isLikelyEmailQuery(q);
-  const qEmailPrefixRegex = isEmailSearch
-    ? buildCaseSensitivePrefixRegex(q)
-    : null;
+  const qEmailPrefixRegex = isEmailSearch ? buildCaseSensitivePrefixRegex(q) : null;
   const idCandidates = buildIdCandidates(q);
 
   const client = new MongoClient(uri);
@@ -250,9 +246,7 @@ async function run() {
               ? [{ userId: { $in: rentalUserIdCandidates } }]
               : []),
             { "guest.email": q },
-            ...(qEmailPrefixRegex
-              ? [{ "guest.email": qEmailPrefixRegex }]
-              : []),
+            ...(qEmailPrefixRegex ? [{ "guest.email": qEmailPrefixRegex }] : []),
           ],
         }
       : {
@@ -303,18 +297,13 @@ async function run() {
       printSection(check.label);
       printQuery(`${check.collection}.find`, check.query);
 
-      let cursor = db
-        .collection(check.collection)
-        .find(check.query)
-        .limit(fetchLimit);
+      let cursor = db.collection(check.collection).find(check.query).limit(fetchLimit);
       if (check.sort) cursor = cursor.sort(check.sort);
 
       const explain = await cursor.explain("executionStats");
       const summary = summarizeExplain(explain);
 
-      console.log(
-        `- winningStages: ${summary.winningStages.join(" -> ") || "(none)"}`,
-      );
+      console.log(`- winningStages: ${summary.winningStages.join(" -> ") || "(none)"}`);
       console.log(`- indexUsed: ${summary.indexUsed ? "YES" : "NO"}`);
       if (summary.indexHints.length > 0) {
         for (const hint of summary.indexHints) {

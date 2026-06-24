@@ -34,9 +34,7 @@ export function verifyAccessToken(token: string) {
 }
 
 function getOrderScopedTokenSecret(): Secret {
-  return (
-    process.env.ORDER_ACCESS_TOKEN_SECRET || process.env.REFRESH_TOKEN_SECRET!
-  );
+  return process.env.ORDER_ACCESS_TOKEN_SECRET || process.env.REFRESH_TOKEN_SECRET!;
 }
 
 type OrderScopedAccessTokenPayload =

@@ -23,9 +23,7 @@ test("community-list-query 유틸은 BoardListClient 쿼리 키 전부를 Mongo 
   assert.ok(source.includes("filter.title = regex;"));
   assert.ok(source.includes("query.searchType === 'author'"));
   assert.ok(source.includes("filter.nickname = regex;"));
-  assert.ok(
-    source.includes("filter.$or = [{ title: regex }, { content: regex }];"),
-  );
+  assert.ok(source.includes("filter.$or = [{ title: regex }, { content: regex }];"));
 
   // authorId, brand, category 반영 계약
   assert.ok(source.includes("if (query.authorObjectId)"));
@@ -53,20 +51,14 @@ test("boards/community API는 동일한 공통 쿼리 파서/필터를 사용한
     ),
   );
   assert.ok(boardsRoute.includes("function parseCommunityKindParam("));
-  assert.ok(
-    boardsRoute.includes("return isCommunityKindParam(value) ? value : null;"),
-  );
+  assert.ok(boardsRoute.includes("return isCommunityKindParam(value) ? value : null;"));
 
   // boards route에는 파싱 항목 vs 반영 항목 표 문서화를 강제
   assert.ok(
     boardsRoute.includes("communityKind 분기의 쿼리 파싱/반영 계약표") ||
       boardsRoute.includes("boards/community 목록 쿼리 파라미터"),
   );
-  assert.ok(
-    boardsRoute.includes(
-      "| sort | sort | find().sort(getCommunitySortOption(sort)) |",
-    ),
-  );
+  assert.ok(boardsRoute.includes("| sort | sort | find().sort(getCommunitySortOption(sort)) |"));
   assert.ok(
     boardsRoute.includes(
       "| searchType | searchType | buildCommunityListMongoFilter 내부 title/nickname/$or 분기 |",
@@ -78,9 +70,7 @@ test("boards/community API는 동일한 공통 쿼리 파서/필터를 사용한
     ),
   );
   assert.ok(
-    boardsRoute.includes(
-      "| brand | brand | buildCommunityListMongoFilter 내부 brand 필터 |",
-    ),
+    boardsRoute.includes("| brand | brand | buildCommunityListMongoFilter 내부 brand 필터 |"),
   );
   assert.ok(
     boardsRoute.includes(

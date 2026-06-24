@@ -20,9 +20,7 @@ type OrderShippingLike =
  * - 표준: courier | quick | visit
  * - 레거시/혼용: delivery -> courier 로 흡수
  */
-export const normalizeOrderShippingMethod = (
-  v: any,
-): OrderShippingMethod | null => {
+export const normalizeOrderShippingMethod = (v: any): OrderShippingMethod | null => {
   const s = String(v ?? "")
     .trim()
     .toLowerCase();
@@ -44,8 +42,7 @@ export const normalizeOrderShippingMethod = (
   )
     return "courier";
   if (["quick", "퀵", "퀵배송"].includes(s)) return "quick";
-  if (["visit", "pickup", "방문", "방문수령", "매장"].includes(s))
-    return "visit";
+  if (["visit", "pickup", "방문", "방문수령", "매장"].includes(s)) return "visit";
   return null;
 };
 
@@ -59,38 +56,26 @@ export const orderShippingMethodLabel = (v: any): string => {
 
 export const isVisitPickupOrder = (shippingLike: any): boolean => {
   // 주문 도메인 공통: shippingMethod / deliveryMethod 혼용값 모두 허용
-  const rawMethod =
-    shippingLike?.shippingMethod ??
-    shippingLike?.deliveryMethod ??
-    shippingLike;
+  const rawMethod = shippingLike?.shippingMethod ?? shippingLike?.deliveryMethod ?? shippingLike;
   return normalizeOrderShippingMethod(rawMethod) === "visit";
 };
 
 export const getOrderFulfillmentMethod = (
   shippingLike: OrderShippingLike,
 ): OrderShippingMethod | null => {
-  const rawMethod =
-    shippingLike?.shippingMethod ?? shippingLike?.deliveryMethod ?? null;
+  const rawMethod = shippingLike?.shippingMethod ?? shippingLike?.deliveryMethod ?? null;
   return normalizeOrderShippingMethod(rawMethod);
 };
 
-export const hasAnyRegisteredFulfillmentField = (
-  shippingLike: OrderShippingLike,
-): boolean => {
+export const hasAnyRegisteredFulfillmentField = (shippingLike: OrderShippingLike): boolean => {
   const registeredMethod = String(shippingLike?.shippingMethod ?? "").trim();
   const estimatedDate = String(shippingLike?.estimatedDate ?? "").trim();
   const courier = String(shippingLike?.invoice?.courier ?? "").trim();
-  const trackingNumber = String(
-    shippingLike?.invoice?.trackingNumber ?? "",
-  ).trim();
-  return Boolean(
-    registeredMethod || estimatedDate || courier || trackingNumber,
-  );
+  const trackingNumber = String(shippingLike?.invoice?.trackingNumber ?? "").trim();
+  return Boolean(registeredMethod || estimatedDate || courier || trackingNumber);
 };
 
-export const getFulfillmentGuardMessage = (
-  shippingLike: OrderShippingLike,
-): string => {
+export const getFulfillmentGuardMessage = (shippingLike: OrderShippingLike): string => {
   return getOrderFulfillmentMethod(shippingLike) === "visit"
     ? "방문 수령 정보가 등록되지 않았습니다."
     : "배송 정보가 등록되지 않았습니다.";
@@ -102,25 +87,17 @@ export const canEnterShippingPhase = (
   const method = getOrderFulfillmentMethod(shippingLike);
   const estimatedDate = String(shippingLike?.estimatedDate ?? "").trim();
   const courier = String(shippingLike?.invoice?.courier ?? "").trim();
-  const trackingNumber = String(
-    shippingLike?.invoice?.trackingNumber ?? "",
-  ).trim();
+  const trackingNumber = String(shippingLike?.invoice?.trackingNumber ?? "").trim();
 
   // 실제 "등록 완료" 여부는 deliveryMethod가 아니라 관리자가 저장한 shippingMethod 기준으로만 판단해야 합니다.
-  const registeredMethod = normalizeOrderShippingMethod(
-    shippingLike?.shippingMethod ?? null,
-  );
+  const registeredMethod = normalizeOrderShippingMethod(shippingLike?.shippingMethod ?? null);
 
   const isAllowed =
     (method === "courier" &&
       registeredMethod === "courier" &&
       Boolean(estimatedDate && courier && trackingNumber)) ||
-    (method === "quick" &&
-      registeredMethod === "quick" &&
-      Boolean(estimatedDate)) ||
-    (method === "visit" &&
-      registeredMethod === "visit" &&
-      Boolean(estimatedDate));
+    (method === "quick" && registeredMethod === "quick" && Boolean(estimatedDate)) ||
+    (method === "visit" && registeredMethod === "visit" && Boolean(estimatedDate));
 
   if (isAllowed) return { ok: true };
   return { ok: false, message: getFulfillmentGuardMessage(shippingLike) };
@@ -134,10 +111,7 @@ export const getOrderDeliveryInfoTitle = (shippingLike: any): string => {
   return isVisitPickupOrder(shippingLike) ? "방문 수령 정보" : "배송 정보";
 };
 
-export const getOrderStatusLabelForDisplay = (
-  status: string,
-  shippingLike: any,
-): string => {
+export const getOrderStatusLabelForDisplay = (status: string, shippingLike: any): string => {
   if (!isVisitPickupOrder(shippingLike)) return status;
   // 방문 수령 주문은 내부 상태값을 유지하되 화면 문구만 방문 맥락으로 치환
   if (status === "배송중") return "수령 준비중";
@@ -145,18 +119,11 @@ export const getOrderStatusLabelForDisplay = (
   return status;
 };
 
-export const canConfirmOrderByStatus = (
-  status: string,
-  shippingLike: any,
-): boolean => {
+export const canConfirmOrderByStatus = (status: string, shippingLike: any): boolean => {
   const normalized = String(status ?? "").trim();
   // 방문 수령 주문은 '완료' 레거시 상태도 구매확정 가능으로 본다.
   if (isVisitPickupOrder(shippingLike)) {
-    return (
-      normalized === "배송완료" ||
-      normalized === "delivered" ||
-      normalized === "완료"
-    );
+    return normalized === "배송완료" || normalized === "delivered" || normalized === "완료";
   }
   return normalized === "배송완료" || normalized === "delivered";
 };

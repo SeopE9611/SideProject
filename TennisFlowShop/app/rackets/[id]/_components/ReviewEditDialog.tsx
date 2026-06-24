@@ -3,12 +3,7 @@
 import PhotosReorderGrid from "@/components/reviews/PhotosReorderGrid";
 import PhotosUploader from "@/components/reviews/PhotosUploader";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Star } from "lucide-react";
@@ -56,9 +51,7 @@ export default function ReviewEditDialog({
               {Array.from({ length: 5 }).map((_, i) => {
                 const score = i + 1;
                 const active =
-                  (hoverRating ??
-                    (editForm.rating === "" ? 0 : Number(editForm.rating))) >=
-                  score;
+                  (hoverRating ?? (editForm.rating === "" ? 0 : Number(editForm.rating))) >= score;
                 return (
                   <button
                     key={i}
@@ -66,9 +59,7 @@ export default function ReviewEditDialog({
                     className="p-1"
                     onMouseEnter={() => setHoverRating(score)}
                     onMouseLeave={() => setHoverRating(null)}
-                    onClick={() =>
-                      setEditForm((p) => ({ ...p, rating: score }))
-                    }
+                    onClick={() => setEditForm((p) => ({ ...p, rating: score }))}
                     aria-label={`별점 ${score}점`}
                   >
                     <Star
@@ -84,9 +75,7 @@ export default function ReviewEditDialog({
             <Label>내용</Label>
             <Textarea
               value={editForm.content}
-              onChange={(e) =>
-                setEditForm((p) => ({ ...p, content: e.target.value }))
-              }
+              onChange={(e) => setEditForm((p) => ({ ...p, content: e.target.value }))}
               rows={6}
               placeholder="리뷰 내용을 입력하세요."
             />

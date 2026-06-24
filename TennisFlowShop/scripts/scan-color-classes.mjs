@@ -4,8 +4,7 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 const TARGET_DIRS = process.argv.slice(2);
-const scanDirs =
-  TARGET_DIRS.length > 0 ? TARGET_DIRS : ["app", "components", "lib"];
+const scanDirs = TARGET_DIRS.length > 0 ? TARGET_DIRS : ["app", "components", "lib"];
 const exts = new Set([".ts", ".tsx", ".js", ".jsx", ".mdx"]);
 const svgExts = new Set([".svg"]);
 const palettes = [
@@ -47,8 +46,7 @@ const invertedLabelTextRegex =
 // 최소 추가 패턴 (중립 하드코딩 클래스)
 const hardcodedNeutralRegex =
   /(?:[\w-]+:)*(?:text-(?:white|black)|bg-(?:white|black)\/\d{1,3}|border-white\/\d{1,3}|ring-black\/\d{1,3}|dark:ring-white\/\d{1,3})/g;
-const forbiddenGradientNeutralRegex =
-  /(?:[\w-]+:)*(?:from|via|to)-(?:white|black)(?:\/\d{1,3})?/g;
+const forbiddenGradientNeutralRegex = /(?:[\w-]+:)*(?:from|via|to)-(?:white|black)(?:\/\d{1,3})?/g;
 const forbiddenRingOffsetPaletteRegex = new RegExp(
   `(?:[\\w-]+:)*ring-offset-(?:${paletteAlternation})-(?:\\d{2,3})`,
   "g",
@@ -66,8 +64,7 @@ const lowContrastPrimaryRegex =
   /\bbg-primary(?:\/\d{1,3})?\b[\s\S]*\b(?:text-accent\b|text-primary\b(?!-foreground))/;
 const lowContrastGradientRegex =
   /\bbg-clip-text\b[\s\S]*\btext-transparent\b[\s\S]*\b(?:from-card|to-card|from-primary-foreground|to-primary-foreground)\b/;
-const hoverAccentRegex =
-  /(?:^|\s)(?:[\w-]+:)*hover:bg-accent(?:\/[\d]{1,3})?(?:\s|$)/;
+const hoverAccentRegex = /(?:^|\s)(?:[\w-]+:)*hover:bg-accent(?:\/[\d]{1,3})?(?:\s|$)/;
 const solidDestructiveWithTextDestructiveRegex =
   /(?:^|\s)(?:[\w-]+:)*bg-destructive(?!\/)(?:\s|$)[\s\S]*?(?:^|\s)(?:[\w-]+:)*text-destructive(?:\s|$)/;
 const primaryTintWithForegroundRegex =
@@ -82,30 +79,21 @@ const lowContrastMutedCardBackgroundForegroundRegex =
   /\bbg-(?:muted|card|background)\/\d{1,3}\b(?:\s+[A-Za-z0-9_:[\]/.-]+){0,8}\s+text-primary-foreground\b/;
 const lowContrastForegroundTintWithPrimaryForegroundRegex =
   /\bbg-foreground\/(?:5|10|15|20)\b(?:\s+[A-Za-z0-9_:[\]/.-]+){0,8}\s+text-primary-foreground\b/;
-const groupHoverSolidPrimaryRegex =
-  /(?:^|\s)(?:[\w-]+:)*group-hover:bg-primary(?!\/)(?:\s|$)/;
-const solidHoverDestructiveRegex =
-  /(?:^|\s)(?:[\w-]+:)*hover:bg-destructive(?!\/)(?:\s|$)/;
-const hoverTextDestructiveRegex =
-  /(?:^|\s)(?:[\w-]+:)*hover:text-destructive(?:\s|$)/;
-const solidHoverPrimaryRegex =
-  /(?:^|\s)(?:[\w-]+:)*hover:bg-primary(?!\/)(?:\s|$)/;
+const groupHoverSolidPrimaryRegex = /(?:^|\s)(?:[\w-]+:)*group-hover:bg-primary(?!\/)(?:\s|$)/;
+const solidHoverDestructiveRegex = /(?:^|\s)(?:[\w-]+:)*hover:bg-destructive(?!\/)(?:\s|$)/;
+const hoverTextDestructiveRegex = /(?:^|\s)(?:[\w-]+:)*hover:text-destructive(?:\s|$)/;
+const solidHoverPrimaryRegex = /(?:^|\s)(?:[\w-]+:)*hover:bg-primary(?!\/)(?:\s|$)/;
 const outlineGhostNeutralMutedRegex =
   /(?:^|\s)(?:[\w-]+:)*(?:variant="(?:outline|ghost|neutral|muted)"|outline|ghost|neutral|muted|badge|chip)(?:\s|$)/i;
-const textAccentForegroundRegex =
-  /(?:^|\s)(?:[\w-]+:)*text-accent-foreground(?:\s|$)/;
+const textAccentForegroundRegex = /(?:^|\s)(?:[\w-]+:)*text-accent-foreground(?:\s|$)/;
 const bgAccentSolidRegex = /(?:^|\s)(?:[\w-]+:)*bg-accent(?!\/)(?:\s|$)/;
-const largePaddingRegex =
-  /(?:^|\s)(?:[\w-]+:)*p-(?:3|4|5|6|7|8|9|10|11|12)(?:\s|$)/;
-const accentTintSurfaceRegex =
-  /(?:^|\s)(?:[\w-]+:)*bg-accent\/(?:10|15)(?:\s|$)/;
-const textAccentUsageRegex =
-  /(?:^|\s)(?:[\w-]+:)*(?:text-accent|dark:text-accent)(?:\s|$)/;
+const largePaddingRegex = /(?:^|\s)(?:[\w-]+:)*p-(?:3|4|5|6|7|8|9|10|11|12)(?:\s|$)/;
+const accentTintSurfaceRegex = /(?:^|\s)(?:[\w-]+:)*bg-accent\/(?:10|15)(?:\s|$)/;
+const textAccentUsageRegex = /(?:^|\s)(?:[\w-]+:)*(?:text-accent|dark:text-accent)(?:\s|$)/;
 const buttonLikeRegex =
   /(?:^|\s)(?:[\w-]+:)*(?:btn|button|variant="(?:destructive|default|secondary|outline|ghost|link)"|size="(?:sm|lg|icon)"|inline-flex)(?:\s|$)/i;
 const sliderRangeRegex = /(?:^|\s)(?:[\w-]+:)*slider-range(?:\s|$)/;
-const checkedStatePrimaryRegex =
-  /(?:^|\s)(?:[\w-]+:)*data-\[state=checked\]:bg-primary(?:\s|$)/;
+const checkedStatePrimaryRegex = /(?:^|\s)(?:[\w-]+:)*data-\[state=checked\]:bg-primary(?:\s|$)/;
 
 const brokenSplitBgTokenRegex =
   /(?:[\w-]+:)*bg-(?:primary|accent|background|card|muted|foreground)\s+\d(?:\b|\/\d+)/g;
@@ -121,12 +109,9 @@ const arbitraryHexClassRegex =
   /(?:^|\s)(?:[\w-]+:)*(?:bg|text|border|ring|fill|stroke)-\[#(?:[0-9A-Fa-f]{3,8})\](?:\s|$)/g;
 
 const doubleOpacityBgRegex = /(?:[\w-]+:)*bg-[\w[\]-]+\/\d{1,3}\/\d{1,3}/g;
-const doubleOpacityHoverBgRegex =
-  /(?:[\w-]+:)*hover:bg-[\w[\]-]+\/\d{1,3}\/\d{1,3}/g;
-const doubleOpacityDarkBgRegex =
-  /(?:[\w-]+:)*dark:bg-[\w[\]-]+\/\d{1,3}\/\d{1,3}/g;
-const doubleOpacityDarkHoverBgRegex =
-  /(?:[\w-]+:)*dark:hover:bg-[\w[\]-]+\/\d{1,3}\/\d{1,3}/g;
+const doubleOpacityHoverBgRegex = /(?:[\w-]+:)*hover:bg-[\w[\]-]+\/\d{1,3}\/\d{1,3}/g;
+const doubleOpacityDarkBgRegex = /(?:[\w-]+:)*dark:bg-[\w[\]-]+\/\d{1,3}\/\d{1,3}/g;
+const doubleOpacityDarkHoverBgRegex = /(?:[\w-]+:)*dark:hover:bg-[\w[\]-]+\/\d{1,3}\/\d{1,3}/g;
 const ringRing500Regex = /(?:[\w-]+:)*ring-ring500\b/g;
 
 // 허용 예외는 명시적으로 분리 관리한다.
@@ -144,12 +129,7 @@ function walk(dir, results = []) {
   const absDir = path.join(ROOT, dir);
   if (!fs.existsSync(absDir)) return results;
   for (const ent of fs.readdirSync(absDir, { withFileTypes: true })) {
-    if (
-      ent.name === "node_modules" ||
-      ent.name === ".next" ||
-      ent.name === ".git"
-    )
-      continue;
+    if (ent.name === "node_modules" || ent.name === ".next" || ent.name === ".git") continue;
     const abs = path.join(absDir, ent.name);
     const rel = path.relative(ROOT, abs).replaceAll("\\", "/");
     if (ent.isDirectory()) {
@@ -165,12 +145,7 @@ function walkByExt(dir, allowedExts, results = []) {
   const absDir = path.join(ROOT, dir);
   if (!fs.existsSync(absDir)) return results;
   for (const ent of fs.readdirSync(absDir, { withFileTypes: true })) {
-    if (
-      ent.name === "node_modules" ||
-      ent.name === ".next" ||
-      ent.name === ".git"
-    )
-      continue;
+    if (ent.name === "node_modules" || ent.name === ".next" || ent.name === ".git") continue;
     const abs = path.join(absDir, ent.name);
     const rel = path.relative(ROOT, abs).replaceAll("\\", "/");
     if (ent.isDirectory()) {
@@ -377,22 +352,16 @@ for (const file of files) {
     if (!block) continue;
 
     const isPrimaryTintStandard =
-      /\bbg-primary\/(?:10|15|20)\b/.test(block) &&
-      /\btext-primary\b(?!-foreground)/.test(block);
+      /\bbg-primary\/(?:10|15|20)\b/.test(block) && /\btext-primary\b(?!-foreground)/.test(block);
     const isDestructiveTintStandard =
       /\bbg-destructive\/(?:10|15|20)\b/.test(block) &&
       /\btext-destructive\b(?!-foreground)/.test(block);
     const isWarningTintStandard =
-      /\bbg-warning\/(?:10|15|20)\b/.test(block) &&
-      /\btext-warning\b(?!-foreground)/.test(block);
+      /\bbg-warning\/(?:10|15|20)\b/.test(block) && /\btext-warning\b(?!-foreground)/.test(block);
 
     if (
       lowContrastPrimaryRegex.test(block) &&
-      !(
-        isPrimaryTintStandard ||
-        isDestructiveTintStandard ||
-        isWarningTintStandard
-      )
+      !(isPrimaryTintStandard || isDestructiveTintStandard || isWarningTintStandard)
     ) {
       warnings.push({
         file,
@@ -546,10 +515,7 @@ for (const file of files) {
       });
     }
 
-    if (
-      solidHoverDestructiveRegex.test(block) &&
-      hoverTextDestructiveRegex.test(block)
-    ) {
+    if (solidHoverDestructiveRegex.test(block) && hoverTextDestructiveRegex.test(block)) {
       warnings.push({
         file,
         type: "solid-hover-destructive-with-hover-text-destructive",
@@ -558,10 +524,7 @@ for (const file of files) {
       });
     }
 
-    if (
-      solidHoverPrimaryRegex.test(block) &&
-      outlineGhostNeutralMutedRegex.test(block)
-    ) {
+    if (solidHoverPrimaryRegex.test(block) && outlineGhostNeutralMutedRegex.test(block)) {
       warnings.push({
         file,
         type: "solid-hover-primary-on-outline-ghost-badge",
@@ -570,10 +533,7 @@ for (const file of files) {
       });
     }
 
-    if (
-      textAccentForegroundRegex.test(block) &&
-      !bgAccentSolidRegex.test(block)
-    ) {
+    if (textAccentForegroundRegex.test(block) && !bgAccentSolidRegex.test(block)) {
       warnings.push({
         file,
         type: "text-accent-foreground-without-bg-accent",
@@ -591,10 +551,7 @@ for (const file of files) {
       });
     }
 
-    if (
-      /\banimate-pulse\b/.test(block) &&
-      /\bbg-primary(?:\/\d{1,3})?\b/.test(block)
-    ) {
+    if (/\banimate-pulse\b/.test(block) && /\bbg-primary(?:\/\d{1,3})?\b/.test(block)) {
       warnings.push({
         file,
         type: "animate-pulse-with-bg-primary",
@@ -677,10 +634,7 @@ for (const file of files) {
       });
     }
 
-    if (
-      textAccentUsageRegex.test(block) &&
-      !ACCENT_TEXT_WARN_EXCEPTION_WHITELIST.has(file)
-    ) {
+    if (textAccentUsageRegex.test(block) && !ACCENT_TEXT_WARN_EXCEPTION_WHITELIST.has(file)) {
       warnings.push({
         file,
         type: "text-accent-usage",
@@ -689,10 +643,7 @@ for (const file of files) {
       });
     }
 
-    if (
-      file === "components/ui/radio-group.tsx" &&
-      /\bbg-accent(?:\/\d{1,3})?\b/.test(block)
-    ) {
+    if (file === "components/ui/radio-group.tsx" && /\bbg-accent(?:\/\d{1,3})?\b/.test(block)) {
       warnings.push({
         file,
         type: "radio-group-solid-bg-accent-regression",
@@ -707,9 +658,7 @@ for (const file of files) {
     const hasSolidWarning = /\bbg-warning(?!\/)\b/.test(block);
     const hasSolidSuccess = /\bbg-success(?!\/)\b/.test(block);
     const isTinyDot =
-      /\bw-(?:1|2)\b/.test(block) &&
-      /\bh-(?:1|2)\b/.test(block) &&
-      /\brounded-full\b/.test(block);
+      /\bw-(?:1|2)\b/.test(block) && /\bh-(?:1|2)\b/.test(block) && /\brounded-full\b/.test(block);
     const isSliderRange =
       sliderRangeRegex.test(block) ||
       /\bdata-slider-range\b/.test(block) ||
@@ -724,11 +673,7 @@ for (const file of files) {
         !/\btext-/.test(block));
     const isCheckedStatePrimary = checkedStatePrimaryRegex.test(block);
     const isDecorativePrimaryOnly =
-      isTinyDot ||
-      isSliderRange ||
-      isProgressBarFill ||
-      isCheckedStatePrimary ||
-      isThinProgressBar;
+      isTinyDot || isSliderRange || isProgressBarFill || isCheckedStatePrimary || isThinProgressBar;
     const isDecorativeSolid = isTinyDot || isThinProgressBar;
 
     if (hasSolidPrimary && !hasPrimaryForeground && !isDecorativePrimaryOnly) {
@@ -758,12 +703,7 @@ for (const file of files) {
     }
 
     if (file !== "components/ui/button.tsx") {
-      const semanticForegroundTokens = [
-        "primary",
-        "success",
-        "warning",
-        "destructive",
-      ];
+      const semanticForegroundTokens = ["primary", "success", "warning", "destructive"];
       for (const semantic of semanticForegroundTokens) {
         const foregroundRegex = new RegExp(
           `(?:^|\\s)(?:[\\w-]+:)*text-${semantic}-foreground(?:\\s|$)`,
@@ -832,9 +772,7 @@ for (const file of publicSvgFiles) {
   violations.push({ file, found });
 }
 
-const sortedGroups = [...grouped.entries()].sort((a, b) =>
-  a[0].localeCompare(b[0]),
-);
+const sortedGroups = [...grouped.entries()].sort((a, b) => a[0].localeCompare(b[0]));
 console.log("# color-class scan");
 console.log(`- scanned files: ${files.length + publicSvgFiles.length}`);
 console.log(`- total matches: ${total}`);
@@ -860,12 +798,8 @@ for (const [group, items] of sortedGroups) {
 
 if (exceptionMatches.length > 0) {
   console.warn("ℹ️ 허용 예외 매치");
-  for (const entry of exceptionMatches.sort((a, b) =>
-    a.file.localeCompare(b.file),
-  )) {
-    console.warn(
-      `- ${entry.file} (${entry.exceptionType}, ${entry.found.length} hits)`,
-    );
+  for (const entry of exceptionMatches.sort((a, b) => a.file.localeCompare(b.file))) {
+    console.warn(`- ${entry.file} (${entry.exceptionType}, ${entry.found.length} hits)`);
   }
   console.warn("");
 }
@@ -873,9 +807,7 @@ if (exceptionMatches.length > 0) {
 if (warnings.length > 0) {
   console.warn("⚠️ 저대비 조합 감지 (WARN)");
   for (const entry of warnings.slice(0, 50)) {
-    console.warn(
-      `- ${entry.file} [${entry.type}] L${entry.line}: ${entry.token}`,
-    );
+    console.warn(`- ${entry.file} [${entry.type}] L${entry.line}: ${entry.token}`);
   }
   if (warnings.length > 50) {
     console.warn(`- ...and ${warnings.length - 50} more warnings`);

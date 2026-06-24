@@ -11,15 +11,7 @@ import {
   PACKAGE_VARIANT_TOP_BAR_CLASS,
 } from "@/app/services/packages/_lib/packageVariant";
 import { PriceSummary, PublicSurface } from "@/components/public";
-import {
-  Award,
-  CheckCircle,
-  Gift,
-  Package,
-  Star,
-  Target,
-  Trophy,
-} from "lucide-react";
+import { Award, CheckCircle, Gift, Package, Star, Target, Trophy } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -146,15 +138,11 @@ export default function UnifiedPackageCard({
           className={`grid gap-3 ${showTotalPrice ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-2"}`}
         >
           <div className="rounded-xl border border-border bg-muted/30 p-3 text-center">
-            <div className="text-xl font-bold text-foreground">
-              {pkg.sessions}회
-            </div>
+            <div className="text-xl font-bold text-foreground">{pkg.sessions}회</div>
             <div className="text-sm text-muted-foreground">이용 회차</div>
           </div>
           <div className="rounded-xl border border-border bg-muted/30 p-3 text-center">
-            <div className="text-xl font-bold text-foreground">
-              {pkg.validityPeriod}
-            </div>
+            <div className="text-xl font-bold text-foreground">{pkg.validityPeriod}</div>
             <div className="text-sm text-muted-foreground">유효기간</div>
           </div>
           {showTotalPrice && (
@@ -219,9 +207,7 @@ export default function UnifiedPackageCard({
               </Link>
             </Button>
             {ctaHelperText ? (
-              <p className="text-center text-sm text-muted-foreground">
-                {ctaHelperText}
-              </p>
+              <p className="text-center text-sm text-muted-foreground">{ctaHelperText}</p>
             ) : null}
           </div>
         )}

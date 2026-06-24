@@ -21,8 +21,7 @@ export async function POST(req: NextRequest) {
     const payload = safeVerifyAccessToken(token);
     if (!payload?.sub) return NextResponse.json({ ok: false }, { status: 401 });
     const subStr = String(payload.sub);
-    if (!ObjectId.isValid(subStr))
-      return NextResponse.json({ ok: false }, { status: 401 });
+    if (!ObjectId.isValid(subStr)) return NextResponse.json({ ok: false }, { status: 401 });
 
     const client = await clientPromise;
     const db = client.db();
@@ -33,13 +32,8 @@ export async function POST(req: NextRequest) {
       .collection("users")
       .findOne({ _id: userId }, { projection: { email: 1 } });
 
-    if (!user?.email)
-      return NextResponse.json({ ok: true, matched: 0, linked: 0 });
-    const { matched, modified } = await autoLinkStringingByEmail(
-      db,
-      userId,
-      user.email,
-    );
+    if (!user?.email) return NextResponse.json({ ok: true, matched: 0, linked: 0 });
+    const { matched, modified } = await autoLinkStringingByEmail(db, userId, user.email);
     return NextResponse.json({ ok: true, matched, linked: modified });
   } catch (e) {
     console.error("[POST /api/claims/auto-link] error", e);

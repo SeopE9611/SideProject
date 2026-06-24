@@ -2,17 +2,12 @@
 
 import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
-import {
-  badgeBase,
-  badgeSizeSm,
-  getOrderStatusBadgeSpec,
-} from "@/lib/badge-style";
+import { badgeBase, badgeSizeSm, getOrderStatusBadgeSpec } from "@/lib/badge-style";
 import { getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
 import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
 import { cn } from "@/lib/utils";
 
-const fetcher = (url: string) =>
-  fetch(url, { credentials: "include" }).then((res) => res.json());
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((res) => res.json());
 
 // NOTE:
 // 마이페이지 주문 상세에서 사용하는 상태 배지.
@@ -25,21 +20,13 @@ type Props = {
   shippingMethod?: any;
 };
 
-export function OrderStatusBadge({
-  orderId,
-  initialStatus,
-  shippingMethod,
-}: Props) {
-  const { data } = useSWR<{ status: string }>(
-    `/api/orders/${orderId}/status`,
-    fetcher,
-    {
-      fallbackData: { status: initialStatus },
-      revalidateOnMount: true, //  mount 될 때 강제 fetch
-      revalidateOnFocus: false, // 탭 전환 시 re-fetch 방지
-      dedupingInterval: 3000, // 동일 요청 최소 간격 3초
-    },
-  );
+export function OrderStatusBadge({ orderId, initialStatus, shippingMethod }: Props) {
+  const { data } = useSWR<{ status: string }>(`/api/orders/${orderId}/status`, fetcher, {
+    fallbackData: { status: initialStatus },
+    revalidateOnMount: true, //  mount 될 때 강제 fetch
+    revalidateOnFocus: false, // 탭 전환 시 re-fetch 방지
+    dedupingInterval: 3000, // 동일 요청 최소 간격 3초
+  });
 
   const normalized = String(data?.status ?? initialStatus ?? "").trim();
   const baseLabel = getCommonOrderStatusLabel(normalized) ?? normalized;

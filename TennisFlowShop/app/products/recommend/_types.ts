@@ -1,15 +1,6 @@
-export type RecommendGoal =
-  | "power"
-  | "spin"
-  | "control"
-  | "comfort"
-  | "durability";
+export type RecommendGoal = "power" | "spin" | "control" | "comfort" | "durability";
 
-export type RecommendLevel =
-  | "beginner"
-  | "novice"
-  | "intermediate"
-  | "advanced";
+export type RecommendLevel = "beginner" | "novice" | "intermediate" | "advanced";
 
 export type ArmLoad = "high" | "medium" | "low";
 
@@ -73,13 +64,7 @@ export type RecommendableProduct = {
   };
   tags?: Partial<
     Record<
-      | "beginner"
-      | "intermediate"
-      | "advanced"
-      | "baseline"
-      | "serveVolley"
-      | "allCourt"
-      | "power",
+      "beginner" | "intermediate" | "advanced" | "baseline" | "serveVolley" | "allCourt" | "power",
       boolean
     >
   >;

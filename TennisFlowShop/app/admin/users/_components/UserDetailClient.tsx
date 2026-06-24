@@ -9,11 +9,7 @@ import { UserActivityTabsSection } from "@/app/admin/users/_components/UserActiv
 import { useUserSessions } from "@/app/admin/users/_hooks/useUserSessions";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 import { InfoItem } from "@/components/admin/InfoItem";
-import {
-  Section,
-  SectionBody,
-  SectionHeader,
-} from "@/components/admin/Section";
+import { Section, SectionBody, SectionHeader } from "@/components/admin/Section";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
@@ -100,17 +96,13 @@ function humanizeAuditDetail(action: string, raw?: string) {
   const entries = Object.entries(obj);
 
   // isSuspended / isDeleted만 있는 경우는 제목(액션)으로 충분하니 생략
-  if (
-    entries.length === 1 &&
-    (entries[0][0] === "isSuspended" || entries[0][0] === "isDeleted")
-  ) {
+  if (entries.length === 1 && (entries[0][0] === "isSuspended" || entries[0][0] === "isDeleted")) {
     return "";
   }
 
   const parts = entries.map(([k, v]) => {
     const label = AUDIT_LABELS[k] ?? k;
-    if (k === "isSuspended")
-      return `${label}: ${v ? "비활성화" : "비활성 해제"}`;
+    if (k === "isSuspended") return `${label}: ${v ? "비활성화" : "비활성 해제"}`;
     if (k === "isDeleted") return `${label}: ${v ? "삭제됨" : "—"}`;
     if (k === "role") return `${label}: ${v === "admin" ? "관리자" : "일반"}`;
     const val = v === "" || v === null || v === undefined ? "—" : String(v);
@@ -180,10 +172,7 @@ function normalizeActorId(value: unknown): string | null {
     if (typeof record.$oid === "string") return record.$oid;
     if (typeof record.toString === "function") {
       const stringified = record.toString();
-      if (
-        typeof stringified === "string" &&
-        stringified !== "[object Object]"
-      ) {
+      if (typeof stringified === "string" && stringified !== "[object Object]") {
         return stringified;
       }
     }
@@ -197,13 +186,10 @@ function getAuditActorDisplay(log: AuditLog): {
 } {
   const actor = log?.diff?.metadata?.actor;
   const name = actor?.name ?? log?.diff?.actorName ?? log?.actorName ?? null;
-  const email =
-    actor?.email ?? log?.diff?.actorEmail ?? log?.actorEmail ?? null;
+  const email = actor?.email ?? log?.diff?.actorEmail ?? log?.actorEmail ?? null;
   const role = actor?.role ?? log?.diff?.actorRole ?? log?.actorRole ?? null;
   const actorId =
-    normalizeActorId(actor?.id) ??
-    normalizeActorId(log?.actorId) ??
-    normalizeActorId(log?.by);
+    normalizeActorId(actor?.id) ?? normalizeActorId(log?.actorId) ?? normalizeActorId(log?.by);
 
   const principal = name ? (email ? `${name} <${email}>` : name) : email;
 
@@ -214,10 +200,7 @@ function getAuditActorDisplay(log: AuditLog): {
   }
 
   if (actorId) {
-    const shortId =
-      actorId.length > 12
-        ? `${actorId.slice(0, 4)}...${actorId.slice(-4)}`
-        : actorId;
+    const shortId = actorId.length > 12 ? `${actorId.slice(0, 4)}...${actorId.slice(-4)}` : actorId;
     return { label: `actorId: ${shortId}`, title: actorId };
   }
 
@@ -242,9 +225,9 @@ export default function UserDetailClient({ id }: { id: string }) {
     jibunAddress?: string;
   };
   type DaumPostcodeApi = {
-    Postcode: new (options: {
-      oncomplete: (data: DaumPostcodeData) => void;
-    }) => { open: () => void };
+    Postcode: new (options: { oncomplete: (data: DaumPostcodeData) => void }) => {
+      open: () => void;
+    };
   };
   type DaumWindow = typeof window & { daum?: DaumPostcodeApi };
   // 주소 팝업 핸들러
@@ -252,9 +235,7 @@ export default function UserDetailClient({ id }: { id: string }) {
     try {
       await loadDaumPostcode();
     } catch {
-      showErrorToast(
-        "주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
-      );
+      showErrorToast("주소 검색 모듈을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
       return;
     }
     const w = window as DaumWindow;
@@ -317,12 +298,14 @@ export default function UserDetailClient({ id }: { id: string }) {
       revalidateOnReconnect: false,
     },
   );
-  const { data: auditResp } = useSWR<
-    { items?: AuditLog[] } | AuditLog[] | null
-  >(`/api/admin/users/${id}/audit?limit=5`, authenticatedSWRFetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-  });
+  const { data: auditResp } = useSWR<{ items?: AuditLog[] } | AuditLog[] | null>(
+    `/api/admin/users/${id}/audit?limit=5`,
+    authenticatedSWRFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
   const { data: sessionsResp, mutate: mutateSessions } = useUserSessions(id, 5);
   const orders = safeArray(ordersResp);
   const apps = safeArray(appsResp);
@@ -330,9 +313,7 @@ export default function UserDetailClient({ id }: { id: string }) {
 
   // 세션 정리
   const [cleanupOpen, setCleanupOpen] = useState(false);
-  const [cleanupDays, setCleanupDays] = useState<"0" | "30" | "90" | "180">(
-    "90",
-  ); // 기본 90일
+  const [cleanupDays, setCleanupDays] = useState<"0" | "30" | "90" | "180">("90"); // 기본 90일
 
   //kpi 안전 가드
   const kpiSafe = useMemo(
@@ -345,9 +326,7 @@ export default function UserDetailClient({ id }: { id: string }) {
   );
 
   const [localAudit, setLocalAudit] = useState<AuditLog[]>([]);
-  const audit: AuditLog[] = Array.isArray(auditResp)
-    ? auditResp
-    : (auditResp?.items ?? []);
+  const audit: AuditLog[] = Array.isArray(auditResp) ? auditResp : (auditResp?.items ?? []);
   const auditMerged = [...(audit || []), ...localAudit]
     .sort((a, b) => +new Date(b.at) - +new Date(a.at))
     .slice(0, 5);
@@ -355,8 +334,7 @@ export default function UserDetailClient({ id }: { id: string }) {
   // 폼 로컬 상태 (미저장 변경 탐지)
   const [form, setForm] = useState<Partial<UserDetail>>({});
   const hasDirty = useMemo(() => Object.keys(form).length > 0, [form]);
-  const confirmLeaveIfDirty = () =>
-    !hasDirty || window.confirm(UNSAVED_CHANGES_MESSAGE);
+  const confirmLeaveIfDirty = () => !hasDirty || window.confirm(UNSAVED_CHANGES_MESSAGE);
 
   // 입력 중 이탈 방지(뒤로가기/탭닫기/링크이동)
   useUnsavedChangesGuard(hasDirty);
@@ -369,10 +347,7 @@ export default function UserDetailClient({ id }: { id: string }) {
 
   function pushAudit(action: string, detail?: string) {
     setLocalAudit((prev) =>
-      [
-        { action, detail, at: new Date().toISOString(), by: "admin" },
-        ...prev,
-      ].slice(0, 5),
+      [{ action, detail, at: new Date().toISOString(), by: "admin" }, ...prev].slice(0, 5),
     );
   }
 
@@ -449,13 +424,7 @@ export default function UserDetailClient({ id }: { id: string }) {
 
   // 상태 -> StatusBadge 매핑
   const statusKey = (u?: UserDetail) =>
-    !u
-      ? "active"
-      : u.isDeleted
-        ? "deleted"
-        : u.isSuspended
-          ? "suspended"
-          : "active";
+    !u ? "active" : u.isDeleted ? "deleted" : u.isSuspended ? "suspended" : "active";
 
   const fmt = (iso?: string) =>
     iso
@@ -623,10 +592,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                 disabled={pending}
                 onClick={async () => {
                   const next = !user.isSuspended;
-                  await patchUser(
-                    { isSuspended: next },
-                    next ? "비활성화" : "비활성 해제",
-                  );
+                  await patchUser({ isSuspended: next }, next ? "비활성화" : "비활성 해제");
                   await mutate();
                 }}
               >
@@ -655,9 +621,9 @@ export default function UserDetailClient({ id }: { id: string }) {
                   <AlertDialogHeader>
                     <AlertDialogTitle>비밀번호 초기화 실행</AlertDialogTitle>
                     <AlertDialogDescription>
-                      이 회원의 비밀번호를 임시 비밀번호로 재설정합니다. 실행
-                      즉시 <b>임시 비밀번호가 1회 표시</b>되며, 사용자는 로그인
-                      후 비밀번호 변경이 <b>강제</b>됩니다.
+                      이 회원의 비밀번호를 임시 비밀번호로 재설정합니다. 실행 즉시{" "}
+                      <b>임시 비밀번호가 1회 표시</b>되며, 사용자는 로그인 후 비밀번호 변경이{" "}
+                      <b>강제</b>됩니다.
                       <br />
                       실수 클릭 방지를 위해 아래 확인 문구를 입력해 주세요.
                     </AlertDialogDescription>
@@ -666,8 +632,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                   <div className="space-y-2">
                     <Label>확인 문구</Label>
                     <div className="text-xs text-muted-foreground">
-                      아래 입력창에 <code>초기화</code> 라고 입력하면 실행
-                      버튼이 활성화됩니다.
+                      아래 입력창에 <code>초기화</code> 라고 입력하면 실행 버튼이 활성화됩니다.
                     </div>
                     <Input
                       value={pwConfirmText}
@@ -695,20 +660,13 @@ export default function UserDetailClient({ id }: { id: string }) {
 
               {/* 탈퇴(삭제) */}
               {user.isDeleted ? (
-                <Button
-                  variant="secondary"
-                  className="whitespace-nowrap shrink-0"
-                  disabled
-                >
+                <Button variant="secondary" className="whitespace-nowrap shrink-0" disabled>
                   삭제됨
                 </Button>
               ) : (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button
-                      variant="destructive"
-                      className="whitespace-nowrap shrink-0"
-                    >
+                    <Button variant="destructive" className="whitespace-nowrap shrink-0">
                       탈퇴(삭제)
                     </Button>
                   </AlertDialogTrigger>
@@ -716,8 +674,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                     <AlertDialogHeader>
                       <AlertDialogTitle>탈퇴(삭제) 처리</AlertDialogTitle>
                       <AlertDialogDescription>
-                        이 회원을 삭제(탈퇴) 처리합니다. 진행 후에는 복구할 수
-                        없습니다.
+                        이 회원을 삭제(탈퇴) 처리합니다. 진행 후에는 복구할 수 없습니다.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -750,17 +707,14 @@ export default function UserDetailClient({ id }: { id: string }) {
             <div className="flex items-center gap-4">
               <div className="relative">
                 <Avatar className="size-12 shadow-sm ring-2 ring-border">
-                  <AvatarFallback className="text-sm font-semibold">
-                    {initials}
-                  </AvatarFallback>
+                  <AvatarFallback className="text-sm font-semibold">{initials}</AvatarFallback>
                 </Avatar>
                 <span
                   className={cn(
                     "absolute -right-1 -bottom-1 size-3 rounded-full ring-2 ring-border",
                     statusKey(user) === "active" && "bg-primary",
                     statusKey(user) === "suspended" && "bg-muted",
-                    statusKey(user) === "deleted" &&
-                      "bg-destructive/10 dark:bg-destructive/15",
+                    statusKey(user) === "deleted" && "bg-destructive/10 dark:bg-destructive/15",
                   )}
                 />
               </div>
@@ -845,8 +799,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                   value={
                     user.address ? (
                       <span className="truncate">
-                        {user.address}{" "}
-                        {user.addressDetail ? ` ${user.addressDetail}` : ""}{" "}
+                        {user.address} {user.addressDetail ? ` ${user.addressDetail}` : ""}{" "}
                         {user.postalCode ? ` [${user.postalCode}]` : ""}
                       </span>
                     ) : (
@@ -871,9 +824,7 @@ export default function UserDetailClient({ id }: { id: string }) {
             <Section>
               <SectionHeader
                 title="보안 & 최근 활동"
-                aside={
-                  <ShieldAlert className="h-4 w-4 text-muted-foreground" />
-                }
+                aside={<ShieldAlert className="h-4 w-4 text-muted-foreground" />}
               />
               <SectionBody className="space-y-3">
                 <InfoItem
@@ -890,9 +841,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                         {fmt(sessionsResp?.items?.[0]?.at ?? user.lastLoginAt)}
                       </span>
                       <span className="block text-xs text-muted-foreground">
-                        {fromNowK(
-                          sessionsResp?.items?.[0]?.at ?? user.lastLoginAt,
-                        )}
+                        {fromNowK(sessionsResp?.items?.[0]?.at ?? user.lastLoginAt)}
                       </span>
                     </>
                   }
@@ -901,9 +850,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                 {/* 최근 로그인 장치 */}
                 <div className="mt-2 rounded-xl border bg-card border-border p-2">
                   <div className="mb-2 flex items-center justify-between">
-                    <div className="text-sm font-medium text-foreground">
-                      최근 로그인 장치
-                    </div>
+                    <div className="text-sm font-medium text-foreground">최근 로그인 장치</div>
                     <Button
                       variant="outline"
                       size="sm"
@@ -934,17 +881,15 @@ export default function UserDetailClient({ id }: { id: string }) {
                 <AlertDialogHeader>
                   <AlertDialogTitle>세션 로그 정리</AlertDialogTitle>
                   <AlertDialogDescription>
-                    선택한 기간 <b>이전</b>의 로그인 세션 기록을 영구
-                    삭제합니다. 현재 로그인 세션에는 영향이 없습니다.
+                    선택한 기간 <b>이전</b>의 로그인 세션 기록을 영구 삭제합니다. 현재 로그인
+                    세션에는 영향이 없습니다.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
 
                 <div className="mt-2 space-y-3">
                   <RadioGroup
                     value={cleanupDays}
-                    onValueChange={(v: "0" | "30" | "90" | "180") =>
-                      setCleanupDays(v)
-                    }
+                    onValueChange={(v: "0" | "30" | "90" | "180") => setCleanupDays(v)}
                   >
                     <div className="flex items-center gap-2">
                       <RadioGroupItem id="days30" value="30" />
@@ -966,8 +911,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                     </div>
                   </RadioGroup>
                   <p className="text-xs text-muted-foreground">
-                    * 삭제 후에는 복구할 수 없습니다. 감사 로그에 삭제 내역이
-                    기록됩니다.
+                    * 삭제 후에는 복구할 수 없습니다. 감사 로그에 삭제 내역이 기록됩니다.
                   </p>
                 </div>
 
@@ -987,9 +931,7 @@ export default function UserDetailClient({ id }: { id: string }) {
             <Section>
               <SectionHeader
                 title="액티비티"
-                aside={
-                  <ActivityIcon className="h-4 w-4 text-muted-foreground" />
-                }
+                aside={<ActivityIcon className="h-4 w-4 text-muted-foreground" />}
               />
               <SectionBody>
                 <div className="grid grid-cols-3 gap-3">
@@ -1159,9 +1101,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                     <Input
                       id="addr2"
                       value={form.addressDetail ?? user.addressDetail ?? ""}
-                      onChange={(e) =>
-                        onChange("addressDetail", e.target.value)
-                      }
+                      onChange={(e) => onChange("addressDetail", e.target.value)}
                       placeholder="동/호수, 층 등"
                     />
                   </FormRow>
@@ -1205,8 +1145,8 @@ export default function UserDetailClient({ id }: { id: string }) {
             <AlertDialogHeader>
               <AlertDialogTitle>임시 비밀번호</AlertDialogTitle>
               <AlertDialogDescription>
-                아래 비밀번호는 <b>이번 한 번만</b> 표시됩니다. 사용자가
-                로그인한 후 비밀번호를 변경하도록 안내하세요.
+                아래 비밀번호는 <b>이번 한 번만</b> 표시됩니다. 사용자가 로그인한 후 비밀번호를
+                변경하도록 안내하세요.
               </AlertDialogDescription>
             </AlertDialogHeader>
 
@@ -1219,16 +1159,13 @@ export default function UserDetailClient({ id }: { id: string }) {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                * 서버에는 해시만 저장됩니다. 이 값은 창을 닫으면 다시 볼 수
-                없습니다.
+                * 서버에는 해시만 저장됩니다. 이 값은 창을 닫으면 다시 볼 수 없습니다.
               </p>
             </div>
 
             <AlertDialogFooter>
               <AlertDialogCancel>닫기</AlertDialogCancel>
-              <AlertDialogAction onClick={() => setPwDialogOpen(false)}>
-                확인
-              </AlertDialogAction>
+              <AlertDialogAction onClick={() => setPwDialogOpen(false)}>확인</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
@@ -1305,14 +1242,9 @@ function SessionRow({
               return <Badge variant={currentSpec.variant}>현재</Badge>;
             })()}
           {(() => {
-            const deviceSpec = getSessionDeviceBadgeSpec(
-              s.isMobile ? "mobile" : "desktop",
-            );
+            const deviceSpec = getSessionDeviceBadgeSpec(s.isMobile ? "mobile" : "desktop");
             return (
-              <Badge
-                variant={deviceSpec.variant}
-                className="hidden sm:inline-block"
-              >
+              <Badge variant={deviceSpec.variant} className="hidden sm:inline-block">
                 {s.isMobile ? "모바일" : "데스크탑"}
               </Badge>
             );
@@ -1371,20 +1303,12 @@ function StatCard({
     emerald: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary",
     sky: "bg-muted text-foreground dark:bg-muted dark:text-foreground",
     violet: "bg-muted text-foreground dark:bg-muted dark:text-foreground",
-    slate:
-      "bg-background text-muted-foreground dark:bg-card dark:text-muted-foreground",
+    slate: "bg-background text-muted-foreground dark:bg-card dark:text-muted-foreground",
   };
 
   const content = (
     <div className="flex items-center gap-3 rounded-xl border border-border p-3 bg-card shadow-sm">
-      <div
-        className={cn(
-          "grid size-8 place-items-center rounded-lg",
-          toneMap[tone],
-        )}
-      >
-        {icon}
-      </div>
+      <div className={cn("grid size-8 place-items-center rounded-lg", toneMap[tone])}>{icon}</div>
       <div className="flex-1">
         <div className="text-xs text-muted-foreground">{label}</div>
         <div className="text-base font-semibold">{value}</div>
@@ -1444,16 +1368,10 @@ function Row({
     <div className="flex items-center justify-between gap-3">
       <div className="min-w-0">
         <div className="text-sm font-medium truncate">{title}</div>
-        {subtitle ? (
-          <div className="text-xs text-muted-foreground truncate">
-            {subtitle}
-          </div>
-        ) : null}
+        {subtitle ? <div className="text-xs text-muted-foreground truncate">{subtitle}</div> : null}
       </div>
       {right ? (
-        <div className="text-xs text-muted-foreground whitespace-nowrap">
-          {right}
-        </div>
+        <div className="text-xs text-muted-foreground whitespace-nowrap">{right}</div>
       ) : null}
     </div>
   );

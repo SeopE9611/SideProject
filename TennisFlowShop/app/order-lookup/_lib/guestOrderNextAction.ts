@@ -21,10 +21,7 @@ const normalizeRawStatus = (status?: string | null): string => {
     .replace(/-/g, "_");
 };
 
-const normalizeOrderStatusLabel = (
-  status?: string | null,
-  displayStatus?: string | null,
-) => {
+const normalizeOrderStatusLabel = (status?: string | null, displayStatus?: string | null) => {
   const raw = normalizeStatus(status);
   const display = normalizeStatus(displayStatus);
 
@@ -37,28 +34,15 @@ const normalizeOrderStatusLabel = (
   return display || raw;
 };
 
-export function getGuestOrderNextActionText(
-  input: GuestOrderNextActionInput,
-): string | null {
-  const normalized = normalizeOrderStatusLabel(
-    input.status,
-    input.displayStatus,
-  );
+export function getGuestOrderNextActionText(input: GuestOrderNextActionInput): string | null {
+  const normalized = normalizeOrderStatusLabel(input.status, input.displayStatus);
   const normalizedRawStatus = normalizeRawStatus(input.status);
 
-  if (
-    normalizedRawStatus === "pending" ||
-    normalized === "대기중" ||
-    normalized === "결제 대기"
-  ) {
+  if (normalizedRawStatus === "pending" || normalized === "대기중" || normalized === "결제 대기") {
     return "결제를 완료해주세요.";
   }
 
-  if (
-    normalizedRawStatus === "paid" ||
-    normalized === "결제완료" ||
-    normalized === "결제 완료"
-  ) {
+  if (normalizedRawStatus === "paid" || normalized === "결제완료" || normalized === "결제 완료") {
     return "결제가 완료되었습니다. 상품 준비를 기다려주세요.";
   }
 

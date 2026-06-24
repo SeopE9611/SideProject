@@ -4,9 +4,7 @@ export function createTossOrderId() {
   return `tosspay_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export function buildTossOrderName(
-  items: Array<{ name?: string; quantity?: number }>,
-) {
+export function buildTossOrderName(items: Array<{ name?: string; quantity?: number }>) {
   const first = (items[0]?.name || "주문 상품").trim();
   const extraCount = Math.max(0, items.length - 1);
   return extraCount > 0 ? `${first} 외 ${extraCount}건` : first;
@@ -35,10 +33,7 @@ export async function confirmTossPayment(params: {
 
   const json = await res.json().catch(() => null);
   if (!res.ok || !json) {
-    const message =
-      typeof json?.message === "string"
-        ? json.message
-        : "토스 승인에 실패했습니다.";
+    const message = typeof json?.message === "string" ? json.message : "토스 승인에 실패했습니다.";
     throw new Error(message);
   }
 

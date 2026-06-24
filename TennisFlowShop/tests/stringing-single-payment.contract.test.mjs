@@ -9,21 +9,13 @@ test("single 신청은 패키지 미사용 시 보유 스트링 장착비와 일
   const payment = read(
     "app/features/stringing-applications/components/apply-shared/PaymentInfoSection.tsx",
   );
-  const submitCore = read(
-    "app/features/stringing-applications/api/submit-core.ts",
-  );
+  const submitCore = read("app/features/stringing-applications/api/submit-core.ts");
 
   assert.match(page, /mode === "single" && !isOrderBased && !isRentalBased/);
-  assert.match(
-    page,
-    /CUSTOM_STRING_MOUNTING_FEE \* Math\.max\(1, requiredPassCount\)/,
-  );
+  assert.match(page, /CUSTOM_STRING_MOUNTING_FEE \* Math\.max\(1, requiredPassCount\)/);
   assert.match(payment, /value="bank_transfer"/);
   assert.match(payment, /value="nicepay"/);
-  assert.match(
-    submitCore,
-    /serviceFeeBeforeRaw[\s\S]*calcStringingTotal\(db, stringTypes\)/,
-  );
+  assert.match(submitCore, /serviceFeeBeforeRaw[\s\S]*calcStringingTotal\(db, stringTypes\)/);
   assert.match(submitCore, /paymentStatus: standalonePaymentInfo\.status/);
 });
 

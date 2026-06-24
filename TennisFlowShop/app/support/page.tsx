@@ -193,9 +193,7 @@ function QuickActionCard({
         <h3 className="break-keep font-semibold text-foreground group-hover:text-foreground/90">
           {title}
         </h3>
-        <p className="break-keep text-sm leading-relaxed text-muted-foreground">
-          {description}
-        </p>
+        <p className="break-keep text-sm leading-relaxed text-muted-foreground">{description}</p>
       </div>
       <ChevronRight className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground/50 transition-transform group-hover:translate-x-1" />
     </Link>
@@ -224,9 +222,7 @@ function InfoLinkItem({ icon: Icon, title, href }: InfoLinkProps) {
       className="group flex min-h-14 min-w-0 items-center gap-3 rounded-xl border border-border/60 bg-background px-4 py-3 transition-colors hover:border-primary/20 hover:bg-muted/50"
     >
       <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-      <span className="min-w-0 break-keep text-sm font-medium text-foreground">
-        {title}
-      </span>
+      <span className="min-w-0 break-keep text-sm font-medium text-foreground">{title}</span>
       <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
     </Link>
   );
@@ -255,14 +251,7 @@ function ErrorBox({
   message?: string;
   onRetry?: () => void;
 }) {
-  return (
-    <AsyncState
-      kind="error"
-      variant="inline"
-      title={message}
-      onAction={onRetry}
-    />
-  );
+  return <AsyncState kind="error" variant="inline" title={message} onAction={onRetry} />;
 }
 
 // ---------------------- 공지/이벤트 리스트 ----------------------
@@ -286,9 +275,7 @@ function NoticeList({
   const isEventMode = mode === "event";
   const basePath = isEventMode ? "/board/event" : "/board/notice";
   const writePath = isEventMode ? "/board/event/write" : "/board/notice/write";
-  const emptyTitle = isEventMode
-    ? "등록된 이벤트가 없습니다."
-    : "등록된 공지가 없습니다.";
+  const emptyTitle = isEventMode ? "등록된 이벤트가 없습니다." : "등록된 공지가 없습니다.";
   const emptyDescription = isEventMode
     ? "새로운 이벤트가 등록되면 이곳에 표시됩니다."
     : "새 소식이 등록되면 이곳에서 바로 확인할 수 있어요.";
@@ -301,12 +288,7 @@ function NoticeList({
   if (isLoading) return <ListSkeleton />;
   if (items.length === 0)
     return (
-      <AsyncState
-        kind="empty"
-        variant="card"
-        title={emptyTitle}
-        description={emptyDescription}
-      />
+      <AsyncState kind="empty" variant="card" title={emptyTitle} description={emptyDescription} />
     );
 
   return (
@@ -375,12 +357,7 @@ function NoticeList({
           </Link>
         </Button>
         {isAdmin && (
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="whitespace-nowrap"
-          >
+          <Button asChild variant="outline" size="sm" className="whitespace-nowrap">
             <Link href={writePath}>글 쓰기</Link>
           </Button>
         )}
@@ -412,10 +389,7 @@ function QnaList({
   }>({ open: false });
   const supportQuery = "from=support&returnTo=%2Fsupport";
 
-  if (error)
-    return (
-      <ErrorBox message="Q&A 불러오기에 실패했습니다." onRetry={onRetry} />
-    );
+  if (error) return <ErrorBox message="Q&A 불러오기에 실패했습니다." onRetry={onRetry} />;
   if (isLoading) return <ListSkeleton />;
   if (items.length === 0)
     return (
@@ -441,17 +415,12 @@ function QnaList({
             </DialogTitle>
             <DialogDescription className="space-y-2">
               <span className="block">
-                이 문의는 <b>비밀글</b>로 등록되어 <b>작성자와 관리자만</b>{" "}
-                확인할 수 있습니다.
+                이 문의는 <b>비밀글</b>로 등록되어 <b>작성자와 관리자만</b> 확인할 수 있습니다.
               </span>
               {!viewerId ? (
-                <span className="block">
-                  작성자 계정이라면 로그인 후 다시 확인해 주세요.
-                </span>
+                <span className="block">작성자 계정이라면 로그인 후 다시 확인해 주세요.</span>
               ) : (
-                <span className="block">
-                  현재 계정으로는 이 문의를 열람할 수 없습니다.
-                </span>
+                <span className="block">현재 계정으로는 이 문의를 열람할 수 없습니다.</span>
               )}
             </DialogDescription>
           </DialogHeader>
@@ -475,24 +444,18 @@ function QnaList({
       <div className="space-y-1">
         {items.map((qna) => {
           const canOpenSecret =
-            !qna.isSecret ||
-            !!isAdmin ||
-            (viewerId && qna.authorId && viewerId === qna.authorId);
+            !qna.isSecret || !!isAdmin || (viewerId && qna.authorId && viewerId === qna.authorId);
 
           const RowContent = (
             <div className="flex items-start gap-3">
               <div className="flex shrink-0 items-center gap-1.5 pt-0.5">
                 <Badge
-                  variant={
-                    getQnaCategoryBadgeSpec(qna.category ?? undefined).variant
-                  }
+                  variant={getQnaCategoryBadgeSpec(qna.category ?? undefined).variant}
                   className={`${badgeBaseOutlined} ${badgeSizeSm}`}
                 >
                   {qna.category ?? "일반"}
                 </Badge>
-                {qna.isSecret && (
-                  <Lock className="h-3 w-3 text-muted-foreground" />
-                )}
+                {qna.isSecret && <Lock className="h-3 w-3 text-muted-foreground" />}
               </div>
 
               <span
@@ -570,10 +533,7 @@ function QnaList({
 // ---------------------- 페이지 컴포넌트 ----------------------
 
 export default function SupportPage() {
-  const { data, error, isLoading, mutate } = useSWR<BoardsMainRes>(
-    "/api/boards/main",
-    fetcher,
-  );
+  const { data, error, isLoading, mutate } = useSWR<BoardsMainRes>("/api/boards/main", fetcher);
   const notices = data?.notices ?? [];
   const events = data?.events ?? [];
   const qnas = data?.qna ?? [];

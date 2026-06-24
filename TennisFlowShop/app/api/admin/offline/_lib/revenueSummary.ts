@@ -1,8 +1,5 @@
 import type { Db, Document } from "mongodb";
-import {
-  OFFLINE_PACKAGE_ORDER_FILTER,
-  isOfflinePackageOrder,
-} from "./packageOrderOffline";
+import { OFFLINE_PACKAGE_ORDER_FILTER, isOfflinePackageOrder } from "./packageOrderOffline";
 import {
   isPaidPaymentStatus,
   orderPaidAmount,
@@ -15,12 +12,7 @@ import type {
   OfflineRevenueKindBucket,
 } from "@/types/admin/offline";
 
-const PAYMENT_METHODS: OfflinePaymentMethod[] = [
-  "cash",
-  "card",
-  "bank_transfer",
-  "etc",
-];
+const PAYMENT_METHODS: OfflinePaymentMethod[] = ["cash", "card", "bank_transfer", "etc"];
 const KIND_KEYS = ["stringing", "package_sale", "etc"] as const;
 
 type DateRange = { from: Date | null; to: Date | null };
@@ -54,27 +46,19 @@ function emptyBucket(): OfflineRevenueBucket {
 
 function normalizePaymentMethod(value: unknown): OfflinePaymentMethod {
   const raw = String(value ?? "").trim();
-  if (PAYMENT_METHODS.includes(raw as OfflinePaymentMethod))
-    return raw as OfflinePaymentMethod;
+  if (PAYMENT_METHODS.includes(raw as OfflinePaymentMethod)) return raw as OfflinePaymentMethod;
   if (raw.includes("현금") || raw.toLowerCase() === "cash") return "cash";
   if (raw.includes("카드") || raw.toLowerCase() === "card") return "card";
-  if (
-    raw.includes("계좌") ||
-    raw.includes("이체") ||
-    raw.toLowerCase().includes("bank")
-  )
+  if (raw.includes("계좌") || raw.includes("이체") || raw.toLowerCase().includes("bank"))
     return "bank_transfer";
   return "etc";
 }
 
-function normalizePaymentStatus(
-  value: unknown,
-): "paid" | "refunded" | "pending" {
+function normalizePaymentStatus(value: unknown): "paid" | "refunded" | "pending" {
   const raw = String(value ?? "").trim();
   const lower = raw.toLowerCase();
   if (isPaidPaymentStatus(raw)) return "paid";
-  if (lower === "refunded" || lower.includes("refund") || raw.includes("환불"))
-    return "refunded";
+  if (lower === "refunded" || lower.includes("refund") || raw.includes("환불")) return "refunded";
   return "pending";
 }
 
@@ -127,23 +111,16 @@ function addStatusAmount(
 
 function getPackageOrderStatus(doc: Document): "paid" | "refunded" | "pending" {
   const paymentInfo = doc.paymentInfo as Record<string, unknown> | undefined;
-  return normalizePaymentStatus(
-    doc.paymentStatus ?? paymentInfo?.status ?? doc.status,
-  );
+  return normalizePaymentStatus(doc.paymentStatus ?? paymentInfo?.status ?? doc.status);
 }
 
-function getPackageOrderAmount(
-  doc: Document,
-  status?: "paid" | "refunded" | "pending",
-): number {
+function getPackageOrderAmount(doc: Document, status?: "paid" | "refunded" | "pending"): number {
   const packageInfo = doc.packageInfo as Record<string, unknown> | undefined;
   const meta = doc.meta as Record<string, unknown> | undefined;
   if (status === "refunded") {
     const offlineRefundAmount = toNumber(meta?.offlineRefundAmount);
     if (offlineRefundAmount > 0) return offlineRefundAmount;
-    const refundAmount = toNumber(
-      (doc as Record<string, unknown>).refundAmount,
-    );
+    const refundAmount = toNumber((doc as Record<string, unknown>).refundAmount);
     if (refundAmount > 0) return refundAmount;
   }
   const paidOrTotal = orderPaidAmount(doc);
@@ -168,11 +145,7 @@ export function parseOfflineSummaryDateBoundary(
   if (!trimmed) return null;
   const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(trimmed);
   const date = dateOnly
-    ? new Date(
-        boundary === "from"
-          ? `${trimmed}T00:00:00.000Z`
-          : `${trimmed}T23:59:59.999Z`,
-      )
+    ? new Date(boundary === "from" ? `${trimmed}T00:00:00.000Z` : `${trimmed}T23:59:59.999Z`)
     : new Date(trimmed);
   return Number.isNaN(date.getTime()) ? null : date;
 }
@@ -322,8 +295,7 @@ export async function buildOfflineRevenueSummary(
   total.totalCount = records.totalCount + packageSales.totalCount;
   total.byMethod = emptyMethodMap();
   for (const method of PAYMENT_METHODS)
-    total.byMethod[method] =
-      records.byMethod[method] + packageSales.byMethod[method];
+    total.byMethod[method] = records.byMethod[method] + packageSales.byMethod[method];
 
   return {
     range: {
@@ -335,9 +307,7 @@ export async function buildOfflineRevenueSummary(
     total,
     ...(options.groupBy
       ? {
-          daily: Array.from(dailyMap.values()).sort((a, b) =>
-            a.date.localeCompare(b.date),
-          ),
+          daily: Array.from(dailyMap.values()).sort((a, b) => a.date.localeCompare(b.date)),
         }
       : {}),
   };

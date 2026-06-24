@@ -25,10 +25,7 @@ function validateCronSecret(req: Request): NextResponse | null {
   }
 
   if (getBearerToken(req.headers) !== cronSecret) {
-    return NextResponse.json(
-      { ok: false, message: "unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, message: "unauthorized" }, { status: 401 });
   }
 
   return null;
@@ -41,10 +38,7 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const yyyymmOverride = url.searchParams.get("yyyymm")?.trim() ?? "";
   if (yyyymmOverride && !REVENUE_REPORT_YYYY_MM_RE.test(yyyymmOverride)) {
-    return NextResponse.json(
-      { ok: false, message: "invalid yyyymm" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, message: "invalid yyyymm" }, { status: 400 });
   }
 
   const yyyymm = yyyymmOverride || getKstPreviousMonthYyyymm();
@@ -100,9 +94,6 @@ export async function GET(req: Request) {
     });
   } catch (error) {
     console.error("[cron][revenue-snapshots][monthly]", error);
-    return NextResponse.json(
-      { ok: false, message: "internal_error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ ok: false, message: "internal_error" }, { status: 500 });
   }
 }

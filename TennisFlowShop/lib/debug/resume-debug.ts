@@ -40,26 +40,18 @@ export function getResumeDebugSnapshot(): ResumeDebugSnapshot {
   const now = Date.now();
   const win = getWindow();
   const state = win?.[RESUME_DEBUG_KEY] ?? getDefaultState();
-  const visibilityState =
-    typeof document === "undefined" ? "unknown" : document.visibilityState;
-  const latestResumeAt = Math.max(
-    state.lastVisibleAt ?? 0,
-    state.lastPageShowAt ?? 0,
-  );
+  const visibilityState = typeof document === "undefined" ? "unknown" : document.visibilityState;
+  const latestResumeAt = Math.max(state.lastVisibleAt ?? 0, state.lastPageShowAt ?? 0);
 
   return {
     ...state,
     now,
     visibilityState,
-    wasRecentlyResumed:
-      latestResumeAt > 0 && now - latestResumeAt <= RECENT_RESUME_WINDOW_MS,
+    wasRecentlyResumed: latestResumeAt > 0 && now - latestResumeAt <= RECENT_RESUME_WINDOW_MS,
   };
 }
 
-export function debugResumeFetch(
-  event: string,
-  payload: Record<string, unknown>,
-): void {
+export function debugResumeFetch(event: string, payload: Record<string, unknown>): void {
   if (process.env.NODE_ENV !== "development") return;
   console.debug(`[resume-debug] ${event}`, payload);
 }

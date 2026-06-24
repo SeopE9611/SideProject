@@ -1,7 +1,4 @@
-import {
-  ADMIN_CSRF_COOKIE_KEY,
-  ADMIN_CSRF_HEADER_KEY,
-} from "@/lib/admin/adminCsrf";
+import { ADMIN_CSRF_COOKIE_KEY, ADMIN_CSRF_HEADER_KEY } from "@/lib/admin/adminCsrf";
 
 const ADMIN_HTTP_ERROR_MESSAGES: Record<number, string> = {
   400: "요청 값이 올바르지 않습니다.",
@@ -17,8 +14,7 @@ const ADMIN_HTTP_ERROR_MESSAGES: Record<number, string> = {
   504: "응답 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.",
 };
 
-const ADMIN_UNKNOWN_ERROR_MESSAGE =
-  "요청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+const ADMIN_UNKNOWN_ERROR_MESSAGE = "요청 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
 export type AdminMutationMethod = "POST" | "PUT" | "PATCH" | "DELETE";
 
 export class AdminFetchError extends Error {
@@ -109,8 +105,7 @@ async function readResponsePayload(response: Response): Promise<unknown> {
 function throwIfHttpError(response: Response, payload: unknown) {
   if (response.ok) return;
 
-  const message =
-    pickPayloadMessage(payload) ?? getMessageByStatus(response.status);
+  const message = pickPayloadMessage(payload) ?? getMessageByStatus(response.status);
   throw new AdminFetchError(message, response.status, payload);
 }
 
@@ -139,10 +134,7 @@ function withAdminCsrfHeader(initHeaders?: HeadersInit): Headers {
   return headers;
 }
 
-export async function adminFetcher<T>(
-  url: string,
-  init?: RequestInit,
-): Promise<T> {
+export async function adminFetcher<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     credentials: "include",
     ...init,

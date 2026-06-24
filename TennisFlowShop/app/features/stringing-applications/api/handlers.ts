@@ -5,10 +5,7 @@ import {
   loadStringingSettings,
   validateBookingWindow,
 } from "@/app/features/stringing-applications/lib/slotEngine";
-import {
-  normalizeOrderStatus,
-  normalizePaymentStatus,
-} from "@/lib/admin-ops-normalize";
+import { normalizeOrderStatus, normalizePaymentStatus } from "@/lib/admin-ops-normalize";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { appendAudit } from "@/lib/audit";
 import {
@@ -24,10 +21,7 @@ import {
   buildCancelRefundSubject,
   recordCancelRefundSignal,
 } from "@/lib/risk/recordCancelRefundSignal";
-import {
-  calcStringingMountingFeeByProductId,
-  calcStringingTotal,
-} from "@/lib/pricing";
+import { calcStringingMountingFeeByProductId, calcStringingTotal } from "@/lib/pricing";
 import { normalizeEmailForSearch } from "@/lib/search-email";
 import {
   findCourierCatalogItem,
@@ -40,36 +34,19 @@ import {
 } from "@/lib/shipping/tracking-number";
 import { getStringingServicePrice } from "@/lib/stringing-prices";
 import { ServicePassConsumption } from "@/lib/types/pass";
-import {
-  HistoryItem,
-  HistoryRecord,
-} from "@/lib/types/stringing-application-db";
+import { HistoryItem, HistoryRecord } from "@/lib/types/stringing-application-db";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-export const INPROGRESS_STATUSES = [
-  "draft",
-  "검토 중",
-  "접수완료",
-  "작업 중",
-] as const;
-const ORDER_TERMINAL_STATUSES = new Set([
-  "취소",
-  "결제취소",
-  "환불",
-  "구매확정",
-  "완료",
-]);
+export const INPROGRESS_STATUSES = ["draft", "검토 중", "접수완료", "작업 중"] as const;
+const ORDER_TERMINAL_STATUSES = new Set(["취소", "결제취소", "환불", "구매확정", "완료"]);
 const ORDER_SHIPPING_PHASE_STATUSES = new Set(["배송중", "배송완료"]);
 
 type ServicePickupMethod = "SELF_SEND" | "COURIER_VISIT" | "SHOP_VISIT";
 
-function normalizeServicePickupMethod(
-  raw: unknown,
-): ServicePickupMethod | null {
-  if (raw === "SELF_SEND" || raw === "COURIER_VISIT" || raw === "SHOP_VISIT")
-    return raw;
+function normalizeServicePickupMethod(raw: unknown): ServicePickupMethod | null {
+  if (raw === "SELF_SEND" || raw === "COURIER_VISIT" || raw === "SHOP_VISIT") return raw;
   if (raw === "COURIER_PICKUP") return "COURIER_VISIT";
   if (raw === "VISIT") return "SHOP_VISIT";
   return null;
@@ -84,12 +61,7 @@ function toCollectionMethodFromServicePickup(
   return "self_ship";
 }
 type CancelStatus = "none" | "requested" | "approved" | "rejected";
-type LinkedPaymentSource =
-  | "order"
-  | "rental"
-  | "application"
-  | "package"
-  | null;
+type LinkedPaymentSource = "order" | "rental" | "application" | "package" | null;
 
 type LinkedPaymentPayload = {
   source: LinkedPaymentSource;
@@ -121,8 +93,7 @@ function normalizeCancelStatus(raw: any): CancelStatus {
   if (v === "거절") return "rejected";
 
   // 이미 표준값이면 그대로
-  if (v === "requested" || v === "approved" || v === "rejected" || v === "none")
-    return v;
+  if (v === "requested" || v === "approved" || v === "rejected" || v === "none") return v;
 
   // 그 외 알 수 없는 값은 안전하게 none 처리
   return "none";
@@ -158,14 +129,10 @@ function normalizeLinkedPaymentStatus(raw: unknown): string | null {
   if (!original) return null;
   const normalized = original.toLowerCase();
 
-  if (["결제완료", "paid", "done", "approved", "success"].includes(normalized))
-    return "결제완료";
-  if (["결제대기", "ready", "pending", "waiting"].includes(normalized))
-    return "결제대기";
-  if (["결제취소", "취소", "cancelled", "canceled"].includes(normalized))
-    return "결제취소";
-  if (["결제실패", "실패", "failed", "failure"].includes(normalized))
-    return "결제실패";
+  if (["결제완료", "paid", "done", "approved", "success"].includes(normalized)) return "결제완료";
+  if (["결제대기", "ready", "pending", "waiting"].includes(normalized)) return "결제대기";
+  if (["결제취소", "취소", "cancelled", "canceled"].includes(normalized)) return "결제취소";
+  if (["결제실패", "실패", "failed", "failure"].includes(normalized)) return "결제실패";
 
   return original;
 }
@@ -184,36 +151,22 @@ function buildLinkedPaymentFromDoc(
     source,
     status: normalizedStatus,
     method: typeof paymentInfo?.method === "string" ? paymentInfo.method : null,
-    provider:
-      typeof paymentInfo?.provider === "string" ? paymentInfo.provider : null,
+    provider: typeof paymentInfo?.provider === "string" ? paymentInfo.provider : null,
     easyPayProvider:
-      typeof paymentInfo?.easyPayProvider === "string"
-        ? paymentInfo.easyPayProvider
-        : null,
+      typeof paymentInfo?.easyPayProvider === "string" ? paymentInfo.easyPayProvider : null,
     tid: typeof paymentInfo?.tid === "string" ? paymentInfo.tid : null,
     bank: typeof paymentInfo?.bank === "string" ? paymentInfo.bank : null,
-    depositor:
-      typeof paymentInfo?.depositor === "string" ? paymentInfo.depositor : null,
+    depositor: typeof paymentInfo?.depositor === "string" ? paymentInfo.depositor : null,
     cardDisplayName:
-      typeof paymentInfo?.cardDisplayName === "string"
-        ? paymentInfo.cardDisplayName
-        : null,
-    cardCompany:
-      typeof paymentInfo?.cardCompany === "string"
-        ? paymentInfo.cardCompany
-        : null,
-    cardLabel:
-      typeof paymentInfo?.cardLabel === "string" ? paymentInfo.cardLabel : null,
+      typeof paymentInfo?.cardDisplayName === "string" ? paymentInfo.cardDisplayName : null,
+    cardCompany: typeof paymentInfo?.cardCompany === "string" ? paymentInfo.cardCompany : null,
+    cardLabel: typeof paymentInfo?.cardLabel === "string" ? paymentInfo.cardLabel : null,
     approvedAt: toIsoOrNull(paymentInfo?.approvedAt),
     niceSync: niceSyncRaw
       ? {
           lastSyncedAt: toIsoOrNull(niceSyncRaw.lastSyncedAt),
-          pgStatus:
-            typeof niceSyncRaw.pgStatus === "string"
-              ? niceSyncRaw.pgStatus
-              : null,
-          source:
-            typeof niceSyncRaw.source === "string" ? niceSyncRaw.source : null,
+          pgStatus: typeof niceSyncRaw.pgStatus === "string" ? niceSyncRaw.pgStatus : null,
+          source: typeof niceSyncRaw.source === "string" ? niceSyncRaw.source : null,
         }
       : null,
   };
@@ -253,9 +206,7 @@ async function resolveStringingCancelPaymentContext(
   db: any,
   appDoc: any,
 ): Promise<StringingCancelPaymentContext> {
-  const packageApplied = Boolean(
-    appDoc?.packageApplied || appDoc?.packageInfo?.applied,
-  );
+  const packageApplied = Boolean(appDoc?.packageApplied || appDoc?.packageInfo?.applied);
   if (packageApplied) {
     return { packageApplied: true, status: "패키지 적용 완료", provider: "" };
   }
@@ -272,53 +223,35 @@ async function resolveStringingCancelPaymentContext(
   if (paymentSourceRaw.startsWith("order:") && orderObjectId) {
     const order = await db
       .collection("orders")
-      .findOne(
-        { _id: orderObjectId },
-        { projection: { paymentStatus: 1, paymentInfo: 1 } },
-      );
+      .findOne({ _id: orderObjectId }, { projection: { paymentStatus: 1, paymentInfo: 1 } });
     if (order) linkedPayment = buildLinkedPaymentFromDoc("order", order);
   }
 
-  if (
-    !linkedPayment &&
-    paymentSourceRaw.startsWith("rental:") &&
-    rentalObjectId
-  ) {
+  if (!linkedPayment && paymentSourceRaw.startsWith("rental:") && rentalObjectId) {
     const rental = await db
       .collection("rental_orders")
-      .findOne(
-        { _id: rentalObjectId },
-        { projection: { paymentStatus: 1, paymentInfo: 1 } },
-      );
+      .findOne({ _id: rentalObjectId }, { projection: { paymentStatus: 1, paymentInfo: 1 } });
     if (rental) linkedPayment = buildLinkedPaymentFromDoc("rental", rental);
   }
 
   if (!linkedPayment && orderObjectId) {
     const order = await db
       .collection("orders")
-      .findOne(
-        { _id: orderObjectId },
-        { projection: { paymentStatus: 1, paymentInfo: 1 } },
-      );
+      .findOne({ _id: orderObjectId }, { projection: { paymentStatus: 1, paymentInfo: 1 } });
     if (order) linkedPayment = buildLinkedPaymentFromDoc("order", order);
   }
 
   if (!linkedPayment && rentalObjectId) {
     const rental = await db
       .collection("rental_orders")
-      .findOne(
-        { _id: rentalObjectId },
-        { projection: { paymentStatus: 1, paymentInfo: 1 } },
-      );
+      .findOne({ _id: rentalObjectId }, { projection: { paymentStatus: 1, paymentInfo: 1 } });
     if (rental) linkedPayment = buildLinkedPaymentFromDoc("rental", rental);
   }
 
   const fallbackPaymentInfo = appDoc?.paymentInfo ?? {};
   return {
     packageApplied: false,
-    status:
-      linkedPayment?.status ??
-      normalizeLinkedPaymentStatus(appDoc?.paymentStatus),
+    status: linkedPayment?.status ?? normalizeLinkedPaymentStatus(appDoc?.paymentStatus),
     provider: normalizePaymentProvider(
       linkedPayment?.provider ??
         fallbackPaymentInfo?.provider ??
@@ -331,42 +264,26 @@ async function resolveStringingCancelPaymentContext(
 function getApplicationLines(stringDetails: any): any[] {
   // 통합 플로우 우선(lines) + 레거시(racketLines) fallback
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
-  if (Array.isArray(stringDetails?.racketLines))
-    return stringDetails.racketLines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
   return [];
 }
 
-async function resolveInboundTrackingPolicy(
-  db: any,
-  appDoc: any,
-  preloadedOrder?: any | null,
-) {
+async function resolveInboundTrackingPolicy(db: any, appDoc: any, preloadedOrder?: any | null) {
   const collectionMethod = normalizeCollection(
-    appDoc?.collectionMethod ??
-      appDoc?.shippingInfo?.collectionMethod ??
-      "self_ship",
+    appDoc?.collectionMethod ?? appDoc?.shippingInfo?.collectionMethod ?? "self_ship",
   );
 
   let order = preloadedOrder ?? null;
   if (!order && appDoc?.orderId && ObjectId.isValid(String(appDoc.orderId))) {
     order = await db
       .collection("orders")
-      .findOne(
-        { _id: new ObjectId(String(appDoc.orderId)) },
-        { projection: { items: 1 } },
-      );
+      .findOne({ _id: new ObjectId(String(appDoc.orderId)) }, { projection: { items: 1 } });
   }
 
   const orderHasRacket =
-    Array.isArray(order?.items) &&
-    order.items.some((it: any) => it?.kind === "racket");
-  const inboundRequired = appDoc?.rentalId
-    ? false
-    : appDoc?.orderId
-      ? !orderHasRacket
-      : true;
-  const needsInboundTracking =
-    inboundRequired && collectionMethod === "self_ship";
+    Array.isArray(order?.items) && order.items.some((it: any) => it?.kind === "racket");
+  const inboundRequired = appDoc?.rentalId ? false : appDoc?.orderId ? !orderHasRacket : true;
+  const needsInboundTracking = inboundRequired && collectionMethod === "self_ship";
 
   return {
     collectionMethod,
@@ -409,9 +326,7 @@ async function requireAdminUserFromAccessToken() {
   return { ok: true as const, db, userId };
 }
 
-function pickStringProductObjectIdFromApplicationDoc(
-  appDoc: any,
-): ObjectId | null {
+function pickStringProductObjectIdFromApplicationDoc(appDoc: any): ObjectId | null {
   const toObjectIdIfValid = (value: unknown): ObjectId | null => {
     if (value == null) return null;
     const str = String(value).trim();
@@ -420,9 +335,7 @@ function pickStringProductObjectIdFromApplicationDoc(
   };
 
   const fromStringTypes = Array.isArray(appDoc?.stringDetails?.stringTypes)
-    ? appDoc.stringDetails.stringTypes.find(
-        (v: unknown) => String(v).trim() !== "custom",
-      )
+    ? appDoc.stringDetails.stringTypes.find((v: unknown) => String(v).trim() !== "custom")
     : null;
   const fromStringTypesObjectId = toObjectIdIfValid(fromStringTypes);
   if (fromStringTypesObjectId) return fromStringTypesObjectId;
@@ -430,11 +343,7 @@ function pickStringProductObjectIdFromApplicationDoc(
   const fromStringItems = Array.isArray(appDoc?.stringItems)
     ? appDoc.stringItems.find((item: any) => {
         const productId = item?.productId ?? item?.id;
-        return (
-          typeof productId === "string" &&
-          productId.trim() &&
-          productId.trim() !== "custom"
-        );
+        return typeof productId === "string" && productId.trim() && productId.trim() !== "custom";
       })
     : null;
   const fromStringItemsObjectId = toObjectIdIfValid(
@@ -476,11 +385,7 @@ function resolveVariantStockDeduction(
   return null;
 }
 
-async function restoreStringingVariantStockIfNeeded(
-  db: any,
-  appDoc: any,
-  now: Date,
-) {
+async function restoreStringingVariantStockIfNeeded(db: any, appDoc: any, now: Date) {
   const stockDeduction = resolveVariantStockDeduction(appDoc);
   const mode = String(stockDeduction?.mode ?? "").trim();
   const alreadyRestored = Boolean(appDoc?.stockRestore?.variantStockRestoredAt);
@@ -493,19 +398,15 @@ async function restoreStringingVariantStockIfNeeded(
   }
 
   const selectedColor =
-    typeof stockDeduction?.colorValue === "string" &&
-    stockDeduction.colorValue.trim()
+    typeof stockDeduction?.colorValue === "string" && stockDeduction.colorValue.trim()
       ? stockDeduction.colorValue.trim()
-      : typeof appDoc?.meta?.selectedColor === "string" &&
-          appDoc.meta.selectedColor.trim()
+      : typeof appDoc?.meta?.selectedColor === "string" && appDoc.meta.selectedColor.trim()
         ? appDoc.meta.selectedColor.trim()
         : undefined;
   const selectedGauge =
-    typeof stockDeduction?.gaugeValue === "string" &&
-    stockDeduction.gaugeValue.trim()
+    typeof stockDeduction?.gaugeValue === "string" && stockDeduction.gaugeValue.trim()
       ? stockDeduction.gaugeValue.trim()
-      : typeof appDoc?.meta?.selectedGauge === "string" &&
-          appDoc.meta.selectedGauge.trim()
+      : typeof appDoc?.meta?.selectedGauge === "string" && appDoc.meta.selectedGauge.trim()
         ? appDoc.meta.selectedGauge.trim()
         : undefined;
   if (!selectedColor || !selectedGauge) {
@@ -516,8 +417,7 @@ async function restoreStringingVariantStockIfNeeded(
     };
   }
 
-  const stringProductObjectId =
-    pickStringProductObjectIdFromApplicationDoc(appDoc);
+  const stringProductObjectId = pickStringProductObjectIdFromApplicationDoc(appDoc);
   if (!stringProductObjectId) {
     return {
       restored: false,
@@ -579,8 +479,7 @@ async function restoreStringingVariantStockIfNeeded(
     skippedReason: null,
     setFields: {
       "stockRestore.variantStockRestoredAt": now,
-      "stockRestore.variantStockRestoreReason":
-        "stringing_application_cancelled",
+      "stockRestore.variantStockRestoreReason": "stringing_application_cancelled",
     } as Record<string, unknown>,
   };
 }
@@ -599,8 +498,7 @@ async function restoreStringingGaugeStockIfNeeded(
     };
   }
   const selectedGauge =
-    typeof appDoc?.meta?.selectedGauge === "string" &&
-    appDoc.meta.selectedGauge.trim()
+    typeof appDoc?.meta?.selectedGauge === "string" && appDoc.meta.selectedGauge.trim()
       ? appDoc.meta.selectedGauge.trim()
       : undefined;
   const hasDeducted = Boolean(appDoc?.meta?.gaugeStockDeductedAt);
@@ -614,8 +512,7 @@ async function restoreStringingGaugeStockIfNeeded(
     };
   }
 
-  const stringProductObjectId =
-    pickStringProductObjectIdFromApplicationDoc(appDoc);
+  const stringProductObjectId = pickStringProductObjectIdFromApplicationDoc(appDoc);
   if (!stringProductObjectId) {
     console.error(
       "[restoreStringingGaugeStockIfNeeded] missing string product id for deducted application",
@@ -685,8 +582,7 @@ async function restoreStringingColorStockIfNeeded(
     };
   }
   const selectedColor =
-    typeof appDoc?.meta?.selectedColor === "string" &&
-    appDoc.meta.selectedColor.trim()
+    typeof appDoc?.meta?.selectedColor === "string" && appDoc.meta.selectedColor.trim()
       ? appDoc.meta.selectedColor.trim()
       : undefined;
   const hasDeducted = Boolean(appDoc?.meta?.colorStockDeductedAt);
@@ -699,8 +595,7 @@ async function restoreStringingColorStockIfNeeded(
     };
   }
 
-  const stringProductObjectId =
-    pickStringProductObjectIdFromApplicationDoc(appDoc);
+  const stringProductObjectId = pickStringProductObjectIdFromApplicationDoc(appDoc);
   if (!stringProductObjectId) {
     return {
       restored: false,
@@ -755,9 +650,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
     if (!ObjectId.isValid(id)) {
       return NextResponse.json({ error: "Invalid id" }, { status: 400 });
     }
-    const app = await db
-      .collection("stringing_applications")
-      .findOne({ _id: new ObjectId(id) });
+    const app = await db.collection("stringing_applications").findOne({ _id: new ObjectId(id) });
     if (!app) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
@@ -765,10 +658,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
     // 1순위: 새 표준 필드(app.stringItems)가 있으면 그대로 사용
     let stringItems: { id: string; name: string }[] = [];
 
-    if (
-      Array.isArray((app as any).stringItems) &&
-      (app as any).stringItems.length > 0
-    ) {
+    if (Array.isArray((app as any).stringItems) && (app as any).stringItems.length > 0) {
       stringItems = (app as any).stringItems.map((it: any) => ({
         id: it.productId ?? it.id ?? "custom",
         name: it.name ?? "알 수 없는 상품",
@@ -785,10 +675,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
           }
           const prod = await db
             .collection("products")
-            .findOne(
-              { _id: new ObjectId(prodId) },
-              { projection: { name: 1 } },
-            );
+            .findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
           return {
             id: prodId,
             name: prod?.name ?? "알 수 없는 상품",
@@ -810,10 +697,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
         }
         const prod = await db
           .collection("products")
-          .findOne(
-            { _id: new ObjectId(item.id) },
-            { projection: { mountingFee: 1 } },
-          );
+          .findOne({ _id: new ObjectId(item.id) }, { projection: { mountingFee: 1 } });
         return {
           id: item.id,
           name: item.name,
@@ -902,9 +786,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
 
     const linkedOrderPickupMethod = (() => {
       if (!order) return null;
-      const pickup = normalizeServicePickupMethod(
-        (order as any).servicePickupMethod,
-      );
+      const pickup = normalizeServicePickupMethod((order as any).servicePickupMethod);
       const codeFromPickup =
         pickup === "SHOP_VISIT"
           ? "visit"
@@ -928,58 +810,50 @@ export async function handleGetStringingApplication(req: Request, id: string) {
     // - 그 외(스트링만 구매+교체 / 단독 신청): 고객 라켓 기반 → 입고 필요
     // - 운송장 필요: 입고가 필요 + self_ship(자가발송)인 경우
     // -------------------------------------------
-    const {
-      collectionMethod,
-      inboundRequired,
-      needsInboundTracking,
-      orderHasRacket,
-    } = await resolveInboundTrackingPolicy(db, app, order);
+    const { collectionMethod, inboundRequired, needsInboundTracking, orderHasRacket } =
+      await resolveInboundTrackingPolicy(db, app, order);
 
     // 체크박스 옵션으로 그대로 사용
     const purchasedStrings = orderStrings;
     const sd = app.stringDetails || {};
 
     // 라켓별 세부 장착 정보(lines 우선 + racketLines fallback) 정리
-    const racketLines = getApplicationLines(sd).map(
-      (line: any, index: number) => {
-        // 저장된 racketType 이 있으면 우선 사용, 없으면 racketLabel 로 보정
-        const rawName =
-          (line.racketType && String(line.racketType).trim()) ||
-          (line.racketLabel && String(line.racketLabel).trim()) ||
-          "";
+    const racketLines = getApplicationLines(sd).map((line: any, index: number) => {
+      // 저장된 racketType 이 있으면 우선 사용, 없으면 racketLabel 로 보정
+      const rawName =
+        (line.racketType && String(line.racketType).trim()) ||
+        (line.racketLabel && String(line.racketLabel).trim()) ||
+        "";
 
-        const racketName = rawName || "";
+      const racketName = rawName || "";
 
-        return {
-          // key 용 ID – 기존 DB에 id가 있으면 그대로 쓰고, 없으면 index 기반으로 생성
-          id: String(line.id ?? `${index}`),
+      return {
+        // key 용 ID – 기존 DB에 id가 있으면 그대로 쓰고, 없으면 index 기반으로 생성
+        id: String(line.id ?? `${index}`),
 
-          // 라켓 이름: null 허용 (없을 수도 있으니)
-          racketLabel: racketName || null,
-          racketType: racketName, // 클라이언트에서 바로 쓸 수 있게 별도 필드 제공
+        // 라켓 이름: null 허용 (없을 수도 있으니)
+        racketLabel: racketName || null,
+        racketType: racketName, // 클라이언트에서 바로 쓸 수 있게 별도 필드 제공
 
-          // 어떤 스트링 상품을 장착하는지
-          stringProductId: line.stringProductId ?? "",
-          stringName: line.stringName ?? "",
+        // 어떤 스트링 상품을 장착하는지
+        stringProductId: line.stringProductId ?? "",
+        stringName: line.stringName ?? "",
 
-          // 메인/크로스 텐션
-          tensionMain: line.tensionMain ?? "",
-          tensionCross: line.tensionCross ?? "",
+        // 메인/크로스 텐션
+        tensionMain: line.tensionMain ?? "",
+        tensionCross: line.tensionCross ?? "",
 
-          // 라켓별 메모
-          note: line.note ?? "",
+        // 라켓별 메모
+        note: line.note ?? "",
 
-          // 한 자루당 장착비 – 숫자가 아니면 0으로 방어
-          mountingFee:
-            typeof line.mountingFee === "number" ? line.mountingFee : 0,
-        };
-      },
-    );
+        // 한 자루당 장착비 – 숫자가 아니면 0으로 방어
+        mountingFee: typeof line.mountingFee === "number" ? line.mountingFee : 0,
+      };
+    });
 
     // === 패키지 사용 정보 계산 ===
     // - 제출 시점 로직과 동일하게, 라켓 라인 개수를 사용 회차로 간주
-    const usingLinesForPackage =
-      Array.isArray(racketLines) && racketLines.length > 0;
+    const usingLinesForPackage = Array.isArray(racketLines) && racketLines.length > 0;
     const packageUseCount = usingLinesForPackage ? racketLines.length : 1;
 
     // 조건 없이 항상 packageInfo 객체 생성
@@ -991,9 +865,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       useCount: packageUseCount,
 
       // 패스 관련 정보 (있으면 값, 없으면 null)
-      passId: (app as any).packagePassId
-        ? String((app as any).packagePassId)
-        : null,
+      passId: (app as any).packagePassId ? String((app as any).packagePassId) : null,
       passTitle: null,
       packageSize: null,
       usedCount: null,
@@ -1014,10 +886,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
     const packageConsumptions = rawConsumptions.map((c) => ({
       id: c._id.toString(),
       passId: c.passId.toString(),
-      usedAt:
-        c.usedAt instanceof Date
-          ? c.usedAt.toISOString()
-          : new Date(c.usedAt).toISOString(),
+      usedAt: c.usedAt instanceof Date ? c.usedAt.toISOString() : new Date(c.usedAt).toISOString(),
       count: typeof c.count === "number" ? c.count : 1,
       reverted: !!c.reverted,
     }));
@@ -1042,30 +911,18 @@ export async function handleGetStringingApplication(req: Request, id: string) {
         }
       : (paymentSourceRaw.startsWith("order:") || app.orderId) && order
         ? buildLinkedPaymentFromDoc("order", order)
-        : (paymentSourceRaw.startsWith("rental:") || rentalObjectId) &&
-            linkedRental
+        : (paymentSourceRaw.startsWith("rental:") || rentalObjectId) && linkedRental
           ? buildLinkedPaymentFromDoc("rental", linkedRental)
           : {
               source: "application",
-              status:
-                typeof app.paymentStatus === "string"
-                  ? app.paymentStatus
-                  : null,
-              method:
-                typeof app.paymentMethod === "string"
-                  ? app.paymentMethod
-                  : null,
+              status: typeof app.paymentStatus === "string" ? app.paymentStatus : null,
+              method: typeof app.paymentMethod === "string" ? app.paymentMethod : null,
               provider: null,
               easyPayProvider: null,
               tid: null,
-              bank:
-                typeof app.shippingInfo?.bank === "string"
-                  ? app.shippingInfo.bank
-                  : null,
+              bank: typeof app.shippingInfo?.bank === "string" ? app.shippingInfo.bank : null,
               depositor:
-                typeof app.shippingInfo?.depositor === "string"
-                  ? app.shippingInfo.depositor
-                  : null,
+                typeof app.shippingInfo?.depositor === "string" ? app.shippingInfo.depositor : null,
               cardDisplayName: null,
               cardCompany: null,
               cardLabel: null,
@@ -1088,34 +945,20 @@ export async function handleGetStringingApplication(req: Request, id: string) {
             ? (app as any).userConfirmedAt
             : null,
       // 주문 cancelRequest도 한글/영문 혼재 가능 → 표준화해서 내려야 UI가 안 깨짐
-      orderCancelStatus:
-        normalizeCancelStatus(order?.cancelRequest?.status) ?? "none",
+      orderCancelStatus: normalizeCancelStatus(order?.cancelRequest?.status) ?? "none",
       orderStatus: order?.status ?? null,
       orderPaymentStatus: order?.paymentStatus ?? null,
       customer: {
-        name:
-          app.customer?.name ?? app.userSnapshot?.name ?? app.guestName ?? "-",
-        email:
-          app.customer?.email ??
-          app.userSnapshot?.email ??
-          app.guestEmail ??
-          "-",
-        phone:
-          app.customer?.phone ??
-          app.shippingInfo?.phone ??
-          app.guestPhone ??
-          "",
+        name: app.customer?.name ?? app.userSnapshot?.name ?? app.guestName ?? "-",
+        email: app.customer?.email ?? app.userSnapshot?.email ?? app.guestEmail ?? "-",
+        phone: app.customer?.phone ?? app.shippingInfo?.phone ?? app.guestPhone ?? "",
         address: app.customer?.address ?? app.shippingInfo?.address ?? "",
-        addressDetail:
-          app.customer?.addressDetail ?? app.shippingInfo?.addressDetail ?? "",
-        postalCode:
-          app.customer?.postalCode ?? app.shippingInfo?.postalCode ?? "",
+        addressDetail: app.customer?.addressDetail ?? app.shippingInfo?.addressDetail ?? "",
+        postalCode: app.customer?.postalCode ?? app.shippingInfo?.postalCode ?? "",
       },
       // Date/string 혼재 방어 (NextResponse.json에서 Date는 ISO로 직렬화되지만, 명시해두면 안전)
       requestedAt:
-        app.createdAt instanceof Date
-          ? app.createdAt.toISOString()
-          : (app.createdAt ?? null),
+        app.createdAt instanceof Date ? app.createdAt.toISOString() : (app.createdAt ?? null),
       desiredDateTime: app.desiredDateTime,
       status: app.status,
       paymentStatus: app.paymentStatus,
@@ -1134,15 +977,11 @@ export async function handleGetStringingApplication(req: Request, id: string) {
         stringTypes: Array.isArray(sd.stringTypes) ? sd.stringTypes : [],
         stringItems,
         racketLines,
-        ...(sd.customStringName
-          ? { customStringName: sd.customStringName }
-          : {}),
+        ...(sd.customStringName ? { customStringName: sd.customStringName } : {}),
       },
       // 방문 예약 슬롯 정보 (없으면 null)
       visitSlotCount:
-        typeof (app as any).visitSlotCount === "number"
-          ? (app as any).visitSlotCount
-          : null,
+        typeof (app as any).visitSlotCount === "number" ? (app as any).visitSlotCount : null,
       visitDurationMinutes:
         typeof (app as any).visitDurationMinutes === "number"
           ? (app as any).visitDurationMinutes
@@ -1182,39 +1021,19 @@ export async function handleGetStringingApplication(req: Request, id: string) {
 }
 
 // ================= PATCH (관리자용 수정) =================
-export async function handlePatchStringingApplication(
-  req: Request,
-  id: string,
-) {
+export async function handlePatchStringingApplication(req: Request, id: string) {
   try {
     const client = await clientPromise;
     const db = await getDb();
-    const {
-      name,
-      email,
-      phone,
-      address,
-      addressDetail,
-      postalCode,
-      depositor,
-      stringDetails,
-    } = await req.json();
+    const { name, email, phone, address, addressDetail, postalCode, depositor, stringDetails } =
+      await req.json();
 
     if (!ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { error: "Invalid application ID" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid application ID" }, { status: 400 });
     }
 
-    const app = await db
-      .collection("stringing_applications")
-      .findOne({ _id: new ObjectId(id) });
-    if (!app)
-      return NextResponse.json(
-        { error: "Application not found" },
-        { status: 404 },
-      );
+    const app = await db.collection("stringing_applications").findOne({ _id: new ObjectId(id) });
+    if (!app) return NextResponse.json({ error: "Application not found" }, { status: 404 });
 
     const appDoc = app as NonNullable<typeof app>;
 
@@ -1258,9 +1077,7 @@ export async function handlePatchStringingApplication(
         ...(addressDetail ? { addressDetail } : {}),
         ...(postalCode ? { postalCode } : {}),
       };
-      setFields.searchEmailLower = normalizeEmailForSearch(
-        setFields.customer.email,
-      );
+      setFields.searchEmailLower = normalizeEmailForSearch(setFields.customer.email);
       pushHistory.push({
         status: "고객정보수정",
         date: new Date(),
@@ -1289,9 +1106,7 @@ export async function handlePatchStringingApplication(
 
       // 날짜/시간
       if (hasTimeChange) {
-        const [date, time] = String(stringDetails.desiredDateTime ?? "").split(
-          "T",
-        );
+        const [date, time] = String(stringDetails.desiredDateTime ?? "").split("T");
         if (date && time) {
           setFields["stringDetails.preferredDate"] = date;
           setFields["stringDetails.preferredTime"] = time;
@@ -1301,17 +1116,14 @@ export async function handlePatchStringingApplication(
 
       // 스트링 타입 & 커스텀 이름
       if (hasTypesChange) {
-        const prevTypes: string[] = Array.isArray(
-          appDoc?.stringDetails?.stringTypes,
-        )
+        const prevTypes: string[] = Array.isArray(appDoc?.stringDetails?.stringTypes)
           ? appDoc.stringDetails.stringTypes
           : []; //
         const types: string[] = Array.isArray(stringDetails.stringTypes)
           ? stringDetails.stringTypes
           : prevTypes;
         setFields["stringDetails.stringTypes"] = types;
-        setFields["stringDetails.customStringName"] =
-          stringDetails.customStringName ?? null;
+        setFields["stringDetails.customStringName"] = stringDetails.customStringName ?? null;
       }
 
       // 라켓 종류
@@ -1321,9 +1133,7 @@ export async function handlePatchStringingApplication(
 
       // stringItems 재계산
       if (hasTimeChange || hasTypesChange || hasCustomNameChange) {
-        const typesForItems: string[] = Array.isArray(
-          stringDetails?.stringTypes,
-        )
+        const typesForItems: string[] = Array.isArray(stringDetails?.stringTypes)
           ? stringDetails.stringTypes
           : Array.isArray(appDoc?.stringDetails?.stringTypes)
             ? appDoc.stringDetails.stringTypes
@@ -1341,16 +1151,10 @@ export async function handlePatchStringingApplication(
                 quantity: 1, //
               };
             }
-            const mountingFee = await calcStringingMountingFeeByProductId(
-              db,
-              prodId,
-            );
+            const mountingFee = await calcStringingMountingFeeByProductId(db, prodId);
             const prod = await db
               .collection("products")
-              .findOne(
-                { _id: new ObjectId(prodId) },
-                { projection: { name: 1 } },
-              );
+              .findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
             return {
               id: prodId,
               name: prod?.name ?? "알 수 없는 상품",
@@ -1377,9 +1181,7 @@ export async function handlePatchStringingApplication(
         // 스트링 요금(newItems) 합산하여 totalPrice 자동 설정
         // 유틸 기준으로 최종 금액 1회 확정
         if (hasTypesChange || hasCustomNameChange) {
-          const typesForTotal: string[] = Array.isArray(
-            setFields["stringDetails.stringTypes"],
-          )
+          const typesForTotal: string[] = Array.isArray(setFields["stringDetails.stringTypes"])
             ? setFields["stringDetails.stringTypes"]
             : (appDoc.stringDetails?.stringTypes ?? []);
 
@@ -1392,12 +1194,7 @@ export async function handlePatchStringingApplication(
           });
         }
       }
-      if (
-        hasTimeChange ||
-        hasTypesChange ||
-        hasCustomNameChange ||
-        hasRacketChange
-      ) {
+      if (hasTimeChange || hasTypesChange || hasCustomNameChange || hasRacketChange) {
         pushHistory.push({
           status: "스트링 정보 수정",
           date: new Date(),
@@ -1427,10 +1224,7 @@ export async function handlePatchStringingApplication(
       } as any);
 
     if (result.matchedCount === 0) {
-      return NextResponse.json(
-        { error: "Application not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Application not found" }, { status: 404 });
     }
 
     // 동기화: 연결된 일반 주문서가 있으면 고객 정보 / 입금자명 반영
@@ -1483,16 +1277,10 @@ export async function handlePatchStringingApplication(
     return NextResponse.json({ success: true });
   } catch (e: any) {
     if (e?.status) {
-      return NextResponse.json(
-        { error: e.message ?? "요청 처리 실패" },
-        { status: e.status },
-      );
+      return NextResponse.json({ error: e.message ?? "요청 처리 실패" }, { status: e.status });
     }
     console.error("[PATCH stringing_application]", e);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -1510,37 +1298,23 @@ export async function handleUpdateApplicationStatus(
 
   // URL 파라미터로부터 신청 ID 추출
   const { id } = context.params;
-  if (!ObjectId.isValid(id))
-    return new NextResponse("Invalid ID", { status: 400 }); // MongoDB ObjectId 형식 검증
+  if (!ObjectId.isValid(id)) return new NextResponse("Invalid ID", { status: 400 }); // MongoDB ObjectId 형식 검증
 
   // 요청 본문에서 status 값 추출
   const { status: statusStr } = await req.json(); //   변수명 명확화
   if (!statusStr || typeof statusStr !== "string") {
-    return NextResponse.json(
-      { error: "상태값 누락 또는 형식 오류" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "상태값 누락 또는 형식 오류" }, { status: 400 });
   }
 
   //   상태 유니온 타입 보장
-  const STATUS_VALUES = [
-    "draft",
-    "검토 중",
-    "접수완료",
-    "작업 중",
-    "교체완료",
-    "취소",
-  ] as const; //
+  const STATUS_VALUES = ["draft", "검토 중", "접수완료", "작업 중", "교체완료", "취소"] as const; //
   type AppStatus = (typeof STATUS_VALUES)[number]; //
   const toAppStatus = (s: string): AppStatus | null =>
     (STATUS_VALUES as readonly string[]).includes(s) ? (s as AppStatus) : null; //
   const status = toAppStatus(statusStr); //
   if (!status) {
     //
-    return NextResponse.json(
-      { error: "허용되지 않는 상태값입니다." },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "허용되지 않는 상태값입니다." }, { status: 400 });
   } //
 
   // MongoDB 연결
@@ -1552,10 +1326,7 @@ export async function handleUpdateApplicationStatus(
     .collection("stringing_applications")
     .findOne({ _id: new ObjectId(id) });
   if (!beforeAppDoc) {
-    return NextResponse.json(
-      { error: "신청서를 찾을 수 없습니다." },
-      { status: 404 },
-    );
+    return NextResponse.json({ error: "신청서를 찾을 수 없습니다." }, { status: 404 });
   }
   const linkedPaymentSource = String(beforeAppDoc.paymentSource ?? "").trim();
   if (
@@ -1588,11 +1359,7 @@ export async function handleUpdateApplicationStatus(
     setFields: {} as Record<string, unknown>,
   };
   if (willBeCanceled && !wasCanceled) {
-    variantRestore = await restoreStringingVariantStockIfNeeded(
-      db,
-      beforeAppDoc,
-      now,
-    );
+    variantRestore = await restoreStringingVariantStockIfNeeded(db, beforeAppDoc, now);
     if (variantRestore.errorResponse) {
       return variantRestore.errorResponse;
     }
@@ -1620,15 +1387,9 @@ export async function handleUpdateApplicationStatus(
   // 상태 + 이력 함께 업데이트
   const colorRestore =
     status === "취소"
-      ? await restoreStringingColorStockIfNeeded(
-          db,
-          beforeAppDoc,
-          now,
-          "status_changed_to_cancel",
-        )
+      ? await restoreStringingColorStockIfNeeded(db, beforeAppDoc, now, "status_changed_to_cancel")
       : { setFields: {} };
-  if ((colorRestore as any).errorResponse)
-    return (colorRestore as any).errorResponse;
+  if ((colorRestore as any).errorResponse) return (colorRestore as any).errorResponse;
   const updateOps: any = {
     $set: {
       status,
@@ -1650,20 +1411,12 @@ export async function handleUpdateApplicationStatus(
 
   // 신청서를 찾지 못했을 경우
   if (result.matchedCount === 0) {
-    return NextResponse.json(
-      { error: "신청서를 찾을 수 없습니다." },
-      { status: 404 },
-    );
+    return NextResponse.json({ error: "신청서를 찾을 수 없습니다." }, { status: 404 });
   }
 
-  const appDoc = await db
-    .collection("stringing_applications")
-    .findOne({ _id: new ObjectId(id) });
+  const appDoc = await db.collection("stringing_applications").findOne({ _id: new ObjectId(id) });
   if (!appDoc) {
-    return NextResponse.json(
-      { error: "신청서를 찾을 수 없습니다." },
-      { status: 404 },
-    );
+    return NextResponse.json({ error: "신청서를 찾을 수 없습니다." }, { status: 404 });
   }
 
   await appendAdminAudit(
@@ -1676,16 +1429,12 @@ export async function handleUpdateApplicationStatus(
       diff: {
         before: {
           status: beforeAppDoc?.status ?? null,
-          paymentStatus: normalizeLinkedPaymentStatus(
-            beforeAppDoc?.paymentStatus ?? null,
-          ),
+          paymentStatus: normalizeLinkedPaymentStatus(beforeAppDoc?.paymentStatus ?? null),
           serviceType: beforeAppDoc?.serviceType ?? null,
         },
         after: {
           status,
-          paymentStatus: normalizeLinkedPaymentStatus(
-            appDoc?.paymentStatus ?? null,
-          ),
+          paymentStatus: normalizeLinkedPaymentStatus(appDoc?.paymentStatus ?? null),
           serviceType: appDoc?.serviceType ?? null,
         },
         metadata: {
@@ -1725,10 +1474,7 @@ export async function handleStringingCancelRequest(
 
     const appDoc = await col.findOne({ _id: new ObjectId(id) });
     if (!appDoc) {
-      return NextResponse.json(
-        { error: "신청서를 찾을 수 없습니다." },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "신청서를 찾을 수 없습니다." }, { status: 404 });
     }
 
     const paymentSourceRaw = String((appDoc as any).paymentSource ?? "").trim();
@@ -1759,18 +1505,13 @@ export async function handleStringingCancelRequest(
       reasonText?: string;
     };
 
-    const paymentContext = await resolveStringingCancelPaymentContext(
-      db,
-      appDoc,
-    );
+    const paymentContext = await resolveStringingCancelPaymentContext(db, appDoc);
     const needsRefundAccount =
       !paymentContext.packageApplied &&
       paymentContext.status === "결제완료" &&
       paymentContext.provider !== "nicepay";
 
-    let refundAccount:
-      | { bank: string; account: string; holder: string }
-      | undefined;
+    let refundAccount: { bank: string; account: string; holder: string } | undefined;
     if (needsRefundAccount) {
       const parsedRefundAccount = RefundAccountSchema.safeParse(
         (body as any)?.refundAccount ?? null,
@@ -1843,9 +1584,7 @@ export async function handleStringingCancelRequest(
         db,
         {
           type: "stringing_cancel_request_created",
-          actorId: (appDoc as any).userId
-            ? String((appDoc as any).userId)
-            : undefined,
+          actorId: (appDoc as any).userId ? String((appDoc as any).userId) : undefined,
           targetId: id,
           message: "교체서비스 신청 취소 요청 생성",
           diff: {
@@ -1854,9 +1593,7 @@ export async function handleStringingCancelRequest(
             actorRole: "user",
             reasonCode: nextCancelRequest.reasonCode,
             reasonTextPreview: toReasonPreview(nextCancelRequest.reasonText),
-            refundAccountMasked: maskRefundAccount(
-              nextCancelRequest.refundAccount,
-            ),
+            refundAccountMasked: maskRefundAccount(nextCancelRequest.refundAccount),
             prevCancelStatus: appDoc.cancelRequest?.status ?? null,
             nextCancelStatus: nextCancelRequest.status,
             applicationStatus: appDoc.status ?? null,
@@ -1882,10 +1619,7 @@ export async function handleStringingCancelRequest(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[handleStringingCancelRequest] error", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -1910,10 +1644,7 @@ export async function handleStringingCancelApprove(
 
     const appDoc: any = await col.findOne({ _id });
     if (!appDoc) {
-      return NextResponse.json(
-        { error: "신청서를 찾을 수 없습니다." },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "신청서를 찾을 수 없습니다." }, { status: 404 });
     }
     if (appDoc.orderId || appDoc.rentalId) {
       return NextResponse.json(
@@ -1928,28 +1659,13 @@ export async function handleStringingCancelApprove(
     // 취소 요청이 없는 경우 / 이미 처리된 경우 방어
     const cur = normalizeCancelStatus(appDoc.cancelRequest?.status);
     if (!appDoc.cancelRequest || cur !== "requested") {
-      return NextResponse.json(
-        { error: "처리할 취소 요청이 없습니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "처리할 취소 요청이 없습니다." }, { status: 400 });
     }
 
     const now = new Date();
-    const variantRestore = await restoreStringingVariantStockIfNeeded(
-      db,
-      appDoc,
-      now,
-    );
-    const gaugeRestore = await restoreStringingGaugeStockIfNeeded(
-      db,
-      appDoc,
-      now,
-    );
-    const colorRestore = await restoreStringingColorStockIfNeeded(
-      db,
-      appDoc,
-      now,
-    );
+    const variantRestore = await restoreStringingVariantStockIfNeeded(db, appDoc, now);
+    const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, appDoc, now);
+    const colorRestore = await restoreStringingColorStockIfNeeded(db, appDoc, now);
     if (variantRestore.errorResponse) {
       return variantRestore.errorResponse;
     }
@@ -1971,10 +1687,7 @@ export async function handleStringingCancelApprove(
         await revertConsumption(db, appDoc.packagePassId as ObjectId, _id);
       } catch (e) {
         // 패키지 복원 실패해도 취소 자체는 진행
-        console.error(
-          "[handleStringingCancelApprove] revertConsumption error",
-          e,
-        );
+        console.error("[handleStringingCancelApprove] revertConsumption error", e);
       }
     }
 
@@ -2012,9 +1725,7 @@ export async function handleStringingCancelApprove(
           },
           reasonCode: appDoc.cancelRequest?.reasonCode ?? null,
           reasonTextPreview: toReasonPreview(appDoc.cancelRequest?.reasonText),
-          refundAccountMasked: maskRefundAccount(
-            appDoc.cancelRequest?.refundAccount,
-          ),
+          refundAccountMasked: maskRefundAccount(appDoc.cancelRequest?.refundAccount),
           prevCancelStatus: appDoc.cancelRequest?.status ?? null,
           nextCancelStatus: "approved",
           applicationStatus: "취소",
@@ -2041,19 +1752,12 @@ export async function handleStringingCancelApprove(
 
     return NextResponse.json({
       success: true,
-      gaugeStockRestore: gaugeRestore.restored
-        ? "restored"
-        : gaugeRestore.skippedReason,
-      colorStockRestore: colorRestore.restored
-        ? "restored"
-        : colorRestore.skippedReason,
+      gaugeStockRestore: gaugeRestore.restored ? "restored" : gaugeRestore.skippedReason,
+      colorStockRestore: colorRestore.restored ? "restored" : colorRestore.skippedReason,
     });
   } catch (error) {
     console.error("[handleStringingCancelApprove] error", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -2077,18 +1781,12 @@ export async function handleStringingCancelReject(
 
     const appDoc: any = await col.findOne({ _id });
     if (!appDoc) {
-      return NextResponse.json(
-        { error: "신청서를 찾을 수 없습니다." },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "신청서를 찾을 수 없습니다." }, { status: 404 });
     }
 
     const cur = normalizeCancelStatus(appDoc.cancelRequest?.status);
     if (!appDoc.cancelRequest || cur !== "requested") {
-      return NextResponse.json(
-        { error: "처리할 취소 요청이 없습니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "처리할 취소 요청이 없습니다." }, { status: 400 });
     }
 
     // 관리자 거절 사유(선택)를 body에서 받기
@@ -2134,12 +1832,8 @@ export async function handleStringingCancelReject(
             },
           },
           reasonCode: appDoc.cancelRequest?.reasonCode ?? null,
-          reasonTextPreview: toReasonPreview(
-            trimmed ?? appDoc.cancelRequest?.reasonText,
-          ),
-          refundAccountMasked: maskRefundAccount(
-            appDoc.cancelRequest?.refundAccount,
-          ),
+          reasonTextPreview: toReasonPreview(trimmed ?? appDoc.cancelRequest?.reasonText),
+          refundAccountMasked: maskRefundAccount(appDoc.cancelRequest?.refundAccount),
           prevCancelStatus: appDoc.cancelRequest?.status ?? null,
           nextCancelStatus: "rejected",
           applicationStatus: appDoc.status ?? null,
@@ -2167,10 +1861,7 @@ export async function handleStringingCancelReject(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[handleStringingCancelReject] error", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -2184,9 +1875,7 @@ export async function handleUpdateShippingInfo(
     const body = await req.json();
 
     const db = await getDb();
-    const app = await db
-      .collection("stringing_applications")
-      .findOne({ _id: new ObjectId(id) });
+    const app = await db.collection("stringing_applications").findOne({ _id: new ObjectId(id) });
 
     if (!app) {
       return new NextResponse("신청서를 찾을 수 없습니다.", { status: 404 });
@@ -2197,27 +1886,14 @@ export async function handleUpdateShippingInfo(
       return new NextResponse("배송 정보가 필요합니다.", { status: 400 });
     }
 
-    const normalizeMethod = (
-      raw: unknown,
-    ): "delivery" | "quick" | "visit" | null => {
+    const normalizeMethod = (raw: unknown): "delivery" | "quick" | "visit" | null => {
       const s = String(raw ?? "")
         .trim()
         .toLowerCase();
       if (!s) return null;
-      if (["visit", "pickup", "방문", "방문수령", "매장"].includes(s))
-        return "visit";
+      if (["visit", "pickup", "방문", "방문수령", "매장"].includes(s)) return "visit";
       if (["quick", "퀵", "퀵배송"].includes(s)) return "quick";
-      if (
-        [
-          "delivery",
-          "courier",
-          "parcel",
-          "ship",
-          "shipping",
-          "택배",
-          "택배배송",
-        ].includes(s)
-      )
+      if (["delivery", "courier", "parcel", "ship", "shipping", "택배", "택배배송"].includes(s))
         return "delivery";
       return null;
     };
@@ -2238,15 +1914,12 @@ export async function handleUpdateShippingInfo(
       : null;
 
     const deriveVisitContext = (doc: any, order: any): boolean => {
-      const collectionRaw =
-        doc?.collectionMethod ?? doc?.shippingInfo?.collectionMethod;
+      const collectionRaw = doc?.collectionMethod ?? doc?.shippingInfo?.collectionMethod;
       if (normalizeCollection(collectionRaw) === "visit") return true;
 
       const linkedPickup = (() => {
         if (!order) return null;
-        const pickup = normalizeServicePickupMethod(
-          (order as any).servicePickupMethod,
-        );
+        const pickup = normalizeServicePickupMethod((order as any).servicePickupMethod);
         const codeFromPickup =
           pickup === "SHOP_VISIT"
             ? "visit"
@@ -2257,9 +1930,7 @@ export async function handleUpdateShippingInfo(
           (order as any).shippingInfo?.shippingMethod ??
           (order as any).shippingInfo?.deliveryMethod ??
           null;
-        return (
-          normalizeOrderShippingMethod(shippingRaw) ?? codeFromPickup ?? null
-        );
+        return normalizeOrderShippingMethod(shippingRaw) ?? codeFromPickup ?? null;
       })();
       if (linkedPickup === "visit") return true;
 
@@ -2269,9 +1940,7 @@ export async function handleUpdateShippingInfo(
     };
 
     const isOriginalVisitContext = deriveVisitContext(app as any, linkedOrder);
-    const nextMethodNormalized = normalizeMethod(
-      (newShippingInfo as any)?.shippingMethod,
-    );
+    const nextMethodNormalized = normalizeMethod((newShippingInfo as any)?.shippingMethod);
 
     if (isOriginalVisitContext) {
       if (nextMethodNormalized && nextMethodNormalized !== "visit") {
@@ -2311,10 +1980,7 @@ export async function handleUpdateShippingInfo(
       const courierItem = findCourierCatalogItem(normalizedCourier);
 
       if (!courierItem) {
-        return NextResponse.json(
-          { success: false, message: "INVALID_COURIER" },
-          { status: 400 },
-        );
+        return NextResponse.json({ success: false, message: "INVALID_COURIER" }, { status: 400 });
       }
 
       if (courierItem.code === "ems") {
@@ -2327,9 +1993,7 @@ export async function handleUpdateShippingInfo(
         );
       }
 
-      const normalizedTracking = normalizeTrackingNumber(
-        invoice.trackingNumber,
-      );
+      const normalizedTracking = normalizeTrackingNumber(invoice.trackingNumber);
 
       if (!normalizedTracking) {
         return NextResponse.json(
@@ -2386,12 +2050,8 @@ export async function handleUpdateShippingInfo(
     const historyEntries: HistoryRecord[] = [];
 
     // 매장 발송 정보(방식/예정일/운송장) 통합 로그
-    const prevMethod = (prevShippingInfo.shippingMethod ?? null) as
-      | string
-      | null;
-    const nextMethod = (mergedShippingInfo.shippingMethod ?? null) as
-      | string
-      | null;
+    const prevMethod = (prevShippingInfo.shippingMethod ?? null) as string | null;
+    const nextMethod = (mergedShippingInfo.shippingMethod ?? null) as string | null;
 
     const prevEst = (prevShippingInfo.estimatedDate ?? null) as string | null;
     const nextEst = (mergedShippingInfo.estimatedDate ?? null) as string | null;
@@ -2401,10 +2061,8 @@ export async function handleUpdateShippingInfo(
     const nextTrackingStore =
       ((nextInvoice.trackingNumber as string | undefined) || "").trim() || null;
 
-    const prevCourierStore =
-      ((prevInvoice.courier as string | undefined) || "").trim() || null;
-    const nextCourierStore =
-      ((nextInvoice.courier as string | undefined) || "").trim() || null;
+    const prevCourierStore = ((prevInvoice.courier as string | undefined) || "").trim() || null;
+    const nextCourierStore = ((nextInvoice.courier as string | undefined) || "").trim() || null;
 
     const changedMethod = prevMethod !== nextMethod;
     const changedEst = prevEst !== nextEst;
@@ -2509,9 +2167,7 @@ export async function handleUpdateShippingInfo(
       };
     }
 
-    await db
-      .collection("stringing_applications")
-      .updateOne({ _id: new ObjectId(id) }, updateDoc);
+    await db.collection("stringing_applications").updateOne({ _id: new ObjectId(id) }, updateDoc);
 
     // 연결된 주문에도 동일 병합
     if ((app as any).orderId) {
@@ -2521,20 +2177,15 @@ export async function handleUpdateShippingInfo(
         ...newShippingInfo,
       };
 
-      const linkedOrderStatusRaw = String(
-        (linkedOrder as any)?.status ?? "",
-      ).trim();
+      const linkedOrderStatusRaw = String((linkedOrder as any)?.status ?? "").trim();
       const linkedOrderStatus = normalizeOrderStatus(linkedOrderStatusRaw);
       const linkedOrderPaymentStatus = normalizePaymentStatus(
         String(
-          (linkedOrder as any)?.paymentStatus ??
-            (linkedOrder as any)?.paymentInfo?.status ??
-            "",
+          (linkedOrder as any)?.paymentStatus ?? (linkedOrder as any)?.paymentInfo?.status ?? "",
         ).trim(),
       );
       const linkedOrderPaid =
-        linkedOrderPaymentStatus === "결제완료" ||
-        linkedOrderStatus === "결제완료";
+        linkedOrderPaymentStatus === "결제완료" || linkedOrderStatus === "결제완료";
       const shouldAutoTransitLinkedOrder =
         !isOriginalVisitContext &&
         isStoreRegister &&
@@ -2567,10 +2218,7 @@ export async function handleUpdateShippingInfo(
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error(
-      "[PATCH /api/applications/stringing/[id]/shipping] error:",
-      err,
-    );
+    console.error("[PATCH /api/applications/stringing/[id]/shipping] error:", err);
     return new NextResponse("서버 오류 발생", { status: 500 });
   }
 }
@@ -2588,10 +2236,7 @@ export async function handleGetApplicationHistory(
   const skip = (page - 1) * limit;
 
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json(
-      { error: "Invalid application ID" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Invalid application ID" }, { status: 400 });
   }
 
   const client = await clientPromise;
@@ -2601,16 +2246,12 @@ export async function handleGetApplicationHistory(
     .findOne({ _id: new ObjectId(id) }, { projection: { history: 1 } });
 
   if (!application) {
-    return NextResponse.json(
-      { error: "Application not found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ error: "Application not found" }, { status: 404 });
   }
 
   // 날짜 내림차순 정렬
   const allLogs = (application.history || []).sort(
-    (a: HistoryItem, b: HistoryItem) =>
-      new Date(b.date).getTime() - new Date(a.date).getTime(),
+    (a: HistoryItem, b: HistoryItem) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
 
   // 페이징
@@ -2668,10 +2309,9 @@ export async function handleApplicationCancelRequest(
       }
     } else {
       // userId 없는 신청서는 여기서 취소 요청 허용하지 않음 (운영 정책에 따라 조정 가능)
-      return new NextResponse(
-        "게스트 신청서는 마이페이지에서 취소 요청을 할 수 없습니다.",
-        { status: 403 },
-      );
+      return new NextResponse("게스트 신청서는 마이페이지에서 취소 요청을 할 수 없습니다.", {
+        status: 403,
+      });
     }
 
     // 5) 비즈니스 룰 체크
@@ -2687,9 +2327,7 @@ export async function handleApplicationCancelRequest(
     const trackingCandidates: string[] = [];
 
     const t1 = shippingInfo?.trackingNumber;
-    const t2 =
-      shippingInfo?.selfShip?.trackingNumber ??
-      shippingInfo?.selfShip?.trackingNo;
+    const t2 = shippingInfo?.selfShip?.trackingNumber ?? shippingInfo?.selfShip?.trackingNo;
 
     if (typeof t1 === "string") trackingCandidates.push(t1.trim());
     if (typeof t2 === "string") trackingCandidates.push(t2.trim());
@@ -2697,10 +2335,9 @@ export async function handleApplicationCancelRequest(
     const hasTracking = trackingCandidates.some((v) => v.length > 0);
 
     if (hasTracking) {
-      return new NextResponse(
-        "이미 배송이 진행 중이어서 취소 요청을 할 수 없습니다.",
-        { status: 400 },
-      );
+      return new NextResponse("이미 배송이 진행 중이어서 취소 요청을 할 수 없습니다.", {
+        status: 400,
+      });
     }
 
     // 6) 요청 body 에서 사유 파싱
@@ -2716,22 +2353,15 @@ export async function handleApplicationCancelRequest(
     const reasonText: string | undefined =
       typeof body.reasonText === "string" ? body.reasonText.trim() : undefined;
 
-    const paymentContext = await resolveStringingCancelPaymentContext(
-      db,
-      existing,
-    );
+    const paymentContext = await resolveStringingCancelPaymentContext(db, existing);
     const needsRefundAccount =
       !paymentContext.packageApplied &&
       paymentContext.status === "결제완료" &&
       paymentContext.provider !== "nicepay";
 
-    let refundAccount:
-      | { bank: string; account: string; holder: string }
-      | undefined;
+    let refundAccount: { bank: string; account: string; holder: string } | undefined;
     if (needsRefundAccount) {
-      const parsedRefundAccount = RefundAccountSchema.safeParse(
-        body.refundAccount ?? null,
-      );
+      const parsedRefundAccount = RefundAccountSchema.safeParse(body.refundAccount ?? null);
       if (!parsedRefundAccount.success) {
         return NextResponse.json(
           {
@@ -2776,10 +2406,7 @@ export async function handleApplicationCancelRequest(
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error(
-      "POST /api/applications/stringing/[id]/cancel-request 오류:",
-      err,
-    );
+    console.error("POST /api/applications/stringing/[id]/cancel-request 오류:", err);
     return new NextResponse("서버 오류가 발생했습니다.", { status: 500 });
   }
 }
@@ -2825,10 +2452,9 @@ export async function handleApplicationCancelRequestWithdraw(
         });
       }
     } else {
-      return new NextResponse(
-        "게스트 신청서는 마이페이지에서 취소 요청을 철회할 수 없습니다.",
-        { status: 403 },
-      );
+      return new NextResponse("게스트 신청서는 마이페이지에서 취소 요청을 철회할 수 없습니다.", {
+        status: 403,
+      });
     }
 
     // ── 비즈니스 룰 ──
@@ -2842,9 +2468,7 @@ export async function handleApplicationCancelRequestWithdraw(
     const trackingCandidates: string[] = [];
 
     const t1 = shippingInfo?.trackingNumber;
-    const t2 =
-      shippingInfo?.selfShip?.trackingNumber ??
-      shippingInfo?.selfShip?.trackingNo;
+    const t2 = shippingInfo?.selfShip?.trackingNumber ?? shippingInfo?.selfShip?.trackingNo;
 
     if (typeof t1 === "string") trackingCandidates.push(t1.trim());
     if (typeof t2 === "string") trackingCandidates.push(t2.trim());
@@ -2852,10 +2476,9 @@ export async function handleApplicationCancelRequestWithdraw(
     const hasTracking = trackingCandidates.some((v) => v.length > 0);
 
     if (hasTracking) {
-      return new NextResponse(
-        "이미 배송이 진행 중이어서 취소 요청을 철회할 수 없습니다.",
-        { status: 400 },
-      );
+      return new NextResponse("이미 배송이 진행 중이어서 취소 요청을 철회할 수 없습니다.", {
+        status: 400,
+      });
     }
 
     // 현재 cancelRequest 상태 확인
@@ -2863,10 +2486,9 @@ export async function handleApplicationCancelRequestWithdraw(
     const currentStatus = currentCancel.status;
 
     if (currentStatus !== "requested" && currentStatus !== "요청") {
-      return new NextResponse(
-        "현재는 취소 요청 상태가 아니어서 철회할 수 없습니다.",
-        { status: 400 },
-      );
+      return new NextResponse("현재는 취소 요청 상태가 아니어서 철회할 수 없습니다.", {
+        status: 400,
+      });
     }
 
     const now = new Date();
@@ -2890,10 +2512,7 @@ export async function handleApplicationCancelRequestWithdraw(
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error(
-      "POST /api/applications/stringing/[id]/cancel-request-withdraw 오류:",
-      err,
-    );
+    console.error("POST /api/applications/stringing/[id]/cancel-request-withdraw 오류:", err);
     return new NextResponse("서버 오류가 발생했습니다.", { status: 500 });
   }
 }
@@ -2937,8 +2556,7 @@ export async function handleApplicationCancelApprove(
       .filter(Boolean);
 
     const isAdmin =
-      payload.role === "admin" ||
-      (payload.email && adminList.includes(payload.email));
+      payload.role === "admin" || (payload.email && adminList.includes(payload.email));
     if (!isAdmin) {
       return new NextResponse("관리자만 신청 취소를 승인할 수 있습니다.", {
         status: 403,
@@ -2952,28 +2570,15 @@ export async function handleApplicationCancelApprove(
 
     const currentCancel = existing.cancelRequest ?? {};
     if (currentCancel.status !== "requested") {
-      return new NextResponse(
-        "현재는 취소 요청 상태가 아니어서 승인할 수 없습니다.",
-        { status: 400 },
-      );
+      return new NextResponse("현재는 취소 요청 상태가 아니어서 승인할 수 없습니다.", {
+        status: 400,
+      });
     }
 
     const now = new Date();
-    const variantRestore = await restoreStringingVariantStockIfNeeded(
-      db,
-      existing,
-      now,
-    );
-    const gaugeRestore = await restoreStringingGaugeStockIfNeeded(
-      db,
-      existing,
-      now,
-    );
-    const colorRestore = await restoreStringingColorStockIfNeeded(
-      db,
-      existing,
-      now,
-    );
+    const variantRestore = await restoreStringingVariantStockIfNeeded(db, existing, now);
+    const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, existing, now);
+    const colorRestore = await restoreStringingColorStockIfNeeded(db, existing, now);
     if (variantRestore.errorResponse) {
       return variantRestore.errorResponse;
     }
@@ -3010,28 +2615,18 @@ export async function handleApplicationCancelApprove(
       try {
         await revertConsumption(db, existing.packagePassId as ObjectId, _id);
       } catch (err) {
-        console.error(
-          "[handleApplicationCancelApprove] revertConsumption error",
-          err,
-        );
+        console.error("[handleApplicationCancelApprove] revertConsumption error", err);
         // 복원 실패해도 취소 자체는 유지
       }
     }
 
     return NextResponse.json({
       ok: true,
-      gaugeStockRestore: gaugeRestore.restored
-        ? "restored"
-        : gaugeRestore.skippedReason,
-      colorStockRestore: colorRestore.restored
-        ? "restored"
-        : colorRestore.skippedReason,
+      gaugeStockRestore: gaugeRestore.restored ? "restored" : gaugeRestore.skippedReason,
+      colorStockRestore: colorRestore.restored ? "restored" : colorRestore.skippedReason,
     });
   } catch (err) {
-    console.error(
-      "POST /api/applications/stringing/[id]/cancel-approve 오류:",
-      err,
-    );
+    console.error("POST /api/applications/stringing/[id]/cancel-approve 오류:", err);
     return new NextResponse("서버 오류가 발생했습니다.", { status: 500 });
   }
 }
@@ -3075,8 +2670,7 @@ export async function handleApplicationCancelReject(
       .filter(Boolean);
 
     const isAdmin =
-      payload.role === "admin" ||
-      (payload.email && adminList.includes(payload.email));
+      payload.role === "admin" || (payload.email && adminList.includes(payload.email));
     if (!isAdmin) {
       return new NextResponse("관리자만 신청 취소를 거절할 수 있습니다.", {
         status: 403,
@@ -3086,10 +2680,9 @@ export async function handleApplicationCancelReject(
     // ── 비즈니스 룰 ──
     const currentCancel = existing.cancelRequest ?? {};
     if (currentCancel.status !== "requested") {
-      return new NextResponse(
-        "현재는 취소 요청 상태가 아니어서 거절할 수 없습니다.",
-        { status: 400 },
-      );
+      return new NextResponse("현재는 취소 요청 상태가 아니어서 거절할 수 없습니다.", {
+        status: 400,
+      });
     }
 
     const now = new Date();
@@ -3126,10 +2719,7 @@ export async function handleApplicationCancelReject(
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error(
-      "POST /api/applications/stringing/[id]/cancel-reject 오류:",
-      err,
-    );
+    console.error("POST /api/applications/stringing/[id]/cancel-reject 오류:", err);
     return new NextResponse("서버 오류가 발생했습니다.", { status: 500 });
   }
 }
@@ -3161,9 +2751,7 @@ export async function handleGetApplicationList() {
     const applications = await Promise.all(
       rawList.map(async (doc) => {
         const details: any = (doc as any).stringDetails ?? {};
-        const typeIds: string[] = Array.isArray(details.stringTypes)
-          ? details.stringTypes
-          : [];
+        const typeIds: string[] = Array.isArray(details.stringTypes) ? details.stringTypes : [];
 
         // 스트링 이름 목록 생성 (커스텀/상품명 혼합)
         const names = await Promise.all(
@@ -3173,10 +2761,7 @@ export async function handleGetApplicationList() {
             }
             const prod = await db
               .collection("products")
-              .findOne(
-                { _id: new ObjectId(prodId) },
-                { projection: { name: 1 } },
-              );
+              .findOne({ _id: new ObjectId(prodId) }, { projection: { name: 1 } });
             return (prod?.name as string) ?? "알 수 없는 스트링";
           }),
         );
@@ -3186,8 +2771,7 @@ export async function handleGetApplicationList() {
 
         let stringSummary: string | undefined;
         if (primaryName) {
-          stringSummary =
-            kinds <= 1 ? primaryName : `${primaryName} 외 ${kinds - 1}종`;
+          stringSummary = kinds <= 1 ? primaryName : `${primaryName} 외 ${kinds - 1}종`;
         }
 
         return {
@@ -3202,10 +2786,7 @@ export async function handleGetApplicationList() {
   } catch (err) {
     console.error("신청 목록 조회 오류:", err);
     //  에러 발생 시 500 상태와 메시지 반환
-    return NextResponse.json(
-      { message: "목록을 불러올 수 없습니다." },
-      { status: 500 },
-    );
+    return NextResponse.json({ message: "목록을 불러올 수 없습니다." }, { status: 500 });
   }
 }
 
@@ -3220,20 +2801,14 @@ export async function handleGetReservedTimeSlots(req: Request) {
     const isValidDate = (s: string | null | undefined): s is string =>
       typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
     if (!isValidDate(date)) {
-      return NextResponse.json(
-        { message: "유효하지 않은 날짜입니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "유효하지 않은 날짜입니다." }, { status: 400 });
     }
 
     const db = (await clientPromise).db();
 
     const capRaw = searchParams.get("cap");
     const cap = Number(capRaw);
-    const capCount = Math.max(
-      1,
-      Math.floor((Number.isNaN(cap) ? 1 : cap) || 1),
-    );
+    const capCount = Math.max(1, Math.floor((Number.isNaN(cap) ? 1 : cap) || 1));
 
     // 1) 우선 설정을 로드하고, "예약 가능 기간" 검증을 slotEngine 로직으로 수행
     const settings = await loadStringingSettings(db);
@@ -3274,20 +2849,14 @@ export async function handleSubmitStringingApplication(req: Request) {
   const token = cookieStore.get("accessToken")?.value;
   const payload = token ? verifyAccessToken(token) : null;
   const userId = payload?.sub ? new ObjectId(payload.sub) : null;
-  const guestClaims = verifyOrderAccessToken(
-    cookieStore.get("orderAccessToken")?.value ?? "",
-  );
+  const guestClaims = verifyOrderAccessToken(cookieStore.get("orderAccessToken")?.value ?? "");
 
   const guestOrderId =
-    guestClaims &&
-    "orderId" in guestClaims &&
-    typeof guestClaims.orderId === "string"
+    guestClaims && "orderId" in guestClaims && typeof guestClaims.orderId === "string"
       ? guestClaims.orderId
       : null;
   const guestRentalId =
-    guestClaims &&
-    "rentalId" in guestClaims &&
-    typeof guestClaims.rentalId === "string"
+    guestClaims && "rentalId" in guestClaims && typeof guestClaims.rentalId === "string"
       ? guestClaims.rentalId
       : null;
 
@@ -3310,8 +2879,7 @@ export async function handleSubmitStringingApplication(req: Request) {
 
     const hasGuestOrderToken = typeof guestOrderId === "string";
     const hasGuestRentalToken = typeof guestRentalId === "string";
-    const hasOrderIdInPayload =
-      typeof body?.orderId === "string" && body.orderId.trim().length > 0;
+    const hasOrderIdInPayload = typeof body?.orderId === "string" && body.orderId.trim().length > 0;
     const hasRentalIdInPayload =
       typeof body?.rentalId === "string" && body.rentalId.trim().length > 0;
     const isGuestStandaloneSubmit =
@@ -3337,10 +2905,7 @@ export async function handleSubmitStringingApplication(req: Request) {
     return response;
   } catch (e: any) {
     if (e?.status) {
-      return NextResponse.json(
-        { message: e.message ?? "요청 처리 실패" },
-        { status: e.status },
-      );
+      return NextResponse.json({ message: e.message ?? "요청 처리 실패" }, { status: e.status });
     }
     console.error("[POST stringing_application]", e);
     return NextResponse.json({ message: "서버 오류 발생" }, { status: 500 });
@@ -3380,10 +2945,7 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
 
   if (!orderId || !ObjectId.isValid(orderId)) {
     console.warn("[stringing drafts] invalid orderId:", orderId);
-    return NextResponse.json(
-      { ok: false, error: "Invalid or missing orderId" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "Invalid or missing orderId" }, { status: 400 });
   }
   try {
     const db = await getDb();
@@ -3399,28 +2961,19 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
     const ordersCol = db.collection("orders");
     const order = await ordersCol.findOne({ _id: new ObjectId(orderId) });
     if (!order) {
-      return new Response(
-        JSON.stringify({ message: "주문을 찾을 수 없습니다." }),
-        { status: 404 },
-      );
+      return new Response(JSON.stringify({ message: "주문을 찾을 수 없습니다." }), { status: 404 });
     }
 
     // 게스트용 쿠키 토큰(있을 수도/없을 수도) → order 조회 후에 일치 여부 판단
     const oax = jar.get("orderAccessToken")?.value ?? null;
     const guestClaims = oax ? verifyOrderAccessToken(oax) : null;
     const guestOrderId =
-      guestClaims &&
-      "orderId" in guestClaims &&
-      typeof guestClaims.orderId === "string"
+      guestClaims && "orderId" in guestClaims && typeof guestClaims.orderId === "string"
         ? guestClaims.orderId
         : null;
     // 권한: (주문 소유자) or (관리자) or (게스트 토큰의 orderId 일치)
-    const isOwner = !!(
-      order?.userId && String(order.userId) === String(userId)
-    );
-    const guestOwnsOrder = !!(
-      guestOrderId && guestOrderId === String(order._id)
-    );
+    const isOwner = !!(order?.userId && String(order.userId) === String(userId));
+    const guestOwnsOrder = !!(guestOrderId && guestOrderId === String(order._id));
 
     if (!isOwner && !isAdmin && !guestOwnsOrder) {
       return new Response(JSON.stringify({ message: "forbidden" }), {
@@ -3430,13 +2983,11 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
 
     // 서비스 대상 확인: withStringService / isStringServiceApplied 둘 다 허용
     const withString =
-      Boolean(order?.shippingInfo?.withStringService) ||
-      Boolean(order?.isStringServiceApplied);
+      Boolean(order?.shippingInfo?.withStringService) || Boolean(order?.isStringServiceApplied);
     if (!withString) {
-      return new Response(
-        JSON.stringify({ message: "스트링 서비스 대상 주문이 아닙니다." }),
-        { status: 400 },
-      );
+      return new Response(JSON.stringify({ message: "스트링 서비스 대상 주문이 아닙니다." }), {
+        status: 400,
+      });
     }
 
     const appsCol = db.collection("stringing_applications");
@@ -3476,9 +3027,7 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
     const initialCollectionMethod: "self_ship" | "courier_pickup" | "visit" =
       (order as any)?.shippingInfo?.deliveryMethod === "방문수령"
         ? "visit"
-        : toCollectionMethodFromServicePickup(
-            (order as any)?.servicePickupMethod,
-          );
+        : toCollectionMethodFromServicePickup((order as any)?.servicePickupMethod);
 
     // 없으면 초안 생성
     const now = new Date();
@@ -3516,14 +3065,8 @@ export async function handleCreateOrGetDraftApplication(req: Request) {
       stringDetails: { stringTypes: [], customStringName: "" },
 
       shippingInfo: {
-        name:
-          (order as any)?.shippingInfo?.name ??
-          (order as any)?.customer?.name ??
-          "",
-        phone:
-          (order as any)?.shippingInfo?.phone ??
-          (order as any)?.customer?.phone ??
-          "",
+        name: (order as any)?.shippingInfo?.name ?? (order as any)?.customer?.name ?? "",
+        phone: (order as any)?.shippingInfo?.phone ?? (order as any)?.customer?.phone ?? "",
         email: (order as any)?.customer?.email ?? undefined,
         address: (order as any)?.shippingInfo?.address ?? "",
         addressDetail: (order as any)?.shippingInfo?.addressDetail ?? "",

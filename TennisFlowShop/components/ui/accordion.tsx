@@ -31,11 +31,7 @@ export function Accordion({
   children,
 }: AccordionRootProps) {
   const initial = new Set<string>(
-    Array.isArray(defaultValue)
-      ? defaultValue
-      : defaultValue
-        ? [defaultValue]
-        : [],
+    Array.isArray(defaultValue) ? defaultValue : defaultValue ? [defaultValue] : [],
   );
   const [openSet, setOpenSet] = React.useState<Set<string>>(initial);
 
@@ -62,9 +58,7 @@ export function Accordion({
 
   return (
     <div className={className} data-accordion-type={type}>
-      <AccordionCtx.Provider value={{ type, openSet, toggle }}>
-        {children}
-      </AccordionCtx.Provider>
+      <AccordionCtx.Provider value={{ type, openSet, toggle }}>{children}</AccordionCtx.Provider>
     </div>
   );
 }
@@ -76,10 +70,7 @@ type ItemProps = {
 };
 export function AccordionItem({ value, className, children }: ItemProps) {
   return (
-    <div
-      className={cn("border-b border-border", className)}
-      data-acc-item={value}
-    >
+    <div className={cn("border-b border-border", className)} data-acc-item={value}>
       {children}
     </div>
   );
@@ -104,9 +95,7 @@ export function AccordionTrigger({ value, className, children }: TriggerProps) {
       )}
     >
       <span>{children}</span>
-      <ChevronDown
-        className={cn("h-4 w-4 transition-transform", open && "rotate-180")}
-      />
+      <ChevronDown className={cn("h-4 w-4 transition-transform", open && "rotate-180")} />
     </button>
   );
 }
@@ -126,9 +115,7 @@ export function AccordionContent({ value, className, children }: ContentProps) {
       data-state={open ? "open" : "closed"}
       className={cn(
         "grid overflow-hidden transition-all duration-200 ease-out",
-        open
-          ? "grid-rows-[1fr] opacity-100"
-          : "grid-rows-[0fr] opacity-0 pointer-events-none",
+        open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none",
       )}
     >
       <div className={cn("min-h-0", className)}>{children}</div>

@@ -47,10 +47,7 @@ export async function POST(req: Request) {
     try {
       body = await req.json();
     } catch {
-      return NextResponse.json(
-        { message: "요청 형식이 올바르지 않습니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "요청 형식이 올바르지 않습니다." }, { status: 400 });
     }
 
     const email = String(body?.email ?? "")
@@ -58,25 +55,16 @@ export async function POST(req: Request) {
       .toLowerCase();
 
     if (!email) {
-      return NextResponse.json(
-        { message: "이메일을 입력해주세요." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "이메일을 입력해주세요." }, { status: 400 });
     }
 
     if (!isValidEmail(email)) {
-      return NextResponse.json(
-        { message: "올바른 이메일 형식을 입력해주세요." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "올바른 이메일 형식을 입력해주세요." }, { status: 400 });
     }
 
-    const emailPolicy =
-      AUTH_RATE_LIMIT_POLICIES.forgot_password_request.identifier;
+    const emailPolicy = AUTH_RATE_LIMIT_POLICIES.forgot_password_request.identifier;
     if (!emailPolicy) {
-      console.error(
-        "[forgot-password/request] email rate limit policy missing",
-      );
+      console.error("[forgot-password/request] email rate limit policy missing");
       return NextResponse.json(CONFIGURATION_ERROR_RESPONSE, { status: 500 });
     }
 
@@ -90,9 +78,7 @@ export async function POST(req: Request) {
     if (emailRateLimited) return emailRateLimited;
 
     if (!isRecoveryTokenSecretConfigured()) {
-      console.error(
-        "[forgot-password/request] RECOVERY_TOKEN_SECRET is not configured",
-      );
+      console.error("[forgot-password/request] RECOVERY_TOKEN_SECRET is not configured");
       return NextResponse.json(CONFIGURATION_ERROR_RESPONSE, { status: 500 });
     }
 

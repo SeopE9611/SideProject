@@ -7,10 +7,7 @@ import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -23,11 +20,7 @@ export async function POST(
   const db = (await clientPromise).db();
   const _id = new ObjectId(id);
   const doc = await db.collection("rental_orders").findOne({ _id });
-  if (!doc)
-    return NextResponse.json(
-      { ok: false, message: "NOT_FOUND" },
-      { status: 404 },
-    );
+  if (!doc) return NextResponse.json({ ok: false, message: "NOT_FOUND" }, { status: 404 });
 
   const current = String(doc.status ?? "pending");
   if (current === "paid") return NextResponse.json({ ok: true, id });
@@ -41,10 +34,7 @@ export async function POST(
       { $set: { status: "paid", paidAt, updatedAt: new Date() } },
     );
   if (!u.matchedCount) {
-    return NextResponse.json(
-      { ok: false, message: `INVALID_STATE(${current})` },
-      { status: 409 },
-    );
+    return NextResponse.json({ ok: false, message: `INVALID_STATE(${current})` }, { status: 409 });
   }
 
   await appendAdminAudit(

@@ -2,11 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { REFUND_BANK_CATALOG } from "@/lib/refund-bank-catalog";
 import { cn } from "@/lib/utils";
 import { Check, ChevronsUpDown } from "lucide-react";
@@ -38,8 +34,7 @@ export default function RefundBankCombobox({
     }
   };
 
-  const selectedItem =
-    REFUND_BANK_CATALOG.find((bank) => bank.code === value) ?? null;
+  const selectedItem = REFUND_BANK_CATALOG.find((bank) => bank.code === value) ?? null;
 
   const filteredBanks = useMemo(() => {
     const q = normalize(query);
@@ -69,9 +64,7 @@ export default function RefundBankCombobox({
           disabled={disabled}
           className="w-full justify-between font-normal"
         >
-          <span className="truncate text-left">
-            {selectedItem?.label ?? placeholder}
-          </span>
+          <span className="truncate text-left">{selectedItem?.label ?? placeholder}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -88,14 +81,9 @@ export default function RefundBankCombobox({
           autoFocus
         />
 
-        <div
-          ref={listRef}
-          className="max-h-64 overflow-y-auto rounded-md border border-border/60"
-        >
+        <div ref={listRef} className="max-h-64 overflow-y-auto rounded-md border border-border/60">
           {filteredBanks.length === 0 && (
-            <p className="px-3 py-2 text-sm text-muted-foreground">
-              검색 결과가 없습니다.
-            </p>
+            <p className="px-3 py-2 text-sm text-muted-foreground">검색 결과가 없습니다.</p>
           )}
 
           {filteredBanks.map((bank) => (

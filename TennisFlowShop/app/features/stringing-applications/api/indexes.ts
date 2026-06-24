@@ -9,10 +9,7 @@ export async function ensureStringingTTLIndexes(db: Db) {
 
   // 1) TTL index
   if (!set.has("ttl_expireAt")) {
-    await col.createIndex(
-      { expireAt: 1 },
-      { name: "ttl_expireAt", expireAfterSeconds: 0 },
-    );
+    await col.createIndex({ expireAt: 1 }, { name: "ttl_expireAt", expireAfterSeconds: 0 });
   }
 
   // 2) legacy TTL index cleanup
@@ -23,23 +20,18 @@ export async function ensureStringingTTLIndexes(db: Db) {
 
   // 2-1) legacy unique index cleanup
   if (set.has("uniq_order_one_inprogress_application")) {
-    await col
-      .dropIndex("uniq_order_one_inprogress_application")
-      .catch(() => {});
+    await col.dropIndex("uniq_order_one_inprogress_application").catch(() => {});
     set.delete("uniq_order_one_inprogress_application");
   }
 
   // 3) migrate legacy uniq_draft_per_order
   // Legacy definition: partialFilterExpression: { status: 'draft' }
   // Problem: documents without orderId are indexed as orderId=null and can collide (e.g., rental drafts).
-  const orderDraftIdx = indexes.find(
-    (i: any) => i.name === "uniq_draft_per_order",
-  );
+  const orderDraftIdx = indexes.find((i: any) => i.name === "uniq_draft_per_order");
   const partial = (orderDraftIdx as any)?.partialFilterExpression;
   const isLegacyOrderDraft =
     !!orderDraftIdx &&
-    (!partial ||
-      (partial.status === "draft" && (partial as any).orderId === undefined));
+    (!partial || (partial.status === "draft" && (partial as any).orderId === undefined));
 
   if (isLegacyOrderDraft) {
     await col.dropIndex("uniq_draft_per_order").catch(() => {});
@@ -57,10 +49,7 @@ export async function ensureStringingTTLIndexes(db: Db) {
         // null/미존재 제외 + 실제 타입(ObjectId|string)만 포함
         partialFilterExpression: {
           status: "draft",
-          $or: [
-            { orderId: { $type: "objectId" } },
-            { orderId: { $type: "string" } },
-          ],
+          $or: [{ orderId: { $type: "objectId" } }, { orderId: { $type: "string" } }],
         },
       },
     );

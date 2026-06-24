@@ -41,12 +41,8 @@ export default function StringInfoEditForm({
   // 날짜(YYYY-MM-DD)와 시간(hh:mm) 분리 관리
   const [date, setDate] = useState<string>("");
   const [time, setTime] = useState<string>("");
-  const [stringTypes, setStringTypes] = useState<string[]>(
-    initial.stringTypes ?? [],
-  );
-  const [customStringType, setCustomStringType] = useState(
-    initial.customStringName || "",
-  );
+  const [stringTypes, setStringTypes] = useState<string[]>(initial.stringTypes ?? []);
+  const [customStringType, setCustomStringType] = useState(initial.customStringName || "");
   const [racketType, setRacketType] = useState(initial.racketType || "");
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,12 +70,7 @@ export default function StringInfoEditForm({
       customStringName: initial.customStringName ?? "",
       racketType: initial.racketType ?? "",
     };
-  }, [
-    initial.desiredDateTime,
-    initial.stringTypes,
-    initial.customStringName,
-    initial.racketType,
-  ]);
+  }, [initial.desiredDateTime, initial.stringTypes, initial.customStringName, initial.racketType]);
 
   const isDirty = useMemo(() => {
     const curDesired = !date && !time ? "" : `${date}T${time}`;
@@ -152,18 +143,13 @@ export default function StringInfoEditForm({
         return;
       }
       try {
-        const res = await fetch(
-          `/api/applications/stringing/reserved?date=${date}`,
-          {
-            cache: "no-store",
-          },
-        );
+        const res = await fetch(`/api/applications/stringing/reserved?date=${date}`, {
+          cache: "no-store",
+        });
         if (!res.ok) throw new Error("시간대 조회 실패");
         const data = await res.json();
         if (abort) return;
-        const slots: string[] = Array.isArray(data?.availableTimes)
-          ? data.availableTimes
-          : [];
+        const slots: string[] = Array.isArray(data?.availableTimes) ? data.availableTimes : [];
         setTimeSlots(slots);
 
         // 현재 선택된 시간이 유효하지 않으면 초기화
@@ -258,14 +244,9 @@ export default function StringInfoEditForm({
         <>
           <div className="flex items-center justify-between mt-4">
             <Label>스트링 종류</Label>
-            <Switch
-              checked={enableStrings}
-              onCheckedChange={handleStringsToggle}
-            />
+            <Switch checked={enableStrings} onCheckedChange={handleStringsToggle} />
           </div>
-          <div
-            className={enableStrings ? "" : "opacity-50 pointer-events-none"}
-          >
+          <div className={enableStrings ? "" : "opacity-50 pointer-events-none"}>
             <StringCheckboxes
               items={stringOptions}
               stringTypes={stringTypes}
@@ -275,8 +256,7 @@ export default function StringInfoEditForm({
               disabled={!enableStrings}
             />
             <p className="text-xs text-muted-foreground">
-              ※ 두 개 이상의 스트링을 교체 원하신 경우, “직접 입력”을
-              선택하세요.
+              ※ 두 개 이상의 스트링을 교체 원하신 경우, “직접 입력”을 선택하세요.
             </p>
           </div>
         </>
@@ -286,10 +266,7 @@ export default function StringInfoEditForm({
         <>
           <div className="flex items-center justify-between mt-4">
             <Label htmlFor="racketType">라켓 종류</Label>
-            <Switch
-              checked={enableRacket}
-              onCheckedChange={handleRacketToggle}
-            />
+            <Switch checked={enableRacket} onCheckedChange={handleRacketToggle} />
           </div>
           <Input
             id="racketType"

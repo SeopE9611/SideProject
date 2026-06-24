@@ -9,18 +9,31 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
-import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import {
+  UNSAVED_CHANGES_MESSAGE,
+  useUnsavedChangesGuard,
+} from "@/lib/hooks/useUnsavedChangesGuard";
 import { supabase } from "@/lib/supabase";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { adminFormHintTooltipClass } from "@/lib/tooltip-style";
 import { cn } from "@/lib/utils";
-import type { HybridSpecUnit, ProductColorInventory, ProductVariantInventory } from "@/types/admin/products";
+import type {
+  HybridSpecUnit,
+  ProductColorInventory,
+  ProductVariantInventory,
+} from "@/types/admin/products";
 import {
   Activity,
   Boxes,
@@ -57,7 +70,9 @@ import {
 } from "@/components/admin/product-form";
 import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 
-const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirmDialog"), { loading: () => null });
+const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirmDialog"), {
+  loading: () => null,
+});
 
 const STEPS: Step[] = PRODUCT_FORM_STEPS;
 
@@ -157,7 +172,12 @@ export default function NewStringPage() {
     return `${normalized}mm`;
   };
   const normalizeGaugeInput = (input: string) => {
-    const normalized = input.trim().toLowerCase().replace(/mm/g, "").replace(/\s+/g, "").replace(",", ".");
+    const normalized = input
+      .trim()
+      .toLowerCase()
+      .replace(/mm/g, "")
+      .replace(/\s+/g, "")
+      .replace(",", ".");
     if (!/^\d+\.\d+$/.test(normalized)) return null;
     const numericValue = Number(normalized);
     if (!Number.isFinite(numericValue) || numericValue <= 0) return null;
@@ -181,7 +201,9 @@ export default function NewStringPage() {
   const gaugeSummaryRows = useMemo(() => {
     const values = Array.from(new Set(variantInventories.map((row) => row.gaugeValue)));
     return values.map((value) => {
-      const variantGaugeLabel = variantInventories.find((variant) => variant.gaugeValue === value)?.gaugeLabel;
+      const variantGaugeLabel = variantInventories.find(
+        (variant) => variant.gaugeValue === value,
+      )?.gaugeLabel;
       return {
         value,
         label: formatPlainGaugeLabel(value) || variantGaugeLabel || `${value}mm`,
@@ -199,13 +221,23 @@ export default function NewStringPage() {
   };
   const updateVariantSoldOut = (colorValue: string, gaugeValue: string, isSoldOut: boolean) => {
     setVariantInventories((prev) =>
-      prev.map((row) => (row.colorValue === colorValue && row.gaugeValue === gaugeValue ? { ...row, isSoldOut } : row)),
+      prev.map((row) =>
+        row.colorValue === colorValue && row.gaugeValue === gaugeValue
+          ? { ...row, isSoldOut }
+          : row,
+      ),
     );
   };
-  const updateVariantShowWhenSoldOut = (colorValue: string, gaugeValue: string, showWhenSoldOut: boolean) => {
+  const updateVariantShowWhenSoldOut = (
+    colorValue: string,
+    gaugeValue: string,
+    showWhenSoldOut: boolean,
+  ) => {
     setVariantInventories((prev) =>
       prev.map((row) =>
-        row.colorValue === colorValue && row.gaugeValue === gaugeValue ? { ...row, showWhenSoldOut } : row,
+        row.colorValue === colorValue && row.gaugeValue === gaugeValue
+          ? { ...row, showWhenSoldOut }
+          : row,
       ),
     );
   };
@@ -217,7 +249,11 @@ export default function NewStringPage() {
       return;
     }
     setVariantInventories((prev) => {
-      if (prev.some((row) => row.colorValue === colorRow.value && row.gaugeValue === normalizedGauge.value)) {
+      if (
+        prev.some(
+          (row) => row.colorValue === colorRow.value && row.gaugeValue === normalizedGauge.value,
+        )
+      ) {
         showErrorToast("이미 같은 색상에 추가된 게이지입니다.");
         return prev;
       }
@@ -268,9 +304,13 @@ export default function NewStringPage() {
     return { value, label, colorHex };
   };
   const handleAddCustomColor = () => {
-    const normalized = normalizeCustomColorInput(customColorName, customColorHexTouched ? customColorHex : "");
+    const normalized = normalizeCustomColorInput(
+      customColorName,
+      customColorHexTouched ? customColorHex : "",
+    );
     if (!normalized) return showErrorToast("색상명을 입력해주세요.");
-    if (normalized.colorHex === null) return showErrorToast("색상 미리보기 값이 올바르지 않습니다.");
+    if (normalized.colorHex === null)
+      return showErrorToast("색상 미리보기 값이 올바르지 않습니다.");
     const labelLower = normalized.label.trim().toLowerCase();
     const duplicated = colorInventories.some(
       (row) =>
@@ -351,7 +391,9 @@ export default function NewStringPage() {
 
     if (totalSelected > availableSlots) {
       e.target.value = "";
-      showErrorToast(`최대 ${MAX_IMAGE_COUNT}장까지만 업로드할 수 있습니다. (${availableSlots}장만 추가 가능)`);
+      showErrorToast(
+        `최대 ${MAX_IMAGE_COUNT}장까지만 업로드할 수 있습니다. (${availableSlots}장만 추가 가능)`,
+      );
     }
 
     const filesToUpload = Array.from(files).slice(0, availableSlots);
@@ -417,7 +459,10 @@ export default function NewStringPage() {
     setImages(newImages);
   };
 
-  const handleUploadColorImage = async (colorValue: string, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUploadColorImage = async (
+    colorValue: string,
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
@@ -429,9 +474,13 @@ export default function NewStringPage() {
       return;
     }
     setColorInventories((prev) => {
-      const next = prev.map((row) => (row.value === colorValue ? { ...row, image: imageUrl } : row));
+      const next = prev.map((row) =>
+        row.value === colorValue ? { ...row, image: imageUrl } : row,
+      );
       setVariantInventories((variantPrev) =>
-        variantPrev.map((row) => (row.colorValue === colorValue ? { ...row, colorImage: imageUrl } : row)),
+        variantPrev.map((row) =>
+          row.colorValue === colorValue ? { ...row, colorImage: imageUrl } : row,
+        ),
       );
       return next;
     });
@@ -774,7 +823,9 @@ export default function NewStringPage() {
       showErrorToast("각 색상마다 최소 1개 이상의 게이지를 추가해주세요.");
       return;
     }
-    if (variantInventories.some((row) => !Number.isFinite(Number(row.stock)) || Number(row.stock) < 0)) {
+    if (
+      variantInventories.some((row) => !Number.isFinite(Number(row.stock)) || Number(row.stock) < 0)
+    ) {
       goToStep("options");
       showErrorToast("조합 재고 수량은 0 이상 숫자로 입력해주세요.");
       return;
@@ -800,7 +851,8 @@ export default function NewStringPage() {
 
     if (basicInfo.material === "hybrid") {
       const hasMain = hybridMain.brand || hybridMain.name || hybridMain.gauge || hybridMain.color;
-      const hasCross = hybridCross.brand || hybridCross.name || hybridCross.gauge || hybridCross.color;
+      const hasCross =
+        hybridCross.brand || hybridCross.name || hybridCross.gauge || hybridCross.color;
       if (hasMain || hasCross) {
         specifications.hybrid = {
           main: { ...hybridMain },
@@ -836,7 +888,9 @@ export default function NewStringPage() {
     const normalizedGaugeInventories = gaugeSummaryRows.map((gaugeRow) => {
       const rows = normalizedVariants.filter((row) => row.gaugeValue === gaugeRow.value);
       const stock = rows.filter((row) => !row.isSoldOut).reduce((sum, row) => sum + row.stock, 0);
-      const variantGaugeLabel = normalizedVariants.find((variant) => variant.gaugeValue === gaugeRow.value)?.gaugeLabel;
+      const variantGaugeLabel = normalizedVariants.find(
+        (variant) => variant.gaugeValue === gaugeRow.value,
+      )?.gaugeLabel;
       return {
         ...gaugeRow,
         label: formatPlainGaugeLabel(gaugeRow.value) || variantGaugeLabel || `${gaugeRow.value}mm`,
@@ -894,7 +948,9 @@ export default function NewStringPage() {
       router.replace(`/admin/products/${data.id}/edit`);
     } catch (error) {
       // 상품 등록 중 에러 발생시
-      showErrorToast(getAdminErrorMessage(error) || "서버 오류가 발생했습니다. 잠시 후에 다시 시도하세요.");
+      showErrorToast(
+        getAdminErrorMessage(error) || "서버 오류가 발생했습니다. 잠시 후에 다시 시도하세요.",
+      );
     } finally {
       setSubmitting(false);
       submitRef.current = false;
@@ -908,7 +964,9 @@ export default function NewStringPage() {
   // 저장 전 준비 상태를 화면에 보여주기 위한 표시용 계산입니다.
   // handleSubmit의 실제 검증/저장 로직은 그대로 유지합니다.
   const hasRequiredBasicInfo =
-    basicInfo.name.trim().length > 0 && basicInfo.price > 0 && basicInfo.description.trim().length > 0;
+    basicInfo.name.trim().length > 0 &&
+    basicInfo.price > 0 &&
+    basicInfo.description.trim().length > 0;
 
   const hasColorOptions = colorInventories.length > 0;
 
@@ -919,9 +977,12 @@ export default function NewStringPage() {
   const hasVariantOptions = variantInventories.length > 0 && !hasColorWithoutVariant;
 
   const hasValidVariantStocks =
-    variantInventories.length > 0 && variantInventories.every((row) => row.isSoldOut || Number(row.stock) >= 1);
+    variantInventories.length > 0 &&
+    variantInventories.every((row) => row.isSoldOut || Number(row.stock) >= 1);
 
-  const hasValidPerformanceValues = Object.values(features).every((value) => value >= 1 && value <= 100);
+  const hasValidPerformanceValues = Object.values(features).every(
+    (value) => value >= 1 && value <= 100,
+  );
 
   const hasValidInventorySettings =
     inventory.lowStock >= 0 &&
@@ -972,7 +1033,9 @@ export default function NewStringPage() {
                     <Package className="h-7 w-7 text-primary" />
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground">스트링 등록</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                      스트링 등록
+                    </h1>
                     <p className="mt-0.5 text-sm text-muted-foreground">
                       {basicInfo.name || "새로운 테니스 스트링 정보를 입력하고 등록하세요."}
                     </p>
@@ -986,14 +1049,19 @@ export default function NewStringPage() {
             {/* 등록 흐름 안내 */}
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {PRODUCT_NEW_WORKFLOW_GUIDES.map(({ icon: Icon, title, description }) => (
-                <div key={title} className="rounded-xl border border-border/60 bg-card/70 p-4 shadow-sm">
+                <div
+                  key={title}
+                  className="rounded-xl border border-border/60 bg-card/70 p-4 shadow-sm"
+                >
                   <div className="flex items-center gap-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                       <Icon className="h-4 w-4" />
                     </div>
                     <p className="text-sm font-semibold text-foreground">{title}</p>
                   </div>
-                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{description}</p>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    {description}
+                  </p>
                 </div>
               ))}
             </div>
@@ -1012,9 +1080,12 @@ export default function NewStringPage() {
                 <div className="rounded-xl border border-border/60 bg-card/70 p-4 shadow-sm">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-sm font-semibold text-foreground">현재 단계: {currentStep.label}</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        현재 단계: {currentStep.label}
+                      </p>
                       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                        입력한 내용은 단계 이동 중에도 유지됩니다. 최종 저장은 이미지 단계에서 진행됩니다.
+                        입력한 내용은 단계 이동 중에도 유지됩니다. 최종 저장은 이미지 단계에서
+                        진행됩니다.
                       </p>
                     </div>
                     <Badge variant={readyToSubmit ? "success" : "outline"} className="w-fit">
@@ -1084,7 +1155,9 @@ export default function NewStringPage() {
                           </FormFieldGroup>
 
                           <div className="space-y-2">
-                            <Label htmlFor="string-search-keywords">검색 키워드 (쉼표로 구분)</Label>
+                            <Label htmlFor="string-search-keywords">
+                              검색 키워드 (쉼표로 구분)
+                            </Label>
                             <div className="flex flex-col gap-2 md:flex-row md:items-center">
                               <Input
                                 id="string-search-keywords"
@@ -1154,7 +1227,9 @@ export default function NewStringPage() {
                             <Label htmlFor="string-brand">브랜드</Label>
                             <Select
                               value={basicInfo.brand}
-                              onValueChange={(value) => setBasicInfo({ ...basicInfo, brand: value })}
+                              onValueChange={(value) =>
+                                setBasicInfo({ ...basicInfo, brand: value })
+                              }
                             >
                               <SelectTrigger id="string-brand" className="h-11">
                                 <SelectValue placeholder="브랜드 선택" />
@@ -1172,7 +1247,9 @@ export default function NewStringPage() {
                             <Label htmlFor="string-material">소재</Label>
                             <Select
                               value={basicInfo.material}
-                              onValueChange={(value) => setBasicInfo({ ...basicInfo, material: value })}
+                              onValueChange={(value) =>
+                                setBasicInfo({ ...basicInfo, material: value })
+                              }
                             >
                               <SelectTrigger id="string-material" className="h-11">
                                 <SelectValue placeholder="소재 선택" />
@@ -1190,7 +1267,9 @@ export default function NewStringPage() {
                             <Label htmlFor="string-color">대표 색상(목록/필터용)</Label>
                             <Select
                               value={basicInfo.color}
-                              onValueChange={(value) => setBasicInfo({ ...basicInfo, color: value })}
+                              onValueChange={(value) =>
+                                setBasicInfo({ ...basicInfo, color: value })
+                              }
                             >
                               <SelectTrigger id="string-color" className="h-11">
                                 <SelectValue placeholder="색상 선택" />
@@ -1211,7 +1290,9 @@ export default function NewStringPage() {
                             <Label htmlFor="string-length">길이 (m)</Label>
                             <Select
                               value={basicInfo.length}
-                              onValueChange={(value) => setBasicInfo({ ...basicInfo, length: value })}
+                              onValueChange={(value) =>
+                                setBasicInfo({ ...basicInfo, length: value })
+                              }
                             >
                               <SelectTrigger id="string-length" className="h-11">
                                 <SelectValue placeholder="길이 선택" />
@@ -1242,7 +1323,9 @@ export default function NewStringPage() {
                                   <Label>브랜드</Label>
                                   <Select
                                     value={hybridMain.brand}
-                                    onValueChange={(v) => setHybridMain((s) => ({ ...s, brand: v }))}
+                                    onValueChange={(v) =>
+                                      setHybridMain((s) => ({ ...s, brand: v }))
+                                    }
                                   >
                                     <SelectTrigger className="h-10">
                                       <SelectValue placeholder="브랜드 선택" />
@@ -1274,7 +1357,9 @@ export default function NewStringPage() {
                                   <Label>게이지</Label>
                                   <Select
                                     value={hybridMain.gauge}
-                                    onValueChange={(v) => setHybridMain((s) => ({ ...s, gauge: v }))}
+                                    onValueChange={(v) =>
+                                      setHybridMain((s) => ({ ...s, gauge: v }))
+                                    }
                                   >
                                     <SelectTrigger className="h-10">
                                       <SelectValue placeholder="게이지 선택" />
@@ -1292,7 +1377,9 @@ export default function NewStringPage() {
                                   <Label>색상</Label>
                                   <Select
                                     value={hybridMain.color}
-                                    onValueChange={(v) => setHybridMain((s) => ({ ...s, color: v }))}
+                                    onValueChange={(v) =>
+                                      setHybridMain((s) => ({ ...s, color: v }))
+                                    }
                                   >
                                     <SelectTrigger className="h-10">
                                       <SelectValue placeholder="색상 선택" />
@@ -1503,10 +1590,13 @@ export default function NewStringPage() {
                       >
                         <div className="space-y-6">
                           <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-                            <p className="text-sm font-semibold text-foreground">구매 옵션 입력 순서</p>
+                            <p className="text-sm font-semibold text-foreground">
+                              구매 옵션 입력 순서
+                            </p>
                             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                              먼저 색상을 추가하고, 각 색상 카드 안에서 판매할 게이지와 재고를 입력하세요. 품절이 아닌
-                              조합은 재고가 1개 이상이어야 저장할 수 있습니다.
+                              먼저 색상을 추가하고, 각 색상 카드 안에서 판매할 게이지와 재고를
+                              입력하세요. 품절이 아닌 조합은 재고가 1개 이상이어야 저장할 수
+                              있습니다.
                             </p>
                           </div>
                           {/* Color Selection */}
@@ -1517,7 +1607,9 @@ export default function NewStringPage() {
                             </p>
                             <div className="flex flex-wrap gap-2">
                               {colors.map((color) => {
-                                const selected = colorInventories.some((row) => row.value === color.id);
+                                const selected = colorInventories.some(
+                                  (row) => row.value === color.id,
+                                );
                                 return (
                                   <Button
                                     key={color.id}
@@ -1557,7 +1649,9 @@ export default function NewStringPage() {
                               <Label className="mb-3 block font-medium">색상 직접 추가</Label>
                               <div className="flex flex-col gap-3 md:flex-row md:items-end">
                                 <div className="flex-1">
-                                  <Label className="mb-1.5 block text-xs text-muted-foreground">색상명</Label>
+                                  <Label className="mb-1.5 block text-xs text-muted-foreground">
+                                    색상명
+                                  </Label>
                                   <Input
                                     placeholder="예: 네온 옐로우"
                                     value={customColorName}
@@ -1566,7 +1660,9 @@ export default function NewStringPage() {
                                   />
                                 </div>
                                 <div>
-                                  <Label className="mb-1.5 block text-xs text-muted-foreground">색상 미리보기</Label>
+                                  <Label className="mb-1.5 block text-xs text-muted-foreground">
+                                    색상 미리보기
+                                  </Label>
                                   <Input
                                     type="color"
                                     value={customColorHex}
@@ -1577,7 +1673,11 @@ export default function NewStringPage() {
                                     className="h-10 w-14 cursor-pointer p-1"
                                   />
                                 </div>
-                                <Button type="button" onClick={handleAddCustomColor} className="h-10">
+                                <Button
+                                  type="button"
+                                  onClick={handleAddCustomColor}
+                                  className="h-10"
+                                >
                                   <Plus className="mr-2 h-4 w-4" />
                                   추가
                                 </Button>
@@ -1607,7 +1707,11 @@ export default function NewStringPage() {
                                       <div className="flex items-center gap-3">
                                         <span
                                           className="h-5 w-5 rounded-full border border-border/60 shadow-sm"
-                                          style={resolvedHex ? { backgroundColor: resolvedHex } : undefined}
+                                          style={
+                                            resolvedHex
+                                              ? { backgroundColor: resolvedHex }
+                                              : undefined
+                                          }
                                         />
                                         <span className="font-semibold text-foreground">
                                           {colorMeta?.name ?? row.label ?? row.value}
@@ -1654,7 +1758,8 @@ export default function NewStringPage() {
                                       <div className="flex-1">
                                         <Label className="mb-1 block text-sm">색상 이미지</Label>
                                         <p className="mb-2 text-xs text-muted-foreground">
-                                          색상 이미지를 등록하면 상품 상세에서 해당 색상 선택 시 이미지가 전환됩니다.
+                                          색상 이미지를 등록하면 상품 상세에서 해당 색상 선택 시
+                                          이미지가 전환됩니다.
                                         </p>
                                         <div className="flex gap-2">
                                           <Input
@@ -1662,14 +1767,18 @@ export default function NewStringPage() {
                                             accept="image/*"
                                             className="hidden"
                                             id={`edit-color-image-${row.value}`}
-                                            onChange={(e) => void handleUploadColorImage(row.value, e)}
+                                            onChange={(e) =>
+                                              void handleUploadColorImage(row.value, e)
+                                            }
                                           />
                                           <Button
                                             type="button"
                                             variant="outline"
                                             size="sm"
                                             onClick={() =>
-                                              document.getElementById(`edit-color-image-${row.value}`)?.click()
+                                              document
+                                                .getElementById(`edit-color-image-${row.value}`)
+                                                ?.click()
                                             }
                                           >
                                             <Upload className="mr-1 h-4 w-4" />
@@ -1683,7 +1792,9 @@ export default function NewStringPage() {
                                               onClick={() => {
                                                 setColorInventories((prev) =>
                                                   prev.map((item) =>
-                                                    item.value === row.value ? { ...item, image: "" } : item,
+                                                    item.value === row.value
+                                                      ? { ...item, image: "" }
+                                                      : item,
                                                   ),
                                                 );
                                                 setVariantInventories((prev) =>
@@ -1738,9 +1849,12 @@ export default function NewStringPage() {
                                       </div>
 
                                       {/* Variant List */}
-                                      {variantInventories.filter((variant) => variant.colorValue === row.value)
-                                        .length === 0 ? (
-                                        <p className="text-sm text-muted-foreground">아직 추가된 게이지가 없습니다.</p>
+                                      {variantInventories.filter(
+                                        (variant) => variant.colorValue === row.value,
+                                      ).length === 0 ? (
+                                        <p className="text-sm text-muted-foreground">
+                                          아직 추가된 게이지가 없습니다.
+                                        </p>
                                       ) : (
                                         <div className="space-y-2">
                                           {variantInventories
@@ -1750,12 +1864,17 @@ export default function NewStringPage() {
                                                 key={`${row.value}-${variantRow.gaugeValue}`}
                                                 className="flex flex-col gap-3 rounded-lg border border-border/40 bg-muted/10 p-3 md:flex-row md:items-center"
                                               >
-                                                <Badge variant="outline" className="shrink-0 self-start md:self-center">
+                                                <Badge
+                                                  variant="outline"
+                                                  className="shrink-0 self-start md:self-center"
+                                                >
                                                   {variantRow.gaugeLabel ?? variantRow.gaugeValue}
                                                 </Badge>
                                                 <div className="flex flex-1 flex-wrap items-center gap-3">
                                                   <div className="flex items-center gap-2">
-                                                    <Label className="text-xs text-muted-foreground">재고</Label>
+                                                    <Label className="text-xs text-muted-foreground">
+                                                      재고
+                                                    </Label>
                                                     <Input
                                                       type="number"
                                                       min={0}
@@ -1769,7 +1888,9 @@ export default function NewStringPage() {
                                                         )
                                                       }
                                                     />
-                                                    <span className="text-xs text-muted-foreground">개</span>
+                                                    <span className="text-xs text-muted-foreground">
+                                                      개
+                                                    </span>
                                                   </div>
                                                   <label className="flex items-center gap-1.5 text-sm">
                                                     <Checkbox
@@ -1803,7 +1924,10 @@ export default function NewStringPage() {
                                                   variant="ghost"
                                                   size="sm"
                                                   onClick={() =>
-                                                    removeVariantForColor(row.value, variantRow.gaugeValue)
+                                                    removeVariantForColor(
+                                                      row.value,
+                                                      variantRow.gaugeValue,
+                                                    )
                                                   }
                                                   className="shrink-0 text-destructive hover:bg-destructive/10"
                                                 >
@@ -1823,7 +1947,9 @@ export default function NewStringPage() {
                           {/* Gauge Summary */}
                           {gaugeSummaryRows.length > 0 && (
                             <div className="space-y-3">
-                              <Label className="text-base font-semibold">전체 사용 게이지 요약</Label>
+                              <Label className="text-base font-semibold">
+                                전체 사용 게이지 요약
+                              </Label>
                               <p className="text-sm text-muted-foreground">
                                 실제 추가/삭제는 각 색상 카드 안에서 관리됩니다.
                               </p>
@@ -1833,8 +1959,12 @@ export default function NewStringPage() {
                                     key={gaugeRow.value}
                                     className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 p-3"
                                   >
-                                    <span className="font-medium">{gaugeRow.label ?? gaugeRow.value}</span>
-                                    <Badge variant="secondary">총 {getGaugeTotalStock(gaugeRow.value)}개</Badge>
+                                    <span className="font-medium">
+                                      {gaugeRow.label ?? gaugeRow.value}
+                                    </span>
+                                    <Badge variant="secondary">
+                                      총 {getGaugeTotalStock(gaugeRow.value)}개
+                                    </Badge>
                                   </div>
                                 ))}
                               </div>
@@ -1925,9 +2055,14 @@ export default function NewStringPage() {
                                   <Switch
                                     id={`player-${item.id}`}
                                     checked={tags[item.key]}
-                                    onCheckedChange={(checked) => setTags({ ...tags, [item.key]: checked })}
+                                    onCheckedChange={(checked) =>
+                                      setTags({ ...tags, [item.key]: checked })
+                                    }
                                   />
-                                  <Label htmlFor={`player-${item.id}`} className="flex-1 cursor-pointer">
+                                  <Label
+                                    htmlFor={`player-${item.id}`}
+                                    className="flex-1 cursor-pointer"
+                                  >
                                     {item.label}
                                   </Label>
                                 </div>
@@ -1967,9 +2102,14 @@ export default function NewStringPage() {
                                   <Switch
                                     id={`style-${item.id}`}
                                     checked={tags[item.key]}
-                                    onCheckedChange={(checked) => setTags({ ...tags, [item.key]: checked })}
+                                    onCheckedChange={(checked) =>
+                                      setTags({ ...tags, [item.key]: checked })
+                                    }
                                   />
-                                  <Label htmlFor={`style-${item.id}`} className="flex-1 cursor-pointer">
+                                  <Label
+                                    htmlFor={`style-${item.id}`}
+                                    className="flex-1 cursor-pointer"
+                                  >
                                     {item.label}
                                   </Label>
                                 </div>
@@ -2009,8 +2149,8 @@ export default function NewStringPage() {
                               재고 수량은 구매 옵션에서 자동 합산됩니다
                             </p>
                             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                              색상·게이지 조합별 재고가 전체 재고로 합산됩니다. 이 단계에서는 재고 부족 기준,
-                              추천/신상품/할인 노출 여부를 확인하세요.
+                              색상·게이지 조합별 재고가 전체 재고로 합산됩니다. 이 단계에서는 재고
+                              부족 기준, 추천/신상품/할인 노출 여부를 확인하세요.
                             </p>
                           </div>
                           <FormFieldGroup columns={2}>
@@ -2054,7 +2194,9 @@ export default function NewStringPage() {
                             <Label>재고 상태</Label>
                             <RadioGroup
                               value={inventory.status}
-                              onValueChange={(value) => setInventory({ ...inventory, status: value })}
+                              onValueChange={(value) =>
+                                setInventory({ ...inventory, status: value })
+                              }
                               className="flex flex-wrap gap-4"
                             >
                               {[
@@ -2100,7 +2242,9 @@ export default function NewStringPage() {
                                 <Label htmlFor="string-manage-stock" className="cursor-pointer">
                                   재고 관리 사용
                                 </Label>
-                                <p className="text-xs text-muted-foreground">판매 시 재고 자동 감소</p>
+                                <p className="text-xs text-muted-foreground">
+                                  판매 시 재고 자동 감소
+                                </p>
                               </div>
                             </div>
                             <div className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/10 p-4">
@@ -2118,7 +2262,9 @@ export default function NewStringPage() {
                                 <Label htmlFor="string-backorders" className="cursor-pointer">
                                   품절 시 주문 허용
                                 </Label>
-                                <p className="text-xs text-muted-foreground">재고가 없어도 주문 가능</p>
+                                <p className="text-xs text-muted-foreground">
+                                  재고가 없어도 주문 가능
+                                </p>
                               </div>
                             </div>
                           </div>
@@ -2151,7 +2297,9 @@ export default function NewStringPage() {
                               <Switch
                                 id="string-new"
                                 checked={inventory.isNew}
-                                onCheckedChange={(checked) => setInventory({ ...inventory, isNew: checked })}
+                                onCheckedChange={(checked) =>
+                                  setInventory({ ...inventory, isNew: checked })
+                                }
                               />
                               <Label htmlFor="string-new" className="cursor-pointer">
                                 신상품
@@ -2173,14 +2321,19 @@ export default function NewStringPage() {
                               </Label>
                             </div>
                             <div className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/10 p-4 md:col-span-3">
-                              <Switch id="string-visible" checked={isVisible} onCheckedChange={setIsVisible} />
+                              <Switch
+                                id="string-visible"
+                                checked={isVisible}
+                                onCheckedChange={setIsVisible}
+                              />
                               <div className="space-y-1">
                                 <Label htmlFor="string-visible" className="cursor-pointer">
                                   일반 사용자에게 상품 노출
                                 </Label>
                                 {!isVisible && (
                                   <p className="text-xs text-muted-foreground">
-                                    끄면 관리자 화면에서만 보이며, 일반 회원의 목록/상세/추천/결제 경로에서 차단됩니다.
+                                    끄면 관리자 화면에서만 보이며, 일반 회원의 목록/상세/추천/결제
+                                    경로에서 차단됩니다.
                                   </p>
                                 )}
                               </div>
@@ -2250,7 +2403,9 @@ export default function NewStringPage() {
                                 </Button>
 
                                 {/* Primary badge */}
-                                {index === 0 && <Badge className="absolute left-1 top-1">대표</Badge>}
+                                {index === 0 && (
+                                  <Badge className="absolute left-1 top-1">대표</Badge>
+                                )}
 
                                 {/* Set as primary button */}
                                 {index !== 0 && (
@@ -2299,7 +2454,10 @@ export default function NewStringPage() {
                                   최대 4장까지 업로드 가능합니다.
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p>최적의 표시를 위해 1000x1000 픽셀 이상의 정사각형 이미지를 사용하세요.</p>
+                                  <p>
+                                    최적의 표시를 위해 1000x1000 픽셀 이상의 정사각형 이미지를
+                                    사용하세요.
+                                  </p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
@@ -2309,7 +2467,9 @@ export default function NewStringPage() {
                       <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                           <div>
-                            <p className="text-base font-semibold text-foreground">저장 전 체크리스트</p>
+                            <p className="text-base font-semibold text-foreground">
+                              저장 전 체크리스트
+                            </p>
                             <p className="mt-1 text-sm text-muted-foreground">
                               아래 항목이 모두 완료되어야 상품 등록이 안전하게 진행됩니다.
                             </p>
@@ -2325,16 +2485,23 @@ export default function NewStringPage() {
                               key={item.label}
                               className={cn(
                                 "rounded-lg border px-3 py-2",
-                                item.done ? "border-primary/30 bg-primary/5" : "border-warning/30 bg-warning/10",
+                                item.done
+                                  ? "border-primary/30 bg-primary/5"
+                                  : "border-warning/30 bg-warning/10",
                               )}
                             >
                               <div className="flex items-center justify-between gap-2">
                                 <p className="text-sm font-medium text-foreground">{item.label}</p>
-                                <Badge variant={item.done ? "success" : "outline"} className="shrink-0">
+                                <Badge
+                                  variant={item.done ? "success" : "outline"}
+                                  className="shrink-0"
+                                >
                                   {item.done ? "완료" : "확인필요"}
                                 </Badge>
                               </div>
-                              <p className="mt-1 text-xs text-muted-foreground">{item.description}</p>
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {item.description}
+                              </p>
                             </div>
                           ))}
                         </div>
@@ -2349,7 +2516,9 @@ export default function NewStringPage() {
                     basicInfo={{
                       name: basicInfo.name,
                       brand: brands.find((b) => b.id === basicInfo.brand)?.name ?? basicInfo.brand,
-                      material: materials.find((m) => m.id === basicInfo.material)?.name ?? basicInfo.material,
+                      material:
+                        materials.find((m) => m.id === basicInfo.material)?.name ??
+                        basicInfo.material,
                       price: basicInfo.price,
                       shortDescription: basicInfo.shortDescription,
                     }}

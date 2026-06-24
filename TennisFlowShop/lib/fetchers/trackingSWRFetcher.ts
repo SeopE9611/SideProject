@@ -22,10 +22,7 @@ async function parseJsonResponse<T>(res: Response): Promise<T> {
   }
 }
 
-async function request(
-  url: string,
-  suppressAuthExpiredHeader: boolean,
-): Promise<Response> {
+async function request(url: string, suppressAuthExpiredHeader: boolean): Promise<Response> {
   return fetch(url, {
     credentials: "include",
     cache: "no-store",
@@ -41,15 +38,10 @@ async function safeReadErrorBody(res: Response): Promise<unknown> {
   }
 }
 
-function buildTrackingError(
-  res: Response,
-  body: unknown,
-): TrackingSWRFetcherError {
+function buildTrackingError(res: Response, body: unknown): TrackingSWRFetcherError {
   const trackingBody = body as TrackingErrorBody | null;
   const message =
-    trackingBody &&
-    typeof trackingBody.message === "string" &&
-    trackingBody.message.trim()
+    trackingBody && typeof trackingBody.message === "string" && trackingBody.message.trim()
       ? trackingBody.message
       : `HTTP_${res.status}`;
 
@@ -59,9 +51,7 @@ function buildTrackingError(
       ? trackingBody.statusCode
       : res.status;
   error.errorCode =
-    trackingBody && typeof trackingBody.errorCode === "string"
-      ? trackingBody.errorCode
-      : undefined;
+    trackingBody && typeof trackingBody.errorCode === "string" ? trackingBody.errorCode : undefined;
   error.responseBody = body;
   return error;
 }

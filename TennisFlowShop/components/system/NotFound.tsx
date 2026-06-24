@@ -13,9 +13,7 @@ export default function NotFound() {
 
         {/* 제목 */}
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold">
-            페이지를 찾을 수 없습니다.
-          </h2>
+          <h2 className="text-2xl sm:text-3xl font-bold">페이지를 찾을 수 없습니다.</h2>
         </div>
 
         {/* 설명 문구 */}
@@ -36,11 +34,7 @@ export default function NotFound() {
               홈으로 돌아가기
             </Link>
           </Button>
-          <Button
-            variant="outline"
-            className="flex-1 whitespace-nowrap"
-            asChild
-          >
+          <Button variant="outline" className="flex-1 whitespace-nowrap" asChild>
             <Link href="/board/qna/write">
               문의하기
               <ArrowRight className="ml-2 h-4 w-4" />

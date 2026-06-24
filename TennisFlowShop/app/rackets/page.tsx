@@ -72,8 +72,7 @@ export default async function RacketsPage({
                   라켓 선택 후 스트링 장착까지 이어집니다
                 </p>
                 <p className="mt-0.5 break-keep text-xs leading-relaxed text-muted-foreground">
-                  구매는 스트링 선택 후 결제로, 대여는 기간 선택 후 장착
-                  설정으로 이동합니다.
+                  구매는 스트링 선택 후 결제로, 대여는 기간 선택 후 장착 설정으로 이동합니다.
                 </p>
               </div>
 
@@ -84,10 +83,7 @@ export default async function RacketsPage({
                 wrap="responsive"
                 className="w-full bp-sm:w-auto"
               >
-                <Link
-                  href="/services/apply"
-                  className="flex items-center justify-center gap-1.5"
-                >
+                <Link href="/services/apply" className="flex items-center justify-center gap-1.5">
                   <span aria-hidden="true">←</span>
                   신청 화면으로
                 </Link>
@@ -96,10 +92,7 @@ export default async function RacketsPage({
           </PublicSurface>
         )}
         <div id="racket-list">
-          <FilterableRacketList
-            initialBrand={initialBrand}
-            initialCondition={initialCondition}
-          />
+          <FilterableRacketList initialBrand={initialBrand} initialCondition={initialCondition} />
         </div>
       </SiteContainer>
     </div>

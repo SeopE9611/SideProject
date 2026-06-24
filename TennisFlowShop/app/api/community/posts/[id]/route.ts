@@ -7,16 +7,9 @@ import { getDb } from "@/lib/mongodb";
 import { logInfo, reqMeta, startTimer } from "@/lib/logger";
 import { verifyCommunityCsrf } from "@/lib/community/security";
 import type { CommunityBoardType, CommunityPost } from "@/lib/types/community";
-import {
-  COMMUNITY_BOARD_TYPES,
-  COMMUNITY_CATEGORIES,
-} from "@/lib/types/community";
+import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES } from "@/lib/types/community";
 import { verifyAccessToken } from "@/lib/auth.utils";
-import {
-  normalizeSanitizedContent,
-  sanitizeHtml,
-  validateSanitizedLength,
-} from "@/lib/sanitize";
+import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from "@/lib/sanitize";
 import { validateBoardAssetUrl } from "@/lib/boards-community-url-policy";
 import { classifyBoardPatchFailure } from "@/lib/boards-patch-conflict";
 import { normalizeMarketMeta } from "@/lib/market";
@@ -25,10 +18,7 @@ import { resolveCommunityDisplayName } from "@/lib/community-display-name";
 // ---------------------------------------------------------------------------
 // GET: 게시글 상세
 // ---------------------------------------------------------------------------
-export async function GET(
-  req: NextRequest,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const stop = startTimer();
   const meta = reqMeta(req);
 
@@ -59,10 +49,7 @@ export async function GET(
         ...meta,
       });
 
-      return NextResponse.json(
-        { ok: false, error: "not_found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
     }
 
     // 어떤 게시판의 postNo인지 결정
@@ -89,10 +76,7 @@ export async function GET(
 
   // 문서가 없거나 _id를 얻지 못한 경우
   if (!doc || !postObjectId) {
-    return NextResponse.json(
-      { ok: false, error: "not_found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
 
   // 숨김 글 접근 제어: 관리자/작성자만 조회 허용
@@ -109,14 +93,10 @@ export async function GET(
     }
 
     const isAdmin = payload?.role === "admin";
-    const isOwner =
-      payload?.sub && doc.userId && String(payload.sub) === String(doc.userId);
+    const isOwner = payload?.sub && doc.userId && String(payload.sub) === String(doc.userId);
 
     if (!isAdmin && !isOwner) {
-      return NextResponse.json(
-        { ok: false, error: "not_found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
     }
   }
 
@@ -177,10 +157,7 @@ export async function GET(
     likedByMe,
     commentsCount: doc.commentsCount ?? 0,
 
-    createdAt:
-      doc.createdAt instanceof Date
-        ? doc.createdAt.toISOString()
-        : String(doc.createdAt),
+    createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : String(doc.createdAt),
     updatedAt:
       doc.updatedAt instanceof Date
         ? doc.updatedAt.toISOString()
@@ -296,10 +273,7 @@ function findFirstInvalidAssetUrl(input: {
   return null;
 }
 
-export async function PATCH(
-  req: NextRequest,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const csrf = verifyCommunityCsrf(req);
   if (!csrf.ok) {
     return csrf.response;
@@ -310,18 +284,12 @@ export async function PATCH(
   const { id } = await ctx.params;
 
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json(
-      { ok: false, error: "not_found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
 
   const userId = await getAuthUserId();
   if (!userId) {
-    return NextResponse.json(
-      { ok: false, error: "unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
   const _id = new ObjectId(id);
@@ -330,28 +298,19 @@ export async function PATCH(
 
   const doc = (await col.findOne({ _id })) as any | null;
   if (!doc) {
-    return NextResponse.json(
-      { ok: false, error: "not_found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
 
   // 작성자 본인인지 확인
   if (!doc.userId || String(doc.userId) !== userId) {
-    return NextResponse.json(
-      { ok: false, error: "forbidden" },
-      { status: 403 },
-    );
+    return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
   }
 
   let json: unknown;
   try {
     json = await req.json();
   } catch {
-    return NextResponse.json(
-      { ok: false, error: "invalid_json" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 });
   }
 
   const parsed = patchBodySchema.safeParse(json);
@@ -375,10 +334,7 @@ export async function PATCH(
   const clientSeenDateBody = (json as any)?.clientSeenDate;
   const ifUnmodifiedSinceBody = (json as any)?.ifUnmodifiedSince;
   const clientSeenAtRaw =
-    clientSeenDateBody ??
-    ifUnmodifiedSinceBody ??
-    ifUnmodifiedSinceHeader ??
-    null;
+    clientSeenDateBody ?? ifUnmodifiedSinceBody ?? ifUnmodifiedSinceHeader ?? null;
 
   let clientSeenDate: Date | null = null;
   if (typeof clientSeenAtRaw === "string") {
@@ -394,8 +350,7 @@ export async function PATCH(
       {
         ok: false,
         error: "invalid_attachment_url",
-        message:
-          "허용되지 않은 첨부 URL입니다. HTTPS + 허용 호스트/경로 정책을 확인해 주세요.",
+        message: "허용되지 않은 첨부 URL입니다. HTTPS + 허용 호스트/경로 정책을 확인해 주세요.",
         details: [
           {
             path: invalidAsset.path,
@@ -410,9 +365,7 @@ export async function PATCH(
 
   let sanitizedContent: string | undefined;
   if (body.content !== undefined) {
-    sanitizedContent = normalizeSanitizedContent(
-      await sanitizeHtml(body.content),
-    );
+    sanitizedContent = normalizeSanitizedContent(await sanitizeHtml(body.content));
     const contentLengthValidation = validateSanitizedLength(sanitizedContent, {
       min: 1,
       max: 5000,
@@ -449,11 +402,8 @@ export async function PATCH(
   // market 게시판: 라켓/스트링은 brand 필수, 일반장비는 brand 제거(null)
   if (doc.type === "market") {
     const nextCategory =
-      body.category !== undefined
-        ? (body.category as any)
-        : (doc.category ?? null);
-    const nextBrand =
-      body.brand !== undefined ? body.brand : (doc.brand ?? null);
+      body.category !== undefined ? (body.category as any) : (doc.category ?? null);
+    const nextBrand = body.brand !== undefined ? body.brand : (doc.brand ?? null);
 
     const needBrand = nextCategory === "racket" || nextCategory === "string";
     const b = typeof nextBrand === "string" ? nextBrand.trim() : "";
@@ -474,10 +424,7 @@ export async function PATCH(
       );
     }
 
-    const nextMetaRaw =
-      body.marketMeta !== undefined
-        ? body.marketMeta
-        : (doc.marketMeta ?? null);
+    const nextMetaRaw = body.marketMeta !== undefined ? body.marketMeta : (doc.marketMeta ?? null);
     const nextMeta = normalizeMarketMeta(nextCategory, nextMetaRaw);
     if (!nextMeta || nextMeta.price == null || nextMeta.price <= 0) {
       return NextResponse.json(
@@ -494,10 +441,7 @@ export async function PATCH(
         { status: 400 },
       );
     }
-    if (
-      nextCategory === "racket" &&
-      !(nextMeta.racketSpec?.modelName ?? "").trim()
-    ) {
+    if (nextCategory === "racket" && !(nextMeta.racketSpec?.modelName ?? "").trim()) {
       return NextResponse.json(
         {
           ok: false,
@@ -512,10 +456,7 @@ export async function PATCH(
         { status: 400 },
       );
     }
-    if (
-      nextCategory === "string" &&
-      !(nextMeta.stringSpec?.modelName ?? "").trim()
-    ) {
+    if (nextCategory === "string" && !(nextMeta.stringSpec?.modelName ?? "").trim()) {
       return NextResponse.json(
         {
           ok: false,
@@ -540,11 +481,8 @@ export async function PATCH(
   // brand 업데이트(중고거래 게시판만)
   if (doc.type === "market") {
     const nextCategory =
-      body.category !== undefined
-        ? (body.category as any)
-        : (doc.category ?? null);
-    const nextBrand =
-      body.brand !== undefined ? body.brand : (doc.brand ?? null);
+      body.category !== undefined ? (body.category as any) : (doc.category ?? null);
+    const nextBrand = body.brand !== undefined ? body.brand : (doc.brand ?? null);
 
     const needBrand = nextCategory === "racket" || nextCategory === "string";
 
@@ -557,9 +495,7 @@ export async function PATCH(
     }
     const normalizedMarketMeta = normalizeMarketMeta(
       nextCategory,
-      body.marketMeta !== undefined
-        ? body.marketMeta
-        : (doc.marketMeta ?? null),
+      body.marketMeta !== undefined ? body.marketMeta : (doc.marketMeta ?? null),
     );
     update.marketMeta = normalizedMarketMeta ?? null;
   }
@@ -573,25 +509,16 @@ export async function PATCH(
   const updatedResult = await col.updateOne(filter, { $set: update });
 
   if (!updatedResult.matchedCount) {
-    const postStillExists = !!(await col.findOne(
-      { _id },
-      { projection: { _id: 1 } },
-    ));
+    const postStillExists = !!(await col.findOne({ _id }, { projection: { _id: 1 } }));
     const failure = classifyBoardPatchFailure({
       hasClientSeenDate: !!clientSeenDate,
       postStillExists,
     });
 
     if (failure === "conflict") {
-      return NextResponse.json(
-        { ok: false, error: "conflict" },
-        { status: 409 },
-      );
+      return NextResponse.json({ ok: false, error: "conflict" }, { status: 409 });
     }
-    return NextResponse.json(
-      { ok: false, error: "not_found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
 
   return NextResponse.json({ ok: true });
@@ -601,10 +528,7 @@ export async function PATCH(
 // DELETE: 게시글 삭제 (작성자만 가능, 하드 삭제)
 // ---------------------------------------------------------------------------
 
-export async function DELETE(
-  req: NextRequest,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const csrf = verifyCommunityCsrf(req);
   if (!csrf.ok) {
     return csrf.response;
@@ -615,18 +539,12 @@ export async function DELETE(
   const { id } = await ctx.params;
 
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json(
-      { ok: false, error: "not_found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
 
   const userId = await getAuthUserId();
   if (!userId) {
-    return NextResponse.json(
-      { ok: false, error: "unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
   const _id = new ObjectId(id);
@@ -635,18 +553,12 @@ export async function DELETE(
 
   const doc = (await col.findOne({ _id })) as any | null;
   if (!doc) {
-    return NextResponse.json(
-      { ok: false, error: "not_found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
 
   // 작성자 본인인지 확인
   if (!doc.userId || String(doc.userId) !== userId) {
-    return NextResponse.json(
-      { ok: false, error: "forbidden" },
-      { status: 403 },
-    );
+    return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
   }
 
   await col.deleteOne({ _id });

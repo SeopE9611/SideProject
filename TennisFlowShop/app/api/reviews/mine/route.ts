@@ -8,8 +8,7 @@ import { NextResponse } from "next/server";
 export async function GET(req: Request) {
   const jar = await cookies();
   const token = jar.get("accessToken")?.value;
-  if (!token)
-    return NextResponse.json({ message: "unauthorized" }, { status: 401 });
+  if (!token) return NextResponse.json({ message: "unauthorized" }, { status: 401 });
 
   // verifyAccessToken이 만료/깨진 토큰에서 throw 되어도 500이 아니라 401로 정리
   let payload: any = null;
@@ -30,9 +29,7 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   // limit 파싱: NaN이면 Mongo $limit에서 터질 수 있으므로 정수/클램프 처리
   const limitRaw = parseInt(url.searchParams.get("limit") || "10", 10);
-  const limit = Number.isFinite(limitRaw)
-    ? Math.max(1, Math.min(50, limitRaw))
-    : 10;
+  const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(50, limitRaw)) : 10;
   const cursorB64 = url.searchParams.get("cursor");
 
   // 커서: createdAt desc, _id desc
@@ -100,9 +97,7 @@ export async function GET(req: Request) {
           localField: "productIdObj",
           foreignField: "_id",
           as: "product",
-          pipeline: [
-            { $project: { name: 1, title: 1, thumbnail: 1, images: 1 } },
-          ],
+          pipeline: [{ $project: { name: 1, title: 1, thumbnail: 1, images: 1 } }],
         },
       },
       { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
@@ -165,10 +160,7 @@ export async function GET(req: Request) {
         $addFields: {
           // service 필드가 없던 과거 문서도 커버 (serviceApplicationId가 있으면 서비스 리뷰로 간주)
           isStringingReview: {
-            $or: [
-              { $eq: ["$service", "stringing"] },
-              { $ne: ["$serviceApplicationId", null] },
-            ],
+            $or: [{ $eq: ["$service", "stringing"] }, { $ne: ["$serviceApplicationId", null] }],
           },
           serviceTargetName: {
             $let: {
@@ -261,10 +253,7 @@ export async function GET(req: Request) {
                     {
                       $cond: [
                         {
-                          $and: [
-                            { $ne: ["$racket.model", null] },
-                            { $ne: ["$racket.model", ""] },
-                          ],
+                          $and: [{ $ne: ["$racket.model", null] }, { $ne: ["$racket.model", ""] }],
                         },
                         {
                           $concat: [
@@ -287,16 +276,10 @@ export async function GET(req: Request) {
                 {
                   $ifNull: [
                     {
-                      $ifNull: [
-                        "$product.thumbnail",
-                        { $arrayElemAt: ["$product.images", 0] },
-                      ],
+                      $ifNull: ["$product.thumbnail", { $arrayElemAt: ["$product.images", 0] }],
                     },
                     {
-                      $ifNull: [
-                        "$racket.thumbnail",
-                        { $arrayElemAt: ["$racket.images", 0] },
-                      ],
+                      $ifNull: ["$racket.thumbnail", { $arrayElemAt: ["$racket.images", 0] }],
                     },
                   ],
                 },
@@ -331,14 +314,8 @@ export async function GET(req: Request) {
       const computed = `${racketBrandLabel(brandStr)} ${modelStr}`.trim();
 
       // 1) name이 비었거나 일반값이면 라켓명으로 채움
-      const curName =
-        typeof row?.target?.name === "string" ? row.target.name.trim() : "";
-      if (
-        !curName ||
-        curName === "상품" ||
-        curName === "라켓" ||
-        curName === "상품 리뷰"
-      ) {
+      const curName = typeof row?.target?.name === "string" ? row.target.name.trim() : "";
+      if (!curName || curName === "상품" || curName === "라켓" || curName === "상품 리뷰") {
         row.target.name = computed;
       } else {
         // 2) 집계 fallback이 "head 라켓모델1"처럼 코드가 그대로 들어온 경우 → 라벨로 교체
@@ -347,11 +324,7 @@ export async function GET(req: Request) {
       }
 
       // image도 비어 있으면 첫 이미지로 보정
-      if (
-        !row?.target?.image &&
-        Array.isArray(row?.__racketImages) &&
-        row.__racketImages.length
-      ) {
+      if (!row?.target?.image && Array.isArray(row?.__racketImages) && row.__racketImages.length) {
         row.target.image = row.__racketImages[0];
       }
     }

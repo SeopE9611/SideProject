@@ -72,10 +72,7 @@ const FAIL_GUIDE_MAP: Record<
   },
   UNKNOWN: {
     title: "대여 결제를 완료하지 못했어요",
-    description: [
-      "결제 처리 중 문제가 발생했어요.",
-      "대여 페이지로 돌아가 다시 시도해주세요.",
-    ],
+    description: ["결제 처리 중 문제가 발생했어요.", "대여 페이지로 돌아가 다시 시도해주세요."],
   },
 };
 
@@ -106,9 +103,7 @@ export default async function RentalNiceFailPage({
   const fallbackRaw = (sp.fallback || "").trim();
   const fallbackHref =
     checkoutFallback ||
-    (fallbackRaw.startsWith("/rentals/") || fallbackRaw === "/rentals"
-      ? fallbackRaw
-      : "/rentals");
+    (fallbackRaw.startsWith("/rentals/") || fallbackRaw === "/rentals" ? fallbackRaw : "/rentals");
 
   return (
     <SiteContainer className="flex min-h-[60vh] items-center py-10 md:py-16">
@@ -127,12 +122,7 @@ export default async function RentalNiceFailPage({
             <Button asChild className="w-full sm:w-auto" wrap="responsive">
               <Link href={fallbackHref}>대여로 돌아가기</Link>
             </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="w-full sm:w-auto"
-              wrap="responsive"
-            >
+            <Button asChild variant="outline" className="w-full sm:w-auto" wrap="responsive">
               <Link href="/rentals">대여 목록으로 이동</Link>
             </Button>
           </>
@@ -141,15 +131,12 @@ export default async function RentalNiceFailPage({
         <div className="space-y-3 text-sm text-muted-foreground">
           {guide.accent === "warning" && (
             <p className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-warning dark:bg-warning/15">
-              중복 결제를 막기 위해 반복 결제를 피하고, 대여 내역 또는 관리자
-              확인 후 진행해주세요.
+              중복 결제를 막기 위해 반복 결제를 피하고, 대여 내역 또는 관리자 확인 후 진행해주세요.
             </p>
           )}
           <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs">
             <p>오류 코드: {code}</p>
-            {rawMessage ? (
-              <p className="mt-1">참고 메시지: {rawMessage}</p>
-            ) : null}
+            {rawMessage ? <p className="mt-1">참고 메시지: {rawMessage}</p> : null}
           </div>
         </div>
       </ResultState>

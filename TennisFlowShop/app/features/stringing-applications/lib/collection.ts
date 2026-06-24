@@ -1,8 +1,4 @@
-export const COLLECTION_METHODS = [
-  "self_ship",
-  "courier_pickup",
-  "visit",
-] as const;
+export const COLLECTION_METHODS = ["self_ship", "courier_pickup", "visit"] as const;
 export type CollectionMethod = (typeof COLLECTION_METHODS)[number];
 
 // 문자열·옛 포맷을 표준값으로 변환

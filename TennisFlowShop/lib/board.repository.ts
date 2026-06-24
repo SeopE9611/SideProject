@@ -1,10 +1,4 @@
-import {
-  ObjectId,
-  type Db,
-  type Document,
-  type Filter,
-  type Sort,
-} from "mongodb";
+import { ObjectId, type Db, type Document, type Filter, type Sort } from "mongodb";
 import type { BoardKind } from "@/lib/types/board-domain";
 
 export const API_VERSION = "2026-02-board-v1";
@@ -14,15 +8,11 @@ function toObjectId(id: string) {
 }
 
 export function collectionNameByKind(kind: BoardKind) {
-  return kind === "notice" || kind === "qna"
-    ? "board_posts"
-    : "community_posts";
+  return kind === "notice" || kind === "qna" ? "board_posts" : "community_posts";
 }
 
 export async function findBoardPostById(db: Db, id: string, kind?: BoardKind) {
-  const cols = kind
-    ? [collectionNameByKind(kind)]
-    : ["board_posts", "community_posts"];
+  const cols = kind ? [collectionNameByKind(kind)] : ["board_posts", "community_posts"];
   for (const name of cols) {
     const col = db.collection(name);
     const oid = toObjectId(id);
@@ -42,9 +32,7 @@ export async function incrementBoardView(
   kind?: BoardKind,
   field: "viewCount" | "views" = "viewCount",
 ) {
-  const cols = kind
-    ? [collectionNameByKind(kind)]
-    : ["board_posts", "community_posts"];
+  const cols = kind ? [collectionNameByKind(kind)] : ["board_posts", "community_posts"];
   for (const name of cols) {
     const col = db.collection(name);
     const oid = toObjectId(id);

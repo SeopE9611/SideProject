@@ -39,11 +39,7 @@ const CATEGORY_META: Record<MaterialKey, { label: string }> = {
   other: { label: "기타/미분류" },
 };
 
-const PRIMARY_MATERIAL_KEYS: MaterialKey[] = [
-  "polyester",
-  "syntheticGut",
-  "naturalGut",
-];
+const PRIMARY_MATERIAL_KEYS: MaterialKey[] = ["polyester", "syntheticGut", "naturalGut"];
 
 function normalizeMaterialValue(material: string | undefined): string {
   return String(material ?? "")
@@ -92,9 +88,7 @@ function isHybridMaterial(material: string | undefined): boolean {
   if (value.includes("hybrid") || value.includes("하이브리드")) return true;
 
   const separators = ["/", "+", "&"];
-  const hasSeparator = separators.some((separator) =>
-    value.includes(separator),
-  );
+  const hasSeparator = separators.some((separator) => value.includes(separator));
   const hasPoly = value.includes("poly") || value.includes("폴리");
   const hasMulti =
     value.includes("multi") ||
@@ -107,9 +101,7 @@ function isHybridMaterial(material: string | undefined): boolean {
     value.includes("내추럴") ||
     value.includes("natural");
 
-  return (
-    hasSeparator && [hasPoly, hasMulti, hasGut].filter(Boolean).length >= 2
-  );
+  return hasSeparator && [hasPoly, hasMulti, hasGut].filter(Boolean).length >= 2;
 }
 
 function toMaterialKey(material: string | undefined): MaterialKey {
@@ -121,19 +113,11 @@ function toMaterialKey(material: string | undefined): MaterialKey {
   }
   if (value === "polyester") return "polyester";
 
-  if (
-    value.includes("natural") ||
-    value.includes("내추럴") ||
-    value.includes("천연")
-  )
+  if (value.includes("natural") || value.includes("내추럴") || value.includes("천연"))
     return "naturalGut";
   if (
     (value.includes("gut") || value.includes("거트")) &&
-    !(
-      value.includes("synthetic") ||
-      value.includes("인조") ||
-      value.includes("합성")
-    )
+    !(value.includes("synthetic") || value.includes("인조") || value.includes("합성"))
   )
     return "naturalGut";
   if (
@@ -184,9 +168,7 @@ async function fetchStringingProducts(): Promise<ProductLite[]> {
   }
 }
 
-export async function getStringingMaterialSummaries(): Promise<
-  MaterialSummary[]
-> {
+export async function getStringingMaterialSummaries(): Promise<MaterialSummary[]> {
   const products = await fetchStringingProducts();
 
   const grouped = new Map<MaterialKey, ProductLite[]>();
@@ -200,9 +182,7 @@ export async function getStringingMaterialSummaries(): Promise<
 
   return (Object.keys(CATEGORY_META) as MaterialKey[]).map((key) => {
     const rows = grouped.get(key) ?? [];
-    const prices = rows
-      .map((r) => toPositiveNumber(r.price))
-      .filter((n): n is number => n != null);
+    const prices = rows.map((r) => toPositiveNumber(r.price)).filter((n): n is number => n != null);
     const fees = rows
       .map((r) => toNonNegativeNumber(r.mountingFee))
       .filter((n): n is number => n != null);
@@ -278,9 +258,7 @@ export async function getStringingPricingView() {
     getHybridGuideSummary(),
   ]);
   return {
-    primarySummaries: summaries.filter((summary) =>
-      PRIMARY_MATERIAL_KEYS.includes(summary.key),
-    ),
+    primarySummaries: summaries.filter((summary) => PRIMARY_MATERIAL_KEYS.includes(summary.key)),
     otherSummary: summaries.find((summary) => summary.key === "other") ?? null,
     hybridGuide,
   };

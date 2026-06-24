@@ -1,33 +1,13 @@
 "use client";
 
-import {
-  useRacketCompareStore,
-  type CompareRacketItem,
-} from "@/app/store/racketCompareStore";
+import { useRacketCompareStore, type CompareRacketItem } from "@/app/store/racketCompareStore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  gripSizeLabel,
-  racketBrandLabel,
-  stringPatternLabel,
-} from "@/lib/constants";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { gripSizeLabel, racketBrandLabel, stringPatternLabel } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import {
-  AlertCircle,
-  ArrowLeft,
-  ChevronRight,
-  Info,
-  Scale,
-  Trash2,
-  X,
-} from "lucide-react";
+import { AlertCircle, ArrowLeft, ChevronRight, Info, Scale, Trash2, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -212,8 +192,7 @@ export default function RacketCompareClient() {
         label: "Pattern",
         kind: "text",
         // 비교 표도 raw 값 대신 공통 라벨 함수로 표시 방식 통일
-        get: (r) =>
-          r.spec?.pattern ? stringPatternLabel(String(r.spec?.pattern)) : "-",
+        get: (r) => (r.spec?.pattern ? stringPatternLabel(String(r.spec?.pattern)) : "-"),
         hint: "오픈(16x19)=스핀 경향, 덴스(18x20)=컨트롤 경향.",
       },
       {
@@ -221,8 +200,7 @@ export default function RacketCompareClient() {
         label: "Grip",
         kind: "text",
         // g2/G2/과거 자유입력값이 와도 사람이 읽기 쉬운 라벨로 노출
-        get: (r) =>
-          r.spec?.gripSize ? gripSizeLabel(String(r.spec?.gripSize)) : "-",
+        get: (r) => (r.spec?.gripSize ? gripSizeLabel(String(r.spec?.gripSize)) : "-"),
         hint: "그립 두께(사이즈) 비교 항목입니다.",
       },
     ],
@@ -284,9 +262,7 @@ export default function RacketCompareClient() {
           <div className="rounded-xl border border-border bg-card overflow-hidden">
             <div className="border-b border-border bg-secondary/60 px-4 py-3 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">
-                비교할 라켓이 부족합니다
-              </span>
+              <span className="text-sm font-medium text-primary">비교할 라켓이 부족합니다</span>
             </div>
             <div className="p-4 space-y-4">
               <p className="text-sm text-muted-foreground">
@@ -337,10 +313,7 @@ export default function RacketCompareClient() {
                               {r.model}
                             </Link>
                             {idx === 0 && (
-                              <Badge
-                                variant="info"
-                                className="h-4 px-1.5 text-[10px]"
-                              >
+                              <Badge variant="info" className="h-4 px-1.5 text-[10px]">
                                 기준
                               </Badge>
                             )}
@@ -399,18 +372,14 @@ export default function RacketCompareClient() {
                             </button>
                           </TooltipTrigger>
                           <TooltipContent className="max-w-[280px] text-xs leading-relaxed">
-                            배경 막대는 현재 비교 대상들 내에서의 상대
-                            위치(최소~최대)입니다. ±는 첫 번째(기준) 라켓 대비
-                            차이입니다.
+                            배경 막대는 현재 비교 대상들 내에서의 상대 위치(최소~최대)입니다. ±는 첫
+                            번째(기준) 라켓 대비 차이입니다.
                           </TooltipContent>
                         </Tooltip>
                       </div>
                     </th>
                     {list.map((r, idx) => (
-                      <th
-                        key={r.id}
-                        className="p-4 text-left align-top min-w-[220px]"
-                      >
+                      <th key={r.id} className="p-4 text-left align-top min-w-[220px]">
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
@@ -426,10 +395,7 @@ export default function RacketCompareClient() {
                                 }
                               />
                               {idx === 0 && (
-                                <Badge
-                                  variant="info"
-                                  className="h-5 px-2 text-[10px]"
-                                >
+                                <Badge variant="info" className="h-5 px-2 text-[10px]">
                                   기준
                                 </Badge>
                               )}
@@ -466,14 +432,11 @@ export default function RacketCompareClient() {
                                 unoptimized
                               />
                             ) : (
-                              <span className="text-[10px] text-muted-foreground">
-                                No Image
-                              </span>
+                              <span className="text-[10px] text-muted-foreground">No Image</span>
                             )}
                           </div>
                           <div className="text-xs text-muted-foreground font-normal">
-                            {r.year ? `${r.year}년` : "-"} /{" "}
-                            {r.condition ? r.condition : "-"}
+                            {r.year ? `${r.year}년` : "-"} / {r.condition ? r.condition : "-"}
                           </div>
                         </div>
                       </th>
@@ -484,12 +447,9 @@ export default function RacketCompareClient() {
                 <tbody className="divide-y divide-muted/50 dark:divide-muted/30">
                   {rows.map((row) => {
                     const baseItem = list[0];
-                    const baseNum =
-                      row.kind === "num" ? toNum(row.get(baseItem)) : null;
+                    const baseNum = row.kind === "num" ? toNum(row.get(baseItem)) : null;
                     const mm =
-                      row.kind === "num"
-                        ? minMax(list.map((it) => toNum(row.get(it))))
-                        : null;
+                      row.kind === "num" ? minMax(list.map((it) => toNum(row.get(it)))) : null;
 
                     return (
                       <tr
@@ -521,10 +481,7 @@ export default function RacketCompareClient() {
                         {list.map((r, idx) => {
                           if (row.kind === "text") {
                             return (
-                              <td
-                                key={r.id + row.key}
-                                className="p-4 font-medium"
-                              >
+                              <td key={r.id + row.key} className="p-4 font-medium">
                                 {row.get(r)}
                               </td>
                             );
@@ -540,8 +497,7 @@ export default function RacketCompareClient() {
                                 ? `${Math.round(n).toLocaleString()}원`
                                 : `${fmtFixed(n, decimals)}${row.unit ?? ""}`;
 
-                          const delta =
-                            n !== null && baseNum !== null ? n - baseNum : null;
+                          const delta = n !== null && baseNum !== null ? n - baseNum : null;
 
                           const deltaAbsText =
                             delta === null
@@ -550,14 +506,7 @@ export default function RacketCompareClient() {
                                 ? `${Math.abs(Math.round(delta)).toLocaleString()}원`
                                 : `${fmtFixed(Math.abs(delta), decimals)}${row.unit ?? ""}`;
 
-                          const sign =
-                            delta === null
-                              ? ""
-                              : delta > 0
-                                ? "+"
-                                : delta < 0
-                                  ? "-"
-                                  : "";
+                          const sign = delta === null ? "" : delta > 0 ? "+" : delta < 0 ? "-" : "";
 
                           const pct =
                             delta !== null && baseNum !== null && baseNum !== 0
@@ -569,10 +518,7 @@ export default function RacketCompareClient() {
                               ? null
                               : `${pct > 0 ? "+" : pct < 0 ? "-" : ""}${Math.abs(pct).toFixed(1)}%`;
 
-                          const t =
-                            mm && n !== null
-                              ? ratio01(n, mm.min, mm.max)
-                              : null;
+                          const t = mm && n !== null ? ratio01(n, mm.min, mm.max) : null;
                           const isBaseCol = idx === 0;
 
                           const deltaClass =
@@ -594,10 +540,7 @@ export default function RacketCompareClient() {
                                   : "bg-muted/30";
 
                           return (
-                            <td
-                              key={r.id + row.key}
-                              className="p-4 relative overflow-hidden"
-                            >
+                            <td key={r.id + row.key} className="p-4 relative overflow-hidden">
                               {t !== null && (
                                 <div
                                   className={cn(
@@ -612,12 +555,7 @@ export default function RacketCompareClient() {
                                 <div className="font-semibold">{valueText}</div>
 
                                 {!isBaseCol && delta !== null && (
-                                  <div
-                                    className={cn(
-                                      "mt-0.5 text-[11px] font-medium",
-                                      deltaClass,
-                                    )}
-                                  >
+                                  <div className={cn("mt-0.5 text-[11px] font-medium", deltaClass)}>
                                     {sign}
                                     {deltaAbsText}
                                     {pctText ? ` (${pctText})` : ""}

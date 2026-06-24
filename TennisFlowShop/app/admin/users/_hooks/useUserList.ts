@@ -64,9 +64,7 @@ export function useUserList(filters: UserListFilters) {
     : null;
   const totalValue = swr.data?.total;
   const total =
-    hasResolvedData &&
-    typeof totalValue === "number" &&
-    Number.isFinite(totalValue)
+    hasResolvedData && typeof totalValue === "number" && Number.isFinite(totalValue)
       ? totalValue
       : null;
 

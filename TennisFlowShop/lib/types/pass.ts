@@ -1,11 +1,6 @@
 import type { ObjectId } from "mongodb";
 
-export type ServicePassStatus =
-  | "active"
-  | "paused"
-  | "cancelled"
-  | "expired"
-  | "suspended";
+export type ServicePassStatus = "active" | "paused" | "cancelled" | "expired" | "suspended";
 
 export interface ServicePass {
   _id: ObjectId;

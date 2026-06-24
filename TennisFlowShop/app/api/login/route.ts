@@ -59,10 +59,7 @@ export async function POST(req: Request) {
   try {
     rawBody = await req.json();
   } catch {
-    return NextResponse.json(
-      { error: "요청 본문(JSON)이 올바르지 않습니다." },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "요청 본문(JSON)이 올바르지 않습니다." }, { status: 400 });
   }
 
   const parsed = LoginBodySchema.safeParse(rawBody);
@@ -91,9 +88,7 @@ export async function POST(req: Request) {
 
   // 사용자 조회 + 비밀번호 검증
   const user = await getUserByEmail(email);
-  const isValid =
-    user?.hashedPassword &&
-    (await verifyPassword(password, user.hashedPassword));
+  const isValid = user?.hashedPassword && (await verifyPassword(password, user.hashedPassword));
 
   if (!isValid) {
     return NextResponse.json(
@@ -102,13 +97,9 @@ export async function POST(req: Request) {
     );
   }
 
-  if (user.isDeleted)
-    return NextResponse.json({ error: "탈퇴한 계정입니다." }, { status: 403 });
+  if (user.isDeleted) return NextResponse.json({ error: "탈퇴한 계정입니다." }, { status: 403 });
   if (user.isSuspended)
-    return NextResponse.json(
-      { error: "비활성화된 계정입니다." },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: "비활성화된 계정입니다." }, { status: 403 });
 
   // AccessToken 생성 (payload, 시크릿 키, 옵션)
   const accessToken = jwt.sign(
@@ -153,8 +144,7 @@ export async function POST(req: Request) {
    * - non-admin: 이전 관리자 토큰이 남아있지 않도록 즉시 삭제
    */
   if (user.role === "admin") {
-    const adminCsrfToken =
-      `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, "");
+    const adminCsrfToken = `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, "");
     response.cookies.set(ADMIN_CSRF_COOKIE_KEY, adminCsrfToken, {
       ...baseCookie,
       httpOnly: false,
@@ -203,9 +193,7 @@ export async function POST(req: Request) {
     await Promise.all([
       // (db, userId, email) 순서로 통일
       autoLinkStringingByEmail(db, user._id, user.email),
-      db
-        .collection("users")
-        .updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } }),
+      db.collection("users").updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } }),
     ]);
   } catch (e) {
     console.warn("[login] post-login side effects fail:", e);

@@ -6,10 +6,7 @@ import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
 const ALLOWED = new Set(["public", "hidden"]);
 
-export async function PATCH(
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -17,8 +14,7 @@ export async function PATCH(
   const { db } = guard;
 
   const { id } = await context.params;
-  if (!ObjectId.isValid(id))
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  if (!ObjectId.isValid(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
   const body = await req.json().catch(() => null);
   const status = String(body?.status ?? "").trim();
@@ -32,15 +28,13 @@ export async function PATCH(
     { _id: new ObjectId(id) },
     { projection: { status: 1, title: 1, type: 1, category: 1 } },
   );
-  if (!beforeDoc)
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!beforeDoc) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const r = await col.updateOne(
     { _id: new ObjectId(id) },
     { $set: { status, updatedAt: new Date() } },
   );
 
-  if (!r.matchedCount)
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!r.matchedCount) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   await appendAdminAudit(
     db,
@@ -52,8 +46,7 @@ export async function PATCH(
       diff: {
         targetType: "communityPost",
         before: {
-          status:
-            typeof beforeDoc.status === "string" ? beforeDoc.status : undefined,
+          status: typeof beforeDoc.status === "string" ? beforeDoc.status : undefined,
         },
         after: { status },
         metadata: {

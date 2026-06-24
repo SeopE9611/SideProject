@@ -9,9 +9,7 @@ function shouldLog(totalMs: number) {
   if (process.env.API_PERF_LOG === "1") return true;
   const threshold = Number(process.env.API_SLOW_LOG_MS);
   const slowThreshold =
-    Number.isFinite(threshold) && threshold > 0
-      ? threshold
-      : DEFAULT_SLOW_API_THRESHOLD_MS;
+    Number.isFinite(threshold) && threshold > 0 ? threshold : DEFAULT_SLOW_API_THRESHOLD_MS;
   return totalMs >= slowThreshold;
 }
 
@@ -35,9 +33,7 @@ export function createApiPerfLogger(route: string) {
       console.info("[api-perf]", {
         route,
         totalMs: Number(totalMs.toFixed(1)),
-        marks: Object.fromEntries(
-          marks.map((mark) => [mark.name, Number(mark.ms.toFixed(1))]),
-        ),
+        marks: Object.fromEntries(marks.map((mark) => [mark.name, Number(mark.ms.toFixed(1))])),
         ...extra,
       });
     },

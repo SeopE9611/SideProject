@@ -33,24 +33,15 @@ export async function DELETE(req: NextRequest) {
     const cookieStore = await cookies();
     const token = cookieStore.get("accessToken")?.value;
 
-    if (!token)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const payload = safeVerifyAccessToken(token);
 
-    if (!payload)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!payload) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const userId = payload?.sub;
     if (!ObjectId.isValid(String(userId)))
-      return NextResponse.json(
-        { error: "Invalid token payload" },
-        { status: 400 },
-      );
-    if (!userId)
-      return NextResponse.json(
-        { error: "Invalid token payload" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid token payload" }, { status: 400 });
+    if (!userId) return NextResponse.json({ error: "Invalid token payload" }, { status: 400 });
 
     // MongoDB 연결
     const db = (await clientPromise).db();

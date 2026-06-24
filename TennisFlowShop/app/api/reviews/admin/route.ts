@@ -12,15 +12,10 @@ export async function GET(req: Request) {
     const productId = url.searchParams.get("productId");
     // limit 파싱: NaN이면 Mongo limit 단계에서 터질 수 있으므로 정수/클램프 처리
     const limitRaw = parseInt(url.searchParams.get("limit") || "50", 10);
-    const limit = Number.isFinite(limitRaw)
-      ? Math.max(1, Math.min(100, limitRaw))
-      : 50;
+    const limit = Number.isFinite(limitRaw) ? Math.max(1, Math.min(100, limitRaw)) : 50;
 
     if (!productId) {
-      return NextResponse.json(
-        { error: "productId required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "productId required" }, { status: 400 });
     }
 
     const client = await clientPromise;
@@ -35,10 +30,7 @@ export async function GET(req: Request) {
       .find(
         {
           isDeleted: { $ne: true },
-          $or: [
-            { productId: { $in: candidates } },
-            { "target.productId": { $in: candidates } },
-          ],
+          $or: [{ productId: { $in: candidates } }, { "target.productId": { $in: candidates } }],
         },
         {
           projection: {

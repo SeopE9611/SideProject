@@ -3,16 +3,10 @@ import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import RentalsCheckoutClient from "@/app/rentals/[id]/checkout/_components/RentalsCheckoutClient";
 import { verifyAccessToken } from "@/lib/auth.utils";
-import {
-  getEffectiveProductPrice,
-  getProductPriceDisplayMeta,
-} from "@/lib/product-pricing";
+import { getEffectiveProductPrice, getProductPriceDisplayMeta } from "@/lib/product-pricing";
 import { cookies } from "next/headers";
 import LoginGate from "@/components/system/LoginGate";
-import {
-  productVisibilityFilterFor,
-  racketVisibilityFilterFor,
-} from "@/lib/public-visibility";
+import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 
 import type { Metadata } from "next";
@@ -33,11 +27,7 @@ function safeVerifyAccessToken(token?: string) {
 export const dynamic = "force-dynamic";
 
 // [id] = racketId, period = 7|15|30
-async function getInitialForRacket(
-  racketId: string,
-  period: number,
-  stringId?: string,
-) {
+async function getInitialForRacket(racketId: string, period: number, stringId?: string) {
   const db = (await clientPromise).db();
   const viewer = await getVisibilityViewerFromCookies();
   const racket = await db.collection("used_rackets").findOne({
@@ -47,10 +37,7 @@ async function getInitialForRacket(
 
   if (!racket) return null;
 
-  const days = (period === 7 || period === 15 || period === 30 ? period : 7) as
-    | 7
-    | 15
-    | 30;
+  const days = (period === 7 || period === 15 || period === 30 ? period : 7) as 7 | 15 | 30;
 
   const feeMap = {
     7: racket.rental?.fee?.d7 ?? 0,
@@ -92,9 +79,7 @@ async function getInitialForRacket(
 
     const img =
       (typeof (p as any).thumbnail === "string" && (p as any).thumbnail) ||
-      (Array.isArray((p as any).images) && (p as any).images[0]
-        ? (p as any).images[0]
-        : null);
+      (Array.isArray((p as any).images) && (p as any).images[0] ? (p as any).images[0] : null);
     selectedString = {
       id: stringId,
       name: (p as any).name ?? "",
@@ -117,10 +102,7 @@ async function getInitialForRacket(
       id: racket._id.toString(),
       brand: racket.brand,
       model: racket.model,
-      image:
-        Array.isArray(racket.images) && racket.images[0]
-          ? racket.images[0]
-          : null,
+      image: Array.isArray(racket.images) && racket.images[0] ? racket.images[0] : null,
       condition: racket.condition,
     },
   };
@@ -142,17 +124,12 @@ export default async function Page({
 }) {
   const [{ id }, s] = await Promise.all([params, searchParams]);
   const rawPeriod = Number((s?.period as string | undefined) ?? NaN);
-  const period =
-    rawPeriod === 7 || rawPeriod === 15 || rawPeriod === 30 ? rawPeriod : 7;
+  const period = rawPeriod === 7 || rawPeriod === 15 || rawPeriod === 30 ? rawPeriod : 7;
   const stringId = (s?.stringId as string | undefined) ?? undefined;
   const selectedGauge =
-    (s?.selectedGauge as string | undefined) ??
-    (s?.gauge as string | undefined) ??
-    "";
+    (s?.selectedGauge as string | undefined) ?? (s?.gauge as string | undefined) ?? "";
   const selectedColor =
-    (s?.selectedColor as string | undefined) ??
-    (s?.color as string | undefined) ??
-    "";
+    (s?.selectedColor as string | undefined) ?? (s?.color as string | undefined) ?? "";
 
   // 비회원 주문(대여) 차단 정책(서버)
   const guestOrderMode = (
@@ -169,8 +146,7 @@ export default async function Page({
       const qs = new URLSearchParams();
       qs.set("period", String(period));
       if (stringId) qs.set("stringId", stringId);
-      const next =
-        `/rentals/${id}/checkout` + (qs.toString() ? `?${qs.toString()}` : "");
+      const next = `/rentals/${id}/checkout` + (qs.toString() ? `?${qs.toString()}` : "");
       return <LoginGate next={next} variant="checkout" />;
     }
   }

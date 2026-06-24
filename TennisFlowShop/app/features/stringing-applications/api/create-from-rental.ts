@@ -120,8 +120,7 @@ export async function createStringingApplicationFromRental(
 
     // 대여 쪽 금액 구조가 케이스별로 다를 수 있어 우선 힌트 기반
     // (없으면 0으로 시작)
-    serviceAmount:
-      (rental as any).serviceFeeHint ?? (rental as any).serviceFee ?? 0,
+    serviceAmount: (rental as any).serviceFeeHint ?? (rental as any).serviceFee ?? 0,
 
     paymentSource: `rental:${rental._id.toString()}`,
 
@@ -148,9 +147,7 @@ export async function createStringingApplicationFromRental(
     meta: {
       fromRental: true,
       servicePickupMethod: pickup,
-      stringProductId: rental.stringing?.stringId
-        ? String(rental.stringing.stringId)
-        : null,
+      stringProductId: rental.stringing?.stringId ? String(rental.stringing.stringId) : null,
       stringName: (rental.stringing as any)?.name ?? null,
       stringImage: (rental.stringing as any)?.image ?? null,
       stringUnitPrice:
@@ -189,15 +186,11 @@ export async function createStringingApplicationFromRental(
   const upserted = (u as any).upsertedId;
   if (upserted) {
     // 드라이버/환경에 따라 upsertedId 형태가 { _id } 또는 ObjectId일 수 있어 방어
-    const id =
-      typeof upserted === "object" && upserted?._id ? upserted._id : upserted;
+    const id = typeof upserted === "object" && upserted?._id ? upserted._id : upserted;
     if (id) return { _id: id };
   }
 
-  const existing = await col.findOne(
-    { rentalId: rental._id },
-    { session, projection: { _id: 1 } },
-  );
+  const existing = await col.findOne({ rentalId: rental._id }, { session, projection: { _id: 1 } });
   if (!existing?._id) throw new Error("UPSERT_STRINGING_APP_FAILED");
   return { _id: existing._id };
 }

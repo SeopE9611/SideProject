@@ -8,8 +8,6 @@ export interface DashboardMetricsQueryResult {
 }
 
 /** Responsibility: query collection only (DB 접근 진입점). */
-export async function collectDashboardMetrics(
-  db: Db,
-): Promise<DashboardMetricsQueryResult> {
+export async function collectDashboardMetrics(db: Db): Promise<DashboardMetricsQueryResult> {
   return getDashboardMetrics(db);
 }

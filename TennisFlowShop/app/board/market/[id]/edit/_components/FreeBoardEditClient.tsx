@@ -41,33 +41,17 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { MouseEvent as ReactMouseEvent } from "react";
-import {
-  ChangeEvent,
-  FormEvent,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { mutate as globalMutate } from "swr";
 
 type Props = {
   id: string;
 };
 
-type DetailResponse =
-  | { ok: true; item: CommunityPost }
-  | { ok: false; error: string };
+type DetailResponse = { ok: true; item: CommunityPost } | { ok: false; error: string };
 
 type AttachmentItem = NonNullable<CommunityPost["attachments"]>[number];
-type FieldKey =
-  | "category"
-  | "brand"
-  | "price"
-  | "modelName"
-  | "title"
-  | "content"
-  | "attachments";
+type FieldKey = "category" | "brand" | "price" | "modelName" | "title" | "content" | "attachments";
 type FieldErrors = Partial<Record<FieldKey, string>>;
 
 const TITLE_MIN = 4;
@@ -75,8 +59,7 @@ const TITLE_MAX = 80;
 const CONTENT_MIN = 10;
 const CONTENT_MAX = 5000;
 const hasHtmlLike = (s: string) => /<[^>]+>/.test(s);
-const hasScriptLike = (s: string) =>
-  /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
+const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
 const scrollIntoViewOpts: ScrollIntoViewOptions = {
   behavior: "smooth",
   block: "center",
@@ -95,9 +78,7 @@ export default function FreeBoardEditClient({ id }: Props) {
   const [content, setContent] = useState("");
 
   // 카테고리 상태
-  const [category, setCategory] = useState<"racket" | "string" | "equipment">(
-    "racket",
-  );
+  const [category, setCategory] = useState<"racket" | "string" | "equipment">("racket");
 
   const [brand, setBrand] = useState<string>("");
   const [marketMeta, setMarketMeta] = useState<MarketMeta>({
@@ -156,9 +137,7 @@ export default function FreeBoardEditClient({ id }: Props) {
 
     const imagesJson = JSON.stringify(images);
     // marketMeta는 객체 순서/빈 문자열 차이를 줄이기 위해 normalize 후 문자열 비교
-    const marketMetaJson = JSON.stringify(
-      normalizeMarketMeta(category, marketMeta),
-    );
+    const marketMetaJson = JSON.stringify(normalizeMarketMeta(category, marketMeta));
     return (
       title !== b.title ||
       content !== b.content ||
@@ -168,22 +147,10 @@ export default function FreeBoardEditClient({ id }: Props) {
       marketMetaJson !== b.marketMetaJson ||
       selectedFiles.length > 0
     );
-  }, [
-    title,
-    content,
-    category,
-    brand,
-    images,
-    selectedFiles.length,
-    marketMeta,
-  ]);
+  }, [title, content, category, brand, images, selectedFiles.length, marketMeta]);
 
-  useUnsavedChangesGuard(
-    isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles,
-  );
-  useBackNavigationGuard(
-    isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles,
-  );
+  useUnsavedChangesGuard(isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles);
+  useBackNavigationGuard(isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles);
 
   const confirmLeaveIfDirty = (go: () => void) => {
     if (!isDirty) return go();
@@ -222,10 +189,7 @@ export default function FreeBoardEditClient({ id }: Props) {
         stringSpec: null,
       };
       const nextMarketMeta = (item as any).marketMeta ?? defaultMarketMeta;
-      const normalizedMarketMeta = normalizeMarketMeta(
-        nextCategory,
-        nextMarketMeta,
-      );
+      const normalizedMarketMeta = normalizeMarketMeta(nextCategory, nextMarketMeta);
       // baseline과 화면 state 기준을 맞춰 edit 진입 직후 비교 오차를 줄인다.
       const initialMarketMeta = normalizedMarketMeta ?? defaultMarketMeta;
 
@@ -299,11 +263,7 @@ export default function FreeBoardEditClient({ id }: Props) {
     attachmentsRef.current?.scrollIntoView(scrollIntoViewOpts);
   };
 
-  const setInlineError = (
-    key: FieldKey,
-    msg: string,
-    formMsg = "입력값을 확인해 주세요.",
-  ) => {
+  const setInlineError = (key: FieldKey, msg: string, formMsg = "입력값을 확인해 주세요.") => {
     setFieldErrors((prev) => ({ ...prev, [key]: msg }));
     setErrorMsg(formMsg);
     requestAnimationFrame(() => focusField(key));
@@ -319,34 +279,22 @@ export default function FreeBoardEditClient({ id }: Props) {
       else if (!isValidMarketBrandForCategory(category, brand))
         errs.brand = "선택한 브랜드가 분류에 맞지 않습니다.";
     }
-    if (
-      !Number.isFinite(Number(marketMeta.price)) ||
-      Number(marketMeta.price) <= 0
-    )
+    if (!Number.isFinite(Number(marketMeta.price)) || Number(marketMeta.price) <= 0)
       errs.price = "판매가는 1원 이상 입력해 주세요.";
-    if (
-      category === "racket" &&
-      !(marketMeta.racketSpec?.modelName ?? "").trim()
-    )
+    if (category === "racket" && !(marketMeta.racketSpec?.modelName ?? "").trim())
       errs.modelName = "라켓 모델명을 입력해 주세요.";
-    if (
-      category === "string" &&
-      !(marketMeta.stringSpec?.modelName ?? "").trim()
-    )
+    if (category === "string" && !(marketMeta.stringSpec?.modelName ?? "").trim())
       errs.modelName = "스트링 모델명을 입력해 주세요.";
 
     if (!t) errs.title = "제목을 입력해 주세요.";
     if (!c) errs.content = "내용을 입력해 주세요.";
 
     if (!errs.title) {
-      if (t.length < TITLE_MIN)
-        errs.title = `제목은 ${TITLE_MIN}자 이상 입력해 주세요.`;
-      else if (t.length > TITLE_MAX)
-        errs.title = `제목은 ${TITLE_MAX}자 이내로 입력해 주세요.`;
+      if (t.length < TITLE_MIN) errs.title = `제목은 ${TITLE_MIN}자 이상 입력해 주세요.`;
+      else if (t.length > TITLE_MAX) errs.title = `제목은 ${TITLE_MAX}자 이내로 입력해 주세요.`;
     }
     if (!errs.content) {
-      if (c.length < CONTENT_MIN)
-        errs.content = `내용은 ${CONTENT_MIN}자 이상 입력해 주세요.`;
+      if (c.length < CONTENT_MIN) errs.content = `내용은 ${CONTENT_MIN}자 이상 입력해 주세요.`;
       else if (c.length > CONTENT_MAX)
         errs.content = `내용은 ${CONTENT_MAX}자 이내로 입력해 주세요.`;
     }
@@ -355,13 +303,10 @@ export default function FreeBoardEditClient({ id }: Props) {
       errs.title = "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.";
     if (!errs.content && hasScriptLike(c))
       errs.content = "스크립트로 의심되는 입력이 포함되어 저장할 수 없습니다.";
-    if (!errs.title && hasHtmlLike(t))
-      errs.title = "HTML 태그는 사용할 수 없습니다.";
-    if (!errs.content && hasHtmlLike(c))
-      errs.content = "HTML 태그는 사용할 수 없습니다.";
+    if (!errs.title && hasHtmlLike(t)) errs.title = "HTML 태그는 사용할 수 없습니다.";
+    if (!errs.content && hasHtmlLike(c)) errs.content = "HTML 태그는 사용할 수 없습니다.";
 
-    if (images.length > 5)
-      errs.attachments = "이미지는 최대 5장까지만 업로드할 수 있어요.";
+    if (images.length > 5) errs.attachments = "이미지는 최대 5장까지만 업로드할 수 있어요.";
     if (totalAttachmentCount > MAX_FILES)
       errs.attachments = `파일은 최대 ${MAX_FILES}개까지만 업로드할 수 있어요.`;
 
@@ -370,10 +315,8 @@ export default function FreeBoardEditClient({ id }: Props) {
 
   // 카테고리 변경 시 계약에 맞지 않는 spec은 제거
   useEffect(() => {
-    if (category === "racket")
-      setMarketMeta((prev) => ({ ...prev, stringSpec: null }));
-    else if (category === "string")
-      setMarketMeta((prev) => ({ ...prev, racketSpec: null }));
+    if (category === "racket") setMarketMeta((prev) => ({ ...prev, stringSpec: null }));
+    else if (category === "string") setMarketMeta((prev) => ({ ...prev, racketSpec: null }));
     else
       setMarketMeta((prev) => ({
         ...prev,
@@ -390,11 +333,7 @@ export default function FreeBoardEditClient({ id }: Props) {
       price: undefined,
       modelName: undefined,
     }));
-  }, [
-    marketMeta.price,
-    marketMeta.racketSpec?.modelName,
-    marketMeta.stringSpec?.modelName,
-  ]);
+  }, [marketMeta.price, marketMeta.racketSpec?.modelName, marketMeta.stringSpec?.modelName]);
 
   // 파일 업로드 관련
 
@@ -410,11 +349,9 @@ export default function FreeBoardEditClient({ id }: Props) {
    * - 로직 변경이 아니라 "현재 state를 보기 좋게 요약"하는 값들입니다.
    * - edit는 기존 첨부 + 신규 첨부를 함께 봐야 하므로 totalAttachmentCount를 사용합니다.
    */
-  const categoryLabel =
-    CATEGORY_OPTIONS.find((opt) => opt.value === category)?.label ?? "-";
+  const categoryLabel = CATEGORY_OPTIONS.find((opt) => opt.value === category)?.label ?? "-";
   const brandLabel = brand
-    ? (getMarketBrandOptions(category).find((opt) => opt.value === brand)
-        ?.label ?? brand)
+    ? (getMarketBrandOptions(category).find((opt) => opt.value === brand)?.label ?? brand)
     : "-";
   const priceLabel =
     typeof marketMeta.price === "number" && marketMeta.price > 0
@@ -515,8 +452,7 @@ export default function FreeBoardEditClient({ id }: Props) {
     }
 
     // 문서 파일만 허용 (write 페이지와 동일 정책)
-    const extOk = (name: string) =>
-      /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|hwp|hwpx|txt)$/i.test(name);
+    const extOk = (name: string) => /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|hwp|hwpx|txt)$/i.test(name);
     const ALLOWED_MIME = new Set([
       "application/pdf",
       "application/msword",
@@ -528,9 +464,7 @@ export default function FreeBoardEditClient({ id }: Props) {
       "text/plain",
       // HWP/HWPX는 브라우저/OS별로 mime이 비어있거나 제각각이라 확장자 기반을 주로 사용
     ]);
-    const invalid = files.find(
-      (f) => !(ALLOWED_MIME.has(f.type) || extOk(f.name)),
-    );
+    const invalid = files.find((f) => !(ALLOWED_MIME.has(f.type) || extOk(f.name)));
     if (invalid) {
       setInlineError(
         "attachments",
@@ -653,27 +587,18 @@ export default function FreeBoardEditClient({ id }: Props) {
 
       // 새 파일을 업로드한 경우에만 attachments를 보냄
       //    (선택된 파일이 없으면 서버에서 기존 attachments 유지)
-      if (
-        selectedFiles.length > 0 &&
-        nextAttachments &&
-        nextAttachments.length > 0
-      ) {
+      if (selectedFiles.length > 0 && nextAttachments && nextAttachments.length > 0) {
         payload.attachments = nextAttachments;
       }
 
-      const res = await communityFetch(
-        `/api/community/posts/${id}?type=market`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            ...(clientSeenDate
-              ? { "If-Unmodified-Since": clientSeenDate }
-              : {}),
-          },
-          body: JSON.stringify(payload),
+      const res = await communityFetch(`/api/community/posts/${id}?type=market`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(clientSeenDate ? { "If-Unmodified-Since": clientSeenDate } : {}),
         },
-      );
+        body: JSON.stringify(payload),
+      });
 
       const json = await res.json();
 
@@ -705,9 +630,7 @@ export default function FreeBoardEditClient({ id }: Props) {
       router.refresh();
     } catch (err) {
       console.error(err);
-      setErrorMsg(
-        "알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-      );
+      setErrorMsg("알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
     } finally {
       setIsSubmitting(false);
     }
@@ -723,8 +646,7 @@ export default function FreeBoardEditClient({ id }: Props) {
           <Card className="border border-border bg-card shadow-md dark:bg-card">
             <CardContent className="space-y-4 p-6">
               <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
-                해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수
-                있습니다.
+                해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.
               </div>
               <div className="flex justify-end gap-2">
                 <Button asChild variant="outline" size="sm">
@@ -764,15 +686,14 @@ export default function FreeBoardEditClient({ id }: Props) {
               중고 거래 글 수정
             </h1>
             <p className="mt-1 text-sm text-muted-foreground md:text-base">
-              기존에 작성한 글의 내용을 수정합니다. 제목과 내용을 확인한 뒤
-              저장해 주세요.
+              기존에 작성한 글의 내용을 수정합니다. 제목과 내용을 확인한 뒤 저장해 주세요.
             </p>
             {/* 이탈 경고(고정 노출) */}
             <div className="mb-3 mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
               <AlertTriangle className="mt-0.5 h-4 w-4 flex-none" />
               <p className="leading-relaxed">
-                <span className="font-semibold">주의:</span> 수정 중에 다른
-                페이지로 이동하거나 새로고침하면 입력한 내용이{" "}
+                <span className="font-semibold">주의:</span> 수정 중에 다른 페이지로 이동하거나
+                새로고침하면 입력한 내용이{" "}
                 <span className="font-semibold">초기화될 수 있습니다.</span>
               </p>
             </div>
@@ -790,12 +711,7 @@ export default function FreeBoardEditClient({ id }: Props) {
               <ArrowLeft className="h-4 w-4" />
               <span>이전으로</span>
             </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="gap-2 text-xs sm:text-sm"
-            >
+            <Button asChild variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
               <Link href="/board/market" onClick={onLeaveLinkClick}>
                 <MessageSquare className="h-4 w-4" />
                 <span>목록으로</span>
@@ -807,9 +723,7 @@ export default function FreeBoardEditClient({ id }: Props) {
         {isLoading ? (
           <Card className="border border-border bg-card shadow-md dark:bg-card">
             <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
-              <CardTitle className="text-base font-semibold">
-                글 내용 수정
-              </CardTitle>
+              <CardTitle className="text-base font-semibold">글 내용 수정</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 p-6">
               <div className="space-y-2">
@@ -855,8 +769,8 @@ export default function FreeBoardEditClient({ id }: Props) {
                       동시 수정 충돌이 감지되었습니다.
                     </p>
                     <p className="mt-1">
-                      최신 글을 다시 조회한 뒤, 현재 작성 중인 내용과 비교해서
-                      필요한 부분만 반영해 주세요.
+                      최신 글을 다시 조회한 뒤, 현재 작성 중인 내용과 비교해서 필요한 부분만 반영해
+                      주세요.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <Button
@@ -896,8 +810,8 @@ export default function FreeBoardEditClient({ id }: Props) {
                   </CardHeader>
                   <CardContent className="space-y-6 p-6">
                     <div className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-                      브랜드, 모델명, 가격, 상태 정보를 우선 점검해 주세요.
-                      정확한 정보일수록 구매자가 빠르게 판단할 수 있습니다.
+                      브랜드, 모델명, 가격, 상태 정보를 우선 점검해 주세요. 정확한 정보일수록
+                      구매자가 빠르게 판단할 수 있습니다.
                     </div>
 
                     <div className="space-y-2" ref={categoryRef}>
@@ -905,9 +819,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                       <div
                         className={cn(
                           "flex flex-wrap gap-2 text-xs",
-                          fieldErrors.category
-                            ? "rounded-lg border border-destructive/50 p-2"
-                            : "",
+                          fieldErrors.category ? "rounded-lg border border-destructive/50 p-2" : "",
                         )}
                       >
                         {CATEGORY_OPTIONS.map((opt) => (
@@ -951,9 +863,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                           disabled={isSubmitting}
                           className={cn(
                             "h-10 w-full rounded-md border bg-card px-3 text-sm shadow-sm",
-                            fieldErrors.brand
-                              ? "border-destructive focus:border-destructive"
-                              : "",
+                            fieldErrors.brand ? "border-destructive focus:border-destructive" : "",
                           )}
                         >
                           <option value="">브랜드를 선택해 주세요</option>
@@ -967,9 +877,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                           라켓/스트링 글은 브랜드 선택이 필수입니다.
                         </p>
                         {fieldErrors.brand ? (
-                          <p className="text-xs text-destructive">
-                            {fieldErrors.brand}
-                          </p>
+                          <p className="text-xs text-destructive">{fieldErrors.brand}</p>
                         ) : null}
                       </div>
                     )}
@@ -1011,8 +919,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                       <span>게시글 내용</span>
                     </CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      구매자가 이해하기 쉽도록 제목과 설명을 구체적으로 작성해
-                      주세요.
+                      구매자가 이해하기 쉽도록 제목과 설명을 구체적으로 작성해 주세요.
                     </p>
                   </CardHeader>
                   <CardContent className="space-y-6 p-6">
@@ -1041,9 +948,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                         )}
                       />
                       {fieldErrors.title ? (
-                        <p className="text-xs text-destructive">
-                          {fieldErrors.title}
-                        </p>
+                        <p className="text-xs text-destructive">{fieldErrors.title}</p>
                       ) : null}
                     </div>
 
@@ -1072,13 +977,11 @@ export default function FreeBoardEditClient({ id }: Props) {
                         placeholder="구매 시기, 사용 기간, 상태, 거래 방식(직거래/택배), 포함 구성품 등을 적어주세요."
                       />
                       {fieldErrors.content ? (
-                        <p className="text-xs text-destructive">
-                          {fieldErrors.content}
-                        </p>
+                        <p className="text-xs text-destructive">{fieldErrors.content}</p>
                       ) : null}
                       <p className="mt-1 text-xs text-muted-foreground">
-                        신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터
-                        Q&amp;A 게시판을 활용해 주세요.
+                        신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해
+                        주세요.
                       </p>
                     </div>
                   </CardContent>
@@ -1095,8 +998,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                       <span>판매 이미지 / 파일</span>
                     </CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      실물 사진은 최소 1장 이상 권장되며, 첫 번째 이미지가 대표
-                      이미지로 사용됩니다.
+                      실물 사진은 최소 1장 이상 권장되며, 첫 번째 이미지가 대표 이미지로 사용됩니다.
                     </p>
                   </CardHeader>
                   <CardContent className="space-y-3 p-6">
@@ -1106,34 +1008,26 @@ export default function FreeBoardEditClient({ id }: Props) {
                   */}
                     <div className="grid gap-3 sm:grid-cols-3">
                       <div className="rounded-lg border border-border bg-muted/30 px-3 py-3">
-                        <p className="text-sm text-foreground/75">
-                          현재 이미지
-                        </p>
+                        <p className="text-sm text-foreground/75">현재 이미지</p>
                         <p className="mt-1 text-sm font-semibold text-foreground">
                           {images.length}장
                         </p>
                       </div>
                       <div className="rounded-lg border border-border bg-muted/30 px-3 py-3">
-                        <p className="text-sm text-foreground/75">
-                          기존 첨부 파일
-                        </p>
+                        <p className="text-sm text-foreground/75">기존 첨부 파일</p>
                         <p className="mt-1 text-sm font-semibold text-foreground">
                           {existingAttachmentCount}개
                         </p>
                       </div>
                       <div className="rounded-lg border border-border bg-muted/30 px-3 py-3">
-                        <p className="text-sm text-foreground/75">
-                          새로 추가한 파일
-                        </p>
+                        <p className="text-sm text-foreground/75">새로 추가한 파일</p>
                         <p className="mt-1 text-sm font-semibold text-foreground">
                           {newAttachmentCount}개
                         </p>
                       </div>
                     </div>
                     {fieldErrors.attachments ? (
-                      <p className="text-xs text-destructive">
-                        {fieldErrors.attachments}
-                      </p>
+                      <p className="text-xs text-destructive">{fieldErrors.attachments}</p>
                     ) : null}
 
                     <Tabs defaultValue="image" className="w-full">
@@ -1144,8 +1038,7 @@ export default function FreeBoardEditClient({ id }: Props) {
 
                       <TabsContent value="image" className="space-y-2 pt-4">
                         <p className="text-xs text-muted-foreground">
-                          최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가
-                          대표로 사용됩니다.
+                          최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로 사용됩니다.
                         </p>
                         <ImageUploader
                           value={images}
@@ -1216,13 +1109,11 @@ export default function FreeBoardEditClient({ id }: Props) {
                         >
                           <Upload className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
                           <p className="text-sm text-muted-foreground">
-                            클릭하여 파일을 선택하거나, 이 영역으로 드래그하여
-                            업로드할 수 있어요.
+                            클릭하여 파일을 선택하거나, 이 영역으로 드래그하여 업로드할 수 있어요.
                           </p>
                           <p className="mt-1 text-xs text-muted-foreground">
-                            이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당
-                            최대 {MAX_SIZE_MB}MB, 최대 {MAX_FILES}개, 현재{" "}
-                            {totalAttachmentCount}/{MAX_FILES}개)
+                            이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당 최대 {MAX_SIZE_MB}
+                            MB, 최대 {MAX_FILES}개, 현재 {totalAttachmentCount}/{MAX_FILES}개)
                           </p>
                           <Button
                             type="button"
@@ -1259,10 +1150,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                                   className="group relative flex flex-col justify-between rounded-lg bg-card px-3 py-2 shadow-sm ring-1 ring-ring transition hover:shadow-md hover:ring-2 hover:ring-ring"
                                 >
                                   <div className="flex flex-1 flex-col gap-1 text-xs">
-                                    <span
-                                      className="truncate font-medium"
-                                      title={file.name}
-                                    >
+                                    <span className="truncate font-medium" title={file.name}>
                                       {file.name}
                                     </span>
                                     <span className="text-muted-foreground">
@@ -1294,14 +1182,8 @@ export default function FreeBoardEditClient({ id }: Props) {
                     variant="outline"
                     size="sm"
                     className={cn("gap-2")}
-                    disabled={
-                      isSubmitting || isUploadingImages || isUploadingFiles
-                    }
-                    onClick={() =>
-                      confirmLeaveIfDirty(() =>
-                        router.push(`/board/market/${id}`),
-                      )
-                    }
+                    disabled={isSubmitting || isUploadingImages || isUploadingFiles}
+                    onClick={() => confirmLeaveIfDirty(() => router.push(`/board/market/${id}`))}
                   >
                     <ArrowLeft className="h-4 w-4" />
                     <span>취소</span>
@@ -1310,13 +1192,9 @@ export default function FreeBoardEditClient({ id }: Props) {
                     type="submit"
                     size="sm"
                     className={cn("gap-2")}
-                    disabled={
-                      isSubmitting || isUploadingImages || isUploadingFiles
-                    }
+                    disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                   >
-                    {isSubmitting && (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    )}
+                    {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
                     <span>수정하기</span>
                   </Button>
                 </div>
@@ -1324,9 +1202,7 @@ export default function FreeBoardEditClient({ id }: Props) {
 
               {/* ===== 오른쪽: sticky 수정 요약 카드 (lg+) ===== */}
               <aside className="hidden flex-shrink-0 lg:sticky lg:top-24 lg:block lg:w-[300px] lg:self-start xl:w-[320px]">
-                <div
-                  className={cn("space-y-4", isCompactSticky && "space-y-3")}
-                >
+                <div className={cn("space-y-4", isCompactSticky && "space-y-3")}>
                   {/* 수정 요약 */}
                   <div className="rounded-xl border border-border bg-card shadow-sm">
                     <div
@@ -1335,9 +1211,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                         isCompactSticky && "px-4 py-2.5",
                       )}
                     >
-                      <h3 className="text-sm font-semibold text-foreground">
-                        수정 요약
-                      </h3>
+                      <h3 className="text-sm font-semibold text-foreground">수정 요약</h3>
                     </div>
                     <div
                       className={cn(
@@ -1347,17 +1221,13 @@ export default function FreeBoardEditClient({ id }: Props) {
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">분류</span>
-                        <span className="font-medium text-foreground">
-                          {categoryLabel}
-                        </span>
+                        <span className="font-medium text-foreground">{categoryLabel}</span>
                       </div>
 
                       {isMarketBrandCategory(category) && (
                         <div className="flex items-center justify-between">
                           <span className="text-muted-foreground">브랜드</span>
-                          <span className="font-medium text-foreground">
-                            {brandLabel}
-                          </span>
+                          <span className="font-medium text-foreground">{brandLabel}</span>
                         </div>
                       )}
 
@@ -1365,30 +1235,22 @@ export default function FreeBoardEditClient({ id }: Props) {
 
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">판매가</span>
-                        <span className="font-semibold text-foreground">
-                          {priceLabel}
-                        </span>
+                        <span className="font-semibold text-foreground">{priceLabel}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">판매 상태</span>
-                        <span className="font-medium text-foreground">
-                          {saleStatusLabel}
-                        </span>
+                        <span className="font-medium text-foreground">{saleStatusLabel}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">상태 등급</span>
-                        <span className="font-medium text-foreground">
-                          {gradeLabel}
-                        </span>
+                        <span className="font-medium text-foreground">{gradeLabel}</span>
                       </div>
 
                       <div className="border-t border-border" />
 
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">변경 상태</span>
-                        <span className="font-medium text-foreground">
-                          {changeStatusLabel}
-                        </span>
+                        <span className="font-medium text-foreground">{changeStatusLabel}</span>
                       </div>
 
                       <div className="flex items-center justify-between">
@@ -1399,9 +1261,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">이미지</span>
-                        <span className="font-medium text-foreground">
-                          {images.length}장
-                        </span>
+                        <span className="font-medium text-foreground">{images.length}장</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">기존 파일</span>
@@ -1411,25 +1271,16 @@ export default function FreeBoardEditClient({ id }: Props) {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">새 파일</span>
-                        <span className="font-medium text-foreground">
-                          {newAttachmentCount}개
-                        </span>
+                        <span className="font-medium text-foreground">{newAttachmentCount}개</span>
                       </div>
                     </div>
                   </div>
 
-                  <div
-                    className={cn(
-                      "space-y-2",
-                      isCompactSticky && "space-y-1.5",
-                    )}
-                  >
+                  <div className={cn("space-y-2", isCompactSticky && "space-y-1.5")}>
                     <Button
                       type="submit"
                       className={cn("w-full gap-2", isCompactSticky && "h-10")}
-                      disabled={
-                        isSubmitting || isUploadingImages || isUploadingFiles
-                      }
+                      disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                     >
                       {isSubmitting ? (
                         <>
@@ -1448,14 +1299,8 @@ export default function FreeBoardEditClient({ id }: Props) {
                       type="button"
                       variant="outline"
                       className={cn("w-full", isCompactSticky && "h-10")}
-                      disabled={
-                        isSubmitting || isUploadingImages || isUploadingFiles
-                      }
-                      onClick={() =>
-                        confirmLeaveIfDirty(() =>
-                          router.push(`/board/market/${id}`),
-                        )
-                      }
+                      disabled={isSubmitting || isUploadingImages || isUploadingFiles}
+                      onClick={() => confirmLeaveIfDirty(() => router.push(`/board/market/${id}`))}
                     >
                       취소
                     </Button>
@@ -1465,8 +1310,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                         isCompactSticky && "text-[10px] leading-snug",
                       )}
                     >
-                      저장 버튼을 누르면 현재 수정 내용이 상세 페이지에
-                      반영됩니다.
+                      저장 버튼을 누르면 현재 수정 내용이 상세 페이지에 반영됩니다.
                     </p>
                   </div>
                   {/* 수정 전 확인: compact 모드에서는 접힘/펼침 */}
@@ -1479,9 +1323,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                         isCompactSticky && "px-4 py-2.5",
                       )}
                     >
-                      <h3 className="text-sm font-semibold text-foreground">
-                        수정 전 확인
-                      </h3>
+                      <h3 className="text-sm font-semibold text-foreground">수정 전 확인</h3>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span>
                           {checklistDoneCount}/{checklist.length} 완료
@@ -1498,15 +1340,11 @@ export default function FreeBoardEditClient({ id }: Props) {
                       <div
                         className={cn(
                           "space-y-2 px-5 py-4",
-                          isCompactSticky &&
-                            "grid grid-cols-2 gap-x-3 gap-y-2 px-4 py-3",
+                          isCompactSticky && "grid grid-cols-2 gap-x-3 gap-y-2 px-4 py-3",
                         )}
                       >
                         {checklist.map((item) => (
-                          <div
-                            key={item.label}
-                            className="flex items-center gap-2 text-sm"
-                          >
+                          <div key={item.label} className="flex items-center gap-2 text-sm">
                             <div
                               className={cn(
                                 "flex h-4 w-4 items-center justify-center rounded-full",
@@ -1519,9 +1357,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                             </div>
                             <span
                               className={cn(
-                                item.ok
-                                  ? "text-foreground"
-                                  : "text-muted-foreground",
+                                item.ok ? "text-foreground" : "text-muted-foreground",
                                 isCompactSticky && "text-[13px]",
                               )}
                             >

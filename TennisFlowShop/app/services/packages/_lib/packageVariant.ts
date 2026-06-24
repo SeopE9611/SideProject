@@ -1,9 +1,4 @@
-export const PACKAGE_VARIANTS = [
-  "primary",
-  "accent",
-  "muted",
-  "success",
-] as const;
+export const PACKAGE_VARIANTS = ["primary", "accent", "muted", "success"] as const;
 
 export type PackageVariant = (typeof PACKAGE_VARIANTS)[number];
 
@@ -17,10 +12,7 @@ const PACKAGE_VARIANTS_BY_INDEX: readonly PackageVariant[] = [
 ];
 
 export const isPackageVariant = (value: unknown): value is PackageVariant => {
-  return (
-    typeof value === "string" &&
-    PACKAGE_VARIANTS.includes(value as PackageVariant)
-  );
+  return typeof value === "string" && PACKAGE_VARIANTS.includes(value as PackageVariant);
 };
 
 export const toPackageVariant = (

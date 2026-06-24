@@ -20,10 +20,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   const { reason, detail } = body;
-  if (
-    typeof reason !== "string" ||
-    (detail != null && typeof detail !== "string")
-  ) {
+  if (typeof reason !== "string" || (detail != null && typeof detail !== "string")) {
     return NextResponse.json({ error: "INVALID_INPUT" }, { status: 400 });
   }
 
@@ -34,10 +31,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   if (!userId) {
-    return NextResponse.json(
-      { message: "Invalid token payload" },
-      { status: 400 },
-    );
+    return NextResponse.json({ message: "Invalid token payload" }, { status: 400 });
   }
 
   try {
@@ -52,17 +46,14 @@ export async function PATCH(req: NextRequest) {
     if (hasOngoingOrder) {
       return NextResponse.json(
         {
-          error:
-            "진행 중인 주문이 있어 탈퇴할 수 없습니다.\n마이페이지 (주문 내역)에서 확인하세요",
+          error: "진행 중인 주문이 있어 탈퇴할 수 없습니다.\n마이페이지 (주문 내역)에서 확인하세요",
         },
         { status: 400 },
       );
     }
 
     // 기존: soft delete 처리
-    const userEmail = (
-      await db.collection("users").findOne({ _id: new ObjectId(userId) })
-    )?.email;
+    const userEmail = (await db.collection("users").findOne({ _id: new ObjectId(userId) }))?.email;
 
     await db.collection("users").updateOne(
       { _id: new ObjectId(userId) },
@@ -82,10 +73,7 @@ export async function PATCH(req: NextRequest) {
     );
 
     // 성공 응답 (이메일 반환)
-    return NextResponse.json(
-      { message: "탈퇴 완료", email: userEmail },
-      { status: 200 },
-    );
+    return NextResponse.json({ message: "탈퇴 완료", email: userEmail }, { status: 200 });
   } catch (error) {
     console.error("탈퇴 처리 중 오류:", error);
     return NextResponse.json({ message: "서버 오류 발생" }, { status: 500 });

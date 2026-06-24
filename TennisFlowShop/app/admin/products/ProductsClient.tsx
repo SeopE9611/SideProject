@@ -29,13 +29,7 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -90,10 +84,7 @@ const STATUS_KEYS = ["active", "low_stock", "out_of_stock"] as const;
 type StatusKey = (typeof STATUS_KEYS)[number];
 
 // 상태 매핑(아이콘+색)
-const STATUS_UI: Record<
-  StatusKey,
-  { label: string; color: string; Icon: React.ElementType }
-> = {
+const STATUS_UI: Record<StatusKey, { label: string; color: string; Icon: React.ElementType }> = {
   active: {
     label: "판매중",
     color:
@@ -142,10 +133,9 @@ function useDebounce<T>(value: T, delay = 250): T {
   return debounced;
 }
 
-const AdminConfirmDialog = dynamic(
-  () => import("@/components/admin/AdminConfirmDialog"),
-  { loading: () => null },
-);
+const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirmDialog"), {
+  loading: () => null,
+});
 
 export default function ProductsClient() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -158,20 +148,11 @@ export default function ProductsClient() {
 
   const PAGE_SIZE = 10;
   const [page, setPage] = useState(1);
-  const [pendingDeleteProductId, setPendingDeleteProductId] = useState<
-    string | null
-  >(null);
+  const [pendingDeleteProductId, setPendingDeleteProductId] = useState<string | null>(null);
   const ROW_PX = 56; // 한 행 높이를 56px = h-14 로 고정
 
   // 허용되는 정렬 필드(서버 allowMap과 일치시켜야 함)
-  type SortField =
-    | "name"
-    | "brand"
-    | "gauge"
-    | "material"
-    | "price"
-    | "stock"
-    | "createdAt";
+  type SortField = "name" | "brand" | "gauge" | "material" | "price" | "stock" | "createdAt";
 
   const [sort, setSort] = useState<{
     field: SortField;
@@ -223,13 +204,10 @@ export default function ProductsClient() {
   const hasResolvedData = !!data;
   const hasDataError = !!error;
   const isListLoadingState = (isLoading || isValidating) && !hasResolvedData;
-  const isActualEmptyState =
-    hasResolvedData && !hasDataError && items.length === 0;
+  const isActualEmptyState = hasResolvedData && !hasDataError && items.length === 0;
   const commonErrorMessage = error ? getAdminErrorMessage(error) : null;
   const total = data?.total ?? 0;
-  const totalPages = hasResolvedData
-    ? Math.max(1, Math.ceil(total / PAGE_SIZE))
-    : null;
+  const totalPages = hasResolvedData ? Math.max(1, Math.ceil(total / PAGE_SIZE)) : null;
   const currentPage = totalPages ? Math.min(page, totalPages) : null;
 
   const hasActiveTableFilter =
@@ -245,10 +223,7 @@ export default function ProductsClient() {
     low_stock: 0,
     out_of_stock: 0,
   };
-  const totalAll =
-    totalsByStatus.active +
-    totalsByStatus.low_stock +
-    totalsByStatus.out_of_stock;
+  const totalAll = totalsByStatus.active + totalsByStatus.low_stock + totalsByStatus.out_of_stock;
   const activeAll = totalsByStatus.active;
   const lowStockAll = totalsByStatus.low_stock;
   const outOfStockAll = totalsByStatus.out_of_stock;
@@ -256,8 +231,7 @@ export default function ProductsClient() {
   // 삭제 핸들러
   const handleDelete = async (id: string) => {
     const result = await runAdminActionWithToast({
-      action: () =>
-        adminMutator(`/api/admin/products/${id}`, { method: "DELETE" }),
+      action: () => adminMutator(`/api/admin/products/${id}`, { method: "DELETE" }),
       successMessage: "상품이 삭제되었습니다.",
       fallbackErrorMessage: "삭제 중 오류가 발생했습니다.",
     });
@@ -288,9 +262,7 @@ export default function ProductsClient() {
               ? "justify-center text-center"
               : "justify-start text-left",
         )}
-        title={
-          active ? (sort!.dir === "asc" ? "오름차순" : "내림차순") : "등록순"
-        }
+        title={active ? (sort!.dir === "asc" ? "오름차순" : "내림차순") : "등록순"}
       >
         <span className="font-medium">{children}</span>
         {active ? (
@@ -419,9 +391,7 @@ export default function ProductsClient() {
     <div className={["min-h-screen", "bg-muted/30"].join(" ")}>
       <div className="container py-8 px-6">
         {commonErrorMessage && (
-          <div className="text-center text-destructive">
-            {commonErrorMessage}
-          </div>
+          <div className="text-center text-destructive">{commonErrorMessage}</div>
         )}
         <AdminPageHeader
           title="상품 관리"
@@ -435,8 +405,7 @@ export default function ProductsClient() {
           <CardContent className="p-4 sm:p-5">
             <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm font-medium leading-relaxed text-foreground">
-                오늘의 상품 운영 우선순위를 먼저 확인하고 목록에서 바로
-                점검하세요.
+                오늘의 상품 운영 우선순위를 먼저 확인하고 목록에서 바로 점검하세요.
               </p>
               <Link
                 href="/admin/operations"
@@ -452,13 +421,8 @@ export default function ProductsClient() {
                 "가격·배송비 점검: 판매 가격, 할인 반영, 배송비 설정이 정확한지 확인하세요.",
                 "판매 상태/노출 관리: 비활성·비노출 상품이 의도된 상태인지 주기적으로 검토하세요.",
               ].map((guide) => (
-                <div
-                  key={guide}
-                  className="rounded-md border border-border bg-muted/40 px-3 py-2"
-                >
-                  <p className="text-sm leading-relaxed text-foreground">
-                    {guide}
-                  </p>
+                <div key={guide} className="rounded-md border border-border bg-muted/40 px-3 py-2">
+                  <p className="text-sm leading-relaxed text-foreground">{guide}</p>
                 </div>
               ))}
             </div>
@@ -496,18 +460,12 @@ export default function ProductsClient() {
               <CardContent className="p-4 bp-md:p-6">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {c.label}
-                    </p>
+                    <p className="text-sm font-medium text-muted-foreground">{c.label}</p>
                     <p className="text-2xl font-bold text-foreground bp-md:text-3xl">
                       {hasResolvedData ? c.value : "-"}
                     </p>
                   </div>
-                  <div
-                    className={`${c.bgColor} rounded-xl p-3 border border-border`}
-                  >
-                    {c.icon}
-                  </div>
+                  <div className={`${c.bgColor} rounded-xl p-3 border border-border`}>{c.icon}</div>
                 </div>
               </CardContent>
             </Card>
@@ -517,9 +475,7 @@ export default function ProductsClient() {
         {/* 빠른 보기 */}
         <Card className={cn("mb-4", adminSurface.cardMuted)}>
           <CardContent className="flex flex-wrap items-center gap-2 p-4">
-            <span className="mr-1 text-xs font-semibold text-muted-foreground">
-              빠른 보기
-            </span>
+            <span className="mr-1 text-xs font-semibold text-muted-foreground">빠른 보기</span>
 
             <Button
               type="button"
@@ -593,14 +549,10 @@ export default function ProductsClient() {
             adminSurface.cardMuted,
           )}
         >
-          <p className="font-semibold text-foreground">
-            현재 보기: {currentViewLabel}
-          </p>
+          <p className="font-semibold text-foreground">현재 보기: {currentViewLabel}</p>
 
           {activeFilterLabels.length > 0 && (
-            <p className="text-muted-foreground">
-              필터: {activeFilterLabels.join(" / ")}
-            </p>
+            <p className="text-muted-foreground">필터: {activeFilterLabels.join(" / ")}</p>
           )}
 
           <p className="text-muted-foreground">
@@ -620,9 +572,7 @@ export default function ProductsClient() {
           )}
         </div>
 
-        <Card
-          className={cn(adminSurface.tableCard, "flex-1 min-h-0 flex flex-col")}
-        >
+        <Card className={cn(adminSurface.tableCard, "flex-1 min-h-0 flex flex-col")}>
           <CardHeader className="bg-muted/50 border-b border-border pb-4 shrink-0">
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
@@ -703,14 +653,8 @@ export default function ProductsClient() {
                     onChange={handleMaterialFilterChange}
                     options={MATERIAL_OPTIONS.map((o) => o.id)}
                   />
-                  <StockStatusFilter
-                    value={statusFilter}
-                    onChange={handleStatusFilterChange}
-                  />
-                  <Select
-                    value={exposureFilter}
-                    onValueChange={handleExposureFilterChange}
-                  >
+                  <StockStatusFilter value={statusFilter} onChange={handleStatusFilterChange} />
+                  <Select value={exposureFilter} onValueChange={handleExposureFilterChange}>
                     <SelectTrigger className="h-9 w-full min-w-0 text-xs">
                       <SelectValue placeholder="노출 유형 전체" />
                     </SelectTrigger>
@@ -788,12 +732,8 @@ export default function ProductsClient() {
                           children: "재고",
                         })}
                       </TableHead>
-                      <TableHead className="w-[10%] text-center text-foreground">
-                        상태
-                      </TableHead>
-                      <TableHead className="w-[10%] text-right text-foreground">
-                        관리
-                      </TableHead>
+                      <TableHead className="w-[10%] text-center text-foreground">상태</TableHead>
+                      <TableHead className="w-[10%] text-right text-foreground">관리</TableHead>
                     </TableRow>
                   </TableHeader>
 
@@ -823,16 +763,13 @@ export default function ProductsClient() {
                         <TableCell colSpan={8} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-2">
                             <Search className="h-8 w-8 text-muted-foreground/50" />
-                            <p className="text-sm text-muted-foreground">
-                              등록된 상품이 없습니다.
-                            </p>
+                            <p className="text-sm text-muted-foreground">등록된 상품이 없습니다.</p>
                           </div>
                         </TableCell>
                       </TableRow>
                     ) : (
                       items.map((s) => {
-                        const statusKey: StatusKey = (s.computedStatus ??
-                          "active") as StatusKey;
+                        const statusKey: StatusKey = (s.computedStatus ?? "active") as StatusKey;
                         const S = STATUS_UI[statusKey];
                         const isHidden = s.isVisible === false;
                         return (
@@ -894,9 +831,7 @@ export default function ProductsClient() {
                                   {s.inventory.stock}
                                 </span>
                               ) : (
-                                <span className="font-medium text-foreground">
-                                  품절
-                                </span>
+                                <span className="font-medium text-foreground">품절</span>
                               )}
                             </TableCell>
 
@@ -924,31 +859,20 @@ export default function ProductsClient() {
                                     <MoreHorizontal />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                  align="end"
-                                  className="border-border"
-                                >
+                                <DropdownMenuContent align="end" className="border-border">
                                   <DropdownMenuLabel>작업</DropdownMenuLabel>
                                   <DropdownMenuItem asChild>
                                     <Link href={`/products/${s._id}`}>
-                                      {isHidden
-                                        ? "관리자 미리보기"
-                                        : "상세 보기"}
+                                      {isHidden ? "관리자 미리보기" : "상세 보기"}
                                     </Link>
                                   </DropdownMenuItem>
                                   <DropdownMenuItem asChild>
-                                    <Link
-                                      href={`/admin/products/${s._id}/edit`}
-                                    >
-                                      수정
-                                    </Link>
+                                    <Link href={`/admin/products/${s._id}/edit`}>수정</Link>
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem
                                     className="text-destructive"
-                                    onClick={() =>
-                                      setPendingDeleteProductId(s._id)
-                                    }
+                                    onClick={() => setPendingDeleteProductId(s._id)}
                                   >
                                     삭제
                                   </DropdownMenuItem>
@@ -969,10 +893,7 @@ export default function ProductsClient() {
                       Array.from({
                         length: Math.max(0, PAGE_SIZE - items.length),
                       }).map((_, i) => (
-                        <TableRow
-                          key={`filler-${i}`}
-                          className="pointer-events-none"
-                        >
+                        <TableRow key={`filler-${i}`} className="pointer-events-none">
                           <TableCell colSpan={8} className="p-0">
                             <div className="h-14" />
                           </TableCell>
@@ -992,11 +913,7 @@ export default function ProductsClient() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    setPage((p) =>
-                      Math.max(1, Math.min(p, totalPages ?? 1) - 1),
-                    )
-                  }
+                  onClick={() => setPage((p) => Math.max(1, Math.min(p, totalPages ?? 1) - 1))}
                   disabled={!currentPage || currentPage <= 1}
                   className="border-border hover:bg-muted dark:hover:bg-muted"
                 >
@@ -1006,16 +923,9 @@ export default function ProductsClient() {
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    setPage((p) =>
-                      Math.min(
-                        totalPages ?? 1,
-                        Math.min(p, totalPages ?? 1) + 1,
-                      ),
-                    )
+                    setPage((p) => Math.min(totalPages ?? 1, Math.min(p, totalPages ?? 1) + 1))
                   }
-                  disabled={
-                    !currentPage || !totalPages || currentPage >= totalPages
-                  }
+                  disabled={!currentPage || !totalPages || currentPage >= totalPages}
                   className="border-border hover:bg-muted dark:hover:bg-muted"
                 >
                   다음

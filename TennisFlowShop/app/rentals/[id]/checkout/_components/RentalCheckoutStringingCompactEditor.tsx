@@ -19,9 +19,7 @@ type Props = {
   adapter: RentalCheckoutStringingServiceAdapter;
 };
 
-export default function RentalCheckoutStringingCompactEditor({
-  adapter,
-}: Props) {
+export default function RentalCheckoutStringingCompactEditor({ adapter }: Props) {
   const {
     formData,
     setFormData,
@@ -56,9 +54,7 @@ export default function RentalCheckoutStringingCompactEditor({
 
       setFormData((prev) => {
         const baseLines =
-          Array.isArray(prev?.lines) && prev.lines.length > 0
-            ? prev.lines
-            : (linesForSubmit ?? []);
+          Array.isArray(prev?.lines) && prev.lines.length > 0 ? prev.lines : (linesForSubmit ?? []);
         if (!Array.isArray(baseLines) || baseLines.length === 0) return prev;
 
         const nextLines = baseLines.map((line) => ({
@@ -76,13 +72,7 @@ export default function RentalCheckoutStringingCompactEditor({
         };
       });
     },
-    [
-      bulkLineNote,
-      bulkTensionCross,
-      bulkTensionMain,
-      linesForSubmit,
-      setFormData,
-    ],
+    [bulkLineNote, bulkTensionCross, bulkTensionMain, linesForSubmit, setFormData],
   );
 
   const applyFirstLineTensionToAll = useCallback(() => {
@@ -102,10 +92,7 @@ export default function RentalCheckoutStringingCompactEditor({
         {isVisit ? (
           <div className="grid grid-cols-1 gap-4 bp-sm:grid-cols-2">
             <div className="space-y-2.5">
-              <Label
-                htmlFor="rental-preferred-date"
-                className="text-xs text-foreground/75"
-              >
+              <Label htmlFor="rental-preferred-date" className="text-xs text-foreground/75">
                 희망 날짜
               </Label>
               <Input
@@ -175,9 +162,7 @@ export default function RentalCheckoutStringingCompactEditor({
       </section>
 
       <section className="space-y-4">
-        <p className="text-sm font-semibold text-foreground">
-          텐션 및 요청사항
-        </p>
+        <p className="text-sm font-semibold text-foreground">텐션 및 요청사항</p>
         {lineCount >= 2 && (
           <div className="rounded-lg border border-border/80 bg-muted/15 p-3.5">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -187,8 +172,7 @@ export default function RentalCheckoutStringingCompactEditor({
                   빠른 설정
                 </p>
                 <p className="mt-0.5 text-xs text-foreground/75">
-                  여러{"\u00A0"}자루에 동일한 텐션/메모를 한{"\u00A0"}번에
-                  적용합니다.
+                  여러{"\u00A0"}자루에 동일한 텐션/메모를 한{"\u00A0"}번에 적용합니다.
                 </p>
               </div>
               <div className="flex gap-2">
@@ -215,17 +199,13 @@ export default function RentalCheckoutStringingCompactEditor({
               <Input
                 className="h-10 px-3"
                 value={bulkTensionMain}
-                onChange={(e) =>
-                  setBulkTensionMain(toNumberText(e.target.value))
-                }
+                onChange={(e) => setBulkTensionMain(toNumberText(e.target.value))}
                 placeholder="공통 메인 텐션"
               />
               <Input
                 className="h-10 px-3"
                 value={bulkTensionCross}
-                onChange={(e) =>
-                  setBulkTensionCross(toNumberText(e.target.value))
-                }
+                onChange={(e) => setBulkTensionCross(toNumberText(e.target.value))}
                 placeholder="공통 크로스 텐션"
               />
               <div className="bp-sm:col-span-2">
@@ -247,12 +227,8 @@ export default function RentalCheckoutStringingCompactEditor({
               className="space-y-3.5 rounded-lg border border-border/80 bg-background p-4"
             >
               <div className="space-y-1">
-                <p className="text-xs font-semibold text-foreground">
-                  장착 대상 라켓
-                </p>
-                <p className="text-sm font-medium text-foreground">
-                  {line.racketType}
-                </p>
+                <p className="text-xs font-semibold text-foreground">장착 대상 라켓</p>
+                <p className="text-sm font-medium text-foreground">{line.racketType}</p>
                 <p className="text-xs text-foreground/75">
                   대여 상품 기준으로 자동 반영 · 구매 스트링: {line.stringName}
                 </p>
@@ -262,11 +238,7 @@ export default function RentalCheckoutStringingCompactEditor({
                   className="h-10 px-3"
                   value={line.tensionMain ?? ""}
                   onChange={(e) =>
-                    handleLineFieldChange(
-                      index,
-                      "tensionMain",
-                      toNumberText(e.target.value),
-                    )
+                    handleLineFieldChange(index, "tensionMain", toNumberText(e.target.value))
                   }
                   placeholder="메인 텐션"
                 />
@@ -274,20 +246,14 @@ export default function RentalCheckoutStringingCompactEditor({
                   className="h-10 px-3"
                   value={line.tensionCross ?? ""}
                   onChange={(e) =>
-                    handleLineFieldChange(
-                      index,
-                      "tensionCross",
-                      toNumberText(e.target.value),
-                    )
+                    handleLineFieldChange(index, "tensionCross", toNumberText(e.target.value))
                   }
                   placeholder="크로스 텐션"
                 />
               </div>
               <Textarea
                 value={line.note ?? ""}
-                onChange={(e) =>
-                  handleLineFieldChange(index, "note", e.target.value)
-                }
+                onChange={(e) => handleLineFieldChange(index, "note", e.target.value)}
                 placeholder="장착 요청사항 (선택)"
                 className="min-h-[84px] px-3 py-2.5"
               />
@@ -310,9 +276,7 @@ export default function RentalCheckoutStringingCompactEditor({
           placeholder="예: 선호 텐션 느낌, 작업 시 확인할 사항"
           className="min-h-[98px] px-3 py-2.5"
         />
-        <p className="text-xs text-foreground/75">
-          필요한 경우에만 간단히 남겨주세요.
-        </p>
+        <p className="text-xs text-foreground/75">필요한 경우에만 간단히 남겨주세요.</p>
       </section>
     </div>
   );

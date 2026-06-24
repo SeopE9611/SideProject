@@ -6,10 +6,7 @@ type OrderPrefillBadgeProps = {
   rentalId?: string | null;
 };
 
-export default function OrderPrefillBadge({
-  orderId,
-  rentalId,
-}: OrderPrefillBadgeProps) {
+export default function OrderPrefillBadge({ orderId, rentalId }: OrderPrefillBadgeProps) {
   const resolvedId = orderId ?? rentalId;
   if (!resolvedId) return null;
 
@@ -27,9 +24,7 @@ export default function OrderPrefillBadge({
         <code className="max-w-full truncate rounded border border-border bg-card px-2 py-0.5 font-mono text-xs text-primary">
           {resolvedId}
         </code>
-        <span className="text-sm text-muted-foreground">
-          기준으로 자동 채워짐
-        </span>
+        <span className="text-sm text-muted-foreground">기준으로 자동 채워짐</span>
       </div>
     </div>
   );

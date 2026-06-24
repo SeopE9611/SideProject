@@ -1,7 +1,5 @@
 "use client";
-import AdminRacketForm, {
-  type RacketForm,
-} from "@/app/admin/rackets/_components/AdminRacketForm";
+import AdminRacketForm, { type RacketForm } from "@/app/admin/rackets/_components/AdminRacketForm";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Package } from "lucide-react";
 import Link from "next/link";
@@ -14,8 +12,7 @@ export default function AdminRacketNewClient() {
   const r = useRouter();
 
   const confirmLeave = (e: React.MouseEvent) => {
-    const hasUnsaved =
-      typeof window !== "undefined" && window.history.state?.__unsaved === true;
+    const hasUnsaved = typeof window !== "undefined" && window.history.state?.__unsaved === true;
     if (!hasUnsaved) return;
     if (!window.confirm(UNSAVED_CHANGES_MESSAGE)) {
       e.preventDefault();
@@ -43,9 +40,7 @@ export default function AdminRacketNewClient() {
                   <Package className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold tracking-normal">
-                    라켓 등록
-                  </h2>
+                  <h2 className="text-3xl font-bold tracking-normal">라켓 등록</h2>
                   <p className="text-muted-foreground">
                     새로운 중고 라켓 정보를 입력하고 등록하세요.
                   </p>
@@ -58,11 +53,7 @@ export default function AdminRacketNewClient() {
                   asChild
                   className="bg-muted/40 hover:bg-muted border-border"
                 >
-                  <Link
-                    href="/admin/rackets"
-                    data-no-unsaved-guard
-                    onClick={confirmLeave}
-                  >
+                  <Link href="/admin/rackets" data-no-unsaved-guard onClick={confirmLeave}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     취소
                   </Link>

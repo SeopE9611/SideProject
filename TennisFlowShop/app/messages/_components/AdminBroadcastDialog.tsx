@@ -24,11 +24,7 @@ type Props = {
   defaultExpireDays?: number;
 
   /** 전송 성공 후 훅 */
-  onSent?: (info: {
-    broadcastId: string;
-    sent: number;
-    expiresAt?: string | null;
-  }) => void;
+  onSent?: (info: { broadcastId: string; sent: number; expiresAt?: string | null }) => void;
 };
 
 export default function AdminBroadcastDialog({
@@ -64,11 +60,7 @@ export default function AdminBroadcastDialog({
   const isDirty = useMemo(() => {
     if (!open) return false;
     if (isSending) return false; // 전송 중에는 닫기 confirm 없이 처리(UX)
-    return (
-      title.trim() !== "" ||
-      body.trim() !== "" ||
-      expireDays !== baselineExpireDays
-    );
+    return title.trim() !== "" || body.trim() !== "" || expireDays !== baselineExpireDays;
   }, [open, isSending, title, body, expireDays, baselineExpireDays]);
 
   const handleOpenChange = (nextOpen: boolean) => {
@@ -139,10 +131,7 @@ export default function AdminBroadcastDialog({
 
         <div className="grid gap-5 py-4">
           <div className="grid gap-2.5">
-            <label
-              htmlFor="broadcast-title"
-              className="text-sm font-semibold text-foreground"
-            >
+            <label htmlFor="broadcast-title" className="text-sm font-semibold text-foreground">
               제목
             </label>
             <Input
@@ -155,10 +144,7 @@ export default function AdminBroadcastDialog({
           </div>
 
           <div className="grid gap-2.5">
-            <label
-              htmlFor="broadcast-body"
-              className="text-sm font-semibold text-foreground"
-            >
+            <label htmlFor="broadcast-body" className="text-sm font-semibold text-foreground">
               내용
             </label>
             <Textarea
@@ -188,8 +174,7 @@ export default function AdminBroadcastDialog({
               className="h-10"
             />
             <p className="text-xs text-muted-foreground leading-relaxed">
-              0이면 만료가 없고, 숫자를 입력하면 해당 일수 이후 자동
-              삭제(TTL)됩니다.
+              0이면 만료가 없고, 숫자를 입력하면 해당 일수 이후 자동 삭제(TTL)됩니다.
             </p>
           </div>
         </div>
@@ -203,11 +188,7 @@ export default function AdminBroadcastDialog({
           >
             취소
           </Button>
-          <Button
-            onClick={handleSend}
-            disabled={isSending}
-            className="min-w-[100px] gap-2"
-          >
+          <Button onClick={handleSend} disabled={isSending} className="min-w-[100px] gap-2">
             {isSending ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />

@@ -26,18 +26,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import {
-  gripSizeLabel,
-  racketBrandLabel,
-  stringPatternLabel,
-} from "@/lib/constants";
+import { gripSizeLabel, racketBrandLabel, stringPatternLabel } from "@/lib/constants";
 
 import type { CompareRacketItem } from "@/app/store/racketCompareStore";
 
@@ -60,20 +51,16 @@ function fmtNum(n?: number | null, unit = "", decimals = 0) {
 }
 
 const SPEC_HINTS: Record<string, string> = {
-  headSize:
-    "헤드가 클수록 관용성/파워가 늘고, 작을수록 컨트롤이 쉬운 경향이 있습니다.",
+  headSize: "헤드가 클수록 관용성/파워가 늘고, 작을수록 컨트롤이 쉬운 경향이 있습니다.",
   weight: "무게가 높을수록 안정감/파워는 늘지만, 스윙이 무거워질 수 있습니다.",
-  balance:
-    "수치가 높을수록 헤드 쪽(헤드 헤비), 낮을수록 손쪽(헤드 라이트)인 경향이 있습니다.",
+  balance: "수치가 높을수록 헤드 쪽(헤드 헤비), 낮을수록 손쪽(헤드 라이트)인 경향이 있습니다.",
   lengthIn: "길이가 길수록 리치/파워는 늘지만, 조작성은 떨어질 수 있습니다.",
   swingWeight:
     "스윙웨이트가 높을수록 임팩트 안정감/플로우스루가 늘지만, 휘두르기 무거울 수 있습니다.",
-  stiffnessRa:
-    "RA가 높을수록 단단(파워)하지만 충격이 커질 수 있고, 낮을수록 편안한 편입니다.",
+  stiffnessRa: "RA가 높을수록 단단(파워)하지만 충격이 커질 수 있고, 낮을수록 편안한 편입니다.",
   pattern:
     "패턴이 오픈(예: 16x19)이면 스핀/파워, 덴스(예: 18x20)이면 컨트롤/내구성 경향이 있습니다.",
-  gripSize:
-    "그립 사이즈는 손 크기/그립 두께와 관련이 있어, 편안한 스윙과 부상 예방에 중요합니다.",
+  gripSize: "그립 사이즈는 손 크기/그립 두께와 관련이 있어, 편안한 스윙과 부상 예방에 중요합니다.",
   price: "가격은 등록/업데이트 시점에 따라 변동될 수 있습니다.",
 };
 
@@ -224,23 +211,17 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
       {
         key: "pattern",
         label: "Pattern",
-        value: racket.spec?.pattern
-          ? stringPatternLabel(String(racket.spec.pattern))
-          : "-",
+        value: racket.spec?.pattern ? stringPatternLabel(String(racket.spec.pattern)) : "-",
       },
       {
         key: "gripSize",
         label: "Grip",
-        value: racket.spec?.gripSize
-          ? gripSizeLabel(String(racket.spec.gripSize))
-          : "-",
+        value: racket.spec?.gripSize ? gripSizeLabel(String(racket.spec.gripSize)) : "-",
       },
       {
         key: "price",
         label: "Price",
-        value: racket.price
-          ? `${Math.round(racket.price).toLocaleString()}원`
-          : "-",
+        value: racket.price ? `${Math.round(racket.price).toLocaleString()}원` : "-",
       },
     ],
     [racket],
@@ -277,9 +258,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
               <span className="text-base font-bold text-foreground bp-sm:text-lg">
                 {racket.model}
               </span>
-              <span className="text-xs text-muted-foreground bp-sm:text-sm">
-                {brandText}
-              </span>
+              <span className="text-xs text-muted-foreground bp-sm:text-sm">{brandText}</span>
               <div className="flex items-center gap-1.5">
                 {racket.year ? (
                   <Badge
@@ -345,9 +324,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                     />
                   </>
                 ) : (
-                  <span className="text-xs text-muted-foreground">
-                    No Image
-                  </span>
+                  <span className="text-xs text-muted-foreground">No Image</span>
                 )}
               </div>
             </div>
@@ -370,10 +347,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                       비교 목록에 담을 때의 스냅샷
                     </span>
                     입니다.
-                    <span className="hidden bp-sm:inline">
-                      {" "}
-                      (최신 값은 상세 페이지에서 확인)
-                    </span>
+                    <span className="hidden bp-sm:inline"> (최신 값은 상세 페이지에서 확인)</span>
                   </span>
                 </div>
 
@@ -408,11 +382,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                       "bp-sm:flex-1",
                     )}
                   >
-                    <Link
-                      href={`/rackets/${racket.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                    <Link href={`/rackets/${racket.id}`} target="_blank" rel="noopener noreferrer">
                       상세 페이지 열기
                       <ExternalLink className="h-4 w-4" />
                     </Link>
@@ -428,9 +398,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                       "bp-sm:flex-1",
                     )}
                   >
-                    <Link href={`/rackets/${racket.id}/select-string`}>
-                      스트링 선택 후 구매
-                    </Link>
+                    <Link href={`/rackets/${racket.id}/select-string`}>스트링 선택 후 구매</Link>
                   </Button>
                 </div>
               </div>

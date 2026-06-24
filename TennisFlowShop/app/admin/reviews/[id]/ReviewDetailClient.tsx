@@ -4,16 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  Star,
-  Trash2,
-  User,
-  Calendar,
-  Tag,
-  Mail,
-  MessageSquare,
-} from "lucide-react";
+import { ArrowLeft, Star, Trash2, User, Calendar, Tag, Mail, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -55,8 +46,7 @@ const sampleReviews: Review[] = [
     id: "rev_002",
     authorName: "김재민",
     authorEmail: "tennis@example.com",
-    content:
-      "스트링 장력이 제가 원하는 대로 정확하게 맞춰주셨어요. 타구감이 확실히 좋아졌습니다.",
+    content: "스트링 장력이 제가 원하는 대로 정확하게 맞춰주셨어요. 타구감이 확실히 좋아졌습니다.",
     rating: 4,
     createdAt: "2025-01-01T09:30:00Z",
     type: "stringing",
@@ -77,10 +67,9 @@ interface Props {
   reviewId: string;
 }
 
-const AdminConfirmDialog = dynamic(
-  () => import("@/components/admin/AdminConfirmDialog"),
-  { loading: () => null },
-);
+const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirmDialog"), {
+  loading: () => null,
+});
 
 export default function ReviewDetailClient({ reviewId }: Props) {
   const router = useRouter();
@@ -96,17 +85,10 @@ export default function ReviewDetailClient({ reviewId }: Props) {
         <div className="flex h-[60vh] flex-col items-center justify-center space-y-6">
           <div className="text-center">
             <MessageSquare className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              리뷰를 찾을 수 없습니다
-            </h1>
-            <p className="text-muted-foreground">
-              요청하신 리뷰가 존재하지 않거나 삭제되었습니다.
-            </p>
+            <h1 className="text-3xl font-bold text-foreground mb-2">리뷰를 찾을 수 없습니다</h1>
+            <p className="text-muted-foreground">요청하신 리뷰가 존재하지 않거나 삭제되었습니다.</p>
           </div>
-          <Button
-            asChild
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
+          <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
             <Link href="/admin/reviews">
               <ArrowLeft className="mr-2 h-4 w-4" />
               리뷰 목록으로 돌아가기
@@ -127,9 +109,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
             className={`h-6 w-6 ${index < rating ? "text-warning fill-current" : "text-muted-foreground/40"}`}
           />
         ))}
-        <span className="ml-2 text-lg font-semibold text-foreground">
-          {rating}/5
-        </span>
+        <span className="ml-2 text-lg font-semibold text-foreground">{rating}/5</span>
       </div>
     );
   };
@@ -193,12 +173,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
 
         {/* 네비게이션 */}
         <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-            className="bg-transparent"
-          >
+          <Button variant="outline" size="sm" asChild className="bg-transparent">
             <Link href="/admin/reviews">
               <ArrowLeft className="mr-2 h-4 w-4" />
               리뷰 목록으로 돌아가기
@@ -211,9 +186,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
           <CardHeader className="pb-6">
             <div className="flex flex-col space-y-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl font-bold text-foreground">
-                  리뷰 정보
-                </CardTitle>
+                <CardTitle className="text-2xl font-bold text-foreground">리뷰 정보</CardTitle>
                 {getReviewTypeBadge(review.type)}
               </div>
               <CardDescription className="text-muted-foreground">
@@ -225,9 +198,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
           <CardContent className="space-y-8">
             {/* 평점 */}
             <div className="text-center py-6 bg-muted/30 rounded-xl">
-              <h3 className="text-lg font-semibold text-foreground mb-3">
-                고객 평점
-              </h3>
+              <h3 className="text-lg font-semibold text-foreground mb-3">고객 평점</h3>
               {renderRating(review.rating)}
             </div>
 
@@ -243,9 +214,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
                 <div className="space-y-2">
                   <div>
                     <p className="text-sm text-muted-foreground">이름</p>
-                    <p className="font-medium text-foreground">
-                      {review.authorName}
-                    </p>
+                    <p className="font-medium text-foreground">{review.authorName}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">이메일</p>
@@ -267,9 +236,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
                 <div className="space-y-2">
                   <div>
                     <p className="text-sm text-muted-foreground">작성일</p>
-                    <p className="font-medium text-foreground">
-                      {formatDate(review.createdAt)}
-                    </p>
+                    <p className="font-medium text-foreground">{formatDate(review.createdAt)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">리뷰 타입</p>
@@ -295,9 +262,7 @@ export default function ReviewDetailClient({ reviewId }: Props) {
 
             {/* 내용 */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-foreground">
-                리뷰 내용
-              </h3>
+              <h3 className="text-lg font-semibold text-foreground">리뷰 내용</h3>
               <div className="p-6 bg-muted/30 rounded-xl border-l-4 border-border">
                 <p className="text-foreground leading-relaxed whitespace-pre-line text-lg">
                   "{review.content}"

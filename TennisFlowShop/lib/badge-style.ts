@@ -69,12 +69,9 @@ export const SEMANTIC_BADGE_VARIANT = {
   destructive: "danger",
 } as const;
 
-export type BadgeSemanticVariant =
-  (typeof SEMANTIC_BADGE_VARIANT)[BadgeSemanticTone];
+export type BadgeSemanticVariant = (typeof SEMANTIC_BADGE_VARIANT)[BadgeSemanticTone];
 
-export function badgeToneVariant(
-  tone: BadgeSemanticTone,
-): BadgeSemanticVariant {
+export function badgeToneVariant(tone: BadgeSemanticTone): BadgeSemanticVariant {
   return SEMANTIC_BADGE_VARIANT[tone];
 }
 
@@ -103,12 +100,7 @@ export function getSocialProviderBadgeSpec(provider?: string | null) {
   return badgeStyleSpec("neutral");
 }
 
-export type MerchandisingBadgeKind =
-  | "popular"
-  | "recommended"
-  | "new"
-  | "genuine"
-  | "discount";
+export type MerchandisingBadgeKind = "popular" | "recommended" | "new" | "genuine" | "discount";
 
 export function getMerchandisingBadgeSpec(kind: MerchandisingBadgeKind) {
   if (kind === "genuine") return badgeStyleSpec("info");
@@ -122,18 +114,12 @@ export type WorkflowMetaBadgeKind =
   | "replacement_service_included";
 
 export function getWorkflowMetaBadgeSpec(kind: WorkflowMetaBadgeKind) {
-  if (kind === "action_required" || kind === "cancel_requested")
-    return badgeStyleSpec("warning");
+  if (kind === "action_required" || kind === "cancel_requested") return badgeStyleSpec("warning");
   if (kind === "application_linked") return badgeStyleSpec("info");
   return badgeStyleSpec("brand");
 }
 
-export type AuxiliaryMetaBadgeKind =
-  | "attached"
-  | "pinned"
-  | "owned"
-  | "linked"
-  | "integrated";
+export type AuxiliaryMetaBadgeKind = "attached" | "pinned" | "owned" | "linked" | "integrated";
 
 export function getAuxiliaryMetaBadgeSpec(kind: AuxiliaryMetaBadgeKind) {
   if (kind === "pinned") return badgeStyleSpec("brand");
@@ -143,17 +129,8 @@ export function getAuxiliaryMetaBadgeSpec(kind: AuxiliaryMetaBadgeKind) {
 }
 
 export type OrderFlowBadgeState = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-export type OrderKindBadgeState =
-  | "order"
-  | "stringing_application"
-  | "rental_order"
-  | "rental";
-export type OrderLinkBadgeState =
-  | "integrated"
-  | "standalone"
-  | "linked_order"
-  | "rental"
-  | "error";
+export type OrderKindBadgeState = "order" | "stringing_application" | "rental_order" | "rental";
+export type OrderLinkBadgeState = "integrated" | "standalone" | "linked_order" | "rental" | "error";
 
 export function flowBadgeTone(flow?: OrderFlowBadgeState): BadgeSemanticTone {
   if (!flow || flow === 3) return "neutral";
@@ -220,19 +197,10 @@ export const orderStatusColors: Record<string, string> = {
 export function getOrderStatusTone(status?: string | null): BadgeSemanticTone {
   const normalized = String(status ?? "").trim();
   if (!normalized) return "neutral";
-  if (normalized.includes("취소") || normalized.includes("환불"))
-    return "danger";
-  if (
-    normalized === "결제완료" ||
-    normalized === "배송완료" ||
-    normalized === "구매확정"
-  )
+  if (normalized.includes("취소") || normalized.includes("환불")) return "danger";
+  if (normalized === "결제완료" || normalized === "배송완료" || normalized === "구매확정")
     return "success";
-  if (
-    normalized === "배송중" ||
-    normalized === "처리중" ||
-    normalized === "배송준비중"
-  )
+  if (normalized === "배송중" || normalized === "처리중" || normalized === "배송준비중")
     return "info";
   if (normalized === "대기중") return "warning";
   return "neutral";
@@ -254,22 +222,12 @@ export const paymentStatusColors: Record<string, string> = {
   환불: SEMANTIC_BADGE.destructive,
 };
 
-export function getPaymentStatusTone(
-  status?: string | null,
-): BadgeSemanticTone {
+export function getPaymentStatusTone(status?: string | null): BadgeSemanticTone {
   const normalized = String(status ?? "").trim();
   if (!normalized) return "neutral";
-  if (
-    normalized.includes("실패") ||
-    normalized.includes("취소") ||
-    normalized.includes("환불")
-  )
+  if (normalized.includes("실패") || normalized.includes("취소") || normalized.includes("환불"))
     return "danger";
-  if (
-    normalized === "결제완료" ||
-    normalized === "주문결제포함" ||
-    normalized === "대여결제포함"
-  )
+  if (normalized === "결제완료" || normalized === "주문결제포함" || normalized === "대여결제포함")
     return "success";
   if (normalized === "패키지차감") return "info";
   if (normalized === "결제대기") return "warning";
@@ -303,9 +261,7 @@ export const shippingMethodColors: Record<string, string> = {
   "선택 없음": shippingStatusColors["미입력"],
 };
 
-export function getShippingMethodTone(
-  label?: string | null,
-): BadgeSemanticTone {
+export function getShippingMethodTone(label?: string | null): BadgeSemanticTone {
   if (label === "방문") return "brand";
   if (label === "퀵") return "info";
   if (label === "택배") return "neutral";
@@ -326,8 +282,7 @@ export function getTrackingTone(label?: string | null): BadgeSemanticTone {
 
 export function getShippingBadge(order: Order) {
   const shippingRaw =
-    (order.shippingInfo as any)?.shippingMethod ??
-    (order.shippingInfo as any)?.deliveryMethod;
+    (order.shippingInfo as any)?.shippingMethod ?? (order.shippingInfo as any)?.deliveryMethod;
   const code = normalizeOrderShippingMethod(shippingRaw);
   const tn = order.shippingInfo?.invoice?.trackingNumber?.trim() ?? "";
 
@@ -364,24 +319,16 @@ export function getShippingMethodBadge(order: Order) {
   const codeFromPickup =
     servicePickupMethod === "SHOP_VISIT"
       ? "visit"
-      : servicePickupMethod === "SELF_SEND" ||
-          servicePickupMethod === "COURIER_VISIT"
+      : servicePickupMethod === "SELF_SEND" || servicePickupMethod === "COURIER_VISIT"
         ? "courier"
         : undefined;
 
   const shippingRaw =
-    (order.shippingInfo as any)?.shippingMethod ??
-    (order.shippingInfo as any)?.deliveryMethod;
+    (order.shippingInfo as any)?.shippingMethod ?? (order.shippingInfo as any)?.deliveryMethod;
   const code = normalizeOrderShippingMethod(shippingRaw) ?? codeFromPickup;
 
   const label =
-    code === "courier"
-      ? "택배"
-      : code === "visit"
-        ? "방문"
-        : code === "quick"
-          ? "퀵"
-          : "선택 없음";
+    code === "courier" ? "택배" : code === "visit" ? "방문" : code === "quick" ? "퀵" : "선택 없음";
   const displayLabel = label;
 
   const tone = getShippingMethodTone(label);
@@ -402,8 +349,7 @@ export function getShippingMethodBadge(order: Order) {
  */
 export function getTrackingBadge(order: Order) {
   const shippingRaw =
-    (order.shippingInfo as any)?.shippingMethod ??
-    (order.shippingInfo as any)?.deliveryMethod;
+    (order.shippingInfo as any)?.shippingMethod ?? (order.shippingInfo as any)?.deliveryMethod;
   const code = normalizeOrderShippingMethod(shippingRaw);
   if (code !== "courier") {
     return {
@@ -434,11 +380,7 @@ export function getRentalStatusTone(status?: string | null): BadgeSemanticTone {
   if (normalized === "out" || normalized === "대여중") return "info";
   if (normalized === "returned" || normalized === "반납완료") return "success";
   if (normalized === "pending" || normalized === "대기중") return "warning";
-  if (
-    normalized === "canceled" ||
-    normalized === "취소" ||
-    normalized === "취소됨"
-  )
+  if (normalized === "canceled" || normalized === "취소" || normalized === "취소됨")
     return "danger";
   return "neutral";
 }
@@ -456,9 +398,7 @@ export const applicationStatusColors = {
   default: SEMANTIC_BADGE.neutral,
 } as const;
 
-export function getApplicationStatusTone(
-  status?: string | null,
-): BadgeSemanticTone {
+export function getApplicationStatusTone(status?: string | null): BadgeSemanticTone {
   const normalized = String(status ?? "").trim();
   if (!normalized) return "neutral";
   if (normalized === "교체완료") return "success";
@@ -490,9 +430,7 @@ export function getQnaCategoryColor(label?: QnaCategory | string | null) {
   return getQnaCategoryBadgeSpec(label).className;
 }
 
-export function getQnaCategoryTone(
-  label?: QnaCategory | string | null,
-): BadgeSemanticTone {
+export function getQnaCategoryTone(label?: QnaCategory | string | null): BadgeSemanticTone {
   if (!label) return "neutral";
   if (label === "상품문의") return "info";
   if (label === "주문/결제" || label === "아카데미") return "brand";
@@ -542,9 +480,7 @@ export function getReviewTypeBadgeSpec(t?: string | null) {
   return badgeStyleSpec(getReviewTypeTone(t));
 }
 
-export function getNoticeCategoryTone(
-  label?: string | null,
-): BadgeSemanticTone {
+export function getNoticeCategoryTone(label?: string | null): BadgeSemanticTone {
   const normalized = String(label ?? "").trim();
   if (!normalized) return "neutral";
   if (normalized === "이벤트") return "success";
@@ -639,24 +575,15 @@ export function usedBadgeMeta(
   return {
     label: meta?.label ?? state,
     tone,
-    className:
-      surface === "image" ? imageBadgeClass(tone) : badgeToneClass(tone),
+    className: surface === "image" ? imageBadgeClass(tone) : badgeToneClass(tone),
   };
 }
 
 export type BoardBadgeKind = "free" | "market" | "gear";
 
-export type BoardCategoryTone =
-  | "neutral"
-  | "info"
-  | "success"
-  | "warning"
-  | "danger";
+export type BoardCategoryTone = "neutral" | "info" | "success" | "warning" | "danger";
 
-export const boardCategoryToneMap: Record<
-  BoardBadgeKind,
-  Record<string, BoardCategoryTone>
-> = {
+export const boardCategoryToneMap: Record<BoardBadgeKind, Record<string, BoardCategoryTone>> = {
   free: {
     general: "neutral",
     info: "info",
@@ -694,16 +621,12 @@ export function academyBadgeVariant() {
   return "brand" as const;
 }
 
-export function packagesBadgeVariant(
-  kind: "hero" | "selection" | "benefits" | "faq",
-) {
+export function packagesBadgeVariant(kind: "hero" | "selection" | "benefits" | "faq") {
   if (kind === "hero" || kind === "benefits") return "neutral" as const;
   return "brand" as const;
 }
 
-export function racketStockBadgeVariant(
-  state: "sold" | "allRented" | "available" | "rented",
-) {
+export function racketStockBadgeVariant(state: "sold" | "allRented" | "available" | "rented") {
   if (state === "sold") return "neutral" as const;
   if (state === "allRented") return "danger" as const;
   if (state === "rented") return "warning" as const;
@@ -718,9 +641,7 @@ export function adminReportTargetBadgeVariant(targetType: "post" | "comment") {
   return targetType === "post" ? ("neutral" as const) : ("info" as const);
 }
 
-export function adminReportStatusBadgeVariant(
-  status: "pending" | "resolved" | "rejected",
-) {
+export function adminReportStatusBadgeVariant(status: "pending" | "resolved" | "rejected") {
   if (status === "pending") return "warning" as const;
   if (status === "resolved") return "success" as const;
   return "danger" as const;

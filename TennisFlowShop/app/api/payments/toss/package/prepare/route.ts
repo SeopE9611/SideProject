@@ -4,14 +4,8 @@ import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { getPackagePricingInfo } from "@/app/features/packages/api/db";
 import { isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
-import {
-  buildTossOrderName,
-  createTossOrderId,
-} from "@/lib/payments/toss/server";
-import {
-  ensureTossPaymentSessionIndexes,
-  tossPaymentSessions,
-} from "@/lib/payments/toss/session";
+import { buildTossOrderName, createTossOrderId } from "@/lib/payments/toss/server";
+import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
 import { findBlockingPackageOrderByUserId } from "@/lib/package-order-ownership";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -35,10 +29,7 @@ export async function POST(req: Request) {
     const payload = token ? verifyAccessToken(token) : null;
     const userId = payload?.sub ?? null;
     if (!userId) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 },
-      );
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json().catch(() => ({}));

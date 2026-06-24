@@ -81,8 +81,7 @@ function getWishlistOptionState(row: any) {
   if (requiresGauge && selectedGauge) {
     const gauge = gaugeRows.find((row) => row.value === selectedGauge);
     const optionStock = Math.max(0, Number(gauge?.stock ?? 0));
-    const optionAvailable =
-      !!gauge && gauge.isSoldOut !== true && optionStock > 0;
+    const optionAvailable = !!gauge && gauge.isSoldOut !== true && optionStock > 0;
     return {
       requiresOption,
       hasSelectedOption,
@@ -146,15 +145,11 @@ export async function GET() {
     const cookieStore = await cookies();
     const token = cookieStore.get("accessToken")?.value;
     const user = safeVerifyAccessToken(token);
-    if (!user)
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     const userId = String((user as any).sub ?? "");
     if (!ObjectId.isValid(userId))
-      return NextResponse.json(
-        { error: "Invalid token payload" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid token payload" }, { status: 400 });
 
     const db = await getDb();
     const wishlists = db.collection("wishlists");
@@ -172,9 +167,7 @@ export async function GET() {
             as: "product",
             pipeline: [
               {
-                $match: productVisibilityFilterFor(
-                  await getVisibilityViewerFromCookies(),
-                ),
+                $match: productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
               },
               {
                 $project: {
@@ -218,8 +211,7 @@ export async function GET() {
           id: r.productId.toString(),
           name: r.product.name,
           price: r.product.price,
-          image:
-            r.selectedColorImage || r.product.images?.[0] || "/placeholder.svg",
+          image: r.selectedColorImage || r.product.images?.[0] || "/placeholder.svg",
           stock: optionState.optionStock ?? r.product?.inventory?.stock ?? 0,
           createdAt: r.createdAt,
           selectedGauge: r.selectedGauge,
@@ -245,15 +237,11 @@ export async function POST(req: Request) {
     const cookieStore = await cookies();
     const token = cookieStore.get("accessToken")?.value;
     const user = safeVerifyAccessToken(token);
-    if (!user)
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     const userId = String((user as any).sub ?? "");
     if (!ObjectId.isValid(userId))
-      return NextResponse.json(
-        { error: "Invalid token payload" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid token payload" }, { status: 400 });
 
     let body: any = null;
     try {
@@ -265,16 +253,9 @@ export async function POST(req: Request) {
 
     const productId = body?.productId;
     if (typeof productId !== "string" || !productId) {
-      return NextResponse.json(
-        { message: "INVALID_PRODUCT_ID" },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "INVALID_PRODUCT_ID" }, { status: 400 });
     }
-    if (!productId)
-      return NextResponse.json(
-        { message: "productId required" },
-        { status: 400 },
-      );
+    if (!productId) return NextResponse.json({ message: "productId required" }, { status: 400 });
     if (!ObjectId.isValid(String(productId)))
       return NextResponse.json({ error: "Invalid productId" }, { status: 400 });
 
@@ -286,11 +267,7 @@ export async function POST(req: Request) {
       _id: new ObjectId(productId),
       ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
     });
-    if (!prod)
-      return NextResponse.json(
-        { message: "Product not found" },
-        { status: 404 },
-      );
+    if (!prod) return NextResponse.json({ message: "Product not found" }, { status: 404 });
 
     const optionPayload = buildWishlistOptionPayload(body);
 
@@ -304,10 +281,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true });
   } catch (e: any) {
     if (e?.code === 11000) {
-      return NextResponse.json(
-        { message: "Already in wishlist" },
-        { status: 409 },
-      );
+      return NextResponse.json({ message: "Already in wishlist" }, { status: 409 });
     }
     console.error("[wishlist] POST error", e);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
@@ -320,20 +294,14 @@ export async function DELETE() {
     const cookieStore = await cookies();
     const token = cookieStore.get("accessToken")?.value;
     const user = safeVerifyAccessToken(token);
-    if (!user)
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     const userId = String((user as any).sub ?? "");
     if (!ObjectId.isValid(userId))
-      return NextResponse.json(
-        { error: "Invalid token payload" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid token payload" }, { status: 400 });
 
     const db = await getDb();
-    await db
-      .collection("wishlists")
-      .deleteMany({ userId: new ObjectId(userId) });
+    await db.collection("wishlists").deleteMany({ userId: new ObjectId(userId) });
 
     return NextResponse.json({ success: true });
   } catch (e) {

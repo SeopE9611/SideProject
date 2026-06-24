@@ -1,9 +1,5 @@
 import { Db, ObjectId } from "mongodb";
-import {
-  maskPhone,
-  normalizeEmail,
-  normalizePhone,
-} from "@/lib/offline/normalizers";
+import { maskPhone, normalizeEmail, normalizePhone } from "@/lib/offline/normalizers";
 
 export async function ensureOfflineIndexes(db: Db) {
   await Promise.all([
@@ -44,10 +40,8 @@ export function sanitizeCustomer(doc: Record<string, any>, masked = false) {
     tags: Array.isArray(doc.tags) ? doc.tags : [],
     source: "offline_admin" as const,
     stats: doc.stats,
-    createdAt:
-      doc.createdAt instanceof Date ? doc.createdAt.toISOString() : null,
-    updatedAt:
-      doc.updatedAt instanceof Date ? doc.updatedAt.toISOString() : null,
+    createdAt: doc.createdAt instanceof Date ? doc.createdAt.toISOString() : null,
+    updatedAt: doc.updatedAt instanceof Date ? doc.updatedAt.toISOString() : null,
   };
 }
 
@@ -55,9 +49,7 @@ export function buildCustomerSearchFilter(q: string) {
   const trimmed = q.trim();
   const phoneNormalized = normalizePhone(trimmed);
   const emailLower = normalizeEmail(trimmed);
-  const regex = trimmed
-    ? new RegExp(trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")
-    : null;
+  const regex = trimmed ? new RegExp(trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i") : null;
   const or: Record<string, any>[] = [];
   if (regex) or.push({ name: regex }, { phone: regex }, { email: regex });
   if (phoneNormalized) or.push({ phoneNormalized });

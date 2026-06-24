@@ -12,10 +12,7 @@ import {
   resolveDaySchedule,
 } from "@/app/features/stringing-applications/lib/slotEngine";
 import { normalizeEmail } from "@/lib/claims";
-import {
-  calcStringingMountingFeeByProductId,
-  calcStringingTotal,
-} from "@/lib/pricing";
+import { calcStringingMountingFeeByProductId, calcStringingTotal } from "@/lib/pricing";
 import { consumePass, findOneActivePassForUser } from "@/lib/passes.service";
 import { productVisibilityFilterFor } from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
@@ -103,15 +100,7 @@ async function applyStringingVariantInventoryDeduction(params: {
   quantity: number;
   session?: ClientSession;
 }) {
-  const {
-    db,
-    productId,
-    product,
-    selectedColor,
-    selectedGauge,
-    quantity,
-    session,
-  } = params;
+  const { db, productId, product, selectedColor, selectedGauge, quantity, session } = params;
   const variantInventories = Array.isArray(product?.variantInventories)
     ? product.variantInventories
     : [];
@@ -132,13 +121,10 @@ async function applyStringingVariantInventoryDeduction(params: {
       String(row?.gaugeValue ?? "").trim() === selectedGauge,
   );
   if (!variantRow) {
-    throw Object.assign(
-      new Error("선택한 옵션 조합 정보를 찾을 수 없습니다."),
-      {
-        status: 400,
-        code: "VARIANT_NOT_FOUND",
-      },
-    );
+    throw Object.assign(new Error("선택한 옵션 조합 정보를 찾을 수 없습니다."), {
+      status: 400,
+      code: "VARIANT_NOT_FOUND",
+    });
   }
   if (variantRow?.isSoldOut === true) {
     throw Object.assign(new Error("선택한 옵션 조합은 현재 품절입니다."), {
@@ -231,12 +217,7 @@ export async function submitStringingApplicationCore({
     lines,
   } = input;
 
-  if (
-    !name ||
-    !phone ||
-    !Array.isArray(stringTypes) ||
-    stringTypes.length === 0
-  ) {
+  if (!name || !phone || !Array.isArray(stringTypes) || stringTypes.length === 0) {
     throw Object.assign(new Error("필수 항목 누락"), { status: 400 });
   }
 
@@ -245,10 +226,9 @@ export async function submitStringingApplicationCore({
   const rentalObjectId = toObjectIdOrThrow(rentalId, "rentalId");
 
   if (orderObjectId && rentalObjectId) {
-    throw Object.assign(
-      new Error("orderId와 rentalId는 동시에 제출할 수 없습니다."),
-      { status: 400 },
-    );
+    throw Object.assign(new Error("orderId와 rentalId는 동시에 제출할 수 없습니다."), {
+      status: 400,
+    });
   }
 
   const bodyApplicationObjectId = toObjectIdOrThrow(bodyAppId, "applicationId");
@@ -267,8 +247,7 @@ export async function submitStringingApplicationCore({
       });
     }
 
-    const isMemberOwner =
-      !!userId && isSameObjectId((existingApp as any).userId, userId);
+    const isMemberOwner = !!userId && isSameObjectId((existingApp as any).userId, userId);
     const isGuestOrderOwner =
       !userId &&
       !!guestOrderId &&
@@ -287,16 +266,12 @@ export async function submitStringingApplicationCore({
     }
   }
 
-  const applicationId: ObjectId =
-    bodyApplicationObjectId ?? new MongoObjectId();
+  const applicationId: ObjectId = bodyApplicationObjectId ?? new MongoObjectId();
 
   if (orderObjectId) {
     const order = await db
       .collection("orders")
-      .findOne(
-        { _id: orderObjectId },
-        { projection: { _id: 1, userId: 1, guest: 1 }, session },
-      );
+      .findOne({ _id: orderObjectId }, { projection: { _id: 1, userId: 1, guest: 1 }, session });
     if (!order) {
       throw Object.assign(new Error("접근할 수 없는 주문입니다."), {
         status: 403,
@@ -304,12 +279,9 @@ export async function submitStringingApplicationCore({
     }
 
     const isOwner = !!userId && isSameObjectId((order as any).userId, userId);
-    const isGuestOrder =
-      !userId && (!(order as any).userId || (order as any).guest === true);
+    const isGuestOrder = !userId && (!(order as any).userId || (order as any).guest === true);
     const guestOwns =
-      !!isGuestOrder &&
-      !!guestOrderId &&
-      String(guestOrderId) === String((order as any)._id);
+      !!isGuestOrder && !!guestOrderId && String(guestOrderId) === String((order as any)._id);
     if (!isOwner && !guestOwns) {
       throw Object.assign(new Error("접근할 수 없는 주문입니다."), {
         status: 403,
@@ -320,10 +292,7 @@ export async function submitStringingApplicationCore({
   if (rentalObjectId) {
     const rental = await db
       .collection("rental_orders")
-      .findOne(
-        { _id: rentalObjectId },
-        { projection: { _id: 1, userId: 1 }, session },
-      );
+      .findOne({ _id: rentalObjectId }, { projection: { _id: 1, userId: 1 }, session });
     if (!rental) {
       throw Object.assign(new Error("접근할 수 없는 대여입니다."), {
         status: 403,
@@ -348,10 +317,7 @@ export async function submitStringingApplicationCore({
     ? await Promise.all(
         lines.map(async (line) => {
           const stringProductId = line.stringProductId ?? "custom";
-          const serverMountingFee = await calcStringingMountingFeeByProductId(
-            db,
-            stringProductId,
-          );
+          const serverMountingFee = await calcStringingMountingFeeByProductId(db, stringProductId);
           return {
             racketType: line.racketType ?? "",
             stringProductId,
@@ -378,10 +344,7 @@ export async function submitStringingApplicationCore({
       }))
     : stringTypes.map((id) => ({
         productId: id,
-        name:
-          id === "custom"
-            ? customStringName?.trim() || "커스텀 스트링"
-            : "선택한 스트링",
+        name: id === "custom" ? customStringName?.trim() || "커스텀 스트링" : "선택한 스트링",
         quantity: 1,
       }));
 
@@ -404,10 +367,7 @@ export async function submitStringingApplicationCore({
   };
 
   const serviceFeeBeforeRaw = usingLines
-    ? normalizedLines.reduce(
-        (sum, line) => sum + Number(line.mountingFee ?? 0),
-        0,
-      )
+    ? normalizedLines.reduce((sum, line) => sum + Number(line.mountingFee ?? 0), 0)
     : await calcStringingTotal(db, stringTypes);
   const serviceFeeBefore = Math.max(
     0,
@@ -466,10 +426,7 @@ export async function submitStringingApplicationCore({
   const totalPriceRaw = applyPackageToServiceFee(serviceFeeBefore, {
     usingPackage: packageApplied,
   });
-  const totalPrice = Math.max(
-    0,
-    Math.round(Number.isFinite(totalPriceRaw) ? totalPriceRaw : 0),
-  );
+  const totalPrice = Math.max(0, Math.round(Number.isFinite(totalPriceRaw) ? totalPriceRaw : 0));
   const paymentSource = orderObjectId
     ? `order:${String(orderObjectId)}`
     : rentalObjectId
@@ -514,13 +471,9 @@ export async function submitStringingApplicationCore({
       : {};
 
   const normalizedSelectedGauge =
-    typeof selectedGauge === "string" && selectedGauge.trim()
-      ? selectedGauge.trim()
-      : undefined;
+    typeof selectedGauge === "string" && selectedGauge.trim() ? selectedGauge.trim() : undefined;
   const normalizedSelectedColor =
-    typeof selectedColor === "string" && selectedColor.trim()
-      ? selectedColor.trim()
-      : undefined;
+    typeof selectedColor === "string" && selectedColor.trim() ? selectedColor.trim() : undefined;
   const orderForGauge =
     orderObjectId && !rentalObjectId
       ? await db.collection("orders").findOne(
@@ -590,27 +543,19 @@ export async function submitStringingApplicationCore({
   );
 
   const selectedProductIdCandidate =
-    (Array.isArray(stringTypes)
-      ? stringTypes.find((id) => id && id !== "custom")
-      : undefined) ??
-    normalizedStringItems.find(
-      (item) => item.productId && item.productId !== "custom",
-    )?.productId ??
-    normalizedLines.find(
-      (line) => line.stringProductId && line.stringProductId !== "custom",
-    )?.stringProductId;
+    (Array.isArray(stringTypes) ? stringTypes.find((id) => id && id !== "custom") : undefined) ??
+    normalizedStringItems.find((item) => item.productId && item.productId !== "custom")
+      ?.productId ??
+    normalizedLines.find((line) => line.stringProductId && line.stringProductId !== "custom")
+      ?.stringProductId;
 
   const normalizedStringProductId =
-    typeof selectedProductIdCandidate === "string" &&
-    selectedProductIdCandidate.trim()
+    typeof selectedProductIdCandidate === "string" && selectedProductIdCandidate.trim()
       ? selectedProductIdCandidate.trim()
       : "";
 
   if (orderObjectId && !rentalObjectId && normalizedStringProductId) {
-    const stringProductObjectId = toObjectIdOrThrow(
-      normalizedStringProductId,
-      "stringProductId",
-    );
+    const stringProductObjectId = toObjectIdOrThrow(normalizedStringProductId, "stringProductId");
 
     if (!stringProductObjectId) {
       throw Object.assign(new Error("유효하지 않은 stringProductId입니다."), {
@@ -622,9 +567,7 @@ export async function submitStringingApplicationCore({
       ? (orderForGauge as any).items.find((item: any) => {
           const kind = item?.kind ?? "product";
           const productId = String(item?.productId ?? "");
-          return (
-            kind === "product" && productId === String(stringProductObjectId)
-          );
+          return kind === "product" && productId === String(stringProductObjectId);
         })
       : null;
 
@@ -639,20 +582,15 @@ export async function submitStringingApplicationCore({
         ? purchasedStringItem.selectedColor.trim()
         : undefined;
 
-    const effectiveSelectedGauge =
-      normalizedSelectedGauge ?? selectedGaugeFromOrderItem;
-    const effectiveSelectedColor =
-      normalizedSelectedColor ?? selectedColorFromOrderItem;
+    const effectiveSelectedGauge = normalizedSelectedGauge ?? selectedGaugeFromOrderItem;
+    const effectiveSelectedColor = normalizedSelectedColor ?? selectedColorFromOrderItem;
 
     const isStockAlreadyDeductedByOrderItem =
-      Boolean(selectedGaugeFromOrderItem) &&
-      selectedGaugeFromOrderItem === effectiveSelectedGauge;
+      Boolean(selectedGaugeFromOrderItem) && selectedGaugeFromOrderItem === effectiveSelectedGauge;
     const isColorStockAlreadyDeductedByOrderItem =
-      Boolean(selectedColorFromOrderItem) &&
-      selectedColorFromOrderItem === effectiveSelectedColor;
+      Boolean(selectedColorFromOrderItem) && selectedColorFromOrderItem === effectiveSelectedColor;
     const isVariantStockAlreadyDeductedByOrderItem =
-      isStockAlreadyDeductedByOrderItem &&
-      isColorStockAlreadyDeductedByOrderItem;
+      isStockAlreadyDeductedByOrderItem && isColorStockAlreadyDeductedByOrderItem;
 
     const stringProduct = await db.collection("products").findOne(
       {
@@ -704,8 +642,7 @@ export async function submitStringingApplicationCore({
       updateDoc["meta.selectedColorImage"] = selectedColorImage.trim();
     }
 
-    const existingSelectedGauge = (existingApplication as any)?.meta
-      ?.selectedGauge;
+    const existingSelectedGauge = (existingApplication as any)?.meta?.selectedGauge;
     if (
       isGaugeSelectableProduct &&
       alreadyDeductedGaugeStock &&
@@ -713,27 +650,23 @@ export async function submitStringingApplicationCore({
       existingSelectedGauge &&
       existingSelectedGauge !== effectiveSelectedGauge
     ) {
-      throw Object.assign(
-        new Error("이미 재고가 차감된 신청서의 게이지는 변경할 수 없습니다."),
-        {
-          status: 409,
-          code: "GAUGE_ALREADY_DEDUCTED",
-        },
-      );
+      throw Object.assign(new Error("이미 재고가 차감된 신청서의 게이지는 변경할 수 없습니다."), {
+        status: 409,
+        code: "GAUGE_ALREADY_DEDUCTED",
+      });
     }
 
-    const existingSelectedColor = (existingApplication as any)?.meta
-      ?.selectedColor;
+    const existingSelectedColor = (existingApplication as any)?.meta?.selectedColor;
     if (
       alreadyDeductedColorStock &&
       effectiveSelectedColor &&
       existingSelectedColor &&
       existingSelectedColor !== effectiveSelectedColor
     ) {
-      throw Object.assign(
-        new Error("이미 재고가 차감된 신청서의 색상은 변경할 수 없습니다."),
-        { status: 409, code: "COLOR_ALREADY_DEDUCTED" },
-      );
+      throw Object.assign(new Error("이미 재고가 차감된 신청서의 색상은 변경할 수 없습니다."), {
+        status: 409,
+        code: "COLOR_ALREADY_DEDUCTED",
+      });
     }
 
     const hasManagedColorInventories =
@@ -777,8 +710,7 @@ export async function submitStringingApplicationCore({
       hasManagedColorInventories
     ) {
       const colorRow = (stringProduct as any).colorInventories.find(
-        (row: any) =>
-          String(row?.value ?? "").trim() === effectiveSelectedColor,
+        (row: any) => String(row?.value ?? "").trim() === effectiveSelectedColor,
       );
       if (!colorRow) {
         throw Object.assign(new Error("선택한 색상 정보를 찾을 수 없습니다."), {
@@ -793,13 +725,10 @@ export async function submitStringingApplicationCore({
         });
       }
       if (Number(colorRow?.stock ?? 0) < 1) {
-        throw Object.assign(
-          new Error("선택한 색상의 구매 가능 수량을 초과했습니다."),
-          {
-            status: 409,
-            code: "COLOR_INSUFFICIENT_STOCK",
-          },
-        );
+        throw Object.assign(new Error("선택한 색상의 구매 가능 수량을 초과했습니다."), {
+          status: 409,
+          code: "COLOR_INSUFFICIENT_STOCK",
+        });
       }
 
       const shouldAdjustGlobalInventory = !effectiveSelectedGauge;
@@ -807,9 +736,7 @@ export async function submitStringingApplicationCore({
         {
           _id: stringProductObjectId,
           ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
-          ...(shouldAdjustGlobalInventory
-            ? { "inventory.stock": { $gte: 1 } }
-            : {}),
+          ...(shouldAdjustGlobalInventory ? { "inventory.stock": { $gte: 1 } } : {}),
           colorInventories: {
             $elemMatch: {
               value: effectiveSelectedColor,
@@ -827,13 +754,10 @@ export async function submitStringingApplicationCore({
       );
 
       if (!colorDeductResult.matchedCount || !colorDeductResult.modifiedCount) {
-        throw Object.assign(
-          new Error("선택한 색상의 구매 가능 수량을 초과했습니다."),
-          {
-            status: 409,
-            code: "COLOR_INSUFFICIENT_STOCK",
-          },
-        );
+        throw Object.assign(new Error("선택한 색상의 구매 가능 수량을 초과했습니다."), {
+          status: 409,
+          code: "COLOR_INSUFFICIENT_STOCK",
+        });
       }
       updateDoc["meta.colorStockDeductedAt"] = new Date();
     }
@@ -851,10 +775,7 @@ export async function submitStringingApplicationCore({
         Array.isArray((stringProduct as any)?.gaugeInventories)
           ? (stringProduct as any).gaugeInventories
           : []
-      ).find(
-        (row: any) =>
-          String(row?.value ?? "").trim() === effectiveSelectedGauge,
-      );
+      ).find((row: any) => String(row?.value ?? "").trim() === effectiveSelectedGauge);
 
       if (!gaugeRow) {
         throw Object.assign(new Error("선택한 게이지를 찾을 수 없습니다."), {

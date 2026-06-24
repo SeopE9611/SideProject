@@ -1,8 +1,5 @@
 import { verifyAccessToken } from "@/lib/auth.utils";
-import {
-  maskSecretTitle,
-  resolveBoardViewerContext,
-} from "@/lib/board-secret-policy";
+import { maskSecretTitle, resolveBoardViewerContext } from "@/lib/board-secret-policy";
 import { API_VERSION } from "@/lib/board.repository";
 import { validateBoardAssetUrl } from "@/lib/boards-community-url-policy";
 import { getBoardList } from "@/lib/boards.queries";
@@ -16,11 +13,7 @@ import {
   getValidCommunityUserObjectIds,
   resolveCommunityDisplayName,
 } from "@/lib/community-display-name";
-import {
-  getMarketBrandOptions,
-  isBrandRequiredCategory,
-  normalizeMarketMeta,
-} from "@/lib/market";
+import { getMarketBrandOptions, isBrandRequiredCategory, normalizeMarketMeta } from "@/lib/market";
 import { verifyCommunityCsrf } from "@/lib/community/security";
 import { logInfo, reqMeta, startTimer } from "@/lib/logger";
 import { getDb } from "@/lib/mongodb";
@@ -43,18 +36,11 @@ import { z } from "zod";
 const COMMUNITY_KIND_VALUES = ["free", "market", "gear", "brand"] as const;
 type CommunityKindParam = (typeof COMMUNITY_KIND_VALUES)[number];
 
-function isCommunityKindParam(
-  value: string | null,
-): value is CommunityKindParam {
-  return (
-    typeof value === "string" &&
-    (COMMUNITY_KIND_VALUES as readonly string[]).includes(value)
-  );
+function isCommunityKindParam(value: string | null): value is CommunityKindParam {
+  return typeof value === "string" && (COMMUNITY_KIND_VALUES as readonly string[]).includes(value);
 }
 
-function parseCommunityKindParam(
-  value: string | null,
-): CommunityKindParam | null {
+function parseCommunityKindParam(value: string | null): CommunityKindParam | null {
   return isCommunityKindParam(value) ? value : null;
 }
 
@@ -63,10 +49,7 @@ function parseCommunityKindParam(
  * - NaN이면 defaultValue 적용
  * - min/max 범위로 clamp
  */
-function parseIntParam(
-  v: string | null,
-  opts: { defaultValue: number; min: number; max: number },
-) {
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
@@ -91,10 +74,7 @@ async function mustAdmin() {
   const db = await getDb();
   const u = await db
     .collection("users")
-    .findOne(
-      { _id: new ObjectId(subStr) },
-      { projection: { _id: 1, role: 1 } },
-    );
+    .findOne({ _id: new ObjectId(subStr) }, { projection: { _id: 1, role: 1 } });
 
   if (!u || u.role !== "admin") return null;
   return payload;
@@ -131,20 +111,8 @@ const QNA_CATEGORY_CODES = [
 ] as const;
 
 /** ---- Notice 카테고리(라벨) ---- */
-const NOTICE_CATEGORY_LABELS = [
-  "일반",
-  "이벤트",
-  "아카데미",
-  "점검",
-  "긴급",
-] as const;
-const NOTICE_CATEGORY_CODES = [
-  "general",
-  "event",
-  "academy",
-  "maintenance",
-  "urgent",
-] as const;
+const NOTICE_CATEGORY_LABELS = ["일반", "이벤트", "아카데미", "점검", "긴급"] as const;
+const NOTICE_CATEGORY_CODES = ["general", "event", "academy", "maintenance", "urgent"] as const;
 const NOTICE_CODE_TO_LABEL: Record<
   (typeof NOTICE_CATEGORY_CODES)[number],
   (typeof NOTICE_CATEGORY_LABELS)[number]
@@ -168,21 +136,19 @@ function normalizeNoticeCategory(input: string | null | undefined) {
 }
 
 /** 코드 -> 라벨 매핑 (모든 코드는 반드시 라벨 중 하나로 매핑) */
-const CODE_TO_LABEL: Record<(typeof QNA_CATEGORY_CODES)[number], QnaCategory> =
-  {
-    product: "상품문의",
-    order: "주문/결제",
-    delivery: "배송",
-    refund: "환불/교환",
-    service: "서비스",
-    academy: "아카데미",
-    member: "회원",
-    general: "일반문의",
-  } as const;
+const CODE_TO_LABEL: Record<(typeof QNA_CATEGORY_CODES)[number], QnaCategory> = {
+  product: "상품문의",
+  order: "주문/결제",
+  delivery: "배송",
+  refund: "환불/교환",
+  service: "서비스",
+  academy: "아카데미",
+  member: "회원",
+  general: "일반문의",
+} as const;
 
 /** 라벨 배열(런타임 비교용) */
-const QNA_LABEL_SET: readonly string[] =
-  QNA_CATEGORY_LABELS as readonly string[];
+const QNA_LABEL_SET: readonly string[] = QNA_CATEGORY_LABELS as readonly string[];
 
 /** 런타임 타입가드: 값이 실제 QnaCategory 라벨인지 검사 */
 const isQnaCategory = (v: unknown): v is QnaCategory =>
@@ -194,9 +160,7 @@ const isQnaCategory = (v: unknown): v is QnaCategory =>
  * - 라벨이 이미 들어왔다면 유효성 검사 후 그대로 사용
  * - 그 외 문자열/오타는 null 반환(필터 미적용)
  */
-function normalizeCategory(
-  input: string | null | undefined,
-): QnaCategory | null {
+function normalizeCategory(input: string | null | undefined): QnaCategory | null {
   if (!input) return null;
   // 코드로 들어온 경우
   if ((QNA_CATEGORY_CODES as readonly string[]).includes(input)) {
@@ -255,11 +219,7 @@ const createSchema = z.object({
   productRef: productRefSchema,
   isSecret: z.boolean().optional(),
   isPinned: z.boolean().optional(), // notice에서만 사용
-  brand: z
-    .string()
-    .max(100, "브랜드명은 100자 이내로 입력해 주세요.")
-    .optional()
-    .nullable(),
+  brand: z.string().max(100, "브랜드명은 100자 이내로 입력해 주세요.").optional().nullable(),
   // marketMeta의 세부 검증은 normalizeMarketMeta + type별 후속 검증에서 수행
   marketMeta: z.any().optional(),
   images: z.array(z.string().url()).max(10).optional(),
@@ -395,10 +355,7 @@ export async function GET(req: NextRequest) {
     const users = userObjectIds.length
       ? await db
           .collection("users")
-          .find(
-            { _id: { $in: userObjectIds } },
-            { projection: { name: 1, nickname: 1 } },
-          )
+          .find({ _id: { $in: userObjectIds } }, { projection: { name: 1, nickname: 1 } })
           .toArray()
       : [];
     const userMap = new Map(
@@ -431,12 +388,8 @@ export async function GET(req: NextRequest) {
         views: d.views ?? 0,
         likes: d.likes ?? 0,
         commentsCount: d.commentsCount ?? 0,
-        createdAt:
-          d.createdAt instanceof Date
-            ? d.createdAt.toISOString()
-            : String(d.createdAt),
-        updatedAt:
-          d.updatedAt instanceof Date ? d.updatedAt.toISOString() : undefined,
+        createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : String(d.createdAt),
+        updatedAt: d.updatedAt instanceof Date ? d.updatedAt.toISOString() : undefined,
         attachments: d.attachments ?? [],
         images: d.images ?? [],
         brand: d.brand ?? null,
@@ -550,12 +503,9 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(response, {
     headers: {
       // 브라우저 캐시는 짧게(or 없음), CDN은 30초, 그리고 SWR 60초
-      "Cache-Control":
-        "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
-      "CDN-Cache-Control":
-        "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
-      "Vercel-CDN-Cache-Control":
-        "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
+      "Cache-Control": "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
+      "CDN-Cache-Control": "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
+      "Vercel-CDN-Cache-Control": "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
     },
   });
 }
@@ -659,14 +609,9 @@ export async function POST(req: NextRequest) {
 
     if (body.type === "market") {
       const marketCategory = (body as any).category ?? null;
-      const rawBrand =
-        typeof (body as any).brand === "string"
-          ? (body as any).brand.trim()
-          : "";
+      const rawBrand = typeof (body as any).brand === "string" ? (body as any).brand.trim() : "";
       const brandOptions = getMarketBrandOptions(marketCategory);
-      const isValidBrand = brandOptions.some(
-        (option) => option.value === rawBrand,
-      );
+      const isValidBrand = brandOptions.some((option) => option.value === rawBrand);
 
       if (isBrandRequiredCategory(marketCategory) && !isValidBrand) {
         return NextResponse.json(
@@ -685,19 +630,10 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      normalizedBrand = isBrandRequiredCategory(marketCategory)
-        ? rawBrand
-        : null;
-      normalizedMarketMeta = normalizeMarketMeta(
-        marketCategory,
-        (body as any).marketMeta,
-      );
+      normalizedBrand = isBrandRequiredCategory(marketCategory) ? rawBrand : null;
+      normalizedMarketMeta = normalizeMarketMeta(marketCategory, (body as any).marketMeta);
 
-      if (
-        !normalizedMarketMeta ||
-        !normalizedMarketMeta.price ||
-        normalizedMarketMeta.price <= 0
-      ) {
+      if (!normalizedMarketMeta || !normalizedMarketMeta.price || normalizedMarketMeta.price <= 0) {
         return NextResponse.json(
           {
             ok: false,
@@ -806,20 +742,13 @@ export async function POST(req: NextRequest) {
     // payload.sub → ObjectId 변환 전 선검증(Phase 0 - 500 방지)
     const subStr = String(payload.sub);
     if (ObjectId.isValid(subStr)) {
-      const u = await db
-        .collection("users")
-        .findOne({ _id: new ObjectId(subStr) });
+      const u = await db.collection("users").findOne({ _id: new ObjectId(subStr) });
       displayName = u?.name ?? u?.nickname ?? undefined;
     }
   } catch (_) {}
-  const payloadName = payload as
-    | { name?: string; nickname?: string; email?: string }
-    | undefined;
+  const payloadName = payload as { name?: string; nickname?: string; email?: string } | undefined;
   if (!displayName)
-    displayName =
-      payloadName?.name ??
-      payloadName?.nickname ??
-      payloadName?.email?.split("@")?.[0];
+    displayName = payloadName?.name ?? payloadName?.nickname ?? payloadName?.email?.split("@")?.[0];
 
   // 카테고리 정규화 (qna에서만 사용)
   let normalizedCategory: QnaCategory | undefined = undefined;
@@ -868,9 +797,7 @@ export async function POST(req: NextRequest) {
     createdAt: now,
   };
 
-  const r = await db
-    .collection<BoardCreateMongoDoc>("board_posts")
-    .insertOne(doc);
+  const r = await db.collection<BoardCreateMongoDoc>("board_posts").insertOne(doc);
   logInfo({
     msg: "boards:post:created",
     status: 200,

@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SectionHeader } from "@/components/public/SectionHeader";
 import { ReceiptText } from "lucide-react";
 
@@ -51,8 +45,8 @@ export default function Step3PaymentInfoRentalReadonly({
           </CardTitle>
           <CardDescription className="text-sm">
             대여 결제에 <span className="font-medium">스트링 상품</span>과{" "}
-            <span className="font-medium">교체 서비스 비용</span>까지 포함되어
-            있어 추가 결제정보 입력이 필요하지 않습니다.
+            <span className="font-medium">교체 서비스 비용</span>까지 포함되어 있어 추가 결제정보
+            입력이 필요하지 않습니다.
             {/* {rentalId ? <span className="ml-1 text-xs text-muted-foreground">(rentalId: {rentalId})</span> : null} */}
           </CardDescription>
         </CardHeader>
@@ -71,9 +65,7 @@ export default function Step3PaymentInfoRentalReadonly({
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-muted-foreground">교체 서비스</span>
-            <span className="font-medium tabular-nums">
-              {won(stringingFee)}
-            </span>
+            <span className="font-medium tabular-nums">{won(stringingFee)}</span>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3">
             <span className="font-semibold">합계</span>

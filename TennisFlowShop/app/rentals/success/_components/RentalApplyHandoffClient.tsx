@@ -59,9 +59,7 @@ export default function RentalApplyHandoffClient({
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-success/30 bg-success/10 text-success dark:bg-success/15">
             <CheckCircle2 className="h-7 w-7" />
           </div>
-          <CardTitle className="text-2xl bp-sm:text-3xl">
-            대여 신청 접수 완료
-          </CardTitle>
+          <CardTitle className="text-2xl bp-sm:text-3xl">대여 신청 접수 완료</CardTitle>
           <CardDescription className="text-base">
             대여 신청이 정상적으로 접수되었습니다.
             <br />
@@ -84,10 +82,7 @@ export default function RentalApplyHandoffClient({
                 </div>
                 <div className="mt-1 text-xs text-foreground">
                   {cancelled ? (
-                    <>
-                      자동 이동이 취소되었습니다. 준비되면 아래 버튼으로 이동해
-                      주세요.
-                    </>
+                    <>자동 이동이 취소되었습니다. 준비되면 아래 버튼으로 이동해 주세요.</>
                   ) : (
                     <>준비되면 신청서 페이지로 자동 이동합니다. ({remain}s)</>
                   )}
@@ -100,10 +95,7 @@ export default function RentalApplyHandoffClient({
 
         <CardFooter className="flex flex-col gap-2">
           <Button asChild className="w-full" size="lg">
-            <Link
-              href={safeHref}
-              className="flex items-center justify-center gap-2"
-            >
+            <Link href={safeHref} className="flex items-center justify-center gap-2">
               신청서 작성하기 <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -131,8 +123,8 @@ export default function RentalApplyHandoffClient({
           )}
 
           <p className="text-xs text-muted-foreground text-center">
-            대여 내역은 마이페이지에서 언제든지 확인할 수 있으며, 최종 결제/입금
-            계좌/요금 요약 등은 신청서 제출 후 성공 페이지에서 안내됩니다.
+            대여 내역은 마이페이지에서 언제든지 확인할 수 있으며, 최종 결제/입금 계좌/요금 요약 등은
+            신청서 제출 후 성공 페이지에서 안내됩니다.
           </p>
         </CardFooter>
       </Card>

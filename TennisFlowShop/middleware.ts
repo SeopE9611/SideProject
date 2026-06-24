@@ -3,8 +3,7 @@ import type { NextRequest } from "next/server";
 
 function getOrCreateReqId(req: NextRequest) {
   // 프록시/클라이언트가 보낸 ID가 있으면 재사용
-  const fromClient =
-    req.headers.get("x-request-id") || req.headers.get("x-correlation-id");
+  const fromClient = req.headers.get("x-request-id") || req.headers.get("x-correlation-id");
   if (fromClient) return fromClient;
   // Node 18+ : 랜덤 UUID
   return crypto.randomUUID();
@@ -48,7 +47,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!api|_next|favicon.ico|robots.txt|sitemap.xml|images|fonts).*)",
-  ],
+  matcher: ["/((?!api|_next|favicon.ico|robots.txt|sitemap.xml|images|fonts).*)"],
 };

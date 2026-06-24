@@ -21,10 +21,7 @@ const COLLECTION_NAME = "academy_classes";
 const APPLICATION_COLLECTION_NAME = "academy_lesson_applications";
 const DETAIL_APPLICATION_LIMIT = 50;
 
-type ApplicationStats = Record<
-  AcademyLessonApplicationStatus | "total",
-  number
->;
+type ApplicationStats = Record<AcademyLessonApplicationStatus | "total", number>;
 
 function createEmptyApplicationStats(): ApplicationStats {
   return {
@@ -70,14 +67,11 @@ function serializeClass(doc: Document) {
     levelLabel: getAcademyClassLevelLabel(doc.level),
     lessonType: typeof doc.lessonType === "string" ? doc.lessonType : "group",
     lessonTypeLabel: getAcademyClassLessonTypeLabel(doc.lessonType),
-    instructorName:
-      typeof doc.instructorName === "string" ? doc.instructorName : null,
+    instructorName: typeof doc.instructorName === "string" ? doc.instructorName : null,
     location: typeof doc.location === "string" ? doc.location : null,
-    scheduleText:
-      typeof doc.scheduleText === "string" ? doc.scheduleText : null,
+    scheduleText: typeof doc.scheduleText === "string" ? doc.scheduleText : null,
     capacity: typeof doc.capacity === "number" ? doc.capacity : null,
-    enrolledCount:
-      typeof doc.enrolledCount === "number" ? doc.enrolledCount : 0,
+    enrolledCount: typeof doc.enrolledCount === "number" ? doc.enrolledCount : 0,
     price: typeof doc.price === "number" ? doc.price : null,
     status: typeof doc.status === "string" ? doc.status : "draft",
     statusLabel: getAcademyClassStatusLabel(doc.status),
@@ -99,29 +93,23 @@ function buildClassApplicationFilter(classId: string): Filter<Document> {
 }
 
 function serializeApplicationSummary(doc: Document) {
-  const customerMessage =
-    typeof doc.customerMessage === "string" ? doc.customerMessage.trim() : "";
+  const customerMessage = typeof doc.customerMessage === "string" ? doc.customerMessage.trim() : "";
 
   return {
     _id: String(serializeValue(doc._id)),
-    applicantName:
-      typeof doc.applicantName === "string" ? doc.applicantName : "",
+    applicantName: typeof doc.applicantName === "string" ? doc.applicantName : "",
     phone: typeof doc.phone === "string" ? doc.phone : "",
     email: typeof doc.email === "string" ? doc.email : null,
-    desiredLessonType:
-      typeof doc.desiredLessonType === "string" ? doc.desiredLessonType : "",
+    desiredLessonType: typeof doc.desiredLessonType === "string" ? doc.desiredLessonType : "",
     desiredLessonTypeLabel: getAcademyLessonTypeLabel(doc.desiredLessonType),
     currentLevel: typeof doc.currentLevel === "string" ? doc.currentLevel : "",
     currentLevelLabel: getAcademyCurrentLevelLabel(doc.currentLevel),
     preferredDays: Array.isArray(doc.preferredDays) ? doc.preferredDays : [],
-    preferredTimeText:
-      typeof doc.preferredTimeText === "string" ? doc.preferredTimeText : null,
+    preferredTimeText: typeof doc.preferredTimeText === "string" ? doc.preferredTimeText : null,
     status: typeof doc.status === "string" ? doc.status : "submitted",
     statusLabel: getAcademyApplicationStatusLabel(doc.status),
     hasCustomerMessage: customerMessage.length > 0,
-    customerMessagePreview: customerMessage
-      ? customerMessage.slice(0, 80)
-      : null,
+    customerMessagePreview: customerMessage ? customerMessage.slice(0, 80) : null,
     createdAt: serializeValue(doc.createdAt) ?? null,
     updatedAt: serializeValue(doc.updatedAt) ?? null,
   };
@@ -157,10 +145,7 @@ async function getClassApplicationDetail(db: Db, classId: string) {
       .aggregate<{
         _id: AcademyLessonApplicationStatus;
         count: number;
-      }>([
-        { $match: filter },
-        { $group: { _id: "$status", count: { $sum: 1 } } },
-      ])
+      }>([{ $match: filter }, { $group: { _id: "$status", count: { $sum: 1 } } }])
       .toArray(),
   ]);
 
@@ -188,8 +173,7 @@ function parseOptionalNonNegativeNumber(
   value: unknown,
   fieldLabel: string,
 ): { value: number | null } | { error: string } {
-  if (value === null || value === undefined || value === "")
-    return { value: null };
+  if (value === null || value === undefined || value === "") return { value: null };
   const numeric = typeof value === "number" ? value : Number(value);
   if (!Number.isFinite(numeric) || numeric < 0) {
     return { error: `${fieldLabel}은 0 이상의 숫자로 입력해 주세요.` };
@@ -207,10 +191,7 @@ function validateClassPayload(
   }
 
   const description = normalizeOptionalText(payload.description, 1000);
-  if (
-    typeof payload.description === "string" &&
-    payload.description.trim().length > 1000
-  ) {
+  if (typeof payload.description === "string" && payload.description.trim().length > 1000) {
     return { ok: false, message: "설명은 1000자 이하로 입력해 주세요." };
   }
 
@@ -225,35 +206,22 @@ function validateClassPayload(
   }
 
   const instructorName = normalizeOptionalText(payload.instructorName, 50);
-  if (
-    typeof payload.instructorName === "string" &&
-    payload.instructorName.trim().length > 50
-  ) {
+  if (typeof payload.instructorName === "string" && payload.instructorName.trim().length > 50) {
     return { ok: false, message: "강사명은 50자 이하로 입력해 주세요." };
   }
 
   const location = normalizeOptionalText(payload.location, 100);
-  if (
-    typeof payload.location === "string" &&
-    payload.location.trim().length > 100
-  ) {
+  if (typeof payload.location === "string" && payload.location.trim().length > 100) {
     return { ok: false, message: "장소는 100자 이하로 입력해 주세요." };
   }
 
   const scheduleText = normalizeOptionalText(payload.scheduleText, 200);
-  if (
-    typeof payload.scheduleText === "string" &&
-    payload.scheduleText.trim().length > 200
-  ) {
+  if (typeof payload.scheduleText === "string" && payload.scheduleText.trim().length > 200) {
     return { ok: false, message: "일정 안내는 200자 이하로 입력해 주세요." };
   }
 
-  const capacityResult = parseOptionalNonNegativeNumber(
-    payload.capacity,
-    "정원",
-  );
-  if ("error" in capacityResult)
-    return { ok: false, message: capacityResult.error };
+  const capacityResult = parseOptionalNonNegativeNumber(payload.capacity, "정원");
+  if ("error" in capacityResult) return { ok: false, message: capacityResult.error };
 
   const priceResult = parseOptionalNonNegativeNumber(payload.price, "가격");
   if ("error" in priceResult) return { ok: false, message: priceResult.error };
@@ -280,10 +248,7 @@ function validateClassPayload(
   };
 }
 
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
 
@@ -295,9 +260,7 @@ export async function GET(
     );
   }
 
-  const item = await guard.db
-    .collection(COLLECTION_NAME)
-    .findOne({ _id: new ObjectId(id) });
+  const item = await guard.db.collection(COLLECTION_NAME).findOne({ _id: new ObjectId(id) });
 
   if (!item) {
     return NextResponse.json(
@@ -306,10 +269,7 @@ export async function GET(
     );
   }
 
-  const { applicationStats, applications } = await getClassApplicationDetail(
-    guard.db,
-    id,
-  );
+  const { applicationStats, applications } = await getClassApplicationDetail(guard.db, id);
 
   return NextResponse.json({
     success: true,
@@ -319,10 +279,7 @@ export async function GET(
   });
 }
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -337,14 +294,10 @@ export async function PATCH(
   }
 
   const body = (await req.json().catch(() => null)) as unknown;
-  const payload =
-    body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+  const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
   const validation = validateClassPayload(payload);
   if (!validation.ok) {
-    return NextResponse.json(
-      { success: false, message: validation.message },
-      { status: 400 },
-    );
+    return NextResponse.json({ success: false, message: validation.message }, { status: 400 });
   }
 
   const updated = await guard.db
@@ -365,10 +318,7 @@ export async function PATCH(
   return NextResponse.json({ success: true, item: serializeClass(updated) });
 }
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);

@@ -63,8 +63,7 @@ type AcademyApplicationsResponse = {
 
 const LIMIT = 5;
 
-const fetcher = (url: string) =>
-  authenticatedSWRFetcher<AcademyApplicationsResponse>(url);
+const fetcher = (url: string) => authenticatedSWRFetcher<AcademyApplicationsResponse>(url);
 
 function AcademyApplicationsListSkeleton({ count = 3 }: { count?: number }) {
   return (
@@ -139,12 +138,8 @@ function getStatusVariant(status: string) {
 function InfoItem({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="rounded-xl border border-border/50 bg-background p-3">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {label}
-      </p>
-      <p className="mt-1 break-words text-sm font-medium text-foreground">
-        {value?.trim() || "-"}
-      </p>
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-1 break-words text-sm font-medium text-foreground">{value?.trim() || "-"}</p>
     </div>
   );
 }
@@ -152,10 +147,7 @@ function InfoItem({ label, value }: { label: string; value?: string | null }) {
 export default function AcademyApplicationsTab() {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const getKey = (
-    pageIndex: number,
-    previousPageData: AcademyApplicationsResponse | null,
-  ) => {
+  const getKey = (pageIndex: number, previousPageData: AcademyApplicationsResponse | null) => {
     if (previousPageData && previousPageData.items.length < LIMIT) return null;
 
     const params = new URLSearchParams();
@@ -165,18 +157,11 @@ export default function AcademyApplicationsTab() {
     return `/api/applications/me?${params.toString()}`;
   };
 
-  const { data, error, isValidating, size, setSize, mutate } = useSWRInfinite(
-    getKey,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-    },
-  );
+  const { data, error, isValidating, size, setSize, mutate } = useSWRInfinite(getKey, fetcher, {
+    revalidateOnFocus: false,
+  });
 
-  const applications = useMemo(
-    () => (data ? data.flatMap((page) => page.items) : []),
-    [data],
-  );
+  const applications = useMemo(() => (data ? data.flatMap((page) => page.items) : []), [data]);
   const total = data?.[0]?.total ?? 0;
   const isInitialLoading = !data && isValidating;
   const isLoadingMore = Boolean(data) && isValidating;
@@ -208,17 +193,13 @@ export default function AcademyApplicationsTab() {
         message?: string;
       } | null;
       if (!response.ok || !payload?.success) {
-        throw new Error(
-          payload?.message || "신청 기록 삭제 중 문제가 발생했습니다.",
-        );
+        throw new Error(payload?.message || "신청 기록 삭제 중 문제가 발생했습니다.");
       }
       showSuccessToast(payload.message || "신청 기록이 삭제되었습니다.");
       await mutate();
     } catch (error) {
       showErrorToast(
-        error instanceof Error
-          ? error.message
-          : "신청 기록 삭제 중 문제가 발생했습니다.",
+        error instanceof Error ? error.message : "신청 기록 삭제 중 문제가 발생했습니다.",
       );
     } finally {
       setDeletingId(null);
@@ -251,8 +232,8 @@ export default function AcademyApplicationsTab() {
             아직 신청한 아카데미 클래스가 없습니다.
           </h3>
           <p className="mb-6 text-muted-foreground">
-            아카데미 페이지에서 원하는 클래스를 확인하고 상담 신청을 남겨보세요.
-            등록이 확정되면 현장에서 결제를 안내해드립니다.
+            아카데미 페이지에서 원하는 클래스를 확인하고 상담 신청을 남겨보세요. 등록이 확정되면
+            현장에서 결제를 안내해드립니다.
           </p>
           <Button asChild variant="default" className="shadow-sm">
             <Link href="/academy">아카데미 보러가기</Link>
@@ -295,16 +276,12 @@ export default function AcademyApplicationsTab() {
                 <InfoItem
                   label="수업 유형"
                   value={
-                    application.classSnapshot?.lessonTypeLabel ||
-                    application.desiredLessonTypeLabel
+                    application.classSnapshot?.lessonTypeLabel || application.desiredLessonTypeLabel
                   }
                 />
                 <InfoItem
                   label="레벨"
-                  value={
-                    application.classSnapshot?.levelLabel ||
-                    application.currentLevelLabel
-                  }
+                  value={application.classSnapshot?.levelLabel || application.currentLevelLabel}
                 />
                 <InfoItem
                   label="일정"
@@ -314,16 +291,12 @@ export default function AcademyApplicationsTab() {
                     application.preferredTimeText
                   }
                 />
-                <InfoItem
-                  label="희망 시간대"
-                  value={application.preferredTimeText}
-                />
+                <InfoItem label="희망 시간대" value={application.preferredTimeText} />
               </div>
 
               {isCancelled ? (
                 <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
-                  취소된 신청입니다. 필요하면 마이페이지에서 기록을 삭제할 수
-                  있습니다.
+                  취소된 신청입니다. 필요하면 마이페이지에서 기록을 삭제할 수 있습니다.
                 </div>
               ) : null}
 
@@ -338,9 +311,7 @@ export default function AcademyApplicationsTab() {
                   </p>
                   <dl className="mt-3 grid gap-2 text-sm text-muted-foreground bp-sm:grid-cols-2">
                     <div className="rounded-lg bg-background p-3">
-                      <dt className="text-xs uppercase tracking-wide">
-                        수업 유형
-                      </dt>
+                      <dt className="text-xs uppercase tracking-wide">수업 유형</dt>
                       <dd className="mt-0.5 font-medium text-foreground">
                         {application.classSnapshot.lessonTypeLabel || "미선택"}
                       </dd>
@@ -356,8 +327,7 @@ export default function AcademyApplicationsTab() {
                         <CalendarDays className="h-3.5 w-3.5" /> 일정
                       </dt>
                       <dd className="mt-0.5 break-keep font-medium text-foreground">
-                        {application.classSnapshot.scheduleText ||
-                          "상담 후 조율"}
+                        {application.classSnapshot.scheduleText || "상담 후 조율"}
                       </dd>
                     </div>
                     <div className="rounded-lg bg-background p-3">
@@ -377,8 +347,8 @@ export default function AcademyApplicationsTab() {
                       </dd>
                       {!isCancelled ? (
                         <dd className="mt-1 break-keep text-xs text-muted-foreground">
-                          수강료는 상담 내용에 따라 최종 확인될 수 있습니다.
-                          등록 확정 후 현장에서 결제를 안내해드립니다.
+                          수강료는 상담 내용에 따라 최종 확인될 수 있습니다. 등록 확정 후 현장에서
+                          결제를 안내해드립니다.
                         </dd>
                       ) : null}
                     </div>
@@ -388,14 +358,8 @@ export default function AcademyApplicationsTab() {
 
               {isExpanded ? (
                 <div className="grid gap-3 bp-sm:grid-cols-2">
-                  <InfoItem
-                    label="희망 레슨 유형"
-                    value={application.desiredLessonTypeLabel}
-                  />
-                  <InfoItem
-                    label="현재 실력"
-                    value={application.currentLevelLabel}
-                  />
+                  <InfoItem label="희망 레슨 유형" value={application.desiredLessonTypeLabel} />
+                  <InfoItem label="현재 실력" value={application.currentLevelLabel} />
                   <InfoItem
                     label="희망 요일"
                     value={
@@ -404,10 +368,7 @@ export default function AcademyApplicationsTab() {
                         : null
                     }
                   />
-                  <InfoItem
-                    label="희망 시간대"
-                    value={application.preferredTimeText}
-                  />
+                  <InfoItem label="희망 시간대" value={application.preferredTimeText} />
                 </div>
               ) : null}
 
@@ -424,12 +385,7 @@ export default function AcademyApplicationsTab() {
               ) : null}
 
               <div className="flex flex-col gap-2 border-t border-border/60 pt-4 sm:flex-row sm:justify-end">
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="w-full sm:w-auto"
-                >
+                <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
                   <Link href={`/mypage/academy-applications/${application.id}`}>
                     <Eye className="h-4 w-4" />
                     상세 보기

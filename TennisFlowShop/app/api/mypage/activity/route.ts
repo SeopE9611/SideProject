@@ -19,10 +19,7 @@ import jwt from "jsonwebtoken";
 export const dynamic = "force-dynamic";
 
 // 숫자 쿼리 파라미터 안전 파싱 (NaN/Infinity/음수 방지 + 범위 보정)
-function parseIntParam(
-  v: string | null,
-  opts: { defaultValue: number; min: number; max: number },
-) {
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
@@ -32,8 +29,7 @@ type ActivityKind = "order" | "rental" | "application";
 type ActivityScope = "all" | "todo" | "order" | "application" | "rental";
 
 function parseScopeParam(v: string | null): ActivityScope {
-  if (v === "todo" || v === "order" || v === "application" || v === "rental")
-    return v;
+  if (v === "todo" || v === "order" || v === "application" || v === "rental") return v;
   return "all";
 }
 
@@ -47,8 +43,7 @@ function resolveOrderPaymentStatus(o: any): string {
   if (paymentInfoStatus === "pending") return "결제대기";
   if (paymentInfoStatus === "paid") return "결제완료";
   if (paymentInfoStatus === "failed") return "결제실패";
-  if (paymentInfoStatus === "canceled" || paymentInfoStatus === "cancelled")
-    return "결제취소";
+  if (paymentInfoStatus === "canceled" || paymentInfoStatus === "cancelled") return "결제취소";
   if (paymentInfoStatus === "refunded") return "환불완료";
 
   return "결제대기";
@@ -56,10 +51,7 @@ function resolveOrderPaymentStatus(o: any): string {
 
 function resolvePaymentProvider(doc: any): string | null {
   const provider = String(
-    doc?.paymentInfo?.provider ??
-      doc?.paymentProvider ??
-      doc?.paymentMethod ??
-      "",
+    doc?.paymentInfo?.provider ?? doc?.paymentProvider ?? doc?.paymentMethod ?? "",
   ).trim();
   return provider || null;
 }
@@ -71,9 +63,7 @@ function resolveStringingPaymentContext(
     paymentProvider?: string | null;
   } | null,
 ) {
-  const packageApplied = Boolean(
-    appDoc?.packageApplied || appDoc?.packageInfo?.applied,
-  );
+  const packageApplied = Boolean(appDoc?.packageApplied || appDoc?.packageInfo?.applied);
   if (packageApplied) {
     return {
       packageApplied,
@@ -89,8 +79,7 @@ function resolveStringingPaymentContext(
       (appDoc?.paymentStatus || appDoc?.paymentInfo?.status
         ? resolveOrderPaymentStatus(appDoc)
         : null),
-    paymentProvider:
-      linkedPayment?.paymentProvider ?? resolvePaymentProvider(appDoc),
+    paymentProvider: linkedPayment?.paymentProvider ?? resolvePaymentProvider(appDoc),
   };
 }
 
@@ -203,12 +192,7 @@ function getOrderFlowLabel(opts: {
   hasProductItem: boolean;
   linkedApplicationCount: number;
 }): string {
-  const {
-    hasRacketItem,
-    hasStringItem,
-    hasProductItem,
-    linkedApplicationCount,
-  } = opts;
+  const { hasRacketItem, hasStringItem, hasProductItem, linkedApplicationCount } = opts;
   const hasLinked = linkedApplicationCount > 0;
 
   if (!hasLinked) {
@@ -227,16 +211,14 @@ function getOrderFlowLabel(opts: {
 function firstText(...values: unknown[]): string | null {
   for (const value of values) {
     if (typeof value === "string" && value.trim()) return value.trim();
-    if (typeof value === "number" && Number.isFinite(value))
-      return String(value);
+    if (typeof value === "number" && Number.isFinite(value)) return String(value);
   }
   return null;
 }
 
 function getApplicationLines(stringDetails: any): any[] {
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
-  if (Array.isArray(stringDetails?.racketLines))
-    return stringDetails.racketLines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
   return [];
 }
 
@@ -251,9 +233,7 @@ function summarizeStringSelection(appDoc: any) {
     details?.selectedStringName,
     appDoc?.selectedStringName,
     meta?.selectedStringName,
-    Array.isArray(appDoc?.stringNames)
-      ? appDoc.stringNames[0]
-      : appDoc?.stringNames,
+    Array.isArray(appDoc?.stringNames) ? appDoc.stringNames[0] : appDoc?.stringNames,
     Array.isArray(appDoc?.applicationSummary?.stringNames)
       ? appDoc.applicationSummary.stringNames[0]
       : appDoc?.applicationSummary?.stringNames,
@@ -298,17 +278,11 @@ function compareByUpdatedThenCreatedDesc(
   a: Pick<ActivityApplicationSummary, "updatedAt" | "createdAt">,
   b: Pick<ActivityApplicationSummary, "updatedAt" | "createdAt">,
 ) {
-  return (
-    b.updatedAt.localeCompare(a.updatedAt) ||
-    b.createdAt.localeCompare(a.createdAt)
-  );
+  return b.updatedAt.localeCompare(a.updatedAt) || b.createdAt.localeCompare(a.createdAt);
 }
 
 function isActionableInboundTracking(
-  app?: Pick<
-    ActivityApplicationSummary,
-    "needsInboundTracking" | "hasTracking"
-  > | null,
+  app?: Pick<ActivityApplicationSummary, "needsInboundTracking" | "hasTracking"> | null,
 ) {
   return Boolean(app?.needsInboundTracking && !app?.hasTracking);
 }
@@ -322,8 +296,7 @@ function pickPrimaryLinkedApplication(apps: ActivityApplicationSummary[]) {
 
 function calcOrderTotal(o: any): number {
   // 기존 /api/users/me/orders 로직의 축약판(총액이 있으면 우선, 없으면 items 합산)
-  const explicit =
-    o.totalPrice ?? o.total ?? o.finalAmount ?? o.totalAmount ?? null;
+  const explicit = o.totalPrice ?? o.total ?? o.finalAmount ?? o.totalAmount ?? null;
   if (typeof explicit === "number") return explicit;
 
   const items: any[] = Array.isArray(o.items) ? o.items : [];
@@ -357,11 +330,7 @@ function resolveOrderShippingMethod(shippingInfo: any): string {
 
 function summarizeRacketType(details: any): string {
   // 신청서 목록(route.ts)처럼 “완벽”하게 만들기보다, 통합 피드용 최소 요약만
-  if (
-    details?.racketType &&
-    typeof details.racketType === "string" &&
-    details.racketType.trim()
-  ) {
+  if (details?.racketType && typeof details.racketType === "string" && details.racketType.trim()) {
     return details.racketType.trim();
   }
   const lines = Array.isArray(details?.racketLines) ? details.racketLines : [];
@@ -398,25 +367,19 @@ export async function GET(req: Request) {
   const at = jar.get("accessToken")?.value;
   const rt = jar.get("refreshToken")?.value;
 
-  let payload: jwt.JwtPayload | null = at
-    ? (verifyAccessToken(at) as jwt.JwtPayload | null)
-    : null;
+  let payload: jwt.JwtPayload | null = at ? (verifyAccessToken(at) as jwt.JwtPayload | null) : null;
   let recoveredByRefresh = false;
 
   if (!payload?.sub && rt) {
     try {
-      payload = jwt.verify(
-        rt,
-        process.env.REFRESH_TOKEN_SECRET!,
-      ) as jwt.JwtPayload;
+      payload = jwt.verify(rt, process.env.REFRESH_TOKEN_SECRET!) as jwt.JwtPayload;
       recoveredByRefresh = Boolean(payload?.sub);
     } catch {
       payload = null;
     }
   }
 
-  if (!payload?.sub)
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  if (!payload?.sub) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
   const subStr = String(payload.sub);
   if (!ObjectId.isValid(subStr)) {
@@ -450,10 +413,7 @@ export async function GET(req: Request) {
     // 이렇게 해야 "만료 직후 즉시 401" 문제를 줄이면서도 탈퇴/정지 계정을 우회하지 않는다.
     const authUser = await db
       .collection("users")
-      .findOne(
-        { _id: userId },
-        { projection: { _id: 1, isDeleted: 1, isSuspended: 1 } },
-      );
+      .findOne({ _id: userId }, { projection: { _id: 1, isDeleted: 1, isSuspended: 1 } });
     if (!authUser || authUser.isDeleted) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -576,33 +536,26 @@ export async function GET(req: Request) {
   for (const o of orders as any[]) {
     const orderId = String(o._id);
     const items = Array.isArray(o.items) ? o.items : [];
-    const hasRacket = items.some(
-      (it: any) => it?.kind === "racket" || it?.kind === "used_racket",
-    );
+    const hasRacket = items.some((it: any) => it?.kind === "racket" || it?.kind === "used_racket");
     orderHasRacketById.set(orderId, hasRacket);
 
-    const rawReviewTargetProductIds: (string | null)[] = items.map(
-      (it: any): string | null => (it?.productId ? String(it.productId) : null),
+    const rawReviewTargetProductIds: (string | null)[] = items.map((it: any): string | null =>
+      it?.productId ? String(it.productId) : null,
     );
 
-    const filteredReviewTargetProductIds: string[] =
-      rawReviewTargetProductIds.filter(
-        (productId: string | null): productId is string =>
-          productId !== null && ObjectId.isValid(productId),
-      );
+    const filteredReviewTargetProductIds: string[] = rawReviewTargetProductIds.filter(
+      (productId: string | null): productId is string =>
+        productId !== null && ObjectId.isValid(productId),
+    );
 
-    const reviewTargetProductIds: string[] = [
-      ...new Set<string>(filteredReviewTargetProductIds),
-    ];
+    const reviewTargetProductIds: string[] = [...new Set<string>(filteredReviewTargetProductIds)];
     orderReviewProductIdsById.set(orderId, reviewTargetProductIds);
 
     const status = normalizeMypageTodoStatus(o?.status);
     const isConfirmed = Boolean(o?.userConfirmedAt) || status === "구매확정";
     if (isConfirmed && reviewTargetProductIds.length > 0) {
       confirmedOrderIds.push(new ObjectId(orderId));
-      reviewTargetProductIds.forEach((productId) =>
-        reviewProductIdsPool.add(productId),
-      );
+      reviewTargetProductIds.forEach((productId) => reviewProductIdsPool.add(productId));
     }
   }
 
@@ -626,8 +579,7 @@ export async function GET(req: Request) {
     for (const reviewed of reviewedDocs as any[]) {
       const orderId = String(reviewed.orderId);
       const productId = String(reviewed.productId);
-      const bucket =
-        reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
+      const bucket = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
       bucket.add(productId);
       reviewedProductIdsByOrderId.set(orderId, bucket);
     }
@@ -643,10 +595,7 @@ export async function GET(req: Request) {
       {
         userId,
         status: { $ne: "draft" },
-        $or: [
-          { orderId: { $in: orderIdsAny } },
-          { rentalId: { $in: rentalIdsAny } },
-        ],
+        $or: [{ orderId: { $in: orderIdsAny } }, { rentalId: { $in: rentalIdsAny } }],
       },
       {
         projection: {
@@ -703,9 +652,7 @@ export async function GET(req: Request) {
   const serviceReviewCandidateIds = [...linkedApps, ...standaloneApps]
     .filter((app: any) => {
       const userConfirmedAt = app?.userConfirmedAt;
-      return (
-        Boolean(userConfirmedAt) && !isStringingReviewBlockedStatus(app?.status)
-      );
+      return Boolean(userConfirmedAt) && !isStringingReviewBlockedStatus(app?.status);
     })
     .map((app: any) => String(app._id))
     .filter((id) => ObjectId.isValid(id));
@@ -720,10 +667,7 @@ export async function GET(req: Request) {
           userId,
           service: "stringing",
           serviceApplicationId: {
-            $in: serviceReviewCandidateIds.flatMap((id) => [
-              new ObjectId(id),
-              id,
-            ]),
+            $in: serviceReviewCandidateIds.flatMap((id) => [new ObjectId(id), id]),
           },
           isDeleted: { $ne: true },
         },
@@ -750,9 +694,7 @@ export async function GET(req: Request) {
 
     // 수거 방식(visit/self_ship) 정규화
     const collectionMethod = normalizeCollection(
-      (shipping as any)?.collectionMethod ??
-        (doc as any)?.collectionMethod ??
-        "self_ship",
+      (shipping as any)?.collectionMethod ?? (doc as any)?.collectionMethod ?? "self_ship",
     );
 
     // 입고 필요 여부 판단
@@ -765,15 +707,13 @@ export async function GET(req: Request) {
       : orderIdStr && orderHasRacketById.get(orderIdStr)
         ? false
         : true;
-    const needsInboundTracking =
-      inboundRequired && collectionMethod === "self_ship";
+    const needsInboundTracking = inboundRequired && collectionMethod === "self_ship";
 
     const rawCancelStatus = doc?.cancelRequest?.status ?? null;
     let cancelReasonSummary: string | null = null;
     const reasonCode = doc?.cancelRequest?.reasonCode;
     const reasonText = doc?.cancelRequest?.reasonText;
-    if (reasonCode)
-      cancelReasonSummary = reasonCode + (reasonText ? ` (${reasonText})` : "");
+    if (reasonCode) cancelReasonSummary = reasonCode + (reasonText ? ` (${reasonText})` : "");
     else if (reasonText) cancelReasonSummary = reasonText;
 
     const createdAt = toISO(doc.appliedAt ?? doc.createdAt);
@@ -783,10 +723,7 @@ export async function GET(req: Request) {
       : doc.rentalId
         ? rentalPaymentContextById.get(String(doc.rentalId))
         : undefined;
-    const paymentContext = resolveStringingPaymentContext(
-      doc,
-      linkedPaymentContext,
-    );
+    const paymentContext = resolveStringingPaymentContext(doc, linkedPaymentContext);
 
     const stringSelection = summarizeStringSelection(doc);
 
@@ -850,8 +787,7 @@ export async function GET(req: Request) {
     const linkedApps = appByOrderId.get(orderId) ?? [];
     const serviceLinkedOrder = isOrderLinkedToStringing(o, linkedApps);
     const reviewTargetProductIds = orderReviewProductIdsById.get(orderId) ?? [];
-    const reviewedProductIds =
-      reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
+    const reviewedProductIds = reviewedProductIdsByOrderId.get(orderId) ?? new Set<string>();
     const reviewPendingProductIds = reviewTargetProductIds.filter(
       (productId) => !reviewedProductIds.has(productId),
     );
@@ -873,29 +809,20 @@ export async function GET(req: Request) {
     );
     const hasStringItem = items.some((item: any) => item?.kind === "string");
     const hasProductItem = items.some(
-      (item: any) =>
-        !["racket", "used_racket", "string"].includes(String(item?.kind ?? "")),
+      (item: any) => !["racket", "used_racket", "string"].includes(String(item?.kind ?? "")),
     );
 
     const rawCancelStatus = o?.cancelRequest?.status ?? null;
     let cancelReasonSummary: string | null = null;
     const reasonCode = o?.cancelRequest?.reasonCode;
     const reasonText = o?.cancelRequest?.reasonText;
-    if (reasonCode)
-      cancelReasonSummary = reasonCode + (reasonText ? ` (${reasonText})` : "");
+    if (reasonCode) cancelReasonSummary = reasonCode + (reasonText ? ` (${reasonText})` : "");
     else if (reasonText) cancelReasonSummary = reasonText;
 
     const withStringService = Boolean(o?.shippingInfo?.withStringService);
     const createdAt = toISO(o.createdAt ?? new ObjectId(o._id).getTimestamp());
-    const updatedAt = toISO(
-      o.updatedAt ?? o.createdAt ?? new ObjectId(o._id).getTimestamp(),
-    );
-    const sortAt = isoMax(
-      updatedAt,
-      createdAt,
-      linked?.updatedAt,
-      linked?.createdAt,
-    );
+    const updatedAt = toISO(o.updatedAt ?? o.createdAt ?? new ObjectId(o._id).getTimestamp());
+    const sortAt = isoMax(updatedAt, createdAt, linked?.updatedAt, linked?.createdAt);
 
     groups.push({
       key: `order:${orderId}`,
@@ -925,13 +852,8 @@ export async function GET(req: Request) {
               : null,
         paymentStatus: resolveOrderPaymentStatus(o),
         paymentProvider:
-          typeof o?.paymentInfo?.provider === "string"
-            ? o.paymentInfo.provider
-            : null,
-        paymentMethod:
-          typeof o?.paymentInfo?.method === "string"
-            ? o.paymentInfo.method
-            : null,
+          typeof o?.paymentInfo?.provider === "string" ? o.paymentInfo.provider : null,
+        paymentMethod: typeof o?.paymentInfo?.method === "string" ? o.paymentInfo.method : null,
         shippingMethod: resolveOrderShippingMethod(o?.shippingInfo),
         totalPrice: calcOrderTotal(o),
         firstItemName: first?.name ?? "(상품명 없음)",
@@ -961,15 +883,8 @@ export async function GET(req: Request) {
     const linked = pickPrimaryLinkedApplication(linkedApps);
 
     const createdAt = toISO(r.createdAt ?? new ObjectId(r._id).getTimestamp());
-    const updatedAt = toISO(
-      r.updatedAt ?? r.createdAt ?? new ObjectId(r._id).getTimestamp(),
-    );
-    const sortAt = isoMax(
-      updatedAt,
-      createdAt,
-      linked?.updatedAt,
-      linked?.createdAt,
-    );
+    const updatedAt = toISO(r.updatedAt ?? r.createdAt ?? new ObjectId(r._id).getTimestamp());
+    const sortAt = isoMax(updatedAt, createdAt, linked?.updatedAt, linked?.createdAt);
 
     const withStringService =
       Boolean(r?.stringing?.requested) || Boolean(r?.stringingApplicationId);
@@ -1039,30 +954,21 @@ export async function GET(req: Request) {
 
     // 단독 신청서는 기본적으로 "고객 라켓 입고"가 필요
     const collectionMethod = normalizeCollection(
-      (shipping as any)?.collectionMethod ??
-        (doc as any)?.collectionMethod ??
-        "self_ship",
+      (shipping as any)?.collectionMethod ?? (doc as any)?.collectionMethod ?? "self_ship",
     );
     const inboundRequired = true;
-    const needsInboundTracking =
-      inboundRequired && collectionMethod === "self_ship";
+    const needsInboundTracking = inboundRequired && collectionMethod === "self_ship";
 
     const rawCancelStatus = doc?.cancelRequest?.status ?? null;
     let cancelReasonSummary: string | null = null;
     const reasonCode = doc?.cancelRequest?.reasonCode;
     const reasonText = doc?.cancelRequest?.reasonText;
-    if (reasonCode)
-      cancelReasonSummary = reasonCode + (reasonText ? ` (${reasonText})` : "");
+    if (reasonCode) cancelReasonSummary = reasonCode + (reasonText ? ` (${reasonText})` : "");
     else if (reasonText) cancelReasonSummary = reasonText;
 
-    const createdAt = toISO(
-      doc.appliedAt ?? doc.createdAt ?? new ObjectId(doc._id).getTimestamp(),
-    );
+    const createdAt = toISO(doc.appliedAt ?? doc.createdAt ?? new ObjectId(doc._id).getTimestamp());
     const updatedAt = toISO(
-      doc.updatedAt ??
-        doc.appliedAt ??
-        doc.createdAt ??
-        new ObjectId(doc._id).getTimestamp(),
+      doc.updatedAt ?? doc.appliedAt ?? doc.createdAt ?? new ObjectId(doc._id).getTimestamp(),
     );
     const sortAt = isoMax(updatedAt, createdAt);
     const paymentContext = resolveStringingPaymentContext(doc);
@@ -1111,13 +1017,11 @@ export async function GET(req: Request) {
     if (scope === "all") return true;
     if (scope === "order") return group.kind === "order";
     if (scope === "rental") return group.kind === "rental";
-    if (scope === "application")
-      return group.kind === "application" || Boolean(group.application);
+    if (scope === "application") return group.kind === "application" || Boolean(group.application);
 
     if (scope === "todo") {
       const applicationNeedsAction =
-        group.kind === "application" &&
-        isApplicationTodoActionable(group.application);
+        group.kind === "application" && isApplicationTodoActionable(group.application);
       const orderNeedsAction =
         group.kind === "order" &&
         isOrderTodoActionable({
@@ -1144,9 +1048,7 @@ export async function GET(req: Request) {
     return true;
   });
 
-  scopedGroups.sort(
-    (a, b) => new Date(b.sortAt).getTime() - new Date(a.sortAt).getTime(),
-  );
+  scopedGroups.sort((a, b) => new Date(b.sortAt).getTime() - new Date(a.sortAt).getTime());
   const paged = scopedGroups.slice(skip, skip + pageSize);
 
   return NextResponse.json({

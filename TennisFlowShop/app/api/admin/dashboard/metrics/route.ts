@@ -22,8 +22,7 @@ export async function GET(req: Request) {
 
   const raw = await collectDashboardMetrics(guard.db);
   const aggregate = transformDashboardMetrics(raw.payload);
-  const dto: AdminDashboardMetricsResponseDto =
-    mapDashboardMetricsResponse(aggregate);
+  const dto: AdminDashboardMetricsResponseDto = mapDashboardMetricsResponse(aggregate);
 
   return NextResponse.json(dto, { headers: raw.headers });
 }

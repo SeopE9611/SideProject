@@ -4,29 +4,19 @@
 import useSWR from "swr";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Mail, Phone, MapPin, User, Calendar, Shield } from "lucide-react";
 
-const fetcher = (url: string) =>
-  fetch(url, { credentials: "include" }).then((r) => r.json());
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
 type Props = { id: string; baseUrl: string };
 
 export default function UserDetailClient({ id, baseUrl }: Props) {
   const router = useRouter();
-  const { data, error, isLoading, mutate } = useSWR(
-    `${baseUrl}/api/admin/users/${id}`,
-    fetcher,
-  );
+  const { data, error, isLoading, mutate } = useSWR(`${baseUrl}/api/admin/users/${id}`, fetcher);
 
   if (isLoading)
     return (
@@ -50,8 +40,7 @@ export default function UserDetailClient({ id, baseUrl }: Props) {
         </Card>
       </div>
     );
-  if (error || !data)
-    return <div className="p-6 text-destructive">불러오기 실패</div>;
+  if (error || !data) return <div className="p-6 text-destructive">불러오기 실패</div>;
 
   const u = data as {
     id: string;
@@ -152,8 +141,7 @@ export default function UserDetailClient({ id, baseUrl }: Props) {
             <MapPin className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm">
               {u.postalCode ? `[${u.postalCode}] ` : ""}
-              {(u.address || "") +
-                (u.addressDetail ? ` ${u.addressDetail}` : "") || "-"}
+              {(u.address || "") + (u.addressDetail ? ` ${u.addressDetail}` : "") || "-"}
             </span>
           </div>
         </CardContent>

@@ -2,10 +2,7 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
-import {
-  APPLICATION_STATUSES,
-  type ApplicationStatus,
-} from "@/lib/application-status";
+import { APPLICATION_STATUSES, type ApplicationStatus } from "@/lib/application-status";
 
 export const dynamic = "force-dynamic";
 
@@ -22,10 +19,7 @@ function toObjectId(value: unknown): ObjectId | null {
   return ObjectId.isValid(normalized) ? new ObjectId(normalized) : null;
 }
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ rentalId: string }> },
-) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ rentalId: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
 
@@ -44,10 +38,7 @@ export async function PATCH(
   try {
     body = (await req.json()) as StatusBody;
   } catch {
-    return NextResponse.json(
-      { ok: false, message: "요청 본문을 확인해주세요." },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, message: "요청 본문을 확인해주세요." }, { status: 400 });
   }
 
   if (!isApplicationStatus(body.status)) {
@@ -76,8 +67,7 @@ export async function PATCH(
     return NextResponse.json(
       {
         ok: false,
-        message:
-          "교체서비스 작업 상태는 결제완료 상태의 대여 상세에서만 변경할 수 있습니다.",
+        message: "교체서비스 작업 상태는 결제완료 상태의 대여 상세에서만 변경할 수 있습니다.",
       },
       { status: 409 },
     );
@@ -106,9 +96,7 @@ export async function PATCH(
 
   const applicationRentalId = String(application.rentalId ?? "").trim();
   const paymentSource = String(application.paymentSource ?? "").trim();
-  const rentalApplicationId = String(
-    rental.stringingApplicationId ?? "",
-  ).trim();
+  const rentalApplicationId = String(rental.stringingApplicationId ?? "").trim();
   const applicationId = String(application._id);
   const isLinked =
     applicationRentalId === rentalId ||
@@ -123,9 +111,7 @@ export async function PATCH(
   }
 
   const previousStatus = String(application.status ?? "").trim();
-  const cancelRequestStatus = String(
-    application?.cancelRequest?.status ?? "",
-  ).trim();
+  const cancelRequestStatus = String(application?.cancelRequest?.status ?? "").trim();
   if (
     !isApplicationStatus(previousStatus) ||
     cancelRequestStatus === "requested" ||

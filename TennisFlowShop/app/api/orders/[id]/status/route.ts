@@ -13,10 +13,7 @@ function safeVerifyAccessToken(token?: string) {
   }
 }
 
-export async function GET(
-  request: Request,
-  context: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   //  인증 처리
   const cookieStore = await cookies();
   const token = cookieStore.get("accessToken")?.value;

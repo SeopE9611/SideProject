@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
-import {
-  deductPoints,
-  getPointsBalance,
-  grantPoints,
-} from "@/lib/points.service";
+import { deductPoints, getPointsBalance, grantPoints } from "@/lib/points.service";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { createUserNotification } from "@/lib/notifications/user-notification.service";
 
@@ -36,21 +32,11 @@ export async function POST(req: Request) {
 
   // 1) 기본 검증
   if (!ObjectId.isValid(userId)) {
-    return NextResponse.json(
-      { ok: false, error: "INVALID_USER_ID" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "INVALID_USER_ID" }, { status: 400 });
   }
   // 포인트는 정수 단위만 허용(소수/NaN 방지)
-  if (
-    !Number.isFinite(amountRaw) ||
-    amountRaw === 0 ||
-    !Number.isInteger(amountRaw)
-  ) {
-    return NextResponse.json(
-      { ok: false, error: "INVALID_AMOUNT" },
-      { status: 400 },
-    );
+  if (!Number.isFinite(amountRaw) || amountRaw === 0 || !Number.isInteger(amountRaw)) {
+    return NextResponse.json({ ok: false, error: "INVALID_AMOUNT" }, { status: 400 });
   }
 
   const targetUserId = new ObjectId(userId);
@@ -92,8 +78,7 @@ export async function POST(req: Request) {
       await createUserNotification(db, {
         userId: targetUserId,
         type: amount > 0 ? "point_granted" : "point_deducted",
-        title:
-          amount > 0 ? "포인트가 지급되었습니다." : "포인트가 차감되었습니다.",
+        title: amount > 0 ? "포인트가 지급되었습니다." : "포인트가 차감되었습니다.",
         body:
           amount > 0
             ? `${amount.toLocaleString()}P가 지급되었습니다.`
@@ -107,10 +92,7 @@ export async function POST(req: Request) {
         ...(transactionId ? { dedupeKey: `point:${transactionId}` } : {}),
       });
     } catch (error) {
-      console.error(
-        "[admin points adjust] create user notification failed",
-        error,
-      );
+      console.error("[admin points adjust] create user notification failed", error);
     }
 
     // 3) 조정 후 잔액 반환
@@ -143,23 +125,14 @@ export async function POST(req: Request) {
     const code = err?.code || err?.message;
 
     if (code === "INSUFFICIENT_POINTS") {
-      return NextResponse.json(
-        { ok: false, error: "INSUFFICIENT_POINTS" },
-        { status: 400 },
-      );
+      return NextResponse.json({ ok: false, error: "INSUFFICIENT_POINTS" }, { status: 400 });
     }
     if (code === "USER_NOT_FOUND") {
-      return NextResponse.json(
-        { ok: false, error: "USER_NOT_FOUND" },
-        { status: 404 },
-      );
+      return NextResponse.json({ ok: false, error: "USER_NOT_FOUND" }, { status: 404 });
     }
 
     // refKey 멱등(중복) 케이스를 “성공(이미 반영됨)”으로 처리하고 싶으면 여기서 E11000 처리 추가 가능
     console.error("[admin points adjust] failed", err);
-    return NextResponse.json(
-      { ok: false, error: "INTERNAL_ERROR" },
-      { status: 500 },
-    );
+    return NextResponse.json({ ok: false, error: "INTERNAL_ERROR" }, { status: 500 });
   }
 }

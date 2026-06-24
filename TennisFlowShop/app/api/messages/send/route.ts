@@ -3,19 +3,11 @@ import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { createUserNotification } from "@/lib/notifications/user-notification.service";
 import { getCurrentUser } from "@/lib/hooks/get-current-user";
-import {
-  mapMessageListItem,
-  notExpiredClause,
-  parseListQuery,
-} from "../_utils";
+import { mapMessageListItem, notExpiredClause, parseListQuery } from "../_utils";
 
 export async function GET(req: NextRequest) {
   const me = await getCurrentUser();
-  if (!me)
-    return NextResponse.json(
-      { ok: false, error: "Unauthorized" },
-      { status: 401 },
-    );
+  if (!me) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
   const { page, limit } = parseListQuery(req);
   const skip = (page - 1) * limit;
@@ -61,11 +53,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const me = await getCurrentUser();
-  if (!me)
-    return NextResponse.json(
-      { ok: false, error: "Unauthorized" },
-      { status: 401 },
-    );
+  if (!me) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
   const payload = (await req.json().catch(() => null)) as null | {
     toUserId?: unknown;
@@ -73,26 +61,16 @@ export async function POST(req: NextRequest) {
     body?: unknown;
   };
 
-  const toUserId =
-    typeof payload?.toUserId === "string" ? payload.toUserId : "";
+  const toUserId = typeof payload?.toUserId === "string" ? payload.toUserId : "";
   const title = typeof payload?.title === "string" ? payload.title.trim() : "";
   const body = typeof payload?.body === "string" ? payload.body.trim() : "";
 
   if (!ObjectId.isValid(toUserId))
-    return NextResponse.json(
-      { ok: false, error: "Invalid toUserId" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "Invalid toUserId" }, { status: 400 });
   if (!title)
-    return NextResponse.json(
-      { ok: false, error: "제목을 입력해주세요." },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "제목을 입력해주세요." }, { status: 400 });
   if (!body)
-    return NextResponse.json(
-      { ok: false, error: "내용을 입력해주세요." },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "내용을 입력해주세요." }, { status: 400 });
   if (toUserId === me.id)
     return NextResponse.json(
       { ok: false, error: "본인에게는 쪽지를 보낼 수 없습니다." },
@@ -122,20 +100,15 @@ export async function POST(req: NextRequest) {
   // 조건(게시글 5 + 댓글 5), 단 관리자/관리자에게 보내기는 예외
   if (!isFromAdmin && !isToAdmin) {
     const fromOid = new ObjectId(me.id);
-    const [communityPostCount, qnaPostCount, communityCommentCount] =
-      await Promise.all([
-        db
-          .collection("community_posts")
-          .countDocuments({ userId: fromOid, status: "public" }),
-        db.collection("board_posts").countDocuments({
-          authorId: me.id,
-          type: "qna",
-          status: "published",
-        }),
-        db
-          .collection("community_comments")
-          .countDocuments({ userId: fromOid, status: "public" }),
-      ]);
+    const [communityPostCount, qnaPostCount, communityCommentCount] = await Promise.all([
+      db.collection("community_posts").countDocuments({ userId: fromOid, status: "public" }),
+      db.collection("board_posts").countDocuments({
+        authorId: me.id,
+        type: "qna",
+        status: "published",
+      }),
+      db.collection("community_comments").countDocuments({ userId: fromOid, status: "public" }),
+    ]);
 
     const postCount = communityPostCount + qnaPostCount;
     const commentCount = communityCommentCount;
@@ -144,8 +117,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           ok: false,
-          error:
-            "쪽지는 게시글 5개 이상 + 댓글 5개 이상부터 이용할 수 있습니다. (스팸 광고 방지)",
+          error: "쪽지는 게시글 5개 이상 + 댓글 5개 이상부터 이용할 수 있습니다. (스팸 광고 방지)",
           required: { posts: 5, comments: 5 },
           current: { posts: postCount, comments: commentCount },
         },
@@ -175,15 +147,9 @@ export async function POST(req: NextRequest) {
     ]);
 
     if (cnt1m >= 3)
-      return NextResponse.json(
-        { ok: false, error: "분당 3회 제한" },
-        { status: 429 },
-      );
+      return NextResponse.json({ ok: false, error: "분당 3회 제한" }, { status: 429 });
     if (cnt24h >= 20)
-      return NextResponse.json(
-        { ok: false, error: "하루 20회 제한" },
-        { status: 429 },
-      );
+      return NextResponse.json({ ok: false, error: "하루 20회 제한" }, { status: 429 });
   }
 
   // 저장

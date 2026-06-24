@@ -1,5 +1,15 @@
 import SiteContainer from "@/components/layout/SiteContainer";
-import { ArrowUpRight, Clock, CreditCard, Instagram, Mail, MapPin, Phone, Train, Truck } from "lucide-react";
+import {
+  ArrowUpRight,
+  Clock,
+  CreditCard,
+  Instagram,
+  Mail,
+  MapPin,
+  Phone,
+  Train,
+  Truck,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -11,7 +21,8 @@ const Footer = () => {
    * - on: 비회원 주문을 운영할 때만 '주문 조회(/order-lookup)' 링크 노출
    */
   const rawMode = (process.env.GUEST_ORDER_MODE ?? "on").trim();
-  const guestOrderMode = rawMode === "off" || rawMode === "legacy" || rawMode === "on" ? rawMode : "on";
+  const guestOrderMode =
+    rawMode === "off" || rawMode === "legacy" || rawMode === "on" ? rawMode : "on";
 
   // const quickLinks = [
   //   { name: "스트링 쇼핑", href: "/products" },
@@ -32,7 +43,9 @@ const Footer = () => {
   const customerServiceLinks = customerService.filter(
     (link) => link.name === "공지사항" || link.name === "이벤트" || link.name === "Q&A 문의",
   );
-  const policyLinks = customerService.filter((link) => link.name === "이용약관" || link.name === "개인정보처리방침");
+  const policyLinks = customerService.filter(
+    (link) => link.name === "이용약관" || link.name === "개인정보처리방침",
+  );
 
   const snsLinks = [
     {
@@ -91,7 +104,9 @@ const Footer = () => {
             <div className="space-y-6 bp-sm:space-y-8">
               <div className="grid w-full grid-cols-1 gap-y-6 pb-5 bp-sm:grid-cols-2 bp-sm:gap-x-8 bp-sm:gap-y-7 bp-sm:pb-6 bp-lg:grid-cols-[1.15fr_1fr_1fr_1fr] bp-lg:gap-x-8 bp-xl:grid-cols-[1.15fr_1fr_1fr_1fr_0.85fr]">
                 <section className="flex min-w-0 w-full flex-col items-start gap-3">
-                  <h3 className="text-ui-body-sm font-semibold text-foreground bp-sm:text-ui-body">고객센터</h3>
+                  <h3 className="text-ui-body-sm font-semibold text-foreground bp-sm:text-ui-body">
+                    고객센터
+                  </h3>
                   <div className="w-full space-y-3">
                     <div className="flex items-start gap-2.5">
                       <Phone className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -99,7 +114,9 @@ const Footer = () => {
                         <span className="block text-ui-body-lg font-semibold leading-none text-foreground">
                           010-5218-5248
                         </span>
-                        <p className="mt-1 text-ui-label text-muted-foreground/95">영업 시간 내 상담 가능</p>
+                        <p className="mt-1 text-ui-label text-muted-foreground/95">
+                          영업 시간 내 상담 가능
+                        </p>
                       </div>
                     </div>
 
@@ -128,19 +145,22 @@ const Footer = () => {
                     <li className="flex items-start gap-2">
                       <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-primary/70" />
                       <p>
-                        <span className="font-medium text-foreground/90">작업 완료 시</span> 당일 발송됩니다.
+                        <span className="font-medium text-foreground/90">작업 완료 시</span> 당일
+                        발송됩니다.
                       </p>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-primary/70" />
                       <p>
-                        <span className="font-medium text-foreground/90">영업일 기준</span> 순차 처리됩니다.
+                        <span className="font-medium text-foreground/90">영업일 기준</span> 순차
+                        처리됩니다.
                       </p>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-primary/70" />
                       <p>
-                        <span className="font-medium text-foreground/90">작업량에 따라</span> 일정이 변동될 수 있습니다.
+                        <span className="font-medium text-foreground/90">작업량에 따라</span> 일정이
+                        변동될 수 있습니다.
                       </p>
                     </li>
                   </ul>
@@ -154,7 +174,9 @@ const Footer = () => {
                   <div className="w-full space-y-3">
                     <div className="space-y-1.5 border-l border-primary/30 pl-3">
                       <p className="text-ui-body-sm font-semibold text-foreground">도깨비테니스</p>
-                      <p className="text-ui-body-sm text-foreground/95">서울 동작구 노량진로 22 B1</p>
+                      <p className="text-ui-body-sm text-foreground/95">
+                        서울 동작구 노량진로 22 B1
+                      </p>
                       <div className="mt-2 flex items-start gap-2 text-ui-label text-muted-foreground/95">
                         <Train className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary/80" />
                         <span>대방역 2번 출구 도보 이동</span>
@@ -188,14 +210,18 @@ const Footer = () => {
                   </h3>
                   <div className="w-full space-y-2 text-ui-label leading-5 text-muted-foreground/95">
                     <p>무통장 입금 계좌</p>
-                    <p className="text-ui-body-sm font-semibold text-foreground">카카오뱅크 3333-2110-92155</p>
+                    <p className="text-ui-body-sm font-semibold text-foreground">
+                      카카오뱅크 3333-2110-92155
+                    </p>
                     <p>예금주 김재민</p>
                     <p>입금 확인은 영업시간 내 순차 처리됩니다.</p>
                   </div>
                 </section>
 
                 <section className="flex min-w-0 w-full flex-col items-start gap-3">
-                  <h3 className="text-ui-body-sm font-semibold text-foreground bp-sm:text-ui-body">SNS</h3>
+                  <h3 className="text-ui-body-sm font-semibold text-foreground bp-sm:text-ui-body">
+                    SNS
+                  </h3>
                   <div className="flex flex-col items-start gap-2.5">
                     {snsLinks.map(({ name, href, Icon }) => (
                       <Link
@@ -237,27 +263,41 @@ const Footer = () => {
                         {link.name}
                       </Link>
                     ))}
-                    <Link href="/board/notice" className="transition-colors duration-300 hover:text-primary">
+                    <Link
+                      href="/board/notice"
+                      className="transition-colors duration-300 hover:text-primary"
+                    >
                       공지사항
                     </Link>
-                    <Link href="/board/event" className="transition-colors duration-300 hover:text-primary">
+                    <Link
+                      href="/board/event"
+                      className="transition-colors duration-300 hover:text-primary"
+                    >
                       이벤트
                     </Link>
-                    <Link href="/board/qna" className="transition-colors duration-300 hover:text-primary">
+                    <Link
+                      href="/board/qna"
+                      className="transition-colors duration-300 hover:text-primary"
+                    >
                       Q&amp;A 문의
                     </Link>
                     {guestOrderMode === "on" ? (
-                      <Link href="/order-lookup" className="transition-colors duration-300 hover:text-primary">
+                      <Link
+                        href="/order-lookup"
+                        className="transition-colors duration-300 hover:text-primary"
+                      >
                         주문조회
                       </Link>
                     ) : null}
                   </div>
 
                   <p className="text-foreground/85">
-                    상호: 도깨비테니스 | 대표: 김재민 | 사업자등록번호: 329-39-01593 | 통신판매업신고: 제 2026 -
-                    서울동작 - 0548 호
+                    상호: 도깨비테니스 | 대표: 김재민 | 사업자등록번호: 329-39-01593 |
+                    통신판매업신고: 제 2026 - 서울동작 - 0548 호
                   </p>
-                  <p className="text-foreground/80">사업장 소재지: 서울특별시 동작구 여의대방로62길 16(대방동)</p>
+                  <p className="text-foreground/80">
+                    사업장 소재지: 서울특별시 동작구 여의대방로62길 16(대방동)
+                  </p>
                   <p className="text-ui-body-sm text-foreground/75">
                     &copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.
                   </p>

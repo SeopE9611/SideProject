@@ -23,10 +23,7 @@ function generateTempPassword(length = 12) {
     .join("");
 }
 
-export async function POST(
-  req: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   try {
     // 공용 가드 사용
     const guard = await requireAdmin(req);
@@ -35,16 +32,14 @@ export async function POST(
     if (!csrf.ok) return csrf.res;
     const { db, admin } = guard;
     const { id } = await ctx.params;
-    if (!ObjectId.isValid(id))
-      return NextResponse.json({ message: "invalid id" }, { status: 400 });
+    if (!ObjectId.isValid(id)) return NextResponse.json({ message: "invalid id" }, { status: 400 });
 
     const _id = new ObjectId(id);
 
     const user = await db
       .collection("users")
       .findOne({ _id }, { projection: { _id: 1, email: 1 } });
-    if (!user)
-      return NextResponse.json({ message: "not found" }, { status: 404 });
+    if (!user) return NextResponse.json({ message: "not found" }, { status: 404 });
 
     // 1) 임시 비밀번호 생성 & 해시
     const tempPassword = generateTempPassword(12);

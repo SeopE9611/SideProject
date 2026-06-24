@@ -45,9 +45,7 @@ export function EmailSettingsTab({
           <CardDescription>SMTP 설정을 관리합니다.</CardDescription>
         </CardHeader>
         {error.message && (
-          <div className="mx-6 rounded border px-3 py-2 text-sm">
-            {error.message}
-          </div>
+          <div className="mx-6 rounded border px-3 py-2 text-sm">{error.message}</div>
         )}
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-3">
@@ -77,11 +75,9 @@ export function EmailSettingsTab({
               <Select
                 value={form.watch("smtpEncryption")}
                 onValueChange={(v) =>
-                  form.setValue(
-                    "smtpEncryption",
-                    v as EmailSettings["smtpEncryption"],
-                    { shouldDirty: true },
-                  )
+                  form.setValue("smtpEncryption", v as EmailSettings["smtpEncryption"], {
+                    shouldDirty: true,
+                  })
                 }
               >
                 <SelectTrigger>
@@ -100,10 +96,7 @@ export function EmailSettingsTab({
               <Send className="mr-2 h-4 w-4" />
               테스트 이메일
             </Button>
-            <Button
-              disabled={isBootstrapping || form.formState.isSubmitting}
-              type="submit"
-            >
+            <Button disabled={isBootstrapping || form.formState.isSubmitting} type="submit">
               <Save className="mr-2 h-4 w-4" />
               설정 저장
             </Button>

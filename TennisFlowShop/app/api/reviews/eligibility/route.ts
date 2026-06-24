@@ -23,10 +23,7 @@ async function findReviewableStringingApplicationForProduct(
     .find({
       userId,
       "items.productId": { $in: [productIdObj, productId] },
-      $or: [
-        { userConfirmedAt: { $exists: true, $ne: null } },
-        { status: "구매확정" },
-      ],
+      $or: [{ userConfirmedAt: { $exists: true, $ne: null } }, { status: "구매확정" }],
     })
     .project({ _id: 1 })
     .sort({ createdAt: -1 })
@@ -66,14 +63,10 @@ async function findReviewableStringingApplicationForProduct(
     })
     .project({ serviceApplicationId: 1 })
     .toArray();
-  const reviewedSet = new Set(
-    reviewed.map((r: any) => String(r.serviceApplicationId)),
-  );
+  const reviewedSet = new Set(reviewed.map((r: any) => String(r.serviceApplicationId)));
   return (
     apps.find(
-      (a: any) =>
-        !isStringingReviewBlockedStatus(a.status) &&
-        !reviewedSet.has(String(a._id)),
+      (a: any) => !isStringingReviewBlockedStatus(a.status) && !reviewedSet.has(String(a._id)),
     ) ?? null
   );
 }
@@ -88,10 +81,7 @@ export async function GET(req: Request) {
   // 인증
   const token = (await cookies()).get("accessToken")?.value;
   if (!token)
-    return NextResponse.json(
-      { eligible: false, reason: "unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ eligible: false, reason: "unauthorized" }, { status: 401 });
   // 토큰 파손/만료로 verifyAccessToken이 throw 되어도 500이 아니라 401로 정리
   let payload: any = null;
   try {
@@ -102,10 +92,7 @@ export async function GET(req: Request) {
   // sub는 ObjectId 문자열이어야 함 (new ObjectId에서 500 방지)
   const subStr = payload?.sub ? String(payload.sub) : "";
   if (!subStr || !ObjectId.isValid(subStr)) {
-    return NextResponse.json(
-      { eligible: false, reason: "unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ eligible: false, reason: "unauthorized" }, { status: 401 });
   }
   const db = await getDb();
   const userId = new ObjectId(subStr);
@@ -130,9 +117,7 @@ export async function GET(req: Request) {
       }
       const orderIdObj = new ObjectId(orderId);
 
-      const order = await db
-        .collection("orders")
-        .findOne({ _id: orderIdObj, userId });
+      const order = await db.collection("orders").findOne({ _id: orderIdObj, userId });
       if (!order)
         return NextResponse.json(
           { eligible: false, reason: "orderNotFound" },
@@ -147,9 +132,7 @@ export async function GET(req: Request) {
 
       const hasProduct =
         Array.isArray(order.items) &&
-        order.items.some(
-          (it: any) => String(it.productId || "") === String(productId),
-        );
+        order.items.some((it: any) => String(it.productId || "") === String(productId));
       if (!hasProduct) {
         return NextResponse.json(
           { eligible: false, reason: "productNotInOrder" },
@@ -157,11 +140,7 @@ export async function GET(req: Request) {
         );
       }
       if (await isOrderServiceReviewOnly(db, order)) {
-        const app = await findReviewableStringingApplicationForProduct(
-          db,
-          userId,
-          productId,
-        );
+        const app = await findReviewableStringingApplicationForProduct(db, userId, productId);
         return NextResponse.json(
           {
             eligible: false,
@@ -198,10 +177,7 @@ export async function GET(req: Request) {
       .find({
         userId,
         "items.productId": { $in: [productIdObj, productId] },
-        $or: [
-          { userConfirmedAt: { $exists: true, $ne: null } },
-          { status: "구매확정" },
-        ],
+        $or: [{ userConfirmedAt: { $exists: true, $ne: null } }, { status: "구매확정" }],
       })
       .project({
         _id: 1,
@@ -240,15 +216,10 @@ export async function GET(req: Request) {
       })),
     );
     const candidate = orderEligibility.find(
-      ({ order, serviceOnly }) =>
-        !serviceOnly && !reviewedSet.has(String(order._id)),
+      ({ order, serviceOnly }) => !serviceOnly && !reviewedSet.has(String(order._id)),
     )?.order;
     if (!candidate) {
-      const serviceApp = await findReviewableStringingApplicationForProduct(
-        db,
-        userId,
-        productId,
-      );
+      const serviceApp = await findReviewableStringingApplicationForProduct(db, userId, productId);
       return NextResponse.json(
         {
           eligible: false,
@@ -278,9 +249,7 @@ export async function GET(req: Request) {
     }
     const orderIdObj = new ObjectId(orderId);
 
-    const order = await db
-      .collection("orders")
-      .findOne({ _id: orderIdObj, userId });
+    const order = await db.collection("orders").findOne({ _id: orderIdObj, userId });
     if (!order)
       return NextResponse.json(
         { eligible: false, reason: "orderNotFound" },
@@ -423,13 +392,9 @@ export async function GET(req: Request) {
       .project({ serviceApplicationId: 1 })
       .toArray();
 
-    const reviewedSet = new Set(
-      reviewed.map((r) => String(r.serviceApplicationId)),
-    );
+    const reviewedSet = new Set(reviewed.map((r) => String(r.serviceApplicationId)));
     const candidate = myApps.find(
-      (a) =>
-        !isStringingReviewBlockedStatus(a.status) &&
-        !reviewedSet.has(String(a._id)),
+      (a) => !isStringingReviewBlockedStatus(a.status) && !reviewedSet.has(String(a._id)),
     );
 
     if (!candidate) {

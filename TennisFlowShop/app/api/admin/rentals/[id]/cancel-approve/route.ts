@@ -6,29 +6,22 @@ import { writeRentalHistory } from "@/app/features/rentals/utils/history";
 import { grantPoints } from "@/lib/points.service";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 
-async function restoreRentalVariantStockIfNeeded(params: {
-  db: any;
-  existing: any;
-  now: Date;
-}) {
+async function restoreRentalVariantStockIfNeeded(params: { db: any; existing: any; now: Date }) {
   const { db, existing, now } = params;
   if (existing?.stockRestore?.variantStockRestoredAt) return;
   const stockDeduction = existing?.stringing?.stockDeduction;
   if (String(stockDeduction?.mode ?? "") !== "variant") return;
 
   const selectedColor =
-    typeof stockDeduction?.colorValue === "string" &&
-    stockDeduction.colorValue.trim()
+    typeof stockDeduction?.colorValue === "string" && stockDeduction.colorValue.trim()
       ? stockDeduction.colorValue.trim()
       : null;
   const selectedGauge =
-    typeof stockDeduction?.gaugeValue === "string" &&
-    stockDeduction.gaugeValue.trim()
+    typeof stockDeduction?.gaugeValue === "string" && stockDeduction.gaugeValue.trim()
       ? stockDeduction.gaugeValue.trim()
       : null;
   const stringProductId =
-    existing?.stringing?.stringId &&
-    ObjectId.isValid(String(existing.stringing.stringId))
+    existing?.stringing?.stringId && ObjectId.isValid(String(existing.stringing.stringId))
       ? new ObjectId(String(existing.stringing.stringId))
       : null;
   if (!stringProductId || !selectedColor || !selectedGauge) {
@@ -86,10 +79,7 @@ async function restoreRentalVariantStockIfNeeded(params: {
   );
 }
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -107,10 +97,7 @@ export async function POST(
     const _id = new ObjectId(id);
     const existing: any = await rentals.findOne({ _id });
     if (!existing)
-      return NextResponse.json(
-        { ok: false, message: "대여를 찾을 수 없습니다." },
-        { status: 404 },
-      );
+      return NextResponse.json({ ok: false, message: "대여를 찾을 수 없습니다." }, { status: 404 });
 
     const currentStatus = String(existing.status ?? "pending");
     const cancel = existing.cancelRequest;
@@ -158,8 +145,7 @@ export async function POST(
       String(existing?.stringing?.stockDeduction?.mode ?? "") === "variant";
 
     const stringProductId =
-      existing?.stringing?.stringId &&
-      ObjectId.isValid(String(existing.stringing.stringId))
+      existing?.stringing?.stringId && ObjectId.isValid(String(existing.stringing.stringId))
         ? new ObjectId(String(existing.stringing.stringId))
         : null;
 
@@ -185,33 +171,23 @@ export async function POST(
       }
     }
 
-    if (
-      !alreadyCanceledApproved &&
-      !isVariantDeductionMode &&
-      selectedGauge &&
-      stringProductId
-    ) {
-      const gaugeRestoreResult = await guard.db
-        .collection("products")
-        .updateOne(
-          {
-            _id: stringProductId,
-            sold: { $gte: 1 },
-            "gaugeInventories.value": selectedGauge,
+    if (!alreadyCanceledApproved && !isVariantDeductionMode && selectedGauge && stringProductId) {
+      const gaugeRestoreResult = await guard.db.collection("products").updateOne(
+        {
+          _id: stringProductId,
+          sold: { $gte: 1 },
+          "gaugeInventories.value": selectedGauge,
+        },
+        {
+          $inc: {
+            "gaugeInventories.$.stock": 1,
+            "inventory.stock": 1,
+            sold: -1,
           },
-          {
-            $inc: {
-              "gaugeInventories.$.stock": 1,
-              "inventory.stock": 1,
-              sold: -1,
-            },
-          },
-        );
+        },
+      );
 
-      if (
-        gaugeRestoreResult.matchedCount < 1 ||
-        gaugeRestoreResult.modifiedCount < 1
-      ) {
+      if (gaugeRestoreResult.matchedCount < 1 || gaugeRestoreResult.modifiedCount < 1) {
         return NextResponse.json(
           { ok: false, message: "스트링 게이지 재고 복구에 실패했습니다." },
           { status: 409 },
@@ -226,45 +202,38 @@ export async function POST(
       stringProductId &&
       !colorStockRestoredAt
     ) {
-      const hasManagedColorInventories = await guard.db
-        .collection("products")
-        .countDocuments(
-          {
-            _id: stringProductId,
-            colorInventories: { $exists: true, $ne: [] },
-          },
-          { limit: 1 },
-        );
+      const hasManagedColorInventories = await guard.db.collection("products").countDocuments(
+        {
+          _id: stringProductId,
+          colorInventories: { $exists: true, $ne: [] },
+        },
+        { limit: 1 },
+      );
 
       if (hasManagedColorInventories > 0) {
-        const colorRestoreResult = await guard.db
-          .collection("products")
-          .updateOne(
-            selectedGauge
-              ? {
-                  _id: stringProductId,
-                  "colorInventories.value": selectedColor,
-                }
-              : {
-                  _id: stringProductId,
-                  sold: { $gte: 1 },
-                  "colorInventories.value": selectedColor,
+        const colorRestoreResult = await guard.db.collection("products").updateOne(
+          selectedGauge
+            ? {
+                _id: stringProductId,
+                "colorInventories.value": selectedColor,
+              }
+            : {
+                _id: stringProductId,
+                sold: { $gte: 1 },
+                "colorInventories.value": selectedColor,
+              },
+          selectedGauge
+            ? { $inc: { "colorInventories.$.stock": 1 } }
+            : {
+                $inc: {
+                  "colorInventories.$.stock": 1,
+                  "inventory.stock": 1,
+                  sold: -1,
                 },
-            selectedGauge
-              ? { $inc: { "colorInventories.$.stock": 1 } }
-              : {
-                  $inc: {
-                    "colorInventories.$.stock": 1,
-                    "inventory.stock": 1,
-                    sold: -1,
-                  },
-                },
-          );
+              },
+        );
 
-        if (
-          colorRestoreResult.matchedCount < 1 ||
-          colorRestoreResult.modifiedCount < 1
-        ) {
+        if (colorRestoreResult.matchedCount < 1 || colorRestoreResult.modifiedCount < 1) {
           return NextResponse.json(
             {
               ok: false,
@@ -319,10 +288,7 @@ export async function POST(
         });
         const amountFromTx = Math.abs(Number(spendTx?.amount ?? 0));
         const amountFromRental = Number(existing.pointsUsed ?? 0);
-        const amountToRestore = Math.max(
-          0,
-          Math.trunc(amountFromTx || amountFromRental || 0),
-        );
+        const amountToRestore = Math.max(0, Math.trunc(amountFromTx || amountFromRental || 0));
 
         if (amountToRestore > 0) {
           await grantPoints(guard.db, {
@@ -378,9 +344,6 @@ export async function POST(
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("POST /api/admin/rentals/[id]/cancel-approve 오류:", error);
-    return NextResponse.json(
-      { ok: false, message: "서버 오류가 발생했습니다." },
-      { status: 500 },
-    );
+    return NextResponse.json({ ok: false, message: "서버 오류가 발생했습니다." }, { status: 500 });
   }
 }

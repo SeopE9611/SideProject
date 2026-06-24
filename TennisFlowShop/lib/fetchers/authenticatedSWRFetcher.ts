@@ -15,10 +15,7 @@ async function parseJsonResponse<T>(res: Response): Promise<T> {
   }
 }
 
-async function request(
-  url: string,
-  suppressAuthExpiredHeader: boolean,
-): Promise<Response> {
+async function request(url: string, suppressAuthExpiredHeader: boolean): Promise<Response> {
   return fetch(url, {
     credentials: "include",
     cache: "no-store",

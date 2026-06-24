@@ -4,10 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu } from "lucide-react";
-import {
-  SIDEBAR_SECTIONS,
-  ADMIN_MOBILE_QUICK_ITEMS,
-} from "@/components/admin/sidebar-navigation";
+import { SIDEBAR_SECTIONS, ADMIN_MOBILE_QUICK_ITEMS } from "@/components/admin/sidebar-navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,11 +21,7 @@ import type { SidebarBadgeKey } from "@/components/admin/sidebar-navigation";
 
 type BadgeCounts = Partial<Record<SidebarBadgeKey, number>>;
 
-export default function AdminMobileMenu({
-  badgeCounts = {},
-}: {
-  badgeCounts?: BadgeCounts;
-}) {
+export default function AdminMobileMenu({ badgeCounts = {} }: { badgeCounts?: BadgeCounts }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -46,18 +39,12 @@ export default function AdminMobileMenu({
         </Button>
       </SheetTrigger>
 
-      <SheetContent
-        side="left"
-        className="w-[88vw] max-w-sm overflow-y-auto p-0"
-      >
+      <SheetContent side="left" className="w-[88vw] max-w-sm overflow-y-auto p-0">
         <SheetHeader className="border-b px-4 py-3 text-left">
           <SheetTitle className="text-base">관리자 메뉴</SheetTitle>
         </SheetHeader>
 
-        <nav
-          className="space-y-5 px-4 py-4"
-          aria-label="관리자 모바일 네비게이션"
-        >
+        <nav className="space-y-5 px-4 py-4" aria-label="관리자 모바일 네비게이션">
           <section>
             <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               빠른 이동
@@ -83,10 +70,7 @@ export default function AdminMobileMenu({
                         <Icon className="h-4 w-4 shrink-0" />
                         <span className="truncate">{item.title}</span>
                         {!!count && (
-                          <Badge
-                            variant="secondary"
-                            className="ml-auto px-1.5 py-0 text-[10px]"
-                          >
+                          <Badge variant="secondary" className="ml-auto px-1.5 py-0 text-[10px]">
                             {count > 99 ? "99+" : count}
                           </Badge>
                         )}
@@ -124,10 +108,7 @@ export default function AdminMobileMenu({
                           <Icon className="h-4 w-4 shrink-0" />
                           <span>{item.title}</span>
                           {!!count && (
-                            <Badge
-                              variant="secondary"
-                              className="ml-auto px-1.5 py-0 text-[10px]"
-                            >
+                            <Badge variant="secondary" className="ml-auto px-1.5 py-0 text-[10px]">
                               {count > 99 ? "99+" : count}
                             </Badge>
                           )}

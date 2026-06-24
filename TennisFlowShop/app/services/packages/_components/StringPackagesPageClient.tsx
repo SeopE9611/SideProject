@@ -9,15 +9,7 @@ import { SectionHeader } from "@/components/public/SectionHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { packagesBadgeVariant } from "@/lib/badge-style";
-import {
-  ArrowRight,
-  Clock,
-  Gift,
-  MessageSquare,
-  Phone,
-  Shield,
-  Users,
-} from "lucide-react";
+import { ArrowRight, Clock, Gift, MessageSquare, Phone, Shield, Users } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -38,12 +30,9 @@ export default function StringPackagesPageClient({
   // 서버에서 선조회한 데이터를 초기값으로 사용한다.
   // 이렇게 하면 첫 렌더 직후 추가 네트워크 요청 없이 즉시 카드 UI를 그릴 수 있다.
   const [packages] = useState<PackageCardData[]>(initialPackages);
-  const [ownershipBlockedMessage] = useState<string | null>(
-    initialOwnershipBlockedMessage,
-  );
+  const [ownershipBlockedMessage] = useState<string | null>(initialOwnershipBlockedMessage);
   const isPendingOrderBlocked =
-    ownershipBlockedMessage?.includes("결제대기") ||
-    ownershipBlockedMessage?.includes("주문 상태");
+    ownershipBlockedMessage?.includes("결제대기") || ownershipBlockedMessage?.includes("주문 상태");
   const cardBlockedHelperText = isPendingOrderBlocked
     ? "기존 주문 상태를 먼저 확인해주세요."
     : "기존 패키지 이용 종료 후 다시 구매할 수 있습니다.";
@@ -71,8 +60,7 @@ export default function StringPackagesPageClient({
     {
       icon: <Gift className="h-6 w-6" />,
       title: "이용 횟수 관리",
-      description:
-        "남은 횟수와 유효기간을 기준으로 패키지를 사용할 수 있습니다.",
+      description: "남은 횟수와 유효기간을 기준으로 패키지를 사용할 수 있습니다.",
     },
   ];
 
@@ -127,12 +115,7 @@ export default function StringPackagesPageClient({
               </Link>
             </Button>
 
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full sm:w-auto"
-              asChild
-            >
+            <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
               <Link href="/services">
                 <Phone className="mr-2 h-5 w-5" />
                 상담 받기
@@ -171,9 +154,7 @@ export default function StringPackagesPageClient({
                 >
                   <div className="shrink-0 text-primary">{benefit.icon}</div>
                   <div className="min-w-0">
-                    <p className="font-semibold text-foreground">
-                      {benefit.title}
-                    </p>
+                    <p className="font-semibold text-foreground">{benefit.title}</p>
                     <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
                       {benefit.description}
                     </p>
@@ -195,11 +176,7 @@ export default function StringPackagesPageClient({
           <SectionHeader
             align="center"
             className="mb-8 md:mb-10"
-            eyebrow={
-              <Badge variant={packagesBadgeVariant("selection")}>
-                맞춤형 패키지 선택
-              </Badge>
-            }
+            eyebrow={<Badge variant={packagesBadgeVariant("selection")}>맞춤형 패키지 선택</Badge>}
             title="스트링 교체 패키지"
             description={
               <>
@@ -214,9 +191,7 @@ export default function StringPackagesPageClient({
               variant="muted"
               className="mx-auto mb-6 max-w-3xl text-left sm:text-center"
             >
-              <p className="text-sm font-semibold text-foreground">
-                추가 구매가 제한되어 있습니다
-              </p>
+              <p className="text-sm font-semibold text-foreground">추가 구매가 제한되어 있습니다</p>
               <p className="mt-2 break-keep text-sm leading-relaxed text-muted-foreground">
                 {ownershipBlockedMessage}
               </p>
@@ -235,13 +210,9 @@ export default function StringPackagesPageClient({
                   selected={selectedPackage === pkg.id}
                   onSelect={() => setSelectedPackage(pkg.id)}
                   ctaHref={`/services/packages/checkout?package=${pkg.id}`}
-                  ctaLabel={
-                    ownershipBlockedMessage ? "추가 구매 불가" : "패키지 선택"
-                  }
+                  ctaLabel={ownershipBlockedMessage ? "추가 구매 불가" : "패키지 선택"}
                   ctaDisabled={!!ownershipBlockedMessage}
-                  ctaHelperText={
-                    ownershipBlockedMessage ? cardBlockedHelperText : undefined
-                  }
+                  ctaHelperText={ownershipBlockedMessage ? cardBlockedHelperText : undefined}
                 />
               ))}
             </div>
@@ -261,11 +232,7 @@ export default function StringPackagesPageClient({
           <SectionHeader
             align="center"
             className="mb-8 md:mb-10"
-            eyebrow={
-              <Badge variant={packagesBadgeVariant("faq")}>
-                자주 묻는 질문
-              </Badge>
-            }
+            eyebrow={<Badge variant={packagesBadgeVariant("faq")}>자주 묻는 질문</Badge>}
             title="패키지 이용 안내"
             description="구매 전 자주 확인하는 내용을 간결하게 정리했습니다."
           />
@@ -275,8 +242,7 @@ export default function StringPackagesPageClient({
               {[
                 {
                   question: "패키지 유효기간이 지나면 어떻게 되나요?",
-                  answer:
-                    "유효기간이 임박한 경우 운영 정책에 따라 연장 가능 여부를 안내드립니다.",
+                  answer: "유효기간이 임박한 경우 운영 정책에 따라 연장 가능 여부를 안내드립니다.",
                 },
                 {
                   question: "다른 사람과 패키지를 공유할 수 있나요?",
@@ -284,13 +250,11 @@ export default function StringPackagesPageClient({
                 },
                 {
                   question: "패키지 환불이 가능한가요?",
-                  answer:
-                    "환불 가능 여부와 금액은 사용 횟수와 결제 상태를 확인한 뒤 안내드립니다.",
+                  answer: "환불 가능 여부와 금액은 사용 횟수와 결제 상태를 확인한 뒤 안내드립니다.",
                 },
                 {
                   question: "패키지 사용은 어떻게 하나요?",
-                  answer:
-                    "구매 후 교체서비스 신청 시 보유 패키지를 선택해 사용할 수 있습니다.",
+                  answer: "구매 후 교체서비스 신청 시 보유 패키지를 선택해 사용할 수 있습니다.",
                 },
               ].map((faq, index) => (
                 <PublicSurface
@@ -316,8 +280,7 @@ export default function StringPackagesPageClient({
               asChild
             >
               <Link href="/board/qna">
-                <MessageSquare className="w-5 h-5 mr-2" />더 궁금한 점이
-                있으신가요?
+                <MessageSquare className="w-5 h-5 mr-2" />더 궁금한 점이 있으신가요?
               </Link>
             </Button>
           </div>

@@ -19,8 +19,7 @@ export async function GET(req: NextRequest) {
 
   const payload = verifyAccessToken(at);
   const sub = payload?.sub ? String(payload.sub) : "";
-  if (!payload || !sub)
-    return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+  if (!payload || !sub) return NextResponse.json({ error: "Invalid token" }, { status: 401 });
 
   // 2) 페이지네이션 파라미터(안전 clamp)
   const url = new URL(req.url);
@@ -28,9 +27,7 @@ export async function GET(req: NextRequest) {
   const limitRaw = Number(url.searchParams.get("limit") ?? "10");
 
   const page = Number.isFinite(pageRaw) ? Math.max(1, Math.trunc(pageRaw)) : 1;
-  const limit = Number.isFinite(limitRaw)
-    ? Math.min(50, Math.max(1, Math.trunc(limitRaw)))
-    : 10;
+  const limit = Number.isFinite(limitRaw) ? Math.min(50, Math.max(1, Math.trunc(limitRaw))) : 10;
 
   // 3) DB 조회
   const db = await getDb();

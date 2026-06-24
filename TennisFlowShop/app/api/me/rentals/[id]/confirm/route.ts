@@ -32,33 +32,21 @@ function paymentMethodLabel(method?: string) {
 
 // 사용자: 대여 반납 확정(returned 상태 + 본인 소유)
 // - 대여료(fee) 기준으로 포인트 적립
-export async function POST(
-  _: Request,
-  context: { params: Promise<{ id: string }> },
-) {
+export async function POST(_: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
 
   const jar = await cookies();
   const accessToken = jar.get("accessToken")?.value;
   if (!accessToken)
-    return NextResponse.json(
-      { ok: false, message: "Unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
 
   const payload = safeVerifyAccessToken(accessToken);
   const userId = typeof payload?.sub === "string" ? payload.sub : null;
   if (!userId || !ObjectId.isValid(userId))
-    return NextResponse.json(
-      { ok: false, message: "Unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
 
   if (!ObjectId.isValid(id))
-    return NextResponse.json(
-      { ok: false, message: "invalid rental id" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, message: "invalid rental id" }, { status: 400 });
 
   const client = await clientPromise;
   const db = client.db();
@@ -69,17 +57,10 @@ export async function POST(
     const rental = await db
       .collection("rental_orders")
       .findOne({ _id: new ObjectId(id), userId: new ObjectId(userId) });
-    if (!rental)
-      return NextResponse.json(
-        { ok: false, message: "not found" },
-        { status: 404 },
-      );
+    if (!rental) return NextResponse.json({ ok: false, message: "not found" }, { status: 404 });
 
     if (String(rental.userId) !== String(userId)) {
-      return NextResponse.json(
-        { ok: false, message: "Forbidden" },
-        { status: 403 },
-      );
+      return NextResponse.json({ ok: false, message: "Forbidden" }, { status: 403 });
     }
 
     if (rental.status !== "returned") {
@@ -93,18 +74,13 @@ export async function POST(
     }
 
     const alreadyConfirmed = Boolean(rental.userConfirmedAt);
-    const confirmedAt = rental.userConfirmedAt
-      ? new Date(rental.userConfirmedAt)
-      : new Date();
+    const confirmedAt = rental.userConfirmedAt ? new Date(rental.userConfirmedAt) : new Date();
 
     if (!alreadyConfirmed) {
       await db.collection("rental_orders").updateOne(
         {
           _id,
-          $or: [
-            { userConfirmedAt: { $exists: false } },
-            { userConfirmedAt: null },
-          ],
+          $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }],
         },
         { $set: { userConfirmedAt: confirmedAt } },
       );
@@ -116,9 +92,7 @@ export async function POST(
 
     if (earnedPoints > 0) {
       const methodLabel = paymentMethodLabel(rental?.payment?.method);
-      const reason = methodLabel
-        ? `대여 확정 적립 (${methodLabel})`
-        : "대여 확정 적립";
+      const reason = methodLabel ? `대여 확정 적립 (${methodLabel})` : "대여 확정 적립";
 
       const rewardRefKey = `rental_confirm_reward:${String(_id)}`;
       const grantResult = await grantPoints(db, {
@@ -150,10 +124,7 @@ export async function POST(
           },
           { status: { $in: ["교체완료", "취소"] } },
           {
-            $or: [
-              { userConfirmedAt: { $exists: false } },
-              { userConfirmedAt: null },
-            ],
+            $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }],
           },
         ],
       },
@@ -163,9 +134,7 @@ export async function POST(
     return NextResponse.json({
       ok: true,
       already: alreadyConfirmed,
-      message: alreadyConfirmed
-        ? "이미 반납 확정된 대여입니다."
-        : "반납 확정 완료",
+      message: alreadyConfirmed ? "이미 반납 확정된 대여입니다." : "반납 확정 완료",
       earnedPoints: pointsGranted ? earnedPoints : 0,
       pointsGranted,
       alsoConfirmedServices: (svcRes as any).modifiedCount ?? 0,

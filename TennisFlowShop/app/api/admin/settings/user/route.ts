@@ -3,11 +3,7 @@ import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { getDb } from "@/lib/mongodb";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
-import {
-  SETTINGS_COLLECTION,
-  defaultUserSettings,
-  userSettingsSchema,
-} from "@/lib/admin-settings";
+import { SETTINGS_COLLECTION, defaultUserSettings, userSettingsSchema } from "@/lib/admin-settings";
 
 const DOC_ID = "adminUserSettings";
 
@@ -16,9 +12,7 @@ export async function GET(req: Request) {
   if (!guard.ok) return guard.res;
 
   const db = await getDb();
-  const doc = await db
-    .collection<any>(SETTINGS_COLLECTION)
-    .findOne({ _id: DOC_ID });
+  const doc = await db.collection<any>(SETTINGS_COLLECTION).findOne({ _id: DOC_ID });
   const parsed = userSettingsSchema.safeParse({
     ...defaultUserSettings,
     ...(doc?.value ?? {}),

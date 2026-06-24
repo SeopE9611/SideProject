@@ -20,9 +20,7 @@ export default function AuthGuard({ children }: Props) {
   useEffect(() => {
     (async () => {
       const redirectTo =
-        typeof window !== "undefined"
-          ? window.location.pathname + window.location.search
-          : "/";
+        typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
       try {
         const res = await fetch("/api/users/me", { credentials: "include" });
         if (res.status === 403) {

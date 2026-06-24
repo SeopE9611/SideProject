@@ -155,10 +155,7 @@ export default function OrderDetailSkeleton() {
                 </div>
                 {/* 테이블 바디 3개 행 분량 */}
                 {Array.from({ length: 3 }).map((_, rowIdx) => (
-                  <div
-                    key={rowIdx}
-                    className="flex items-center px-4 py-2 border-t border-border"
-                  >
+                  <div key={rowIdx} className="flex items-center px-4 py-2 border-t border-border">
                     <Skeleton className="h-4 w-1/4" />
                     <Skeleton className="h-4 w-1/4 ml-auto" />
                     <Skeleton className="h-4 w-1/4 ml-auto" />

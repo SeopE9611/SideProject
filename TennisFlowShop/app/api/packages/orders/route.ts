@@ -37,20 +37,17 @@ export async function POST(req: Request) {
     // 인증
     const at = (await cookies()).get("accessToken")?.value || null;
     const user = safeVerifyAccessToken(at);
-    if (!user?.sub)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user?.sub) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     // 입력 파싱
     const body: any = await req.json().catch(() => ({}));
     const pkg = body?.packageInfo ?? {};
 
     // 관리자 패키지 설정(허용 회수 / 가격 / 이름) 로드
-    const { allowedSessions, priceBySessions, configById } =
-      await getPackagePricingInfo();
+    const { allowedSessions, priceBySessions, configById } = await getPackagePricingInfo();
 
     // 클라이언트가 보낸 패키지 ID 후보
-    const rawPlanId =
-      str(pkg?.id) || str(body?.packageId) || str(body?.package);
+    const rawPlanId = str(pkg?.id) || str(body?.packageId) || str(body?.package);
 
     // 설정에서 해당 ID를 찾아본다 (없으면 undefined)
     const config = rawPlanId ? configById[rawPlanId] : undefined;
@@ -74,30 +71,21 @@ export async function POST(req: Request) {
 
     // 허용된 세션(활성 패키지)만 주문 가능
     if (!Number.isFinite(sessions) || !allowedSessions.has(sessions)) {
-      return NextResponse.json(
-        { error: "잘못된 패키지(회수)입니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "잘못된 패키지(회수)입니다." }, { status: 400 });
     }
 
     // 서버 권위로 금액 결정 (클라이언트 price는 무시)
     const price = config?.price ?? priceBySessions[sessions];
 
     if (!Number.isFinite(price) || price <= 0) {
-      return NextResponse.json(
-        { error: "가격 정보를 확인할 수 없습니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "가격 정보를 확인할 수 없습니다." }, { status: 400 });
     }
 
     // 최종 planId / 이름 구성
     const planId = config?.id || rawPlanId || `${sessions}-sessions`;
 
     const planTitle =
-      config?.name ||
-      str(pkg?.title) ||
-      str(body?.packageTitle) ||
-      `${sessions}회권`;
+      config?.name || str(pkg?.title) || str(body?.packageTitle) || `${sessions}회권`;
     const requestedServiceMethod = str(
       body?.serviceInfo?.serviceMethod ?? body?.serviceMethod ?? "방문이용",
     );

@@ -7,10 +7,7 @@ import { ObjectId } from "mongodb";
 import { APPLICATION_STATUSES } from "@/lib/application-status";
 
 // PATCH 요청 핸들러: 신청서 상태를 변경함
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth(); // 현재 로그인한 사용자 인증
 
   // 관리자만 접근 가능
@@ -40,11 +37,7 @@ export async function PATCH(
   }
 
   // 허용되지 않은 상태값이면 에러 처리
-  if (
-    !APPLICATION_STATUSES.includes(
-      status as (typeof APPLICATION_STATUSES)[number],
-    )
-  ) {
+  if (!APPLICATION_STATUSES.includes(status as (typeof APPLICATION_STATUSES)[number])) {
     return new NextResponse("Invalid status value", { status: 400 });
   }
 
@@ -55,10 +48,7 @@ export async function PATCH(
     const collection = db.collection("stringing_applications");
 
     // 해당 ID의 신청서 상태 업데이트
-    const result = await collection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { status } },
-    );
+    const result = await collection.updateOne({ _id: new ObjectId(id) }, { $set: { status } });
 
     // 신청서가 존재하지 않을 경우
     if (result.matchedCount === 0) {

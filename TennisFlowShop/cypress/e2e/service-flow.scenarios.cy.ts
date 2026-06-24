@@ -18,10 +18,7 @@ function buildIds(prefix: string) {
   };
 }
 
-function buildTrace(
-  scenario: ServiceScenarioKey,
-  method: CollectionMethod,
-): ServiceFlowTrace {
+function buildTrace(scenario: ServiceScenarioKey, method: CollectionMethod): ServiceFlowTrace {
   const suffix = `${scenario}-${method === "택배" ? "delivery" : "visit"}`;
 
   const base = {
@@ -29,8 +26,7 @@ function buildTrace(
     collectionMethod: method,
   };
 
-  const shippingGuide =
-    method === "택배" ? "택배 수거/배송 안내" : "방문 접수 안내";
+  const shippingGuide = method === "택배" ? "택배 수거/배송 안내" : "방문 접수 안내";
 
   const scenarioTemplate: Record<
     ServiceScenarioKey,

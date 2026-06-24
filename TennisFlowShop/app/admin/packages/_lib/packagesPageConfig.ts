@@ -59,11 +59,8 @@ export type PackagesResponse = AdminPackageListResponseDto;
 
 export const badgeSizeCls = "px-2.5 py-0.5 text-xs leading-[1.05] rounded-md";
 
-export function normalizePackagePaymentStatus(
-  status?: string | null,
-): PaymentStatus {
-  if (status === "결제완료" || status === "결제대기" || status === "결제취소")
-    return status;
+export function normalizePackagePaymentStatus(status?: string | null): PaymentStatus {
+  if (status === "결제완료" || status === "결제대기" || status === "결제취소") return status;
   return "결제대기";
 }
 

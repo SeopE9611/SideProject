@@ -31,10 +31,7 @@ const PASS_STATUS = {
   cancelled: "cancelled" as PassStatus,
 };
 // body: { mode: 'days'|'absolute', days?: number, newExpiry?: string, reason?: string }
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   // 관리자 인증/인가 표준 가드
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
@@ -45,24 +42,18 @@ export async function POST(
 
   try {
     const { id } = await params;
-    if (!ObjectId.isValid(id))
-      return NextResponse.json({ error: "invalid id" }, { status: 400 });
+    if (!ObjectId.isValid(id)) return NextResponse.json({ error: "invalid id" }, { status: 400 });
 
     // 입력 파싱
     const body = await req.json().catch(() => ({}));
     const mode = body?.mode as "days" | "absolute";
     const reason = String(body?.reason ?? "");
     if (mode !== "days" && mode !== "absolute")
-      return NextResponse.json(
-        { error: "mode must be days|absolute" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "mode must be days|absolute" }, { status: 400 });
 
     const db = (await clientPromise).db();
     const packageOrders = db.collection<PackageOrder>("packageOrders");
-    const passes = db.collection<ServicePass & { history?: PassHistoryItem[] }>(
-      "service_passes",
-    );
+    const passes = db.collection<ServicePass & { history?: PassHistoryItem[] }>("service_passes");
 
     const _id = new ObjectId(id);
     const now = new Date();
@@ -70,10 +61,7 @@ export async function POST(
     // 연결된 pass 찾기 (orderId = packageOrder._id)
     const passDoc = await passes.findOne({ orderId: _id });
     if (!passDoc) {
-      return NextResponse.json(
-        { error: "service pass not found for this order" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "service pass not found for this order" }, { status: 404 });
     }
 
     const pkgOrder = await packageOrders.findOne({ _id });
@@ -89,32 +77,21 @@ export async function POST(
     }
 
     if (passDoc.status === PASS_STATUS.cancelled) {
-      return NextResponse.json(
-        { error: "취소된 패스입니다." },
-        { status: 409 },
-      );
+      return NextResponse.json({ error: "취소된 패스입니다." }, { status: 409 });
     }
 
-    const currentExpiry = passDoc.expiresAt
-      ? new Date(passDoc.expiresAt)
-      : null;
+    const currentExpiry = passDoc.expiresAt ? new Date(passDoc.expiresAt) : null;
     let nextExpiry: Date;
     if (mode === "days") {
       const days = Number(body?.days || 0);
       if (!Number.isFinite(days) || days === 0)
-        return NextResponse.json(
-          { error: "days must be non-zero number" },
-          { status: 400 },
-        );
+        return NextResponse.json({ error: "days must be non-zero number" }, { status: 400 });
       const base = currentExpiry && currentExpiry > now ? currentExpiry : now;
       nextExpiry = new Date(base.getTime() + days * 86400000);
     } else {
       const d = new Date(body?.newExpiry);
       if (!d || Number.isNaN(d.getTime()))
-        return NextResponse.json(
-          { error: "invalid newExpiry" },
-          { status: 400 },
-        );
+        return NextResponse.json({ error: "invalid newExpiry" }, { status: 400 });
       nextExpiry = d;
     }
 
@@ -124,10 +101,7 @@ export async function POST(
         ? Number(body?.days || 0)
         : Math.round(
             (nextExpiry.getTime() -
-              (currentExpiry && currentExpiry > now
-                ? currentExpiry
-                : now
-              ).getTime()) /
+              (currentExpiry && currentExpiry > now ? currentExpiry : now).getTime()) /
               86400000,
           );
 
@@ -208,8 +182,7 @@ export async function POST(
           after: {
             expiresAt: nextExpiry.toISOString(),
             status: shouldActivate ? "active" : (passDoc.status ?? null),
-            remainingCount:
-              freshPass?.remainingCount ?? passDoc.remainingCount ?? null,
+            remainingCount: freshPass?.remainingCount ?? passDoc.remainingCount ?? null,
           },
           metadata: {
             servicePassId: passDoc._id.toString(),

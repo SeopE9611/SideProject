@@ -5,15 +5,9 @@ import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { writeRentalHistory } from "@/app/features/rentals/utils/history";
 import { getLinkedRentalStringingStatus } from "@/lib/admin/rental-stringing-flow.server";
-import {
-  hasRentalStringingService,
-  isRentalStringingComplete,
-} from "@/lib/rental-stringing-flow";
+import { hasRentalStringingService, isRentalStringingComplete } from "@/lib/rental-stringing-flow";
 
-export async function POST(
-  _: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const accessToken = (await cookies()).get("accessToken")?.value;
   if (!accessToken) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });

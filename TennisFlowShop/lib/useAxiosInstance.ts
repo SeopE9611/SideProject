@@ -40,8 +40,7 @@ axiosInstance.interceptors.response.use(
     if (response.status === 401) {
       // (quiet) 억제 플래그: 전역 만료 로직에 진입하지 않음
       const suppressed =
-        (config?.headers &&
-          config.headers["x-suppress-auth-expired"] === "1") ||
+        (config?.headers && config.headers["x-suppress-auth-expired"] === "1") ||
         (config as any)?.__suppressAuthExpired === true;
       if (suppressed) {
         return Promise.reject(error);

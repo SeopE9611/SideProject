@@ -4,8 +4,7 @@ import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import OrderReviewCTA from "@/components/reviews/OrderReviewCTA";
 
-const fetcher = (url: string) =>
-  fetch(url, { credentials: "include" }).then((r) => r.json());
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
 type Props = {
   orderId: string;

@@ -68,9 +68,7 @@ export async function POST(req: Request) {
 
     const yyyymms = Array.from(
       new Set(
-        raw
-          .map((v: unknown) => String(v ?? "").trim())
-          .filter((v: string) => /^\d{6}$/.test(v)),
+        raw.map((v: unknown) => String(v ?? "").trim()).filter((v: string) => /^\d{6}$/.test(v)),
       ),
     );
     if (yyyymms.length === 0) {
@@ -80,9 +78,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const result = await db
-      .collection("settlements")
-      .deleteMany({ yyyymm: { $in: yyyymms } });
+    const result = await db.collection("settlements").deleteMany({ yyyymm: { $in: yyyymms } });
 
     await appendAdminAudit(
       db,
@@ -105,11 +101,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "internal_error" }, { status: 500 });
   } finally {
     if (lockDb && lockOwner) {
-      await releaseAdminExecutionLock(
-        lockDb,
-        "admin.settlements.bulk-delete",
-        lockOwner,
-      );
+      await releaseAdminExecutionLock(lockDb, "admin.settlements.bulk-delete", lockOwner);
     }
   }
 }

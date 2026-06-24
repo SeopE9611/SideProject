@@ -55,9 +55,7 @@ export default function PackageTossSuccessPage() {
       <Card className="w-full max-w-xl border border-border bg-card shadow-sm">
         <CardContent className="flex flex-col items-center justify-center gap-3 p-8 text-center">
           <Loader2 className="h-7 w-7 animate-spin text-primary" />
-          <p className="font-medium text-foreground">
-            결제 승인 처리 중입니다.
-          </p>
+          <p className="font-medium text-foreground">결제 승인 처리 중입니다.</p>
           <p className="text-sm text-muted-foreground">
             잠시만 기다려주세요. 승인 결과 확인 후 완료 페이지로 이동합니다.
           </p>

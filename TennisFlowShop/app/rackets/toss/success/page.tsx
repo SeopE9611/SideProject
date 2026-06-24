@@ -46,9 +46,7 @@ export default function RacketTossSuccessPage() {
           );
           return;
         }
-        router.replace(
-          `/racket-orders/${encodeURIComponent(json.mongoOrderId)}/select-string`,
-        );
+        router.replace(`/racket-orders/${encodeURIComponent(json.mongoOrderId)}/select-string`);
       })
       .catch((error: any) => {
         const fallbackPath = racketId

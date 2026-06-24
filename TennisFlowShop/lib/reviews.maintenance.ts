@@ -28,9 +28,7 @@ async function ensureIndex(
   try {
     const keySig = JSON.stringify(keys);
     const existing = await col.listIndexes().toArray();
-    existingKeyMatch = existing.some(
-      (ix: any) => JSON.stringify(ix.key) === keySig,
-    );
+    existingKeyMatch = existing.some((ix: any) => JSON.stringify(ix.key) === keySig);
   } catch (e: any) {
     // ns not exist (26) 등 -> 바로 생성 단계로 진행
   }
@@ -41,10 +39,7 @@ async function ensureIndex(
     await col.createIndex(keys, options);
   } catch (e: any) {
     // 85: "Index already exists with a different name"
-    if (
-      e?.code === 85 ||
-      /already exists with a different name/i.test(e?.message)
-    ) {
+    if (e?.code === 85 || /already exists with a different name/i.test(e?.message)) {
       return;
     }
     // 드물게 ns not exist가 또 나오면 한 번 더 생성 시도
@@ -106,12 +101,7 @@ export async function ensureReviewIndexes(db: Db) {
   );
 
   // 조회/정렬용 인덱스(중복이면 ensureIndex가 스킵)
-  await ensureIndex(
-    db,
-    "reviews",
-    { userId: 1, createdAt: -1 },
-    { name: "user_createdAt" },
-  );
+  await ensureIndex(db, "reviews", { userId: 1, createdAt: -1 }, { name: "user_createdAt" });
   await ensureIndex(
     db,
     "reviews",
@@ -144,12 +134,7 @@ export async function ensureReviewIndexes(db: Db) {
     { reviewId: 1, userId: 1 },
     { name: "review_user_unique", unique: true },
   );
-  await ensureIndex(
-    db,
-    "review_votes",
-    { reviewId: 1 },
-    { name: "reviewId_idx" },
-  );
+  await ensureIndex(db, "review_votes", { reviewId: 1 }, { name: "reviewId_idx" });
 }
 
 export async function dedupActiveReviews(db: Db) {
@@ -185,8 +170,7 @@ export async function dedupActiveReviews(db: Db) {
   for (const g of dups) {
     // createdAt 오름차순 -> 가장 최신(마지막)만 보존
     const sorted = g.docs.sort(
-      (a: any, b: any) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      (a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     );
     const toDelete = sorted.slice(0, -1).map((x: any) => x._id);
     if (toDelete.length) {
@@ -230,12 +214,7 @@ export async function rebuildProductRatingSummary(db: any) {
   const toObjectId = (v: any): ObjectId | null => {
     if (!v) return null;
     if (v instanceof ObjectId) return v;
-    const s =
-      typeof v === "string"
-        ? v
-        : typeof v?.toString === "function"
-          ? v.toString()
-          : "";
+    const s = typeof v === "string" ? v : typeof v?.toString === "function" ? v.toString() : "";
     if (!ObjectId.isValid(s)) return null;
     return new ObjectId(s);
   };

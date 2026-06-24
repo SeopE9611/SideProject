@@ -48,15 +48,10 @@ export function getPackagePricingMeta(pkg: {
   const originalPrice = toSafeNumber(pkg.originalPrice);
   const perSession = sessions > 0 ? Math.round(price / sessions) : 0;
   const originalPerSession =
-    sessions > 0 && originalPrice > 0
-      ? Math.round(originalPrice / sessions)
-      : 0;
+    sessions > 0 && originalPrice > 0 ? Math.round(originalPrice / sessions) : 0;
   const rawDiscountRate =
-    originalPrice > price && originalPrice > 0
-      ? (1 - price / originalPrice) * 100
-      : 0;
-  const discountRate =
-    rawDiscountRate > 0 ? Number(rawDiscountRate.toFixed(1)) : 0;
+    originalPrice > price && originalPrice > 0 ? (1 - price / originalPrice) * 100 : 0;
+  const discountRate = rawDiscountRate > 0 ? Number(rawDiscountRate.toFixed(1)) : 0;
   const savingAmount = originalPrice > price ? originalPrice - price : 0;
 
   return { perSession, originalPerSession, discountRate, savingAmount };
@@ -81,16 +76,8 @@ export const formatValidityPeriod = (value: unknown): string => {
   return `${months}개월 ${daysRemainder}일`;
 };
 
-const calculateDiscount = (
-  price: number,
-  originalPrice?: number,
-): number | undefined => {
-  if (
-    !originalPrice ||
-    originalPrice <= 0 ||
-    price <= 0 ||
-    price >= originalPrice
-  )
+const calculateDiscount = (price: number, originalPrice?: number): number | undefined => {
+  if (!originalPrice || originalPrice <= 0 || price <= 0 || price >= originalPrice)
     return undefined;
   return Number(((1 - price / originalPrice) * 100).toFixed(1));
 };
@@ -112,18 +99,12 @@ export const normalizePackageCardData = (input: {
   const validityPeriod = formatValidityPeriod(input.validityPeriod);
   const { discountRate } = getPackagePricingMeta(input);
   const discount =
-    input.discount ??
-    discountRate ??
-    calculateDiscount(input.price, input.originalPrice);
+    input.discount ?? discountRate ?? calculateDiscount(input.price, input.originalPrice);
 
   const normalizedBenefits = [
-    validityPeriod !== "유효기간 설정 없음"
-      ? `유효기간 ${validityPeriod}`
-      : null,
+    validityPeriod !== "유효기간 설정 없음" ? `유효기간 ${validityPeriod}` : null,
     ...(input.benefits ?? []),
-  ].filter(
-    (item, index, arr): item is string => !!item && arr.indexOf(item) === index,
-  );
+  ].filter((item, index, arr): item is string => !!item && arr.indexOf(item) === index);
 
   const features = (
     input.features && input.features.length > 0

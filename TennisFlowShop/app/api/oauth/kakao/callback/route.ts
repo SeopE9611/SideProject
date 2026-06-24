@@ -102,9 +102,7 @@ export async function GET(req: NextRequest) {
 
   const meJson: any = await meRes.json();
   const kakaoId = meJson?.id;
-  const emailRaw = meJson?.kakao_account?.email
-    ? String(meJson.kakao_account.email)
-    : "";
+  const emailRaw = meJson?.kakao_account?.email ? String(meJson.kakao_account.email) : "";
   const email = emailRaw.trim().toLowerCase();
   const nickname = meJson?.kakao_account?.profile?.nickname;
 
@@ -129,9 +127,7 @@ export async function GET(req: NextRequest) {
     expiresAt: Date;
   };
 
-  const pendings = db.collection(
-    "oauth_pending_signups",
-  ) as Collection<PendingDoc>;
+  const pendings = db.collection("oauth_pending_signups") as Collection<PendingDoc>;
 
   const user = await users.findOne({ email });
 
@@ -164,11 +160,7 @@ export async function GET(req: NextRequest) {
 
   // 이미 다른 kakaoId가 연결된 계정이면 충돌 방지
   const existingKakaoId = user?.oauth?.kakao?.id ?? null;
-  if (
-    existingKakaoId &&
-    kakaoId &&
-    String(existingKakaoId) !== String(kakaoId)
-  ) {
+  if (existingKakaoId && kakaoId && String(existingKakaoId) !== String(kakaoId)) {
     const loginUrl = `${getBaseUrl()}/login?tab=login`;
     return NextResponse.redirect(loginUrl);
   }
@@ -192,13 +184,9 @@ export async function GET(req: NextRequest) {
     { expiresIn: ACCESS_TOKEN_EXPIRES_IN },
   );
 
-  const refreshToken = jwt.sign(
-    { sub: user._id.toString() },
-    REFRESH_TOKEN_SECRET,
-    {
-      expiresIn: REFRESH_TOKEN_EXPIRES_IN,
-    },
-  );
+  const refreshToken = jwt.sign({ sub: user._id.toString() }, REFRESH_TOKEN_SECRET, {
+    expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+  });
 
   // 7) 어디로 보낼지(from 쿠키)
   const from = req.cookies.get("kakao_oauth_from")?.value;
@@ -218,8 +206,7 @@ export async function GET(req: NextRequest) {
 
   // 관리자 계정으로 OAuth 로그인한 경우 admin CSRF 쿠키를 함께 발급
   if (user.role === "admin") {
-    const adminCsrfToken =
-      `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, "");
+    const adminCsrfToken = `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, "");
     res.cookies.set(ADMIN_CSRF_COOKIE_KEY, adminCsrfToken, {
       ...baseCookie,
       httpOnly: false,
@@ -259,9 +246,7 @@ export async function GET(req: NextRequest) {
 
     await Promise.all([
       autoLinkStringingByEmail(db, user._id, user.email),
-      db
-        .collection("users")
-        .updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } }),
+      db.collection("users").updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } }),
     ]);
   } catch (e) {
     console.warn("[kakao callback] post-login side effects fail:", e);

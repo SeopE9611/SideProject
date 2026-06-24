@@ -14,7 +14,12 @@ import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { CartItem, useCartStore } from "@/app/store/cartStore";
 import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { PriceSummary, PrimaryCTAGroup, SummaryCard, type PriceSummaryRow } from "@/components/public";
+import {
+  PriceSummary,
+  PrimaryCTAGroup,
+  SummaryCard,
+  type PriceSummaryRow,
+} from "@/components/public";
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +28,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,7 +42,10 @@ import { getMyInfo } from "@/lib/auth.client";
 import { bankLabelMap } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { useBackNavigationGuard } from "@/lib/hooks/useBackNavigationGuard";
-import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import {
+  UNSAVED_CHANGES_MESSAGE,
+  useUnsavedChangesGuard,
+} from "@/lib/hooks/useUnsavedChangesGuard";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
@@ -110,7 +124,13 @@ type CheckoutField =
   | "items"
   | "composition";
 type CheckoutFieldErrors = Partial<Record<CheckoutField, string>>;
-type CheckoutTouchedField = "name" | "phone" | "email" | "postalCode" | "addressDetail" | "depositor";
+type CheckoutTouchedField =
+  | "name"
+  | "phone"
+  | "email"
+  | "postalCode"
+  | "addressDetail"
+  | "depositor";
 type CheckoutTouchedFields = Partial<Record<CheckoutTouchedField, boolean>>;
 type CheckoutPrefillUser = User & {
   phone?: string | null;
@@ -279,7 +299,11 @@ function FinalPaymentConfirmCard({
     {
       id: "total-price",
       label: "합계",
-      value: !isShippingFeeReady ? <Skeleton className="h-5 w-24 rounded" /> : `${totalPrice.toLocaleString()}원`,
+      value: !isShippingFeeReady ? (
+        <Skeleton className="h-5 w-24 rounded" />
+      ) : (
+        `${totalPrice.toLocaleString()}원`
+      ),
     },
     {
       id: "payable-total-price",
@@ -316,7 +340,8 @@ function FinalPaymentConfirmCard({
       <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-3 text-ui-label text-foreground">
         {paymentMethod === "bank-transfer" && (
           <p className="text-muted-foreground">
-            입금 계좌: {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.account ?? selectedBank}
+            입금 계좌:{" "}
+            {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.account ?? selectedBank}
             <span className="mt-1 block">입금자명: {depositor.trim() || "미입력"}</span>
           </p>
         )}
@@ -329,7 +354,8 @@ function FinalPaymentConfirmCard({
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
-const DAUM_POSTCODE_SCRIPT_URL = "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
+const DAUM_POSTCODE_SCRIPT_URL =
+  "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
 let daumPostcodeScriptPromise: Promise<void> | null = null;
 // 연락처는 010으로 시작하는 휴대폰 번호만 허용 (010 0000 0000)
 const formatKoreanPhone010 = (v: string) => {
@@ -369,7 +395,9 @@ export default function CheckoutPage() {
 
   // 상품ID 목록을 기준으로 mountingFee를 mini API로 가져오는 상태
   const [mountingFeeByProductId, setMountingFeeByProductId] = useState<Record<string, number>>({});
-  const [mountableStringByProductId, setMountableStringByProductId] = useState<Record<string, boolean>>({});
+  const [mountableStringByProductId, setMountableStringByProductId] = useState<
+    Record<string, boolean>
+  >({});
   const [shippingFeeByProductId, setShippingFeeByProductId] = useState<Record<string, number>>({});
   const [mountingFeeLoading, setMountingFeeLoading] = useState(false);
 
@@ -406,7 +434,9 @@ export default function CheckoutPage() {
     try {
       const raw = sessionStorage.getItem(CART_CHECKOUT_SELECTION_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
-      setSelectedLineKeys(Array.isArray(parsed) ? parsed.filter((key): key is string => typeof key === "string") : []);
+      setSelectedLineKeys(
+        Array.isArray(parsed) ? parsed.filter((key): key is string => typeof key === "string") : [],
+      );
     } catch {
       setSelectedLineKeys([]);
     }
@@ -430,7 +460,10 @@ export default function CheckoutPage() {
         ? selectedCartItems
         : cartItems;
   const orderItemsKey = orderItems
-    .map((it) => `${it.kind}:${it.id}:${it.quantity}:${it.selectedGauge ?? ""}:${it.selectedColor ?? ""}`)
+    .map(
+      (it) =>
+        `${it.kind}:${it.id}:${it.quantity}:${it.selectedGauge ?? ""}:${it.selectedColor ?? ""}`,
+    )
     .join("|");
 
   // 장착비(공임)를 붙일 아이템 kind 정의
@@ -538,7 +571,9 @@ export default function CheckoutPage() {
 
     async function loadMountingFees() {
       const allItemIds = Array.from(new Set(orderItems.map((it) => String(it.id))));
-      const serviceTargetIds = new Set(orderItems.filter(isServiceFeeTarget).map((it) => String(it.id)));
+      const serviceTargetIds = new Set(
+        orderItems.filter(isServiceFeeTarget).map((it) => String(it.id)),
+      );
 
       if (allItemIds.length === 0) {
         setMountingFeeLoading(false);
@@ -575,14 +610,21 @@ export default function CheckoutPage() {
 
       if (cancelled) return;
       setMountingFeeByProductId(
-        Object.fromEntries(entries.map(([id, fee]) => [id, serviceTargetIds.has(id) ? fee.mountingFee : 0])),
+        Object.fromEntries(
+          entries.map(([id, fee]) => [id, serviceTargetIds.has(id) ? fee.mountingFee : 0]),
+        ),
       );
       setMountableStringByProductId(
         Object.fromEntries(
-          entries.map(([id, fee]) => [id, serviceTargetIds.has(id) && fee.isMountableString === true]),
+          entries.map(([id, fee]) => [
+            id,
+            serviceTargetIds.has(id) && fee.isMountableString === true,
+          ]),
         ),
       );
-      setShippingFeeByProductId(Object.fromEntries(entries.map(([id, fee]) => [id, fee.shippingFee])));
+      setShippingFeeByProductId(
+        Object.fromEntries(entries.map(([id, fee]) => [id, fee.shippingFee])),
+      );
       setMountingFeeLoading(false);
     }
 
@@ -596,7 +638,9 @@ export default function CheckoutPage() {
   const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const regularSubtotal = orderItems.reduce((sum, item) => {
     const regularPrice =
-      typeof item.regularPrice === "number" && Number.isFinite(item.regularPrice) && item.regularPrice > item.price
+      typeof item.regularPrice === "number" &&
+      Number.isFinite(item.regularPrice) &&
+      item.regularPrice > item.price
         ? item.regularPrice
         : item.price;
     return sum + regularPrice * item.quantity;
@@ -630,14 +674,18 @@ export default function CheckoutPage() {
 
   const isShippingFeeReady = useMemo(() => {
     if (shippingFeeIdsToResolve.length === 0) return true;
-    return shippingFeeIdsToResolve.every((id) => Object.prototype.hasOwnProperty.call(shippingFeeByProductId, id));
+    return shippingFeeIdsToResolve.every((id) =>
+      Object.prototype.hasOwnProperty.call(shippingFeeByProductId, id),
+    );
   }, [shippingFeeIdsToResolve, shippingFeeByProductId]);
 
   const isMountingFeeReady = useMemo(() => {
     if (!withStringService) return true;
     if (mountingFeeLoading) return false;
     // mini 호출이 끝나면 각 id에 대해 0이든 양수든 값이 "세팅"되므로 hasOwnProperty로 판단한다.
-    return mountingFeeIdsToResolve.every((id) => Object.prototype.hasOwnProperty.call(mountingFeeByProductId, id));
+    return mountingFeeIdsToResolve.every((id) =>
+      Object.prototype.hasOwnProperty.call(mountingFeeByProductId, id),
+    );
   }, [withStringService, mountingFeeLoading, mountingFeeIdsToResolve, mountingFeeByProductId]);
 
   // 배송비
@@ -695,7 +743,10 @@ export default function CheckoutPage() {
   const bundleQtyGuard = useMemo(() => {
     if (!withStringService) return { mismatch: false, racketQty: 0, serviceQty: 0 };
 
-    const racketQty = orderItems.reduce((sum, it) => (it.kind === "racket" ? sum + (it.quantity ?? 0) : sum), 0);
+    const racketQty = orderItems.reduce(
+      (sum, it) => (it.kind === "racket" ? sum + (it.quantity ?? 0) : sum),
+      0,
+    );
     const serviceSet = new Set(serviceTargetIds);
 
     const serviceQty = orderItems.reduce((sum, it) => {
@@ -721,7 +772,9 @@ export default function CheckoutPage() {
     if (!withStringService) return { invalid: false, racketKinds: 0, mountableStringKinds: 0 };
 
     // 라켓은 "종(라인)" 기준으로 1개만 허용 (서로 다른 라켓 2종이면 매칭 불가)
-    const racketKinds = new Set(orderItems.filter((it) => it.kind === "racket").map((it) => String(it.id))).size;
+    const racketKinds = new Set(
+      orderItems.filter((it) => it.kind === "racket").map((it) => String(it.id)),
+    ).size;
 
     // 장착 대상 스트링도 "종(라인)" 기준으로 1개만 허용
     // (serviceTargetIds는 mountingFee>0 인 “장착 가능 스트링” id 목록)
@@ -778,7 +831,9 @@ export default function CheckoutPage() {
     if (daumPostcodeScriptPromise) return daumPostcodeScriptPromise;
 
     daumPostcodeScriptPromise = new Promise<void>((resolve, reject) => {
-      const existingScript = document.querySelector<HTMLScriptElement>(`script[src="${DAUM_POSTCODE_SCRIPT_URL}"]`);
+      const existingScript = document.querySelector<HTMLScriptElement>(
+        `script[src="${DAUM_POSTCODE_SCRIPT_URL}"]`,
+      );
       const script = existingScript ?? document.createElement("script");
 
       const handleLoad = () => resolve();
@@ -994,7 +1049,8 @@ export default function CheckoutPage() {
     else if (nameTrim.length < 2) errors.name = "수령인 이름은 2자 이상 입력해주세요.";
 
     if (!phone.trim()) errors.phone = "연락처는 필수입니다.";
-    else if (!isValidKoreanPhone010(phone)) errors.phone = "올바른 연락처 형식(01012345678)으로 입력해주세요.";
+    else if (!isValidKoreanPhone010(phone))
+      errors.phone = "올바른 연락처 형식(01012345678)으로 입력해주세요.";
 
     const emailTrim = email.trim();
     // 게스트 주문은 이메일 필수, 로그인 주문은 선택(하지만 입력 시 형식 체크)
@@ -1006,8 +1062,10 @@ export default function CheckoutPage() {
 
     // 택배수령일 때만 주소 필수
     if (needsShippingAddress) {
-      if (!postalCode.trim() || !address.trim()) errors.postalCode = "우편번호 찾기를 통해 주소를 등록해주세요.";
-      else if (!POSTAL_RE.test(postalCode.trim())) errors.postalCode = "우편번호 형식을 확인해주세요. (5자리)";
+      if (!postalCode.trim() || !address.trim())
+        errors.postalCode = "우편번호 찾기를 통해 주소를 등록해주세요.";
+      else if (!POSTAL_RE.test(postalCode.trim()))
+        errors.postalCode = "우편번호 형식을 확인해주세요. (5자리)";
 
       if (!addressDetail.trim()) errors.addressDetail = "상세 주소는 필수입니다.";
     }
@@ -1154,7 +1212,9 @@ export default function CheckoutPage() {
 
         // available이 내려오면 그걸 최우선 사용
         // (혹시 아직 API가 안 바뀐 상태면 fallback으로 balance - debt 계산)
-        const available = Number.isFinite(availRaw) ? Math.max(0, Math.trunc(availRaw)) : Math.max(0, bal - debt);
+        const available = Number.isFinite(availRaw)
+          ? Math.max(0, Math.trunc(availRaw))
+          : Math.max(0, bal - debt);
 
         setPointsBalance(bal);
         setPointsDebt(debt);
@@ -1182,9 +1242,13 @@ export default function CheckoutPage() {
   const previewPointCapBase = Math.max(0, previewTotalPrice - shippingFee);
   const previewMaxPointsByPolicy = user ? previewPointCapBase : 0;
   const previewResolvedPointsAvailable = pointsAvailable ?? 0;
-  const previewMaxPointsToUseRaw = Math.min(previewResolvedPointsAvailable, previewMaxPointsByPolicy);
+  const previewMaxPointsToUseRaw = Math.min(
+    previewResolvedPointsAvailable,
+    previewMaxPointsByPolicy,
+  );
   const previewMaxPointsToUse = Math.floor(previewMaxPointsToUseRaw / POINT_UNIT) * POINT_UNIT;
-  const previewNormalizedPointsToUse = Math.floor((Number(pointsToUse) || 0) / POINT_UNIT) * POINT_UNIT;
+  const previewNormalizedPointsToUse =
+    Math.floor((Number(pointsToUse) || 0) / POINT_UNIT) * POINT_UNIT;
   const previewAppliedPoints = Math.min(previewNormalizedPointsToUse, previewMaxPointsToUse);
   const isZeroPayableAmount = previewTotalPrice - previewAppliedPoints <= 0;
 
@@ -1204,9 +1268,15 @@ export default function CheckoutPage() {
   }
 
   const renderCheckout = (checkoutStringingAdapter?: CheckoutStringingServiceAdapter) => {
-    const checkoutPackageUsage = resolveCheckoutPackageUsage(withStringService, checkoutStringingAdapter);
-    const hasStringingLineErrors = !!(withStringService && checkoutStringingAdapter?.hasLineValidationErrors);
-    const resolvedCanSubmit = canSubmit && !hasStringingLineErrors && !checkoutStringingAdapter?.packagePreviewLoading;
+    const checkoutPackageUsage = resolveCheckoutPackageUsage(
+      withStringService,
+      checkoutStringingAdapter,
+    );
+    const hasStringingLineErrors = !!(
+      withStringService && checkoutStringingAdapter?.hasLineValidationErrors
+    );
+    const resolvedCanSubmit =
+      canSubmit && !hasStringingLineErrors && !checkoutStringingAdapter?.packagePreviewLoading;
     const requestStringingValidationMessages = () => {
       if (!hasStringingLineErrors) return;
       setShowStringingValidationErrors(true);
@@ -1228,7 +1298,9 @@ export default function CheckoutPage() {
       if (!withStringService || !checkoutStringingAdapter) return undefined;
 
       const form = checkoutStringingAdapter.formData;
-      const lines = (checkoutStringingAdapter.linesForSubmit ?? []).filter((line) => line?.stringProductId);
+      const lines = (checkoutStringingAdapter.linesForSubmit ?? []).filter(
+        (line) => line?.stringProductId,
+      );
       const stringTypes = (form.stringTypes ?? []).filter(Boolean);
 
       if (!name.trim() || !phone.trim() || stringTypes.length === 0 || lines.length === 0) {
@@ -1381,7 +1453,10 @@ export default function CheckoutPage() {
               </div>
             ) : (
               <div
-                className={cn("space-y-6 pb-28 bp-md:pb-0", isCheckoutSubmitting && "pointer-events-none")}
+                className={cn(
+                  "space-y-6 pb-28 bp-md:pb-0",
+                  isCheckoutSubmitting && "pointer-events-none",
+                )}
                 aria-busy={isCheckoutSubmitting}
               >
                 <nav
@@ -1446,8 +1521,12 @@ export default function CheckoutPage() {
                       </h2>
                       {withStringService ? (
                         <div className="space-y-1 text-ui-body-sm leading-relaxed text-muted-foreground">
-                          <p className="break-keep">작업 정보와 수령/배송 방식을 확인하면 함께 접수됩니다.</p>
-                          {isStringOnlyServiceFlow && <p className="break-keep">{stringStandalonePausedNotice}</p>}
+                          <p className="break-keep">
+                            작업 정보와 수령/배송 방식을 확인하면 함께 접수됩니다.
+                          </p>
+                          {isStringOnlyServiceFlow && (
+                            <p className="break-keep">{stringStandalonePausedNotice}</p>
+                          )}
                         </div>
                       ) : (
                         <div className="space-y-1 text-ui-body-sm leading-relaxed text-muted-foreground">
@@ -1496,7 +1575,13 @@ export default function CheckoutPage() {
                         </p>
                         {bundleRacketId && (
                           <div className="mt-3">
-                            <Button type="button" variant="outline" size="sm" className="h-8" asChild>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-8"
+                              asChild
+                            >
                               <Link
                                 href={`/rackets/${bundleRacketId}/select-string`}
                                 data-no-unsaved-guard
@@ -1520,7 +1605,10 @@ export default function CheckoutPage() {
                             <div className="relative shrink-0">
                               <div className="overflow-hidden rounded-xl ring-2 ring-border/50">
                                 <Image
-                                  src={item.image || "/placeholder.svg?height=80&width=80&query=tennis+product"}
+                                  src={
+                                    item.image ||
+                                    "/placeholder.svg?height=80&width=80&query=tennis+product"
+                                  }
                                   alt={item.name}
                                   width={80}
                                   height={80}
@@ -1562,14 +1650,15 @@ export default function CheckoutPage() {
                                     </span>
                                   </span>
                                 )}
-                                {withStringService && serviceTargetIds.includes(String(item.id)) && (
-                                  <Badge
-                                    variant="outline"
-                                    className="shrink-0 whitespace-nowrap border-primary/30 text-ui-caption text-primary"
-                                  >
-                                    교체서비스
-                                  </Badge>
-                                )}
+                                {withStringService &&
+                                  serviceTargetIds.includes(String(item.id)) && (
+                                    <Badge
+                                      variant="outline"
+                                      className="shrink-0 whitespace-nowrap border-primary/30 text-ui-caption text-primary"
+                                    >
+                                      교체서비스
+                                    </Badge>
+                                  )}
                               </div>
                             </div>
                           </div>
@@ -1577,13 +1666,16 @@ export default function CheckoutPage() {
                           <div className="w-full rounded-lg border border-border/50 bg-card/70 px-3 py-2 bp-sm:w-auto bp-sm:min-w-[160px] bp-sm:text-right">
                             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 bp-sm:justify-end">
                               <span className="text-ui-label font-medium text-muted-foreground">
-                                {typeof item.regularPrice === "number" && item.regularPrice > item.price
+                                {typeof item.regularPrice === "number" &&
+                                item.regularPrice > item.price
                                   ? "할인가"
                                   : "판매가"}
                               </span>
                               <div className="whitespace-nowrap text-ui-price font-semibold tabular-nums text-foreground bp-sm:text-ui-price-lg">
                                 {item.price.toLocaleString()}
-                                <span className="ml-0.5 text-ui-label font-medium text-muted-foreground">원</span>
+                                <span className="ml-0.5 text-ui-label font-medium text-muted-foreground">
+                                  원
+                                </span>
                               </div>
                             </div>
                             {typeof item.regularPrice === "number" &&
@@ -1591,11 +1683,20 @@ export default function CheckoutPage() {
                               item.regularPrice > item.price && (
                                 <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-ui-label">
                                   <span className="text-muted-foreground tabular-nums">
-                                    정가 <span className="line-through">{item.regularPrice.toLocaleString()}원</span>
+                                    정가{" "}
+                                    <span className="line-through">
+                                      {item.regularPrice.toLocaleString()}원
+                                    </span>
                                   </span>
-                                  <Badge variant="destructive" className="text-ui-micro tabular-nums">
+                                  <Badge
+                                    variant="destructive"
+                                    className="text-ui-micro tabular-nums"
+                                  >
                                     {item.discountRate ??
-                                      Math.round(((item.regularPrice - item.price) / item.regularPrice) * 100)}
+                                      Math.round(
+                                        ((item.regularPrice - item.price) / item.regularPrice) *
+                                          100,
+                                      )}
                                     % OFF
                                   </Badge>
                                 </div>
@@ -1607,10 +1708,14 @@ export default function CheckoutPage() {
 
                     {/* 상품 금액 소계 */}
                     <div className="mt-5 flex items-center justify-between gap-3 border-t border-dashed border-border/60 pt-5">
-                      <span className="break-keep text-ui-body-sm text-foreground/80">상품 판매가 합계</span>
+                      <span className="break-keep text-ui-body-sm text-foreground/80">
+                        상품 판매가 합계
+                      </span>
                       <span className="whitespace-nowrap text-ui-price-lg font-semibold tabular-nums text-foreground">
                         {subtotal.toLocaleString()}
-                        <span className="ml-0.5 text-ui-label font-medium text-muted-foreground">원</span>
+                        <span className="ml-0.5 text-ui-label font-medium text-muted-foreground">
+                          원
+                        </span>
                       </span>
                     </div>
                   </CardContent>
@@ -1627,7 +1732,9 @@ export default function CheckoutPage() {
                         <Truck className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-ui-card-title-lg font-semibold">수령/배송 방법</CardTitle>
+                        <CardTitle className="text-ui-card-title-lg font-semibold">
+                          수령/배송 방법
+                        </CardTitle>
                         <CardDescription className="mt-0.5 text-ui-label bp-sm:text-ui-body-sm">
                           수령 방식에 맞춰 배송비와 입력 항목이 달라집니다.
                         </CardDescription>
@@ -1659,7 +1766,9 @@ export default function CheckoutPage() {
                           <Truck
                             className={cn(
                               "h-6 w-6",
-                              deliveryMethod === "택배수령" ? "text-primary" : "text-muted-foreground",
+                              deliveryMethod === "택배수령"
+                                ? "text-primary"
+                                : "text-muted-foreground",
                             )}
                           />
                         </div>
@@ -1679,7 +1788,9 @@ export default function CheckoutPage() {
                               : "border-border bg-transparent",
                           )}
                         >
-                          {deliveryMethod === "택배수령" && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+                          {deliveryMethod === "택배수령" && (
+                            <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                          )}
                         </div>
                       </label>
                       <label
@@ -1701,7 +1812,9 @@ export default function CheckoutPage() {
                           <Building2
                             className={cn(
                               "h-6 w-6",
-                              deliveryMethod === "방문수령" ? "text-primary" : "text-muted-foreground",
+                              deliveryMethod === "방문수령"
+                                ? "text-primary"
+                                : "text-muted-foreground",
                             )}
                           />
                         </div>
@@ -1721,7 +1834,9 @@ export default function CheckoutPage() {
                               : "border-border bg-transparent",
                           )}
                         >
-                          {deliveryMethod === "방문수령" && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+                          {deliveryMethod === "방문수령" && (
+                            <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                          )}
                         </div>
                       </label>
                     </RadioGroup>
@@ -1764,7 +1879,10 @@ export default function CheckoutPage() {
                     <div className="w-full space-y-4 bp-sm:space-y-5">
                       <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
                         <div className="space-y-2">
-                          <Label htmlFor="recipient-name" className="flex items-center gap-2 text-sm font-medium">
+                          <Label
+                            htmlFor="recipient-name"
+                            className="flex items-center gap-2 text-sm font-medium"
+                          >
                             <UserIcon className="h-4 w-4 text-muted-foreground" />
                             수령인 이름
                           </Label>
@@ -1789,7 +1907,10 @@ export default function CheckoutPage() {
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="recipient-email" className="flex items-center gap-2 text-sm font-medium">
+                          <Label
+                            htmlFor="recipient-email"
+                            className="flex items-center gap-2 text-sm font-medium"
+                          >
                             <Mail className="h-4 w-4 text-muted-foreground" />
                             이메일
                           </Label>
@@ -1815,7 +1936,10 @@ export default function CheckoutPage() {
                           </div>
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                          <Label htmlFor="recipient-phone" className="flex items-center gap-2 text-sm font-medium">
+                          <Label
+                            htmlFor="recipient-phone"
+                            className="flex items-center gap-2 text-sm font-medium"
+                          >
                             <Phone className="h-4 w-4 text-muted-foreground" />
                             연락처
                           </Label>
@@ -1845,7 +1969,10 @@ export default function CheckoutPage() {
                       {needsShippingAddress && (
                         <div className="space-y-4 border-t border-border/60 pt-5">
                           <div className="space-y-2">
-                            <Label htmlFor="address-postal" className="flex items-center gap-2 text-sm">
+                            <Label
+                              htmlFor="address-postal"
+                              className="flex items-center gap-2 text-sm"
+                            >
                               <Home className="h-4 w-4 text-foreground" />
                               우편번호
                             </Label>
@@ -1907,18 +2034,24 @@ export default function CheckoutPage() {
                               placeholder="상세 주소를 입력하세요"
                               className={cn(
                                 "h-11 border-2 transition-colors focus:border-border",
-                                showAddressDetailError && "border-destructive/30 focus:border-destructive/30",
+                                showAddressDetailError &&
+                                  "border-destructive/30 focus:border-destructive/30",
                               )}
                             />
                             <div className="min-h-[16px]">
                               {showAddressDetailError && (
-                                <p className="text-xs text-destructive">{fieldErrors.addressDetail}</p>
+                                <p className="text-xs text-destructive">
+                                  {fieldErrors.addressDetail}
+                                </p>
                               )}
                             </div>
                           </div>
 
                           <div className="space-y-2">
-                            <Label htmlFor="delivery-request" className="flex items-center gap-2 text-sm">
+                            <Label
+                              htmlFor="delivery-request"
+                              className="flex items-center gap-2 text-sm"
+                            >
                               <MessageSquare className="h-4 w-4 text-foreground" />
                               배송 요청사항
                             </Label>
@@ -2005,11 +2138,14 @@ export default function CheckoutPage() {
                             </span>
                           </div>
                           {user && pointsFetchError && (
-                            <p className="text-xs text-destructive">포인트 정보를 불러오지 못했습니다.</p>
+                            <p className="text-xs text-destructive">
+                              포인트 정보를 불러오지 못했습니다.
+                            </p>
                           )}
                           {user && !pointsFetchError && resolvedPointsDebt > 0 && (
                             <p className="text-xs text-destructive">
-                              회수 예정 포인트(채무): {resolvedPointsDebt.toLocaleString()}P → 적립금이 먼저 상계됩니다.
+                              회수 예정 포인트(채무): {resolvedPointsDebt.toLocaleString()}P →
+                              적립금이 먼저 상계됩니다.
                             </p>
                           )}
                           <div className="flex items-center justify-between gap-3">
@@ -2035,7 +2171,10 @@ export default function CheckoutPage() {
                                   maxPointsToUse <= 0
                                 }
                               />
-                              <Label htmlFor="useAllPoints" className="text-sm font-medium cursor-pointer">
+                              <Label
+                                htmlFor="useAllPoints"
+                                className="text-sm font-medium cursor-pointer"
+                              >
                                 전액 사용
                               </Label>
                             </div>
@@ -2067,7 +2206,9 @@ export default function CheckoutPage() {
                                   }, 0);
                                 }}
                                 onChange={(e) => {
-                                  const onlyDigits = e.target.value.replace(/[^\d]/g, "").replace(/^0+(?=\d)/, "");
+                                  const onlyDigits = e.target.value
+                                    .replace(/[^\d]/g, "")
+                                    .replace(/^0+(?=\d)/, "");
 
                                   const raw = onlyDigits ? Number(onlyDigits) : 0;
                                   const safe = Number.isFinite(raw) ? Math.floor(raw) : 0;
@@ -2093,7 +2234,8 @@ export default function CheckoutPage() {
                             </div>
                           </div>
                           <p className="break-keep text-sm text-foreground/80">
-                            배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P 사용 가능
+                            배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P
+                            사용 가능
                           </p>
                         </div>
                       </div>
@@ -2144,7 +2286,11 @@ export default function CheckoutPage() {
                                 isZeroPayableAmount && "opacity-60",
                               )}
                             >
-                              <RadioGroupItem value="nicepay" id="nicepay" disabled={isZeroPayableAmount} />
+                              <RadioGroupItem
+                                value="nicepay"
+                                id="nicepay"
+                                disabled={isZeroPayableAmount}
+                              />
                               <Label
                                 htmlFor="nicepay"
                                 className={cn(
@@ -2174,8 +2320,12 @@ export default function CheckoutPage() {
                                 <SelectValue placeholder="입금 계좌를 선택하세요" />
                               </SelectTrigger>
                               <SelectContent className="w-[var(--radix-select-trigger-width)]">
-                                <SelectItem value="kakao" className="whitespace-normal break-words leading-snug">
-                                  카카오뱅크 {bankLabelMap.kakao.account} (예금주: {bankLabelMap.kakao.holder})
+                                <SelectItem
+                                  value="kakao"
+                                  className="whitespace-normal break-words leading-snug"
+                                >
+                                  카카오뱅크 {bankLabelMap.kakao.account} (예금주:{" "}
+                                  {bankLabelMap.kakao.holder})
                                 </SelectItem>
                               </SelectContent>
                             </Select>
@@ -2191,7 +2341,8 @@ export default function CheckoutPage() {
                               placeholder="입금자명을 입력하세요"
                               className={cn(
                                 "border-2 focus:border-border transition-colors",
-                                showDepositorError && "border-destructive/30 focus:border-destructive/30",
+                                showDepositorError &&
+                                  "border-destructive/30 focus:border-destructive/30",
                               )}
                             />
                             <div className="min-h-[16px]">
@@ -2240,7 +2391,9 @@ export default function CheckoutPage() {
                         <CheckCircle className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg bp-sm:text-xl font-bold">주문자 동의</CardTitle>
+                        <CardTitle className="text-lg bp-sm:text-xl font-bold">
+                          주문자 동의
+                        </CardTitle>
                         <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">
                           필수 약관에 동의하면 결제를 진행할 수 있습니다.
                         </CardDescription>
@@ -2308,7 +2461,10 @@ export default function CheckoutPage() {
                                 : "border-border/40 bg-secondary/20 hover:bg-secondary/40",
                             )}
                           >
-                            <label htmlFor={item.id} className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
+                            <label
+                              htmlFor={item.id}
+                              className="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
+                            >
                               <Checkbox
                                 id={item.id}
                                 checked={item.state}
@@ -2316,7 +2472,8 @@ export default function CheckoutPage() {
                                   const value = !!checked;
                                   item.setState(value);
                                   if (!value) setAgreeAll(false);
-                                  else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
+                                  else if (agreeTerms && agreePrivacy && agreeRefund)
+                                    setAgreeAll(true);
                                 }}
                               />
                               <span className="min-w-0 break-words text-sm font-medium text-foreground">
@@ -2400,7 +2557,9 @@ export default function CheckoutPage() {
                         <p className="font-semibold mb-1">확인 필요</p>
                         {fieldErrors.items && <p>• {fieldErrors.items}</p>}
                         {fieldErrors.bundle && <p>• {fieldErrors.bundle}</p>}
-                        {hasStringingLineErrors && <p>• 교체서비스 라켓명과 텐션을 모두 입력해 주세요.</p>}
+                        {hasStringingLineErrors && (
+                          <p>• 교체서비스 라켓명과 텐션을 모두 입력해 주세요.</p>
+                        )}
                         {fieldErrors.composition && (
                           <p>
                             • {fieldErrors.composition}{" "}
@@ -2437,7 +2596,10 @@ export default function CheckoutPage() {
                       className="w-full sm:w-full"
                       primary={
                         paymentMethod === "bank-transfer" ? (
-                          <div onPointerDownCapture={requestStringingValidationMessages} className="w-full">
+                          <div
+                            onPointerDownCapture={requestStringingValidationMessages}
+                            className="w-full"
+                          >
                             <CheckoutButton
                               disabled={!resolvedCanSubmit}
                               name={name}
@@ -2462,16 +2624,27 @@ export default function CheckoutPage() {
                               pointsToUse={appliedPoints}
                               stringingApplicationInput={stringingApplicationInput}
                               onSubmittingChange={setIsCheckoutSubmitting}
-                              onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
-                              onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                              onBeforeSuccessNavigation={() =>
+                                setIsIntentionalSuccessNavigation(true)
+                              }
+                              onSuccessNavigationAbort={() =>
+                                setIsIntentionalSuccessNavigation(false)
+                              }
                             />
                           </div>
                         ) : nicePaymentsEnabled && !isZeroPayableAmount ? (
-                          <div onPointerDownCapture={requestStringingValidationMessages} className="w-full">
+                          <div
+                            onPointerDownCapture={requestStringingValidationMessages}
+                            className="w-full"
+                          >
                             <NiceCheckoutButton
                               disabled={!resolvedCanSubmit}
-                              onBeforeSuccessNavigation={() => setIsIntentionalSuccessNavigation(true)}
-                              onSuccessNavigationAbort={() => setIsIntentionalSuccessNavigation(false)}
+                              onBeforeSuccessNavigation={() =>
+                                setIsIntentionalSuccessNavigation(true)
+                              }
+                              onSuccessNavigationAbort={() =>
+                                setIsIntentionalSuccessNavigation(false)
+                              }
                               payableAmount={payableTotalPrice}
                               payload={{
                                 items: orderItems.map((item) => ({
@@ -2563,7 +2736,9 @@ export default function CheckoutPage() {
       servicePickupMethod={servicePickupMethod}
       isMember={!!user}
     >
-      {(checkoutStringingAdapter: CheckoutStringingServiceAdapter) => renderCheckout(checkoutStringingAdapter)}
+      {(checkoutStringingAdapter: CheckoutStringingServiceAdapter) =>
+        renderCheckout(checkoutStringingAdapter)
+      }
     </CheckoutStringingRuntimeBridge>
   );
 }

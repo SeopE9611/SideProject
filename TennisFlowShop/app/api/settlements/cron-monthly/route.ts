@@ -116,37 +116,17 @@ export async function POST() {
       .toArray();
 
     // 연결된 신청서는 중복 정산 방지(주문/대여 결제 앵커에 포함되므로 신청서는 제외)
-    const standaloneApps = apps.filter((a: any) =>
-      isStandaloneStringingApplication(a),
-    );
+    const standaloneApps = apps.filter((a: any) => isStandaloneStringingApplication(a));
 
     // paid/net 계산 (정책 함수 사용)
-    const paidOrders = orders.reduce(
-      (s: number, o: any) => s + orderPaidAmount(o),
-      0,
-    );
-    const paidApps = standaloneApps.reduce(
-      (s: number, a: any) => s + applicationPaidAmount(a),
-      0,
-    );
-    const paidPackages = packages.reduce(
-      (s: number, p: any) => s + orderPaidAmount(p),
-      0,
-    );
+    const paidOrders = orders.reduce((s: number, o: any) => s + orderPaidAmount(o), 0);
+    const paidApps = standaloneApps.reduce((s: number, a: any) => s + applicationPaidAmount(a), 0);
+    const paidPackages = packages.reduce((s: number, p: any) => s + orderPaidAmount(p), 0);
     const paid = paidOrders + paidApps + paidPackages;
 
-    const refundOrders = orders.reduce(
-      (s: number, o: any) => s + refundsAmount(o),
-      0,
-    );
-    const refundApps = standaloneApps.reduce(
-      (s: number, a: any) => s + refundsAmount(a),
-      0,
-    );
-    const refundPackages = packages.reduce(
-      (s: number, p: any) => s + refundsAmount(p),
-      0,
-    );
+    const refundOrders = orders.reduce((s: number, o: any) => s + refundsAmount(o), 0);
+    const refundApps = standaloneApps.reduce((s: number, a: any) => s + refundsAmount(a), 0);
+    const refundPackages = packages.reduce((s: number, p: any) => s + refundsAmount(p), 0);
     const refund = refundOrders + refundApps + refundPackages;
     const net = paid - refund;
 

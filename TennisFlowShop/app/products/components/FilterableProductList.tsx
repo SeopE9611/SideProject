@@ -24,14 +24,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Filter, Grid3X3, List, Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 // 브랜드 리스트
 const brands = [
   { label: "럭실론", value: "luxilon" },
@@ -57,10 +50,7 @@ const brandLabelMap: Record<string, string> = Object.fromEntries(
 // 가격 필터 기본값
 const DEFAULT_MIN_PRICE = 0;
 const DEFAULT_MAX_PRICE = 200000;
-const DEFAULT_PRICE_RANGE: [number, number] = [
-  DEFAULT_MIN_PRICE,
-  DEFAULT_MAX_PRICE,
-];
+const DEFAULT_PRICE_RANGE: [number, number] = [DEFAULT_MIN_PRICE, DEFAULT_MAX_PRICE];
 
 const activeFilterChipClass =
   "inline-flex max-w-[220px] shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-border bg-muted px-2.5 py-1 text-xs text-foreground";
@@ -91,37 +81,27 @@ export default function FilterableProductList({
   const [isMobileViewport, setIsMobileViewport] = useState(false);
 
   // 필터 상태들
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(
-    initialBrand,
-  );
-  const [selectedMaterial, setSelectedMaterial] = useState<string | null>(
-    initialMaterial,
-  );
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(initialBrand);
+  const [selectedMaterial, setSelectedMaterial] = useState<string | null>(initialMaterial);
   const [selectedBounce, setSelectedBounce] = useState<number | null>(null);
-  const [selectedDurability, setSelectedDurability] = useState<number | null>(
-    null,
-  );
+  const [selectedDurability, setSelectedDurability] = useState<number | null>(null);
   const [selectedSpin, setSelectedSpin] = useState<number | null>(null);
   const [selectedControl, setSelectedControl] = useState<number | null>(null);
   const [selectedComfort, setSelectedComfort] = useState<number | null>(null);
-  const [priceRange, setPriceRange] =
-    useState<[number, number]>(DEFAULT_PRICE_RANGE);
+  const [priceRange, setPriceRange] = useState<[number, number]>(DEFAULT_PRICE_RANGE);
   const [exposureFilter, setExposureFilter] = useState<string[]>([]);
 
   // 모바일(Sheet) 전용: 임시 선택값(draft)
   // - Sheet 안에서 선택해도 즉시 서버 조회가 일어나지 않게 하기 위함
   // - "적용"을 눌렀을 때만 selectedXXX로 커밋한다
   const [draftBrand, setDraftBrand] = useState<string | null>(initialBrand);
-  const [draftMaterial, setDraftMaterial] = useState<string | null>(
-    initialMaterial,
-  );
+  const [draftMaterial, setDraftMaterial] = useState<string | null>(initialMaterial);
   const [draftBounce, setDraftBounce] = useState<number | null>(null);
   const [draftDurability, setDraftDurability] = useState<number | null>(null);
   const [draftSpin, setDraftSpin] = useState<number | null>(null);
   const [draftControl, setDraftControl] = useState<number | null>(null);
   const [draftComfort, setDraftComfort] = useState<number | null>(null);
-  const [draftPriceRange, setDraftPriceRange] =
-    useState<[number, number]>(DEFAULT_PRICE_RANGE);
+  const [draftPriceRange, setDraftPriceRange] = useState<[number, number]>(DEFAULT_PRICE_RANGE);
   const [draftExposureFilter, setDraftExposureFilter] = useState<string[]>([]);
 
   // 모바일에서 검색 입력도 draft로만 관리 (취소 시 되돌리기 위함)
@@ -164,8 +144,7 @@ export default function FilterableProductList({
       setSelectedBrand(brand || null);
 
       const material = searchParams.get("material");
-      if (material && material !== selectedMaterial)
-        setSelectedMaterial(material);
+      if (material && material !== selectedMaterial) setSelectedMaterial(material);
 
       const bounce = searchParams.get("power");
       setSelectedBounce(bounce ? Number(bounce) : null);
@@ -194,9 +173,7 @@ export default function FilterableProductList({
       setSortOption(searchParams.get("sort") || "latest");
 
       const view = searchParams.get("view");
-      setViewMode(
-        isMobileViewport ? "grid" : view === "list" ? "list" : "grid",
-      );
+      setViewMode(isMobileViewport ? "grid" : view === "list" ? "list" : "grid");
 
       const q = searchParams.get("q") || "";
       setSearchQuery(q);
@@ -213,8 +190,7 @@ export default function FilterableProductList({
     if ((brand || null) !== selectedBrand) setSelectedBrand(brand || null);
 
     const material = searchParams.get("material");
-    if ((material || null) !== selectedMaterial)
-      setSelectedMaterial(material || null);
+    if ((material || null) !== selectedMaterial) setSelectedMaterial(material || null);
 
     const bounce = searchParams.get("power");
     const bounceVal = bounce ? Number(bounce) : null;
@@ -230,8 +206,7 @@ export default function FilterableProductList({
 
     const durability = searchParams.get("durability");
     const durabilityVal = durability ? Number(durability) : null;
-    if (durabilityVal !== selectedDurability)
-      setSelectedDurability(durabilityVal);
+    if (durabilityVal !== selectedDurability) setSelectedDurability(durabilityVal);
 
     const comfort = searchParams.get("comfort");
     const comfortVal = comfort ? Number(comfort) : null;
@@ -246,26 +221,19 @@ export default function FilterableProductList({
     if (pr[0] !== priceRange[0] || pr[1] !== priceRange[1]) setPriceRange(pr);
 
     const nextExposure = parseBenefitFilters(searchParams.get("exposure"));
-    if (nextExposure.join(",") !== exposureFilter.join(","))
-      setExposureFilter(nextExposure);
+    if (nextExposure.join(",") !== exposureFilter.join(",")) setExposureFilter(nextExposure);
 
     const sort = searchParams.get("sort") || "latest";
     if (sort !== sortOption) setSortOption(sort);
 
     const view = searchParams.get("view");
-    const desiredView = isMobileViewport
-      ? "grid"
-      : view === "list"
-        ? "list"
-        : "grid";
+    const desiredView = isMobileViewport ? "grid" : view === "list" ? "list" : "grid";
     if (desiredView !== viewMode) setViewMode(desiredView as "grid" | "list");
   }, [searchParams, isMobileViewport]);
 
   // 기본 범위면 아예 min/max를 안 보내서 "가격 필터 미적용" 상태 유지
-  const minPriceParam =
-    priceRange[0] > DEFAULT_MIN_PRICE ? priceRange[0] : undefined;
-  const maxPriceParam =
-    priceRange[1] < DEFAULT_MAX_PRICE ? priceRange[1] : undefined;
+  const minPriceParam = priceRange[0] > DEFAULT_MIN_PRICE ? priceRange[0] : undefined;
+  const maxPriceParam = priceRange[1] < DEFAULT_MAX_PRICE ? priceRange[1] : undefined;
 
   // 서버 필터링 + 무한 스크롤
   const {
@@ -368,8 +336,7 @@ export default function FilterableProductList({
   const loadedCount = (productsList ?? []).length;
   const showInlineLoadingSkeleton = isLoadingInitial && loadedCount === 0;
   const hasInitialFetchSettled = total !== null || error !== null;
-  const canShowEmptyState =
-    hasInitialFetchSettled && loadedCount === 0 && !isLoadingInitial;
+  const canShowEmptyState = hasInitialFetchSettled && loadedCount === 0 && !isLoadingInitial;
   const isCountLoading = total === null && loadedCount === 0;
   const isBackgroundRefreshing = isUiTransitioning && loadedCount > 0;
 
@@ -508,8 +475,7 @@ export default function FilterableProductList({
   );
 
   // active filter 개수 계산
-  const priceChanged =
-    priceRange[0] > DEFAULT_MIN_PRICE || priceRange[1] < DEFAULT_MAX_PRICE;
+  const priceChanged = priceRange[0] > DEFAULT_MIN_PRICE || priceRange[1] < DEFAULT_MAX_PRICE;
   const activeFiltersCount = [
     selectedBrand,
     selectedMaterial,
@@ -524,8 +490,7 @@ export default function FilterableProductList({
   ].filter(Boolean).length;
 
   const draftPriceChanged =
-    draftPriceRange[0] > DEFAULT_MIN_PRICE ||
-    draftPriceRange[1] < DEFAULT_MAX_PRICE;
+    draftPriceRange[0] > DEFAULT_MIN_PRICE || draftPriceRange[1] < DEFAULT_MAX_PRICE;
   const activeDraftCount = [
     draftBrand,
     draftMaterial,
@@ -563,43 +528,19 @@ export default function FilterableProductList({
 
     setOrDelete("brand", selectedBrand);
     setOrDelete("material", selectedMaterial);
-    setOrDelete(
-      "power",
-      selectedBounce !== null ? String(selectedBounce) : null,
-    );
-    setOrDelete(
-      "control",
-      selectedControl !== null ? String(selectedControl) : null,
-    );
+    setOrDelete("power", selectedBounce !== null ? String(selectedBounce) : null);
+    setOrDelete("control", selectedControl !== null ? String(selectedControl) : null);
     setOrDelete("spin", selectedSpin !== null ? String(selectedSpin) : null);
-    setOrDelete(
-      "durability",
-      selectedDurability !== null ? String(selectedDurability) : null,
-    );
-    setOrDelete(
-      "comfort",
-      selectedComfort !== null ? String(selectedComfort) : null,
-    );
+    setOrDelete("durability", selectedDurability !== null ? String(selectedDurability) : null);
+    setOrDelete("comfort", selectedComfort !== null ? String(selectedComfort) : null);
     setOrDelete("q", submittedQuery ? submittedQuery : null);
     setOrDelete("exposure", serializeBenefitFilters(exposureFilter));
 
     // 기본값이면 URL에 굳이 남기지 않기(기존 동작 유지)
-    setOrDelete(
-      "sort",
-      sortOption && sortOption !== "latest" ? sortOption : null,
-    );
-    setOrDelete(
-      "view",
-      !isMobileViewport && viewMode !== "grid" ? viewMode : null,
-    );
-    setOrDelete(
-      "minPrice",
-      priceRange[0] > DEFAULT_MIN_PRICE ? String(priceRange[0]) : null,
-    );
-    setOrDelete(
-      "maxPrice",
-      priceRange[1] < DEFAULT_MAX_PRICE ? String(priceRange[1]) : null,
-    );
+    setOrDelete("sort", sortOption && sortOption !== "latest" ? sortOption : null);
+    setOrDelete("view", !isMobileViewport && viewMode !== "grid" ? viewMode : null);
+    setOrDelete("minPrice", priceRange[0] > DEFAULT_MIN_PRICE ? String(priceRange[0]) : null);
+    setOrDelete("maxPrice", priceRange[1] < DEFAULT_MAX_PRICE ? String(priceRange[1]) : null);
 
     const newSearch = params.toString();
     if (newSearch === lastSerializedRef.current) return;
@@ -632,12 +573,7 @@ export default function FilterableProductList({
       if (isFetchingMore || isLoadingInitial || !hasMore) return;
       if (observerRef.current) observerRef.current.disconnect();
       observerRef.current = new IntersectionObserver((entries) => {
-        if (
-          entries[0]?.isIntersecting &&
-          hasMore &&
-          !isFetchingMore &&
-          !isLoadingInitial
-        ) {
+        if (entries[0]?.isIntersecting && hasMore && !isFetchingMore && !isLoadingInitial) {
           loadMore();
         }
       });
@@ -728,11 +664,7 @@ export default function FilterableProductList({
               : "h-dvh w-[min(420px,calc(100vw-24px))] max-w-none overflow-y-auto p-0"
           }
         >
-          <FilterPanel
-            {...(isMobileViewport
-              ? mobileFilterPanelProps
-              : desktopFilterPanelProps)}
-          />
+          <FilterPanel {...(isMobileViewport ? mobileFilterPanelProps : desktopFilterPanelProps)} />
         </SheetContent>
       </Sheet>
 
@@ -740,10 +672,7 @@ export default function FilterableProductList({
         {/* 상품 목록 */}
         <div className="min-w-0">
           <div className="mb-6 space-y-3 bp-md:mb-8">
-            <SummaryCard
-              className="overflow-hidden"
-              contentClassName="p-4 bp-sm:p-5"
-            >
+            <SummaryCard className="overflow-hidden" contentClassName="p-4 bp-sm:p-5">
               <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-end bp-sm:justify-between">
                 <div className="min-w-0 space-y-1">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
@@ -779,9 +708,7 @@ export default function FilterableProductList({
             {activeFiltersCount > 0 && (
               <div className="rounded-2xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-foreground">
-                    적용 중인 조건
-                  </p>
+                  <p className="text-sm font-medium text-foreground">적용 중인 조건</p>
                   <Button
                     type="button"
                     variant="ghost"
@@ -1004,19 +931,17 @@ export default function FilterableProductList({
                     : "grid-cols-1",
                 )}
               >
-                {Array.from({ length: viewMode === "grid" ? 12 : 4 }).map(
-                  (_, index) => (
-                    <div
-                      key={`products-loading-skeleton-${index}`}
-                      className="rounded-2xl border border-border bg-card p-4 shadow-sm"
-                    >
-                      <Skeleton className="mb-4 aspect-[4/3] w-full rounded-lg" />
-                      <Skeleton className="h-5 w-2/3" />
-                      <Skeleton className="mt-2 h-4 w-1/2" />
-                      <Skeleton className="mt-4 h-8 w-full rounded-md" />
-                    </div>
-                  ),
-                )}
+                {Array.from({ length: viewMode === "grid" ? 12 : 4 }).map((_, index) => (
+                  <div
+                    key={`products-loading-skeleton-${index}`}
+                    className="rounded-2xl border border-border bg-card p-4 shadow-sm"
+                  >
+                    <Skeleton className="mb-4 aspect-[4/3] w-full rounded-lg" />
+                    <Skeleton className="h-5 w-2/3" />
+                    <Skeleton className="mt-2 h-4 w-1/2" />
+                    <Skeleton className="mt-4 h-8 w-full rounded-md" />
+                  </div>
+                ))}
               </div>
             </div>
           ) : error ? (
@@ -1062,17 +987,11 @@ export default function FilterableProductList({
                 {productsList.map((product, i) => {
                   const isLast = i === productsList.length - 1;
                   return (
-                    <div
-                      key={product._id}
-                      ref={isLast ? lastProductRef : undefined}
-                    >
+                    <div key={product._id} ref={isLast ? lastProductRef : undefined}>
                       <ProductCard
                         product={product}
                         viewMode={viewMode}
-                        brandLabel={
-                          brandLabelMap[product.brand.toLowerCase()] ??
-                          product.brand
-                        }
+                        brandLabel={brandLabelMap[product.brand.toLowerCase()] ?? product.brand}
                         isApplyFlow={isApplyFlow}
                       />
                     </div>

@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Check,
-  FileText,
-  Palette,
-  Activity,
-  Package,
-  ImageIcon,
-} from "lucide-react";
+import { Check, FileText, Palette, Activity, Package, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface Step {
@@ -93,11 +86,7 @@ export function StepProgress({
                   )}
                   aria-current={isCurrent ? "step" : undefined}
                 >
-                  {isCompleted && !isCurrent ? (
-                    <Check className="h-4 w-4" />
-                  ) : (
-                    step.icon
-                  )}
+                  {isCompleted && !isCurrent ? <Check className="h-4 w-4" /> : step.icon}
                 </button>
 
                 {/* Step label */}

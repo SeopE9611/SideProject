@@ -1,23 +1,9 @@
 "use client";
 
-import {
-  FormEvent,
-  useEffect,
-  useState,
-  useRef,
-  ChangeEvent,
-  useMemo,
-} from "react";
+import { FormEvent, useEffect, useState, useRef, ChangeEvent, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  MessageSquare,
-  ArrowLeft,
-  Loader2,
-  Upload,
-  X,
-  AlertTriangle,
-} from "lucide-react";
+import { MessageSquare, ArrowLeft, Loader2, Upload, X, AlertTriangle } from "lucide-react";
 import useSWR, { mutate as globalMutate } from "swr";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -44,9 +30,7 @@ type Props = {
   id: string;
 };
 
-type DetailResponse =
-  | { ok: true; item: CommunityPost }
-  | { ok: false; error: string };
+type DetailResponse = { ok: true; item: CommunityPost } | { ok: false; error: string };
 
 type AttachmentItem = NonNullable<CommunityPost["attachments"]>[number];
 
@@ -64,15 +48,7 @@ export default function FreeBoardEditClient({ id }: Props) {
 
   // 카테고리 상태
   const [category, setCategory] = useState<
-    | "racket"
-    | "string"
-    | "shoes"
-    | "bag"
-    | "apparel"
-    | "grip"
-    | "accessory"
-    | "ball"
-    | "other"
+    "racket" | "string" | "shoes" | "bag" | "apparel" | "grip" | "accessory" | "ball" | "other"
   >("racket");
 
   // 이미지 상태
@@ -120,12 +96,8 @@ export default function FreeBoardEditClient({ id }: Props) {
     );
   }, [title, content, category, images, selectedFiles.length]);
 
-  useUnsavedChangesGuard(
-    isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles,
-  );
-  useBackNavigationGuard(
-    isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles,
-  );
+  useUnsavedChangesGuard(isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles);
+  useBackNavigationGuard(isDirty && !isSubmitting && !isUploadingImages && !isUploadingFiles);
 
   const confirmLeaveIfDirty = (go: () => void) => {
     if (!isDirty) return go();
@@ -307,11 +279,7 @@ export default function FreeBoardEditClient({ id }: Props) {
 
       // 새 파일을 업로드한 경우에만 attachments를 보냄
       //    (선택된 파일이 없으면 서버에서 기존 attachments 유지)
-      if (
-        selectedFiles.length > 0 &&
-        nextAttachments &&
-        nextAttachments.length > 0
-      ) {
+      if (selectedFiles.length > 0 && nextAttachments && nextAttachments.length > 0) {
         payload.attachments = nextAttachments;
       }
 
@@ -354,9 +322,7 @@ export default function FreeBoardEditClient({ id }: Props) {
       router.refresh();
     } catch (err) {
       console.error(err);
-      setErrorMsg(
-        "알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-      );
+      setErrorMsg("알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
     } finally {
       setIsSubmitting(false);
     }
@@ -367,10 +333,7 @@ export default function FreeBoardEditClient({ id }: Props) {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-muted/30">
-        <SiteContainer
-          variant="wide"
-          className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8"
-        >
+        <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Skeleton className="h-4 w-16" />
             <span>›</span>
@@ -403,8 +366,7 @@ export default function FreeBoardEditClient({ id }: Props) {
           <Card className="border border-border bg-card shadow-md dark:bg-card">
             <CardContent className="space-y-4 p-6">
               <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
-                해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수
-                있습니다.
+                해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.
               </div>
               <div className="flex justify-end gap-2">
                 <Button asChild variant="outline" size="sm">
@@ -444,15 +406,14 @@ export default function FreeBoardEditClient({ id }: Props) {
               장비 사용기 글 수정
             </h1>
             <p className="mt-1 text-sm text-muted-foreground md:text-base">
-              기존에 작성한 글의 내용을 수정합니다. 제목과 내용을 확인한 뒤
-              저장해 주세요.
+              기존에 작성한 글의 내용을 수정합니다. 제목과 내용을 확인한 뒤 저장해 주세요.
             </p>
             {/* 이탈 경고(고정 노출) */}
             <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
               <AlertTriangle className="mt-0.5 h-4 w-4 flex-none" />
               <p className="leading-relaxed">
-                <span className="font-semibold">주의:</span> 수정 중에 다른
-                페이지로 이동하거나 새로고침하면 입력한 내용이{" "}
+                <span className="font-semibold">주의:</span> 수정 중에 다른 페이지로 이동하거나
+                새로고침하면 입력한 내용이{" "}
                 <span className="font-semibold">초기화될 수 있습니다.</span>
               </p>
             </div>
@@ -470,12 +431,7 @@ export default function FreeBoardEditClient({ id }: Props) {
               <ArrowLeft className="h-4 w-4" />
               <span>이전으로</span>
             </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="gap-2 text-xs sm:text-sm"
-            >
+            <Button asChild variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
               <Link href="/board/gear" onClick={onLeaveLinkClick}>
                 <MessageSquare className="h-4 w-4" />
                 <span>목록으로</span>
@@ -539,8 +495,8 @@ export default function FreeBoardEditClient({ id }: Props) {
                   disabled={isSubmitting}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A
-                  게시판을 활용해 주세요.
+                  신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해
+                  주세요.
                 </p>
               </div>
 
@@ -557,8 +513,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                   {/* 이미지 업로드 탭 */}
                   <TabsContent value="image" className="pt-4 space-y-2">
                     <p className="text-xs text-muted-foreground">
-                      최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로
-                      사용됩니다.
+                      최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로 사용됩니다.
                     </p>
                     <ImageUploader
                       value={images}
@@ -593,13 +548,11 @@ export default function FreeBoardEditClient({ id }: Props) {
                     >
                       <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                       <p className="text-sm text-muted-foreground">
-                        클릭하여 파일을 선택하거나, 이 영역으로 드래그하여
-                        업로드할 수 있어요.
+                        클릭하여 파일을 선택하거나, 이 영역으로 드래그하여 업로드할 수 있어요.
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당
-                        최대 {MAX_SIZE_MB}MB, 최대 {MAX_FILES}개, 현재{" "}
-                        {totalAttachmentCount}/{MAX_FILES}개)
+                        이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당 최대 {MAX_SIZE_MB}MB,
+                        최대 {MAX_FILES}개, 현재 {totalAttachmentCount}/{MAX_FILES}개)
                       </p>
                       <Button
                         type="button"
@@ -637,10 +590,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                               className="group relative flex flex-col justify-between rounded-lg bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
                             >
                               <div className="flex-1 flex flex-col gap-1 text-xs">
-                                <span
-                                  className="font-medium truncate"
-                                  title={file.name}
-                                >
+                                <span className="font-medium truncate" title={file.name}>
                                   {file.name}
                                 </span>
                                 <span className="text-muted-foreground">
@@ -673,12 +623,10 @@ export default function FreeBoardEditClient({ id }: Props) {
 
               {conflictOpen && (
                 <div className="rounded-md border border-border bg-muted px-3 py-3 text-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
-                  <p className="font-semibold">
-                    동시 수정 충돌이 감지되었습니다.
-                  </p>
+                  <p className="font-semibold">동시 수정 충돌이 감지되었습니다.</p>
                   <p className="mt-1">
-                    최신 글을 다시 조회한 뒤, 현재 작성 중인 내용과 비교해서
-                    필요한 부분만 반영해 주세요.
+                    최신 글을 다시 조회한 뒤, 현재 작성 중인 내용과 비교해서 필요한 부분만 반영해
+                    주세요.
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Button
@@ -712,12 +660,8 @@ export default function FreeBoardEditClient({ id }: Props) {
                   variant="outline"
                   size="sm"
                   className={cn("gap-2")}
-                  disabled={
-                    isSubmitting || isUploadingImages || isUploadingFiles
-                  }
-                  onClick={() =>
-                    confirmLeaveIfDirty(() => router.push(`/board/gear/${id}`))
-                  }
+                  disabled={isSubmitting || isUploadingImages || isUploadingFiles}
+                  onClick={() => confirmLeaveIfDirty(() => router.push(`/board/gear/${id}`))}
                 >
                   <ArrowLeft className="h-4 w-4" />
                   <span>취소</span>
@@ -726,9 +670,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                   type="submit"
                   size="sm"
                   className={cn("gap-2")}
-                  disabled={
-                    isSubmitting || isUploadingImages || isUploadingFiles
-                  }
+                  disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                 >
                   {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
                   <span>수정하기</span>

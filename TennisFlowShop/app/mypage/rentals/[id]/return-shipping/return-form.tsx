@@ -1,21 +1,12 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckCircle2, Loader2, Truck } from "lucide-react";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import {
-  getSelectableCourierCatalog,
-  normalizeCourierCode,
-} from "@/lib/shipping/courier-map";
+import { getSelectableCourierCatalog, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import {
   Select,
@@ -27,12 +18,9 @@ import {
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 
 // 서버 정규확 검증
-const isValidTrackingDigits = (digits: string) =>
-  digits.length >= 9 && digits.length <= 20;
+const isValidTrackingDigits = (digits: string) => digits.length >= 9 && digits.length <= 20;
 
-function formatFieldErrors(
-  fieldErrors?: Record<string, string[] | undefined> | null,
-) {
+function formatFieldErrors(fieldErrors?: Record<string, string[] | undefined> | null) {
   if (!fieldErrors) return "";
   const lines: string[] = [];
   for (const [field, msgs] of Object.entries(fieldErrors)) {
@@ -107,8 +95,7 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
 
     // 메모: 200자 제한
     const noteTrimmed = note.trim();
-    if (noteTrimmed.length > 200)
-      return showErrorToast("메모는 200자 이내로 입력해주세요");
+    if (noteTrimmed.length > 200) return showErrorToast("메모는 200자 이내로 입력해주세요");
 
     setBusy(true);
     const res = await fetch(`/api/rentals/${rentalId}/return-shipping`, {
@@ -158,9 +145,7 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
         </CardHeader>
         <CardContent className="space-y-4 p-4 bp-sm:p-6">
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-foreground">
-              택배사
-            </Label>
+            <Label className="text-sm font-medium text-foreground">택배사</Label>
             <Select value={courier} onValueChange={setCourier}>
               <SelectTrigger className="border-border bg-background focus:ring-ring">
                 <SelectValue placeholder="택배사를 선택" />
@@ -176,17 +161,12 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-foreground">
-              운송장 번호
-            </Label>
+            <Label className="text-sm font-medium text-foreground">운송장 번호</Label>
             <Input
               value={tracking}
               onChange={(e) => {
                 // 입력 중에도 숫자만 유지 + 최대 20자리 제한
-                const digits = normalizeTrackingNumber(e.target.value).slice(
-                  0,
-                  20,
-                );
+                const digits = normalizeTrackingNumber(e.target.value).slice(0, 20);
                 setTracking(digits);
               }}
               inputMode="numeric"
@@ -195,9 +175,7 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-foreground">
-              발송일(선택)
-            </Label>
+            <Label className="text-sm font-medium text-foreground">발송일(선택)</Label>
             <Input
               type="date"
               value={date}
@@ -206,9 +184,7 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
             />
           </div>
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-foreground">
-              메모(선택)
-            </Label>
+            <Label className="text-sm font-medium text-foreground">메모(선택)</Label>
             <Input
               value={note}
               onChange={(e) => setNote(e.target.value)}

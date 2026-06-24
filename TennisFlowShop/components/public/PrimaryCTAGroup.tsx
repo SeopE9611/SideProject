@@ -27,12 +27,8 @@ export function PrimaryCTAGroup({
       )}
     >
       <div className="[&>*]:w-full sm:[&>*]:w-auto">{primary}</div>
-      {secondary && (
-        <div className="[&>*]:w-full sm:[&>*]:w-auto">{secondary}</div>
-      )}
-      {tertiary && (
-        <div className="[&>*]:w-full sm:[&>*]:w-auto">{tertiary}</div>
-      )}
+      {secondary && <div className="[&>*]:w-full sm:[&>*]:w-auto">{secondary}</div>}
+      {tertiary && <div className="[&>*]:w-full sm:[&>*]:w-auto">{tertiary}</div>}
     </div>
   );
 }

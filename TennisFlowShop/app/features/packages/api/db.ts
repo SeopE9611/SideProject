@@ -55,9 +55,7 @@ function normalizePackageConfigs(configs: PackageConfig[]): PackageConfig[] {
       sortOrder: typeof pkg.sortOrder === "number" ? pkg.sortOrder : index + 1,
       isActive: pkg.isActive ?? true,
       isPopular: pkg.isPopular ?? false,
-      features: Array.isArray(pkg.features)
-        ? pkg.features.map((f) => String(f))
-        : [],
+      features: Array.isArray(pkg.features) ? pkg.features.map((f) => String(f)) : [],
     }))
     .sort((a, b) => a.sortOrder - b.sortOrder);
 }

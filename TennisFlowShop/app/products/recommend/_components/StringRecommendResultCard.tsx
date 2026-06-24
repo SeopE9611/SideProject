@@ -1,13 +1,7 @@
 import type { RecommendedStringProduct } from "@/app/products/recommend/_types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { stringBrandLabel, stringMaterialLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import Image from "next/image";
@@ -26,15 +20,10 @@ export default function StringRecommendResultCard({
   const productHref = `/products/${product.id}?from=apply`;
   const regularPrice = Number(product.price ?? 0);
   const salePrice = Number(product.inventory?.salePrice ?? 0);
-  const isSale =
-    product.inventory?.isSale === true &&
-    salePrice > 0 &&
-    salePrice < regularPrice;
+  const isSale = product.inventory?.isSale === true && salePrice > 0 && salePrice < regularPrice;
   const displayPrice = isSale ? salePrice : regularPrice;
   const saleRate =
-    isSale && regularPrice > 0
-      ? Math.round(((regularPrice - salePrice) / regularPrice) * 100)
-      : 0;
+    isSale && regularPrice > 0 ? Math.round(((regularPrice - salePrice) / regularPrice) * 100) : 0;
   const primaryGauge = product.gauge || product.gaugeOptions?.[0];
 
   return (
@@ -43,12 +32,7 @@ export default function StringRecommendResultCard({
         <Badge className="w-fit shrink-0">TOP {rank}</Badge>
         <div className="relative aspect-[5/4] w-full overflow-hidden rounded-xl bg-muted">
           {product.image ? (
-            <Image
-              src={product.image}
-              alt={product.name}
-              fill
-              className="object-cover"
-            />
+            <Image src={product.image} alt={product.name} fill className="object-cover" />
           ) : (
             <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
               이미지 없음
@@ -65,12 +49,8 @@ export default function StringRecommendResultCard({
           {isSale ? (
             <div className="space-y-1 tabular-nums">
               <div className="flex flex-wrap items-baseline gap-1.5">
-                <span className="text-[11px] text-muted-foreground">
-                  할인가
-                </span>
-                <span className="text-sm font-semibold">
-                  {displayPrice.toLocaleString()}원
-                </span>
+                <span className="text-[11px] text-muted-foreground">할인가</span>
+                <span className="text-sm font-semibold">{displayPrice.toLocaleString()}원</span>
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="text-[11px] text-muted-foreground">정가</span>
@@ -83,9 +63,7 @@ export default function StringRecommendResultCard({
               </div>
             </div>
           ) : (
-            <p className="text-sm font-semibold">
-              {displayPrice.toLocaleString()}원
-            </p>
+            <p className="text-sm font-semibold">{displayPrice.toLocaleString()}원</p>
           )}
           <p className="break-keep text-xs leading-relaxed text-muted-foreground">
             소재 {stringMaterialLabel(product.material) || "-"} · 게이지{" "}
@@ -127,8 +105,7 @@ export default function StringRecommendResultCard({
         ) : null}
         <div className="rounded-xl border border-border bg-muted/40 p-3 text-sm leading-relaxed">
           <p className="break-keep font-medium">
-            {result.tensionRange.label}: {result.tensionRange.min}~
-            {result.tensionRange.max} lbs
+            {result.tensionRange.label}: {result.tensionRange.min}~{result.tensionRange.max} lbs
           </p>
           <p className="mt-1 break-keep leading-relaxed text-muted-foreground">
             {result.tensionRange.note}
@@ -140,18 +117,12 @@ export default function StringRecommendResultCard({
           <Button asChild wrap="normal" className="min-h-10 w-full">
             <Link href={productHref}>이 스트링으로 교체서비스 신청</Link>
           </Button>
-          <Button
-            asChild
-            variant="outline"
-            wrap="normal"
-            className="min-h-10 w-full"
-          >
+          <Button asChild variant="outline" wrap="normal" className="min-h-10 w-full">
             <Link href={productHref}>상세 보기</Link>
           </Button>
         </div>
         <p className="break-keep text-xs leading-relaxed text-muted-foreground">
-          상세 페이지에서 스트링 정보를 확인한 뒤 교체서비스 신청을 이어서
-          진행할 수 있어요.
+          상세 페이지에서 스트링 정보를 확인한 뒤 교체서비스 신청을 이어서 진행할 수 있어요.
         </p>
       </CardFooter>
     </Card>

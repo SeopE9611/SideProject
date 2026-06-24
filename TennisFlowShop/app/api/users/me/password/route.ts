@@ -60,10 +60,7 @@ export async function PATCH(req: Request) {
     },
   );
   if (!user) {
-    return Response.json(
-      { message: "사용자 정보를 찾을 수 없습니다." },
-      { status: 404 },
-    );
+    return Response.json({ message: "사용자 정보를 찾을 수 없습니다." }, { status: 404 });
   }
 
   // 강제 변경 모드: 관리자 초기화 후 passwordMustChange === true
@@ -72,17 +69,11 @@ export async function PATCH(req: Request) {
   // 일반 모드에서만 현재 비밀번호 검증
   if (!forceMode) {
     if (!user.hashedPassword) {
-      return Response.json(
-        { message: "사용자 정보를 찾을 수 없습니다." },
-        { status: 404 },
-      );
+      return Response.json({ message: "사용자 정보를 찾을 수 없습니다." }, { status: 404 });
     }
     const isMatch = await bcrypt.compare(currentPassword, user.hashedPassword);
     if (!isMatch) {
-      return Response.json(
-        { message: "현재 비밀번호가 올바르지 않습니다." },
-        { status: 400 },
-      );
+      return Response.json({ message: "현재 비밀번호가 올바르지 않습니다." }, { status: 400 });
     }
   }
 
@@ -102,10 +93,7 @@ export async function PATCH(req: Request) {
   );
 
   // 성공 응답 + 전역 리다이렉트 플래그 쿠키 제거
-  const res = NextResponse.json(
-    { message: "비밀번호 변경 완료" },
-    { status: 200 },
-  );
+  const res = NextResponse.json({ message: "비밀번호 변경 완료" }, { status: 200 });
   res.cookies.set("force_pwd_change", "", {
     httpOnly: true,
     sameSite: "lax",

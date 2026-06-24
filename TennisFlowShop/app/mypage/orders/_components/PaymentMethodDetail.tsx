@@ -33,10 +33,7 @@ function getTossMethodLabel(method?: string, easyPayProvider?: string | null) {
     .toUpperCase();
   const hasEasyPayProvider = Boolean(String(easyPayProvider ?? "").trim());
 
-  if (
-    normalized.includes("CARD") &&
-    (normalized.includes("EASY") || hasEasyPayProvider)
-  ) {
+  if (normalized.includes("CARD") && (normalized.includes("EASY") || hasEasyPayProvider)) {
     return "카드/간편결제";
   }
   if (normalized.includes("EASY") || hasEasyPayProvider) {
@@ -54,10 +51,7 @@ function getNiceMethodLabel(method?: string, easyPayProvider?: string | null) {
     .toUpperCase();
   const hasEasyPayProvider = Boolean(String(easyPayProvider ?? "").trim());
 
-  if (
-    normalized.includes("CARD") &&
-    (normalized.includes("EASY") || hasEasyPayProvider)
-  ) {
+  if (normalized.includes("CARD") && (normalized.includes("EASY") || hasEasyPayProvider)) {
     return "카드/간편결제";
   }
   if (normalized.includes("EASY") || hasEasyPayProvider) {
@@ -144,19 +138,13 @@ export default function PaymentMethodDetail({
             {easyPayProviderLabel && (
               <div className="text-sm">간편결제: {easyPayProviderLabel}</div>
             )}
-            {statusLabel && (
-              <div className="text-sm">결제 상태: {statusLabel}</div>
-            )}
+            {statusLabel && <div className="text-sm">결제 상태: {statusLabel}</div>}
           </div>
         ) : isNicePayment ? (
           <div className="mt-1 rounded-md bg-muted px-3 py-2 text-sm text-foreground leading-relaxed border border-border space-y-1">
             <div className="font-semibold">{niceMethodLabel}</div>
-            {cardDisplayName && (
-              <div className="text-sm">결제 수단: {cardDisplayName}</div>
-            )}
-            {statusLabel && (
-              <div className="text-sm">결제 상태: {statusLabel}</div>
-            )}
+            {cardDisplayName && <div className="text-sm">결제 수단: {cardDisplayName}</div>}
+            {statusLabel && <div className="text-sm">결제 상태: {statusLabel}</div>}
           </div>
         ) : bankInfo ? (
           <div className="mt-1 rounded-md bg-muted px-3 py-2 text-sm text-foreground leading-relaxed border border-border space-y-1">

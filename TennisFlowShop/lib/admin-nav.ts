@@ -2,11 +2,7 @@ export function isAdminNavActive(pathname: string, href: string): boolean {
   const path = pathname || "";
 
   if (href === "/admin/dashboard") {
-    return (
-      path === "/admin" ||
-      path === "/admin/dashboard" ||
-      path.startsWith("/admin/dashboard/")
-    );
+    return path === "/admin" || path === "/admin/dashboard" || path.startsWith("/admin/dashboard/");
   }
 
   if (path === href) return true;

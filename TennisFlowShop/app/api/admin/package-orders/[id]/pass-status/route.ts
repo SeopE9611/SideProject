@@ -24,13 +24,9 @@ function toRemainingValidityMs(pass: ServicePass, now: Date): number {
   }
 
   // 비활성 계열은 저장된 remainingValidityMs를 우선 사용
-  if (
-    typeof pass.remainingValidityMs === "number" &&
-    pass.remainingValidityMs >= 0
-  )
+  if (typeof pass.remainingValidityMs === "number" && pass.remainingValidityMs >= 0)
     return pass.remainingValidityMs;
-  if (pass.expiresAt instanceof Date)
-    return Math.max(0, pass.expiresAt.getTime() - now.getTime());
+  if (pass.expiresAt instanceof Date) return Math.max(0, pass.expiresAt.getTime() - now.getTime());
   return 0;
 }
 
@@ -48,10 +44,7 @@ type PassHistoryItem = {
 
 // POST /api/admin/package-orders/:id/pass-status
 // body: { status: 'active' | 'paused' | 'cancelled', reason?: string }
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   // 관리자 인증/인가 표준 가드
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
@@ -62,8 +55,7 @@ export async function POST(
 
   try {
     const { id } = await params;
-    if (!ObjectId.isValid(id))
-      return NextResponse.json({ error: "invalid id" }, { status: 400 });
+    if (!ObjectId.isValid(id)) return NextResponse.json({ error: "invalid id" }, { status: 400 });
 
     // 입력
     const body = await req.json().catch(() => ({}));
@@ -77,23 +69,20 @@ export async function POST(
     }
 
     const db = (await clientPromise).db();
-    const passes = db.collection<ServicePass & { history?: PassHistoryItem[] }>(
-      "service_passes",
-    );
+    const passes = db.collection<ServicePass & { history?: PassHistoryItem[] }>("service_passes");
     const orders = db.collection<PackageOrder>("packageOrders");
 
     // 이 주문에 연결된 패스 찾기
     const orderId = new ObjectId(id);
     const pass = await passes.findOne({ orderId });
     if (!pass)
-      return NextResponse.json(
-        { error: "service pass not found for this order" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "service pass not found for this order" }, { status: 404 });
 
     const now = new Date();
-    const prev = ((pass.status === "suspended" ? "paused" : pass.status) ??
-      "active") as "active" | "paused" | "cancelled";
+    const prev = ((pass.status === "suspended" ? "paused" : pass.status) ?? "active") as
+      | "active"
+      | "paused"
+      | "cancelled";
     const currentRemainingMs = toRemainingValidityMs(pass, now);
 
     const setPatch: Partial<ServicePass> & {
@@ -110,8 +99,7 @@ export async function POST(
     } else if (next === "active") {
       const resumeMs = currentRemainingMs > 0 ? currentRemainingMs : 0;
       setPatch.activatedAt = pass.activatedAt ?? now;
-      setPatch.expiresAt =
-        resumeMs > 0 ? new Date(now.getTime() + resumeMs) : null;
+      setPatch.expiresAt = resumeMs > 0 ? new Date(now.getTime() + resumeMs) : null;
       // active 복귀 직후 stale remainingValidityMs 정리
       setPatch.remainingValidityMs = null;
     } else if (next === "cancelled") {

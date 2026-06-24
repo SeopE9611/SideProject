@@ -37,8 +37,7 @@ function authError(status: 401 | 403) {
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
-  if (typeof value !== "object" || value === null || Array.isArray(value))
-    return null;
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
   return value as Record<string, unknown>;
 }
 
@@ -50,8 +49,7 @@ function parseAccessTokenPayload(raw: unknown): AccessTokenPayload | null {
 
 function parseAdminUser(raw: unknown): AdminUserRecord | null {
   const admin = asRecord(raw);
-  if (!admin || !(admin._id instanceof ObjectId) || admin.role !== "admin")
-    return null;
+  if (!admin || !(admin._id instanceof ObjectId) || admin.role !== "admin") return null;
 
   return {
     _id: admin._id,
@@ -67,9 +65,7 @@ function parseAdminUser(raw: unknown): AdminUserRecord | null {
  * - 401 Unauthorized: accessToken 누락/파손/만료 또는 sub 식별자 검증 실패
  * - 403 Forbidden: 인증은 되었으나 관리자 계정이 아닌 경우
  */
-export async function requireAdmin(
-  _req: Request,
-): Promise<GuardOk | GuardFail> {
+export async function requireAdmin(_req: Request): Promise<GuardOk | GuardFail> {
   const jar = await cookies();
   const at = jar.get("accessToken")?.value;
   if (!at) return { ok: false, res: authError(401) };

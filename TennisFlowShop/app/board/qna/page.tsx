@@ -62,10 +62,7 @@ export default async function Page({
 
   const rawCategory = first(resolvedSearchParams?.category); // code(예: product) 또는 label(예: 상품문의) 모두 올 수 있음
   const initialCategory =
-    (rawCategory &&
-      (rawCategory in CODE_TO_LABEL
-        ? rawCategory
-        : LABEL_TO_CODE[rawCategory])) ||
+    (rawCategory && (rawCategory in CODE_TO_LABEL ? rawCategory : LABEL_TO_CODE[rawCategory])) ||
     "all";
 
   const rawAnswer = first(resolvedSearchParams?.answer);
@@ -75,21 +72,14 @@ export default async function Page({
   const initialKeyword = first(resolvedSearchParams?.q) ?? "";
 
   const rawField = first(resolvedSearchParams?.field);
-  const allowedFields = new Set([
-    "all",
-    "title",
-    "content",
-    "title_content",
-  ] as const);
+  const allowedFields = new Set(["all", "title", "content", "title_content"] as const);
   const initialField = (
     rawField && allowedFields.has(rawField as any) ? (rawField as any) : "all"
   ) as "all" | "title" | "content" | "title_content";
 
   // 2) DB 프리로드 파라미터 구성 (getBoardList는 "라벨" 카테고리를 기대)
-  const categoryLabel =
-    initialCategory !== "all" ? (CODE_TO_LABEL[initialCategory] ?? null) : null;
-  const answerParam =
-    initialAnswerFilter === "all" ? null : initialAnswerFilter;
+  const categoryLabel = initialCategory !== "all" ? (CODE_TO_LABEL[initialCategory] ?? null) : null;
+  const answerParam = initialAnswerFilter === "all" ? null : initialAnswerFilter;
 
   // 3) 서버 프리로드 (실패해도 페이지 전체가 죽지 않게 방어)
   // try/catch 안에서는 "데이터"만 만들고, JSX는 밖에서 한 번만 return

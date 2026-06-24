@@ -10,12 +10,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/public/EmptyState";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { readCancelRequestError } from "@/lib/cancel-request/refund-account-client";
 import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -115,9 +110,7 @@ const shouldRequestCancelRefundAccount = (app?: Application | null) => {
     .trim()
     .toLowerCase();
   return (
-    !app.packageApplied &&
-    app.paymentStatus === "결제완료" &&
-    normalizedProvider !== "nicepay"
+    !app.packageApplied && app.paymentStatus === "결제완료" && normalizedProvider !== "nicepay"
   );
 };
 
@@ -198,12 +191,7 @@ const formatVisitTimeRange = (
   const h = Number(hh);
   const m = Number(mm);
 
-  if (
-    !Number.isFinite(h) ||
-    !Number.isFinite(m) ||
-    !durationMinutes ||
-    durationMinutes <= 0
-  ) {
+  if (!Number.isFinite(h) || !Number.isFinite(m) || !durationMinutes || durationMinutes <= 0) {
     // duration 없으면 예전처럼 시작 시각만
     return `${preferredDate} ${preferredTime}`;
   }
@@ -276,11 +264,7 @@ export default function ApplicationsClient() {
   // SWR Infinite 키 생성
   const getKey = (pageIndex: number, previousPageData: AppResponse | null) => {
     // 직전 페이지가 LIMIT 미만이면 다음 페이지 없음
-    if (
-      previousPageData &&
-      previousPageData.items &&
-      previousPageData.items.length < LIMIT
-    )
+    if (previousPageData && previousPageData.items && previousPageData.items.length < LIMIT)
       return null;
 
     const page = pageIndex + 1;
@@ -296,12 +280,15 @@ export default function ApplicationsClient() {
     return `/api/applications/me?${params.toString()}`;
   };
 
-  const { data, size, setSize, isValidating, error, mutate } =
-    useSWRInfinite<AppResponse>(getKey, fetcher, {
+  const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite<AppResponse>(
+    getKey,
+    fetcher,
+    {
       revalidateFirstPage: true,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-    });
+    },
+  );
 
   // 취소 요청 Dialog 제어용 상태
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
@@ -319,33 +306,23 @@ export default function ApplicationsClient() {
     try {
       setIsCancelSubmitting(true);
 
-      const res = await fetch(
-        `/api/applications/stringing/${targetId}/cancel-request`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            reasonCode: params.reasonCode,
-            reasonText: params.reasonText,
-            ...(params.refundAccount
-              ? { refundAccount: params.refundAccount }
-              : {}),
-          }),
-        },
-      );
+      const res = await fetch(`/api/applications/stringing/${targetId}/cancel-request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reasonCode: params.reasonCode,
+          reasonText: params.reasonText,
+          ...(params.refundAccount ? { refundAccount: params.refundAccount } : {}),
+        }),
+      });
 
       if (!res.ok) {
-        const parsed = await readCancelRequestError(
-          res,
-          "취소 요청 처리 중 오류가 발생했습니다.",
-        );
+        const parsed = await readCancelRequestError(res, "취소 요청 처리 중 오류가 발생했습니다.");
         showErrorToast(parsed.message);
         return;
       }
 
-      showSuccessToast(
-        "취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.",
-      );
+      showSuccessToast("취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.");
 
       // Dialog 닫기 + 선택된 ID 초기화
       setCancelDialogOpen(false);
@@ -365,13 +342,10 @@ export default function ApplicationsClient() {
     if (!confirm("이 신청의 취소 요청을 철회하시겠습니까?")) return;
 
     try {
-      const res = await fetch(
-        `/api/applications/${applicationId}/cancel-request-withdraw`,
-        {
-          method: "POST",
-          credentials: "include",
-        },
-      );
+      const res = await fetch(`/api/applications/${applicationId}/cancel-request-withdraw`, {
+        method: "POST",
+        credentials: "include",
+      });
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
@@ -402,21 +376,16 @@ export default function ApplicationsClient() {
     try {
       setConfirmingId(applicationId);
 
-      const res = await fetch(
-        `/api/applications/stringing/${applicationId}/confirm`,
-        {
-          method: "POST",
-          credentials: "include",
-        },
-      );
+      const res = await fetch(`/api/applications/stringing/${applicationId}/confirm`, {
+        method: "POST",
+        credentials: "include",
+      });
 
       const data = await res.json().catch(() => null);
 
       if (!res.ok || data?.ok === false) {
         showErrorToast(
-          data?.message ||
-            data?.error ||
-            "교체서비스 확정 처리 중 오류가 발생했습니다.",
+          data?.message || data?.error || "교체서비스 확정 처리 중 오류가 발생했습니다.",
         );
         return;
       }
@@ -426,9 +395,7 @@ export default function ApplicationsClient() {
       } else {
         const earned = Number(data?.earnedPoints ?? 0);
         showSuccessToast(
-          earned > 0
-            ? `교체서비스 확정 완료 (+${earned}P 적립)`
-            : "교체서비스 확정 완료",
+          earned > 0 ? `교체서비스 확정 완료 (+${earned}P 적립)` : "교체서비스 확정 완료",
         );
       }
 
@@ -442,8 +409,7 @@ export default function ApplicationsClient() {
         { revalidate: true },
       );
       await globalMutate(
-        (key) =>
-          typeof key === "string" && key.startsWith("/api/users/me/orders"),
+        (key) => typeof key === "string" && key.startsWith("/api/users/me/orders"),
         undefined,
         { revalidate: true },
       );
@@ -456,10 +422,7 @@ export default function ApplicationsClient() {
   };
 
   // 누적 리스트
-  const applications = useMemo(
-    () => (data ? data.flatMap((d) => d.items) : []),
-    [data],
-  );
+  const applications = useMemo(() => (data ? data.flatMap((d) => d.items) : []), [data]);
   const cancelTargetApplication = targetId
     ? (applications.find((app) => app.id === targetId) ?? null)
     : null;
@@ -474,12 +437,7 @@ export default function ApplicationsClient() {
   // 에러
   if (error) {
     return (
-      <AsyncState
-        kind="error"
-        variant="card"
-        resourceName="신청 내역"
-        onAction={() => mutate()}
-      />
+      <AsyncState kind="error" variant="card" resourceName="신청 내역" onAction={() => mutate()} />
     );
   }
 
@@ -500,9 +458,7 @@ export default function ApplicationsClient() {
           action={
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <Button asChild>
-                <Link href="/services/apply?mode=single">
-                  교체서비스 신청하기
-                </Link>
+                <Link href="/services/apply?mode=single">교체서비스 신청하기</Link>
               </Button>
               <Button asChild variant="outline" className="bg-transparent">
                 <Link href="/services">서비스 안내 보기</Link>
@@ -519,20 +475,16 @@ export default function ApplicationsClient() {
               app.kind === "academy_lesson" ||
               app.type === "아카데미 레슨 신청" ||
               app.type === "아카데미 수강 신청";
-            const isStringService =
-              !isAcademyLesson && app.type === "스트링 장착 서비스";
+            const isStringService = !isAcademyLesson && app.type === "스트링 장착 서비스";
             // collectionMethod는 "방문/자가발송" 라벨 표시에만 사용 (버튼 노출 조건은 needsInboundTracking 사용)
             const cm = normalizeCollection(
-              (app as any).collectionMethod ??
-                (app as any).shippingInfo?.collectionMethod,
+              (app as any).collectionMethod ?? (app as any).shippingInfo?.collectionMethod,
             );
 
             // Step1에서 내려준 파생값(고증 보정 핵심)
             // - inboundRequired=false  : 주문(라켓 포함)/대여 기반 → 고객이 보낼 필요 없음
             // - needsInboundTracking=true : 고객 자가발송 케이스 → 운송장 등록 UI 필요
-            const inboundRequired = isStringService
-              ? Boolean((app as any).inboundRequired)
-              : false;
+            const inboundRequired = isStringService ? Boolean((app as any).inboundRequired) : false;
             const needsInboundTracking = isStringService
               ? Boolean((app as any).needsInboundTracking)
               : false;
@@ -543,10 +495,7 @@ export default function ApplicationsClient() {
 
             // 방문 예약 희망 일시 라벨 (목록 카드용)
             const visitTimeLabel =
-              isStringService &&
-              isVisit &&
-              app.preferredDate &&
-              app.preferredTime
+              isStringService && isVisit && app.preferredDate && app.preferredTime
                 ? formatVisitTimeRange(
                     app.preferredDate,
                     app.preferredTime,
@@ -560,9 +509,7 @@ export default function ApplicationsClient() {
               ? null
               : !inboundRequired
                 ? "접수 방식: 입고 불필요(주문/대여 기반)"
-                : cm === "self_ship" ||
-                    cm === "courier_pickup" ||
-                    cm === "visit"
+                : cm === "self_ship" || cm === "courier_pickup" || cm === "visit"
                   ? `접수 방식: ${collectionMethodLabel(cm)}`
                   : "접수 방식: 기타";
 
@@ -585,22 +532,16 @@ export default function ApplicationsClient() {
 
             // 취소 상태 계산 (한글/영문 둘 다 대응)
             const rawCancelStatus = app.cancelStatus ?? "none";
-            const isCancelRequested =
-              rawCancelStatus === "요청" || rawCancelStatus === "requested";
-            const isCancelRejected =
-              rawCancelStatus === "거절" || rawCancelStatus === "rejected";
+            const isCancelRequested = rawCancelStatus === "요청" || rawCancelStatus === "requested";
+            const isCancelRejected = rawCancelStatus === "거절" || rawCancelStatus === "rejected";
 
             // 취소 요청 가능 여부
             const isCancelable =
-              isStringService &&
-              ["접수완료", "검토 중"].includes(app.status) &&
-              !isCancelRequested; // 요청 상태가 아니면 언제든 다시 취소 요청 가능
+              isStringService && ["접수완료", "검토 중"].includes(app.status) && !isCancelRequested; // 요청 상태가 아니면 언제든 다시 취소 요청 가능
             const title = isStringService
               ? `${app.racketType?.trim() || "라켓 미입력"} / ${app.stringType?.trim() || "스트링 미입력"}`
               : app.title?.trim() || "아카데미 레슨 신청";
-            const displayStatus = isAcademyLesson
-              ? app.statusLabel || app.status
-              : app.status;
+            const displayStatus = isAcademyLesson ? app.statusLabel || app.status : app.status;
             const preferredDaysLabel = app.preferredDays?.length
               ? app.preferredDays.join(", ")
               : "희망 요일 미입력";
@@ -611,11 +552,7 @@ export default function ApplicationsClient() {
                 : hasRentalLink
                   ? "대여 기반 장착 정보"
                   : "단독 교체서비스";
-            const metaLinkId = hasOrderLink
-              ? orderId
-              : hasRentalLink
-                ? rentalId
-                : null;
+            const metaLinkId = hasOrderLink ? orderId : hasRentalLink ? rentalId : null;
             const detailHref = isAcademyLesson
               ? `/mypage/academy-applications/${app.id}`
               : hasOrderLink && orderId
@@ -672,27 +609,18 @@ export default function ApplicationsClient() {
 
                 <div className="flex flex-wrap items-center gap-2 text-xs">
                   {metaLinkLabel ? (
-                    <Badge
-                      variant="outline"
-                      className="shrink-0 whitespace-nowrap"
-                    >
+                    <Badge variant="outline" className="shrink-0 whitespace-nowrap">
                       {metaLinkLabel}
                       {metaLinkId ? ` · ${String(metaLinkId).slice(-6)}` : ""}
                     </Badge>
                   ) : null}
                   {isAcademyLesson ? (
-                    <Badge
-                      variant="outline"
-                      className="shrink-0 whitespace-nowrap"
-                    >
+                    <Badge variant="outline" className="shrink-0 whitespace-nowrap">
                       도깨비테니스 아카데미
                     </Badge>
                   ) : null}
                   {collectionLabel ? (
-                    <Badge
-                      variant="outline"
-                      className="shrink-0 whitespace-nowrap"
-                    >
+                    <Badge variant="outline" className="shrink-0 whitespace-nowrap">
                       {collectionLabel}
                     </Badge>
                   ) : null}
@@ -705,9 +633,7 @@ export default function ApplicationsClient() {
                         <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                           <Clock className="h-4 w-4 text-muted-foreground" />
                           <div>
-                            <p className="text-xs font-medium text-muted-foreground">
-                              방문 예약
-                            </p>
+                            <p className="text-xs font-medium text-muted-foreground">방문 예약</p>
                             <p className="whitespace-nowrap font-medium tabular-nums text-foreground">
                               {visitTimeLabel}
                             </p>
@@ -784,8 +710,7 @@ export default function ApplicationsClient() {
                             희망 시간대
                           </p>
                           <p className="break-words font-medium text-foreground">
-                            {app.preferredTimeText?.trim() ||
-                              "희망 시간 미입력"}
+                            {app.preferredTimeText?.trim() || "희망 시간 미입력"}
                           </p>
                         </div>
                       </div>
@@ -809,41 +734,31 @@ export default function ApplicationsClient() {
                         </p>
                         <dl className="mt-3 grid gap-2 text-sm text-muted-foreground md:grid-cols-2">
                           <div>
-                            <dt className="text-xs uppercase tracking-wide">
-                              수업 유형
-                            </dt>
+                            <dt className="text-xs uppercase tracking-wide">수업 유형</dt>
                             <dd className="mt-0.5 font-medium text-foreground">
                               {app.classSnapshot.lessonTypeLabel || "미선택"}
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs uppercase tracking-wide">
-                              레벨
-                            </dt>
+                            <dt className="text-xs uppercase tracking-wide">레벨</dt>
                             <dd className="mt-0.5 font-medium text-foreground">
                               {app.classSnapshot.levelLabel || "미선택"}
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs uppercase tracking-wide">
-                              일정
-                            </dt>
+                            <dt className="text-xs uppercase tracking-wide">일정</dt>
                             <dd className="mt-0.5 break-keep font-medium text-foreground">
                               {app.classSnapshot.scheduleText || "상담 후 조율"}
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs uppercase tracking-wide">
-                              장소
-                            </dt>
+                            <dt className="text-xs uppercase tracking-wide">장소</dt>
                             <dd className="mt-0.5 break-keep font-medium text-foreground">
                               {app.classSnapshot.location || "상담 후 안내"}
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs uppercase tracking-wide">
-                              수강료
-                            </dt>
+                            <dt className="text-xs uppercase tracking-wide">수강료</dt>
                             <dd className="mt-0.5 font-medium text-foreground">
                               {formatAcademyClassPrice(app.classSnapshot.price)}
                             </dd>
@@ -857,9 +772,7 @@ export default function ApplicationsClient() {
                         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                           레슨 목표
                         </p>
-                        <p className="mt-1 whitespace-pre-wrap break-words">
-                          {app.lessonGoal}
-                        </p>
+                        <p className="mt-1 whitespace-pre-wrap break-words">{app.lessonGoal}</p>
                       </div>
                     ) : null}
                     {app.requestMemo ? (
@@ -867,9 +780,7 @@ export default function ApplicationsClient() {
                         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                           요청사항
                         </p>
-                        <p className="mt-1 whitespace-pre-wrap break-words">
-                          {app.requestMemo}
-                        </p>
+                        <p className="mt-1 whitespace-pre-wrap break-words">{app.requestMemo}</p>
                       </div>
                     ) : null}
                     {app.customerMessage ? (
@@ -906,12 +817,7 @@ export default function ApplicationsClient() {
                   ) : null}
 
                   {hasOrderLink && orderId ? (
-                    <Button
-                      asChild
-                      size="sm"
-                      variant="outline"
-                      className="bg-transparent"
-                    >
+                    <Button asChild size="sm" variant="outline" className="bg-transparent">
                       <Link
                         href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders`}
                       >
@@ -920,12 +826,7 @@ export default function ApplicationsClient() {
                     </Button>
                   ) : null}
                   {hasRentalLink && rentalId ? (
-                    <Button
-                      asChild
-                      size="sm"
-                      variant="outline"
-                      className="bg-transparent"
-                    >
+                    <Button asChild size="sm" variant="outline" className="bg-transparent">
                       <Link
                         href={`/mypage?tab=orders&flowType=rental&flowId=${rentalId}&from=orders`}
                       >
@@ -937,9 +838,7 @@ export default function ApplicationsClient() {
                   {canShowInboundTracking ? (
                     <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 sm:col-span-2 md:w-full">
                       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm">
-                        <span className="font-medium text-foreground">
-                          운송장 상태
-                        </span>
+                        <span className="font-medium text-foreground">운송장 상태</span>
                         <Badge variant={hasTracking ? "outline" : "default"}>
                           {hasTracking ? "등록됨" : "등록 필요"}
                         </Badge>
@@ -955,9 +854,7 @@ export default function ApplicationsClient() {
                           variant="outline"
                           size="sm"
                           onClick={() =>
-                            showInfoToast(
-                              "이미 종료된 신청서입니다. 운송장 수정이 불가합니다.",
-                            )
+                            showInfoToast("이미 종료된 신청서입니다. 운송장 수정이 불가합니다.")
                           }
                         >
                           운송장 수정
@@ -985,8 +882,7 @@ export default function ApplicationsClient() {
                         <TooltipTrigger asChild>
                           <span className="inline-block">
                             {(() => {
-                              const userConfirmedAt =
-                                (app as any).userConfirmedAt ?? null;
+                              const userConfirmedAt = (app as any).userConfirmedAt ?? null;
                               const isUserConfirmed = Boolean(userConfirmedAt);
 
                               const canConfirm =
@@ -1020,29 +916,18 @@ export default function ApplicationsClient() {
 
                         <TooltipContent>
                           {(() => {
-                            const userConfirmedAt =
-                              (app as any).userConfirmedAt ?? null;
+                            const userConfirmedAt = (app as any).userConfirmedAt ?? null;
                             const isUserConfirmed = Boolean(userConfirmedAt);
 
                             if (confirmingId === app.id)
                               return <p>교체서비스 확정 처리 중입니다.</p>;
-                            if (isUserConfirmed)
-                              return <p>이미 교체서비스 확정된 신청입니다.</p>;
+                            if (isUserConfirmed) return <p>이미 교체서비스 확정된 신청입니다.</p>;
                             if (isCancelRequested)
-                              return (
-                                <p>취소 요청 처리 중에는 확정할 수 없습니다.</p>
-                              );
+                              return <p>취소 요청 처리 중에는 확정할 수 없습니다.</p>;
                             if (app.status !== "교체완료")
-                              return (
-                                <p>
-                                  교체완료 상태에서만 교체서비스 확정이
-                                  가능합니다.
-                                </p>
-                              );
+                              return <p>교체완료 상태에서만 교체서비스 확정이 가능합니다.</p>;
 
-                            return (
-                              <p>교체서비스 확정 시 포인트가 지급됩니다.</p>
-                            );
+                            return <p>교체서비스 확정 시 포인트가 지급됩니다.</p>;
                           })()}
                         </TooltipContent>
                       </Tooltip>
@@ -1090,17 +975,11 @@ export default function ApplicationsClient() {
       {/* '더 보기' 버튼 */}
       <div className="mt-6 flex justify-center items-center">
         {hasMore ? (
-          <Button
-            variant="outline"
-            onClick={() => setSize(size + 1)}
-            disabled={isValidating}
-          >
+          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating}>
             더 보기
           </Button>
         ) : applications.length ? (
-          <span className="text-sm text-foreground/80">
-            마지막 페이지입니다
-          </span>
+          <span className="text-sm text-foreground/80">마지막 페이지입니다</span>
         ) : null}
       </div>
 
@@ -1118,12 +997,8 @@ export default function ApplicationsClient() {
           }}
           onConfirm={handleConfirmCancel}
           isSubmitting={isCancelSubmitting}
-          needsRefundAccount={shouldRequestCancelRefundAccount(
-            cancelTargetApplication,
-          )}
-          noRefundAccountMessage={getNoRefundAccountMessage(
-            cancelTargetApplication,
-          )}
+          needsRefundAccount={shouldRequestCancelRefundAccount(cancelTargetApplication)}
+          noRefundAccountMessage={getNoRefundAccountMessage(cancelTargetApplication)}
         />
       ) : null}
     </div>

@@ -1,7 +1,4 @@
-import {
-  PRODUCT_FEATURE_ITEMS,
-  type ProductFeatureKey,
-} from "@/lib/product-feature-score";
+import { PRODUCT_FEATURE_ITEMS, type ProductFeatureKey } from "@/lib/product-feature-score";
 
 type Props = {
   scores: Record<ProductFeatureKey, number>;
@@ -15,8 +12,7 @@ export default function ProductFeatureRadarChart({ scores }: Props) {
   const radius = 110;
 
   const axisPoints = PRODUCT_FEATURE_ITEMS.map((item, index) => {
-    const angle =
-      -Math.PI / 2 + (index * 2 * Math.PI) / PRODUCT_FEATURE_ITEMS.length;
+    const angle = -Math.PI / 2 + (index * 2 * Math.PI) / PRODUCT_FEATURE_ITEMS.length;
     const x = center + radius * Math.cos(angle);
     const y = center + radius * Math.sin(angle);
     return { ...item, angle, x, y };
@@ -96,9 +92,7 @@ export default function ProductFeatureRadarChart({ scores }: Props) {
             className="flex items-center justify-between rounded-lg border border-border/50 bg-secondary/30 px-3 py-2"
           >
             <span className="text-muted-foreground">{item.label}</span>
-            <span className="font-semibold text-foreground">
-              {scores[item.key]}
-            </span>
+            <span className="font-semibold text-foreground">{scores[item.key]}</span>
           </div>
         ))}
       </div>

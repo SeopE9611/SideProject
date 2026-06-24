@@ -7,11 +7,8 @@ import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 
 const CART_CHECKOUT_SELECTION_KEY = "cart.checkout.selectedLineKeys.v1";
 
-const getCartLineKey = (item: {
-  id: string;
-  selectedGauge?: string;
-  selectedColor?: string;
-}) => `${item.id}::${item.selectedGauge ?? ""}::${item.selectedColor ?? ""}`;
+const getCartLineKey = (item: { id: string; selectedGauge?: string; selectedColor?: string }) =>
+  `${item.id}::${item.selectedGauge ?? ""}::${item.selectedColor ?? ""}`;
 
 export default function ClearCartOnMount() {
   const cartItems = useCartStore((s) => s.items);
@@ -38,9 +35,7 @@ export default function ClearCartOnMount() {
       if (selectedLineKeys && selectedLineKeys.length > 0) {
         cartItems
           .filter((item) => selectedLineKeys.includes(getCartLineKey(item)))
-          .forEach((item) =>
-            removeItem(item.id, item.selectedGauge, item.selectedColor),
-          );
+          .forEach((item) => removeItem(item.id, item.selectedGauge, item.selectedColor));
       } else {
         clearCart(); // 기존 장바구니 비우기
       }

@@ -14,13 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -54,9 +48,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import useSWR from "swr";
 
-function getStatusTone(
-  status: AcademyLessonApplicationStatus,
-): BadgeSemanticTone {
+function getStatusTone(status: AcademyLessonApplicationStatus): BadgeSemanticTone {
   switch (status) {
     case "confirmed":
       return "success";
@@ -139,10 +131,7 @@ function DetailSkeleton() {
         </CardContent>
       </Card>
       {Array.from({ length: 4 }).map((_, index) => (
-        <Card
-          key={`academy-detail-skeleton-${index}`}
-          className="border-border bg-card"
-        >
+        <Card key={`academy-detail-skeleton-${index}`} className="border-border bg-card">
           <CardHeader>
             <Skeleton className="h-6 w-40" />
             <Skeleton className="h-4 w-64" />
@@ -171,9 +160,7 @@ function InfoBox({
   className?: string;
 }) {
   return (
-    <div
-      className={`min-w-0 rounded-xl border border-border bg-background p-3 ${className}`}
-    >
+    <div className={`min-w-0 rounded-xl border border-border bg-background p-3 ${className}`}>
       <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
       <dd
         className={`mt-1 min-w-0 break-words text-sm font-medium text-foreground ${
@@ -197,9 +184,7 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
             <GraduationCap className="h-5 w-5 text-primary" />
             클래스 정보
           </CardTitle>
-          <CardDescription>
-            선택 클래스 없이 접수된 일반 아카데미 신청입니다.
-          </CardDescription>
+          <CardDescription>선택 클래스 없이 접수된 일반 아카데미 신청입니다.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm leading-relaxed text-muted-foreground">
@@ -244,15 +229,8 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
           <InfoBox label="수업 유형" value={classSnapshot.lessonTypeLabel} />
           <InfoBox label="레벨" value={classSnapshot.levelLabel} />
           <InfoBox label="강사" value={classSnapshot.instructorName} />
-          <InfoBox
-            label="장소"
-            value={classSnapshot.location || "상담 후 안내"}
-          />
-          <InfoBox
-            label="일정"
-            value={classSnapshot.scheduleText || "상담 후 조율"}
-            multiline
-          />
+          <InfoBox label="장소" value={classSnapshot.location || "상담 후 안내"} />
+          <InfoBox label="일정" value={classSnapshot.scheduleText || "상담 후 조율"} multiline />
           <InfoBox
             label="정원"
             value={
@@ -269,8 +247,8 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
               {formatPrice(classSnapshot.price)}
             </dd>
             <dd className="mt-2 break-keep text-xs leading-5 text-muted-foreground">
-              수강료는 상담 내용에 따라 최종 확인될 수 있으며, 등록 확정 후
-              현장에서 결제를 안내해드립니다.
+              수강료는 상담 내용에 따라 최종 확인될 수 있으며, 등록 확정 후 현장에서 결제를
+              안내해드립니다.
             </dd>
           </div>
         </dl>
@@ -279,11 +257,7 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
   );
 }
 
-function ApplicationInfoCard({
-  item,
-}: {
-  item: AcademyCustomerApplicationDetail;
-}) {
+function ApplicationInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
   return (
     <Card className="rounded-2xl border border-border bg-card shadow-sm">
       <CardHeader>
@@ -304,16 +278,9 @@ function ApplicationInfoCard({
           <InfoBox label="현재 실력" value={item.currentLevelLabel} />
           <InfoBox
             label="희망 요일"
-            value={
-              item.preferredDays.length
-                ? item.preferredDays.join(", ")
-                : "미입력"
-            }
+            value={item.preferredDays.length ? item.preferredDays.join(", ") : "미입력"}
           />
-          <InfoBox
-            label="희망 시간대"
-            value={item.preferredTimeText || "미입력"}
-          />
+          <InfoBox label="희망 시간대" value={item.preferredTimeText || "미입력"} />
         </dl>
       </CardContent>
     </Card>
@@ -355,12 +322,11 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [cancelReasonDetail, setCancelReasonDetail] = useState("");
-  const { data, error, isLoading, mutate } =
-    useSWR<AcademyCustomerApplicationDetailResponse>(
-      `/api/applications/academy/${id}`,
-      authenticatedSWRFetcher,
-      { revalidateOnFocus: false },
-    );
+  const { data, error, isLoading, mutate } = useSWR<AcademyCustomerApplicationDetailResponse>(
+    `/api/applications/academy/${id}`,
+    authenticatedSWRFetcher,
+    { revalidateOnFocus: false },
+  );
 
   const item = data?.item;
 
@@ -403,18 +369,14 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
       } | null;
 
       if (!response.ok || !payload?.success) {
-        throw new Error(
-          payload?.message || "신청 기록 삭제 중 문제가 발생했습니다.",
-        );
+        throw new Error(payload?.message || "신청 기록 삭제 중 문제가 발생했습니다.");
       }
 
       showSuccessToast(payload.message || "신청 기록이 삭제되었습니다.");
       router.push("/mypage?tab=academy");
     } catch (error) {
       showErrorToast(
-        error instanceof Error
-          ? error.message
-          : "신청 기록 삭제 중 문제가 발생했습니다.",
+        error instanceof Error ? error.message : "신청 기록 삭제 중 문제가 발생했습니다.",
       );
     } finally {
       setIsDeleting(false);
@@ -428,15 +390,12 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
     }
 
     if (cancelReasonDetail.trim().length > CANCEL_REASON_DETAIL_MAX_LENGTH) {
-      showErrorToast(
-        `상세 사유는 ${CANCEL_REASON_DETAIL_MAX_LENGTH}자 이하로 입력해 주세요.`,
-      );
+      showErrorToast(`상세 사유는 ${CANCEL_REASON_DETAIL_MAX_LENGTH}자 이하로 입력해 주세요.`);
       return;
     }
 
     const reasonLabel =
-      CANCEL_REASON_OPTIONS.find((option) => option.value === cancelReason)
-        ?.label ?? "";
+      CANCEL_REASON_OPTIONS.find((option) => option.value === cancelReason)?.label ?? "";
 
     setIsCancelling(true);
 
@@ -458,9 +417,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
       } | null;
 
       if (!response.ok || !payload?.success || !payload.item) {
-        throw new Error(
-          payload?.message || "신청 취소 중 문제가 발생했습니다.",
-        );
+        throw new Error(payload?.message || "신청 취소 중 문제가 발생했습니다.");
       }
 
       await mutate({ success: true, item: payload.item }, false);
@@ -473,11 +430,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           : "아카데미 신청이 취소되었습니다.",
       );
     } catch (error) {
-      showErrorToast(
-        error instanceof Error
-          ? error.message
-          : "신청 취소 중 문제가 발생했습니다.",
-      );
+      showErrorToast(error instanceof Error ? error.message : "신청 취소 중 문제가 발생했습니다.");
     } finally {
       setIsCancelling(false);
     }
@@ -487,12 +440,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
     <div className="mx-auto max-w-4xl space-y-4 md:space-y-6">
       <Card className="rounded-2xl border border-border bg-card shadow-sm">
         <CardContent className="space-y-4 p-4 md:p-6">
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="w-fit px-0 hover:bg-transparent"
-          >
+          <Button asChild variant="ghost" size="sm" className="w-fit px-0 hover:bg-transparent">
             <Link href="/mypage?tab=academy">
               <ArrowLeft className="h-4 w-4" />
               클래스 신청 목록
@@ -524,12 +472,8 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           <div className="rounded-xl border border-border bg-muted/20 p-4">
             <div className="flex flex-wrap items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-muted-foreground">
-                현재 상태
-              </span>
-              <Badge variant={badgeToneVariant(statusTone)}>
-                {item.statusLabel}
-              </Badge>
+              <span className="text-sm font-medium text-muted-foreground">현재 상태</span>
+              <Badge variant={badgeToneVariant(statusTone)}>{item.statusLabel}</Badge>
             </div>
             <p className="mt-3 break-keep text-sm leading-relaxed text-foreground">
               {getStatusDescription(item.status)}
@@ -549,9 +493,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               <MessageSquareText className="h-5 w-5 text-primary" />
               관리자 안내
             </CardTitle>
-            <CardDescription>
-              도깨비테니스 담당자가 남긴 안내입니다.
-            </CardDescription>
+            <CardDescription>도깨비테니스 담당자가 남긴 안내입니다.</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="whitespace-pre-wrap break-words rounded-xl border border-border bg-muted/20 p-4 text-sm leading-relaxed text-foreground">
@@ -574,8 +516,8 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         </CardHeader>
         <CardContent>
           <p className="rounded-xl border border-border bg-muted/20 p-4 break-keep text-sm leading-relaxed text-foreground">
-            아카데미 수강료는 신청 단계에서 결제되지 않습니다. 상담 후 등록이
-            확정되면 첫 방문 또는 안내된 일정에 맞춰 현장에서 결제해 주세요.
+            아카데미 수강료는 신청 단계에서 결제되지 않습니다. 상담 후 등록이 확정되면 첫 방문 또는
+            안내된 일정에 맞춰 현장에서 결제해 주세요.
           </p>
         </CardContent>
       </Card>
@@ -592,15 +534,13 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             <div className="space-y-3">
               <div className="space-y-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
                 <p className="font-medium">
-                  이미 취소된 신청입니다. 다시 수강을 원하시면 아카데미
-                  페이지에서 새로 신청해 주세요.
+                  이미 취소된 신청입니다. 다시 수강을 원하시면 아카데미 페이지에서 새로 신청해
+                  주세요.
                 </p>
                 {item.cancelReasonLabel ? (
                   <p className="text-xs leading-5 text-destructive/85">
                     취소 사유: {item.cancelReasonLabel}
-                    {item.cancelReasonDetail
-                      ? ` - ${item.cancelReasonDetail}`
-                      : ""}
+                    {item.cancelReasonDetail ? ` - ${item.cancelReasonDetail}` : ""}
                   </p>
                 ) : null}
               </div>
@@ -619,18 +559,14 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      취소 신청 기록을 삭제할까요?
-                    </AlertDialogTitle>
+                    <AlertDialogTitle>취소 신청 기록을 삭제할까요?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      삭제하면 마이페이지에서 이 신청 기록이 보이지 않습니다.
-                      운영 기록은 보존됩니다.
+                      삭제하면 마이페이지에서 이 신청 기록이 보이지 않습니다. 운영 기록은
+                      보존됩니다.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isDeleting}>
-                      취소
-                    </AlertDialogCancel>
+                    <AlertDialogCancel disabled={isDeleting}>취소</AlertDialogCancel>
                     <AlertDialogAction
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       disabled={isDeleting}
@@ -669,20 +605,15 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    아카데미 신청을 취소할까요?
-                  </AlertDialogTitle>
+                  <AlertDialogTitle>아카데미 신청을 취소할까요?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    취소 후에는 이 신청이 취소 상태로 표시됩니다. 다시 수강을
-                    원하시면 아카데미 페이지에서 새로 신청해 주세요.
+                    취소 후에는 이 신청이 취소 상태로 표시됩니다. 다시 수강을 원하시면 아카데미
+                    페이지에서 새로 신청해 주세요.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="space-y-4 py-1">
                   <div className="space-y-2">
-                    <label
-                      className="text-sm font-medium"
-                      htmlFor="academy-cancel-reason"
-                    >
+                    <label className="text-sm font-medium" htmlFor="academy-cancel-reason">
                       취소 사유 <span className="text-destructive">*</span>
                     </label>
                     <Select
@@ -704,39 +635,29 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                   </div>
                   {cancelReason === "other" ? (
                     <div className="space-y-2">
-                      <label
-                        className="text-sm font-medium"
-                        htmlFor="academy-cancel-detail"
-                      >
-                        상세 사유{" "}
-                        <span className="text-muted-foreground">(선택)</span>
+                      <label className="text-sm font-medium" htmlFor="academy-cancel-detail">
+                        상세 사유 <span className="text-muted-foreground">(선택)</span>
                       </label>
                       <Textarea
                         id="academy-cancel-detail"
                         value={cancelReasonDetail}
-                        onChange={(event) =>
-                          setCancelReasonDetail(event.target.value)
-                        }
+                        onChange={(event) => setCancelReasonDetail(event.target.value)}
                         maxLength={CANCEL_REASON_DETAIL_MAX_LENGTH}
                         rows={3}
                         placeholder="운영자에게 전달할 내용을 간단히 입력해 주세요."
                         disabled={isCancelling}
                       />
                       <p className="text-right text-xs text-muted-foreground">
-                        {cancelReasonDetail.length}/
-                        {CANCEL_REASON_DETAIL_MAX_LENGTH}
+                        {cancelReasonDetail.length}/{CANCEL_REASON_DETAIL_MAX_LENGTH}
                       </p>
                     </div>
                   ) : null}
                   <p className="break-keep rounded-xl border border-border/60 bg-muted/30 p-3 text-xs leading-5 text-muted-foreground">
-                    취소 사유는 운영자가 신청 내역을 확인하고 안내를 개선하는 데
-                    사용됩니다.
+                    취소 사유는 운영자가 신청 내역을 확인하고 안내를 개선하는 데 사용됩니다.
                   </p>
                 </div>
                 <AlertDialogFooter>
-                  <AlertDialogCancel disabled={isCancelling}>
-                    취소하지 않기
-                  </AlertDialogCancel>
+                  <AlertDialogCancel disabled={isCancelling}>취소하지 않기</AlertDialogCancel>
                   <AlertDialogAction
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     disabled={isCancelling || !cancelReason}
@@ -758,12 +679,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         <Button asChild variant="outline" wrap="responsive" className="w-full">
           <Link href="/mypage?tab=academy">목록으로 돌아가기</Link>
         </Button>
-        <Button
-          asChild
-          variant="secondary"
-          wrap="responsive"
-          className="w-full"
-        >
+        <Button asChild variant="secondary" wrap="responsive" className="w-full">
           <Link href="/academy">아카데미 홈 보기</Link>
         </Button>
         <Button asChild variant="default" wrap="responsive" className="w-full">

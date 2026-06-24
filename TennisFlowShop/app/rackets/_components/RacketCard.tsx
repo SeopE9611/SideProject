@@ -19,23 +19,17 @@ import {
   usedBadgeMeta,
 } from "@/lib/badge-style";
 import { cn } from "@/lib/utils";
-import {
-  getEffectiveRacketPrice,
-  getRacketDiscountRate,
-} from "@/lib/racket-pricing";
+import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 
-const RentDialog = dynamic(
-  () => import("@/app/rackets/[id]/_components/RentDialog"),
-  { loading: () => null },
-);
+const RentDialog = dynamic(() => import("@/app/rackets/[id]/_components/RentDialog"), {
+  loading: () => null,
+});
 
-const fetcher = (url: string) =>
-  fetch(url, { credentials: "include" }).then((r) => r.json());
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((r) => r.json());
 
 const racketCardSurfaceClass =
   "overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:bg-muted/20 hover:shadow-sm";
-const racketImageWrapClass =
-  "relative block w-full aspect-[4/3] overflow-hidden bg-muted/20";
+const racketImageWrapClass = "relative block w-full aspect-[4/3] overflow-hidden bg-muted/20";
 
 type RacketItem = {
   id: string;
@@ -110,10 +104,7 @@ function ConditionBadge({ state }: { state: string }) {
   return (
     <Badge
       variant="neutral"
-      className={cn(
-        "rounded px-2 py-0.5 text-xs font-medium shadow-sm",
-        meta.className,
-      )}
+      className={cn("rounded px-2 py-0.5 text-xs font-medium shadow-sm", meta.className)}
     >
       상태: {meta.label}
     </Badge>
@@ -175,20 +166,11 @@ function RacketAvailBadge({
 }
 
 const RacketCard = React.memo(
-  function RacketCard({
-    racket,
-    viewMode,
-    brandLabel,
-    isApplyFlow = false,
-  }: Props) {
+  function RacketCard({ racket, viewMode, brandLabel, isApplyFlow = false }: Props) {
     const availability = useRacketAvailability(racket.id);
     const { avail, isSold, ready } = availability;
     const canBuy = ready ? !isSold && avail > 0 : true; // 로딩 중엔 일단 true(서버에서 최종 검증)
-    const canRent = racket.rental?.enabled
-      ? ready
-        ? !isSold && avail > 0
-        : true
-      : false;
+    const canRent = racket.rental?.enabled ? (ready ? !isSold && avail > 0 : true) : false;
     const buyDisabledTitle = !canBuy
       ? isSold
         ? "판매가 종료된 상품입니다."
@@ -242,12 +224,7 @@ const RacketCard = React.memo(
       >
         {hasSalePrice ? (
           <>
-            <div
-              className={cn(
-                "flex items-baseline gap-1.5",
-                align === "right" && "justify-end",
-              )}
-            >
+            <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
               <span className="text-[11px] text-muted-foreground">할인가</span>
               <span className="whitespace-nowrap text-lg font-bold text-foreground bp-sm:text-xl">
                 {salePrice.toLocaleString()}원
@@ -265,22 +242,14 @@ const RacketCard = React.memo(
               </span>
               <Badge
                 variant="outline"
-                className={cn(
-                  "shrink-0 whitespace-nowrap text-xs",
-                  benefitBadgeClass.off,
-                )}
+                className={cn("shrink-0 whitespace-nowrap text-xs", benefitBadgeClass.off)}
               >
                 {discountRate}% OFF
               </Badge>
             </div>
           </>
         ) : (
-          <div
-            className={cn(
-              "flex items-baseline gap-1.5",
-              align === "right" && "justify-end",
-            )}
-          >
+          <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
             <span className="text-[11px] text-muted-foreground">판매가</span>
             <span className="whitespace-nowrap text-lg font-bold text-foreground bp-sm:text-xl">
               {racket.price.toLocaleString()}원
@@ -290,10 +259,7 @@ const RacketCard = React.memo(
       </div>
     );
 
-    const actionButtons = (options?: {
-      compact?: boolean;
-      stackOnNarrow?: boolean;
-    }) => {
+    const actionButtons = (options?: { compact?: boolean; stackOnNarrow?: boolean }) => {
       const compact = options?.compact ?? false;
       const buttonClassName = cn(
         "inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-lg px-2.5 text-center font-semibold [&_svg]:mr-0 [&_svg]:shrink-0",
@@ -324,12 +290,7 @@ const RacketCard = React.memo(
               </Link>
             </Button>
           ) : (
-            <Button
-              size="sm"
-              className={disabledButtonClassName}
-              disabled
-              title={buyDisabledTitle}
-            >
+            <Button size="sm" className={disabledButtonClassName} disabled title={buyDisabledTitle}>
               <ShoppingCart className={iconClassName} />
               품절
             </Button>
@@ -387,12 +348,10 @@ const RacketCard = React.memo(
               )}
               aria-label={`${displayBrandLabel} ${racket.model} 상세 보기`}
             >
-              {(racket.marketing?.isFeatured || racket.marketing?.isNew) &&
-                marketingBadges}
+              {(racket.marketing?.isFeatured || racket.marketing?.isNew) && marketingBadges}
               <Image
                 src={
-                  racket.images?.[0] ||
-                  "/placeholder.svg?height=200&width=200&query=tennis+racket"
+                  racket.images?.[0] || "/placeholder.svg?height=200&width=200&query=tennis+racket"
                 }
                 alt={`${displayBrandLabel} ${racket.model}`}
                 fill
@@ -420,9 +379,7 @@ const RacketCard = React.memo(
                 <div className="mt-2 flex flex-wrap items-center gap-1.5 bp-sm:gap-2">
                   <ConditionBadge state={racket.condition} />
                   <RacketAvailBadge {...availability} />
-                  {!racket.rental?.enabled && (
-                    <StatusBadge kind="rental" state="unavailable" />
-                  )}
+                  {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
                 </div>
               </div>
             </div>
@@ -437,10 +394,7 @@ const RacketCard = React.memo(
                   variant="outline"
                   className="h-10 w-full justify-center whitespace-nowrap rounded-lg bg-background text-xs font-semibold bp-sm:text-sm"
                 >
-                  <Link
-                    href={`/rackets/${racket.id}`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
                     <Eye className="mr-1.5 h-4 w-4 shrink-0" />
                     상세 보기
                   </Link>
@@ -454,24 +408,15 @@ const RacketCard = React.memo(
 
     // grid view
     return (
-      <Card
-        className={cn(
-          racketCardSurfaceClass,
-          "group relative flex h-full flex-col",
-        )}
-      >
+      <Card className={cn(racketCardSurfaceClass, "group relative flex h-full flex-col")}>
         <Link
           href={`/rackets/${racket.id}`}
           className={racketImageWrapClass}
           aria-label={`${displayBrandLabel} ${racket.model} 상세 보기`}
         >
-          {(racket.marketing?.isFeatured || racket.marketing?.isNew) &&
-            marketingBadges}
+          {(racket.marketing?.isFeatured || racket.marketing?.isNew) && marketingBadges}
           <Image
-            src={
-              racket.images?.[0] ||
-              "/placeholder.svg?height=300&width=300&query=tennis+racket"
-            }
+            src={racket.images?.[0] || "/placeholder.svg?height=300&width=300&query=tennis+racket"}
             alt={`${displayBrandLabel} ${racket.model}`}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -497,9 +442,7 @@ const RacketCard = React.memo(
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
             <ConditionBadge state={racket.condition} />
             <RacketAvailBadge {...availability} />
-            {!racket.rental?.enabled && (
-              <StatusBadge kind="rental" state="unavailable" />
-            )}
+            {!racket.rental?.enabled && <StatusBadge kind="rental" state="unavailable" />}
           </div>
         </CardContent>
 
@@ -507,9 +450,7 @@ const RacketCard = React.memo(
           <div className="w-full">
             <div>{priceBlock()}</div>
 
-            <div className="mt-3">
-              {actionButtons({ compact: true, stackOnNarrow: false })}
-            </div>
+            <div className="mt-3">{actionButtons({ compact: true, stackOnNarrow: false })}</div>
           </div>
         </CardFooter>
       </Card>

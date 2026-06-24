@@ -39,10 +39,7 @@ async function getRacketMini(racketId: string) {
 
   if (!racket) return null;
 
-  const image =
-    Array.isArray(racket.images) && racket.images.length > 0
-      ? racket.images[0]
-      : null;
+  const image = Array.isArray(racket.images) && racket.images.length > 0 ? racket.images[0] : null;
 
   return {
     id: String(racket._id),
@@ -66,8 +63,7 @@ export default async function Page({
 
   const sp = (await Promise.resolve(searchParams ?? {})) as { period?: string };
   const raw = Number(sp.period ?? 7);
-  const period =
-    raw === 7 || raw === 15 || raw === 30 ? (raw as 7 | 15 | 30) : 7;
+  const period = raw === 7 || raw === 15 || raw === 30 ? (raw as 7 | 15 | 30) : 7;
 
   const guestOrderMode = (
     process.env.GUEST_ORDER_MODE ??
@@ -83,8 +79,7 @@ export default async function Page({
       const qs = new URLSearchParams();
       qs.set("period", String(period));
       const next =
-        `/rentals/${racketId}/select-string` +
-        (qs.toString() ? `?${qs.toString()}` : "");
+        `/rentals/${racketId}/select-string` + (qs.toString() ? `?${qs.toString()}` : "");
       return <LoginGate next={next} variant="checkout" />;
     }
   }

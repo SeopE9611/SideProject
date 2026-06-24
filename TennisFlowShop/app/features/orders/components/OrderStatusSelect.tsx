@@ -24,13 +24,11 @@ const SHIPPING_GUARD_MESSAGES = new Set([
 ]);
 
 // fetcher 함수: API 호출 후 JSON 파싱
-const fetcher = (url: string) =>
-  fetch(url, { credentials: "include" }).then((res) => res.json());
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then((res) => res.json());
 
 // 이력 API 키 생성기: 이전 페이지가 비었으면 더 이상 요청하지 않음
 const getHistoryKey =
-  (orderId: string) =>
-  (pageIndex: number, previousPageData: { history: any[] } | null) => {
+  (orderId: string) => (pageIndex: number, previousPageData: { history: any[] } | null) => {
     if (previousPageData && previousPageData.history.length === 0) return null;
     return `/api/orders/${orderId}/history?page=${pageIndex + 1}&limit=${LIMIT}`;
   };
@@ -53,11 +51,7 @@ interface Props {
   };
 }
 
-export default function OrderStatusSelect({
-  orderId,
-  currentStatus,
-  shippingInfo,
-}: Props) {
+export default function OrderStatusSelect({ orderId, currentStatus, shippingInfo }: Props) {
   // 상태 전용 SWR: fallbackData로 초기 상태 주입 -> 첫 렌더 안정화
   const { data: statusData, mutate: mutateStatus } = useSWR<StatusRes>(
     `/api/orders/${orderId}/status`,
@@ -66,14 +60,8 @@ export default function OrderStatusSelect({
   );
 
   // 주문 상세/이력/목록 revalidate를 위한 SWR 핸들들
-  const { mutate: mutateOrderDetail } = useSWR(
-    `/api/orders/${orderId}`,
-    fetcher,
-  );
-  const { mutate: mutateHistory } = useSWRInfinite(
-    getHistoryKey(orderId),
-    fetcher,
-  );
+  const { mutate: mutateOrderDetail } = useSWR(`/api/orders/${orderId}`, fetcher);
+  const { mutate: mutateHistory } = useSWRInfinite(getHistoryKey(orderId), fetcher);
 
   // 현재 상태(취소여부 판정에 사용)
   const current = statusData?.status ?? currentStatus;
@@ -83,13 +71,7 @@ export default function OrderStatusSelect({
   const isVisitPickup = isVisitPickupOrder(shippingInfo);
 
   // 셀렉트에 노출할 “일반 상태”만 남김 (‘취소’는 모달 전용이므로 제외)
-  const SELECTABLE_STATUSES = [
-    "대기중",
-    "결제완료",
-    "배송중",
-    "배송완료",
-    "환불",
-  ] as const;
+  const SELECTABLE_STATUSES = ["대기중", "결제완료", "배송중", "배송완료", "환불"] as const;
 
   // 셀렉트 변경 핸들러
   const handleChange = async (nextStatus: string) => {
@@ -126,21 +108,15 @@ export default function OrderStatusSelect({
       await mutateStatus();
       await mutateOrderDetail();
       await mutateHistory();
-      await mutate(
-        (key) => typeof key === "string" && key.startsWith("/api/orders"),
-      );
+      await mutate((key) => typeof key === "string" && key.startsWith("/api/orders"));
 
-      const displayStatus = getOrderStatusLabelForDisplay(
-        nextStatus,
-        shippingInfo,
-      );
+      const displayStatus = getOrderStatusLabelForDisplay(nextStatus, shippingInfo);
       showSuccessToast(`주문 상태가 '${displayStatus}'(으)로 변경되었습니다.`);
     } catch (err: unknown) {
       console.error(err);
       await mutateStatus({ status: prevStatus }, false);
 
-      const errorMessage =
-        err instanceof Error ? err.message.trim() : "서버 오류";
+      const errorMessage = err instanceof Error ? err.message.trim() : "서버 오류";
 
       if (SHIPPING_GUARD_MESSAGES.has(errorMessage)) {
         showErrorToast(errorMessage);

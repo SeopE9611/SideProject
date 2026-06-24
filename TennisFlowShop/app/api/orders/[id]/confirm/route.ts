@@ -7,10 +7,7 @@ import { calcOrderEarnPoints } from "@/lib/points.policy";
 import { grantPoints } from "@/lib/points.service";
 import { createUserNotification } from "@/lib/notifications/user-notification.service";
 import { bankLabelMap } from "@/lib/constants";
-import {
-  canConfirmOrderByStatus,
-  isVisitPickupOrder,
-} from "@/lib/order-shipping";
+import { canConfirmOrderByStatus, isVisitPickupOrder } from "@/lib/order-shipping";
 
 function paymentMethodLabel(paymentInfo: any): string {
   const method = String(paymentInfo?.method ?? "").trim();
@@ -38,25 +35,16 @@ function paymentMethodLabel(paymentInfo: any): string {
   return method; // 마지막 fallback (프로젝트 내부 표기 유지)
 }
 
-export async function POST(
-  _req: Request,
-  context: { params: Promise<{ id: string }> },
-) {
+export async function POST(_req: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json(
-      { ok: false, error: "유효하지 않은 주문 ID입니다." },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "유효하지 않은 주문 ID입니다." }, { status: 400 });
   }
 
   const jar = await cookies();
   const token = jar.get("accessToken")?.value;
   if (!token) {
-    return NextResponse.json(
-      { ok: false, error: "로그인이 필요합니다." },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, error: "로그인이 필요합니다." }, { status: 401 });
   }
 
   // verifyAccessToken이 throw되어 500으로 터지는 케이스 방지
@@ -70,10 +58,7 @@ export async function POST(
   // payload.sub는 ObjectId 문자열이어야 함
   const userIdStr = typeof payload?.sub === "string" ? payload.sub : null;
   if (!userIdStr || !ObjectId.isValid(userIdStr)) {
-    return NextResponse.json(
-      { ok: false, error: "로그인이 필요합니다." },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, error: "로그인이 필요합니다." }, { status: 401 });
   }
 
   const userId = new ObjectId(userIdStr);
@@ -98,16 +83,10 @@ export async function POST(
   );
 
   if (!order) {
-    return NextResponse.json(
-      { ok: false, error: "주문을 찾을 수 없습니다." },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, error: "주문을 찾을 수 없습니다." }, { status: 404 });
   }
   if (String((order as any).userId) !== String(userId)) {
-    return NextResponse.json(
-      { ok: false, error: "권한이 없습니다." },
-      { status: 403 },
-    );
+    return NextResponse.json({ ok: false, error: "권한이 없습니다." }, { status: 403 });
   }
 
   /**
@@ -193,10 +172,7 @@ export async function POST(
         _id: orderObjectId,
         userId,
         status: { $in: allowedStatuses },
-        $or: [
-          { userConfirmedAt: { $exists: false } },
-          { userConfirmedAt: null },
-        ],
+        $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }],
       },
       {
         $set: {

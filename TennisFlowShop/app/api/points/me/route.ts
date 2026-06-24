@@ -32,10 +32,7 @@ export async function GET(request: Request) {
   // /api/points/me?summary=1 헤더 호출마다 중복 DB 조회가 발생했다.
   const uidStr = String((await getCurrentUserId()) ?? "");
   if (!uidStr || !ObjectId.isValid(uidStr)) {
-    return NextResponse.json(
-      { ok: false, error: "Unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
   const userId = new ObjectId(uidStr);
   const db = await getDb();
@@ -45,18 +42,13 @@ export async function GET(request: Request) {
   // 1) 현재 잔액(캐시)
   const user = await db
     .collection("users")
-    .findOne(
-      { _id: userId },
-      { projection: { pointsBalance: 1, pointsDebt: 1 } as any },
-    );
+    .findOne({ _id: userId }, { projection: { pointsBalance: 1, pointsDebt: 1 } as any });
   const balanceRaw =
-    typeof user?.pointsBalance === "number" &&
-    Number.isFinite(user.pointsBalance)
+    typeof user?.pointsBalance === "number" && Number.isFinite(user.pointsBalance)
       ? user.pointsBalance
       : 0;
   const debtRaw =
-    typeof (user as any)?.pointsDebt === "number" &&
-    Number.isFinite((user as any).pointsDebt)
+    typeof (user as any)?.pointsDebt === "number" && Number.isFinite((user as any).pointsDebt)
       ? (user as any).pointsDebt
       : 0;
 

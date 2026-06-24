@@ -14,10 +14,7 @@ function safeVerifyAccessToken(token?: string) {
 }
 
 // GET 메서드 정의
-export async function GET(
-  req: Request,
-  context: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   // 인증 처리
   const cookieStore = await cookies();
   const token = cookieStore.get("accessToken")?.value;
@@ -31,10 +28,7 @@ export async function GET(
 
     // 유효성 검사: 빈 ID일 경우 400 반환
     if (!id) {
-      return NextResponse.json(
-        { error: "신청 ID가 제공되지 않았습니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "신청 ID가 제공되지 않았습니다." }, { status: 400 });
     }
 
     // MongoDB 연결
@@ -53,10 +47,7 @@ export async function GET(
 
     // 신청서를 찾지 못한 경우
     if (!raw) {
-      return NextResponse.json(
-        { error: "해당 신청서를 찾을 수 없습니다." },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "해당 신청서를 찾을 수 없습니다." }, { status: 404 });
     }
 
     // Application 형태로 매핑
@@ -85,9 +76,6 @@ export async function GET(
     return NextResponse.json(application);
   } catch (error) {
     console.error("신청서 조회 오류:", error);
-    return NextResponse.json(
-      { error: "서버 오류가 발생했습니다." },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "서버 오류가 발생했습니다." }, { status: 500 });
   }
 }

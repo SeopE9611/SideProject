@@ -12,30 +12,21 @@ type AccessGateOptions = {
   allowGuestRental: boolean;
 };
 
-export async function canAccessStringingApplicationById(
-  id: string,
-  options: AccessGateOptions,
-) {
+export async function canAccessStringingApplicationById(id: string, options: AccessGateOptions) {
   if (!ObjectId.isValid(id)) {
     return {
       ok: false as const,
-      response: Response.json(
-        { error: "Invalid application ID" },
-        { status: 400 },
-      ),
+      response: Response.json({ error: "Invalid application ID" }, { status: 400 }),
     };
   }
 
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value ?? null;
   const orderAccessToken = cookieStore.get("orderAccessToken")?.value ?? null;
-  const applicationAccessToken =
-    cookieStore.get("applicationAccessToken")?.value ?? null;
+  const applicationAccessToken = cookieStore.get("applicationAccessToken")?.value ?? null;
 
   const accessPayload = accessToken ? verifyAccessToken(accessToken) : null;
-  const guestClaims = orderAccessToken
-    ? verifyOrderAccessToken(orderAccessToken)
-    : null;
+  const guestClaims = orderAccessToken ? verifyOrderAccessToken(orderAccessToken) : null;
   const applicationClaims = applicationAccessToken
     ? verifyApplicationAccessToken(applicationAccessToken)
     : null;
@@ -50,8 +41,7 @@ export async function canAccessStringingApplicationById(
   const db = await getDb();
 
   let isAdmin = false;
-  const requesterId =
-    typeof accessPayload?.sub === "string" ? accessPayload.sub : null;
+  const requesterId = typeof accessPayload?.sub === "string" ? accessPayload.sub : null;
 
   if (requesterId && ObjectId.isValid(requesterId)) {
     const me = await db
@@ -81,10 +71,7 @@ export async function canAccessStringingApplicationById(
   if (!application) {
     return {
       ok: false as const,
-      response: Response.json(
-        { error: "Application not found" },
-        { status: 404 },
-      ),
+      response: Response.json({ error: "Application not found" }, { status: 404 }),
     };
   }
 
@@ -93,13 +80,9 @@ export async function canAccessStringingApplicationById(
     !!(application as any).userId &&
     String((application as any).userId) === requesterId;
   const guestOrderId =
-    typeof (guestClaims as any)?.orderId === "string"
-      ? (guestClaims as any).orderId
-      : null;
+    typeof (guestClaims as any)?.orderId === "string" ? (guestClaims as any).orderId : null;
   const guestRentalId =
-    typeof (guestClaims as any)?.rentalId === "string"
-      ? (guestClaims as any).rentalId
-      : null;
+    typeof (guestClaims as any)?.rentalId === "string" ? (guestClaims as any).rentalId : null;
 
   const isGuestOrderOwner =
     options.allowGuestOrder &&
@@ -112,13 +95,9 @@ export async function canAccessStringingApplicationById(
     !!(application as any).rentalId &&
     String((application as any).rentalId) === guestRentalId;
   const tokenApplicationId =
-    typeof applicationClaims?.applicationId === "string"
-      ? applicationClaims.applicationId
-      : null;
+    typeof applicationClaims?.applicationId === "string" ? applicationClaims.applicationId : null;
   const isStandaloneApplication =
-    !(application as any).userId &&
-    !(application as any).orderId &&
-    !(application as any).rentalId;
+    !(application as any).userId && !(application as any).orderId && !(application as any).rentalId;
   const isGuestStandaloneOwner =
     !!tokenApplicationId &&
     isStandaloneApplication &&

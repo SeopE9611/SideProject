@@ -4,16 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
 import useSWR from "swr";
-import {
-  BookOpen,
-  Eye,
-  EyeOff,
-  MoreHorizontal,
-  Pencil,
-  Plus,
-  Search,
-  Trash2,
-} from "lucide-react";
+import { BookOpen, Eye, EyeOff, MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
@@ -52,11 +43,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  adminFetcher,
-  adminMutator,
-  getAdminErrorMessage,
-} from "@/lib/admin/adminFetcher";
+import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
@@ -95,10 +82,7 @@ function getStatusTone(status: AcademyClassStatus): BadgeSemanticTone {
 
 function AcademyClassStatusBadge({ status }: { status: AcademyClassStatus }) {
   return (
-    <Badge
-      variant={badgeToneVariant(getStatusTone(status))}
-      className="shrink-0 whitespace-nowrap"
-    >
+    <Badge variant={badgeToneVariant(getStatusTone(status))} className="shrink-0 whitespace-nowrap">
       {getAcademyClassStatusLabel(status)}
     </Badge>
   );
@@ -151,33 +135,17 @@ function ApplicationStatsCell({ item }: { item: AcademyClass }) {
 
   return (
     <div className="shrink-0 whitespace-nowrap tabular-nums">
-      <div className="font-medium text-foreground">
-        신청 {total.toLocaleString("ko-KR")}건
-      </div>
+      <div className="font-medium text-foreground">신청 {total.toLocaleString("ko-KR")}건</div>
       <div className="text-xs text-muted-foreground">
-        등록 확정 {confirmed.toLocaleString("ko-KR")}명 /{" "}
-        {formatCapacityLabel(item.capacity)}
+        등록 확정 {confirmed.toLocaleString("ko-KR")}명 / {formatCapacityLabel(item.capacity)}
       </div>
     </div>
   );
 }
 
-function SummaryCard({
-  label,
-  value,
-  active,
-}: {
-  label: string;
-  value: number;
-  active?: boolean;
-}) {
+function SummaryCard({ label, value, active }: { label: string; value: number; active?: boolean }) {
   return (
-    <Card
-      className={cn(
-        adminSurface.kpiCard,
-        active ? "border-primary/50 bg-primary/5" : "",
-      )}
-    >
+    <Card className={cn(adminSurface.kpiCard, active ? "border-primary/50 bg-primary/5" : "")}>
       <CardContent className="p-4">
         <div className="text-xs font-medium text-muted-foreground">{label}</div>
         <div className="mt-2 whitespace-nowrap text-2xl font-semibold tabular-nums text-foreground">
@@ -212,10 +180,7 @@ export default function AcademyClassesClient() {
     return `/api/admin/academy/classes?${params.toString()}`;
   }, [keyword, page, status]);
 
-  const { data, error, isLoading, mutate } = useSWR<ClassesResponse>(
-    query,
-    adminFetcher,
-  );
+  const { data, error, isLoading, mutate } = useSWR<ClassesResponse>(query, adminFetcher);
 
   const counts = data?.counts ?? {
     all: 0,
@@ -239,10 +204,7 @@ export default function AcademyClassesClient() {
     router.push(`/admin/academy/classes/${id}/edit`);
   }
 
-  function handleRowKeyDown(
-    event: KeyboardEvent<HTMLTableRowElement>,
-    id: string,
-  ) {
+  function handleRowKeyDown(event: KeyboardEvent<HTMLTableRowElement>, id: string) {
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
     goToDetail(id);
@@ -320,11 +282,7 @@ export default function AcademyClassesClient() {
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <SummaryCard
-          label="전체"
-          value={counts.all}
-          active={status === "all"}
-        />
+        <SummaryCard label="전체" value={counts.all} active={status === "all"} />
         {ACADEMY_CLASS_STATUSES.map((item) => (
           <SummaryCard
             key={item}
@@ -361,10 +319,7 @@ export default function AcademyClassesClient() {
               </SelectContent>
             </Select>
 
-            <form
-              className="flex w-full gap-2 lg:max-w-md"
-              onSubmit={submitSearch}
-            >
+            <form className="flex w-full gap-2 lg:max-w-md" onSubmit={submitSearch}>
               <Input
                 value={keywordInput}
                 onChange={(event) => setKeywordInput(event.target.value)}
@@ -387,27 +342,13 @@ export default function AcademyClassesClient() {
             <Table className="min-w-[1040px] table-fixed">
               <TableHeader className={adminSurface.tableHeader}>
                 <TableRow>
-                  <TableHead className="whitespace-nowrap px-3">
-                    등록일
-                  </TableHead>
-                  <TableHead className="w-[280px] whitespace-nowrap px-3">
-                    클래스
-                  </TableHead>
-                  <TableHead className="whitespace-nowrap px-3">
-                    수업 정보
-                  </TableHead>
-                  <TableHead className="w-[240px] whitespace-nowrap px-3">
-                    운영 정보
-                  </TableHead>
-                  <TableHead className="whitespace-nowrap px-3">
-                    신청 현황
-                  </TableHead>
-                  <TableHead className="whitespace-nowrap px-3">
-                    가격/상태
-                  </TableHead>
-                  <TableHead className="whitespace-nowrap px-3 text-right">
-                    관리
-                  </TableHead>
+                  <TableHead className="whitespace-nowrap px-3">등록일</TableHead>
+                  <TableHead className="w-[280px] whitespace-nowrap px-3">클래스</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">수업 정보</TableHead>
+                  <TableHead className="w-[240px] whitespace-nowrap px-3">운영 정보</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">신청 현황</TableHead>
+                  <TableHead className="whitespace-nowrap px-3">가격/상태</TableHead>
+                  <TableHead className="whitespace-nowrap px-3 text-right">관리</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -436,16 +377,11 @@ export default function AcademyClassesClient() {
                   if (!classId) return null;
 
                   const createdAt = formatAdminDateTimeParts(item.createdAt);
-                  const isHideDisabled =
-                    item.status === "hidden" || hidingId === classId;
+                  const isHideDisabled = item.status === "hidden" || hidingId === classId;
                   const applicationTotal = item.applicationStats?.total ?? 0;
                   const cancelledTotal = item.applicationStats?.cancelled ?? 0;
-                  const blockingApplicationTotal = Math.max(
-                    0,
-                    applicationTotal - cancelledTotal,
-                  );
-                  const isDeleteDisabled =
-                    blockingApplicationTotal > 0 || deletingId === classId;
+                  const blockingApplicationTotal = Math.max(0, applicationTotal - cancelledTotal);
+                  const isDeleteDisabled = blockingApplicationTotal > 0 || deletingId === classId;
 
                   return (
                     <TableRow
@@ -457,12 +393,8 @@ export default function AcademyClassesClient() {
                       onKeyDown={(event) => handleRowKeyDown(event, classId)}
                     >
                       <TableCell className="whitespace-nowrap px-3 py-3 text-xs">
-                        <div className="font-medium text-foreground">
-                          {createdAt.date}
-                        </div>
-                        <div className="text-muted-foreground">
-                          {createdAt.time}
-                        </div>
+                        <div className="font-medium text-foreground">{createdAt.date}</div>
+                        <div className="text-muted-foreground">{createdAt.time}</div>
                       </TableCell>
                       <TableCell className="min-w-0 px-3 py-3">
                         <div
@@ -479,9 +411,7 @@ export default function AcademyClassesClient() {
                         </div>
                       </TableCell>
                       <TableCell className="whitespace-nowrap px-3 py-3 text-sm">
-                        <div>
-                          {getAcademyClassLessonTypeLabel(item.lessonType)}
-                        </div>
+                        <div>{getAcademyClassLessonTypeLabel(item.lessonType)}</div>
                         <div className="text-xs text-muted-foreground">
                           {getAcademyClassLevelLabel(item.level)}
                         </div>
@@ -534,10 +464,7 @@ export default function AcademyClassesClient() {
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent
-                            align="end"
-                            className="min-w-max"
-                          >
+                          <DropdownMenuContent align="end" className="min-w-max">
                             <DropdownMenuItem
                               className="whitespace-nowrap"
                               onSelect={(event) => {
@@ -610,8 +537,7 @@ export default function AcademyClassesClient() {
           <div className="flex flex-col gap-2 text-sm leading-relaxed text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
             <div>
               총 {data?.pagination.total.toLocaleString("ko-KR") ?? 0}건 ·{" "}
-              {data?.pagination.page ?? page} /{" "}
-              {data?.pagination.totalPages ?? 1}페이지
+              {data?.pagination.page ?? page} / {data?.pagination.totalPages ?? 1}페이지
             </div>
             <div className="flex gap-2">
               <Button

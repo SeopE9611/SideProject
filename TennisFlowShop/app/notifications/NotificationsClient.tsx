@@ -32,14 +32,10 @@ async function fetchNotifications(cursor?: string | null) {
   const res = await fetch(`/api/notifications?${params.toString()}`, {
     credentials: "include",
   });
-  const data = (await res
-    .json()
-    .catch(() => null)) as NotificationListRes | null;
+  const data = (await res.json().catch(() => null)) as NotificationListRes | null;
 
   if (!res.ok || !data?.ok) {
-    throw new Error(
-      data && !data.ok ? data.error : `알림 조회 실패 (${res.status})`,
-    );
+    throw new Error(data && !data.ok ? data.error : `알림 조회 실패 (${res.status})`);
   }
 
   return data;
@@ -52,9 +48,7 @@ export default function NotificationsClient() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">(
-    "loading",
-  );
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isMarkingAll, setIsMarkingAll] = useState(false);
 
@@ -112,9 +106,7 @@ export default function NotificationsClient() {
 
     setItems((prev) =>
       prev.map((item) =>
-        item.id === id && !item.readAt
-          ? { ...item, readAt: new Date().toISOString() }
-          : item,
+        item.id === id && !item.readAt ? { ...item, readAt: new Date().toISOString() } : item,
       ),
     );
     setUnreadCount((prev) => Math.max(0, prev - 1));
@@ -134,9 +126,7 @@ export default function NotificationsClient() {
       }
 
       const now = new Date().toISOString();
-      setItems((prev) =>
-        prev.map((item) => (item.readAt ? item : { ...item, readAt: now })),
-      );
+      setItems((prev) => prev.map((item) => (item.readAt ? item : { ...item, readAt: now })));
       setUnreadCount(0);
       await globalMutate("/api/notifications/unread-count");
     } catch (error) {
@@ -211,11 +201,7 @@ export default function NotificationsClient() {
           ) : (
             <div className="space-y-2 p-3 md:p-4">
               {items.map((item) => (
-                <NotificationItem
-                  key={item.id}
-                  item={item}
-                  onClick={() => handleItemClick(item)}
-                />
+                <NotificationItem key={item.id} item={item} onClick={() => handleItemClick(item)} />
               ))}
             </div>
           )}
@@ -229,9 +215,7 @@ export default function NotificationsClient() {
                   disabled={isLoadingMore}
                   onClick={loadMore}
                 >
-                  {isLoadingMore && (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  )}
+                  {isLoadingMore && <Loader2 className="h-4 w-4 animate-spin" />}
                   더보기
                 </Button>
               </div>

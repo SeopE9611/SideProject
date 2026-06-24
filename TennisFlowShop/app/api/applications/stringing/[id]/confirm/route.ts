@@ -34,9 +34,7 @@ function resolveOrderRewardBaseAmount(order: any): number {
 
 function resolveStandaloneAppRewardBaseAmount(app: any): number {
   return toSafeRewardBaseAmount(
-    (app as any)?.serviceAmount ??
-      (app as any)?.serviceFee ??
-      (app as any)?.totalPrice,
+    (app as any)?.serviceAmount ?? (app as any)?.serviceFee ?? (app as any)?.totalPrice,
   );
 }
 
@@ -48,33 +46,21 @@ function resolveRentalRewardBaseAmount(rental: any): number {
 // - orderId가 있는 신청(= 주문 기반 신청)은 "주문 구매확정"과 동일한 규칙으로 처리한다.
 //   (주문을 구매확정으로 변경 + 포인트 1회 적립 + 연결된 신청도 함께 확정 → 중복 지급 방지)
 // - orderId가 없는 신청(= 단독 신청)은 신청 금액 기준으로 포인트 적립
-export async function POST(
-  _: Request,
-  context: { params: Promise<{ id: string }> },
-) {
+export async function POST(_: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
 
   const jar = await cookies();
   const accessToken = jar.get("accessToken")?.value;
   if (!accessToken)
-    return NextResponse.json(
-      { ok: false, message: "Unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
 
   const payload = safeVerifyAccessToken(accessToken);
   const userId = typeof payload?.sub === "string" ? payload.sub : null;
   if (!userId || !ObjectId.isValid(userId))
-    return NextResponse.json(
-      { ok: false, message: "Unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, message: "Unauthorized" }, { status: 401 });
 
   if (!ObjectId.isValid(id))
-    return NextResponse.json(
-      { ok: false, message: "invalid application id" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, message: "invalid application id" }, { status: 400 });
 
   const client = await clientPromise;
   const db = client.db();
@@ -83,17 +69,10 @@ export async function POST(
     const _id = new ObjectId(id);
 
     const app = await db.collection("stringing_applications").findOne({ _id });
-    if (!app)
-      return NextResponse.json(
-        { ok: false, message: "not found" },
-        { status: 404 },
-      );
+    if (!app) return NextResponse.json({ ok: false, message: "not found" }, { status: 404 });
 
     if (String(app.userId) !== String(userId)) {
-      return NextResponse.json(
-        { ok: false, message: "Forbidden" },
-        { status: 403 },
-      );
+      return NextResponse.json({ ok: false, message: "Forbidden" }, { status: 403 });
     }
 
     const paymentSource = String(app.paymentSource ?? "").trim();
@@ -102,8 +81,7 @@ export async function POST(
         {
           ok: false,
           code: "RENTAL_LINKED_CONFIRM_NOT_ALLOWED",
-          message:
-            "대여와 연결된 교체서비스는 대여 수령 확인 흐름에서 함께 진행됩니다.",
+          message: "대여와 연결된 교체서비스는 대여 수령 확인 흐름에서 함께 진행됩니다.",
         },
         { status: 409 },
       );
@@ -121,9 +99,7 @@ export async function POST(
     // - 주문이 구매확정되면, 연결된 신청서도 userConfirmedAt을 함께 찍어 중복 확정을 막는다.
     if (app.orderId) {
       const orderObjectId =
-        app.orderId instanceof ObjectId
-          ? app.orderId
-          : new ObjectId(String(app.orderId));
+        app.orderId instanceof ObjectId ? app.orderId : new ObjectId(String(app.orderId));
       const orders = db.collection("orders");
 
       const order = await orders.findOne(
@@ -147,27 +123,18 @@ export async function POST(
       }
 
       if (String((order as any).userId) !== String(userId)) {
-        return NextResponse.json(
-          { ok: false, message: "Forbidden" },
-          { status: 403 },
-        );
+        return NextResponse.json({ ok: false, message: "Forbidden" }, { status: 403 });
       }
 
       // 이미 주문이 확정된 경우: 신청서도 "표시 목적"으로만 확정 처리(멱등)
-      if (
-        (order as any).userConfirmedAt ||
-        (order as any).status === "구매확정"
-      ) {
+      if ((order as any).userConfirmedAt || (order as any).status === "구매확정") {
         const confirmedAt = (order as any).userConfirmedAt
           ? new Date((order as any).userConfirmedAt)
           : new Date();
         await db.collection("stringing_applications").updateOne(
           {
             _id,
-            $or: [
-              { userConfirmedAt: { $exists: false } },
-              { userConfirmedAt: null },
-            ],
+            $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }],
           },
           { $set: { userConfirmedAt: confirmedAt } },
         );
@@ -181,8 +148,7 @@ export async function POST(
 
       // 주문 확정은 "배송완료"에서만(기존 구매확정 정책 유지)
       const prevStatus = String((order as any).status ?? "");
-      const allowedPrev =
-        prevStatus === "배송완료" || prevStatus === "delivered";
+      const allowedPrev = prevStatus === "배송완료" || prevStatus === "delivered";
       if (!allowedPrev) {
         return NextResponse.json(
           { ok: false, message: "배송완료 상태에서만 확정할 수 있습니다." },
@@ -231,10 +197,7 @@ export async function POST(
           _id: orderObjectId,
           userId: userObjectId,
           status: { $in: ["배송완료", "delivered"] },
-          $or: [
-            { userConfirmedAt: { $exists: false } },
-            { userConfirmedAt: null },
-          ],
+          $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }],
         },
         {
           $set: { status: "구매확정", userConfirmedAt: now, updatedAt: now },
@@ -275,10 +238,7 @@ export async function POST(
         {
           orderId: orderObjectId,
           status: { $in: ["교체완료", "취소"] },
-          $or: [
-            { userConfirmedAt: { $exists: false } },
-            { userConfirmedAt: null },
-          ],
+          $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }],
         },
         { $set: { userConfirmedAt: now } },
       );
@@ -313,10 +273,7 @@ export async function POST(
     if (rentalObjectId) {
       const rental = await db
         .collection("rental_orders")
-        .findOne(
-          { _id: rentalObjectId },
-          { projection: { userId: 1, amount: 1 } as any },
-        );
+        .findOne({ _id: rentalObjectId }, { projection: { userId: 1, amount: 1 } as any });
 
       if (rental && String((rental as any).userId) === String(userId)) {
         rewardBaseAmount = resolveRentalRewardBaseAmount(rental);
@@ -330,10 +287,7 @@ export async function POST(
       await db.collection("stringing_applications").updateOne(
         {
           _id,
-          $or: [
-            { userConfirmedAt: { $exists: false } },
-            { userConfirmedAt: null },
-          ],
+          $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }],
         },
         { $set: { userConfirmedAt: now } },
       );
@@ -359,10 +313,7 @@ export async function POST(
     await db.collection("stringing_applications").updateOne(
       {
         _id,
-        $or: [
-          { userConfirmedAt: { $exists: false } },
-          { userConfirmedAt: null },
-        ],
+        $or: [{ userConfirmedAt: { $exists: false } }, { userConfirmedAt: null }],
       },
       { $set: { userConfirmedAt: now } },
     );

@@ -1,8 +1,4 @@
-import type {
-  ComponentPropsWithoutRef,
-  HTMLAttributes,
-  ReactNode,
-} from "react";
+import type { ComponentPropsWithoutRef, HTMLAttributes, ReactNode } from "react";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
@@ -11,10 +7,7 @@ type LinkCardProps = {
   href: ComponentPropsWithoutRef<typeof Link>["href"];
   children: ReactNode;
   className?: string;
-} & Omit<
-  ComponentPropsWithoutRef<typeof Link>,
-  "href" | "children" | "className"
->;
+} & Omit<ComponentPropsWithoutRef<typeof Link>, "href" | "children" | "className">;
 
 type DivCardProps = {
   href?: undefined;
@@ -36,11 +29,7 @@ export function InteractiveCard(props: InteractiveCardProps) {
     const { href, className, children, ...linkProps } = props;
 
     return (
-      <Link
-        href={href}
-        className={cn(interactiveClassName, className)}
-        {...linkProps}
-      >
+      <Link href={href} className={cn(interactiveClassName, className)} {...linkProps}>
         {children}
       </Link>
     );

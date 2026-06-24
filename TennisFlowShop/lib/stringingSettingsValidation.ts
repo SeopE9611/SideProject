@@ -36,9 +36,7 @@ const toMinutes = (hhmm: string) => {
 const hasAtLeastOneSlot = (start: string, end: string, step: number) =>
   toMinutes(end) - toMinutes(start) >= step;
 
-export function validateBaseSettings(
-  settings: BaseStringingSettings,
-): string | null {
+export function validateBaseSettings(settings: BaseStringingSettings): string | null {
   if (!isValidHHMM(settings.start) || !isValidHHMM(settings.end)) {
     return "영업 시작/종료 시각 형식이 올바르지 않습니다.";
   }
@@ -78,9 +76,7 @@ export function validateBaseSettings(
   return null;
 }
 
-export function sanitizeExceptionInput(
-  exception: ExceptionItem,
-): ExceptionItem {
+export function sanitizeExceptionInput(exception: ExceptionItem): ExceptionItem {
   if (!exception.closed) return { ...exception };
 
   return {

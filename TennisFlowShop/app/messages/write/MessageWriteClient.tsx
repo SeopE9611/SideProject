@@ -21,23 +21,14 @@ type SafeUser = {
 };
 type ToUser = { id: string; name: string; role: string } | null;
 
-export default function MessageWriteClient({
-  me,
-  toUser,
-}: {
-  me: SafeUser;
-  toUser: ToUser;
-}) {
+export default function MessageWriteClient({ me, toUser }: { me: SafeUser; toUser: ToUser }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [loading, setLoading] = useState(false);
 
   // 입력이 하나라도 있으면 "이탈 시 초기화" 대상(= dirty)
-  const isDirty = useMemo(
-    () => title.trim().length > 0 || body.trim().length > 0,
-    [title, body],
-  );
+  const isDirty = useMemo(() => title.trim().length > 0 || body.trim().length > 0, [title, body]);
 
   // 탭 닫기/새로고침/주소 직접 변경 등 브라우저 이탈 감지
   useUnsavedChangesGuard(isDirty && !loading);
@@ -69,8 +60,7 @@ export default function MessageWriteClient({
       });
       const data = await res.json().catch(() => null);
 
-      if (!res.ok)
-        return showErrorToast(data?.error ?? "쪽지 전송에 실패했습니다.");
+      if (!res.ok) return showErrorToast(data?.error ?? "쪽지 전송에 실패했습니다.");
       showSuccessToast("쪽지를 보냈습니다.");
       router.push("/messages"); // (원하면 여기서 ?tab=send로 확장 가능)
     } finally {
@@ -80,10 +70,7 @@ export default function MessageWriteClient({
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-6 md:py-8">
-      <Card
-        className="border-border bg-card shadow-sm"
-        data-cy="message-write-card"
-      >
+      <Card className="border-border bg-card shadow-sm" data-cy="message-write-card">
         <CardHeader className="flex flex-col gap-3 border-b border-border/60 bg-secondary/70 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="text-lg">쪽지 보내기</CardTitle>
@@ -91,23 +78,15 @@ export default function MessageWriteClient({
               받는 사람과 내용을 확인한 뒤 쪽지를 전송하세요.
             </p>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => confirmLeaveIfDirty(() => router.back())}
-          >
+          <Button variant="outline" onClick={() => confirmLeaveIfDirty(() => router.back())}>
             뒤로
           </Button>
         </CardHeader>
 
         <CardContent className="space-y-5 p-4 md:p-6">
-          <div
-            className="text-sm text-muted-foreground"
-            data-cy="message-recipient"
-          >
+          <div className="text-sm text-muted-foreground" data-cy="message-recipient">
             받는 사람:{" "}
-            <span className="font-medium text-foreground">
-              {toUser?.name ?? "알 수 없음"}
-            </span>
+            <span className="font-medium text-foreground">{toUser?.name ?? "알 수 없음"}</span>
           </div>
 
           <div className="space-y-2">
@@ -138,24 +117,18 @@ export default function MessageWriteClient({
             <Button
               data-cy="message-cancel"
               variant="outline"
-              onClick={() =>
-                confirmLeaveIfDirty(() => router.push("/messages"))
-              }
+              onClick={() => confirmLeaveIfDirty(() => router.push("/messages"))}
             >
               취소
             </Button>
-            <Button
-              data-cy="message-submit"
-              disabled={!canSubmit || loading}
-              onClick={submit}
-            >
+            <Button data-cy="message-submit" disabled={!canSubmit || loading} onClick={submit}>
               {loading ? "전송 중…" : "전송"}
             </Button>
           </div>
 
           <div className="text-xs text-muted-foreground">
-            스팸 방지를 위해 “게시글 5개 + 댓글 5개” 조건 및 레이트리밋이
-            적용됩니다. (관리자는 예외)
+            스팸 방지를 위해 “게시글 5개 + 댓글 5개” 조건 및 레이트리밋이 적용됩니다. (관리자는
+            예외)
           </div>
         </CardContent>
       </Card>

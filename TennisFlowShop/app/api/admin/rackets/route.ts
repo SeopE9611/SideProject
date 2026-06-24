@@ -21,10 +21,7 @@ function normalizeRacketMarketing(value: any) {
 }
 
 // 숫자 쿼리 파싱 NaN 방지 + 범위 보정(skip/limit 런타임 에러 예방)
-function parseIntParam(
-  v: string | null,
-  opts: { defaultValue: number; min: number; max: number },
-) {
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
@@ -122,19 +119,13 @@ export async function POST(req: Request) {
     year: Number(body.year ?? 0) || null,
     // 검색 키워드
     searchKeywords: Array.isArray(body.searchKeywords)
-      ? body.searchKeywords
-          .map((k: any) => String(k).trim())
-          .filter((k: string) => k.length > 0)
+      ? body.searchKeywords.map((k: any) => String(k).trim()).filter((k: string) => k.length > 0)
       : [],
     spec: {
       weight:
-        body.spec?.weight != null && body.spec?.weight !== ""
-          ? Number(body.spec.weight)
-          : null,
+        body.spec?.weight != null && body.spec?.weight !== "" ? Number(body.spec.weight) : null,
       balance:
-        body.spec?.balance != null && body.spec?.balance !== ""
-          ? Number(body.spec.balance)
-          : null,
+        body.spec?.balance != null && body.spec?.balance !== "" ? Number(body.spec.balance) : null,
       headSize:
         body.spec?.headSize != null && body.spec?.headSize !== ""
           ? Number(body.spec.headSize)
@@ -188,31 +179,19 @@ export async function POST(req: Request) {
   }
 
   if (doc.rental.enabled === false && !doc.rental.disabledReason) {
-    return NextResponse.json(
-      { message: "대여 불가 시 사유 입력이 필요합니다." },
-      { status: 400 },
-    );
+    return NextResponse.json({ message: "대여 불가 시 사유 입력이 필요합니다." }, { status: 400 });
   }
 
   if (!doc.spec.pattern) {
-    return NextResponse.json(
-      { message: "스트링 패턴 값이 유효하지 않습니다." },
-      { status: 400 },
-    );
+    return NextResponse.json({ message: "스트링 패턴 값이 유효하지 않습니다." }, { status: 400 });
   }
   if (!doc.spec.gripSize) {
-    return NextResponse.json(
-      { message: "그립 사이즈 값이 유효하지 않습니다." },
-      { status: 400 },
-    );
+    return NextResponse.json({ message: "그립 사이즈 값이 유효하지 않습니다." }, { status: 400 });
   }
 
   const brandOk = RACKET_BRANDS.some((b) => b.value === doc.brand);
   if (!brandOk)
-    return NextResponse.json(
-      { message: "브랜드 값이 유효하지 않습니다." },
-      { status: 400 },
-    );
+    return NextResponse.json({ message: "브랜드 값이 유효하지 않습니다." }, { status: 400 });
 
   // spec 숫자 필드 유효성(숫자/빈값/null만 허용)
   for (const k of [
@@ -225,10 +204,7 @@ export async function POST(req: Request) {
   ] as const) {
     const v = (doc as any).spec?.[k];
     if (v !== null && v !== undefined && !Number.isFinite(v)) {
-      return NextResponse.json(
-        { message: `spec.${k} 값이 유효하지 않습니다.` },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: `spec.${k} 값이 유효하지 않습니다.` }, { status: 400 });
     }
   }
 

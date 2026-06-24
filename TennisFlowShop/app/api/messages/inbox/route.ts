@@ -2,19 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/hooks/get-current-user";
-import {
-  mapMessageListItem,
-  notExpiredClause,
-  parseListQuery,
-} from "../_utils";
+import { mapMessageListItem, notExpiredClause, parseListQuery } from "../_utils";
 
 export async function GET(req: NextRequest) {
   const me = await getCurrentUser();
-  if (!me)
-    return NextResponse.json(
-      { ok: false, error: "Unauthorized" },
-      { status: 401 },
-    );
+  if (!me) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
   const { page, limit } = parseListQuery(req);
   const skip = (page - 1) * limit;

@@ -30,9 +30,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
     const rNext = sp.next;
     const rRedirectTo = sp.redirectTo;
     const next = Array.isArray(rNext) ? rNext[0] : rNext;
-    const redirectTo = Array.isArray(rRedirectTo)
-      ? rRedirectTo[0]
-      : rRedirectTo;
+    const redirectTo = Array.isArray(rRedirectTo) ? rRedirectTo[0] : rRedirectTo;
     redirect(safeRedirectTarget(next ?? redirectTo));
   }
   return <LoginPageClient />;

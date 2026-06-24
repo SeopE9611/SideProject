@@ -1,20 +1,11 @@
 import { verifyAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
 import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
-import {
-  buildNiceOrderName,
-  createNiceOrderId,
-} from "@/lib/payments/nice/server";
+import { buildNiceOrderName, createNiceOrderId } from "@/lib/payments/nice/server";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
-import {
-  ensureTossPaymentSessionIndexes,
-  tossPaymentSessions,
-} from "@/lib/payments/toss/session";
+import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
 import { getPointsSummary } from "@/lib/points.service";
-import {
-  productVisibilityFilterFor,
-  racketVisibilityFilterFor,
-} from "@/lib/public-visibility";
+import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
@@ -27,9 +18,7 @@ export const preferredRegion = ["icn1", "hnd1"];
 const POINT_UNIT = 100;
 
 function resolveClientId() {
-  return String(
-    process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "",
-  ).trim();
+  return String(process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "").trim();
 }
 
 function resolveAppUrl() {
@@ -42,9 +31,7 @@ const BodySchema = z.object({
   racketId: z.string().trim().min(1),
   days: z.union([z.literal(7), z.literal(15), z.literal(30)]),
   pointsToUse: z.coerce.number().optional(),
-  servicePickupMethod: z
-    .enum(["SELF_SEND", "SHOP_VISIT", "delivery", "pickup"])
-    .optional(),
+  servicePickupMethod: z.enum(["SELF_SEND", "SHOP_VISIT", "delivery", "pickup"]).optional(),
   payment: z.object({ method: z.literal("nicepay") }).optional(),
   shipping: z.record(z.any()).optional(),
   refundAccount: RefundAccountSchema,
@@ -109,10 +96,7 @@ export async function POST(req: Request) {
       "legacy"
     ).trim();
     if (guestOrderMode !== "on" && !userId) {
-      return NextResponse.json(
-        { success: false, error: "로그인이 필요합니다." },
-        { status: 401 },
-      );
+      return NextResponse.json({ success: false, error: "로그인이 필요합니다." }, { status: 401 });
     }
 
     const client = await clientPromise;
@@ -123,19 +107,14 @@ export async function POST(req: Request) {
     const racket = await db
       .collection("used_rackets")
       .findOne({ _id: racketObjectId, ...racketVisibilityFilterFor(viewer) });
-    if (!racket)
-      return NextResponse.json(
-        { success: false, error: "라켓 없음" },
-        { status: 404 },
-      );
+    if (!racket) return NextResponse.json({ success: false, error: "라켓 없음" }, { status: 404 });
 
     const activeCount = await db.collection("rental_orders").countDocuments({
       racketId: racketObjectId,
       status: { $in: ["paid", "out"] },
     });
     const rawQtyField = (racket as any).quantity;
-    const hasStockQty =
-      typeof rawQtyField === "number" && Number.isFinite(rawQtyField);
+    const hasStockQty = typeof rawQtyField === "number" && Number.isFinite(rawQtyField);
     const baseQty = hasStockQty
       ? Math.max(0, Math.trunc(rawQtyField))
       : racket.status === "available"
@@ -153,10 +132,7 @@ export async function POST(req: Request) {
     if (parsed.data.stringing?.requested) {
       const sid = parsed.data.stringing?.stringId;
       if (!sid || !ObjectId.isValid(sid)) {
-        return NextResponse.json(
-          { success: false, error: "BAD_STRING_ID" },
-          { status: 400 },
-        );
+        return NextResponse.json({ success: false, error: "BAD_STRING_ID" }, { status: 400 });
       }
       const s = await db
         .collection("products")
@@ -165,10 +141,7 @@ export async function POST(req: Request) {
           { projection: { price: 1, mountingFee: 1 } },
         );
       if (!s)
-        return NextResponse.json(
-          { success: false, error: "STRING_NOT_FOUND" },
-          { status: 404 },
-        );
+        return NextResponse.json({ success: false, error: "STRING_NOT_FOUND" }, { status: 404 });
       stringPrice = Number((s as any)?.price ?? 0);
       stringingFee = Number((s as any)?.mountingFee ?? 0);
     }
@@ -182,12 +155,8 @@ export async function POST(req: Request) {
     const deposit = Number((racket as any).rental?.deposit ?? 0);
     const originalTotal = deposit + fee + stringPrice + stringingFee;
 
-    const requestedPoints = Math.max(
-      0,
-      Math.floor(Number(parsed.data.pointsToUse ?? 0)),
-    );
-    const normalizedRequestedPointsToUse =
-      Math.floor(requestedPoints / POINT_UNIT) * POINT_UNIT;
+    const requestedPoints = Math.max(0, Math.floor(Number(parsed.data.pointsToUse ?? 0)));
+    const normalizedRequestedPointsToUse = Math.floor(requestedPoints / POINT_UNIT) * POINT_UNIT;
     if (!userId && normalizedRequestedPointsToUse > 0) {
       return NextResponse.json(
         { success: false, error: "LOGIN_REQUIRED_FOR_POINTS" },
@@ -196,17 +165,10 @@ export async function POST(req: Request) {
     }
 
     let pointsUsed = 0;
-    if (
-      userId &&
-      normalizedRequestedPointsToUse > 0 &&
-      ObjectId.isValid(userId)
-    ) {
+    if (userId && normalizedRequestedPointsToUse > 0 && ObjectId.isValid(userId)) {
       const summary = await getPointsSummary(db, new ObjectId(userId));
       if (summary.debt > 0)
-        return NextResponse.json(
-          { success: false, error: "POINTS_DEBT_EXISTS" },
-          { status: 409 },
-        );
+        return NextResponse.json({ success: false, error: "POINTS_DEBT_EXISTS" }, { status: 409 });
       const maxPointsByPolicy = Math.max(0, originalTotal - deposit);
       const maxSpendable = Math.min(summary.available, maxPointsByPolicy);
       pointsUsed = Math.min(normalizedRequestedPointsToUse, maxSpendable);
@@ -257,14 +219,10 @@ export async function POST(req: Request) {
         returnUrl,
         goodsName,
         buyerName: String(
-          (parsed.data.shipping as any)?.name ??
-            parsed.data.guestInfo?.name ??
-            "",
+          (parsed.data.shipping as any)?.name ?? parsed.data.guestInfo?.name ?? "",
         ).trim(),
         buyerTel: String(
-          (parsed.data.shipping as any)?.phone ??
-            parsed.data.guestInfo?.phone ??
-            "",
+          (parsed.data.shipping as any)?.phone ?? parsed.data.guestInfo?.phone ?? "",
         ).replace(/\D/g, ""),
         buyerEmail: String(parsed.data.guestInfo?.email ?? "").trim(),
       },
@@ -281,9 +239,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        error:
-          error?.message ||
-          "라켓 대여 카드/간편결제 준비 중 오류가 발생했습니다.",
+        error: error?.message || "라켓 대여 카드/간편결제 준비 중 오류가 발생했습니다.",
       },
       { status: 500 },
     );

@@ -5,9 +5,7 @@ const dbName = process.env.MONGODB_DB || "tennis_academy";
 const sampleSize = Number(process.env.SMOKE_SAMPLE_SIZE || "20");
 
 if (!uri) {
-  console.error(
-    "[smoke-admin-community-posts-metrics] MONGODB_URI is required",
-  );
+  console.error("[smoke-admin-community-posts-metrics] MONGODB_URI is required");
   process.exit(1);
 }
 

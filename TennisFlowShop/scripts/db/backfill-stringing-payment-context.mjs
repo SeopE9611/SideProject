@@ -5,9 +5,7 @@ const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB || "tennis_academy";
 
 if (!uri) {
-  console.error(
-    "[backfill-stringing-payment-context] MONGODB_URI 환경 변수가 필요합니다.",
-  );
+  console.error("[backfill-stringing-payment-context] MONGODB_URI 환경 변수가 필요합니다.");
   process.exit(1);
 }
 
@@ -60,10 +58,7 @@ async function run() {
             ],
           },
           {
-            $or: [
-              { orderId: { $exists: true } },
-              { rentalId: { $exists: true } },
-            ],
+            $or: [{ orderId: { $exists: true } }, { rentalId: { $exists: true } }],
           },
         ],
       },
@@ -137,9 +132,7 @@ async function run() {
     console.log(`\n[${modeLabel}] scan complete`);
     console.log(`[${modeLabel}] scanned=${scanned}`);
     console.log(`[${modeLabel}] candidates=${candidates}`);
-    console.log(
-      `[${modeLabel}] skipped_explicit_payment_status=${skippedExplicitPaymentStatus}`,
-    );
+    console.log(`[${modeLabel}] skipped_explicit_payment_status=${skippedExplicitPaymentStatus}`);
     console.log(`[${modeLabel}] skipped_unresolved=${skippedUnresolved}`);
     console.log(`[${modeLabel}] modified=${modified}`);
   } finally {

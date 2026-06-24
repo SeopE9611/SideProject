@@ -12,12 +12,7 @@ interface Props {
   onCancel: () => void;
 }
 
-export default function RequestEditForm({
-  initialData,
-  orderId,
-  onSuccess,
-  onCancel,
-}: Props) {
+export default function RequestEditForm({ initialData, orderId, onSuccess, onCancel }: Props) {
   const [value, setValue] = useState(initialData);
   const [baseline, setBaseline] = useState(initialData);
   const [loading, setLoading] = useState(false);

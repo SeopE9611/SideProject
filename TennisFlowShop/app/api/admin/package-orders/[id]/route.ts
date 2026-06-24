@@ -23,10 +23,7 @@ function getCurrentRemainingForPause(passDoc: ServicePass, now: Date): number {
     return 0;
   }
 
-  if (
-    typeof passDoc.remainingValidityMs === "number" &&
-    passDoc.remainingValidityMs >= 0
-  )
+  if (typeof passDoc.remainingValidityMs === "number" && passDoc.remainingValidityMs >= 0)
     return passDoc.remainingValidityMs;
   if (passDoc.expiresAt instanceof Date)
     return Math.max(0, passDoc.expiresAt.getTime() - now.getTime());
@@ -48,10 +45,7 @@ function getCurrentRemainingForPause(passDoc: ServicePass, now: Date): number {
 
 // PATCH: 상태 변경 (결제완료 -> 패스 멱등 발급 포함)
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   // 관리자 인증/인가 표준 가드
   const guard = await requireAdmin(request);
   if (!guard.ok) return guard.res;
@@ -81,13 +75,10 @@ export async function PATCH(
     const _id = new ObjectId(id);
 
     const pkgOrder = await packageOrders.findOne({ _id });
-    if (!pkgOrder)
-      return NextResponse.json({ error: "Not Found" }, { status: 404 });
+    if (!pkgOrder) return NextResponse.json({ error: "Not Found" }, { status: 404 });
 
     const prevPayment = pkgOrder.paymentStatus ?? "결제대기";
-    const adminLabel = String(
-      guard.admin.email ?? guard.admin._id.toHexString(),
-    );
+    const adminLabel = String(guard.admin.email ?? guard.admin._id.toHexString());
     const historyDesc = willSetPayment
       ? `결제 상태 ${prevPayment} → ${paymentToSet}` +
         (reason ? ` / 사유: ${reason}` : "") +
@@ -144,22 +135,14 @@ export async function PATCH(
           },
           after: {
             status: afterDoc?.status ?? statusStr ?? null,
-            paymentStatus:
-              afterDoc?.paymentStatus ??
-              (willSetPayment ? paymentToSet : prevPayment),
+            paymentStatus: afterDoc?.paymentStatus ?? (willSetPayment ? paymentToSet : prevPayment),
             expiresAt: null,
             usedCount: null,
             remainingCount: null,
-            totalCount:
-              afterDoc?.packageInfo?.sessions ??
-              pkgOrder.packageInfo?.sessions ??
-              null,
+            totalCount: afterDoc?.packageInfo?.sessions ?? pkgOrder.packageInfo?.sessions ?? null,
           },
           metadata: {
-            changedKeys: [
-              "status",
-              ...(willSetPayment ? ["paymentStatus"] : []),
-            ],
+            changedKeys: ["status", ...(willSetPayment ? ["paymentStatus"] : [])],
             reason: reason || null,
             actor: {
               id: String(guard.admin._id),
@@ -188,9 +171,7 @@ export async function PATCH(
 
         if (statusStr !== "결제완료") {
           const nextStatus =
-            statusStr === "결제취소" || statusStr === "취소"
-              ? "cancelled"
-              : "paused";
+            statusStr === "결제취소" || statusStr === "취소" ? "cancelled" : "paused";
           const remainingValidityMs = getCurrentRemainingForPause(passDoc, now);
           const updateDoc: Partial<ServicePass> & { updatedAt: Date } = {
             status: nextStatus,
@@ -215,10 +196,7 @@ export async function PATCH(
 }
 
 // GET: 관리자 상세 조회 (고객정보 + 사용 이력 포함)
-export async function GET(
-  request: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: Request, ctx: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(request);
   if (!guard.ok) return guard.res;
 
@@ -325,10 +303,7 @@ export async function GET(
                           { $and: ["$$h.from", "$$h.to"] },
                           {
                             $toInt: {
-                              $divide: [
-                                { $subtract: ["$$h.to", "$$h.from"] },
-                                86400000,
-                              ],
+                              $divide: [{ $subtract: ["$$h.to", "$$h.from"] }, 86400000],
                             },
                           },
                           { $ifNull: ["$$h.daysAdded", 0] },
@@ -362,10 +337,7 @@ export async function GET(
                     input: { $ifNull: ["$history", []] },
                     as: "h",
                     cond: {
-                      $in: [
-                        "$$h.status",
-                        ["결제대기", "결제완료", "결제취소", "취소"],
-                      ],
+                      $in: ["$$h.status", ["결제대기", "결제완료", "결제취소", "취소"]],
                     },
                   },
                 },
@@ -397,10 +369,7 @@ export async function GET(
                         input: { $ifNull: ["$history", []] },
                         as: "h",
                         cond: {
-                          $in: [
-                            "$$h.status",
-                            ["결제대기", "결제완료", "결제취소", "취소"],
-                          ],
+                          $in: ["$$h.status", ["결제대기", "결제완료", "결제취소", "취소"]],
                         },
                       },
                     },
@@ -429,10 +398,7 @@ export async function GET(
                         input: { $ifNull: ["$passDoc.history", []] },
                         as: "h",
                         cond: {
-                          $in: [
-                            "$$h.type",
-                            ["extend_expiry", "adjust_sessions"],
-                          ],
+                          $in: ["$$h.type", ["extend_expiry", "adjust_sessions"]],
                         },
                       },
                     },
@@ -448,10 +414,7 @@ export async function GET(
                               { $and: ["$$h.from", "$$h.to"] },
                               {
                                 $toInt: {
-                                  $divide: [
-                                    { $subtract: ["$$h.to", "$$h.from"] },
-                                    86400000,
-                                  ],
+                                  $divide: [{ $subtract: ["$$h.to", "$$h.from"] }, 86400000],
                                 },
                               },
                               { $ifNull: ["$$h.daysAdded", 0] },
@@ -508,10 +471,7 @@ export async function GET(
                           $and: [
                             { $ne: ["$passDoc", null] },
                             {
-                              $lte: [
-                                { $ifNull: ["$passDoc.remainingCount", 0] },
-                                0,
-                              ],
+                              $lte: [{ $ifNull: ["$passDoc.remainingCount", 0] }, 0],
                             },
                           ],
                         },
@@ -520,10 +480,7 @@ export async function GET(
                       // 시간 만료
                       {
                         case: {
-                          $and: [
-                            { $ne: ["$$exp", null] },
-                            { $lte: ["$$exp", "$$NOW"] },
-                          ],
+                          $and: [{ $ne: ["$$exp", null] }, { $lte: ["$$exp", "$$NOW"] }],
                         },
                         then: "만료",
                       },
@@ -666,8 +623,7 @@ export async function GET(
       .toArray();
 
     const item = rows[0] || null;
-    if (!item)
-      return NextResponse.json({ error: "Not Found" }, { status: 404 });
+    if (!item) return NextResponse.json({ error: "Not Found" }, { status: 404 });
 
     return NextResponse.json({ item });
   } catch (e) {

@@ -50,12 +50,7 @@ export default function RentDialog({
   //   if (autoOpen) setOpen(true);
   // }, [autoOpen]);
 
-  const fee =
-    period === 7
-      ? rental.fee.d7
-      : period === 15
-        ? rental.fee.d15
-        : rental.fee.d30;
+  const fee = period === 7 ? rental.fee.d7 : period === 15 ? rental.fee.d15 : rental.fee.d30;
 
   // const safeJson = async (res: Response) => {
   //   try {
@@ -89,9 +84,7 @@ export default function RentDialog({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto border border-border bg-card shadow-sm sm:max-w-md">
           <DialogHeader className="pr-8 text-left">
-            <DialogTitle className="text-xl font-bold text-foreground">
-              대여 기간 선택
-            </DialogTitle>
+            <DialogTitle className="text-xl font-bold text-foreground">대여 기간 선택</DialogTitle>
             <DialogDescription className="break-keep text-sm text-muted-foreground">
               스트링 선택 단계로 이동하기 전 대여 기간을 선택해 주세요.
             </DialogDescription>
@@ -99,18 +92,14 @@ export default function RentDialog({
 
           <div className="space-y-4">
             <div className="rounded-xl border border-border bg-muted/20 p-4">
-              <div className="mb-1 text-sm text-muted-foreground">
-                선택한 라켓
-              </div>
+              <div className="mb-1 text-sm text-muted-foreground">선택한 라켓</div>
               <div className="min-w-0 break-keep font-semibold text-foreground">
                 {brand} {model}
               </div>
             </div>
 
             <div className="space-y-3">
-              <div className="text-sm font-semibold text-foreground">
-                기간 선택
-              </div>
+              <div className="text-sm font-semibold text-foreground">기간 선택</div>
               <div className="grid grid-cols-3 gap-2">
                 {[7, 15, 30].map((d) => {
                   const selected = period === d;
@@ -137,17 +126,13 @@ export default function RentDialog({
 
             <div className="space-y-3 rounded-xl border border-border bg-background p-4">
               <div className="flex items-center justify-between gap-3">
-                <span className="min-w-0 break-keep text-sm text-muted-foreground">
-                  대여료
-                </span>
+                <span className="min-w-0 break-keep text-sm text-muted-foreground">대여료</span>
                 <span className="shrink-0 whitespace-nowrap text-right font-bold text-foreground tabular-nums">
                   {fee.toLocaleString()}원
                 </span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span className="min-w-0 break-keep text-sm text-muted-foreground">
-                  보증금
-                </span>
+                <span className="min-w-0 break-keep text-sm text-muted-foreground">보증금</span>
                 <span className="shrink-0 whitespace-nowrap text-right font-bold text-foreground tabular-nums">
                   {(rental.deposit ?? 0).toLocaleString()}원
                 </span>
@@ -161,11 +146,7 @@ export default function RentDialog({
           </div>
 
           <DialogFooter className="gap-2 sm:gap-2 [&_button]:h-11 [&_button]:rounded-xl sm:[&_button]:min-w-24">
-            <Button
-              variant="outline"
-              onClick={() => setOpen(false)}
-              disabled={loading}
-            >
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
               취소
             </Button>
             <Button onClick={onSubmit} disabled={loading}>

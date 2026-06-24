@@ -6,10 +6,7 @@ import { z } from "zod";
 import { getDb } from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { logInfo, reqMeta, startTimer } from "@/lib/logger";
-import {
-  COMMUNITY_BOARD_TYPES,
-  COMMUNITY_CATEGORIES,
-} from "@/lib/types/community";
+import { COMMUNITY_BOARD_TYPES, COMMUNITY_CATEGORIES } from "@/lib/types/community";
 import { API_VERSION } from "@/lib/board.repository";
 import { verifyCommunityCsrf } from "@/lib/community/security";
 import {
@@ -18,11 +15,7 @@ import {
   getCommunitySortOption,
   parseCommunityListQuery,
 } from "@/lib/community-list-query";
-import {
-  normalizeSanitizedContent,
-  sanitizeHtml,
-  validateSanitizedLength,
-} from "@/lib/sanitize";
+import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from "@/lib/sanitize";
 import { validateBoardAssetUrl } from "@/lib/boards-community-url-policy";
 import { normalizeMarketMeta } from "@/lib/market";
 import {
@@ -61,19 +54,12 @@ async function getAuthPayload() {
 const createSchema = z.object({
   type: z.enum(COMMUNITY_BOARD_TYPES),
 
-  title: z
-    .string()
-    .min(1, "제목을 입력해 주세요.")
-    .max(200, "제목은 200자 이내로 입력해 주세요."),
+  title: z.string().min(1, "제목을 입력해 주세요.").max(200, "제목은 200자 이내로 입력해 주세요."),
 
   content: z.string().max(5000, "내용은 5000자 이내로 입력해 주세요."),
 
   // 브랜드 게시판/중고거래 게시판에서만 의미 있음 (그 외 게시판은 null/undefined)
-  brand: z
-    .string()
-    .max(100, "브랜드명은 100자 이내로 입력해 주세요.")
-    .optional()
-    .nullable(),
+  brand: z.string().max(100, "브랜드명은 100자 이내로 입력해 주세요.").optional().nullable(),
 
   // 자유 게시판 카테고리 (제목 머릿말 용)
   // - 폼에서 아직 값을 안 보내도 기본값 'general' 로 처리
@@ -180,12 +166,7 @@ export async function GET(req: NextRequest) {
   const skip = (page - 1) * limit;
 
   const total = await col.countDocuments(filter);
-  const docs = await col
-    .find(filter)
-    .sort(sortOption)
-    .skip(skip)
-    .limit(limit)
-    .toArray();
+  const docs = await col.find(filter).sort(sortOption).skip(skip).limit(limit).toArray();
 
   const communityDocs = docs as CommunityPostMongoDoc[];
   const userObjectIds = getValidCommunityUserObjectIds(
@@ -194,10 +175,7 @@ export async function GET(req: NextRequest) {
   const users = userObjectIds.length
     ? await db
         .collection("users")
-        .find(
-          { _id: { $in: userObjectIds } },
-          { projection: { name: 1, nickname: 1 } },
-        )
+        .find({ _id: { $in: userObjectIds } }, { projection: { name: 1, nickname: 1 } })
         .toArray()
     : [];
   const userMap = new Map(
@@ -239,10 +217,7 @@ export async function GET(req: NextRequest) {
       views: d.views ?? 0,
       likes: d.likes ?? 0,
       commentsCount: d.commentsCount ?? 0,
-      createdAt:
-        d.createdAt instanceof Date
-          ? d.createdAt.toISOString()
-          : String(d.createdAt),
+      createdAt: d.createdAt instanceof Date ? d.createdAt.toISOString() : String(d.createdAt),
       updatedAt:
         d.updatedAt instanceof Date
           ? d.updatedAt.toISOString()
@@ -271,12 +246,9 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(response, {
     headers: {
       // 목록은 짧게 캐시 (필요 시 조정 가능)
-      "Cache-Control":
-        "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
-      "CDN-Cache-Control":
-        "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
-      "Vercel-CDN-Cache-Control":
-        "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
+      "Cache-Control": "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
+      "CDN-Cache-Control": "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
+      "Vercel-CDN-Cache-Control": "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
     },
   });
 }
@@ -362,8 +334,7 @@ export async function POST(req: NextRequest) {
         ok: false,
         version: API_VERSION,
         error: "invalid_attachment_url",
-        message:
-          "허용되지 않은 첨부 URL입니다. HTTPS + 허용 호스트/경로 정책을 확인해 주세요.",
+        message: "허용되지 않은 첨부 URL입니다. HTTPS + 허용 호스트/경로 정책을 확인해 주세요.",
         details: [
           {
             path: invalidAsset.path,
@@ -376,9 +347,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const sanitizedContent = normalizeSanitizedContent(
-    await sanitizeHtml(body.content),
-  );
+  const sanitizedContent = normalizeSanitizedContent(await sanitizeHtml(body.content));
   const contentLengthValidation = validateSanitizedLength(sanitizedContent, {
     min: 1,
     max: 5000,
@@ -402,9 +371,7 @@ export async function POST(req: NextRequest) {
         ok: false,
         version: API_VERSION,
         error: "validation_error",
-        details: [
-          { path: ["content"], message: "내용은 5000자 이내로 입력해 주세요." },
-        ],
+        details: [{ path: ["content"], message: "내용은 5000자 이내로 입력해 주세요." }],
       },
       { status: 400 },
     );
@@ -444,10 +411,7 @@ export async function POST(req: NextRequest) {
   }
   // market 게시판: 라켓/스트링은 brand 필수, 일반장비는 brand 제거(null)
   if (body.type === "market") {
-    const normalizedMarketMeta = normalizeMarketMeta(
-      body.category ?? null,
-      body.marketMeta,
-    );
+    const normalizedMarketMeta = normalizeMarketMeta(body.category ?? null, body.marketMeta);
     const cat = body.category ?? null;
     const b = typeof body.brand === "string" ? body.brand.trim() : "";
 
@@ -476,11 +440,7 @@ export async function POST(req: NextRequest) {
       body.brand = b;
     }
 
-    if (
-      !normalizedMarketMeta ||
-      !normalizedMarketMeta.price ||
-      normalizedMarketMeta.price <= 0
-    ) {
+    if (!normalizedMarketMeta || !normalizedMarketMeta.price || normalizedMarketMeta.price <= 0) {
       return NextResponse.json(
         {
           ok: false,
@@ -495,10 +455,7 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-    if (
-      body.category === "racket" &&
-      !(normalizedMarketMeta.racketSpec?.modelName ?? "").trim()
-    ) {
+    if (body.category === "racket" && !(normalizedMarketMeta.racketSpec?.modelName ?? "").trim()) {
       return NextResponse.json(
         {
           ok: false,
@@ -513,10 +470,7 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-    if (
-      body.category === "string" &&
-      !(normalizedMarketMeta.stringSpec?.modelName ?? "").trim()
-    ) {
+    if (body.category === "string" && !(normalizedMarketMeta.stringSpec?.modelName ?? "").trim()) {
       return NextResponse.json(
         {
           ok: false,
@@ -553,10 +507,7 @@ export async function POST(req: NextRequest) {
     content: sanitizedContent,
 
     // 브랜드 게시판/중고거래 게시판이 아닐 때는 항상 null
-    brand:
-      body.type === "brand" || body.type === "market"
-        ? (body.brand ?? null)
-        : null,
+    brand: body.type === "brand" || body.type === "market" ? (body.brand ?? null) : null,
 
     // 자유 게시판 카테고리 (제목 머릿말)
     category: body.category ?? "general",
@@ -564,8 +515,7 @@ export async function POST(req: NextRequest) {
     marketMeta: body.type === "market" ? (body.marketMeta ?? null) : null,
 
     // 첨부 이미지 URL 배열 (없으면 빈 배열)
-    images:
-      Array.isArray(body.images) && body.images.length > 0 ? body.images : [],
+    images: Array.isArray(body.images) && body.images.length > 0 ? body.images : [],
 
     // 첨부 파일
     attachments: body.attachments ?? [],

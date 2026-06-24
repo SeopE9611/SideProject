@@ -2,12 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -54,12 +49,7 @@ function safeDateLabel(iso: string) {
   return safeLocalDateTime(iso);
 }
 
-export default function UserPointsDialog({
-  open,
-  onOpenChange,
-  userId,
-  userName,
-}: Props) {
+export default function UserPointsDialog({ open, onOpenChange, userId, userName }: Props) {
   const [page, setPage] = useState(1);
   // 유저가 바뀌거나 다이얼로그를 다시 열면 1페이지부터 보여주기
   useEffect(() => {
@@ -73,39 +63,30 @@ export default function UserPointsDialog({
     return `/api/admin/users/${userId}/points/history?page=${page}&limit=${limit}`;
   }, [userId, page]);
 
-  const { data, error, mutate, isLoading, isValidating } =
-    useSWR<UserPointHistoryResponse>(historyUrl, authenticatedSWRFetcher, {
+  const { data, error, mutate, isLoading, isValidating } = useSWR<UserPointHistoryResponse>(
+    historyUrl,
+    authenticatedSWRFetcher,
+    {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-    });
+    },
+  );
 
   // 조회 성공/실패/미확정 상태를 분리해 실패가 0건처럼 보이지 않게 처리한다.
   const hasResolvedData = !!data;
   const hasDataError = !!error;
-  const hasResolvedBalance =
-    hasResolvedData && !hasDataError && typeof data.balance === "number";
-  const hasResolvedItems =
-    hasResolvedData && !hasDataError && Array.isArray(data.items);
-  const hasResolvedTotal =
-    hasResolvedData && !hasDataError && typeof data.total === "number";
+  const hasResolvedBalance = hasResolvedData && !hasDataError && typeof data.balance === "number";
+  const hasResolvedItems = hasResolvedData && !hasDataError && Array.isArray(data.items);
+  const hasResolvedTotal = hasResolvedData && !hasDataError && typeof data.total === "number";
   const isPageTransitionLoading = !isLoading && isValidating && !hasDataError;
 
-  const balance: number | null = hasResolvedBalance
-    ? (data?.balance as number)
-    : null;
-  const items: TxItem[] | null = hasResolvedItems
-    ? (data?.items as TxItem[])
-    : null;
-  const total: number | null = hasResolvedTotal
-    ? (data?.total as number)
-    : null;
+  const balance: number | null = hasResolvedBalance ? (data?.balance as number) : null;
+  const items: TxItem[] | null = hasResolvedItems ? (data?.items as TxItem[]) : null;
+  const total: number | null = hasResolvedTotal ? (data?.total as number) : null;
   const totalPages = total === null ? 1 : Math.max(1, Math.ceil(total / limit));
   const hasResolvedTotalPages = hasResolvedTotal && total !== null;
   const shouldShowResolvedPageInfo =
-    hasResolvedTotalPages &&
-    !hasDataError &&
-    !isLoading &&
-    !isPageTransitionLoading;
+    hasResolvedTotalPages && !hasDataError && !isLoading && !isPageTransitionLoading;
   const shouldShowRows = !!items && items.length > 0;
   const shouldShowEmptyState = !!items && items.length === 0;
 
@@ -118,10 +99,7 @@ export default function UserPointsDialog({
 
   // 입력 중 이탈 방지(dirty): 입력칸에 뭐라도 있으면 보호
   const isDirty =
-    open &&
-    (amount.trim().length > 0 ||
-      reason.trim().length > 0 ||
-      refKey.trim().length > 0);
+    open && (amount.trim().length > 0 || reason.trim().length > 0 || refKey.trim().length > 0);
   useUnsavedChangesGuard(isDirty);
 
   // 오버레이/ESC/닫기 등 “다이얼로그 자체 닫기”에서도 입력 유실 방지
@@ -205,9 +183,7 @@ export default function UserPointsDialog({
         <DialogHeader>
           <DialogTitle>
             포인트 관리{userName ? ` - ${userName}` : ""}{" "}
-            {userId
-              ? `(잔액: ${balance === null ? "-" : `${balance.toLocaleString()}P`})`
-              : ""}
+            {userId ? `(잔액: ${balance === null ? "-" : `${balance.toLocaleString()}P`})` : ""}
           </DialogTitle>
         </DialogHeader>
 
@@ -215,9 +191,8 @@ export default function UserPointsDialog({
         <div className="grid gap-2">
           <div className="text-sm text-muted-foreground">
             amount는 <span className="font-medium">양수(지급)</span> /{" "}
-            <span className="font-medium">음수(차감)</span>입니다. ‘중복 방지
-            키(고급)’는 같은 요청이 두 번 들어와도{" "}
-            <span className="font-medium">1번만 반영</span>되게 막고 싶을 때만
+            <span className="font-medium">음수(차감)</span>입니다. ‘중복 방지 키(고급)’는 같은
+            요청이 두 번 들어와도 <span className="font-medium">1번만 반영</span>되게 막고 싶을 때만
             사용합니다.
           </div>
 
@@ -257,17 +232,10 @@ export default function UserPointsDialog({
           ) : null}
 
           <div className="flex gap-2">
-            <Button
-              disabled={!canSubmit || submitting}
-              onClick={() => onAdjust(amountNum)}
-            >
+            <Button disabled={!canSubmit || submitting} onClick={() => onAdjust(amountNum)}>
               적용
             </Button>
-            <Button
-              variant="secondary"
-              disabled={submitting}
-              onClick={() => mutate()}
-            >
+            <Button variant="secondary" disabled={submitting} onClick={() => mutate()}>
               새로고침
             </Button>
           </div>
@@ -287,9 +255,7 @@ export default function UserPointsDialog({
                 이전
               </Button>
               <div className="text-sm">
-                {shouldShowResolvedPageInfo
-                  ? `${page} / ${totalPages}`
-                  : "- / -"}
+                {shouldShowResolvedPageInfo ? `${page} / ${totalPages}` : "- / -"}
               </div>
               <Button
                 variant="outline"
@@ -322,13 +288,9 @@ export default function UserPointsDialog({
                 ))}
               </div>
             ) : hasDataError ? (
-              <div className="text-sm text-destructive">
-                내역을 불러오지 못했습니다.
-              </div>
+              <div className="text-sm text-destructive">내역을 불러오지 못했습니다.</div>
             ) : shouldShowEmptyState ? (
-              <div className="text-sm text-muted-foreground">
-                내역이 없습니다.
-              </div>
+              <div className="text-sm text-muted-foreground">내역이 없습니다.</div>
             ) : (
               <div className="grid gap-2">
                 {items?.map((tx) => (
@@ -338,25 +300,15 @@ export default function UserPointsDialog({
                   >
                     <div className="grid gap-1">
                       <div className="text-sm">
-                        <span
-                          className={
-                            tx.amount >= 0 ? "font-semibold" : "font-semibold"
-                          }
-                        >
+                        <span className={tx.amount >= 0 ? "font-semibold" : "font-semibold"}>
                           {tx.amount >= 0 ? "+" : ""}
                           {tx.amount.toLocaleString()}P
                         </span>
                         <span className="ml-2 inline-flex flex-wrap items-center gap-1">
-                          <Badge
-                            variant="secondary"
-                            className="h-5 px-2 text-[10px]"
-                          >
+                          <Badge variant="secondary" className="h-5 px-2 text-[10px]">
                             {pointTxTypeLabel(tx.type)}
                           </Badge>
-                          <Badge
-                            variant="outline"
-                            className="h-5 px-2 text-[10px]"
-                          >
+                          <Badge variant="outline" className="h-5 px-2 text-[10px]">
                             {pointTxStatusLabel(tx.status)}
                           </Badge>
                         </span>
@@ -373,11 +325,8 @@ export default function UserPointsDialog({
                         if (ref.kind === "order") {
                           return (
                             <div className="text-[11px] text-muted-foreground">
-                              주문 ID:{" "}
-                              <span className="font-mono">{ref.orderId}</span>
-                              {ref.suffix ? (
-                                <span className="ml-1">({ref.suffix})</span>
-                              ) : null}
+                              주문 ID: <span className="font-mono">{ref.orderId}</span>
+                              {ref.suffix ? <span className="ml-1">({ref.suffix})</span> : null}
                             </div>
                           );
                         }
@@ -385,16 +334,14 @@ export default function UserPointsDialog({
                         if (ref.kind === "review") {
                           return (
                             <div className="text-[11px] text-muted-foreground">
-                              리뷰 ID:{" "}
-                              <span className="font-mono">{ref.reviewId}</span>
+                              리뷰 ID: <span className="font-mono">{ref.reviewId}</span>
                             </div>
                           );
                         }
 
                         return (
                           <div className="text-[11px] text-muted-foreground">
-                            중복 방지 키:{" "}
-                            <span className="font-mono">{ref.raw}</span>
+                            중복 방지 키: <span className="font-mono">{ref.raw}</span>
                           </div>
                         );
                       })()}

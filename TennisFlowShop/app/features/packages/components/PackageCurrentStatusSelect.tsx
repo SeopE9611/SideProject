@@ -27,14 +27,7 @@ import { useMemo, useState } from "react";
  * - '취소'에서 복구 시: "상태 복구 사유(선택)" 모달  ← 요청사항 반영
  */
 type CurrentStatusUI = "활성" | "비활성" | "취소";
-type PassStatus =
-  | "활성"
-  | "대기"
-  | "비활성"
-  | "일시정지"
-  | "종료"
-  | "만료"
-  | "취소";
+type PassStatus = "활성" | "대기" | "비활성" | "일시정지" | "종료" | "만료" | "취소";
 type PaymentStatus = "결제대기" | "결제완료" | "결제취소";
 
 type Props = {
@@ -68,20 +61,14 @@ export default function PackageCurrentStatusSelect({
   // passStatus(활성/대기/만료/취소) → UI선택값(활성/비활성/취소)
   const initialUI: CurrentStatusUI | null = useMemo(() => {
     if (passStatus === "만료" || passStatus === "종료") return null; // 만료/종료는 변경 불가
-    if (
-      passStatus === "대기" ||
-      passStatus === "일시정지" ||
-      passStatus === "비활성"
-    )
+    if (passStatus === "대기" || passStatus === "일시정지" || passStatus === "비활성")
       return "비활성";
     if (passStatus === "활성") return "활성";
     if (passStatus === "취소") return "취소";
     return "비활성";
   }, [passStatus]);
 
-  const [selected, setSelected] = useState<CurrentStatusUI | "">(
-    initialUI ?? "",
-  );
+  const [selected, setSelected] = useState<CurrentStatusUI | "">(initialUI ?? "");
   const [saving, setSaving] = useState(false);
 
   // 모달 상태
@@ -93,11 +80,7 @@ export default function PackageCurrentStatusSelect({
 
   const isEndedLike = passStatus === "만료" || passStatus === "종료";
   const placeholder =
-    passStatus === "종료"
-      ? "종료"
-      : passStatus === "만료"
-        ? "만료됨"
-        : "상태 선택";
+    passStatus === "종료" ? "종료" : passStatus === "만료" ? "만료됨" : "상태 선택";
 
   function openCancelDialog(next: CurrentStatusUI) {
     setIsRestoreDialog(false);
@@ -154,9 +137,7 @@ export default function PackageCurrentStatusSelect({
     submit(next, "");
   }
 
-  const disabledMessage = isEndedLike
-    ? "만료/종료된 패키지는 상태를 바꿀 수 없습니다."
-    : undefined;
+  const disabledMessage = isEndedLike ? "만료/종료된 패키지는 상태를 바꿀 수 없습니다." : undefined;
 
   return (
     <>
@@ -181,9 +162,7 @@ export default function PackageCurrentStatusSelect({
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {isRestoreDialog ? "상태 복구 사유(선택)" : "취소 사유 입력"}
-            </DialogTitle>
+            <DialogTitle>{isRestoreDialog ? "상태 복구 사유(선택)" : "취소 사유 입력"}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-3">
@@ -237,9 +216,7 @@ export default function PackageCurrentStatusSelect({
             <button
               className="inline-flex items-center rounded-md bg-primary text-primary-foreground px-3 py-2 text-sm"
               onClick={() => {
-                const reason = [reasonType, reasonText]
-                  .filter(Boolean)
-                  .join(" / ");
+                const reason = [reasonType, reasonText].filter(Boolean).join(" / ");
                 if (!isRestoreDialog) setSelected("취소");
                 submit(pendingNext || "비활성", reason);
               }}

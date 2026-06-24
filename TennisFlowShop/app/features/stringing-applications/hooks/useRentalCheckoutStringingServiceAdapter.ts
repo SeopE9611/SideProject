@@ -143,11 +143,7 @@ export default function useRentalCheckoutStringingServiceAdapter({
   }, [withStringService, stringProduct?.id, setFormData]);
 
   const price = useMemo(
-    () =>
-      shared.linesForSubmit.reduce(
-        (sum, line) => sum + Number(line.mountingFee ?? 0),
-        0,
-      ),
+    () => shared.linesForSubmit.reduce((sum, line) => sum + Number(line.mountingFee ?? 0), 0),
     [shared.linesForSubmit],
   );
 
@@ -155,13 +151,7 @@ export default function useRentalCheckoutStringingServiceAdapter({
   // 대여는 1대 기준이므로 일반적으로 1이지만, 안전하게 lineCount 기준으로 맞춤
   const reservationSlotCount = Math.max(shared.lineCount || 1, 1);
 
-  const {
-    disabledTimes,
-    timeSlots,
-    slotsLoading,
-    slotsError,
-    hasCacheForDate,
-  } = useReservedSlots({
+  const { disabledTimes, timeSlots, slotsLoading, slotsError, hasCacheForDate } = useReservedSlots({
     preferredDate: shared.formData.preferredDate,
     preferredTime: shared.formData.preferredTime,
     requiredPassCount: reservationSlotCount,
@@ -194,15 +184,11 @@ export default function useRentalCheckoutStringingServiceAdapter({
   }, [visitDurationMinutesUi, shared.setVisitDurationMinutesUi]);
 
   const summary = useMemo(() => {
-    const collectionLabel = collectionMethodLabel(
-      shared.formData.collectionMethod,
-    );
+    const collectionLabel = collectionMethodLabel(shared.formData.collectionMethod);
     const lineCount = shared.linesForSubmit.length;
     const stringNames = Array.from(
       new Set(
-        shared.linesForSubmit
-          .map((line) => String(line.stringName ?? "").trim())
-          .filter(Boolean),
+        shared.linesForSubmit.map((line) => String(line.stringName ?? "").trim()).filter(Boolean),
       ),
     );
     const tensionSet = Array.from(
@@ -253,13 +239,10 @@ export default function useRentalCheckoutStringingServiceAdapter({
       return hasRacketType && hasTension;
     }).length;
 
-    const basicConfigured =
-      shared.formData.stringTypes.length > 0 && totalLineCount > 0;
+    const basicConfigured = shared.formData.stringTypes.length > 0 && totalLineCount > 0;
     const needsVisitReservation = shared.formData.collectionMethod === "visit";
-    const hasReservation =
-      !!shared.formData.preferredDate && !!shared.formData.preferredTime;
-    const lineDone =
-      totalLineCount > 0 && lineConfiguredCount === totalLineCount;
+    const hasReservation = !!shared.formData.preferredDate && !!shared.formData.preferredTime;
+    const lineDone = totalLineCount > 0 && lineConfiguredCount === totalLineCount;
 
     const isReadyToSubmit =
       basicConfigured && lineDone && (!needsVisitReservation || hasReservation);

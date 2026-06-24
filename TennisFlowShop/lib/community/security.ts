@@ -64,10 +64,7 @@ function buildOriginAllowlist(req: NextRequest) {
     allowlist.add(`http://${host}`);
   }
 
-  for (const origin of [
-    process.env.NEXT_PUBLIC_SITE_URL,
-    process.env.NEXTAUTH_URL,
-  ]) {
+  for (const origin of [process.env.NEXT_PUBLIC_SITE_URL, process.env.NEXTAUTH_URL]) {
     if (!origin) continue;
     try {
       allowlist.add(new URL(origin).origin);
@@ -98,9 +95,7 @@ function failCsrfResponse(code: CsrfFailCode, status = 403) {
  * 3) Double Submit Cookie 토큰 검증
  */
 export function verifyCommunityCsrf(req: NextRequest) {
-  const fetchSite = (req.headers.get("sec-fetch-site") ?? "")
-    .trim()
-    .toLowerCase();
+  const fetchSite = (req.headers.get("sec-fetch-site") ?? "").trim().toLowerCase();
   if (fetchSite && fetchSite !== "same-origin" && fetchSite !== "same-site") {
     return {
       ok: false as const,
@@ -152,8 +147,7 @@ export function verifyCommunityCsrf(req: NextRequest) {
   }
 
   const headerToken = req.headers.get(COMMUNITY_CSRF_HEADER)?.trim() ?? "";
-  const cookieToken =
-    req.cookies.get(COMMUNITY_CSRF_COOKIE)?.value?.trim() ?? "";
+  const cookieToken = req.cookies.get(COMMUNITY_CSRF_COOKIE)?.value?.trim() ?? "";
 
   if (!headerToken || !cookieToken) {
     const response = failCsrfResponse("csrf_missing_token");
@@ -233,9 +227,7 @@ async function consumeRateLimitWindow(
 
   const now = new Date();
   const windowStartMs =
-    Math.floor(now.getTime() / (policy.windowSec * 1000)) *
-    policy.windowSec *
-    1000;
+    Math.floor(now.getTime() / (policy.windowSec * 1000)) * policy.windowSec * 1000;
   const windowStart = new Date(windowStartMs);
 
   const result = await col.findOneAndUpdate(
@@ -259,10 +251,7 @@ async function consumeRateLimitWindow(
 
   const count = Number(result?.count ?? 0);
   const windowEndMs = windowStartMs + policy.windowSec * 1000;
-  const retryAfterSec = Math.max(
-    1,
-    Math.ceil((windowEndMs - now.getTime()) / 1000),
-  );
+  const retryAfterSec = Math.max(1, Math.ceil((windowEndMs - now.getTime()) / 1000));
 
   return { limited: count > limit, retryAfterSec };
 }
@@ -284,21 +273,14 @@ export async function enforceCommunityRateLimit(params: {
       return {
         ok: false as const,
         scope: "user" as const,
-        response: buildRateLimitResponse(
-          policy,
-          userResult.retryAfterSec,
-          "user",
-        ),
+        response: buildRateLimitResponse(policy, userResult.retryAfterSec, "user"),
       };
     }
   }
 
   const ip = getClientIp(req);
   const ipKeySource = ip || "unknown";
-  const ipHash = createHash("sha256")
-    .update(ipKeySource)
-    .digest("hex")
-    .slice(0, 16);
+  const ipHash = createHash("sha256").update(ipKeySource).digest("hex").slice(0, 16);
 
   const ipResult = await consumeRateLimitWindow(
     `ip:${policy.routeId}:${ipHash}`,

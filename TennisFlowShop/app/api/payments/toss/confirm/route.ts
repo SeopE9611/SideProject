@@ -99,8 +99,7 @@ export async function POST(req: Request) {
         {
           success: false,
           code: "SESSION_EXPIRED",
-          error:
-            "결제 세션 유효시간이 만료되었습니다. 다시 결제를 시도해주세요.",
+          error: "결제 세션 유효시간이 만료되었습니다. 다시 결제를 시도해주세요.",
         },
         { status: 410 },
       );
@@ -160,9 +159,7 @@ export async function POST(req: Request) {
       method: confirmed.method,
       type: confirmed.type,
       totalAmount: Number(confirmed.totalAmount ?? amount),
-      approvedAt: confirmed.approvedAt
-        ? new Date(confirmed.approvedAt)
-        : undefined,
+      approvedAt: confirmed.approvedAt ? new Date(confirmed.approvedAt) : undefined,
       card: confirmed.card
         ? {
             issuerCode: confirmed.card.issuerCode,
@@ -229,9 +226,7 @@ export async function POST(req: Request) {
             status: "paid",
             paymentKey: confirmed.paymentKey,
             total: amount,
-            approvedAt: confirmed.approvedAt
-              ? new Date(confirmed.approvedAt)
-              : new Date(),
+            approvedAt: confirmed.approvedAt ? new Date(confirmed.approvedAt) : new Date(),
             rawSummary: {
               orderId: confirmed.orderId,
               totalAmount: confirmed.totalAmount ?? amount,

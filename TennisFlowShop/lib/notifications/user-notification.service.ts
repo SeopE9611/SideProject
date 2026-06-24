@@ -1,9 +1,5 @@
 import { ObjectId, type Db } from "mongodb";
-import type {
-  UserNotificationDoc,
-  UserNotificationPriority,
-  UserNotificationType,
-} from "./types";
+import type { UserNotificationDoc, UserNotificationPriority, UserNotificationType } from "./types";
 
 type NotificationSource = {
   collection?: string;
@@ -60,15 +56,10 @@ function buildDoc(params: CreateUserNotificationParams): UserNotificationDoc {
   };
 }
 
-export async function createUserNotification(
-  db: Db,
-  params: CreateUserNotificationParams,
-) {
+export async function createUserNotification(db: Db, params: CreateUserNotificationParams) {
   try {
     const doc = buildDoc(params);
-    await db
-      .collection<UserNotificationDoc>("user_notifications")
-      .insertOne(doc);
+    await db.collection<UserNotificationDoc>("user_notifications").insertOne(doc);
     return { ok: true as const, insertedId: doc._id, duplicated: false };
   } catch (error) {
     if (isDuplicateKeyError(error)) {
@@ -78,12 +69,8 @@ export async function createUserNotification(
   }
 }
 
-export async function createUserNotifications(
-  db: Db,
-  params: CreateUserNotificationParams[],
-) {
-  if (params.length === 0)
-    return { ok: true as const, insertedCount: 0, duplicated: 0 };
+export async function createUserNotifications(db: Db, params: CreateUserNotificationParams[]) {
+  if (params.length === 0) return { ok: true as const, insertedCount: 0, duplicated: 0 };
   const docs = params.map(buildDoc);
   try {
     const res = await db
@@ -96,12 +83,8 @@ export async function createUserNotifications(
     };
   } catch (error: any) {
     if (isDuplicateKeyError(error)) {
-      const writeErrors = Array.isArray(error?.writeErrors)
-        ? error.writeErrors
-        : [];
-      const duplicated = writeErrors.filter(
-        (e: any) => e?.code === 11000,
-      ).length;
+      const writeErrors = Array.isArray(error?.writeErrors) ? error.writeErrors : [];
+      const duplicated = writeErrors.filter((e: any) => e?.code === 11000).length;
       const fatal = writeErrors.some((e: any) => e?.code !== 11000);
       if (!fatal) {
         return {
@@ -126,10 +109,7 @@ export function serializeUserNotification(doc: UserNotificationDoc) {
     source: doc.source
       ? {
           collection: doc.source.collection,
-          id:
-            doc.source.id instanceof ObjectId
-              ? doc.source.id.toString()
-              : doc.source.id,
+          id: doc.source.id instanceof ObjectId ? doc.source.id.toString() : doc.source.id,
           kind: doc.source.kind,
         }
       : null,

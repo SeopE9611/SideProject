@@ -79,18 +79,13 @@ function hasMatchingIndex(indexes, spec) {
   return indexes.some((index) => {
     if (JSON.stringify(index.key) !== expectedKey) return false;
     if (Boolean(index.unique) !== Boolean(spec.options.unique)) return false;
-    return (
-      (index.expireAfterSeconds ?? null) ===
-      (spec.options.expireAfterSeconds ?? null)
-    );
+    return (index.expireAfterSeconds ?? null) === (spec.options.expireAfterSeconds ?? null);
   });
 }
 
 function runUniqueConflictAudit() {
   console.log(`${prefix} UNIQUE_CONFLICT_AUDIT_START`);
-  const auditPath = fileURLToPath(
-    new URL("./audit-unique-index-conflicts.mjs", import.meta.url),
-  );
+  const auditPath = fileURLToPath(new URL("./audit-unique-index-conflicts.mjs", import.meta.url));
   const result = spawnSync(process.execPath, [auditPath], {
     env: process.env,
     stdio: "inherit",
@@ -101,9 +96,7 @@ function runUniqueConflictAudit() {
     return 2;
   }
   if (result.status !== 0) {
-    console.error(
-      `${prefix} UNIQUE_CONFLICT_AUDIT_FAILED; no indexes were created.`,
-    );
+    console.error(`${prefix} UNIQUE_CONFLICT_AUDIT_FAILED; no indexes were created.`);
     return 1;
   }
 

@@ -7,9 +7,7 @@ import CheckoutStringingCompactEditor from "@/app/checkout/_components/CheckoutS
 import CheckoutStringingSummaryCard from "@/app/checkout/_components/CheckoutStringingSummaryCard";
 import type useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
 
-type CheckoutStringingServiceAdapter = ReturnType<
-  typeof useCheckoutStringingServiceAdapter
->;
+type CheckoutStringingServiceAdapter = ReturnType<typeof useCheckoutStringingServiceAdapter>;
 
 type Props = {
   withStringService: boolean;

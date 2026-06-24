@@ -15,8 +15,7 @@ export const dynamic = "force-dynamic";
 const POSTAL_RE = /^\d{5}$/;
 const AllowedDaysSchema = z.union([z.literal(7), z.literal(15), z.literal(30)]);
 
-const toTrimmedString = (v: unknown) =>
-  v === null || v === undefined ? "" : String(v).trim();
+const toTrimmedString = (v: unknown) => (v === null || v === undefined ? "" : String(v).trim());
 const toDigits = (v: unknown) => toTrimmedString(v).replace(/\D/g, "");
 
 const RentalsCreateBodySchema = z
@@ -28,9 +27,7 @@ const RentalsCreateBodySchema = z
       .refine((s) => ObjectId.isValid(s), { message: "BAD_RACKET_ID" }),
     days: z.coerce.number().pipe(AllowedDaysSchema),
     pointsToUse: z.coerce.number().optional(),
-    servicePickupMethod: z
-      .enum(["SELF_SEND", "SHOP_VISIT", "delivery", "pickup"])
-      .optional(),
+    servicePickupMethod: z.enum(["SELF_SEND", "SHOP_VISIT", "delivery", "pickup"]).optional(),
     payment: z
       .object({
         method: z.literal("bank_transfer"),
@@ -63,10 +60,7 @@ const RentalsCreateBodySchema = z
   .superRefine((data, ctx) => {
     const pickup = data.servicePickupMethod;
     const shippingMethod = data.shipping?.shippingMethod;
-    const isPickup =
-      pickup === "SHOP_VISIT" ||
-      pickup === "pickup" ||
-      shippingMethod === "pickup";
+    const isPickup = pickup === "SHOP_VISIT" || pickup === "pickup" || shippingMethod === "pickup";
 
     if (isPickup) return;
 
@@ -91,41 +85,28 @@ const RentalsCreateBodySchema = z
 
 export async function POST(req: Request) {
   const idemKeyRaw = req.headers.get("Idempotency-Key");
-  const idemKey =
-    idemKeyRaw && idemKeyRaw.trim() ? idemKeyRaw.trim() : undefined;
+  const idemKey = idemKeyRaw && idemKeyRaw.trim() ? idemKeyRaw.trim() : undefined;
 
   const raw = await req.text();
   if (!raw) {
-    return NextResponse.json(
-      { ok: false, message: "EMPTY_BODY" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, message: "EMPTY_BODY" }, { status: 400 });
   }
 
   let body: unknown;
   try {
     body = JSON.parse(raw);
   } catch {
-    return NextResponse.json(
-      { ok: false, message: "INVALID_JSON" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, message: "INVALID_JSON" }, { status: 400 });
   }
 
   const parsed = RentalsCreateBodySchema.safeParse(body);
   if (!parsed.success) {
     const issues = parsed.error.issues ?? [];
     if (issues.some((i) => i.message === "BAD_RACKET_ID")) {
-      return NextResponse.json(
-        { ok: false, message: "BAD_RACKET_ID" },
-        { status: 400 },
-      );
+      return NextResponse.json({ ok: false, message: "BAD_RACKET_ID" }, { status: 400 });
     }
     if (issues.some((i) => i.path?.[0] === "days")) {
-      return NextResponse.json(
-        { message: "허용되지 않는 대여 기간" },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "허용되지 않는 대여 기간" }, { status: 400 });
     }
     return NextResponse.json(
       { ok: false, message: "요청 값이 올바르지 않습니다." },
@@ -135,16 +116,14 @@ export async function POST(req: Request) {
 
   const normalizedBody = parsed.data;
   const selectedGauge =
-    typeof (body as any)?.selectedGauge === "string" &&
-    (body as any).selectedGauge.trim()
+    typeof (body as any)?.selectedGauge === "string" && (body as any).selectedGauge.trim()
       ? (body as any).selectedGauge.trim()
       : typeof (body as any)?.stringing?.selectedGauge === "string" &&
           (body as any).stringing.selectedGauge.trim()
         ? (body as any).stringing.selectedGauge.trim()
         : undefined;
   const selectedColor =
-    typeof (body as any)?.selectedColor === "string" &&
-    (body as any).selectedColor.trim()
+    typeof (body as any)?.selectedColor === "string" && (body as any).selectedColor.trim()
       ? (body as any).selectedColor.trim()
       : typeof (body as any)?.stringing?.selectedColor === "string" &&
           (body as any).stringing.selectedColor.trim()
@@ -191,9 +170,7 @@ export async function POST(req: Request) {
       payload = null;
     }
     const sub =
-      typeof payload?.sub === "string" && ObjectId.isValid(payload.sub)
-        ? payload.sub
-        : null;
+      typeof payload?.sub === "string" && ObjectId.isValid(payload.sub) ? payload.sub : null;
     const userObjectId = sub ? new ObjectId(sub) : null;
 
     const guestOrderMode = (

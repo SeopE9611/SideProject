@@ -14,7 +14,13 @@ import { Badge } from "@/components/ui/badge";
 import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { asRecord, safeNumber } from "@/lib/admin/parsers";
@@ -40,7 +46,8 @@ const MODEL_MAX = 80;
 const PRICE_MIN = 1;
 const isFiniteNumber = (v: unknown) => Number.isFinite(safeNumber(v, Number.NaN));
 const nonNegative = (v: unknown) => isFiniteNumber(v) && safeNumber(v) >= 0;
-const positiveOrNull = (v: unknown) => (v == null || v === "" ? true : isFiniteNumber(v) && safeNumber(v) >= 1);
+const positiveOrNull = (v: unknown) =>
+  v == null || v === "" ? true : isFiniteNumber(v) && safeNumber(v) >= 1;
 
 const STEPS: Step[] = [
   { id: "basic", label: "기본 정보", icon: <FileText className="h-4 w-4" /> },
@@ -184,14 +191,21 @@ export default function AdminRacketForm({
   const stepContentRef = useRef<HTMLDivElement | null>(null);
   const shouldScrollAfterStepChangeRef = useRef(false);
   const baselineRef = useRef<string | null>(null);
-  const snapshot = useMemo(() => JSON.stringify({ form, searchKeywordsText }), [form, searchKeywordsText]);
+  const snapshot = useMemo(
+    () => JSON.stringify({ form, searchKeywordsText }),
+    [form, searchKeywordsText],
+  );
   useEffect(() => {
     if (baselineRef.current === null) baselineRef.current = snapshot;
   }, [snapshot]);
-  useUnsavedChangesGuard(baselineRef.current !== null && baselineRef.current !== snapshot && !loading);
+  useUnsavedChangesGuard(
+    baselineRef.current !== null && baselineRef.current !== snapshot && !loading,
+  );
 
   const hasBasicInfo =
-    Boolean(form.brand) && form.model.trim().length >= MODEL_MIN && form.model.trim().length <= MODEL_MAX;
+    Boolean(form.brand) &&
+    form.model.trim().length >= MODEL_MIN &&
+    form.model.trim().length <= MODEL_MAX;
 
   const hasValidSpecs =
     Boolean(form.spec.pattern.trim()) &&
@@ -288,7 +302,8 @@ export default function AdminRacketForm({
     if (form.year != null) {
       const y = Number(form.year);
       const now = new Date().getFullYear();
-      if (!Number.isFinite(y) || y < 1900 || y > now + 1) return [0, "연식(year)이 유효하지 않습니다."] as const;
+      if (!Number.isFinite(y) || y < 1900 || y > now + 1)
+        return [0, "연식(year)이 유효하지 않습니다."] as const;
     }
     if (
       !positiveOrNull(form.spec.weight) ||
@@ -301,7 +316,8 @@ export default function AdminRacketForm({
       return [1, "스펙 수치는 1 이상 숫자만 입력하세요."] as const;
     const normalizedPattern = normalizeAndValidateStringPattern(patternTrim);
     const normalizedGripSize = normalizeAndValidateGripSize(gripTrim);
-    if (!normalizedPattern || !normalizedGripSize) return [1, "스트링 패턴/그립 사이즈를 선택하세요."] as const;
+    if (!normalizedPattern || !normalizedGripSize)
+      return [1, "스트링 패턴/그립 사이즈를 선택하세요."] as const;
     if (!form.rental.enabled && !form.rental.disabledReason?.trim())
       return [2, "대여 불가 사유를 입력하세요."] as const;
     if (
@@ -312,7 +328,10 @@ export default function AdminRacketForm({
         !nonNegative(form.rental.fee.d30))
     )
       return [2, "보증금/대여료는 0 이상 숫자만 입력하세요."] as const;
-    if (form.marketing.isSale && (!isFiniteNumber(form.marketing.salePrice) || Number(form.marketing.salePrice) < 1))
+    if (
+      form.marketing.isSale &&
+      (!isFiniteNumber(form.marketing.salePrice) || Number(form.marketing.salePrice) < 1)
+    )
       return [2, "할인 상품은 할인가를 1원 이상 입력하세요."] as const;
     if (form.marketing.isSale && Number(form.marketing.salePrice) >= Number(form.price))
       return [2, "할인가는 정가보다 낮아야 합니다."] as const;
@@ -422,10 +441,12 @@ export default function AdminRacketForm({
         <div className="rounded-xl border border-border/60 bg-muted/20 p-3 shadow-sm">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-semibold text-foreground">현재 단계: {currentStep.label}</p>
+              <p className="text-sm font-semibold text-foreground">
+                현재 단계: {currentStep.label}
+              </p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                라켓 정보는 단계 이동 중에도 유지됩니다. 저장 전 기본 정보, 스펙, 판매/대여 설정, 이미지를 함께
-                확인하세요.
+                라켓 정보는 단계 이동 중에도 유지됩니다. 저장 전 기본 정보, 스펙, 판매/대여 설정,
+                이미지를 함께 확인하세요.
               </p>
             </div>
             <Badge variant={readyToSubmit ? "success" : "outline"} className="w-fit">
@@ -455,12 +476,16 @@ export default function AdminRacketForm({
               <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
                 <p className="text-sm font-semibold text-foreground">기본 정보 입력 순서</p>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  브랜드와 모델명은 고객 목록과 검색 결과에 바로 노출됩니다. 모델명은 2~80자 범위로 입력하세요.
+                  브랜드와 모델명은 고객 목록과 검색 결과에 바로 노출됩니다. 모델명은 2~80자 범위로
+                  입력하세요.
                 </p>
               </div>
               <FormFieldGroup columns={2}>
                 <FormField label="브랜드" required>
-                  <Select value={form.brand} onValueChange={(v: RacketBrand) => setForm({ ...form, brand: v })}>
+                  <Select
+                    value={form.brand}
+                    onValueChange={(v: RacketBrand) => setForm({ ...form, brand: v })}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="브랜드 선택" />
                     </SelectTrigger>
@@ -474,7 +499,10 @@ export default function AdminRacketForm({
                   </Select>
                 </FormField>
                 <FormField label="모델" required>
-                  <Input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} />
+                  <Input
+                    value={form.model}
+                    onChange={(e) => setForm({ ...form, model: e.target.value })}
+                  />
                 </FormField>
                 <FormField label="연식">
                   <Input
@@ -491,7 +519,9 @@ export default function AdminRacketForm({
                 <FormField label="상태 등급">
                   <Select
                     value={form.condition}
-                    onValueChange={(value: RacketCondition) => setForm({ ...form, condition: value })}
+                    onValueChange={(value: RacketCondition) =>
+                      setForm({ ...form, condition: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -505,17 +535,24 @@ export default function AdminRacketForm({
                 </FormField>
               </FormFieldGroup>
               <FormField label="검색 키워드" className="mt-6">
-                <Input value={searchKeywordsText} onChange={(e) => setSearchKeywordsText(e.target.value)} />
+                <Input
+                  value={searchKeywordsText}
+                  onChange={(e) => setSearchKeywordsText(e.target.value)}
+                />
               </FormField>
             </FormSection>
           )}
           {currentStep.id === "specs" && (
-            <FormSection title="상세 스펙" description="라켓 상세 스펙" icon={<Settings className="h-4 w-4" />}>
+            <FormSection
+              title="상세 스펙"
+              description="라켓 상세 스펙"
+              icon={<Settings className="h-4 w-4" />}
+            >
               <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
                 <p className="text-sm font-semibold text-foreground">스펙 입력 안내</p>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  무게, 밸런스, 헤드 사이즈 같은 수치는 선택 필드지만, 입력 시 1 이상의 숫자만 허용됩니다. 스트링 패턴과
-                  그립 사이즈는 반드시 선택해야 합니다.
+                  무게, 밸런스, 헤드 사이즈 같은 수치는 선택 필드지만, 입력 시 1 이상의 숫자만
+                  허용됩니다. 스트링 패턴과 그립 사이즈는 반드시 선택해야 합니다.
                 </p>
               </div>
               <FormFieldGroup columns={2}>
@@ -656,8 +693,8 @@ export default function AdminRacketForm({
                 <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-4">
                   <p className="text-sm font-semibold text-foreground">판매/대여 설정 안내</p>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    가격, 배송비, 보유 수량은 주문과 대여 가능 여부에 직접 영향을 줍니다. 대여 불가인 경우 고객에게 보일
-                    사유를 반드시 입력하세요.
+                    가격, 배송비, 보유 수량은 주문과 대여 가능 여부에 직접 영향을 줍니다. 대여
+                    불가인 경우 고객에게 보일 사유를 반드시 입력하세요.
                   </p>
                 </div>
                 <FormFieldGroup columns={2}>
@@ -684,7 +721,10 @@ export default function AdminRacketForm({
                     />
                   </FormField>
                   <FormField label="판매 상태">
-                    <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as RacketStatus })}>
+                    <Select
+                      value={form.status}
+                      onValueChange={(v) => setForm({ ...form, status: v as RacketStatus })}
+                    >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -700,7 +740,8 @@ export default function AdminRacketForm({
                       <div className="space-y-1">
                         <p className="text-sm font-medium">{form.isVisible ? "노출" : "숨김"}</p>
                         <p className="text-xs text-muted-foreground">
-                          숨김이어도 관리자는 사용자 화면에서 미리보기와 결제 테스트를 할 수 있습니다.
+                          숨김이어도 관리자는 사용자 화면에서 미리보기와 결제 테스트를 할 수
+                          있습니다.
                         </p>
                       </div>
                       <Switch
@@ -893,11 +934,16 @@ export default function AdminRacketForm({
             </div>
           )}
           {currentStep.id === "images" && (
-            <FormSection title="이미지" description="이미지 업로드/대표 설정" icon={<ImageIcon className="h-4 w-4" />}>
+            <FormSection
+              title="이미지"
+              description="이미지 업로드/대표 설정"
+              icon={<ImageIcon className="h-4 w-4" />}
+            >
               <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
                 <p className="text-sm font-semibold text-foreground">이미지 등록 안내</p>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  대표 이미지는 목록과 상세 페이지에서 가장 먼저 보입니다. 최소 1장 이상 등록한 뒤 저장하세요.
+                  대표 이미지는 목록과 상세 페이지에서 가장 먼저 보입니다. 최소 1장 이상 등록한 뒤
+                  저장하세요.
                 </p>
               </div>
               <ImageUploader
@@ -913,9 +959,13 @@ export default function AdminRacketForm({
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-base font-semibold text-foreground">저장 전 체크리스트</p>
-                <p className="mt-1 text-sm text-muted-foreground">아래 항목을 확인한 뒤 라켓 정보를 저장하세요.</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  아래 항목을 확인한 뒤 라켓 정보를 저장하세요.
+                </p>
               </div>
-              <Badge variant={readyToSubmit ? "success" : "outline"}>{readyToSubmit ? "저장 가능" : "확인 필요"}</Badge>
+              <Badge variant={readyToSubmit ? "success" : "outline"}>
+                {readyToSubmit ? "저장 가능" : "확인 필요"}
+              </Badge>
             </div>
 
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -924,7 +974,9 @@ export default function AdminRacketForm({
                   key={item.label}
                   className={cn(
                     "rounded-lg border px-3 py-2",
-                    item.done ? "border-primary/30 bg-primary/5" : "border-warning/30 bg-warning/10",
+                    item.done
+                      ? "border-primary/30 bg-primary/5"
+                      : "border-warning/30 bg-warning/10",
                   )}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -979,18 +1031,22 @@ export default function AdminRacketForm({
                       추천
                     </Badge>
                   )}
-                  {form.marketing.isSale && form.marketing.salePrice > 0 && form.marketing.salePrice < form.price && (
-                    <Badge variant="destructive" className="text-xs">
-                      SALE
-                    </Badge>
-                  )}
+                  {form.marketing.isSale &&
+                    form.marketing.salePrice > 0 &&
+                    form.marketing.salePrice < form.price && (
+                      <Badge variant="destructive" className="text-xs">
+                        SALE
+                      </Badge>
+                    )}
                 </div>
               </div>
 
               <div className="rounded-xl border border-border/60 bg-card p-3">
                 <p className="text-xs font-medium text-muted-foreground">판매가</p>
 
-                {form.marketing.isSale && form.marketing.salePrice > 0 && form.marketing.salePrice < form.price ? (
+                {form.marketing.isSale &&
+                form.marketing.salePrice > 0 &&
+                form.marketing.salePrice < form.price ? (
                   <div className="mt-1">
                     <p className="text-xl font-bold text-primary">
                       {Number(form.marketing.salePrice).toLocaleString("ko-KR")}원
@@ -1027,7 +1083,9 @@ export default function AdminRacketForm({
 
                 <div className="rounded-lg border border-border/60 bg-muted/20 p-2 text-center">
                   <p className="text-[11px] text-muted-foreground">이미지</p>
-                  <p className="mt-0.5 text-base font-semibold text-foreground">{form.images.length}</p>
+                  <p className="mt-0.5 text-base font-semibold text-foreground">
+                    {form.images.length}
+                  </p>
                 </div>
               </div>
 
@@ -1041,7 +1099,9 @@ export default function AdminRacketForm({
                   </div>
                   <div className="flex justify-between gap-3">
                     <span className="text-muted-foreground">밸런스</span>
-                    <span className="font-medium text-foreground">{form.spec.balance ?? "-"}mm</span>
+                    <span className="font-medium text-foreground">
+                      {form.spec.balance ?? "-"}mm
+                    </span>
                   </div>
                   <div className="flex justify-between gap-3">
                     <span className="text-muted-foreground">패턴</span>

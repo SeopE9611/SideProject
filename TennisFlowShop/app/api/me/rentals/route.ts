@@ -12,8 +12,7 @@ export async function GET(req: Request) {
   const at = jar.get("accessToken")?.value;
 
   // 토큰 파싱 방어 (없거나, 손상된 토큰이면 401)
-  if (!at)
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  if (!at) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   let payload: any = null;
   try {
     payload = verifyAccessToken(at);
@@ -64,9 +63,7 @@ export async function GET(req: Request) {
        * - 대여 신청 시 교체 서비스가 포함되면 rental_orders에 stringingApplicationId가 저장됨
        * - 마이페이지(대여 내역)에서 "신청서 보기" 버튼을 띄우기 위해 내려준다.
        */
-      stringingApplicationId: d.stringingApplicationId
-        ? d.stringingApplicationId.toString()
-        : null,
+      stringingApplicationId: d.stringingApplicationId ? d.stringingApplicationId.toString() : null,
 
       /**
        * 교체 서비스 포함 여부

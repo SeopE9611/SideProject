@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  CompareRacketItem,
-  useRacketCompareStore,
-} from "@/app/store/racketCompareStore";
+import { CompareRacketItem, useRacketCompareStore } from "@/app/store/racketCompareStore";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { SummaryCard } from "@/components/public/SummaryCard";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
@@ -24,16 +21,9 @@ import {
   merchandisingImageBadgeVariant,
   usedBadgeMeta,
 } from "@/lib/badge-style";
-import {
-  gripSizeLabel,
-  racketBrandLabel,
-  stringPatternLabel,
-} from "@/lib/constants";
+import { gripSizeLabel, racketBrandLabel, stringPatternLabel } from "@/lib/constants";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
-import {
-  getEffectiveRacketPrice,
-  getRacketDiscountRate,
-} from "@/lib/racket-pricing";
+import { getEffectiveRacketPrice, getRacketDiscountRate } from "@/lib/racket-pricing";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -73,19 +63,15 @@ const RentDialog = dynamic(() => import("./RentDialog"), {
   loading: () => null,
 });
 
-const ReviewImageViewerDialog = dynamic(
-  () => import("./ReviewImageViewerDialog"),
-  { loading: () => null },
-);
+const ReviewImageViewerDialog = dynamic(() => import("./ReviewImageViewerDialog"), {
+  loading: () => null,
+});
 
 const ReviewEditDialog = dynamic(() => import("./ReviewEditDialog"), {
   loading: () => null,
 });
 
-export default function RacketDetailClient({
-  racket,
-  stock,
-}: RacketDetailClientProps) {
+export default function RacketDetailClient({ racket, stock }: RacketDetailClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const rentSectionRef = useRef<HTMLDivElement>(null);
@@ -113,9 +99,7 @@ export default function RacketDetailClient({
   const racketId = String(racket?.id ?? racket?._id ?? "");
   const racketShippingFee = normalizeItemShippingFee(racket?.shippingFee);
   const racketShippingLabel =
-    racketShippingFee > 0
-      ? `${racketShippingFee.toLocaleString()}원 배송비`
-      : "무료배송";
+    racketShippingFee > 0 ? `${racketShippingFee.toLocaleString()}원 배송비` : "무료배송";
   const brandLabel = racketBrandLabel(racket?.brand);
   const salePrice = getEffectiveRacketPrice(racket);
   const discountRate = getRacketDiscountRate(racket);
@@ -133,14 +117,7 @@ export default function RacketDetailClient({
       href: `/rackets/${racketId}`,
       price: Number.isFinite(safePrice) ? safePrice : null,
     });
-  }, [
-    brandLabel,
-    racket?.condition,
-    racket?.images,
-    racket?.model,
-    racket?.price,
-    racketId,
-  ]);
+  }, [brandLabel, racket?.condition, racket?.images, racket?.model, racket?.price, racketId]);
 
   // 리뷰 탭 표시를 위한 데이터
   // - racket API에서 reviews/reviewSummary를 함께 내려주도록 되어 있어야 함
@@ -175,8 +152,7 @@ export default function RacketDetailClient({
     ((user as any).role === "admin" ||
       (user as any).role === "ADMIN" ||
       (user as any).isAdmin === true ||
-      (Array.isArray((user as any).roles) &&
-        (user as any).roles.includes("admin")));
+      (Array.isArray((user as any).roles) && (user as any).roles.includes("admin")));
 
   // 화면에 보이는 개수만큼만 가져와 병합(과한 트래픽 방지)
   const reviewsCount = reviewsLen || 10;
@@ -188,17 +164,14 @@ export default function RacketDetailClient({
     { revalidateOnFocus: false },
   );
   const { data: myReview, mutate: mutateMyReview } = useSWR(
-    isReviewsTabActive && user
-      ? `/api/reviews/self?productId=${racketId}`
-      : null,
+    isReviewsTabActive && user ? `/api/reviews/self?productId=${racketId}` : null,
     fetcher,
     { revalidateOnFocus: false },
   );
 
   const isMine = (rv: any) =>
     !!rv?.ownedByMe ||
-    (!!(myReview as any)?._id &&
-      String(rv?._id) === String((myReview as any)._id));
+    (!!(myReview as any)?._id && String(rv?._id) === String((myReview as any)._id));
 
   // 서버가 내려준 racket.reviews는 숨김 리뷰를 마스킹
   // myReview가 있으면 동일 _id 항목을 원문으로 덮어쓰기 + 마스킹 해제
@@ -208,9 +181,7 @@ export default function RacketDetailClient({
 
     // 내 리뷰 덮어쓰기 (있을 때만)
     if (myReview && (myReview as any)._id) {
-      const i = next.findIndex(
-        (r: any) => String(r._id) === String((myReview as any)._id),
-      );
+      const i = next.findIndex((r: any) => String(r._id) === String((myReview as any)._id));
       if (i !== -1) {
         next = [...next];
         next[i] = {
@@ -228,9 +199,7 @@ export default function RacketDetailClient({
 
     // 관리자면 표시 중인 항목 범위에서 원문으로 덮어쓰기
     if (isAdmin && Array.isArray(adminReviews) && adminReviews.length > 0) {
-      const map = new Map(
-        (adminReviews as any[]).map((r: any) => [String(r._id), r]),
-      );
+      const map = new Map((adminReviews as any[]).map((r: any) => [String(r._id), r]));
       next = next.map((r: any) => {
         const raw = map.get(String(r._id));
         if (!raw) return r;
@@ -253,10 +222,8 @@ export default function RacketDetailClient({
   const reviewCount = mergedReviews.length;
   const averageRating =
     reviewCount > 0
-      ? mergedReviews.reduce(
-          (sum: number, review: any) => sum + (Number(review?.rating) || 0),
-          0,
-        ) / reviewCount
+      ? mergedReviews.reduce((sum: number, review: any) => sum + (Number(review?.rating) || 0), 0) /
+        reviewCount
       : 0;
 
   // 인라인 수정 다이얼로그 상태/핸들러
@@ -391,10 +358,7 @@ export default function RacketDetailClient({
     remove: removeFromCompare,
   } = useRacketCompareStore();
 
-  const compareCount = useMemo(
-    () => (compareItems || []).filter(Boolean).length,
-    [compareItems],
-  );
+  const compareCount = useMemo(() => (compareItems || []).filter(Boolean).length, [compareItems]);
   const isCompared = useMemo(
     () => (compareItems || []).some((x: any) => x?.id === racketId),
     [compareItems, racketId],
@@ -552,8 +516,7 @@ export default function RacketDetailClient({
                     </Button>
                   </>
                 )}
-                {(racket?.marketing?.isFeatured ||
-                  racket?.marketing?.isNew) && (
+                {(racket?.marketing?.isFeatured || racket?.marketing?.isNew) && (
                   <div className="absolute left-4 top-4 flex flex-wrap gap-2">
                     {racket?.marketing?.isFeatured && (
                       <Badge
@@ -607,9 +570,7 @@ export default function RacketDetailClient({
               title={
                 <div className="min-w-0 space-y-3">
                   <div className="flex min-w-0 flex-wrap items-center gap-2">
-                    <Badge variant="outline">
-                      {racketBrandLabel(racket.brand)}
-                    </Badge>
+                    <Badge variant="outline">{racketBrandLabel(racket.brand)}</Badge>
                     <Badge variant="outline">
                       {usedBadgeMeta("condition", racket.condition).label}
                     </Badge>
@@ -650,9 +611,7 @@ export default function RacketDetailClient({
                     <>
                       <span className="whitespace-nowrap tabular-nums text-3xl font-bold tracking-normal text-foreground sm:text-4xl">
                         {salePrice.toLocaleString()}
-                        <span className="ml-0.5 text-xl font-medium sm:text-2xl">
-                          원
-                        </span>
+                        <span className="ml-0.5 text-xl font-medium sm:text-2xl">원</span>
                       </span>
                       <span className="whitespace-nowrap tabular-nums text-lg text-muted-foreground/60 line-through sm:text-xl">
                         {racket.price?.toLocaleString()}원
@@ -664,9 +623,7 @@ export default function RacketDetailClient({
                   ) : (
                     <span className="whitespace-nowrap tabular-nums text-3xl font-bold tracking-normal text-foreground sm:text-4xl">
                       {racket.price?.toLocaleString()}
-                      <span className="ml-0.5 text-xl font-medium sm:text-2xl">
-                        원
-                      </span>
+                      <span className="ml-0.5 text-xl font-medium sm:text-2xl">원</span>
                     </span>
                   )}
                 </div>
@@ -681,9 +638,7 @@ export default function RacketDetailClient({
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-muted-foreground">대여</span>
                       <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">
-                        7일{" "}
-                        {Number(racket.rental?.fee?.d7 ?? 0).toLocaleString()}원
-                        · 보증금{" "}
+                        7일 {Number(racket.rental?.fee?.d7 ?? 0).toLocaleString()}원 · 보증금{" "}
                         {Number(racket.rental?.deposit ?? 0).toLocaleString()}원
                       </span>
                     </div>
@@ -695,17 +650,14 @@ export default function RacketDetailClient({
               </div>
 
               {/* CTA 영역 */}
-              <div
-                ref={rentSectionRef}
-                className="space-y-4 border-t border-border pt-5"
-              >
+              <div ref={rentSectionRef} className="space-y-4 border-t border-border pt-5">
                 <div className="rounded-xl border border-border bg-muted/20 p-4">
                   <h2 className="text-base font-bold text-foreground">
                     이 라켓으로 무엇을 할까요?
                   </h2>
                   <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
-                    구매 시 다음 단계에서 스트링을 선택하고 장착 정보를 함께
-                    확인합니다. 라켓만 바로 결제되지 않아요.
+                    구매 시 다음 단계에서 스트링을 선택하고 장착 정보를 함께 확인합니다. 라켓만 바로
+                    결제되지 않아요.
                   </p>
                 </div>
                 <div className="grid gap-2.5">
@@ -713,9 +665,7 @@ export default function RacketDetailClient({
                     wrap="responsive"
                     size="tall"
                     className="min-h-12 w-full px-3 sm:min-h-14"
-                    onClick={() =>
-                      router.push(`/rackets/${racketId}/select-string`)
-                    }
+                    onClick={() => router.push(`/rackets/${racketId}/select-string`)}
                     disabled={soldOut}
                     title={
                       soldOut
@@ -786,22 +736,17 @@ export default function RacketDetailClient({
                     className="min-h-11 min-w-0 rounded-xl whitespace-normal break-keep px-2 text-sm"
                     onClick={() => router.push("/rackets/compare")}
                     disabled={compareCount < 2}
-                    title={
-                      compareCount < 2
-                        ? "비교는 최소 2개부터 가능합니다."
-                        : undefined
-                    }
+                    title={compareCount < 2 ? "비교는 최소 2개부터 가능합니다." : undefined}
                   >
                     비교하기
                   </Button>
                 </div>
 
-                {racket?.rental?.enabled === false &&
-                  racket?.rental?.disabledReason && (
-                    <div className="mt-3 break-keep rounded-xl border border-border bg-muted/20 p-3 text-sm text-foreground">
-                      대여 불가 사유: {racket.rental.disabledReason}
-                    </div>
-                  )}
+                {racket?.rental?.enabled === false && racket?.rental?.disabledReason && (
+                  <div className="mt-3 break-keep rounded-xl border border-border bg-muted/20 p-3 text-sm text-foreground">
+                    대여 불가 사유: {racket.rental.disabledReason}
+                  </div>
+                )}
               </div>
             </SummaryCard>
 
@@ -846,9 +791,7 @@ export default function RacketDetailClient({
                 >
                   <Star className="mr-1.5 h-4 w-4 shrink-0 sm:mr-2 sm:h-5 sm:w-5" />
                   리뷰
-                  <span className="ml-1 text-muted-foreground sm:ml-1.5">
-                    ({reviewCount})
-                  </span>
+                  <span className="ml-1 text-muted-foreground sm:ml-1.5">({reviewCount})</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -864,12 +807,10 @@ export default function RacketDetailClient({
                   </div>
                   <div className="rounded-xl border border-border bg-muted/30 p-4 sm:rounded-2xl sm:p-6">
                     <p className="break-words break-keep text-sm leading-relaxed text-muted-foreground sm:text-base">
-                      {racketBrandLabel(racket.brand)} {racket.model} 중고
-                      라켓입니다. 상태 등급은{" "}
-                      {usedBadgeMeta("condition", racket.condition).label}이며,
-                      전문가의 검수를 거쳐 안전하게 사용하실 수 있습니다.
-                      {racket?.rental?.enabled &&
-                        " 대여 서비스도 이용 가능합니다."}
+                      {racketBrandLabel(racket.brand)} {racket.model} 중고 라켓입니다. 상태 등급은{" "}
+                      {usedBadgeMeta("condition", racket.condition).label}이며, 전문가의 검수를 거쳐
+                      안전하게 사용하실 수 있습니다.
+                      {racket?.rental?.enabled && " 대여 서비스도 이용 가능합니다."}
                     </p>
                   </div>
                 </div>
@@ -955,8 +896,7 @@ export default function RacketDetailClient({
                           상태
                         </span>
                         <span className="min-w-0 break-words text-left text-sm font-medium text-muted-foreground sm:text-right sm:text-base">
-                          상태:{" "}
-                          {usedBadgeMeta("condition", racket.condition).label}
+                          상태: {usedBadgeMeta("condition", racket.condition).label}
                         </span>
                       </div>
                     </div>
@@ -1012,10 +952,7 @@ export default function RacketDetailClient({
                                     </div>
 
                                     {review?.status === "hidden" && (
-                                      <Badge
-                                        variant="outline"
-                                        className="shrink-0 text-xs"
-                                      >
+                                      <Badge variant="outline" className="shrink-0 text-xs">
                                         비공개
                                       </Badge>
                                     )}
@@ -1052,19 +989,14 @@ export default function RacketDetailClient({
                                       </Button>
                                     </DropdownMenuTrigger>
 
-                                    <DropdownMenuContent
-                                      align="end"
-                                      className="w-44"
-                                    >
+                                    <DropdownMenuContent align="end" className="w-44">
                                       {/* 비공개/공개 토글: 내 리뷰 or 관리자 */}
                                       <DropdownMenuItem
                                         onClick={async () => {
                                           if (!review?._id) return;
 
                                           const nextStatus =
-                                            review?.status === "hidden"
-                                              ? "visible"
-                                              : "hidden";
+                                            review?.status === "hidden" ? "visible" : "hidden";
                                           setBusyReviewId(String(review._id));
 
                                           // 낙관적 업데이트
@@ -1072,8 +1004,7 @@ export default function RacketDetailClient({
                                             mutateMyReview?.((prev: any) => {
                                               if (
                                                 !prev?._id ||
-                                                String(prev._id) !==
-                                                  String(review._id)
+                                                String(prev._id) !== String(review._id)
                                               )
                                                 return prev;
                                               return {
@@ -1082,51 +1013,40 @@ export default function RacketDetailClient({
                                               };
                                             }, false);
                                           } else if (isAdmin) {
-                                            mutateAdminReviews?.(
-                                              (prev: any[] | undefined) => {
-                                                if (!Array.isArray(prev))
-                                                  return prev;
-                                                return prev.map((r) =>
-                                                  String(r._id) ===
-                                                  String(review._id)
-                                                    ? {
-                                                        ...r,
-                                                        status: nextStatus,
-                                                      }
-                                                    : r,
-                                                );
-                                              },
-                                              false,
-                                            );
+                                            mutateAdminReviews?.((prev: any[] | undefined) => {
+                                              if (!Array.isArray(prev)) return prev;
+                                              return prev.map((r) =>
+                                                String(r._id) === String(review._id)
+                                                  ? {
+                                                      ...r,
+                                                      status: nextStatus,
+                                                    }
+                                                  : r,
+                                              );
+                                            }, false);
                                           }
 
                                           try {
-                                            const res = await fetch(
-                                              `/api/reviews/${review._id}`,
-                                              {
-                                                method: "PATCH",
-                                                credentials: "include",
-                                                headers: {
-                                                  "Content-Type":
-                                                    "application/json",
-                                                },
-                                                body: JSON.stringify({
-                                                  status: nextStatus,
-                                                }),
+                                            const res = await fetch(`/api/reviews/${review._id}`, {
+                                              method: "PATCH",
+                                              credentials: "include",
+                                              headers: {
+                                                "Content-Type": "application/json",
                                               },
-                                            );
-                                            if (!res.ok)
-                                              throw new Error("상태 변경 실패");
+                                              body: JSON.stringify({
+                                                status: nextStatus,
+                                              }),
+                                            });
+                                            if (!res.ok) throw new Error("상태 변경 실패");
 
                                             // 탭 유지 + 서버 리프레시
                                             const params = new URLSearchParams(
                                               searchParams.toString(),
                                             );
                                             params.set("tab", "reviews");
-                                            router.replace(
-                                              `?${params.toString()}`,
-                                              { scroll: false },
-                                            );
+                                            router.replace(`?${params.toString()}`, {
+                                              scroll: false,
+                                            });
                                             router.refresh();
 
                                             showSuccessToast(
@@ -1136,13 +1056,10 @@ export default function RacketDetailClient({
                                             );
                                           } catch (err: any) {
                                             // 롤백(재검증)
-                                            if (isMine(review))
-                                              await mutateMyReview?.();
-                                            else if (isAdmin)
-                                              await mutateAdminReviews?.();
+                                            if (isMine(review)) await mutateMyReview?.();
+                                            else if (isAdmin) await mutateAdminReviews?.();
                                             showErrorToast(
-                                              err?.message ||
-                                                "상태 변경에 실패했습니다.",
+                                              err?.message || "상태 변경에 실패했습니다.",
                                             );
                                           } finally {
                                             setBusyReviewId(null);
@@ -1163,9 +1080,7 @@ export default function RacketDetailClient({
                                       </DropdownMenuItem>
 
                                       {/* 수정: 내 리뷰 or 관리자 */}
-                                      <DropdownMenuItem
-                                        onClick={() => openEdit(review)}
-                                      >
+                                      <DropdownMenuItem onClick={() => openEdit(review)}>
                                         <Pencil className="mr-2 h-4 w-4" />
                                         수정하기
                                       </DropdownMenuItem>
@@ -1178,12 +1093,9 @@ export default function RacketDetailClient({
                                             className="text-destructive focus:text-destructive"
                                             onClick={async () => {
                                               if (!review?._id) return;
-                                              if (!confirm("정말 삭제할까요?"))
-                                                return;
+                                              if (!confirm("정말 삭제할까요?")) return;
 
-                                              setBusyReviewId(
-                                                String(review._id),
-                                              );
+                                              setBusyReviewId(String(review._id));
                                               try {
                                                 const res = await fetch(
                                                   `/api/reviews/${review._id}`,
@@ -1192,29 +1104,23 @@ export default function RacketDetailClient({
                                                     credentials: "include",
                                                   },
                                                 );
-                                                if (!res.ok)
-                                                  throw new Error("삭제 실패");
+                                                if (!res.ok) throw new Error("삭제 실패");
 
                                                 // 재검증 + 탭 유지
                                                 await mutateAdminReviews?.();
-                                                const params =
-                                                  new URLSearchParams(
-                                                    searchParams.toString(),
-                                                  );
-                                                params.set("tab", "reviews");
-                                                router.replace(
-                                                  `?${params.toString()}`,
-                                                  { scroll: false },
+                                                const params = new URLSearchParams(
+                                                  searchParams.toString(),
                                                 );
+                                                params.set("tab", "reviews");
+                                                router.replace(`?${params.toString()}`, {
+                                                  scroll: false,
+                                                });
                                                 router.refresh();
 
-                                                showSuccessToast(
-                                                  "리뷰를 삭제했어요.",
-                                                );
+                                                showSuccessToast("리뷰를 삭제했어요.");
                                               } catch (err: any) {
                                                 showErrorToast(
-                                                  err?.message ||
-                                                    "리뷰 삭제에 실패했습니다.",
+                                                  err?.message || "리뷰 삭제에 실패했습니다.",
                                                 );
                                               } finally {
                                                 setBusyReviewId(null);
@@ -1241,41 +1147,35 @@ export default function RacketDetailClient({
                             )}
 
                             {/* 이미지 썸네일 → 뷰어 */}
-                            {Array.isArray(review?.photos) &&
-                            review.photos.length > 0 ? (
+                            {Array.isArray(review?.photos) && review.photos.length > 0 ? (
                               <div className="flex gap-2 overflow-x-auto pb-1 sm:gap-3">
-                                {review.photos
-                                  .slice(0, 4)
-                                  .map((src: string, i: number) => (
-                                    <button
-                                      key={i}
-                                      type="button"
-                                      onClick={() =>
-                                        openViewer(review.photos, i)
-                                      }
-                                      className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-border bg-muted sm:rounded-xl"
-                                      title="확대 보기"
-                                    >
-                                      <Image
-                                        src={src}
-                                        alt={`리뷰 이미지 ${i + 1}`}
-                                        fill
-                                        className="object-cover"
-                                      />
-                                      {/* 4장 넘어가면 +N 표시 */}
-                                      {i === 3 && review.photos.length > 4 ? (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-foreground/45 text-sm font-semibold text-background">
-                                          +{review.photos.length - 4}
-                                        </div>
-                                      ) : null}
-                                    </button>
-                                  ))}
+                                {review.photos.slice(0, 4).map((src: string, i: number) => (
+                                  <button
+                                    key={i}
+                                    type="button"
+                                    onClick={() => openViewer(review.photos, i)}
+                                    className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-border bg-muted sm:rounded-xl"
+                                    title="확대 보기"
+                                  >
+                                    <Image
+                                      src={src}
+                                      alt={`리뷰 이미지 ${i + 1}`}
+                                      fill
+                                      className="object-cover"
+                                    />
+                                    {/* 4장 넘어가면 +N 표시 */}
+                                    {i === 3 && review.photos.length > 4 ? (
+                                      <div className="absolute inset-0 flex items-center justify-center bg-foreground/45 text-sm font-semibold text-background">
+                                        +{review.photos.length - 4}
+                                      </div>
+                                    ) : null}
+                                  </button>
+                                ))}
                               </div>
                             ) : null}
 
                             {/* 작업 중 오버레이 */}
-                            {busyReviewId &&
-                            String(busyReviewId) === String(review?._id) ? (
+                            {busyReviewId && String(busyReviewId) === String(review?._id) ? (
                               <div className="flex items-center gap-2 pt-2 text-xs text-muted-foreground">
                                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                 처리 중...

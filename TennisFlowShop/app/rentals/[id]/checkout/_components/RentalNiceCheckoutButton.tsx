@@ -72,11 +72,9 @@ export default function RentalNiceCheckoutButton({
             return;
           }
           existing.addEventListener("load", () => resolve(), { once: true });
-          existing.addEventListener(
-            "error",
-            () => reject(new Error("NICE_SCRIPT_LOAD_FAILED")),
-            { once: true },
-          );
+          existing.addEventListener("error", () => reject(new Error("NICE_SCRIPT_LOAD_FAILED")), {
+            once: true,
+          });
           return;
         }
 
@@ -99,14 +97,10 @@ export default function RentalNiceCheckoutButton({
       setScriptReady(false);
       const code = String(error?.message || "");
       if (code === "NICE_SCRIPT_LOAD_FAILED") {
-        setScriptError(
-          "카드/간편결제 모듈을 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.",
-        );
+        setScriptError("카드/간편결제 모듈을 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.");
         return;
       }
-      setScriptError(
-        "카드/간편결제창 준비 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
-      );
+      setScriptError("카드/간편결제창 준비 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
     });
 
     return () => {
@@ -114,15 +108,9 @@ export default function RentalNiceCheckoutButton({
     };
   }, []);
 
-  const blockedByZeroAmount =
-    !Number.isFinite(payableAmount) || payableAmount <= 0;
+  const blockedByZeroAmount = !Number.isFinite(payableAmount) || payableAmount <= 0;
   const isDisabled = useMemo(
-    () =>
-      disabled ||
-      loading ||
-      blockedByZeroAmount ||
-      !scriptReady ||
-      !!scriptError,
+    () => disabled || loading || blockedByZeroAmount || !scriptReady || !!scriptError,
     [disabled, loading, blockedByZeroAmount, scriptReady, scriptError],
   );
 
@@ -130,9 +118,7 @@ export default function RentalNiceCheckoutButton({
     if (isDisabled) return;
 
     if (blockedByZeroAmount) {
-      setInlineError(
-        "최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.",
-      );
+      setInlineError("최종 결제금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.");
       return;
     }
 
@@ -146,14 +132,10 @@ export default function RentalNiceCheckoutButton({
         body: JSON.stringify(payload),
       });
 
-      const prepJson = (await prepRes
-        .json()
-        .catch(() => null)) as NicePrepareResponse | null;
+      const prepJson = (await prepRes.json().catch(() => null)) as NicePrepareResponse | null;
       if (!prepRes.ok || !prepJson?.success || !prepJson?.nice) {
         onSuccessNavigationAbort?.();
-        throw new Error(
-          prepJson?.error || "카드/간편결제 준비에 실패했습니다.",
-        );
+        throw new Error(prepJson?.error || "카드/간편결제 준비에 실패했습니다.");
       }
 
       if (typeof window.AUTHNICE?.requestPay !== "function") {
@@ -176,9 +158,7 @@ export default function RentalNiceCheckoutButton({
           fnError: (result: any) => {
             onSuccessNavigationAbort?.();
             const msg = String(
-              result?.errorMsg ||
-                result?.message ||
-                "결제가 취소되었거나 실패했습니다.",
+              result?.errorMsg || result?.message || "결제가 취소되었거나 실패했습니다.",
             );
             setInlineError(msg);
             setLoading(false);
@@ -196,11 +176,7 @@ export default function RentalNiceCheckoutButton({
 
   return (
     <div className="space-y-2 w-full">
-      <Button
-        onClick={handleClick}
-        className="w-full h-12"
-        disabled={isDisabled}
-      >
+      <Button onClick={handleClick} className="w-full h-12" disabled={isDisabled}>
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -50,10 +50,7 @@ type ReportInput = z.infer<typeof reportSchema>;
 // POST: 댓글/대댓글 신고 생성
 // POST /api/community/comments/[id]/report
 // -----------------------------------------------------------------------
-export async function POST(
-  req: NextRequest,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const stop = startTimer();
   const meta = reqMeta(req);
 
@@ -73,10 +70,7 @@ export async function POST(
 
   // 1) ID 유효성 검사
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json(
-      { ok: false, error: "invalid_id" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "invalid_id" }, { status: 400 });
   }
 
   // 2) body 파싱 + Zod 검증
@@ -84,10 +78,7 @@ export async function POST(
   try {
     json = await req.json();
   } catch {
-    return NextResponse.json(
-      { ok: false, error: "invalid_body" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "invalid_body" }, { status: 400 });
   }
 
   const parsed = reportSchema.safeParse(json);
@@ -108,36 +99,26 @@ export async function POST(
   const db = await getDb();
   const commentsCol = db.collection("community_comments");
   const postsCol = db.collection("community_posts");
-  const reportsCol =
-    db.collection<CommunityReportDocument>("community_reports");
+  const reportsCol = db.collection<CommunityReportDocument>("community_reports");
 
   const commentObjectId = new ObjectId(id);
 
   const comment = await commentsCol.findOne({ _id: commentObjectId });
 
   if (!comment || comment.status === "deleted") {
-    return NextResponse.json(
-      { ok: false, error: "not_found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
 
   // 이 댓글이 속한 게시글 정보 (게시판 타입 등)
   const post = await postsCol.findOne({ _id: comment.postId });
   if (!post) {
-    return NextResponse.json(
-      { ok: false, error: "post_not_found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, error: "post_not_found" }, { status: 404 });
   }
 
   // 4) 신고자 정보 (회원만 허용)
   const payload = await getAuthPayload();
   if (!payload) {
-    return NextResponse.json(
-      { ok: false, error: "unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
   const reporter = await resolveReporterSnapshot(db, payload);
@@ -163,10 +144,7 @@ export async function POST(
 
   // 자기 댓글은 신고 불가
   if (comment.userId && String(comment.userId) === reporter.reporterUserId) {
-    return NextResponse.json(
-      { ok: false, error: "cannot_report_own_comment" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "cannot_report_own_comment" }, { status: 400 });
   }
 
   // 5) 중복 신고(5분 이내) 방지
@@ -180,10 +158,7 @@ export async function POST(
   });
 
   if (recent) {
-    return NextResponse.json(
-      { ok: false, error: "too_many_requests" },
-      { status: 429 },
-    );
+    return NextResponse.json({ ok: false, error: "too_many_requests" }, { status: 429 });
   }
 
   // 6) 신고 문서 생성

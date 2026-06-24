@@ -187,9 +187,7 @@ export const REFUND_BANK_CATALOG: readonly RefundBankCatalogItem[] = [
 ] as const;
 
 const BANK_CODE_SET = new Set(REFUND_BANK_CATALOG.map((bank) => bank.code));
-const BANK_LABEL_MAP = new Map(
-  REFUND_BANK_CATALOG.map((bank) => [bank.code, bank.label]),
-);
+const BANK_LABEL_MAP = new Map(REFUND_BANK_CATALOG.map((bank) => [bank.code, bank.label]));
 
 export const REFUND_BANK_CODES = REFUND_BANK_CATALOG.map((bank) => bank.code);
 

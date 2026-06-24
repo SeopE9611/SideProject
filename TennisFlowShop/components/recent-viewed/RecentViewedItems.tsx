@@ -1,8 +1,6 @@
 "use client";
 
-import HorizontalProducts, {
-  type HItem,
-} from "@/components/HorizontalProducts";
+import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -31,9 +29,7 @@ export default function RecentViewedItems({
   limit = 6,
 }: RecentViewedItemsProps) {
   const [mounted, setMounted] = useState(false);
-  const [items, setItems] = useState<ReturnType<typeof getRecentViewedItems>>(
-    [],
-  );
+  const [items, setItems] = useState<ReturnType<typeof getRecentViewedItems>>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -43,10 +39,7 @@ export default function RecentViewedItems({
   const filteredItems = useMemo(() => {
     const id = (currentId ?? "").trim();
     return items
-      .filter(
-        (item) =>
-          !(currentType && id && item.type === currentType && item.id === id),
-      )
+      .filter((item) => !(currentType && id && item.type === currentType && item.id === id))
       .slice(0, Math.max(1, limit));
   }, [items, currentId, currentType, limit]);
 

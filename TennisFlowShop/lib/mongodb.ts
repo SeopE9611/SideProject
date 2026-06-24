@@ -136,9 +136,7 @@ if (!uri) {
 
     clientPromise = Promise.resolve(mockClient);
   } else {
-    clientPromise = Promise.reject(
-      new Error("MONGODB_URI 환경변수가 설정되지 않았습니다."),
-    );
+    clientPromise = Promise.reject(new Error("MONGODB_URI 환경변수가 설정되지 않았습니다."));
   }
 } else {
   const getMongoClient = async () => {
@@ -154,8 +152,7 @@ if (!uri) {
   };
 
   clientPromise = {
-    then: (onFulfilled, onRejected) =>
-      getMongoClient().then(onFulfilled, onRejected),
+    then: (onFulfilled, onRejected) => getMongoClient().then(onFulfilled, onRejected),
   } as Promise<MongoClient>;
 }
 
@@ -170,16 +167,14 @@ export default clientPromise;
 const RUNTIME_INDEX_RETRY_COOLDOWN_MS = 60_000;
 
 function scheduleRuntimeIndexRetry() {
-  global._runtimeIndexesRetryAfter =
-    Date.now() + RUNTIME_INDEX_RETRY_COOLDOWN_MS;
+  global._runtimeIndexesRetryAfter = Date.now() + RUNTIME_INDEX_RETRY_COOLDOWN_MS;
 }
 
 export async function getDb() {
   const c = await clientPromise; // lazy connect + 실패한 Promise 재사용 방지
   const db = c.db(dbName);
   const canStartRuntimeIndexEnsures =
-    !global._runtimeIndexesRetryAfter ||
-    global._runtimeIndexesRetryAfter <= Date.now();
+    !global._runtimeIndexesRetryAfter || global._runtimeIndexesRetryAfter <= Date.now();
 
   // 핵심: 인덱스 보장을 "순차 await" 하지 않고, 같은 요청 안에서 병렬로 시작한다.
   // - 기존 구조는 첫 요청/콜드스타트에서 ensure*Indexes를 하나씩 기다려서 지연이 누적됐다.
@@ -232,13 +227,8 @@ export async function getDb() {
 
   // user_notifications 인덱스 보장(1회)
   if (canStartRuntimeIndexEnsures && !global._userNotificationIndexesReady) {
-    global._userNotificationIndexesReady = ensureUserNotificationIndexes(
-      db,
-    ).catch((e) => {
-      console.error(
-        "[user_notifications] ensureUserNotificationIndexes failed",
-        e,
-      );
+    global._userNotificationIndexesReady = ensureUserNotificationIndexes(db).catch((e) => {
+      console.error("[user_notifications] ensureUserNotificationIndexes failed", e);
       scheduleRuntimeIndexRetry();
       global._userNotificationIndexesReady = null;
     });
@@ -255,13 +245,11 @@ export async function getDb() {
 
   // used_rackets (Finder 범위검색 성능)
   if (canStartRuntimeIndexEnsures && !global._usedRacketsIndexesReady) {
-    global._usedRacketsIndexesReady = ensureUsedRacketsIndexes(db).catch(
-      (e) => {
-        console.error("[used_rackets] ensureUsedRacketsIndexes failed", e);
-        scheduleRuntimeIndexRetry();
-        global._usedRacketsIndexesReady = null;
-      },
-    );
+    global._usedRacketsIndexesReady = ensureUsedRacketsIndexes(db).catch((e) => {
+      console.error("[used_rackets] ensureUsedRacketsIndexes failed", e);
+      scheduleRuntimeIndexRetry();
+      global._usedRacketsIndexesReady = null;
+    });
   }
 
   // wishlists 인덱스 보장(1회)
@@ -284,13 +272,8 @@ export async function getDb() {
 
   // admin operations 검색 인덱스 보장(1회)
   if (canStartRuntimeIndexEnsures && !global._adminOperationsIndexesReady) {
-    global._adminOperationsIndexesReady = ensureAdminOperationsIndexes(
-      db,
-    ).catch((e) => {
-      console.error(
-        "[admin-operations] ensureAdminOperationsIndexes failed",
-        e,
-      );
+    global._adminOperationsIndexesReady = ensureAdminOperationsIndexes(db).catch((e) => {
+      console.error("[admin-operations] ensureAdminOperationsIndexes failed", e);
       scheduleRuntimeIndexRetry();
       global._adminOperationsIndexesReady = null;
     });
@@ -324,19 +307,14 @@ export async function getDb() {
   }
 
   // revenue_report_snapshots 인덱스 보장(1회)
-  if (
-    canStartRuntimeIndexEnsures &&
-    !global._revenueReportSnapshotIndexesReady
-  ) {
-    global._revenueReportSnapshotIndexesReady =
-      ensureRevenueReportSnapshotIndexes(db).catch((e) => {
-        console.error(
-          "[revenue_report_snapshots] ensureRevenueReportSnapshotIndexes failed",
-          e,
-        );
+  if (canStartRuntimeIndexEnsures && !global._revenueReportSnapshotIndexesReady) {
+    global._revenueReportSnapshotIndexesReady = ensureRevenueReportSnapshotIndexes(db).catch(
+      (e) => {
+        console.error("[revenue_report_snapshots] ensureRevenueReportSnapshotIndexes failed", e);
         scheduleRuntimeIndexRetry();
         global._revenueReportSnapshotIndexesReady = null;
-      });
+      },
+    );
   }
 
   if (canStartRuntimeIndexEnsures && !global._offlineIndexesReady) {

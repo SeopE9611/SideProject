@@ -1,12 +1,5 @@
 "use client";
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 // 길이 추정 스케일은 제거(혹은 fallback로만 유지해도 OK)
 const MIN_SCALE = 0.66; // 너무 작아지지 않도록 하한선

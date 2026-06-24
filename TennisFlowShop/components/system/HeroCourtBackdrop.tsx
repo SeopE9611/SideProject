@@ -3,10 +3,7 @@ type HeroCourtBackdropProps = {
   opacity?: "soft" | "normal";
 };
 
-export default function HeroCourtBackdrop({
-  className,
-  opacity,
-}: HeroCourtBackdropProps) {
+export default function HeroCourtBackdrop({ className, opacity }: HeroCourtBackdropProps) {
   void className;
   void opacity;
   return null;

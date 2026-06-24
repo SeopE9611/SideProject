@@ -1,10 +1,5 @@
 export type OfflineKind = "stringing" | "package_sale" | "etc";
-export type OfflineStatus =
-  | "received"
-  | "in_progress"
-  | "completed"
-  | "picked_up"
-  | "canceled";
+export type OfflineStatus = "received" | "in_progress" | "completed" | "picked_up" | "canceled";
 export type OfflinePaymentStatus = "pending" | "paid" | "refunded";
 export type OfflinePaymentMethod = "cash" | "card" | "bank_transfer" | "etc";
 

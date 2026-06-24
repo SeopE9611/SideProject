@@ -2,13 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,10 +17,7 @@ import { showErrorToast } from "@/lib/toast";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { adminFetcher, adminMutator } from "@/lib/admin/adminFetcher";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
-import {
-  getSelectableCourierCatalog,
-  normalizeCourierCode,
-} from "@/lib/shipping/courier-map";
+import { getSelectableCourierCatalog, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import {
   isValidTrackingNumberLength,
   normalizeTrackingNumber,
@@ -67,9 +58,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
       const json = await adminFetcher<any>(`/api/admin/rentals/${rentalId}`, {
         cache: "no-store",
       });
-      const pickupMethod = String(
-        json?.servicePickupMethod ?? "",
-      ).toUpperCase();
+      const pickupMethod = String(json?.servicePickupMethod ?? "").toUpperCase();
       const isVisit = pickupMethod === "SHOP_VISIT";
       setIsVisitPickup(isVisit);
       const out = json?.shipping?.outbound;
@@ -88,10 +77,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
   }, [rentalId]);
 
   const onSave = async () => {
-    if (isVisitPickup)
-      return showErrorToast(
-        "방문 수령 대여는 출고 운송장을 등록할 수 없습니다.",
-      );
+    if (isVisitPickup) return showErrorToast("방문 수령 대여는 출고 운송장을 등록할 수 없습니다.");
     if (!courier) return showErrorToast("택배사를 선택해주세요");
     const normalizedCourier = normalizeCourierCode(courier);
     const normalizedTracking = normalizeTrackingNumber(tracking);
@@ -137,10 +123,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
             이 대여는 방문 수령 건이라 출고 운송장 등록이 필요하지 않습니다.
           </CardContent>
           <CardFooter>
-            <Button
-              variant="outline"
-              onClick={() => router.push(`/admin/rentals/${rentalId}`)}
-            >
+            <Button variant="outline" onClick={() => router.push(`/admin/rentals/${rentalId}`)}>
               상세로 돌아가기
             </Button>
           </CardFooter>
@@ -181,20 +164,12 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
               inputMode="numeric"
               maxLength={20}
               placeholder="숫자만 입력 (9~20자리)"
-              onChange={(e) =>
-                setTracking(
-                  normalizeTrackingNumber(e.target.value).slice(0, 20),
-                )
-              }
+              onChange={(e) => setTracking(normalizeTrackingNumber(e.target.value).slice(0, 20))}
             />
           </div>
           <div className="space-y-2">
             <Label>출고일(선택)</Label>
-            <Input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
+            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
         </CardContent>
         <CardFooter>

@@ -4,10 +4,7 @@ import {
   type GeneralSettings,
   type PackageConfig,
 } from "@/lib/package-settings";
-import {
-  loadPackageSettings,
-  savePackageSettings,
-} from "@/app/features/packages/api/db";
+import { loadPackageSettings, savePackageSettings } from "@/app/features/packages/api/db";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
@@ -74,19 +71,15 @@ export async function PUT(req: Request) {
         sessions: toNumberSafe(pkg.sessions, 0),
         price: toNumberSafe(pkg.price, 0),
         originalPrice:
-          pkg.originalPrice != null &&
-          Number.isFinite(Number(pkg.originalPrice))
+          pkg.originalPrice != null && Number.isFinite(Number(pkg.originalPrice))
             ? Number(pkg.originalPrice)
             : undefined,
         description: String(pkg.description ?? ""),
-        features: Array.isArray(pkg.features)
-          ? pkg.features.map((f) => String(f))
-          : [],
+        features: Array.isArray(pkg.features) ? pkg.features.map((f) => String(f)) : [],
         isActive: !!pkg.isActive,
         isPopular: !!pkg.isPopular,
         validityDays: toNumberSafe(pkg.validityDays, 0),
-        sortOrder:
-          typeof pkg.sortOrder === "number" ? pkg.sortOrder : index + 1,
+        sortOrder: typeof pkg.sortOrder === "number" ? pkg.sortOrder : index + 1,
       }))
       // 회수/가격이 0인 이상한 항목은 버림
       .filter((pkg) => pkg.sessions > 0 && pkg.price > 0);
@@ -99,14 +92,8 @@ export async function PUT(req: Request) {
         rawGeneral.maxValidityDays,
         DEFAULT_GENERAL_SETTINGS.maxValidityDays,
       ),
-      minSessions: toNumberSafe(
-        rawGeneral.minSessions,
-        DEFAULT_GENERAL_SETTINGS.minSessions,
-      ),
-      maxSessions: toNumberSafe(
-        rawGeneral.maxSessions,
-        DEFAULT_GENERAL_SETTINGS.maxSessions,
-      ),
+      minSessions: toNumberSafe(rawGeneral.minSessions, DEFAULT_GENERAL_SETTINGS.minSessions),
+      maxSessions: toNumberSafe(rawGeneral.maxSessions, DEFAULT_GENERAL_SETTINGS.maxSessions),
       defaultServiceType: "방문",
       autoExpireNotificationDays: toNumberSafe(
         rawGeneral.autoExpireNotificationDays,
@@ -122,17 +109,11 @@ export async function PUT(req: Request) {
     const beforeSettings = await loadPackageSettings();
     await savePackageSettings({ packageConfigs, generalSettings });
 
-    const beforeSummary = summarizePackageSettings(
-      beforeSettings.packageConfigs,
-    );
+    const beforeSummary = summarizePackageSettings(beforeSettings.packageConfigs);
     const afterSummary = summarizePackageSettings(packageConfigs);
-    const beforeById = new Map(
-      beforeSettings.packageConfigs.map((pkg) => [pkg.id, pkg]),
-    );
+    const beforeById = new Map(beforeSettings.packageConfigs.map((pkg) => [pkg.id, pkg]));
     const afterById = new Map(packageConfigs.map((pkg) => [pkg.id, pkg]));
-    const addedCount = packageConfigs.filter(
-      (pkg) => !beforeById.has(pkg.id),
-    ).length;
+    const addedCount = packageConfigs.filter((pkg) => !beforeById.has(pkg.id)).length;
     const removedCount = beforeSettings.packageConfigs.filter(
       (pkg) => !afterById.has(pkg.id),
     ).length;

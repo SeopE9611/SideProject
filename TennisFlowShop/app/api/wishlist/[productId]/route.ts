@@ -57,20 +57,14 @@ async function getAuthenticatedUserId() {
   const userId = String((user as any).sub ?? "");
   if (!ObjectId.isValid(userId)) {
     return {
-      response: NextResponse.json(
-        { error: "Invalid token payload" },
-        { status: 400 },
-      ),
+      response: NextResponse.json({ error: "Invalid token payload" }, { status: 400 }),
     };
   }
 
   return { userId };
 }
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ productId: string }> },
-) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ productId: string }> }) {
   try {
     const auth = await getAuthenticatedUserId();
     if (auth.response) return auth.response;
@@ -95,10 +89,7 @@ export async function PATCH(
       ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
     });
     if (!prod) {
-      return NextResponse.json(
-        { message: "Product not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ message: "Product not found" }, { status: 404 });
     }
 
     const result = await db
@@ -109,10 +100,7 @@ export async function PATCH(
       );
 
     if (result.matchedCount === 0) {
-      return NextResponse.json(
-        { message: "Wishlist item not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ message: "Wishlist item not found" }, { status: 404 });
     }
 
     return NextResponse.json({ success: true });

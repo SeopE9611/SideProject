@@ -20,13 +20,7 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,12 +45,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { buildQueryString } from "@/lib/admin/urlQuerySync";
 import { useAdminListQueryState } from "@/lib/admin/useAdminListQueryState";
@@ -108,11 +97,7 @@ function SortableTH({
   icon: React.ReactNode;
 }) {
   return (
-    <TableHead
-      className={cn(thClasses, className)}
-      role="columnheader"
-      aria-sort={ariaSort}
-    >
+    <TableHead className={cn(thClasses, className)} role="columnheader" aria-sort={ariaSort}>
       <button
         type="button"
         onClick={() => onSort(k)}
@@ -157,27 +142,15 @@ export default function PackageOrdersClient() {
     "결제대기",
     "결제취소",
   ];
-  const SERVICE_TYPE_VALUES: ReadonlyArray<"all" | ServiceType> = [
-    "all",
-    "방문",
-    "출장",
-  ];
+  const SERVICE_TYPE_VALUES: ReadonlyArray<"all" | ServiceType> = ["all", "방문", "출장"];
 
-  const isPassStatusFilter = (
-    value: string | null,
-  ): value is "all" | PassStatus =>
+  const isPassStatusFilter = (value: string | null): value is "all" | PassStatus =>
     !!value && PASS_STATUS_VALUES.includes(value as "all" | PassStatus);
-  const isPaymentStatusFilter = (
-    value: string | null,
-  ): value is "all" | PaymentStatus =>
+  const isPaymentStatusFilter = (value: string | null): value is "all" | PaymentStatus =>
     !!value && PAYMENT_STATUS_VALUES.includes(value as "all" | PaymentStatus);
-  const isServiceTypeFilter = (
-    value: string | null,
-  ): value is "all" | ServiceType =>
+  const isServiceTypeFilter = (value: string | null): value is "all" | ServiceType =>
     !!value && SERVICE_TYPE_VALUES.includes(value as "all" | ServiceType);
-  const isPackageTypeFilter = (
-    value: string | null,
-  ): value is "all" | PackageType =>
+  const isPackageTypeFilter = (value: string | null): value is "all" | PackageType =>
     !!value && PACKAGE_TYPE_VALUES.includes(value as "all" | PackageType);
 
   const { state, patchState, setPage } = useAdminListQueryState<{
@@ -208,9 +181,7 @@ export default function PackageOrdersClient() {
     parse: (sp, defaults) => {
       const pkgRaw = sp.get("package");
       const normalizedPkg =
-        pkgRaw && ["10", "30", "50", "100"].includes(pkgRaw)
-          ? `${pkgRaw}회권`
-          : pkgRaw;
+        pkgRaw && ["10", "30", "50", "100"].includes(pkgRaw) ? `${pkgRaw}회권` : pkgRaw;
       const sortParam = sp.get("sort");
       let sortBy: SortKey | null = defaults.sortBy;
       let sortDirection: "asc" | "desc" = defaults.sortDirection;
@@ -237,8 +208,7 @@ export default function PackageOrdersClient() {
       return {
         page: Math.max(
           1,
-          Number.parseInt(sp.get("page") || String(defaults.page), 10) ||
-            defaults.page,
+          Number.parseInt(sp.get("page") || String(defaults.page), 10) || defaults.page,
         ),
         searchTerm: (sp.get("q") || defaults.searchTerm).trim(),
         statusFilter: isPassStatusFilter(sp.get("status"))
@@ -254,9 +224,7 @@ export default function PackageOrdersClient() {
           ? normalizedPkg
           : defaults.packageTypeFilter,
         presetFilter:
-          sp.get("preset") === PAYMENT_CHECK_PRESET
-            ? PAYMENT_CHECK_PRESET
-            : defaults.presetFilter,
+          sp.get("preset") === PAYMENT_CHECK_PRESET ? PAYMENT_CHECK_PRESET : defaults.presetFilter,
         sortBy,
         sortDirection,
       };
@@ -271,9 +239,7 @@ export default function PackageOrdersClient() {
       payment: queryState.paymentFilter,
       service: queryState.serviceTypeFilter,
       preset: queryState.presetFilter,
-      sort: queryState.sortBy
-        ? `${queryState.sortBy}:${queryState.sortDirection}`
-        : undefined,
+      sort: queryState.sortBy ? `${queryState.sortBy}:${queryState.sortDirection}` : undefined,
       page: queryState.page === DEFAULTS.page ? undefined : queryState.page,
       limit: DEFAULTS.limit,
     }),
@@ -311,10 +277,7 @@ export default function PackageOrdersClient() {
       buildQueryString({
         q: debouncedSearch.trim(),
         status: statusFilter,
-        package:
-          packageTypeFilter !== "all"
-            ? packageTypeFilter.replace("회권", "")
-            : "all",
+        package: packageTypeFilter !== "all" ? packageTypeFilter.replace("회권", "") : "all",
         payment: paymentFilter,
         service: serviceTypeFilter,
         preset: presetFilter,
@@ -363,9 +326,7 @@ export default function PackageOrdersClient() {
       ? data.items
       : []
     : null;
-  const totalCount: number | null = hasResolvedTotal
-    ? (data?.total ?? 0)
-    : null;
+  const totalCount: number | null = hasResolvedTotal ? (data?.total ?? 0) : null;
   const shouldShowRows = !!packages && packages.length > 0;
   const shouldShowEmptyState =
     hasResolvedData && !hasDataError && !!packages && packages.length === 0;
@@ -430,8 +391,7 @@ export default function PackageOrdersClient() {
     items.push(t);
     return items;
   }, [hasResolvedTotalPages, page, totalPages]);
-  const shouldRenderPaginationNumbers =
-    hasResolvedTotalPages && !isInitialLoading;
+  const shouldRenderPaginationNumbers = hasResolvedTotalPages && !isInitialLoading;
 
   // totalPages가 줄어든 경우 현재 페이지를 자동 보정
   useEffect(() => {
@@ -446,9 +406,7 @@ export default function PackageOrdersClient() {
       <div className="container py-6">
         <Card className="border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 text-foreground">
           <CardHeader>
-            <CardTitle className="text-destructive">
-              목록을 불러오지 못했습니다.
-            </CardTitle>
+            <CardTitle className="text-destructive">목록을 불러오지 못했습니다.</CardTitle>
             <CardDescription className="text-muted-foreground">
               {commonErrorMessage}
             </CardDescription>
@@ -693,8 +651,7 @@ export default function PackageOrdersClient() {
     "border-b border-border text-foreground " +
     "font-semibold text-xs leading-tight box-border";
 
-  const tdClasses =
-    "px-3 py-2 align-middle text-center text-xs leading-tight tabular-nums";
+  const tdClasses = "px-3 py-2 align-middle text-center text-xs leading-tight tabular-nums";
 
   // 열별 정렬
   const col = {
@@ -725,10 +682,7 @@ export default function PackageOrdersClient() {
     const remaining = Math.max(0, Number(remainingRaw) || 0);
     const total = used + remaining;
     if (total <= 0) return { percent: 0, used, remaining, total };
-    const percent = Math.min(
-      100,
-      Math.max(0, Math.round((used / total) * 100)),
-    );
+    const percent = Math.min(100, Math.max(0, Math.round((used / total) * 100)));
     return { percent, used, remaining, total };
   }
 
@@ -740,12 +694,9 @@ export default function PackageOrdersClient() {
   ) {
     if (passStatus === "종료") return { label: "종료", tone: "muted" as const };
     if (passStatus === "대기") return { label: "대기", tone: "muted" as const };
-    if (passStatus === "취소")
-      return { label: "취소", tone: "destructive" as const };
-    if (passStatus === "비활성")
-      return { label: "비활성", tone: "warning" as const };
-    if (paymentStatus === "결제취소")
-      return { label: "취소", tone: "destructive" as const };
+    if (passStatus === "취소") return { label: "취소", tone: "destructive" as const };
+    if (passStatus === "비활성") return { label: "비활성", tone: "warning" as const };
+    if (paymentStatus === "결제취소") return { label: "취소", tone: "destructive" as const };
 
     const d = toDateSafe(passExpiresAt);
     let expired = false;
@@ -762,9 +713,7 @@ export default function PackageOrdersClient() {
   }
 
   // 상태 뱃지 스타일
-  function statusBadgeClass(
-    tone: "destructive" | "muted" | "warning" | "success",
-  ) {
+  function statusBadgeClass(tone: "destructive" | "muted" | "warning" | "success") {
     switch (tone) {
       case "destructive":
         return "bg-destructive/10 text-destructive border border-destructive/30 dark:bg-destructive/15";
@@ -801,9 +750,7 @@ export default function PackageOrdersClient() {
             <CardContent className="p-6">
               <div className="flex min-w-0 items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    총 패키지
-                  </p>
+                  <p className="text-sm font-medium text-muted-foreground">총 패키지</p>
                   <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-foreground">
                     {kpiTotal === null ? "-" : kpiTotal}
                   </div>
@@ -819,9 +766,7 @@ export default function PackageOrdersClient() {
             <CardContent className="p-6">
               <div className="flex min-w-0 items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    활성 패키지
-                  </p>
+                  <p className="text-sm font-medium text-muted-foreground">활성 패키지</p>
                   <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-success">
                     {kpiActive === null ? "-" : kpiActive}
                   </div>
@@ -837,13 +782,9 @@ export default function PackageOrdersClient() {
             <CardContent className="p-6">
               <div className="flex min-w-0 items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    총 매출
-                  </p>
+                  <p className="text-sm font-medium text-muted-foreground">총 매출</p>
                   <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-foreground">
-                    {kpiRevenue === null
-                      ? "집계 중"
-                      : formatCurrency(kpiRevenue)}
+                    {kpiRevenue === null ? "집계 중" : formatCurrency(kpiRevenue)}
                   </div>
                 </div>
                 <div className="shrink-0 bg-muted rounded-xl p-3">
@@ -857,9 +798,7 @@ export default function PackageOrdersClient() {
             <CardContent className="p-6">
               <div className="flex min-w-0 items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    만료 예정
-                  </p>
+                  <p className="text-sm font-medium text-muted-foreground">만료 예정</p>
                   <div className="overflow-hidden text-ellipsis whitespace-nowrap text-3xl font-bold tabular-nums text-warning">
                     {kpiExpSoon === null ? "-" : kpiExpSoon}
                   </div>
@@ -875,9 +814,7 @@ export default function PackageOrdersClient() {
         {/* 빠른 보기 */}
         <Card className={cn("mb-4", adminSurface.cardMuted)}>
           <CardContent className="flex flex-wrap items-center gap-2 p-4">
-            <span className="mr-1 text-xs font-semibold text-muted-foreground">
-              빠른 보기
-            </span>
+            <span className="mr-1 text-xs font-semibold text-muted-foreground">빠른 보기</span>
 
             <Button
               type="button"
@@ -891,9 +828,7 @@ export default function PackageOrdersClient() {
             <Button
               type="button"
               size="sm"
-              variant={
-                currentViewLabel === "결제/활성화 대기" ? "default" : "outline"
-              }
+              variant={currentViewLabel === "결제/활성화 대기" ? "default" : "outline"}
               onClick={() =>
                 applyQuickView({
                   presetFilter: PAYMENT_CHECK_PRESET,
@@ -906,9 +841,7 @@ export default function PackageOrdersClient() {
             <Button
               type="button"
               size="sm"
-              variant={
-                currentViewLabel === "활성 패키지" ? "default" : "outline"
-              }
+              variant={currentViewLabel === "활성 패키지" ? "default" : "outline"}
               onClick={() =>
                 applyQuickView({
                   statusFilter: "활성",
@@ -934,9 +867,7 @@ export default function PackageOrdersClient() {
             <Button
               type="button"
               size="sm"
-              variant={
-                currentViewLabel === "만료 패키지" ? "default" : "outline"
-              }
+              variant={currentViewLabel === "만료 패키지" ? "default" : "outline"}
               onClick={() =>
                 applyQuickView({
                   statusFilter: "만료",
@@ -949,9 +880,7 @@ export default function PackageOrdersClient() {
             <Button
               type="button"
               size="sm"
-              variant={
-                currentViewLabel === "취소 패키지" ? "default" : "outline"
-              }
+              variant={currentViewLabel === "취소 패키지" ? "default" : "outline"}
               onClick={() =>
                 applyQuickView({
                   statusFilter: "취소",
@@ -970,20 +899,14 @@ export default function PackageOrdersClient() {
             adminSurface.cardMuted,
           )}
         >
-          <p className="font-semibold text-foreground">
-            현재 보기: {currentViewLabel}
-          </p>
+          <p className="font-semibold text-foreground">현재 보기: {currentViewLabel}</p>
 
           {activeFilterLabels.length > 0 && (
-            <p className="text-muted-foreground">
-              필터: {activeFilterLabels.join(" / ")}
-            </p>
+            <p className="text-muted-foreground">필터: {activeFilterLabels.join(" / ")}</p>
           )}
 
           {totalCount !== null && (
-            <p className="text-muted-foreground">
-              총 {totalCount.toLocaleString("ko-KR")}건
-            </p>
+            <p className="text-muted-foreground">총 {totalCount.toLocaleString("ko-KR")}건</p>
           )}
 
           {hasAnyFilter && (
@@ -1007,8 +930,8 @@ export default function PackageOrdersClient() {
               패키지 찾기
             </CardTitle>
             <CardDescription>
-              빠른 보기로 주요 상태를 좁히거나 패키지 상태, 유형, 결제 상태,
-              고객 정보를 조합해 검색하세요.
+              빠른 보기로 주요 상태를 좁히거나 패키지 상태, 유형, 결제 상태, 고객 정보를 조합해
+              검색하세요.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -1061,8 +984,7 @@ export default function PackageOrdersClient() {
                 <Select
                   value={packageTypeFilter}
                   onValueChange={(v) => {
-                    if (isPackageTypeFilter(v))
-                      patchState({ packageTypeFilter: v });
+                    if (isPackageTypeFilter(v)) patchState({ packageTypeFilter: v });
                   }}
                 >
                   <SelectTrigger>
@@ -1080,8 +1002,7 @@ export default function PackageOrdersClient() {
                 <Select
                   value={paymentFilter}
                   onValueChange={(v) => {
-                    if (isPaymentStatusFilter(v))
-                      patchState({ paymentFilter: v });
+                    if (isPaymentStatusFilter(v)) patchState({ paymentFilter: v });
                   }}
                 >
                   <SelectTrigger>
@@ -1098,8 +1019,7 @@ export default function PackageOrdersClient() {
                 <Select
                   value={serviceTypeFilter}
                   onValueChange={(v) => {
-                    if (isServiceTypeFilter(v))
-                      patchState({ serviceTypeFilter: v });
+                    if (isServiceTypeFilter(v)) patchState({ serviceTypeFilter: v });
                   }}
                 >
                   <SelectTrigger>
@@ -1112,11 +1032,7 @@ export default function PackageOrdersClient() {
                   </SelectContent>
                 </Select>
 
-                <Button
-                  variant="outline"
-                  onClick={resetFilters}
-                  className="w-full bg-transparent"
-                >
+                <Button variant="outline" onClick={resetFilters} className="w-full bg-transparent">
                   필터 초기화
                 </Button>
               </div>
@@ -1127,8 +1043,7 @@ export default function PackageOrdersClient() {
                     패키지 결제/활성화 대기
                   </Badge>
                   <span className="text-xs text-muted-foreground">
-                    온라인 패키지 주문 중 결제 확인 또는 활성화 처리가 필요한
-                    건만 표시합니다.
+                    온라인 패키지 주문 중 결제 확인 또는 활성화 처리가 필요한 건만 표시합니다.
                   </span>
                 </div>
               )}
@@ -1155,9 +1070,7 @@ export default function PackageOrdersClient() {
               >
                 <TableHeader className="sticky top-0 bg-card shadow-sm">
                   <TableRow>
-                    <TableHead className={cn(thClasses, "w-[120px]")}>
-                      패키지 ID
-                    </TableHead>
+                    <TableHead className={cn(thClasses, "w-[120px]")}>패키지 ID</TableHead>
 
                     <SortableTH
                       k="customer"
@@ -1258,11 +1171,7 @@ export default function PackageOrdersClient() {
                       icon={SortIcon("price")}
                     />
 
-                    <TableHead
-                      className={cn(thClasses, "w-[44px] text-center")}
-                    >
-                      작업
-                    </TableHead>
+                    <TableHead className={cn(thClasses, "w-[44px] text-center")}>작업</TableHead>
                   </TableRow>
                 </TableHeader>
 
@@ -1325,13 +1234,8 @@ export default function PackageOrdersClient() {
                     <>
                       {packages!.map((pkg) => {
                         // 진행률 계산(used / (used + remaining))
-                        const {
-                          percent: progressPercentage,
-                          total: currentTotal,
-                        } = calcProgressPercent(
-                          pkg.usedSessions,
-                          pkg.remainingSessions,
-                        );
+                        const { percent: progressPercentage, total: currentTotal } =
+                          calcProgressPercent(pkg.usedSessions, pkg.remainingSessions);
 
                         // 만료일 소스(연장 반영)
                         const expirySource = pkg.expiryDate ?? null;
@@ -1342,8 +1246,7 @@ export default function PackageOrdersClient() {
                           pkg.paymentStatus,
                           expirySource,
                         );
-                        const daysUntilExpiry =
-                          getDaysUntilExpiry(expirySource);
+                        const daysUntilExpiry = getDaysUntilExpiry(expirySource);
 
                         return (
                           // 라이트/다크 줄 배경 토큰 통일
@@ -1365,9 +1268,7 @@ export default function PackageOrdersClient() {
                                   </TooltipTrigger>
                                   <TooltipContent>
                                     <div className="flex items-center gap-2">
-                                      <span className="whitespace-nowrap">
-                                        {pkg.id}
-                                      </span>
+                                      <span className="whitespace-nowrap">{pkg.id}</span>
                                       <Button
                                         size="icon"
                                         variant="ghost"
@@ -1392,10 +1293,7 @@ export default function PackageOrdersClient() {
                               {(() => {
                                 const cName = pkg.customer?.name ?? "이름없음";
                                 const cEmail = pkg.customer?.email ?? "";
-                                const baseName = cName.replace(
-                                  /$$비회원$$\s*$/,
-                                  "",
-                                );
+                                const baseName = cName.replace(/$$비회원$$\s*$/, "");
                                 const isGuest = cName.includes("(비회원)");
                                 return (
                                   <div className="flex min-w-0 flex-col items-center overflow-hidden text-center">
@@ -1422,13 +1320,7 @@ export default function PackageOrdersClient() {
                             </TableCell>
 
                             {/* 패키지 유형 배지 */}
-                            <TableCell
-                              className={cn(
-                                tdClasses,
-                                col.type,
-                                "whitespace-nowrap",
-                              )}
-                            >
+                            <TableCell className={cn(tdClasses, col.type, "whitespace-nowrap")}>
                               <Badge
                                 className={cn(
                                   "border",
@@ -1450,9 +1342,7 @@ export default function PackageOrdersClient() {
                               )}
                             >
                               <div className="flex flex-col items-center leading-tight">
-                                <span className="font-bold text-lg">
-                                  {pkg.remainingSessions}
-                                </span>
+                                <span className="font-bold text-lg">{pkg.remainingSessions}</span>
                                 <span className="text-xs text-muted-foreground">
                                   {pkg.totalSessions ?? currentTotal}회
                                 </span>
@@ -1460,13 +1350,7 @@ export default function PackageOrdersClient() {
                             </TableCell>
 
                             {/* 진행률 (바 + %) */}
-                            <TableCell
-                              className={cn(
-                                tdClasses,
-                                col.progress,
-                                "whitespace-nowrap",
-                              )}
-                            >
+                            <TableCell className={cn(tdClasses, col.progress, "whitespace-nowrap")}>
                               <div className="flex flex-col items-center gap-1">
                                 <div
                                   className="w-[56px] bg-muted rounded-full h-1.5 xl:w-[72px] dark:bg-card"
@@ -1481,17 +1365,13 @@ export default function PackageOrdersClient() {
                                     style={{ width: `${progressPercentage}%` }}
                                   />
                                 </div>
-                                <span className="text-xs font-medium">
-                                  {progressPercentage}%
-                                </span>
+                                <span className="text-xs font-medium">{progressPercentage}%</span>
                               </div>
                             </TableCell>
 
                             {/* 구매일(날짜/시간 두 줄) */}
                             {(() => {
-                              const { date, time } = formatDateSplit(
-                                pkg.purchaseDate,
-                              );
+                              const { date, time } = formatDateSplit(pkg.purchaseDate);
                               return (
                                 <TableCell className={cn(tdClasses, col.buy)}>
                                   <div className="flex flex-col items-center leading-tight">
@@ -1508,12 +1388,9 @@ export default function PackageOrdersClient() {
 
                             {/* 만료일(날짜/시간 + 보조 라벨) */}
                             {(() => {
-                              const { date, time } =
-                                formatDateSplit(expirySource);
+                              const { date, time } = formatDateSplit(expirySource);
                               return (
-                                <TableCell
-                                  className={cn(tdClasses, col.expire)}
-                                >
+                                <TableCell className={cn(tdClasses, col.expire)}>
                                   <div className="flex flex-col items-center leading-tight">
                                     <span className="whitespace-nowrap text-sm tabular-nums">
                                       {date}
@@ -1539,17 +1416,9 @@ export default function PackageOrdersClient() {
                             })()}
 
                             {/* 상태 배지 */}
-                            <TableCell
-                              className={cn(
-                                tdClasses,
-                                col.status,
-                                "whitespace-nowrap",
-                              )}
-                            >
+                            <TableCell className={cn(tdClasses, col.status, "whitespace-nowrap")}>
                               {(() => {
-                                const badgeCls = statusBadgeClass(
-                                  listState.tone,
-                                );
+                                const badgeCls = statusBadgeClass(listState.tone);
                                 return (
                                   <Badge
                                     className={cn(
@@ -1575,12 +1444,10 @@ export default function PackageOrdersClient() {
                               )}
                             >
                               {(() => {
-                                const paymentLabel =
-                                  normalizePackagePaymentStatus(
-                                    pkg.paymentStatus,
-                                  );
-                                const pay =
-                                  getPaymentStatusBadgeSpec(paymentLabel);
+                                const paymentLabel = normalizePackagePaymentStatus(
+                                  pkg.paymentStatus,
+                                );
+                                const pay = getPaymentStatusBadgeSpec(paymentLabel);
                                 return (
                                   <Badge
                                     variant={pay.variant}
@@ -1597,29 +1464,17 @@ export default function PackageOrdersClient() {
                             </TableCell>
 
                             {/* 금액 */}
-                            <TableCell
-                              className={cn(
-                                tdClasses,
-                                col.price,
-                                "whitespace-nowrap",
-                              )}
-                            >
+                            <TableCell className={cn(tdClasses, col.price, "whitespace-nowrap")}>
                               <span className="whitespace-nowrap font-medium tabular-nums">
                                 {formatCurrency(pkg.price)}
                               </span>
                             </TableCell>
 
                             {/* 작업 드롭다운 */}
-                            <TableCell
-                              className={cn(tdClasses, col.actions, "p-0")}
-                            >
+                            <TableCell className={cn(tdClasses, col.actions, "p-0")}>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7 p-0"
-                                  >
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 p-0">
                                     <MoreHorizontal className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
@@ -1677,10 +1532,7 @@ export default function PackageOrdersClient() {
                           {it}
                         </Button>
                       ) : (
-                        <span
-                          key={idx}
-                          className="px-2 text-muted-foreground select-none"
-                        >
+                        <span key={idx} className="px-2 text-muted-foreground select-none">
                           …
                         </span>
                       ),

@@ -134,13 +134,7 @@ export const FilterPanel = React.memo(function FilterPanel({
         featureKey: "comfort",
       },
     ],
-    [
-      selectedBounce,
-      selectedControl,
-      selectedSpin,
-      selectedDurability,
-      selectedComfort,
-    ],
+    [selectedBounce, selectedControl, selectedSpin, selectedDurability, selectedComfort],
   );
 
   return (
@@ -180,9 +174,7 @@ export const FilterPanel = React.memo(function FilterPanel({
           >
             <div className="mb-2 flex items-center justify-between gap-3">
               <div className="flex gap-2 items-center">
-                <h2 className="break-keep text-lg font-bold leading-tight text-foreground">
-                  필터
-                </h2>
+                <h2 className="break-keep text-lg font-bold leading-tight text-foreground">필터</h2>
               </div>
               <div className="flex gap-2">
                 {activeFiltersCount > 0 && (
@@ -228,9 +220,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                     onClick={() => {
                       setSearchQuery("");
                       onClearInput?.();
-                      const el = document.getElementById(
-                        "search",
-                      ) as HTMLInputElement | null;
+                      const el = document.getElementById("search") as HTMLInputElement | null;
                       el?.focus();
                     }}
                     className="absolute right-2.5 bp-sm:right-3 top-1/2 -translate-y-1/2 flex items-center justify-center"
@@ -250,16 +240,11 @@ export const FilterPanel = React.memo(function FilterPanel({
             </form>
 
             <div className="mb-4 rounded-xl border border-border bg-muted/20 p-3">
-              <Label
-                htmlFor="brand"
-                className="mb-1.5 block text-sm font-medium"
-              >
+              <Label htmlFor="brand" className="mb-1.5 block text-sm font-medium">
                 브랜드
               </Label>
               <Select
-                onValueChange={(value) =>
-                  setSelectedBrand(value === "all" ? null : value)
-                }
+                onValueChange={(value) => setSelectedBrand(value === "all" ? null : value)}
                 value={selectedBrand ?? "all"}
               >
                 <SelectTrigger className="h-9 bp-sm:h-10 text-sm rounded-xl border-border focus:border-border dark:focus:border-border">
@@ -280,9 +265,7 @@ export const FilterPanel = React.memo(function FilterPanel({
               <Label className="text-sm">재질</Label>
               <Select
                 value={selectedMaterial ?? "all"}
-                onValueChange={(v) =>
-                  setSelectedMaterial(v === "all" ? null : v)
-                }
+                onValueChange={(v) => setSelectedMaterial(v === "all" ? null : v)}
               >
                 <SelectTrigger className="h-9 bp-sm:h-10 text-sm">
                   <SelectValue placeholder="전체" />
@@ -299,9 +282,7 @@ export const FilterPanel = React.memo(function FilterPanel({
             </div>
 
             <div className="mb-4 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
-              <Label className="text-sm font-medium text-foreground">
-                혜택
-              </Label>
+              <Label className="text-sm font-medium text-foreground">혜택</Label>
               <div className="grid grid-cols-2 gap-2">
                 <Button
                   type="button"
@@ -323,9 +304,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                       onClick={() =>
                         onExposureChange(
                           isActive
-                            ? exposureFilter.filter(
-                                (value) => value !== option.value,
-                              )
+                            ? exposureFilter.filter((value) => value !== option.value)
                             : [...exposureFilter, option.value],
                         )
                       }
@@ -342,43 +321,37 @@ export const FilterPanel = React.memo(function FilterPanel({
             <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-3">
               <h3 className="text-base font-medium">성능</h3>
               <p className="text-xs text-muted-foreground leading-relaxed break-keep">
-                성능 점수는 도깨비테니스 내부 기준입니다. 100점에 가까울수록
-                해당 성향이 강합니다.
+                성능 점수는 도깨비테니스 내부 기준입니다. 100점에 가까울수록 해당 성향이 강합니다.
               </p>
-              {performanceFiltersConfig.map(
-                ({ label, state, setter, featureKey }) => (
-                  <div key={featureKey}>
-                    <Label className="mb-1.5 bp-sm:mb-2 block text-xs bp-sm:text-sm font-medium">
-                      {label}
-                    </Label>
-                    <Select
-                      onValueChange={(val) =>
-                        setter(val === "all" ? null : Number(val))
-                      }
-                      value={state !== null ? String(state) : "all"}
-                    >
-                      <SelectTrigger className="h-9 bp-sm:h-10 text-sm rounded-xl border-border focus:border-border dark:focus:border-border">
-                        <SelectValue placeholder="선택" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">전체</SelectItem>
-                        <SelectItem value="90">90 이상</SelectItem>
-                        <SelectItem value="80">80 이상</SelectItem>
-                        <SelectItem value="70">70 이상</SelectItem>
-                        <SelectItem value="60">60 이상</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                ),
-              )}
+              {performanceFiltersConfig.map(({ label, state, setter, featureKey }) => (
+                <div key={featureKey}>
+                  <Label className="mb-1.5 bp-sm:mb-2 block text-xs bp-sm:text-sm font-medium">
+                    {label}
+                  </Label>
+                  <Select
+                    onValueChange={(val) => setter(val === "all" ? null : Number(val))}
+                    value={state !== null ? String(state) : "all"}
+                  >
+                    <SelectTrigger className="h-9 bp-sm:h-10 text-sm rounded-xl border-border focus:border-border dark:focus:border-border">
+                      <SelectValue placeholder="선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체</SelectItem>
+                      <SelectItem value="90">90 이상</SelectItem>
+                      <SelectItem value="80">80 이상</SelectItem>
+                      <SelectItem value="70">70 이상</SelectItem>
+                      <SelectItem value="60">60 이상</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
             </div>
             <div className="mt-4 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
               <h3 className="text-base font-medium">가격대</h3>
               <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-3">
                 {PRICE_PRESETS.map((preset) => {
                   const isActive =
-                    priceRange[0] === preset.range[0] &&
-                    priceRange[1] === preset.range[1];
+                    priceRange[0] === preset.range[0] && priceRange[1] === preset.range[1];
                   return (
                     <button
                       key={preset.label}
@@ -407,11 +380,7 @@ export const FilterPanel = React.memo(function FilterPanel({
                 >
                   초기화
                 </Button>
-                <Button
-                  type="button"
-                  className="flex-1 whitespace-nowrap"
-                  onClick={onSearchSubmit}
-                >
+                <Button type="button" className="flex-1 whitespace-nowrap" onClick={onSearchSubmit}>
                   필터 적용
                 </Button>
               </div>

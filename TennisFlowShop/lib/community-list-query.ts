@@ -84,8 +84,7 @@ export function buildCommunityListMongoFilter(
   if (query.typeParam === "market") {
     const f = query.marketFilters;
     if (f.saleStatus) filter["marketMeta.saleStatus"] = f.saleStatus;
-    if (f.conditionGrade)
-      filter["marketMeta.conditionGrade"] = f.conditionGrade;
+    if (f.conditionGrade) filter["marketMeta.conditionGrade"] = f.conditionGrade;
 
     if (f.minPrice != null || f.maxPrice != null) {
       filter["marketMeta.price"] = {
@@ -103,30 +102,10 @@ export function buildCommunityListMongoFilter(
       if (f.gripSize) filter["marketMeta.racketSpec.gripSize"] = f.gripSize;
       if (f.pattern) filter["marketMeta.racketSpec.pattern"] = f.pattern;
       ranged(filter, "marketMeta.racketSpec.weight", f.minWeight, f.maxWeight);
-      ranged(
-        filter,
-        "marketMeta.racketSpec.balance",
-        f.minBalance,
-        f.maxBalance,
-      );
-      ranged(
-        filter,
-        "marketMeta.racketSpec.headSize",
-        f.minHeadSize,
-        f.maxHeadSize,
-      );
-      ranged(
-        filter,
-        "marketMeta.racketSpec.swingWeight",
-        f.minSwingWeight,
-        f.maxSwingWeight,
-      );
-      ranged(
-        filter,
-        "marketMeta.racketSpec.stiffnessRa",
-        f.minStiffnessRa,
-        f.maxStiffnessRa,
-      );
+      ranged(filter, "marketMeta.racketSpec.balance", f.minBalance, f.maxBalance);
+      ranged(filter, "marketMeta.racketSpec.headSize", f.minHeadSize, f.maxHeadSize);
+      ranged(filter, "marketMeta.racketSpec.swingWeight", f.minSwingWeight, f.maxSwingWeight);
+      ranged(filter, "marketMeta.racketSpec.stiffnessRa", f.minStiffnessRa, f.maxStiffnessRa);
     }
 
     if (query.category === "string") {
@@ -170,19 +149,14 @@ const parseNum = (v: string | null) => {
   return Number.isFinite(n) ? n : null;
 };
 
-const normalizeRange = (
-  min: number | null,
-  max: number | null,
-): [number | null, number | null] => {
+const normalizeRange = (min: number | null, max: number | null): [number | null, number | null] => {
   if (min != null && max != null && min > max) {
     return [max, min];
   }
   return [min, max];
 };
 
-export function getCommunitySortOption(
-  sort: CommunityListSort,
-): Record<string, 1 | -1> {
+export function getCommunitySortOption(sort: CommunityListSort): Record<string, 1 | -1> {
   switch (sort) {
     case "views":
       return { views: -1, createdAt: -1 };
@@ -211,19 +185,14 @@ export function parseCommunityListQuery(
 
   const rawSort = url.searchParams.get("sort");
   const sort: CommunityListSort =
-    rawSort === "latest" ||
-    rawSort === "views" ||
-    rawSort === "likes" ||
-    rawSort === "hot"
+    rawSort === "latest" || rawSort === "views" || rawSort === "likes" || rawSort === "hot"
       ? rawSort
       : "latest";
 
   const pageRaw = parseInt(url.searchParams.get("page") || "1", 10);
   const limitRaw = parseInt(url.searchParams.get("limit") || "10", 10);
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
-  const limit = Number.isFinite(limitRaw)
-    ? Math.min(50, Math.max(1, limitRaw))
-    : 10;
+  const limit = Number.isFinite(limitRaw) ? Math.min(50, Math.max(1, limitRaw)) : 10;
 
   const rawQuery =
     queryKeys
@@ -234,21 +203,17 @@ export function parseCommunityListQuery(
   const escapedQ = escapeRegex(q);
 
   const authorId = url.searchParams.get("authorId");
-  const authorObjectId =
-    authorId && ObjectId.isValid(authorId) ? new ObjectId(authorId) : null;
+  const authorObjectId = authorId && ObjectId.isValid(authorId) ? new ObjectId(authorId) : null;
 
   const rawSearchType = url.searchParams.get("searchType");
   const searchType: CommunityListSearchType =
-    rawSearchType === "title" ||
-    rawSearchType === "author" ||
-    rawSearchType === "title_content"
+    rawSearchType === "title" || rawSearchType === "author" || rawSearchType === "title_content"
       ? rawSearchType
       : "title_content";
 
   const rawCategory = url.searchParams.get("category");
   const category =
-    rawCategory &&
-    (COMMUNITY_CATEGORIES as readonly string[]).includes(rawCategory)
+    rawCategory && (COMMUNITY_CATEGORIES as readonly string[]).includes(rawCategory)
       ? (rawCategory as (typeof COMMUNITY_CATEGORIES)[number])
       : null;
 

@@ -9,22 +9,16 @@ import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
  * - 구매 플로우의 by-order 라우터와 동일한 계약(=draft만 찾는다)
  * - rentalId가 ObjectId/string으로 혼재할 수 있으므로 둘 다 매칭.
  */
-export async function GET(
-  _req: Request,
-  context: { params: Promise<{ rentalId: string }> },
-) {
+export async function GET(_req: Request, context: { params: Promise<{ rentalId: string }> }) {
   try {
     const db = (await clientPromise).db();
     const { rentalId } = await context.params;
 
     if (!ObjectId.isValid(rentalId)) {
-      return new NextResponse(
-        JSON.stringify({ message: "유효하지 않은 대여 ID입니다." }),
-        {
-          status: 400,
-          headers: { "Cache-Control": "no-store" },
-        },
-      );
+      return new NextResponse(JSON.stringify({ message: "유효하지 않은 대여 ID입니다." }), {
+        status: 400,
+        headers: { "Cache-Control": "no-store" },
+      });
     }
 
     const rentalObjectId = new ObjectId(rentalId);
@@ -47,8 +41,7 @@ export async function GET(
 
     const userSub = typeof payload?.sub === "string" ? payload.sub : null;
     const isAdmin = payload?.role === "admin";
-    const guestRentalId =
-      typeof guestClaims?.rentalId === "string" ? guestClaims.rentalId : null;
+    const guestRentalId = typeof guestClaims?.rentalId === "string" ? guestClaims.rentalId : null;
 
     let rental: any = null;
     if (userSub && ObjectId.isValid(userSub)) {
@@ -63,10 +56,7 @@ export async function GET(
     if (!rental && isAdmin) {
       rental = await db
         .collection("rental_orders")
-        .findOne(
-          { _id: rentalObjectId },
-          { projection: { _id: 1, userId: 1 } },
-        );
+        .findOne({ _id: rentalObjectId }, { projection: { _id: 1, userId: 1 } });
     }
 
     if (!rental && guestRentalId) {

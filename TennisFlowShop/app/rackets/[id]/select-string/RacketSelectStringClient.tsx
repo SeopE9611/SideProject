@@ -3,7 +3,11 @@
 import SelectStringLayout from "@/app/components/select-string/SelectStringLayout";
 import { useCartStore } from "@/app/store/cartStore";
 import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
-import { buildPriceDisplayMeta, getEffectiveProductPrice, getProductPriceDisplayMeta } from "@/lib/product-pricing";
+import {
+  buildPriceDisplayMeta,
+  getEffectiveProductPrice,
+  getProductPriceDisplayMeta,
+} from "@/lib/product-pricing";
 import {
   getColorLabel,
   getVariantBySelection,
@@ -57,8 +61,14 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
   // Clamp work count
   const clampWorkCount = (v: number, stringStock?: number) => {
     if (!Number.isFinite(v)) return 1;
-    const racketMax = Number.isFinite(racket.maxQty) && (racket.maxQty as number) > 0 ? (racket.maxQty as number) : 99;
-    const stockMax = Number.isFinite(stringStock) && (stringStock as number) > 0 ? (stringStock as number) : Infinity;
+    const racketMax =
+      Number.isFinite(racket.maxQty) && (racket.maxQty as number) > 0
+        ? (racket.maxQty as number)
+        : 99;
+    const stockMax =
+      Number.isFinite(stringStock) && (stringStock as number) > 0
+        ? (stringStock as number)
+        : Infinity;
     const max = Math.min(racketMax, stockMax);
     return Math.max(1, Math.min(max, Math.trunc(v)));
   };
@@ -75,17 +85,27 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
 
   // Calculate display price
   const displayPrice = useMemo(() => {
-    if (racket.salePrice && racket.salePrice > 0 && racket.salePrice < (racket.regularPrice ?? racket.price)) {
+    if (
+      racket.salePrice &&
+      racket.salePrice > 0 &&
+      racket.salePrice < (racket.regularPrice ?? racket.price)
+    ) {
       return racket.salePrice;
     }
     return racket.price;
   }, [racket.price, racket.salePrice, racket.regularPrice]);
 
   // Upsert cart bundle helper
-  const upsertCartBundle = (selectedString: any, qty: number, selectedGauge?: string, selectedColor?: string) => {
+  const upsertCartBundle = (
+    selectedString: any,
+    qty: number,
+    selectedGauge?: string,
+    selectedColor?: string,
+  ) => {
     const newStringId = String(selectedString?._id);
     const hasVariantInventories =
-      Array.isArray(selectedString?.variantInventories) && selectedString.variantInventories.length > 0;
+      Array.isArray(selectedString?.variantInventories) &&
+      selectedString.variantInventories.length > 0;
     const selectedVariant = hasVariantInventories
       ? getVariantBySelection(selectedString, selectedColor ?? "", selectedGauge ?? "")
       : undefined;
@@ -95,7 +115,8 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
       ? {
           selectedColor,
           selectedColorLabel:
-            selectedVariant?.colorLabel || (selectedColorRow ? getColorLabel(selectedColorRow) : selectedColor),
+            selectedVariant?.colorLabel ||
+            (selectedColorRow ? getColorLabel(selectedColorRow) : selectedColor),
           selectedColorHex: selectedVariant?.colorHex || selectedColorRow?.colorHex,
           selectedColorImage:
             selectedVariant?.colorImage ||
@@ -111,7 +132,9 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
       selectedString?.imageUrl;
 
     // Update racket in cart
-    const hasRacket = cartItems.some((it) => it.id === racket.id && (it.kind ?? "product") === "racket");
+    const hasRacket = cartItems.some(
+      (it) => it.id === racket.id && (it.kind ?? "product") === "racket",
+    );
     if (!hasRacket) {
       addItem({
         id: racket.id,
@@ -144,7 +167,11 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
         (initialSelectedGauge || "") !== (selectedGauge || "") ||
         (initialSelectedColor || "") !== (selectedColor || ""))
     ) {
-      removeItem(initialStringId, initialSelectedGauge || undefined, initialSelectedColor || undefined);
+      removeItem(
+        initialStringId,
+        initialSelectedGauge || undefined,
+        initialSelectedColor || undefined,
+      );
     }
 
     // Add new string
@@ -199,7 +226,8 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
     workCount: number;
   }) => {
     const p = stringProduct;
-    const hasVariantInventories = Array.isArray(p?.variantInventories) && p.variantInventories.length > 0;
+    const hasVariantInventories =
+      Array.isArray(p?.variantInventories) && p.variantInventories.length > 0;
     const selectedVariant = hasVariantInventories
       ? getVariantBySelection(p, selectedColor ?? "", selectedGauge ?? "")
       : undefined;
@@ -217,7 +245,11 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
       showErrorToast?.("선택한 게이지 정보를 찾을 수 없습니다.");
       return;
     }
-    if (!hasVariantInventories && selectedGaugeRow && (selectedGaugeRow.isSoldOut || selectedGaugeRow.stock <= 0)) {
+    if (
+      !hasVariantInventories &&
+      selectedGaugeRow &&
+      (selectedGaugeRow.isSoldOut || selectedGaugeRow.stock <= 0)
+    ) {
       showErrorToast?.("선택한 게이지는 품절입니다.");
       return;
     }
@@ -264,13 +296,18 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
       ? {
           selectedColor,
           selectedColorLabel:
-            selectedVariant?.colorLabel || (selectedColorRow ? getColorLabel(selectedColorRow) : selectedColor),
+            selectedVariant?.colorLabel ||
+            (selectedColorRow ? getColorLabel(selectedColorRow) : selectedColor),
           selectedColorHex: selectedVariant?.colorHex || selectedColorRow?.colorHex,
-          selectedColorImage: selectedVariant?.colorImage || selectedColorRow?.image || p?.images?.[0] || p?.imageUrl,
+          selectedColorImage:
+            selectedVariant?.colorImage || selectedColorRow?.image || p?.images?.[0] || p?.imageUrl,
         }
       : {};
     const selectedStringImage =
-      selectedVariant?.colorImage?.trim() || selectedColorRow?.image?.trim() || p?.images?.[0] || p?.imageUrl;
+      selectedVariant?.colorImage?.trim() ||
+      selectedColorRow?.image?.trim() ||
+      p?.images?.[0] ||
+      p?.imageUrl;
 
     const manageStock = Boolean(p?.inventory?.manageStock);
     const baseStock = typeof p?.inventory?.stock === "number" ? p.inventory.stock : undefined;

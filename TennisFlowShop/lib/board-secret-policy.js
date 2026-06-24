@@ -17,11 +17,7 @@
  * }} params
  * @returns {Promise<BoardViewerContext>}
  */
-export async function resolveBoardViewerContext({
-  accessToken,
-  verifyToken,
-  fetchUserRoleById,
-}) {
+export async function resolveBoardViewerContext({ accessToken, verifyToken, fetchUserRoleById }) {
   if (!accessToken) {
     return { viewerId: null, isAdmin: false, payload: null };
   }

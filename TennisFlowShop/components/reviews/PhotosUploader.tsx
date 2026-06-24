@@ -55,8 +55,7 @@ export default function PhotosUploader({
   const showQueue = previewMode !== "none";
   const showDone = previewMode === "all";
 
-  const sanitizeStorageKey = (key: string) =>
-    key.replace(/[^a-zA-Z0-9/_.-]/g, "_");
+  const sanitizeStorageKey = (key: string) => key.replace(/[^a-zA-Z0-9/_.-]/g, "_");
 
   const totalCount = (value?.length ?? 0) + queue.length;
   const hasRoom = totalCount < max;
@@ -64,10 +63,7 @@ export default function PhotosUploader({
   const onPick = () => inputRef.current?.click();
 
   //timeout 가드 (resolve/reject 안 되어도 ms 지나면 null로 돌아오게)
-  const withTimeout = async <T,>(
-    p: Promise<T>,
-    ms = 45000,
-  ): Promise<T | null> => {
+  const withTimeout = async <T,>(p: Promise<T>, ms = 45000): Promise<T | null> => {
     let done = false;
     return await Promise.race([
       p
@@ -76,9 +72,7 @@ export default function PhotosUploader({
           return v;
         })
         .catch(() => null),
-      new Promise<null>((resolve) =>
-        setTimeout(() => !done && resolve(null), ms),
-      ),
+      new Promise<null>((resolve) => setTimeout(() => !done && resolve(null), ms)),
     ]);
   };
 
@@ -179,12 +173,7 @@ export default function PhotosUploader({
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onPick}
-          disabled={!hasRoom || isUploading}
-        >
+        <Button type="button" variant="outline" onClick={onPick} disabled={!hasRoom || isUploading}>
           <ImagePlus className="h-4 w-4 mr-2" />
           이미지 추가 ({totalCount}/{max})
         </Button>
@@ -236,10 +225,7 @@ export default function PhotosUploader({
           {/* 완료된 썸네일 */}
           {showDone &&
             value.map((src, i) => (
-              <div
-                key={src + i}
-                className="relative group rounded-md overflow-hidden border"
-              >
+              <div key={src + i} className="relative group rounded-md overflow-hidden border">
                 <Image
                   src={src}
                   alt={`photo-${i}`}

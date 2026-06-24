@@ -167,14 +167,10 @@ const CancelRentalDialog = ({
           res,
           "대여 취소 요청 처리 중 오류가 발생했습니다.",
         );
-        throw new Error(
-          parsed.message || "대여 취소 요청 처리 중 오류가 발생했습니다.",
-        );
+        throw new Error(parsed.message || "대여 취소 요청 처리 중 오류가 발생했습니다.");
       }
 
-      showSuccessToast(
-        "대여 취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.",
-      );
+      showSuccessToast("대여 취소 요청이 접수되었습니다. 관리자 확인 후 처리됩니다.");
 
       // 상세 데이터 갱신 (혹시 다른 곳에서 SWR로 쓰고 있을 수도 있으니 유지)
       await mutate(`/api/rentals/${rentalId}`, undefined, { revalidate: true });
@@ -184,11 +180,9 @@ const CancelRentalDialog = ({
       });
 
       // 마이페이지 목록 갱신
-      await mutate(
-        (key: string) => key?.startsWith("/api/me/rentals"),
-        undefined,
-        { revalidate: true },
-      );
+      await mutate((key: string) => key?.startsWith("/api/me/rentals"), undefined, {
+        revalidate: true,
+      });
 
       // 성공 종료 시에도 입력값은 초기화(다음 오픈 시 이전 선택값 잔존 방지)
       resetForm();
@@ -202,11 +196,7 @@ const CancelRentalDialog = ({
       }
     } catch (e) {
       console.error(e);
-      showErrorToast(
-        e instanceof Error
-          ? e.message
-          : "대여 취소 요청 중 오류가 발생했습니다.",
-      );
+      showErrorToast(e instanceof Error ? e.message : "대여 취소 요청 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }

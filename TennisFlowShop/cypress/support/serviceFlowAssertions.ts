@@ -43,17 +43,13 @@ export function assertIdConsistency(
   sourceLabel: string,
   targetLabel: string,
 ) {
-  expect(
-    target.flowLabel,
-    `${sourceLabel} ↔ ${targetLabel} flowLabel`,
-  ).to.equal(reference.flowLabel);
-  expect(
-    target.collectionMethod,
-    `${sourceLabel} ↔ ${targetLabel} collectionMethod`,
-  ).to.equal(reference.collectionMethod);
-  expect(target.orderId, `${sourceLabel} ↔ ${targetLabel} orderId`).to.equal(
-    reference.orderId,
+  expect(target.flowLabel, `${sourceLabel} ↔ ${targetLabel} flowLabel`).to.equal(
+    reference.flowLabel,
   );
+  expect(target.collectionMethod, `${sourceLabel} ↔ ${targetLabel} collectionMethod`).to.equal(
+    reference.collectionMethod,
+  );
+  expect(target.orderId, `${sourceLabel} ↔ ${targetLabel} orderId`).to.equal(reference.orderId);
   expect(
     target.stringingApplicationId,
     `${sourceLabel} ↔ ${targetLabel} stringingApplicationId`,

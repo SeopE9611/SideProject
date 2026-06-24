@@ -53,9 +53,7 @@ const AUTH_ERROR_MESSAGES = {
 export function useAdminSettings() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("site");
   const [isBootstrapping, setIsBootstrapping] = useState(true);
-  const [tabErrors, setTabErrors] = useState<
-    Record<SettingsTab, TabErrorState>
-  >({
+  const [tabErrors, setTabErrors] = useState<Record<SettingsTab, TabErrorState>>({
     site: { type: null, message: "" },
     user: { type: null, message: "" },
     email: { type: null, message: "" },
@@ -116,15 +114,13 @@ export function useAdminSettings() {
         type: "unauthorized",
         message: AUTH_ERROR_MESSAGES.unauthorized,
       };
-    if (res.status === 403)
-      return { type: "forbidden", message: AUTH_ERROR_MESSAGES.forbidden };
+    if (res.status === 403) return { type: "forbidden", message: AUTH_ERROR_MESSAGES.forbidden };
     return { type: null, message };
   };
 
   const setTabError = (tab: SettingsTab, next: TabErrorState) =>
     setTabErrors((prev) => ({ ...prev, [tab]: next }));
-  const clearTabError = (tab: SettingsTab) =>
-    setTabError(tab, { type: null, message: "" });
+  const clearTabError = (tab: SettingsTab) => setTabError(tab, { type: null, message: "" });
 
   const loadTab = async <T>(
     tab: SettingsTab,
@@ -145,18 +141,13 @@ export function useAdminSettings() {
     onSuccess((await res.json()) as SettingsApiResponse<T>);
   };
 
-  const readNicepayMeta = (
-    meta: Record<string, unknown> | undefined,
-  ): NicepayMeta => {
+  const readNicepayMeta = (meta: Record<string, unknown> | undefined): NicepayMeta => {
     const candidate = meta?.nicepay;
-    if (!candidate || typeof candidate !== "object")
-      return DEFAULT_NICEPAY_META;
+    if (!candidate || typeof candidate !== "object") return DEFAULT_NICEPAY_META;
     const raw = candidate as Record<string, unknown>;
     const mode = raw.mode;
     const safeMode: NicepayMode =
-      mode === "sandbox" || mode === "production" || mode === "unknown"
-        ? mode
-        : "unknown";
+      mode === "sandbox" || mode === "production" || mode === "unknown" ? mode : "unknown";
     return {
       provider: "NICEPay",
       enabled: Boolean(raw.enabled),
@@ -179,14 +170,12 @@ export function useAdminSettings() {
           loadTab(
             "site",
             "/api/admin/settings/site",
-            (json) =>
-              !cancelled && siteForm.reset(json.data ?? defaultSiteSettings),
+            (json) => !cancelled && siteForm.reset(json.data ?? defaultSiteSettings),
           ),
           loadTab(
             "user",
             "/api/admin/settings/user",
-            (json) =>
-              !cancelled && userForm.reset(json.data ?? defaultUserSettings),
+            (json) => !cancelled && userForm.reset(json.data ?? defaultUserSettings),
           ),
           loadTab("email", "/api/admin/settings/email", (json) => {
             if (cancelled) return;
@@ -206,9 +195,7 @@ export function useAdminSettings() {
           }),
         ]);
       } catch {
-        showErrorToast(
-          "일부 설정을 불러오지 못했습니다. 권한 또는 서버 상태를 확인해주세요.",
-        );
+        showErrorToast("일부 설정을 불러오지 못했습니다. 권한 또는 서버 상태를 확인해주세요.");
       } finally {
         if (!cancelled) setIsBootstrapping(false);
       }
@@ -219,11 +206,7 @@ export function useAdminSettings() {
     };
   }, []);
 
-  const saveTab = async (
-    tab: SettingsTab,
-    endpoint: string,
-    payload: unknown,
-  ) => {
+  const saveTab = async (tab: SettingsTab, endpoint: string, payload: unknown) => {
     try {
       const json = await adminMutator<SettingsApiResponse<unknown>>(endpoint, {
         method: "PATCH",
@@ -261,11 +244,7 @@ export function useAdminSettings() {
       siteForm.reset(json.data ?? data);
       showSuccessToast("사이트 설정이 저장되었습니다.");
     } catch (error: unknown) {
-      showErrorToast(
-        error instanceof Error
-          ? error.message
-          : "사이트 설정 저장에 실패했습니다.",
-      );
+      showErrorToast(error instanceof Error ? error.message : "사이트 설정 저장에 실패했습니다.");
     }
   };
 
@@ -275,11 +254,7 @@ export function useAdminSettings() {
       userForm.reset(json.data ?? data);
       showSuccessToast("사용자 설정이 저장되었습니다.");
     } catch (error: unknown) {
-      showErrorToast(
-        error instanceof Error
-          ? error.message
-          : "사용자 설정 저장에 실패했습니다.",
-      );
+      showErrorToast(error instanceof Error ? error.message : "사용자 설정 저장에 실패했습니다.");
     }
   };
 
@@ -290,21 +265,13 @@ export function useAdminSettings() {
       setEmailMeta({ hasSmtpPassword: Boolean(json?.meta?.hasSmtpPassword) });
       showSuccessToast("이메일 설정이 저장되었습니다.");
     } catch (error: unknown) {
-      showErrorToast(
-        error instanceof Error
-          ? error.message
-          : "이메일 설정 저장에 실패했습니다.",
-      );
+      showErrorToast(error instanceof Error ? error.message : "이메일 설정 저장에 실패했습니다.");
     }
   };
 
   const onSubmitPaymentSettings = async (data: PaymentSettings) => {
     try {
-      const json = await saveTab(
-        "payment",
-        "/api/admin/settings/payment",
-        data,
-      );
+      const json = await saveTab("payment", "/api/admin/settings/payment", data);
       paymentForm.reset(json.data ?? data);
       setPaymentMeta({
         hasPaypalSecret: Boolean(json?.meta?.hasPaypalSecret),
@@ -313,11 +280,7 @@ export function useAdminSettings() {
       });
       showSuccessToast("결제 설정이 저장되었습니다.");
     } catch (error: unknown) {
-      showErrorToast(
-        error instanceof Error
-          ? error.message
-          : "결제 설정 저장에 실패했습니다.",
-      );
+      showErrorToast(error instanceof Error ? error.message : "결제 설정 저장에 실패했습니다.");
     }
   };
 
@@ -328,13 +291,8 @@ export function useAdminSettings() {
   };
 
   const requestTabChange = (nextTab: string) => {
-    if (
-      !["site", "user", "email", "payment"].includes(nextTab) ||
-      nextTab === activeTab
-    )
-      return;
-    const currentDirty =
-      (dirtyByTab as Record<string, boolean>)[activeTab] ?? false;
+    if (!["site", "user", "email", "payment"].includes(nextTab) || nextTab === activeTab) return;
+    const currentDirty = (dirtyByTab as Record<string, boolean>)[activeTab] ?? false;
     if (currentDirty) {
       setPendingTab(nextTab as SettingsTab);
       return;

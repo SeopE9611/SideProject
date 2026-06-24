@@ -15,13 +15,10 @@ import { ObjectId } from "mongodb";
 import { NextRequest, NextResponse } from "next/server";
 
 function asRecord(value: unknown): Record<string, unknown> | null {
-  if (typeof value !== "object" || value === null || Array.isArray(value))
-    return null;
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
   return value as Record<string, unknown>;
 }
-function normalizeVariantInventories(
-  value: unknown,
-): ProductVariantInventory[] {
+function normalizeVariantInventories(value: unknown): ProductVariantInventory[] {
   if (!Array.isArray(value)) return [];
   return value
     .map<ProductVariantInventory | null>((item) => {
@@ -46,8 +43,7 @@ function normalizeVariantInventories(
         ...(typeof row.gaugeLabel === "string" && row.gaugeLabel.trim()
           ? { gaugeLabel: row.gaugeLabel.trim() }
           : {}),
-        stock:
-          Number.isFinite(stockNumber) && stockNumber >= 0 ? stockNumber : 0,
+        stock: Number.isFinite(stockNumber) && stockNumber >= 0 ? stockNumber : 0,
         isSoldOut: asBoolean(row.isSoldOut),
         showWhenSoldOut: row.showWhenSoldOut === false ? false : true,
       };
@@ -84,11 +80,8 @@ function normalizeGaugeInventories(value: unknown): ProductGaugeInventory[] {
 
       const normalizedRow: ProductGaugeInventory = {
         value: gaugeValue,
-        ...(typeof row.label === "string" && row.label.trim()
-          ? { label: row.label.trim() }
-          : {}),
-        stock:
-          Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
+        ...(typeof row.label === "string" && row.label.trim() ? { label: row.label.trim() } : {}),
+        stock: Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
         isSoldOut: asBoolean(row.isSoldOut),
       };
 
@@ -113,17 +106,12 @@ function normalizeColorInventories(value: unknown): ProductColorInventory[] {
       const stockNumber = Number(row.stock);
       const normalizedRow: ProductColorInventory = {
         value: colorValue,
-        ...(typeof row.label === "string" && row.label.trim()
-          ? { label: row.label.trim() }
-          : {}),
+        ...(typeof row.label === "string" && row.label.trim() ? { label: row.label.trim() } : {}),
         ...(typeof row.colorHex === "string" && row.colorHex.trim()
           ? { colorHex: row.colorHex.trim() }
           : {}),
-        ...(typeof row.image === "string" && row.image.trim()
-          ? { image: row.image.trim() }
-          : {}),
-        stock:
-          Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
+        ...(typeof row.image === "string" && row.image.trim() ? { image: row.image.trim() } : {}),
+        stock: Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
         isSoldOut: asBoolean(row.isSoldOut),
       };
       return normalizedRow;
@@ -146,14 +134,8 @@ function toProductAuditSnapshot(doc: Record<string, unknown> | null) {
     price: typeof safe.price === "number" ? safe.price : null,
     stock: typeof inventory?.stock === "number" ? inventory.stock : null,
     status: asString(safe.status) || undefined,
-    isActive:
-      typeof safe.isActive === "boolean"
-        ? (safe.isActive as boolean)
-        : undefined,
-    isPublished:
-      typeof safe.isPublished === "boolean"
-        ? (safe.isPublished as boolean)
-        : undefined,
+    isActive: typeof safe.isActive === "boolean" ? (safe.isActive as boolean) : undefined,
+    isPublished: typeof safe.isPublished === "boolean" ? (safe.isPublished as boolean) : undefined,
     imageCount: Array.isArray(safe.images) ? safe.images.length : 0,
     isVisible: safe.isVisible !== false,
   };
@@ -167,21 +149,15 @@ function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
     .map((g) => g.trim())
     .filter((g) => g.length > 0);
   const gaugeOptions =
-    gaugeInventories.length > 0
-      ? gaugeInventories.map((row) => row.value)
-      : legacyGaugeOptions;
+    gaugeInventories.length > 0 ? gaugeInventories.map((row) => row.value) : legacyGaugeOptions;
   const normalizedGauge = gaugeOptions[0] ?? asString(body.gauge);
   const colorInventories = normalizeColorInventories(body.colorInventories);
-  const variantInventories = normalizeVariantInventories(
-    body.variantInventories,
-  );
+  const variantInventories = normalizeVariantInventories(body.variantInventories);
   const legacyColorOptions = asStringArray(body.colorOptions)
     .map((c) => c.trim())
     .filter((c) => c.length > 0);
   const colorOptions =
-    colorInventories.length > 0
-      ? colorInventories.map((row) => row.value)
-      : legacyColorOptions;
+    colorInventories.length > 0 ? colorInventories.map((row) => row.value) : legacyColorOptions;
   const normalizedColor = colorOptions[0] ?? asString(body.color);
 
   return {
@@ -193,14 +169,11 @@ function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
     material: asString(body.material),
     gauge: normalizedGauge,
     gaugeOptions,
-    gaugeInventories:
-      gaugeInventories.length > 0 ? gaugeInventories : undefined,
+    gaugeInventories: gaugeInventories.length > 0 ? gaugeInventories : undefined,
     color: normalizedColor,
     colorOptions,
-    colorInventories:
-      colorInventories.length > 0 ? colorInventories : undefined,
-    variantInventories:
-      variantInventories.length > 0 ? variantInventories : undefined,
+    colorInventories: colorInventories.length > 0 ? colorInventories : undefined,
+    variantInventories: variantInventories.length > 0 ? variantInventories : undefined,
     length: asString(body.length),
     mountingFee: asNumber(body.mountingFee),
     price: asNumber(body.price),
@@ -217,20 +190,14 @@ function parseUpdateRequest(raw: unknown): AdminProductUpdateRequestDto | null {
 }
 
 function invalidIdResponse() {
-  return NextResponse.json(
-    { message: "유효하지 않은 상품 ID입니다." },
-    { status: 400 },
-  );
+  return NextResponse.json({ message: "유효하지 않은 상품 ID입니다." }, { status: 400 });
 }
 
 /**
  * 단일 상품 조회 (관리자)
  * - 스트링 수정 페이지(/admin/products/[id]/edit)에서 GET /api/admin/products/:id 로 호출.
  */
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
 
@@ -247,18 +214,13 @@ export async function GET(
       );
 
     if (!prod) {
-      return NextResponse.json(
-        { message: "상품을 찾을 수 없습니다." },
-        { status: 404 },
-      );
+      return NextResponse.json({ message: "상품을 찾을 수 없습니다." }, { status: 404 });
     }
 
     return NextResponse.json({
       product: {
         ...prod,
-        shippingFee: normalizeItemShippingFee(
-          (prod as Record<string, unknown>).shippingFee,
-        ),
+        shippingFee: normalizeItemShippingFee((prod as Record<string, unknown>).shippingFee),
         _id: prod._id.toString(),
       },
     });
@@ -268,10 +230,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -281,10 +240,7 @@ export async function PUT(
     const rawBody: unknown = await req.json();
     const requestDto = parseUpdateRequest(rawBody);
     if (!requestDto) {
-      return NextResponse.json(
-        { message: "요청 바디 형식이 잘못되었습니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "요청 바디 형식이 잘못되었습니다." }, { status: 400 });
     }
 
     const { id } = await params;
@@ -304,15 +260,13 @@ export async function PUT(
       .collection("products")
       .updateOne({ _id: new ObjectId(id) }, { $set: updateData });
     if (result.matchedCount === 0) {
-      return NextResponse.json(
-        { message: "상품 업데이트 실패" },
-        { status: 500 },
-      );
+      return NextResponse.json({ message: "상품 업데이트 실패" }, { status: 500 });
     }
 
-    const afterDoc = (await db
-      .collection("products")
-      .findOne({ _id: new ObjectId(id) })) as Record<string, unknown> | null;
+    const afterDoc = (await db.collection("products").findOne({ _id: new ObjectId(id) })) as Record<
+      string,
+      unknown
+    > | null;
     const before = toProductAuditSnapshot(beforeDoc);
     const after = toProductAuditSnapshot(afterDoc);
     await appendAdminAudit(
@@ -370,10 +324,7 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -389,16 +340,10 @@ export async function DELETE(
     })) as Record<string, unknown> | null;
     const result = await db
       .collection("products")
-      .updateOne(
-        { _id: new ObjectId(id) },
-        { $set: { isDeleted: true, deletedAt: new Date() } },
-      );
+      .updateOne({ _id: new ObjectId(id) }, { $set: { isDeleted: true, deletedAt: new Date() } });
 
     if (result.matchedCount === 0) {
-      return NextResponse.json(
-        { message: "상품을 찾을 수 없습니다." },
-        { status: 404 },
-      );
+      return NextResponse.json({ message: "상품을 찾을 수 없습니다." }, { status: 404 });
     }
     const before = toProductAuditSnapshot(beforeDoc);
     await appendAdminAudit(
@@ -434,10 +379,7 @@ export async function DELETE(
       },
       req,
     );
-    return NextResponse.json(
-      { message: "상품이 삭제되었습니다." },
-      { status: 200 },
-    );
+    return NextResponse.json({ message: "상품이 삭제되었습니다." }, { status: 200 });
   } catch (err) {
     console.error("[admin/products/[id]] delete error", err);
     return NextResponse.json({ message: "서버 오류" }, { status: 500 });

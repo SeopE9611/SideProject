@@ -9,31 +9,24 @@ const MAX_BODY_LENGTH = 2000;
 function parseBody(raw: unknown) {
   const body = typeof raw === "string" ? raw.trim() : "";
   if (!body) return { ok: false as const, message: "body required" };
-  if (body.length > MAX_BODY_LENGTH)
-    return { ok: false as const, message: "body too long" };
+  if (body.length > MAX_BODY_LENGTH) return { ok: false as const, message: "body too long" };
   return { ok: true as const, body };
 }
 
-export async function PATCH(
-  req: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
   if (!csrf.ok) return csrf.res;
   const { id } = await ctx.params;
-  if (!ObjectId.isValid(id))
-    return NextResponse.json({ message: "invalid id" }, { status: 400 });
+  if (!ObjectId.isValid(id)) return NextResponse.json({ message: "invalid id" }, { status: 400 });
   const noteId = new ObjectId(id);
   const payload = await req.json().catch(() => ({}));
   const parsed = parseBody((payload as any).body);
-  if (!parsed.ok)
-    return NextResponse.json({ message: parsed.message }, { status: 400 });
+  if (!parsed.ok) return NextResponse.json({ message: parsed.message }, { status: 400 });
   const coll = guard.db.collection("admin_notes");
   const note = await coll.findOne({ _id: noteId });
-  if (!note)
-    return NextResponse.json({ message: "not found" }, { status: 404 });
+  if (!note) return NextResponse.json({ message: "not found" }, { status: 404 });
   if (note.isDeleted === true)
     return NextResponse.json({ message: "deleted note" }, { status: 400 });
   const now = new Date();
@@ -87,38 +80,24 @@ export async function PATCH(
       createdByEmail: updated?.createdByEmail ?? null,
       createdByName: updated?.createdByName ?? null,
       createdByRole: updated?.createdByRole ?? null,
-      createdAt:
-        updated?.createdAt instanceof Date
-          ? updated.createdAt.toISOString()
-          : null,
-      updatedAt:
-        updated?.updatedAt instanceof Date
-          ? updated.updatedAt.toISOString()
-          : null,
-      editedAt:
-        updated?.editedAt instanceof Date
-          ? updated.editedAt.toISOString()
-          : null,
+      createdAt: updated?.createdAt instanceof Date ? updated.createdAt.toISOString() : null,
+      updatedAt: updated?.updatedAt instanceof Date ? updated.updatedAt.toISOString() : null,
+      editedAt: updated?.editedAt instanceof Date ? updated.editedAt.toISOString() : null,
     },
   });
 }
 
-export async function DELETE(
-  req: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
   if (!csrf.ok) return csrf.res;
   const { id } = await ctx.params;
-  if (!ObjectId.isValid(id))
-    return NextResponse.json({ message: "invalid id" }, { status: 400 });
+  if (!ObjectId.isValid(id)) return NextResponse.json({ message: "invalid id" }, { status: 400 });
   const noteId = new ObjectId(id);
   const coll = guard.db.collection("admin_notes");
   const note = await coll.findOne({ _id: noteId });
-  if (!note)
-    return NextResponse.json({ message: "not found" }, { status: 404 });
+  if (!note) return NextResponse.json({ message: "not found" }, { status: 404 });
   if (note.isDeleted === true) return NextResponse.json({ success: true });
   const now = new Date();
   await coll.updateOne(

@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { getHangulInitials } from "@/lib/hangul-utils";
-import {
-  productVisibilityFilterFor,
-  racketVisibilityFilterFor,
-} from "@/lib/public-visibility";
+import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 
 type SearchResult = {
@@ -52,23 +49,15 @@ export async function GET(req: NextRequest) {
 
     // 스트링 상품 조회 (기존 preview 로직과 동일하게 isDeleted 제외)
     const [products, rackets] = await Promise.all([
-      db
-        .collection("products")
-        .find(productVisibilityFilterFor(viewer))
-        .toArray(),
-      db
-        .collection("used_rackets")
-        .find(racketVisibilityFilterFor(viewer))
-        .toArray(),
+      db.collection("products").find(productVisibilityFilterFor(viewer)).toArray(),
+      db.collection("used_rackets").find(racketVisibilityFilterFor(viewer)).toArray(),
     ]);
 
     const results: SearchResult[] = [];
 
     // 스트링 상품 매칭
     for (const p of products as any[]) {
-      const searchKeywords: string[] = Array.isArray(p.searchKeywords)
-        ? p.searchKeywords
-        : [];
+      const searchKeywords: string[] = Array.isArray(p.searchKeywords) ? p.searchKeywords : [];
 
       const ok = matchText([p.name, p.brand, ...searchKeywords]);
       if (!ok) continue;
@@ -80,9 +69,7 @@ export async function GET(req: NextRequest) {
         brand: p.brand ?? "",
         price: typeof p.price === "number" ? p.price : 0,
         image:
-          (Array.isArray(p.images) &&
-          p.images.length > 0 &&
-          typeof p.images[0] === "string"
+          (Array.isArray(p.images) && p.images.length > 0 && typeof p.images[0] === "string"
             ? p.images[0]
             : p.thumbnailUrl) ?? null,
       });
@@ -90,9 +77,7 @@ export async function GET(req: NextRequest) {
 
     // 중고 라켓 매칭 (brand + model 중심)
     for (const r of rackets as any[]) {
-      const searchKeywords: string[] = Array.isArray(r.searchKeywords)
-        ? r.searchKeywords
-        : [];
+      const searchKeywords: string[] = Array.isArray(r.searchKeywords) ? r.searchKeywords : [];
 
       const ok = matchText([r.model, r.brand, ...searchKeywords]);
       if (!ok) continue;
@@ -104,9 +89,7 @@ export async function GET(req: NextRequest) {
         brand: r.brand ?? "",
         price: typeof r.price === "number" ? r.price : 0,
         image:
-          Array.isArray(r.images) &&
-          r.images.length > 0 &&
-          typeof r.images[0] === "string"
+          Array.isArray(r.images) && r.images.length > 0 && typeof r.images[0] === "string"
             ? r.images[0]
             : null,
       });

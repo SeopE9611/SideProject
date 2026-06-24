@@ -6,25 +6,17 @@ import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 
 // 단일 상품 조회
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const client = await clientPromise;
     const db = client.db();
     const { id } = await params;
-    const prod = await db
-      .collection("products")
-      .findOne({
-        _id: new ObjectId(id),
-        ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
-      });
+    const prod = await db.collection("products").findOne({
+      _id: new ObjectId(id),
+      ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+    });
     if (!prod) {
-      return NextResponse.json(
-        { message: "상품을 찾을 수 없습니다." },
-        { status: 404 },
-      );
+      return NextResponse.json({ message: "상품을 찾을 수 없습니다." }, { status: 404 });
     }
     return NextResponse.json({
       product: {

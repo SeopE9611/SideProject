@@ -1,24 +1,12 @@
 import { z } from "zod";
 
 export const siteSettingsSchema = z.object({
-  siteName: z
-    .string()
-    .min(2, { message: "사이트 이름은 2자 이상이어야 합니다." }),
-  siteDescription: z
-    .string()
-    .min(10, { message: "사이트 설명은 10자 이상이어야 합니다." }),
-  contactEmail: z
-    .string()
-    .email({ message: "유효한 이메일 주소를 입력해주세요." }),
-  contactPhone: z
-    .string()
-    .min(8, { message: "유효한 전화번호를 입력해주세요." }),
+  siteName: z.string().min(2, { message: "사이트 이름은 2자 이상이어야 합니다." }),
+  siteDescription: z.string().min(10, { message: "사이트 설명은 10자 이상이어야 합니다." }),
+  contactEmail: z.string().email({ message: "유효한 이메일 주소를 입력해주세요." }),
+  contactPhone: z.string().min(8, { message: "유효한 전화번호를 입력해주세요." }),
   address: z.string().min(5, { message: "주소는 5자 이상이어야 합니다." }),
-  logoUrl: z
-    .string()
-    .url({ message: "유효한 URL을 입력해주세요." })
-    .optional()
-    .or(z.literal("")),
+  logoUrl: z.string().url({ message: "유효한 URL을 입력해주세요." }).optional().or(z.literal("")),
   faviconUrl: z
     .string()
     .url({ message: "유효한 URL을 입력해주세요." })
@@ -38,15 +26,11 @@ export const userSettingsSchema = z.object({
 export const emailSettingsSchema = z.object({
   smtpHost: z.string().min(1, { message: "SMTP 호스트를 입력해주세요." }),
   smtpPort: z.number().int().min(1).max(65535),
-  smtpUsername: z
-    .string()
-    .min(1, { message: "SMTP 사용자 이름을 입력해주세요." }),
+  smtpUsername: z.string().min(1, { message: "SMTP 사용자 이름을 입력해주세요." }),
   smtpPassword: z.string().optional().or(z.literal("")),
   smtpEncryption: z.enum(["none", "ssl", "tls"]),
   senderName: z.string().min(1, { message: "발신자 이름을 입력해주세요." }),
-  senderEmail: z
-    .string()
-    .email({ message: "유효한 이메일 주소를 입력해주세요." }),
+  senderEmail: z.string().email({ message: "유효한 이메일 주소를 입력해주세요." }),
 });
 
 export const paymentSettingsSchema = z.object({

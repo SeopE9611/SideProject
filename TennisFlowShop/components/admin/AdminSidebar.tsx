@@ -1,18 +1,10 @@
 "use client";
 
 import { adminTypography } from "@/components/admin/admin-typography";
-import {
-  SIDEBAR_SECTIONS,
-  type SidebarBadgeKey,
-} from "@/components/admin/sidebar-navigation";
+import { SIDEBAR_SECTIONS, type SidebarBadgeKey } from "@/components/admin/sidebar-navigation";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { isAdminNavActive } from "@/lib/admin-nav";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -23,10 +15,7 @@ import { useEffect, useState } from "react";
 type BadgeCounts = Partial<Record<SidebarBadgeKey, number>>;
 type Props = { defaultCollapsed?: boolean; badgeCounts?: BadgeCounts };
 
-export default function AdminSidebar({
-  defaultCollapsed = false,
-  badgeCounts = {},
-}: Props) {
+export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {} }: Props) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
 
@@ -65,11 +54,7 @@ export default function AdminSidebar({
             className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border bg-card text-muted-foreground hover:bg-background dark:border-border dark:bg-card dark:text-muted-foreground"
             aria-label={collapsed ? "사이드바 펼치기" : "사이드바 접기"}
           >
-            {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </button>
         </div>
 
@@ -111,22 +96,12 @@ export default function AdminSidebar({
                             : "w-0 opacity-0 group-hover:w-1 group-hover:opacity-60",
                         )}
                       />
-                      <Icon
-                        className={cn(
-                          "h-4 w-4 shrink-0",
-                          active && "text-primary",
-                        )}
-                      />
-                      {!collapsed && (
-                        <span className="truncate">{item.title}</span>
-                      )}
+                      <Icon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
+                      {!collapsed && <span className="truncate">{item.title}</span>}
                       {!!count && !collapsed && (
                         <Badge
                           variant="secondary"
-                          className={cn(
-                            "ml-auto",
-                            adminTypography.sidebarCount,
-                          )}
+                          className={cn("ml-auto", adminTypography.sidebarCount)}
                         >
                           {count > 99 ? "99+" : count}
                         </Badge>
@@ -139,9 +114,7 @@ export default function AdminSidebar({
                       {collapsed ? (
                         <Tooltip>
                           <TooltipTrigger asChild>{link}</TooltipTrigger>
-                          <TooltipContent side="right">
-                            {item.title}
-                          </TooltipContent>
+                          <TooltipContent side="right">{item.title}</TooltipContent>
                         </Tooltip>
                       ) : (
                         link

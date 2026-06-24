@@ -3,13 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -73,9 +67,7 @@ export default function LinkedFlowStageCard({
     () => inferLinkedFlowStage(orderStatus, applicationStatus),
     [orderStatus, applicationStatus],
   );
-  const [selectedStage, setSelectedStage] = useState<LinkedFlowStage>(
-    currentStage ?? "신청접수",
-  );
+  const [selectedStage, setSelectedStage] = useState<LinkedFlowStage>(currentStage ?? "신청접수");
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -125,9 +117,7 @@ export default function LinkedFlowStageCard({
         );
 
         if (!result?.success) {
-          throw new Error(
-            result?.message || "연결 진행 단계 변경에 실패했습니다.",
-          );
+          throw new Error(result?.message || "연결 진행 단계 변경에 실패했습니다.");
         }
 
         if (result.noop) {
@@ -142,9 +132,7 @@ export default function LinkedFlowStageCard({
         await onSaved?.(result);
       } catch (error: any) {
         const message = String(error?.message ?? "").trim();
-        showErrorToast(
-          message || "연결 진행 단계 변경 중 오류가 발생했습니다.",
-        );
+        showErrorToast(message || "연결 진행 단계 변경 중 오류가 발생했습니다.");
       }
     });
   };
@@ -152,12 +140,10 @@ export default function LinkedFlowStageCard({
   return (
     <Card className={className}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">
-          1. 진행 상태 관리 · 연결 진행 단계
-        </CardTitle>
+        <CardTitle className="text-base">1. 진행 상태 관리 · 연결 진행 단계</CardTitle>
         <CardDescription>
-          이 단계 변경은 주문 상태와 교체서비스 신청 상태를 함께 업데이트합니다.
-          현재 단계와 저장 시 변경값을 확인한 뒤 처리하세요.
+          이 단계 변경은 주문 상태와 교체서비스 신청 상태를 함께 업데이트합니다. 현재 단계와 저장 시
+          변경값을 확인한 뒤 처리하세요.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -183,9 +169,7 @@ export default function LinkedFlowStageCard({
             <p className="text-xs text-muted-foreground">변경할 단계</p>
             <Select
               value={selectedStage}
-              onValueChange={(value) =>
-                setSelectedStage(value as LinkedFlowStage)
-              }
+              onValueChange={(value) => setSelectedStage(value as LinkedFlowStage)}
               disabled={isPending || disabled}
             >
               <SelectTrigger>
@@ -201,29 +185,20 @@ export default function LinkedFlowStageCard({
             </Select>
           </div>
 
-          <Button
-            onClick={handleSave}
-            disabled={isPending || isSameStage || disabled}
-          >
+          <Button onClick={handleSave} disabled={isPending || isSameStage || disabled}>
             {isPending ? "저장 중..." : "저장"}
           </Button>
         </div>
 
         <div className="rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground break-keep">
-          <p className="mb-1 font-medium text-foreground">
-            저장 시 함께 변경되는 상태
-          </p>
+          <p className="mb-1 font-medium text-foreground">저장 시 함께 변경되는 상태</p>
           {previewText}
         </div>
-        {disabledReason && (
-          <p className="text-xs text-destructive break-keep">
-            {disabledReason}
-          </p>
-        )}
+        {disabledReason && <p className="text-xs text-destructive break-keep">{disabledReason}</p>}
         <p className="text-xs text-muted-foreground break-keep">
-          결제 확인, 작업 접수·진행, 인도 준비·완료는 이 카드에서 관리합니다.
-          배송/수령 정보 등록과 신청서 세부 확인은 아래 정보 영역을 이용하고,
-          취소/환불은 주문 상세의 취소/환불 액션에서 처리하세요.
+          결제 확인, 작업 접수·진행, 인도 준비·완료는 이 카드에서 관리합니다. 배송/수령 정보 등록과
+          신청서 세부 확인은 아래 정보 영역을 이용하고, 취소/환불은 주문 상세의 취소/환불 액션에서
+          처리하세요.
         </p>
       </CardContent>
     </Card>

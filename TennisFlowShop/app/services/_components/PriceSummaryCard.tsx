@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  PriceSummary,
-  type PriceSummaryRow,
-} from "@/components/public/PriceSummary";
+import { PriceSummary, type PriceSummaryRow } from "@/components/public/PriceSummary";
 import { SummaryCard } from "@/components/public/SummaryCard";
 import {
   BadgeDollarSign,
@@ -67,9 +64,7 @@ export default function PriceSummaryCard({
 }: PriceSummaryProps) {
   const isCustom = stringTypes.includes("custom");
   const isRentalBreakdown = Number(rentalDeposit) > 0 || Number(rentalFee) > 0;
-  const visibleWorkLines = Array.isArray(workLines)
-    ? workLines.slice(0, 3)
-    : [];
+  const visibleWorkLines = Array.isArray(workLines) ? workLines.slice(0, 3) : [];
   const hiddenWorkLineCount = Array.isArray(workLines)
     ? Math.max(workLines.length - visibleWorkLines.length, 0)
     : 0;
@@ -234,12 +229,8 @@ export default function PriceSummaryCard({
       {hasWorkLines && (
         <div className="space-y-2 rounded-xl border border-border bg-card p-3">
           <div className="flex flex-wrap items-center justify-between gap-1.5 text-sm">
-            <span className="font-semibold text-foreground">
-              작업 {workLines?.length ?? 0}자루
-            </span>
-            <span className="text-xs leading-tight text-muted-foreground">
-              1자루 = 교체 1회
-            </span>
+            <span className="font-semibold text-foreground">작업 {workLines?.length ?? 0}자루</span>
+            <span className="text-xs leading-tight text-muted-foreground">1자루 = 교체 1회</span>
           </div>
           <div className="space-y-2">
             {visibleWorkLines.map((line, index) => {
@@ -247,10 +238,7 @@ export default function PriceSummaryCard({
               const stringName = line.stringName?.trim() || "스트링명 미입력";
               const main = line.tensionMain?.trim();
               const cross = line.tensionCross?.trim();
-              const tension =
-                main || cross
-                  ? `${main || "—"}-${cross || "—"}LB`
-                  : "텐션 미입력";
+              const tension = main || cross ? `${main || "—"}-${cross || "—"}LB` : "텐션 미입력";
               return (
                 <div
                   key={`${racketName}-${index}`}
@@ -268,9 +256,7 @@ export default function PriceSummaryCard({
               );
             })}
             {hiddenWorkLineCount > 0 && (
-              <p className="text-xs text-muted-foreground">
-                외 {hiddenWorkLineCount}건
-              </p>
+              <p className="text-xs text-muted-foreground">외 {hiddenWorkLineCount}건</p>
             )}
           </div>
         </div>

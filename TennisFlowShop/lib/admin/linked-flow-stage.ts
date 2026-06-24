@@ -1,34 +1,15 @@
 import { isVisitPickupOrder } from "@/lib/order-shipping";
 
-const LINKED_FLOW_STAGES = [
-  "결제대기",
-  "신청접수",
-  "작업중",
-  "인도준비",
-  "인도완료",
-] as const;
+const LINKED_FLOW_STAGES = ["결제대기", "신청접수", "작업중", "인도준비", "인도완료"] as const;
 
 export type LinkedFlowStage = (typeof LINKED_FLOW_STAGES)[number];
 
-export const LINKED_FLOW_STAGE_LIST: readonly LinkedFlowStage[] =
-  LINKED_FLOW_STAGES;
+export const LINKED_FLOW_STAGE_LIST: readonly LinkedFlowStage[] = LINKED_FLOW_STAGES;
 
-export const LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES = [
-  "취소",
-  "환불",
-  "구매확정",
-] as const;
-export const LINKED_FLOW_AUTOMATION_BLOCKED_APPLICATION_STATUSES = [
-  "취소",
-] as const;
-export const LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES = [
-  "draft",
-  "취소",
-] as const;
-export const LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES = [
-  "approved",
-  "승인",
-] as const;
+export const LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES = ["취소", "환불", "구매확정"] as const;
+export const LINKED_FLOW_AUTOMATION_BLOCKED_APPLICATION_STATUSES = ["취소"] as const;
+export const LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES = ["draft", "취소"] as const;
+export const LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES = ["approved", "승인"] as const;
 
 const STAGE_TO_ORDER_STATUS: Record<LinkedFlowStage, string> = {
   결제대기: "대기중",
@@ -54,18 +35,12 @@ const EXACT_STATUS_COMBO_TO_STAGE = new Map<string, LinkedFlowStage>([
   ["배송완료::교체완료", "인도완료"],
 ]);
 
-function comboKey(
-  orderStatus?: string | null,
-  applicationStatus?: string | null,
-): string {
+function comboKey(orderStatus?: string | null, applicationStatus?: string | null): string {
   return `${String(orderStatus ?? "").trim()}::${String(applicationStatus ?? "").trim()}`;
 }
 
 export function isLinkedFlowStage(value: unknown): value is LinkedFlowStage {
-  return (
-    typeof value === "string" &&
-    (LINKED_FLOW_STAGES as readonly string[]).includes(value)
-  );
+  return typeof value === "string" && (LINKED_FLOW_STAGES as readonly string[]).includes(value);
 }
 
 export function mapStageToOrderStatus(stage: LinkedFlowStage): string {
@@ -76,11 +51,8 @@ export function mapStageToApplicationStatus(stage: LinkedFlowStage): string {
   return STAGE_TO_APPLICATION_STATUS[stage];
 }
 
-export function mapOrderStatusToPaymentStatus(
-  orderStatus: string,
-): string | null {
-  if (["결제완료", "배송중", "배송완료"].includes(orderStatus))
-    return "결제완료";
+export function mapOrderStatusToPaymentStatus(orderStatus: string): string | null {
+  if (["결제완료", "배송중", "배송완료"].includes(orderStatus)) return "결제완료";
   if (orderStatus === "대기중") return "결제대기";
   if (orderStatus === "취소") return "결제취소";
   if (orderStatus === "환불") return "환불";
@@ -96,18 +68,13 @@ export function isApplicationClosedForLinkedAutomation(input: {
     .trim()
     .toLowerCase();
 
-  if (
-    LINKED_FLOW_AUTOMATION_BLOCKED_APPLICATION_STATUSES.includes(status as any)
-  )
-    return true;
+  if (LINKED_FLOW_AUTOMATION_BLOCKED_APPLICATION_STATUSES.includes(status as any)) return true;
   if (cancelStatus === "approved" || cancelStatus === "승인") return true;
 
   return false;
 }
 
-export function isOrderBlockedForLinkedAutomation(
-  orderStatus?: string | null,
-): boolean {
+export function isOrderBlockedForLinkedAutomation(orderStatus?: string | null): boolean {
   const status = String(orderStatus ?? "").trim();
   return LINKED_FLOW_AUTOMATION_BLOCKED_ORDER_STATUSES.includes(status as any);
 }
@@ -119,13 +86,8 @@ export function isApplicationEligibleForLinkedStage(input: {
   const status = String(input.status ?? "").trim();
   const cancelStatus = String(input.cancelRequestStatus ?? "").trim();
 
-  if (LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES.includes(status as any))
-    return false;
-  if (
-    LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES.includes(
-      cancelStatus as any,
-    )
-  )
+  if (LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES.includes(status as any)) return false;
+  if (LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES.includes(cancelStatus as any))
     return false;
 
   return true;
@@ -135,9 +97,7 @@ export function inferLinkedFlowStage(
   orderStatus?: string | null,
   applicationStatus?: string | null,
 ): LinkedFlowStage | null {
-  const exact = EXACT_STATUS_COMBO_TO_STAGE.get(
-    comboKey(orderStatus, applicationStatus),
-  );
+  const exact = EXACT_STATUS_COMBO_TO_STAGE.get(comboKey(orderStatus, applicationStatus));
   if (exact) return exact;
 
   const order = String(orderStatus ?? "").trim();

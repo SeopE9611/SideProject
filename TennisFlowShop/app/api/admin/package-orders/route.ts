@@ -28,10 +28,7 @@ export async function GET(req: Request) {
     const sp = url.searchParams;
 
     const page = Math.max(1, parseInt(sp.get("page") || "1", 10));
-    const limit = Math.min(
-      50,
-      Math.max(1, parseInt(sp.get("limit") || "10", 10)),
-    );
+    const limit = Math.min(50, Math.max(1, parseInt(sp.get("limit") || "10", 10)));
     const skip = (page - 1) * limit;
 
     const q = (sp.get("q") || "").trim();
@@ -190,10 +187,7 @@ export async function GET(req: Request) {
                         $and: [
                           { $ne: ["$passDoc", null] },
                           {
-                            $lte: [
-                              { $ifNull: ["$passDoc.remainingCount", 0] },
-                              0,
-                            ],
+                            $lte: [{ $ifNull: ["$passDoc.remainingCount", 0] }, 0],
                           },
                         ],
                       },
@@ -202,10 +196,7 @@ export async function GET(req: Request) {
                     // 4) 시간 만료
                     {
                       case: {
-                        $and: [
-                          { $ne: ["$$exp", null] },
-                          { $lte: ["$$exp", "$$NOW"] },
-                        ],
+                        $and: [{ $ne: ["$$exp", null] }, { $lte: ["$$exp", "$$NOW"] }],
                       },
                       then: "만료",
                     },
@@ -297,9 +288,7 @@ export async function GET(req: Request) {
         },
       },
       // 계산된 상태로 서버-사이드 필터 (필요할 때만 붙이기)
-      ...(status && status !== "all"
-        ? [{ $match: { passStatusKo: status } }]
-        : []),
+      ...(status && status !== "all" ? [{ $match: { passStatusKo: status } }] : []),
 
       // 고객 표시용 필드
       {

@@ -46,8 +46,7 @@ export default function PackagePaymentStatusSelect({
   disabled,
 }: Props) {
   // 서버가 취소 줄수도있으니 대비
-  const normalize = (s?: string) =>
-    s === "취소" ? "결제취소" : s || "결제대기";
+  const normalize = (s?: string) => (s === "취소" ? "결제취소" : s || "결제대기");
 
   const [selected, setSelected] = useState<string>(normalize(currentStatus));
   const [isPending, startTransition] = useTransition();
@@ -55,18 +54,15 @@ export default function PackagePaymentStatusSelect({
 
   // 결제 상태 변경 모달 상태
   const [showDialog, setShowDialog] = useState(false);
-  const [pendingStatus, setPendingStatus] = useState<
-    "결제대기" | "결제완료" | "결제취소" | null
-  >(null);
+  const [pendingStatus, setPendingStatus] = useState<"결제대기" | "결제완료" | "결제취소" | null>(
+    null,
+  );
 
   // 사유 입력
   const [reasonType, setReasonType] = useState<string>(""); // 셀렉트로 고르는 기본 사유
   const [reasonText, setReasonText] = useState<string>(""); // 추가 메모(자유 입력)
 
-  async function submitPaymentStatus(
-    next: "결제대기" | "결제완료" | "결제취소",
-    reason: string,
-  ) {
+  async function submitPaymentStatus(next: "결제대기" | "결제완료" | "결제취소", reason: string) {
     try {
       setSaving(true);
       await adminMutator(`/api/admin/package-orders/${orderId}`, {
@@ -102,10 +98,7 @@ export default function PackagePaymentStatusSelect({
     }
 
     // 2) 현재가 결제취소인데 → 결제대기/결제완료로 복구 → 모달 (사유 선택)
-    if (
-      selected === "결제취소" &&
-      (next === "결제대기" || next === "결제완료")
-    ) {
+    if (selected === "결제취소" && (next === "결제대기" || next === "결제완료")) {
       setPendingStatus(next as "결제대기" | "결제완료");
       setShowDialog(true);
       return;
@@ -119,11 +112,7 @@ export default function PackagePaymentStatusSelect({
 
   return (
     <>
-      <Select
-        value={selected}
-        onValueChange={onChange}
-        disabled={disabled || isPending || saving}
-      >
+      <Select value={selected} onValueChange={onChange} disabled={disabled || isPending || saving}>
         <SelectTrigger className="w-[140px]">
           <SelectValue placeholder="상태 선택" />
         </SelectTrigger>
@@ -141,9 +130,7 @@ export default function PackagePaymentStatusSelect({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {pendingStatus === "결제취소"
-                ? "결제 취소 사유 입력"
-                : "결제 상태 복구 사유(선택)"}
+              {pendingStatus === "결제취소" ? "결제 취소 사유 입력" : "결제 상태 복구 사유(선택)"}
             </DialogTitle>
           </DialogHeader>
 
@@ -175,10 +162,7 @@ export default function PackagePaymentStatusSelect({
             </div>
 
             <div className="space-y-1.5">
-              <Label>
-                추가 메모{" "}
-                {pendingStatus === "결제취소" ? "(필요 시)" : "(선택)"}
-              </Label>
+              <Label>추가 메모 {pendingStatus === "결제취소" ? "(필요 시)" : "(선택)"}</Label>
               <Textarea
                 placeholder="세부 사유를 메모하세요"
                 value={reasonText}
@@ -207,9 +191,7 @@ export default function PackagePaymentStatusSelect({
                 if (!pendingStatus) return;
 
                 const base = reasonType || "";
-                const memo = reasonText?.trim()
-                  ? ` - ${reasonText.trim()}`
-                  : "";
+                const memo = reasonText?.trim() ? ` - ${reasonText.trim()}` : "";
                 const reason = `${base}${memo}`.trim();
 
                 // 결제취소는 사유 선택 필수
@@ -230,16 +212,12 @@ export default function PackagePaymentStatusSelect({
                     });
                     if (!res.ok) {
                       const err = await res.json().catch(() => ({}));
-                      throw new Error(
-                        err?.error || "상태 변경에 실패했습니다.",
-                      );
+                      throw new Error(err?.error || "상태 변경에 실패했습니다.");
                     }
                     showSuccessToast("상태가 변경되었습니다.");
                     onUpdated?.();
                   } catch (e: any) {
-                    showErrorToast(
-                      e?.message || "상태 변경 중 오류가 발생했습니다.",
-                    );
+                    showErrorToast(e?.message || "상태 변경 중 오류가 발생했습니다.");
                     setSelected(normalize(currentStatus));
                   } finally {
                     setSaving(false);

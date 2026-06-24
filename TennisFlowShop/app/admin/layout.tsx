@@ -52,9 +52,7 @@ function canBypassAdminGuard(requestHeaders: Headers): boolean {
   const bypassAccepted = providedToken === expectedToken;
 
   logInfo({
-    msg: bypassAccepted
-      ? "admin_guard_bypass_approved"
-      : "admin_guard_bypass_denied",
+    msg: bypassAccepted ? "admin_guard_bypass_approved" : "admin_guard_bypass_denied",
     path: "/admin",
     extra: {
       reason: bypassAccepted ? "token_matched" : "token_mismatch",
@@ -65,11 +63,7 @@ function canBypassAdminGuard(requestHeaders: Headers): boolean {
 }
 
 /** 관리자 UI 권한 검사의 단일 진입점. (app/admin/**) */
-export default async function AdminLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default async function AdminLayout({ children }: { children: ReactNode }) {
   const requestHeaders = await headers();
   const e2eBypass = canBypassAdminGuard(requestHeaders);
 

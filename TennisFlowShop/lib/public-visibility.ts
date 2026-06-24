@@ -11,10 +11,7 @@ export const publicProductFilter: Filter<ProductVisibilityDoc> = {
 export const HIDDEN_RACKET_STATUSES = ["inactive", "비노출"] as const;
 
 export const publicRacketStatusFilter: Filter<RacketVisibilityDoc> = {
-  $or: [
-    { status: { $exists: false } },
-    { status: { $nin: [...HIDDEN_RACKET_STATUSES] } },
-  ],
+  $or: [{ status: { $exists: false } }, { status: { $nin: [...HIDDEN_RACKET_STATUSES] } }],
 };
 
 export function isPublicRacketStatus(status: unknown) {
@@ -25,17 +22,18 @@ export type VisibilityViewer = {
   isAdmin?: boolean;
 };
 
-export function productVisibilityFilterFor<
-  T extends ProductVisibilityDoc = ProductVisibilityDoc,
->(viewer?: VisibilityViewer): Filter<T> {
+export function productVisibilityFilterFor<T extends ProductVisibilityDoc = ProductVisibilityDoc>(
+  viewer?: VisibilityViewer,
+): Filter<T> {
   return viewer?.isAdmin
     ? ({ isDeleted: { $ne: true } } as Filter<T>)
     : (publicProductFilter as Filter<T>);
 }
 
-export function racketVisibilityFilterFor<
-  T extends RacketVisibilityDoc = RacketVisibilityDoc,
->(viewer?: VisibilityViewer, options?: { rentOnly?: boolean }): Filter<T> {
+export function racketVisibilityFilterFor<T extends RacketVisibilityDoc = RacketVisibilityDoc>(
+  viewer?: VisibilityViewer,
+  options?: { rentOnly?: boolean },
+): Filter<T> {
   if (viewer?.isAdmin) {
     if (options?.rentOnly) {
       return {

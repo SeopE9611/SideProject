@@ -42,9 +42,7 @@ const toTrimmedString = (v: unknown) => {
 
 const CancelRequestBodySchema = z
   .object({
-    reasonCode: z
-      .preprocess(toOptionalTrimmedString, z.string().max(30))
-      .optional(),
+    reasonCode: z.preprocess(toOptionalTrimmedString, z.string().max(30)).optional(),
     reasonText: z.preprocess(toTrimmedString, z.string().max(500)).optional(),
   })
   .passthrough();
@@ -55,18 +53,12 @@ const CancelRequestBodySchema = z
  * -  출고 전(status = pending/paid 이면서 출고 운송장 미등록)까지만 취소 요청 가능.
  * - 대여 소유자만 호출 가능.
  */
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
     if (!ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { ok: false, message: "BAD_ID" },
-        { status: 400 },
-      );
+      return NextResponse.json({ ok: false, message: "BAD_ID" }, { status: 400 });
     }
 
     const db = (await clientPromise).db();
@@ -74,10 +66,7 @@ export async function POST(
     const rental: any = await db.collection("rental_orders").findOne({ _id });
 
     if (!rental) {
-      return NextResponse.json(
-        { ok: false, message: "NOT_FOUND" },
-        { status: 404 },
-      );
+      return NextResponse.json({ ok: false, message: "NOT_FOUND" }, { status: 404 });
     }
 
     // 1) 인증/인가: 회원 대여건이면 소유자만 취소 요청 가능
@@ -92,10 +81,7 @@ export async function POST(
         payload = null;
       }
       if (!payload || payload.sub !== String(rental.userId)) {
-        return NextResponse.json(
-          { ok: false, message: "FORBIDDEN" },
-          { status: 403 },
-        );
+        return NextResponse.json({ ok: false, message: "FORBIDDEN" }, { status: 403 });
       }
     }
 
@@ -104,10 +90,7 @@ export async function POST(
 
     // 이미 취소된 건에 대한 추가 요청 차단
     if (currentStatus === "canceled" || currentStatus === "cancelled") {
-      return NextResponse.json(
-        { ok: false, message: "ALREADY_CANCELED" },
-        { status: 400 },
-      );
+      return NextResponse.json({ ok: false, message: "ALREADY_CANCELED" }, { status: 400 });
     }
 
     if (rental.depositRefundedAt) {
@@ -136,9 +119,7 @@ export async function POST(
     // 출고 운송장 등록 여부 확인
     const outbound = (rental.shipping as any)?.outbound ?? null;
     const outboundTracking =
-      typeof outbound?.trackingNumber === "string"
-        ? outbound.trackingNumber.trim()
-        : "";
+      typeof outbound?.trackingNumber === "string" ? outbound.trackingNumber.trim() : "";
 
     if (outboundTracking) {
       // 출고가 시작된 이후에는 취소 요청 불가
@@ -166,10 +147,7 @@ export async function POST(
     // 이미 취소 요청이 걸려있으면 중복 요청 차단
     const existingReq = rental.cancelRequest ?? null;
     if (existingReq && existingReq.status === "requested") {
-      return NextResponse.json(
-        { ok: false, message: "ALREADY_REQUESTED" },
-        { status: 400 },
-      );
+      return NextResponse.json({ ok: false, message: "ALREADY_REQUESTED" }, { status: 400 });
     }
 
     // 3) body 파싱 (취소 사유)
@@ -183,12 +161,8 @@ export async function POST(
     const parsedBody = CancelRequestBodySchema.safeParse(rawBody);
 
     // 스키마 실패 시에도 기존처럼 기본값으로 처리(동작/UX 유지)
-    const reasonCode = parsedBody.success
-      ? (parsedBody.data.reasonCode ?? "기타")
-      : "기타";
-    const reasonText = parsedBody.success
-      ? (parsedBody.data.reasonText ?? "")
-      : "";
+    const reasonCode = parsedBody.success ? (parsedBody.data.reasonCode ?? "기타") : "기타";
+    const reasonText = parsedBody.success ? (parsedBody.data.reasonText ?? "") : "";
 
     /**
      * 대여는 기존에 top-level refundAccount가 이미 존재할 수 있다.
@@ -196,9 +170,7 @@ export async function POST(
      * body.refundAccount를 우선하고 없으면 기존 refundAccount를 fallback으로 사용한다.
      */
     const bodyRefundAccount =
-      rawBody && typeof rawBody === "object"
-        ? (rawBody as any).refundAccount
-        : undefined;
+      rawBody && typeof rawBody === "object" ? (rawBody as any).refundAccount : undefined;
 
     const parsedRefundAccount = RefundAccountSchema.safeParse(
       bodyRefundAccount ?? rental.refundAccount ?? null,
@@ -250,9 +222,6 @@ export async function POST(
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("rental cancel-request error", e);
-    return NextResponse.json(
-      { ok: false, message: "SERVER_ERROR" },
-      { status: 500 },
-    );
+    return NextResponse.json({ ok: false, message: "SERVER_ERROR" }, { status: 500 });
   }
 }

@@ -23,9 +23,7 @@ export function formatKRWCard(n: number, maxChars = 6) {
     let core = Math.round(v).toString();
     let out = `₩${core}만`;
     if (out.length > maxChars) {
-      core = (
-        Math.abs(v) < 10 ? v.toFixed(1) : Math.round(v).toString()
-      ).replace(/\.0$/, "");
+      core = (Math.abs(v) < 10 ? v.toFixed(1) : Math.round(v).toString()).replace(/\.0$/, "");
       out = `₩${core}만`;
     }
     return out;

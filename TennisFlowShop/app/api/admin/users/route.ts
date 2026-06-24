@@ -11,9 +11,7 @@ import type {
 type UserQueryDoc = Record<string, unknown>;
 
 function asRecord(value: unknown): UserQueryDoc {
-  return typeof value === "object" && value !== null
-    ? (value as UserQueryDoc)
-    : {};
+  return typeof value === "object" && value !== null ? (value as UserQueryDoc) : {};
 }
 
 function toIso(value: unknown): string | null {
@@ -23,10 +21,7 @@ function toIso(value: unknown): string | null {
 }
 
 // 숫자 쿼리 파싱 NaN 방지 + 범위 보정 (skip/limit 런타임 에러 예방)
-function parseIntParam(
-  v: string | null,
-  opts: { defaultValue: number; min: number; max: number },
-) {
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
@@ -64,14 +59,9 @@ export async function GET(req: Request) {
     limit,
     q,
     role: role === "user" || role === "admin" ? role : "all",
-    status:
-      status === "active" || status === "deleted" || status === "suspended"
-        ? status
-        : "all",
+    status: status === "active" || status === "deleted" || status === "suspended" ? status : "all",
     sort:
-      sortKey === "created_asc" ||
-      sortKey === "name_asc" ||
-      sortKey === "name_desc"
+      sortKey === "created_asc" || sortKey === "name_asc" || sortKey === "name_desc"
         ? sortKey
         : "created_desc",
     signup,
@@ -91,10 +81,7 @@ export async function GET(req: Request) {
 
   // 검색어(q): 이름/이메일/휴대폰 부분 일치
   if (queryText) {
-    const regex = new RegExp(
-      queryText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-      "i",
-    );
+    const regex = new RegExp(queryText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
     and.push({ $or: [{ name: regex }, { email: regex }, { phone: regex }] });
   }
 
@@ -139,16 +126,10 @@ export async function GET(req: Request) {
     and.push({
       $and: [
         {
-          $or: [
-            { "oauth.kakao.id": { $exists: false } },
-            { "oauth.kakao.id": null },
-          ],
+          $or: [{ "oauth.kakao.id": { $exists: false } }, { "oauth.kakao.id": null }],
         },
         {
-          $or: [
-            { "oauth.naver.id": { $exists: false } },
-            { "oauth.naver.id": null },
-          ],
+          $or: [{ "oauth.naver.id": { $exists: false } }, { "oauth.naver.id": null }],
         },
       ],
     });
@@ -202,23 +183,19 @@ export async function GET(req: Request) {
     .skip((page - 1) * limit)
     .limit(limit);
 
-  const [items, total] = await Promise.all([
-    cursor.toArray(),
-    col.countDocuments(filter),
-  ]);
+  const [items, total] = await Promise.all([cursor.toArray(), col.countDocuments(filter)]);
 
   // 전체 지표(필터 무시) 동시 계산
-  const [grandTotal, activeTotal, deletedTotal, adminTotal, suspendedTotal] =
-    await Promise.all([
-      col.countDocuments({}),
-      col.countDocuments({
-        isDeleted: { $ne: true },
-        isSuspended: { $ne: true },
-      }),
-      col.countDocuments({ isDeleted: true }),
-      col.countDocuments({ role: "admin" }),
-      col.countDocuments({ isDeleted: { $ne: true }, isSuspended: true }),
-    ]);
+  const [grandTotal, activeTotal, deletedTotal, adminTotal, suspendedTotal] = await Promise.all([
+    col.countDocuments({}),
+    col.countDocuments({
+      isDeleted: { $ne: true },
+      isSuspended: { $ne: true },
+    }),
+    col.countDocuments({ isDeleted: true }),
+    col.countDocuments({ role: "admin" }),
+    col.countDocuments({ isDeleted: { $ne: true }, isSuspended: true }),
+  ]);
 
   const responseDto: AdminUsersListResponseDto = {
     items: items.map((u) => {
@@ -236,12 +213,10 @@ export async function GET(req: Request) {
         email: typeof doc.email === "string" ? doc.email : "",
         phone: typeof doc.phone === "string" ? doc.phone : "",
         address: typeof doc.address === "string" ? doc.address : "",
-        addressDetail:
-          typeof doc.addressDetail === "string" ? doc.addressDetail : "",
+        addressDetail: typeof doc.addressDetail === "string" ? doc.addressDetail : "",
         postalCode: typeof doc.postalCode === "string" ? doc.postalCode : "",
         pointsBalance:
-          typeof doc.pointsBalance === "number" &&
-          Number.isFinite(doc.pointsBalance)
+          typeof doc.pointsBalance === "number" && Number.isFinite(doc.pointsBalance)
             ? doc.pointsBalance
             : 0,
         role: doc.role === "admin" ? "admin" : "user",

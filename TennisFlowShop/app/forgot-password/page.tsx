@@ -24,8 +24,7 @@ export default function ForgotPasswordPage() {
   // 입력 중인데 아직 전송 완료 전이면 페이지 이탈 경고
   const isDirty = !isSubmitted && email.trim() !== "";
   useUnsavedChangesGuard(isDirty && !isSubmitting);
-  const confirmLeaveIfDirty = () =>
-    !isDirty || window.confirm(UNSAVED_CHANGES_MESSAGE);
+  const confirmLeaveIfDirty = () => !isDirty || window.confirm(UNSAVED_CHANGES_MESSAGE);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,9 +50,7 @@ export default function ForgotPasswordPage() {
       const json = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        throw new Error(
-          json?.message || "비밀번호 재설정 메일 전송에 실패했습니다.",
-        );
+        throw new Error(json?.message || "비밀번호 재설정 메일 전송에 실패했습니다.");
       }
 
       // 중요:
@@ -62,9 +59,7 @@ export default function ForgotPasswordPage() {
       setEmail(normalizedEmail);
       setIsSubmitted(true);
     } catch (error: any) {
-      showErrorToast(
-        error?.message || "비밀번호 재설정 메일 전송에 실패했습니다.",
-      );
+      showErrorToast(error?.message || "비밀번호 재설정 메일 전송에 실패했습니다.");
     } finally {
       setIsSubmitting(false);
     }

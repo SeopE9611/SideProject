@@ -53,9 +53,7 @@ export default function StringCheckboxes({
             className={cn(
               "flex items-center justify-between border rounded-lg px-4 py-2 cursor-pointer transition-all",
               "hover:border-primary",
-              isChecked
-                ? "border-primary bg-primary/10 dark:bg-primary/20"
-                : "border-muted",
+              isChecked ? "border-primary bg-primary/10 dark:bg-primary/20" : "border-muted",
               isDisabled ? "opacity-50 pointer-events-none" : "",
             )}
           >

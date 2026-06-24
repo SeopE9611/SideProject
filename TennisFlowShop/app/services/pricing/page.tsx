@@ -6,10 +6,7 @@ import { SectionHeader } from "@/components/public/SectionHeader";
 import { SummaryCard } from "@/components/public/SummaryCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  CUSTOM_STRING_MOUNTING_FEE,
-  STRINGING_POLICY_TEXT,
-} from "@/lib/stringing-pricing-policy";
+import { CUSTOM_STRING_MOUNTING_FEE, STRINGING_POLICY_TEXT } from "@/lib/stringing-pricing-policy";
 import {
   ArrowRight,
   Check,
@@ -34,41 +31,29 @@ const materialDescriptions: Record<string, string> = {
   naturalGut: "부드러운 반발력과 프리미엄 타구감을 중시하는 소재입니다.",
 };
 
-const won = (n: number | null) =>
-  n == null ? null : `${n.toLocaleString("ko-KR")}원`;
+const won = (n: number | null) => (n == null ? null : `${n.toLocaleString("ko-KR")}원`);
 const mountingFeeWon = (n: number | null) => (n === 0 ? "무료" : won(n));
 
-function formatRange(
-  min: number | null,
-  max: number | null,
-  emptyLabel: string,
-) {
+function formatRange(min: number | null, max: number | null, emptyLabel: string) {
   const minText = won(min);
   const maxText = won(max);
 
   if (!minText && !maxText) return emptyLabel;
-  if (minText && maxText)
-    return min === max ? minText : `${minText} ~ ${maxText}`;
+  if (minText && maxText) return min === max ? minText : `${minText} ~ ${maxText}`;
   return minText ?? maxText ?? emptyLabel;
 }
 
-function formatMountingFeeRange(
-  min: number | null,
-  max: number | null,
-  emptyLabel: string,
-) {
+function formatMountingFeeRange(min: number | null, max: number | null, emptyLabel: string) {
   const minText = mountingFeeWon(min);
   const maxText = mountingFeeWon(max);
 
   if (!minText && !maxText) return emptyLabel;
-  if (minText && maxText)
-    return min === max ? minText : `${minText} ~ ${maxText}`;
+  if (minText && maxText) return min === max ? minText : `${minText} ~ ${maxText}`;
   return minText ?? maxText ?? emptyLabel;
 }
 
 export default async function PricingPage() {
-  const { primarySummaries, otherSummary, hybridGuide } =
-    await getStringingPricingView();
+  const { primarySummaries, otherSummary, hybridGuide } = await getStringingPricingView();
 
   const basicServices = [
     {
@@ -76,19 +61,14 @@ export default async function PricingPage() {
       price: `${CUSTOM_STRING_MOUNTING_FEE.toLocaleString("ko-KR")}원`,
       time: "30-45분",
       description: "보유한 스트링 또는 직접 입력 스트링 기준 장착비입니다.",
-      features: [
-        "장착비 고정",
-        "스트링 상품가 별도 없음",
-        "장력/세팅 상담 가능",
-      ],
+      features: ["장착비 고정", "스트링 상품가 별도 없음", "장력/세팅 상담 가능"],
       icon: Wrench,
     },
     {
       name: "스트링 상품 선택 장착",
       price: "상품가 + 장착비",
       time: "30-60분",
-      description:
-        "사이트에서 선택한 스트링 상품가와 상품별 장착비를 기준으로 안내합니다.",
+      description: "사이트에서 선택한 스트링 상품가와 상품별 장착비를 기준으로 안내합니다.",
       features: [
         "상품별 가격 기준",
         "주문/대여 연계 시 기존 결제내역 우선",
@@ -99,8 +79,7 @@ export default async function PricingPage() {
     {
       name: "패키지 적용 신청",
       time: "30-60분",
-      description:
-        "사용가능한 패키지 횟수가 있으면 교체비 대신 패키지 잔여횟수가 차감됩니다",
+      description: "사용가능한 패키지 횟수가 있으면 교체비 대신 패키지 잔여횟수가 차감됩니다",
       features: [
         "패키지 잔여 횟수 기준",
         "적용 불가 시 일반 정책으로 계산",
@@ -146,10 +125,7 @@ export default async function PricingPage() {
         title="장착 비용 안내"
         description="신청 방식과 선택 상품에 따라 달라지는 비용 구조를 한눈에 확인하세요."
       />
-      <SiteContainer
-        variant="wide"
-        className="py-8 md:py-12 space-y-8 md:space-y-12"
-      >
+      <SiteContainer variant="wide" className="py-8 md:py-12 space-y-8 md:space-y-12">
         <section className="space-y-4 md:space-y-6">
           <SectionHeader
             align="center"
@@ -172,22 +148,15 @@ export default async function PricingPage() {
                     <h3 className="text-lg font-semibold leading-tight text-foreground">
                       {service.name}
                     </h3>
-                    <div className="text-2xl font-bold text-foreground">
-                      {service.price}
-                    </div>
+                    <div className="text-2xl font-bold text-foreground">{service.price}</div>
                     <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
                       <Clock className="h-4 w-4" /> 소요시간: {service.time}
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground break-keep">
-                    {service.description}
-                  </p>
+                  <p className="text-sm text-muted-foreground break-keep">{service.description}</p>
                   <ul className="space-y-1">
                     {service.features.map((feature) => (
-                      <li
-                        key={feature}
-                        className="text-sm flex items-center gap-2 break-keep"
-                      >
+                      <li key={feature} className="text-sm flex items-center gap-2 break-keep">
                         <Check className="h-4 w-4 text-success" />
                         <span>{feature}</span>
                       </li>
@@ -240,10 +209,7 @@ export default async function PricingPage() {
                   }
                   description={materialDescriptions[category.key]}
                   action={
-                    <Badge
-                      variant={hasProducts ? "brand" : "secondary"}
-                      className="w-fit"
-                    >
+                    <Badge variant={hasProducts ? "brand" : "secondary"} className="w-fit">
                       등록 상품 {category.count.toLocaleString("ko-KR")}개
                     </Badge>
                   }
@@ -253,26 +219,20 @@ export default async function PricingPage() {
                     <>
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
                         <PublicSurface variant="muted" padding="sm">
-                          <p className="text-xs font-medium text-muted-foreground">
-                            상품가
-                          </p>
+                          <p className="text-xs font-medium text-muted-foreground">상품가</p>
                           <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">
                             {productPriceRange}
                           </p>
                         </PublicSurface>
                         <PublicSurface variant="muted" padding="sm">
-                          <p className="text-xs font-medium text-muted-foreground">
-                            장착비
-                          </p>
+                          <p className="text-xs font-medium text-muted-foreground">장착비</p>
                           <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">
                             {mountingFeeRange}
                           </p>
                         </PublicSurface>
                       </div>
                       <div className="space-y-2">
-                        <p className="text-xs font-medium text-muted-foreground">
-                          대표 브랜드
-                        </p>
+                        <p className="text-xs font-medium text-muted-foreground">대표 브랜드</p>
                         <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                           {category.brands.length ? (
                             category.brands.map((brand) => (
@@ -292,9 +252,7 @@ export default async function PricingPage() {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <p className="text-xs font-medium text-muted-foreground">
-                          대표 상품
-                        </p>
+                        <p className="text-xs font-medium text-muted-foreground">대표 상품</p>
                         <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                           {category.productNames.length ? (
                             category.productNames.map((name) => (
@@ -454,24 +412,16 @@ export default async function PricingPage() {
         </section> */}
 
         <section className="grid gap-4 md:gap-6 lg:grid-cols-2">
-          <SummaryCard
-            title="추가 서비스 / 무료 지원"
-            contentClassName="space-y-3"
-          >
+          <SummaryCard title="추가 서비스 / 무료 지원" contentClassName="space-y-3">
             {additionalServices.map((service) => (
               <PublicSurface key={service.name} padding="sm">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                   <p className="font-medium">{service.name}</p>
-                  <Badge
-                    variant="secondary"
-                    className="shrink-0 whitespace-nowrap"
-                  >
+                  <Badge variant="secondary" className="shrink-0 whitespace-nowrap">
                     {service.policy}
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {service.description}
-                </p>
+                <p className="text-sm text-muted-foreground mt-1">{service.description}</p>
               </PublicSurface>
             ))}
           </SummaryCard>
@@ -485,14 +435,8 @@ export default async function PricingPage() {
             }
             contentClassName="space-y-2 text-sm leading-relaxed text-muted-foreground"
           >
-            <p>
-              • 일반 소요 시간은 30~60분이며, 예약 상황에 따라 달라질 수
-              있습니다.
-            </p>
-            <p>
-              • 스트링 교체는 예약제 운영이므로 신청서 또는 문의 후 방문해
-              주세요.
-            </p>
+            <p>• 일반 소요 시간은 30~60분이며, 예약 상황에 따라 달라질 수 있습니다.</p>
+            <p>• 스트링 교체는 예약제 운영이므로 신청서 또는 문의 후 방문해 주세요.</p>
           </SummaryCard>
         </section>
 
@@ -504,14 +448,11 @@ export default async function PricingPage() {
             <Zap className="h-5 w-5" />
             주의사항 / FAQ
           </h2>
-          <p>
-            • 스트링 포함 가격은 고정값이 아니며 선택 상품과 신청 방식에 따라
-            달라집니다.
-          </p>
+          <p>• 스트링 포함 가격은 고정값이 아니며 선택 상품과 신청 방식에 따라 달라집니다.</p>
           <p>• 패키지 적용 가능 시 교체비가 무료입니다.</p>
           <p>
-            • 주문/대여 기반 신청은 이미 결제된 내역과 이번 신청의 별도 결제
-            항목을 구분해 안내됩니다.
+            • 주문/대여 기반 신청은 이미 결제된 내역과 이번 신청의 별도 결제 항목을 구분해
+            안내됩니다.
           </p>
         </PublicSurface>
 
@@ -522,12 +463,7 @@ export default async function PricingPage() {
               <ArrowRight className="transition-transform group-hover:translate-x-1" />
             </Link>
           </Button>
-          <Button
-            asChild
-            size="lg"
-            variant="outline"
-            className="w-full sm:w-auto"
-          >
+          <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
             <Link href="/products?from=apply" className="group">
               스트링 먼저 고르기
               <ArrowRight className="transition-transform group-hover:translate-x-1" />

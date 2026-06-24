@@ -37,11 +37,7 @@ export type CartItem = {
 interface CartState {
   items: CartItem[]; // 장바구니에 담긴 상품 목록
   addItem: (item: CartItem) => { success: boolean; message?: string };
-  removeItem: (
-    id: string,
-    selectedGauge?: string,
-    selectedColor?: string,
-  ) => void; // 장바구니에서 상품 제거
+  removeItem: (id: string, selectedGauge?: string, selectedColor?: string) => void; // 장바구니에서 상품 제거
   updateQuantity: (
     id: string,
     quantity: number,
@@ -53,9 +49,7 @@ interface CartState {
 
 // --- 재고(가용 수량) 해석/클램프 유틸 ---
 const getMaxStock = (stock?: number) =>
-  typeof stock === "number" && Number.isFinite(stock)
-    ? stock
-    : Number.POSITIVE_INFINITY;
+  typeof stock === "number" && Number.isFinite(stock) ? stock : Number.POSITIVE_INFINITY;
 
 const clampQuantity = (qty: number, maxStock: number) => {
   const next = Math.max(0, qty);
@@ -85,10 +79,7 @@ export const useCartStore = create<CartState>()(
         const exists = get().items.find((i) => isSameCartLine(i, item));
         if (exists) {
           const maxStock = getMaxStock(exists.stock);
-          const nextQty = clampQuantity(
-            exists.quantity + item.quantity,
-            maxStock,
-          );
+          const nextQty = clampQuantity(exists.quantity + item.quantity, maxStock);
           if (nextQty === exists.quantity) {
             return { success: false, message: "재고 한도까지 담겨 있습니다." };
           }
@@ -121,11 +112,7 @@ export const useCartStore = create<CartState>()(
 
       // 특정 상품을 장바구니에서 제거
       // id가 일치하지 않는 상품만 남기고 나머지는 제거 (즉 해당 상품 삭제)
-      removeItem: (
-        id: string,
-        selectedGauge?: string,
-        selectedColor?: string,
-      ) =>
+      removeItem: (id: string, selectedGauge?: string, selectedColor?: string) =>
         set((state) => ({
           items: state.items.filter(
             (i) =>

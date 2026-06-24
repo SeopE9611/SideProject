@@ -26,27 +26,18 @@ function serializeClassSnapshot(value: unknown) {
         ? record.classId
         : String(serializeValue(record.classId) ?? ""),
     name: typeof record.name === "string" ? record.name : "",
-    description:
-      typeof record.description === "string" ? record.description : null,
+    description: typeof record.description === "string" ? record.description : null,
     level: typeof record.level === "string" ? record.level : null,
-    levelLabel:
-      typeof record.levelLabel === "string" ? record.levelLabel : null,
-    lessonType:
-      typeof record.lessonType === "string" ? record.lessonType : null,
-    lessonTypeLabel:
-      typeof record.lessonTypeLabel === "string"
-        ? record.lessonTypeLabel
-        : null,
-    instructorName:
-      typeof record.instructorName === "string" ? record.instructorName : null,
+    levelLabel: typeof record.levelLabel === "string" ? record.levelLabel : null,
+    lessonType: typeof record.lessonType === "string" ? record.lessonType : null,
+    lessonTypeLabel: typeof record.lessonTypeLabel === "string" ? record.lessonTypeLabel : null,
+    instructorName: typeof record.instructorName === "string" ? record.instructorName : null,
     location: typeof record.location === "string" ? record.location : null,
-    scheduleText:
-      typeof record.scheduleText === "string" ? record.scheduleText : null,
+    scheduleText: typeof record.scheduleText === "string" ? record.scheduleText : null,
     capacity: typeof record.capacity === "number" ? record.capacity : null,
     price: typeof record.price === "number" ? record.price : null,
     status: typeof record.status === "string" ? record.status : null,
-    statusLabel:
-      typeof record.statusLabel === "string" ? record.statusLabel : null,
+    statusLabel: typeof record.statusLabel === "string" ? record.statusLabel : null,
   };
 }
 
@@ -56,17 +47,10 @@ function serializeHistory(history: unknown) {
     const record = item && typeof item === "object" ? (item as Document) : {};
     return {
       status: typeof record.status === "string" ? record.status : "submitted",
-      date:
-        typeof record.date === "string"
-          ? record.date
-          : serializeValue(record.date),
-      description:
-        typeof record.description === "string" ? record.description : "",
-      actorId: record.actorId
-        ? String(serializeValue(record.actorId))
-        : undefined,
-      actorName:
-        typeof record.actorName === "string" ? record.actorName : undefined,
+      date: typeof record.date === "string" ? record.date : serializeValue(record.date),
+      description: typeof record.description === "string" ? record.description : "",
+      actorId: record.actorId ? String(serializeValue(record.actorId)) : undefined,
+      actorName: typeof record.actorName === "string" ? record.actorName : undefined,
     };
   });
 }
@@ -74,35 +58,24 @@ function serializeHistory(history: unknown) {
 function serializeApplication(doc: Document) {
   return {
     _id: String(serializeValue(doc._id)),
-    applicantName:
-      typeof doc.applicantName === "string" ? doc.applicantName : "",
+    applicantName: typeof doc.applicantName === "string" ? doc.applicantName : "",
     phone: typeof doc.phone === "string" ? doc.phone : "",
     email: typeof doc.email === "string" ? doc.email : null,
-    desiredLessonType:
-      typeof doc.desiredLessonType === "string" ? doc.desiredLessonType : "",
+    desiredLessonType: typeof doc.desiredLessonType === "string" ? doc.desiredLessonType : "",
     currentLevel: typeof doc.currentLevel === "string" ? doc.currentLevel : "",
     preferredDays: Array.isArray(doc.preferredDays) ? doc.preferredDays : [],
-    preferredTimeText:
-      typeof doc.preferredTimeText === "string" ? doc.preferredTimeText : null,
+    preferredTimeText: typeof doc.preferredTimeText === "string" ? doc.preferredTimeText : null,
     lessonGoal: typeof doc.lessonGoal === "string" ? doc.lessonGoal : null,
     requestMemo: typeof doc.requestMemo === "string" ? doc.requestMemo : null,
     status: typeof doc.status === "string" ? doc.status : "submitted",
     adminMemo: typeof doc.adminMemo === "string" ? doc.adminMemo : null,
-    customerMessage:
-      typeof doc.customerMessage === "string" ? doc.customerMessage : null,
-    cancelReason:
-      typeof doc.cancelReason === "string" ? doc.cancelReason : null,
-    cancelReasonLabel:
-      typeof doc.cancelReasonLabel === "string" ? doc.cancelReasonLabel : null,
-    cancelReasonDetail:
-      typeof doc.cancelReasonDetail === "string"
-        ? doc.cancelReasonDetail
-        : null,
+    customerMessage: typeof doc.customerMessage === "string" ? doc.customerMessage : null,
+    cancelReason: typeof doc.cancelReason === "string" ? doc.cancelReason : null,
+    cancelReasonLabel: typeof doc.cancelReasonLabel === "string" ? doc.cancelReasonLabel : null,
+    cancelReasonDetail: typeof doc.cancelReasonDetail === "string" ? doc.cancelReasonDetail : null,
     cancelledAt: serializeValue(doc.cancelledAt) ?? null,
     cancelledBy:
-      doc.cancelledBy === "customer" || doc.cancelledBy === "admin"
-        ? doc.cancelledBy
-        : null,
+      doc.cancelledBy === "customer" || doc.cancelledBy === "admin" ? doc.cancelledBy : null,
     history: serializeHistory(doc.history),
     createdAt: serializeValue(doc.createdAt) ?? null,
     updatedAt: serializeValue(doc.updatedAt) ?? null,
@@ -112,10 +85,7 @@ function serializeApplication(doc: Document) {
   };
 }
 
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
 
@@ -141,10 +111,7 @@ export async function GET(
   return NextResponse.json({ success: true, item: serializeApplication(item) });
 }
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
 

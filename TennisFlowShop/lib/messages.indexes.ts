@@ -60,20 +60,10 @@ export async function ensureMessageIndexes(db: Db) {
   );
 
   // 미열람 카운트: toUserId + readAt(null)
-  await ensureIndex(
-    db,
-    "messages",
-    { toUserId: 1, readAt: 1 },
-    { name: "idx_messages_to_readAt" },
-  );
+  await ensureIndex(db, "messages", { toUserId: 1, readAt: 1 }, { name: "idx_messages_to_readAt" });
 
   // 브로드캐스트 묶음 일괄 삭제/조회: broadcastId
-  await ensureIndex(
-    db,
-    "messages",
-    { broadcastId: 1 },
-    { name: "idx_messages_broadcastId" },
-  );
+  await ensureIndex(db, "messages", { broadcastId: 1 }, { name: "idx_messages_broadcastId" });
 
   // TTL: expiresAt이 지난 문서는 자동 삭제 (broadcast에서만 expiresAt을 넣는 것을 권장)
   await ensureIndex(

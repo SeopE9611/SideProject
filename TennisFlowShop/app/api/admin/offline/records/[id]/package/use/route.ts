@@ -7,8 +7,7 @@ import { consumePass } from "@/lib/passes.service";
 import { isTimeExpired } from "@/lib/pass-status";
 import type { ServicePass, ServicePassConsumption } from "@/lib/types/pass";
 
-const toObjectId = (value: string) =>
-  ObjectId.isValid(value) ? new ObjectId(value) : null;
+const toObjectId = (value: string) => (ObjectId.isValid(value) ? new ObjectId(value) : null);
 
 class PackageUseError extends Error {
   constructor(
@@ -44,16 +43,12 @@ function serializeRecord(doc: Record<string, any>) {
     ...doc,
     id: String(doc._id),
     _id: undefined,
-    offlineCustomerId: doc.offlineCustomerId
-      ? String(doc.offlineCustomerId)
-      : null,
+    offlineCustomerId: doc.offlineCustomerId ? String(doc.offlineCustomerId) : null,
     userId: doc.userId ? String(doc.userId) : null,
     packageUsage: {
       passId: doc.packageUsage?.passId ? String(doc.packageUsage.passId) : null,
       usedCount:
-        typeof doc.packageUsage?.usedCount === "number"
-          ? doc.packageUsage.usedCount
-          : null,
+        typeof doc.packageUsage?.usedCount === "number" ? doc.packageUsage.usedCount : null,
       consumptionId: doc.packageUsage?.consumptionId
         ? String(doc.packageUsage.consumptionId)
         : null,
@@ -71,13 +66,9 @@ function serializePass(pass: ServicePass) {
     usedCount: Number(pass.usedCount ?? 0),
     remainingCount: Number(pass.remainingCount ?? 0),
     expiresAt:
-      pass.expiresAt instanceof Date
-        ? pass.expiresAt.toISOString()
-        : (pass.expiresAt ?? null),
+      pass.expiresAt instanceof Date ? pass.expiresAt.toISOString() : (pass.expiresAt ?? null),
     createdAt:
-      pass.createdAt instanceof Date
-        ? pass.createdAt.toISOString()
-        : (pass.createdAt ?? null),
+      pass.createdAt instanceof Date ? pass.createdAt.toISOString() : (pass.createdAt ?? null),
   };
 }
 
@@ -92,38 +83,27 @@ function isDuplicateKeyError(err: unknown) {
 
 function mapConsumeError(err: any): PackageUseError {
   const code = err?.code || err?.message;
-  if (code === "PASS_NOT_FOUND")
-    return new PackageUseError(404, "pass not found", err);
+  if (code === "PASS_NOT_FOUND") return new PackageUseError(404, "pass not found", err);
   if (code === "ORDER_NOT_PAID" || code === "PASS_CONSUME_FAILED")
     return new PackageUseError(409, "package consumption failed", err);
   if (isDuplicateKeyError(err))
-    return new PackageUseError(
-      409,
-      "package already used for this record",
-      err,
-    );
+    return new PackageUseError(409, "package already used for this record", err);
   console.error("[offline package use] consumption failed", err);
   return new PackageUseError(500, "package consumption failed", err);
 }
 
-export async function POST(
-  req: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
   if (!csrf.ok) return csrf.res;
 
   const recordId = toObjectId((await ctx.params).id);
-  if (!recordId)
-    return NextResponse.json({ message: "invalid id" }, { status: 400 });
+  if (!recordId) return NextResponse.json({ message: "invalid id" }, { status: 400 });
 
   const body = await req.json().catch(() => null);
-  const passId =
-    typeof body?.passId === "string" ? toObjectId(body.passId) : null;
-  if (!passId)
-    return NextResponse.json({ message: "invalid passId" }, { status: 400 });
+  const passId = typeof body?.passId === "string" ? toObjectId(body.passId) : null;
+  if (!passId) return NextResponse.json({ message: "invalid passId" }, { status: 400 });
 
   const usedCount = body?.usedCount == null ? 1 : Number(body.usedCount);
   if (!Number.isInteger(usedCount) || usedCount !== 1) {
@@ -149,13 +129,9 @@ export async function POST(
       if (!record) throw new PackageUseError(404, "record not found");
 
       previousPackageUsage = {
-        passId: record.packageUsage?.passId
-          ? String(record.packageUsage.passId)
-          : null,
+        passId: record.packageUsage?.passId ? String(record.packageUsage.passId) : null,
         usedCount:
-          typeof record.packageUsage?.usedCount === "number"
-            ? record.packageUsage.usedCount
-            : null,
+          typeof record.packageUsage?.usedCount === "number" ? record.packageUsage.usedCount : null,
         consumptionId: record.packageUsage?.consumptionId
           ? String(record.packageUsage.consumptionId)
           : null,
@@ -165,25 +141,15 @@ export async function POST(
       }
 
       offlineCustomerId =
-        record.offlineCustomerId instanceof ObjectId
-          ? record.offlineCustomerId
-          : null;
-      if (!offlineCustomerId)
-        throw new PackageUseError(404, "offline customer not found");
+        record.offlineCustomerId instanceof ObjectId ? record.offlineCustomerId : null;
+      if (!offlineCustomerId) throw new PackageUseError(404, "offline customer not found");
 
       const customer = await guard.db
         .collection("offline_customers")
-        .findOne(
-          { _id: offlineCustomerId },
-          { projection: { linkedUserId: 1 }, session },
-        );
-      if (!customer)
-        throw new PackageUseError(404, "offline customer not found");
+        .findOne({ _id: offlineCustomerId }, { projection: { linkedUserId: 1 }, session });
+      if (!customer) throw new PackageUseError(404, "offline customer not found");
 
-      linkedUserId =
-        customer.linkedUserId instanceof ObjectId
-          ? customer.linkedUserId
-          : null;
+      linkedUserId = customer.linkedUserId instanceof ObjectId ? customer.linkedUserId : null;
       if (!linkedUserId) throw new PackageUseError(400, "linked user required");
 
       const user = await guard.db
@@ -198,11 +164,7 @@ export async function POST(
       if (!pass.userId || String(pass.userId) !== String(linkedUserId)) {
         throw new PackageUseError(403, "pass does not belong to linked user");
       }
-      if (
-        pass.status !== "active" ||
-        !pass.expiresAt ||
-        isTimeExpired(pass.expiresAt)
-      ) {
+      if (pass.status !== "active" || !pass.expiresAt || isTimeExpired(pass.expiresAt)) {
         throw new PackageUseError(409, "pass is not usable");
       }
       if (Number(pass.remainingCount ?? 0) < usedCount) {
@@ -254,43 +216,25 @@ export async function POST(
     });
   } catch (err) {
     if (err instanceof PackageUseError) {
-      return NextResponse.json(
-        { message: err.message },
-        { status: err.status },
-      );
+      return NextResponse.json({ message: err.message }, { status: err.status });
     }
     console.error("[offline package use] transaction failed", err);
-    return NextResponse.json(
-      { message: "package consumption failed" },
-      { status: 500 },
-    );
+    return NextResponse.json({ message: "package consumption failed" }, { status: 500 });
   } finally {
     await session.endSession();
   }
 
-  if (
-    !updatedRecord ||
-    !updatedPass ||
-    !consumption ||
-    !offlineCustomerId ||
-    !linkedUserId
-  ) {
-    console.error(
-      "[offline package use] transaction completed without response payload",
-      { recordId: String(recordId), passId: String(passId) },
-    );
-    return NextResponse.json(
-      { message: "package consumption failed" },
-      { status: 500 },
-    );
+  if (!updatedRecord || !updatedPass || !consumption || !offlineCustomerId || !linkedUserId) {
+    console.error("[offline package use] transaction completed without response payload", {
+      recordId: String(recordId),
+      passId: String(passId),
+    });
+    return NextResponse.json({ message: "package consumption failed" }, { status: 500 });
   }
 
   const finalRecord = updatedRecord as Record<string, any>;
   const finalPass = updatedPass as ServicePass;
-  const finalConsumption = consumption as Pick<
-    ServicePassConsumption,
-    "_id" | "count"
-  >;
+  const finalConsumption = consumption as Pick<ServicePassConsumption, "_id" | "count">;
   const finalOfflineCustomerId = offlineCustomerId as ObjectId;
   const finalLinkedUserId = linkedUserId as ObjectId;
   const nextPackageUsage = {

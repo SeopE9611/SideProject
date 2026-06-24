@@ -98,8 +98,7 @@ export async function POST(req: Request) {
         {
           success: false,
           code: "SESSION_EXPIRED",
-          error:
-            "결제 세션 유효시간이 만료되었습니다. 다시 결제를 시도해주세요.",
+          error: "결제 세션 유효시간이 만료되었습니다. 다시 결제를 시도해주세요.",
         },
         { status: 410 },
       );
@@ -159,9 +158,7 @@ export async function POST(req: Request) {
       method: confirmed.method,
       type: confirmed.type,
       totalAmount: Number(confirmed.totalAmount ?? amount),
-      approvedAt: confirmed.approvedAt
-        ? new Date(confirmed.approvedAt)
-        : undefined,
+      approvedAt: confirmed.approvedAt ? new Date(confirmed.approvedAt) : undefined,
       card: confirmed.card
         ? {
             issuerCode: confirmed.card.issuerCode,
@@ -190,8 +187,7 @@ export async function POST(req: Request) {
             paymentKey,
             failureStage: "create_order_after_confirm",
             failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_CONFIRM",
-            failureMessage:
-              "결제 승인 후 라켓 주문 데이터를 복원하지 못했습니다.",
+            failureMessage: "결제 승인 후 라켓 주문 데이터를 복원하지 못했습니다.",
             confirmedPaymentSummary,
             updatedAt: new Date(),
           },
@@ -249,8 +245,7 @@ export async function POST(req: Request) {
         {
           success: false,
           code: "ORDER_CREATION_FAILED_AFTER_PAYMENT_CONFIRM",
-          error:
-            "결제 승인 후 주문 처리에 실패했습니다. 주문/결제 상태를 확인해주세요.",
+          error: "결제 승인 후 주문 처리에 실패했습니다. 주문/결제 상태를 확인해주세요.",
         },
         { status: 500 },
       );
@@ -269,9 +264,7 @@ export async function POST(req: Request) {
             status: "paid",
             paymentKey: confirmed.paymentKey,
             total: amount,
-            approvedAt: confirmed.approvedAt
-              ? new Date(confirmed.approvedAt)
-              : new Date(),
+            approvedAt: confirmed.approvedAt ? new Date(confirmed.approvedAt) : new Date(),
             rawSummary: {
               orderId: confirmed.orderId,
               totalAmount: confirmed.totalAmount ?? amount,

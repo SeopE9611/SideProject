@@ -10,8 +10,7 @@ export function parseListQuery(req: NextRequest) {
   const limitRaw = Number(searchParams.get("limit") ?? "20");
 
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
-  const limit =
-    Number.isFinite(limitRaw) && limitRaw > 0 && limitRaw <= 50 ? limitRaw : 20;
+  const limit = Number.isFinite(limitRaw) && limitRaw > 0 && limitRaw <= 50 ? limitRaw : 20;
 
   return { page, limit };
 }

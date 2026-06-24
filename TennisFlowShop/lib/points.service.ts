@@ -13,9 +13,7 @@ import type {
 type MongoSessionOptions = { session?: ClientSession };
 
 function isDuplicateKeyError(e: any) {
-  return (
-    e?.code === 11000 || /E11000 duplicate key/i.test(String(e?.message ?? ""))
-  );
+  return e?.code === 11000 || /E11000 duplicate key/i.test(String(e?.message ?? ""));
 }
 
 type GrantParams = {
@@ -46,10 +44,7 @@ function asSafeInt(n: unknown): number {
   return Math.trunc(v);
 }
 
-export async function getPointsBalance(
-  db: Db,
-  userId: ObjectId,
-): Promise<number> {
+export async function getPointsBalance(db: Db, userId: ObjectId): Promise<number> {
   const users = db.collection("users");
   const u = await users.findOne(
     { _id: userId as any },
@@ -73,13 +68,8 @@ export async function getPointsSummary(
   const debtRaw = (u as any)?.pointsDebt;
 
   const balance =
-    typeof balanceRaw === "number" && Number.isFinite(balanceRaw)
-      ? Math.trunc(balanceRaw)
-      : 0;
-  const debt =
-    typeof debtRaw === "number" && Number.isFinite(debtRaw)
-      ? Math.trunc(debtRaw)
-      : 0;
+    typeof balanceRaw === "number" && Number.isFinite(balanceRaw) ? Math.trunc(balanceRaw) : 0;
+  const debt = typeof debtRaw === "number" && Number.isFinite(debtRaw) ? Math.trunc(debtRaw) : 0;
 
   const available = Math.max(0, balance - debt);
 
@@ -99,22 +89,14 @@ export async function getPointsState(
   const debtRaw = (u as any)?.pointsDebt;
 
   const balance =
-    typeof balRaw === "number" && Number.isFinite(balRaw)
-      ? Math.max(0, Math.trunc(balRaw))
-      : 0;
+    typeof balRaw === "number" && Number.isFinite(balRaw) ? Math.max(0, Math.trunc(balRaw)) : 0;
   const debt =
-    typeof debtRaw === "number" && Number.isFinite(debtRaw)
-      ? Math.max(0, Math.trunc(debtRaw))
-      : 0;
+    typeof debtRaw === "number" && Number.isFinite(debtRaw) ? Math.max(0, Math.trunc(debtRaw)) : 0;
 
   return { balance, debt };
 }
 
-export async function grantPoints(
-  db: Db,
-  params: GrantParams,
-  opts: MongoSessionOptions = {},
-) {
+export async function grantPoints(db: Db, params: GrantParams, opts: MongoSessionOptions = {}) {
   const now = new Date();
   const amount = asSafeInt(params.amount);
   if (amount <= 0)
@@ -193,11 +175,7 @@ export async function grantPoints(
   return { transactionId: tx._id.toString(), amount };
 }
 
-export async function deductPoints(
-  db: Db,
-  params: DeductParams,
-  opts: MongoSessionOptions = {},
-) {
+export async function deductPoints(db: Db, params: DeductParams, opts: MongoSessionOptions = {}) {
   const now = new Date();
   const amount = asSafeInt(params.amount);
   if (amount <= 0)
@@ -246,10 +224,7 @@ export async function deductPoints(
               $subtract: ["$pointsBalance", "$_deductFromBalance"],
             },
             pointsDebt: {
-              $add: [
-                "$pointsDebt",
-                { $subtract: [amount, "$_deductFromBalance"] },
-              ],
+              $add: ["$pointsDebt", { $subtract: [amount, "$_deductFromBalance"] }],
             },
             updatedAt: now,
           },

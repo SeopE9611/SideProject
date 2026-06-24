@@ -2,20 +2,9 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -65,8 +54,7 @@ const TITLE_MAX = 80;
 const CONTENT_MIN = 10;
 const CONTENT_MAX = 5000;
 const hasHtmlLike = (s: string) => /<[^>]+>/.test(s); // 최소 수준 태그 감지
-const hasScriptLike = (s: string) =>
-  /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
+const hasScriptLike = (s: string) => /<\s*script/i.test(s) || /javascript\s*:/i.test(s);
 
 type FieldKey = "category" | "product" | "title" | "content" | "images";
 type FieldErrors = Partial<Record<FieldKey, string>>;
@@ -131,15 +119,7 @@ export default function QnaWritePage() {
       selectedFiles.length > 0 ||
       isPrivate
     );
-  }, [
-    initialCategory,
-    category,
-    product?.id,
-    title,
-    content,
-    selectedFiles.length,
-    isPrivate,
-  ]);
+  }, [initialCategory, category, product?.id, title, content, selectedFiles.length, isPrivate]);
 
   useUnsavedChangesGuard(isDirty && !submitting);
   useBackNavigationGuard(isDirty && !submitting);
@@ -166,9 +146,10 @@ export default function QnaWritePage() {
 
   // 썸네일 index에서 Dialog 열기 (이미지 파일만 모아서)
   const openViewerFromIndex = (uiIndex: number) => {
-    const only = previews
-      .map((url, i) => ({ url, i }))
-      .filter((v) => !!v.url) as { url: string; i: number }[];
+    const only = previews.map((url, i) => ({ url, i })).filter((v) => !!v.url) as {
+      url: string;
+      i: number;
+    }[];
     if (only.length === 0) return;
 
     const start = only.findIndex((v) => v.i === uiIndex);
@@ -241,54 +222,43 @@ export default function QnaWritePage() {
   const ordersKey = me ? "/api/orders?limit=100" : null;
 
   // “내 구매상품” 목록 (로그인일 때만 호출)
-  const { data: myOrders, error: ordersError } = useSWR<OrdersListRes>(
-    ordersKey,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      shouldRetryOnError: false,
-    },
-  );
+  const { data: myOrders, error: ordersError } = useSWR<OrdersListRes>(ordersKey, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    shouldRetryOnError: false,
+  });
 
   // 주문 내 모든 상품을 평탄화 후 productId 기준으로 중복 제거
-  const myProducts: { id: string; name: string; image?: string | null }[] =
-    useMemo(() => {
-      const set = new Map<
-        string,
-        { id: string; name: string; image?: string | null }
-      >();
-      const orders = myOrders?.items ?? myOrders?.orders ?? [];
-      for (const o of orders) {
-        const lines = o.items ?? o.orderItems ?? [];
-        for (const it of lines) {
-          const pid = String(it.productId ?? it.product?._id ?? it._id ?? "");
-          if (!pid) continue;
-          const name = it.product?.name ?? it.name ?? it.title ?? "상품";
-          const image = it.product?.image ?? it.image ?? null;
-          if (!set.has(pid)) set.set(pid, { id: pid, name, image });
-        }
+  const myProducts: { id: string; name: string; image?: string | null }[] = useMemo(() => {
+    const set = new Map<string, { id: string; name: string; image?: string | null }>();
+    const orders = myOrders?.items ?? myOrders?.orders ?? [];
+    for (const o of orders) {
+      const lines = o.items ?? o.orderItems ?? [];
+      for (const it of lines) {
+        const pid = String(it.productId ?? it.product?._id ?? it._id ?? "");
+        if (!pid) continue;
+        const name = it.product?.name ?? it.name ?? it.title ?? "상품";
+        const image = it.product?.image ?? it.image ?? null;
+        if (!set.has(pid)) set.set(pid, { id: pid, name, image });
       }
-      return Array.from(set.values());
-    }, [myOrders]);
+    }
+    return Array.from(set.values());
+  }, [myOrders]);
 
   // 전체 상품 검색
   const [q, setQ] = useState("");
   const { data: searchData } = useSWR<ProductsListRes>(
-    q.trim()
-      ? `/api/products?q=${encodeURIComponent(q.trim())}&limit=20`
-      : null,
+    q.trim() ? `/api/products?q=${encodeURIComponent(q.trim())}&limit=20` : null,
     fetcher,
   );
-  const searchProducts: { id: string; name: string; image?: string | null }[] =
-    useMemo(() => {
-      const rows = searchData?.products ?? searchData?.items ?? [];
-      return rows.map((p: any) => ({
-        id: String(p._id ?? p.id),
-        name: p.name ?? p.title ?? "상품",
-        image: p.image ?? p.thumbnail ?? null,
-      }));
-    }, [searchData]);
+  const searchProducts: { id: string; name: string; image?: string | null }[] = useMemo(() => {
+    const rows = searchData?.products ?? searchData?.items ?? [];
+    return rows.map((p: any) => ({
+      id: String(p._id ?? p.id),
+      name: p.name ?? p.title ?? "상품",
+      image: p.image ?? p.thumbnail ?? null,
+    }));
+  }, [searchData]);
 
   const clearErrors = (keys?: FieldKey | FieldKey[]) => {
     if (!keys) {
@@ -357,14 +327,10 @@ export default function QnaWritePage() {
     if (!t) errs.title = "제목을 입력해주세요.";
     if (!c) errs.content = "내용을 입력해주세요.";
 
-    if (t && t.length < TITLE_MIN)
-      errs.title = `제목은 ${TITLE_MIN}자 이상 입력해주세요.`;
-    if (t && t.length > TITLE_MAX)
-      errs.title = `제목은 ${TITLE_MAX}자 이내로 입력해주세요.`;
-    if (c && c.length < CONTENT_MIN)
-      errs.content = `내용은 ${CONTENT_MIN}자 이상 입력해주세요.`;
-    if (c && c.length > CONTENT_MAX)
-      errs.content = `내용은 ${CONTENT_MAX}자 이내로 입력해주세요.`;
+    if (t && t.length < TITLE_MIN) errs.title = `제목은 ${TITLE_MIN}자 이상 입력해주세요.`;
+    if (t && t.length > TITLE_MAX) errs.title = `제목은 ${TITLE_MAX}자 이내로 입력해주세요.`;
+    if (c && c.length < CONTENT_MIN) errs.content = `내용은 ${CONTENT_MIN}자 이상 입력해주세요.`;
+    if (c && c.length > CONTENT_MAX) errs.content = `내용은 ${CONTENT_MAX}자 이내로 입력해주세요.`;
 
     // HTML/스크립트 차단
     if (t && (hasScriptLike(t) || hasHtmlLike(t))) {
@@ -380,8 +346,7 @@ export default function QnaWritePage() {
 
     // (방어) 이미지 첨부 재검증
     const MAX = 3;
-    if (selectedFiles.length > MAX)
-      errs.images = `최대 ${MAX}개까지만 업로드할 수 있어요.`;
+    if (selectedFiles.length > MAX) errs.images = `최대 ${MAX}개까지만 업로드할 수 있어요.`;
     if (selectedFiles.some((f) => f.size > 5 * 1024 * 1024))
       errs.images = "파일당 최대 5MB까지 업로드할 수 있어요.";
     if (selectedFiles.some((f) => !f.type.startsWith("image/")))
@@ -405,9 +370,7 @@ export default function QnaWritePage() {
         images: `최대 ${MAX}개까지만 업로드할 수 있어요.`,
       }));
       setFormError("첨부 이미지를 확인해 주세요.");
-      requestAnimationFrame(() =>
-        imagesWrapRef.current?.scrollIntoView(scrollIntoViewOpts),
-      );
+      requestAnimationFrame(() => imagesWrapRef.current?.scrollIntoView(scrollIntoViewOpts));
       return;
     }
 
@@ -418,9 +381,7 @@ export default function QnaWritePage() {
         images: "파일당 최대 5MB까지 업로드할 수 있어요.",
       }));
       setFormError("첨부 이미지를 확인해 주세요.");
-      requestAnimationFrame(() =>
-        imagesWrapRef.current?.scrollIntoView(scrollIntoViewOpts),
-      );
+      requestAnimationFrame(() => imagesWrapRef.current?.scrollIntoView(scrollIntoViewOpts));
       return;
     }
 
@@ -431,9 +392,7 @@ export default function QnaWritePage() {
         images: "이미지 파일만 업로드할 수 있어요.",
       }));
       setFormError("첨부 이미지를 확인해 주세요.");
-      requestAnimationFrame(() =>
-        imagesWrapRef.current?.scrollIntoView(scrollIntoViewOpts),
-      );
+      requestAnimationFrame(() => imagesWrapRef.current?.scrollIntoView(scrollIntoViewOpts));
       return;
     }
 
@@ -476,12 +435,10 @@ export default function QnaWritePage() {
       const uploadOne = async (file: File) => {
         const ext = file.name.split(".").pop() || "bin";
         const path = `${FOLDER}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-        const { error } = await supabase.storage
-          .from(BUCKET)
-          .upload(path, file, {
-            upsert: false,
-            contentType: file.type || undefined,
-          });
+        const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+          upsert: false,
+          contentType: file.type || undefined,
+        });
         if (error) throw error;
         const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
         return {
@@ -491,9 +448,7 @@ export default function QnaWritePage() {
         };
       };
       const attachments =
-        selectedFiles.length > 0
-          ? await Promise.all(selectedFiles.map(uploadOne))
-          : [];
+        selectedFiles.length > 0 ? await Promise.all(selectedFiles.map(uploadOne)) : [];
 
       //  조건부 스프레드로 '한 번에' payload 구성 + attachments 포함
       const payload = {
@@ -560,9 +515,7 @@ export default function QnaWritePage() {
                 <h1 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">
                   문의하기
                 </h1>
-                <p className="text-lg text-muted-foreground">
-                  궁금한 점을 자세히 작성해주세요
-                </p>
+                <p className="text-lg text-muted-foreground">궁금한 점을 자세히 작성해주세요</p>
               </div>
             </div>
           </div>
@@ -603,9 +556,7 @@ export default function QnaWritePage() {
                   </SelectContent>
                 </Select>
                 {fieldErrors.category && (
-                  <p className="text-sm text-destructive">
-                    {fieldErrors.category}
-                  </p>
+                  <p className="text-sm text-destructive">{fieldErrors.category}</p>
                 )}
 
                 {/* 상품 상세에서 진입한 프리필이 있으면 안내 뱃지 */}
@@ -613,18 +564,13 @@ export default function QnaWritePage() {
                   <div className="mt-2 text-sm text-muted-foreground flex items-center gap-2">
                     <Badge variant="secondary">프리필</Badge>
                     <span>
-                      선택된 상품:{" "}
-                      <strong>{preProductName || preProductId}</strong>
+                      선택된 상품: <strong>{preProductName || preProductId}</strong>
                     </span>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={() =>
-                        confirmGoIfDirty(() =>
-                          router.replace("/board/qna/write"),
-                        )
-                      }
+                      onClick={() => confirmGoIfDirty(() => router.replace("/board/qna/write"))}
                     >
                       제거
                     </Button>
@@ -635,13 +581,11 @@ export default function QnaWritePage() {
               {category === "product" && !preProductId && (
                 <div ref={productWrapRef} className="space-y-4">
                   <div className="text-sm text-muted-foreground">
-                    <span className="font-medium">상품 선택</span> — 본인이
-                    구매했던 상품 또는 전체 상품에서 선택하세요.
+                    <span className="font-medium">상품 선택</span> — 본인이 구매했던 상품 또는 전체
+                    상품에서 선택하세요.
                   </div>
                   {fieldErrors.product && (
-                    <p className="text-sm text-destructive">
-                      {fieldErrors.product}
-                    </p>
+                    <p className="text-sm text-destructive">{fieldErrors.product}</p>
                   )}
 
                   {/* 탭처럼 보이는 간단한 토글 */}
@@ -651,21 +595,17 @@ export default function QnaWritePage() {
                       <div className="font-semibold mb-3">내 구매상품</div>
                       {!me && (
                         <div className="mb-2 text-xs text-muted-foreground">
-                          로그인하면 "내 구매상품" 목록을 불러와 빠르게 선택할
-                          수 있어요.
+                          로그인하면 "내 구매상품" 목록을 불러와 빠르게 선택할 수 있어요.
                         </div>
                       )}
                       {me && ordersError && (
                         <div className="mb-2 text-sm text-destructive">
-                          구매 상품 목록을 불러오지 못했습니다. 네트워크 상태를
-                          확인해주세요.
+                          구매 상품 목록을 불러오지 못했습니다. 네트워크 상태를 확인해주세요.
                         </div>
                       )}
                       <div className="space-y-2 max-h-60 overflow-auto">
                         {me && myProducts.length === 0 && (
-                          <div className="text-sm text-muted-foreground">
-                            구매 이력이 없습니다.
-                          </div>
+                          <div className="text-sm text-muted-foreground">구매 이력이 없습니다.</div>
                         )}
                         {myProducts.map((p) => (
                           <button
@@ -678,9 +618,7 @@ export default function QnaWritePage() {
                             className={`w-full text-left px-3 py-2 rounded hover:bg-muted dark:hover:bg-card ${product?.id === p.id ? "ring-2 ring-ring" : ""}`}
                           >
                             <div className="font-medium">{p.name}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {p.id}
-                            </div>
+                            <div className="text-xs text-muted-foreground">{p.id}</div>
                           </button>
                         ))}
                       </div>
@@ -700,14 +638,10 @@ export default function QnaWritePage() {
                       </div>
                       <div className="space-y-2 max-h-60 overflow-auto">
                         {!q.trim() && (
-                          <div className="text-sm text-muted-foreground">
-                            검색어를 입력하세요.
-                          </div>
+                          <div className="text-sm text-muted-foreground">검색어를 입력하세요.</div>
                         )}
                         {q.trim() && searchProducts.length === 0 && (
-                          <div className="text-sm text-muted-foreground">
-                            검색 결과가 없습니다.
-                          </div>
+                          <div className="text-sm text-muted-foreground">검색 결과가 없습니다.</div>
                         )}
                         {searchProducts.map((p) => (
                           <button
@@ -720,9 +654,7 @@ export default function QnaWritePage() {
                             className={`w-full text-left px-3 py-2 rounded hover:bg-muted dark:hover:bg-card ${product?.id === p.id ? "ring-2 ring-ring" : ""}`}
                           >
                             <div className="font-medium">{p.name}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {p.id}
-                            </div>
+                            <div className="text-xs text-muted-foreground">{p.id}</div>
                           </button>
                         ))}
                       </div>
@@ -765,9 +697,7 @@ export default function QnaWritePage() {
                   className="h-12 bg-card dark:bg-muted text-base"
                 />
                 {fieldErrors.title && (
-                  <p className="text-sm text-destructive">
-                    {fieldErrors.title}
-                  </p>
+                  <p className="text-sm text-destructive">{fieldErrors.title}</p>
                 )}
               </div>
 
@@ -787,9 +717,7 @@ export default function QnaWritePage() {
                   className="min-h-[200px] bg-card dark:bg-muted text-base resize-none"
                 />
                 {fieldErrors.content && (
-                  <p className="text-sm text-destructive">
-                    {fieldErrors.content}
-                  </p>
+                  <p className="text-sm text-destructive">{fieldErrors.content}</p>
                 )}
                 <p className="text-sm text-muted-foreground">
                   상세한 정보를 제공해주시면 더 정확한 답변을 드릴 수 있습니다.
@@ -810,9 +738,7 @@ export default function QnaWritePage() {
                       fileInputRef.current?.click();
                     }}
                     onKeyDown={(e) =>
-                      e.key === "Enter" || e.key === " "
-                        ? fileInputRef.current?.click()
-                        : null
+                      e.key === "Enter" || e.key === " " ? fileInputRef.current?.click() : null
                     }
                   >
                     <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
@@ -842,9 +768,7 @@ export default function QnaWritePage() {
                     </Button>
                   </div>
                   {fieldErrors.images && (
-                    <p className="text-sm text-destructive">
-                      {fieldErrors.images}
-                    </p>
+                    <p className="text-sm text-destructive">{fieldErrors.images}</p>
                   )}
 
                   {/* 미리보기 썸네일 */}
@@ -933,9 +857,7 @@ export default function QnaWritePage() {
                 <Checkbox
                   id="private"
                   checked={isPrivate}
-                  onCheckedChange={(checked) =>
-                    setIsPrivate(checked as boolean)
-                  }
+                  onCheckedChange={(checked) => setIsPrivate(checked as boolean)}
                   className="mt-1"
                 />
                 <div className="space-y-1">
@@ -953,12 +875,7 @@ export default function QnaWritePage() {
             </CardContent>
 
             <CardFooter className="flex justify-between p-4 md:p-8 border-t bg-muted/50 dark:bg-muted/20">
-              <Button
-                variant="outline"
-                asChild
-                size="lg"
-                className="px-8 bg-transparent"
-              >
+              <Button variant="outline" asChild size="lg" className="px-8 bg-transparent">
                 <Link href="/board/qna" onClick={guardLinkLeave}>
                   취소
                 </Link>

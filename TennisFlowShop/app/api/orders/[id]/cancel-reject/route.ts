@@ -26,10 +26,7 @@ function safeVerifyAccessToken(token?: string | null) {
   }
 }
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
@@ -72,8 +69,7 @@ export async function POST(
       .map((s) => s.trim())
       .filter(Boolean);
 
-    const isAdmin =
-      user.role === "admin" || (user.email && adminList.includes(user.email));
+    const isAdmin = user.role === "admin" || (user.email && adminList.includes(user.email));
 
     if (!isAdmin) {
       return new NextResponse("관리자만 취소 요청을 거절할 수 있습니다.", {
@@ -90,8 +86,7 @@ export async function POST(
     }
 
     const body = await req.json().catch(() => ({}));
-    const inputReasonText =
-      typeof body.adminMemo === "string" ? body.adminMemo.trim() : undefined;
+    const inputReasonText = typeof body.adminMemo === "string" ? body.adminMemo.trim() : undefined;
 
     const now = new Date();
 

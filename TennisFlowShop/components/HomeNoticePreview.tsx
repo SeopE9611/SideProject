@@ -35,7 +35,9 @@ export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewPro
           <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-secondary text-foreground">
             <Bell className="h-4 w-4" />
           </div>
-          <h2 className="text-ui-card-title font-semibold text-foreground bp-sm:text-ui-card-title-lg">공지사항</h2>
+          <h2 className="text-ui-card-title font-semibold text-foreground bp-sm:text-ui-card-title-lg">
+            공지사항
+          </h2>
         </div>
         <Link
           className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-ui-label font-medium text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"

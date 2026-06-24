@@ -94,8 +94,7 @@ type StringingSummary = {
 
 function getApplicationLines(stringDetails: any): any[] {
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
-  if (Array.isArray(stringDetails?.racketLines))
-    return stringDetails.racketLines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
   return [];
 }
 
@@ -193,12 +192,9 @@ function safeVerifyOrderAccessToken(token?: string) {
 function toErrorLog(error: unknown) {
   const err = error as { name?: unknown; message?: unknown; code?: unknown };
   const name = typeof err?.name === "string" ? err.name : "UnknownError";
-  const message =
-    typeof err?.message === "string" ? err.message : "Unknown message";
+  const message = typeof err?.message === "string" ? err.message : "Unknown message";
   const code =
-    typeof err?.code === "string" || typeof err?.code === "number"
-      ? String(err.code)
-      : undefined;
+    typeof err?.code === "string" || typeof err?.code === "number" ? String(err.code) : undefined;
   const isMongoTimeout =
     name === "MongoServerSelectionError" ||
     message.includes("Server selection timed out") ||
@@ -287,8 +283,7 @@ export default async function CheckoutSuccessPage({
       orderId,
       collection: "orders",
       action: "findOneById",
-      run: () =>
-        db.collection("orders").findOne({ _id: new ObjectId(orderId) }),
+      run: () => db.collection("orders").findOne({ _id: new ObjectId(orderId) }),
     });
     console.info("[checkout][success][fetch_order_success]", {
       orderId,
@@ -298,9 +293,7 @@ export default async function CheckoutSuccessPage({
     if (!order) return notFound();
 
     const cookieStore = await cookies();
-    const accessPayload = safeVerifyAccessToken(
-      cookieStore.get("accessToken")?.value,
-    );
+    const accessPayload = safeVerifyAccessToken(cookieStore.get("accessToken")?.value);
     const orderAccessPayload = safeVerifyOrderAccessToken(
       cookieStore.get("orderAccessToken")?.value,
     );
@@ -326,17 +319,11 @@ export default async function CheckoutSuccessPage({
 
     const withStringService = order.shippingInfo?.withStringService === true;
     const orderStringingApplicationId =
-      typeof order.stringingApplicationId === "string" &&
-      order.stringingApplicationId.trim()
+      typeof order.stringingApplicationId === "string" && order.stringingApplicationId.trim()
         ? order.stringingApplicationId.trim()
         : null;
 
-    const submittedStatusExclusions = [
-      "draft",
-      "canceled",
-      "cancelled",
-      "취소",
-    ];
+    const submittedStatusExclusions = ["draft", "canceled", "cancelled", "취소"];
     const latestSubmittedByOrderApp = withStringService
       ? await runMongoQueryWithDiagnosis({
           route,
@@ -348,10 +335,7 @@ export default async function CheckoutSuccessPage({
               {
                 $and: [
                   {
-                    $or: [
-                      { orderId: order._id },
-                      { orderId: order._id.toString() },
-                    ],
+                    $or: [{ orderId: order._id }, { orderId: order._id.toString() }],
                   },
                   { status: { $nin: submittedStatusExclusions } },
                 ],
@@ -382,22 +366,15 @@ export default async function CheckoutSuccessPage({
         : null;
 
     const representativeStringingApplicationId =
-      (orderLinkedSubmittedApp?._id
-        ? String(orderLinkedSubmittedApp._id)
-        : null) ??
-      (latestSubmittedByOrderApp?._id
-        ? String(latestSubmittedByOrderApp._id)
-        : null);
-    const hasSubmittedApplication = Boolean(
-      representativeStringingApplicationId,
-    );
+      (orderLinkedSubmittedApp?._id ? String(orderLinkedSubmittedApp._id) : null) ??
+      (latestSubmittedByOrderApp?._id ? String(latestSubmittedByOrderApp._id) : null);
+    const hasSubmittedApplication = Boolean(representativeStringingApplicationId);
 
-    const { isLoggedIn, orderDetailHref, stringingApplicationHref } =
-      buildCheckoutSuccessLinks({
-        accessSub: accessPayload?.sub,
-        orderId: order._id.toString(),
-        stringingApplicationId: representativeStringingApplicationId,
-      });
+    const { isLoggedIn, orderDetailHref, stringingApplicationHref } = buildCheckoutSuccessLinks({
+      accessSub: accessPayload?.sub,
+      orderId: order._id.toString(),
+      stringingApplicationId: representativeStringingApplicationId,
+    });
     const isGuest = !isLoggedIn && (!order.userId || order.guest === true);
     const shouldShowApplyCta = withStringService && !hasSubmittedApplication;
     const isVisitPickup = isVisitPickupOrder(order.shippingInfo);
@@ -411,9 +388,7 @@ export default async function CheckoutSuccessPage({
       : isVisitPickup
         ? "매장 방문 전 주문번호와 수령 안내를 확인해주세요."
         : "배송이 시작되면 마이페이지에서 배송 상태를 확인할 수 있습니다.";
-    const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(
-      order.shippingInfo,
-    );
+    const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(order.shippingInfo);
 
     let stringingSummary: StringingSummary | null = null;
     if (
@@ -447,11 +422,7 @@ export default async function CheckoutSuccessPage({
       if (app) {
         const lines = getApplicationLines((app as any).stringDetails);
         const stringNames = Array.from(
-          new Set(
-            lines
-              .map((line: any) => String(line?.stringName ?? "").trim())
-              .filter(Boolean),
-          ),
+          new Set(lines.map((line: any) => String(line?.stringName ?? "").trim()).filter(Boolean)),
         );
         const tensionSet = Array.from(
           new Set(
@@ -460,19 +431,13 @@ export default async function CheckoutSuccessPage({
                 const main = String(line?.tensionMain ?? "").trim();
                 const cross = String(line?.tensionCross ?? "").trim();
                 if (!main && !cross) return "";
-                return cross && cross !== main
-                  ? `${main}/${cross}`
-                  : main || cross;
+                return cross && cross !== main ? `${main}/${cross}` : main || cross;
               })
               .filter(Boolean),
           ),
         );
-        const preferredDate = String(
-          (app as any)?.stringDetails?.preferredDate ?? "",
-        ).trim();
-        const preferredTime = String(
-          (app as any)?.stringDetails?.preferredTime ?? "",
-        ).trim();
+        const preferredDate = String((app as any)?.stringDetails?.preferredDate ?? "").trim();
+        const preferredTime = String((app as any)?.stringDetails?.preferredTime ?? "").trim();
         const packagePassId = (app as any)?.packagePassId
           ? String((app as any).packagePassId)
           : null;
@@ -502,9 +467,7 @@ export default async function CheckoutSuccessPage({
           Number((app as any)?.serviceFee),
           Number((app as any)?.totalPrice),
         ];
-        const serviceFeeAfterRaw = serviceFeeAfterCandidates.find((v) =>
-          Number.isFinite(v),
-        );
+        const serviceFeeAfterRaw = serviceFeeAfterCandidates.find((v) => Number.isFinite(v));
 
         stringingSummary = {
           lineCount: lines.length,
@@ -512,12 +475,8 @@ export default async function CheckoutSuccessPage({
           tensionSummary: tensionSet.length ? tensionSet.join(", ") : null,
           receptionLabel: getReceptionLabel((app as any).collectionMethod),
           reservationLabel:
-            preferredDate && preferredTime
-              ? `${preferredDate} ${preferredTime}`
-              : null,
-          serviceFeeBefore: Number.isFinite(serviceFeeBeforeRaw)
-            ? serviceFeeBeforeRaw
-            : null,
+            preferredDate && preferredTime ? `${preferredDate} ${preferredTime}` : null,
+          serviceFeeBefore: Number.isFinite(serviceFeeBeforeRaw) ? serviceFeeBeforeRaw : null,
           serviceFeeAfter: Number.isFinite(serviceFeeAfterRaw)
             ? (serviceFeeAfterRaw as number)
             : null,
@@ -530,16 +489,13 @@ export default async function CheckoutSuccessPage({
                   ? lines.length
                   : 1,
             passId: packagePassId,
-            passTitle:
-              String((passDoc as any)?.meta?.planTitle ?? "").trim() || null,
+            passTitle: String((passDoc as any)?.meta?.planTitle ?? "").trim() || null,
             packageSize:
               typeof (passDoc as any)?.packageSize === "number"
                 ? (passDoc as any).packageSize
                 : null,
             usedCount:
-              typeof (passDoc as any)?.usedCount === "number"
-                ? (passDoc as any).usedCount
-                : null,
+              typeof (passDoc as any)?.usedCount === "number" ? (passDoc as any).usedCount : null,
             remainingCount:
               typeof (passDoc as any)?.remainingCount === "number"
                 ? (passDoc as any).remainingCount
@@ -563,86 +519,54 @@ export default async function CheckoutSuccessPage({
     // 안전한 수량 표시 함수
     const formatQuantity = (quantity: NumericLike): number => {
       const numQuantity = Number(quantity);
-      return isNaN(numQuantity) ||
-        numQuantity === null ||
-        numQuantity === undefined
+      return isNaN(numQuantity) || numQuantity === null || numQuantity === undefined
         ? 1
         : numQuantity;
     };
 
-    const populatedItems: PopulatedItem[] = (order.items || []).map(
-      (it: OrderItemLike) => {
-        const quantity = formatQuantity(it?.quantity);
-        const price = Number(it?.price);
+    const populatedItems: PopulatedItem[] = (order.items || []).map((it: OrderItemLike) => {
+      const quantity = formatQuantity(it?.quantity);
+      const price = Number(it?.price);
 
-        return {
-          name: it?.name ?? "상품명 없음",
-          price: Number.isFinite(price) ? price : 0,
-          quantity,
-          selectedGauge:
-            typeof it?.selectedGauge === "string"
-              ? it.selectedGauge
-              : undefined,
-          selectedColor:
-            typeof it?.selectedColor === "string"
-              ? it.selectedColor
-              : undefined,
-          selectedColorLabel:
-            typeof it?.selectedColorLabel === "string"
-              ? it.selectedColorLabel
-              : undefined,
-          selectedColorHex:
-            typeof it?.selectedColorHex === "string"
-              ? it.selectedColorHex
-              : undefined,
-        };
-      },
-    );
+      return {
+        name: it?.name ?? "상품명 없음",
+        price: Number.isFinite(price) ? price : 0,
+        quantity,
+        selectedGauge: typeof it?.selectedGauge === "string" ? it.selectedGauge : undefined,
+        selectedColor: typeof it?.selectedColor === "string" ? it.selectedColor : undefined,
+        selectedColorLabel:
+          typeof it?.selectedColorLabel === "string" ? it.selectedColorLabel : undefined,
+        selectedColorHex:
+          typeof it?.selectedColorHex === "string" ? it.selectedColorHex : undefined,
+      };
+    });
 
     // 포인트/적용 전 금액 안전 추출(필드가 없을 수도 있으니 fallback)
     const originalTotal =
-      order.originalTotalPrice ??
-      order.paymentInfo?.originalTotal ??
-      order.totalPrice ??
-      0;
+      order.originalTotalPrice ?? order.paymentInfo?.originalTotal ?? order.totalPrice ?? 0;
     const pointsUsed = order.pointsUsed ?? order.paymentInfo?.pointsUsed ?? 0;
     const totalPrice = Number(order.totalPrice ?? 0);
     const normalizedTotalPrice = Number.isFinite(totalPrice) ? totalPrice : 0;
     const originalTotalNumber = Number(originalTotal);
-    const normalizedOriginalTotal = Number.isFinite(originalTotalNumber)
-      ? originalTotalNumber
-      : 0;
+    const normalizedOriginalTotal = Number.isFinite(originalTotalNumber) ? originalTotalNumber : 0;
     const pointsUsedNumber = Number(pointsUsed);
-    const normalizedPointsUsed = Number.isFinite(pointsUsedNumber)
-      ? pointsUsedNumber
-      : 0;
-    const serviceFeeRaw = Number(
-      order.paymentInfo?.serviceFee ?? order.serviceFee ?? 0,
-    );
-    const normalizedServiceFee = Number.isFinite(serviceFeeRaw)
-      ? serviceFeeRaw
-      : 0;
-    const shippingFeeRaw = Number(
-      order.paymentInfo?.shippingFee ?? order.shippingFee ?? 0,
-    );
-    const normalizedShippingFee = Number.isFinite(shippingFeeRaw)
-      ? shippingFeeRaw
-      : 0;
+    const normalizedPointsUsed = Number.isFinite(pointsUsedNumber) ? pointsUsedNumber : 0;
+    const serviceFeeRaw = Number(order.paymentInfo?.serviceFee ?? order.serviceFee ?? 0);
+    const normalizedServiceFee = Number.isFinite(serviceFeeRaw) ? serviceFeeRaw : 0;
+    const shippingFeeRaw = Number(order.paymentInfo?.shippingFee ?? order.shippingFee ?? 0);
+    const normalizedShippingFee = Number.isFinite(shippingFeeRaw) ? shippingFeeRaw : 0;
     const productAmount = Math.max(
       0,
       normalizedOriginalTotal - normalizedServiceFee - normalizedShippingFee,
     );
     // 0원 결제 시 입금 안내 오해 방지
     const isZeroPayment =
-      normalizedTotalPrice <= 0 ||
-      normalizedOriginalTotal - normalizedPointsUsed <= 0;
+      normalizedTotalPrice <= 0 || normalizedOriginalTotal - normalizedPointsUsed <= 0;
     const paymentProvider = String(order.paymentInfo?.provider ?? "")
       .trim()
       .toLowerCase();
     const paymentMethodRaw = String(order.paymentInfo?.method ?? "").trim();
-    const easyPayProviderRaw = String(
-      order.paymentInfo?.rawSummary?.easyPay?.provider ?? "",
-    )
+    const easyPayProviderRaw = String(order.paymentInfo?.rawSummary?.easyPay?.provider ?? "")
       .trim()
       .toUpperCase();
     const easyPayProviderLabel = easyPayProviderRaw
@@ -714,9 +638,7 @@ export default async function CheckoutSuccessPage({
                     </h3>
                     <div className="space-y-3 rounded-lg border border-border bg-background p-4">
                       <div>
-                        <span className="text-sm text-muted-foreground">
-                          주문 번호:
-                        </span>{" "}
+                        <span className="text-sm text-muted-foreground">주문 번호:</span>{" "}
                         <span
                           data-cy="checkout-order-id"
                           className="break-all font-mono font-semibold text-foreground"
@@ -743,18 +665,13 @@ export default async function CheckoutSuccessPage({
                             : "현재 주문에 교체서비스가 포함되어 있습니다."}
                         </p>
                       )}
-                      {withStringService &&
-                      hasSubmittedApplication &&
-                      stringingApplicationHref ? (
+                      {withStringService && hasSubmittedApplication && stringingApplicationHref ? (
                         <Button
                           variant="outline"
                           className="w-full sm:w-auto bg-transparent"
                           asChild
                         >
-                          <Link
-                            href={stringingApplicationHref}
-                            className="flex items-center gap-2"
-                          >
+                          <Link href={stringingApplicationHref} className="flex items-center gap-2">
                             신청 내역 보기
                             <ArrowRight className="h-4 w-4" />
                           </Link>
@@ -764,28 +681,19 @@ export default async function CheckoutSuccessPage({
                   </div>
 
                   <div className="mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4 md:p-5">
-                    <h3 className="text-base font-bold text-foreground">
-                      다음 행동 안내
-                    </h3>
+                    <h3 className="text-base font-bold text-foreground">다음 행동 안내</h3>
                     <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted-foreground">
-                      <li>
-                        • {nextActionStatusLabel}은 마이페이지에서 확인할 수
-                        있습니다.
-                      </li>
+                      <li>• {nextActionStatusLabel}은 마이페이지에서 확인할 수 있습니다.</li>
                       {withStringService && (
                         <li>
-                          • 교체서비스 신청도 함께 접수되었습니다. 수령/방문
-                          안내에 따라 라켓을 준비해주세요.
+                          • 교체서비스 신청도 함께 접수되었습니다. 수령/방문 안내에 따라 라켓을
+                          준비해주세요.
                         </li>
                       )}
                       <li>• {nextActionGuidance}</li>
                     </ul>
                     <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                      <Button
-                        asChild
-                        className="min-h-11 flex-1"
-                        wrap="responsive"
-                      >
+                      <Button asChild className="min-h-11 flex-1" wrap="responsive">
                         <Link href="/mypage">마이페이지에서 확인하기</Link>
                       </Button>
                       <Button
@@ -806,43 +714,33 @@ export default async function CheckoutSuccessPage({
                       <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-4">
                         <Clock className="h-5 w-5 text-primary" />
                         <div>
-                          <p className="text-sm text-muted-foreground">
-                            주문일자
-                          </p>
+                          <p className="text-sm text-muted-foreground">주문일자</p>
                           <p className="font-semibold text-foreground">
-                            {new Date(order.createdAt).toLocaleDateString(
-                              "ko-KR",
-                              {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                                weekday: "short",
-                              },
-                            )}
+                            {new Date(order.createdAt).toLocaleDateString("ko-KR", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              weekday: "short",
+                            })}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-4">
                         <CreditCard className="h-5 w-5 text-primary" />
                         <div>
-                          <p className="text-sm text-muted-foreground">
-                            결제 방법
-                          </p>
+                          <p className="text-sm text-muted-foreground">결제 방법</p>
                           {isZeroPayment ? (
                             <>
                               <p className="font-semibold text-foreground">
                                 결제 완료 (결제 금액 0원)
                               </p>
                               <p className="text-sm text-muted-foreground">
-                                포인트 전액 사용 등으로 추가 입금이 필요하지
-                                않습니다.
+                                포인트 전액 사용 등으로 추가 입금이 필요하지 않습니다.
                               </p>
                             </>
                           ) : (
                             <>
-                              <p className="font-semibold text-foreground">
-                                {paymentMethodLabel}
-                              </p>
+                              <p className="font-semibold text-foreground">{paymentMethodLabel}</p>
                               {isTossPayment && (
                                 <p className="text-sm text-muted-foreground">
                                   결제 제공사: Toss Payments
@@ -863,52 +761,37 @@ export default async function CheckoutSuccessPage({
                       <div className="flex items-center gap-2 mb-4">
                         <CreditCard className="h-5 w-5 text-primary" />
                         <h3 className="font-bold text-foreground">
-                          {isTossPayment || isNicePayment
-                            ? "결제 완료 정보"
-                            : "입금 계좌 정보"}
+                          {isTossPayment || isNicePayment ? "결제 완료 정보" : "입금 계좌 정보"}
                         </h3>
                       </div>
                       {isZeroPayment ? (
                         <div className="space-y-2 rounded-lg border border-border bg-card p-4">
-                          <p className="font-semibold text-foreground">
-                            추가 입금 불필요
-                          </p>
+                          <p className="font-semibold text-foreground">추가 입금 불필요</p>
                           <p className="text-sm text-muted-foreground">
-                            결제 금액이 0원으로 확인되어 입금 안내가
-                            생략되었습니다.
+                            결제 금액이 0원으로 확인되어 입금 안내가 생략되었습니다.
                           </p>
                         </div>
                       ) : isTossPayment ? (
                         <div className="space-y-2 rounded-lg border border-border bg-card p-4 text-sm">
                           <p>
-                            <span className="text-muted-foreground">
-                              결제 상태:
-                            </span>{" "}
+                            <span className="text-muted-foreground">결제 상태:</span>{" "}
                             <span className="font-semibold text-foreground">
                               {order.paymentStatus || "결제완료"}
                             </span>
                           </p>
                           <p>
-                            <span className="text-muted-foreground">
-                              결제 방식:
-                            </span>{" "}
+                            <span className="text-muted-foreground">결제 방식:</span>{" "}
                             <span className="font-semibold text-foreground">
                               {paymentMethodLabel}
                             </span>
                           </p>
                           <p>
-                            <span className="text-muted-foreground">
-                              결제 제공사:
-                            </span>{" "}
-                            <span className="font-semibold text-foreground">
-                              Toss Payments
-                            </span>
+                            <span className="text-muted-foreground">결제 제공사:</span>{" "}
+                            <span className="font-semibold text-foreground">Toss Payments</span>
                           </p>
                           {easyPayProviderLabel && (
                             <p>
-                              <span className="text-muted-foreground">
-                                간편결제:
-                              </span>{" "}
+                              <span className="text-muted-foreground">간편결제:</span>{" "}
                               <span className="font-semibold text-foreground">
                                 {easyPayProviderLabel}
                               </span>
@@ -921,34 +804,24 @@ export default async function CheckoutSuccessPage({
                       ) : isNicePayment ? (
                         <div className="space-y-2 rounded-lg border border-border bg-card p-4 text-sm">
                           <p>
-                            <span className="text-muted-foreground">
-                              결제 상태:
-                            </span>{" "}
+                            <span className="text-muted-foreground">결제 상태:</span>{" "}
                             <span className="font-semibold text-foreground">
                               {order.paymentStatus || "결제완료"}
                             </span>
                           </p>
                           <p>
-                            <span className="text-muted-foreground">
-                              결제 방식:
-                            </span>{" "}
+                            <span className="text-muted-foreground">결제 방식:</span>{" "}
                             <span className="font-semibold text-foreground">
                               {paymentMethodLabel}
                             </span>
                           </p>
                           <p>
-                            <span className="text-muted-foreground">
-                              결제 수단:
-                            </span>{" "}
-                            <span className="font-semibold text-foreground">
-                              카드/간편결제
-                            </span>
+                            <span className="text-muted-foreground">결제 수단:</span>{" "}
+                            <span className="font-semibold text-foreground">카드/간편결제</span>
                           </p>
                           {easyPayProviderLabel && (
                             <p>
-                              <span className="text-muted-foreground">
-                                간편결제:
-                              </span>{" "}
+                              <span className="text-muted-foreground">간편결제:</span>{" "}
                               <span className="font-semibold text-foreground">
                                 {easyPayProviderLabel}
                               </span>
@@ -958,8 +831,7 @@ export default async function CheckoutSuccessPage({
                             결제가 정상 승인되어 주문이 완료되었습니다.
                           </p>
                         </div>
-                      ) : order.paymentInfo?.bank &&
-                        bankLabelMap[order.paymentInfo.bank] ? (
+                      ) : order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (
                         <>
                           <div className="space-y-2 rounded-lg border border-border bg-card p-4">
                             <div className="font-semibold text-foreground">
@@ -969,24 +841,18 @@ export default async function CheckoutSuccessPage({
                               {bankLabelMap[order.paymentInfo.bank].account}
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              예금주:{" "}
-                              {bankLabelMap[order.paymentInfo.bank].holder}
+                              예금주: {bankLabelMap[order.paymentInfo.bank].holder}
                             </div>
                           </div>
                           <div className="mt-4 rounded-lg border border-border bg-card p-3">
                             <p className="text-sm font-semibold text-primary">
-                              ⏰ 입금 기한:{" "}
-                              {new Date(order.createdAt).toLocaleDateString(
-                                "ko-KR",
-                              )}{" "}
+                              ⏰ 입금 기한: {new Date(order.createdAt).toLocaleDateString("ko-KR")}{" "}
                               23:59까지
                             </p>
                           </div>
                         </>
                       ) : (
-                        <p className="text-muted-foreground">
-                          선택된 은행 없음
-                        </p>
+                        <p className="text-muted-foreground">선택된 은행 없음</p>
                       )}
                     </div>
                   </div>
@@ -999,65 +865,53 @@ export default async function CheckoutSuccessPage({
                       <Package className="h-5 w-5 text-primary" /> 주문 상품
                     </h3>
                     <div className="space-y-3">
-                      {populatedItems.map(
-                        (item: PopulatedItem, index: number) => {
-                          const itemPrice = formatPrice(item.price);
-                          const itemQuantity = formatQuantity(item.quantity);
-                          const totalItemPrice = formatPrice(
-                            item.price * itemQuantity,
-                          );
+                      {populatedItems.map((item: PopulatedItem, index: number) => {
+                        const itemPrice = formatPrice(item.price);
+                        const itemQuantity = formatQuantity(item.quantity);
+                        const totalItemPrice = formatPrice(item.price * itemQuantity);
 
-                          return (
-                            <div
-                              key={index}
-                              className="flex flex-col gap-3 rounded-lg border border-border bg-background p-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between"
-                            >
-                              <div className="min-w-0 flex-1">
-                                <p className="break-keep break-words font-semibold leading-relaxed text-foreground">
-                                  {item.name}
+                        return (
+                          <div
+                            key={index}
+                            className="flex flex-col gap-3 rounded-lg border border-border bg-background p-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="break-keep break-words font-semibold leading-relaxed text-foreground">
+                                {item.name}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                수량: {itemQuantity}개
+                              </p>
+                              {item.selectedGauge && (
+                                <p className="text-xs text-muted-foreground">
+                                  선택 옵션: 게이지 {formatGaugeLabel(item.selectedGauge)}
                                 </p>
-                                <p className="text-sm text-muted-foreground">
-                                  수량: {itemQuantity}개
+                              )}
+                              {(item.selectedColorLabel || item.selectedColor) && (
+                                <p className="flex min-w-0 flex-wrap items-center gap-2 text-xs leading-relaxed text-muted-foreground">
+                                  <span>선택 옵션: 색상</span>
+                                  {item.selectedColorHex && (
+                                    <span
+                                      className="h-3 w-3 rounded-full border border-border"
+                                      style={{
+                                        backgroundColor: item.selectedColorHex,
+                                      }}
+                                      aria-hidden="true"
+                                    />
+                                  )}
+                                  <span className="min-w-0 break-keep break-words">
+                                    {item.selectedColorLabel || item.selectedColor}
+                                  </span>
                                 </p>
-                                {item.selectedGauge && (
-                                  <p className="text-xs text-muted-foreground">
-                                    선택 옵션: 게이지{" "}
-                                    {formatGaugeLabel(item.selectedGauge)}
-                                  </p>
-                                )}
-                                {(item.selectedColorLabel ||
-                                  item.selectedColor) && (
-                                  <p className="flex min-w-0 flex-wrap items-center gap-2 text-xs leading-relaxed text-muted-foreground">
-                                    <span>선택 옵션: 색상</span>
-                                    {item.selectedColorHex && (
-                                      <span
-                                        className="h-3 w-3 rounded-full border border-border"
-                                        style={{
-                                          backgroundColor:
-                                            item.selectedColorHex,
-                                        }}
-                                        aria-hidden="true"
-                                      />
-                                    )}
-                                    <span className="min-w-0 break-keep break-words">
-                                      {item.selectedColorLabel ||
-                                        item.selectedColor}
-                                    </span>
-                                  </p>
-                                )}
-                              </div>
-                              <div className="shrink-0 text-left bp-sm:text-right">
-                                <p className="text-lg font-bold text-primary">
-                                  {totalItemPrice}원
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                  단가: {itemPrice}원
-                                </p>
-                              </div>
+                              )}
                             </div>
-                          );
-                        },
-                      )}
+                            <div className="shrink-0 text-left bp-sm:text-right">
+                              <p className="text-lg font-bold text-primary">{totalItemPrice}원</p>
+                              <p className="text-sm text-muted-foreground">단가: {itemPrice}원</p>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -1074,26 +928,20 @@ export default async function CheckoutSuccessPage({
                         {hasSubmittedApplication && stringingSummary ? (
                           <div className="space-y-2 rounded-lg border border-border bg-background p-4 text-sm text-foreground">
                             <p>
-                              <span className="text-muted-foreground">
-                                접수 방식:
-                              </span>{" "}
+                              <span className="text-muted-foreground">접수 방식:</span>{" "}
                               <span className="font-semibold">
                                 {stringingSummary.receptionLabel}
                               </span>
                             </p>
                             <p>
-                              <span className="text-muted-foreground">
-                                작업 수량:
-                              </span>{" "}
+                              <span className="text-muted-foreground">작업 수량:</span>{" "}
                               <span className="font-semibold">
                                 {stringingSummary.lineCount}자루
                               </span>
                             </p>
                             {stringingSummary.stringNames.length > 0 && (
                               <p>
-                                <span className="text-muted-foreground">
-                                  선택 스트링:
-                                </span>{" "}
+                                <span className="text-muted-foreground">선택 스트링:</span>{" "}
                                 <span className="font-semibold">
                                   {stringingSummary.stringNames.join(", ")}
                                 </span>
@@ -1101,9 +949,7 @@ export default async function CheckoutSuccessPage({
                             )}
                             {stringingSummary.tensionSummary && (
                               <p>
-                                <span className="text-muted-foreground">
-                                  텐션:
-                                </span>{" "}
+                                <span className="text-muted-foreground">텐션:</span>{" "}
                                 <span className="font-semibold">
                                   {stringingSummary.tensionSummary}
                                 </span>
@@ -1111,9 +957,7 @@ export default async function CheckoutSuccessPage({
                             )}
                             {stringingSummary.reservationLabel && (
                               <p>
-                                <span className="text-muted-foreground">
-                                  예약 정보:
-                                </span>{" "}
+                                <span className="text-muted-foreground">예약 정보:</span>{" "}
                                 <span className="font-semibold">
                                   {stringingSummary.reservationLabel}
                                 </span>
@@ -1121,83 +965,55 @@ export default async function CheckoutSuccessPage({
                             )}
                             <Separator className="my-3" />
                             <div className="space-y-1.5 rounded-md border border-border bg-card p-3">
-                              <p className="font-semibold text-foreground">
-                                패키지 적용 정보
-                              </p>
+                              <p className="font-semibold text-foreground">패키지 적용 정보</p>
                               {stringingSummary.packageInfo.applied ? (
                                 <>
                                   <p>
-                                    <span className="text-muted-foreground">
-                                      패키지 사용:
-                                    </span>{" "}
-                                    <span className="font-semibold text-primary">
-                                      적용됨
-                                    </span>
+                                    <span className="text-muted-foreground">패키지 사용:</span>{" "}
+                                    <span className="font-semibold text-primary">적용됨</span>
                                   </p>
                                   <p>
-                                    <span className="text-muted-foreground">
-                                      사용 패키지:
-                                    </span>{" "}
+                                    <span className="text-muted-foreground">사용 패키지:</span>{" "}
                                     <span className="font-semibold">
                                       {stringingSummary.packageInfo.passTitle ??
                                         "패키지명 확인 불가"}
                                     </span>
                                   </p>
                                   <p>
-                                    <span className="text-muted-foreground">
-                                      이번 차감 횟수:
-                                    </span>{" "}
+                                    <span className="text-muted-foreground">이번 차감 횟수:</span>{" "}
                                     <span className="font-semibold">
                                       {stringingSummary.packageInfo.useCount}회
                                     </span>
                                   </p>
-                                  {typeof stringingSummary.packageInfo
-                                    .remainingCount === "number" && (
+                                  {typeof stringingSummary.packageInfo.remainingCount ===
+                                    "number" && (
                                     <p>
-                                      <span className="text-muted-foreground">
-                                        남은 횟수:
-                                      </span>{" "}
+                                      <span className="text-muted-foreground">남은 횟수:</span>{" "}
                                       <span className="font-semibold">
-                                        {
-                                          stringingSummary.packageInfo
-                                            .remainingCount
-                                        }
-                                        회
+                                        {stringingSummary.packageInfo.remainingCount}회
                                       </span>
                                     </p>
                                   )}
                                   <p>
-                                    <span className="text-muted-foreground">
-                                      교체서비스 비용:
-                                    </span>{" "}
-                                    <span className="font-semibold text-primary">
-                                      무료
-                                    </span>
+                                    <span className="text-muted-foreground">교체서비스 비용:</span>{" "}
+                                    <span className="font-semibold text-primary">무료</span>
                                   </p>
                                 </>
                               ) : (
                                 <>
                                   <p>
-                                    <span className="text-muted-foreground">
-                                      패키지 사용:
-                                    </span>{" "}
-                                    <span className="font-semibold">
-                                      적용 안 됨
-                                    </span>
+                                    <span className="text-muted-foreground">패키지 사용:</span>{" "}
+                                    <span className="font-semibold">적용 안 됨</span>
                                   </p>
                                   <p className="text-muted-foreground">
-                                    사용 가능한 패키지가 없거나 이번 주문에
-                                    패키지가 적용되지 않아 교체서비스 비용이
-                                    일반 결제로 반영되었습니다.
+                                    사용 가능한 패키지가 없거나 이번 주문에 패키지가 적용되지 않아
+                                    교체서비스 비용이 일반 결제로 반영되었습니다.
                                   </p>
                                   <p>
-                                    <span className="text-muted-foreground">
-                                      교체서비스 비용:
-                                    </span>{" "}
+                                    <span className="text-muted-foreground">교체서비스 비용:</span>{" "}
                                     <span className="font-semibold">
                                       {formatPrice(
-                                        stringingSummary.serviceFeeAfter ??
-                                          normalizedServiceFee,
+                                        stringingSummary.serviceFeeAfter ?? normalizedServiceFee,
                                       )}
                                       원
                                     </span>
@@ -1218,10 +1034,7 @@ export default async function CheckoutSuccessPage({
                                 className="bg-primary text-primary-foreground font-semibold shadow-lg hover:bg-primary/90"
                                 asChild
                               >
-                                <Link
-                                  href={appHref}
-                                  className="flex items-center gap-2"
-                                >
+                                <Link href={appHref} className="flex items-center gap-2">
                                   장착 서비스 신청서 작성하기
                                   <ArrowRight className="h-4 w-4" />
                                 </Link>
@@ -1244,28 +1057,21 @@ export default async function CheckoutSuccessPage({
                     <div className="space-y-2 rounded-lg border border-border bg-background p-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <span className="text-sm text-muted-foreground">
-                            수령인:
-                          </span>
+                          <span className="text-sm text-muted-foreground">수령인:</span>
                           <span className="ml-2 font-semibold text-foreground">
                             {order.shippingInfo?.name || "정보 없음"}
                           </span>
                         </div>
                         <div>
-                          <span className="text-sm text-muted-foreground">
-                            연락처:
-                          </span>
+                          <span className="text-sm text-muted-foreground">연락처:</span>
                           <span className="ml-2 font-semibold text-foreground">
-                            {formatKoreanPhone(order.shippingInfo?.phone) ||
-                              "정보 없음"}
+                            {formatKoreanPhone(order.shippingInfo?.phone) || "정보 없음"}
                           </span>
                         </div>
                       </div>
                       {showDeliveryOnlyFields && (
                         <div>
-                          <span className="text-sm text-muted-foreground">
-                            주소:
-                          </span>
+                          <span className="text-sm text-muted-foreground">주소:</span>
                           <span className="ml-2 font-semibold text-foreground">
                             {order.shippingInfo?.address || "정보 없음"}
                           </span>
@@ -1276,17 +1082,14 @@ export default async function CheckoutSuccessPage({
                           매장 방문 시 주문번호를 제시해주세요.
                         </p>
                       )}
-                      {showDeliveryOnlyFields &&
-                        order.shippingInfo?.deliveryRequest && (
-                          <div>
-                            <span className="text-sm text-muted-foreground">
-                              배송 요청사항:
-                            </span>
-                            <span className="ml-2 font-semibold text-foreground">
-                              {order.shippingInfo.deliveryRequest}
-                            </span>
-                          </div>
-                        )}
+                      {showDeliveryOnlyFields && order.shippingInfo?.deliveryRequest && (
+                        <div>
+                          <span className="text-sm text-muted-foreground">배송 요청사항:</span>
+                          <span className="ml-2 font-semibold text-foreground">
+                            {order.shippingInfo.deliveryRequest}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -1296,9 +1099,7 @@ export default async function CheckoutSuccessPage({
                   <div className="rounded-xl border border-border bg-background p-6">
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-3">
-                        <span className="min-w-0 break-words text-muted-foreground">
-                          상품 금액
-                        </span>
+                        <span className="min-w-0 break-words text-muted-foreground">상품 금액</span>
                         <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
                           {formatPrice(productAmount)}원
                         </span>
@@ -1336,9 +1137,7 @@ export default async function CheckoutSuccessPage({
                       )}
 
                       <div className="flex items-center justify-between gap-3 pt-2 text-2xl font-bold">
-                        <span className="min-w-0 break-words text-foreground">
-                          총 결제 금액
-                        </span>
+                        <span className="min-w-0 break-words text-foreground">총 결제 금액</span>
                         <span className="shrink-0 whitespace-nowrap text-right tabular-nums text-primary">
                           {formatPrice(order.totalPrice)}원
                         </span>
@@ -1360,11 +1159,7 @@ export default async function CheckoutSuccessPage({
                       wrap="responsive"
                     >
                       <Link
-                        href={
-                          isLoggedIn
-                            ? "/mypage"
-                            : `/order-lookup/details/${order._id}`
-                        }
+                        href={isLoggedIn ? "/mypage" : `/order-lookup/details/${order._id}`}
                         className="flex items-center gap-2"
                       >
                         <Package className="h-5 w-5" />
@@ -1375,9 +1170,7 @@ export default async function CheckoutSuccessPage({
                     <div className="flex-1">
                       <ContinueShoppingButton
                         deliveryMethod={order.shippingInfo?.deliveryMethod}
-                        withStringService={
-                          order.shippingInfo?.withStringService
-                        }
+                        withStringService={order.shippingInfo?.withStringService}
                       />
                     </div>
                   </div>
@@ -1398,9 +1191,7 @@ export default async function CheckoutSuccessPage({
                       <div className="flex items-start gap-3 rounded-lg border border-border bg-background p-4">
                         <CreditCard className="mt-0.5 h-5 w-5 text-primary" />
                         <div>
-                          <h4 className="mb-1 font-semibold text-foreground">
-                            입금 안내
-                          </h4>
+                          <h4 className="mb-1 font-semibold text-foreground">입금 안내</h4>
                           <p className="text-sm text-muted-foreground">
                             주문하신 상품의 결제 금액을 위 계좌로 입금해주세요.
                           </p>
@@ -1424,9 +1215,7 @@ export default async function CheckoutSuccessPage({
                       <div className="flex items-start gap-3 rounded-lg border border-border bg-background p-4">
                         <Star className="mt-0.5 h-5 w-5 text-primary" />
                         <div>
-                          <h4 className="mb-1 font-semibold text-foreground">
-                            주문 확인
-                          </h4>
+                          <h4 className="mb-1 font-semibold text-foreground">주문 확인</h4>
                           <p className="text-sm text-muted-foreground">
                             주문 내역은 마이페이지에서 확인하실 수 있습니다.
                           </p>
@@ -1435,9 +1224,7 @@ export default async function CheckoutSuccessPage({
                       <div className="flex items-start gap-3 rounded-lg border border-border bg-background p-4">
                         <Phone className="mt-0.5 h-5 w-5 text-primary" />
                         <div>
-                          <h4 className="mb-1 font-semibold text-foreground">
-                            고객 지원
-                          </h4>
+                          <h4 className="mb-1 font-semibold text-foreground">고객 지원</h4>
                           <p className="text-sm text-muted-foreground">
                             {isVisitPickup
                               ? "방문 수령 관련 문의사항은 고객센터(010-5218-5248)로 연락주세요."
@@ -1486,9 +1273,7 @@ export default async function CheckoutSuccessPage({
                 <div className="mb-4 md:mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm dark:bg-primary/20">
                   <CheckCircle className="h-12 w-12 text-foreground" />
                 </div>
-                <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                  주문이 접수되었습니다
-                </h1>
+                <h1 className="text-3xl md:text-4xl font-bold mb-4">주문이 접수되었습니다</h1>
                 <p className="mb-4 md:mb-6 text-xl text-muted-foreground">
                   결제가 정상 처리되었습니다.
                 </p>
@@ -1502,31 +1287,23 @@ export default async function CheckoutSuccessPage({
                 <CardHeader className="border-b border-border bg-background">
                   <CardTitle className="text-xl">주문 완료</CardTitle>
                   <CardDescription>
-                    주문 상세 정보를 불러오는 중 일시적인 문제가 발생했습니다.
-                    잠시 후 다시 시도하거나 마이페이지에서 확인해주세요.
+                    주문 상세 정보를 불러오는 중 일시적인 문제가 발생했습니다. 잠시 후 다시
+                    시도하거나 마이페이지에서 확인해주세요.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3 p-6 text-sm text-muted-foreground">
                   <p>
                     주문번호:{" "}
-                    <span className="font-mono font-semibold text-foreground">
-                      {orderId}
-                    </span>
+                    <span className="font-mono font-semibold text-foreground">{orderId}</span>
                   </p>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-2 border-t border-border bg-background p-6 sm:flex-row">
                   <Button asChild className="w-full sm:w-auto">
-                    <Link
-                      href={`/checkout/success?orderId=${encodeURIComponent(orderId)}`}
-                    >
+                    <Link href={`/checkout/success?orderId=${encodeURIComponent(orderId)}`}>
                       다시 시도
                     </Link>
                   </Button>
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                  >
+                  <Button asChild variant="outline" className="w-full sm:w-auto">
                     <Link href="/mypage">마이페이지 이동</Link>
                   </Button>
                   <Button asChild variant="ghost" className="w-full sm:w-auto">

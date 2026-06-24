@@ -38,9 +38,7 @@ export default function PackagePassStatusSelect({
   disabled,
 }: Props) {
   // '만료'나 '대기'면 일단 '활성'을 기본값으로 보여주되, 선택 시 서버에 반영됨
-  const initial: PassKo = (["활성", "일시정지", "취소"] as PassKo[]).includes(
-    currentKo as any,
-  )
+  const initial: PassKo = (["활성", "일시정지", "취소"] as PassKo[]).includes(currentKo as any)
     ? (currentKo as PassKo)
     : "활성";
 
@@ -53,15 +51,12 @@ export default function PackagePassStatusSelect({
     setSaving(true);
     startTransition(async () => {
       try {
-        const res = await fetch(
-          `/api/admin/package-orders/${orderId}/pass-status`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ status: koToRaw[nextKo] }),
-          },
-        );
+        const res = await fetch(`/api/admin/package-orders/${orderId}/pass-status`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ status: koToRaw[nextKo] }),
+        });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
           throw new Error(err?.error || "패스 상태 변경에 실패했습니다.");

@@ -150,9 +150,7 @@ export function normalizeRentalStatus(status?: string | null) {
  * 주문 아이템 요약(목록 1줄)
  */
 export function summarizeOrderItems(items: any[] | undefined) {
-  const names = (items ?? [])
-    .map((it) => String(it?.name ?? "").trim())
-    .filter(Boolean);
+  const names = (items ?? []).map((it) => String(it?.name ?? "").trim()).filter(Boolean);
   if (names.length === 0) return "주문";
   if (names.length === 1) return names[0]!;
   return `${names[0]} 외 ${names.length - 1}개`;
@@ -164,8 +162,7 @@ export function summarizeOrderItems(items: any[] | undefined) {
  */
 export function pickCustomerFromDoc(doc: any): OpsCustomer {
   const c = doc?.customer;
-  if (c?.name || c?.email)
-    return { name: String(c?.name ?? ""), email: String(c?.email ?? "") };
+  if (c?.name || c?.email) return { name: String(c?.name ?? ""), email: String(c?.email ?? "") };
 
   const us = doc?.userSnapshot;
   if (us?.name || us?.email)
@@ -187,8 +184,7 @@ export function pickCustomerFromDoc(doc: any): OpsCustomer {
 
   // rental_orders guest object
   const g = doc?.guest;
-  if (g?.name || g?.email)
-    return { name: String(g?.name ?? ""), email: String(g?.email ?? "") };
+  if (g?.name || g?.email) return { name: String(g?.name ?? ""), email: String(g?.email ?? "") };
 
   return { name: "", email: "" };
 }
@@ -206,12 +202,9 @@ export function normalizeRentalAmountTotal(r: any) {
     r?.amount?.stringPrice ?? (requested ? (r?.stringing?.price ?? 0) : 0),
   );
   const stringingFee = Number(
-    r?.amount?.stringingFee ??
-      (requested ? (r?.stringing?.mountingFee ?? 0) : 0),
+    r?.amount?.stringingFee ?? (requested ? (r?.stringing?.mountingFee ?? 0) : 0),
   );
-  const total = Number(
-    r?.amount?.total ?? fee + deposit + stringPrice + stringingFee,
-  );
+  const total = Number(r?.amount?.total ?? fee + deposit + stringPrice + stringingFee);
   return total;
 }
 

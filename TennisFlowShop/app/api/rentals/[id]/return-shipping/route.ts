@@ -3,18 +3,14 @@ import { cookies } from "next/headers";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
-import {
-  findCourierCatalogItem,
-  normalizeCourierCode,
-} from "@/lib/shipping/courier-map";
+import { findCourierCatalogItem, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
 // 서버 기준: courier allowlist + trackingNumber digits(9~20) + note(<=200) + shippedAt 유효날짜
-const isValidTrackingDigits = (digits: string) =>
-  digits.length >= 9 && digits.length <= 20;
+const isValidTrackingDigits = (digits: string) => digits.length >= 9 && digits.length <= 20;
 
 const requestSchema = z.object({
   courier: z.string().transform((s) => normalizeCourierCode(s)),
@@ -46,10 +42,7 @@ const requestSchema = z.object({
     }),
 });
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   // 로그인 검증
   const at = (await cookies()).get("accessToken")?.value;
   let payload: any = null;
@@ -58,8 +51,7 @@ export async function POST(
   } catch {
     payload = null;
   }
-  if (!payload?.sub)
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  if (!payload?.sub) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
   /**
    * sub(ObjectId 문자열) 최종 방어
@@ -67,16 +59,12 @@ export async function POST(
    * - 따라서 "문자열 + ObjectId 유효"인 경우에만 통과시킵니다.
    */
   const sub =
-    typeof payload?.sub === "string" && ObjectId.isValid(payload.sub)
-      ? payload.sub
-      : null;
-  if (!sub)
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    typeof payload?.sub === "string" && ObjectId.isValid(payload.sub) ? payload.sub : null;
+  if (!sub) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
   // 파라미터/바디 검증
   const { id } = await params;
-  if (!ObjectId.isValid(id))
-    return NextResponse.json({ message: "BAD_ID" }, { status: 400 });
+  if (!ObjectId.isValid(id)) return NextResponse.json({ message: "BAD_ID" }, { status: 400 });
   const body = await req.json().catch(() => null);
   const parsed = requestSchema.safeParse(body);
   if (!parsed.success) {
@@ -95,10 +83,7 @@ export async function POST(
   const { courier, trackingNumber, shippedAt, note } = parsed.data;
   const courierItem = findCourierCatalogItem(courier);
   if (!courierItem) {
-    return NextResponse.json(
-      { ok: false, message: "INVALID_COURIER" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, message: "INVALID_COURIER" }, { status: 400 });
   }
   if (courierItem.code === "ems") {
     return NextResponse.json(
@@ -110,11 +95,8 @@ export async function POST(
   const db = (await clientPromise).db();
   const _id = new ObjectId(id);
   const ownerId = new ObjectId(sub);
-  const mine = await db
-    .collection("rental_orders")
-    .findOne({ _id, userId: ownerId });
-  if (!mine)
-    return NextResponse.json({ message: "FORBIDDEN" }, { status: 403 });
+  const mine = await db.collection("rental_orders").findOne({ _id, userId: ownerId });
+  if (!mine) return NextResponse.json({ message: "FORBIDDEN" }, { status: 403 });
 
   // 저장
   await db.collection("rental_orders").updateOne(

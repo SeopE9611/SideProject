@@ -17,13 +17,7 @@ function redirectToAdmin(req: Request, adminPath: string) {
   return res;
 }
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return redirectToAdmin(
-    req,
-    `/api/admin/package-orders/${id}/adjust-sessions`,
-  );
+  return redirectToAdmin(req, `/api/admin/package-orders/${id}/adjust-sessions`);
 }

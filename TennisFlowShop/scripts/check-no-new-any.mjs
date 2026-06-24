@@ -36,9 +36,7 @@ function resolveBaseRef() {
 }
 
 const baseRef = resolveBaseRef();
-const diff = run(
-  `git diff --unified=0 ${baseRef}...HEAD -- ${TARGET_PREFIXES.join(" ")}`,
-);
+const diff = run(`git diff --unified=0 ${baseRef}...HEAD -- ${TARGET_PREFIXES.join(" ")}`);
 
 const violations = [];
 let currentFile = "";
@@ -50,8 +48,7 @@ for (const line of diff.split("\n")) {
   }
 
   if (!line.startsWith("+") || line.startsWith("+++")) continue;
-  if (!TARGET_PREFIXES.some((prefix) => currentFile.startsWith(prefix)))
-    continue;
+  if (!TARGET_PREFIXES.some((prefix) => currentFile.startsWith(prefix))) continue;
 
   const codeLine = line.slice(1);
   if (!ANY_PATTERN.test(codeLine)) continue;
@@ -60,9 +57,7 @@ for (const line of diff.split("\n")) {
 }
 
 if (violations.length > 0) {
-  console.error(
-    "[no-new-any-gate] FAIL: 새로 추가된 코드에서 any 사용이 발견되었습니다.",
-  );
+  console.error("[no-new-any-gate] FAIL: 새로 추가된 코드에서 any 사용이 발견되었습니다.");
   violations.forEach(({ file, codeLine }) => {
     console.error(`- ${file}: ${codeLine}`);
   });

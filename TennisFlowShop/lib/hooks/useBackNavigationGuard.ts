@@ -13,14 +13,11 @@ const isEditableElementFocused = () => {
   if (!(activeElement instanceof HTMLElement)) return false;
 
   const tagName = activeElement.tagName;
-  if (tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT")
-    return true;
+  if (tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT") return true;
 
   if (activeElement.isContentEditable) return true;
 
-  return Boolean(
-    activeElement.closest('[contenteditable]:not([contenteditable="false"])'),
-  );
+  return Boolean(activeElement.closest('[contenteditable]:not([contenteditable="false"])'));
 };
 
 /**
@@ -49,9 +46,7 @@ export function useBackNavigationGuard(
       }
 
       const nextState = {
-        ...(currentState && typeof currentState === "object"
-          ? currentState
-          : {}),
+        ...(currentState && typeof currentState === "object" ? currentState : {}),
         [BACK_GUARD_MARKER_KEY]: markerId,
       };
 
@@ -94,14 +89,12 @@ export function useBackNavigationGuard(
       window.removeEventListener("popstate", onPopState);
 
       const currentState = window.history.state;
-      if (
-        !isNavigatingAway &&
-        hasGuardEntry &&
-        isGuardState(currentState, markerId)
-      ) {
+      if (!isNavigatingAway && hasGuardEntry && isGuardState(currentState, markerId)) {
         // 언마운트 정리 시 실제 히스토리 이동을 만들지 않도록 marker만 제거한다.
-        const { [BACK_GUARD_MARKER_KEY]: _marker, ...rest } =
-          currentState as Record<string, unknown>;
+        const { [BACK_GUARD_MARKER_KEY]: _marker, ...rest } = currentState as Record<
+          string,
+          unknown
+        >;
         window.history.replaceState(
           Object.keys(rest).length > 0 ? rest : null,
           "",

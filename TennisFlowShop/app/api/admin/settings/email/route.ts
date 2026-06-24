@@ -17,9 +17,7 @@ export async function GET(req: Request) {
   if (!guard.ok) return guard.res;
 
   const db = await getDb();
-  const doc = await db
-    .collection<any>(SETTINGS_COLLECTION)
-    .findOne({ _id: DOC_ID });
+  const doc = await db.collection<any>(SETTINGS_COLLECTION).findOne({ _id: DOC_ID });
   const merged = { ...defaultEmailSettings, ...(doc?.value ?? {}) };
   const parsed = emailSettingsSchema.safeParse(merged);
   const data = parsed.success ? parsed.data : defaultEmailSettings;
@@ -39,9 +37,7 @@ export async function PATCH(req: Request) {
   const csrf = verifyAdminCsrf(req);
   if (!csrf.ok) return csrf.res;
 
-  const payload = (await req
-    .json()
-    .catch(() => null)) as Partial<EmailSettings> | null;
+  const payload = (await req.json().catch(() => null)) as Partial<EmailSettings> | null;
   const parsed = emailSettingsSchema.safeParse(payload);
   if (!parsed.success) {
     return NextResponse.json(
@@ -54,9 +50,7 @@ export async function PATCH(req: Request) {
   }
 
   const db = await getDb();
-  const prev = await db
-    .collection<any>(SETTINGS_COLLECTION)
-    .findOne({ _id: DOC_ID });
+  const prev = await db.collection<any>(SETTINGS_COLLECTION).findOne({ _id: DOC_ID });
   const prevValue = (prev?.value ?? {}) as Partial<EmailSettings>;
 
   const toSave: EmailSettings = {

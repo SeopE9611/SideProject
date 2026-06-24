@@ -13,9 +13,20 @@ export type CalendarProps = {
 export function Calendar({ selected, onSelect, className, ...props }: CalendarProps) {
   return (
     <div
-      className={cn("rounded-lg border border-border bg-card text-ui-body-sm shadow-md", "overflow-visible", className)}
+      className={cn(
+        "rounded-lg border border-border bg-card text-ui-body-sm shadow-md",
+        "overflow-visible",
+        className,
+      )}
     >
-      <DayPicker mode="single" showOutsideDays selected={selected} onSelect={onSelect} className="m-0 p-2" {...props} />
+      <DayPicker
+        mode="single"
+        showOutsideDays
+        selected={selected}
+        onSelect={onSelect}
+        className="m-0 p-2"
+        {...props}
+      />
     </div>
   );
 }

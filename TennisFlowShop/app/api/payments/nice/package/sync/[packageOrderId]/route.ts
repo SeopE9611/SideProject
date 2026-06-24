@@ -21,8 +21,7 @@ function getNiceCredentials() {
   ).trim();
   const secretKey = String(process.env.NICEPAY_SECRET_KEY ?? "").trim();
   const apiBaseUrl = String(
-    process.env.NICEPAY_APPROVE_API_BASE ||
-      "https://api.nicepay.co.kr/v1/payments",
+    process.env.NICEPAY_APPROVE_API_BASE || "https://api.nicepay.co.kr/v1/payments",
   )
     .trim()
     .replace(/\/+$/, "");
@@ -45,12 +44,8 @@ function mapNicePgStatusToInternalPaymentStatus(params: {
   previousPaymentInfoStatus: string;
 }) {
   const normalizedPgStatus = normalizeNicePgStatus(params.pgStatusRaw);
-  const previousPaymentStatus = String(
-    params.previousPaymentStatus ?? "",
-  ).trim();
-  const previousPaymentInfoStatus = String(
-    params.previousPaymentInfoStatus ?? "",
-  ).trim();
+  const previousPaymentStatus = String(params.previousPaymentStatus ?? "").trim();
+  const previousPaymentInfoStatus = String(params.previousPaymentInfoStatus ?? "").trim();
 
   if (normalizedPgStatus === "paid") {
     return {
@@ -182,44 +177,27 @@ export async function POST(
     const pgStatus = pick(pgRaw, "status", "Status");
     const mapped = mapNicePgStatusToInternalPaymentStatus({
       pgStatusRaw: pgStatus,
-      previousPaymentStatus: String(
-        (packageOrder as any)?.paymentStatus ?? "",
-      ).trim(),
-      previousPaymentInfoStatus: String(
-        (packageOrder as any)?.paymentInfo?.status ?? "",
-      ).trim(),
+      previousPaymentStatus: String((packageOrder as any)?.paymentStatus ?? "").trim(),
+      previousPaymentInfoStatus: String((packageOrder as any)?.paymentInfo?.status ?? "").trim(),
     });
 
     const syncCardInfo = extractNiceCardInfo(pgRaw);
     const currentCardDisplayName = String(
       (packageOrder as any)?.paymentInfo?.cardDisplayName ?? "",
     ).trim();
-    const currentCardCompany = String(
-      (packageOrder as any)?.paymentInfo?.cardCompany ?? "",
-    ).trim();
-    const currentCardLabel = String(
-      (packageOrder as any)?.paymentInfo?.cardLabel ?? "",
-    ).trim();
-    const currentNiceCard =
-      (packageOrder as any)?.paymentInfo?.niceCard ?? null;
+    const currentCardCompany = String((packageOrder as any)?.paymentInfo?.cardCompany ?? "").trim();
+    const currentCardLabel = String((packageOrder as any)?.paymentInfo?.cardLabel ?? "").trim();
+    const currentNiceCard = (packageOrder as any)?.paymentInfo?.niceCard ?? null;
 
-    const nextCardDisplayName =
-      currentCardDisplayName || syncCardInfo?.displayName || "";
-    const nextCardCompany =
-      currentCardCompany || syncCardInfo?.issuerName || "";
+    const nextCardDisplayName = currentCardDisplayName || syncCardInfo?.displayName || "";
+    const nextCardCompany = currentCardCompany || syncCardInfo?.issuerName || "";
     const nextCardLabel = currentCardLabel || syncCardInfo?.cardName || "";
     const nextNiceCard = currentNiceCard || syncCardInfo || null;
 
     const cancelAmount = Math.floor(
       Number(pick(pgRaw, "cancAmt", "cancelAmount", "cancelAmt")) || 0,
     );
-    const canceledAt = pick(
-      pgRaw,
-      "canceledAt",
-      "cancelledAt",
-      "cancelDate",
-      "cancelDt",
-    );
+    const canceledAt = pick(pgRaw, "canceledAt", "cancelledAt", "cancelDate", "cancelDt");
     const nowIso = new Date().toISOString();
 
     const updateResult = await db.collection("packageOrders").updateOne(
@@ -228,12 +206,8 @@ export async function POST(
         $set: {
           paymentStatus: mapped.nextPaymentStatus,
           "paymentInfo.status": mapped.nextPaymentInfoStatus,
-          ...(nextCardDisplayName
-            ? { "paymentInfo.cardDisplayName": nextCardDisplayName }
-            : {}),
-          ...(nextCardCompany
-            ? { "paymentInfo.cardCompany": nextCardCompany }
-            : {}),
+          ...(nextCardDisplayName ? { "paymentInfo.cardDisplayName": nextCardDisplayName } : {}),
+          ...(nextCardCompany ? { "paymentInfo.cardCompany": nextCardCompany } : {}),
           ...(nextCardLabel ? { "paymentInfo.cardLabel": nextCardLabel } : {}),
           ...(nextNiceCard ? { "paymentInfo.niceCard": nextNiceCard } : {}),
           ...(nextNiceCard
@@ -277,9 +251,7 @@ export async function POST(
       {
         success: false,
         code: "NICE_PACKAGE_SYNC_ROUTE_ERROR",
-        error:
-          error?.message ||
-          "패키지 NicePay 상태 동기화 중 오류가 발생했습니다.",
+        error: error?.message || "패키지 NicePay 상태 동기화 중 오류가 발생했습니다.",
       },
       { status: 500 },
     );

@@ -35,8 +35,7 @@ async function checkAuthGate(path) {
         text.toLowerCase().includes("login")));
   if (!pass) {
     throw new Error(
-      `[SMOKE FAIL][AUTH_GATE] ${path} -> ${status}, location=${location}\n` +
-        text.slice(0, 200),
+      `[SMOKE FAIL][AUTH_GATE] ${path} -> ${status}, location=${location}\n` + text.slice(0, 200),
     );
   }
   console.log(

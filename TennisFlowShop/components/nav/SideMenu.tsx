@@ -1,6 +1,11 @@
 "use client";
 
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -30,7 +35,9 @@ export default function SideMenu() {
 
     // 스트링 재질 필터 활성화
     if (url.pathname === "/products" && url.searchParams.has("material")) {
-      return pathname === "/products" && search?.get("material") === url.searchParams.get("material");
+      return (
+        pathname === "/products" && search?.get("material") === url.searchParams.get("material")
+      );
     }
 
     if (url.pathname === "/products") {
@@ -61,7 +68,9 @@ export default function SideMenu() {
       "hover:bg-muted",
       "hover:shadow-sm hover:z-10",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-      isActive ? "bg-muted text-foreground font-medium shadow-sm" : "text-foreground/75 hover:text-foreground",
+      isActive
+        ? "bg-muted text-foreground font-medium shadow-sm"
+        : "text-foreground/75 hover:text-foreground",
     );
   };
 
@@ -129,10 +138,15 @@ export default function SideMenu() {
                               <Link
                                 key={b.href}
                                 href={b.href}
-                                className={cn(brandLinkClass(b.href), "min-w-0 px-2 py-2 text-ui-label")}
+                                className={cn(
+                                  brandLinkClass(b.href),
+                                  "min-w-0 px-2 py-2 text-ui-label",
+                                )}
                               >
                                 <span className="flex min-w-0 items-center justify-between">
-                                  <span className="block min-w-0 truncate whitespace-nowrap">{b.name}</span>
+                                  <span className="block min-w-0 truncate whitespace-nowrap">
+                                    {b.name}
+                                  </span>
                                   <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
                                 </span>
                               </Link>
@@ -176,7 +190,10 @@ export default function SideMenu() {
             </AccordionContent>
           </AccordionItem>
 
-          <Link href={NAV_LINKS.academy.href} className={cn(topLevelLinkClass(NAV_LINKS.academy.href), "my-1.5")}>
+          <Link
+            href={NAV_LINKS.academy.href}
+            className={cn(topLevelLinkClass(NAV_LINKS.academy.href), "my-1.5")}
+          >
             <span className="flex items-center justify-between">
               {NAV_LINKS.academy.name}
               <ChevronRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
@@ -219,10 +236,15 @@ export default function SideMenu() {
                               <Link
                                 key={b.href}
                                 href={b.href}
-                                className={cn(brandLinkClass(b.href), "min-w-0 px-2 py-2 text-ui-label")}
+                                className={cn(
+                                  brandLinkClass(b.href),
+                                  "min-w-0 px-2 py-2 text-ui-label",
+                                )}
                               >
                                 <span className="flex min-w-0 items-center justify-between">
-                                  <span className="block min-w-0 truncate whitespace-nowrap">{b.name}</span>
+                                  <span className="block min-w-0 truncate whitespace-nowrap">
+                                    {b.name}
+                                  </span>
                                   <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-[background-color,color,border-color,box-shadow,opacity] duration-200" />
                                 </span>
                               </Link>

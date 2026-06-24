@@ -6,31 +6,17 @@ import {
 } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import { hasCompletedStringingApplication } from "@/app/order-lookup/_lib/stringing-status";
 import SiteContainer from "@/components/layout/SiteContainer";
-import {
-  EmptyState,
-  PublicPageHero,
-  PublicSurface,
-  ResultState,
-} from "@/components/public";
+import { EmptyState, PublicPageHero, PublicSurface, ResultState } from "@/components/public";
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { badgeToneVariant, getOrderStatusTone } from "@/lib/badge-style";
 import { bankLabelMap } from "@/lib/constants";
 import { formatKoreanPhone } from "@/lib/phone";
-import {
-  getOrderStatusLabelForDisplay,
-  isVisitPickupOrder,
-} from "@/lib/order-shipping";
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import {
   getCommonApplicationStatusLabel,
   getCommonOrderStatusLabel,
@@ -134,13 +120,8 @@ type TrackingResponse =
       message: string;
     };
 
-const getTrackingFailureMessage = (
-  tracking: Extract<TrackingResponse, { success: false }>,
-) => {
-  if (
-    tracking.errorCode === "UNAUTHENTICATED" ||
-    tracking.errorCode === "FORBIDDEN"
-  ) {
+const getTrackingFailureMessage = (tracking: Extract<TrackingResponse, { success: false }>) => {
+  if (tracking.errorCode === "UNAUTHENTICATED" || tracking.errorCode === "FORBIDDEN") {
     return "배송조회 서비스 설정을 확인해주세요.";
   }
   if (tracking.errorCode === "BAD_REQUEST") {
@@ -163,11 +144,7 @@ const getStatusIcon = (status: string, isVisitPickup: boolean) => {
     case "배송완료":
       return <CheckCircle className="w-5 h-5" />;
     case "배송중":
-      return isVisitPickup ? (
-        <Store className="w-5 h-5" />
-      ) : (
-        <Truck className="w-5 h-5" />
-      );
+      return isVisitPickup ? <Store className="w-5 h-5" /> : <Truck className="w-5 h-5" />;
     case "배송준비중":
       return <Clock className="w-5 h-5" />;
     default:
@@ -248,9 +225,7 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [trackingInfo, setTrackingInfo] = useState<TrackingResponse | null>(
-    null,
-  );
+  const [trackingInfo, setTrackingInfo] = useState<TrackingResponse | null>(null);
   const [trackingError, setTrackingError] = useState<string | null>(null);
   const [trackingLoading, setTrackingLoading] = useState(false);
 
@@ -273,9 +248,7 @@ export default function OrderDetailPage() {
         }
       } catch (err) {
         console.error("주문 상세 정보 조회 중 오류 발생:", err);
-        setError(
-          "주문 정보를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.",
-        );
+        setError("주문 정보를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.");
       } finally {
         setLoading(false);
       }
@@ -295,12 +268,9 @@ export default function OrderDetailPage() {
 
   const hasStringingApplication = hasCompletedStringingApplication(order ?? {});
   const latestStringingApplication =
-    Array.isArray(order?.stringingApplications) &&
-    order.stringingApplications.length > 0
+    Array.isArray(order?.stringingApplications) && order.stringingApplications.length > 0
       ? [...order.stringingApplications].sort(
-          (a, b) =>
-            new Date(b.createdAt ?? 0).getTime() -
-            new Date(a.createdAt ?? 0).getTime(),
+          (a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime(),
         )[0]
       : null;
 
@@ -329,10 +299,7 @@ export default function OrderDetailPage() {
             <Skeleton className="h-5 w-40" />
 
             {Array.from({ length: 3 }).map((_, index) => (
-              <Card
-                key={index}
-                className="rounded-2xl border-border/50 bg-card/80 shadow-sm"
-              >
+              <Card key={index} className="rounded-2xl border-border/50 bg-card/80 shadow-sm">
                 <CardHeader className="space-y-2">
                   <Skeleton className="h-6 w-40" />
                   <Skeleton className="h-4 w-64 max-w-full" />
@@ -409,31 +376,25 @@ export default function OrderDetailPage() {
   const orderShippingMethod = normalizeOrderShippingMethod(rawShippingMethod);
   // 비회원 주문 상세도 공용 방문 수령 판별 유틸로 통일해 화면/서버 정책 판단 기준을 맞춘다.
   const isVisitPickup = isVisitPickupOrder(order.shippingInfo);
-  const orderShippingReadLabels =
-    getOrderShippingReadLabels(orderShippingMethod);
+  const orderShippingReadLabels = getOrderShippingReadLabels(orderShippingMethod);
   const shippingCardTitle = orderShippingReadLabels.sectionTitle;
   const shippingAddressLabel = orderShippingReadLabels.primaryLabel;
   const shippingAddressValue = isVisitPickup
     ? orderShippingReadLabels.primaryValue
     : order.shippingInfo.address;
-  const displayStatus = getLookupOrderStatusLabel(
-    order.status,
-    order.shippingInfo,
-  );
+  const displayStatus = getLookupOrderStatusLabel(order.status, order.shippingInfo);
   const nextActionText = getGuestOrderNextActionText({
     status: order.status,
     displayStatus,
     shippingLike: order.shippingInfo,
   });
-  const trackingNumber =
-    order.shippingInfo?.invoice?.trackingNumber ?? order.trackingNumber;
+  const trackingNumber = order.shippingInfo?.invoice?.trackingNumber ?? order.trackingNumber;
   const canTrack = !isVisitPickup && Boolean(trackingNumber);
   const isUnsupportedCourier =
     String(order.shippingInfo?.invoice?.courier ?? "")
       .trim()
       .toLowerCase() === "etc";
-  const unsupportedCourierMessage =
-    "현재 택배사는 자동 배송조회가 지원되지 않습니다.";
+  const unsupportedCourierMessage = "현재 택배사는 자동 배송조회가 지원되지 않습니다.";
 
   const formatDateTime = (dateString: string | null | undefined) => {
     if (!dateString) return "-";
@@ -467,9 +428,7 @@ export default function OrderDetailPage() {
         if (!data.success) {
           setTrackingError(getTrackingFailureMessage(data));
         } else {
-          setTrackingError(
-            (data as any)?.message ?? "배송조회 정보를 불러오지 못했습니다.",
-          );
+          setTrackingError((data as any)?.message ?? "배송조회 정보를 불러오지 못했습니다.");
         }
         return;
       }
@@ -492,9 +451,7 @@ export default function OrderDetailPage() {
   const normalizedStatus = String(order.status ?? "")
     .trim()
     .toLowerCase();
-  const paymentSource = String(
-    order.paymentMethod ?? order.paymentInfo?.method ?? "",
-  )
+  const paymentSource = String(order.paymentMethod ?? order.paymentInfo?.method ?? "")
     .trim()
     .toLowerCase();
 
@@ -504,16 +461,10 @@ export default function OrderDetailPage() {
     normalizedStatus.includes("결제완료") ||
     paymentSource.includes("card") ||
     paymentSource.includes("결제");
-  const isPreparing = [
-    "processing",
-    "preparing",
-    "배송준비",
-    "배송준비중",
-    "처리중",
-  ].some((keyword) => normalizedStatus.includes(keyword));
-  const isShipped = ["shipped", "배송중"].some((keyword) =>
-    normalizedStatus.includes(keyword),
+  const isPreparing = ["processing", "preparing", "배송준비", "배송준비중", "처리중"].some(
+    (keyword) => normalizedStatus.includes(keyword),
   );
+  const isShipped = ["shipped", "배송중"].some((keyword) => normalizedStatus.includes(keyword));
   const isDelivered = ["delivered", "배송완료"].some((keyword) =>
     normalizedStatus.includes(keyword),
   );
@@ -547,8 +498,7 @@ export default function OrderDetailPage() {
       description: isVisitPickup
         ? "매장 수령 준비 상태를 확인해주세요."
         : "배송 정보를 확인해주세요.",
-      state:
-        isDelivered || isCompleted ? "done" : isShipped ? "active" : "waiting",
+      state: isDelivered || isCompleted ? "done" : isShipped ? "active" : "waiting",
     },
     {
       title: "완료/구매확정",
@@ -599,12 +549,8 @@ export default function OrderDetailPage() {
 
           {nextActionText && (
             <PublicSurface variant="muted" className="mb-6 md:mb-8">
-              <p className="text-sm font-medium text-foreground">
-                현재 진행 안내
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {nextActionText}
-              </p>
+              <p className="text-sm font-medium text-foreground">현재 진행 안내</p>
+              <p className="mt-1 text-sm text-muted-foreground">{nextActionText}</p>
             </PublicSurface>
           )}
 
@@ -612,17 +558,14 @@ export default function OrderDetailPage() {
             <CardHeader className="border-b border-border/60 bg-muted/30 rounded-t-xl">
               <CardTitle className="text-base">주문 진행 타임라인</CardTitle>
               <p className="text-sm text-muted-foreground">
-                주문 접수부터 결제, 준비, 배송/수령, 완료까지의 흐름을 확인할 수
-                있습니다.
+                주문 접수부터 결제, 준비, 배송/수령, 완료까지의 흐름을 확인할 수 있습니다.
               </p>
             </CardHeader>
             <CardContent className="space-y-3 pt-5">
               {timelineSteps.map((step, index) => {
                 const tone = getTimelineStepTone(step.state);
                 const Icon =
-                  step.state === "active" &&
-                  !isVisitPickup &&
-                  step.title.includes("배송")
+                  step.state === "active" && !isVisitPickup && step.title.includes("배송")
                     ? Truck
                     : tone.Icon;
                 return (
@@ -641,15 +584,11 @@ export default function OrderDetailPage() {
                           <p className="font-medium text-foreground">
                             {index + 1}. {step.title}
                           </p>
-                          <Badge
-                            className={`px-2 py-0.5 text-xs ${tone.badge}`}
-                          >
+                          <Badge className={`px-2 py-0.5 text-xs ${tone.badge}`}>
                             {getTimelineStateLabel(step.state)}
                           </Badge>
                         </div>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {step.description}
-                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">{step.description}</p>
                       </div>
                     </div>
                   </div>
@@ -657,10 +596,7 @@ export default function OrderDetailPage() {
               })}
               <div className="space-y-1 text-xs text-muted-foreground">
                 <p>이 타임라인은 현재 상태 기준 안내입니다.</p>
-                <p>
-                  주문 정보와 배송/수령 정보에서 세부 상태를 함께 확인할 수
-                  있습니다.
-                </p>
+                <p>주문 정보와 배송/수령 정보에서 세부 상태를 함께 확인할 수 있습니다.</p>
                 {shouldShowStringingTimelineHint && (
                   <p>
                     {hasStringingApplication
@@ -682,9 +618,7 @@ export default function OrderDetailPage() {
                       <ShoppingBag className="w-6 h-6 text-foreground" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-foreground mb-2">
-                        교체서비스 신청 가능
-                      </h3>
+                      <h3 className="font-semibold text-foreground mb-2">교체서비스 신청 가능</h3>
                       <p className="text-muted-foreground mb-4">
                         {isVisitPickup
                           ? "이 주문은 스트링 장착 서비스가 포함되어 있습니다. 방문 수령 시 현장 장착으로 진행되며, 아직 접수된 신청서가 없어 신청을 진행할 수 있습니다."
@@ -695,9 +629,7 @@ export default function OrderDetailPage() {
                         className="inline-flex items-center rounded-lg border border-border bg-secondary px-4 py-2 font-semibold text-foreground transition-colors hover:bg-secondary/80"
                       >
                         <ShoppingBag className="w-4 h-4 mr-2" />
-                        {isVisitPickup
-                          ? "교체서비스 신청하기"
-                          : "교체서비스 신청하기"}
+                        {isVisitPickup ? "교체서비스 신청하기" : "교체서비스 신청하기"}
                       </Link>
                     </div>
                   </div>
@@ -728,17 +660,13 @@ export default function OrderDetailPage() {
             latestStringingApplication && (
               <Card className="mb-6 border border-border bg-card md:mb-8">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base">
-                    교체서비스 접수 요약
-                  </CardTitle>
+                  <CardTitle className="text-base">교체서비스 접수 요약</CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-2 text-sm">
                   <p className="text-muted-foreground">
                     신청 상태:{" "}
                     <span className="font-medium text-foreground">
-                      {getLookupApplicationStatusLabel(
-                        latestStringingApplication.status,
-                      )}
+                      {getLookupApplicationStatusLabel(latestStringingApplication.status)}
                     </span>
                   </p>
                   {latestStringingApplication.receptionLabel && (
@@ -797,37 +725,26 @@ export default function OrderDetailPage() {
                     <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
                       <Calendar className="w-5 h-5 text-foreground" />
                     </div>
-                    <CardTitle className="text-xl font-bold">
-                      주문 정보
-                    </CardTitle>
+                    <CardTitle className="text-xl font-bold">주문 정보</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div>
-                        <p className="text-sm text-muted-foreground mb-1">
-                          주문일자
-                        </p>
+                        <p className="text-sm text-muted-foreground mb-1">주문일자</p>
                         <p className="font-semibold">
                           {new Date(order.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground mb-1">
-                          주문번호
-                        </p>
-                        <p className="font-mono text-sm bg-muted px-3 py-1 rounded">
-                          {order._id}
-                        </p>
+                        <p className="text-sm text-muted-foreground mb-1">주문번호</p>
+                        <p className="font-mono text-sm bg-muted px-3 py-1 rounded">{order._id}</p>
                       </div>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        입금 계좌
-                      </p>
-                      {order.paymentInfo?.bank &&
-                      bankLabelMap[order.paymentInfo.bank] ? (
+                      <p className="text-sm text-muted-foreground mb-2">입금 계좌</p>
+                      {order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (
                         <div className="rounded-lg border border-border bg-secondary/40 p-4">
                           <div className="space-y-2">
                             <p className="font-semibold text-foreground">
@@ -840,15 +757,12 @@ export default function OrderDetailPage() {
                               {bankLabelMap[order.paymentInfo.bank].account}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              예금주:{" "}
-                              {bankLabelMap[order.paymentInfo.bank].holder}
+                              예금주: {bankLabelMap[order.paymentInfo.bank].holder}
                             </p>
                           </div>
                         </div>
                       ) : (
-                        <p className="text-muted-foreground">
-                          선택된 은행 없음
-                        </p>
+                        <p className="text-muted-foreground">선택된 은행 없음</p>
                       )}
                     </div>
                   </div>
@@ -862,9 +776,7 @@ export default function OrderDetailPage() {
                     <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
                       <MapPin className="w-5 h-5 text-foreground" />
                     </div>
-                    <CardTitle className="text-xl font-bold">
-                      {shippingCardTitle}
-                    </CardTitle>
+                    <CardTitle className="text-xl font-bold">{shippingCardTitle}</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -873,20 +785,14 @@ export default function OrderDetailPage() {
                       <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
                         <User className="w-5 h-5 text-foreground" />
                         <div>
-                          <p className="text-sm text-muted-foreground">
-                            수령인
-                          </p>
-                          <p className="font-semibold">
-                            {order.shippingInfo.name}
-                          </p>
+                          <p className="text-sm text-muted-foreground">수령인</p>
+                          <p className="font-semibold">{order.shippingInfo.name}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
                         <Phone className="w-5 h-5 text-foreground" />
                         <div>
-                          <p className="text-sm text-muted-foreground">
-                            연락처
-                          </p>
+                          <p className="text-sm text-muted-foreground">연락처</p>
                           <p className="font-semibold">
                             {formatKoreanPhone(order.shippingInfo.phone) ||
                               order.shippingInfo.phone}
@@ -896,37 +802,30 @@ export default function OrderDetailPage() {
                     </div>
                     <div className="space-y-4">
                       <div className="p-3 bg-background rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-1">
-                          {shippingAddressLabel}
-                        </p>
+                        <p className="text-sm text-muted-foreground mb-1">{shippingAddressLabel}</p>
                         <p className="font-semibold">{shippingAddressValue}</p>
                       </div>
                       {canTrack && (
                         <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/40 p-3">
                           <Truck className="w-5 h-5 text-primary" />
                           <div className="flex-1">
-                            <p className="text-sm text-muted-foreground mb-1">
-                              운송장 번호
-                            </p>
+                            <p className="text-sm text-muted-foreground mb-1">운송장 번호</p>
                             <p className="font-mono font-semibold text-foreground">
                               {trackingNumber}
                             </p>
-                            {trackingInfo?.success &&
-                              trackingInfo.supported && (
-                                <p className="mt-1 text-sm text-foreground">
-                                  실시간 배송 상태: {trackingInfo.displayStatus}
-                                  {trackingInfo.lastEvent?.locationName
-                                    ? ` · ${trackingInfo.lastEvent.locationName}`
-                                    : ""}
-                                  {trackingInfo.lastEvent?.time
-                                    ? ` · ${formatDateTime(trackingInfo.lastEvent.time)}`
-                                    : ""}
-                                </p>
-                              )}
-                            {trackingError && (
-                              <p className="mt-1 text-sm text-muted-foreground">
-                                {trackingError}
+                            {trackingInfo?.success && trackingInfo.supported && (
+                              <p className="mt-1 text-sm text-foreground">
+                                실시간 배송 상태: {trackingInfo.displayStatus}
+                                {trackingInfo.lastEvent?.locationName
+                                  ? ` · ${trackingInfo.lastEvent.locationName}`
+                                  : ""}
+                                {trackingInfo.lastEvent?.time
+                                  ? ` · ${formatDateTime(trackingInfo.lastEvent.time)}`
+                                  : ""}
                               </p>
+                            )}
+                            {trackingError && (
+                              <p className="mt-1 text-sm text-muted-foreground">{trackingError}</p>
                             )}
                             {!trackingError && isUnsupportedCourier && (
                               <p className="mt-1 text-sm text-muted-foreground">
@@ -960,9 +859,7 @@ export default function OrderDetailPage() {
                     <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
                       <ShoppingBag className="w-5 h-5 text-foreground" />
                     </div>
-                    <CardTitle className="text-xl font-bold">
-                      주문 상품
-                    </CardTitle>
+                    <CardTitle className="text-xl font-bold">주문 상품</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -986,9 +883,7 @@ export default function OrderDetailPage() {
                             {item.name}
                           </h4>
                           {item.option && (
-                            <p className="text-sm text-muted-foreground mb-2">
-                              {item.option}
-                            </p>
+                            <p className="text-sm text-muted-foreground mb-2">{item.option}</p>
                           )}
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -1017,29 +912,21 @@ export default function OrderDetailPage() {
                     <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary">
                       <CreditCard className="w-5 h-5 text-foreground" />
                     </div>
-                    <CardTitle className="text-xl font-bold">
-                      결제 정보
-                    </CardTitle>
+                    <CardTitle className="text-xl font-bold">결제 정보</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between gap-3 py-2">
-                      <span className="min-w-0 break-words text-muted-foreground">
-                        상품 금액
-                      </span>
+                      <span className="min-w-0 break-words text-muted-foreground">상품 금액</span>
                       <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
                         {formatCurrency(order.totalPrice - order.shippingFee)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-3 py-2">
-                      <span className="min-w-0 break-words text-muted-foreground">
-                        배송비
-                      </span>
+                      <span className="min-w-0 break-words text-muted-foreground">배송비</span>
                       <span className="shrink-0 whitespace-nowrap text-right font-semibold tabular-nums">
-                        {order.shippingFee > 0
-                          ? formatCurrency(order.shippingFee)
-                          : "무료"}
+                        {order.shippingFee > 0 ? formatCurrency(order.shippingFee) : "무료"}
                       </span>
                     </div>
                     <Separator className="my-4" />
@@ -1057,21 +944,15 @@ export default function OrderDetailPage() {
                       <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/40 p-3">
                         <Shield className="w-5 h-5 text-primary" />
                         <div>
-                          <p className="text-sm font-medium text-foreground">
-                            안전한 결제
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            SSL 보안 결제 시스템
-                          </p>
+                          <p className="text-sm font-medium text-foreground">안전한 결제</p>
+                          <p className="text-xs text-muted-foreground">SSL 보안 결제 시스템</p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/40 p-3">
                         <Truck className="w-5 h-5 text-primary" />
                         <div>
-                          <p className="text-sm font-medium text-foreground">
-                            배송 보장
-                          </p>
+                          <p className="text-sm font-medium text-foreground">배송 보장</p>
                           <p className="text-xs text-muted-foreground">
                             상품에 따라 배송비가 다를 수 있습니다.
                           </p>

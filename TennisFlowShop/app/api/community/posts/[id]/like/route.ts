@@ -33,10 +33,7 @@ async function getAuthUserId() {
   return subStr;
 }
 
-export async function POST(
-  req: NextRequest,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const stop = startTimer();
   const meta = reqMeta(req);
 
@@ -56,18 +53,12 @@ export async function POST(
 
   // 1) ID 형식 검증
   if (!ObjectId.isValid(id)) {
-    return NextResponse.json(
-      { ok: false, error: "invalid_id" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "invalid_id" }, { status: 400 });
   }
 
   const userId = await getAuthUserId();
   if (!userId) {
-    return NextResponse.json(
-      { ok: false, error: "unauthorized" },
-      { status: 401 },
-    );
+    return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
   const rateLimit = await enforceCommunityRateLimit({
@@ -94,15 +85,9 @@ export async function POST(
   const _userId = new ObjectId(userId);
 
   // 2) 게시글 존재 검증 (없으면 좋아요 문서/카운트가 오염되면 안 됨)
-  const exists = await postsCol.findOne(
-    { _id: _postId },
-    { projection: { _id: 1 } },
-  );
+  const exists = await postsCol.findOne({ _id: _postId }, { projection: { _id: 1 } });
   if (!exists) {
-    return NextResponse.json(
-      { ok: false, error: "not_found" },
-      { status: 404 },
-    );
+    return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
   }
 
   let liked = false;
@@ -130,10 +115,7 @@ export async function POST(
     );
 
     if (!incResult) {
-      return NextResponse.json(
-        { ok: false, error: "not_found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
     }
 
     likesCount = Math.max(0, Number(incResult.likes ?? 0));
@@ -165,23 +147,14 @@ export async function POST(
       );
 
       if (!decResult) {
-        return NextResponse.json(
-          { ok: false, error: "not_found" },
-          { status: 404 },
-        );
+        return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
       }
 
       likesCount = Math.max(0, Number(decResult.likes ?? 0));
     } else {
-      const post = await postsCol.findOne(
-        { _id: _postId },
-        { projection: { likes: 1 } },
-      );
+      const post = await postsCol.findOne({ _id: _postId }, { projection: { likes: 1 } });
       if (!post) {
-        return NextResponse.json(
-          { ok: false, error: "not_found" },
-          { status: 404 },
-        );
+        return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
       }
       likesCount = Math.max(0, Number(post.likes ?? 0));
     }
@@ -195,8 +168,5 @@ export async function POST(
     ...meta,
   });
 
-  return NextResponse.json(
-    { ok: true, liked, likes: likesCount },
-    { status: 200 },
-  );
+  return NextResponse.json({ ok: true, liked, likes: likesCount }, { status: 200 });
 }

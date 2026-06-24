@@ -97,18 +97,10 @@ function ProductDetailLoadError({ id }: { id: string }) {
   );
 }
 
-export default async function ProductDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!ObjectId.isValid(id)) {
-    return (
-      <div className="p-6 text-destructive font-bold">
-        상품을 찾을 수 없습니다
-      </div>
-    );
+    return <div className="p-6 text-destructive font-bold">상품을 찾을 수 없습니다</div>;
   }
   const productObjectId = new ObjectId(id);
   let db;
@@ -149,14 +141,10 @@ export default async function ProductDetailPage({
   try {
     product = await withRetry(
       async () =>
-        db
-          .collection("products")
-          .findOne({
-            _id: productObjectId,
-            ...productVisibilityFilterFor(
-              await getVisibilityViewerFromCookies(),
-            ),
-          }),
+        db.collection("products").findOne({
+          _id: productObjectId,
+          ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+        }),
       {
         retries: 2,
         delayMs: 150,
@@ -181,11 +169,7 @@ export default async function ProductDetailPage({
   }
 
   if (!product)
-    return (
-      <div className="p-6 text-destructive font-bold">
-        상품을 찾을 수 없습니다
-      </div>
-    );
+    return <div className="p-6 text-destructive font-bold">상품을 찾을 수 없습니다</div>;
 
   // 최신 리뷰 10개 (숨김 포함) — 서버에서 보안 마스킹
   let reviews: Array<Record<string, unknown>> = [];
@@ -220,11 +204,7 @@ export default async function ProductDetailPage({
               $cond: [{ $eq: ["$status", "hidden"] }, null, "$content"],
             },
             photos: {
-              $cond: [
-                { $eq: ["$status", "hidden"] },
-                [],
-                { $ifNull: ["$photos", []] },
-              ],
+              $cond: [{ $eq: ["$status", "hidden"] }, [], { $ifNull: ["$photos", []] }],
             },
             masked: { $eq: ["$status", "hidden"] },
           },

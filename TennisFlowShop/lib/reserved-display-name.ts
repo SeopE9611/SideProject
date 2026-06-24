@@ -1,11 +1,7 @@
 export const RESERVED_DISPLAY_NAME_MESSAGE =
   "사용할 수 없는 이름입니다. 운영/공식 계정으로 오해될 수 있는 표현은 사용할 수 없습니다.";
 
-type ReservedCategory =
-  | "impersonation"
-  | "brand"
-  | "system_route"
-  | "confusing";
+type ReservedCategory = "impersonation" | "brand" | "system_route" | "confusing";
 
 export const normalizeDisplayNameInput = (value: string) =>
   value.normalize("NFKC").trim().toLowerCase();
@@ -100,17 +96,9 @@ const SYSTEM_ROUTE_EXACT = new Set([
   "마이페이지",
 ]);
 
-const CONFUSING_EXACT = new Set([
-  "null",
-  "undefined",
-  "unknown",
-  "deleted",
-  "systemuser",
-]);
+const CONFUSING_EXACT = new Set(["null", "undefined", "unknown", "deleted", "systemuser"]);
 
-export function getReservedDisplayNameReason(
-  name: string,
-): ReservedCategory | null {
+export function getReservedDisplayNameReason(name: string): ReservedCategory | null {
   const normalized = normalizeDisplayNameInput(name);
   const compact = normalizeDisplayNameForComparison(name);
 
@@ -162,9 +150,7 @@ export function isReservedDisplayName(name: string): boolean {
   return getReservedDisplayNameReason(name) !== null;
 }
 
-export function getReservedDisplayNameErrorMessage(
-  name: string,
-): string | null {
+export function getReservedDisplayNameErrorMessage(name: string): string | null {
   if (!isReservedDisplayName(name)) return null;
   return RESERVED_DISPLAY_NAME_MESSAGE;
 }

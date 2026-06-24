@@ -27,10 +27,7 @@ function resolveClientIp(req: Request) {
   return "unknown-ip";
 }
 
-function build429Response(
-  policy: AdminEndpointCostPolicy,
-  retryAfterSec: number,
-) {
+function build429Response(policy: AdminEndpointCostPolicy, retryAfterSec: number) {
   const res = NextResponse.json(
     {
       ok: false,
@@ -59,26 +56,24 @@ export async function enforceAdminRateLimit(
   const ip = resolveClientIp(req);
   const key = `${policy.endpointKey}:${adminId}:${ip}:${windowStart}`;
 
-  const result = await db
-    .collection<RateLimitWindowDoc>(RATE_LIMIT_COLLECTION)
-    .findOneAndUpdate(
-      { _id: key },
-      {
-        $setOnInsert: {
-          endpointKey: policy.endpointKey,
-          category: policy.category,
-          costGrade: policy.costGrade,
-          adminId,
-          ip,
-          windowStart: new Date(windowStart),
-          windowEnd: new Date(windowEnd),
-          createdAt: new Date(now),
-        },
-        $inc: { count: 1 },
-        $set: { updatedAt: new Date(now) },
+  const result = await db.collection<RateLimitWindowDoc>(RATE_LIMIT_COLLECTION).findOneAndUpdate(
+    { _id: key },
+    {
+      $setOnInsert: {
+        endpointKey: policy.endpointKey,
+        category: policy.category,
+        costGrade: policy.costGrade,
+        adminId,
+        ip,
+        windowStart: new Date(windowStart),
+        windowEnd: new Date(windowEnd),
+        createdAt: new Date(now),
       },
-      { upsert: true, returnDocument: "after" },
-    );
+      $inc: { count: 1 },
+      $set: { updatedAt: new Date(now) },
+    },
+    { upsert: true, returnDocument: "after" },
+  );
 
   const count = Number(result?.count ?? 1);
   const remaining = Math.max(policy.maxRequests - count, 0);

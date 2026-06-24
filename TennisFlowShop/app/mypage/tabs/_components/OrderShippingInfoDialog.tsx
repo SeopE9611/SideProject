@@ -132,10 +132,7 @@ const formatDateTime = (value?: string | null) => {
 const getTrackingFailureMessage = (
   tracking: Extract<OrderTrackingResponse, { success: false }>,
 ) => {
-  if (
-    tracking.errorCode === "UNAUTHENTICATED" ||
-    tracking.errorCode === "FORBIDDEN"
-  ) {
+  if (tracking.errorCode === "UNAUTHENTICATED" || tracking.errorCode === "FORBIDDEN") {
     return "배송조회 서비스 설정을 확인해주세요.";
   }
   if (tracking.errorCode === "BAD_REQUEST") {
@@ -151,8 +148,7 @@ const getTrackingErrorMessage = (
   if (trackingData && !trackingData.success && trackingData.message) {
     return trackingData.message;
   }
-  const message = (trackingError as TrackingSWRFetcherError | undefined)
-    ?.message;
+  const message = (trackingError as TrackingSWRFetcherError | undefined)?.message;
   return message || "배송조회 정보를 불러오지 못했습니다.";
 };
 
@@ -221,12 +217,8 @@ export default function OrderShippingInfoDialog({
   const displayData = data ?? cachedData;
 
   const invoice = displayData?.shippingInfo?.invoice;
-  const isVisitPickup = isVisitPickupOrder(
-    displayData?.shippingInfo ?? { shippingMethod },
-  );
-  const infoTitle = getOrderDeliveryInfoTitle(
-    displayData?.shippingInfo ?? { shippingMethod },
-  );
+  const isVisitPickup = isVisitPickupOrder(displayData?.shippingInfo ?? { shippingMethod });
+  const infoTitle = getOrderDeliveryInfoTitle(displayData?.shippingInfo ?? { shippingMethod });
   const resolvedTriggerLabel =
     triggerLabel ?? (isVisitPickup ? "방문 수령 정보 확인" : "배송정보 확인");
   const TriggerIcon = isVisitPickup ? Store : Truck;
@@ -239,8 +231,7 @@ export default function OrderShippingInfoDialog({
     rawStatusLabel,
     displayData?.shippingInfo,
   );
-  const canTrackDelivery =
-    dialogOpen && !isVisitPickup && Boolean(trackingNumber);
+  const canTrackDelivery = dialogOpen && !isVisitPickup && Boolean(trackingNumber);
   const {
     data: trackingData,
     isLoading: isTrackingLoading,
@@ -253,8 +244,7 @@ export default function OrderShippingInfoDialog({
       revalidateOnReconnect: false,
     },
   );
-  const shouldShowTrackingSummarySkeleton =
-    isTrackingLoading && !trackingData && !trackingError;
+  const shouldShowTrackingSummarySkeleton = isTrackingLoading && !trackingData && !trackingError;
   const shouldShowTrackingStatusNotice = Boolean(
     trackingData &&
     trackingData.success &&
@@ -274,12 +264,7 @@ export default function OrderShippingInfoDialog({
     <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
       {!hideTrigger ? (
         <DialogTrigger asChild>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className={className}
-          >
+          <Button type="button" size="sm" variant="outline" className={className}>
             <TriggerIcon className="mr-2 h-4 w-4" />
             {resolvedTriggerLabel}
           </Button>
@@ -338,9 +323,7 @@ export default function OrderShippingInfoDialog({
 
             <div className="space-y-1 text-sm">
               <div className="font-medium">현재 상태</div>
-              <div className="text-muted-foreground">
-                {displayStatusLabel || "상태 미정"}
-              </div>
+              <div className="text-muted-foreground">{displayStatusLabel || "상태 미정"}</div>
             </div>
 
             <Separator />
@@ -355,17 +338,14 @@ export default function OrderShippingInfoDialog({
               아직 운송장(택배사/운송장번호) 정보가 등록되지 않았습니다.
             </p>
             <p className="text-muted-foreground">
-              관리자가 운송장 입력 후 배송 상태를 변경하면 이곳에서 확인할 수
-              있습니다.
+              관리자가 운송장 입력 후 배송 상태를 변경하면 이곳에서 확인할 수 있습니다.
             </p>
           </div>
         ) : (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">{courierLabel(courier)}</Badge>
-              {trackingNumber ? (
-                <Badge variant="outline">{trackingNumber}</Badge>
-              ) : null}
+              {trackingNumber ? <Badge variant="outline">{trackingNumber}</Badge> : null}
               {trackingNumber ? (
                 <Button
                   type="button"
@@ -385,10 +365,7 @@ export default function OrderShippingInfoDialog({
             <div className="space-y-1 text-sm">
               <div className="font-medium">수령인</div>
               <div className="text-muted-foreground">
-                {[
-                  displayData?.shippingInfo?.name,
-                  displayData?.shippingInfo?.phone,
-                ]
+                {[displayData?.shippingInfo?.name, displayData?.shippingInfo?.phone]
                   .filter(Boolean)
                   .join(" / ") || "-"}
               </div>
@@ -422,24 +399,18 @@ export default function OrderShippingInfoDialog({
                 {trackingData.success && trackingData.supported ? (
                   <>
                     <p className="text-foreground">
-                      <span className="text-muted-foreground">
-                        실시간 배송 상태:
-                      </span>{" "}
+                      <span className="text-muted-foreground">실시간 배송 상태:</span>{" "}
                       {trackingData.displayStatus}
                     </p>
                     {trackingData.lastEvent?.locationName ? (
                       <p className="text-foreground">
-                        <span className="text-muted-foreground">
-                          최근 위치:
-                        </span>{" "}
+                        <span className="text-muted-foreground">최근 위치:</span>{" "}
                         {trackingData.lastEvent.locationName}
                       </p>
                     ) : null}
                     {trackingData.lastEvent?.time ? (
                       <p className="text-foreground">
-                        <span className="text-muted-foreground">
-                          최근 갱신:
-                        </span>{" "}
+                        <span className="text-muted-foreground">최근 갱신:</span>{" "}
                         {formatDateTime(trackingData.lastEvent.time)}
                       </p>
                     ) : null}
@@ -454,24 +425,16 @@ export default function OrderShippingInfoDialog({
                       size="sm"
                       variant="outline"
                       onClick={() =>
-                        window.open(
-                          trackingData.linkUrl,
-                          "_blank",
-                          "noopener,noreferrer",
-                        )
+                        window.open(trackingData.linkUrl, "_blank", "noopener,noreferrer")
                       }
                     >
                       배송조회
                     </Button>
                   </>
                 ) : trackingData.success && !trackingData.supported ? (
-                  <p className="text-muted-foreground">
-                    {trackingData.message}
-                  </p>
+                  <p className="text-muted-foreground">{trackingData.message}</p>
                 ) : (
-                  <p className="text-destructive">
-                    {getTrackingFailureMessage(trackingData)}
-                  </p>
+                  <p className="text-destructive">{getTrackingFailureMessage(trackingData)}</p>
                 )}
               </div>
             ) : null}

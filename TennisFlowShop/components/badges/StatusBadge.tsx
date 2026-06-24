@@ -1,11 +1,7 @@
 "use client";
 
 import { badgeVariants } from "@/components/ui/badge";
-import {
-  usedBadgeMeta,
-  type BadgeSurface,
-  type UsedBadgeKind,
-} from "@/lib/badge-style";
+import { usedBadgeMeta, type BadgeSurface, type UsedBadgeKind } from "@/lib/badge-style";
 import { cn } from "@/lib/utils";
 
 type Props = {

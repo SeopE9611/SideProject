@@ -4,13 +4,7 @@ import SiteContainer from "@/components/layout/SiteContainer";
 import { EmptyState, PublicPageHero, ResultState } from "@/components/public";
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -29,12 +23,7 @@ import {
   Store,
 } from "lucide-react";
 import Link from "next/link";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import LoginGate from "@/components/system/LoginGate";
 import { badgeToneVariant, getOrderStatusTone } from "@/lib/badge-style";
@@ -43,17 +32,13 @@ import {
   hasCompletedStringingApplication,
   normalizeStringingApplicationId,
 } from "@/app/order-lookup/_lib/stringing-status";
-import {
-  getOrderStatusLabelForDisplay,
-  isVisitPickupOrder,
-} from "@/lib/order-shipping";
+import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { getGuestOrderNextActionText } from "@/app/order-lookup/_lib/guestOrderNextAction";
 import { getCommonOrderStatusLabel } from "@/lib/status-labels/base";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => v.replace(/\D/g, "");
-const isValidKoreanPhoneDigits = (digits: string) =>
-  digits.length === 10 || digits.length === 11;
+const isValidKoreanPhoneDigits = (digits: string) => digits.length === 10 || digits.length === 11;
 
 type GuestOrderMode = "off" | "legacy" | "on";
 
@@ -94,11 +79,7 @@ const getStatusIcon = (status: string, isVisitPickup: boolean) => {
     case "배송완료":
       return <CheckCircle2 className="w-4 h-4" />;
     case "배송중":
-      return isVisitPickup ? (
-        <Store className="w-4 h-4" />
-      ) : (
-        <Truck className="w-4 h-4" />
-      );
+      return isVisitPickup ? <Store className="w-4 h-4" /> : <Truck className="w-4 h-4" />;
     case "배송준비중":
       return <Clock className="w-4 h-4" />;
     default:
@@ -119,10 +100,7 @@ export default function OrderLookupResultsPage() {
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<
-    string,
-    string[]
-  > | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | null>(null);
 
   // 비회원 주문 조회(게스트) 접근 허용 여부(클라)
   const guestOrderMode = getGuestOrderModeClient();
@@ -152,9 +130,7 @@ export default function OrderLookupResultsPage() {
 
         // 2) URL 파라미터 검증 (서버와 동일 기준)
         if (!name) {
-          setError(
-            "이름이 비어있습니다. 주문 조회 페이지에서 다시 입력해주세요.",
-          );
+          setError("이름이 비어있습니다. 주문 조회 페이지에서 다시 입력해주세요.");
           setLoading(false);
           return;
         }
@@ -165,9 +141,7 @@ export default function OrderLookupResultsPage() {
           return;
         }
         if (!email) {
-          setError(
-            "이메일이 비어있습니다. 주문 조회 페이지에서 다시 입력해주세요.",
-          );
+          setError("이메일이 비어있습니다. 주문 조회 페이지에서 다시 입력해주세요.");
           setLoading(false);
           return;
         }
@@ -222,9 +196,7 @@ export default function OrderLookupResultsPage() {
                 withStringService: o.shippingInfo?.withStringService,
               },
               isStringServiceApplied: o.isStringServiceApplied,
-              stringingApplicationId: normalizeStringingApplicationId(
-                o.stringingApplicationId,
-              ),
+              stringingApplicationId: normalizeStringingApplicationId(o.stringingApplicationId),
             })),
           );
         } else {
@@ -234,9 +206,7 @@ export default function OrderLookupResultsPage() {
         setLoading(false);
       } catch (err) {
         console.error("주문 조회 중 오류 발생:", err);
-        setError(
-          "주문 정보를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.",
-        );
+        setError("주문 정보를 불러오는 중 오류가 발생했습니다. 다시 시도해주세요.");
         setLoading(false);
       }
     };
@@ -289,20 +259,12 @@ export default function OrderLookupResultsPage() {
           >
             {fieldErrors && (
               <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-foreground dark:bg-destructive/15">
-                <p className="mb-2 text-sm font-semibold text-destructive">
-                  입력값 오류 상세
-                </p>
+                <p className="mb-2 text-sm font-semibold text-destructive">입력값 오류 상세</p>
                 <ul className="list-disc space-y-1 pl-5">
                   {Object.entries(fieldErrors).map(([field, msgs]) =>
                     (msgs ?? []).map((msg, i) => (
-                      <li
-                        key={`${field}-${i}`}
-                        className="text-sm text-destructive"
-                      >
-                        <span className="font-medium">
-                          {FIELD_LABELS[field] ?? field}:
-                        </span>{" "}
-                        {msg}
+                      <li key={`${field}-${i}`} className="text-sm text-destructive">
+                        <span className="font-medium">{FIELD_LABELS[field] ?? field}:</span> {msg}
                       </li>
                     )),
                   )}
@@ -367,12 +329,9 @@ export default function OrderLookupResultsPage() {
               ) : orders && orders.length > 0 ? (
                 <div className="space-y-4 md:space-y-6">
                   {orders.map((order, index) => {
-                    const hasStringingApplication =
-                      hasCompletedStringingApplication(order);
+                    const hasStringingApplication = hasCompletedStringingApplication(order);
                     // 비회원 조회도 관리자/마이페이지와 동일한 공용 방문 수령 판별 유틸을 사용해 정책 일관성을 유지한다.
-                    const isVisitPickup = isVisitPickupOrder(
-                      order.shippingInfo,
-                    );
+                    const isVisitPickup = isVisitPickupOrder(order.shippingInfo);
                     const displayStatus = getLookupOrderStatusLabel(
                       order.status,
                       order.shippingInfo,
@@ -393,9 +352,7 @@ export default function OrderLookupResultsPage() {
                           <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4 md:mb-6">
                             <div className="flex items-center mb-4 lg:mb-0">
                               <div className="flex-shrink-0 w-12 h-12 bg-secondary rounded-full flex items-center justify-center mr-4 border border-border/60">
-                                <span className="text-foreground font-bold">
-                                  #{index + 1}
-                                </span>
+                                <span className="text-foreground font-bold">#{index + 1}</span>
                               </div>
                               <div>
                                 <h3 className="font-semibold text-lg text-foreground">
@@ -410,10 +367,7 @@ export default function OrderLookupResultsPage() {
                               <Badge
                                 variant={badgeToneVariant(
                                   getOrderStatusTone(
-                                    getLookupOrderStatusLabel(
-                                      order.status,
-                                      order.shippingInfo,
-                                    ),
+                                    getLookupOrderStatusLabel(order.status, order.shippingInfo),
                                   ),
                                 )}
                                 className="gap-1 px-3 py-1.5 text-sm font-medium"
@@ -435,9 +389,7 @@ export default function OrderLookupResultsPage() {
                             <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
                               <User className="h-5 w-5 text-primary flex-shrink-0" />
                               <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground mb-1">
-                                  수령인
-                                </p>
+                                <p className="text-xs text-muted-foreground mb-1">수령인</p>
                                 <p className="font-medium text-foreground truncate">
                                   {order.recipient}
                                 </p>
@@ -447,9 +399,7 @@ export default function OrderLookupResultsPage() {
                             <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
                               <Phone className="h-5 w-5 text-success flex-shrink-0" />
                               <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground mb-1">
-                                  연락처
-                                </p>
+                                <p className="text-xs text-muted-foreground mb-1">연락처</p>
                                 <p className="font-medium text-foreground truncate">
                                   {order.contactNumber}
                                 </p>
@@ -459,21 +409,15 @@ export default function OrderLookupResultsPage() {
                             <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
                               <Calendar className="h-5 w-5 text-foreground flex-shrink-0" />
                               <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground mb-1">
-                                  주문일자
-                                </p>
-                                <p className="font-medium text-foreground">
-                                  {order.orderDate}
-                                </p>
+                                <p className="text-xs text-muted-foreground mb-1">주문일자</p>
+                                <p className="font-medium text-foreground">{order.orderDate}</p>
                               </div>
                             </div>
 
                             <div className="flex items-center gap-3 p-3 bg-secondary rounded-lg border border-border">
                               <CreditCard className="h-5 w-5 text-primary flex-shrink-0" />
                               <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground mb-1">
-                                  결제금액
-                                </p>
+                                <p className="text-xs text-muted-foreground mb-1">결제금액</p>
                                 <p className="font-bold text-foreground">
                                   {formatCurrency(order.totalAmount)}
                                 </p>
@@ -505,9 +449,7 @@ export default function OrderLookupResultsPage() {
                                     <Button
                                       className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-sm transition-all duration-200 hover:shadow-md"
                                       onClick={() =>
-                                        router.push(
-                                          `/services/apply?orderId=${order.id}`,
-                                        )
+                                        router.push(`/services/apply?orderId=${order.id}`)
                                       }
                                     >
                                       <ShoppingBag className="w-4 h-4 mr-2" />
@@ -525,10 +467,7 @@ export default function OrderLookupResultsPage() {
                                           교체서비스 신청서 접수 완료
                                         </div>
                                       </TooltipTrigger>
-                                      <TooltipContent
-                                        side="top"
-                                        className="text-sm"
-                                      >
+                                      <TooltipContent side="top" className="text-sm">
                                         {isVisitPickup
                                           ? "이미 접수된 신청서가 존재합니다. 방문수령 장착은 접수된 내용으로 진행됩니다."
                                           : "이미 접수된 신청서가 존재합니다. 택배 장착 서비스는 접수된 내용으로 진행됩니다."}
@@ -557,11 +496,7 @@ export default function OrderLookupResultsPage() {
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         다시 조회하기
                       </Button>
-                      <Button
-                        asChild
-                        variant="outline"
-                        className="w-full border-border sm:w-auto"
-                      >
+                      <Button asChild variant="outline" className="w-full border-border sm:w-auto">
                         <Link href="/board/qna/write">고객센터 문의하기</Link>
                       </Button>
                     </div>

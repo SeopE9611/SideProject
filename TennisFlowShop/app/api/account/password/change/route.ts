@@ -11,8 +11,7 @@ export async function POST(req: Request) {
     // 1) 인증된 사용자 식별
     const jar = await cookies();
     const at = jar.get("accessToken")?.value;
-    if (!at)
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!at) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     // 토큰 검증은 throw 가능하므로 401로 정리
     let payload: any = null;
@@ -21,8 +20,7 @@ export async function POST(req: Request) {
     } catch {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-    if (!payload?.sub)
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!payload?.sub) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     const subStr = String(payload.sub);
     if (!ObjectId.isValid(subStr))
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -36,10 +34,7 @@ export async function POST(req: Request) {
     }
     const { newPassword } = body ?? {};
     if (typeof newPassword !== "string" || newPassword.length < 8) {
-      return NextResponse.json(
-        { message: "비밀번호는 8자 이상이어야 합니다." },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: "비밀번호는 8자 이상이어야 합니다." }, { status: 400 });
     }
 
     // 3) 해시 생성
@@ -60,10 +55,7 @@ export async function POST(req: Request) {
     );
 
     if (!r.matchedCount) {
-      return NextResponse.json(
-        { message: "사용자를 찾을 수 없습니다." },
-        { status: 404 },
-      );
+      return NextResponse.json({ message: "사용자를 찾을 수 없습니다." }, { status: 404 });
     }
 
     // 5) (선택) 감사 로그 저장 – 이미 공용 appendAudit가 있다면 그걸 사용

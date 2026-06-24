@@ -9,17 +9,11 @@ import { verifyAccessToken } from "@/lib/auth.utils";
 function withDeprecation(res: NextResponse) {
   res.headers.set("Deprecation", "true");
   res.headers.set("Sunset", "Wed, 31 Dec 2026 14:59:59 GMT");
-  res.headers.set(
-    "Link",
-    '</api/admin/rentals/{id}/history>; rel="successor-version"',
-  );
+  res.headers.set("Link", '</api/admin/rentals/{id}/history>; rel="successor-version"');
   return res;
 }
 
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     // (1) 관리자 가드 (토큰 불량 throw → 500 방지)
@@ -33,18 +27,13 @@ export async function GET(
     }
     if (!payload || payload.role !== "admin") {
       return withDeprecation(
-        NextResponse.json(
-          { ok: false, message: "UNAUTHORIZED" },
-          { status: 401 },
-        ),
+        NextResponse.json({ ok: false, message: "UNAUTHORIZED" }, { status: 401 }),
       );
     }
 
     // (2) id(ObjectId) 유효성 (new ObjectId(id) throw → 500 방지)
     if (!ObjectId.isValid(id)) {
-      return withDeprecation(
-        NextResponse.json({ ok: false, message: "BAD_ID" }, { status: 400 }),
-      );
+      return withDeprecation(NextResponse.json({ ok: false, message: "BAD_ID" }, { status: 400 }));
     }
     const rentalId = new ObjectId(id);
 
@@ -53,9 +42,7 @@ export async function GET(
     const pageRaw = parseInt(url.searchParams.get("page") || "1", 10);
     const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
     const pageSizeRaw = parseInt(url.searchParams.get("pageSize") || "10", 10);
-    const pageSize = Number.isFinite(pageSizeRaw)
-      ? Math.min(50, Math.max(5, pageSizeRaw))
-      : 10;
+    const pageSize = Number.isFinite(pageSizeRaw) ? Math.min(50, Math.max(5, pageSizeRaw)) : 10;
     const skip = (page - 1) * pageSize;
 
     const db = (await clientPromise).db();
@@ -90,10 +77,7 @@ export async function GET(
   } catch (e) {
     console.error("history list error", e);
     return withDeprecation(
-      NextResponse.json(
-        { ok: false, message: "SERVER_ERROR" },
-        { status: 500 },
-      ),
+      NextResponse.json({ ok: false, message: "SERVER_ERROR" }, { status: 500 }),
     );
   }
 }

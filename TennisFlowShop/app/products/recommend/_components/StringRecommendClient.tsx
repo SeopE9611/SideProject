@@ -35,8 +35,7 @@ const answerLabels = {
 } as const;
 
 export default function StringRecommendClient() {
-  const [answers, setAnswers] =
-    useState<StringRecommendAnswers>(initialAnswers);
+  const [answers, setAnswers] = useState<StringRecommendAnswers>(initialAnswers);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [products, setProducts] = useState<RecommendableProduct[]>([]);
   const [results, setResults] = useState<RecommendedStringProduct[]>([]);
@@ -49,11 +48,8 @@ export default function StringRecommendClient() {
       try {
         setIsLoadingProducts(true);
         setProductsError(null);
-        const response = await fetch(
-          "/api/products?purpose=stringing&limit=100",
-        );
-        if (!response.ok)
-          throw new Error("추천에 사용할 스트링 정보를 불러오지 못했습니다.");
+        const response = await fetch("/api/products?purpose=stringing&limit=100");
+        if (!response.ok) throw new Error("추천에 사용할 스트링 정보를 불러오지 못했습니다.");
         const data: unknown = await response.json();
         const rawItems = Array.isArray(data)
           ? data
@@ -91,16 +87,12 @@ export default function StringRecommendClient() {
 
   const answeredCount = Object.values(answers).filter(Boolean).length;
   const isComplete = answeredCount === RECOMMEND_QUESTIONS.length;
-  const progress = Math.round(
-    (answeredCount / RECOMMEND_QUESTIONS.length) * 100,
-  );
+  const progress = Math.round((answeredCount / RECOMMEND_QUESTIONS.length) * 100);
 
   const selectedSummary = useMemo(
     () =>
       RECOMMEND_QUESTIONS.map((q) => {
-        const picked = q.options.find(
-          (option) => option.value === answers[q.id],
-        );
+        const picked = q.options.find((option) => option.value === answers[q.id]);
         return {
           id: q.id,
           title: answerLabels[q.id],
@@ -140,13 +132,10 @@ export default function StringRecommendClient() {
           title="스트링 추천 도우미"
           description={
             <div className="space-y-2 break-keep leading-relaxed">
-              <p>
-                간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을
-                안내해드릴게요.
-              </p>
+              <p>간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을 안내해드릴게요.</p>
               <p className="text-sm">
-                추천 결과는 선택을 돕기 위한 참고 정보이며, 실제 텐션과 세팅은
-                라켓 상태와 사용 습관에 따라 달라질 수 있어요.
+                추천 결과는 선택을 돕기 위한 참고 정보이며, 실제 텐션과 세팅은 라켓 상태와 사용
+                습관에 따라 달라질 수 있어요.
               </p>
             </div>
           }
@@ -227,11 +216,7 @@ export default function StringRecommendClient() {
       {hasSubmitted && results.length > 0 ? (
         <div className="grid gap-4 sm:gap-5 lg:grid-cols-3">
           {results.map((result, idx) => (
-            <StringRecommendResultCard
-              key={result.product.id}
-              result={result}
-              rank={idx + 1}
-            />
+            <StringRecommendResultCard key={result.product.id} result={result} rank={idx + 1} />
           ))}
         </div>
       ) : null}
@@ -241,28 +226,17 @@ export default function StringRecommendClient() {
             <p className="break-keep text-sm text-muted-foreground">
               조건에 맞는 추천 상품을 찾지 못했어요.
             </p>
-            <Button
-              asChild
-              variant="outline"
-              className="mt-3 w-full sm:w-auto"
-              type="button"
-            >
+            <Button asChild variant="outline" className="mt-3 w-full sm:w-auto" type="button">
               <Link href="/products?from=apply">전체 스트링 보기</Link>
             </Button>
           </CardContent>
         </Card>
       ) : null}
       <div className="flex flex-col gap-2 rounded-2xl border border-border bg-card p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
-        <Link
-          href="/services/tension-guide"
-          className="break-keep text-primary hover:underline"
-        >
+        <Link href="/services/tension-guide" className="break-keep text-primary hover:underline">
           텐션 가이드 보기
         </Link>
-        <Link
-          href="/products?from=apply"
-          className="break-keep text-primary hover:underline"
-        >
+        <Link href="/products?from=apply" className="break-keep text-primary hover:underline">
           전체 스트링 보기
         </Link>
       </div>

@@ -47,9 +47,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const token = (await cookies()).get("accessToken")?.value;
 
   let initialUser: any = null;
@@ -71,11 +69,7 @@ export default async function RootLayout({
   }
   // throw new Error('[TEST] app/global error.tsx 동작 확인용');
   return (
-    <html
-      lang="ko"
-      suppressHydrationWarning
-      className="scroll-smooth overflow-x-hidden"
-    >
+    <html lang="ko" suppressHydrationWarning className="scroll-smooth overflow-x-hidden">
       <body className="bg-background text-foreground">
         {/* Kakao JavaScript SDK (채널 1:1 문의용) */}
         <Script

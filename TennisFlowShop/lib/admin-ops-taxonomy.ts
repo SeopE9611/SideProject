@@ -3,18 +3,8 @@
  * - 의도: 여러 관리자 화면(주문/대여/운영함)에서 동일한 의미를 동일한 텍스트/색상으로 유지
  * - 주의: 여기서는 “표시(UI)” 규칙만. 정산(금액 산정) 정책은 settlementPolicy가 기준.
  */
-export type OpsKind =
-  | "order"
-  | "stringing_application"
-  | "rental"
-  | "package_purchase";
-export type OpsBadgeTone =
-  | "success"
-  | "warning"
-  | "danger"
-  | "neutral"
-  | "info"
-  | "brand";
+export type OpsKind = "order" | "stringing_application" | "rental" | "package_purchase";
+export type OpsBadgeTone = "success" | "warning" | "danger" | "neutral" | "info" | "brand";
 export type OpsSignalType = "status" | "payment";
 
 export function opsKindLabel(kind: OpsKind) {
@@ -68,8 +58,7 @@ const rentalStatusColors: Record<string, OpsBadgeTone> = {
 
 export function opsStatusBadgeTone(kind: OpsKind, label: string): OpsBadgeTone {
   if (kind === "order") return orderStatusColors[label] ?? "neutral";
-  if (kind === "stringing_application")
-    return applicationStatusColors[label] ?? "neutral";
+  if (kind === "stringing_application") return applicationStatusColors[label] ?? "neutral";
   if (kind === "package_purchase") return orderStatusColors[label] ?? "neutral";
   return rentalStatusColors[label] ?? "neutral";
 }
@@ -95,16 +84,12 @@ export function pickPrimaryOpsSignal(
     type: OpsSignalType;
   }>,
 ) {
-  const filtered = signals.filter(
-    (signal) => signal.label && signal.label.trim().length > 0,
-  );
+  const filtered = signals.filter((signal) => signal.label && signal.label.trim().length > 0);
   if (filtered.length === 0) return null;
 
   const deduped = filtered.filter(
     (signal, idx, arr) =>
-      arr.findIndex(
-        (x) => x.label === signal.label && x.tone === signal.tone,
-      ) === idx,
+      arr.findIndex((x) => x.label === signal.label && x.tone === signal.tone) === idx,
   );
   deduped.sort((a, b) => {
     const toneDiff = SIGNAL_PRIORITY[b.tone] - SIGNAL_PRIORITY[a.tone];

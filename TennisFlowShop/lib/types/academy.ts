@@ -13,12 +13,7 @@ export type AcademyLessonType =
   | "onePoint"
   | "consultation";
 
-export type AcademyCurrentLevel =
-  | "new"
-  | "beginner"
-  | "intermediate"
-  | "advanced"
-  | "unknown";
+export type AcademyCurrentLevel = "new" | "beginner" | "intermediate" | "advanced" | "unknown";
 
 export type AcademyApplicantProfile = {
   name: string;
@@ -99,10 +94,7 @@ export const ACADEMY_APPLICATION_STATUSES = [
   "cancelled",
 ] as const satisfies readonly AcademyLessonApplicationStatus[];
 
-export const ACADEMY_APPLICATION_STATUS_LABELS: Record<
-  AcademyLessonApplicationStatus,
-  string
-> = {
+export const ACADEMY_APPLICATION_STATUS_LABELS: Record<AcademyLessonApplicationStatus, string> = {
   submitted: "접수완료",
   reviewing: "검토 중",
   contacted: "상담 완료",
@@ -119,23 +111,20 @@ export const ACADEMY_LESSON_TYPE_LABELS: Record<AcademyLessonType, string> = {
   consultation: "상담 후 결정",
 };
 
-export const ACADEMY_CURRENT_LEVEL_LABELS: Record<AcademyCurrentLevel, string> =
-  {
-    new: "처음 배워요",
-    beginner: "초급",
-    intermediate: "중급",
-    advanced: "상급",
-    unknown: "잘 모르겠어요",
-  };
+export const ACADEMY_CURRENT_LEVEL_LABELS: Record<AcademyCurrentLevel, string> = {
+  new: "처음 배워요",
+  beginner: "초급",
+  intermediate: "중급",
+  advanced: "상급",
+  unknown: "잘 모르겠어요",
+};
 
 export function isAcademyApplicationStatus(
   value: unknown,
 ): value is AcademyLessonApplicationStatus {
   return (
     typeof value === "string" &&
-    ACADEMY_APPLICATION_STATUSES.includes(
-      value as AcademyLessonApplicationStatus,
-    )
+    ACADEMY_APPLICATION_STATUSES.includes(value as AcademyLessonApplicationStatus)
   );
 }
 
@@ -146,9 +135,7 @@ export function getAcademyApplicationStatusLabel(
   return ACADEMY_APPLICATION_STATUS_LABELS[status];
 }
 
-export function getAcademyLessonTypeLabel(
-  type: AcademyLessonType | string | null | undefined,
-) {
+export function getAcademyLessonTypeLabel(type: AcademyLessonType | string | null | undefined) {
   if (typeof type !== "string" || !(type in ACADEMY_LESSON_TYPE_LABELS)) {
     return "미선택";
   }
@@ -166,18 +153,9 @@ export function getAcademyCurrentLevelLabel(
 
 export type AcademyClassStatus = "draft" | "visible" | "hidden" | "closed";
 
-export type AcademyClassLevel =
-  | "beginner"
-  | "intermediate"
-  | "advanced"
-  | "all";
+export type AcademyClassLevel = "beginner" | "intermediate" | "advanced" | "all";
 
-export type AcademyClassLessonType =
-  | "group"
-  | "private"
-  | "junior"
-  | "adult"
-  | "onePoint";
+export type AcademyClassLessonType = "group" | "private" | "junior" | "adult" | "onePoint";
 
 export type PublicAcademyClass = {
   _id: string;
@@ -348,10 +326,7 @@ export const ACADEMY_CLASS_LEVEL_LABELS: Record<AcademyClassLevel, string> = {
   all: "전체 레벨",
 };
 
-export const ACADEMY_CLASS_LESSON_TYPE_LABELS: Record<
-  AcademyClassLessonType,
-  string
-> = {
+export const ACADEMY_CLASS_LESSON_TYPE_LABELS: Record<AcademyClassLessonType, string> = {
   group: "그룹 레슨",
   private: "개인 레슨",
   junior: "주니어 레슨",
@@ -359,43 +334,27 @@ export const ACADEMY_CLASS_LESSON_TYPE_LABELS: Record<
   onePoint: "원포인트 레슨",
 };
 
-export function isAcademyClassStatus(
-  value: unknown,
-): value is AcademyClassStatus {
-  return (
-    typeof value === "string" &&
-    ACADEMY_CLASS_STATUSES.includes(value as AcademyClassStatus)
-  );
+export function isAcademyClassStatus(value: unknown): value is AcademyClassStatus {
+  return typeof value === "string" && ACADEMY_CLASS_STATUSES.includes(value as AcademyClassStatus);
 }
 
-export function isAcademyClassLevel(
-  value: unknown,
-): value is AcademyClassLevel {
-  return (
-    typeof value === "string" &&
-    ACADEMY_CLASS_LEVELS.includes(value as AcademyClassLevel)
-  );
+export function isAcademyClassLevel(value: unknown): value is AcademyClassLevel {
+  return typeof value === "string" && ACADEMY_CLASS_LEVELS.includes(value as AcademyClassLevel);
 }
 
-export function isAcademyClassLessonType(
-  value: unknown,
-): value is AcademyClassLessonType {
+export function isAcademyClassLessonType(value: unknown): value is AcademyClassLessonType {
   return (
     typeof value === "string" &&
     ACADEMY_CLASS_LESSON_TYPES.includes(value as AcademyClassLessonType)
   );
 }
 
-export function getAcademyClassStatusLabel(
-  status: AcademyClassStatus | string | null | undefined,
-) {
+export function getAcademyClassStatusLabel(status: AcademyClassStatus | string | null | undefined) {
   if (!isAcademyClassStatus(status)) return "알 수 없음";
   return ACADEMY_CLASS_STATUS_LABELS[status];
 }
 
-export function getAcademyClassLevelLabel(
-  level: AcademyClassLevel | string | null | undefined,
-) {
+export function getAcademyClassLevelLabel(level: AcademyClassLevel | string | null | undefined) {
   if (!isAcademyClassLevel(level)) return "미선택";
   return ACADEMY_CLASS_LEVEL_LABELS[level];
 }

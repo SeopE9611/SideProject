@@ -1,22 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import {
-  AdminFetchError,
-  adminMutator,
-  getAdminErrorMessage,
-} from "@/lib/admin/adminFetcher";
+import { AdminFetchError, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import {
   RENTAL_CLEANUP_CREATED_DISABLED_MESSAGE,
   isRentalCleanupCreatedEnabledForClient,
 } from "@/lib/admin/rentalCleanupCreatedFeature";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
-export default function CleanupCreatedButton({
-  hours = 2,
-}: {
-  hours?: number;
-}) {
+export default function CleanupCreatedButton({ hours = 2 }: { hours?: number }) {
   const [loading, setLoading] = useState(false);
   const isFeatureEnabled = isRentalCleanupCreatedEnabledForClient();
 

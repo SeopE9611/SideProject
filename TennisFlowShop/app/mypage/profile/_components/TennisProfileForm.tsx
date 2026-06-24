@@ -1,13 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -117,10 +111,7 @@ export default function TennisProfileForm() {
     }
   }, [isLoading, snapshot]);
 
-  const isDirty =
-    !isLoading &&
-    baselineRef.current !== null &&
-    baselineRef.current !== snapshot;
+  const isDirty = !isLoading && baselineRef.current !== null && baselineRef.current !== snapshot;
   useUnsavedChangesGuard(isDirty && !isSaving);
 
   // 1) 마운트 시 내 테니스 프로필 불러오기
@@ -175,10 +166,7 @@ export default function TennisProfileForm() {
   }, []);
 
   // 공통 onChange 헬퍼 (루트 필드용)
-  const updateField = <K extends keyof TennisProfile>(
-    key: K,
-    value: TennisProfile[K],
-  ) => {
+  const updateField = <K extends keyof TennisProfile>(key: K, value: TennisProfile[K]) => {
     setProfile((prev) => ({
       ...prev,
       [key]: value,
@@ -186,10 +174,7 @@ export default function TennisProfileForm() {
   };
 
   // 라켓/스트링 중첩 필드용
-  const updateMainRacket = (
-    key: keyof TennisProfile["mainRacket"],
-    value: string,
-  ) => {
+  const updateMainRacket = (key: keyof TennisProfile["mainRacket"], value: string) => {
     setProfile((prev) => ({
       ...prev,
       mainRacket: {
@@ -199,10 +184,7 @@ export default function TennisProfileForm() {
     }));
   };
 
-  const updateMainString = (
-    key: keyof TennisProfile["mainString"],
-    value: string,
-  ) => {
+  const updateMainString = (key: keyof TennisProfile["mainString"], value: string) => {
     setProfile((prev) => ({
       ...prev,
       mainString: {
@@ -229,9 +211,7 @@ export default function TennisProfileForm() {
       return;
     }
     if (playStyle && !ALLOWED_PLAY_STYLE.has(playStyle)) {
-      showErrorToast(
-        "플레이 스타일 값이 올바르지 않습니다. 다시 선택해주세요.",
-      );
+      showErrorToast("플레이 스타일 값이 올바르지 않습니다. 다시 선택해주세요.");
       return;
     }
 
@@ -247,14 +227,8 @@ export default function TennisProfileForm() {
 
     const note = trim(profile.note);
 
-    if (
-      isTooLong(racketBrand, 40) ||
-      isTooLong(racketModel, 60) ||
-      isTooLong(racketBalance, 40)
-    ) {
-      showErrorToast(
-        "라켓 정보가 너무 깁니다. (브랜드 40자 / 모델 60자 / 밸런스 40자 이내)",
-      );
+    if (isTooLong(racketBrand, 40) || isTooLong(racketModel, 60) || isTooLong(racketBalance, 40)) {
+      showErrorToast("라켓 정보가 너무 깁니다. (브랜드 40자 / 모델 60자 / 밸런스 40자 이내)");
       return;
     }
     if (
@@ -373,8 +347,8 @@ export default function TennisProfileForm() {
           <div>
             <CardTitle className="text-xl">테니스 프로필</CardTitle>
             <CardDescription>
-              사용하는 라켓과 스트링, 플레이 스타일을 설정하면 커뮤니티에서
-              프로필 카드로 보여집니다.
+              사용하는 라켓과 스트링, 플레이 스타일을 설정하면 커뮤니티에서 프로필 카드로
+              보여집니다.
             </CardDescription>
           </div>
         </div>
@@ -407,9 +381,7 @@ export default function TennisProfileForm() {
           <>
             {/* 플레이어 기본 정보 */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-foreground">
-                플레이어 기본 정보
-              </h3>
+              <h3 className="text-sm font-semibold text-foreground">플레이어 기본 정보</h3>
               <div className="grid gap-4 md:grid-cols-3">
                 {/* 레벨 */}
                 <div className="space-y-1.5">
@@ -438,9 +410,7 @@ export default function TennisProfileForm() {
 
                 {/* 손 */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">
-                    사용 손
-                  </Label>
+                  <Label className="text-xs text-muted-foreground">사용 손</Label>
                   <Select
                     value={profile.hand}
                     onValueChange={(value) => updateField("hand", value)}
@@ -458,9 +428,7 @@ export default function TennisProfileForm() {
 
                 {/* 플레이 스타일 */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">
-                    플레이 스타일
-                  </Label>
+                  <Label className="text-xs text-muted-foreground">플레이 스타일</Label>
                   <Select
                     value={profile.playStyle}
                     onValueChange={(value) => updateField("playStyle", value)}
@@ -471,9 +439,7 @@ export default function TennisProfileForm() {
                     <SelectContent>
                       <SelectItem value="baseline">베이스라이너</SelectItem>
                       <SelectItem value="all_court">올코트</SelectItem>
-                      <SelectItem value="serve_and_volley">
-                        서브&발리
-                      </SelectItem>
+                      <SelectItem value="serve_and_volley">서브&발리</SelectItem>
                       <SelectItem value="counter_puncher">공격적</SelectItem>
                       <SelectItem value="other">기타</SelectItem>
                     </SelectContent>
@@ -484,14 +450,10 @@ export default function TennisProfileForm() {
 
             {/* 2. 메인 라켓 */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-foreground">
-                메인 라켓
-              </h3>
+              <h3 className="text-sm font-semibold text-foreground">메인 라켓</h3>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">
-                    브랜드
-                  </Label>
+                  <Label className="text-xs text-muted-foreground">브랜드</Label>
                   <Input
                     value={profile.mainRacket.brand}
                     onChange={(e) => updateMainRacket("brand", e.target.value)}
@@ -499,9 +461,7 @@ export default function TennisProfileForm() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">
-                    모델명
-                  </Label>
+                  <Label className="text-xs text-muted-foreground">모델명</Label>
                   <Input
                     value={profile.mainRacket.model}
                     onChange={(e) => updateMainRacket("model", e.target.value)}
@@ -509,9 +469,7 @@ export default function TennisProfileForm() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">
-                    무게 (g)
-                  </Label>
+                  <Label className="text-xs text-muted-foreground">무게 (g)</Label>
                   <Input
                     value={profile.mainRacket.weight}
                     onChange={(e) => updateMainRacket("weight", e.target.value)}
@@ -519,14 +477,10 @@ export default function TennisProfileForm() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">
-                    밸런스
-                  </Label>
+                  <Label className="text-xs text-muted-foreground">밸런스</Label>
                   <Input
                     value={profile.mainRacket.balance}
-                    onChange={(e) =>
-                      updateMainRacket("balance", e.target.value)
-                    }
+                    onChange={(e) => updateMainRacket("balance", e.target.value)}
                     placeholder="예: 320mm, 3pts HL"
                   />
                 </div>
@@ -535,14 +489,10 @@ export default function TennisProfileForm() {
 
             {/* 3. 메인 스트링 */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-foreground">
-                메인 스트링
-              </h3>
+              <h3 className="text-sm font-semibold text-foreground">메인 스트링</h3>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">
-                    브랜드
-                  </Label>
+                  <Label className="text-xs text-muted-foreground">브랜드</Label>
                   <Input
                     value={profile.mainString.brand}
                     onChange={(e) => updateMainString("brand", e.target.value)}
@@ -550,9 +500,7 @@ export default function TennisProfileForm() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">
-                    모델명
-                  </Label>
+                  <Label className="text-xs text-muted-foreground">모델명</Label>
                   <Input
                     value={profile.mainString.model}
                     onChange={(e) => updateMainString("model", e.target.value)}
@@ -560,9 +508,7 @@ export default function TennisProfileForm() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">
-                    게이지
-                  </Label>
+                  <Label className="text-xs text-muted-foreground">게이지</Label>
                   <Input
                     value={profile.mainString.gauge}
                     onChange={(e) => updateMainString("gauge", e.target.value)}
@@ -573,33 +519,23 @@ export default function TennisProfileForm() {
                   <Label className="text-xs text-muted-foreground">재질</Label>
                   <Input
                     value={profile.mainString.material}
-                    onChange={(e) =>
-                      updateMainString("material", e.target.value)
-                    }
+                    onChange={(e) => updateMainString("material", e.target.value)}
                     placeholder="예: 폴리, 멀티, 내추럴"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">
-                    메인 텐션 (LB)
-                  </Label>
+                  <Label className="text-xs text-muted-foreground">메인 텐션 (LB)</Label>
                   <Input
                     value={profile.mainString.tensionMain}
-                    onChange={(e) =>
-                      updateMainString("tensionMain", e.target.value)
-                    }
+                    onChange={(e) => updateMainString("tensionMain", e.target.value)}
                     placeholder="예: 53"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">
-                    크로스 텐션 (LB)
-                  </Label>
+                  <Label className="text-xs text-muted-foreground">크로스 텐션 (LB)</Label>
                   <Input
                     value={profile.mainString.tensionCross}
-                    onChange={(e) =>
-                      updateMainString("tensionCross", e.target.value)
-                    }
+                    onChange={(e) => updateMainString("tensionCross", e.target.value)}
                     placeholder="예: 51"
                   />
                 </div>
@@ -608,9 +544,7 @@ export default function TennisProfileForm() {
 
             {/* 4. 소개 문구 */}
             <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">
-                소개 / 한 줄 설명
-              </Label>
+              <Label className="text-xs text-muted-foreground">소개 / 한 줄 설명</Label>
               <Textarea
                 value={profile.note}
                 onChange={(e) => updateField("note", e.target.value)}
@@ -626,8 +560,7 @@ export default function TennisProfileForm() {
                   커뮤니티에서 테니스 프로필 공개
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  작성자 프로필 카드에서 라켓/스트링 정보를 보여줄지 여부를
-                  설정합니다.
+                  작성자 프로필 카드에서 라켓/스트링 정보를 보여줄지 여부를 설정합니다.
                 </p>
               </div>
               <Switch

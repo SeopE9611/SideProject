@@ -5,18 +5,9 @@ import { StackedCardListSkeleton } from "@/components/system/loading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  getAnswerStatusBadgeSpec,
-  getQnaCategoryBadgeSpec,
-} from "@/lib/badge-style";
+import { getAnswerStatusBadgeSpec, getQnaCategoryBadgeSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import {
-  ArrowRight,
-  Calendar,
-  CheckCircle,
-  Clock,
-  MessageCircleQuestion,
-} from "lucide-react";
+import { ArrowRight, Calendar, CheckCircle, Clock, MessageCircleQuestion } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import useSWRInfinite from "swr/infinite";
@@ -42,11 +33,7 @@ export default function QnAList() {
   // SWR Infinite 키 생성
   const getKey = (pageIndex: number, previousPageData: QnaPage | null) => {
     // 직전 페이지가 LIMIT 미만이면 다음 페이지 없음
-    if (
-      previousPageData &&
-      previousPageData.items &&
-      previousPageData.items.length < LIMIT
-    )
+    if (previousPageData && previousPageData.items && previousPageData.items.length < LIMIT)
       return null;
 
     const page = pageIndex + 1;
@@ -60,18 +47,18 @@ export default function QnAList() {
     return `/api/qna/me?${params.toString()}`;
   };
 
-  const { data, size, setSize, isValidating, error, mutate } =
-    useSWRInfinite<QnaPage>(getKey, fetcher, {
+  const { data, size, setSize, isValidating, error, mutate } = useSWRInfinite<QnaPage>(
+    getKey,
+    fetcher,
+    {
       revalidateFirstPage: true,
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-    });
+    },
+  );
 
   // 누적 리스트
-  const qnas = useMemo(
-    () => (data ? data.flatMap((d) => d.items) : []),
-    [data],
-  );
+  const qnas = useMemo(() => (data ? data.flatMap((d) => d.items) : []), [data]);
 
   // 더 보기 가능 여부
   const hasMore = useMemo(() => {
@@ -83,12 +70,7 @@ export default function QnAList() {
   // 에러
   if (error) {
     return (
-      <AsyncState
-        kind="error"
-        variant="card"
-        resourceName="문의 내역"
-        onAction={() => mutate()}
-      />
+      <AsyncState kind="error" variant="card" resourceName="문의 내역" onAction={() => mutate()} />
     );
   }
 
@@ -112,10 +94,7 @@ export default function QnAList() {
           </p>
 
           <Button asChild size="sm" variant="default" className="mt-4">
-            <Link
-              href="/board/qna/write"
-              className="inline-flex items-center gap-1.5"
-            >
+            <Link href="/board/qna/write" className="inline-flex items-center gap-1.5">
               문의하기
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
@@ -182,9 +161,7 @@ export default function QnAList() {
                   <Clock className="h-5 w-5 text-warning" />
                 )}
                 {(() => {
-                  const st = getAnswerStatusBadgeSpec(
-                    qna.status === "답변 완료",
-                  );
+                  const st = getAnswerStatusBadgeSpec(qna.status === "답변 완료");
                   return <Badge variant={st.variant}>{qna.status}</Badge>;
                 })()}
               </div>
@@ -202,10 +179,7 @@ export default function QnAList() {
                 asChild
                 className="w-full border-border bg-background transition-colors hover:bg-card sm:w-auto"
               >
-                <Link
-                  href={`/board/qna/${qna.id}`}
-                  className="inline-flex items-center gap-1"
-                >
+                <Link href={`/board/qna/${qna.id}`} className="inline-flex items-center gap-1">
                   상세 보기
                   <ArrowRight className="h-3 w-3" />
                 </Link>
@@ -218,17 +192,11 @@ export default function QnAList() {
       {/* '더 보기' */}
       <div className="mt-6 flex justify-center items-center">
         {hasMore ? (
-          <Button
-            variant="outline"
-            onClick={() => setSize(size + 1)}
-            disabled={isValidating}
-          >
+          <Button variant="outline" onClick={() => setSize(size + 1)} disabled={isValidating}>
             더 보기
           </Button>
         ) : qnas.length ? (
-          <span className="text-sm text-foreground/80">
-            마지막 페이지입니다
-          </span>
+          <span className="text-sm text-foreground/80">마지막 페이지입니다</span>
         ) : null}
       </div>
 

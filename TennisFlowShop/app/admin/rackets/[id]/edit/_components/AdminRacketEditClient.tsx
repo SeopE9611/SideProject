@@ -2,9 +2,7 @@
 
 import useSWR from "swr";
 import { useRouter } from "next/navigation";
-import AdminRacketForm, {
-  type RacketForm,
-} from "@/app/admin/rackets/_components/AdminRacketForm";
+import AdminRacketForm, { type RacketForm } from "@/app/admin/rackets/_components/AdminRacketForm";
 import { ArrowLeft, Edit, Trash2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -49,17 +47,8 @@ function StockChip({ id, total }: { id: string; total: number }) {
   const avail = Math.max(0, Number(data?.available ?? 0));
   const soldOut = avail <= 0;
   return (
-    <Badge
-      variant={soldOut ? "destructive" : "default"}
-      className="font-normal"
-    >
-      {qty > 1
-        ? soldOut
-          ? `0/${qty}`
-          : `${avail}/${qty}`
-        : soldOut
-          ? "대여 중"
-          : "대여 가능"}
+    <Badge variant={soldOut ? "destructive" : "default"} className="font-normal">
+      {qty > 1 ? (soldOut ? `0/${qty}` : `${avail}/${qty}`) : soldOut ? "대여 중" : "대여 가능"}
     </Badge>
   );
 }
@@ -76,8 +65,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
   );
 
   const confirmLeave = (e: React.MouseEvent) => {
-    const hasUnsaved =
-      typeof window !== "undefined" && window.history.state?.__unsaved === true;
+    const hasUnsaved = typeof window !== "undefined" && window.history.state?.__unsaved === true;
     if (!hasUnsaved) return;
     if (!window.confirm(UNSAVED_CHANGES_MESSAGE)) {
       e.preventDefault();
@@ -161,9 +149,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-3xl font-bold tracking-normal">
-                      라켓 수정
-                    </h2>
+                    <h2 className="text-3xl font-bold tracking-normal">라켓 수정</h2>
                     <StockChip id={data.id} total={data.quantity ?? 1} />
                   </div>
                   <p className="text-muted-foreground">
@@ -178,11 +164,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
                   asChild
                   className="bg-muted/40 hover:bg-muted border-border"
                 >
-                  <Link
-                    href="/admin/rackets"
-                    data-no-unsaved-guard
-                    onClick={confirmLeave}
-                  >
+                  <Link href="/admin/rackets" data-no-unsaved-guard onClick={confirmLeave}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     목록으로
                   </Link>
@@ -196,12 +178,9 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        라켓을 삭제하시겠습니까?
-                      </AlertDialogTitle>
+                      <AlertDialogTitle>라켓을 삭제하시겠습니까?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        이 작업은 되돌릴 수 없습니다. 라켓 정보가 영구적으로
-                        삭제됩니다.
+                        이 작업은 되돌릴 수 없습니다. 라켓 정보가 영구적으로 삭제됩니다.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -221,11 +200,7 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
 
           <Separator className="bg-border" />
 
-          <AdminRacketForm
-            initial={data}
-            submitLabel="저장"
-            onSubmit={onSubmit}
-          />
+          <AdminRacketForm initial={data} submitLabel="저장" onSubmit={onSubmit} />
         </div>
       </div>
     </div>

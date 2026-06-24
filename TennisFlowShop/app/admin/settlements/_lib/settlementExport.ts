@@ -12,9 +12,7 @@ export function makeCsvFilename(base: string) {
     second: "2-digit",
     hour12: false,
   });
-  const parts = Object.fromEntries(
-    fmt.formatToParts(new Date()).map((p) => [p.type, p.value]),
-  );
+  const parts = Object.fromEntries(fmt.formatToParts(new Date()).map((p) => [p.type, p.value]));
   const ts = `${parts.year}${parts.month}${parts.day}_${parts.hour}${parts.minute}${parts.second}`;
   return `${safe}_${ts}.csv`;
 }

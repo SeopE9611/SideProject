@@ -32,8 +32,7 @@ export default function GlobalError({
             </div>
 
             <h1 className="mb-2 text-3xl font-extrabold tracking-normal">
-              <span className="text-destructive">서비스</span>에 오류가
-              발생했어요
+              <span className="text-destructive">서비스</span>에 오류가 발생했어요
             </h1>
             <p className="leading-relaxed text-muted-foreground">
               잠시 후 다시 시도해주세요. 문제가 계속되면 관리자에게 알려주세요.
@@ -46,10 +45,7 @@ export default function GlobalError({
             )}
 
             <div className="mt-4">
-              <Badge
-                variant="warning"
-                className="px-2.5 py-1 text-xs font-medium"
-              >
+              <Badge variant="warning" className="px-2.5 py-1 text-xs font-medium">
                 일시적인 오류일 수 있습니다
               </Badge>
             </div>

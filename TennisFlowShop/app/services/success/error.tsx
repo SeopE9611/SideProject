@@ -4,21 +4,9 @@ import { useEffect } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function Error({
-  error,
-  reset,
-}: {
-  error: Error;
-  reset: () => void;
-}) {
+export default function Error({ error, reset }: { error: Error; reset: () => void }) {
   useEffect(() => {
     // 여기서 원문 에러 확인 가능 (Vercel 함수 로그에도 남음)
     console.error("Success page error:", error);
@@ -34,9 +22,7 @@ export default function Error({
           <CardTitle className="text-2xl font-bold tracking-normal">
             처리 중 오류가 발생했어요
           </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            잠시 후 다시 시도해 주세요.
-          </p>
+          <p className="text-sm text-muted-foreground">잠시 후 다시 시도해 주세요.</p>
         </CardHeader>
 
         <CardContent className="pt-0">

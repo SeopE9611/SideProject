@@ -19,9 +19,7 @@ const STRICT_P0_FILES = [
 
 const errors = [];
 if (report.totals.all > baseline.totals.all) {
-  errors.push(
-    `admin any 총계 증가: baseline=${baseline.totals.all}, current=${report.totals.all}`,
-  );
+  errors.push(`admin any 총계 증가: baseline=${baseline.totals.all}, current=${report.totals.all}`);
 }
 if (report.totals.p0Critical > baseline.totals.p0Critical) {
   errors.push(

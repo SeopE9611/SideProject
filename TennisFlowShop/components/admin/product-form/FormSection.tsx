@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
@@ -37,12 +31,7 @@ export function FormSection({
         className,
       )}
     >
-      <CardHeader
-        className={cn(
-          "border-b border-border/40 bg-muted/20 pb-4",
-          headerClassName,
-        )}
-      >
+      <CardHeader className={cn("border-b border-border/40 bg-muted/20 pb-4", headerClassName)}>
         <div className="flex items-start gap-3">
           {icon && (
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -50,9 +39,7 @@ export function FormSection({
             </div>
           )}
           <div className="space-y-1">
-            <CardTitle className="text-lg font-semibold text-foreground">
-              {title}
-            </CardTitle>
+            <CardTitle className="text-lg font-semibold text-foreground">{title}</CardTitle>
             {description && (
               <CardDescription className="text-sm text-muted-foreground">
                 {description}
@@ -61,9 +48,7 @@ export function FormSection({
           </div>
         </div>
       </CardHeader>
-      <CardContent className={cn("p-6", contentClassName)}>
-        {children}
-      </CardContent>
+      <CardContent className={cn("p-6", contentClassName)}>{children}</CardContent>
     </Card>
   );
 }
@@ -74,11 +59,7 @@ interface FormFieldGroupProps {
   columns?: 1 | 2 | 3 | 4;
 }
 
-export function FormFieldGroup({
-  children,
-  className,
-  columns = 2,
-}: FormFieldGroupProps) {
+export function FormFieldGroup({ children, className, columns = 2 }: FormFieldGroupProps) {
   const gridCols = {
     1: "grid-cols-1",
     2: "md:grid-cols-2",
@@ -86,11 +67,7 @@ export function FormFieldGroup({
     4: "md:grid-cols-2 lg:grid-cols-4",
   };
 
-  return (
-    <div className={cn("grid gap-6", gridCols[columns], className)}>
-      {children}
-    </div>
-  );
+  return <div className={cn("grid gap-6", gridCols[columns], className)}>{children}</div>;
 }
 
 interface FormFieldProps {
@@ -102,14 +79,7 @@ interface FormFieldProps {
   className?: string;
 }
 
-export function FormField({
-  label,
-  required,
-  hint,
-  error,
-  children,
-  className,
-}: FormFieldProps) {
+export function FormField({ label, required, hint, error, children, className }: FormFieldProps) {
   return (
     <div className={cn("space-y-2", className)}>
       <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
@@ -117,9 +87,7 @@ export function FormField({
         {required && <span className="ml-1 text-destructive">*</span>}
       </label>
       {children}
-      {hint && !error && (
-        <p className="text-xs text-muted-foreground">{hint}</p>
-      )}
+      {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );

@@ -1,42 +1,26 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
-import {
-  maskPhone,
-  normalizeEmail,
-  normalizePhone,
-} from "@/lib/offline/normalizers";
+import { maskPhone, normalizeEmail, normalizePhone } from "@/lib/offline/normalizers";
 
 const oid = (id: string) => (ObjectId.isValid(id) ? new ObjectId(id) : null);
-const escapeRegex = (value: string) =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 function buildLoosePhoneRegex(digits: string) {
   return new RegExp(digits.split("").map(escapeRegex).join("\\D*"));
 }
 
-export async function GET(
-  req: Request,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
 
   const _id = oid((await ctx.params).id);
-  if (!_id)
-    return NextResponse.json(
-      { message: "invalid customer id" },
-      { status: 400 },
-    );
+  if (!_id) return NextResponse.json({ message: "invalid customer id" }, { status: 400 });
 
   const customer = await guard.db
     .collection("offline_customers")
     .findOne({ _id }, { projection: { _id: 1 } });
-  if (!customer)
-    return NextResponse.json(
-      { message: "customer not found" },
-      { status: 404 },
-    );
+  if (!customer) return NextResponse.json({ message: "customer not found" }, { status: 404 });
 
   const url = new URL(req.url);
   const name = (url.searchParams.get("name") || "").trim();
@@ -71,10 +55,7 @@ export async function GET(
   const linkedCustomers = userIds.length
     ? await guard.db
         .collection("offline_customers")
-        .find(
-          { linkedUserId: { $in: userIds } },
-          { projection: { _id: 1, linkedUserId: 1 } },
-        )
+        .find({ linkedUserId: { $in: userIds } }, { projection: { _id: 1, linkedUserId: 1 } })
         .toArray()
     : [];
   const linkedByUserId = new Map<string, string>();
@@ -97,15 +78,10 @@ export async function GET(
         phoneMasked: userPhone ? maskPhone(userPhone) : null,
         match: {
           name: !!name && userName.toLowerCase().includes(name.toLowerCase()),
-          phone:
-            !!phoneNormalized && normalizedUserPhone.includes(phoneNormalized),
-          email:
-            !!emailLower &&
-            !!userEmail &&
-            userEmail.toLowerCase().includes(emailLower),
+          phone: !!phoneNormalized && normalizedUserPhone.includes(phoneNormalized),
+          email: !!emailLower && !!userEmail && userEmail.toLowerCase().includes(emailLower),
         },
-        alreadyLinkedOfflineCustomerId:
-          linkedByUserId.get(String(user._id)) ?? null,
+        alreadyLinkedOfflineCustomerId: linkedByUserId.get(String(user._id)) ?? null,
       };
     }),
   });

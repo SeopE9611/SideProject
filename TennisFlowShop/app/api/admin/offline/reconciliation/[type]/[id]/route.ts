@@ -14,10 +14,7 @@ const bodySchema = z.object({
   note: z.string().max(2000).optional().nullable(),
 });
 
-export async function PATCH(
-  req: Request,
-  ctx: { params: Promise<{ type: string; id: string }> },
-) {
+export async function PATCH(req: Request, ctx: { params: Promise<{ type: string; id: string }> }) {
   const guard = await requireAdmin(req);
   if (!guard.ok) return guard.res;
   const csrf = verifyAdminCsrf(req);
@@ -25,15 +22,11 @@ export async function PATCH(
 
   const parsedParams = paramsSchema.safeParse(await ctx.params);
   if (!parsedParams.success)
-    return NextResponse.json(
-      { message: "invalid reconciliation target" },
-      { status: 400 },
-    );
+    return NextResponse.json({ message: "invalid reconciliation target" }, { status: 400 });
 
   const body = await req.json().catch(() => null);
   const parsedBody = bodySchema.safeParse(body);
-  if (!parsedBody.success)
-    return NextResponse.json({ message: "invalid body" }, { status: 400 });
+  if (!parsedBody.success) return NextResponse.json({ message: "invalid body" }, { status: 400 });
 
   const { type, id } = parsedParams.data;
   const { status } = parsedBody.data;
@@ -57,31 +50,23 @@ export async function PATCH(
       },
     );
     if (result.matchedCount === 0)
-      return NextResponse.json(
-        { message: "package order not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ message: "package order not found" }, { status: 404 });
   } else {
-    const result = await guard.db
-      .collection("offline_service_records")
-      .updateOne(
-        { _id },
-        {
-          $set: {
-            "packageUsage.reconcileStatus": status,
-            "packageUsage.reconcileNote": note,
-            "packageUsage.reconciledAt": reconciledAt,
-            "packageUsage.reconciledBy": reconciledBy,
-            updatedAt: now,
-            updatedBy: guard.admin._id,
-          },
+    const result = await guard.db.collection("offline_service_records").updateOne(
+      { _id },
+      {
+        $set: {
+          "packageUsage.reconcileStatus": status,
+          "packageUsage.reconcileNote": note,
+          "packageUsage.reconciledAt": reconciledAt,
+          "packageUsage.reconciledBy": reconciledBy,
+          updatedAt: now,
+          updatedBy: guard.admin._id,
         },
-      );
+      },
+    );
     if (result.matchedCount === 0)
-      return NextResponse.json(
-        { message: "offline record not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ message: "offline record not found" }, { status: 404 });
   }
 
   await appendAudit(

@@ -7,9 +7,7 @@ import { appendAudit } from "@/lib/audit";
 function toObjectIds(ids: unknown[]): ObjectId[] {
   const uniqueIds = Array.from(
     new Set(
-      ids
-        .filter((id): id is string => typeof id === "string")
-        .filter((id) => ObjectId.isValid(id)),
+      ids.filter((id): id is string => typeof id === "string").filter((id) => ObjectId.isValid(id)),
     ),
   );
 
@@ -38,11 +36,7 @@ function hasActiveLinkedAccounting(record: any): boolean {
   return hasActivePointGrant || hasActivePointDeduct || hasActivePackageUsage;
 }
 
-async function rebuildOfflineCustomerStats(
-  db: any,
-  customerId: ObjectId,
-  adminId: ObjectId,
-) {
+async function rebuildOfflineCustomerStats(db: any, customerId: ObjectId, adminId: ObjectId) {
   const records = await db
     .collection("offline_service_records")
     .find(
@@ -99,10 +93,7 @@ export async function DELETE(req: Request) {
   const objectIds = toObjectIds(ids);
 
   if (objectIds.length === 0) {
-    return NextResponse.json(
-      { message: "삭제할 오프라인 기록을 선택해주세요." },
-      { status: 400 },
-    );
+    return NextResponse.json({ message: "삭제할 오프라인 기록을 선택해주세요." }, { status: 400 });
   }
 
   const recordsCol = guard.db.collection("offline_service_records");

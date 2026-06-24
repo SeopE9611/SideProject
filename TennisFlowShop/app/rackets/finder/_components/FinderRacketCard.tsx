@@ -8,18 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { racketBrandLabel, stringPatternLabel } from "@/lib/constants";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import {
-  useRacketCompareStore,
-  type CompareRacketItem,
-} from "@/app/store/racketCompareStore";
+import { useRacketCompareStore, type CompareRacketItem } from "@/app/store/racketCompareStore";
 import { useMemo } from "react";
 import { Scale, ShoppingCart, Info } from "lucide-react";
 import { badgeToneVariant, imageBadgeClass } from "@/lib/badge-style";
 
-const RentDialog = dynamic(
-  () => import("@/app/rackets/[id]/_components/RentDialog"),
-  { loading: () => null },
-);
+const RentDialog = dynamic(() => import("@/app/rackets/[id]/_components/RentDialog"), {
+  loading: () => null,
+});
 
 const RacketSpecQuickViewDialog = dynamic(
   () => import("@/app/rackets/compare/_components/RacketSpecQuickViewDialog"),
@@ -60,12 +56,9 @@ export type FinderRacket = {
 function conditionLabel(condition?: string | null) {
   if (!condition) return null;
   const c = condition.toUpperCase();
-  if (c === "A")
-    return { label: "A", desc: "최상", className: imageBadgeClass("success") };
-  if (c === "B")
-    return { label: "B", desc: "상", className: imageBadgeClass("info") };
-  if (c === "C")
-    return { label: "C", desc: "보통", className: imageBadgeClass("warning") };
+  if (c === "A") return { label: "A", desc: "최상", className: imageBadgeClass("success") };
+  if (c === "B") return { label: "B", desc: "상", className: imageBadgeClass("info") };
+  if (c === "C") return { label: "C", desc: "보통", className: imageBadgeClass("warning") };
   return {
     label: c,
     desc: "",
@@ -132,16 +125,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
         gripSize: spec.gripSize ?? null,
       },
     }),
-    [
-      racket.id,
-      racket.brand,
-      racket.model,
-      racket.year,
-      racket.price,
-      racket.condition,
-      img,
-      spec,
-    ],
+    [racket.id, racket.brand, racket.model, racket.year, racket.price, racket.condition, img, spec],
   );
 
   return (
@@ -213,16 +197,12 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
               {/* 화면 표시는 공통 라벨 함수로 통일(과거 raw 값도 최대한 사람이 읽기 쉽게) */}
               <SpecItem
                 label="Pattern"
-                value={
-                  spec.pattern ? stringPatternLabel(String(spec.pattern)) : "-"
-                }
+                value={spec.pattern ? stringPatternLabel(String(spec.pattern)) : "-"}
                 className="col-span-2 bp-xl:col-span-1"
               />
               <SpecItem
                 label="Price"
-                value={
-                  racket.price ? `${(racket.price / 10000).toFixed(0)}만` : "-"
-                }
+                value={racket.price ? `${(racket.price / 10000).toFixed(0)}만` : "-"}
               />
             </div>
 
@@ -254,9 +234,7 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                 )}
                 onClick={() => {
                   if (!selected && compareItems.length >= 4) {
-                    showErrorToast(
-                      "라켓 비교는 최대 4개까지 담을 수 있습니다.",
-                    );
+                    showErrorToast("라켓 비교는 최대 4개까지 담을 수 있습니다.");
                     return;
                   }
                   const res = toggle(compareItem);
@@ -264,10 +242,8 @@ export default function FinderRacketCard({ racket }: { racket: FinderRacket }) {
                     showErrorToast(res.message);
                     return;
                   }
-                  if (res.action === "added")
-                    showSuccessToast("비교 목록에 담았습니다.");
-                  if (res.action === "removed")
-                    showSuccessToast("비교 목록에서 제거했습니다.");
+                  if (res.action === "added") showSuccessToast("비교 목록에 담았습니다.");
+                  if (res.action === "removed") showSuccessToast("비교 목록에서 제거했습니다.");
                 }}
               >
                 <Scale className="mr-1.5 h-3.5 w-3.5" />

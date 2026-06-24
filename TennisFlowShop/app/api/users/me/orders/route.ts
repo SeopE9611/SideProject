@@ -10,10 +10,7 @@ import { isMountableStringItem } from "@/lib/orders/string-mounting-policy";
  * - 비정상 값이면 defaultValue 적용
  * - min/max 범위로 clamp
  */
-function parseIntParam(
-  v: string | null,
-  opts: { defaultValue: number; min: number; max: number },
-) {
+function parseIntParam(v: string | null, opts: { defaultValue: number; min: number; max: number }) {
   const n = Number(v);
   const base = Number.isFinite(n) ? n : opts.defaultValue;
   return Math.min(opts.max, Math.max(opts.min, Math.trunc(base)));
@@ -97,8 +94,7 @@ type OrderResponse = {
 
 /* 주문 총액 계산: 명시 총액이 있으면 그것, 없으면 아이템 합계 */
 function calcOrderTotal(o: any): number {
-  const explicit =
-    o.totalPrice ?? o.total ?? o.finalAmount ?? o.totalAmount ?? null;
+  const explicit = o.totalPrice ?? o.total ?? o.finalAmount ?? o.totalAmount ?? null;
   if (typeof explicit === "number") return explicit;
 
   const items: any[] = Array.isArray(o.items) ? o.items : [];
@@ -121,8 +117,7 @@ function resolveListItemKind(item: any): "racket" | "string" | "product" {
     .join(" ")
     .toLowerCase();
 
-  if (categoryToken.includes("string") || categoryToken.includes("스트링"))
-    return "string";
+  if (categoryToken.includes("string") || categoryToken.includes("스트링")) return "string";
 
   return "product";
 }
@@ -130,8 +125,7 @@ function resolveListItemKind(item: any): "racket" | "string" | "product" {
 function getApplicationLines(stringDetails: any): any[] {
   // 통합 플로우 우선(lines) + 레거시(racketLines) fallback
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
-  if (Array.isArray(stringDetails?.racketLines))
-    return stringDetails.racketLines;
+  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
   return [];
 }
 
@@ -146,8 +140,7 @@ function resolveOrderPaymentStatus(order: OrderDoc): string {
   if (paymentInfoStatus === "pending") return "결제대기";
   if (paymentInfoStatus === "paid") return "결제완료";
   if (paymentInfoStatus === "failed") return "결제실패";
-  if (paymentInfoStatus === "canceled" || paymentInfoStatus === "cancelled")
-    return "결제취소";
+  if (paymentInfoStatus === "canceled" || paymentInfoStatus === "cancelled") return "결제취소";
   if (paymentInfoStatus === "refunded") return "환불완료";
 
   return "결제대기";
@@ -256,9 +249,7 @@ export async function GET(req: NextRequest) {
 
       const usedLineCount = getApplicationLines(app?.stringDetails).length;
       const submittedApplicationId =
-        prev.submittedApplicationId === null
-          ? String(app._id)
-          : prev.submittedApplicationId;
+        prev.submittedApplicationId === null ? String(app._id) : prev.submittedApplicationId;
 
       stringServiceByOrderId.set(orderId, {
         submittedApplicationId,
@@ -314,35 +305,23 @@ export async function GET(req: NextRequest) {
       const validProductIds = productIds.filter((pid) => ObjectId.isValid(pid));
 
       // 이미 작성한 리뷰 (배치 조회 결과 사용)
-      const reviewedSet =
-        reviewedByOrderId.get(String(order._id)) ?? new Set<string>();
+      const reviewedSet = reviewedByOrderId.get(String(order._id)) ?? new Set<string>();
 
-      const unreviewedIds = validProductIds.filter(
-        (pid) => !reviewedSet.has(pid),
-      );
+      const unreviewedIds = validProductIds.filter((pid) => !reviewedSet.has(pid));
       const unreviewedCount = unreviewedIds.length;
-      const reviewNextTargetProductId = unreviewedIds.length
-        ? unreviewedIds[0]
-        : null;
+      const reviewNextTargetProductId = unreviewedIds.length ? unreviewedIds[0] : null;
       const reviewAllDone = validProductIds.length > 0 && unreviewedCount === 0;
 
       // 총액 계산
       const totalPrice = calcOrderTotal(order);
       const totalSlots = items
         .filter((it) => resolveListItemKind(it) === "string")
-        .reduce(
-          (sum, it) => sum + (it?.quantity ?? it?.qty ?? it?.count ?? 1),
-          0,
-        );
-      const stringServiceSummary = stringServiceByOrderId.get(
-        String(order._id),
-      );
+        .reduce((sum, it) => sum + (it?.quantity ?? it?.qty ?? it?.count ?? 1), 0);
+      const stringServiceSummary = stringServiceByOrderId.get(String(order._id));
       const usedSlots = stringServiceSummary?.usedSlots ?? 0;
       const remainingSlots = Math.max(totalSlots - usedSlots, 0);
       const canApplyMoreStringService =
-        Boolean(order.shippingInfo?.withStringService) &&
-        totalSlots > 0 &&
-        remainingSlots > 0;
+        Boolean(order.shippingInfo?.withStringService) && totalSlots > 0 && remainingSlots > 0;
 
       // 취소 요청 정보 정리
       const cancel: any = (order as any).cancelRequest ?? {};
@@ -352,8 +331,7 @@ export async function GET(req: NextRequest) {
       if (rawCancelStatus && rawCancelStatus !== "none") {
         if (cancel.reasonCode) {
           cancelReasonSummary =
-            cancel.reasonCode +
-            (cancel.reasonText ? ` (${cancel.reasonText})` : "");
+            cancel.reasonCode + (cancel.reasonText ? ` (${cancel.reasonText})` : "");
         } else if (cancel.reasonText) {
           cancelReasonSummary = cancel.reasonText;
         }
@@ -392,11 +370,8 @@ export async function GET(req: NextRequest) {
         unreviewedCount,
         reviewNextTargetProductId,
         // 실제 신청 여부/ID
-        isStringServiceApplied: Boolean(
-          stringServiceSummary?.submittedApplicationId,
-        ),
-        stringingApplicationId:
-          stringServiceSummary?.submittedApplicationId ?? null,
+        isStringServiceApplied: Boolean(stringServiceSummary?.submittedApplicationId),
+        stringingApplicationId: stringServiceSummary?.submittedApplicationId ?? null,
         stringService: {
           totalSlots,
           usedSlots,

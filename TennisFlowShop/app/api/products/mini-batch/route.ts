@@ -4,10 +4,7 @@ import { NextResponse } from "next/server";
 import { productVisibilityFilterFor } from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
-import {
-  hasPaidMountingFee,
-  isMountableStringByFee,
-} from "@/lib/orders/string-mounting-policy";
+import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 
 type MiniBatchRow = {
   id: string;
@@ -21,14 +18,9 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    ids = Array.isArray(body?.ids)
-      ? body.ids.map((v: unknown) => String(v)).filter(Boolean)
-      : [];
+    ids = Array.isArray(body?.ids) ? body.ids.map((v: unknown) => String(v)).filter(Boolean) : [];
   } catch {
-    return NextResponse.json(
-      { ok: false, error: "invalidBody" },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "invalidBody" }, { status: 400 });
   }
 
   if (ids.length === 0) {
@@ -51,9 +43,7 @@ export async function POST(req: Request) {
           .find(
             {
               _id: { $in: validObjectIds },
-              ...productVisibilityFilterFor(
-                await getVisibilityViewerFromCookies(),
-              ),
+              ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
             },
             { projection: { _id: 1, mountingFee: 1, shippingFee: 1 } },
           )
@@ -68,9 +58,7 @@ export async function POST(req: Request) {
     const rawMounting = (product as { mountingFee?: unknown }).mountingFee;
     feeById.set(String(product._id), {
       mountingFee: hasPaidMountingFee(rawMounting) ? rawMounting : 0,
-      shippingFee: normalizeItemShippingFee(
-        (product as { shippingFee?: unknown }).shippingFee,
-      ),
+      shippingFee: normalizeItemShippingFee((product as { shippingFee?: unknown }).shippingFee),
       isMountableString: isMountableStringByFee(rawMounting),
     });
   });
@@ -82,8 +70,5 @@ export async function POST(req: Request) {
     isMountableString: feeById.get(id)?.isMountableString === true,
   }));
 
-  return NextResponse.json(
-    { ok: true, items },
-    { headers: { "Cache-Control": "no-store" } },
-  );
+  return NextResponse.json({ ok: true, items }, { headers: { "Cache-Control": "no-store" } });
 }

@@ -77,11 +77,8 @@ export function StringCard({
   const stringId = String(product._id);
   const stringImage = product?.images?.[0] ?? product?.imageUrl;
   const hasVariantInventories =
-    Array.isArray(product?.variantInventories) &&
-    product.variantInventories.length > 0;
-  const variantRows = hasVariantInventories
-    ? normalizeVariantRows(product)
-    : [];
+    Array.isArray(product?.variantInventories) && product.variantInventories.length > 0;
+  const variantRows = hasVariantInventories ? normalizeVariantRows(product) : [];
   const colorRows = hasVariantInventories
     ? getVisibleColorRows(product)
     : normalizeColorRows(product);
@@ -108,46 +105,32 @@ export function StringCard({
     : undefined;
   const hideGaugeStock = product?.inventory?.hideGaugeStock === true;
   const manageStock = Boolean(product?.inventory?.manageStock);
-  const stock =
-    typeof product?.inventory?.stock === "number"
-      ? product.inventory.stock
-      : undefined;
+  const stock = typeof product?.inventory?.stock === "number" ? product.inventory.stock : undefined;
   const effectiveStock = hasVariantInventories
     ? selectedVariant?.stock
     : selectedGaugeRow
       ? selectedGaugeRow.stock
       : stock;
   const lowStock =
-    typeof product?.inventory?.lowStock === "number"
-      ? product.inventory.lowStock
-      : 5;
+    typeof product?.inventory?.lowStock === "number" ? product.inventory.lowStock : 5;
 
   const isGaugeSoldOut =
-    selectedGaugeRow != null &&
-    (selectedGaugeRow.isSoldOut || selectedGaugeRow.stock <= 0);
-  const isGaugeShort =
-    selectedGaugeRow != null && selectedGaugeRow.stock < workCount;
+    selectedGaugeRow != null && (selectedGaugeRow.isSoldOut || selectedGaugeRow.stock <= 0);
+  const isGaugeShort = selectedGaugeRow != null && selectedGaugeRow.stock < workCount;
   const isProductSoldOut = !hasSelectableStringStock(product);
   const isSoldOut =
     isProductSoldOut ||
-    (hasGaugeRows
-      ? isGaugeSoldOut
-      : manageStock && typeof stock === "number" && stock <= 0);
+    (hasGaugeRows ? isGaugeSoldOut : manageStock && typeof stock === "number" && stock <= 0);
   const isShort = hasGaugeRows
     ? selectedGaugeRow != null && (effectiveStock ?? 0) < workCount
     : manageStock && typeof stock === "number" && stock < workCount;
   const disabledByGauge =
-    (hasVariantInventories || hasGaugeRows) &&
-    (!selectedGauge || isGaugeSoldOut || isGaugeShort);
+    (hasVariantInventories || hasGaugeRows) && (!selectedGauge || isGaugeSoldOut || isGaugeShort);
   const isColorSoldOutState = hasVariantInventories
-    ? !variantRows.some(
-        (row) => row.colorValue === selectedColor && isSellableVariant(row),
-      )
+    ? !variantRows.some((row) => row.colorValue === selectedColor && isSellableVariant(row))
     : selectedColorRow != null && isColorSoldOut(selectedColorRow);
-  const isColorShort =
-    selectedColorRow != null && selectedColorRow.stock < workCount;
-  const disabledByColor =
-    hasColorRows && (!selectedColor || isColorSoldOutState || isColorShort);
+  const isColorShort = selectedColorRow != null && selectedColorRow.stock < workCount;
+  const disabledByColor = hasColorRows && (!selectedColor || isColorSoldOutState || isColorShort);
   const canShowStockHint =
     manageStock &&
     typeof effectiveStock === "number" &&
@@ -155,17 +138,13 @@ export function StringCard({
     effectiveStock <= lowStock &&
     (!hasGaugeRows || (selectedGaugeRow != null && !hideGaugeStock));
 
-  const isDisabled =
-    disabled || disabledByGauge || disabledByColor || isSoldOut || isShort;
+  const isDisabled = disabled || disabledByGauge || disabledByColor || isSoldOut || isShort;
   const regularPrice = Number(product?.price ?? 0);
   const salePrice = getEffectiveProductPrice(product);
-  const hasSalePrice =
-    Number.isFinite(salePrice) && salePrice > 0 && salePrice < regularPrice;
+  const hasSalePrice = Number.isFinite(salePrice) && salePrice > 0 && salePrice < regularPrice;
   const discountAmount = hasSalePrice ? regularPrice - salePrice : 0;
   const discountRate =
-    hasSalePrice && regularPrice > 0
-      ? Math.round((discountAmount / regularPrice) * 100)
-      : 0;
+    hasSalePrice && regularPrice > 0 ? Math.round((discountAmount / regularPrice) * 100) : 0;
 
   return (
     <div
@@ -219,12 +198,7 @@ export function StringCard({
       </div>
 
       {/* Content */}
-      <div
-        className={cn(
-          "flex flex-1 flex-col",
-          isRacketPurchaseDesign ? "p-3 bp-md:p-4" : "p-4",
-        )}
-      >
+      <div className={cn("flex flex-1 flex-col", isRacketPurchaseDesign ? "p-3 bp-md:p-4" : "p-4")}>
         {/* Title & Price */}
         <div className="mb-3 space-y-1.5">
           <h3 className="line-clamp-2 min-w-0 break-keep text-sm font-semibold leading-tight text-foreground bp-md:text-base">
@@ -238,9 +212,7 @@ export function StringCard({
           {hasSalePrice ? (
             <div className="space-y-1 tabular-nums">
               <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                <span className="text-xs font-medium text-muted-foreground">
-                  할인가
-                </span>
+                <span className="text-xs font-medium text-muted-foreground">할인가</span>
                 <span className="text-lg font-bold text-foreground">
                   {getEffectiveProductPrice(product).toLocaleString()}원
                 </span>
@@ -257,9 +229,7 @@ export function StringCard({
             </div>
           ) : (
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 tabular-nums">
-              <span className="text-xs font-medium text-muted-foreground">
-                판매가
-              </span>
+              <span className="text-xs font-medium text-muted-foreground">판매가</span>
               <span className="text-lg font-bold text-foreground">
                 {getEffectiveProductPrice(product).toLocaleString()}원
               </span>
@@ -283,9 +253,7 @@ export function StringCard({
                 const label = getColorLabel(row);
                 const soldOut = hasVariantInventories
                   ? !variantRows.some(
-                      (variant) =>
-                        variant.colorValue === row.value &&
-                        isSellableVariant(variant),
+                      (variant) => variant.colorValue === row.value && isSellableVariant(variant),
                     )
                   : isColorSoldOut(row);
                 const isColorSelected = selectedColor === row.value;
@@ -293,10 +261,7 @@ export function StringCard({
                   row.image?.trim() ||
                   (hasVariantInventories
                     ? variantRows
-                        .find(
-                          (v) =>
-                            v.colorValue === row.value && v.colorImage?.trim(),
-                        )
+                        .find((v) => v.colorValue === row.value && v.colorImage?.trim())
                         ?.colorImage?.trim()
                     : undefined);
 
@@ -311,13 +276,8 @@ export function StringCard({
                       onColorChange(row.value);
                       // Auto-select first available gauge for new color
                       if (hasVariantInventories) {
-                        const nextVariants = getVariantsByColor(
-                          product,
-                          row.value,
-                        );
-                        const firstSellable = nextVariants.find((v) =>
-                          isSellableVariant(v),
-                        );
+                        const nextVariants = getVariantsByColor(product, row.value);
+                        const firstSellable = nextVariants.find((v) => isSellableVariant(v));
                         if (firstSellable) {
                           onGaugeChange(firstSellable.gaugeValue);
                         }
@@ -401,13 +361,9 @@ export function StringCard({
         {/* Stock hints */}
         <div className="mt-auto space-y-1">
           {canShowStockHint && (
-            <p className="text-xs font-medium text-warning">
-              남은 수량 {effectiveStock}개
-            </p>
+            <p className="text-xs font-medium text-warning">남은 수량 {effectiveStock}개</p>
           )}
-          {isShort && !isSoldOut && (
-            <p className="text-xs text-destructive">구매 가능 수량 초과</p>
-          )}
+          {isShort && !isSoldOut && <p className="text-xs text-destructive">구매 가능 수량 초과</p>}
         </div>
 
         {/* CTA Button */}
@@ -435,9 +391,7 @@ export function StringCard({
           </Link>
         </Button>
         {ctaSubLabel && (
-          <p className="mt-1.5 text-center text-[11px] text-muted-foreground">
-            {ctaSubLabel}
-          </p>
+          <p className="mt-1.5 text-center text-[11px] text-muted-foreground">{ctaSubLabel}</p>
         )}
       </div>
     </div>
