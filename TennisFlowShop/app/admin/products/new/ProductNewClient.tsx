@@ -1451,13 +1451,13 @@ export default function NewStringPage() {
                             </Label>
                             <div className="relative">
                               <FormattedNumberInput
-                                id="string-shipping-fee"
-                                placeholder="3000"
-                                value={basicInfo.shippingFee}
-                                onValueChange={(shippingFee) => {
+                                id="string-stringing-fee"
+                                placeholder="0"
+                                value={basicInfo.mountingFee ?? 0}
+                                onValueChange={(mountingFee) => {
                                   setBasicInfo({
                                     ...basicInfo,
-                                    shippingFee: Math.max(0, shippingFee),
+                                    mountingFee,
                                   });
                                 }}
                                 className="h-11 pr-8"
@@ -1470,21 +1470,15 @@ export default function NewStringPage() {
                           <div className="space-y-2">
                             <Label htmlFor="string-shipping-fee">배송비</Label>
                             <div className="relative">
-                              <Input
+                              <FormattedNumberInput
                                 id="string-shipping-fee"
-                                type="number"
-                                min={0}
-                                step={1}
                                 placeholder="3000"
                                 value={basicInfo.shippingFee}
-                                onChange={(e) => {
-                                  const numeric = Number(e.target.value);
-                                  if (!isNaN(numeric)) {
-                                    setBasicInfo({
-                                      ...basicInfo,
-                                      shippingFee: Math.max(0, numeric),
-                                    });
-                                  }
+                                onValueChange={(shippingFee) => {
+                                  setBasicInfo({
+                                    ...basicInfo,
+                                    shippingFee: Math.max(0, shippingFee),
+                                  });
                                 }}
                                 className="h-11 pr-8"
                               />

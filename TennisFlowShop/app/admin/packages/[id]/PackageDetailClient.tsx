@@ -4,14 +4,7 @@ import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -54,15 +47,9 @@ import useSWR from "swr";
 
 import PackageCurrentStatusSelect from "@/app/features/packages/components/PackageCurrentStatusSelect";
 import { adminMutator } from "@/lib/admin/adminFetcher";
-import {
-  getMerchandisingBadgeSpec,
-  getPaymentStatusBadgeSpec,
-} from "@/lib/badge-style";
+import { getMerchandisingBadgeSpec, getPaymentStatusBadgeSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import {
-  UNSAVED_CHANGES_MESSAGE,
-  useUnsavedChangesGuard,
-} from "@/lib/hooks/useUnsavedChangesGuard";
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 
 type PackageDetail = AdminPackageDetailDto;
 type OperationsHistoryItem = AdminPackageOperationHistoryDto;
@@ -85,9 +72,7 @@ const daysUntil = (v: string | Date | null | undefined) => {
 const fmtDate = (v?: string | Date | null) => {
   if (!v) return "-";
   try {
-    return new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium" }).format(
-      new Date(v),
-    );
+    return new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium" }).format(new Date(v));
   } catch {
     return String(v);
   }
@@ -106,11 +91,7 @@ const fmtDateTime = (v?: string | Date | null) => {
 
 function ExtensionHistoryList({ items }: { items: OperationsHistoryItem[] }) {
   if (!items || items.length === 0)
-    return (
-      <div className="py-8 text-center text-sm text-muted-foreground">
-        운영 내역이 없습니다.
-      </div>
-    );
+    return <div className="py-8 text-center text-sm text-muted-foreground">운영 내역이 없습니다.</div>;
 
   return (
     <ol className="relative ml-1">
@@ -119,27 +100,19 @@ function ExtensionHistoryList({ items }: { items: OperationsHistoryItem[] }) {
 
         // 유형 판별
         const isExtend =
-          it.eventType === "extend_expiry" ||
-          (typeof it.extendedDays === "number" && it.extendedDays !== 0);
+          it.eventType === "extend_expiry" || (typeof it.extendedDays === "number" && it.extendedDays !== 0);
         const isAdjust =
-          it.eventType === "adjust_sessions" ||
-          (typeof it.extendedSessions === "number" &&
-            it.extendedSessions !== 0);
-        const isPayment =
-          it.eventType === "payment_status_change" || !!it.paymentStatus;
+          it.eventType === "adjust_sessions" || (typeof it.extendedSessions === "number" && it.extendedSessions !== 0);
+        const isPayment = it.eventType === "payment_status_change" || !!it.paymentStatus;
 
         // 칩 텍스트
         const chips: string[] = [];
-        if (isExtend)
-          chips.push(
-            `${it.extendedDays! > 0 ? "+" : ""}${it.extendedDays ?? 0}일 연장`,
-          );
+        if (isExtend) chips.push(`${it.extendedDays! > 0 ? "+" : ""}${it.extendedDays ?? 0}일 연장`);
         if (isAdjust)
           chips.push(
             `${it.extendedSessions! > 0 ? "+" : ""}${it.extendedSessions ?? 0}회 ${it.extendedSessions! >= 0 ? "증가" : "감소"}`,
           );
-        if (isPayment && it.paymentStatus)
-          chips.push(`결제상태: ${it.paymentStatus}`);
+        if (isPayment && it.paymentStatus) chips.push(`결제상태: ${it.paymentStatus}`);
 
         // 스타일 (점/헤더색)
         const dotCls = isPayment
@@ -168,9 +141,7 @@ function ExtensionHistoryList({ items }: { items: OperationsHistoryItem[] }) {
 
         return (
           <li key={it.id} className="pl-8 py-4 border-l border-border relative">
-            <span
-              className={`absolute -left-[7px] top-6 h-3 w-3 rounded-full ${dotCls} shadow`}
-            />
+            <span className={`absolute -left-[7px] top-6 h-3 w-3 rounded-full ${dotCls} shadow`} />
             <div className={cn("flex items-center gap-2 text-sm", headTextCls)}>
               {isPayment ? (
                 <CreditCard className="h-4 w-4" />
@@ -179,9 +150,7 @@ function ExtensionHistoryList({ items }: { items: OperationsHistoryItem[] }) {
               ) : (
                 <Target className="h-4 w-4" />
               )}
-              <span className="font-medium">
-                {chips.length ? chips.join(" · ") : "운영 기록"}
-              </span>
+              <span className="font-medium">{chips.length ? chips.join(" · ") : "운영 기록"}</span>
             </div>
 
             {isExtend
@@ -189,16 +158,12 @@ function ExtensionHistoryList({ items }: { items: OperationsHistoryItem[] }) {
                   <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
                     <span>{fmtDate(it.from ?? null)}</span>
                     <ChevronRight className="h-4 w-4" />
-                    <span className="font-medium text-foreground">
-                      {fmtDate(it.to ?? null)}
-                    </span>
+                    <span className="font-medium text-foreground">{fmtDate(it.to ?? null)}</span>
                   </div>
                 )
               : (typeof it.from === "number" || typeof it.to === "number") && (
                   <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
-                    <span>
-                      {typeof it.from === "number" ? `${it.from}회` : "-"}
-                    </span>
+                    <span>{typeof it.from === "number" ? `${it.from}회` : "-"}</span>
                     <ChevronRight className="h-4 w-4" />
                     <span className="font-medium text-foreground">
                       {typeof it.to === "number" ? `${it.to}회` : "-"}
@@ -206,11 +171,7 @@ function ExtensionHistoryList({ items }: { items: OperationsHistoryItem[] }) {
                   </div>
                 )}
 
-            {it.reason && (
-              <p className="mt-2 whitespace-pre-wrap text-[13px] leading-5">
-                {it.reason}
-              </p>
-            )}
+            {it.reason && <p className="mt-2 whitespace-pre-wrap text-[13px] leading-5">{it.reason}</p>}
 
             <div className="mt-2 text-xs text-muted-foreground flex items-center gap-2">
               <User2 className="h-3.5 w-3.5" />
@@ -225,11 +186,7 @@ function ExtensionHistoryList({ items }: { items: OperationsHistoryItem[] }) {
   );
 }
 
-export default function PackageDetailClient({
-  packageId,
-}: {
-  packageId: string;
-}) {
+export default function PackageDetailClient({ packageId }: { packageId: string }) {
   const router = useRouter();
 
   const [isEditMode, setIsEditMode] = useState(false);
@@ -254,19 +211,13 @@ export default function PackageDetailClient({
     error,
     isLoading,
     mutate,
-  } = useSWR<{ item: PackageDetail }>(
-    `/api/admin/package-orders/${packageId}`,
-    authenticatedSWRFetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    },
-  );
+  } = useSWR<{ item: PackageDetail }>(`/api/admin/package-orders/${packageId}`, authenticatedSWRFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  });
 
   const data = resp?.item;
-  const [usageHistory, setUsageHistory] = useState<
-    AdminPackageUsageHistoryDto[]
-  >([]);
+  const [usageHistory, setUsageHistory] = useState<AdminPackageUsageHistoryDto[]>([]);
   const [usageCursor, setUsageCursor] = useState<string | null>(null);
   const [usageHasMore, setUsageHasMore] = useState(false);
   const [usageLoading, setUsageLoading] = useState(false);
@@ -285,10 +236,9 @@ export default function PackageDetailClient({
     try {
       const query = new URLSearchParams({ limit: "10" });
       if (append && usageCursor) query.set("cursor", usageCursor);
-      const res =
-        await authenticatedSWRFetcher<AdminPackageUsageHistoryResponseDto>(
-          `/api/admin/package-orders/${packageId}/usage-history?${query.toString()}`,
-        );
+      const res = await authenticatedSWRFetcher<AdminPackageUsageHistoryResponseDto>(
+        `/api/admin/package-orders/${packageId}/usage-history?${query.toString()}`,
+      );
       setUsageCursor(res.nextCursor ?? null);
       setUsageHasMore(Boolean(res.hasMore));
       setUsageHistory((prev) => (append ? [...prev, ...res.items] : res.items));
@@ -310,13 +260,9 @@ export default function PackageDetailClient({
    * 입력 이탈 경고(Unsaved Changes Guard)
    * - 이 페이지에서 실제 “입력 폼”은 모달 2개(연장/횟수조절)
    */
-  const isExtensionDirty =
-    showExtensionForm &&
-    (extensionData.days > 0 || extensionData.reason.trim().length > 0);
+  const isExtensionDirty = showExtensionForm && (extensionData.days > 0 || extensionData.reason.trim().length > 0);
   const isAdjustDirty =
-    editingSessions &&
-    (sessionAdjustment.amount !== 0 ||
-      sessionAdjustment.reason.trim().length > 0);
+    editingSessions && (sessionAdjustment.amount !== 0 || sessionAdjustment.reason.trim().length > 0);
   const isDirty = isExtensionDirty || isAdjustDirty;
   useUnsavedChangesGuard(isDirty);
 
@@ -399,10 +345,7 @@ export default function PackageDetailClient({
 
   const progressPercentage =
     data.usedSessions + data.remainingSessions > 0
-      ? Math.round(
-          (data.usedSessions / (data.usedSessions + data.remainingSessions)) *
-            100,
-        )
+      ? Math.round((data.usedSessions / (data.usedSessions + data.remainingSessions)) * 100)
       : 0;
   const isPaid = data.paymentStatus === "결제완료";
   const isCancelled = data.passStatus === "취소";
@@ -420,22 +363,19 @@ export default function PackageDetailClient({
   const packageGuide = isCancelled
     ? {
         title: "취소된 패키지입니다",
-        description:
-          "결제취소 또는 패스 취소 상태이므로 연장/횟수 조절 작업을 진행하지 않습니다.",
+        description: "결제취소 또는 패스 취소 상태이므로 연장/횟수 조절 작업을 진행하지 않습니다.",
         toneClass: "border-destructive/30 bg-destructive/10 text-destructive",
       }
     : !isPaid
       ? {
           title: "결제 상태 확인이 필요합니다",
-          description:
-            "결제완료 전에는 패키지 연장이나 횟수 조절을 진행할 수 없습니다. 결제 상태를 먼저 확인하세요.",
+          description: "결제완료 전에는 패키지 연장이나 횟수 조절을 진행할 수 없습니다. 결제 상태를 먼저 확인하세요.",
           toneClass: "border-warning/30 bg-warning/10 text-warning",
         }
       : isExpired
         ? {
             title: "만료된 패키지입니다",
-            description:
-              "이미 만료된 패키지입니다. 운영 정책에 따라 연장이 필요한지 먼저 확인하세요.",
+            description: "이미 만료된 패키지입니다. 운영 정책에 따라 연장이 필요한지 먼저 확인하세요.",
             toneClass: "border-warning/30 bg-warning/10 text-warning",
           }
         : data.remainingSessions <= 0
@@ -448,8 +388,7 @@ export default function PackageDetailClient({
           : daysLeft <= 7
             ? {
                 title: "만료 임박 패키지입니다",
-                description:
-                  "만료일까지 7일 이하로 남았습니다. 고객 문의 시 연장 가능 여부를 함께 확인하세요.",
+                description: "만료일까지 7일 이하로 남았습니다. 고객 문의 시 연장 가능 여부를 함께 확인하세요.",
                 toneClass: "border-warning/30 bg-warning/10 text-warning",
               }
             : {
@@ -462,22 +401,16 @@ export default function PackageDetailClient({
   const currentExpiryDate = data?.expiryDate ? new Date(data.expiryDate) : null;
   const baseForPreview = ((): Date => {
     const now = new Date();
-    return currentExpiryDate && currentExpiryDate > now
-      ? currentExpiryDate
-      : now;
+    return currentExpiryDate && currentExpiryDate > now ? currentExpiryDate : now;
   })();
   const previewExpiryDate =
-    extensionData.days > 0
-      ? new Date(baseForPreview.getTime() + extensionData.days * 86400000)
-      : null;
+    extensionData.days > 0 ? new Date(baseForPreview.getTime() + extensionData.days * 86400000) : null;
 
   // 액션
   const handleExtension = async () => {
     if (isSavingExtend) return;
-    if (extensionData.days <= 0)
-      return showErrorToast("연장할 일수를 입력해주세요.");
-    if (!extensionData.reason.trim())
-      return showErrorToast("연장 사유를 입력해주세요.");
+    if (extensionData.days <= 0) return showErrorToast("연장할 일수를 입력해주세요.");
+    if (!extensionData.reason.trim()) return showErrorToast("연장 사유를 입력해주세요.");
 
     setIsSavingExtend(true);
     try {
@@ -495,9 +428,7 @@ export default function PackageDetailClient({
       setShowExtensionForm(false);
       setExtensionData({ sessions: 0, days: 0, reason: "" });
     } catch (e: unknown) {
-      showErrorToast(
-        e instanceof Error ? e.message : "연장 중 오류가 발생했습니다.",
-      );
+      showErrorToast(e instanceof Error ? e.message : "연장 중 오류가 발생했습니다.");
     } finally {
       setIsSavingExtend(false);
     }
@@ -506,33 +437,26 @@ export default function PackageDetailClient({
   // 횟수 조절 처리
   const handleSessionAdjustment = async () => {
     if (isSavingAdjust) return;
-    if (sessionAdjustment.amount === 0)
-      return showErrorToast("조절할 횟수를 입력해주세요.");
-    if (!sessionAdjustment.reason.trim())
-      return showErrorToast("조절 사유를 입력해주세요.");
+    if (sessionAdjustment.amount === 0) return showErrorToast("조절할 횟수를 입력해주세요.");
+    if (!sessionAdjustment.reason.trim()) return showErrorToast("조절 사유를 입력해주세요.");
 
     setIsSavingAdjust(true);
     try {
-      await adminMutator(
-        `/api/admin/package-orders/${packageId}/adjust-sessions`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            delta: sessionAdjustment.amount,
-            clampZero: true,
-            reason: sessionAdjustment.reason,
-          }),
-        },
-      );
+      await adminMutator(`/api/admin/package-orders/${packageId}/adjust-sessions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          delta: sessionAdjustment.amount,
+          clampZero: true,
+          reason: sessionAdjustment.reason,
+        }),
+      });
       await mutate();
       showSuccessToast("횟수가 조절되었습니다.");
       setEditingSessions(false);
       setSessionAdjustment({ amount: 0, reason: "" });
     } catch (e: unknown) {
-      showErrorToast(
-        e instanceof Error ? e.message : "횟수 조절 중 오류가 발생했습니다.",
-      );
+      showErrorToast(e instanceof Error ? e.message : "횟수 조절 중 오류가 발생했습니다.");
     } finally {
       setIsSavingAdjust(false);
     }
@@ -574,9 +498,7 @@ export default function PackageDetailClient({
                 <PackageIcon className="h-7 w-7 text-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold tracking-normal text-foreground lg:text-3xl">
-                  패키지 상세 관리
-                </h1>
+                <h1 className="text-2xl font-semibold tracking-normal text-foreground lg:text-3xl">패키지 상세 관리</h1>
                 <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-foreground/75">
                   <span className="font-mono">
                     패키지 ID: {data.id.slice(0, 8)}…{data.id.slice(-6)}
@@ -599,11 +521,7 @@ export default function PackageDetailClient({
             </div>
             <div className="flex gap-2">
               <Button asChild variant="outline" className="border-border">
-                <Link
-                  href="/admin/packages"
-                  data-no-unsaved-guard
-                  onClick={onLeaveListClick}
-                >
+                <Link href="/admin/packages" data-no-unsaved-guard onClick={onLeaveListClick}>
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   목록으로
                 </Link>
@@ -624,9 +542,7 @@ export default function PackageDetailClient({
             <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
               <div className="flex items-center gap-2 mb-1.5">
                 <PackageIcon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  패키지 유형
-                </span>
+                <span className="text-sm text-muted-foreground">패키지 유형</span>
               </div>
               <p className="text-lg font-semibold">{data.packageType}</p>
             </div>
@@ -636,9 +552,7 @@ export default function PackageDetailClient({
                 <Target className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">남은 횟수</span>
               </div>
-              <p className="text-lg font-semibold text-primary">
-                {data.remainingSessions}회
-              </p>
+              <p className="text-lg font-semibold text-primary">{data.remainingSessions}회</p>
             </div>
 
             <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
@@ -666,12 +580,7 @@ export default function PackageDetailClient({
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">결제 상태</span>
               </div>
-              <Badge
-                variant={
-                  getPaymentStatusBadgeSpec(data.paymentStatus ?? "결제대기")
-                    .variant
-                }
-              >
+              <Badge variant={getPaymentStatusBadgeSpec(data.paymentStatus ?? "결제대기").variant}>
                 {data.paymentStatus ?? "결제대기"}
               </Badge>
             </div>
@@ -683,9 +592,7 @@ export default function PackageDetailClient({
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <p className="text-sm font-semibold">{packageGuide.title}</p>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  {packageGuide.description}
-                </p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{packageGuide.description}</p>
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -705,26 +612,18 @@ export default function PackageDetailClient({
 
         <Card
           id="package-usage-history"
-          className={cn(
-            "mb-6 border-border bg-card/80 dark:bg-card dark:border-border",
-            adminSurface.tableCard,
-          )}
+          className={cn("mb-6 border-border bg-card/80 dark:bg-card dark:border-border", adminSurface.tableCard)}
         >
           <CardHeader className="border-b border-border">
             <CardTitle className="flex items-center gap-2">
               <History className="h-5 w-5 text-primary" />
               잔여 횟수/만료/사용 이력
             </CardTitle>
-            <CardDescription>
-              패키지 횟수가 차감된 신청서 목록과 현재 사용 흐름을 먼저
-              확인하세요.
-            </CardDescription>
+            <CardDescription>패키지 횟수가 차감된 신청서 목록과 현재 사용 흐름을 먼저 확인하세요.</CardDescription>
           </CardHeader>
           <CardContent className="p-6">
             {usageHistory.length === 0 && !usageLoading ? (
-              <p className="text-center text-muted-foreground py-8">
-                사용 내역이 없습니다.
-              </p>
+              <p className="text-center text-muted-foreground py-8">사용 내역이 없습니다.</p>
             ) : (
               <div className="space-y-4">
                 {usageHistory.map((u) => (
@@ -735,25 +634,15 @@ export default function PackageDetailClient({
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <Badge
-                            variant={
-                              getMerchandisingBadgeSpec("discount").variant
-                            }
-                            className="text-xs"
-                          >
+                          <Badge variant={getMerchandisingBadgeSpec("discount").variant} className="text-xs">
                             -{u.sessionsUsed}회 차감
                           </Badge>
                         </div>
                         <p className="font-medium mb-1">{u.summary}</p>
                         <p className="text-sm text-muted-foreground">
-                          {u.applicationSummary ||
-                            `신청서 #${u.applicationId.slice(-6)}`}
+                          {u.applicationSummary || `신청서 #${u.applicationId.slice(-6)}`}
                         </p>
-                        {u.adminNote && (
-                          <p className="text-sm text-foreground mt-1">
-                            관리자 메모: {u.adminNote}
-                          </p>
-                        )}
+                        {u.adminNote && <p className="text-sm text-foreground mt-1">관리자 메모: {u.adminNote}</p>}
                       </div>
                       <Button variant="ghost" size="sm" asChild>
                         <Link
@@ -823,10 +712,7 @@ export default function PackageDetailClient({
                   value: data.serviceType,
                 },
               ].map((row, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-card"
-                >
+                <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-card">
                   <span className="text-muted-foreground">{row.icon}</span>
                   <div>
                     <p className="text-xs text-muted-foreground">{row.label}</p>
@@ -845,9 +731,7 @@ export default function PackageDetailClient({
                   <PackageIcon className="h-5 w-5 text-primary" />
                   패키지 상태
                 </span>
-                {isEditMode && (
-                  <Edit3 className="h-4 w-4 text-muted-foreground" />
-                )}
+                {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-3">
@@ -868,26 +752,13 @@ export default function PackageDetailClient({
 
               <div className="p-3 rounded-lg bg-card space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    결제 상태
-                  </span>
-                  <Badge
-                    variant={
-                      getPaymentStatusBadgeSpec(
-                        data.paymentStatus ?? "결제대기",
-                      ).variant
-                    }
-                  >
+                  <span className="text-sm text-muted-foreground">결제 상태</span>
+                  <Badge variant={getPaymentStatusBadgeSpec(data.paymentStatus ?? "결제대기").variant}>
                     {data.paymentStatus ?? "결제대기"}
                   </Badge>
                 </div>
                 {isNicePayment && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleNiceSync}
-                    disabled={isSyncingNice}
-                  >
+                  <Button variant="outline" size="sm" onClick={handleNiceSync} disabled={isSyncingNice}>
                     {isSyncingNice ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -902,12 +773,8 @@ export default function PackageDetailClient({
 
               <div className="p-3 rounded-lg bg-card">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-muted-foreground">
-                    이용 진행률
-                  </span>
-                  <span className="text-sm font-medium">
-                    {progressPercentage}%
-                  </span>
+                  <span className="text-sm text-muted-foreground">이용 진행률</span>
+                  <span className="text-sm font-medium">{progressPercentage}%</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-muted dark:bg-card">
                   <div
@@ -923,9 +790,7 @@ export default function PackageDetailClient({
 
               <div className="p-3 rounded-lg bg-card">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">
-                    만료까지
-                  </span>
+                  <span className="text-sm text-muted-foreground">만료까지</span>
                   <span
                     className={cn(
                       "text-sm font-medium",
@@ -944,19 +809,13 @@ export default function PackageDetailClient({
               </div>
 
               {!isPaid && data.paymentStatus !== "결제취소" && (
-                <p className="text-xs text-primary">
-                  결제대기 상태에서는 연장/횟수 조절을 할 수 없습니다.
-                </p>
+                <p className="text-xs text-primary">결제대기 상태에서는 연장/횟수 조절을 할 수 없습니다.</p>
               )}
               {isCancelled && (
-                <p className="text-xs text-destructive">
-                  결제취소 상태이므로 모든 작업이 비활성화되었습니다.
-                </p>
+                <p className="text-xs text-destructive">결제취소 상태이므로 모든 작업이 비활성화되었습니다.</p>
               )}
               {isExpired && isPaid && !isCancelled && (
-                <p className="text-xs text-muted-foreground">
-                  만료된 패스는 연장만 가능합니다.
-                </p>
+                <p className="text-xs text-muted-foreground">만료된 패스는 연장만 가능합니다.</p>
               )}
               <div className="rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
                 <p className="font-medium text-foreground">작업 가능 여부</p>
@@ -995,51 +854,33 @@ export default function PackageDetailClient({
           </Card>
 
           {/* 운영 내역 */}
-          <Card
-            id="package-operation-history"
-            className={cn("md:col-span-2", adminSurface.tableCard)}
-          >
+          <Card id="package-operation-history" className={cn("md:col-span-2", adminSurface.tableCard)}>
             <CardHeader className="border-b border-border">
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5 text-foreground" />
                 운영 내역 (연장/횟수)
               </CardTitle>
-              <CardDescription>
-                패키지 연장 및 횟수 조절 기록입니다.
-              </CardDescription>
+              <CardDescription>패키지 연장 및 횟수 조절 기록입니다.</CardDescription>
             </CardHeader>
             <CardContent className="p-6">
               <span className="text-xs text-muted-foreground">
-                총 {operationsHistorySorted.length}건 (현재 {visibleOps.length}
-                건 표시)
+                총 {operationsHistorySorted.length}건 (현재 {visibleOps.length}건 표시)
               </span>
 
               {operationsHistorySorted.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  운영 내역이 없습니다.
-                </p>
+                <p className="text-center text-muted-foreground py-8">운영 내역이 없습니다.</p>
               ) : (
                 <>
                   <ExtensionHistoryList items={visibleOps} />
                   <div className="pt-4 flex justify-center items-center gap-2">
                     {opsHasMore ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setOpsLimit((n) => n + 5)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => setOpsLimit((n) => n + 5)}>
                         더 보기
                       </Button>
                     ) : operationsHistorySorted.length > 5 ? (
                       <>
-                        <p className="text-xs text-muted-foreground">
-                          마지막 페이지입니다.
-                        </p>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setOpsLimit(5)}
-                        >
+                        <p className="text-xs text-muted-foreground">마지막 페이지입니다.</p>
+                        <Button variant="ghost" size="sm" onClick={() => setOpsLimit(5)}>
                           접기
                         </Button>
                       </>
@@ -1058,16 +899,10 @@ export default function PackageDetailClient({
               <CardHeader>
                 <CardTitle>패키지 연장</CardTitle>
                 <CardDescription>
-                  고객의 이용 가능 기간이 변경됩니다. 연장 일수와 사유를 확인한
-                  뒤 진행해주세요.
+                  고객의 이용 가능 기간이 변경됩니다. 연장 일수와 사유를 확인한 뒤 진행해주세요.
                 </CardDescription>
               </CardHeader>
-              <CardContent
-                className={cn(
-                  "space-y-4",
-                  isSavingExtend && "opacity-70 pointer-events-none",
-                )}
-              >
+              <CardContent className={cn("space-y-4", isSavingExtend && "opacity-70 pointer-events-none")}>
                 <div>
                   <Label htmlFor="days">연장 일수</Label>
                   <div className="mt-2 text-sm">
@@ -1076,9 +911,7 @@ export default function PackageDetailClient({
                     {previewExpiryDate && (
                       <>
                         <ChevronRight className="inline h-4 w-4 mx-1 text-muted-foreground" />
-                        <span className="font-medium text-primary">
-                          {fmtDate(previewExpiryDate)}
-                        </span>
+                        <span className="font-medium text-primary">{fmtDate(previewExpiryDate)}</span>
                       </>
                     )}
                   </div>
@@ -1099,7 +932,7 @@ export default function PackageDetailClient({
                     <Input
                       id="days"
                       inputMode="numeric"
-                      pattern="[0-9]*"
+                      pattern="[0-9,]*"
                       className="text-center"
                       disabled={isSavingExtend}
                       value={String(extensionData.days)}
@@ -1114,9 +947,7 @@ export default function PackageDetailClient({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() =>
-                        setExtensionData((p) => ({ ...p, days: p.days + 1 }))
-                      }
+                      onClick={() => setExtensionData((p) => ({ ...p, days: p.days + 1 }))}
                       disabled={isSavingExtend}
                     >
                       <Plus className="h-4 w-4" />
@@ -1141,11 +972,7 @@ export default function PackageDetailClient({
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowExtensionForm(false)}
-                  disabled={isSavingExtend}
-                >
+                <Button variant="outline" onClick={() => setShowExtensionForm(false)} disabled={isSavingExtend}>
                   취소
                 </Button>
                 <Button onClick={handleExtension} disabled={isSavingExtend}>
@@ -1169,16 +996,10 @@ export default function PackageDetailClient({
               <CardHeader>
                 <CardTitle>횟수 조절</CardTitle>
                 <CardDescription>
-                  고객의 이용 가능 횟수가 변경됩니다. 변경 전/후 값과 사유를
-                  확인한 뒤 진행해주세요.
+                  고객의 이용 가능 횟수가 변경됩니다. 변경 전/후 값과 사유를 확인한 뒤 진행해주세요.
                 </CardDescription>
               </CardHeader>
-              <CardContent
-                className={cn(
-                  "space-y-4",
-                  isSavingAdjust && "opacity-70 pointer-events-none",
-                )}
-              >
+              <CardContent className={cn("space-y-4", isSavingAdjust && "opacity-70 pointer-events-none")}>
                 <div>
                   <Label htmlFor="adjustment">조절 수량</Label>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -1187,9 +1008,7 @@ export default function PackageDetailClient({
                       <span
                         className={cn(
                           "ml-2 font-medium",
-                          sessionAdjustment.amount > 0
-                            ? "text-primary"
-                            : "text-destructive",
+                          sessionAdjustment.amount > 0 ? "text-primary" : "text-destructive",
                         )}
                       >
                         → {data.remainingSessions + sessionAdjustment.amount}회
@@ -1256,17 +1075,10 @@ export default function PackageDetailClient({
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setEditingSessions(false)}
-                  disabled={isSavingAdjust}
-                >
+                <Button variant="outline" onClick={() => setEditingSessions(false)} disabled={isSavingAdjust}>
                   취소
                 </Button>
-                <Button
-                  onClick={handleSessionAdjustment}
-                  disabled={isSavingAdjust}
-                >
+                <Button onClick={handleSessionAdjustment} disabled={isSavingAdjust}>
                   {isSavingAdjust ? (
                     <>
                       <Loader2 className="mr-1 h-4 w-4 animate-spin" /> 저장 중…

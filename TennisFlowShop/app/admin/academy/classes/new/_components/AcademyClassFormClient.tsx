@@ -1,23 +1,18 @@
 "use client";
 
+import { ArrowLeft, BookOpen, Save } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { ArrowLeft, BookOpen, Save } from "lucide-react";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -82,10 +77,7 @@ function optionalNumber(value: string) {
   return Number(trimmed);
 }
 
-export default function AcademyClassFormClient({
-  mode,
-  initialItem,
-}: AcademyClassFormClientProps) {
+export default function AcademyClassFormClient({ mode, initialItem }: AcademyClassFormClientProps) {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(() => toFormState(initialItem));
   const [errorMessage, setErrorMessage] = useState("");
@@ -97,9 +89,7 @@ export default function AcademyClassFormClient({
 
   const isEdit = mode === "edit";
   const endpoint =
-    isEdit && initialItem?._id
-      ? `/api/admin/academy/classes/${initialItem._id}`
-      : "/api/admin/academy/classes";
+    isEdit && initialItem?._id ? `/api/admin/academy/classes/${initialItem._id}` : "/api/admin/academy/classes";
 
   const title = isEdit ? "클래스 수정" : "새 클래스 등록";
   const description = isEdit
@@ -108,25 +98,17 @@ export default function AcademyClassFormClient({
 
   const canSubmit = useMemo(() => form.name.trim().length > 0, [form.name]);
 
-  function updateField<Key extends keyof FormState>(
-    key: Key,
-    value: FormState[Key],
-  ) {
+  function updateField<Key extends keyof FormState>(key: Key, value: FormState[Key]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
   function validateClient() {
     if (!form.name.trim()) return "클래스명을 입력해 주세요.";
-    if (form.name.trim().length > 80)
-      return "클래스명은 80자 이하로 입력해 주세요.";
-    if (form.description.trim().length > 1000)
-      return "설명은 1000자 이하로 입력해 주세요.";
-    if (form.instructorName.trim().length > 50)
-      return "강사명은 50자 이하로 입력해 주세요.";
-    if (form.location.trim().length > 100)
-      return "장소는 100자 이하로 입력해 주세요.";
-    if (form.scheduleText.trim().length > 200)
-      return "일정 안내는 200자 이하로 입력해 주세요.";
+    if (form.name.trim().length > 80) return "클래스명은 80자 이하로 입력해 주세요.";
+    if (form.description.trim().length > 1000) return "설명은 1000자 이하로 입력해 주세요.";
+    if (form.instructorName.trim().length > 50) return "강사명은 50자 이하로 입력해 주세요.";
+    if (form.location.trim().length > 100) return "장소는 100자 이하로 입력해 주세요.";
+    if (form.scheduleText.trim().length > 200) return "일정 안내는 200자 이하로 입력해 주세요.";
 
     const capacity = optionalNumber(form.capacity);
     if (capacity !== null && (!Number.isFinite(capacity) || capacity < 0)) {
@@ -170,9 +152,7 @@ export default function AcademyClassFormClient({
           status: form.status,
         }),
       });
-      showSuccessToast(
-        isEdit ? "클래스가 수정되었습니다." : "클래스가 등록되었습니다.",
-      );
+      showSuccessToast(isEdit ? "클래스가 수정되었습니다." : "클래스가 등록되었습니다.");
       router.push(LIST_PATH);
       router.refresh();
     } catch (submitError) {
@@ -230,25 +210,19 @@ export default function AcademyClassFormClient({
                 <Textarea
                   id="academy-class-description"
                   value={form.description}
-                  onChange={(event) =>
-                    updateField("description", event.target.value)
-                  }
+                  onChange={(event) => updateField("description", event.target.value)}
                   placeholder="레슨 프로그램 소개를 입력해 주세요."
                   maxLength={1000}
                   rows={5}
                 />
-                <p className="text-xs text-muted-foreground">
-                  {form.description.length}/1000자
-                </p>
+                <p className="text-xs text-muted-foreground">{form.description.length}/1000자</p>
               </div>
 
               <div className="space-y-2">
                 <Label>수업 유형</Label>
                 <Select
                   value={form.lessonType}
-                  onValueChange={(value) =>
-                    updateField("lessonType", value as AcademyClassLessonType)
-                  }
+                  onValueChange={(value) => updateField("lessonType", value as AcademyClassLessonType)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="수업 유형 선택" />
@@ -265,12 +239,7 @@ export default function AcademyClassFormClient({
 
               <div className="space-y-2">
                 <Label>레벨</Label>
-                <Select
-                  value={form.level}
-                  onValueChange={(value) =>
-                    updateField("level", value as AcademyClassLevel)
-                  }
-                >
+                <Select value={form.level} onValueChange={(value) => updateField("level", value as AcademyClassLevel)}>
                   <SelectTrigger>
                     <SelectValue placeholder="레벨 선택" />
                   </SelectTrigger>
@@ -289,9 +258,7 @@ export default function AcademyClassFormClient({
                 <Input
                   id="academy-class-instructor"
                   value={form.instructorName}
-                  onChange={(event) =>
-                    updateField("instructorName", event.target.value)
-                  }
+                  onChange={(event) => updateField("instructorName", event.target.value)}
                   placeholder="예: 도깨비 코치"
                   maxLength={50}
                 />
@@ -302,9 +269,7 @@ export default function AcademyClassFormClient({
                 <Input
                   id="academy-class-location"
                   value={form.location}
-                  onChange={(event) =>
-                    updateField("location", event.target.value)
-                  }
+                  onChange={(event) => updateField("location", event.target.value)}
                   placeholder="예: 도깨비테니스 실내 코트"
                   maxLength={100}
                 />
@@ -315,9 +280,7 @@ export default function AcademyClassFormClient({
                 <Input
                   id="academy-class-schedule"
                   value={form.scheduleText}
-                  onChange={(event) =>
-                    updateField("scheduleText", event.target.value)
-                  }
+                  onChange={(event) => updateField("scheduleText", event.target.value)}
                   placeholder="예: 화/목 저녁 7시"
                   maxLength={200}
                 />
@@ -331,26 +294,20 @@ export default function AcademyClassFormClient({
                   min="0"
                   step="1"
                   value={form.capacity}
-                  onChange={(event) =>
-                    updateField("capacity", event.target.value)
-                  }
+                  onChange={(event) => updateField("capacity", event.target.value)}
                   placeholder="예: 6"
                 />
-                <p className="text-xs text-muted-foreground">
-                  미입력 시 제한 없음으로 표시됩니다.
-                </p>
+                <p className="text-xs text-muted-foreground">미입력 시 제한 없음으로 표시됩니다.</p>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="academy-class-price">가격</Label>
-                <Input
+                <FormattedNumberInput
                   id="academy-class-price"
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={form.price}
-                  onChange={(event) => updateField("price", event.target.value)}
-                  placeholder="예: 180000"
+                  min={0}
+                  value={form.price ? Number(form.price) : null}
+                  onValueChange={(price) => updateField("price", String(price))}
+                  placeholder="예: 180,000"
                 />
               </div>
 
@@ -358,9 +315,7 @@ export default function AcademyClassFormClient({
                 <Label>상태</Label>
                 <Select
                   value={form.status}
-                  onValueChange={(value) =>
-                    updateField("status", value as AcademyClassStatus)
-                  }
+                  onValueChange={(value) => updateField("status", value as AcademyClassStatus)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="상태 선택" />
