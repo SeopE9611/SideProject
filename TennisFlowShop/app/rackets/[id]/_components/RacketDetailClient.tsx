@@ -681,7 +681,10 @@ export default function RacketDetailClient({
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-muted-foreground">대여</span>
                       <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">
-                        7일 {Number(racket.rental?.fee?.d7 ?? 0).toLocaleString()}원 · 보증금 {Number(racket.rental?.deposit ?? 0).toLocaleString()}원
+                        7일{" "}
+                        {Number(racket.rental?.fee?.d7 ?? 0).toLocaleString()}원
+                        · 보증금{" "}
+                        {Number(racket.rental?.deposit ?? 0).toLocaleString()}원
                       </span>
                     </div>
                   )}
@@ -701,7 +704,8 @@ export default function RacketDetailClient({
                     이 라켓으로 무엇을 할까요?
                   </h2>
                   <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
-                    구매 시 다음 단계에서 스트링을 선택하고 장착 정보를 함께 확인합니다. 라켓만 바로 결제되지 않아요.
+                    구매 시 다음 단계에서 스트링을 선택하고 장착 정보를 함께
+                    확인합니다. 라켓만 바로 결제되지 않아요.
                   </p>
                 </div>
                 <div className="grid gap-2.5">

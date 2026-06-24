@@ -613,7 +613,9 @@ function pickOnePerKind(items: OpItem[]) {
     const t2 = it.createdAt ? new Date(it.createdAt).getTime() : 0;
     if (t2 >= t1) byKind.set(it.kind, it);
   }
-  return (["order", "rental", "stringing_application", "package_purchase"] as Kind[])
+  return (
+    ["order", "rental", "stringing_application", "package_purchase"] as Kind[]
+  )
     .map((k) => byKind.get(k))
     .filter(Boolean) as OpItem[];
 }
@@ -1599,12 +1601,14 @@ export default function OperationsClient() {
           >
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <p className="text-sm font-semibold text-foreground">빠른 보기</p>
+                <p className="text-sm font-semibold text-foreground">
+                  빠른 보기
+                </p>
                 <Badge variant="outline">{activeQuickViewMeta.label}</Badge>
               </div>
               <p className="mt-1 text-xs leading-relaxed text-foreground/75">
-                {activeQuickViewMeta.description} 자주 처리하는 업무 유형을 한 번에
-                전환할 수 있습니다.
+                {activeQuickViewMeta.description} 자주 처리하는 업무 유형을 한
+                번에 전환할 수 있습니다.
               </p>
             </div>
           </AdminFilterBar>
@@ -1827,7 +1831,9 @@ export default function OperationsClient() {
                       신청서
                     </SelectItem>
                     <SelectItem value="rental">대여</SelectItem>
-                    <SelectItem value="package_purchase">패키지 구매</SelectItem>
+                    <SelectItem value="package_purchase">
+                      패키지 구매
+                    </SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -1860,7 +1866,8 @@ export default function OperationsClient() {
                   </SelectContent>
                 </Select>
                 <p className="w-full text-[11px] leading-relaxed text-muted-foreground bp-sm:col-span-2 bp-md:col-span-3 bp-lg:col-span-5">
-                  레거시 유형은 기존 데이터 확인용이며 신규 접수 흐름은 현재 운영하지 않습니다.
+                  레거시 유형은 기존 데이터 확인용이며 신규 접수 흐름은 현재
+                  운영하지 않습니다.
                 </p>
 
                 <Select
@@ -3024,7 +3031,7 @@ export default function OperationsClient() {
                                               ? "대여"
                                               : item.kind === "package_purchase"
                                                 ? "패키지 구매"
-                                              : "주문"}
+                                                : "주문"}
                                         </p>
                                       </div>
                                     </div>

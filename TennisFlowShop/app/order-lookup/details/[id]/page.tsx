@@ -6,7 +6,12 @@ import {
 } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import { hasCompletedStringingApplication } from "@/app/order-lookup/_lib/stringing-status";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { EmptyState, PublicPageHero, PublicSurface, ResultState } from "@/components/public";
+import {
+  EmptyState,
+  PublicPageHero,
+  PublicSurface,
+  ResultState,
+} from "@/components/public";
 import LoginGate from "@/components/system/LoginGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

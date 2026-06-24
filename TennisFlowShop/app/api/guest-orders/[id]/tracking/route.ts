@@ -116,7 +116,8 @@ export async function GET(
 
     const courierItem = findCourierCatalogItem(courier);
     const carrierId = mapCourierCodeToCarrierId(courier);
-    const carrierDisplayName = courierItem?.label ?? getCourierDisplayName(courier);
+    const carrierDisplayName =
+      courierItem?.label ?? getCourierDisplayName(courier);
     if (!courierItem?.supportsTracking || !carrierId) {
       return NextResponse.json({
         success: true,

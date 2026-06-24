@@ -247,7 +247,10 @@ export function inferNextActionForOperationItem(
       };
     }
     if (isRentalPaid(item.statusLabel) && !isRentalOut(item.statusLabel)) {
-      if (item.linkedApplicationStatus && !isAppDone(item.linkedApplicationStatus)) {
+      if (
+        item.linkedApplicationStatus &&
+        !isAppDone(item.linkedApplicationStatus)
+      ) {
         return {
           stage: "교체서비스 작업 단계",
           nextAction: "교체서비스 작업 완료 필요",

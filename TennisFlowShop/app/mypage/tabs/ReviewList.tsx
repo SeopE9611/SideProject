@@ -174,7 +174,8 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
       apiItems.map((a) => ({
         _id: a._id,
         type: a.target?.type ?? (a.productId ? "product" : "service"),
-        title: a.target?.name ?? (a.productId ? "상품 후기" : "교체서비스 후기"),
+        title:
+          a.target?.name ?? (a.productId ? "상품 후기" : "교체서비스 후기"),
         rating: a.rating,
         content: a.content ?? "",
         status: a.status,
@@ -502,9 +503,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
             key={it._id}
             className="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[box-shadow,border-color,background-color,color,opacity] duration-200 hover:border-primary/30 hover:shadow-md"
           >
-            <div
-              className="pointer-events-none absolute inset-0 border border-border/40 bg-muted/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-            >
+            <div className="pointer-events-none absolute inset-0 border border-border/40 bg-muted/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
               <div className="h-full w-full bg-card rounded-lg" />
             </div>
 

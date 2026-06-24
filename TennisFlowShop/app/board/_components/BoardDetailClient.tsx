@@ -1572,7 +1572,12 @@ export default function BoardDetailClient({
               <ArrowLeft className="h-4 w-4" />
               <span>이전으로</span>
             </Button>
-            <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="w-full sm:w-auto"
+            >
               <Link href={listHref}>목록으로</Link>
             </Button>
           </div>

@@ -716,8 +716,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
             "로딩 중..."
           ) : (
             <span className="inline-flex items-center gap-2">
-              <RotateCcw className="h-4 w-4" />
-              더 보기
+              <RotateCcw className="h-4 w-4" />더 보기
             </span>
           )}
         </Button>

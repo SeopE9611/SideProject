@@ -324,23 +324,21 @@ export async function POST(req: Request) {
   const r = await guard.db.collection("offline_service_records").insertOne(doc);
   const paidAmount =
     doc.payment?.status === "paid" ? Number(doc.payment?.amount || 0) : 0;
-  await guard.db
-    .collection("offline_customers")
-    .updateOne(
-      { _id: doc.offlineCustomerId },
-      {
-        $inc: {
-          "stats.visitCount": 1,
-          "stats.totalPaid": paidAmount,
-          "stats.totalServiceCount": 1,
-        },
-        $set: {
-          "stats.lastVisitedAt": doc.occurredAt,
-          updatedAt: now,
-          updatedBy: guard.admin._id,
-        },
+  await guard.db.collection("offline_customers").updateOne(
+    { _id: doc.offlineCustomerId },
+    {
+      $inc: {
+        "stats.visitCount": 1,
+        "stats.totalPaid": paidAmount,
+        "stats.totalServiceCount": 1,
       },
-    );
+      $set: {
+        "stats.lastVisitedAt": doc.occurredAt,
+        updatedAt: now,
+        updatedBy: guard.admin._id,
+      },
+    },
+  );
   await appendAudit(
     guard.db,
     {

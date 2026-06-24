@@ -8,9 +8,9 @@ export type RentalStringingLike = {
 export function hasRentalStringingService(rental?: RentalStringingLike | null) {
   return Boolean(
     rental?.isStringServiceApplied ||
-      rental?.stringingApplicationId ||
-      rental?.stringing?.requested ||
-      rental?.linkedStringingApplication,
+    rental?.stringingApplicationId ||
+    rental?.stringing?.requested ||
+    rental?.linkedStringingApplication,
   );
 }
 

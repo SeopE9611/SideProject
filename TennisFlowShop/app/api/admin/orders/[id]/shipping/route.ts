@@ -14,7 +14,10 @@ import {
   normalizeOrderStatus,
   normalizePaymentStatus,
 } from "@/lib/admin-ops-normalize";
-import { findCourierCatalogItem, normalizeCourierCode } from "@/lib/shipping/courier-map";
+import {
+  findCourierCatalogItem,
+  normalizeCourierCode,
+} from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 
 const shippingMethodMap: Record<string, string> = {
@@ -124,7 +127,9 @@ export async function PATCH(
 
     const isCourier = normalizedMethod === "courier";
     const normalizedCourier = isCourier ? normalizeCourierCode(courier) : "";
-    const courierItem = isCourier ? findCourierCatalogItem(normalizedCourier) : null;
+    const courierItem = isCourier
+      ? findCourierCatalogItem(normalizedCourier)
+      : null;
     if (isCourier) {
       if (!courierItem)
         return NextResponse.json(
@@ -133,7 +138,10 @@ export async function PATCH(
         );
       if (courierItem.code === "ems")
         return NextResponse.json(
-          { success: false, message: "EMS는 현재 운송장 등록을 지원하지 않습니다." },
+          {
+            success: false,
+            message: "EMS는 현재 운송장 등록을 지원하지 않습니다.",
+          },
           { status: 400 },
         );
       const normalizedTrackingNumber = normalizeTrackingNumber(trackingNumber);
@@ -147,7 +155,10 @@ export async function PATCH(
         normalizedTrackingNumber.length > 20
       )
         return NextResponse.json(
-          { success: false, message: "운송장 번호는 숫자 9~20자리로 입력해주세요." },
+          {
+            success: false,
+            message: "운송장 번호는 숫자 9~20자리로 입력해주세요.",
+          },
           { status: 400 },
         );
     }
@@ -160,7 +171,9 @@ export async function PATCH(
     const nextMethod = String(normalizedMethod ?? shippingMethod ?? "").trim();
     const nextEstimatedDate = String(estimatedDate ?? "").trim();
     const nextCourier = normalizedCourier;
-    const nextTracking = isCourier ? normalizeTrackingNumber(trackingNumber) : "";
+    const nextTracking = isCourier
+      ? normalizeTrackingNumber(trackingNumber)
+      : "";
     const isFirstShippingRegistration =
       !isRegistered &&
       Boolean(nextMethod || nextEstimatedDate || nextCourier || nextTracking);

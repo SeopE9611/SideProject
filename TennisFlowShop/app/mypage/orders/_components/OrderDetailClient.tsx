@@ -919,7 +919,9 @@ export default function OrderDetailClient({
                 className="h-9 w-full overflow-hidden whitespace-nowrap border-border bg-background hover:border-primary/30 bp-lg:w-auto"
               >
                 <span className="bp-sm:hidden">목록</span>
-                <span className="hidden bp-sm:inline">주문 목록으로 돌아가기</span>
+                <span className="hidden bp-sm:inline">
+                  주문 목록으로 돌아가기
+                </span>
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
 
@@ -976,7 +978,6 @@ export default function OrderDetailClient({
                   {formatCurrency(orderDetail.total)}
                 </p>
               </div>
-
 
               <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
                 <div className="mb-2 flex items-center space-x-2">
@@ -1231,13 +1232,17 @@ export default function OrderDetailClient({
                                         {stringName}
                                       </dd>
                                     </div>
-                                    {(line.gauge || line.colorLabel || line.color) ? (
+                                    {line.gauge ||
+                                    line.colorLabel ||
+                                    line.color ? (
                                       <div className="flex gap-2">
                                         <dt className="w-20 shrink-0 text-muted-foreground">
                                           옵션
                                         </dt>
                                         <dd className="min-w-0 break-words">
-                                          {line.gauge ? `게이지 ${formatGaugeLabel(line.gauge)}` : "게이지 -"}
+                                          {line.gauge
+                                            ? `게이지 ${formatGaugeLabel(line.gauge)}`
+                                            : "게이지 -"}
                                           {" / 색상 "}
                                           {line.colorLabel || line.color || "-"}
                                         </dd>
@@ -1302,7 +1307,9 @@ export default function OrderDetailClient({
                                   택배사:
                                 </span>{" "}
                                 {appSelfShipInfo?.courier?.trim()
-                                  ? getCourierDisplayName(appSelfShipInfo.courier)
+                                  ? getCourierDisplayName(
+                                      appSelfShipInfo.courier,
+                                    )
                                   : "미등록"}
                               </p>
                               <p>
@@ -1383,8 +1390,8 @@ export default function OrderDetailClient({
         <div id="reviews-cta" className="mt-4">
           {serviceLinkedOrder ? (
             <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
-              이 이용 건은 교체서비스 이용 경험에 대한 서비스 리뷰를 작성할
-              수 있습니다.
+              이 이용 건은 교체서비스 이용 경험에 대한 서비스 리뷰를 작성할 수
+              있습니다.
             </div>
           ) : allReviewed ? (
             <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/10 p-4 shadow-sm dark:bg-primary/20 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-6">
@@ -1922,16 +1929,18 @@ export default function OrderDetailClient({
                       <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
                         가격: {formatCurrency(item.price)}
                       </p>
-                      {typeof item.stringPrice === "number" && item.stringPrice > 0 && (
-                        <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
-                          스트링 가격: {formatCurrency(item.stringPrice)}
-                        </p>
-                      )}
-                      {typeof item.mountingFee === "number" && item.mountingFee > 0 && (
-                        <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
-                          장착비: {formatCurrency(item.mountingFee)}
-                        </p>
-                      )}
+                      {typeof item.stringPrice === "number" &&
+                        item.stringPrice > 0 && (
+                          <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
+                            스트링 가격: {formatCurrency(item.stringPrice)}
+                          </p>
+                        )}
+                      {typeof item.mountingFee === "number" &&
+                        item.mountingFee > 0 && (
+                          <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
+                            장착비: {formatCurrency(item.mountingFee)}
+                          </p>
+                        )}
                       <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
                         상품 소계: {formatCurrency(item.price * item.quantity)}
                       </p>

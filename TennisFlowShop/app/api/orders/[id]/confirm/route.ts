@@ -251,7 +251,11 @@ export async function POST(
         title: "구매확정 포인트가 적립되었습니다.",
         body: `${earnedPoints.toLocaleString()}P가 적립되었습니다.`,
         href: "/mypage?tab=points",
-        source: { collection: "orders", id: orderObjectId, kind: "order_reward" },
+        source: {
+          collection: "orders",
+          id: orderObjectId,
+          kind: "order_reward",
+        },
         dedupeKey: `notification:order_reward:${orderObjectId.toString()}`,
       });
     } catch (error) {

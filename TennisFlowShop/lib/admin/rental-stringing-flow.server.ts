@@ -16,9 +16,8 @@ export async function getLinkedRentalStringingStatus(
     links.unshift({ _id: new ObjectId(applicationId) });
   }
 
-  const application = await db.collection("stringing_applications").findOne(
-    { $or: links },
-    { projection: { status: 1 } },
-  );
+  const application = await db
+    .collection("stringing_applications")
+    .findOne({ $or: links }, { projection: { status: 1 } });
   return typeof application?.status === "string" ? application.status : null;
 }

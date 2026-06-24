@@ -484,19 +484,19 @@ export default function OrdersClient() {
 
   const hasQuickViewModifiers = Boolean(
     searchTerm.trim() ||
-      selectedDate ||
-      sortBy !== "date" ||
-      sortDirection !== "desc",
+    selectedDate ||
+    sortBy !== "date" ||
+    sortDirection !== "desc",
   );
 
   const activeQuickView = hasQuickViewModifiers
     ? null
     : paymentFilter === "결제대기" &&
-    statusFilter === "all" &&
-    typeFilter === "all" &&
-    shippingFilter === "all" &&
-    customerTypeFilter === "all" &&
-    cancelFilter === "all"
+        statusFilter === "all" &&
+        typeFilter === "all" &&
+        shippingFilter === "all" &&
+        customerTypeFilter === "all" &&
+        cancelFilter === "all"
       ? "payment"
       : cancelFilter === "requested" &&
           statusFilter === "all" &&
@@ -820,7 +820,9 @@ export default function OrdersClient() {
             현재 보기: {quickViewLabel}
           </span>
           {searchTerm.trim() ? (
-            <span className="text-foreground/75">검색어: {searchTerm.trim()}</span>
+            <span className="text-foreground/75">
+              검색어: {searchTerm.trim()}
+            </span>
           ) : null}
           {appliedFilterLabels.length > 0 ? (
             <span className="text-foreground/75">
@@ -1606,7 +1608,9 @@ export default function OrdersClient() {
                                 className="h-7 w-7 border border-border/60 bg-background"
                               >
                                 <MoreHorizontal className="h-3.5 w-3.5" />
-                                <span className="sr-only">주문 작업 메뉴 열기</span>
+                                <span className="sr-only">
+                                  주문 작업 메뉴 열기
+                                </span>
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent

@@ -306,12 +306,7 @@ const RacketCard = React.memo(
       const iconClassName = "h-4 w-4 shrink-0";
 
       return (
-        <div
-          className={cn(
-            "grid w-full gap-2",
-            "grid-cols-1",
-          )}
-        >
+        <div className={cn("grid w-full gap-2", "grid-cols-1")}>
           {canBuy ? (
             <Button
               asChild

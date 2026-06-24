@@ -36,8 +36,8 @@ export default function RentalCheckoutStringingSections({
           교체서비스 상세 설정
         </CardTitle>
         <CardDescription className="mt-2">
-          대여할 라켓에 장착할 스트링 텐션과 요청사항을 입력하세요. 라켓
-          정보는 대여 상품 기준으로 자동 반영됩니다.
+          대여할 라켓에 장착할 스트링 텐션과 요청사항을 입력하세요. 라켓 정보는
+          대여 상품 기준으로 자동 반영됩니다.
         </CardDescription>
       </div>
       <CardContent className="space-y-4 p-4 md:space-y-6 md:p-6">

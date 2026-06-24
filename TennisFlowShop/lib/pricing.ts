@@ -31,7 +31,10 @@ async function resolveStringProductMountingFee(
   const prod = await db
     .collection("products")
     .findOne(
-      { _id: new ObjectId(productId), ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) },
+      {
+        _id: new ObjectId(productId),
+        ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+      },
       { projection: { mountingFee: 1 } },
     );
   if (!prod) {

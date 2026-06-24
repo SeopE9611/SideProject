@@ -291,7 +291,6 @@ const fmtDateOnly = (v?: string | Date | null) =>
 const formatCurrency = (amount: number) =>
   `${new Intl.NumberFormat("ko-KR").format(amount)}원`;
 
-
 type Props = {
   id: string;
   backUrl?: string;
@@ -535,10 +534,9 @@ export default function RentalsDetailClient({
     !isVisitPickup &&
     hasOutboundShipping &&
     isLinkedStringingComplete;
-  const displayStatusLabel =
-    data.depositRefundedAt
-      ? "보증금 환급 완료"
-      : data.status === "paid"
+  const displayStatusLabel = data.depositRefundedAt
+    ? "보증금 환급 완료"
+    : data.status === "paid"
       ? hasOutboundShipping
         ? "출고됨 · 수령 확인 대기"
         : "출고 준비 중"
@@ -591,9 +589,7 @@ export default function RentalsDetailClient({
           label: returnTrackingNo
             ? "반납 운송장 확인/수정"
             : "반납 운송장 등록",
-          ctaLabel: returnTrackingNo
-            ? "반납 운송장 수정"
-            : "반납 운송장 등록",
+          ctaLabel: returnTrackingNo ? "반납 운송장 수정" : "반납 운송장 등록",
           ctaHref: returnShippingHref,
         }
       : null;
@@ -709,9 +705,12 @@ export default function RentalsDetailClient({
         </div>
         {canReceiveRental && (
           <div className="mb-4 rounded-xl border border-primary/20 bg-primary/10 p-4">
-            <p className="font-semibold text-foreground">라켓을 수령하셨나요?</p>
+            <p className="font-semibold text-foreground">
+              라켓을 수령하셨나요?
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              수령 확인을 누르면 오늘부터 대여 기간이 시작되고 반납 예정일이 계산됩니다.
+              수령 확인을 누르면 오늘부터 대여 기간이 시작되고 반납 예정일이
+              계산됩니다.
             </p>
             <Button
               size="sm"
@@ -997,13 +996,17 @@ export default function RentalsDetailClient({
                       {outboundTrackingNo ? (
                         <>
                           <div>
-                            <dt className="text-muted-foreground">출고 택배사</dt>
+                            <dt className="text-muted-foreground">
+                              출고 택배사
+                            </dt>
                             <dd className="mt-1 font-medium">
                               {getCourierLabel(outboundCourier ?? undefined)}
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-muted-foreground">출고 운송장</dt>
+                            <dt className="text-muted-foreground">
+                              출고 운송장
+                            </dt>
                             <dd className="mt-1 break-all font-medium">
                               {outboundTrackingNo}
                             </dd>
@@ -1028,7 +1031,9 @@ export default function RentalsDetailClient({
                       )}
                       {linkedApplication?.shippingInfo?.deliveryRequest ? (
                         <div className="bp-sm:col-span-2">
-                          <dt className="text-muted-foreground">배송 요청사항</dt>
+                          <dt className="text-muted-foreground">
+                            배송 요청사항
+                          </dt>
                           <dd className="mt-1 whitespace-pre-wrap break-words font-medium">
                             {linkedApplication.shippingInfo.deliveryRequest}
                           </dd>
@@ -1066,7 +1071,10 @@ export default function RentalsDetailClient({
                   <p className="text-muted-foreground">
                     대여에 교체서비스가 포함되어 있어 신청서 작성이 필요합니다.
                   </p>
-                  <Button asChild className="h-9 w-full gap-2 overflow-hidden whitespace-nowrap bp-sm:w-auto">
+                  <Button
+                    asChild
+                    className="h-9 w-full gap-2 overflow-hidden whitespace-nowrap bp-sm:w-auto"
+                  >
                     <Link href={applyHref}>
                       <Wrench className="h-4 w-4" />
                       교체서비스 신청하기
@@ -1288,10 +1296,7 @@ export default function RentalsDetailClient({
                   </p>
                   <p className="text-sm mt-1">
                     {isVisitPickup ? (
-                      <>
-                        준비 확인 번호 ·{" "}
-                        {outboundTrackingNo ?? "-"}
-                      </>
+                      <>준비 확인 번호 · {outboundTrackingNo ?? "-"}</>
                     ) : (
                       <>
                         {getCourierLabel(outboundCourier ?? undefined)} ·{" "}
@@ -1340,12 +1345,13 @@ export default function RentalsDetailClient({
                   </p>
                   <p className="text-sm mt-1">
                     {isVisitPickup ? (
-                      <>
-                        접수 번호 · {returnTrackingNo ?? "-"}
-                      </>
+                      <>접수 번호 · {returnTrackingNo ?? "-"}</>
                     ) : (
                       <>
-                        {getCourierLabel(getCourierValue(data.shipping?.return) ?? undefined)} ·{" "}
+                        {getCourierLabel(
+                          getCourierValue(data.shipping?.return) ?? undefined,
+                        )}{" "}
+                        ·{" "}
                         <a
                           className="underline underline-offset-2"
                           href={getTrackHref(

@@ -24,9 +24,7 @@
 잘못된 예:
 
 ```tsx
-<Button className="h-10 whitespace-nowrap">
-  교체서비스와 함께 선택
-</Button>
+<Button className="h-10 whitespace-nowrap">교체서비스와 함께 선택</Button>
 ```
 
 권장 예:
@@ -49,9 +47,7 @@
 권장 패턴:
 
 ```tsx
-<div className="grid grid-cols-1 gap-2 bp-sm:flex bp-sm:flex-wrap">
-  ...
-</div>
+<div className="grid grid-cols-1 gap-2 bp-sm:flex bp-sm:flex-wrap">...</div>
 ```
 
 ## 4. Form / Input / Select 규칙

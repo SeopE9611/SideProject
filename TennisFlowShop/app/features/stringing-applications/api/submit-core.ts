@@ -655,7 +655,10 @@ export async function submitStringingApplicationCore({
       isColorStockAlreadyDeductedByOrderItem;
 
     const stringProduct = await db.collection("products").findOne(
-      { _id: stringProductObjectId, ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) },
+      {
+        _id: stringProductObjectId,
+        ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+      },
       {
         projection: {
           _id: 1,

@@ -139,8 +139,7 @@ export default function RentalCheckoutStringingCompactEditor({
                 onSelect={(value) =>
                   setFormData((prev) => ({
                     ...prev,
-                    preferredTime:
-                      prev.preferredTime === value ? "" : value,
+                    preferredTime: prev.preferredTime === value ? "" : value,
                   }))
                 }
                 times={timeSlots}
@@ -176,7 +175,9 @@ export default function RentalCheckoutStringingCompactEditor({
       </section>
 
       <section className="space-y-4">
-        <p className="text-sm font-semibold text-foreground">텐션 및 요청사항</p>
+        <p className="text-sm font-semibold text-foreground">
+          텐션 및 요청사항
+        </p>
         {lineCount >= 2 && (
           <div className="rounded-lg border border-border/80 bg-muted/15 p-3.5">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">

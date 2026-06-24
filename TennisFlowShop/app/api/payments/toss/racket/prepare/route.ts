@@ -92,7 +92,10 @@ export async function POST(req: Request) {
     const viewer = await getVisibilityViewerFromCookies();
     const racket = await db
       .collection("used_rackets")
-      .findOne({ _id: new ObjectId(racketId), ...racketVisibilityFilterFor(viewer) });
+      .findOne({
+        _id: new ObjectId(racketId),
+        ...racketVisibilityFilterFor(viewer),
+      });
 
     if (!racket || racket.status !== "available") {
       return NextResponse.json(

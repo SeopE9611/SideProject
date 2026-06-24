@@ -2,7 +2,17 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChevronRight, ClipboardList, GraduationCap, Heart, MessageCircleQuestion, MessageSquare, ReceiptCent, Ticket, UserCog } from "lucide-react";
+import {
+  ChevronRight,
+  ClipboardList,
+  GraduationCap,
+  Heart,
+  MessageCircleQuestion,
+  MessageSquare,
+  ReceiptCent,
+  Ticket,
+  UserCog,
+} from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
@@ -62,12 +72,38 @@ export function UserSidebar({ activeTab }: { activeTab?: string } = {}) {
         const isActive = tab === value && !isProfile;
 
         return (
-          <Button key={value} variant="ghost" className={cn("w-full justify-start gap-2.5 h-10 px-3 transition-colors group relative rounded-lg", isActive ? "bg-primary/10 text-primary" : "hover:bg-muted dark:hover:bg-card")} asChild>
+          <Button
+            key={value}
+            variant="ghost"
+            className={cn(
+              "w-full justify-start gap-2.5 h-10 px-3 transition-colors group relative rounded-lg",
+              isActive
+                ? "bg-primary/10 text-primary"
+                : "hover:bg-muted dark:hover:bg-card",
+            )}
+            asChild
+          >
             <Link href={href} replace={!isProfile}>
-              <div className={cn("flex h-7 w-7 items-center justify-center rounded-lg transition-colors", isActive ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground group-hover:bg-muted/80 dark:group-hover:bg-muted")}>
+              <div
+                className={cn(
+                  "flex h-7 w-7 items-center justify-center rounded-lg transition-colors",
+                  isActive
+                    ? "bg-primary/10 text-primary"
+                    : "bg-muted text-muted-foreground group-hover:bg-muted/80 dark:group-hover:bg-muted",
+                )}
+              >
                 <Icon className="w-4 h-4" />
               </div>
-              <span className={cn("font-medium transition-colors", isActive ? "text-foreground" : "text-foreground group-hover:text-foreground")}>{label}</span>
+              <span
+                className={cn(
+                  "font-medium transition-colors",
+                  isActive
+                    ? "text-foreground"
+                    : "text-foreground group-hover:text-foreground",
+                )}
+              >
+                {label}
+              </span>
               <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
             </Link>
           </Button>

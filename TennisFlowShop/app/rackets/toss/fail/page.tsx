@@ -112,7 +112,10 @@ export default async function RacketTossFailPage({
       >
         <div className="space-y-3 text-sm text-muted-foreground">
           {guide.accent === "warning" && (
-            <p className="text-warning">중복 결제를 막기 위해 반복 결제를 피하고, 주문 내역 또는 관리자 확인 후 진행해주세요.</p>
+            <p className="text-warning">
+              중복 결제를 막기 위해 반복 결제를 피하고, 주문 내역 또는 관리자
+              확인 후 진행해주세요.
+            </p>
           )}
           <div className="space-y-1 text-xs">
             <p>오류 코드: {code}</p>

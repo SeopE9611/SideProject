@@ -157,7 +157,10 @@ async function getClassApplicationDetail(db: Db, classId: string) {
       .aggregate<{
         _id: AcademyLessonApplicationStatus;
         count: number;
-      }>([{ $match: filter }, { $group: { _id: "$status", count: { $sum: 1 } } }])
+      }>([
+        { $match: filter },
+        { $group: { _id: "$status", count: { $sum: 1 } } },
+      ])
       .toArray(),
   ]);
 

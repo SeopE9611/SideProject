@@ -3,7 +3,12 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
-export type OrdersFlowScope = "all" | "todo" | "order" | "application" | "rental";
+export type OrdersFlowScope =
+  | "all"
+  | "todo"
+  | "order"
+  | "application"
+  | "rental";
 
 const SCOPE_ITEMS: Array<{
   value: OrdersFlowScope;
@@ -21,13 +26,24 @@ const SCOPE_ITEMS: Array<{
   { value: "rental", label: "대여", href: "/mypage?tab=orders&scope=rental" },
 ];
 
-export const parseOrdersScope = (value: string | null): OrdersFlowScope | null => {
-  if (value === "todo" || value === "order" || value === "application" || value === "rental") return value;
+export const parseOrdersScope = (
+  value: string | null,
+): OrdersFlowScope | null => {
+  if (
+    value === "todo" ||
+    value === "order" ||
+    value === "application" ||
+    value === "rental"
+  )
+    return value;
   if (value === "all") return "all";
   return null;
 };
 
-export const resolveOrdersScopeContext = (backUrl: string | undefined, fallbackScope: OrdersFlowScope): OrdersFlowScope => {
+export const resolveOrdersScopeContext = (
+  backUrl: string | undefined,
+  fallbackScope: OrdersFlowScope,
+): OrdersFlowScope => {
   const query = new URLSearchParams((backUrl ?? "").split("?")[1] ?? "");
   const fromBackUrl = parseOrdersScope(query.get("scope"));
   if (fromBackUrl) return fromBackUrl;
@@ -40,9 +56,15 @@ type OrdersScopeTabsProps = {
   className?: string;
 };
 
-export default function OrdersScopeTabs({ activeScope, className }: OrdersScopeTabsProps) {
+export default function OrdersScopeTabs({
+  activeScope,
+  className,
+}: OrdersScopeTabsProps) {
   return (
-    <nav className={cn("relative border-b border-border", className)} aria-label="거래/이용내역 하위 탭">
+    <nav
+      className={cn("relative border-b border-border", className)}
+      aria-label="거래/이용내역 하위 탭"
+    >
       <div className="flex flex-wrap items-center gap-x-5 gap-y-1 sm:gap-x-7">
         {SCOPE_ITEMS.map((item) => {
           const isActive = item.value === activeScope;
@@ -54,7 +76,9 @@ export default function OrdersScopeTabs({ activeScope, className }: OrdersScopeT
               className={cn(
                 "group relative -mb-px flex min-w-fit items-center whitespace-nowrap border-b-2 px-0.5 py-3 text-sm",
                 "transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2",
-                isActive ? "border-foreground font-semibold text-foreground" : "border-transparent font-medium text-muted-foreground hover:text-foreground",
+                isActive
+                  ? "border-foreground font-semibold text-foreground"
+                  : "border-transparent font-medium text-muted-foreground hover:text-foreground",
               )}
             >
               <span>{item.label}</span>

@@ -825,7 +825,8 @@ export default function OrderDetailClient({ orderId }: Props) {
     {
       label: "장착 정보 보기",
       href: "#admin-order-linked",
-      show: linkedDocs.length > 0 || Boolean(orderDetail.stringingApplicationId),
+      show:
+        linkedDocs.length > 0 || Boolean(orderDetail.stringingApplicationId),
     },
     { label: "처리 이력 보기", href: "#admin-order-history", show: true },
   ].filter((action) => action.show);
@@ -1004,7 +1005,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                       onClick={() => {
                         void navigator.clipboard
                           .writeText(orderDetail._id)
-                          .then(() => showSuccessToast("주문 ID가 복사되었습니다."))
+                          .then(() =>
+                            showSuccessToast("주문 ID가 복사되었습니다."),
+                          )
                           .catch(() => {});
                       }}
                     >
@@ -1198,10 +1201,12 @@ export default function OrderDetailClient({ orderId }: Props) {
                     이 주문은 상품 주문에 교체서비스가 포함된 주문입니다.
                   </span>
                   <span className="block">
-                    결제는 주문에서 처리되었습니다. 교체서비스 신청서는 주문에 포함된 작업 정보로 확인하세요.
+                    결제는 주문에서 처리되었습니다. 교체서비스 신청서는 주문에
+                    포함된 작업 정보로 확인하세요.
                   </span>
                   <span className="block">
-                    연결 신청서에서 라켓, 선택 스트링, 게이지, 색상, 텐션, 요청사항을 확인하세요.
+                    연결 신청서에서 라켓, 선택 스트링, 게이지, 색상, 텐션,
+                    요청사항을 확인하세요.
                   </span>
                 </CardDescription>
               </CardHeader>
@@ -1426,9 +1431,12 @@ export default function OrderDetailClient({ orderId }: Props) {
             <div className="mb-6">
               <Card className={adminSurface.card}>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base">4. 연결 신청서 · 장착 정보</CardTitle>
+                  <CardTitle className="text-base">
+                    4. 연결 신청서 · 장착 정보
+                  </CardTitle>
                   <CardDescription>
-                    주문에 포함된 교체서비스 신청서입니다. 상품 정보와 분리해 장착 정보와 요청사항을 확인하세요.
+                    주문에 포함된 교체서비스 신청서입니다. 상품 정보와 분리해
+                    장착 정보와 요청사항을 확인하세요.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -1546,15 +1554,23 @@ export default function OrderDetailClient({ orderId }: Props) {
                         )}
                         {latestApplicationLines.length > 0 && (
                           <div className="sm:col-span-2">
-                            <span className="text-muted-foreground">장착 정보:</span>{" "}
+                            <span className="text-muted-foreground">
+                              장착 정보:
+                            </span>{" "}
                             <div className="mt-1 space-y-1">
                               {latestApplicationLines.map((line, index) => (
                                 <p
-                                  key={line.id ?? `${latestLinkedApplication?.id}-line-${index}`}
+                                  key={
+                                    line.id ??
+                                    `${latestLinkedApplication?.id}-line-${index}`
+                                  }
                                   className="font-medium text-foreground"
                                 >
-                                  {line.racketLabel || line.racketType || `${index + 1}번째 라켓`} · {line.stringName || "스트링 미입력"}
-                                  {(line.gauge || line.colorLabel || line.color)
+                                  {line.racketLabel ||
+                                    line.racketType ||
+                                    `${index + 1}번째 라켓`}{" "}
+                                  · {line.stringName || "스트링 미입력"}
+                                  {line.gauge || line.colorLabel || line.color
                                     ? ` · 게이지 ${line.gauge ? formatGaugeLabel(line.gauge) : "-"} / 색상 ${line.colorLabel || line.color || "-"}`
                                     : ""}
                                 </p>
@@ -1564,7 +1580,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                         )}
                         {latestRequirements && (
                           <p className="sm:col-span-2">
-                            <span className="text-muted-foreground">요청사항:</span>{" "}
+                            <span className="text-muted-foreground">
+                              요청사항:
+                            </span>{" "}
                             <span className="whitespace-pre-wrap font-medium text-foreground">
                               {latestRequirements}
                             </span>
@@ -1667,9 +1685,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                           이 주문은 교체서비스 신청서와 연결되어 있습니다.
                         </p>
                         <p className="mt-1">
-                          주문과 신청서의 진행 상태는 상단 연결 진행 단계에서 함께
-                          변경합니다. 이 영역에서는 결제 상태를 확인하고 취소/환불을
-                          처리하세요.
+                          주문과 신청서의 진행 상태는 상단 연결 진행 단계에서
+                          함께 변경합니다. 이 영역에서는 결제 상태를 확인하고
+                          취소/환불을 처리하세요.
                         </p>
                       </div>
                     ) : (
@@ -2035,8 +2053,8 @@ export default function OrderDetailClient({ orderId }: Props) {
 
                         <p className="text-xs text-foreground/75">
                           이 영역은 연결 신청서의 수거·인도 정보를 확인하거나
-                          등록하는 곳입니다. 주문과 신청서의 진행 상태는 연결 진행
-                          단계에서 함께 변경하세요.
+                          등록하는 곳입니다. 주문과 신청서의 진행 상태는 연결
+                          진행 단계에서 함께 변경하세요.
                         </p>
                       </div>
                     </div>
@@ -2085,7 +2103,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                                 택배사
                               </p>
                               <p className="font-semibold text-foreground">
-                                {getCourierDisplayName(orderDetail.shippingInfo.invoice.courier)}
+                                {getCourierDisplayName(
+                                  orderDetail.shippingInfo.invoice.courier,
+                                )}
                               </p>
                             </div>
                           </div>
@@ -2381,18 +2401,21 @@ export default function OrderDetailClient({ orderId }: Props) {
                         <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
                           {formatCurrency(item.price)}
                         </p>
-                        {typeof item.stringPrice === "number" && item.stringPrice > 0 && (
-                          <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
-                            스트링 가격: {formatCurrency(item.stringPrice)}
-                          </p>
-                        )}
-                        {typeof item.mountingFee === "number" && item.mountingFee > 0 && (
-                          <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
-                            장착비: {formatCurrency(item.mountingFee)}
-                          </p>
-                        )}
+                        {typeof item.stringPrice === "number" &&
+                          item.stringPrice > 0 && (
+                            <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
+                              스트링 가격: {formatCurrency(item.stringPrice)}
+                            </p>
+                          )}
+                        {typeof item.mountingFee === "number" &&
+                          item.mountingFee > 0 && (
+                            <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
+                              장착비: {formatCurrency(item.mountingFee)}
+                            </p>
+                          )}
                         <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
-                          상품 소계: {formatCurrency(item.price * item.quantity)}
+                          상품 소계:{" "}
+                          {formatCurrency(item.price * item.quantity)}
                         </p>
                       </div>
                     </div>

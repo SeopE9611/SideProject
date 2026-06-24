@@ -209,10 +209,13 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
             </div>
 
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-              <Button asChild variant="outline" className="w-full gap-2 sm:w-auto">
+              <Button
+                asChild
+                variant="outline"
+                className="w-full gap-2 sm:w-auto"
+              >
                 <Link href="/messages/write">
-                  <Send className="h-4 w-4" />
-                  새 쪽지 작성
+                  <Send className="h-4 w-4" />새 쪽지 작성
                 </Link>
               </Button>
               {user.role === "admin" && (

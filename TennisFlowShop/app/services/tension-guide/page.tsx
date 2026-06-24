@@ -491,123 +491,121 @@ export default function TensionGuidePage() {
                   className="border border-border shadow-sm bg-card dark:bg-muted/90"
                   contentClassName="space-y-6 bp-md:space-y-8"
                 >
-                    {/* 성별 선택 */}
-                    <div>
-                      <label className="block text-sm font-semibold text-foreground mb-3">
-                        성별
-                      </label>
-                      <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-sm:gap-3">
-                        {[
-                          {
-                            id: "female",
-                            label: "여자",
-                            desc: "여성 추천 범위 기준 계산",
-                          },
-                          {
-                            id: "male",
-                            label: "남자",
-                            desc: "남성 추천 범위 기준 계산",
-                          },
-                        ].map((option) => (
-                          <button
-                            key={option.id}
-                            onClick={() => setGender(option.id as Gender)}
-                            className={`p-3 bp-sm:p-4 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 text-left ${gender === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
+                  {/* 성별 선택 */}
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-3">
+                      성별
+                    </label>
+                    <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-sm:gap-3">
+                      {[
+                        {
+                          id: "female",
+                          label: "여자",
+                          desc: "여성 추천 범위 기준 계산",
+                        },
+                        {
+                          id: "male",
+                          label: "남자",
+                          desc: "남성 추천 범위 기준 계산",
+                        },
+                      ].map((option) => (
+                        <button
+                          key={option.id}
+                          onClick={() => setGender(option.id as Gender)}
+                          className={`p-3 bp-sm:p-4 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 text-left ${gender === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
+                        >
+                          <div
+                            className={`font-medium text-sm ${gender === option.id ? "text-primary" : "text-foreground"}`}
                           >
-                            <div
-                              className={`font-medium text-sm ${gender === option.id ? "text-primary" : "text-foreground"}`}
-                            >
-                              {option.label}
-                            </div>
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {option.desc}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
+                            {option.label}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {option.desc}
+                          </div>
+                        </button>
+                      ))}
                     </div>
+                  </div>
 
-                    {/* 스윙 스피드 선택 */}
-                    <div>
-                      <label className="block text-sm font-semibold text-foreground mb-3">
-                        스윙 스피드
-                      </label>
-                      <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-sm:gap-3">
-                        {swingSpeedOptions.map((option) => (
-                          <button
-                            key={option.id}
-                            onClick={() =>
-                              setSwingSpeed(option.id as SwingSpeed)
-                            }
-                            className={`p-2 bp-sm:p-3 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 ${swingSpeed === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
+                  {/* 스윙 스피드 선택 */}
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-3">
+                      스윙 스피드
+                    </label>
+                    <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-sm:gap-3">
+                      {swingSpeedOptions.map((option) => (
+                        <button
+                          key={option.id}
+                          onClick={() => setSwingSpeed(option.id as SwingSpeed)}
+                          className={`p-2 bp-sm:p-3 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 ${swingSpeed === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
+                        >
+                          <div
+                            className={`font-medium text-xs bp-sm:text-sm ${swingSpeed === option.id ? "text-primary" : "text-foreground"}`}
                           >
-                            <div
-                              className={`font-medium text-xs bp-sm:text-sm ${swingSpeed === option.id ? "text-primary" : "text-foreground"}`}
-                            >
-                              {option.label}
-                            </div>
-                            <div className="text-xs text-foreground/80 mt-1 hidden bp-sm:block">
-                              {option.desc}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
+                            {option.label}
+                          </div>
+                          <div className="text-xs text-foreground/80 mt-1 hidden bp-sm:block">
+                            {option.desc}
+                          </div>
+                        </button>
+                      ))}
                     </div>
-                    {/* 스트링 타입 선택 */}
-                    <div>
-                      <label className="block text-sm font-semibold text-foreground mb-3">
-                        스트링 타입
-                      </label>
-                      <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-sm:gap-3">
-                        {stringTypes.map((st) => (
-                          <button
-                            key={st.id}
-                            onClick={() => setStringType(st.id as StringType)}
-                            className={`p-3 bp-sm:p-4 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 text-left ${stringType === st.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
-                          >
-                            <div className="flex items-center gap-2 mb-1">
-                              <st.icon
-                                className={`h-4 w-4 ${stringType === st.id ? "text-primary" : "text-muted-foreground"}`}
-                              />
-                              <span
-                                className={`font-medium text-sm ${stringType === st.id ? "text-primary" : "text-foreground"}`}
-                              >
-                                {st.name}
-                              </span>
-                            </div>
-                            <span className="text-xs text-muted-foreground">
-                              여 {st.ranges.female.min}~{st.ranges.female.max}LB
-                              · 남 {st.ranges.male.min}~{st.ranges.male.max}LB
+                  </div>
+                  {/* 스트링 타입 선택 */}
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-3">
+                      스트링 타입
+                    </label>
+                    <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-sm:gap-3">
+                      {stringTypes.map((st) => (
+                        <button
+                          key={st.id}
+                          onClick={() => setStringType(st.id as StringType)}
+                          className={`p-3 bp-sm:p-4 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 text-left ${stringType === st.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <st.icon
+                              className={`h-4 w-4 ${stringType === st.id ? "text-primary" : "text-muted-foreground"}`}
+                            />
+                            <span
+                              className={`font-medium text-sm ${stringType === st.id ? "text-primary" : "text-foreground"}`}
+                            >
+                              {st.name}
                             </span>
-                          </button>
-                        ))}
-                      </div>
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            여 {st.ranges.female.min}~{st.ranges.female.max}LB ·
+                            남 {st.ranges.male.min}~{st.ranges.male.max}LB
+                          </span>
+                        </button>
+                      ))}
                     </div>
+                  </div>
 
-                    {/* 플레이 스타일 선택 */}
-                    <div>
-                      <label className="block text-sm font-semibold text-foreground mb-3">
-                        플레이 스타일
-                      </label>
-                      <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-sm:gap-3">
-                        {playStyleOptions.map((option) => (
-                          <button
-                            key={option.id}
-                            onClick={() => setPlayStyle(option.id as PlayStyle)}
-                            className={`p-2 bp-sm:p-3 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 ${playStyle === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
+                  {/* 플레이 스타일 선택 */}
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-3">
+                      플레이 스타일
+                    </label>
+                    <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-sm:gap-3">
+                      {playStyleOptions.map((option) => (
+                        <button
+                          key={option.id}
+                          onClick={() => setPlayStyle(option.id as PlayStyle)}
+                          className={`p-2 bp-sm:p-3 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 ${playStyle === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
+                        >
+                          <div
+                            className={`font-medium text-xs bp-sm:text-sm ${playStyle === option.id ? "text-primary" : "text-foreground"}`}
                           >
-                            <div
-                              className={`font-medium text-xs bp-sm:text-sm ${playStyle === option.id ? "text-primary" : "text-foreground"}`}
-                            >
-                              {option.label}
-                            </div>
-                            <div className="text-xs text-foreground/80 mt-1 hidden bp-sm:block">
-                              {option.desc}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
+                            {option.label}
+                          </div>
+                          <div className="text-xs text-foreground/80 mt-1 hidden bp-sm:block">
+                            {option.desc}
+                          </div>
+                        </button>
+                      ))}
                     </div>
+                  </div>
                 </SummaryCard>
               </div>
 
@@ -622,132 +620,132 @@ export default function TensionGuidePage() {
                   }
                   className="border border-border shadow-sm bg-muted/40 dark:bg-muted/30 overflow-hidden"
                 >
-                    <div className="text-center mb-6 bp-md:mb-8">
-                      <div className="text-5xl bp-sm:text-6xl bp-md:text-7xl font-bold text-primary mb-2 ">
-                        {calculatedTension}LB
-                      </div>
+                  <div className="text-center mb-6 bp-md:mb-8">
+                    <div className="text-5xl bp-sm:text-6xl bp-md:text-7xl font-bold text-primary mb-2 ">
+                      {calculatedTension}LB
+                    </div>
+                    <div
+                      className={`text-base bp-md:text-lg font-medium ${getTensionFeedback().color}`}
+                    >
+                      {getTensionFeedback().text}
+                    </div>
+                  </div>
+
+                  {/* 텐션 시각화 */}
+                  <div className="mb-6 bp-md:mb-8">
+                    <div className="flex justify-between text-xs text-muted-foreground mb-2">
+                      <span>42LB</span>
+                      <span>56LB</span>
+                    </div>
+                    <div className="relative h-3 bp-sm:h-4 bg-muted/30 rounded-full shadow-inner">
                       <div
-                        className={`text-base bp-md:text-lg font-medium ${getTensionFeedback().color}`}
+                        className="absolute top-1/2 -translate-y-1/2 -translate-x-[10px] bp-sm:-translate-x-[12px] w-5 h-5 bp-sm:w-6 bp-sm:h-6 bg-card ring-2 ring-border rounded-full shadow-sm transition-[transform,box-shadow,border-color,background-color] duration-500 ease-out"
+                        style={{ left: `${gaugePosition}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs mt-2">
+                      <span className="text-primary">파워</span>
+                      <span className="text-muted-foreground">컨트롤</span>
+                    </div>
+                  </div>
+
+                  {/* 추천 범위 */}
+                  <PublicSurface
+                    padding="sm"
+                    className="mb-4 rounded-xl dark:bg-muted/80"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Info className="h-4 w-4 text-primary" />
+                      <span className="font-medium text-foreground">
+                        추천 범위 (선택 성별 기준)
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      최종 추천 텐션 {calculatedTension}LB · {selectedRange.min}
+                      LB ~ {selectedRange.max}LB
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Badge
+                        variant="secondary"
+                        className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug"
                       >
-                        {getTensionFeedback().text}
-                      </div>
+                        {gender === "female" ? "여자" : "남자"}{" "}
+                        {selectedRange.min}~{selectedRange.max}LB
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug"
+                      >
+                        {oppositeGender === "female" ? "여자" : "남자"}{" "}
+                        {oppositeRange.min}~{oppositeRange.max}LB
+                      </Badge>
                     </div>
+                  </PublicSurface>
 
-                    {/* 텐션 시각화 */}
-                    <div className="mb-6 bp-md:mb-8">
-                      <div className="flex justify-between text-xs text-muted-foreground mb-2">
-                        <span>42LB</span>
-                        <span>56LB</span>
-                      </div>
-                      <div className="relative h-3 bp-sm:h-4 bg-muted/30 rounded-full shadow-inner">
-                        <div
-                          className="absolute top-1/2 -translate-y-1/2 -translate-x-[10px] bp-sm:-translate-x-[12px] w-5 h-5 bp-sm:w-6 bp-sm:h-6 bg-card ring-2 ring-border rounded-full shadow-sm transition-[transform,box-shadow,border-color,background-color] duration-500 ease-out"
-                          style={{ left: `${gaugePosition}%` }}
-                        />
-                      </div>
-                      <div className="flex justify-between text-xs mt-2">
-                        <span className="text-primary">파워</span>
-                        <span className="text-muted-foreground">컨트롤</span>
-                      </div>
+                  {/* 계산 근거를 한눈에 보여주면 사용자가 추천값의 출처를 빠르게 이해할 수 있습니다. */}
+                  <PublicSurface
+                    padding="sm"
+                    className="mb-6 rounded-xl dark:bg-muted/80"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <BarChart3 className="h-4 w-4 text-primary" />
+                      <span className="font-medium text-foreground">
+                        계산 근거
+                      </span>
                     </div>
-
-                    {/* 추천 범위 */}
-                    <PublicSurface
-                      padding="sm"
-                      className="mb-4 rounded-xl dark:bg-muted/80"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <Info className="h-4 w-4 text-primary" />
+                    <ul className="space-y-2">
+                      <li className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">기준점</span>
                         <span className="font-medium text-foreground">
-                          추천 범위 (선택 성별 기준)
+                          {selectedRange.base}LB
                         </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        최종 추천 텐션 {calculatedTension}LB ·{" "}
-                        {selectedRange.min}LB ~ {selectedRange.max}LB
-                      </p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <Badge
-                          variant="secondary"
-                          className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug"
-                        >
-                          {gender === "female" ? "여자" : "남자"}{" "}
-                          {selectedRange.min}~{selectedRange.max}LB
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug"
-                        >
-                          {oppositeGender === "female" ? "여자" : "남자"}{" "}
-                          {oppositeRange.min}~{oppositeRange.max}LB
-                        </Badge>
-                      </div>
-                    </PublicSurface>
-
-                    {/* 계산 근거를 한눈에 보여주면 사용자가 추천값의 출처를 빠르게 이해할 수 있습니다. */}
-                    <PublicSurface
-                      padding="sm"
-                      className="mb-6 rounded-xl dark:bg-muted/80"
-                    >
-                      <div className="flex items-center gap-2 mb-3">
-                        <BarChart3 className="h-4 w-4 text-primary" />
+                      </li>
+                      <li className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          플레이 스타일 보정
+                        </span>
                         <span className="font-medium text-foreground">
-                          계산 근거
+                          {styleAdjust > 0 ? `+${styleAdjust}` : styleAdjust}
+                          LB
                         </span>
-                      </div>
-                      <ul className="space-y-2">
-                        <li className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">기준점</span>
-                          <span className="font-medium text-foreground">
-                            {selectedRange.base}LB
-                          </span>
-                        </li>
-                        <li className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            플레이 스타일 보정
-                          </span>
-                          <span className="font-medium text-foreground">
-                            {styleAdjust > 0 ? `+${styleAdjust}` : styleAdjust}
-                            LB
-                          </span>
-                        </li>
-                        <li className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            스윙 스피드 보정
-                          </span>
-                          <span className="font-medium text-foreground">
-                            {speedAdjust > 0 ? `+${speedAdjust}` : speedAdjust}
-                            LB
-                          </span>
-                        </li>
-                        <li className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            중간 계산값 (raw value)
-                          </span>
-                          <span className="font-medium text-foreground">
-                            {rawTensionValue}LB
-                          </span>
-                        </li>
-                        <li className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            {clampReason.label}
-                          </span>
-                          <span className="font-medium text-foreground">
-                            {clampReason.value}LB
-                          </span>
-                        </li>
-                        <li className="pt-2 border-t border-border flex items-center justify-between text-sm">
-                          <span className="text-foreground font-medium">
-                            최종 추천
-                          </span>
-                          <span className="text-primary font-semibold">
-                            {calculatedTension}LB
-                          </span>
-                        </li>
-                      </ul>
-                    </PublicSurface>
+                      </li>
+                      <li className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          스윙 스피드 보정
+                        </span>
+                        <span className="font-medium text-foreground">
+                          {speedAdjust > 0 ? `+${speedAdjust}` : speedAdjust}
+                          LB
+                        </span>
+                      </li>
+                      <li className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          중간 계산값 (raw value)
+                        </span>
+                        <span className="font-medium text-foreground">
+                          {rawTensionValue}LB
+                        </span>
+                      </li>
+                      <li className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {clampReason.label}
+                        </span>
+                        <span className="font-medium text-foreground">
+                          {clampReason.value}LB
+                        </span>
+                      </li>
+                      <li className="pt-2 border-t border-border flex items-center justify-between text-sm">
+                        <span className="text-foreground font-medium">
+                          최종 추천
+                        </span>
+                        <span className="text-primary font-semibold">
+                          {calculatedTension}LB
+                        </span>
+                      </li>
+                    </ul>
+                  </PublicSurface>
 
-                    {/* <Button asChild className="w-full bg-secondary hover:bg-secondary/90 transition-[background-color,color,border-color,box-shadow,opacity] duration-200">
+                  {/* <Button asChild className="w-full bg-secondary hover:bg-secondary/90 transition-[background-color,color,border-color,box-shadow,opacity] duration-200">
                       <Link href="/services/apply">
                         이 텐션으로 스트링 신청하기
                         <ArrowRight className="ml-2 h-4 w-4" />
@@ -765,28 +763,28 @@ export default function TensionGuidePage() {
                   }
                   className="border border-border shadow-sm bg-card dark:bg-muted/90"
                 >
-                    <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-sm:gap-3">
-                      {environmentFactors.map((factor, index) => (
-                        <PublicSurface
-                          key={index}
-                          variant="muted"
-                          padding="sm"
-                          className="flex items-start gap-2 rounded-lg hover:bg-muted dark:hover:bg-muted transition-colors duration-200"
-                        >
-                          <factor.icon
-                            className={`h-4 w-4 mt-0.5 flex-shrink-0 ${factor.color}`}
-                          />
-                          <div>
-                            <div className="text-xs bp-sm:text-xs font-medium text-foreground">
-                              {factor.factor}
-                            </div>
-                            <div className="text-xs bp-sm:text-xs text-primary font-semibold">
-                              {factor.adjustment}
-                            </div>
+                  <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-sm:gap-3">
+                    {environmentFactors.map((factor, index) => (
+                      <PublicSurface
+                        key={index}
+                        variant="muted"
+                        padding="sm"
+                        className="flex items-start gap-2 rounded-lg hover:bg-muted dark:hover:bg-muted transition-colors duration-200"
+                      >
+                        <factor.icon
+                          className={`h-4 w-4 mt-0.5 flex-shrink-0 ${factor.color}`}
+                        />
+                        <div>
+                          <div className="text-xs bp-sm:text-xs font-medium text-foreground">
+                            {factor.factor}
                           </div>
-                        </PublicSurface>
-                      ))}
-                    </div>
+                          <div className="text-xs bp-sm:text-xs text-primary font-semibold">
+                            {factor.adjustment}
+                          </div>
+                        </div>
+                      </PublicSurface>
+                    ))}
+                  </div>
                 </SummaryCard>
               </div>
             </div>
@@ -1044,80 +1042,80 @@ export default function TensionGuidePage() {
                 }
                 className="overflow-hidden border bg-card before:block before:h-1 before:bg-muted/30"
               >
-                  <div className="grid bp-md:grid-cols-2 gap-6 bp-md:gap-8">
-                    {/* 낮은 텐션 */}
-                    <div className="space-y-3 bp-md:space-y-4">
-                      <div className="flex items-center gap-2 bp-sm:gap-3">
-                        <div className="w-10 h-10 bp-md:w-12 bp-md:h-12 border border-primary/20 bg-secondary rounded-xl flex items-center justify-center">
-                          <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-primary rotate-180" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-sm bp-md:text-base text-foreground">
-                            낮은 텐션
-                          </h4>
-                          <p className="text-xs bp-md:text-sm text-muted-foreground">
-                            파워와 편안함 중심
-                          </p>
-                        </div>
+                <div className="grid bp-md:grid-cols-2 gap-6 bp-md:gap-8">
+                  {/* 낮은 텐션 */}
+                  <div className="space-y-3 bp-md:space-y-4">
+                    <div className="flex items-center gap-2 bp-sm:gap-3">
+                      <div className="w-10 h-10 bp-md:w-12 bp-md:h-12 border border-primary/20 bg-secondary rounded-xl flex items-center justify-center">
+                        <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-primary rotate-180" />
                       </div>
-                      <ul className="space-y-1.5 bp-md:space-y-2">
-                        <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
-                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
-                          스트링 베드가 더 많이 휘어져 볼에 더 많은 에너지를
-                          전달합니다
-                        </li>
-                        <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
-                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
-                          스윗스팟이 넓어져 미스히트 시에도 괜찮은 샷이 나옵니다
-                        </li>
-                        <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
-                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
-                          팔과 어깨에 가해지는 충격이 줄어들어 부상 위험이
-                          감소합니다
-                        </li>
-                        <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
-                          <AlertTriangle className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                          정밀한 컨트롤이 어려울 수 있습니다
-                        </li>
-                      </ul>
-                    </div>
-
-                    {/* 높은 텐션 */}
-                    <div className="space-y-3 bp-md:space-y-4">
-                      <div className="flex items-center gap-2 bp-sm:gap-3">
-                        <div className="w-10 h-10 bp-md:w-12 bp-md:h-12 bg-muted/40 rounded-xl flex items-center justify-center">
-                          <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-muted-foreground" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-sm bp-md:text-base text-foreground">
-                            높은 텐션
-                          </h4>
-                          <p className="text-xs bp-md:text-sm text-muted-foreground">
-                            컨트롤과 정밀함 중심
-                          </p>
-                        </div>
+                      <div>
+                        <h4 className="font-semibold text-sm bp-md:text-base text-foreground">
+                          낮은 텐션
+                        </h4>
+                        <p className="text-xs bp-md:text-sm text-muted-foreground">
+                          파워와 편안함 중심
+                        </p>
                       </div>
-                      <ul className="space-y-1.5 bp-md:space-y-2">
-                        <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
-                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
-                          스트링 베드가 단단해져 정밀한 샷 컨트롤이 가능합니다
-                        </li>
-                        <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
-                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
-                          스핀 생성이 용이하고 볼의 궤적을 예측하기 쉽습니다
-                        </li>
-                        <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
-                          <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
-                          강한 스윙 스피드를 가진 선수에게 적합합니다
-                        </li>
-                        <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
-                          <AlertTriangle className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                          팔에 무리가 갈 수 있으며 파워가 줄어들 수 있습니다
-                        </li>
-                      </ul>
                     </div>
+                    <ul className="space-y-1.5 bp-md:space-y-2">
+                      <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
+                        <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
+                        스트링 베드가 더 많이 휘어져 볼에 더 많은 에너지를
+                        전달합니다
+                      </li>
+                      <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
+                        <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
+                        스윗스팟이 넓어져 미스히트 시에도 괜찮은 샷이 나옵니다
+                      </li>
+                      <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
+                        <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
+                        팔과 어깨에 가해지는 충격이 줄어들어 부상 위험이
+                        감소합니다
+                      </li>
+                      <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
+                        <AlertTriangle className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        정밀한 컨트롤이 어려울 수 있습니다
+                      </li>
+                    </ul>
                   </div>
-                </SummaryCard>
+
+                  {/* 높은 텐션 */}
+                  <div className="space-y-3 bp-md:space-y-4">
+                    <div className="flex items-center gap-2 bp-sm:gap-3">
+                      <div className="w-10 h-10 bp-md:w-12 bp-md:h-12 bg-muted/40 rounded-xl flex items-center justify-center">
+                        <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-sm bp-md:text-base text-foreground">
+                          높은 텐션
+                        </h4>
+                        <p className="text-xs bp-md:text-sm text-muted-foreground">
+                          컨트롤과 정밀함 중심
+                        </p>
+                      </div>
+                    </div>
+                    <ul className="space-y-1.5 bp-md:space-y-2">
+                      <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
+                        <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
+                        스트링 베드가 단단해져 정밀한 샷 컨트롤이 가능합니다
+                      </li>
+                      <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
+                        <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
+                        스핀 생성이 용이하고 볼의 궤적을 예측하기 쉽습니다
+                      </li>
+                      <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
+                        <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
+                        강한 스윙 스피드를 가진 선수에게 적합합니다
+                      </li>
+                      <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
+                        <AlertTriangle className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        팔에 무리가 갈 수 있으며 파워가 줄어들 수 있습니다
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </SummaryCard>
 
               {/* 텐션 관리 팁 */}
               <div className="grid bp-sm:grid-cols-2 bp-lg:grid-cols-3 gap-4 bp-md:gap-6">
@@ -1131,24 +1129,24 @@ export default function TensionGuidePage() {
                   className="bg-secondary border-border"
                   contentClassName="space-y-2 bp-md:space-y-3"
                 >
-                    <p className="text-xs bp-md:text-sm text-foreground">
-                      스트링은 장착 후 지속적으로 텐션이 감소합니다.
-                    </p>
-                    <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground">
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
-                        첫 24시간: 10-15% 손실
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
-                        첫 주: 추가 5-10% 손실
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
-                        이후: 점진적 안정화
-                      </li>
-                    </ul>
-                  </SummaryCard>
+                  <p className="text-xs bp-md:text-sm text-foreground">
+                    스트링은 장착 후 지속적으로 텐션이 감소합니다.
+                  </p>
+                  <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
+                      첫 24시간: 10-15% 손실
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
+                      첫 주: 추가 5-10% 손실
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
+                      이후: 점진적 안정화
+                    </li>
+                  </ul>
+                </SummaryCard>
 
                 <SummaryCard
                   title={
@@ -1160,24 +1158,24 @@ export default function TensionGuidePage() {
                   className="bg-secondary border-border"
                   contentClassName="space-y-2 bp-md:space-y-3"
                 >
-                    <p className="text-xs bp-md:text-sm text-foreground">
-                      올바른 보관은 스트링 수명과 텐션 유지에 중요합니다.
-                    </p>
-                    <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground">
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
-                        직사광선 피하기
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
-                        극단적 온도 피하기
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
-                        라켓 커버 사용
-                      </li>
-                    </ul>
-                  </SummaryCard>
+                  <p className="text-xs bp-md:text-sm text-foreground">
+                    올바른 보관은 스트링 수명과 텐션 유지에 중요합니다.
+                  </p>
+                  <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
+                      직사광선 피하기
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
+                      극단적 온도 피하기
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
+                      라켓 커버 사용
+                    </li>
+                  </ul>
+                </SummaryCard>
 
                 <SummaryCard
                   title={
@@ -1189,24 +1187,24 @@ export default function TensionGuidePage() {
                   className="bg-muted/50 dark:bg-muted/40 border-border bp-sm:col-span-2 bp-lg:col-span-1"
                   contentClassName="space-y-2 bp-md:space-y-3"
                 >
-                    <p className="text-xs bp-md:text-sm text-muted-foreground">
-                      다음 신호가 나타나면 교체를 고려하세요.
-                    </p>
-                    <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground">
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-muted-foreground/60 rounded-full flex-shrink-0" />
-                        탄력 감소 느낌
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-muted-foreground/60 rounded-full flex-shrink-0" />
-                        노칭(홈) 발생
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-muted-foreground/60 rounded-full flex-shrink-0" />
-                        변색 또는 보풀
-                      </li>
-                    </ul>
-                  </SummaryCard>
+                  <p className="text-xs bp-md:text-sm text-muted-foreground">
+                    다음 신호가 나타나면 교체를 고려하세요.
+                  </p>
+                  <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-muted-foreground/60 rounded-full flex-shrink-0" />
+                      탄력 감소 느낌
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-muted-foreground/60 rounded-full flex-shrink-0" />
+                      노칭(홈) 발생
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-muted-foreground/60 rounded-full flex-shrink-0" />
+                      변색 또는 보풀
+                    </li>
+                  </ul>
+                </SummaryCard>
               </div>
 
               {/* FAQ 섹션 */}
@@ -1220,50 +1218,50 @@ export default function TensionGuidePage() {
                 className="border bg-card"
                 contentClassName="space-y-3 bp-md:space-y-4"
               >
-                  <div className="space-y-4 bp-md:space-y-6">
-                    <div className="border-b border-border pb-3 bp-md:pb-4">
-                      <h4 className="font-semibold text-sm bp-md:text-base text-foreground mb-1.5 bp-md:mb-2">
-                        메인과 크로스 텐션을 다르게 해야 하나요?
-                      </h4>
-                      <p className="text-xs bp-md:text-sm text-muted-foreground">
-                        반드시 필요하지는 않지만, 일부 선수들은 메인을
-                        크로스보다 2-4LB 높게 설정합니다. 이는 스윗스팟을
-                        확장하고 컨트롤과 파워의 균형을 맞추는 데 도움이 됩니다.
-                      </p>
-                    </div>
-                    <div className="border-b border-border pb-3 bp-md:pb-4">
-                      <h4 className="font-semibold text-sm bp-md:text-base text-foreground mb-1.5 bp-md:mb-2">
-                        새 라켓에는 어떤 텐션으로 시작해야 하나요?
-                      </h4>
-                      <p className="text-xs bp-md:text-sm text-muted-foreground">
-                        라켓 제조사가 권장하는 텐션 범위의 중간값으로 시작하는
-                        것이 좋습니다. 이후 플레이 느낌에 따라 2-4LB씩 조절해
-                        나가세요.
-                      </p>
-                    </div>
-                    <div className="border-b border-border pb-3 bp-md:pb-4">
-                      <h4 className="font-semibold text-sm bp-md:text-base text-foreground mb-1.5 bp-md:mb-2">
-                        텐션을 자주 바꿔도 되나요?
-                      </h4>
-                      <p className="text-xs bp-md:text-sm text-muted-foreground">
-                        일관된 텐션을 유지하는 것이 플레이 향상에 도움이 됩니다.
-                        하지만 계절 변화나 코트 조건에 따라 2-4LB 정도 조절하는
-                        것은 권장됩니다.
-                      </p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-sm bp-md:text-base text-foreground mb-1.5 bp-md:mb-2">
-                        프로 선수들은 어떤 텐션을 사용하나요?
-                      </h4>
-                      <p className="text-xs bp-md:text-sm text-muted-foreground">
-                        프로 선수들은 보통 51-60LB 범위를 사용합니다. 일반적인
-                        인식과 달리 매우 높은 텐션을 사용하지 않는 경우가
-                        많습니다. 중요한 것은 자신의 플레이 스타일에 맞는 텐션을
-                        찾는 것입니다.
-                      </p>
-                    </div>
+                <div className="space-y-4 bp-md:space-y-6">
+                  <div className="border-b border-border pb-3 bp-md:pb-4">
+                    <h4 className="font-semibold text-sm bp-md:text-base text-foreground mb-1.5 bp-md:mb-2">
+                      메인과 크로스 텐션을 다르게 해야 하나요?
+                    </h4>
+                    <p className="text-xs bp-md:text-sm text-muted-foreground">
+                      반드시 필요하지는 않지만, 일부 선수들은 메인을 크로스보다
+                      2-4LB 높게 설정합니다. 이는 스윗스팟을 확장하고 컨트롤과
+                      파워의 균형을 맞추는 데 도움이 됩니다.
+                    </p>
                   </div>
-                </SummaryCard>
+                  <div className="border-b border-border pb-3 bp-md:pb-4">
+                    <h4 className="font-semibold text-sm bp-md:text-base text-foreground mb-1.5 bp-md:mb-2">
+                      새 라켓에는 어떤 텐션으로 시작해야 하나요?
+                    </h4>
+                    <p className="text-xs bp-md:text-sm text-muted-foreground">
+                      라켓 제조사가 권장하는 텐션 범위의 중간값으로 시작하는
+                      것이 좋습니다. 이후 플레이 느낌에 따라 2-4LB씩 조절해
+                      나가세요.
+                    </p>
+                  </div>
+                  <div className="border-b border-border pb-3 bp-md:pb-4">
+                    <h4 className="font-semibold text-sm bp-md:text-base text-foreground mb-1.5 bp-md:mb-2">
+                      텐션을 자주 바꿔도 되나요?
+                    </h4>
+                    <p className="text-xs bp-md:text-sm text-muted-foreground">
+                      일관된 텐션을 유지하는 것이 플레이 향상에 도움이 됩니다.
+                      하지만 계절 변화나 코트 조건에 따라 2-4LB 정도 조절하는
+                      것은 권장됩니다.
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm bp-md:text-base text-foreground mb-1.5 bp-md:mb-2">
+                      프로 선수들은 어떤 텐션을 사용하나요?
+                    </h4>
+                    <p className="text-xs bp-md:text-sm text-muted-foreground">
+                      프로 선수들은 보통 51-60LB 범위를 사용합니다. 일반적인
+                      인식과 달리 매우 높은 텐션을 사용하지 않는 경우가
+                      많습니다. 중요한 것은 자신의 플레이 스타일에 맞는 텐션을
+                      찾는 것입니다.
+                    </p>
+                  </div>
+                </div>
+              </SummaryCard>
             </div>
           </TabsContent>
         </Tabs>

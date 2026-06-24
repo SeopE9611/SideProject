@@ -202,8 +202,7 @@ export default async function ServicesPage() {
     {
       step: 3,
       title: "정확한 장력 설정",
-      description:
-        "전자식 스트링 머신으로 장력을 설정하고 장착합니다.",
+      description: "전자식 스트링 머신으로 장력을 설정하고 장착합니다.",
       icon: <Award className="h-8 w-8" />,
     },
     {
@@ -338,7 +337,11 @@ export default async function ServicesPage() {
                       {item.description}
                     </p>
 
-                    <PublicSurface variant="muted" padding="sm" className="mt-4">
+                    <PublicSurface
+                      variant="muted"
+                      padding="sm"
+                      className="mt-4"
+                    >
                       <p className="text-xs font-semibold text-primary">
                         진행 순서
                       </p>
@@ -446,9 +449,7 @@ export default async function ServicesPage() {
 
                 {/* 성능 차트 */}
                 <PublicSurface variant="muted" padding="sm">
-                  <h4 className="mb-3 text-center font-semibold">
-                    성능 특성
-                  </h4>
+                  <h4 className="mb-3 text-center font-semibold">성능 특성</h4>
                   <div className="space-y-2">
                     {Object.entries(type.performance).map(([key, value]) => (
                       <div
@@ -557,24 +558,16 @@ export default async function ServicesPage() {
                 )}
 
                 <div className="flex flex-1 flex-col items-center">
-                  <div
-                    className="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-sm bg-secondary text-muted-foreground"
-                  >
+                  <div className="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center shadow-sm bg-secondary text-muted-foreground">
                     {item.icon}
                   </div>
-                  <h3
-                    className="break-keep text-lg font-bold leading-snug text-foreground"
-                  >
+                  <h3 className="break-keep text-lg font-bold leading-snug text-foreground">
                     {item.service}
                   </h3>
-                  <div
-                    className="whitespace-nowrap tabular-nums text-2xl font-bold bp-sm:text-3xl text-foreground"
-                  >
+                  <div className="whitespace-nowrap tabular-nums text-2xl font-bold bp-sm:text-3xl text-foreground">
                     {item.priceLabel}
                   </div>
-                  <div
-                    className="text-sm text-muted-foreground"
-                  >
+                  <div className="text-sm text-muted-foreground">
                     소요시간: {item.duration}
                   </div>
                   <p className="mt-4 text-sm leading-relaxed text-muted-foreground">

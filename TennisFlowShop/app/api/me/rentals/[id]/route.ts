@@ -89,30 +89,28 @@ export async function GET(
   let applicationSummary = null;
   let stringingApplication = null;
   if (appId && ObjectId.isValid(appId)) {
-    const app = await db
-      .collection("stringing_applications")
-      .findOne(
-        {
-          _id: new ObjectId(appId),
-          userId,
-          $or: [{ rentalId: new ObjectId(id) }, { rentalId: id }],
+    const app = await db.collection("stringing_applications").findOne(
+      {
+        _id: new ObjectId(appId),
+        userId,
+        $or: [{ rentalId: new ObjectId(id) }, { rentalId: id }],
+      },
+      {
+        projection: {
+          stringDetails: 1,
+          collectionMethod: 1,
+          status: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          userConfirmedAt: 1,
+          totalPrice: 1,
+          shippingInfo: 1,
+          desiredDateTime: 1,
+          rentalId: 1,
+          userId: 1,
         },
-        {
-          projection: {
-            stringDetails: 1,
-            collectionMethod: 1,
-            status: 1,
-            createdAt: 1,
-            updatedAt: 1,
-            userConfirmedAt: 1,
-            totalPrice: 1,
-            shippingInfo: 1,
-            desiredDateTime: 1,
-            rentalId: 1,
-            userId: 1,
-          },
-        },
-      );
+      },
+    );
     if (app) {
       const lines = getApplicationLines((app as any).stringDetails);
       const tensionSummary = getTensionSummary(lines);
@@ -170,9 +168,7 @@ export async function GET(
       }));
       stringingApplication = {
         id: appId,
-        rentalId: (app as any)?.rentalId
-          ? String((app as any).rentalId)
-          : null,
+        rentalId: (app as any)?.rentalId ? String((app as any).rentalId) : null,
         status: String((app as any)?.status ?? "접수완료"),
         createdAt: toNullableIsoString((app as any)?.createdAt),
         updatedAt: toNullableIsoString((app as any)?.updatedAt),

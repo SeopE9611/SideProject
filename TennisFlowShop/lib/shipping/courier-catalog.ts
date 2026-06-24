@@ -108,7 +108,11 @@ export function normalizeCourierCode(courier?: string | null): string {
   for (const item of COURIER_CATALOG) {
     if (compactCourierValue(item.code) === normalized) return item.code;
     if (compactCourierValue(item.label) === normalized) return item.code;
-    if (item.keywords.some((keyword) => compactCourierValue(keyword) === normalized)) {
+    if (
+      item.keywords.some(
+        (keyword) => compactCourierValue(keyword) === normalized,
+      )
+    ) {
       return item.code;
     }
   }
@@ -130,10 +134,15 @@ export function findCourierCatalogItem(
 
 export function getCourierDisplayName(courier?: string | null): string {
   if (!courier) return "미지정";
-  return (findCourierCatalogItem(courier)?.label ?? String(courier).trim()) || "미지정";
+  return (
+    (findCourierCatalogItem(courier)?.label ?? String(courier).trim()) ||
+    "미지정"
+  );
 }
 
-export function mapCourierCodeToCarrierId(courier?: string | null): string | null {
+export function mapCourierCodeToCarrierId(
+  courier?: string | null,
+): string | null {
   const item = findCourierCatalogItem(courier);
   return item?.supportsTracking ? item.trackerCarrierId : null;
 }

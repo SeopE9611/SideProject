@@ -78,8 +78,7 @@ function getFeatureEntries(features?: Record<string, number>) {
     const rawValue = Number(features?.[key] ?? 0);
     const value = normalizeFeatureScoreTo100(rawValue);
     return { key, label: keyMap[key], value };
-  })
-    .filter((item) => item.value > 0);
+  }).filter((item) => item.value > 0);
 }
 
 function PerformanceSummary({
@@ -105,7 +104,9 @@ function PerformanceSummary({
             )}
           >
             <span className="text-muted-foreground">{feature.label}</span>
-            <strong className="tabular-nums text-foreground">{feature.value}</strong>
+            <strong className="tabular-nums text-foreground">
+              {feature.value}
+            </strong>
           </div>
         ))}
         {entries.length % 2 === 1 && <div aria-hidden="true" />}

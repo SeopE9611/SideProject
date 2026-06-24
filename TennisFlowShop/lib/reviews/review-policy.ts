@@ -32,10 +32,7 @@ export async function isOrderServiceReviewOnly(
       : [order._id, String(order._id)];
   const linkedApplication = await db
     .collection("stringing_applications")
-    .findOne(
-      { orderId: { $in: orderIds } },
-      { projection: { _id: 1 } },
-    );
+    .findOne({ orderId: { $in: orderIds } }, { projection: { _id: 1 } });
 
   return Boolean(linkedApplication);
 }
@@ -51,7 +48,9 @@ const BLOCKED_STRINGING_REVIEW_STATUS_TOKENS = [
 ];
 
 export function isStringingReviewBlockedStatus(status: unknown) {
-  const normalized = String(status ?? "").trim().toLowerCase();
+  const normalized = String(status ?? "")
+    .trim()
+    .toLowerCase();
   return BLOCKED_STRINGING_REVIEW_STATUS_TOKENS.some((token) =>
     normalized.includes(token),
   );

@@ -1,9 +1,15 @@
 import { verifyAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
-import { buildNiceOrderName, createNiceOrderId } from "@/lib/payments/nice/server";
+import {
+  buildNiceOrderName,
+  createNiceOrderId,
+} from "@/lib/payments/nice/server";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 import { calculateCheckoutPayableAmount } from "@/lib/payments/toss/checkout-quote";
-import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
+import {
+  ensureTossPaymentSessionIndexes,
+  tossPaymentSessions,
+} from "@/lib/payments/toss/session";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -11,7 +17,9 @@ export const runtime = "nodejs";
 export const preferredRegion = ["icn1", "hnd1"];
 
 function resolveClientId() {
-  return String(process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "").trim();
+  return String(
+    process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "",
+  ).trim();
 }
 
 function resolveAppUrl() {
@@ -38,7 +46,10 @@ export async function POST(req: Request) {
     const shippingInfo = body?.shippingInfo;
 
     if (!Array.isArray(items) || items.length === 0 || !shippingInfo) {
-      return NextResponse.json({ success: false, error: "요청 데이터가 올바르지 않습니다." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "요청 데이터가 올바르지 않습니다." },
+        { status: 400 },
+      );
     }
 
     const clientId = resolveClientId();
@@ -58,7 +69,10 @@ export async function POST(req: Request) {
     const payload = token ? verifyAccessToken(token) : null;
     const userId = payload?.sub ?? null;
     const gomRaw = (process.env.GUEST_ORDER_MODE ?? "on").trim();
-    const guestOrderMode = gomRaw === "off" || gomRaw === "legacy" || gomRaw === "on" ? gomRaw : "on";
+    const guestOrderMode =
+      gomRaw === "off" || gomRaw === "legacy" || gomRaw === "on"
+        ? gomRaw
+        : "on";
     if (!userId && guestOrderMode !== "on") {
       return NextResponse.json(
         {
@@ -82,7 +96,10 @@ export async function POST(req: Request) {
       stringingApplicationInput: body?.stringingApplicationInput,
     });
 
-    if (!Number.isFinite(quote.payableTotalPrice) || quote.payableTotalPrice <= 0) {
+    if (
+      !Number.isFinite(quote.payableTotalPrice) ||
+      quote.payableTotalPrice <= 0
+    ) {
       return NextResponse.json(
         {
           success: false,
@@ -103,8 +120,12 @@ export async function POST(req: Request) {
     );
     const returnUrl = `${resolveAppUrl()}/api/payments/nice/return`;
 
-    const buyerName = String(shippingInfo?.name ?? body?.guestInfo?.name ?? "").trim();
-    const buyerTel = String(shippingInfo?.phone ?? body?.guestInfo?.phone ?? "").replace(/\D/g, "");
+    const buyerName = String(
+      shippingInfo?.name ?? body?.guestInfo?.name ?? "",
+    ).trim();
+    const buyerTel = String(
+      shippingInfo?.phone ?? body?.guestInfo?.phone ?? "",
+    ).replace(/\D/g, "");
     const buyerEmail = String(body?.guestInfo?.email ?? body?.email ?? "")
       .trim()
       .toLowerCase();

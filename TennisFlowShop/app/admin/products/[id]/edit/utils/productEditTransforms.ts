@@ -1,4 +1,8 @@
-import type { ProductColorInventory, ProductDetail, ProductVariantInventory } from "@/types/admin/products";
+import type {
+  ProductColorInventory,
+  ProductDetail,
+  ProductVariantInventory,
+} from "@/types/admin/products";
 
 export const MAX_PRODUCT_IMAGE_COUNT = 4;
 
@@ -65,7 +69,9 @@ export type ProductEditHydbridState = {
   hybridCross: HybridCrossSpec;
 };
 
-export function normalizeHybridState(product: ProductDetail): ProductEditHydbridState {
+export function normalizeHybridState(
+  product: ProductDetail,
+): ProductEditHydbridState {
   return {
     hybridMain: product?.specifications?.hybrid
       ? {
@@ -88,11 +94,14 @@ export function normalizeHybridState(product: ProductDetail): ProductEditHydbrid
   };
 }
 
-export function buildProductEditInitialSnapshot(product: ProductDetail): string {
+export function buildProductEditInitialSnapshot(
+  product: ProductDetail,
+): string {
   const hybridState = normalizeHybridState(product);
 
   const colorInventories =
-    Array.isArray(product.colorInventories) && product.colorInventories.length > 0
+    Array.isArray(product.colorInventories) &&
+    product.colorInventories.length > 0
       ? product.colorInventories
       : Array.isArray(product.colorOptions) && product.colorOptions.length > 0
         ? product.colorOptions.map((value) => ({
@@ -116,7 +125,9 @@ export function buildProductEditInitialSnapshot(product: ProductDetail): string 
             ]
           : [];
 
-  const variantInventories = Array.isArray(product.variantInventories) ? product.variantInventories : [];
+  const variantInventories = Array.isArray(product.variantInventories)
+    ? product.variantInventories
+    : [];
 
   return buildProductEditSnapshot({
     basicInfo: {
@@ -147,7 +158,9 @@ export function buildProductEditInitialSnapshot(product: ProductDetail): string 
       salePrice: product.inventory.salePrice,
     },
     isVisible: product.isVisible !== false,
-    searchKeywordsInput: Array.isArray(product.searchKeywords) ? product.searchKeywords.join(", ") : "",
+    searchKeywordsInput: Array.isArray(product.searchKeywords)
+      ? product.searchKeywords.join(", ")
+      : "",
     additionalFeatures: product.additionalFeatures,
     images: product.images,
     hybridMain: hybridState.hybridMain,
@@ -161,11 +174,16 @@ export function buildProductEditInitialSnapshot(product: ProductDetail): string 
   });
 }
 
-export function buildProductEditSnapshot(input: ProductEditSnapshotInput): string {
+export function buildProductEditSnapshot(
+  input: ProductEditSnapshotInput,
+): string {
   return JSON.stringify(input);
 }
 
-export function sanitizeUploadFileName(fileName: string, timestamp = Date.now()): string {
+export function sanitizeUploadFileName(
+  fileName: string,
+  timestamp = Date.now(),
+): string {
   const extension = fileName.split(".").pop();
   const base = fileName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "");
 

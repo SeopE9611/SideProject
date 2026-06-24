@@ -12,7 +12,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckCircle2, Loader2, Truck } from "lucide-react";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { getSelectableCourierCatalog, normalizeCourierCode } from "@/lib/shipping/courier-map";
+import {
+  getSelectableCourierCatalog,
+  normalizeCourierCode,
+} from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import {
   Select,
@@ -180,7 +183,10 @@ export default function ReturnShippingForm({ rentalId }: { rentalId: string }) {
               value={tracking}
               onChange={(e) => {
                 // 입력 중에도 숫자만 유지 + 최대 20자리 제한
-                const digits = normalizeTrackingNumber(e.target.value).slice(0, 20);
+                const digits = normalizeTrackingNumber(e.target.value).slice(
+                  0,
+                  20,
+                );
                 setTracking(digits);
               }}
               inputMode="numeric"

@@ -182,7 +182,9 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
               maxLength={20}
               placeholder="숫자만 입력 (9~20자리)"
               onChange={(e) =>
-                setTracking(normalizeTrackingNumber(e.target.value).slice(0, 20))
+                setTracking(
+                  normalizeTrackingNumber(e.target.value).slice(0, 20),
+                )
               }
             />
           </div>

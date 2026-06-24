@@ -16,7 +16,10 @@ export async function GET(
     const { id } = await params;
     const prod = await db
       .collection("products")
-      .findOne({ _id: new ObjectId(id), ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) });
+      .findOne({
+        _id: new ObjectId(id),
+        ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+      });
     if (!prod) {
       return NextResponse.json(
         { message: "상품을 찾을 수 없습니다." },

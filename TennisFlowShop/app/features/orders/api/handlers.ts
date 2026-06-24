@@ -1,4 +1,7 @@
-import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
+import {
+  productVisibilityFilterFor,
+  racketVisibilityFilterFor,
+} from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import { createStringingApplicationFromOrder } from "@/app/features/stringing-applications/api/create-from-order";
 import {
@@ -447,7 +450,15 @@ export async function createOrder(
           product ??
           (await db
             .collection("products")
-            .findOne({ _id: productId, ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) }, { session }));
+            .findOne(
+              {
+                _id: productId,
+                ...productVisibilityFilterFor(
+                  await getVisibilityViewerFromCookies(),
+                ),
+              },
+              { session },
+            ));
         const variantInventories = Array.isArray(
           (productDoc as any)?.variantInventories,
         )
@@ -512,7 +523,9 @@ export async function createOrder(
         const variantUpdated = await db.collection("products").updateOne(
           {
             _id: productId,
-            ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+            ...productVisibilityFilterFor(
+              await getVisibilityViewerFromCookies(),
+            ),
             "inventory.stock": { $gte: quantity },
             variantInventories: {
               $elemMatch: {
@@ -595,7 +608,15 @@ export async function createOrder(
           product ??
           (await db
             .collection("products")
-            .findOne({ _id: productId, ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) }, { session }));
+            .findOne(
+              {
+                _id: productId,
+                ...productVisibilityFilterFor(
+                  await getVisibilityViewerFromCookies(),
+                ),
+              },
+              { session },
+            ));
         const hasManagedColorInventory =
           Array.isArray((productDoc as any)?.colorInventories) &&
           (productDoc as any).colorInventories.length > 0;
@@ -607,7 +628,9 @@ export async function createOrder(
         const colorUpdated = await db.collection("products").updateOne(
           {
             _id: productId,
-            ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+            ...productVisibilityFilterFor(
+              await getVisibilityViewerFromCookies(),
+            ),
             colorInventories: {
               $elemMatch: {
                 value: selectedColor,
@@ -638,7 +661,15 @@ export async function createOrder(
 
         const productForColor = await db
           .collection("products")
-          .findOne({ _id: productId, ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) }, { session });
+          .findOne(
+            {
+              _id: productId,
+              ...productVisibilityFilterFor(
+                await getVisibilityViewerFromCookies(),
+              ),
+            },
+            { session },
+          );
         const colorInventories = Array.isArray(
           (productForColor as any)?.colorInventories,
         )
@@ -696,7 +727,15 @@ export async function createOrder(
             const productId = new ObjectId(item.productId);
             const product = await db
               .collection("products")
-              .findOne({ _id: productId, ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) }, { session });
+              .findOne(
+                {
+                  _id: productId,
+                  ...productVisibilityFilterFor(
+                    await getVisibilityViewerFromCookies(),
+                  ),
+                },
+                { session },
+              );
             if (!product)
               throw new HttpError(404, { error: "상품을 찾을 수 없습니다." });
 
@@ -764,7 +803,9 @@ export async function createOrder(
               const gaugeUpdated = await db.collection("products").updateOne(
                 {
                   _id: productId,
-                  ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+                  ...productVisibilityFilterFor(
+                    await getVisibilityViewerFromCookies(),
+                  ),
                   "inventory.stock": { $gte: quantity },
                   gaugeInventories: {
                     $elemMatch: {
@@ -836,7 +877,12 @@ export async function createOrder(
             await db
               .collection("products")
               .updateOne(
-                { _id: productId, ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) },
+                {
+                  _id: productId,
+                  ...productVisibilityFilterFor(
+                    await getVisibilityViewerFromCookies(),
+                  ),
+                },
                 { $inc: { "inventory.stock": -quantity, sold: quantity } },
                 { session },
               );
@@ -848,7 +894,12 @@ export async function createOrder(
             const rackCol = db.collection("used_rackets");
 
             const racket = await rackCol.findOne(
-              { _id: racketId, ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) },
+              {
+                _id: racketId,
+                ...racketVisibilityFilterFor(
+                  await getVisibilityViewerFromCookies(),
+                ),
+              },
               {
                 projection: { status: 1, quantity: 1, brand: 1, model: 1 },
                 session,
@@ -999,7 +1050,15 @@ export async function createOrder(
               const oid = new ObjectId(it.productId);
               const prod = await db
                 .collection("products")
-                .findOne({ _id: oid, ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) }, { session });
+                .findOne(
+                  {
+                    _id: oid,
+                    ...productVisibilityFilterFor(
+                      await getVisibilityViewerFromCookies(),
+                    ),
+                  },
+                  { session },
+                );
 
               return {
                 productId: oid,
@@ -1044,7 +1103,15 @@ export async function createOrder(
             const rid = new ObjectId(it.productId);
             const racket = await db
               .collection("used_rackets")
-              .findOne({ _id: rid, ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) }, { session });
+              .findOne(
+                {
+                  _id: rid,
+                  ...racketVisibilityFilterFor(
+                    await getVisibilityViewerFromCookies(),
+                  ),
+                },
+                { session },
+              );
             const racketName = racket
               ? `${racket.brand} ${racket.model}`.trim()
               : "알 수 없는 라켓";

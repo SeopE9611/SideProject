@@ -1,6 +1,9 @@
 "use client";
 
-import { PriceSummary, type PriceSummaryRow } from "@/components/public/PriceSummary";
+import {
+  PriceSummary,
+  type PriceSummaryRow,
+} from "@/components/public/PriceSummary";
 import { SummaryCard } from "@/components/public/SummaryCard";
 import {
   BadgeDollarSign,
@@ -64,8 +67,12 @@ export default function PriceSummaryCard({
 }: PriceSummaryProps) {
   const isCustom = stringTypes.includes("custom");
   const isRentalBreakdown = Number(rentalDeposit) > 0 || Number(rentalFee) > 0;
-  const visibleWorkLines = Array.isArray(workLines) ? workLines.slice(0, 3) : [];
-  const hiddenWorkLineCount = Array.isArray(workLines) ? Math.max(workLines.length - visibleWorkLines.length, 0) : 0;
+  const visibleWorkLines = Array.isArray(workLines)
+    ? workLines.slice(0, 3)
+    : [];
+  const hiddenWorkLineCount = Array.isArray(workLines)
+    ? Math.max(workLines.length - visibleWorkLines.length, 0)
+    : 0;
   const hasWorkLines = visibleWorkLines.length > 0;
 
   const MethodIcon = collectionMethod === "visit" ? Store : Box;
@@ -199,72 +206,84 @@ export default function PriceSummaryCard({
       className="overflow-hidden"
       contentClassName="space-y-4"
     >
-        {/* 선택 요약 */}
-        <div className="grid grid-cols-1 gap-3 rounded-xl border border-border bg-muted/20 p-4">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <CalendarDays className="h-4 w-4" />
-              <span>희망일</span>
-            </div>
-            <span className="tabular-nums">{preferredDate || "—"}</span>
+      {/* 선택 요약 */}
+      <div className="grid grid-cols-1 gap-3 rounded-xl border border-border bg-muted/20 p-4">
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <CalendarDays className="h-4 w-4" />
+            <span>희망일</span>
           </div>
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Clock3 className="h-4 w-4" />
-              <span>시간대</span>
-            </div>
-            <span className="tabular-nums">{preferredTime || "—"}</span>
+          <span className="tabular-nums">{preferredDate || "—"}</span>
+        </div>
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Clock3 className="h-4 w-4" />
+            <span>시간대</span>
           </div>
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <MethodIcon className="h-4 w-4" />
-              <span>수거 방식</span>
-            </div>
-            <span>{methodText}</span>
+          <span className="tabular-nums">{preferredTime || "—"}</span>
+        </div>
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <MethodIcon className="h-4 w-4" />
+            <span>수거 방식</span>
+          </div>
+          <span>{methodText}</span>
+        </div>
+      </div>
+
+      {hasWorkLines && (
+        <div className="space-y-2 rounded-xl border border-border bg-card p-3">
+          <div className="flex flex-wrap items-center justify-between gap-1.5 text-sm">
+            <span className="font-semibold text-foreground">
+              작업 {workLines?.length ?? 0}자루
+            </span>
+            <span className="text-xs leading-tight text-muted-foreground">
+              1자루 = 교체 1회
+            </span>
+          </div>
+          <div className="space-y-2">
+            {visibleWorkLines.map((line, index) => {
+              const racketName = line.racketType?.trim() || `라켓 ${index + 1}`;
+              const stringName = line.stringName?.trim() || "스트링명 미입력";
+              const main = line.tensionMain?.trim();
+              const cross = line.tensionCross?.trim();
+              const tension =
+                main || cross
+                  ? `${main || "—"}-${cross || "—"}LB`
+                  : "텐션 미입력";
+              return (
+                <div
+                  key={`${racketName}-${index}`}
+                  className="rounded-lg bg-muted/30 p-2 text-xs leading-relaxed"
+                >
+                  <p className="truncate font-medium text-foreground">
+                    {index + 1}. {racketName} / {stringName}
+                  </p>
+                  <p className="mt-0.5 break-words text-[11px] leading-snug text-muted-foreground">
+                    <span>{tension}</span>
+                    <span className="mx-1">/</span>
+                    <span>{won(Number(line.mountingFee ?? 0))}</span>
+                  </p>
+                </div>
+              );
+            })}
+            {hiddenWorkLineCount > 0 && (
+              <p className="text-xs text-muted-foreground">
+                외 {hiddenWorkLineCount}건
+              </p>
+            )}
           </div>
         </div>
+      )}
 
-        {hasWorkLines && (
-          <div className="space-y-2 rounded-xl border border-border bg-card p-3">
-            <div className="flex flex-wrap items-center justify-between gap-1.5 text-sm">
-              <span className="font-semibold text-foreground">작업 {workLines?.length ?? 0}자루</span>
-              <span className="text-xs leading-tight text-muted-foreground">1자루 = 교체 1회</span>
-            </div>
-            <div className="space-y-2">
-              {visibleWorkLines.map((line, index) => {
-                const racketName = line.racketType?.trim() || `라켓 ${index + 1}`;
-                const stringName = line.stringName?.trim() || "스트링명 미입력";
-                const main = line.tensionMain?.trim();
-                const cross = line.tensionCross?.trim();
-                const tension = main || cross ? `${main || "—"}-${cross || "—"}LB` : "텐션 미입력";
-                return (
-                  <div key={`${racketName}-${index}`} className="rounded-lg bg-muted/30 p-2 text-xs leading-relaxed">
-                    <p className="truncate font-medium text-foreground">
-                      {index + 1}. {racketName} / {stringName}
-                    </p>
-                    <p className="mt-0.5 break-words text-[11px] leading-snug text-muted-foreground">
-                      <span>{tension}</span>
-                      <span className="mx-1">/</span>
-                      <span>{won(Number(line.mountingFee ?? 0))}</span>
-                    </p>
-                  </div>
-                );
-              })}
-              {hiddenWorkLineCount > 0 && (
-                <p className="text-xs text-muted-foreground">외 {hiddenWorkLineCount}건</p>
-              )}
-            </div>
-          </div>
-        )}
-
-        <PriceSummary
-          rows={rows}
-          footer={
-            usingPackage ? (
-              <p className="text-[11px]">※ 패키지 적용 시 교체비가 무료입니다.</p>
-            ) : undefined
-          }
-        />
+      <PriceSummary
+        rows={rows}
+        footer={
+          usingPackage ? (
+            <p className="text-[11px]">※ 패키지 적용 시 교체비가 무료입니다.</p>
+          ) : undefined
+        }
+      />
     </SummaryCard>
   );
 }

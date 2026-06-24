@@ -254,10 +254,7 @@ export async function GET(req: Request) {
         .countDocuments(academyVisibleFilter),
       db
         .collection("academy_lesson_applications")
-        .find(
-          academyVisibleFilter,
-          { projection: academyProjection },
-        )
+        .find(academyVisibleFilter, { projection: academyProjection })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -286,10 +283,7 @@ export async function GET(req: Request) {
         .toArray(),
       db
         .collection("academy_lesson_applications")
-        .find(
-          academyVisibleFilter,
-          { projection: academyProjection },
-        )
+        .find(academyVisibleFilter, { projection: academyProjection })
         .sort({ createdAt: -1 })
         .limit(pageWindow)
         .toArray(),

@@ -9,7 +9,10 @@ const NO_STORE = { "Cache-Control": "no-store, no-cache, must-revalidate" };
 export async function GET() {
   const userId = await getCurrentUserId();
   if (!userId || !ObjectId.isValid(userId)) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401, headers: NO_STORE });
+    return NextResponse.json(
+      { ok: false, error: "Unauthorized" },
+      { status: 401, headers: NO_STORE },
+    );
   }
 
   const db = await getDb();

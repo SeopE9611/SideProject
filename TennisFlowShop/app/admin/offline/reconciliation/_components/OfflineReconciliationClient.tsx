@@ -8,8 +8,21 @@ import { Label } from "@/components/ui/label";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { cn } from "@/lib/utils";
-import type { OfflineReconciliationItem, OfflineReconciliationResponse, OfflineReconciliationStatus } from "@/types/admin/offline";
-import { AlertTriangle, CheckCircle2, ExternalLink, RefreshCcw, Save, Search, ShieldAlert, XCircle } from "lucide-react";
+import type {
+  OfflineReconciliationItem,
+  OfflineReconciliationResponse,
+  OfflineReconciliationStatus,
+} from "@/types/admin/offline";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ExternalLink,
+  RefreshCcw,
+  Save,
+  Search,
+  ShieldAlert,
+  XCircle,
+} from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState, type ChangeEvent, type ReactNode } from "react";
 import useSWR from "swr";
@@ -66,30 +79,63 @@ function severityVariant(severity: "warning" | "critical") {
   return severity === "critical" ? ("danger" as const) : ("warning" as const);
 }
 
-function Select({ id, value, onChange, children }: { id: string; value: string; onChange: (event: ChangeEvent<HTMLSelectElement>) => void; children: ReactNode }) {
+function Select({
+  id,
+  value,
+  onChange,
+  children,
+}: {
+  id: string;
+  value: string;
+  onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
+  children: ReactNode;
+}) {
   return (
-    <select id={id} value={value} onChange={onChange} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20">
+    <select
+      id={id}
+      value={value}
+      onChange={onChange}
+      className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
+    >
       {children}
     </select>
   );
 }
 
-function SummaryCard({ label, value, tone, active, onClick }: { label: string; value: number; tone?: "danger" | "warning" | "success" | "muted"; active?: boolean; onClick?: () => void }) {
+function SummaryCard({
+  label,
+  value,
+  tone,
+  active,
+  onClick,
+}: {
+  label: string;
+  value: number;
+  tone?: "danger" | "warning" | "success" | "muted";
+  active?: boolean;
+  onClick?: () => void;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
         "rounded-xl border p-4 text-left transition-colors",
-        tone === "danger" && "border-destructive/30 bg-destructive/10 hover:bg-destructive/15",
-        tone === "warning" && "border-warning/30 bg-warning/10 hover:bg-warning/15",
-        tone === "success" && "border-success/30 bg-success/10 hover:bg-success/15",
-        (!tone || tone === "muted") && "border-border/60 bg-muted/20 hover:bg-muted/30",
+        tone === "danger" &&
+          "border-destructive/30 bg-destructive/10 hover:bg-destructive/15",
+        tone === "warning" &&
+          "border-warning/30 bg-warning/10 hover:bg-warning/15",
+        tone === "success" &&
+          "border-success/30 bg-success/10 hover:bg-success/15",
+        (!tone || tone === "muted") &&
+          "border-border/60 bg-muted/20 hover:bg-muted/30",
         active && "ring-2 ring-primary/30",
       )}
     >
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">{value.toLocaleString("ko-KR")}건</p>
+      <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">
+        {value.toLocaleString("ko-KR")}건
+      </p>
     </button>
   );
 }
@@ -103,7 +149,11 @@ function ItemActions({
   item: OfflineReconciliationItem;
   note: string;
   setNote: (value: string) => void;
-  onUpdate: (item: OfflineReconciliationItem, status: OfflineReconciliationStatus, note: string) => Promise<void>;
+  onUpdate: (
+    item: OfflineReconciliationItem,
+    status: OfflineReconciliationStatus,
+    note: string,
+  ) => Promise<void>;
 }) {
   return (
     <div className="flex min-w-[260px] flex-col gap-2">
@@ -138,15 +188,30 @@ function ItemActions({
         className="min-h-[68px] w-full rounded-lg border border-input bg-background px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-ring/20"
       />
       <div className="flex flex-wrap gap-2">
-        <Button type="button" size="sm" variant="secondary" onClick={() => onUpdate(item, item.status, note)}>
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          onClick={() => onUpdate(item, item.status, note)}
+        >
           <Save className="h-3 w-3" />
           메모 저장
         </Button>
-        <Button type="button" size="sm" variant="outline" onClick={() => onUpdate(item, "resolved", note)}>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() => onUpdate(item, "resolved", note)}
+        >
           <CheckCircle2 className="h-3 w-3" />
           확인 완료
         </Button>
-        <Button type="button" size="sm" variant="outline" onClick={() => onUpdate(item, "ignored", note)}>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() => onUpdate(item, "ignored", note)}
+        >
           <XCircle className="h-3 w-3" />
           무시
         </Button>
@@ -180,17 +245,18 @@ export default function OfflineReconciliationClient() {
     return `/api/admin/offline/reconciliation?${params.toString()}`;
   }, [submitted, page]);
 
-  const { data, isLoading, error, mutate } = useSWR<OfflineReconciliationResponse>(query, authenticatedSWRFetcher, {
-    onSuccess(payload) {
-      setNotes((prev) => {
-        const next = { ...prev };
-        for (const item of payload.items) {
-          if (!(item.id in next)) next[item.id] = item.note ?? "";
-        }
-        return next;
-      });
-    },
-  });
+  const { data, isLoading, error, mutate } =
+    useSWR<OfflineReconciliationResponse>(query, authenticatedSWRFetcher, {
+      onSuccess(payload) {
+        setNotes((prev) => {
+          const next = { ...prev };
+          for (const item of payload.items) {
+            if (!(item.id in next)) next[item.id] = item.note ?? "";
+          }
+          return next;
+        });
+      },
+    });
 
   function applyQuickFilter(next: Partial<typeof filters>) {
     const merged = {
@@ -221,18 +287,32 @@ export default function OfflineReconciliationClient() {
     setMessage(null);
   }
 
-  async function updateItem(item: OfflineReconciliationItem, status: OfflineReconciliationStatus, note: string) {
-    const confirmMessage = status === "resolved" ? "확인 완료 처리는 실제 데이터 복구를 의미하지 않습니다. 운영자 확인 상태만 저장할까요?" : status === "ignored" ? "무시 처리는 실제 데이터 복구를 의미하지 않습니다. 목록 상태만 변경할까요?" : null;
+  async function updateItem(
+    item: OfflineReconciliationItem,
+    status: OfflineReconciliationStatus,
+    note: string,
+  ) {
+    const confirmMessage =
+      status === "resolved"
+        ? "확인 완료 처리는 실제 데이터 복구를 의미하지 않습니다. 운영자 확인 상태만 저장할까요?"
+        : status === "ignored"
+          ? "무시 처리는 실제 데이터 복구를 의미하지 않습니다. 목록 상태만 변경할까요?"
+          : null;
     if (confirmMessage && !window.confirm(confirmMessage)) return;
     setUpdatingId(item.id);
     setMessage(null);
     try {
-      await adminMutator(`/api/admin/offline/reconciliation/${item.type}/${item.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status, note }),
-      });
-      setMessage("보정 항목 상태/메모를 저장했습니다. 실제 원장·발급·사용 데이터는 자동 변경되지 않습니다.");
+      await adminMutator(
+        `/api/admin/offline/reconciliation/${item.type}/${item.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status, note }),
+        },
+      );
+      setMessage(
+        "보정 항목 상태/메모를 저장했습니다. 실제 원장·발급·사용 데이터는 자동 변경되지 않습니다.",
+      );
       await mutate();
     } catch (err) {
       setMessage(getAdminErrorMessage(err));
@@ -250,19 +330,38 @@ export default function OfflineReconciliationClient() {
   };
 
   const currentViewLabel =
-    submitted.status === "open" && submitted.type === "all" && !submitted.from && !submitted.to
+    submitted.status === "open" &&
+    submitted.type === "all" &&
+    !submitted.from &&
+    !submitted.to
       ? "전체 미처리"
-      : submitted.status === "open" && submitted.type === "package_issue" && !submitted.from && !submitted.to
+      : submitted.status === "open" &&
+          submitted.type === "package_issue" &&
+          !submitted.from &&
+          !submitted.to
         ? "패키지 발급 실패"
-        : submitted.status === "open" && submitted.type === "package_usage" && !submitted.from && !submitted.to
+        : submitted.status === "open" &&
+            submitted.type === "package_usage" &&
+            !submitted.from &&
+            !submitted.to
           ? "패키지 사용 연결 누락"
-          : submitted.status === "resolved" && submitted.type === "all" && !submitted.from && !submitted.to
+          : submitted.status === "resolved" &&
+              submitted.type === "all" &&
+              !submitted.from &&
+              !submitted.to
             ? "확인 완료"
-            : submitted.status === "ignored" && submitted.type === "all" && !submitted.from && !submitted.to
+            : submitted.status === "ignored" &&
+                submitted.type === "all" &&
+                !submitted.from &&
+                !submitted.to
               ? "무시"
               : "사용자 지정 조건";
 
-  const hasCustomFilters = submitted.type !== "all" || submitted.status !== "open" || Boolean(submitted.from) || Boolean(submitted.to);
+  const hasCustomFilters =
+    submitted.type !== "all" ||
+    submitted.status !== "open" ||
+    Boolean(submitted.from) ||
+    Boolean(submitted.to);
 
   return (
     <div className="space-y-6">
@@ -270,52 +369,103 @@ export default function OfflineReconciliationClient() {
         <CardContent className="flex flex-col gap-2 p-4 text-sm text-foreground/80 md:flex-row md:items-center">
           <ShieldAlert className="h-5 w-5 shrink-0 text-warning" />
           <div>
-            <p className="font-semibold text-foreground">보정 필요 항목은 자동 처리 실패 또는 운영자 확인이 필요한 항목입니다.</p>
-            <p className="text-xs text-muted-foreground">확인 완료 처리는 실제 데이터 복구를 의미하지 않습니다. 자동 재발급/자동 환불은 이번 화면에서 수행하지 않습니다.</p>
+            <p className="font-semibold text-foreground">
+              보정 필요 항목은 자동 처리 실패 또는 운영자 확인이 필요한
+              항목입니다.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              확인 완료 처리는 실제 데이터 복구를 의미하지 않습니다. 자동
+              재발급/자동 환불은 이번 화면에서 수행하지 않습니다.
+            </p>
           </div>
         </CardContent>
       </Card>
 
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border/60 bg-muted/20 p-3">
-        <span className="mr-1 text-xs font-semibold text-muted-foreground">빠른 보기</span>
+        <span className="mr-1 text-xs font-semibold text-muted-foreground">
+          빠른 보기
+        </span>
 
-        <Button type="button" size="sm" variant={currentViewLabel === "전체 미처리" ? "default" : "outline"} onClick={() => applyQuickFilter({ type: "all", status: "open" })}>
+        <Button
+          type="button"
+          size="sm"
+          variant={currentViewLabel === "전체 미처리" ? "default" : "outline"}
+          onClick={() => applyQuickFilter({ type: "all", status: "open" })}
+        >
           전체 미처리
         </Button>
 
-        <Button type="button" size="sm" variant={currentViewLabel === "패키지 발급 실패" ? "default" : "outline"} onClick={() => applyQuickFilter({ type: "package_issue", status: "open" })}>
+        <Button
+          type="button"
+          size="sm"
+          variant={
+            currentViewLabel === "패키지 발급 실패" ? "default" : "outline"
+          }
+          onClick={() =>
+            applyQuickFilter({ type: "package_issue", status: "open" })
+          }
+        >
           발급 실패
         </Button>
 
-        <Button type="button" size="sm" variant={currentViewLabel === "패키지 사용 연결 누락" ? "default" : "outline"} onClick={() => applyQuickFilter({ type: "package_usage", status: "open" })}>
+        <Button
+          type="button"
+          size="sm"
+          variant={
+            currentViewLabel === "패키지 사용 연결 누락" ? "default" : "outline"
+          }
+          onClick={() =>
+            applyQuickFilter({ type: "package_usage", status: "open" })
+          }
+        >
           사용 연결 누락
         </Button>
 
-        <Button type="button" size="sm" variant={currentViewLabel === "확인 완료" ? "default" : "outline"} onClick={() => applyQuickFilter({ type: "all", status: "resolved" })}>
+        <Button
+          type="button"
+          size="sm"
+          variant={currentViewLabel === "확인 완료" ? "default" : "outline"}
+          onClick={() => applyQuickFilter({ type: "all", status: "resolved" })}
+        >
           확인 완료
         </Button>
 
-        <Button type="button" size="sm" variant={currentViewLabel === "무시" ? "default" : "outline"} onClick={() => applyQuickFilter({ type: "all", status: "ignored" })}>
+        <Button
+          type="button"
+          size="sm"
+          variant={currentViewLabel === "무시" ? "default" : "outline"}
+          onClick={() => applyQuickFilter({ type: "all", status: "ignored" })}
+        >
           무시
         </Button>
       </div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-border/60 bg-background px-4 py-3 text-sm">
-        <p className="font-semibold text-foreground">현재 보기: {currentViewLabel}</p>
+        <p className="font-semibold text-foreground">
+          현재 보기: {currentViewLabel}
+        </p>
 
         {submitted.from || submitted.to ? (
           <p className="text-muted-foreground">
-            기간: {submitted.from || "시작일 없음"} ~ {submitted.to || "종료일 없음"}
+            기간: {submitted.from || "시작일 없음"} ~{" "}
+            {submitted.to || "종료일 없음"}
           </p>
         ) : null}
 
         <div className="ml-auto flex flex-wrap items-center gap-2">
           {hasCustomFilters && (
-            <Button type="button" size="sm" variant="ghost" onClick={resetFilters}>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={resetFilters}
+            >
               필터 초기화
             </Button>
           )}
 
-          <span className="text-sm font-medium text-foreground">총 {(data?.total ?? 0).toLocaleString("ko-KR")}건</span>
+          <span className="text-sm font-medium text-foreground">
+            총 {(data?.total ?? 0).toLocaleString("ko-KR")}건
+          </span>
         </div>
       </div>
       <Card>
@@ -364,11 +514,25 @@ export default function OfflineReconciliationClient() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="from">시작일</Label>
-              <Input id="from" type="date" value={filters.from} onChange={(e) => setFilters((prev) => ({ ...prev, from: e.target.value }))} />
+              <Input
+                id="from"
+                type="date"
+                value={filters.from}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, from: e.target.value }))
+                }
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="to">종료일</Label>
-              <Input id="to" type="date" value={filters.to} onChange={(e) => setFilters((prev) => ({ ...prev, to: e.target.value }))} />
+              <Input
+                id="to"
+                type="date"
+                value={filters.to}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, to: e.target.value }))
+                }
+              />
             </div>
             <div className="flex items-end gap-2">
               <Button
@@ -393,18 +557,56 @@ export default function OfflineReconciliationClient() {
       </Card>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <SummaryCard label="전체 미처리" value={summary.open} tone="warning" active={currentViewLabel === "전체 미처리"} onClick={() => applyQuickFilter({ type: "all", status: "open" })} />
+        <SummaryCard
+          label="전체 미처리"
+          value={summary.open}
+          tone="warning"
+          active={currentViewLabel === "전체 미처리"}
+          onClick={() => applyQuickFilter({ type: "all", status: "open" })}
+        />
 
-        <SummaryCard label="패키지 발급 실패" value={summary.packageIssue} tone="danger" active={currentViewLabel === "패키지 발급 실패"} onClick={() => applyQuickFilter({ type: "package_issue", status: "open" })} />
+        <SummaryCard
+          label="패키지 발급 실패"
+          value={summary.packageIssue}
+          tone="danger"
+          active={currentViewLabel === "패키지 발급 실패"}
+          onClick={() =>
+            applyQuickFilter({ type: "package_issue", status: "open" })
+          }
+        />
 
-        <SummaryCard label="패키지 사용 연결 누락" value={summary.packageUsage} tone="warning" active={currentViewLabel === "패키지 사용 연결 누락"} onClick={() => applyQuickFilter({ type: "package_usage", status: "open" })} />
+        <SummaryCard
+          label="패키지 사용 연결 누락"
+          value={summary.packageUsage}
+          tone="warning"
+          active={currentViewLabel === "패키지 사용 연결 누락"}
+          onClick={() =>
+            applyQuickFilter({ type: "package_usage", status: "open" })
+          }
+        />
 
-        <SummaryCard label="확인 완료" value={summary.resolved} tone="success" active={currentViewLabel === "확인 완료"} onClick={() => applyQuickFilter({ type: "all", status: "resolved" })} />
+        <SummaryCard
+          label="확인 완료"
+          value={summary.resolved}
+          tone="success"
+          active={currentViewLabel === "확인 완료"}
+          onClick={() => applyQuickFilter({ type: "all", status: "resolved" })}
+        />
 
-        <SummaryCard label="무시" value={summary.ignored} tone="muted" active={currentViewLabel === "무시"} onClick={() => applyQuickFilter({ type: "all", status: "ignored" })} />
+        <SummaryCard
+          label="무시"
+          value={summary.ignored}
+          tone="muted"
+          active={currentViewLabel === "무시"}
+          onClick={() => applyQuickFilter({ type: "all", status: "ignored" })}
+        />
       </div>
 
-      {message && <div className="rounded-xl border border-border/60 bg-muted/20 p-3 text-sm text-muted-foreground">{message}</div>}
+      {message && (
+        <div className="rounded-xl border border-border/60 bg-muted/20 p-3 text-sm text-muted-foreground">
+          {message}
+        </div>
+      )}
 
       <Card>
         <CardHeader>
@@ -414,9 +616,21 @@ export default function OfflineReconciliationClient() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading && <div className="rounded-xl border border-border/60 bg-muted/20 p-6 text-center text-sm text-muted-foreground">보정 항목을 불러오는 중...</div>}
-          {error && !isLoading && <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-6 text-center text-sm text-destructive">보정 항목을 불러오지 못했습니다.</div>}
-          {!isLoading && !error && (data?.items.length ?? 0) === 0 && <div className="rounded-xl border border-border/60 bg-muted/20 p-8 text-center text-sm text-muted-foreground">조회 조건에 해당하는 보정 필요 항목이 없습니다.</div>}
+          {isLoading && (
+            <div className="rounded-xl border border-border/60 bg-muted/20 p-6 text-center text-sm text-muted-foreground">
+              보정 항목을 불러오는 중...
+            </div>
+          )}
+          {error && !isLoading && (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-6 text-center text-sm text-destructive">
+              보정 항목을 불러오지 못했습니다.
+            </div>
+          )}
+          {!isLoading && !error && (data?.items.length ?? 0) === 0 && (
+            <div className="rounded-xl border border-border/60 bg-muted/20 p-8 text-center text-sm text-muted-foreground">
+              조회 조건에 해당하는 보정 필요 항목이 없습니다.
+            </div>
+          )}
           {!isLoading && !error && (data?.items.length ?? 0) > 0 && (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1180px] table-fixed text-sm">
@@ -437,30 +651,66 @@ export default function OfflineReconciliationClient() {
                   {data!.items.map((item) => {
                     const note = notes[item.id] ?? item.note ?? "";
                     return (
-                      <tr key={`${item.type}-${item.id}`} className={cn(updatingId === item.id && "opacity-60")}>
+                      <tr
+                        key={`${item.type}-${item.id}`}
+                        className={cn(updatingId === item.id && "opacity-60")}
+                      >
                         <td className="py-4 pr-3">
                           <Badge variant="info">{TYPE_LABELS[item.type]}</Badge>
                         </td>
                         <td className="py-4 pr-3">
-                          <Badge variant={statusVariant(item.status)}>{STATUS_LABELS[item.status]}</Badge>
+                          <Badge variant={statusVariant(item.status)}>
+                            {STATUS_LABELS[item.status]}
+                          </Badge>
                         </td>
                         <td className="py-4 pr-3">
-                          <Badge variant={severityVariant(item.severity)}>{SEVERITY_LABELS[item.severity]}</Badge>
+                          <Badge variant={severityVariant(item.severity)}>
+                            {SEVERITY_LABELS[item.severity]}
+                          </Badge>
                         </td>
-                        <td className="py-4 pr-3 text-muted-foreground">{formatDate(stringValue(item.metadata.failedAt ?? item.metadata.occurredAt ?? item.updatedAt, ""))}</td>
+                        <td className="py-4 pr-3 text-muted-foreground">
+                          {formatDate(
+                            stringValue(
+                              item.metadata.failedAt ??
+                                item.metadata.occurredAt ??
+                                item.updatedAt,
+                              "",
+                            ),
+                          )}
+                        </td>
                         <td className="py-4 pr-3">
                           <p className="font-medium">{item.customer.name}</p>
-                          <p className="text-xs text-muted-foreground">{item.customer.phoneMasked ?? "연락처 없음"}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {item.customer.phoneMasked ?? "연락처 없음"}
+                          </p>
                         </td>
                         <td className="max-w-[260px] py-4 pr-3">
                           <p className="font-medium">{item.title}</p>
-                          <p className="mt-1 text-xs text-muted-foreground">{item.type === "package_usage" ? stringValue(item.metadata.lineSummary) : item.description}</p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {item.type === "package_usage"
+                              ? stringValue(item.metadata.lineSummary)
+                              : item.description}
+                          </p>
                         </td>
                         <td className="py-4 pr-3">
-                          <p>{item.type === "package_issue" ? stringValue(item.metadata.packageName) : `passId: ${stringValue(item.metadata.passId)}`}</p>
-                          <p className="text-xs text-muted-foreground">{item.type === "package_issue" ? formatCurrency(item.metadata.amount) : `${stringValue(item.metadata.usedCount, "1")}회 사용 표시`}</p>
+                          <p>
+                            {item.type === "package_issue"
+                              ? stringValue(item.metadata.packageName)
+                              : `passId: ${stringValue(item.metadata.passId)}`}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {item.type === "package_issue"
+                              ? formatCurrency(item.metadata.amount)
+                              : `${stringValue(item.metadata.usedCount, "1")}회 사용 표시`}
+                          </p>
                         </td>
-                        <td className="max-w-[240px] py-4 pr-3 text-xs text-muted-foreground">{stringValue(item.metadata.error ?? item.metadata.memo ?? "consumptionId 연결 없음")}</td>
+                        <td className="max-w-[240px] py-4 pr-3 text-xs text-muted-foreground">
+                          {stringValue(
+                            item.metadata.error ??
+                              item.metadata.memo ??
+                              "consumptionId 연결 없음",
+                          )}
+                        </td>
                         <td className="py-4">
                           <ItemActions
                             item={item}
@@ -483,13 +733,26 @@ export default function OfflineReconciliationClient() {
           )}
           <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
             <span>
-              총 {(data?.total ?? 0).toLocaleString("ko-KR")}건 · {data?.page ?? page}/{Math.max(data?.totalPages ?? 0, 1)}페이지
+              총 {(data?.total ?? 0).toLocaleString("ko-KR")}건 ·{" "}
+              {data?.page ?? page}/{Math.max(data?.totalPages ?? 0, 1)}페이지
             </span>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((prev) => Math.max(1, prev - 1))}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+              >
                 이전
               </Button>
-              <Button type="button" variant="outline" size="sm" disabled={page >= (data?.totalPages ?? 0)} onClick={() => setPage((prev) => prev + 1)}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={page >= (data?.totalPages ?? 0)}
+                onClick={() => setPage((prev) => prev + 1)}
+              >
                 다음
               </Button>
             </div>

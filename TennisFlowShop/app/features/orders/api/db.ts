@@ -432,8 +432,6 @@ export async function fetchCombinedOrders(opts?: {
   const combined = [
     ...ordersWithLinkedApplications,
     ...standaloneOrOrphanStringingOrders,
-  ].sort(
-    (a: any, b: any) => safeToTime(b?.date) - safeToTime(a?.date),
-  );
+  ].sort((a: any, b: any) => safeToTime(b?.date) - safeToTime(a?.date));
   return combined;
 }

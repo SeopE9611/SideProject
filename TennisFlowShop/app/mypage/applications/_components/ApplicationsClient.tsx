@@ -500,7 +500,9 @@ export default function ApplicationsClient() {
           action={
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <Button asChild>
-                <Link href="/services/apply?mode=single">교체서비스 신청하기</Link>
+                <Link href="/services/apply?mode=single">
+                  교체서비스 신청하기
+                </Link>
               </Button>
               <Button asChild variant="outline" className="bg-transparent">
                 <Link href="/services">서비스 안내 보기</Link>
@@ -627,462 +629,459 @@ export default function ApplicationsClient() {
                 padding="md"
                 className="space-y-4 transition-[box-shadow,border-color] duration-200 hover:border-primary/30 hover:shadow-md"
               >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <h3 className="line-clamp-2 break-keep text-base font-semibold text-foreground">
-                        {title}
-                      </h3>
-                      <p className="mt-1 whitespace-nowrap text-xs tabular-nums text-foreground/75">
-                        {app.type} · 신청일 {formatDateTime(app.appliedAt)}
-                      </p>
-                    </div>
-                    <div
-                      className="flex shrink-0 items-center gap-2"
-                      data-cy="mypage-application-status-wrap"
-                    >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="line-clamp-2 break-keep text-base font-semibold text-foreground">
+                      {title}
+                    </h3>
+                    <p className="mt-1 whitespace-nowrap text-xs tabular-nums text-foreground/75">
+                      {app.type} · 신청일 {formatDateTime(app.appliedAt)}
+                    </p>
+                  </div>
+                  <div
+                    className="flex shrink-0 items-center gap-2"
+                    data-cy="mypage-application-status-wrap"
+                  >
+                    {isAcademyLesson ? (
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      getApplicationStatusIcon(app.status)
+                    )}
+                    <span data-cy="mypage-application-status-badge">
                       {isAcademyLesson ? (
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        getApplicationStatusIcon(app.status)
-                      )}
-                      <span data-cy="mypage-application-status-badge">
-                        {isAcademyLesson ? (
-                          <Badge
-                            variant={getAcademyStatusVariant(app.status)}
-                            className="shrink-0 whitespace-nowrap text-[11px] font-medium"
-                          >
-                            {displayStatus}
-                          </Badge>
-                        ) : (
-                          <ApplicationStatusBadge status={app.status} />
-                        )}
-                      </span>
-                      {isCancelRequested ? (
                         <Badge
-                          variant="warning"
+                          variant={getAcademyStatusVariant(app.status)}
                           className="shrink-0 whitespace-nowrap text-[11px] font-medium"
                         >
-                          취소 요청됨
+                          {displayStatus}
                         </Badge>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
-                    {metaLinkLabel ? (
+                      ) : (
+                        <ApplicationStatusBadge status={app.status} />
+                      )}
+                    </span>
+                    {isCancelRequested ? (
                       <Badge
-                        variant="outline"
-                        className="shrink-0 whitespace-nowrap"
+                        variant="warning"
+                        className="shrink-0 whitespace-nowrap text-[11px] font-medium"
                       >
-                        {metaLinkLabel}
-                        {metaLinkId
-                          ? ` · ${String(metaLinkId).slice(-6)}`
-                          : ""}
-                      </Badge>
-                    ) : null}
-                    {isAcademyLesson ? (
-                      <Badge
-                        variant="outline"
-                        className="shrink-0 whitespace-nowrap"
-                      >
-                        도깨비테니스 아카데미
-                      </Badge>
-                    ) : null}
-                    {collectionLabel ? (
-                      <Badge
-                        variant="outline"
-                        className="shrink-0 whitespace-nowrap"
-                      >
-                        {collectionLabel}
+                        취소 요청됨
                       </Badge>
                     ) : null}
                   </div>
+                </div>
 
-                  <div className="grid grid-cols-1 gap-3 rounded-xl border border-border/50 bg-muted/30 p-3 md:grid-cols-2">
-                    {isStringService ? (
-                      <>
-                        {isVisit && app.preferredDate && app.preferredTime ? (
-                          <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            <div>
-                              <p className="text-xs font-medium text-muted-foreground">
-                                방문 예약
-                              </p>
-                              <p className="whitespace-nowrap font-medium tabular-nums text-foreground">
-                                {visitTimeLabel}
-                              </p>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                            <MdSportsTennis className="h-4 w-4 text-muted-foreground" />
-                            <div>
-                              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                                신청 대상
-                              </p>
-                              <p className="line-clamp-2 break-keep font-medium text-foreground">
-                                {app.racketType?.trim() || "라켓 미입력"}
-                              </p>
-                            </div>
-                          </div>
-                        )}
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  {metaLinkLabel ? (
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 whitespace-nowrap"
+                    >
+                      {metaLinkLabel}
+                      {metaLinkId ? ` · ${String(metaLinkId).slice(-6)}` : ""}
+                    </Badge>
+                  ) : null}
+                  {isAcademyLesson ? (
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 whitespace-nowrap"
+                    >
+                      도깨비테니스 아카데미
+                    </Badge>
+                  ) : null}
+                  {collectionLabel ? (
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 whitespace-nowrap"
+                    >
+                      {collectionLabel}
+                    </Badge>
+                  ) : null}
+                </div>
 
+                <div className="grid grid-cols-1 gap-3 rounded-xl border border-border/50 bg-muted/30 p-3 md:grid-cols-2">
+                  {isStringService ? (
+                    <>
+                      {isVisit && app.preferredDate && app.preferredTime ? (
                         <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                          <Package className="h-4 w-4 text-muted-foreground" />
+                          <Clock className="h-4 w-4 text-muted-foreground" />
                           <div>
-                            <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                              스트링
+                            <p className="text-xs font-medium text-muted-foreground">
+                              방문 예약
                             </p>
-                            <p className="line-clamp-2 break-keep font-medium text-foreground">
-                              {app.stringType?.trim() || "미입력"}
+                            <p className="whitespace-nowrap font-medium tabular-nums text-foreground">
+                              {visitTimeLabel}
                             </p>
                           </div>
                         </div>
-                      </>
-                    ) : (
-                      <>
+                      ) : (
                         <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                           <MdSportsTennis className="h-4 w-4 text-muted-foreground" />
                           <div>
                             <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                              희망 레슨 유형
+                              신청 대상
                             </p>
-                            <p className="font-medium text-foreground">
-                              {app.desiredLessonTypeLabel ?? "미선택"}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                              현재 실력
-                            </p>
-                            <p className="font-medium text-foreground">
-                              {app.currentLevelLabel ?? "미선택"}
+                            <p className="line-clamp-2 break-keep font-medium text-foreground">
+                              {app.racketType?.trim() || "라켓 미입력"}
                             </p>
                           </div>
                         </div>
+                      )}
 
-                        <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                              희망 요일
-                            </p>
-                            <p className="break-words font-medium text-foreground">
-                              {preferredDaysLabel}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                          <Phone className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                              희망 시간대
-                            </p>
-                            <p className="break-words font-medium text-foreground">
-                              {app.preferredTimeText?.trim() ||
-                                "희망 시간 미입력"}
-                            </p>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  {isAcademyLesson ? (
-                    <div className="space-y-3 rounded-xl border border-border/50 bg-muted/20 p-3 text-sm text-foreground">
-                      <p className="text-muted-foreground">
-                        신청 내용 확인 후 도깨비테니스에서 상담을 도와드립니다.
-                      </p>
-
-                      {app.classSnapshot ? (
-                        <div className="rounded-xl border border-border/50 bg-background p-3">
-                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                            선택 클래스
-                          </p>
-                          <p className="mt-1 break-keep font-semibold text-foreground">
-                            {app.classSnapshot.name || "클래스명 미입력"}
-                          </p>
-                          <dl className="mt-3 grid gap-2 text-sm text-muted-foreground md:grid-cols-2">
-                            <div>
-                              <dt className="text-xs uppercase tracking-wide">
-                                수업 유형
-                              </dt>
-                              <dd className="mt-0.5 font-medium text-foreground">
-                                {app.classSnapshot.lessonTypeLabel || "미선택"}
-                              </dd>
-                            </div>
-                            <div>
-                              <dt className="text-xs uppercase tracking-wide">
-                                레벨
-                              </dt>
-                              <dd className="mt-0.5 font-medium text-foreground">
-                                {app.classSnapshot.levelLabel || "미선택"}
-                              </dd>
-                            </div>
-                            <div>
-                              <dt className="text-xs uppercase tracking-wide">
-                                일정
-                              </dt>
-                              <dd className="mt-0.5 break-keep font-medium text-foreground">
-                                {app.classSnapshot.scheduleText ||
-                                  "상담 후 조율"}
-                              </dd>
-                            </div>
-                            <div>
-                              <dt className="text-xs uppercase tracking-wide">
-                                장소
-                              </dt>
-                              <dd className="mt-0.5 break-keep font-medium text-foreground">
-                                {app.classSnapshot.location || "상담 후 안내"}
-                              </dd>
-                            </div>
-                            <div>
-                              <dt className="text-xs uppercase tracking-wide">
-                                수강료
-                              </dt>
-                              <dd className="mt-0.5 font-medium text-foreground">
-                                {formatAcademyClassPrice(
-                                  app.classSnapshot.price,
-                                )}
-                              </dd>
-                            </div>
-                          </dl>
-                        </div>
-                      ) : null}
-
-                      {app.lessonGoal ? (
+                      <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                        <Package className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                            레슨 목표
+                          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                            스트링
                           </p>
-                          <p className="mt-1 whitespace-pre-wrap break-words">
-                            {app.lessonGoal}
+                          <p className="line-clamp-2 break-keep font-medium text-foreground">
+                            {app.stringType?.trim() || "미입력"}
                           </p>
                         </div>
-                      ) : null}
-                      {app.requestMemo ? (
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                        <MdSportsTennis className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                            요청사항
+                          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                            희망 레슨 유형
                           </p>
-                          <p className="mt-1 whitespace-pre-wrap break-words">
-                            {app.requestMemo}
-                          </p>
-                        </div>
-                      ) : null}
-                      {app.customerMessage ? (
-                        <div className="rounded-lg border border-info/30 bg-info/10 p-3 text-info dark:bg-info/15">
-                          <p className="text-xs font-semibold">관리자 안내</p>
-                          <p className="mt-1 whitespace-pre-wrap break-words">
-                            {app.customerMessage}
+                          <p className="font-medium text-foreground">
+                            {app.desiredLessonTypeLabel ?? "미선택"}
                           </p>
                         </div>
-                      ) : null}
-                    </div>
-                  ) : null}
+                      </div>
 
-                  {isStringService && isLinkedApplication ? (
-                    <p className="text-sm text-muted-foreground">
-                      {hasOrderLink
-                        ? "이 교체서비스는 연결된 주문의 구매확정과 함께 처리됩니다."
-                        : "이 교체서비스는 연결된 대여의 수령확인과 함께 처리됩니다."}
+                      <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                            현재 실력
+                          </p>
+                          <p className="font-medium text-foreground">
+                            {app.currentLevelLabel ?? "미선택"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                            희망 요일
+                          </p>
+                          <p className="break-words font-medium text-foreground">
+                            {preferredDaysLabel}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                            희망 시간대
+                          </p>
+                          <p className="break-words font-medium text-foreground">
+                            {app.preferredTimeText?.trim() ||
+                              "희망 시간 미입력"}
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {isAcademyLesson ? (
+                  <div className="space-y-3 rounded-xl border border-border/50 bg-muted/20 p-3 text-sm text-foreground">
+                    <p className="text-muted-foreground">
+                      신청 내용 확인 후 도깨비테니스에서 상담을 도와드립니다.
                     </p>
-                  ) : null}
 
-                  <div className="grid grid-cols-1 gap-2 border-t border-border/60 pt-3 bp-sm:flex bp-sm:flex-wrap bp-sm:items-center md:pt-4 [&_button]:w-full bp-sm:[&_button]:w-auto">
-                    {(isStringService || isAcademyLesson) ? (
-                      <Button
-                        data-cy="mypage-application-detail-cta"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => router.push(detailHref)}
-                        className="bg-transparent"
-                      >
-                        상세보기
-                        <ArrowRight className="ml-1 h-3 w-3" />
-                      </Button>
-                    ) : null}
-
-                    {hasOrderLink && orderId ? (
-                      <Button
-                        asChild
-                        size="sm"
-                        variant="outline"
-                        className="bg-transparent"
-                      >
-                        <Link
-                          href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders`}
-                        >
-                          주문 상세
-                        </Link>
-                      </Button>
-                    ) : null}
-                    {hasRentalLink && rentalId ? (
-                      <Button
-                        asChild
-                        size="sm"
-                        variant="outline"
-                        className="bg-transparent"
-                      >
-                        <Link
-                          href={`/mypage?tab=orders&flowType=rental&flowId=${rentalId}&from=orders`}
-                        >
-                          대여 상세
-                        </Link>
-                      </Button>
-                    ) : null}
-
-                    {canShowInboundTracking ? (
-                      <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 sm:col-span-2 md:w-full">
-                        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm">
-                          <span className="font-medium text-foreground">운송장 상태</span>
-                          <Badge variant={hasTracking ? "outline" : "default"}>
-                            {hasTracking ? "등록됨" : "등록 필요"}
-                          </Badge>
-                        </div>
-                        <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
-                          {hasTracking
-                            ? "등록된 운송장을 수정할 수 있습니다."
-                            : "라켓을 보내신 뒤 운송장을 등록해 주세요."}
+                    {app.classSnapshot ? (
+                      <div className="rounded-xl border border-border/50 bg-background p-3">
+                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                          선택 클래스
                         </p>
-                        {isClosed ? (
-                          <Button
-                            data-cy="mypage-application-shipping-cta"
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              showInfoToast(
-                                "이미 종료된 신청서입니다. 운송장 수정이 불가합니다.",
-                              )
-                            }
-                          >
-                            운송장 수정
-                          </Button>
-                        ) : (
-                          <Button
-                            data-cy="mypage-application-shipping-cta"
-                            variant={hasTracking ? "outline" : "default"}
-                            size="sm"
-                            onClick={() =>
-                              router.push(
-                                `/services/applications/${app.id}/shipping?return=${encodeURIComponent("/mypage?tab=orders")}`,
-                              )
-                            }
-                          >
-                            {hasTracking ? "운송장 수정" : "운송장 등록"}
-                          </Button>
-                        )}
+                        <p className="mt-1 break-keep font-semibold text-foreground">
+                          {app.classSnapshot.name || "클래스명 미입력"}
+                        </p>
+                        <dl className="mt-3 grid gap-2 text-sm text-muted-foreground md:grid-cols-2">
+                          <div>
+                            <dt className="text-xs uppercase tracking-wide">
+                              수업 유형
+                            </dt>
+                            <dd className="mt-0.5 font-medium text-foreground">
+                              {app.classSnapshot.lessonTypeLabel || "미선택"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-xs uppercase tracking-wide">
+                              레벨
+                            </dt>
+                            <dd className="mt-0.5 font-medium text-foreground">
+                              {app.classSnapshot.levelLabel || "미선택"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-xs uppercase tracking-wide">
+                              일정
+                            </dt>
+                            <dd className="mt-0.5 break-keep font-medium text-foreground">
+                              {app.classSnapshot.scheduleText || "상담 후 조율"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-xs uppercase tracking-wide">
+                              장소
+                            </dt>
+                            <dd className="mt-0.5 break-keep font-medium text-foreground">
+                              {app.classSnapshot.location || "상담 후 안내"}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="text-xs uppercase tracking-wide">
+                              수강료
+                            </dt>
+                            <dd className="mt-0.5 font-medium text-foreground">
+                              {formatAcademyClassPrice(app.classSnapshot.price)}
+                            </dd>
+                          </div>
+                        </dl>
                       </div>
                     ) : null}
 
-                    {isStringService && !isLinkedApplication && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="inline-block">
-                              {(() => {
-                                const userConfirmedAt =
-                                  (app as any).userConfirmedAt ?? null;
-                                const isUserConfirmed =
-                                  Boolean(userConfirmedAt);
+                    {app.lessonGoal ? (
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                          레슨 목표
+                        </p>
+                        <p className="mt-1 whitespace-pre-wrap break-words">
+                          {app.lessonGoal}
+                        </p>
+                      </div>
+                    ) : null}
+                    {app.requestMemo ? (
+                      <div>
+                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                          요청사항
+                        </p>
+                        <p className="mt-1 whitespace-pre-wrap break-words">
+                          {app.requestMemo}
+                        </p>
+                      </div>
+                    ) : null}
+                    {app.customerMessage ? (
+                      <div className="rounded-lg border border-info/30 bg-info/10 p-3 text-info dark:bg-info/15">
+                        <p className="text-xs font-semibold">관리자 안내</p>
+                        <p className="mt-1 whitespace-pre-wrap break-words">
+                          {app.customerMessage}
+                        </p>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
 
-                                const canConfirm =
-                                  !isLinkedApplication &&
-                                  app.status === "교체완료" &&
-                                  !isUserConfirmed &&
-                                  !isCancelRequested &&
-                                  confirmingId !== app.id;
+                {isStringService && isLinkedApplication ? (
+                  <p className="text-sm text-muted-foreground">
+                    {hasOrderLink
+                      ? "이 교체서비스는 연결된 주문의 구매확정과 함께 처리됩니다."
+                      : "이 교체서비스는 연결된 대여의 수령확인과 함께 처리됩니다."}
+                  </p>
+                ) : null}
 
-                                const label =
-                                  confirmingId === app.id
-                                    ? "확정 중…"
-                                    : isUserConfirmed
-                                      ? "교체서비스 확정 완료"
-                                      : "교체서비스 확정";
+                <div className="grid grid-cols-1 gap-2 border-t border-border/60 pt-3 bp-sm:flex bp-sm:flex-wrap bp-sm:items-center md:pt-4 [&_button]:w-full bp-sm:[&_button]:w-auto">
+                  {isStringService || isAcademyLesson ? (
+                    <Button
+                      data-cy="mypage-application-detail-cta"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(detailHref)}
+                      className="bg-transparent"
+                    >
+                      상세보기
+                      <ArrowRight className="ml-1 h-3 w-3" />
+                    </Button>
+                  ) : null}
 
-                                return (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={!canConfirm}
-                                    onClick={() => handleConfirmService(app.id)}
-                                  >
-                                    <CheckCircle className="mr-1 h-4 w-4" />
-                                    {label}
-                                  </Button>
-                                );
-                              })()}
-                            </span>
-                          </TooltipTrigger>
+                  {hasOrderLink && orderId ? (
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="bg-transparent"
+                    >
+                      <Link
+                        href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders`}
+                      >
+                        주문 상세
+                      </Link>
+                    </Button>
+                  ) : null}
+                  {hasRentalLink && rentalId ? (
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="bg-transparent"
+                    >
+                      <Link
+                        href={`/mypage?tab=orders&flowType=rental&flowId=${rentalId}&from=orders`}
+                      >
+                        대여 상세
+                      </Link>
+                    </Button>
+                  ) : null}
 
-                          <TooltipContent>
+                  {canShowInboundTracking ? (
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 sm:col-span-2 md:w-full">
+                      <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm">
+                        <span className="font-medium text-foreground">
+                          운송장 상태
+                        </span>
+                        <Badge variant={hasTracking ? "outline" : "default"}>
+                          {hasTracking ? "등록됨" : "등록 필요"}
+                        </Badge>
+                      </div>
+                      <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+                        {hasTracking
+                          ? "등록된 운송장을 수정할 수 있습니다."
+                          : "라켓을 보내신 뒤 운송장을 등록해 주세요."}
+                      </p>
+                      {isClosed ? (
+                        <Button
+                          data-cy="mypage-application-shipping-cta"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            showInfoToast(
+                              "이미 종료된 신청서입니다. 운송장 수정이 불가합니다.",
+                            )
+                          }
+                        >
+                          운송장 수정
+                        </Button>
+                      ) : (
+                        <Button
+                          data-cy="mypage-application-shipping-cta"
+                          variant={hasTracking ? "outline" : "default"}
+                          size="sm"
+                          onClick={() =>
+                            router.push(
+                              `/services/applications/${app.id}/shipping?return=${encodeURIComponent("/mypage?tab=orders")}`,
+                            )
+                          }
+                        >
+                          {hasTracking ? "운송장 수정" : "운송장 등록"}
+                        </Button>
+                      )}
+                    </div>
+                  ) : null}
+
+                  {isStringService && !isLinkedApplication && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-block">
                             {(() => {
                               const userConfirmedAt =
                                 (app as any).userConfirmedAt ?? null;
                               const isUserConfirmed = Boolean(userConfirmedAt);
 
-                              if (confirmingId === app.id)
-                                return <p>교체서비스 확정 처리 중입니다.</p>;
-                              if (isUserConfirmed)
-                                return <p>이미 교체서비스 확정된 신청입니다.</p>;
-                              if (isCancelRequested)
-                                return (
-                                  <p>
-                                    취소 요청 처리 중에는 확정할 수 없습니다.
-                                  </p>
-                                );
-                              if (app.status !== "교체완료")
-                                return (
-                                  <p>
-                                    교체완료 상태에서만 교체서비스 확정이 가능합니다.
-                                  </p>
-                                );
+                              const canConfirm =
+                                !isLinkedApplication &&
+                                app.status === "교체완료" &&
+                                !isUserConfirmed &&
+                                !isCancelRequested &&
+                                confirmingId !== app.id;
 
-                              return <p>교체서비스 확정 시 포인트가 지급됩니다.</p>;
+                              const label =
+                                confirmingId === app.id
+                                  ? "확정 중…"
+                                  : isUserConfirmed
+                                    ? "교체서비스 확정 완료"
+                                    : "교체서비스 확정";
+
+                              return (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={!canConfirm}
+                                  onClick={() => handleConfirmService(app.id)}
+                                >
+                                  <CheckCircle className="mr-1 h-4 w-4" />
+                                  {label}
+                                </Button>
+                              );
                             })()}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    )}
+                          </span>
+                        </TooltipTrigger>
 
-                    {isStringService && (
-                      <ServiceReviewCTA
-                        applicationId={app.id}
-                        status={app.status}
-                        userConfirmedAt={app.userConfirmedAt ?? null}
-                        className="w-auto"
-                      />
-                    )}
+                        <TooltipContent>
+                          {(() => {
+                            const userConfirmedAt =
+                              (app as any).userConfirmedAt ?? null;
+                            const isUserConfirmed = Boolean(userConfirmedAt);
 
-                    {isCancelRequested ? (
+                            if (confirmingId === app.id)
+                              return <p>교체서비스 확정 처리 중입니다.</p>;
+                            if (isUserConfirmed)
+                              return <p>이미 교체서비스 확정된 신청입니다.</p>;
+                            if (isCancelRequested)
+                              return (
+                                <p>취소 요청 처리 중에는 확정할 수 없습니다.</p>
+                              );
+                            if (app.status !== "교체완료")
+                              return (
+                                <p>
+                                  교체완료 상태에서만 교체서비스 확정이
+                                  가능합니다.
+                                </p>
+                              );
+
+                            return (
+                              <p>교체서비스 확정 시 포인트가 지급됩니다.</p>
+                            );
+                          })()}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+
+                  {isStringService && (
+                    <ServiceReviewCTA
+                      applicationId={app.id}
+                      status={app.status}
+                      userConfirmedAt={app.userConfirmedAt ?? null}
+                      className="w-auto"
+                    />
+                  )}
+
+                  {isCancelRequested ? (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleWithdrawCancelRequest(app.id)}
+                      className="gap-2"
+                    >
+                      <Undo2 className="h-4 w-4" />
+                      취소 요청 철회
+                    </Button>
+                  ) : (
+                    isCancelable && (
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => handleWithdrawCancelRequest(app.id)}
+                        onClick={() => handleOpenCancel(app.id)}
                         className="gap-2"
                       >
-                        <Undo2 className="h-4 w-4" />
-                        취소 요청 철회
+                        <XCircle className="h-4 w-4" />
+                        취소 요청
                       </Button>
-                    ) : (
-                      isCancelable && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleOpenCancel(app.id)}
-                          className="gap-2"
-                        >
-                          <XCircle className="h-4 w-4" />
-                          취소 요청
-                        </Button>
-                      )
-                    )}
-                  </div>
+                    )
+                  )}
+                </div>
               </PublicSurface>
             );
           })

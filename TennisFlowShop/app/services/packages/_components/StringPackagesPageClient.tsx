@@ -71,7 +71,8 @@ export default function StringPackagesPageClient({
     {
       icon: <Gift className="h-6 w-6" />,
       title: "이용 횟수 관리",
-      description: "남은 횟수와 유효기간을 기준으로 패키지를 사용할 수 있습니다.",
+      description:
+        "남은 횟수와 유효기간을 기준으로 패키지를 사용할 수 있습니다.",
     },
   ];
 
@@ -126,7 +127,12 @@ export default function StringPackagesPageClient({
               </Link>
             </Button>
 
-            <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full sm:w-auto"
+              asChild
+            >
               <Link href="/services">
                 <Phone className="mr-2 h-5 w-5" />
                 상담 받기
@@ -165,7 +171,9 @@ export default function StringPackagesPageClient({
                 >
                   <div className="shrink-0 text-primary">{benefit.icon}</div>
                   <div className="min-w-0">
-                    <p className="font-semibold text-foreground">{benefit.title}</p>
+                    <p className="font-semibold text-foreground">
+                      {benefit.title}
+                    </p>
                     <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
                       {benefit.description}
                     </p>
@@ -187,7 +195,11 @@ export default function StringPackagesPageClient({
           <SectionHeader
             align="center"
             className="mb-8 md:mb-10"
-            eyebrow={<Badge variant={packagesBadgeVariant("selection")}>맞춤형 패키지 선택</Badge>}
+            eyebrow={
+              <Badge variant={packagesBadgeVariant("selection")}>
+                맞춤형 패키지 선택
+              </Badge>
+            }
             title="스트링 교체 패키지"
             description={
               <>
@@ -249,7 +261,11 @@ export default function StringPackagesPageClient({
           <SectionHeader
             align="center"
             className="mb-8 md:mb-10"
-            eyebrow={<Badge variant={packagesBadgeVariant("faq")}>자주 묻는 질문</Badge>}
+            eyebrow={
+              <Badge variant={packagesBadgeVariant("faq")}>
+                자주 묻는 질문
+              </Badge>
+            }
             title="패키지 이용 안내"
             description="구매 전 자주 확인하는 내용을 간결하게 정리했습니다."
           />

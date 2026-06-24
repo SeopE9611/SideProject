@@ -121,7 +121,11 @@ export default function Wishlist() {
           <p className="mb-6 text-muted-foreground">
             마음에 드는 상품을 위시리스트에 추가해보세요!
           </p>
-          <Button asChild variant="default" className="w-full shadow-sm sm:w-auto">
+          <Button
+            asChild
+            variant="default"
+            className="w-full shadow-sm sm:w-auto"
+          >
             <Link href="/products">상품 둘러보기</Link>
           </Button>
         </CardContent>

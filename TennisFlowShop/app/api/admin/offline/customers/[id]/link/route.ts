@@ -83,18 +83,16 @@ export async function POST(
     );
   }
 
-  await guard.db
-    .collection("offline_customers")
-    .updateOne(
-      { _id },
-      {
-        $set: {
-          linkedUserId: userId,
-          updatedAt: new Date(),
-          updatedBy: guard.admin._id,
-        },
+  await guard.db.collection("offline_customers").updateOne(
+    { _id },
+    {
+      $set: {
+        linkedUserId: userId,
+        updatedAt: new Date(),
+        updatedBy: guard.admin._id,
       },
-    );
+    },
+  );
   const updated = await guard.db
     .collection("offline_customers")
     .findOne({ _id });
@@ -156,18 +154,16 @@ export async function DELETE(
 
   const previousLinkedUserId =
     customer.linkedUserId instanceof ObjectId ? customer.linkedUserId : null;
-  await guard.db
-    .collection("offline_customers")
-    .updateOne(
-      { _id },
-      {
-        $set: {
-          linkedUserId: null,
-          updatedAt: new Date(),
-          updatedBy: guard.admin._id,
-        },
+  await guard.db.collection("offline_customers").updateOne(
+    { _id },
+    {
+      $set: {
+        linkedUserId: null,
+        updatedAt: new Date(),
+        updatedBy: guard.admin._id,
       },
-    );
+    },
+  );
   const updated = await guard.db
     .collection("offline_customers")
     .findOne({ _id });

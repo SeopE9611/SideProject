@@ -152,7 +152,9 @@ export default function LinkedFlowStageCard({
   return (
     <Card className={className}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">1. 진행 상태 관리 · 연결 진행 단계</CardTitle>
+        <CardTitle className="text-base">
+          1. 진행 상태 관리 · 연결 진행 단계
+        </CardTitle>
         <CardDescription>
           이 단계 변경은 주문 상태와 교체서비스 신청 상태를 함께 업데이트합니다.
           현재 단계와 저장 시 변경값을 확인한 뒤 처리하세요.

@@ -4,33 +4,82 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { usedBadgeMeta } from "@/lib/badge-style";
 import { racketBrandLabel } from "@/lib/constants";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, CheckCircle, ClipboardList, Edit, Eye, MoreVertical, Package, Plus, Search, XCircle } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle,
+  ClipboardList,
+  Edit,
+  Eye,
+  MoreVertical,
+  Package,
+  Plus,
+  Search,
+  XCircle,
+} from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 
 function StockChip({ id, total }: { id: string; total: number }) {
-  const { data } = useSWR<{ ok: boolean; available: number }>(`/api/admin/rentals/active-count/${id}`, authenticatedSWRFetcher, {
-    dedupingInterval: 5000,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-  });
+  const { data } = useSWR<{ ok: boolean; available: number }>(
+    `/api/admin/rentals/active-count/${id}`,
+    authenticatedSWRFetcher,
+    {
+      dedupingInterval: 5000,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    },
+  );
   const qty = Math.max(1, total ?? 1);
   const avail = Math.max(0, Number(data?.available ?? 0));
   const soldOut = avail <= 0;
   return (
-    <Badge variant={soldOut ? "destructive" : "default"} className="font-normal">
-      {qty > 1 ? (soldOut ? `0/${qty}` : `${avail}/${qty}`) : soldOut ? "대여 중" : "대여 가능"}
+    <Badge
+      variant={soldOut ? "destructive" : "default"}
+      className="font-normal"
+    >
+      {qty > 1
+        ? soldOut
+          ? `0/${qty}`
+          : `${avail}/${qty}`
+        : soldOut
+          ? "대여 중"
+          : "대여 가능"}
     </Badge>
   );
 }
@@ -87,7 +136,11 @@ function ConditionBadge({ condition }: { condition: string }) {
     B: "B급 (양호)",
     C: "C급 (보통)",
   };
-  return <Badge className={cn(meta.className, "shrink-0 whitespace-nowrap")}>{labelMap[condition] || meta.label}</Badge>;
+  return (
+    <Badge className={cn(meta.className, "shrink-0 whitespace-nowrap")}>
+      {labelMap[condition] || meta.label}
+    </Badge>
+  );
 }
 
 export default function AdminRacketsClient() {
@@ -103,7 +156,13 @@ export default function AdminRacketsClient() {
     setExposureFilter("all");
   };
 
-  const applyQuickView = ({ status = "all", exposure = "all" }: { status?: string; exposure?: string }) => {
+  const applyQuickView = ({
+    status = "all",
+    exposure = "all",
+  }: {
+    status?: string;
+    exposure?: string;
+  }) => {
     setSearchQuery("");
     setStatusFilter(status);
     setConditionFilter("all");
@@ -137,13 +196,18 @@ export default function AdminRacketsClient() {
     if (!items.length) return [];
 
     return items.filter((item) => {
-      const matchesCondition = conditionFilter === "all" || item.condition === conditionFilter;
+      const matchesCondition =
+        conditionFilter === "all" || item.condition === conditionFilter;
 
       return matchesCondition;
     });
   }, [items, conditionFilter]);
 
-  const hasActiveTableFilter = searchQuery.trim().length > 0 || statusFilter !== "all" || conditionFilter !== "all" || exposureFilter !== "all";
+  const hasActiveTableFilter =
+    searchQuery.trim().length > 0 ||
+    statusFilter !== "all" ||
+    conditionFilter !== "all" ||
+    exposureFilter !== "all";
 
   const activeFilterLabels = useMemo(() => {
     const labels: string[] = [];
@@ -188,34 +252,61 @@ export default function AdminRacketsClient() {
 
   const currentViewLabel = useMemo(() => {
     if (!hasActiveTableFilter) return "전체 라켓";
-    if (!searchQuery.trim() && conditionFilter === "all" && exposureFilter === "all") {
+    if (
+      !searchQuery.trim() &&
+      conditionFilter === "all" &&
+      exposureFilter === "all"
+    ) {
       if (statusFilter === "available") return "판매가능 라켓";
       if (statusFilter === "rented") return "대여중 라켓";
       if (statusFilter === "sold") return "판매완료 라켓";
       if (statusFilter === "inactive") return "비노출 라켓";
     }
 
-    if (!searchQuery.trim() && statusFilter === "all" && conditionFilter === "all") {
+    if (
+      !searchQuery.trim() &&
+      statusFilter === "all" &&
+      conditionFilter === "all"
+    ) {
       if (exposureFilter === "featured") return "추천 라켓";
       if (exposureFilter === "new") return "신상품 라켓";
       if (exposureFilter === "sale") return "할인 라켓";
     }
 
     return "사용자 지정 조건";
-  }, [hasActiveTableFilter, searchQuery, statusFilter, conditionFilter, exposureFilter]);
+  }, [
+    hasActiveTableFilter,
+    searchQuery,
+    statusFilter,
+    conditionFilter,
+    exposureFilter,
+  ]);
 
   const stats = useMemo(() => {
     const total = filteredItems.length;
-    const available = filteredItems.filter((item) => item.status === "available").length;
-    const rented = filteredItems.filter((item) => item.status === "rented").length;
+    const available = filteredItems.filter(
+      (item) => item.status === "available",
+    ).length;
+    const rented = filteredItems.filter(
+      (item) => item.status === "rented",
+    ).length;
     const sold = filteredItems.filter((item) => item.status === "sold").length;
     return { total, available, rented, sold };
   }, [filteredItems]);
 
-  const kpiStatus = hasDataError ? "error" : isLoading && !data ? "loading" : hasResolvedData ? "ready" : "pending";
+  const kpiStatus = hasDataError
+    ? "error"
+    : isLoading && !data
+      ? "loading"
+      : hasResolvedData
+        ? "ready"
+        : "pending";
 
   const renderKpiValue = (value: number) => {
-    if (kpiStatus === "loading") return <span className="inline-block h-7 w-12 rounded bg-muted animate-pulse align-middle" />;
+    if (kpiStatus === "loading")
+      return (
+        <span className="inline-block h-7 w-12 rounded bg-muted animate-pulse align-middle" />
+      );
     if (kpiStatus !== "ready") return "-";
     return value;
   };
@@ -239,36 +330,50 @@ export default function AdminRacketsClient() {
           helperText="신규 등록 전 가격·배송비·재고 정보를 확인하고, 대여 가능 라켓은 상태와 노출 여부를 우선 점검하세요."
         />
 
-        <section className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 shrink-0" aria-label="라켓 관리 업무 가이드">
+        <section
+          className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 shrink-0"
+          aria-label="라켓 관리 업무 가이드"
+        >
           {[
             {
               title: "신규 라켓 등록",
-              description: "브랜드, 모델, 대표 이미지와 기본 정보를 먼저 확인한 뒤 등록하세요.",
+              description:
+                "브랜드, 모델, 대표 이미지와 기본 정보를 먼저 확인한 뒤 등록하세요.",
             },
             {
               title: "판매·대여 상태 확인",
-              description: "판매 가능, 대여 중, 비노출 상태를 점검해 운영 우선순위를 정리하세요.",
+              description:
+                "판매 가능, 대여 중, 비노출 상태를 점검해 운영 우선순위를 정리하세요.",
             },
             {
               title: "재고·가격·배송비 점검",
-              description: "재고 수량과 판매가, 배송비를 함께 확인해 주문 이슈를 예방하세요.",
+              description:
+                "재고 수량과 판매가, 배송비를 함께 확인해 주문 이슈를 예방하세요.",
             },
             {
               title: "노출·상세 정보 관리",
-              description: "고객이 보는 상세 정보와 노출 상태를 주기적으로 업데이트하세요.",
+              description:
+                "고객이 보는 상세 정보와 노출 상태를 주기적으로 업데이트하세요.",
             },
           ].map((guide) => (
             <Card key={guide.title} className="border-border/70 bg-muted/30">
               <CardContent className="p-4">
-                <p className="text-sm font-semibold leading-relaxed break-keep text-foreground">{guide.title}</p>
-                <p className="mt-1 text-sm leading-relaxed break-keep text-muted-foreground">{guide.description}</p>
+                <p className="text-sm font-semibold leading-relaxed break-keep text-foreground">
+                  {guide.title}
+                </p>
+                <p className="mt-1 text-sm leading-relaxed break-keep text-muted-foreground">
+                  {guide.description}
+                </p>
               </CardContent>
             </Card>
           ))}
         </section>
 
         <div className="mb-6 flex justify-end">
-          <Link href="/admin/operations" className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm">
+          <Link
+            href="/admin/operations"
+            className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+          >
             오늘 처리할 일 보기
           </Link>
         </div>
@@ -304,10 +409,18 @@ export default function AdminRacketsClient() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">{c.label}</p>
-                    <p className="text-3xl font-bold text-foreground">{renderKpiValue(c.value)}</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {c.label}
+                    </p>
+                    <p className="text-3xl font-bold text-foreground">
+                      {renderKpiValue(c.value)}
+                    </p>
                   </div>
-                  <div className={`${c.bgColor} rounded-xl p-3 border border-border`}>{c.icon}</div>
+                  <div
+                    className={`${c.bgColor} rounded-xl p-3 border border-border`}
+                  >
+                    {c.icon}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -315,7 +428,9 @@ export default function AdminRacketsClient() {
         </section>
         <section className="mb-4 rounded-2xl border border-border/70 bg-card p-4 shadow-sm">
           <div className="flex flex-col gap-3 md:flex-row md:items-center">
-            <p className="shrink-0 text-sm font-semibold text-muted-foreground">빠른 보기</p>
+            <p className="shrink-0 text-sm font-semibold text-muted-foreground">
+              빠른 보기
+            </p>
 
             <div className="flex flex-wrap gap-2">
               {[
@@ -326,41 +441,76 @@ export default function AdminRacketsClient() {
                 },
                 {
                   label: "판매가능",
-                  active: statusFilter === "available" && exposureFilter === "all" && conditionFilter === "all" && !searchQuery.trim(),
+                  active:
+                    statusFilter === "available" &&
+                    exposureFilter === "all" &&
+                    conditionFilter === "all" &&
+                    !searchQuery.trim(),
                   onClick: () => applyQuickView({ status: "available" }),
                 },
                 {
                   label: "대여중",
-                  active: statusFilter === "rented" && exposureFilter === "all" && conditionFilter === "all" && !searchQuery.trim(),
+                  active:
+                    statusFilter === "rented" &&
+                    exposureFilter === "all" &&
+                    conditionFilter === "all" &&
+                    !searchQuery.trim(),
                   onClick: () => applyQuickView({ status: "rented" }),
                 },
                 {
                   label: "판매완료",
-                  active: statusFilter === "sold" && exposureFilter === "all" && conditionFilter === "all" && !searchQuery.trim(),
+                  active:
+                    statusFilter === "sold" &&
+                    exposureFilter === "all" &&
+                    conditionFilter === "all" &&
+                    !searchQuery.trim(),
                   onClick: () => applyQuickView({ status: "sold" }),
                 },
                 {
                   label: "비노출",
-                  active: statusFilter === "inactive" && exposureFilter === "all" && conditionFilter === "all" && !searchQuery.trim(),
+                  active:
+                    statusFilter === "inactive" &&
+                    exposureFilter === "all" &&
+                    conditionFilter === "all" &&
+                    !searchQuery.trim(),
                   onClick: () => applyQuickView({ status: "inactive" }),
                 },
                 {
                   label: "추천",
-                  active: exposureFilter === "featured" && statusFilter === "all" && conditionFilter === "all" && !searchQuery.trim(),
+                  active:
+                    exposureFilter === "featured" &&
+                    statusFilter === "all" &&
+                    conditionFilter === "all" &&
+                    !searchQuery.trim(),
                   onClick: () => applyQuickView({ exposure: "featured" }),
                 },
                 {
                   label: "신상품",
-                  active: exposureFilter === "new" && statusFilter === "all" && conditionFilter === "all" && !searchQuery.trim(),
+                  active:
+                    exposureFilter === "new" &&
+                    statusFilter === "all" &&
+                    conditionFilter === "all" &&
+                    !searchQuery.trim(),
                   onClick: () => applyQuickView({ exposure: "new" }),
                 },
                 {
                   label: "할인",
-                  active: exposureFilter === "sale" && statusFilter === "all" && conditionFilter === "all" && !searchQuery.trim(),
+                  active:
+                    exposureFilter === "sale" &&
+                    statusFilter === "all" &&
+                    conditionFilter === "all" &&
+                    !searchQuery.trim(),
                   onClick: () => applyQuickView({ exposure: "sale" }),
                 },
               ].map((preset) => (
-                <Button key={preset.label} type="button" size="sm" variant={preset.active ? "default" : "outline"} onClick={preset.onClick} className="h-8 rounded-lg px-3 text-xs">
+                <Button
+                  key={preset.label}
+                  type="button"
+                  size="sm"
+                  variant={preset.active ? "default" : "outline"}
+                  onClick={preset.onClick}
+                  className="h-8 rounded-lg px-3 text-xs"
+                >
                   {preset.label}
                 </Button>
               ))}
@@ -370,7 +520,9 @@ export default function AdminRacketsClient() {
         <div className="mb-6 rounded-2xl border border-border/70 bg-card p-4 shadow-sm">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-sm font-semibold text-foreground">현재 보기: {currentViewLabel}</p>
+              <p className="text-sm font-semibold text-foreground">
+                현재 보기: {currentViewLabel}
+              </p>
 
               {activeFilterLabels.length > 0 ? (
                 activeFilterLabels.map((label) => (
@@ -385,15 +537,25 @@ export default function AdminRacketsClient() {
               )}
             </div>
 
-            <p className="text-xs text-muted-foreground">{hasResolvedData ? `총 ${filteredItems.length.toLocaleString("ko-KR")}개` : "라켓 목록을 불러오는 중입니다."}</p>
+            <p className="text-xs text-muted-foreground">
+              {hasResolvedData
+                ? `총 ${filteredItems.length.toLocaleString("ko-KR")}개`
+                : "라켓 목록을 불러오는 중입니다."}
+            </p>
           </div>
         </div>
-        <Card className={cn(adminSurface.tableCard, "flex-1 min-h-0 flex flex-col")}>
+        <Card
+          className={cn(adminSurface.tableCard, "flex-1 min-h-0 flex flex-col")}
+        >
           <CardHeader className="bg-muted/30 border-b border-border pb-4 shrink-0">
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
-                <CardTitle className="text-xl font-semibold text-primary">라켓 찾기</CardTitle>
-                <CardDescription className="text-muted-foreground">{listDescription}</CardDescription>
+                <CardTitle className="text-xl font-semibold text-primary">
+                  라켓 찾기
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  {listDescription}
+                </CardDescription>
               </div>
               <Button
                 asChild
@@ -420,7 +582,13 @@ export default function AdminRacketsClient() {
                 <div className="w-full max-w-md">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                    <Input type="search" placeholder="브랜드, 모델 검색..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-8 h-9 text-xs border-border focus:border-border dark:focus:border-border bg-card" />
+                    <Input
+                      type="search"
+                      placeholder="브랜드, 모델 검색..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-8 h-9 text-xs border-border focus:border-border dark:focus:border-border bg-card"
+                    />
                   </div>
                 </div>
                 <div className="grid w-full gap-2 sm:grid-cols-2 md:grid-cols-4">
@@ -437,7 +605,10 @@ export default function AdminRacketsClient() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={conditionFilter} onValueChange={setConditionFilter}>
+                  <Select
+                    value={conditionFilter}
+                    onValueChange={setConditionFilter}
+                  >
                     <SelectTrigger className="h-9 w-full min-w-0 border-border text-xs">
                       <SelectValue placeholder="등급 필터" />
                     </SelectTrigger>
@@ -449,7 +620,10 @@ export default function AdminRacketsClient() {
                     </SelectContent>
                   </Select>
 
-                  <Select value={exposureFilter} onValueChange={setExposureFilter}>
+                  <Select
+                    value={exposureFilter}
+                    onValueChange={setExposureFilter}
+                  >
                     <SelectTrigger className="h-9 w-full min-w-0 border-border text-xs">
                       <SelectValue placeholder="노출 유형" />
                     </SelectTrigger>
@@ -461,7 +635,12 @@ export default function AdminRacketsClient() {
                     </SelectContent>
                   </Select>
 
-                  <Button variant="outline" size="sm" onClick={resetFilters} className="h-9 w-full border-border text-xs hover:bg-primary/10 dark:hover:bg-primary/20 dark:border-border">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={resetFilters}
+                    className="h-9 w-full border-border text-xs hover:bg-primary/10 dark:hover:bg-primary/20 dark:border-border"
+                  >
                     필터 초기화
                   </Button>
                 </div>
@@ -473,7 +652,10 @@ export default function AdminRacketsClient() {
                 <div className="overflow-auto rounded-lg border border-border">
                   <div className="space-y-4 p-8">
                     {[...Array(5)].map((_, i) => (
-                      <div key={i} className="h-16 rounded bg-muted animate-pulse" />
+                      <div
+                        key={i}
+                        className="h-16 rounded bg-muted animate-pulse"
+                      />
                     ))}
                   </div>
                 </div>
@@ -486,43 +668,83 @@ export default function AdminRacketsClient() {
               ) : !filteredItems.length ? (
                 <div className="flex flex-col items-center gap-2">
                   <Search className="h-8 w-8 text-muted-foreground/50" />
-                  <p className="text-sm text-muted-foreground">{hasActiveTableFilter ? "현재 조건에 맞는 라켓이 없습니다." : "등록된 라켓이 없습니다."}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {hasActiveTableFilter
+                      ? "현재 조건에 맞는 라켓이 없습니다."
+                      : "등록된 라켓이 없습니다."}
+                  </p>
                 </div>
               ) : (
                 <div className="overflow-auto rounded-lg border border-border">
                   <Table className="min-w-[860px]">
                     <TableHeader className="sticky top-0 z-10 backdrop-blur bg-muted/50 supports-[backdrop-filter]:bg-muted/50 dark:bg-muted/50 dark:supports-[backdrop-filter]:bg-muted/50 border-b border-border">
                       <TableRow className="border-b border-border">
-                        <TableHead className="text-left text-primary">라켓 정보</TableHead>
-                        <TableHead className="text-right text-primary">가격</TableHead>
-                        <TableHead className="text-center text-primary">등급</TableHead>
-                        <TableHead className="text-center text-primary">상태</TableHead>
-                        <TableHead className="text-center text-primary">대여</TableHead>
-                        <TableHead className="text-center text-primary">재고</TableHead>
-                        <TableHead className="text-right text-primary">관리</TableHead>
+                        <TableHead className="text-left text-primary">
+                          라켓 정보
+                        </TableHead>
+                        <TableHead className="text-right text-primary">
+                          가격
+                        </TableHead>
+                        <TableHead className="text-center text-primary">
+                          등급
+                        </TableHead>
+                        <TableHead className="text-center text-primary">
+                          상태
+                        </TableHead>
+                        <TableHead className="text-center text-primary">
+                          대여
+                        </TableHead>
+                        <TableHead className="text-center text-primary">
+                          재고
+                        </TableHead>
+                        <TableHead className="text-right text-primary">
+                          관리
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredItems.map((item) => (
-                        <TableRow key={item.id} className="border-b border-border last:border-b-0 dark:border-border hover:bg-primary/10 dark:hover:bg-primary/20 even:bg-muted/30 dark:even:bg-card transition-colors">
+                        <TableRow
+                          key={item.id}
+                          className="border-b border-border last:border-b-0 dark:border-border hover:bg-primary/10 dark:hover:bg-primary/20 even:bg-muted/30 dark:even:bg-card transition-colors"
+                        >
                           <TableCell className="py-4">
                             <div className="flex min-w-0 items-center gap-3">
-                              {item.images?.[0] && <img src={item.images[0] || "/placeholder.svg"} alt={item.model} className="h-12 w-12 rounded-lg object-cover" />}
+                              {item.images?.[0] && (
+                                <img
+                                  src={item.images[0] || "/placeholder.svg"}
+                                  alt={item.model}
+                                  className="h-12 w-12 rounded-lg object-cover"
+                                />
+                              )}
                               <div className="min-w-0">
-                                <div className="line-clamp-2 break-keep font-semibold text-foreground">{racketBrandLabel(item.brand)}</div>
-                                <div className="line-clamp-2 break-keep text-sm text-muted-foreground" title={item.model}>
+                                <div className="line-clamp-2 break-keep font-semibold text-foreground">
+                                  {racketBrandLabel(item.brand)}
+                                </div>
+                                <div
+                                  className="line-clamp-2 break-keep text-sm text-muted-foreground"
+                                  title={item.model}
+                                >
                                   {item.model}
                                 </div>
                                 <div className="mt-1 flex flex-wrap gap-1">
-                                  {item.marketing?.isNew && <Badge variant="secondary">NEW</Badge>}
-                                  {item.marketing?.isFeatured && <Badge variant="secondary">추천</Badge>}
-                                  {item.marketing?.isSale && <Badge variant="destructive">SALE</Badge>}
+                                  {item.marketing?.isNew && (
+                                    <Badge variant="secondary">NEW</Badge>
+                                  )}
+                                  {item.marketing?.isFeatured && (
+                                    <Badge variant="secondary">추천</Badge>
+                                  )}
+                                  {item.marketing?.isSale && (
+                                    <Badge variant="destructive">SALE</Badge>
+                                  )}
                                 </div>
                               </div>
                             </div>
                           </TableCell>
                           <TableCell className="whitespace-nowrap text-right tabular-nums">
-                            <span className="font-semibold text-foreground">{item.price?.toLocaleString()}원</span>
+                            <span className="font-semibold text-foreground">
+                              {item.price?.toLocaleString()}원
+                            </span>
                           </TableCell>
                           <TableCell className="text-center">
                             <ConditionBadge condition={item.condition} />
@@ -531,36 +753,84 @@ export default function AdminRacketsClient() {
                             <div className="flex flex-col items-center gap-1">
                               <StatusBadge status={item.status} />
                               {item.isVisible === false && (
-                                <Badge variant="outline" className="shrink-0 whitespace-nowrap border-warning/60 text-warning">숨김</Badge>
+                                <Badge
+                                  variant="outline"
+                                  className="shrink-0 whitespace-nowrap border-warning/60 text-warning"
+                                >
+                                  숨김
+                                </Badge>
                               )}
-                              {(item.status === "inactive" || item.status === "비노출") && (
-                                <Badge variant="outline" className="shrink-0 whitespace-nowrap">기존 비노출 상태</Badge>
+                              {(item.status === "inactive" ||
+                                item.status === "비노출") && (
+                                <Badge
+                                  variant="outline"
+                                  className="shrink-0 whitespace-nowrap"
+                                >
+                                  기존 비노출 상태
+                                </Badge>
                               )}
                             </div>
                           </TableCell>
                           <TableCell className="text-center">
-                            <Badge className={cn(item.rental?.enabled ? usedBadgeMeta("rental", "available").className : usedBadgeMeta("rental", "unavailable").className, "shrink-0 whitespace-nowrap")}>{item.rental?.enabled ? "가능" : "불가"}</Badge>
+                            <Badge
+                              className={cn(
+                                item.rental?.enabled
+                                  ? usedBadgeMeta("rental", "available")
+                                      .className
+                                  : usedBadgeMeta("rental", "unavailable")
+                                      .className,
+                                "shrink-0 whitespace-nowrap",
+                              )}
+                            >
+                              {item.rental?.enabled ? "가능" : "불가"}
+                            </Badge>
                           </TableCell>
                           <TableCell className="text-center">
-                            <StockChip id={item.id} total={item.quantity ?? 1} />
+                            <StockChip
+                              id={item.id}
+                              total={item.quantity ?? 1}
+                            />
                           </TableCell>
                           <TableCell className="text-right">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="p-0 hover:bg-primary/10 dark:hover:bg-primary/20">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="p-0 hover:bg-primary/10 dark:hover:bg-primary/20"
+                                >
                                   <MoreVertical className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="min-w-max border-border">
+                              <DropdownMenuContent
+                                align="end"
+                                className="min-w-max border-border"
+                              >
                                 <DropdownMenuLabel>작업</DropdownMenuLabel>
-                                <DropdownMenuItem asChild className="whitespace-nowrap">
-                                  <Link href={`/rackets/${item.id}`} className="flex items-center">
+                                <DropdownMenuItem
+                                  asChild
+                                  className="whitespace-nowrap"
+                                >
+                                  <Link
+                                    href={`/rackets/${item.id}`}
+                                    className="flex items-center"
+                                  >
                                     <Eye className="h-4 w-4 mr-2" />
-                                    {item.isVisible === false || item.status === "inactive" || item.status === "비노출" ? "관리자 미리보기" : "상세 보기"}
+                                    {item.isVisible === false ||
+                                    item.status === "inactive" ||
+                                    item.status === "비노출"
+                                      ? "관리자 미리보기"
+                                      : "상세 보기"}
                                   </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem asChild className="whitespace-nowrap">
-                                  <Link href={`/admin/rackets/${item.id}/edit`} className="flex items-center">
+                                <DropdownMenuItem
+                                  asChild
+                                  className="whitespace-nowrap"
+                                >
+                                  <Link
+                                    href={`/admin/rackets/${item.id}/edit`}
+                                    className="flex items-center"
+                                  >
                                     <Edit className="h-4 w-4 mr-2" />
                                     수정
                                   </Link>

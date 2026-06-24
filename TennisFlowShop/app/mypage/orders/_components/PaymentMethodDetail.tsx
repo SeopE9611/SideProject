@@ -33,7 +33,10 @@ function getTossMethodLabel(method?: string, easyPayProvider?: string | null) {
     .toUpperCase();
   const hasEasyPayProvider = Boolean(String(easyPayProvider ?? "").trim());
 
-  if (normalized.includes("CARD") && (normalized.includes("EASY") || hasEasyPayProvider)) {
+  if (
+    normalized.includes("CARD") &&
+    (normalized.includes("EASY") || hasEasyPayProvider)
+  ) {
     return "카드/간편결제";
   }
   if (normalized.includes("EASY") || hasEasyPayProvider) {
@@ -51,7 +54,10 @@ function getNiceMethodLabel(method?: string, easyPayProvider?: string | null) {
     .toUpperCase();
   const hasEasyPayProvider = Boolean(String(easyPayProvider ?? "").trim());
 
-  if (normalized.includes("CARD") && (normalized.includes("EASY") || hasEasyPayProvider)) {
+  if (
+    normalized.includes("CARD") &&
+    (normalized.includes("EASY") || hasEasyPayProvider)
+  ) {
     return "카드/간편결제";
   }
   if (normalized.includes("EASY") || hasEasyPayProvider) {
@@ -63,7 +69,11 @@ function getNiceMethodLabel(method?: string, easyPayProvider?: string | null) {
   if (normalized.includes("BANK")) {
     return "계좌이체";
   }
-  if (normalized.includes("CELLPHONE") || normalized.includes("MOBILE") || normalized.includes("PHONE")) {
+  if (
+    normalized.includes("CELLPHONE") ||
+    normalized.includes("MOBILE") ||
+    normalized.includes("PHONE")
+  ) {
     return "휴대폰 결제";
   }
   if (normalized.includes("CARD")) {
@@ -80,11 +90,30 @@ function getEasyPayProviderLabel(easyPayProvider?: string | null) {
   return EASY_PAY_PROVIDER_LABEL_MAP[normalized] ?? normalized;
 }
 
-function getCardDisplayName(params: { paymentCardDisplayName?: string | null; paymentCardLabel?: string | null; paymentCardCompany?: string | null }) {
-  return String(params.paymentCardDisplayName ?? "").trim() || String(params.paymentCardLabel ?? "").trim() || String(params.paymentCardCompany ?? "").trim() || "";
+function getCardDisplayName(params: {
+  paymentCardDisplayName?: string | null;
+  paymentCardLabel?: string | null;
+  paymentCardCompany?: string | null;
+}) {
+  return (
+    String(params.paymentCardDisplayName ?? "").trim() ||
+    String(params.paymentCardLabel ?? "").trim() ||
+    String(params.paymentCardCompany ?? "").trim() ||
+    ""
+  );
 }
 
-export default function PaymentMethodDetail({ method, bankKey, depositor, paymentProvider, easyPayProvider, paymentStatus, paymentCardDisplayName, paymentCardCompany, paymentCardLabel }: PaymentMethodDetailProps) {
+export default function PaymentMethodDetail({
+  method,
+  bankKey,
+  depositor,
+  paymentProvider,
+  easyPayProvider,
+  paymentStatus,
+  paymentCardDisplayName,
+  paymentCardCompany,
+  paymentCardLabel,
+}: PaymentMethodDetailProps) {
   const isTossPayment =
     String(paymentProvider ?? "")
       .trim()
@@ -112,14 +141,22 @@ export default function PaymentMethodDetail({ method, bankKey, depositor, paymen
           <div className="mt-1 rounded-md bg-muted px-3 py-2 text-sm text-foreground leading-relaxed border border-border space-y-1">
             <div className="font-semibold">{tossMethodLabel}</div>
             <div className="text-sm">결제 제공사: Toss Payments</div>
-            {easyPayProviderLabel && <div className="text-sm">간편결제: {easyPayProviderLabel}</div>}
-            {statusLabel && <div className="text-sm">결제 상태: {statusLabel}</div>}
+            {easyPayProviderLabel && (
+              <div className="text-sm">간편결제: {easyPayProviderLabel}</div>
+            )}
+            {statusLabel && (
+              <div className="text-sm">결제 상태: {statusLabel}</div>
+            )}
           </div>
         ) : isNicePayment ? (
           <div className="mt-1 rounded-md bg-muted px-3 py-2 text-sm text-foreground leading-relaxed border border-border space-y-1">
             <div className="font-semibold">{niceMethodLabel}</div>
-            {cardDisplayName && <div className="text-sm">결제 수단: {cardDisplayName}</div>}
-            {statusLabel && <div className="text-sm">결제 상태: {statusLabel}</div>}
+            {cardDisplayName && (
+              <div className="text-sm">결제 수단: {cardDisplayName}</div>
+            )}
+            {statusLabel && (
+              <div className="text-sm">결제 상태: {statusLabel}</div>
+            )}
           </div>
         ) : bankInfo ? (
           <div className="mt-1 rounded-md bg-muted px-3 py-2 text-sm text-foreground leading-relaxed border border-border space-y-1">
@@ -129,9 +166,13 @@ export default function PaymentMethodDetail({ method, bankKey, depositor, paymen
             <div className="text-sm">예금주: {bankInfo.holder}</div>
           </div>
         ) : (
-          <div className="mt-1 rounded-md bg-muted px-3 py-2 text-sm text-foreground leading-relaxed border border-border">{method || "결제 정보 확인 필요"}</div>
+          <div className="mt-1 rounded-md bg-muted px-3 py-2 text-sm text-foreground leading-relaxed border border-border">
+            {method || "결제 정보 확인 필요"}
+          </div>
         )}
-        {!isTossPayment && !isNicePayment && !bankInfo && bankKey && <div className="text-sm">{bankKey}</div>}
+        {!isTossPayment && !isNicePayment && !bankInfo && bankKey && (
+          <div className="text-sm">{bankKey}</div>
+        )}
         {!isTossPayment && !isNicePayment && depositor && (
           <div>
             <div className="text-sm font-medium">입금자명</div>

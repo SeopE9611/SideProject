@@ -9,7 +9,10 @@ import {
 } from "@/lib/orders/string-mounting-policy";
 import { getEffectiveProductPrice } from "@/lib/product-pricing";
 import { getEffectiveRacketPrice } from "@/lib/racket-pricing";
-import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
+import {
+  productVisibilityFilterFor,
+  racketVisibilityFilterFor,
+} from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 
 export async function GET(
@@ -46,7 +49,13 @@ export async function GET(
   // 1) products 먼저
   const prod = await db
     .collection("products")
-    .findOne({ ...idFilter, ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) }, { projection });
+    .findOne(
+      {
+        ...idFilter,
+        ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+      },
+      { projection },
+    );
 
   if (prod) {
     const rawMountingFee = (prod as any).mountingFee;
@@ -85,7 +94,13 @@ export async function GET(
   // 2) 없으면 used_rackets도 조회
   const racket = await db
     .collection("used_rackets")
-    .findOne({ ...idFilter, ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()) }, { projection });
+    .findOne(
+      {
+        ...idFilter,
+        ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+      },
+      { projection },
+    );
 
   if (racket) {
     const rawShippingFee = (racket as any).shippingFee;

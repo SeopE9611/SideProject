@@ -140,7 +140,12 @@ export default function StringRecommendResultCard({
           <Button asChild wrap="normal" className="min-h-10 w-full">
             <Link href={productHref}>이 스트링으로 교체서비스 신청</Link>
           </Button>
-          <Button asChild variant="outline" wrap="normal" className="min-h-10 w-full">
+          <Button
+            asChild
+            variant="outline"
+            wrap="normal"
+            className="min-h-10 w-full"
+          >
             <Link href={productHref}>상세 보기</Link>
           </Button>
         </div>

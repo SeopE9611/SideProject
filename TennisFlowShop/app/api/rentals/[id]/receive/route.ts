@@ -74,26 +74,29 @@ export async function POST(
   due.setDate(due.getDate() + days);
   const dueAt = due.toISOString();
 
-  const updated = await db.collection("rental_orders").updateOne(
-    { _id, userId: new ObjectId(userId), status: "paid" },
-    { $set: { status: "out", outAt, dueAt, updatedAt: new Date() } },
-  );
+  const updated = await db
+    .collection("rental_orders")
+    .updateOne(
+      { _id, userId: new ObjectId(userId), status: "paid" },
+      { $set: { status: "out", outAt, dueAt, updatedAt: new Date() } },
+    );
   if (updated.matchedCount === 0) return notReady();
 
   if (rental.racketId) {
     const racketId = String(rental.racketId);
     if (ObjectId.isValid(racketId)) {
       const rid = new ObjectId(racketId);
-      const racket = await db.collection("used_rackets").findOne(
-        { _id: rid },
-        { projection: { quantity: 1, status: 1 } },
-      );
+      const racket = await db
+        .collection("used_rackets")
+        .findOne({ _id: rid }, { projection: { quantity: 1, status: 1 } });
       const quantity = Number(racket?.quantity ?? 1);
       if (!Number.isFinite(quantity) || quantity <= 1) {
-        await db.collection("used_rackets").updateOne(
-          { _id: rid, status: { $in: ["available", "rented"] } },
-          { $set: { status: "rented", updatedAt: new Date() } },
-        );
+        await db
+          .collection("used_rackets")
+          .updateOne(
+            { _id: rid, status: { $in: ["available", "rented"] } },
+            { $set: { status: "rented", updatedAt: new Date() } },
+          );
       }
     }
   }

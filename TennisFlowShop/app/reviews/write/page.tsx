@@ -1008,7 +1008,9 @@ export default function ReviewWritePage() {
                           onClick={() => setShowAllApps((v) => !v)}
                           className="shrink-0 text-xs font-medium text-foreground underline underline-offset-4 hover:text-muted-foreground"
                         >
-                          {showAllApps ? "작성 가능만 보기" : "전체 신청서 보기"}
+                          {showAllApps
+                            ? "작성 가능만 보기"
+                            : "전체 신청서 보기"}
                         </button>
                       </div>
 
@@ -1073,7 +1075,11 @@ export default function ReviewWritePage() {
                       </p>
                     </div>
                     <div className="rounded-2xl border border-border bg-muted/20 px-4 py-3">
-                      <Stars value={rating} onChange={setRating} disabled={locked} />
+                      <Stars
+                        value={rating}
+                        onChange={setRating}
+                        disabled={locked}
+                      />
                       <div className="mt-3 text-center text-sm font-medium text-foreground">
                         {rating}점
                       </div>
@@ -1131,14 +1137,16 @@ export default function ReviewWritePage() {
                   {state !== "ok" &&
                     (mode !== "invalid" || state === "serviceLinkedOrder") && (
                       <div className="rounded-2xl border border-border bg-muted/30 p-4 text-sm text-foreground">
-                        {state === "loading" && "작성 가능 여부를 확인하고 있습니다."}
+                        {state === "loading" &&
+                          "작성 가능 여부를 확인하고 있습니다."}
                         {state === "notPurchased" && (
                           <div className="space-y-2">
                             <p className="font-medium">
                               작성 가능한 이용 내역이 없습니다.
                             </p>
                             <p className="text-muted-foreground">
-                              구매확정 또는 수령확인이 완료된 내역에서 후기를 작성할 수 있습니다.
+                              구매확정 또는 수령확인이 완료된 내역에서 후기를
+                              작성할 수 있습니다.
                             </p>
                             <button
                               type="button"
@@ -1155,9 +1163,12 @@ export default function ReviewWritePage() {
                         )}
                         {state === "already" && (
                           <div className="space-y-1">
-                            <p className="font-medium">이미 이용 후기를 남겼어요.</p>
+                            <p className="font-medium">
+                              이미 이용 후기를 남겼어요.
+                            </p>
                             <p className="text-muted-foreground">
-                              하나의 이용 내역에는 하나의 후기만 작성할 수 있습니다.
+                              하나의 이용 내역에는 하나의 후기만 작성할 수
+                              있습니다.
                             </p>
                           </div>
                         )}
@@ -1167,7 +1178,8 @@ export default function ReviewWritePage() {
                               상품+교체서비스 후기 대상입니다.
                             </p>
                             <p className="text-muted-foreground">
-                              연결된 교체서비스 수령확인 후 상품과 서비스 경험을 함께 남겨주세요.
+                              연결된 교체서비스 수령확인 후 상품과 서비스 경험을
+                              함께 남겨주세요.
                             </p>
                           </div>
                         )}
@@ -1178,9 +1190,12 @@ export default function ReviewWritePage() {
 
                   {mode === "invalid" && state !== "serviceLinkedOrder" && (
                     <div className="rounded-2xl border border-border bg-muted/30 p-4 text-sm text-foreground">
-                      <p className="font-medium">작성할 후기를 찾을 수 없어요.</p>
+                      <p className="font-medium">
+                        작성할 후기를 찾을 수 없어요.
+                      </p>
                       <p className="mt-1 text-muted-foreground">
-                        구매확정 또는 수령확인이 완료된 내역에서 후기를 작성할 수 있습니다.
+                        구매확정 또는 수령확인이 완료된 내역에서 후기를 작성할
+                        수 있습니다.
                       </p>
                     </div>
                   )}
@@ -1298,9 +1313,14 @@ export default function ReviewWritePage() {
                       {(formatYMD(selectedApp.preferredDate) ||
                         formatHM(selectedApp.preferredTime)) && (
                         <div className="flex justify-between gap-3">
-                          <dt className="shrink-0 text-muted-foreground">예약</dt>
+                          <dt className="shrink-0 text-muted-foreground">
+                            예약
+                          </dt>
                           <dd className="min-w-0 break-words text-right text-foreground">
-                            {[formatYMD(selectedApp.preferredDate), formatHM(selectedApp.preferredTime)]
+                            {[
+                              formatYMD(selectedApp.preferredDate),
+                              formatHM(selectedApp.preferredTime),
+                            ]
                               .filter(Boolean)
                               .join(" ")}
                           </dd>
@@ -1308,7 +1328,9 @@ export default function ReviewWritePage() {
                       )}
                       {selectedApp.racketType && (
                         <div className="flex justify-between gap-3">
-                          <dt className="shrink-0 text-muted-foreground">라켓</dt>
+                          <dt className="shrink-0 text-muted-foreground">
+                            라켓
+                          </dt>
                           <dd className="min-w-0 break-words text-right text-foreground">
                             {selectedApp.racketType}
                           </dd>
@@ -1316,7 +1338,9 @@ export default function ReviewWritePage() {
                       )}
                       {selectedStringNames && (
                         <div className="flex justify-between gap-3">
-                          <dt className="shrink-0 text-muted-foreground">스트링</dt>
+                          <dt className="shrink-0 text-muted-foreground">
+                            스트링
+                          </dt>
                           <dd className="min-w-0 break-words text-right text-foreground">
                             {selectedStringNames}
                           </dd>
@@ -1340,7 +1364,9 @@ export default function ReviewWritePage() {
                 {mode === "product" && orderItems && orderItems.length > 1 && (
                   <div className="space-y-2 border-t border-border pt-4">
                     <div className="flex items-center justify-between gap-3 text-sm">
-                      <span className="font-medium text-foreground">이 주문의 다른 상품</span>
+                      <span className="font-medium text-foreground">
+                        이 주문의 다른 상품
+                      </span>
                       <span className="text-xs text-muted-foreground">
                         미작성 {remainingCount}개
                       </span>
@@ -1402,11 +1428,15 @@ export default function ReviewWritePage() {
 
             <Card className="rounded-2xl border-border bg-card shadow-sm">
               <CardContent className="space-y-2 p-4 md:p-5">
-                <h2 className="text-sm font-semibold text-foreground">작성 기준</h2>
+                <h2 className="text-sm font-semibold text-foreground">
+                  작성 기준
+                </h2>
                 <ul className="space-y-1 text-sm text-muted-foreground">
                   <li>• 실제 사용 경험을 중심으로 작성해주세요.</li>
                   <li>• 사진은 선택 사항이며 최대 5장까지 등록됩니다.</li>
-                  <li>• 하나의 이용 내역에는 하나의 후기만 작성할 수 있습니다.</li>
+                  <li>
+                    • 하나의 이용 내역에는 하나의 후기만 작성할 수 있습니다.
+                  </li>
                 </ul>
               </CardContent>
             </Card>

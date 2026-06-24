@@ -49,7 +49,12 @@ export async function POST(req: Request) {
       ? await db
           .collection("products")
           .find(
-            { _id: { $in: validObjectIds }, ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) },
+            {
+              _id: { $in: validObjectIds },
+              ...productVisibilityFilterFor(
+                await getVisibilityViewerFromCookies(),
+              ),
+            },
             { projection: { _id: 1, mountingFee: 1, shippingFee: 1 } },
           )
           .toArray()

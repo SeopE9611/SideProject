@@ -155,7 +155,10 @@ export async function POST(req: Request) {
     const productIdObj = new ObjectId(productIdStr);
 
     if (!orderIdObj) {
-      return NextResponse.json({ message: "orderId required" }, { status: 400 });
+      return NextResponse.json(
+        { message: "orderId required" },
+        { status: 400 },
+      );
     }
 
     // 구매 이력 검증: orderId가 넘어오면 해당 주문에 그 상품이 포함되어야 함
@@ -260,7 +263,9 @@ export async function POST(req: Request) {
       .collection("stringing_applications")
       .findOne(
         { _id: appIdObj },
-        { projection: { userId: 1, orderId: 1, userConfirmedAt: 1, status: 1 } },
+        {
+          projection: { userId: 1, orderId: 1, userConfirmedAt: 1, status: 1 },
+        },
       );
     if (!app || String(app.userId) !== String(userId)) {
       return NextResponse.json({ message: "forbidden" }, { status: 403 });
@@ -390,7 +395,8 @@ export async function GET(req: Request) {
     productFilterId && ObjectId.isValid(productFilterId)
       ? [new ObjectId(productFilterId), productFilterId]
       : null;
-  const needServiceJoin = type === "all" || type === "service" || Boolean(productFilterCandidates);
+  const needServiceJoin =
+    type === "all" || type === "service" || Boolean(productFilterCandidates);
 
   // match 조건 구성
   const match: any = {};
@@ -745,14 +751,18 @@ export async function GET(req: Request) {
                 $concatArrays: [
                   {
                     $map: {
-                      input: { $ifNull: ["$application.stringDetails.stringItems", []] },
+                      input: {
+                        $ifNull: ["$application.stringDetails.stringItems", []],
+                      },
                       as: "x",
                       in: "$$x.productId",
                     },
                   },
                   {
                     $map: {
-                      input: { $ifNull: ["$application.stringDetails.racketLines", []] },
+                      input: {
+                        $ifNull: ["$application.stringDetails.racketLines", []],
+                      },
                       as: "x",
                       in: "$$x.stringProductId",
                     },
@@ -783,10 +793,7 @@ export async function GET(req: Request) {
                         ],
                       },
                       {
-                        $concat: [
-                          "상품+교체서비스 - ",
-                          "$serviceTargetName",
-                        ],
+                        $concat: ["상품+교체서비스 - ", "$serviceTargetName"],
                       },
                       "상품+교체서비스 이용 후기",
                     ],

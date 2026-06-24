@@ -87,7 +87,9 @@ export default function MessageWriteClient({
         <CardHeader className="flex flex-col gap-3 border-b border-border/60 bg-secondary/70 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="text-lg">쪽지 보내기</CardTitle>
-            <p className="mt-1 break-keep text-sm text-muted-foreground">받는 사람과 내용을 확인한 뒤 쪽지를 전송하세요.</p>
+            <p className="mt-1 break-keep text-sm text-muted-foreground">
+              받는 사람과 내용을 확인한 뒤 쪽지를 전송하세요.
+            </p>
           </div>
           <Button
             variant="outline"

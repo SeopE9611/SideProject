@@ -252,7 +252,10 @@ export default async function PackageSuccessPage({
                     className="h-12 flex-1 font-semibold shadow-sm"
                     asChild
                   >
-                    <Link href="/services/apply" className="flex items-center gap-2">
+                    <Link
+                      href="/services/apply"
+                      className="flex items-center gap-2"
+                    >
                       교체서비스 신청하기
                       <ArrowRight className="h-4 w-4" />
                     </Link>
@@ -299,12 +302,7 @@ export default async function PackageSuccessPage({
                     className="h-12 flex-1 shadow-sm transition-[box-shadow,background-color,border-color] hover:shadow-md"
                     asChild
                   >
-                    <Link
-                      href={
-                        lookupHref
-                      }
-                      className="flex items-center gap-2"
-                    >
+                    <Link href={lookupHref} className="flex items-center gap-2">
                       <Package className="h-5 w-5" />
                       패키지 내역 확인
                       <ArrowRight className="h-4 w-4" />
@@ -326,171 +324,185 @@ export default async function PackageSuccessPage({
                 </div>
               }
             >
-                {/* 패키지 정보 */}
-                <div className="mb-6 md:mb-8">
-                  <UnifiedPackageCard
-                    pkg={packageCard}
-                    showTotalPrice
-                    className="shadow-none"
-                  />
-                </div>
+              {/* 패키지 정보 */}
+              <div className="mb-6 md:mb-8">
+                <UnifiedPackageCard
+                  pkg={packageCard}
+                  showTotalPrice
+                  className="shadow-none"
+                />
+              </div>
 
-                <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
-                  <div className="space-y-4">
-                    <PublicSurface variant="muted" padding="sm" className="flex items-center gap-3">
-                      <Clock className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          주문일자
-                        </p>
-                        <p className="font-semibold text-foreground">
-                          {new Date(packageOrder.createdAt).toLocaleDateString(
-                            "ko-KR",
-                            {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                              weekday: "short",
-                            },
-                          )}
-                        </p>
-                      </div>
-                    </PublicSurface>
-                    <PublicSurface variant="muted" padding="sm" className="flex items-center gap-3">
-                      <CreditCard className="h-5 w-5 text-primary" />
-                      <div className="min-w-0">
-                        <p className="text-sm text-muted-foreground">
-                          결제 방법
-                        </p>
-                        <p className="break-words font-semibold text-foreground">
-                          {paymentMethodLabel}
-                        </p>
-                      </div>
-                    </PublicSurface>
-                    <PublicSurface variant="muted" padding="sm" className="flex items-center gap-3">
-                      <CheckCircle className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          결제/활성화 상태
-                        </p>
-                        <p className="font-semibold text-foreground">
-                          {isPaid ? "결제 완료 · 활성화 완료" : "입금 확인 대기 · 활성화 대기"}
-                        </p>
-                      </div>
-                    </PublicSurface>
-                    <PublicSurface variant="muted" padding="sm">
-                      <div className="flex items-end justify-between gap-4 text-lg font-bold sm:text-xl">
-                        <span className="text-foreground">총 결제 금액</span>
-                        <span className="shrink-0 text-primary">
-                          {formatPrice(packageOrder.totalPrice)}원
-                        </span>
-                      </div>
-                    </PublicSurface>
-                  </div>
-
-                  {!isTossPayment && !isNicePayment ? (
-                    <PublicSurface variant="muted" padding="sm">
-                      <div className="flex items-center gap-2 mb-4">
-                        <CreditCard className="h-5 w-5 text-primary" />
-                        <h3 className="font-bold text-primary">
-                          입금 계좌 정보
-                        </h3>
-                      </div>
-                      {paymentInfo?.bank && bankLabelMap[paymentInfo.bank] ? (
-                        <PublicSurface variant="default" padding="sm" className="space-y-2">
-                          <div className="font-semibold text-foreground">
-                            {bankLabelMap[paymentInfo.bank].label}
-                          </div>
-                          <div className="break-all font-mono text-lg font-bold text-primary">
-                            {bankLabelMap[paymentInfo.bank].account}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            예금주: {bankLabelMap[paymentInfo.bank].holder}
-                          </div>
-                        </PublicSurface>
-                      ) : (
-                        <p className="text-muted-foreground">
-                          선택된 은행 없음
-                        </p>
-                      )}
-                      <div className="mt-4 rounded-lg border border-border bg-card p-3">
-                        <p className="text-sm font-semibold text-foreground">
-                          입금 기한:{" "}
-                          {new Date(packageOrder.createdAt).toLocaleDateString(
-                            "ko-KR",
-                          )}{" "}
-                          23:59까지
-                        </p>
-                      </div>
-                    </PublicSurface>
-                  ) : (
-                    <PublicSurface variant="muted" padding="sm">
-                      <h3 className="font-bold text-primary mb-3">
-                        {isNicePayment ? "카드/간편결제 정보" : "토스 결제 정보"}
-                      </h3>
+              <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+                <div className="space-y-4">
+                  <PublicSurface
+                    variant="muted"
+                    padding="sm"
+                    className="flex items-center gap-3"
+                  >
+                    <Clock className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">주문일자</p>
+                      <p className="font-semibold text-foreground">
+                        {new Date(packageOrder.createdAt).toLocaleDateString(
+                          "ko-KR",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                            weekday: "short",
+                          },
+                        )}
+                      </p>
+                    </div>
+                  </PublicSurface>
+                  <PublicSurface
+                    variant="muted"
+                    padding="sm"
+                    className="flex items-center gap-3"
+                  >
+                    <CreditCard className="h-5 w-5 text-primary" />
+                    <div className="min-w-0">
+                      <p className="text-sm text-muted-foreground">결제 방법</p>
+                      <p className="break-words font-semibold text-foreground">
+                        {paymentMethodLabel}
+                      </p>
+                    </div>
+                  </PublicSurface>
+                  <PublicSurface
+                    variant="muted"
+                    padding="sm"
+                    className="flex items-center gap-3"
+                  >
+                    <CheckCircle className="h-5 w-5 text-primary" />
+                    <div>
                       <p className="text-sm text-muted-foreground">
-                        결제 상태: 결제 완료
+                        결제/활성화 상태
                       </p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        승인 시각:{" "}
-                        {paymentInfo?.approvedAt
-                          ? new Date(paymentInfo.approvedAt).toLocaleString(
-                              "ko-KR",
-                            )
-                          : "-"}
+                      <p className="font-semibold text-foreground">
+                        {isPaid
+                          ? "결제 완료 · 활성화 완료"
+                          : "입금 확인 대기 · 활성화 대기"}
                       </p>
-                    </PublicSurface>
-                  )}
+                    </div>
+                  </PublicSurface>
+                  <PublicSurface variant="muted" padding="sm">
+                    <div className="flex items-end justify-between gap-4 text-lg font-bold sm:text-xl">
+                      <span className="text-foreground">총 결제 금액</span>
+                      <span className="shrink-0 text-primary">
+                        {formatPrice(packageOrder.totalPrice)}원
+                      </span>
+                    </div>
+                  </PublicSurface>
                 </div>
 
-                <div className="my-6 border-t border-border" />
+                {!isTossPayment && !isNicePayment ? (
+                  <PublicSurface variant="muted" padding="sm">
+                    <div className="flex items-center gap-2 mb-4">
+                      <CreditCard className="h-5 w-5 text-primary" />
+                      <h3 className="font-bold text-primary">입금 계좌 정보</h3>
+                    </div>
+                    {paymentInfo?.bank && bankLabelMap[paymentInfo.bank] ? (
+                      <PublicSurface
+                        variant="default"
+                        padding="sm"
+                        className="space-y-2"
+                      >
+                        <div className="font-semibold text-foreground">
+                          {bankLabelMap[paymentInfo.bank].label}
+                        </div>
+                        <div className="break-all font-mono text-lg font-bold text-primary">
+                          {bankLabelMap[paymentInfo.bank].account}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          예금주: {bankLabelMap[paymentInfo.bank].holder}
+                        </div>
+                      </PublicSurface>
+                    ) : (
+                      <p className="text-muted-foreground">선택된 은행 없음</p>
+                    )}
+                    <div className="mt-4 rounded-lg border border-border bg-card p-3">
+                      <p className="text-sm font-semibold text-foreground">
+                        입금 기한:{" "}
+                        {new Date(packageOrder.createdAt).toLocaleDateString(
+                          "ko-KR",
+                        )}{" "}
+                        23:59까지
+                      </p>
+                    </div>
+                  </PublicSurface>
+                ) : (
+                  <PublicSurface variant="muted" padding="sm">
+                    <h3 className="font-bold text-primary mb-3">
+                      {isNicePayment ? "카드/간편결제 정보" : "토스 결제 정보"}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      결제 상태: 결제 완료
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      승인 시각:{" "}
+                      {paymentInfo?.approvedAt
+                        ? new Date(paymentInfo.approvedAt).toLocaleString(
+                            "ko-KR",
+                          )
+                        : "-"}
+                    </p>
+                  </PublicSurface>
+                )}
+              </div>
 
-                {/* 신청자 정보 */}
-                <div className="mb-6">
-                  <h3 className="flex items-center gap-2 font-bold text-lg mb-4 text-foreground">
-                    <MapPin className="h-5 w-5 text-primary" />
-                    신청자 정보
-                  </h3>
-                  <PublicSurface variant="muted" padding="sm" className="space-y-2">
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <div className="min-w-0">
-                        <span className="text-sm text-muted-foreground">
-                          신청자:
-                        </span>
-                        <span className="ml-2 break-words font-semibold text-foreground">
-                          {serviceInfo?.name || "정보 없음"}
-                        </span>
-                      </div>
-                      <div className="min-w-0">
-                        <span className="text-sm text-muted-foreground">
-                          연락처:
-                        </span>
-                        <span className="ml-2 break-words font-semibold text-foreground">
-                          {formatKoreanPhone(serviceInfo?.phone) || "정보 없음"}
-                        </span>
-                      </div>
+              <div className="my-6 border-t border-border" />
+
+              {/* 신청자 정보 */}
+              <div className="mb-6">
+                <h3 className="flex items-center gap-2 font-bold text-lg mb-4 text-foreground">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  신청자 정보
+                </h3>
+                <PublicSurface
+                  variant="muted"
+                  padding="sm"
+                  className="space-y-2"
+                >
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="min-w-0">
+                      <span className="text-sm text-muted-foreground">
+                        신청자:
+                      </span>
+                      <span className="ml-2 break-words font-semibold text-foreground">
+                        {serviceInfo?.name || "정보 없음"}
+                      </span>
                     </div>
                     <div className="min-w-0">
                       <span className="text-sm text-muted-foreground">
-                        이메일:
+                        연락처:
                       </span>
                       <span className="ml-2 break-words font-semibold text-foreground">
-                        {serviceInfo?.email || "정보 없음"}
+                        {formatKoreanPhone(serviceInfo?.phone) || "정보 없음"}
                       </span>
                     </div>
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-sm text-muted-foreground">
+                      이메일:
+                    </span>
+                    <span className="ml-2 break-words font-semibold text-foreground">
+                      {serviceInfo?.email || "정보 없음"}
+                    </span>
+                  </div>
 
-                    {serviceInfo?.serviceRequest && (
-                      <div className="min-w-0">
-                        <span className="text-sm text-muted-foreground">
-                          서비스 요청사항:
-                        </span>
-                        <span className="ml-2 break-words font-semibold text-foreground">
-                          {serviceInfo.serviceRequest}
-                        </span>
-                      </div>
-                    )}
-                  </PublicSurface>
-                </div>
+                  {serviceInfo?.serviceRequest && (
+                    <div className="min-w-0">
+                      <span className="text-sm text-muted-foreground">
+                        서비스 요청사항:
+                      </span>
+                      <span className="ml-2 break-words font-semibold text-foreground">
+                        {serviceInfo.serviceRequest}
+                      </span>
+                    </div>
+                  )}
+                </PublicSurface>
+              </div>
 
               <div className="px-4 md:px-6">
                 <DevMarkPaidButton
@@ -509,63 +521,79 @@ export default async function PackageSuccessPage({
                 </span>
               }
             >
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
-                  <div className="space-y-4">
-                    <PublicSurface variant="muted" padding="sm" className="flex items-start gap-3">
-                      <CreditCard className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <h4 className="font-semibold text-primary mb-1">
-                          {isTossPayment || isNicePayment
-                            ? "결제 안내"
-                            : "입금 안내"}
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          {isOnlinePayment
-                            ? `${isNicePayment ? "카드/간편" : "토스"} 결제가 완료되어 패키지가 즉시 활성화되었습니다.`
-                            : "입금 확인 후 패키지가 활성화되며, 활성화 전에는 패키지를 사용할 수 없습니다."}
-                        </p>
-                      </div>
-                    </PublicSurface>
-                    <PublicSurface variant="muted" padding="sm" className="flex items-start gap-3">
-                      <Calendar className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <h4 className="font-semibold text-primary mb-1">
-                          사용 안내
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          교체서비스 신청이 완료되면 패키지 이용 횟수가 1회
-                          차감됩니다.
-                        </p>
-                      </div>
-                    </PublicSurface>
-                  </div>
-                  <div className="space-y-4">
-                    <PublicSurface variant="muted" padding="sm" className="flex items-start gap-3">
-                      <Star className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <h4 className="font-semibold text-foreground mb-1">
-                          유효기간
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          패키지는 {packageCard.validityPeriod} 동안 유효하며,
-                          기간 내 모든 횟수를 이용해주세요.
-                        </p>
-                      </div>
-                    </PublicSurface>
-                    <PublicSurface variant="muted" padding="sm" className="flex items-start gap-3">
-                      <Phone className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <h4 className="font-semibold text-primary mb-1">
-                          고객 지원
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          패키지 관련 문의는 고객센터(010-5218-5248)로
-                          연락해주세요.
-                        </p>
-                      </div>
-                    </PublicSurface>
-                  </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+                <div className="space-y-4">
+                  <PublicSurface
+                    variant="muted"
+                    padding="sm"
+                    className="flex items-start gap-3"
+                  >
+                    <CreditCard className="h-5 w-5 text-primary mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-primary mb-1">
+                        {isTossPayment || isNicePayment
+                          ? "결제 안내"
+                          : "입금 안내"}
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        {isOnlinePayment
+                          ? `${isNicePayment ? "카드/간편" : "토스"} 결제가 완료되어 패키지가 즉시 활성화되었습니다.`
+                          : "입금 확인 후 패키지가 활성화되며, 활성화 전에는 패키지를 사용할 수 없습니다."}
+                      </p>
+                    </div>
+                  </PublicSurface>
+                  <PublicSurface
+                    variant="muted"
+                    padding="sm"
+                    className="flex items-start gap-3"
+                  >
+                    <Calendar className="h-5 w-5 text-primary mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-primary mb-1">
+                        사용 안내
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        교체서비스 신청이 완료되면 패키지 이용 횟수가 1회
+                        차감됩니다.
+                      </p>
+                    </div>
+                  </PublicSurface>
                 </div>
+                <div className="space-y-4">
+                  <PublicSurface
+                    variant="muted"
+                    padding="sm"
+                    className="flex items-start gap-3"
+                  >
+                    <Star className="h-5 w-5 text-primary mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-foreground mb-1">
+                        유효기간
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        패키지는 {packageCard.validityPeriod} 동안 유효하며,
+                        기간 내 모든 횟수를 이용해주세요.
+                      </p>
+                    </div>
+                  </PublicSurface>
+                  <PublicSurface
+                    variant="muted"
+                    padding="sm"
+                    className="flex items-start gap-3"
+                  >
+                    <Phone className="h-5 w-5 text-primary mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-primary mb-1">
+                        고객 지원
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        패키지 관련 문의는 고객센터(010-5218-5248)로
+                        연락해주세요.
+                      </p>
+                    </div>
+                  </PublicSurface>
+                </div>
+              </div>
             </SummaryCard>
           </div>
         </div>

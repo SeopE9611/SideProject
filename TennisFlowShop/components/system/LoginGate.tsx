@@ -142,7 +142,9 @@ export default function LoginGate({
               <h1 className="mb-2 break-keep text-2xl font-bold tracking-tight text-foreground md:text-3xl">
                 로그인이 필요합니다.
               </h1>
-              <p className="break-keep text-sm leading-relaxed text-muted-foreground md:text-base">{v.description}</p>
+              <p className="break-keep text-sm leading-relaxed text-muted-foreground md:text-base">
+                {v.description}
+              </p>
 
               <div className="mt-4">
                 <Badge variant="highlight">
@@ -153,10 +155,18 @@ export default function LoginGate({
 
             <CardFooter className="px-6 pb-6 md:px-8 md:pb-8">
               <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <Button asChild variant="default" className="w-full whitespace-nowrap sm:w-auto">
+                <Button
+                  asChild
+                  variant="default"
+                  className="w-full whitespace-nowrap sm:w-auto"
+                >
                   <Link href={loginHref}>로그인·회원가입하기</Link>
                 </Button>
-                <Button asChild variant="outline" className="w-full whitespace-nowrap sm:w-auto">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full whitespace-nowrap sm:w-auto"
+                >
                   <Link href={v.secondary.href}>{v.secondary.label}</Link>
                 </Button>
               </div>

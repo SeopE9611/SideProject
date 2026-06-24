@@ -208,7 +208,9 @@ export default function AcademyApplicationsTab() {
         message?: string;
       } | null;
       if (!response.ok || !payload?.success) {
-        throw new Error(payload?.message || "신청 기록 삭제 중 문제가 발생했습니다.");
+        throw new Error(
+          payload?.message || "신청 기록 삭제 중 문제가 발생했습니다.",
+        );
       }
       showSuccessToast(payload.message || "신청 기록이 삭제되었습니다.");
       await mutate();
@@ -290,15 +292,38 @@ export default function AcademyApplicationsTab() {
               </div>
 
               <div className="grid gap-3 bp-sm:grid-cols-2">
-                <InfoItem label="수업 유형" value={application.classSnapshot?.lessonTypeLabel || application.desiredLessonTypeLabel} />
-                <InfoItem label="레벨" value={application.classSnapshot?.levelLabel || application.currentLevelLabel} />
-                <InfoItem label="일정" value={application.classSnapshot?.scheduleText || application.preferredDays?.join(", ") || application.preferredTimeText} />
-                <InfoItem label="희망 시간대" value={application.preferredTimeText} />
+                <InfoItem
+                  label="수업 유형"
+                  value={
+                    application.classSnapshot?.lessonTypeLabel ||
+                    application.desiredLessonTypeLabel
+                  }
+                />
+                <InfoItem
+                  label="레벨"
+                  value={
+                    application.classSnapshot?.levelLabel ||
+                    application.currentLevelLabel
+                  }
+                />
+                <InfoItem
+                  label="일정"
+                  value={
+                    application.classSnapshot?.scheduleText ||
+                    application.preferredDays?.join(", ") ||
+                    application.preferredTimeText
+                  }
+                />
+                <InfoItem
+                  label="희망 시간대"
+                  value={application.preferredTimeText}
+                />
               </div>
 
               {isCancelled ? (
                 <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
-                  취소된 신청입니다. 필요하면 마이페이지에서 기록을 삭제할 수 있습니다.
+                  취소된 신청입니다. 필요하면 마이페이지에서 기록을 삭제할 수
+                  있습니다.
                 </div>
               ) : null}
 
@@ -363,26 +388,26 @@ export default function AcademyApplicationsTab() {
 
               {isExpanded ? (
                 <div className="grid gap-3 bp-sm:grid-cols-2">
-                <InfoItem
-                  label="희망 레슨 유형"
-                  value={application.desiredLessonTypeLabel}
-                />
-                <InfoItem
-                  label="현재 실력"
-                  value={application.currentLevelLabel}
-                />
-                <InfoItem
-                  label="희망 요일"
-                  value={
-                    application.preferredDays?.length
-                      ? application.preferredDays.join(", ")
-                      : null
-                  }
-                />
-                <InfoItem
-                  label="희망 시간대"
-                  value={application.preferredTimeText}
-                />
+                  <InfoItem
+                    label="희망 레슨 유형"
+                    value={application.desiredLessonTypeLabel}
+                  />
+                  <InfoItem
+                    label="현재 실력"
+                    value={application.currentLevelLabel}
+                  />
+                  <InfoItem
+                    label="희망 요일"
+                    value={
+                      application.preferredDays?.length
+                        ? application.preferredDays.join(", ")
+                        : null
+                    }
+                  />
+                  <InfoItem
+                    label="희망 시간대"
+                    value={application.preferredTimeText}
+                  />
                 </div>
               ) : null}
 
@@ -399,18 +424,40 @@ export default function AcademyApplicationsTab() {
               ) : null}
 
               <div className="flex flex-col gap-2 border-t border-border/60 pt-4 sm:flex-row sm:justify-end">
-                <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="w-full sm:w-auto"
+                >
                   <Link href={`/mypage/academy-applications/${application.id}`}>
                     <Eye className="h-4 w-4" />
                     상세 보기
                   </Link>
                 </Button>
-                <Button type="button" variant="secondary" size="sm" className="w-full sm:w-auto" onClick={() => toggleExpanded(application.id)}>
-                  {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="w-full sm:w-auto"
+                  onClick={() => toggleExpanded(application.id)}
+                >
+                  {isExpanded ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
                   {isExpanded ? "접기" : "펼쳐보기"}
                 </Button>
                 {isCancelled ? (
-                  <Button type="button" variant="destructive" size="sm" className="w-full sm:w-auto" disabled={deletingId === application.id} onClick={() => void handleDelete(application.id)}>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="w-full sm:w-auto"
+                    disabled={deletingId === application.id}
+                    onClick={() => void handleDelete(application.id)}
+                  >
                     <Trash2 className="h-4 w-4" />
                     {deletingId === application.id ? "삭제 중..." : "기록 삭제"}
                   </Button>

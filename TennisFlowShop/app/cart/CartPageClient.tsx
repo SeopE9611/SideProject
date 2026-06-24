@@ -5,19 +5,50 @@ import WishlistSidebar from "@/app/cart/_components/WishlistSidebar";
 import { useAuthStore, type User } from "@/app/store/authStore";
 import { useCartStore, type CartItem } from "@/app/store/cartStore";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { EmptyState, PriceSummary, type PriceSummaryRow } from "@/components/public";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import {
+  EmptyState,
+  PriceSummary,
+  type PriceSummaryRow,
+} from "@/components/public";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyInfo } from "@/lib/auth.client";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
-import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
+import {
+  calcOrderShippingFeeWithBundlePolicy,
+  normalizeItemShippingFee,
+} from "@/lib/shipping-fee";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { ArrowRight, Loader2, Minus, PackageOpen, Plus, ShoppingBag, Star, Trash2 } from "lucide-react";
+import {
+  ArrowRight,
+  Loader2,
+  Minus,
+  PackageOpen,
+  Plus,
+  ShoppingBag,
+  Star,
+  Trash2,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -26,11 +57,18 @@ import { useEffect, useMemo, useState } from "react";
 const formatKRW = (n: number) => n.toLocaleString("ko-KR");
 
 // 장바구니 아이템에 저장된 재고(가용 수량) 값을 안전하게 해석
-const getMaxStock = (stock?: number) => (typeof stock === "number" && Number.isFinite(stock) ? stock : Number.POSITIVE_INFINITY);
+const getMaxStock = (stock?: number) =>
+  typeof stock === "number" && Number.isFinite(stock)
+    ? stock
+    : Number.POSITIVE_INFINITY;
 
 const CART_CHECKOUT_SELECTION_KEY = "cart.checkout.selectedLineKeys.v1";
 
-const getCartLineKey = (item: { id: string; selectedGauge?: string; selectedColor?: string }) => `${item.id}::${item.selectedGauge ?? ""}::${item.selectedColor ?? ""}`;
+const getCartLineKey = (item: {
+  id: string;
+  selectedGauge?: string;
+  selectedColor?: string;
+}) => `${item.id}::${item.selectedGauge ?? ""}::${item.selectedColor ?? ""}`;
 
 type ProductVariantInventoryRow = {
   colorValue?: string | null;
@@ -46,7 +84,13 @@ type ProductForCartValidation = {
 
 export default function CartPageClient() {
   const { logout } = useAuthStore(); // 사용 여부와 관계없이 훅 순서 안정
-  const { items: cartItems, addItem, removeItem, updateQuantity, clearCart } = useCartStore();
+  const {
+    items: cartItems,
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+  } = useCartStore();
 
   // 인증
   const [user, setUser] = useState<User | null>(null);
@@ -57,16 +101,28 @@ export default function CartPageClient() {
 
   // 장착 대상 스트링 "이 스트링만 남기기" 확인 다이얼로그 상태
   const [cleanupDialogOpen, setCleanupDialogOpen] = useState(false);
-  const [cleanupKeepLineKey, setCleanupKeepLineKey] = useState<string | null>(null);
-  const [cleanupRemoveLineKeys, setCleanupRemoveLineKeys] = useState<string[]>([]);
+  const [cleanupKeepLineKey, setCleanupKeepLineKey] = useState<string | null>(
+    null,
+  );
+  const [cleanupRemoveLineKeys, setCleanupRemoveLineKeys] = useState<string[]>(
+    [],
+  );
   const [isCheckingCheckoutStock, setIsCheckingCheckoutStock] = useState(false);
-  const [optionChangeItem, setOptionChangeItem] = useState<CartItem | null>(null);
+  const [optionChangeItem, setOptionChangeItem] = useState<CartItem | null>(
+    null,
+  );
 
   // [장착 대상 스트링 정리 다이얼로그] 남길/삭제될 대상 텍스트 생성
-  const keepStringItem = cleanupKeepLineKey ? cartItems.find((i) => getCartLineKey(i) === cleanupKeepLineKey) : undefined;
-  const keepStringLabel = keepStringItem ? `${keepStringItem.name} (수량 ${keepStringItem.quantity}개)` : "선택한 스트링";
+  const keepStringItem = cleanupKeepLineKey
+    ? cartItems.find((i) => getCartLineKey(i) === cleanupKeepLineKey)
+    : undefined;
+  const keepStringLabel = keepStringItem
+    ? `${keepStringItem.name} (수량 ${keepStringItem.quantity}개)`
+    : "선택한 스트링";
 
-  const removeStringItems = cartItems.filter((i) => cleanupRemoveLineKeys.includes(getCartLineKey(i)));
+  const removeStringItems = cartItems.filter((i) =>
+    cleanupRemoveLineKeys.includes(getCartLineKey(i)),
+  );
   const removeCount = removeStringItems.length;
   const removePreview =
     removeCount === 0
@@ -79,9 +135,15 @@ export default function CartPageClient() {
             .join(", ")} 외 ${removeCount - 2}개`;
 
   // "장착 대상 스트링" 판별을 위해 /api/products/mini-batch 결과의 mountingFee를 캐시
-  const [mountingFeeByProductId, setMountingFeeByProductId] = useState<Record<string, number>>({});
-  const [shippingFeeByProductId, setShippingFeeByProductId] = useState<Record<string, number>>({});
-  const [mountableStringByProductId, setMountableStringByProductId] = useState<Record<string, boolean>>({});
+  const [mountingFeeByProductId, setMountingFeeByProductId] = useState<
+    Record<string, number>
+  >({});
+  const [shippingFeeByProductId, setShippingFeeByProductId] = useState<
+    Record<string, number>
+  >({});
+  const [mountableStringByProductId, setMountableStringByProductId] = useState<
+    Record<string, boolean>
+  >({});
 
   useEffect(() => {
     let cancelled = false;
@@ -98,35 +160,78 @@ export default function CartPageClient() {
     };
   }, []);
 
-  const selectedCartItems = useMemo(() => cartItems.filter((item) => selectedLineKeys.includes(getCartLineKey(item))), [cartItems, selectedLineKeys]);
-  const selectedLineKeySet = useMemo(() => new Set(selectedLineKeys), [selectedLineKeys]);
+  const selectedCartItems = useMemo(
+    () =>
+      cartItems.filter((item) =>
+        selectedLineKeys.includes(getCartLineKey(item)),
+      ),
+    [cartItems, selectedLineKeys],
+  );
+  const selectedLineKeySet = useMemo(
+    () => new Set(selectedLineKeys),
+    [selectedLineKeys],
+  );
   const hasSelectedItems = selectedCartItems.length > 0;
 
-  const subtotal = useMemo(() => selectedCartItems.reduce((sum, item) => sum + item.price * item.quantity, 0), [selectedCartItems]);
+  const subtotal = useMemo(
+    () =>
+      selectedCartItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      ),
+    [selectedCartItems],
+  );
   const regularSubtotal = useMemo(
     () =>
       selectedCartItems.reduce((sum, item) => {
-        const regularPrice = typeof item.regularPrice === "number" && Number.isFinite(item.regularPrice) && item.regularPrice > item.price ? item.regularPrice : item.price;
+        const regularPrice =
+          typeof item.regularPrice === "number" &&
+          Number.isFinite(item.regularPrice) &&
+          item.regularPrice > item.price
+            ? item.regularPrice
+            : item.price;
         return sum + regularPrice * item.quantity;
       }, 0),
     [selectedCartItems],
   );
   const productDiscount = regularSubtotal - subtotal;
 
-  const productIds = useMemo(() => Array.from(new Set(cartItems.filter((it) => (it.kind ?? "product") === "product").map((it) => String(it.id)))), [cartItems]);
+  const productIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          cartItems
+            .filter((it) => (it.kind ?? "product") === "product")
+            .map((it) => String(it.id)),
+        ),
+      ),
+    [cartItems],
+  );
 
-  const shippingFeeIdsToResolve = useMemo(() => Array.from(new Set(cartItems.map((it) => String(it.id)))), [cartItems]);
+  const shippingFeeIdsToResolve = useMemo(
+    () => Array.from(new Set(cartItems.map((it) => String(it.id)))),
+    [cartItems],
+  );
 
-  const productIdsKey = useMemo(() => [...productIds].sort().join("|"), [productIds]);
+  const productIdsKey = useMemo(
+    () => [...productIds].sort().join("|"),
+    [productIds],
+  );
 
   const isShippingFeeReady = useMemo(() => {
     if (shippingFeeIdsToResolve.length === 0) return true;
-    return shippingFeeIdsToResolve.every((id) => Object.prototype.hasOwnProperty.call(shippingFeeByProductId, id));
+    return shippingFeeIdsToResolve.every((id) =>
+      Object.prototype.hasOwnProperty.call(shippingFeeByProductId, id),
+    );
   }, [shippingFeeIdsToResolve, shippingFeeByProductId]);
 
   const isServiceMetaReady = useMemo(() => {
     if (productIds.length === 0) return true;
-    return productIds.every((id) => Object.prototype.hasOwnProperty.call(mountingFeeByProductId, id) && Object.prototype.hasOwnProperty.call(mountableStringByProductId, id));
+    return productIds.every(
+      (id) =>
+        Object.prototype.hasOwnProperty.call(mountingFeeByProductId, id) &&
+        Object.prototype.hasOwnProperty.call(mountableStringByProductId, id),
+    );
   }, [productIds, mountingFeeByProductId, mountableStringByProductId]);
 
   const isCartPriceReady = isShippingFeeReady && isServiceMetaReady;
@@ -134,8 +239,14 @@ export default function CartPageClient() {
   const shippingFee = useMemo(() => {
     if (!isShippingFeeReady) return 0;
     if (!hasSelectedItems) return 0;
-    const hasRacket = selectedCartItems.some((it) => (it.kind ?? "product") === "racket");
-    const hasMountableString = selectedCartItems.some((it) => (it.kind ?? "product") === "product" && mountableStringByProductId[String(it.id)] === true);
+    const hasRacket = selectedCartItems.some(
+      (it) => (it.kind ?? "product") === "racket",
+    );
+    const hasMountableString = selectedCartItems.some(
+      (it) =>
+        (it.kind ?? "product") === "product" &&
+        mountableStringByProductId[String(it.id)] === true,
+    );
     return calcOrderShippingFeeWithBundlePolicy({
       items: selectedCartItems.map((it) => ({
         kind: (it.kind ?? "product") as "product" | "racket",
@@ -145,7 +256,14 @@ export default function CartPageClient() {
       })),
       withStringService: hasRacket && hasMountableString,
     });
-  }, [selectedCartItems, mountingFeeByProductId, mountableStringByProductId, shippingFeeByProductId, hasSelectedItems, isShippingFeeReady]);
+  }, [
+    selectedCartItems,
+    mountingFeeByProductId,
+    mountableStringByProductId,
+    shippingFeeByProductId,
+    hasSelectedItems,
+    isShippingFeeReady,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -177,20 +295,32 @@ export default function CartPageClient() {
             if (!res.ok) throw new Error("mini-batch request failed");
             const json = await res.json();
             const rows = Array.isArray(json?.items) ? json.items : [];
-            const miniMap = new Map<string, { mountingFee: number; isMountableString: boolean }>(
-              rows.map((entry: { id?: string; mountingFee?: number; isMountableString?: boolean }) => [
-                String(entry?.id ?? ""),
-                {
-                  mountingFee: Number(entry?.mountingFee ?? 0),
-                  isMountableString: entry?.isMountableString === true,
-                },
-              ]),
+            const miniMap = new Map<
+              string,
+              { mountingFee: number; isMountableString: boolean }
+            >(
+              rows.map(
+                (entry: {
+                  id?: string;
+                  mountingFee?: number;
+                  isMountableString?: boolean;
+                }) => [
+                  String(entry?.id ?? ""),
+                  {
+                    mountingFee: Number(entry?.mountingFee ?? 0),
+                    isMountableString: entry?.isMountableString === true,
+                  },
+                ],
+              ),
             );
             const feePairs = productIds.map((id) => {
               const mf = Number(miniMap.get(id)?.mountingFee ?? 0);
               return [id, Number.isFinite(mf) && mf > 0 ? mf : 0] as const;
             });
-            const mountablePairs = productIds.map((id) => [id, miniMap.get(id)?.isMountableString === true] as const);
+            const mountablePairs = productIds.map(
+              (id) =>
+                [id, miniMap.get(id)?.isMountableString === true] as const,
+            );
             return {
               fees: Object.fromEntries(feePairs),
               mountable: Object.fromEntries(mountablePairs),
@@ -203,7 +333,10 @@ export default function CartPageClient() {
                   cache: "no-store",
                 });
                 const json = await res.json();
-                return [id, normalizeItemShippingFee(json?.shippingFee)] as const;
+                return [
+                  id,
+                  normalizeItemShippingFee(json?.shippingFee),
+                ] as const;
               } catch {
                 return [id, 3000] as const;
               }
@@ -218,9 +351,17 @@ export default function CartPageClient() {
         }
       } catch {
         if (!cancelled) {
-          setMountingFeeByProductId(Object.fromEntries(productIds.map((id) => [id, 0] as const)));
-          setMountableStringByProductId(Object.fromEntries(productIds.map((id) => [id, false] as const)));
-          setShippingFeeByProductId(Object.fromEntries(shippingFeeIdsToResolve.map((id) => [id, 3000] as const)));
+          setMountingFeeByProductId(
+            Object.fromEntries(productIds.map((id) => [id, 0] as const)),
+          );
+          setMountableStringByProductId(
+            Object.fromEntries(productIds.map((id) => [id, false] as const)),
+          );
+          setShippingFeeByProductId(
+            Object.fromEntries(
+              shippingFeeIdsToResolve.map((id) => [id, 3000] as const),
+            ),
+          );
         }
       }
     };
@@ -234,28 +375,64 @@ export default function CartPageClient() {
   // 교체/장착 서비스 신청(체크아웃 withService=1)에서는
   // 라켓(또는 중고라켓) 수량과 "장착 가능한 스트링" 수량이 반드시 일치해야함.
   // (서버에서도 검증하지만, 장바구니에서 먼저 막아주면 사용자가 덜 헷갈림.)
-  const totalRacketQty = useMemo(() => selectedCartItems.filter((it) => it.kind === "racket").reduce((acc, it) => acc + Number(it.quantity ?? 0), 0), [selectedCartItems]);
+  const totalRacketQty = useMemo(
+    () =>
+      selectedCartItems
+        .filter((it) => it.kind === "racket")
+        .reduce((acc, it) => acc + Number(it.quantity ?? 0), 0),
+    [selectedCartItems],
+  );
 
   const totalMountableStringQty = useMemo(
-    () => selectedCartItems.filter((it) => (it.kind ?? "product") === "product" && mountableStringByProductId[String(it.id)] === true).reduce((acc, it) => acc + Number(it.quantity ?? 0), 0),
+    () =>
+      selectedCartItems
+        .filter(
+          (it) =>
+            (it.kind ?? "product") === "product" &&
+            mountableStringByProductId[String(it.id)] === true,
+        )
+        .reduce((acc, it) => acc + Number(it.quantity ?? 0), 0),
     [selectedCartItems, mountableStringByProductId],
   );
 
   // "종류(라인) 개수" 체크: 서버 INVALID_COMPOSITION 규칙과 동일한 기준
-  const racketLineCount = useMemo(() => selectedCartItems.filter((it) => (it.kind ?? "product") === "racket").length, [selectedCartItems]);
+  const racketLineCount = useMemo(
+    () =>
+      selectedCartItems.filter((it) => (it.kind ?? "product") === "racket")
+        .length,
+    [selectedCartItems],
+  );
 
-  const mountableStringLineCount = useMemo(() => selectedCartItems.filter((it) => (it.kind ?? "product") === "product" && mountableStringByProductId[String(it.id)] === true).length, [selectedCartItems, mountableStringByProductId]);
+  const mountableStringLineCount = useMemo(
+    () =>
+      selectedCartItems.filter(
+        (it) =>
+          (it.kind ?? "product") === "product" &&
+          mountableStringByProductId[String(it.id)] === true,
+      ).length,
+    [selectedCartItems, mountableStringByProductId],
+  );
 
   // 장착 대상 스트링이 2종 이상이면, 어떤 라인을 정리해야 하는지 표시하기 위한 id 목록
   const mountableStringIds = useMemo(() => {
-    return cartItems.filter((it) => (it.kind ?? "product") === "product" && mountableStringByProductId[String(it.id)] === true).map((it) => String(it.id));
+    return cartItems
+      .filter(
+        (it) =>
+          (it.kind ?? "product") === "product" &&
+          mountableStringByProductId[String(it.id)] === true,
+      )
+      .map((it) => String(it.id));
   }, [cartItems, mountableStringByProductId]);
 
-  const blockServiceCheckoutByComposition = totalRacketQty > 0 && (racketLineCount !== 1 || mountableStringLineCount !== 1);
+  const blockServiceCheckoutByComposition =
+    totalRacketQty > 0 &&
+    (racketLineCount !== 1 || mountableStringLineCount !== 1);
 
-  const blockServiceCheckoutByQty = totalRacketQty > 0 && totalRacketQty !== totalMountableStringQty;
+  const blockServiceCheckoutByQty =
+    totalRacketQty > 0 && totalRacketQty !== totalMountableStringQty;
 
-  const blockServiceCheckout = blockServiceCheckoutByComposition || blockServiceCheckoutByQty;
+  const blockServiceCheckout =
+    blockServiceCheckoutByComposition || blockServiceCheckoutByQty;
 
   // CTA/토스트 문구를 한 곳에서 관리 (서버 INVALID_COMPOSITION 기준과 동일)
   const serviceBlockToastMessage = blockServiceCheckoutByComposition
@@ -264,9 +441,20 @@ export default function CartPageClient() {
 
   // 번들(라켓 + 장착 가능 스트링)인 경우: 장바구니에서는 "수량 스테퍼"를 잠그고
   // 스트링 선택 화면에서만 수량/스트링을 함께 바꾸도록 UX를 고정한다.
-  const bundleRacketItem = useMemo(() => cartItems.find((it) => (it.kind ?? "product") === "racket"), [cartItems]);
+  const bundleRacketItem = useMemo(
+    () => cartItems.find((it) => (it.kind ?? "product") === "racket"),
+    [cartItems],
+  );
 
-  const bundleStringItem = useMemo(() => cartItems.find((it) => (it.kind ?? "product") === "product" && mountableStringByProductId[String(it.id)] === true), [cartItems, mountableStringByProductId]);
+  const bundleStringItem = useMemo(
+    () =>
+      cartItems.find(
+        (it) =>
+          (it.kind ?? "product") === "product" &&
+          mountableStringByProductId[String(it.id)] === true,
+      ),
+    [cartItems, mountableStringByProductId],
+  );
 
   const bundleQty = useMemo(() => {
     const rq = Number(bundleRacketItem?.quantity ?? 0);
@@ -295,17 +483,34 @@ export default function CartPageClient() {
     }
 
     return `/rackets/${bundleRacketItem.id}/select-string?${params.toString()}`;
-  }, [bundleRacketItem, bundleStringItem, bundleQty, blockServiceCheckoutByComposition]);
+  }, [
+    bundleRacketItem,
+    bundleStringItem,
+    bundleQty,
+    blockServiceCheckoutByComposition,
+  ]);
 
   const isBundleLocked = Boolean(bundleEditHref);
 
-
   const handleOptionChangeApply = (
     item: CartItem,
-    nextOption: Pick<CartItem, "selectedGauge" | "selectedColor" | "selectedColorLabel" | "selectedColorHex" | "selectedColorImage" | "image" | "stock">,
+    nextOption: Pick<
+      CartItem,
+      | "selectedGauge"
+      | "selectedColor"
+      | "selectedColorLabel"
+      | "selectedColorHex"
+      | "selectedColorImage"
+      | "image"
+      | "stock"
+    >,
   ) => {
     const oldLineKey = getCartLineKey(item);
-    const nextItem: CartItem = { ...item, ...nextOption, quantity: item.quantity };
+    const nextItem: CartItem = {
+      ...item,
+      ...nextOption,
+      quantity: item.quantity,
+    };
     const newLineKey = getCartLineKey(nextItem);
     const nextStock = getMaxStock(nextItem.stock);
 
@@ -316,12 +521,20 @@ export default function CartPageClient() {
     }
 
     if (Number.isFinite(nextStock) && item.quantity > nextStock) {
-      showErrorToast(`선택한 옵션의 재고가 부족합니다. 현재 재고: ${nextStock}개`);
+      showErrorToast(
+        `선택한 옵션의 재고가 부족합니다. 현재 재고: ${nextStock}개`,
+      );
       return;
     }
 
-    const existingSameOption = cartItems.find((candidate) => getCartLineKey(candidate) === newLineKey);
-    if (existingSameOption && Number.isFinite(nextStock) && existingSameOption.quantity + item.quantity > nextStock) {
+    const existingSameOption = cartItems.find(
+      (candidate) => getCartLineKey(candidate) === newLineKey,
+    );
+    if (
+      existingSameOption &&
+      Number.isFinite(nextStock) &&
+      existingSameOption.quantity + item.quantity > nextStock
+    ) {
       showErrorToast("이미 담긴 동일 옵션 수량을 포함하면 재고를 초과합니다.");
       return;
     }
@@ -345,16 +558,29 @@ export default function CartPageClient() {
 
   const getRacketOptionChangeHref = (item: CartItem) => {
     if (bundleEditHref) return bundleEditHref;
-    const params = new URLSearchParams({ from: "cart", qty: String(item.quantity), returnTo: "/cart" });
+    const params = new URLSearchParams({
+      from: "cart",
+      qty: String(item.quantity),
+      returnTo: "/cart",
+    });
     return `/rackets/${item.id}/select-string?${params.toString()}`;
   };
 
-  const hasMountableStringOnlyFlow = !ENABLE_STRING_STANDALONE_ORDER && hasSelectedItems && selectedCartItems.every((it) => (it.kind ?? "product") === "product" && mountableStringByProductId[String(it.id)] === true);
+  const hasMountableStringOnlyFlow =
+    !ENABLE_STRING_STANDALONE_ORDER &&
+    hasSelectedItems &&
+    selectedCartItems.every(
+      (it) =>
+        (it.kind ?? "product") === "product" &&
+        mountableStringByProductId[String(it.id)] === true,
+    );
 
   // 체크아웃 진입 URL을 "번들 완성" 또는 "스트링-only 장착 대상"일 때 withService=1로
   // - isBundleLocked: 라켓 1종 + 장착 스트링 1종이 동시에 존재하고, 편집 링크까지 만들어질 정도로 번들이 성립한 상태
   // - blockServiceCheckout: 구성/수량 불일치면 장바구니에서 이미 막히는 상태
-  const shouldEnterCheckoutWithService = hasSelectedItems && ((!blockServiceCheckout && isBundleLocked) || hasMountableStringOnlyFlow);
+  const shouldEnterCheckoutWithService =
+    hasSelectedItems &&
+    ((!blockServiceCheckout && isBundleLocked) || hasMountableStringOnlyFlow);
   const shouldIncludeServiceFee = shouldEnterCheckoutWithService;
   const serviceFee = useMemo(() => {
     if (!shouldIncludeServiceFee) return 0;
@@ -368,7 +594,12 @@ export default function CartPageClient() {
 
       return sum + fee * item.quantity;
     }, 0);
-  }, [selectedCartItems, shouldIncludeServiceFee, mountingFeeByProductId, mountableStringByProductId]);
+  }, [
+    selectedCartItems,
+    shouldIncludeServiceFee,
+    mountingFeeByProductId,
+    mountableStringByProductId,
+  ]);
   const total = subtotal + serviceFee + shippingFee;
 
   const priceSummaryRows = useMemo<PriceSummaryRow[]>(() => {
@@ -408,33 +639,67 @@ export default function CartPageClient() {
       {
         id: "shipping-fee",
         label: "배송비",
-        value: !hasSelectedItems ? "계산 전" : !isCartPriceReady ? <Skeleton className="h-6 w-20 rounded-md" /> : shippingFee > 0 ? `${formatKRW(shippingFee)}원` : <span className="text-primary">무료</span>,
+        value: !hasSelectedItems ? (
+          "계산 전"
+        ) : !isCartPriceReady ? (
+          <Skeleton className="h-6 w-20 rounded-md" />
+        ) : shippingFee > 0 ? (
+          `${formatKRW(shippingFee)}원`
+        ) : (
+          <span className="text-primary">무료</span>
+        ),
       },
       {
         id: "total",
         label: "결제예정금액",
-        value: !isCartPriceReady ? <Skeleton className="h-7 w-28 rounded-md" /> : <span className="text-primary">{formatKRW(total)}원</span>,
+        value: !isCartPriceReady ? (
+          <Skeleton className="h-7 w-28 rounded-md" />
+        ) : (
+          <span className="text-primary">{formatKRW(total)}원</span>
+        ),
         emphasis: true,
       },
     );
 
     return rows;
-  }, [hasSelectedItems, isCartPriceReady, productDiscount, regularSubtotal, serviceFee, shippingFee, subtotal, total]);
-  const stringStandalonePausedNoticeLines = ["스트링 단품 구매는 현재 운영하지 않습니다.", "선택한 스트링은 교체서비스 신청용으로 사용됩니다."];
-  const checkoutBasePath = shouldEnterCheckoutWithService ? "/checkout?withService=1&source=cart-selection" : "/checkout?source=cart-selection";
-  const checkoutHref = user ? checkoutBasePath : `/login?next=${encodeURIComponent(checkoutBasePath)}`;
+  }, [
+    hasSelectedItems,
+    isCartPriceReady,
+    productDiscount,
+    regularSubtotal,
+    serviceFee,
+    shippingFee,
+    subtotal,
+    total,
+  ]);
+  const stringStandalonePausedNoticeLines = [
+    "스트링 단품 구매는 현재 운영하지 않습니다.",
+    "선택한 스트링은 교체서비스 신청용으로 사용됩니다.",
+  ];
+  const checkoutBasePath = shouldEnterCheckoutWithService
+    ? "/checkout?withService=1&source=cart-selection"
+    : "/checkout?source=cart-selection";
+  const checkoutHref = user
+    ? checkoutBasePath
+    : `/login?next=${encodeURIComponent(checkoutBasePath)}`;
 
   // 번들(라켓 + 장착 스트링) 구성품 id를 "원자적(묶음) 삭제" 단위로 묶는다.
   // - 번들이 완성된 상태(isBundleLocked=true)에서만 2개 id가 채워짐
   const bundleLockedIds = useMemo(() => {
-    if (!isBundleLocked || !bundleRacketItem || !bundleStringItem) return [] as string[];
+    if (!isBundleLocked || !bundleRacketItem || !bundleStringItem)
+      return [] as string[];
     return [bundleRacketItem.id, bundleStringItem.id];
   }, [isBundleLocked, bundleRacketItem?.id, bundleStringItem?.id]);
 
   // 선택/일괄
   const toggleSelect = (lineKey: string) => {
     const item = cartItems.find((it) => getCartLineKey(it) === lineKey);
-    const bundleLineKeys = bundleLockedIds.length === 2 && item && bundleLockedIds.includes(item.id) ? cartItems.filter((it) => bundleLockedIds.includes(it.id)).map((it) => getCartLineKey(it)) : [lineKey];
+    const bundleLineKeys =
+      bundleLockedIds.length === 2 && item && bundleLockedIds.includes(item.id)
+        ? cartItems
+            .filter((it) => bundleLockedIds.includes(it.id))
+            .map((it) => getCartLineKey(it))
+        : [lineKey];
 
     setSelectedLineKeys((prev) => {
       const next = new Set(prev);
@@ -458,18 +723,39 @@ export default function CartPageClient() {
     // 불일치가 생기지 않도록 번들 2개를 "같이" 삭제한다.
     const lineKeysToRemove = new Set(selectedLineKeys);
 
-    if (bundleLockedIds.length === 2 && cartItems.some((it) => lineKeysToRemove.has(getCartLineKey(it)) && bundleLockedIds.includes(it.id))) {
+    if (
+      bundleLockedIds.length === 2 &&
+      cartItems.some(
+        (it) =>
+          lineKeysToRemove.has(getCartLineKey(it)) &&
+          bundleLockedIds.includes(it.id),
+      )
+    ) {
       cartItems.forEach((it) => {
-        if (bundleLockedIds.includes(it.id)) lineKeysToRemove.add(getCartLineKey(it));
+        if (bundleLockedIds.includes(it.id))
+          lineKeysToRemove.add(getCartLineKey(it));
       });
     }
 
-    const finalItems = cartItems.filter((it) => lineKeysToRemove.has(getCartLineKey(it)));
-    const bundleHint = bundleLockedIds.length === 2 && finalItems.some((it) => bundleLockedIds.includes(it.id)) ? "\n(번들 구성품은 함께 삭제됩니다.)" : "";
+    const finalItems = cartItems.filter((it) =>
+      lineKeysToRemove.has(getCartLineKey(it)),
+    );
+    const bundleHint =
+      bundleLockedIds.length === 2 &&
+      finalItems.some((it) => bundleLockedIds.includes(it.id))
+        ? "\n(번들 구성품은 함께 삭제됩니다.)"
+        : "";
 
-    if (!confirm(`선택한 ${finalItems.length}개 상품을 장바구니에서 삭제할까요?${bundleHint}`)) return;
+    if (
+      !confirm(
+        `선택한 ${finalItems.length}개 상품을 장바구니에서 삭제할까요?${bundleHint}`,
+      )
+    )
+      return;
 
-    finalItems.forEach((it) => removeItem(it.id, it.selectedGauge, it.selectedColor));
+    finalItems.forEach((it) =>
+      removeItem(it.id, it.selectedGauge, it.selectedColor),
+    );
     setSelectedLineKeys([]);
     showSuccessToast?.("선택한 상품을 삭제했어요.");
   };
@@ -477,7 +763,14 @@ export default function CartPageClient() {
   // "장착 대상 스트링"이 2종 이상 섞였을 때,
   // 사용자가 남길 스트링 1종을 직접 선택해서 나머지를 빠르게 정리하는 유틸(선제 차단 UX 강화)
   const keepOnlyThisMountableString = (keepLineKey: string) => {
-    const lineKeysToRemove = cartItems.filter((it) => (it.kind ?? "product") === "product" && mountableStringByProductId[String(it.id)] === true && getCartLineKey(it) !== keepLineKey).map((it) => getCartLineKey(it));
+    const lineKeysToRemove = cartItems
+      .filter(
+        (it) =>
+          (it.kind ?? "product") === "product" &&
+          mountableStringByProductId[String(it.id)] === true &&
+          getCartLineKey(it) !== keepLineKey,
+      )
+      .map((it) => getCartLineKey(it));
     if (lineKeysToRemove.length === 0) return;
 
     // confirm() 대신 AlertDialog로 확인 UX 통일
@@ -495,11 +788,17 @@ export default function CartPageClient() {
     }
 
     // 나머지 장착 스트링 삭제
-    const cleanupTargets = cartItems.filter((it) => cleanupRemoveLineKeys.includes(getCartLineKey(it)));
-    cleanupTargets.forEach((it) => removeItem(it.id, it.selectedGauge, it.selectedColor));
+    const cleanupTargets = cartItems.filter((it) =>
+      cleanupRemoveLineKeys.includes(getCartLineKey(it)),
+    );
+    cleanupTargets.forEach((it) =>
+      removeItem(it.id, it.selectedGauge, it.selectedColor),
+    );
 
     // 선택 상태에서도 제거(선택삭제/전체선택 UX 꼬임 방지)
-    setSelectedLineKeys((prev) => prev.filter((lineKey) => !cleanupRemoveLineKeys.includes(lineKey)));
+    setSelectedLineKeys((prev) =>
+      prev.filter((lineKey) => !cleanupRemoveLineKeys.includes(lineKey)),
+    );
 
     showSuccessToast?.("교체서비스에 사용할 스트링을 1종으로 정리했어요.");
 
@@ -510,7 +809,9 @@ export default function CartPageClient() {
   };
 
   const validateLatestStockBeforeCheckout = async () => {
-    const cartProductItems = selectedCartItems.filter((item) => (item.kind ?? "product") === "product");
+    const cartProductItems = selectedCartItems.filter(
+      (item) => (item.kind ?? "product") === "product",
+    );
     if (cartProductItems.length === 0) return true;
 
     setIsCheckingCheckoutStock(true);
@@ -520,7 +821,8 @@ export default function CartPageClient() {
           const response = await fetch(`/api/products/${item.id}`, {
             cache: "no-store",
           });
-          if (!response.ok) return { item, product: null as ProductForCartValidation | null };
+          if (!response.ok)
+            return { item, product: null as ProductForCartValidation | null };
           const json = await response.json();
           return {
             item,
@@ -531,23 +833,40 @@ export default function CartPageClient() {
 
       for (const { item, product } of results) {
         if (!product) {
-          showErrorToast("일부 상품의 최신 정보를 확인하지 못했어요. 잠시 후 다시 시도해주세요.");
+          showErrorToast(
+            "일부 상품의 최신 정보를 확인하지 못했어요. 잠시 후 다시 시도해주세요.",
+          );
           return false;
         }
 
-        const variants = Array.isArray(product.variantInventories) ? product.variantInventories : [];
+        const variants = Array.isArray(product.variantInventories)
+          ? product.variantInventories
+          : [];
         if (variants.length > 0) {
           if (!item.selectedColor || !item.selectedGauge) {
-            showErrorToast("옵션 정보를 확인할 수 없습니다. 선택한 색상/게이지 옵션을 다시 선택해주세요.");
+            showErrorToast(
+              "옵션 정보를 확인할 수 없습니다. 선택한 색상/게이지 옵션을 다시 선택해주세요.",
+            );
             return false;
           }
-          const selectedVariant = variants.find((variant) => (variant.colorValue ?? "") === item.selectedColor && (variant.gaugeValue ?? "") === item.selectedGauge);
+          const selectedVariant = variants.find(
+            (variant) =>
+              (variant.colorValue ?? "") === item.selectedColor &&
+              (variant.gaugeValue ?? "") === item.selectedGauge,
+          );
           if (!selectedVariant) {
-            showErrorToast("선택한 색상/게이지 조합의 재고 정보를 찾지 못했어요. 옵션을 다시 확인해주세요.");
+            showErrorToast(
+              "선택한 색상/게이지 조합의 재고 정보를 찾지 못했어요. 옵션을 다시 확인해주세요.",
+            );
             return false;
           }
-          if (selectedVariant.isSoldOut === true || Number(selectedVariant.stock ?? 0) < item.quantity) {
-            showErrorToast("선택한 색상/게이지 조합의 재고가 부족합니다. 수량을 다시 확인해주세요.");
+          if (
+            selectedVariant.isSoldOut === true ||
+            Number(selectedVariant.stock ?? 0) < item.quantity
+          ) {
+            showErrorToast(
+              "선택한 색상/게이지 조합의 재고가 부족합니다. 수량을 다시 확인해주세요.",
+            );
             return false;
           }
           continue;
@@ -555,14 +874,18 @@ export default function CartPageClient() {
 
         const maxStock = getMaxStock(item.stock);
         if (Number.isFinite(maxStock) && item.quantity > maxStock) {
-          showErrorToast("일부 상품의 재고가 변경되었습니다. 수량을 다시 확인해주세요.");
+          showErrorToast(
+            "일부 상품의 재고가 변경되었습니다. 수량을 다시 확인해주세요.",
+          );
           return false;
         }
       }
 
       return true;
     } catch {
-      showErrorToast("재고 확인 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.");
+      showErrorToast(
+        "재고 확인 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.",
+      );
       return false;
     } finally {
       setIsCheckingCheckoutStock(false);
@@ -583,8 +906,13 @@ export default function CartPageClient() {
       return;
     }
 
-    const checkoutLineKeys = selectedCartItems.map((item) => getCartLineKey(item));
-    sessionStorage.setItem(CART_CHECKOUT_SELECTION_KEY, JSON.stringify(checkoutLineKeys));
+    const checkoutLineKeys = selectedCartItems.map((item) =>
+      getCartLineKey(item),
+    );
+    sessionStorage.setItem(
+      CART_CHECKOUT_SELECTION_KEY,
+      JSON.stringify(checkoutLineKeys),
+    );
 
     if (!user) {
       window.location.href = checkoutHref;
@@ -612,28 +940,45 @@ export default function CartPageClient() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-lg font-semibold">교체서비스 스트링 정리</AlertDialogTitle>
+            <AlertDialogTitle className="text-lg font-semibold">
+              교체서비스 스트링 정리
+            </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-2 text-sm text-muted-foreground">
                 <p>
-                  교체서비스에 사용할 스트링은 <span className="font-medium">1종만</span> 선택할 수 있어요.
+                  교체서비스에 사용할 스트링은{" "}
+                  <span className="font-medium">1종만</span> 선택할 수 있어요.
                 </p>
                 <p>
-                  남길 스트링(선택): <span className="font-medium text-foreground">{keepStringLabel}</span>
+                  남길 스트링(선택):{" "}
+                  <span className="font-medium text-foreground">
+                    {keepStringLabel}
+                  </span>
                 </p>
                 <p>
-                  삭제될 스트링(정리 대상): <span className="font-medium text-foreground">{removeCount}개</span>
-                  {removePreview ? <span className="text-muted-foreground"> ({removePreview})</span> : null}
+                  삭제될 스트링(정리 대상):{" "}
+                  <span className="font-medium text-foreground">
+                    {removeCount}개
+                  </span>
+                  {removePreview ? (
+                    <span className="text-muted-foreground">
+                      {" "}
+                      ({removePreview})
+                    </span>
+                  ) : null}
                 </p>
                 <p className="text-muted-foreground">
-                  “정리하기”를 누르면 <b>선택한 스트링 1종만 유지</b>되고, 나머지 스트링은 장바구니에서 삭제됩니다. (취소 시 변경 없음)
+                  “정리하기”를 누르면 <b>선택한 스트링 1종만 유지</b>되고,
+                  나머지 스트링은 장바구니에서 삭제됩니다. (취소 시 변경 없음)
                 </p>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>취소</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmCleanupMountableStrings}>정리하기</AlertDialogAction>
+            <AlertDialogAction onClick={confirmCleanupMountableStrings}>
+              정리하기
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -642,32 +987,66 @@ export default function CartPageClient() {
         <SiteContainer className="max-w-[1240px] py-4 bp-sm:py-5">
           <div className="space-y-4">
             <div className="min-w-0">
-              <h1 className="mb-2 text-2xl font-black bp-sm:text-3xl">장바구니</h1>
-              <p className="max-w-2xl break-keep text-sm leading-relaxed text-muted-foreground bp-sm:text-base">담은 상품과 옵션, 수량을 확인한 뒤 주문을 진행하세요.</p>
+              <h1 className="mb-2 text-2xl font-black bp-sm:text-3xl">
+                장바구니
+              </h1>
+              <p className="max-w-2xl break-keep text-sm leading-relaxed text-muted-foreground bp-sm:text-base">
+                담은 상품과 옵션, 수량을 확인한 뒤 주문을 진행하세요.
+              </p>
             </div>
-
           </div>
         </SiteContainer>
       </div>
 
-      <SiteContainer className={cartItems.length > 0 ? "max-w-[1240px] pb-[calc(96px+env(safe-area-inset-bottom))] pt-4 bp-sm:pt-5 bp-lg:pb-12" : "max-w-[1240px] pt-6 pb-12 bp-sm:pt-8 bp-sm:pb-16 bp-md:py-8"}>
+      <SiteContainer
+        className={
+          cartItems.length > 0
+            ? "max-w-[1240px] pb-[calc(96px+env(safe-area-inset-bottom))] pt-4 bp-sm:pt-5 bp-lg:pb-12"
+            : "max-w-[1240px] pt-6 pb-12 bp-sm:pt-8 bp-sm:pb-16 bp-md:py-8"
+        }
+      >
         {cartItems.length > 0 ? (
           <div className="grid grid-cols-1 gap-5 bp-lg:grid-cols-[minmax(0,1fr)_360px] bp-xl:grid-cols-[minmax(0,1fr)_380px] bp-xl:gap-6">
             {/* 목록 */}
             <div className="min-w-0 space-y-5">
               <Card className="rounded-2xl border border-border bg-card shadow-sm">
-                <CardHeader variant="section" className="rounded-t-2xl px-4 py-4 bp-sm:px-5">
-                  <CardTitle className="text-lg bp-sm:text-xl">장바구니 상품</CardTitle>
+                <CardHeader
+                  variant="section"
+                  className="rounded-t-2xl px-4 py-4 bp-sm:px-5"
+                >
+                  <CardTitle className="text-lg bp-sm:text-xl">
+                    장바구니 상품
+                  </CardTitle>
                 </CardHeader>
 
                 <div className="flex h-12 items-center justify-between border-b border-border px-4 bp-sm:px-5">
                   <div className="inline-flex items-center gap-2">
-                    <Checkbox checked={selectedLineKeys.length === cartItems.length} onCheckedChange={toggleAll} aria-label={selectedLineKeys.length === cartItems.length ? "전체 해제" : "전체 선택"} />
-                    <button type="button" onClick={toggleAll} className="text-sm font-semibold text-foreground">
-                      {selectedLineKeys.length === cartItems.length ? "전체 해제" : "전체 선택"}
+                    <Checkbox
+                      checked={selectedLineKeys.length === cartItems.length}
+                      onCheckedChange={toggleAll}
+                      aria-label={
+                        selectedLineKeys.length === cartItems.length
+                          ? "전체 해제"
+                          : "전체 선택"
+                      }
+                    />
+                    <button
+                      type="button"
+                      onClick={toggleAll}
+                      className="text-sm font-semibold text-foreground"
+                    >
+                      {selectedLineKeys.length === cartItems.length
+                        ? "전체 해제"
+                        : "전체 선택"}
                     </button>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={removeSelected} disabled={!hasSelectedItems} className="h-9 px-2 text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-40 dark:hover:bg-destructive/10">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={removeSelected}
+                    disabled={!hasSelectedItems}
+                    className="h-9 px-2 text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-40 dark:hover:bg-destructive/10"
+                  >
                     선택 삭제
                   </Button>
                 </div>
@@ -678,38 +1057,81 @@ export default function CartPageClient() {
                     // 버튼 비활성 판단
                     const isRacket = (item.kind ?? "product") === "racket";
                     // 라켓은 /rackets/[id], 일반 상품은 /products/[id]
-                    const itemHref = isRacket ? `/rackets/${item.id}` : `/products/${item.id}`;
+                    const itemHref = isRacket
+                      ? `/rackets/${item.id}`
+                      : `/products/${item.id}`;
                     const canDec = item.quantity > 1;
                     const maxStock = getMaxStock(item.stock);
                     const canInc = item.quantity < maxStock;
-                    const isLowStock = Number.isFinite(maxStock) && maxStock <= 3;
-                    const isStockLimitReached = Number.isFinite(maxStock) && item.quantity >= maxStock;
-                    const shouldEmphasizeStock = isLowStock || isStockLimitReached;
-                    const hasDiscount = typeof item.regularPrice === "number" && Number.isFinite(item.regularPrice) && item.regularPrice > item.price;
-                    const itemMountingFee = Number(mountingFeeByProductId[String(item.id)] ?? 0);
-                    const isMountableStringLine = (item.kind ?? "product") === "product" && mountableStringByProductId[String(item.id)] === true;
-                    const shouldShowItemServiceFee = shouldIncludeServiceFee && isMountableStringLine && Number.isFinite(itemMountingFee) && itemMountingFee > 0;
+                    const isLowStock =
+                      Number.isFinite(maxStock) && maxStock <= 3;
+                    const isStockLimitReached =
+                      Number.isFinite(maxStock) && item.quantity >= maxStock;
+                    const shouldEmphasizeStock =
+                      isLowStock || isStockLimitReached;
+                    const hasDiscount =
+                      typeof item.regularPrice === "number" &&
+                      Number.isFinite(item.regularPrice) &&
+                      item.regularPrice > item.price;
+                    const itemMountingFee = Number(
+                      mountingFeeByProductId[String(item.id)] ?? 0,
+                    );
+                    const isMountableStringLine =
+                      (item.kind ?? "product") === "product" &&
+                      mountableStringByProductId[String(item.id)] === true;
+                    const shouldShowItemServiceFee =
+                      shouldIncludeServiceFee &&
+                      isMountableStringLine &&
+                      Number.isFinite(itemMountingFee) &&
+                      itemMountingFee > 0;
                     const itemProductTotal = item.price * item.quantity;
-                    const itemServiceFeeTotal = shouldShowItemServiceFee ? itemMountingFee * item.quantity : 0;
-                    const itemLineTotal = itemProductTotal + itemServiceFeeTotal;
+                    const itemServiceFeeTotal = shouldShowItemServiceFee
+                      ? itemMountingFee * item.quantity
+                      : 0;
+                    const itemLineTotal =
+                      itemProductTotal + itemServiceFeeTotal;
 
-                    const isBundleRacket = isBundleLocked && !!bundleRacketItem && item.id === bundleRacketItem.id && (item.kind ?? "product") === "racket";
+                    const isBundleRacket =
+                      isBundleLocked &&
+                      !!bundleRacketItem &&
+                      item.id === bundleRacketItem.id &&
+                      (item.kind ?? "product") === "racket";
 
-                    const isBundleString = isBundleLocked && !!bundleStringItem && item.id === bundleStringItem.id && (item.kind ?? "product") === "product" && mountableStringByProductId[String(item.id)] === true;
+                    const isBundleString =
+                      isBundleLocked &&
+                      !!bundleStringItem &&
+                      item.id === bundleStringItem.id &&
+                      (item.kind ?? "product") === "product" &&
+                      mountableStringByProductId[String(item.id)] === true;
 
                     const lockStepper = isBundleRacket || isBundleString;
-                    const canOpenOptionOverlay = (item.kind ?? "product") === "product" && !lockStepper && (isMountableStringLine || Boolean(item.selectedGauge || item.selectedColor || item.selectedColorLabel));
-                    const optionChangeHref = (item.kind ?? "product") === "racket" || lockStepper ? getRacketOptionChangeHref(item) : null;
+                    const canOpenOptionOverlay =
+                      (item.kind ?? "product") === "product" &&
+                      !lockStepper &&
+                      (isMountableStringLine ||
+                        Boolean(
+                          item.selectedGauge ||
+                          item.selectedColor ||
+                          item.selectedColorLabel,
+                        ));
+                    const optionChangeHref =
+                      (item.kind ?? "product") === "racket" || lockStepper
+                        ? getRacketOptionChangeHref(item)
+                        : null;
 
                     //- "구성 정리 필요" 상태에서 어떤 라인을 정리해야 하는지(장착 대상 스트링)를 시각적으로 강조
                     // - 장착 대상 스트링: isMountableString=true 인 스트링 상품
                     const isMountableString = isMountableStringLine;
 
                     // - 구성 정리 필요 상태: 라켓이 있고 + (라켓 1종 / 장착 스트링 1종 규칙 위반) + 특히 장착 스트링이 2종 이상인 경우
-                    const needsCompositionCleanup = blockServiceCheckoutByComposition && totalRacketQty > 0 && mountableStringLineCount > 1;
+                    const needsCompositionCleanup =
+                      blockServiceCheckoutByComposition &&
+                      totalRacketQty > 0 &&
+                      mountableStringLineCount > 1;
 
                     // - 정리 대상 하이라이트: 구성 정리 상태에서 "장착 대상 스트링" 라인들을 강조 표시
-                    const highlightCleanupTarget = needsCompositionCleanup && isMountableString;
+                    const highlightCleanupTarget =
+                      needsCompositionCleanup && isMountableString;
 
                     return (
                       <div
@@ -719,42 +1141,84 @@ export default function CartPageClient() {
                         <div className="space-y-3">
                           {/* 상품 기본 정보: 체크박스, 이미지, 상품명/가격/옵션 요약 */}
                           <div className="grid min-w-0 grid-cols-[24px_88px_minmax(0,1fr)] items-start gap-3">
-                            <Checkbox checked={selectedLineKeySet.has(lineKey)} onCheckedChange={() => toggleSelect(lineKey)} aria-label={`${item.name} 선택`} />
+                            <Checkbox
+                              checked={selectedLineKeySet.has(lineKey)}
+                              onCheckedChange={() => toggleSelect(lineKey)}
+                              aria-label={`${item.name} 선택`}
+                            />
                             <Link href={itemHref} className="shrink-0">
-                              <Image src={item.image || "/placeholder.svg?height=72&width=72"} alt={item.name} width={88} height={88} loading="lazy" className="h-[88px] w-[88px] rounded-lg object-cover" />
+                              <Image
+                                src={
+                                  item.image ||
+                                  "/placeholder.svg?height=72&width=72"
+                                }
+                                alt={item.name}
+                                width={88}
+                                height={88}
+                                loading="lazy"
+                                className="h-[88px] w-[88px] rounded-lg object-cover"
+                              />
                             </Link>
                             <div className="min-w-0 flex-1">
-                              <Link href={itemHref} className="block min-w-0 line-clamp-2 break-keep break-words font-medium leading-relaxed text-foreground transition-colors hover:text-primary dark:text-foreground dark:hover:text-primary">
+                              <Link
+                                href={itemHref}
+                                className="block min-w-0 line-clamp-2 break-keep break-words font-medium leading-relaxed text-foreground transition-colors hover:text-primary dark:text-foreground dark:hover:text-primary"
+                              >
                                 {item.name}
                               </Link>
                               <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-sm">
-                                <span className="text-muted-foreground">{hasDiscount ? "할인가" : "판매가"}</span>
-                                <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">{formatKRW(item.price)}원</span>
+                                <span className="text-muted-foreground">
+                                  {hasDiscount ? "할인가" : "판매가"}
+                                </span>
+                                <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">
+                                  {formatKRW(item.price)}원
+                                </span>
                               </div>
                               {shouldShowItemServiceFee && (
                                 <div className="mt-1 text-xs text-muted-foreground">
-                                  교체서비스 <span className="font-medium text-foreground">{formatKRW(itemMountingFee)}원</span> / 개
+                                  교체서비스{" "}
+                                  <span className="font-medium text-foreground">
+                                    {formatKRW(itemMountingFee)}원
+                                  </span>{" "}
+                                  / 개
                                 </div>
                               )}
                               {hasDiscount && (
                                 <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs tabular-nums">
                                   <span className="text-muted-foreground">
-                                    정가 <span className="line-through">{formatKRW(item.regularPrice!)}원</span>
+                                    정가{" "}
+                                    <span className="line-through">
+                                      {formatKRW(item.regularPrice!)}원
+                                    </span>
                                   </span>
-                                  <Badge variant="destructive" className="text-[10px]">
-                                    {item.discountRate ?? Math.round(((item.regularPrice! - item.price) / item.regularPrice!) * 100)}% OFF
+                                  <Badge
+                                    variant="destructive"
+                                    className="text-[10px]"
+                                  >
+                                    {item.discountRate ??
+                                      Math.round(
+                                        ((item.regularPrice! - item.price) /
+                                          item.regularPrice!) *
+                                          100,
+                                      )}
+                                    % OFF
                                   </Badge>
                                 </div>
                               )}
                               {highlightCleanupTarget && (
                                 <>
-                                  <Badge variant="warning" wrap="normal" className="mt-1 max-w-full px-2 py-0.5 text-xs font-medium">
+                                  <Badge
+                                    variant="warning"
+                                    wrap="normal"
+                                    className="mt-1 max-w-full px-2 py-0.5 text-xs font-medium"
+                                  >
                                     교체서비스에 사용할 스트링
                                   </Badge>
                                   <div className="mt-2 space-y-2 rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs leading-snug text-foreground dark:text-foreground">
                                     <span className="inline-flex items-center gap-1.5">
                                       <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-                                      교체서비스에 사용할 스트링은 <b>1종만</b> 선택할 수 있어요.
+                                      교체서비스에 사용할 스트링은 <b>1종만</b>{" "}
+                                      선택할 수 있어요.
                                     </span>
                                     <button
                                       type="button"
@@ -777,17 +1241,38 @@ export default function CartPageClient() {
                           <div className="mt-3 min-w-0 rounded-xl border border-border bg-muted/25 p-3">
                             <div className="flex min-w-0 items-start justify-between gap-3">
                               <p className="flex min-w-0 flex-wrap items-center gap-1.5 pr-2 text-[13px] leading-relaxed text-muted-foreground">
-                                <span className="font-medium text-foreground">옵션:</span>
-                                {item.selectedGauge ? <span className="whitespace-nowrap">게이지 {formatGaugeLabel(item.selectedGauge)}</span> : null}
-                                {item.selectedColorLabel || item.selectedColor ? (
+                                <span className="font-medium text-foreground">
+                                  옵션:
+                                </span>
+                                {item.selectedGauge ? (
+                                  <span className="whitespace-nowrap">
+                                    게이지{" "}
+                                    {formatGaugeLabel(item.selectedGauge)}
+                                  </span>
+                                ) : null}
+                                {item.selectedColorLabel ||
+                                item.selectedColor ? (
                                   <span className="inline-flex max-w-full items-center gap-1 whitespace-nowrap">
                                     <span className="text-border">·</span>
                                     <span>색상</span>
-                                    {item.selectedColorHex && <span className="h-2.5 w-2.5 shrink-0 rounded-full border border-border/60" style={{ backgroundColor: item.selectedColorHex }} />}
-                                    <span className="min-w-0 truncate">{item.selectedColorLabel || item.selectedColor}</span>
+                                    {item.selectedColorHex && (
+                                      <span
+                                        className="h-2.5 w-2.5 shrink-0 rounded-full border border-border/60"
+                                        style={{
+                                          backgroundColor:
+                                            item.selectedColorHex,
+                                        }}
+                                      />
+                                    )}
+                                    <span className="min-w-0 truncate">
+                                      {item.selectedColorLabel ||
+                                        item.selectedColor}
+                                    </span>
                                   </span>
                                 ) : null}
-                                {!item.selectedGauge && !item.selectedColorLabel && !item.selectedColor && <span>기본 옵션</span>}
+                                {!item.selectedGauge &&
+                                  !item.selectedColorLabel &&
+                                  !item.selectedColor && <span>기본 옵션</span>}
                               </p>
 
                               <div className="-mr-1 -mt-1 flex shrink-0 items-center gap-1">
@@ -804,41 +1289,84 @@ export default function CartPageClient() {
                                       setOptionChangeItem(item);
                                     }}
                                   >
-                                    {(item.kind ?? "product") === "racket" ? "스트링 변경" : "옵션 변경"}
+                                    {(item.kind ?? "product") === "racket"
+                                      ? "스트링 변경"
+                                      : "옵션 변경"}
                                   </Button>
                                 )}
 
-                              {/* 삭제 버튼 (컨펌) */}
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                aria-label={lockStepper ? `번들(라켓+스트링) 삭제` : `${item.name} 삭제`}
-                                title={lockStepper ? "라켓과 장착 스트링이 함께 담긴 구성이라 둘 중 하나만 삭제할 수 없어요." : undefined}
-                                onClick={() => {
-                                  // 번들(라켓/장착 스트링) 라인에서 삭제를 누르면
-                                  // "불일치"가 생기지 않도록 번들 2개를 같이 삭제한다.
-                                  if (lockStepper && bundleLockedIds.length === 2) {
-                                    if (confirm("번들(라켓 + 장착 스트링)을 통째로 장바구니에서 삭제할까요?")) {
-                                      cartItems.filter((it) => bundleLockedIds.includes(it.id)).forEach((it) => removeItem(it.id, it.selectedGauge, it.selectedColor));
-                                      setSelectedLineKeys((prev) =>
-                                        prev.filter((selectedLineKey) => {
-                                          const selectedItem = cartItems.find((it) => getCartLineKey(it) === selectedLineKey);
-                                          return selectedItem ? !bundleLockedIds.includes(selectedItem.id) : true;
-                                        }),
+                                {/* 삭제 버튼 (컨펌) */}
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  aria-label={
+                                    lockStepper
+                                      ? `번들(라켓+스트링) 삭제`
+                                      : `${item.name} 삭제`
+                                  }
+                                  title={
+                                    lockStepper
+                                      ? "라켓과 장착 스트링이 함께 담긴 구성이라 둘 중 하나만 삭제할 수 없어요."
+                                      : undefined
+                                  }
+                                  onClick={() => {
+                                    // 번들(라켓/장착 스트링) 라인에서 삭제를 누르면
+                                    // "불일치"가 생기지 않도록 번들 2개를 같이 삭제한다.
+                                    if (
+                                      lockStepper &&
+                                      bundleLockedIds.length === 2
+                                    ) {
+                                      if (
+                                        confirm(
+                                          "번들(라켓 + 장착 스트링)을 통째로 장바구니에서 삭제할까요?",
+                                        )
+                                      ) {
+                                        cartItems
+                                          .filter((it) =>
+                                            bundleLockedIds.includes(it.id),
+                                          )
+                                          .forEach((it) =>
+                                            removeItem(
+                                              it.id,
+                                              it.selectedGauge,
+                                              it.selectedColor,
+                                            ),
+                                          );
+                                        setSelectedLineKeys((prev) =>
+                                          prev.filter((selectedLineKey) => {
+                                            const selectedItem = cartItems.find(
+                                              (it) =>
+                                                getCartLineKey(it) ===
+                                                selectedLineKey,
+                                            );
+                                            return selectedItem
+                                              ? !bundleLockedIds.includes(
+                                                  selectedItem.id,
+                                                )
+                                              : true;
+                                          }),
+                                        );
+                                      }
+                                      return;
+                                    }
+
+                                    // 일반 상품은 기존처럼 개별 삭제
+                                    if (
+                                      confirm(
+                                        `"${item.name}"을(를) 장바구니에서 삭제할까요?`,
+                                      )
+                                    ) {
+                                      removeItem(
+                                        item.id,
+                                        item.selectedGauge,
+                                        item.selectedColor,
                                       );
                                     }
-                                    return;
-                                  }
-
-                                  // 일반 상품은 기존처럼 개별 삭제
-                                  if (confirm(`"${item.name}"을(를) 장바구니에서 삭제할까요?`)) {
-                                    removeItem(item.id, item.selectedGauge, item.selectedColor);
-                                  }
-                                }}
-                                className="h-8 w-8 shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                                  }}
+                                  className="h-8 w-8 shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
                               </div>
                             </div>
 
@@ -850,13 +1378,24 @@ export default function CartPageClient() {
                                     {/* 숫자만 표시(± 없음) */}
                                     <div className="inline-flex items-center gap-2">
                                       <div className="inline-flex h-8 items-center rounded-full bg-muted px-3 dark:bg-muted">
-                                        <span className="w-8 select-none text-center font-medium tabular-nums">{item.quantity}</span>
+                                        <span className="w-8 select-none text-center font-medium tabular-nums">
+                                          {item.quantity}
+                                        </span>
                                       </div>
 
-                                      {Number.isFinite(maxStock) && <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium leading-none ${shouldEmphasizeStock ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>재고 {maxStock}개</span>}
+                                      {Number.isFinite(maxStock) && (
+                                        <span
+                                          className={`rounded-full px-2 py-0.5 text-[11px] font-medium leading-none ${shouldEmphasizeStock ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}
+                                        >
+                                          재고 {maxStock}개
+                                        </span>
+                                      )}
                                     </div>
 
-                                    <p className="mt-1 max-w-[220px] text-[11px] leading-snug text-muted-foreground">옵션 panel 우상단에서 수량과 스트링을 함께 변경할 수 있어요.</p>
+                                    <p className="mt-1 max-w-[220px] text-[11px] leading-snug text-muted-foreground">
+                                      옵션 panel 우상단에서 수량과 스트링을 함께
+                                      변경할 수 있어요.
+                                    </p>
                                   </>
                                 ) : (
                                   <>
@@ -867,52 +1406,100 @@ export default function CartPageClient() {
                                           size="sm"
                                           className="h-8 w-8 disabled:opacity-40"
                                           aria-label={`${item.name} 수량 감소`}
-                                          disabled={lockStepper ? true : !canDec}
-                                          onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedGauge, item.selectedColor)}
-                                          title={lockStepper ? "번들 품목은 스트링 선택 화면에서만 수량을 변경할 수 있어요." : undefined}
+                                          disabled={
+                                            lockStepper ? true : !canDec
+                                          }
+                                          onClick={() =>
+                                            updateQuantity(
+                                              item.id,
+                                              item.quantity - 1,
+                                              item.selectedGauge,
+                                              item.selectedColor,
+                                            )
+                                          }
+                                          title={
+                                            lockStepper
+                                              ? "번들 품목은 스트링 선택 화면에서만 수량을 변경할 수 있어요."
+                                              : undefined
+                                          }
                                         >
                                           <Minus className="h-4 w-4" />
                                         </Button>
 
-                                        <span className={`w-8 select-none text-center font-medium tabular-nums ${lockStepper ? "opacity-60" : ""}`}>{item.quantity}</span>
+                                        <span
+                                          className={`w-8 select-none text-center font-medium tabular-nums ${lockStepper ? "opacity-60" : ""}`}
+                                        >
+                                          {item.quantity}
+                                        </span>
 
                                         <Button
                                           variant="ghost"
                                           size="sm"
                                           className="h-8 w-8 disabled:opacity-40"
                                           aria-label={`${item.name} 수량 증가`}
-                                          disabled={lockStepper ? true : !canInc}
-                                          title={lockStepper ? "번들 품목은 스트링 선택 화면에서만 수량을 변경할 수 있어요." : undefined}
+                                          disabled={
+                                            lockStepper ? true : !canInc
+                                          }
+                                          title={
+                                            lockStepper
+                                              ? "번들 품목은 스트링 선택 화면에서만 수량을 변경할 수 있어요."
+                                              : undefined
+                                          }
                                           onClick={() => {
                                             if (!canInc) {
                                               showErrorToast(
                                                 <>
                                                   <p>
-                                                    <strong>{item.name}</strong>의 최대 주문 수량은 {maxStock}
+                                                    <strong>{item.name}</strong>
+                                                    의 최대 주문 수량은{" "}
+                                                    {maxStock}
                                                     개입니다.
                                                   </p>
-                                                  <p>더 이상 수량을 늘릴 수 없습니다.</p>
+                                                  <p>
+                                                    더 이상 수량을 늘릴 수
+                                                    없습니다.
+                                                  </p>
                                                 </>,
                                               );
                                               return;
                                             }
-                                            updateQuantity(item.id, item.quantity + 1, item.selectedGauge, item.selectedColor);
+                                            updateQuantity(
+                                              item.id,
+                                              item.quantity + 1,
+                                              item.selectedGauge,
+                                              item.selectedColor,
+                                            );
                                           }}
                                         >
                                           <Plus className="h-4 w-4" />
                                         </Button>
                                       </div>
 
-                                      {Number.isFinite(maxStock) && <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium leading-none ${shouldEmphasizeStock ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>재고 {maxStock}개</span>}
+                                      {Number.isFinite(maxStock) && (
+                                        <span
+                                          className={`rounded-full px-2 py-0.5 text-[11px] font-medium leading-none ${shouldEmphasizeStock ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}
+                                        >
+                                          재고 {maxStock}개
+                                        </span>
+                                      )}
                                     </div>
                                   </>
                                 )}
                               </div>
 
                               <div className="shrink-0 whitespace-nowrap text-right">
-                                <div className="text-[13px] text-muted-foreground">합계</div>
-                                <div className="whitespace-nowrap tabular-nums text-lg font-semibold text-foreground">{formatKRW(itemLineTotal)}원</div>
-                                {itemServiceFeeTotal > 0 && <div className="mt-0.5 text-[11px] text-muted-foreground">교체 +{formatKRW(itemServiceFeeTotal)}원 포함</div>}
+                                <div className="text-[13px] text-muted-foreground">
+                                  합계
+                                </div>
+                                <div className="whitespace-nowrap tabular-nums text-lg font-semibold text-foreground">
+                                  {formatKRW(itemLineTotal)}원
+                                </div>
+                                {itemServiceFeeTotal > 0 && (
+                                  <div className="mt-0.5 text-[11px] text-muted-foreground">
+                                    교체 +{formatKRW(itemServiceFeeTotal)}원
+                                    포함
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -929,7 +1516,8 @@ export default function CartPageClient() {
                       size="sm"
                       className="h-8 text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                       onClick={() => {
-                        if (confirm("장바구니의 모든 상품을 비울까요?")) clearCart();
+                        if (confirm("장바구니의 모든 상품을 비울까요?"))
+                          clearCart();
                       }}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -950,105 +1538,194 @@ export default function CartPageClient() {
                 <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
                   <CardHeader className="space-y-1 px-4 py-4 bp-sm:px-5">
                     <CardTitle className="text-lg">주문 요약</CardTitle>
-                    <p className="text-sm text-muted-foreground">선택 상품 기준</p>
+                    <p className="text-sm text-muted-foreground">
+                      선택 상품 기준
+                    </p>
                   </CardHeader>
                   <CardContent className="space-y-4 px-4 pb-4 bp-sm:px-5">
                     <div className="space-y-3">
-                    <PriceSummary rows={priceSummaryRows} />
+                      <PriceSummary rows={priceSummaryRows} />
 
-                    <div className="rounded-lg border border-border/70 bg-muted/15 px-3 py-2">
-                      <div className="mb-1 flex items-center gap-1.5 text-xs text-primary">
-                        <Star className="h-3.5 w-3.5" />
-                        <span className="font-semibold">배송비/교체서비스</span>
-                      </div>
-                      <p className="text-xs leading-relaxed text-muted-foreground">
-                        상품별 배송비와 선택한 스트링의 교체서비스 비용이 주문 요약에 반영됩니다.
-                        <span className="mt-1 block">무료배송 상품은 배송비가 0원으로 표시됩니다.</span>
-                      </p>
-                    </div>
-                    {!hasSelectedItems && <p className="text-xs text-muted-foreground">상품 선택 후 배송비가 계산됩니다.</p>}
-                  </div>
-                    <div className="hidden flex-col items-stretch gap-3 border-t border-border pt-4 bp-lg:flex">
-                    {blockServiceCheckout ? (
-                      <>
-                        {blockServiceCheckoutByComposition && (
-                          <div className="w-full space-y-1 rounded-lg border border-border bg-muted/20 px-3 py-2 text-[13px] leading-relaxed text-foreground">
-                            <p className="font-semibold">교체서비스 구성을 정리해야 해요</p>
-                            <p>라켓 1종에는 장착할 스트링 1종이 필요해요.</p>
-                            <p>
-                              현재 라켓 <span className="font-semibold">{racketLineCount}종</span> / 장착 스트링 <span className="font-semibold">{mountableStringLineCount}종</span>
-                            </p>
-                            {mountableStringLineCount > 1 && <p>해야 할 일: 장착할 스트링 1종만 남겨주세요.</p>}
-                            {mountableStringLineCount === 0 && <p>라켓에 장착할 스트링을 먼저 선택해주세요.</p>}
-                            {racketLineCount !== 1 && <p>교체서비스 신청은 한{"\u00A0"}번에 라켓 1종 기준으로 진행됩니다.</p>}
-                          </div>
-                        )}
-                        {blockServiceCheckoutByQty && (
-                          <div className="w-full rounded-lg border border-border bg-muted/20 px-3 py-2 text-[13px] leading-relaxed text-foreground">
-                            라켓 1개에는 장착할 스트링 1개가 필요해요.
-                            <br />
-                            현재 라켓 <span className="font-semibold">{totalRacketQty}개</span> / 장착 스트링 <span className="font-semibold">{totalMountableStringQty}개</span>
-                            입니다.
-                            <span className="mt-1 inline-flex items-center gap-1.5">
-                              <ArrowRight className="h-3.5 w-3.5 shrink-0" />
-                              {bundleEditHref ? "아래 ‘번들 변경’에서 수량을 함께 맞춰주세요." : "먼저 교체서비스 신청 구성을 정리한 뒤 수량을 다시 확인해주세요."}
-                            </span>
-                          </div>
-                        )}
-                        {bundleEditHref ? (
-                          <Button asChild className="flex h-12 w-full items-center justify-center gap-2 px-3 font-semibold">
-                            <Link href={bundleEditHref}>
-                              <ShoppingBag className="h-5 w-5" />
-                              번들 변경
-                              <ArrowRight className="h-5 w-5" />
-                            </Link>
-                          </Button>
-                        ) : (
-                          <Button className="flex h-12 w-full items-center justify-center gap-2 px-3 font-semibold" size="lg" onClick={() => showErrorToast(serviceBlockToastMessage)}>
-                            <ShoppingBag className="h-5 w-5" />
-                            {blockServiceCheckoutByComposition ? "구성 정리 후 결제하기" : "수량 맞춘 뒤 주문하기"}
-                            <ArrowRight className="h-5 w-5" />
-                          </Button>
-                        )}
-                      </>
-                    ) : loading ? (
-                      <Button className="h-12 w-full font-semibold opacity-70" disabled>
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        로그인 확인 중...
-                      </Button>
-                    ) : !isCartPriceReady ? (
-                      <Button className="h-12 w-full font-semibold opacity-70" disabled>
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        금액 계산 중...
-                      </Button>
-                    ) : (
-                      <>
-                        {hasMountableStringOnlyFlow && (
-                          <div className="space-y-1 rounded-lg border border-primary/25 bg-primary/5 px-3 py-2 text-[13px] leading-relaxed text-foreground break-keep">
-                            {stringStandalonePausedNoticeLines.map((line) => (
-                              <p key={line}>{line}</p>
-                            ))}
-                          </div>
-                        )}
-                        <p className="text-xs text-muted-foreground">최신 재고와 배송비는 주문 단계에서 다시 확인됩니다.</p>
-                        <div className="grid grid-cols-1 gap-2">
-                          <Button className="h-12 w-full px-2 font-semibold" disabled={!hasSelectedItems || !isCartPriceReady || isCheckingCheckoutStock} onClick={handleCheckoutClick}>
-                            {isCheckingCheckoutStock ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingBag className="h-4 w-4" />}
-                            <span className="truncate">{isCheckingCheckoutStock ? "재고 확인 중" : !hasSelectedItems ? "상품 선택" : user ? `주문하기 ${selectedCartItems.length}` : "로그인 주문"}</span>
-                          </Button>
-                          <Button variant="outline" className="h-12 w-full px-2 font-semibold" asChild>
-                            <Link href="/products">쇼핑 계속하기</Link>
-                          </Button>
+                      <div className="rounded-lg border border-border/70 bg-muted/15 px-3 py-2">
+                        <div className="mb-1 flex items-center gap-1.5 text-xs text-primary">
+                          <Star className="h-3.5 w-3.5" />
+                          <span className="font-semibold">
+                            배송비/교체서비스
+                          </span>
                         </div>
-                      </>
-                    )}
-                  </div>
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                          상품별 배송비와 선택한 스트링의 교체서비스 비용이 주문
+                          요약에 반영됩니다.
+                          <span className="mt-1 block">
+                            무료배송 상품은 배송비가 0원으로 표시됩니다.
+                          </span>
+                        </p>
+                      </div>
+                      {!hasSelectedItems && (
+                        <p className="text-xs text-muted-foreground">
+                          상품 선택 후 배송비가 계산됩니다.
+                        </p>
+                      )}
+                    </div>
+                    <div className="hidden flex-col items-stretch gap-3 border-t border-border pt-4 bp-lg:flex">
+                      {blockServiceCheckout ? (
+                        <>
+                          {blockServiceCheckoutByComposition && (
+                            <div className="w-full space-y-1 rounded-lg border border-border bg-muted/20 px-3 py-2 text-[13px] leading-relaxed text-foreground">
+                              <p className="font-semibold">
+                                교체서비스 구성을 정리해야 해요
+                              </p>
+                              <p>라켓 1종에는 장착할 스트링 1종이 필요해요.</p>
+                              <p>
+                                현재 라켓{" "}
+                                <span className="font-semibold">
+                                  {racketLineCount}종
+                                </span>{" "}
+                                / 장착 스트링{" "}
+                                <span className="font-semibold">
+                                  {mountableStringLineCount}종
+                                </span>
+                              </p>
+                              {mountableStringLineCount > 1 && (
+                                <p>
+                                  해야 할 일: 장착할 스트링 1종만 남겨주세요.
+                                </p>
+                              )}
+                              {mountableStringLineCount === 0 && (
+                                <p>라켓에 장착할 스트링을 먼저 선택해주세요.</p>
+                              )}
+                              {racketLineCount !== 1 && (
+                                <p>
+                                  교체서비스 신청은 한{"\u00A0"}번에 라켓 1종
+                                  기준으로 진행됩니다.
+                                </p>
+                              )}
+                            </div>
+                          )}
+                          {blockServiceCheckoutByQty && (
+                            <div className="w-full rounded-lg border border-border bg-muted/20 px-3 py-2 text-[13px] leading-relaxed text-foreground">
+                              라켓 1개에는 장착할 스트링 1개가 필요해요.
+                              <br />
+                              현재 라켓{" "}
+                              <span className="font-semibold">
+                                {totalRacketQty}개
+                              </span>{" "}
+                              / 장착 스트링{" "}
+                              <span className="font-semibold">
+                                {totalMountableStringQty}개
+                              </span>
+                              입니다.
+                              <span className="mt-1 inline-flex items-center gap-1.5">
+                                <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+                                {bundleEditHref
+                                  ? "아래 ‘번들 변경’에서 수량을 함께 맞춰주세요."
+                                  : "먼저 교체서비스 신청 구성을 정리한 뒤 수량을 다시 확인해주세요."}
+                              </span>
+                            </div>
+                          )}
+                          {bundleEditHref ? (
+                            <Button
+                              asChild
+                              className="flex h-12 w-full items-center justify-center gap-2 px-3 font-semibold"
+                            >
+                              <Link href={bundleEditHref}>
+                                <ShoppingBag className="h-5 w-5" />
+                                번들 변경
+                                <ArrowRight className="h-5 w-5" />
+                              </Link>
+                            </Button>
+                          ) : (
+                            <Button
+                              className="flex h-12 w-full items-center justify-center gap-2 px-3 font-semibold"
+                              size="lg"
+                              onClick={() =>
+                                showErrorToast(serviceBlockToastMessage)
+                              }
+                            >
+                              <ShoppingBag className="h-5 w-5" />
+                              {blockServiceCheckoutByComposition
+                                ? "구성 정리 후 결제하기"
+                                : "수량 맞춘 뒤 주문하기"}
+                              <ArrowRight className="h-5 w-5" />
+                            </Button>
+                          )}
+                        </>
+                      ) : loading ? (
+                        <Button
+                          className="h-12 w-full font-semibold opacity-70"
+                          disabled
+                        >
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          로그인 확인 중...
+                        </Button>
+                      ) : !isCartPriceReady ? (
+                        <Button
+                          className="h-12 w-full font-semibold opacity-70"
+                          disabled
+                        >
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          금액 계산 중...
+                        </Button>
+                      ) : (
+                        <>
+                          {hasMountableStringOnlyFlow && (
+                            <div className="space-y-1 rounded-lg border border-primary/25 bg-primary/5 px-3 py-2 text-[13px] leading-relaxed text-foreground break-keep">
+                              {stringStandalonePausedNoticeLines.map((line) => (
+                                <p key={line}>{line}</p>
+                              ))}
+                            </div>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            최신 재고와 배송비는 주문 단계에서 다시 확인됩니다.
+                          </p>
+                          <div className="grid grid-cols-1 gap-2">
+                            <Button
+                              className="h-12 w-full px-2 font-semibold"
+                              disabled={
+                                !hasSelectedItems ||
+                                !isCartPriceReady ||
+                                isCheckingCheckoutStock
+                              }
+                              onClick={handleCheckoutClick}
+                            >
+                              {isCheckingCheckoutStock ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <ShoppingBag className="h-4 w-4" />
+                              )}
+                              <span className="truncate">
+                                {isCheckingCheckoutStock
+                                  ? "재고 확인 중"
+                                  : !hasSelectedItems
+                                    ? "상품 선택"
+                                    : user
+                                      ? `주문하기 ${selectedCartItems.length}`
+                                      : "로그인 주문"}
+                              </span>
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="h-12 w-full px-2 font-semibold"
+                              asChild
+                            >
+                              <Link href="/products">쇼핑 계속하기</Link>
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                     <div className="space-y-2 border-t border-border pt-4 bp-lg:hidden">
                       {blockServiceCheckoutByComposition && (
-                        <p className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-xs leading-relaxed text-muted-foreground">교체서비스 신청은 라켓 1종과 장착 스트링 1종 기준으로 진행됩니다. 구성을 정리한 뒤 주문해주세요.</p>
+                        <p className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+                          교체서비스 신청은 라켓 1종과 장착 스트링 1종 기준으로
+                          진행됩니다. 구성을 정리한 뒤 주문해주세요.
+                        </p>
                       )}
                       {blockServiceCheckoutByQty && (
-                        <p className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-xs leading-relaxed text-muted-foreground">라켓 1개에는 장착 스트링 1개가 필요해요. 수량을 맞춘 뒤 주문해주세요.</p>
+                        <p className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+                          라켓 1개에는 장착 스트링 1개가 필요해요. 수량을 맞춘
+                          뒤 주문해주세요.
+                        </p>
                       )}
                       {hasMountableStringOnlyFlow && (
                         <div className="space-y-1 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs leading-relaxed text-foreground break-keep">
@@ -1057,12 +1734,17 @@ export default function CartPageClient() {
                           ))}
                         </div>
                       )}
-                      <p className="text-xs text-muted-foreground">최신 재고와 배송비는 주문 단계에서 다시 확인됩니다.</p>
+                      <p className="text-xs text-muted-foreground">
+                        최신 재고와 배송비는 주문 단계에서 다시 확인됩니다.
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
                 <div className="mt-4 bp-lg:hidden">
-                  <WishlistSidebar variant="inline" className="mt-0 shadow-none" />
+                  <WishlistSidebar
+                    variant="inline"
+                    className="mt-0 shadow-none"
+                  />
                 </div>
               </div>
             </div>
@@ -1080,8 +1762,15 @@ export default function CartPageClient() {
               description="담아둔 상품이 없어요. 상품을 둘러보거나 라켓 교체서비스 흐름을 확인해보세요."
               action={
                 <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row">
-                  <Button className="w-full px-6 py-3 font-semibold bp-sm:w-auto md:px-8" size="lg" asChild>
-                    <Link href="/products" className="flex items-center justify-center gap-3">
+                  <Button
+                    className="w-full px-6 py-3 font-semibold bp-sm:w-auto md:px-8"
+                    size="lg"
+                    asChild
+                  >
+                    <Link
+                      href="/products"
+                      className="flex items-center justify-center gap-3"
+                    >
                       <ShoppingBag className="h-5 w-5" />
                       상품 보러가기
                       <ArrowRight className="h-5 w-5" />
@@ -1100,14 +1789,27 @@ export default function CartPageClient() {
       {cartItems.length > 0 && (
         <div
           data-bottom-sticky="1"
-          className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur bp-lg:hidden">
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur bp-lg:hidden"
+        >
           <div className="mx-auto flex max-w-[1240px] items-center gap-3">
             <div className="min-w-0 flex-1">
               <p className="text-xs text-muted-foreground">총 주문 예상 금액</p>
-              <p className="truncate text-lg font-black tabular-nums text-foreground">{!isCartPriceReady ? "계산 중" : `${formatKRW(total)}원`}</p>
+              <p className="truncate text-lg font-black tabular-nums text-foreground">
+                {!isCartPriceReady ? "계산 중" : `${formatKRW(total)}원`}
+              </p>
             </div>
-            <Button className="h-11 min-w-[140px] font-semibold" disabled={!hasSelectedItems || !isCartPriceReady || isCheckingCheckoutStock} onClick={handleCheckoutClick}>
-              {!hasSelectedItems ? "상품 선택" : `주문하기 ${selectedCartItems.length}`}
+            <Button
+              className="h-11 min-w-[140px] font-semibold"
+              disabled={
+                !hasSelectedItems ||
+                !isCartPriceReady ||
+                isCheckingCheckoutStock
+              }
+              onClick={handleCheckoutClick}
+            >
+              {!hasSelectedItems
+                ? "상품 선택"
+                : `주문하기 ${selectedCartItems.length}`}
             </Button>
           </div>
         </div>
@@ -1116,7 +1818,11 @@ export default function CartPageClient() {
       <CartOptionChangeOverlay
         open={Boolean(optionChangeItem)}
         item={optionChangeItem}
-        mountingFee={optionChangeItem ? Number(mountingFeeByProductId[String(optionChangeItem.id)] ?? 0) : 0}
+        mountingFee={
+          optionChangeItem
+            ? Number(mountingFeeByProductId[String(optionChangeItem.id)] ?? 0)
+            : 0
+        }
         onOpenChange={(open) => {
           if (!open) setOptionChangeItem(null);
         }}

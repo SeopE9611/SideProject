@@ -1,5 +1,7 @@
 export function normalizeTrackingNumber(value?: string | null): string {
-  return String(value ?? "").replace(/[\s-]+/g, "").replace(/\D+/g, "");
+  return String(value ?? "")
+    .replace(/[\s-]+/g, "")
+    .replace(/\D+/g, "");
 }
 
 export function isValidTrackingNumberLength(value?: string | null): boolean {

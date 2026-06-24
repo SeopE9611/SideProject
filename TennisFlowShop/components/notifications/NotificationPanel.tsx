@@ -9,9 +9,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNotificationList } from "@/lib/hooks/useNotificationList";
 import { showErrorToast } from "@/lib/toast";
 
-export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onClose: () => void }) {
+export function NotificationPanel({
+  enabled,
+  onClose,
+}: {
+  enabled: boolean;
+  onClose: () => void;
+}) {
   const router = useRouter();
-  const { items, unreadCount, status, markAsRead, markAllAsRead } = useNotificationList({ enabled, limit: 10 });
+  const { items, unreadCount, status, markAsRead, markAllAsRead } =
+    useNotificationList({ enabled, limit: 10 });
 
   const handleItemClick = async (id: string, href: string | null) => {
     try {
@@ -37,9 +44,16 @@ export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onCl
       <div className="flex items-start justify-between gap-3 px-4 py-3">
         <div>
           <h2 className="text-base font-bold">알림</h2>
-          <p className="text-xs text-muted-foreground">읽지 않은 알림 {unreadCount.toLocaleString()}개</p>
+          <p className="text-xs text-muted-foreground">
+            읽지 않은 알림 {unreadCount.toLocaleString()}개
+          </p>
         </div>
-        <Button variant="ghost" size="sm" disabled={unreadCount <= 0} onClick={handleMarkAllAsRead}>
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={unreadCount <= 0}
+          onClick={handleMarkAllAsRead}
+        >
           모두 읽음
         </Button>
       </div>
@@ -54,12 +68,20 @@ export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onCl
             </div>
           ))
         ) : status === "error" ? (
-          <div className="px-4 py-10 text-center text-sm text-muted-foreground">알림을 불러오지 못했습니다.</div>
+          <div className="px-4 py-10 text-center text-sm text-muted-foreground">
+            알림을 불러오지 못했습니다.
+          </div>
         ) : items.length === 0 ? (
-          <div className="px-4 py-10 text-center text-sm text-muted-foreground">새 알림이 없습니다.</div>
+          <div className="px-4 py-10 text-center text-sm text-muted-foreground">
+            새 알림이 없습니다.
+          </div>
         ) : (
           items.map((item) => (
-            <NotificationItem key={item.id} item={item} onClick={() => handleItemClick(item.id, item.href)} />
+            <NotificationItem
+              key={item.id}
+              item={item}
+              onClick={() => handleItemClick(item.id, item.href)}
+            />
           ))
         )}
       </div>
@@ -67,7 +89,14 @@ export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onCl
         <>
           <Separator />
           <div className="p-3">
-            <Button variant="outline" className="w-full" onClick={() => { onClose(); router.push("/notifications"); }}>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                onClose();
+                router.push("/notifications");
+              }}
+            >
               전체 알림 보기
             </Button>
           </div>

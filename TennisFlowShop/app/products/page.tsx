@@ -57,8 +57,8 @@ export default async function ProductsPage({
               어떤 스트링이 맞을지 모르겠나요?
             </p>
             <p className="break-words text-sm leading-relaxed text-muted-foreground">
-              간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을
-              확인할 수 있어요.
+              간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을 확인할
+              수 있어요.
             </p>
           </div>
           <Button

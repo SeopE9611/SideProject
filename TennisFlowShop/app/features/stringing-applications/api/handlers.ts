@@ -1736,7 +1736,8 @@ export async function handleStringingCancelRequest(
       return NextResponse.json(
         {
           ok: false,
-          error: "대여와 연결된 교체서비스 신청은 신청서 상세에서 단독으로 취소 요청할 수 없습니다.",
+          error:
+            "대여와 연결된 교체서비스 신청은 신청서 상세에서 단독으로 취소 요청할 수 없습니다.",
         },
         { status: 409 },
       );

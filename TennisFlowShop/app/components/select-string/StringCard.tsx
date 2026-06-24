@@ -160,9 +160,7 @@ export function StringCard({
   const regularPrice = Number(product?.price ?? 0);
   const salePrice = getEffectiveProductPrice(product);
   const hasSalePrice =
-    Number.isFinite(salePrice) &&
-    salePrice > 0 &&
-    salePrice < regularPrice;
+    Number.isFinite(salePrice) && salePrice > 0 && salePrice < regularPrice;
   const discountAmount = hasSalePrice ? regularPrice - salePrice : 0;
   const discountRate =
     hasSalePrice && regularPrice > 0
@@ -174,7 +172,10 @@ export function StringCard({
       className={cn(
         "group relative flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition-all duration-200",
         isSelected
-          ? cn("border-primary/40 bg-primary/5", !isRacketPurchaseDesign && "ring-2 ring-primary/20")
+          ? cn(
+              "border-primary/40 bg-primary/5",
+              !isRacketPurchaseDesign && "ring-2 ring-primary/20",
+            )
           : "border-border hover:border-primary/40 hover:bg-muted/20",
         isSoldOut && "opacity-60",
       )}
@@ -189,7 +190,12 @@ export function StringCard({
       )}
 
       {/* Image */}
-      <div className={cn("relative w-full overflow-hidden bg-muted/20", isRacketPurchaseDesign ? "aspect-[4/3]" : "aspect-square")}>
+      <div
+        className={cn(
+          "relative w-full overflow-hidden bg-muted/20",
+          isRacketPurchaseDesign ? "aspect-[4/3]" : "aspect-square",
+        )}
+      >
         {stringImage ? (
           <Image
             src={stringImage}
@@ -213,7 +219,12 @@ export function StringCard({
       </div>
 
       {/* Content */}
-      <div className={cn("flex flex-1 flex-col", isRacketPurchaseDesign ? "p-3 bp-md:p-4" : "p-4")}>
+      <div
+        className={cn(
+          "flex flex-1 flex-col",
+          isRacketPurchaseDesign ? "p-3 bp-md:p-4" : "p-4",
+        )}
+      >
         {/* Title & Price */}
         <div className="mb-3 space-y-1.5">
           <h3 className="line-clamp-2 min-w-0 break-keep text-sm font-semibold leading-tight text-foreground bp-md:text-base">

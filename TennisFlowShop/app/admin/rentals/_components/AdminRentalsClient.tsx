@@ -1190,12 +1190,16 @@ export default function AdminRentalsClient() {
                                       : []),
                                   ];
                                   return (
-                                    <AdminBadgeRow maxVisible={2} items={items} />
+                                    <AdminBadgeRow
+                                      maxVisible={2}
+                                      items={items}
+                                    />
                                   );
                                 })()}
                                 {r.stringingApplicationStatus && (
                                   <p className="text-sm text-foreground/75">
-                                    교체서비스 상태: {r.stringingApplicationStatus}
+                                    교체서비스 상태:{" "}
+                                    {r.stringingApplicationStatus}
                                   </p>
                                 )}
                               </button>

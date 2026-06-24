@@ -623,8 +623,7 @@ export default function AdminRentalDetailClient() {
     String(data?.shipping?.return?.trackingNumber ?? "").trim(),
   );
   const needsReturnCheck =
-    lowerStatus === "out" &&
-    (Boolean(data?.dueAt) || hasReturnTracking);
+    lowerStatus === "out" && (Boolean(data?.dueAt) || hasReturnTracking);
   const needsDepositRefund =
     lowerStatus === "returned" && data?.depositRefunded !== true;
   const nextActionGuide: AdminNextActionGuide = hasCancelRequested
@@ -648,57 +647,61 @@ export default function AdminRentalDetailClient() {
               "입금/결제 반영 여부를 확인한 뒤 출고 여부를 판단하세요.",
           }
         : isBeforeOut && hasLinkedApplication && !isStringingComplete
-        ? {
-            tone: "warning",
-            title: "교체서비스 작업 완료 필요",
-            description:
-              "교체서비스가 완료된 뒤 출고 또는 대여 시작을 진행하세요.",
-          }
-        : isBeforeOut && !isVisitPickup && hasOutboundTracking
           ? {
               tone: "warning",
-              title: "출고 완료 · 수령 확인 대기",
-              description: "고객 수령 확인 후 대여를 시작하세요.",
-            }
-        : isBeforeOut
-          ? {
-              tone: "warning",
-              title: isVisitPickup ? "방문 수령 처리 필요" : "출고 운송장 등록 필요",
-              description: isVisitPickup
-                ? "고객 방문 수령을 확인한 뒤 대여를 시작하세요."
-                : "교체서비스 완료 상태를 확인한 뒤 출고 운송장을 등록하세요.",
-              actionLabel: isVisitPickup ? undefined : "출고 운송장 등록/수정",
-              actionHref: isVisitPickup
-                ? undefined
-                : `/admin/rentals/${id}/shipping-update`,
-            }
-          : needsReturnCheck
-          ? {
-              tone: "info",
-              title: "반납 확인 필요",
+              title: "교체서비스 작업 완료 필요",
               description:
-                "반납 운송장과 라켓 상태를 확인한 뒤 반납 처리를 진행하세요.",
+                "교체서비스가 완료된 뒤 출고 또는 대여 시작을 진행하세요.",
             }
-          : needsDepositRefund
+          : isBeforeOut && !isVisitPickup && hasOutboundTracking
             ? {
                 tone: "warning",
-                title: "보증금 환불 확인",
-                description:
-                  "반납 상태·라켓 상태·환불 계좌를 확인한 뒤 보증금 환불 처리 여부를 판단하세요.",
+                title: "출고 완료 · 수령 확인 대기",
+                description: "고객 수령 확인 후 대여를 시작하세요.",
               }
-            : hasLinkedApplication
+            : isBeforeOut
               ? {
-                  tone: "info",
-                  title: "대여 라켓 장착 정보 확인",
-                  description:
-                    "장착 스트링과 교체서비스 상태를 확인한 뒤 후속 처리를 진행하세요.",
+                  tone: "warning",
+                  title: isVisitPickup
+                    ? "방문 수령 처리 필요"
+                    : "출고 운송장 등록 필요",
+                  description: isVisitPickup
+                    ? "고객 방문 수령을 확인한 뒤 대여를 시작하세요."
+                    : "교체서비스 완료 상태를 확인한 뒤 출고 운송장을 등록하세요.",
+                  actionLabel: isVisitPickup
+                    ? undefined
+                    : "출고 운송장 등록/수정",
+                  actionHref: isVisitPickup
+                    ? undefined
+                    : `/admin/rentals/${id}/shipping-update`,
                 }
-              : {
-                  tone: "success",
-                  title: "추가 조치 필요 없음",
-                  description:
-                    "현재 기준으로 즉시 필요한 추가 조치는 없습니다.",
-                };
+              : needsReturnCheck
+                ? {
+                    tone: "info",
+                    title: "반납 확인 필요",
+                    description:
+                      "반납 운송장과 라켓 상태를 확인한 뒤 반납 처리를 진행하세요.",
+                  }
+                : needsDepositRefund
+                  ? {
+                      tone: "warning",
+                      title: "보증금 환불 확인",
+                      description:
+                        "반납 상태·라켓 상태·환불 계좌를 확인한 뒤 보증금 환불 처리 여부를 판단하세요.",
+                    }
+                  : hasLinkedApplication
+                    ? {
+                        tone: "info",
+                        title: "대여 라켓 장착 정보 확인",
+                        description:
+                          "장착 스트링과 교체서비스 상태를 확인한 뒤 후속 처리를 진행하세요.",
+                      }
+                    : {
+                        tone: "success",
+                        title: "추가 조치 필요 없음",
+                        description:
+                          "현재 기준으로 즉시 필요한 추가 조치는 없습니다.",
+                      };
   const recommendedActions = [
     { label: "결제 정보 확인", href: "#admin-rental-payment", show: true },
     {
@@ -823,8 +826,9 @@ export default function AdminRentalDetailClient() {
                   </Link>
                 </Button>
 
-                {data?.status !== "canceled" && !isVisitPickup && (
-                  blockRentalStart ? (
+                {data?.status !== "canceled" &&
+                  !isVisitPickup &&
+                  (blockRentalStart ? (
                     <Button
                       variant="outline"
                       size="sm"
@@ -850,8 +854,7 @@ export default function AdminRentalDetailClient() {
                           : "출고 운송장 등록"}
                       </Link>
                     </Button>
-                  )
-                )}
+                  ))}
               </div>
             </div>
 
@@ -1251,8 +1254,10 @@ export default function AdminRentalDetailClient() {
                       대여 라켓 장착 정보
                     </CardTitle>
                     <CardDescription className="mt-1 max-w-3xl leading-relaxed">
-                      대여 라켓에 장착할 스트링, 게이지, 색상, 텐션, 요청사항과 작업 상태를 한곳에서 확인합니다.
-                      매장 보유 대여 라켓에 장착하는 대여 기반 교체서비스이며, 출고 운송장과 반납 운송장은 아래 대여 정보에서 분리해 관리합니다.
+                      대여 라켓에 장착할 스트링, 게이지, 색상, 텐션, 요청사항과
+                      작업 상태를 한곳에서 확인합니다. 매장 보유 대여 라켓에
+                      장착하는 대여 기반 교체서비스이며, 출고 운송장과 반납
+                      운송장은 아래 대여 정보에서 분리해 관리합니다.
                     </CardDescription>
                   </div>
                   <Badge
@@ -1279,7 +1284,7 @@ export default function AdminRentalDetailClient() {
                           ? data.stringingNames.join(", ")
                           : "") ||
                         stringingName ||
-                        ((stringPrice > 0 || stringingFee > 0)
+                        (stringPrice > 0 || stringingFee > 0
                           ? "관리자 확인 필요"
                           : "정보 없음")}
                     </span>
@@ -1420,8 +1425,8 @@ export default function AdminRentalDetailClient() {
                 <div className="space-y-1 text-xs leading-relaxed text-muted-foreground">
                   <p>
                     이 작업은 연결된 교체서비스 신청서의 작업 상태만 변경합니다.
-                    대여 결제, 출고 운송장 등록, 대여 시작, 반납 처리는 기존 대여 액션에서
-                    별도로 진행하세요.
+                    대여 결제, 출고 운송장 등록, 대여 시작, 반납 처리는 기존
+                    대여 액션에서 별도로 진행하세요.
                   </p>
                   <p>접수완료: 결제 확인 후 작업 접수 상태로 표시합니다.</p>
                   <p>작업 중: 실제 스트링 장착 작업이 시작된 상태입니다.</p>
@@ -1509,9 +1514,7 @@ export default function AdminRentalDetailClient() {
                     setPendingAction("return");
                   }}
                 >
-                  {busyAction === "return"
-                    ? "반납 처리중…"
-                    : "반납 처리"}
+                  {busyAction === "return" ? "반납 처리중…" : "반납 처리"}
                 </Button>
 
                 {data.status === "paid" && (
@@ -1950,7 +1953,9 @@ export default function AdminRentalDetailClient() {
                         택배사:{" "}
                         <b>
                           {data.shipping.outbound.courier
-                            ? getCourierDisplayName(data.shipping.outbound.courier)
+                            ? getCourierDisplayName(
+                                data.shipping.outbound.courier,
+                              )
                             : "-"}
                         </b>
                       </div>
@@ -1989,7 +1994,9 @@ export default function AdminRentalDetailClient() {
                         택배사:{" "}
                         <b>
                           {data.shipping.return.courier
-                            ? getCourierDisplayName(data.shipping.return.courier)
+                            ? getCourierDisplayName(
+                                data.shipping.return.courier,
+                              )
                             : "-"}
                         </b>
                       </div>
@@ -2037,7 +2044,9 @@ export default function AdminRentalDetailClient() {
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-foreground/80">
-                      {isVisitPickup ? "방문 수령 처리" : "수령 확인 / 대여 시작"}
+                      {isVisitPickup
+                        ? "방문 수령 처리"
+                        : "수령 확인 / 대여 시작"}
                     </p>
                     <p className="font-semibold text-foreground">
                       {data.outAt ? formatDate(data.outAt) : "-"}
@@ -2049,7 +2058,9 @@ export default function AdminRentalDetailClient() {
                   <div>
                     <p className="text-sm text-foreground/80">반납 예정</p>
                     <p className="font-semibold text-foreground">
-                      {data.dueAt ? formatDate(data.dueAt) : "수령 확인 후 계산"}
+                      {data.dueAt
+                        ? formatDate(data.dueAt)
+                        : "수령 확인 후 계산"}
                     </p>
                   </div>
                 </div>

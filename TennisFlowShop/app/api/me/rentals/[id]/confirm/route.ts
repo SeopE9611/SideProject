@@ -146,10 +146,7 @@ export async function POST(
         $and: [
           { $or: rentalLinks },
           {
-            $or: [
-              { userId: new ObjectId(userId) },
-              { userId: String(userId) },
-            ],
+            $or: [{ userId: new ObjectId(userId) }, { userId: String(userId) }],
           },
           { status: { $in: ["교체완료", "취소"] } },
           {
@@ -166,7 +163,9 @@ export async function POST(
     return NextResponse.json({
       ok: true,
       already: alreadyConfirmed,
-      message: alreadyConfirmed ? "이미 반납 확정된 대여입니다." : "반납 확정 완료",
+      message: alreadyConfirmed
+        ? "이미 반납 확정된 대여입니다."
+        : "반납 확정 완료",
       earnedPoints: pointsGranted ? earnedPoints : 0,
       pointsGranted,
       alsoConfirmedServices: (svcRes as any).modifiedCount ?? 0,

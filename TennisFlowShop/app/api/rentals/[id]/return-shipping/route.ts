@@ -3,7 +3,10 @@ import { cookies } from "next/headers";
 import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
-import { findCourierCatalogItem, normalizeCourierCode } from "@/lib/shipping/courier-map";
+import {
+  findCourierCatalogItem,
+  normalizeCourierCode,
+} from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { z } from "zod";
 
@@ -92,7 +95,10 @@ export async function POST(
   const { courier, trackingNumber, shippedAt, note } = parsed.data;
   const courierItem = findCourierCatalogItem(courier);
   if (!courierItem) {
-    return NextResponse.json({ ok: false, message: "INVALID_COURIER" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, message: "INVALID_COURIER" },
+      { status: 400 },
+    );
   }
   if (courierItem.code === "ems") {
     return NextResponse.json(

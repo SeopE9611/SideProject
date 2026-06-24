@@ -9,12 +9,17 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-sm shadow-black/10 hover:bg-primary/90 active:translate-y-px active:shadow-sm",
-        secondary: "border border-border bg-card text-foreground shadow-sm hover:bg-secondary active:translate-y-px",
-        outline: "border border-border bg-card text-foreground shadow-sm hover:bg-secondary active:translate-y-px",
+        default:
+          "bg-primary text-primary-foreground shadow-sm shadow-black/10 hover:bg-primary/90 active:translate-y-px active:shadow-sm",
+        secondary:
+          "border border-border bg-card text-foreground shadow-sm hover:bg-secondary active:translate-y-px",
+        outline:
+          "border border-border bg-card text-foreground shadow-sm hover:bg-secondary active:translate-y-px",
         ghost: "text-foreground hover:bg-secondary active:bg-secondary",
-        elevated: "border border-border bg-card text-foreground shadow-md shadow-black/5 hover:bg-secondary active:translate-y-px",
-        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+        elevated:
+          "border border-border bg-card text-foreground shadow-md shadow-black/5 hover:bg-secondary active:translate-y-px",
+        destructive:
+          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
@@ -27,7 +32,8 @@ const buttonVariants = cva(
       wrap: {
         nowrap: "whitespace-nowrap",
         normal: "h-auto whitespace-normal break-keep text-center leading-snug",
-        responsive: "h-auto whitespace-normal break-keep text-center leading-snug sm:whitespace-nowrap sm:leading-normal",
+        responsive:
+          "h-auto whitespace-normal break-keep text-center leading-snug sm:whitespace-nowrap sm:leading-normal",
       },
     },
     compoundVariants: [
@@ -58,14 +64,25 @@ const buttonVariants = cva(
   },
 );
 
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+export interface ButtonProps
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant, size, wrap, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? Slot : "button";
-  return <Comp className={cn(buttonVariants({ variant, size, wrap, className }))} ref={ref} {...props} />;
-});
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, wrap, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button";
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, wrap, className }))}
+        ref={ref}
+        {...props}
+      />
+    );
+  },
+);
 Button.displayName = "Button";
 
 export { Button, buttonVariants };

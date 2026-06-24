@@ -193,13 +193,11 @@ function serializePackageIssue(doc: Record<string, any>): ReconciliationItem {
       paymentMethod: meta.paymentMethod ?? doc.paymentInfo?.method ?? null,
       paidAt: serializeDate(doc.paymentInfo?.approvedAt ?? meta.paidAt),
       history: Array.isArray(doc.history)
-        ? doc.history
-            .slice(-3)
-            .map((h: any) => ({
-              status: h?.status ?? null,
-              date: serializeDate(h?.date),
-              description: h?.description ?? null,
-            }))
+        ? doc.history.slice(-3).map((h: any) => ({
+            status: h?.status ?? null,
+            date: serializeDate(h?.date),
+            description: h?.description ?? null,
+          }))
         : [],
     },
     links: {

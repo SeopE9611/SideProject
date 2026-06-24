@@ -26,16 +26,45 @@ const statusLabels = {
   warning: "주의",
 };
 
-export function ResultState({ status = "info", title, description, actions, children, icon, className }: ResultStateProps) {
+export function ResultState({
+  status = "info",
+  title,
+  description,
+  actions,
+  children,
+  icon,
+  className,
+}: ResultStateProps) {
   return (
-    <section className={cn("mx-auto flex max-w-2xl flex-col items-center px-4 py-12 text-center sm:py-16", className)}>
-      <div className={cn("mb-5 flex size-12 items-center justify-center rounded-full border text-ui-caption font-medium", statusStyles[status])} aria-hidden="true">
+    <section
+      className={cn(
+        "mx-auto flex max-w-2xl flex-col items-center px-4 py-12 text-center sm:py-16",
+        className,
+      )}
+    >
+      <div
+        className={cn(
+          "mb-5 flex size-12 items-center justify-center rounded-full border text-ui-caption font-medium",
+          statusStyles[status],
+        )}
+        aria-hidden="true"
+      >
         {icon ?? statusLabels[status]}
       </div>
-      <h1 className="text-ui-page-title font-semibold tracking-tight text-foreground sm:text-ui-page-title-lg">{title}</h1>
-      {description && <div className="mt-3 max-w-xl text-ui-body-sm text-muted-foreground sm:text-ui-body">{description}</div>}
+      <h1 className="text-ui-page-title font-semibold tracking-tight text-foreground sm:text-ui-page-title-lg">
+        {title}
+      </h1>
+      {description && (
+        <div className="mt-3 max-w-xl text-ui-body-sm text-muted-foreground sm:text-ui-body">
+          {description}
+        </div>
+      )}
       {children && <div className="mt-6 w-full text-left">{children}</div>}
-      {actions && <div className="mt-6 flex w-full flex-col justify-center gap-2 sm:w-auto sm:flex-row">{actions}</div>}
+      {actions && (
+        <div className="mt-6 flex w-full flex-col justify-center gap-2 sm:w-auto sm:flex-row">
+          {actions}
+        </div>
+      )}
     </section>
   );
 }

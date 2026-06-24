@@ -12,7 +12,11 @@ const isOrderReviewConfirmed = (order: any) =>
   Boolean(order?.userConfirmedAt) || String(order?.status ?? "") === "구매확정";
 const isStringingReviewConfirmed = (app: any) => Boolean(app?.userConfirmedAt);
 
-async function findReviewableStringingApplicationForProduct(db: any, userId: ObjectId, productId: string) {
+async function findReviewableStringingApplicationForProduct(
+  db: any,
+  userId: ObjectId,
+  productId: string,
+) {
   const productIdObj = new ObjectId(productId);
   const orders = await db
     .collection("orders")
@@ -36,8 +40,16 @@ async function findReviewableStringingApplicationForProduct(db: any, userId: Obj
       userConfirmedAt: { $exists: true, $ne: null },
       $or: [
         { orderId: { $in: orderIds } },
-        { "stringDetails.stringItems.productId": { $in: [productIdObj, productId] } },
-        { "stringDetails.racketLines.stringProductId": { $in: [productIdObj, productId] } },
+        {
+          "stringDetails.stringItems.productId": {
+            $in: [productIdObj, productId],
+          },
+        },
+        {
+          "stringDetails.racketLines.stringProductId": {
+            $in: [productIdObj, productId],
+          },
+        },
       ],
     })
     .project({ _id: 1, status: 1, stringDetails: 1, createdAt: 1 })
@@ -54,8 +66,16 @@ async function findReviewableStringingApplicationForProduct(db: any, userId: Obj
     })
     .project({ serviceApplicationId: 1 })
     .toArray();
-  const reviewedSet = new Set(reviewed.map((r: any) => String(r.serviceApplicationId)));
-  return apps.find((a: any) => !isStringingReviewBlockedStatus(a.status) && !reviewedSet.has(String(a._id))) ?? null;
+  const reviewedSet = new Set(
+    reviewed.map((r: any) => String(r.serviceApplicationId)),
+  );
+  return (
+    apps.find(
+      (a: any) =>
+        !isStringingReviewBlockedStatus(a.status) &&
+        !reviewedSet.has(String(a._id)),
+    ) ?? null
+  );
 }
 
 export async function GET(req: Request) {
@@ -137,7 +157,11 @@ export async function GET(req: Request) {
         );
       }
       if (await isOrderServiceReviewOnly(db, order)) {
-        const app = await findReviewableStringingApplicationForProduct(db, userId, productId);
+        const app = await findReviewableStringingApplicationForProduct(
+          db,
+          userId,
+          productId,
+        );
         return NextResponse.json(
           {
             eligible: false,
@@ -220,7 +244,11 @@ export async function GET(req: Request) {
         !serviceOnly && !reviewedSet.has(String(order._id)),
     )?.order;
     if (!candidate) {
-      const serviceApp = await findReviewableStringingApplicationForProduct(db, userId, productId);
+      const serviceApp = await findReviewableStringingApplicationForProduct(
+        db,
+        userId,
+        productId,
+      );
       return NextResponse.json(
         {
           eligible: false,

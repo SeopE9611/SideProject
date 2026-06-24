@@ -151,7 +151,9 @@ export default function ReviewsClient() {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card shadow-sm">
               <Trophy className="h-5 w-5 text-primary" />
             </div>
-            <h1 className="break-keep text-2xl font-bold text-foreground md:text-3xl">고객 리뷰</h1>
+            <h1 className="break-keep text-2xl font-bold text-foreground md:text-3xl">
+              고객 리뷰
+            </h1>
           </div>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             장비 사용 후기와 교체서비스 경험을 확인하세요. 문의가 필요하다면
@@ -165,7 +167,11 @@ export default function ReviewsClient() {
           <CardContent className="p-4 md:p-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-center">
               {/* Tabs with tennis court styling */}
-              <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="w-full lg:w-auto">
+              <Tabs
+                value={tab}
+                onValueChange={(v) => setTab(v as any)}
+                className="w-full lg:w-auto"
+              >
                 <TabsList className="grid w-full grid-cols-3 bg-secondary p-1 lg:w-auto">
                   <TabsTrigger
                     value="all"

@@ -1,4 +1,7 @@
-import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
+import {
+  productVisibilityFilterFor,
+  racketVisibilityFilterFor,
+} from "@/lib/public-visibility";
 import "server-only";
 
 import { ObjectId, type Filter, type Sort } from "mongodb";

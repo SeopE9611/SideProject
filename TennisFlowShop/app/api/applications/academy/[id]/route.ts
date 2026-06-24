@@ -203,7 +203,6 @@ export async function GET(
   return NextResponse.json({ success: true, item: serializeApplication(item) });
 }
 
-
 export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -268,11 +267,9 @@ export async function DELETE(
     },
   };
 
-  const result = await collection.findOneAndUpdate(
-    filter,
-    deleteUpdate,
-    { returnDocument: "after" },
-  );
+  const result = await collection.findOneAndUpdate(filter, deleteUpdate, {
+    returnDocument: "after",
+  });
 
   if (!result) {
     return NextResponse.json(

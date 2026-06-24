@@ -224,18 +224,19 @@ function getOrderFlowLabel(opts: {
   return "주문 + 교체서비스";
 }
 
-
 function firstText(...values: unknown[]): string | null {
   for (const value of values) {
     if (typeof value === "string" && value.trim()) return value.trim();
-    if (typeof value === "number" && Number.isFinite(value)) return String(value);
+    if (typeof value === "number" && Number.isFinite(value))
+      return String(value);
   }
   return null;
 }
 
 function getApplicationLines(stringDetails: any): any[] {
   if (Array.isArray(stringDetails?.lines)) return stringDetails.lines;
-  if (Array.isArray(stringDetails?.racketLines)) return stringDetails.racketLines;
+  if (Array.isArray(stringDetails?.racketLines))
+    return stringDetails.racketLines;
   return [];
 }
 
@@ -250,13 +251,23 @@ function summarizeStringSelection(appDoc: any) {
     details?.selectedStringName,
     appDoc?.selectedStringName,
     meta?.selectedStringName,
-    Array.isArray(appDoc?.stringNames) ? appDoc.stringNames[0] : appDoc?.stringNames,
-    Array.isArray(appDoc?.applicationSummary?.stringNames) ? appDoc.applicationSummary.stringNames[0] : appDoc?.applicationSummary?.stringNames,
+    Array.isArray(appDoc?.stringNames)
+      ? appDoc.stringNames[0]
+      : appDoc?.stringNames,
+    Array.isArray(appDoc?.applicationSummary?.stringNames)
+      ? appDoc.applicationSummary.stringNames[0]
+      : appDoc?.applicationSummary?.stringNames,
   );
 
   return {
     selectedStringName: stringName,
-    selectedGauge: firstText(firstLine?.selectedGauge, firstLine?.gauge, details?.selectedGauge, appDoc?.selectedGauge, meta?.selectedGauge),
+    selectedGauge: firstText(
+      firstLine?.selectedGauge,
+      firstLine?.gauge,
+      details?.selectedGauge,
+      appDoc?.selectedGauge,
+      meta?.selectedGauge,
+    ),
     selectedColorLabel: firstText(
       firstLine?.selectedColorLabel,
       firstLine?.colorLabel,
@@ -689,7 +700,6 @@ export async function GET(req: Request) {
     ]),
   );
 
-
   const serviceReviewCandidateIds = [...linkedApps, ...standaloneApps]
     .filter((app: any) => {
       const userConfirmedAt = app?.userConfirmedAt;
@@ -729,8 +739,8 @@ export async function GET(req: Request) {
   const hasPendingServiceReview = (applicationId?: string | null) =>
     Boolean(
       applicationId &&
-        serviceReviewCandidateSet.has(applicationId) &&
-        !reviewedServiceApplicationIds.has(applicationId),
+      serviceReviewCandidateSet.has(applicationId) &&
+      !reviewedServiceApplicationIds.has(applicationId),
     );
 
   for (const doc of linkedApps as any[]) {

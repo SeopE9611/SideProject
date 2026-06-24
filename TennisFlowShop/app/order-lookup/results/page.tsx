@@ -557,7 +557,11 @@ export default function OrderLookupResultsPage() {
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         다시 조회하기
                       </Button>
-                      <Button asChild variant="outline" className="w-full border-border sm:w-auto">
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="w-full border-border sm:w-auto"
+                      >
                         <Link href="/board/qna/write">고객센터 문의하기</Link>
                       </Button>
                     </div>

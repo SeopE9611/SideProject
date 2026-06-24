@@ -44,18 +44,16 @@ export async function POST(req: Request) {
       .collection("offline_customers")
       .findOne({ name: user.name || "", phoneNormalized });
     if (customer && !customer.linkedUserId) {
-      await guard.db
-        .collection("offline_customers")
-        .updateOne(
-          { _id: customer._id },
-          {
-            $set: {
-              linkedUserId: linkedId,
-              updatedAt: new Date(),
-              updatedBy: guard.admin._id,
-            },
+      await guard.db.collection("offline_customers").updateOne(
+        { _id: customer._id },
+        {
+          $set: {
+            linkedUserId: linkedId,
+            updatedAt: new Date(),
+            updatedBy: guard.admin._id,
           },
-        );
+        },
+      );
       customer = await guard.db
         .collection("offline_customers")
         .findOne({ _id: customer._id });

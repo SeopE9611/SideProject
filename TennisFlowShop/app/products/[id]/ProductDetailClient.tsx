@@ -10,10 +10,7 @@ import HorizontalProducts, {
 } from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
 import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
-import {
-  PrimaryCTAGroup,
-  SummaryCard,
-} from "@/components/public";
+import { PrimaryCTAGroup, SummaryCard } from "@/components/public";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1510,7 +1507,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           </span>
                         </div>
                         <p className="break-keep text-xs text-muted-foreground">
-                          상품가 {qtyTotal.toLocaleString()}원 + 장착비 {mountingFee.toLocaleString()}원
+                          상품가 {qtyTotal.toLocaleString()}원 + 장착비{" "}
+                          {mountingFee.toLocaleString()}원
                         </p>
                       </div>
                     )}
@@ -1518,7 +1516,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                   <div className="space-y-4 sm:space-y-5 pt-5 sm:pt-6 border-t border-border/60">
                     {visibleColorRows.length > 0 && (
-                      <div className={cn("space-y-3 p-3.5", detailSurfaceSubtleInnerClass)}>
+                      <div
+                        className={cn(
+                          "space-y-3 p-3.5",
+                          detailSurfaceSubtleInnerClass,
+                        )}
+                      >
                         <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
                           <span className="text-sm font-semibold text-foreground">
                             색상 선택
@@ -1667,7 +1670,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       )}
 
                     {isStringProduct && gaugeRows.length > 0 && (
-                      <div className={cn("space-y-3 p-3.5", detailSurfaceSubtleInnerClass)}>
+                      <div
+                        className={cn(
+                          "space-y-3 p-3.5",
+                          detailSurfaceSubtleInnerClass,
+                        )}
+                      >
                         <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
                           <span className="text-sm font-semibold text-foreground">
                             게이지 선택
@@ -1717,8 +1725,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                     {isStringProduct && (
                       <div className="rounded-xl border border-border bg-muted/20 p-3 text-sm leading-relaxed text-muted-foreground">
-                        <p className="font-semibold text-foreground">교체서비스 신청용 스트링입니다.</p>
-                        <p className="mt-1 break-keep">게이지·색상·수량을 확인한 뒤 장착 신청으로 이동하세요.</p>
+                        <p className="font-semibold text-foreground">
+                          교체서비스 신청용 스트링입니다.
+                        </p>
+                        <p className="mt-1 break-keep">
+                          게이지·색상·수량을 확인한 뒤 장착 신청으로 이동하세요.
+                        </p>
                       </div>
                     )}
 
@@ -1882,7 +1894,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </h4>
                 <div className="space-y-2 sm:space-y-2.5">
                   {selectedPlayerTypes.length > 0 && (
-                    <div className={cn("flex flex-col items-start gap-2 p-3 text-sm sm:flex-row sm:items-start sm:gap-3 sm:text-base", detailSurfaceInfoItemClass)}>
+                    <div
+                      className={cn(
+                        "flex flex-col items-start gap-2 p-3 text-sm sm:flex-row sm:items-start sm:gap-3 sm:text-base",
+                        detailSurfaceInfoItemClass,
+                      )}
+                    >
                       <div className="flex shrink-0 items-center gap-3">
                         <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-muted-foreground/70"></div>
                         <span className="shrink-0 whitespace-nowrap break-keep text-muted-foreground">
@@ -1895,7 +1912,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     </div>
                   )}
                   {selectedPlayStyles.length > 0 && (
-                    <div className={cn("flex flex-col items-start gap-2 p-3 text-sm sm:flex-row sm:items-start sm:gap-3 sm:text-base", detailSurfaceInfoItemClass)}>
+                    <div
+                      className={cn(
+                        "flex flex-col items-start gap-2 p-3 text-sm sm:flex-row sm:items-start sm:gap-3 sm:text-base",
+                        detailSurfaceInfoItemClass,
+                      )}
+                    >
                       <div className="flex shrink-0 items-center gap-3">
                         <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-muted-foreground/70"></div>
                         <span className="shrink-0 whitespace-nowrap break-keep text-muted-foreground">
@@ -1915,11 +1937,21 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   추가 특성
                 </h4>
                 {additionalFeaturesText ? (
-                  <p className={cn("whitespace-pre-line break-keep break-words p-3 text-sm leading-relaxed text-muted-foreground sm:text-base", detailSurfaceSubtleInnerClass)}>
+                  <p
+                    className={cn(
+                      "whitespace-pre-line break-keep break-words p-3 text-sm leading-relaxed text-muted-foreground sm:text-base",
+                      detailSurfaceSubtleInnerClass,
+                    )}
+                  >
                     {additionalFeaturesText}
                   </p>
                 ) : (
-                  <p className={cn("p-3 text-sm italic text-muted-foreground sm:text-base", detailSurfaceSubtleInnerClass)}>
+                  <p
+                    className={cn(
+                      "p-3 text-sm italic text-muted-foreground sm:text-base",
+                      detailSurfaceSubtleInnerClass,
+                    )}
+                  >
                     추가 특성 정보가 없습니다.
                   </p>
                 )}
@@ -2007,7 +2039,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </div>
               </TabsContent>
 
-              <TabsContent value="specifications" className="p-4 sm:p-6 bp-md:p-8">
+              <TabsContent
+                value="specifications"
+                className="p-4 sm:p-6 bp-md:p-8"
+              >
                 <div className="space-y-4 sm:space-y-6">
                   <div className="flex min-w-0 items-center gap-3 mb-5 sm:mb-6">
                     <div className="w-10 sm:w-12 h-10 sm:h-12 border border-border/60 bg-secondary text-foreground rounded-lg flex items-center justify-center">
@@ -2151,13 +2186,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 </div>
                                 <div className="min-w-0">
                                   <div className="break-words font-bold text-foreground text-sm sm:text-base">
-                                    {review.type === "service" ? "상품+교체서비스 후기" : review.status === "hidden"
-                                      ? review.ownedByMe
-                                        ? `${review.user ?? "내 리뷰"} (비공개)`
-                                        : review.adminView
-                                          ? `${review.user ?? "사용자"} (비공개)`
-                                          : "비공개 리뷰"
-                                      : (review.user ?? "익명")}
+                                    {review.type === "service"
+                                      ? "상품+교체서비스 후기"
+                                      : review.status === "hidden"
+                                        ? review.ownedByMe
+                                          ? `${review.user ?? "내 리뷰"} (비공개)`
+                                          : review.adminView
+                                            ? `${review.user ?? "사용자"} (비공개)`
+                                            : "비공개 리뷰"
+                                        : (review.user ?? "익명")}
                                   </div>
                                   <div className="flex items-center gap-2 mt-1">
                                     <div className="flex items-center gap-1">
@@ -2611,10 +2648,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
           />
         )}
 
-        <div ref={relatedSectionRef} className="mt-8 space-y-6 sm:mt-12 sm:space-y-8">
+        <div
+          ref={relatedSectionRef}
+          className="mt-8 space-y-6 sm:mt-12 sm:space-y-8"
+        >
           <Card className="rounded-2xl border border-border bg-card shadow-sm sm:rounded-3xl">
             <CardHeader className="p-5 pb-3 sm:p-6 sm:pb-4">
-              <CardTitle className="break-keep text-lg font-semibold leading-snug sm:text-xl">관련 상품</CardTitle>
+              <CardTitle className="break-keep text-lg font-semibold leading-snug sm:text-xl">
+                관련 상품
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
               <HorizontalProducts

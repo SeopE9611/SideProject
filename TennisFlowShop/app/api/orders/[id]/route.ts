@@ -514,10 +514,8 @@ export async function GET(
         racketLabel:
           nullableTrim(line?.racketLabel) ?? nullableTrim(line?.racketType),
         stringName: nullableTrim(line?.stringName),
-        gauge:
-          nullableTrim(line?.selectedGauge) ?? nullableTrim(line?.gauge),
-        color:
-          nullableTrim(line?.selectedColor) ?? nullableTrim(line?.color),
+        gauge: nullableTrim(line?.selectedGauge) ?? nullableTrim(line?.gauge),
+        color: nullableTrim(line?.selectedColor) ?? nullableTrim(line?.color),
         colorLabel:
           nullableTrim(line?.selectedColorLabel) ??
           nullableTrim(line?.colorLabel) ??
@@ -781,8 +779,8 @@ export async function PATCH(
         });
       const isLinkedStringingOrder = Boolean(
         existing.isStringServiceApplied ||
-          existing.stringingApplicationId ||
-          linkedApplication,
+        existing.stringingApplicationId ||
+        linkedApplication,
       );
 
       if (isLinkedStringingOrder) {
@@ -1053,7 +1051,11 @@ export async function PATCH(
       });
     }
 
-    if (__prevStatus !== nextStatus && existing.userId && ObjectId.isValid(String(existing.userId))) {
+    if (
+      __prevStatus !== nextStatus &&
+      existing.userId &&
+      ObjectId.isValid(String(existing.userId))
+    ) {
       try {
         const titleByStatus: Record<string, string> = {
           결제완료: "주문 결제가 확인되었습니다.",
@@ -1062,7 +1064,11 @@ export async function PATCH(
           취소: "주문이 취소되었습니다.",
           환불: "주문이 환불 처리되었습니다.",
         };
-        const displayOrderId = String((existing as any).orderId ?? (existing as any).orderNumber ?? _id.toString());
+        const displayOrderId = String(
+          (existing as any).orderId ??
+            (existing as any).orderNumber ??
+            _id.toString(),
+        );
         await createUserNotification(db, {
           userId: existing.userId,
           type: "order_status",

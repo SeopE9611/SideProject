@@ -174,9 +174,7 @@ function InfoBox({
     <div
       className={`min-w-0 rounded-xl border border-border bg-background p-3 ${className}`}
     >
-      <dt className="text-xs font-medium text-muted-foreground">
-        {label}
-      </dt>
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
       <dd
         className={`mt-1 min-w-0 break-words text-sm font-medium text-foreground ${
           multiline ? "whitespace-pre-wrap leading-relaxed" : "leading-6"
@@ -293,9 +291,7 @@ function ApplicationInfoCard({
           <UserRound className="h-5 w-5 text-primary" />
           신청자 정보
         </CardTitle>
-        <CardDescription>
-          신청자와 접수 정보를 확인하세요.
-        </CardDescription>
+        <CardDescription>신청자와 접수 정보를 확인하세요.</CardDescription>
       </CardHeader>
       <CardContent>
         <dl className="grid gap-3 bp-sm:grid-cols-2">
@@ -332,9 +328,7 @@ function RequestInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
           <MessageSquareText className="h-5 w-5 text-primary" />
           레슨 목표 및 요청사항
         </CardTitle>
-        <CardDescription>
-          신청 당시 남긴 목표와 요청사항입니다.
-        </CardDescription>
+        <CardDescription>신청 당시 남긴 목표와 요청사항입니다.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3">
         <InfoBox
@@ -598,8 +592,8 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             <div className="space-y-3">
               <div className="space-y-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
                 <p className="font-medium">
-                  이미 취소된 신청입니다. 다시 수강을 원하시면 아카데미 페이지에서
-                  새로 신청해 주세요.
+                  이미 취소된 신청입니다. 다시 수강을 원하시면 아카데미
+                  페이지에서 새로 신청해 주세요.
                 </p>
                 {item.cancelReasonLabel ? (
                   <p className="text-xs leading-5 text-destructive/85">
@@ -629,7 +623,8 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                       취소 신청 기록을 삭제할까요?
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      삭제하면 마이페이지에서 이 신청 기록이 보이지 않습니다. 운영 기록은 보존됩니다.
+                      삭제하면 마이페이지에서 이 신청 기록이 보이지 않습니다.
+                      운영 기록은 보존됩니다.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -763,7 +758,12 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         <Button asChild variant="outline" wrap="responsive" className="w-full">
           <Link href="/mypage?tab=academy">목록으로 돌아가기</Link>
         </Button>
-        <Button asChild variant="secondary" wrap="responsive" className="w-full">
+        <Button
+          asChild
+          variant="secondary"
+          wrap="responsive"
+          className="w-full"
+        >
           <Link href="/academy">아카데미 홈 보기</Link>
         </Button>
         <Button asChild variant="default" wrap="responsive" className="w-full">

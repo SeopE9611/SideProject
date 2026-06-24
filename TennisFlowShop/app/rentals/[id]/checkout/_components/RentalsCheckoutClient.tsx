@@ -787,8 +787,12 @@ export default function RentalsCheckoutClient({
         <SiteContainer variant="wide" className="py-6 md:py-8">
           <div className="max-w-3xl space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary" className="rounded-full">1 대여 정보</Badge>
-              <Badge variant="secondary" className="rounded-full">2 스트링 선택</Badge>
+              <Badge variant="secondary" className="rounded-full">
+                1 대여 정보
+              </Badge>
+              <Badge variant="secondary" className="rounded-full">
+                2 스트링 선택
+              </Badge>
               <Badge className="rounded-full">3 신청 확인</Badge>
             </div>
             <div className="space-y-2">
@@ -796,7 +800,8 @@ export default function RentalsCheckoutClient({
                 대여 신청 정보 확인
               </h1>
               <p className="break-keep text-sm leading-relaxed text-muted-foreground md:text-base">
-                대여 라켓, 선택한 스트링 옵션, 수령 정보와 예상 금액을 확인한 뒤 대여 신청을 완료하세요.
+                대여 라켓, 선택한 스트링 옵션, 수령 정보와 예상 금액을 확인한 뒤
+                대여 신청을 완료하세요.
               </p>
             </div>
           </div>
@@ -841,7 +846,9 @@ export default function RentalsCheckoutClient({
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm text-muted-foreground">대여 라켓</div>
+                    <div className="text-sm text-muted-foreground">
+                      대여 라켓
+                    </div>
                     <h3 className="min-w-0 break-keep font-semibold text-foreground">
                       {rentalRacketName}
                     </h3>
@@ -859,11 +866,15 @@ export default function RentalsCheckoutClient({
                     <div className="mt-3 grid gap-2 text-sm text-muted-foreground bp-sm:grid-cols-2">
                       <span className="flex items-center justify-between gap-3 rounded-xl bg-card px-3 py-2">
                         <span>대여료</span>
-                        <span className="tabular-nums text-foreground">{initial.fee.toLocaleString()}원</span>
+                        <span className="tabular-nums text-foreground">
+                          {initial.fee.toLocaleString()}원
+                        </span>
                       </span>
                       <span className="flex items-center justify-between gap-3 rounded-xl bg-card px-3 py-2">
                         <span>보증금</span>
-                        <span className="tabular-nums text-foreground">{initial.deposit.toLocaleString()}원</span>
+                        <span className="tabular-nums text-foreground">
+                          {initial.deposit.toLocaleString()}원
+                        </span>
                       </span>
                     </div>
                   </div>
@@ -984,22 +995,24 @@ export default function RentalsCheckoutClient({
                             selectedString.regularPrice >
                               selectedString.price && (
                               <>
-                              <span className="tabular-nums text-muted-foreground">
-                                정가{" "}
-                                <span className="line-through">
-                                  {selectedString.regularPrice.toLocaleString()}원
+                                <span className="tabular-nums text-muted-foreground">
+                                  정가{" "}
+                                  <span className="line-through">
+                                    {selectedString.regularPrice.toLocaleString()}
+                                    원
+                                  </span>
                                 </span>
-                              </span>
-                              <Badge
-                                variant="destructive"
-                                className="w-fit text-[10px] tabular-nums"
-                              >
-                                {selectedString.discountRate}% OFF
-                              </Badge>
+                                <Badge
+                                  variant="destructive"
+                                  className="w-fit text-[10px] tabular-nums"
+                                >
+                                  {selectedString.discountRate}% OFF
+                                </Badge>
                               </>
                             )}
                           <span>
-                            교체서비스 장착비: {selectedString.mountingFee.toLocaleString()}원
+                            교체서비스 장착비:{" "}
+                            {selectedString.mountingFee.toLocaleString()}원
                           </span>
                         </div>
 
@@ -1575,7 +1588,9 @@ export default function RentalsCheckoutClient({
 
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">배송비</span>
-                      <span className="font-semibold tabular-nums text-foreground">0원</span>
+                      <span className="font-semibold tabular-nums text-foreground">
+                        0원
+                      </span>
                     </div>
 
                     {/* 포인트 차감 표시 */}
@@ -1736,7 +1751,9 @@ export default function RentalsCheckoutClient({
                     <div className="absolute inset-0 grid place-items-center">
                       <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
                         <Loader2 className="h-5 w-5 animate-spin" />
-                        <span className="text-sm">대여 신청을 처리하고 있어요…</span>
+                        <span className="text-sm">
+                          대여 신청을 처리하고 있어요…
+                        </span>
                       </div>
                     </div>
                   </div>

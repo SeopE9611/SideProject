@@ -29,31 +29,53 @@ const fetcher = async (url: string): Promise<NotificationListRes> => {
   return res.json();
 };
 
-export function useNotificationList({ enabled, limit = 10 }: { enabled: boolean; limit?: number }) {
+export function useNotificationList({
+  enabled,
+  limit = 10,
+}: {
+  enabled: boolean;
+  limit?: number;
+}) {
   const { mutate: globalMutate } = useSWRConfig();
   const key = enabled ? `/api/notifications?limit=${limit}` : null;
-  const { data, error, isLoading, mutate } = useSWR<NotificationListRes>(key, fetcher, {
-    revalidateOnFocus: false,
-  });
+  const { data, error, isLoading, mutate } = useSWR<NotificationListRes>(
+    key,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+    },
+  );
 
   const markAsRead = async (id: string) => {
-    const res = await fetch(`/api/notifications/${id}/read`, { method: "PATCH", credentials: "include" });
+    const res = await fetch(`/api/notifications/${id}/read`, {
+      method: "PATCH",
+      credentials: "include",
+    });
     if (!res.ok) {
       const message = `notification markAsRead failed: ${res.status}`;
       console.error(message);
       throw new Error(message);
     }
-    await Promise.all([mutate(), globalMutate("/api/notifications/unread-count")]);
+    await Promise.all([
+      mutate(),
+      globalMutate("/api/notifications/unread-count"),
+    ]);
   };
 
   const markAllAsRead = async () => {
-    const res = await fetch("/api/notifications/read-all", { method: "POST", credentials: "include" });
+    const res = await fetch("/api/notifications/read-all", {
+      method: "POST",
+      credentials: "include",
+    });
     if (!res.ok) {
       const message = `notification markAllAsRead failed: ${res.status}`;
       console.error(message);
       throw new Error(message);
     }
-    await Promise.all([mutate(), globalMutate("/api/notifications/unread-count")]);
+    await Promise.all([
+      mutate(),
+      globalMutate("/api/notifications/unread-count"),
+    ]);
   };
 
   const hasApiError = Boolean(data && !data.ok);

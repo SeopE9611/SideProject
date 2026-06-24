@@ -262,8 +262,8 @@ export async function GET() {
   const hasPendingServiceReview = (applicationId?: string | null) =>
     Boolean(
       applicationId &&
-        serviceReviewCandidateSet.has(applicationId) &&
-        !reviewedServiceApplicationIds.has(applicationId),
+      serviceReviewCandidateSet.has(applicationId) &&
+      !reviewedServiceApplicationIds.has(applicationId),
     );
 
   const actionableLinkedAppCountByOrderId = new Map<string, number>();

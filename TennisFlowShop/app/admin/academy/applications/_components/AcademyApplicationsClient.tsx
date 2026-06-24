@@ -528,7 +528,9 @@ export default function AcademyApplicationsClient() {
                                 }}
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                {deletingId === item._id ? "삭제 중..." : "삭제"}
+                                {deletingId === item._id
+                                  ? "삭제 중..."
+                                  : "삭제"}
                               </DropdownMenuItem>
                             ) : null}
                           </DropdownMenuContent>
@@ -579,8 +581,8 @@ export default function AcademyApplicationsClient() {
           <AlertDialogHeader>
             <AlertDialogTitle>취소 신청 내역을 삭제할까요?</AlertDialogTitle>
             <AlertDialogDescription>
-              삭제하면 관리자 목록과 고객 마이페이지에서 보이지 않습니다. 진행 중
-              신청은 삭제할 수 없습니다.
+              삭제하면 관리자 목록과 고객 마이페이지에서 보이지 않습니다. 진행
+              중 신청은 삭제할 수 없습니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

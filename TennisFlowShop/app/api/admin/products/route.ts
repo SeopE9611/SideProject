@@ -123,7 +123,12 @@ function parseCreateRequest(raw: unknown): AdminProductCreateRequestDto | null {
   const shippingFee = normalizeItemShippingFee(body.shippingFee);
 
   if (!name || !Number.isFinite(price)) return null;
-  return { name, price, shippingFee, raw: { ...body, isVisible: body.isVisible === false ? false : true } };
+  return {
+    name,
+    price,
+    shippingFee,
+    raw: { ...body, isVisible: body.isVisible === false ? false : true },
+  };
 }
 
 function toProductListItem(doc: ProductDoc): AdminProductListItemDto {

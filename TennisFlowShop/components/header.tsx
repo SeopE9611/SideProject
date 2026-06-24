@@ -623,69 +623,69 @@ const Header = () => {
                       />
                       <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="-mr-1 -mt-1 h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
-                          aria-label="사용자 메뉴 더보기"
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="-mr-1 -mt-1 h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
+                            aria-label="사용자 메뉴 더보기"
+                          >
+                            <MoreHorizontal
+                              className="h-4 w-4"
+                              aria-hidden="true"
+                            />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          sideOffset={8}
+                          collisionPadding={12}
+                          className="z-[60] w-44"
                         >
-                          <MoreHorizontal
-                            className="h-4 w-4"
-                            aria-hidden="true"
-                          />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        sideOffset={8}
-                        collisionPadding={12}
-                        className="z-[60] w-44"
-                      >
-                        <DropdownMenuItem
-                          className="h-9"
-                          onSelect={() => {
-                            setOpen(false);
-                            router.push("/mypage");
-                          }}
-                        >
-                          마이페이지
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="h-9"
-                          onSelect={() => {
-                            setOpen(false);
-                            router.push("/board/event");
-                          }}
-                        >
-                          이벤트
-                        </DropdownMenuItem>
-                        {isAdmin && (
                           <DropdownMenuItem
                             className="h-9"
                             onSelect={() => {
                               setOpen(false);
-                              router.push("/admin/dashboard");
+                              router.push("/mypage");
                             }}
                           >
-                            관리자 페이지
+                            마이페이지
                           </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem
-                          className="h-9 text-destructive focus:text-destructive"
-                          onSelect={async () => {
-                            // 로그아웃 직전 캐시를 선제적으로 비워
-                            // 계정 전환 시 stale 포인트가 보이는 플래시를 예방합니다.
-                            headerPointsCache = null;
-                            await fetch("/api/logout", {
-                              method: "POST",
-                              credentials: "include",
-                            });
-                            window.location.href = "/";
-                          }}
-                        >
-                          로그아웃
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
+                          <DropdownMenuItem
+                            className="h-9"
+                            onSelect={() => {
+                              setOpen(false);
+                              router.push("/board/event");
+                            }}
+                          >
+                            이벤트
+                          </DropdownMenuItem>
+                          {isAdmin && (
+                            <DropdownMenuItem
+                              className="h-9"
+                              onSelect={() => {
+                                setOpen(false);
+                                router.push("/admin/dashboard");
+                              }}
+                            >
+                              관리자 페이지
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem
+                            className="h-9 text-destructive focus:text-destructive"
+                            onSelect={async () => {
+                              // 로그아웃 직전 캐시를 선제적으로 비워
+                              // 계정 전환 시 stale 포인트가 보이는 플래시를 예방합니다.
+                              headerPointsCache = null;
+                              await fetch("/api/logout", {
+                                method: "POST",
+                                credentials: "include",
+                              });
+                              window.location.href = "/";
+                            }}
+                          >
+                            로그아웃
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
                   </div>
@@ -1401,7 +1401,10 @@ const Header = () => {
                 )}
 
                 {user && (
-                  <NotificationBell enabled={!loading && !!user} mode="desktop" />
+                  <NotificationBell
+                    enabled={!loading && !!user}
+                    mode="desktop"
+                  />
                 )}
 
                 <div className="max-w-[88px] xl:max-w-[110px] 2xl:max-w-[150px] overflow-hidden shrink-0">

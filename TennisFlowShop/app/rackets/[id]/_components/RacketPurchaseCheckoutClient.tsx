@@ -356,7 +356,9 @@ export default function RacketPurchaseCheckoutClient({
                   라켓 구매 정보를 확인해주세요
                 </h1>
                 <p className="max-w-3xl break-keep text-sm leading-relaxed text-muted-foreground">
-                  수령 방식과 결제 정보를 입력한 뒤 최종 금액을 확인하세요. 라켓과 스트링을 함께 선택하는 새 구매 흐름도 계속 이용할 수 있습니다.
+                  수령 방식과 결제 정보를 입력한 뒤 최종 금액을 확인하세요.
+                  라켓과 스트링을 함께 선택하는 새 구매 흐름도 계속 이용할 수
+                  있습니다.
                 </p>
               </div>
             </div>
@@ -421,7 +423,9 @@ export default function RacketPurchaseCheckoutClient({
 
             <section className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
               <div className="space-y-1">
-                <h2 className="text-lg font-semibold text-foreground">수령 방식</h2>
+                <h2 className="text-lg font-semibold text-foreground">
+                  수령 방식
+                </h2>
                 <p className="text-sm text-muted-foreground">
                   배송비와 입력 항목은 선택한 수령 방식에 맞춰 적용됩니다.
                 </p>
@@ -436,7 +440,9 @@ export default function RacketPurchaseCheckoutClient({
                     className="mt-1 shrink-0"
                   />
                   <span className="min-w-0">
-                    <span className="block font-medium text-foreground">택배 발송/수령</span>
+                    <span className="block font-medium text-foreground">
+                      택배 발송/수령
+                    </span>
                     <span className="mt-1 block break-keep text-xs leading-relaxed text-muted-foreground">
                       주소지로 라켓을 받아보는 기본 수령 방식입니다.
                     </span>
@@ -451,7 +457,9 @@ export default function RacketPurchaseCheckoutClient({
                     className="mt-1 shrink-0"
                   />
                   <span className="min-w-0">
-                    <span className="block font-medium text-foreground">오프라인 매장 방문</span>
+                    <span className="block font-medium text-foreground">
+                      오프라인 매장 방문
+                    </span>
                     <span className="mt-1 block break-keep text-xs leading-relaxed text-muted-foreground">
                       매장에서 직접 수령하며 배송비가 제외됩니다.
                     </span>
@@ -516,9 +524,12 @@ export default function RacketPurchaseCheckoutClient({
 
             <section className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
               <div className="space-y-1">
-                <h2 className="text-lg font-semibold text-foreground">결제수단 및 동의</h2>
+                <h2 className="text-lg font-semibold text-foreground">
+                  결제수단 및 동의
+                </h2>
                 <p className="text-sm text-muted-foreground">
-                  결제수단을 선택하고 주문/결제에 필요한 동의 항목을 확인해주세요.
+                  결제수단을 선택하고 주문/결제에 필요한 동의 항목을
+                  확인해주세요.
                 </p>
               </div>
 
@@ -531,7 +542,9 @@ export default function RacketPurchaseCheckoutClient({
                     onChange={() => setPaymentMethod("bank_transfer")}
                     className="mt-1 shrink-0"
                   />
-                  <span className="font-medium text-foreground">무통장입금</span>
+                  <span className="font-medium text-foreground">
+                    무통장입금
+                  </span>
                 </label>
                 {tossPaymentsEnabled && (
                   <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted/30 p-4 text-sm transition-colors hover:bg-muted/50">
@@ -543,7 +556,9 @@ export default function RacketPurchaseCheckoutClient({
                       disabled={!Number.isFinite(totalPrice) || totalPrice <= 0}
                       className="mt-1 shrink-0"
                     />
-                    <span className="font-medium text-foreground">카드/간편결제 (토스)</span>
+                    <span className="font-medium text-foreground">
+                      카드/간편결제 (토스)
+                    </span>
                   </label>
                 )}
                 {nicePaymentsEnabled && (
@@ -556,7 +571,9 @@ export default function RacketPurchaseCheckoutClient({
                       disabled={!Number.isFinite(totalPrice) || totalPrice <= 0}
                       className="mt-1 shrink-0"
                     />
-                    <span className="font-medium text-foreground">카드/간편결제</span>
+                    <span className="font-medium text-foreground">
+                      카드/간편결제
+                    </span>
                   </label>
                 )}
               </div>
@@ -620,7 +637,9 @@ export default function RacketPurchaseCheckoutClient({
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Order summary
                 </p>
-                <h2 className="text-lg font-semibold text-foreground">구매 요약</h2>
+                <h2 className="text-lg font-semibold text-foreground">
+                  구매 요약
+                </h2>
               </div>
 
               <div className="mt-5 space-y-4">
@@ -648,7 +667,9 @@ export default function RacketPurchaseCheckoutClient({
                   </div>
                   <div className="border-t border-border pt-3">
                     <div className="flex items-end justify-between gap-4">
-                      <span className="font-semibold text-foreground">총 결제 금액</span>
+                      <span className="font-semibold text-foreground">
+                        총 결제 금액
+                      </span>
                       <span className="text-right text-xl font-semibold tabular-nums text-foreground">
                         {totalPrice.toLocaleString()}원
                       </span>
@@ -658,13 +679,17 @@ export default function RacketPurchaseCheckoutClient({
 
                 <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-4 text-sm">
                   <div className="flex items-start justify-between gap-4">
-                    <span className="shrink-0 text-muted-foreground">수령 방식</span>
+                    <span className="shrink-0 text-muted-foreground">
+                      수령 방식
+                    </span>
                     <span className="break-keep text-right font-medium text-foreground">
                       {pickupLabel}
                     </span>
                   </div>
                   <div className="flex items-start justify-between gap-4">
-                    <span className="shrink-0 text-muted-foreground">결제수단</span>
+                    <span className="shrink-0 text-muted-foreground">
+                      결제수단
+                    </span>
                     <span className="break-keep text-right font-medium text-foreground">
                       {paymentLabel}
                     </span>
@@ -710,7 +735,8 @@ export default function RacketPurchaseCheckoutClient({
 
                 {racket.status !== "available" && (
                   <div className="rounded-xl border border-border bg-muted/30 p-3 text-sm text-destructive">
-                    현재 판매 가능한 라켓이 아닙니다. (상태: {racketStatusLabel(racket.status)})
+                    현재 판매 가능한 라켓이 아닙니다. (상태:{" "}
+                    {racketStatusLabel(racket.status)})
                   </div>
                 )}
               </div>

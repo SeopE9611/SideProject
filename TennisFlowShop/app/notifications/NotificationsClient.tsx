@@ -32,10 +32,14 @@ async function fetchNotifications(cursor?: string | null) {
   const res = await fetch(`/api/notifications?${params.toString()}`, {
     credentials: "include",
   });
-  const data = (await res.json().catch(() => null)) as NotificationListRes | null;
+  const data = (await res
+    .json()
+    .catch(() => null)) as NotificationListRes | null;
 
   if (!res.ok || !data?.ok) {
-    throw new Error(data && !data.ok ? data.error : `알림 조회 실패 (${res.status})`);
+    throw new Error(
+      data && !data.ok ? data.error : `알림 조회 실패 (${res.status})`,
+    );
   }
 
   return data;
@@ -48,7 +52,9 @@ export default function NotificationsClient() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isMarkingAll, setIsMarkingAll] = useState(false);
 
@@ -128,7 +134,9 @@ export default function NotificationsClient() {
       }
 
       const now = new Date().toISOString();
-      setItems((prev) => prev.map((item) => (item.readAt ? item : { ...item, readAt: now })));
+      setItems((prev) =>
+        prev.map((item) => (item.readAt ? item : { ...item, readAt: now })),
+      );
       setUnreadCount(0);
       await globalMutate("/api/notifications/unread-count");
     } catch (error) {
@@ -165,7 +173,8 @@ export default function NotificationsClient() {
               <div>
                 <CardTitle className="text-xl font-semibold">알림</CardTitle>
                 <p className="mt-0.5 break-keep text-sm text-muted-foreground">
-                  시간순으로 도착한 활동과 안내를 확인하세요 · 읽지 않은 알림 {unreadCount.toLocaleString()}개
+                  시간순으로 도착한 활동과 안내를 확인하세요 · 읽지 않은 알림{" "}
+                  {unreadCount.toLocaleString()}개
                 </p>
               </div>
             </div>
@@ -202,7 +211,11 @@ export default function NotificationsClient() {
           ) : (
             <div className="space-y-2 p-3 md:p-4">
               {items.map((item) => (
-                <NotificationItem key={item.id} item={item} onClick={() => handleItemClick(item)} />
+                <NotificationItem
+                  key={item.id}
+                  item={item}
+                  onClick={() => handleItemClick(item)}
+                />
               ))}
             </div>
           )}
@@ -210,8 +223,15 @@ export default function NotificationsClient() {
             <>
               <Separator />
               <div className="p-3">
-                <Button variant="outline" className="w-full gap-2" disabled={isLoadingMore} onClick={loadMore}>
-                  {isLoadingMore && <Loader2 className="h-4 w-4 animate-spin" />}
+                <Button
+                  variant="outline"
+                  className="w-full gap-2"
+                  disabled={isLoadingMore}
+                  onClick={loadMore}
+                >
+                  {isLoadingMore && (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  )}
                   더보기
                 </Button>
               </div>

@@ -5,12 +5,7 @@ import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAcademyScheduleDisplay } from "@/lib/academy-display";
 import { getCurrentUserId } from "@/lib/hooks/get-current-user";
 import { getDb } from "@/lib/mongodb";
@@ -294,8 +289,8 @@ export default async function AcademyPage() {
         title="도깨비테니스 아카데미"
         description={
           <p className="break-keep leading-relaxed">
-            입문자부터 실전 플레이어까지, 목표와 레벨에 맞춘 레슨 방향을 상담하고
-            신청할 수 있는 아카데미 안내 페이지입니다.
+            입문자부터 실전 플레이어까지, 목표와 레벨에 맞춘 레슨 방향을
+            상담하고 신청할 수 있는 아카데미 안내 페이지입니다.
           </p>
         }
         actions={
@@ -355,14 +350,13 @@ export default async function AcademyPage() {
           <SectionHeader
             eyebrow="Lesson Program"
             title={
-              <span id="lesson-fees-heading">
-                레슨 프로그램 & 기준 수강료
-              </span>
+              <span id="lesson-fees-heading">레슨 프로그램 & 기준 수강료</span>
             }
             description={
               <p className="break-keep leading-relaxed">
                 레슨 유형과 횟수별 기준 수강료를 카드형 안내로 정리했습니다.
-                수강료는 레슨 유형과 일정에 따라 상담 후 최종 확인될 수 있습니다.
+                수강료는 레슨 유형과 일정에 따라 상담 후 최종 확인될 수
+                있습니다.
               </p>
             }
           />
@@ -380,10 +374,7 @@ export default async function AcademyPage() {
                       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/15">
                         <IconComponent className="h-6 w-6 text-primary" />
                       </div>
-                      <Badge
-                        variant="secondary"
-                        className="break-keep"
-                      >
+                      <Badge variant="secondary" className="break-keep">
                         {program.badge}
                       </Badge>
                     </div>
@@ -639,7 +630,11 @@ export default async function AcademyPage() {
                             </Button>
                           </div>
                         ) : (
-                          <Button asChild wrap="responsive" className="h-11 w-full">
+                          <Button
+                            asChild
+                            wrap="responsive"
+                            className="h-11 w-full"
+                          >
                             <Link href={userId ? applyHref : loginHref}>
                               {userId ? "레슨 신청하기" : "로그인 후 신청"}
                             </Link>

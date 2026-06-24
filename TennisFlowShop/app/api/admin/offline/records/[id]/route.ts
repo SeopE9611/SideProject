@@ -74,15 +74,13 @@ export async function PATCH(
   if (updateResult.matchedCount === 0)
     return NextResponse.json({ message: "record not found" }, { status: 404 });
   if (totalPaidDelta !== 0 && existingRecord.offlineCustomerId) {
-    await guard.db
-      .collection("offline_customers")
-      .updateOne(
-        { _id: existingRecord.offlineCustomerId },
-        {
-          $inc: { "stats.totalPaid": totalPaidDelta },
-          $set: { updatedAt: new Date(), updatedBy: guard.admin._id },
-        },
-      );
+    await guard.db.collection("offline_customers").updateOne(
+      { _id: existingRecord.offlineCustomerId },
+      {
+        $inc: { "stats.totalPaid": totalPaidDelta },
+        $set: { updatedAt: new Date(), updatedBy: guard.admin._id },
+      },
+    );
   }
   await appendAudit(
     guard.db,

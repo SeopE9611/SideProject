@@ -23,7 +23,10 @@ import {
   hasAnyRegisteredFulfillmentField,
   normalizeOrderShippingMethod,
 } from "@/lib/order-shipping";
-import { getSelectableCourierCatalog, normalizeCourierCode } from "@/lib/shipping/courier-map";
+import {
+  getSelectableCourierCatalog,
+  normalizeCourierCode,
+} from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { Loader2 } from "lucide-react";

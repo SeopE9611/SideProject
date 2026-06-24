@@ -6,8 +6,14 @@ import { ObjectId } from "mongodb";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { writeRentalHistory } from "@/app/features/rentals/utils/history";
 import { getLinkedRentalStringingStatus } from "@/lib/admin/rental-stringing-flow.server";
-import { hasRentalStringingService, isRentalStringingComplete } from "@/lib/rental-stringing-flow";
-import { findCourierCatalogItem, normalizeCourierCode } from "@/lib/shipping/courier-map";
+import {
+  hasRentalStringingService,
+  isRentalStringingComplete,
+} from "@/lib/rental-stringing-flow";
+import {
+  findCourierCatalogItem,
+  normalizeCourierCode,
+} from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 
 export const dynamic = "force-dynamic";
@@ -49,7 +55,10 @@ export async function POST(
       { ok: false, message: "MISSING_FIELDS" },
       { status: 400 },
     );
-  if (normalizedTrackingNumber.length < 9 || normalizedTrackingNumber.length > 20)
+  if (
+    normalizedTrackingNumber.length < 9 ||
+    normalizedTrackingNumber.length > 20
+  )
     return NextResponse.json(
       { ok: false, message: "INVALID_TRACKING_NUMBER" },
       { status: 400 },
@@ -120,7 +129,11 @@ export async function POST(
   );
   if (updated.matchedCount === 0) {
     return NextResponse.json(
-      { ok: false, code: "INVALID_STATE", message: "출고 운송장 등록 불가 상태" },
+      {
+        ok: false,
+        code: "INVALID_STATE",
+        message: "출고 운송장 등록 불가 상태",
+      },
       { status: 409 },
     );
   }

@@ -1961,7 +1961,8 @@ export async function handleAdminOperationsGet(req: Request) {
     const packageInfo = asDoc(purchase.packageInfo);
     const sessions = Number(packageInfo?.sessions ?? 0);
     const packageTitle =
-      getString(packageInfo?.title) ?? (sessions > 0 ? `${sessions}회권` : "패키지");
+      getString(packageInfo?.title) ??
+      (sessions > 0 ? `${sessions}회권` : "패키지");
     const statusLabel = getString(purchase.status) ?? "주문접수";
     const paymentLabel = getString(purchase.paymentStatus) ?? "결제대기";
     const serviceInfo = asDoc(purchase.serviceInfo);
@@ -1991,7 +1992,8 @@ export async function handleAdminOperationsGet(req: Request) {
       related: null,
       isIntegrated: false,
       pendingReasons: ["새 패키지 구매가 접수되었습니다."],
-      nextAction: "패키지 구매를 확인하고 결제 상태와 이용권 활성화 상태를 확인하세요.",
+      nextAction:
+        "패키지 구매를 확인하고 결제 상태와 이용권 활성화 상태를 확인하세요.",
     };
   });
 
@@ -2001,13 +2003,11 @@ export async function handleAdminOperationsGet(req: Request) {
     ...appItems,
     ...rentalItems,
     ...packagePurchaseItems,
-  ].sort(
-    (a, b) => {
-      const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return tb - ta;
-    },
-  );
+  ].sort((a, b) => {
+    const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return tb - ta;
+  });
 
   if (kind !== "all") merged = merged.filter((x) => x.kind === kind);
 

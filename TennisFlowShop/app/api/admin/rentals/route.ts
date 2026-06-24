@@ -319,7 +319,15 @@ export async function GET(req: Request) {
       .collection("stringing_applications")
       .find(
         { _id: { $in: appIds.map((id) => new ObjectId(id)) } },
-        { projection: { status: 1, collectionMethod: 1, stringDetails: 1, stringNames: 1, applicationSummary: 1 } },
+        {
+          projection: {
+            status: 1,
+            collectionMethod: 1,
+            stringDetails: 1,
+            stringNames: 1,
+            applicationSummary: 1,
+          },
+        },
       )
       .toArray();
 
@@ -414,10 +422,9 @@ export async function GET(req: Request) {
       stringingReceptionLabel: appSummary?.receptionLabel ?? null,
       stringingRacketCount: appSummary?.racketCount ?? null,
       stringingTensionSummary: appSummary?.tensionSummary ?? null,
-      stringingNames:
-        appSummary?.stringNames?.length
-          ? appSummary.stringNames
-          : getRentalStringNames(rentalDoc),
+      stringingNames: appSummary?.stringNames?.length
+        ? appSummary.stringNames
+        : getRentalStringNames(rentalDoc),
       stringingReservationLabel: appSummary?.reservationLabel ?? null,
       paymentStatusLabel: paymentMeta.label as "결제완료" | "결제대기",
       paymentStatusSource: paymentMeta.source,

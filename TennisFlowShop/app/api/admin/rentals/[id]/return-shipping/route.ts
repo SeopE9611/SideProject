@@ -3,7 +3,10 @@ import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
-import { findCourierCatalogItem, normalizeCourierCode } from "@/lib/shipping/courier-map";
+import {
+  findCourierCatalogItem,
+  normalizeCourierCode,
+} from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { z } from "zod";
 
@@ -77,7 +80,10 @@ export async function POST(
   const courier = normalizeCourierCode(parsed.data.courier);
   const courierItem = findCourierCatalogItem(courier);
   if (!courierItem) {
-    return NextResponse.json({ ok: false, message: "INVALID_COURIER" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, message: "INVALID_COURIER" },
+      { status: 400 },
+    );
   }
   if (courierItem.code === "ems") {
     return badRequest("EMS는 현재 운송장 등록을 지원하지 않습니다.", {

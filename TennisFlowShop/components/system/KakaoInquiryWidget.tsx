@@ -33,7 +33,8 @@ function normalizeChannelPublicId(raw: string) {
  */
 export default function KakaoInquiryWidget() {
   const pathname = usePathname();
-  const isMypageRoute = pathname === "/mypage" || pathname.startsWith("/mypage/");
+  const isMypageRoute =
+    pathname === "/mypage" || pathname.startsWith("/mypage/");
   // 어떤 패널이 열려있는지(중복 오픈 방지)
   const [panel, setPanel] = useState<"guide" | "inquiry" | "bug" | null>(null);
 
@@ -51,11 +52,14 @@ export default function KakaoInquiryWidget() {
 
   // 클라이언트 노출 가능한 env만 사용 (NEXT_PUBLIC_*)
   const jsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY ?? "";
-  const rawChannelPublicId = process.env.NEXT_PUBLIC_KAKAO_CHANNEL_PUBLIC_ID ?? "";
+  const rawChannelPublicId =
+    process.env.NEXT_PUBLIC_KAKAO_CHANNEL_PUBLIC_ID ?? "";
   const channelPublicId = normalizeChannelPublicId(rawChannelPublicId);
 
   // 버그 제보: 카카오 오픈채팅 URL (예: https://open.kakao.com/o/xxxx)
-  const bugOpenChatUrl = (process.env.NEXT_PUBLIC_KAKAO_BUG_OPENCHAT_URL ?? "").trim();
+  const bugOpenChatUrl = (
+    process.env.NEXT_PUBLIC_KAKAO_BUG_OPENCHAT_URL ?? ""
+  ).trim();
 
   // 훅 개수 불일치 방지 - "숨김 여부"는 계산만 하고, return은 마지막에만 처리
   const hideAll = pathname?.startsWith("/admin");
@@ -65,7 +69,10 @@ export default function KakaoInquiryWidget() {
   const canShowGuide = true;
 
   // 목적 선택은 Kakao env와 무관하게 노출한다.
-  const shouldHide = hideAll || (isMypageRoute && !canShowInquiry) || (!isMypageRoute && !canShowGuide && !canShowInquiry && !canShowBug);
+  const shouldHide =
+    hideAll ||
+    (isMypageRoute && !canShowInquiry) ||
+    (!isMypageRoute && !canShowGuide && !canShowInquiry && !canShowBug);
   const hideOnFinderTouch = pathname === "/rackets/finder";
   const hideOnCartMobile = pathname === "/cart";
 
@@ -133,12 +140,14 @@ export default function KakaoInquiryWidget() {
     let ro: ResizeObserver | null = null;
 
     const pickTargets = (): HTMLElement[] => {
-      const marked = Array.from(document.querySelectorAll<HTMLElement>('[data-bottom-sticky="1"]'));
+      const marked = Array.from(
+        document.querySelectorAll<HTMLElement>('[data-bottom-sticky="1"]'),
+      );
       if (marked.length) return marked.filter((el) => !isWidgetOverlay(el));
       // (예비) 혹시 마킹을 빠뜨린 경우를 대비한 fallback
-      return Array.from(document.querySelectorAll<HTMLElement>(".fixed.inset-x-0.bottom-0")).filter(
-        (el) => !isWidgetOverlay(el),
-      );
+      return Array.from(
+        document.querySelectorAll<HTMLElement>(".fixed.inset-x-0.bottom-0"),
+      ).filter((el) => !isWidgetOverlay(el));
     };
 
     const isWidgetOverlay = (el: HTMLElement) =>
@@ -146,7 +155,9 @@ export default function KakaoInquiryWidget() {
       Boolean(el.closest('[data-kakao-widget-hide="1"], [role="dialog"]'));
 
     const hasBlockingOverlay = () =>
-      Array.from(document.querySelectorAll<HTMLElement>('[data-kakao-widget-hide="1"]')).some((el) => {
+      Array.from(
+        document.querySelectorAll<HTMLElement>('[data-kakao-widget-hide="1"]'),
+      ).some((el) => {
         const rect = el.getBoundingClientRect();
         return rect.width > 0 && rect.height > 0;
       });
@@ -205,8 +216,18 @@ export default function KakaoInquiryWidget() {
       const target = e.target as Node | null;
       if (!target) return;
 
-      const activePanelEl = panel === "guide" ? guidePanelRef.current : panel === "bug" ? bugPanelRef.current : inquiryPanelRef.current;
-      const activeTriggerEl = panel === "guide" ? guideTriggerRef.current : panel === "bug" ? bugTriggerRef.current : inquiryTriggerRef.current;
+      const activePanelEl =
+        panel === "guide"
+          ? guidePanelRef.current
+          : panel === "bug"
+            ? bugPanelRef.current
+            : inquiryPanelRef.current;
+      const activeTriggerEl =
+        panel === "guide"
+          ? guideTriggerRef.current
+          : panel === "bug"
+            ? bugTriggerRef.current
+            : inquiryTriggerRef.current;
 
       // 패널 내부 클릭 or 트리거 버튼 클릭이면 유지
       if (activePanelEl?.contains(target)) return;
@@ -218,7 +239,8 @@ export default function KakaoInquiryWidget() {
 
     // 캡처 단계로 잡으면(= true) 다른 UI 핸들러보다 먼저 안정적으로 닫힘 처리 가능
     document.addEventListener("pointerdown", onPointerDown, true);
-    return () => document.removeEventListener("pointerdown", onPointerDown, true);
+    return () =>
+      document.removeEventListener("pointerdown", onPointerDown, true);
   }, [panel]);
 
   const openKakaoChat = () => {
@@ -236,7 +258,11 @@ export default function KakaoInquiryWidget() {
     }
 
     // 2) fallback: 채널 채팅 URL로 이동(최소 동작 보장)
-    window.open(`https://pf.kakao.com/${channelPublicId}/chat`, "_blank", "noopener,noreferrer");
+    window.open(
+      `https://pf.kakao.com/${channelPublicId}/chat`,
+      "_blank",
+      "noopener,noreferrer",
+    );
     setPanel(null);
   };
 
@@ -249,41 +275,85 @@ export default function KakaoInquiryWidget() {
   if (shouldHide || hideForOverlay) return null;
 
   return (
-    <div className={cn("fixed bottom-4 right-4 z-[70] bp-sm:bottom-4 bp-sm:right-4", hideOnFinderTouch && "hidden bp-lg:block", hideOnCartMobile && "hidden bp-lg:block")} style={liftPx ? { transform: `translateY(-${liftPx}px)` } : undefined}>
+    <div
+      className={cn(
+        "fixed bottom-4 right-4 z-[70] bp-sm:bottom-4 bp-sm:right-4",
+        hideOnFinderTouch && "hidden bp-lg:block",
+        hideOnCartMobile && "hidden bp-lg:block",
+      )}
+      style={liftPx ? { transform: `translateY(-${liftPx}px)` } : undefined}
+    >
       <div className="flex flex-col items-end gap-2 bp-sm:gap-3">
         {/* ---------------- 목적 선택 ---------------- */}
         {!isMypageRoute ? (
           <div className="relative">
-            <div className={["absolute right-0 bottom-[64px] bp-sm:bottom-[76px]", "transition-all duration-150", panel === "guide" ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 translate-y-2 pointer-events-none"].join(" ")}>
+            <div
+              className={[
+                "absolute right-0 bottom-[64px] bp-sm:bottom-[76px]",
+                "transition-all duration-150",
+                panel === "guide"
+                  ? "opacity-100 translate-y-0 pointer-events-auto"
+                  : "opacity-0 translate-y-2 pointer-events-none",
+              ].join(" ")}
+            >
               <div ref={guidePanelRef} className="relative">
                 <Card className="relative w-[min(320px,calc(100vw-2rem))] border-border shadow-xl bp-sm:w-[340px]">
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-semibold">무엇을 하러 오셨나요?</CardTitle>
-                    <button type="button" aria-label="닫기" className="rounded-md p-1 text-muted-foreground hover:bg-muted" onClick={() => setPanel(null)}>
+                    <CardTitle className="text-sm font-semibold">
+                      무엇을 하러 오셨나요?
+                    </CardTitle>
+                    <button
+                      type="button"
+                      aria-label="닫기"
+                      className="rounded-md p-1 text-muted-foreground hover:bg-muted"
+                      onClick={() => setPanel(null)}
+                    >
                       <X className="h-4 w-4" />
                     </button>
                   </CardHeader>
 
                   <CardContent className="space-y-2.5 bp-sm:space-y-3">
-                    <p className="text-sm text-muted-foreground">원하는 목적을 선택하면 필요한 단계로 바로 이동할 수 있어요.</p>
+                    <p className="text-sm text-muted-foreground">
+                      원하는 목적을 선택하면 필요한 단계로 바로 이동할 수
+                      있어요.
+                    </p>
                     <div className="grid gap-2">
                       {[
                         ["스트링 교체 신청하기", "/services/apply", ""],
-                        ["새 스트링 고르고 장착 신청", "/products?from=apply", ""],
+                        [
+                          "새 스트링 고르고 장착 신청",
+                          "/products?from=apply",
+                          "",
+                        ],
                         ["라켓 구매/대여 + 장착", "/rackets?from=apply", ""],
                         ["아카데미 신청", "/academy", ""],
                         ["주문/신청 상태 확인", "/mypage"],
                       ].map(([label, href, description]) => (
-                        <Link key={href} href={href} className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold transition-colors hover:bg-muted bp-sm:py-2.5" onClick={() => setPanel(null)}>
-                          <span className="block whitespace-nowrap text-foreground">{label}</span>
-                          {description ? <span className="mt-0.5 block text-xs font-normal text-muted-foreground">{description}</span> : null}
+                        <Link
+                          key={href}
+                          href={href}
+                          className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold transition-colors hover:bg-muted bp-sm:py-2.5"
+                          onClick={() => setPanel(null)}
+                        >
+                          <span className="block whitespace-nowrap text-foreground">
+                            {label}
+                          </span>
+                          {description ? (
+                            <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+                              {description}
+                            </span>
+                          ) : null}
                         </Link>
                       ))}
                     </div>
                   </CardContent>
                 </Card>
 
-                <svg aria-hidden="true" viewBox="0 0 24 12" className="absolute -bottom-3 right-7 h-3 w-6 [fill:hsl(var(--card))] [stroke:hsl(var(--border))]">
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 12"
+                  className="absolute -bottom-3 right-7 h-3 w-6 [fill:hsl(var(--card))] [stroke:hsl(var(--border))]"
+                >
                   <path d="M1 1H23L12 11Z" strokeWidth="1" />
                 </svg>
               </div>
@@ -293,7 +363,9 @@ export default function KakaoInquiryWidget() {
               type="button"
               ref={guideTriggerRef}
               aria-label="목적 선택"
-              onClick={() => setPanel((cur) => (cur === "guide" ? null : "guide"))}
+              onClick={() =>
+                setPanel((cur) => (cur === "guide" ? null : "guide"))
+              }
               className={[
                 "h-12 w-12 rounded-full shadow-xl bp-sm:h-14 bp-sm:w-14",
                 "bg-primary text-primary-foreground",
@@ -310,7 +382,15 @@ export default function KakaoInquiryWidget() {
         {/* ---------------- 버그 제보 ---------------- */}
         {canShowBug && !isMypageRoute ? (
           <div className="relative">
-            <div className={["absolute right-0 bottom-[64px] bp-sm:bottom-[76px]", "transition-all duration-150", panel === "bug" ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 translate-y-2 pointer-events-none"].join(" ")}>
+            <div
+              className={[
+                "absolute right-0 bottom-[64px] bp-sm:bottom-[76px]",
+                "transition-all duration-150",
+                panel === "bug"
+                  ? "opacity-100 translate-y-0 pointer-events-auto"
+                  : "opacity-0 translate-y-2 pointer-events-none",
+              ].join(" ")}
+            >
               <div ref={bugPanelRef} className="relative">
                 <Card
                   className={[
@@ -320,17 +400,29 @@ export default function KakaoInquiryWidget() {
                   ].join(" ")}
                 >
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-semibold">버그 제보</CardTitle>
-                    <button type="button" aria-label="닫기" className="rounded-md p-1 text-muted-foreground hover:bg-muted" onClick={() => setPanel(null)}>
+                    <CardTitle className="text-sm font-semibold">
+                      버그 제보
+                    </CardTitle>
+                    <button
+                      type="button"
+                      aria-label="닫기"
+                      className="rounded-md p-1 text-muted-foreground hover:bg-muted"
+                      onClick={() => setPanel(null)}
+                    >
                       <X className="h-4 w-4" />
                     </button>
                   </CardHeader>
 
                   <CardContent className="space-y-2.5 bp-sm:space-y-3">
-                    <p className="text-sm text-muted-foreground">사이트 이용 중 문제가 생겼거나 버그를 발견하셨나요? 아래 개발자의 오픈채팅으로 제보해주시면 빠르게 확인할게요.</p>
+                    <p className="text-sm text-muted-foreground">
+                      사이트 이용 중 문제가 생겼거나 버그를 발견하셨나요? 아래
+                      개발자의 오픈채팅으로 제보해주시면 빠르게 확인할게요.
+                    </p>
 
                     <div className="rounded-md bg-muted/60 p-3 text-xs text-muted-foreground">
-                      <div className="font-medium text-foreground">제보 시 함께 적어주면 좋아요</div>
+                      <div className="font-medium text-foreground">
+                        제보 시 함께 적어주면 좋아요
+                      </div>
                       <ul className="mt-1 list-disc space-y-1 pl-4">
                         <li>어떤 페이지/기능에서 발생했는지</li>
                         <li>재현 절차(무슨 버튼을 눌렀는지)</li>
@@ -341,7 +433,12 @@ export default function KakaoInquiryWidget() {
                     <button
                       type="button"
                       onClick={openBugChat}
-                      className={["w-full rounded-md py-3 text-sm font-semibold", "bg-primary text-primary-foreground", "hover:bg-primary/90", "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"].join(" ")}
+                      className={[
+                        "w-full rounded-md py-3 text-sm font-semibold",
+                        "bg-primary text-primary-foreground",
+                        "hover:bg-primary/90",
+                        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                      ].join(" ")}
                     >
                       개발자에게 제보하기
                     </button>
@@ -349,7 +446,11 @@ export default function KakaoInquiryWidget() {
                 </Card>
 
                 {/* 말풍선 꼬리 */}
-                <svg aria-hidden="true" viewBox="0 0 24 12" className="absolute -bottom-3 right-7 h-3 w-6 [fill:hsl(var(--card))] [stroke:hsl(var(--border))]">
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 12"
+                  className="absolute -bottom-3 right-7 h-3 w-6 [fill:hsl(var(--card))] [stroke:hsl(var(--border))]"
+                >
                   <path d="M1 1H23L12 11Z" strokeWidth="1" />
                 </svg>
               </div>
@@ -376,25 +477,54 @@ export default function KakaoInquiryWidget() {
         {/* ---------------- 카카오 문의 ---------------- */}
         {canShowInquiry ? (
           <div className="relative">
-            <div className={["absolute right-0 bottom-[64px] bp-sm:bottom-[76px]", "transition-all duration-150", panel === "inquiry" ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 translate-y-2 pointer-events-none"].join(" ")}>
+            <div
+              className={[
+                "absolute right-0 bottom-[64px] bp-sm:bottom-[76px]",
+                "transition-all duration-150",
+                panel === "inquiry"
+                  ? "opacity-100 translate-y-0 pointer-events-auto"
+                  : "opacity-0 translate-y-2 pointer-events-none",
+              ].join(" ")}
+            >
               <div ref={inquiryPanelRef} className="relative">
-                <Card className={["relative w-[min(320px,calc(100vw-2rem))] shadow-xl", "border-border"].join(" ")}>
+                <Card
+                  className={[
+                    "relative w-[min(320px,calc(100vw-2rem))] shadow-xl",
+                    "border-border",
+                  ].join(" ")}
+                >
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-semibold">
-                      문의하기 <span className="ml-1 text-xs font-normal text-muted-foreground">(카카오톡 1:1)</span>
+                      문의하기{" "}
+                      <span className="ml-1 text-xs font-normal text-muted-foreground">
+                        (카카오톡 1:1)
+                      </span>
                     </CardTitle>
-                    <button type="button" aria-label="닫기" className="rounded-md p-1 text-muted-foreground hover:bg-muted" onClick={() => setPanel(null)}>
+                    <button
+                      type="button"
+                      aria-label="닫기"
+                      className="rounded-md p-1 text-muted-foreground hover:bg-muted"
+                      onClick={() => setPanel(null)}
+                    >
                       <X className="h-4 w-4" />
                     </button>
                   </CardHeader>
 
                   <CardContent className="space-y-2.5 bp-sm:space-y-3">
-                    <p className="text-sm text-muted-foreground">카카오톡 채널로 1:1 문의를 남겨주세요. 운영시간 외에는 답변이 늦을 수 있어요.</p>
+                    <p className="text-sm text-muted-foreground">
+                      카카오톡 채널로 1:1 문의를 남겨주세요. 운영시간 외에는
+                      답변이 늦을 수 있어요.
+                    </p>
 
                     <button
                       type="button"
                       onClick={openKakaoChat}
-                      className={["w-full rounded-md py-3 text-sm font-semibold", "bg-primary text-primary-foreground", "hover:bg-primary/90", "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"].join(" ")}
+                      className={[
+                        "w-full rounded-md py-3 text-sm font-semibold",
+                        "bg-primary text-primary-foreground",
+                        "hover:bg-primary/90",
+                        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                      ].join(" ")}
                     >
                       카카오톡으로 문의하기
                     </button>
@@ -402,7 +532,11 @@ export default function KakaoInquiryWidget() {
                 </Card>
 
                 {/* 말풍선 꼬리 */}
-                <svg aria-hidden="true" viewBox="0 0 24 12" className="absolute -bottom-3 right-7 h-3 w-6 [fill:hsl(var(--card))] [stroke:hsl(var(--border))]">
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 12"
+                  className="absolute -bottom-3 right-7 h-3 w-6 [fill:hsl(var(--card))] [stroke:hsl(var(--border))]"
+                >
                   <path d="M1 1H23L12 11Z" strokeWidth="1" />
                 </svg>
               </div>
@@ -412,16 +546,24 @@ export default function KakaoInquiryWidget() {
               type="button"
               ref={inquiryTriggerRef}
               aria-label="카카오톡 문의"
-              onClick={() => setPanel((cur) => (cur === "inquiry" ? null : "inquiry"))}
+              onClick={() =>
+                setPanel((cur) => (cur === "inquiry" ? null : "inquiry"))
+              }
               className={[
-                isMypageRoute ? "h-11 w-11 rounded-full shadow-lg" : "h-12 w-12 rounded-full shadow-xl bp-sm:h-14 bp-sm:w-14",
+                isMypageRoute
+                  ? "h-11 w-11 rounded-full shadow-lg"
+                  : "h-12 w-12 rounded-full shadow-xl bp-sm:h-14 bp-sm:w-14",
                 "bg-primary text-primary-foreground",
                 "hover:bg-primary/90",
                 "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                 "flex items-center justify-center",
               ].join(" ")}
             >
-              <MessageCircle className={isMypageRoute ? "h-5 w-5" : "h-6 w-6 bp-sm:h-7 bp-sm:w-7"} />
+              <MessageCircle
+                className={
+                  isMypageRoute ? "h-5 w-5" : "h-6 w-6 bp-sm:h-7 bp-sm:w-7"
+                }
+              />
             </button>
           </div>
         ) : null}

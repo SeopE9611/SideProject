@@ -21,28 +21,28 @@ function hasActiveLinkedAccounting(record: any): boolean {
   const packageUsage = record?.packageUsage ?? {};
 
   const hasActivePointGrant = Boolean(
-    points.grantTxId &&
-      !points.grantRevertTxId &&
-      !points.grantRevertedAt,
+    points.grantTxId && !points.grantRevertTxId && !points.grantRevertedAt,
   );
 
   const hasActivePointDeduct = Boolean(
-    points.deductTxId &&
-      !points.deductRevertTxId &&
-      !points.deductRevertedAt,
+    points.deductTxId && !points.deductRevertTxId && !points.deductRevertedAt,
   );
 
   const hasActivePackageUsage = Boolean(
     packageUsage.consumptionId &&
-      !packageUsage.reverted &&
-      !packageUsage.revertedAt &&
-      !packageUsage.revertedConsumptionId,
+    !packageUsage.reverted &&
+    !packageUsage.revertedAt &&
+    !packageUsage.revertedConsumptionId,
   );
 
   return hasActivePointGrant || hasActivePointDeduct || hasActivePackageUsage;
 }
 
-async function rebuildOfflineCustomerStats(db: any, customerId: ObjectId, adminId: ObjectId) {
+async function rebuildOfflineCustomerStats(
+  db: any,
+  customerId: ObjectId,
+  adminId: ObjectId,
+) {
   const records = await db
     .collection("offline_service_records")
     .find(

@@ -15,7 +15,9 @@ export default function TossCheckoutSuccessPage() {
     const amount = Number(sp.get("amount") || 0);
 
     if (!paymentKey || !orderId || !Number.isFinite(amount)) {
-      router.replace("/checkout/toss/fail?code=INVALID_QUERY&message=잘못된 결제 결과입니다.");
+      router.replace(
+        "/checkout/toss/fail?code=INVALID_QUERY&message=잘못된 결제 결과입니다.",
+      );
       return;
     }
 
@@ -28,14 +30,22 @@ export default function TossCheckoutSuccessPage() {
         const json = await res.json();
         if (!res.ok || !json?.mongoOrderId) {
           const nextCode = String(json?.code || "CONFIRM_FAILED");
-          const nextMessage = encodeURIComponent(json?.error || "카드/간편결제 승인에 실패했습니다.");
-          router.replace(`/checkout/toss/fail?code=${encodeURIComponent(nextCode)}&message=${nextMessage}`);
+          const nextMessage = encodeURIComponent(
+            json?.error || "카드/간편결제 승인에 실패했습니다.",
+          );
+          router.replace(
+            `/checkout/toss/fail?code=${encodeURIComponent(nextCode)}&message=${nextMessage}`,
+          );
           return;
         }
-        router.replace(`/checkout/success?orderId=${encodeURIComponent(json.mongoOrderId)}`);
+        router.replace(
+          `/checkout/success?orderId=${encodeURIComponent(json.mongoOrderId)}`,
+        );
       })
       .catch((error: any) => {
-        router.replace(`/checkout/toss/fail?code=CONFIRM_FAILED&message=${encodeURIComponent(error?.message || "카드/간편결제 승인에 실패했습니다.")}`);
+        router.replace(
+          `/checkout/toss/fail?code=CONFIRM_FAILED&message=${encodeURIComponent(error?.message || "카드/간편결제 승인에 실패했습니다.")}`,
+        );
       });
   }, [router, sp]);
 
@@ -43,7 +53,9 @@ export default function TossCheckoutSuccessPage() {
     <SiteContainer className="flex min-h-[50vh]">
       <div className="mx-auto flex w-full max-w-xl flex-col items-center justify-center gap-3 text-center">
         <Loader2 className="h-6 w-6 animate-spin" />
-        <p className="text-sm text-muted-foreground">결제 승인 처리 중입니다. 잠시만 기다려주세요.</p>
+        <p className="text-sm text-muted-foreground">
+          결제 승인 처리 중입니다. 잠시만 기다려주세요.
+        </p>
       </div>
     </SiteContainer>
   );

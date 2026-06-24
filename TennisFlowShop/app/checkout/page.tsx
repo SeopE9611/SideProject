@@ -115,7 +115,6 @@ declare global {
   }
 }
 
-
 const CART_CHECKOUT_SELECTION_KEY = "cart.checkout.selectedLineKeys.v1";
 
 const getCartLineKey = (item: {
@@ -269,7 +268,10 @@ function FinalPaymentConfirmCard({
       ) : shippingFee > 0 ? (
         `${shippingFee.toLocaleString()}원`
       ) : (
-        <Badge variant="outline" className="border-primary/30 text-xs text-primary">
+        <Badge
+          variant="outline"
+          className="border-primary/30 text-xs text-primary"
+        >
           무료
         </Badge>
       ),
@@ -457,7 +459,9 @@ export default function CheckoutPage() {
   const allowGuestCheckout = guestOrderMode === "on";
 
   const { items: cartItems } = useCartStore();
-  const [selectedLineKeys, setSelectedLineKeys] = useState<string[] | null>(null);
+  const [selectedLineKeys, setSelectedLineKeys] = useState<string[] | null>(
+    null,
+  );
   const { item: buyNowItem } = useBuyNowStore();
   const { items: pdpBundleItems } = usePdpBundleStore();
 
@@ -480,16 +484,13 @@ export default function CheckoutPage() {
     }
   }, [isCartSelectionSource, mode]);
 
-  const selectedCartItems = useMemo(
-    () => {
-      if (!isCartSelectionSource) return cartItems;
-      if (!selectedLineKeys) return [];
-      return cartItems.filter((item) =>
-        selectedLineKeys.includes(getCartLineKey(item)),
-      );
-    },
-    [cartItems, isCartSelectionSource, selectedLineKeys],
-  );
+  const selectedCartItems = useMemo(() => {
+    if (!isCartSelectionSource) return cartItems;
+    if (!selectedLineKeys) return [];
+    return cartItems.filter((item) =>
+      selectedLineKeys.includes(getCartLineKey(item)),
+    );
+  }, [cartItems, isCartSelectionSource, selectedLineKeys]);
 
   // 장바구니 결제 vs 즉시 구매 모드 분기
   const orderItems: CartItem[] =
@@ -1484,7 +1485,8 @@ export default function CheckoutPage() {
                     주문/결제
                   </h1>
                   <p className="mt-1 break-keep text-sm text-muted-foreground bp-sm:text-base">
-                    주문 상품, 배송 정보, 결제수단을 확인한 뒤 결제를 진행하세요.
+                    주문 상품, 배송 정보, 결제수단을 확인한 뒤 결제를
+                    진행하세요.
                   </p>
                 </div>
               </div>
@@ -1499,7 +1501,10 @@ export default function CheckoutPage() {
              *   2) withStringService: 사용자가 서비스 포함을 선택한 경우
              */}
             {(lockServiceMode || withStringService) && (
-              <nav aria-label="장착 서비스 진행 단계" className="mt-4 bp-sm:mt-5">
+              <nav
+                aria-label="장착 서비스 진행 단계"
+                className="mt-4 bp-sm:mt-5"
+              >
                 <div className="inline-flex max-w-full flex-nowrap items-center gap-1 overflow-x-auto whitespace-nowrap rounded-xl bg-card/75 p-1.5 ring-1 ring-border/50 shadow-sm [-ms-overflow-style:none] [scrollbar-width:none] bp-sm:gap-2.5 bp-sm:p-2.5 [&::-webkit-scrollbar]:hidden">
                   {/* 1) 스트링 선택: 이미 완료된 단계 */}
                   <div className="flex shrink-0 items-center gap-1.5 bp-sm:gap-2.5">
@@ -1648,7 +1653,8 @@ export default function CheckoutPage() {
                       {withStringService ? (
                         <div className="space-y-1 text-sm leading-relaxed text-muted-foreground">
                           <p className="break-keep">
-                            작업 정보와 수령/배송 방식을 확인하면 함께 접수됩니다.
+                            작업 정보와 수령/배송 방식을 확인하면 함께
+                            접수됩니다.
                           </p>
                           {isStringOnlyServiceFlow && (
                             <p className="break-keep">
@@ -1702,7 +1708,8 @@ export default function CheckoutPage() {
                         </p>
                         <p className="mt-1 text-sm text-foreground/80">
                           라켓/스트링 수량은 함께 적용됩니다. 변경은{" "}
-                          <span className="font-medium">스트링 선택 단계</span>에서만 가능합니다.
+                          <span className="font-medium">스트링 선택 단계</span>
+                          에서만 가능합니다.
                         </p>
                         {bundleRacketId && (
                           <div className="mt-3">
@@ -2499,7 +2506,8 @@ export default function CheckoutPage() {
                         </RadioGroup>
                         {nicePaymentsEnabled && isZeroPayableAmount && (
                           <p className="break-keep text-sm text-foreground/80">
-                            결제 예정 금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.
+                            결제 예정 금액이 0원인 경우 카드/간편결제를 사용할
+                            수 없습니다.
                           </p>
                         )}
                       </div>

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { getHangulInitials } from "@/lib/hangul-utils";
-import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
+import {
+  productVisibilityFilterFor,
+  racketVisibilityFilterFor,
+} from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 
 type SearchResult = {

@@ -245,7 +245,14 @@ export async function PATCH(
   const _id = new ObjectId(id);
   const current = await collection.findOne(
     { _id },
-    { projection: { status: 1, userId: 1, classSnapshot: 1, customerMessage: 1 } },
+    {
+      projection: {
+        status: 1,
+        userId: 1,
+        classSnapshot: 1,
+        customerMessage: 1,
+      },
+    },
   );
 
   if (!current) {
@@ -304,7 +311,9 @@ export async function PATCH(
         userId: updated.userId,
         type: "academy_status",
         title: titleByStatus[status] ?? "레슨 신청 상태가 변경되었습니다.",
-        body: className ? `${className} 신청 상태가 변경되었습니다.` : undefined,
+        body: className
+          ? `${className} 신청 상태가 변경되었습니다.`
+          : undefined,
         href: "/mypage",
         source: {
           collection: "academy_lesson_applications",
@@ -314,7 +323,10 @@ export async function PATCH(
         dedupeKey: `academy:${_id.toString()}:status:${status}`,
       });
     } catch (error) {
-      console.error("[admin academy application status] create notification failed", error);
+      console.error(
+        "[admin academy application status] create notification failed",
+        error,
+      );
     }
   }
 

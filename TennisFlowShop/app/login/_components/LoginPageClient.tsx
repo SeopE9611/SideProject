@@ -316,9 +316,7 @@ export default function LoginPageClient() {
       <div
         className={`mx-auto w-full ${activeTab === "register" ? "max-w-2xl" : "max-w-md"}`}
       >
-        <Card
-          className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300"
-        >
+        <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300">
           <div className="border-b border-border bg-muted/30 p-4 text-foreground md:p-5">
             <div className="text-center">
               <div className="mx-auto mb-3 flex justify-center">
@@ -404,7 +402,9 @@ export default function LoginPageClient() {
                     {loginFormError && (
                       <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
                         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                        <div className="whitespace-pre-line break-keep">{loginFormError}</div>
+                        <div className="whitespace-pre-line break-keep">
+                          {loginFormError}
+                        </div>
                       </div>
                     )}
                     <div className="space-y-2">

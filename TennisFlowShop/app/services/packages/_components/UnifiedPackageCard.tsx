@@ -131,7 +131,9 @@ export default function UnifiedPackageCard({
               label: "총 패키지 금액",
               value: `${pkg.price.toLocaleString()}원`,
               ...(pkg.originalPrice && pkg.originalPrice > pkg.price
-                ? { description: `정가 ${pkg.originalPrice.toLocaleString()}원` }
+                ? {
+                    description: `정가 ${pkg.originalPrice.toLocaleString()}원`,
+                  }
                 : {}),
               emphasis: true,
             },

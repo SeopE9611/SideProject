@@ -47,14 +47,19 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
                   도깨비테니스 아카데미
                 </p>
                 <p className="text-pretty leading-relaxed">
-                  신청 내용이 접수되었습니다. 담당자가 일정과 수강 방식을 확인한 뒤
-                  상담을 도와드립니다.
+                  신청 내용이 접수되었습니다. 담당자가 일정과 수강 방식을 확인한
+                  뒤 상담을 도와드립니다.
                 </p>
               </div>
             }
             actions={
               <>
-                <Button asChild size="lg" wrap="responsive" className="h-12 px-6">
+                <Button
+                  asChild
+                  size="lg"
+                  wrap="responsive"
+                  className="h-12 px-6"
+                >
                   <Link href="/mypage?tab=academy">
                     마이페이지에서 확인하기
                     <ArrowRight className="size-4" aria-hidden="true" />
@@ -108,9 +113,9 @@ export default async function AcademyApplySuccessPage({ searchParams }: Props) {
               padding="sm"
               className="text-sm leading-relaxed text-muted-foreground"
             >
-              관리자가 신청 내용을 확인한 뒤 등록 확정 여부를 안내합니다.
-              신청 단계에서는 결제가 진행되지 않으며, 등록 확정 후 현장에서
-              결제를 안내해드립니다.
+              관리자가 신청 내용을 확인한 뒤 등록 확정 여부를 안내합니다. 신청
+              단계에서는 결제가 진행되지 않으며, 등록 확정 후 현장에서 결제를
+              안내해드립니다.
             </PublicSurface>
           </SummaryCard>
 

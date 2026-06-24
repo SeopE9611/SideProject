@@ -26,15 +26,17 @@ export type CreateUserNotificationParams = {
 function isDuplicateKeyError(error: unknown) {
   return Boolean(
     error &&
-      typeof error === "object" &&
-      ("code" in error ? (error as { code?: unknown }).code === 11000 : false),
+    typeof error === "object" &&
+    ("code" in error ? (error as { code?: unknown }).code === 11000 : false),
   );
 }
 
 function toUserObjectId(userId: ObjectId | string) {
   if (userId instanceof ObjectId) return userId;
   if (!ObjectId.isValid(userId)) {
-    throw Object.assign(new Error("INVALID_USER_ID"), { code: "INVALID_USER_ID" });
+    throw Object.assign(new Error("INVALID_USER_ID"), {
+      code: "INVALID_USER_ID",
+    });
   }
   return new ObjectId(userId);
 }
@@ -64,7 +66,9 @@ export async function createUserNotification(
 ) {
   try {
     const doc = buildDoc(params);
-    await db.collection<UserNotificationDoc>("user_notifications").insertOne(doc);
+    await db
+      .collection<UserNotificationDoc>("user_notifications")
+      .insertOne(doc);
     return { ok: true as const, insertedId: doc._id, duplicated: false };
   } catch (error) {
     if (isDuplicateKeyError(error)) {
@@ -78,17 +82,26 @@ export async function createUserNotifications(
   db: Db,
   params: CreateUserNotificationParams[],
 ) {
-  if (params.length === 0) return { ok: true as const, insertedCount: 0, duplicated: 0 };
+  if (params.length === 0)
+    return { ok: true as const, insertedCount: 0, duplicated: 0 };
   const docs = params.map(buildDoc);
   try {
     const res = await db
       .collection<UserNotificationDoc>("user_notifications")
       .insertMany(docs, { ordered: false });
-    return { ok: true as const, insertedCount: res.insertedCount, duplicated: 0 };
+    return {
+      ok: true as const,
+      insertedCount: res.insertedCount,
+      duplicated: 0,
+    };
   } catch (error: any) {
     if (isDuplicateKeyError(error)) {
-      const writeErrors = Array.isArray(error?.writeErrors) ? error.writeErrors : [];
-      const duplicated = writeErrors.filter((e: any) => e?.code === 11000).length;
+      const writeErrors = Array.isArray(error?.writeErrors)
+        ? error.writeErrors
+        : [];
+      const duplicated = writeErrors.filter(
+        (e: any) => e?.code === 11000,
+      ).length;
       const fatal = writeErrors.some((e: any) => e?.code !== 11000);
       if (!fatal) {
         return {
@@ -113,7 +126,10 @@ export function serializeUserNotification(doc: UserNotificationDoc) {
     source: doc.source
       ? {
           collection: doc.source.collection,
-          id: doc.source.id instanceof ObjectId ? doc.source.id.toString() : doc.source.id,
+          id:
+            doc.source.id instanceof ObjectId
+              ? doc.source.id.toString()
+              : doc.source.id,
           kind: doc.source.kind,
         }
       : null,

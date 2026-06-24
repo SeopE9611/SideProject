@@ -148,7 +148,15 @@ export default async function ProductDetailPage({
   let product;
   try {
     product = await withRetry(
-      async () => db.collection("products").findOne({ _id: productObjectId, ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()) }),
+      async () =>
+        db
+          .collection("products")
+          .findOne({
+            _id: productObjectId,
+            ...productVisibilityFilterFor(
+              await getVisibilityViewerFromCookies(),
+            ),
+          }),
       {
         retries: 2,
         delayMs: 150,

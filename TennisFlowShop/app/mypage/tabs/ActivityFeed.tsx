@@ -282,7 +282,12 @@ function isApplicationTrackingNeeded(app?: ActivityApplicationSummary | null) {
   if (!app) return false;
   if (isTerminalCanceledStatus(app.status)) return false;
 
-  return Boolean(app.needsInboundTracking && !app.hasTracking && !app.orderId && !app.rentalId);
+  return Boolean(
+    app.needsInboundTracking &&
+    !app.hasTracking &&
+    !app.orderId &&
+    !app.rentalId,
+  );
 }
 
 /**
@@ -1449,7 +1454,8 @@ export default function ActivityFeed() {
                                         </p>
                                       </div>
                                       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                                        교체서비스 진행을 위해 운송장 정보를 확인해 주세요.
+                                        교체서비스 진행을 위해 운송장 정보를
+                                        확인해 주세요.
                                       </p>
                                     </div>
                                   </div>
@@ -1631,7 +1637,9 @@ export default function ActivityFeed() {
                                       g.kind !== "application" ? (
                                         <DropdownMenuItem asChild>
                                           <Link href={appDetailHref}>
-                                            {g.kind === "rental" ? "장착 정보 보기" : "교체서비스 상세"}
+                                            {g.kind === "rental"
+                                              ? "장착 정보 보기"
+                                              : "교체서비스 상세"}
                                           </Link>
                                         </DropdownMenuItem>
                                       ) : null}

@@ -172,7 +172,10 @@ export async function getRacketActiveCountPayload(
   const projRackets = { projection: { quantity: 1 } } as const;
   const used = await db
     .collection("used_rackets")
-    .findOne({ _id: new ObjectId(racketId), ...racketVisibilityFilterFor(viewer) }, projUsed);
+    .findOne(
+      { _id: new ObjectId(racketId), ...racketVisibilityFilterFor(viewer) },
+      projUsed,
+    );
   const rack =
     used ??
     (await db

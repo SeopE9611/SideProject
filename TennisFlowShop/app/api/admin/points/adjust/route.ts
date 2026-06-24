@@ -92,7 +92,8 @@ export async function POST(req: Request) {
       await createUserNotification(db, {
         userId: targetUserId,
         type: amount > 0 ? "point_granted" : "point_deducted",
-        title: amount > 0 ? "포인트가 지급되었습니다." : "포인트가 차감되었습니다.",
+        title:
+          amount > 0 ? "포인트가 지급되었습니다." : "포인트가 차감되었습니다.",
         body:
           amount > 0
             ? `${amount.toLocaleString()}P가 지급되었습니다.`
@@ -106,7 +107,10 @@ export async function POST(req: Request) {
         ...(transactionId ? { dedupeKey: `point:${transactionId}` } : {}),
       });
     } catch (error) {
-      console.error("[admin points adjust] create user notification failed", error);
+      console.error(
+        "[admin points adjust] create user notification failed",
+        error,
+      );
     }
 
     // 3) 조정 후 잔액 반환

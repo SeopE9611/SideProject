@@ -9,7 +9,10 @@ import {
 } from "@/lib/product-pricing";
 import { cookies } from "next/headers";
 import LoginGate from "@/components/system/LoginGate";
-import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
+import {
+  productVisibilityFilterFor,
+  racketVisibilityFilterFor,
+} from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 
 import type { Metadata } from "next";

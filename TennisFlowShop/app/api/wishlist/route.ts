@@ -171,7 +171,11 @@ export async function GET() {
             foreignField: "_id",
             as: "product",
             pipeline: [
-              { $match: productVisibilityFilterFor(await getVisibilityViewerFromCookies()) },
+              {
+                $match: productVisibilityFilterFor(
+                  await getVisibilityViewerFromCookies(),
+                ),
+              },
               {
                 $project: {
                   name: 1,

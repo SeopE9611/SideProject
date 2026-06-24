@@ -8,7 +8,8 @@ type UnreadNotificationCountRes =
 
 const fetcher = async (url: string): Promise<UnreadNotificationCountRes> => {
   const res = await fetch(url, { credentials: "include" });
-  if (!res.ok) throw new Error(`notification unread-count fetch failed: ${res.status}`);
+  if (!res.ok)
+    throw new Error(`notification unread-count fetch failed: ${res.status}`);
   return res.json();
 };
 
