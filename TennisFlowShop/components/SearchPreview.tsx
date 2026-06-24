@@ -102,12 +102,12 @@ export default function SearchPreview({
                   )}
 
                   <div className="flex flex-col gap-1">
-                    <div className="text-base font-semibold text-foreground group-hover:text-foreground">
+                    <div className="text-ui-body font-medium text-foreground group-hover:text-foreground">
                       {item.name}
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 text-ui-label text-muted-foreground">
                       {/* 타입 뱃지: 라켓 / 스트링 구분 */}
-                      <span className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-[11px] text-foreground">
+                      <span className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-ui-micro text-foreground">
                         {item.type === "racket" ? "중고 라켓" : "스트링"}
                       </span>
                       {typeof item.price === "number" && item.price > 0 && (
@@ -121,10 +121,10 @@ export default function SearchPreview({
               );
             })
           ) : (
-            <div className="flex flex-col items-center justify-center py-7 px-4 text-muted-foreground text-base min-h-[120px]">
+            <div className="flex min-h-[120px] flex-col items-center justify-center px-4 py-7 text-ui-body text-muted-foreground">
               <SearchX className="w-10 h-10 text-muted-foreground mb-2" />
               <div>
-                <span className="font-semibold text-foreground">“{query}”</span>
+                <span className="font-medium text-foreground">“{query}”</span>
                 <span>에 대한 검색 결과가 없습니다.</span>
               </div>
             </div>

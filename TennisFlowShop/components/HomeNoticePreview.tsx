@@ -16,9 +16,7 @@ type HomeNoticePreviewProps = {
   initialItems?: Notice[];
 };
 
-export default function HomeNoticePreview({
-  initialItems,
-}: HomeNoticePreviewProps) {
+export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewProps) {
   const { data, error, isLoading, mutate } = useSWR<{
     ok: boolean;
     items: Notice[];
@@ -37,12 +35,10 @@ export default function HomeNoticePreview({
           <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-secondary text-foreground">
             <Bell className="h-4 w-4" />
           </div>
-          <h2 className="text-base bp-sm:text-lg font-bold text-foreground">
-            공지사항
-          </h2>
+          <h2 className="text-ui-card-title font-semibold text-foreground bp-sm:text-ui-card-title-lg">공지사항</h2>
         </div>
         <Link
-          className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"
+          className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-ui-label font-medium text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"
           href="/board/notice"
         >
           더보기
@@ -84,11 +80,11 @@ export default function HomeNoticePreview({
               >
                 <div className="flex min-w-0 flex-1 items-center gap-2.5">
                   <span className="hidden bp-sm:inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-primary/40" />
-                  <span className="min-w-0 flex-1 truncate text-sm bp-sm:text-[15px] text-foreground/90 group-hover:text-foreground transition-colors">
+                  <span className="min-w-0 flex-1 truncate text-ui-body-sm text-foreground/90 transition-colors group-hover:text-foreground bp-sm:text-ui-body">
                     {p.title}
                   </span>
                 </div>
-                <span className="shrink-0 text-xs tabular-nums text-foreground/75">
+                <span className="shrink-0 text-ui-label tabular-nums text-foreground/75">
                   {new Date(p.createdAt).toLocaleDateString("ko-KR", {
                     month: "short",
                     day: "numeric",

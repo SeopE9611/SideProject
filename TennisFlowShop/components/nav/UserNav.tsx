@@ -1,25 +1,19 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/app/store/authStore";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  LogOut,
-  LayoutDashboard,
-  MessageSquare,
-  Settings,
-  UserIcon,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
-import { useAuthStore } from "@/app/store/authStore";
-import { Badge } from "@/components/ui/badge";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
+import { LayoutDashboard, LogOut, MessageSquare, Settings, UserIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function UserNav() {
   const router = useRouter();
@@ -34,10 +28,7 @@ export function UserNav() {
         aria-busy="true"
       >
         <span className="sr-only">사용자 상태 확인 중</span>
-        <span
-          aria-hidden="true"
-          className="h-3.5 w-full animate-pulse rounded-full bg-muted/70"
-        />
+        <span aria-hidden="true" className="h-3.5 w-full animate-pulse rounded-full bg-muted/70" />
       </div>
     );
   }
@@ -48,10 +39,7 @@ export function UserNav() {
         variant="ghost"
         size="icon"
         onClick={() => {
-          const redirectTo =
-            typeof window !== "undefined"
-              ? window.location.pathname + window.location.search
-              : "/";
+          const redirectTo = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
           router.push(`/login?next=${encodeURIComponent(redirectTo)}`);
         }}
       >
@@ -74,17 +62,14 @@ export function UserNav() {
         <div className="flex items-center gap-2 cursor-pointer hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-foreground px-2 py-1.5 rounded-md transition min-w-0">
           <div className="flex items-center gap-1 min-w-0">
             <span
-              className="text-sm min-w-0 grow max-w-[140px] sm:max-w-[180px] md:max-w-[220px] whitespace-nowrap overflow-hidden text-ellipsis"
+              className="text-ui-body-sm min-w-0 grow max-w-[140px] sm:max-w-[180px] md:max-w-[220px] whitespace-nowrap overflow-hidden text-ellipsis"
               title={`${displayName} 님`}
             >
               {displayName} 님
             </span>
 
             {isAdmin && (
-              <Badge
-                variant="info"
-                className="shrink-0 whitespace-nowrap text-[11px] font-semibold px-1.5 py-[2px]"
-              >
+              <Badge variant="info" className="shrink-0 whitespace-nowrap text-ui-micro font-medium px-1.5 py-[2px]">
                 관리자
               </Badge>
             )}
@@ -96,14 +81,12 @@ export function UserNav() {
           <>
             <div className="px-2 py-2">
               <div className="flex items-center gap-1.5">
-                <span className="text-xs text-muted-foreground">
-                  소셜 로그인
-                </span>
+                <span className="text-ui-label text-muted-foreground">소셜 로그인</span>
                 <div className="flex gap-1">
                   {hasKakao && (
                     <Badge
                       variant={getSocialProviderBadgeSpec("kakao").variant}
-                      className="pointer-events-none h-5 px-2 text-[11px]"
+                      className="pointer-events-none h-5 px-2 text-ui-micro"
                     >
                       카카오
                     </Badge>
@@ -111,7 +94,7 @@ export function UserNav() {
                   {hasNaver && (
                     <Badge
                       variant={getSocialProviderBadgeSpec("naver").variant}
-                      className="pointer-events-none h-5 px-2 text-[11px]"
+                      className="pointer-events-none h-5 px-2 text-ui-micro"
                     >
                       네이버
                     </Badge>
