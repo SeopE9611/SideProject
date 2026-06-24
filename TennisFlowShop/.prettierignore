@@ -1,21 +1,27 @@
-node_modules
+# dependencies
+node_modules/
+
+# package manager
 pnpm-lock.yaml
-.next
-dist
-build
-out
+
+# build outputs
+.next/
+dist/
+build/
+out/
 
 # cache / metadata
 .eslintcache
 tsconfig.tsbuildinfo
+*.tsbuildinfo
 
 # test/runtime artifacts
-coverage
-.turbo
-.vercel
-cypress/downloads
-cypress/screenshots
-cypress/videos
+coverage/
+.turbo/
+.vercel/
+cypress/downloads/
+cypress/screenshots/
+cypress/videos/
 
 # generated baselines / scan reports
 scripts/admin-any-baseline.json
