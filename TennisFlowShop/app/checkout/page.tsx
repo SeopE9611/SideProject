@@ -846,7 +846,7 @@ export default function CheckoutPage() {
   // 숫자 상태(pointsToUse) 변경 시 입력 문자열도 동기화
   useEffect(() => {
     if (isEditingPoints) return; // 입력 중엔 사용자가 타이핑한 값을 유지
-    setPointsInput(String(pointsToUse));
+    setPointsInput(pointsToUse.toLocaleString("ko-KR"));
   }, [pointsToUse, isEditingPoints]);
 
   const [agreeAll, setAgreeAll] = useState(false);
@@ -2017,7 +2017,15 @@ export default function CheckoutPage() {
                               <Checkbox
                                 id="useAllPoints"
                                 checked={useAllPoints}
-                                onCheckedChange={(checked) => setUseAllPoints(Boolean(checked))}
+                                onCheckedChange={(checked) => {
+                                  const nextUseAll = Boolean(checked);
+                                  const nextPoints = nextUseAll ? maxPointsToUse : 0;
+
+                                  setUseAllPoints(nextUseAll);
+                                  setIsEditingPoints(false);
+                                  setPointsToUse(nextPoints);
+                                  setPointsInput(nextPoints.toLocaleString("ko-KR"));
+                                }}
                                 disabled={
                                   !isShippingFeeReady ||
                                   !user ||
@@ -2059,11 +2067,15 @@ export default function CheckoutPage() {
                                   }, 0);
                                 }}
                                 onChange={(e) => {
-                                  const onlyDigits = e.target.value.replace(/[^\d]/g, "");
-                                  setPointsInput(onlyDigits);
+                                  const onlyDigits = e.target.value.replace(/[^\d]/g, "").replace(/^0+(?=\d)/, "");
+
+                                  const raw = onlyDigits ? Number(onlyDigits) : 0;
+                                  const safe = Number.isFinite(raw) ? Math.floor(raw) : 0;
+                                  const clamped = Math.max(0, Math.min(safe, maxPointsToUse));
+
                                   setUseAllPoints(false);
-                                  const n = Number(onlyDigits);
-                                  setPointsToUse(Number.isFinite(n) ? Math.floor(n) : 0);
+                                  setPointsToUse(clamped);
+                                  setPointsInput(onlyDigits ? clamped.toLocaleString("ko-KR") : "");
                                 }}
                                 onBlur={(e) => {
                                   setIsEditingPoints(false);
@@ -2073,7 +2085,7 @@ export default function CheckoutPage() {
                                   const safe = Number.isFinite(raw) ? Math.floor(raw) : 0;
                                   const normalized = Math.floor(safe / POINT_UNIT) * POINT_UNIT;
                                   const clamped = Math.max(0, Math.min(normalized, maxPointsToUse));
-                                  setPointsInput(String(clamped));
+                                  setPointsInput(clamped.toLocaleString("ko-KR"));
                                   setPointsToUse(clamped);
                                 }}
                               />

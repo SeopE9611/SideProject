@@ -1,15 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  CardFooter,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
-import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { useState } from "react";
 
 interface Props {
   orderId: string;
@@ -18,12 +14,7 @@ interface Props {
   onCancel: () => void;
 }
 
-export default function PaymentEditForm({
-  orderId,
-  initialData,
-  onSuccess,
-  onCancel,
-}: Props) {
+export default function PaymentEditForm({ orderId, initialData, onSuccess, onCancel }: Props) {
   const [total, setTotal] = useState(initialData.total);
   const [baselineTotal] = useState(initialData.total);
 
@@ -60,12 +51,7 @@ export default function PaymentEditForm({
       <CardContent>
         <div className="flex flex-col gap-2">
           <label className="font-medium">총 결제 금액 (원)</label>
-          <input
-            type="number"
-            value={total}
-            onChange={(e) => setTotal(Number(e.target.value))}
-            className="w-full rounded border px-2 py-1"
-          />
+          <FormattedNumberInput value={total} onValueChange={setTotal} className="w-full rounded border px-2 py-1" />
         </div>
       </CardContent>
       <CardFooter className="flex justify-end space-x-2">

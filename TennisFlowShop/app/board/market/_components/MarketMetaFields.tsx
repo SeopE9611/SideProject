@@ -1,5 +1,6 @@
 "use client";
 
+import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -54,21 +55,15 @@ export default function MarketMetaFields({
 }: Props) {
   const hasValidPrice = typeof value.price === "number" && value.price > 0;
   const priceDisplay =
-    typeof value.price === "number" && value.price > 0
-      ? `${value.price.toLocaleString("ko-KR")}원`
-      : null;
+    typeof value.price === "number" && value.price > 0 ? `${value.price.toLocaleString("ko-KR")}원` : null;
 
   return (
     <div className="space-y-6">
       {/* ── 섹션 1: 거래 핵심 정보 ── */}
       <div className="rounded-xl border border-border bg-card shadow-sm">
         <div className="border-b border-border px-5 py-4 md:px-6">
-          <h3 className="text-sm font-semibold text-foreground">
-            거래 핵심 정보
-          </h3>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            구매자가 가장 먼저 확인하는 판매 조건입니다.
-          </p>
+          <h3 className="text-sm font-semibold text-foreground">거래 핵심 정보</h3>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">구매자가 가장 먼저 확인하는 판매 조건입니다.</p>
         </div>
 
         <div className="px-5 py-5 md:px-6 space-y-5">
@@ -78,39 +73,32 @@ export default function MarketMetaFields({
               판매가 <span className="text-destructive">*</span>
             </Label>
             <div className="relative">
-              <Input
+              <FormattedNumberInput
                 ref={priceRef}
-                type="number"
-                min={1}
+                min={0}
                 placeholder="금액을 입력하세요"
-                value={value.price ?? ""}
-                onChange={(e) =>
-                  onChange({ ...value, price: onNum(e.target.value) })
+                value={value.price ?? null}
+                onValueChange={(price) =>
+                  onChange({
+                    ...value,
+                    price,
+                  })
                 }
                 disabled={disabled}
                 className={cn(
                   "h-12 pr-10 text-lg font-semibold placeholder:text-muted-foreground/60",
-                  fieldErrors?.price
-                    ? "border-destructive focus-visible:border-destructive"
-                    : "",
+                  fieldErrors?.price ? "border-destructive focus-visible:border-destructive" : "",
                 )}
               />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">
                 원
               </span>
             </div>
-            {fieldErrors?.price ? (
-              <p className="text-xs text-destructive">{fieldErrors.price}</p>
-            ) : null}
-            <p
-              className={`text-xs ${hasValidPrice ? "text-muted-foreground" : "text-muted-foreground"}`}
-            >
+            {fieldErrors?.price ? <p className="text-xs text-destructive">{fieldErrors.price}</p> : null}
+            <p className={`text-xs ${hasValidPrice ? "text-muted-foreground" : "text-muted-foreground"}`}>
               {priceDisplay ? (
                 <>
-                  입력 가격:{" "}
-                  <span className="font-semibold text-foreground">
-                    {priceDisplay}
-                  </span>
+                  입력 가격: <span className="font-semibold text-foreground">{priceDisplay}</span>
                 </>
               ) : (
                 "숫자만 입력하세요. 목록과 상세에서 원 단위로 표시됩니다."
@@ -127,9 +115,7 @@ export default function MarketMetaFields({
               <select
                 className={selectCls}
                 value={value.saleStatus}
-                onChange={(e) =>
-                  onChange({ ...value, saleStatus: e.target.value as any })
-                }
+                onChange={(e) => onChange({ ...value, saleStatus: e.target.value as any })}
                 disabled={disabled}
               >
                 {MARKET_SALE_STATUS_OPTIONS.map((o) => (
@@ -146,9 +132,7 @@ export default function MarketMetaFields({
               <select
                 className={selectCls}
                 value={value.conditionGrade}
-                onChange={(e) =>
-                  onChange({ ...value, conditionGrade: e.target.value as any })
-                }
+                onChange={(e) => onChange({ ...value, conditionGrade: e.target.value as any })}
                 disabled={disabled}
               >
                 {MARKET_CONDITION_GRADE_OPTIONS.map((o) => (
@@ -165,16 +149,12 @@ export default function MarketMetaFields({
             <Label className="text-sm">상태 설명</Label>
             <Textarea
               value={value.conditionNote ?? ""}
-              onChange={(e) =>
-                onChange({ ...value, conditionNote: e.target.value })
-              }
+              onChange={(e) => onChange({ ...value, conditionNote: e.target.value })}
               disabled={disabled}
               className="min-h-[100px] resize-y placeholder:text-muted-foreground/60"
               placeholder="ex: 프레임 상단에 생활 스크래치가 있고, 그립은 최근 교체했습니다."
             />
-            <p className="text-[11px] text-muted-foreground">
-              실물 상태를 솔직하게 적을수록 거래 신뢰도가 올라갑니다.
-            </p>
+            <p className="text-[11px] text-muted-foreground">실물 상태를 솔직하게 적을수록 거래 신뢰도가 올라갑니다.</p>
           </div>
         </div>
       </div>
@@ -183,9 +163,7 @@ export default function MarketMetaFields({
       {category === "racket" && (
         <div className="rounded-xl border border-border bg-card shadow-sm">
           <div className="border-b border-border px-5 py-4 md:px-6">
-            <h3 className="text-sm font-semibold text-foreground">
-              라켓 상세 정보
-            </h3>
+            <h3 className="text-sm font-semibold text-foreground">라켓 상세 정보</h3>
             <p className="mt-0.5 text-[11px] text-muted-foreground">
               모델명은 필수이며, 나머지 스펙은 아는 범위에서만 입력하면 됩니다.
             </p>
@@ -194,9 +172,7 @@ export default function MarketMetaFields({
           <div className="px-5 py-5 md:px-6 space-y-6">
             {/* 핵심 스펙 */}
             <div>
-              <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                핵심 스펙
-              </p>
+              <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">핵심 스펙</p>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2 sm:col-span-2">
                   <Label className="text-sm">
@@ -219,16 +195,10 @@ export default function MarketMetaFields({
                     disabled={disabled}
                     className={cn(
                       "placeholder:text-muted-foreground/60",
-                      fieldErrors?.modelName
-                        ? "border-destructive focus-visible:border-destructive"
-                        : "",
+                      fieldErrors?.modelName ? "border-destructive focus-visible:border-destructive" : "",
                     )}
                   />
-                  {fieldErrors?.modelName ? (
-                    <p className="text-xs text-destructive">
-                      {fieldErrors.modelName}
-                    </p>
-                  ) : null}
+                  {fieldErrors?.modelName ? <p className="text-xs text-destructive">{fieldErrors.modelName}</p> : null}
                 </div>
                 {(
                   [
@@ -238,9 +208,7 @@ export default function MarketMetaFields({
                   ] as const
                 ).map(({ key, ph }) => (
                   <div className="space-y-2" key={key}>
-                    <Label className="text-sm">
-                      {getMarketRacketFieldLabel(key)}
-                    </Label>
+                    <Label className="text-sm">{getMarketRacketFieldLabel(key)}</Label>
                     <Input
                       type="number"
                       placeholder={ph}
@@ -267,9 +235,7 @@ export default function MarketMetaFields({
 
             {/* 선택 스펙 */}
             <div>
-              <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                선택 스펙
-              </p>
+              <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">선택 스펙</p>
               <div className="grid gap-4 sm:grid-cols-2">
                 {(
                   [
@@ -279,9 +245,7 @@ export default function MarketMetaFields({
                   ] as const
                 ).map(({ key, ph }) => (
                   <div className="space-y-2" key={key}>
-                    <Label className="text-sm">
-                      {getMarketRacketFieldLabel(key)}
-                    </Label>
+                    <Label className="text-sm">{getMarketRacketFieldLabel(key)}</Label>
                     <Input
                       type="number"
                       placeholder={ph}
@@ -360,9 +324,7 @@ export default function MarketMetaFields({
       {category === "string" && (
         <div className="rounded-xl border border-border bg-card shadow-sm">
           <div className="border-b border-border px-5 py-4 md:px-6">
-            <h3 className="text-sm font-semibold text-foreground">
-              스트링 상세 정보
-            </h3>
+            <h3 className="text-sm font-semibold text-foreground">스트링 상세 정보</h3>
             <p className="mt-0.5 text-[11px] text-muted-foreground">
               모델명은 필수이며, 세부 옵션은 아는 범위에서만 작성해도 됩니다.
             </p>
@@ -391,16 +353,10 @@ export default function MarketMetaFields({
                   disabled={disabled}
                   className={cn(
                     "placeholder:text-muted-foreground/60",
-                    fieldErrors?.modelName
-                      ? "border-destructive focus-visible:border-destructive"
-                      : "",
+                    fieldErrors?.modelName ? "border-destructive focus-visible:border-destructive" : "",
                   )}
                 />
-                {fieldErrors?.modelName ? (
-                  <p className="text-xs text-destructive">
-                    {fieldErrors.modelName}
-                  </p>
-                ) : null}
+                {fieldErrors?.modelName ? <p className="text-xs text-destructive">{fieldErrors.modelName}</p> : null}
               </div>
               <div className="space-y-2">
                 <Label className="text-sm">재질</Label>

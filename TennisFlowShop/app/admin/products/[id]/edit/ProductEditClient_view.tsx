@@ -2,42 +2,23 @@
 
 /** Responsibility: 상품 수정 화면 표현 + 상호작용 오케스트레이션 뷰. */
 
-import {
-  brands,
-  colors,
-  gauges,
-  materials,
-} from "@/app/admin/products/_lib/productFormOptions";
+import { brands, colors, gauges, materials } from "@/app/admin/products/_lib/productFormOptions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
-import {
-  UNSAVED_CHANGES_MESSAGE,
-  useUnsavedChangesGuard,
-} from "@/lib/hooks/useUnsavedChangesGuard";
+import { UNSAVED_CHANGES_MESSAGE, useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { normalizeFeatureScoresTo100 } from "@/lib/product-feature-score";
 import { supabase } from "@/lib/supabase";
 import { showErrorToast } from "@/lib/toast";
@@ -98,6 +79,7 @@ import {
   StepNavigation,
   StepProgress,
 } from "@/components/admin/product-form";
+import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 
 // Step definition for the wizard
 const STEPS: Step[] = PRODUCT_FORM_STEPS;
@@ -106,8 +88,7 @@ const PRODUCT_EDIT_WORKFLOW_GUIDES = [
   {
     icon: FileText,
     title: "1. 기본 정보 확인",
-    description:
-      "상품명, 브랜드, 재질, 가격, 설명이 현재 판매 정보와 맞는지 확인합니다.",
+    description: "상품명, 브랜드, 재질, 가격, 설명이 현재 판매 정보와 맞는지 확인합니다.",
   },
   {
     icon: Palette,
@@ -122,8 +103,7 @@ const PRODUCT_EDIT_WORKFLOW_GUIDES = [
   {
     icon: ImageIcon,
     title: "4. 이미지 저장",
-    description:
-      "대표 이미지와 색상 이미지를 확인한 뒤 수정 내용을 저장합니다.",
+    description: "대표 이미지와 색상 이미지를 확인한 뒤 수정 내용을 저장합니다.",
   },
 ];
 
@@ -148,11 +128,7 @@ function EditLoadingSkeleton() {
   );
 }
 
-export default function ProductEditClient({
-  productId,
-}: {
-  productId: string;
-}) {
+export default function ProductEditClient({ productId }: { productId: string }) {
   // 기본 정보
   const [basicInfo, setBasicInfo] = useState({
     name: "",
@@ -205,47 +181,28 @@ export default function ProductEditClient({
   // 검색 키워드(쉼표 구분) 입력 상태
   const [searchKeywordsInput, setSearchKeywordsInput] = useState("");
   const [isVisible, setIsVisible] = useState(true);
-  const [gaugeInventories, setGaugeInventories] = useState<
-    ProductGaugeInventory[]
-  >([]);
-  const [colorInventories, setColorInventories] = useState<
-    ProductColorInventory[]
-  >([]);
-  const [variantInventories, setVariantInventories] = useState<
-    ProductVariantInventory[]
-  >([]);
-  const [gaugeInputsByColor, setGaugeInputsByColor] = useState<
-    Record<string, string>
-  >({});
+  const [gaugeInventories, setGaugeInventories] = useState<ProductGaugeInventory[]>([]);
+  const [colorInventories, setColorInventories] = useState<ProductColorInventory[]>([]);
+  const [variantInventories, setVariantInventories] = useState<ProductVariantInventory[]>([]);
+  const [gaugeInputsByColor, setGaugeInputsByColor] = useState<Record<string, string>>({});
   const defaultColorPickerValue = `${String.fromCharCode(35)}000000`;
   const [customColorName, setCustomColorName] = useState("");
   const [customColorHex, setCustomColorHex] = useState(defaultColorPickerValue);
   const [customColorHexTouched, setCustomColorHexTouched] = useState(false);
-  const [shouldShowLegacyVariantGuide, setShouldShowLegacyVariantGuide] =
-    useState(false);
+  const [shouldShowLegacyVariantGuide, setShouldShowLegacyVariantGuide] = useState(false);
   const [showGaugeStockToUser, setShowGaugeStockToUser] = useState(true);
-  const getVariantKey = (colorValue: string, gaugeValue: string) =>
-    `${colorValue}::${gaugeValue}`;
+  const getVariantKey = (colorValue: string, gaugeValue: string) => `${colorValue}::${gaugeValue}`;
   const formatPlainGaugeLabel = (value?: string | null) => {
     const raw = String(value ?? "").trim();
     if (!raw) return "";
 
-    const normalized = raw
-      .toLowerCase()
-      .replace(/mm/g, "")
-      .replace(/\s+/g, "")
-      .replace(",", ".");
+    const normalized = raw.toLowerCase().replace(/mm/g, "").replace(/\s+/g, "").replace(",", ".");
 
     if (!/^\d+\.\d+$/.test(normalized)) return raw;
     return `${normalized}mm`;
   };
   const normalizeGaugeInput = (input: string) => {
-    const normalized = input
-      .trim()
-      .toLowerCase()
-      .replace(/mm/g, "")
-      .replace(/\s+/g, "")
-      .replace(",", ".");
+    const normalized = input.trim().toLowerCase().replace(/mm/g, "").replace(/\s+/g, "").replace(",", ".");
     if (!/^\d+\.\d+$/.test(normalized)) return null;
     const numericValue = Number(normalized);
     if (!Number.isFinite(numericValue) || numericValue <= 0) return null;
@@ -255,21 +212,12 @@ export default function ProductEditClient({
     () =>
       variantInventories
         .filter((row) => !row.isSoldOut)
-        .reduce(
-          (sum, row) => sum + (Number.isFinite(row.stock) ? row.stock : 0),
-          0,
-        ),
+        .reduce((sum, row) => sum + (Number.isFinite(row.stock) ? row.stock : 0), 0),
     [variantInventories],
   );
   const getVariantRow = (colorValue: string, gaugeValue: string) =>
-    variantInventories.find(
-      (row) => row.colorValue === colorValue && row.gaugeValue === gaugeValue,
-    );
-  const updateVariantStock = (
-    colorValue: string,
-    gaugeValue: string,
-    stock: number,
-  ) => {
+    variantInventories.find((row) => row.colorValue === colorValue && row.gaugeValue === gaugeValue);
+  const updateVariantStock = (colorValue: string, gaugeValue: string, stock: number) => {
     setVariantInventories((prev) =>
       prev.map((row) =>
         row.colorValue === colorValue && row.gaugeValue === gaugeValue
@@ -278,46 +226,26 @@ export default function ProductEditClient({
       ),
     );
   };
-  const updateVariantSoldOut = (
-    colorValue: string,
-    gaugeValue: string,
-    isSoldOut: boolean,
-  ) => {
+  const updateVariantSoldOut = (colorValue: string, gaugeValue: string, isSoldOut: boolean) => {
     setVariantInventories((prev) =>
-      prev.map((row) =>
-        row.colorValue === colorValue && row.gaugeValue === gaugeValue
-          ? { ...row, isSoldOut }
-          : row,
-      ),
+      prev.map((row) => (row.colorValue === colorValue && row.gaugeValue === gaugeValue ? { ...row, isSoldOut } : row)),
     );
   };
-  const updateVariantShowWhenSoldOut = (
-    colorValue: string,
-    gaugeValue: string,
-    showWhenSoldOut: boolean,
-  ) => {
+  const updateVariantShowWhenSoldOut = (colorValue: string, gaugeValue: string, showWhenSoldOut: boolean) => {
     setVariantInventories((prev) =>
       prev.map((row) =>
-        row.colorValue === colorValue && row.gaugeValue === gaugeValue
-          ? { ...row, showWhenSoldOut }
-          : row,
+        row.colorValue === colorValue && row.gaugeValue === gaugeValue ? { ...row, showWhenSoldOut } : row,
       ),
     );
   };
   const getColorTotalStock = (colorValue: string) =>
     variantInventories
       .filter((row) => row.colorValue === colorValue && !row.isSoldOut)
-      .reduce(
-        (sum, row) => sum + (Number.isFinite(row.stock) ? row.stock : 0),
-        0,
-      );
+      .reduce((sum, row) => sum + (Number.isFinite(row.stock) ? row.stock : 0), 0);
   const getGaugeTotalStock = (gaugeValue: string) =>
     variantInventories
       .filter((row) => row.gaugeValue === gaugeValue && !row.isSoldOut)
-      .reduce(
-        (sum, row) => sum + (Number.isFinite(row.stock) ? row.stock : 0),
-        0,
-      );
+      .reduce((sum, row) => sum + (Number.isFinite(row.stock) ? row.stock : 0), 0);
   const addVariantForColor = (colorRow: ProductColorInventory) => {
     const rawInput = gaugeInputsByColor[colorRow.value] ?? "";
     const normalizedGauge = normalizeGaugeInput(rawInput);
@@ -326,13 +254,7 @@ export default function ProductEditClient({
       return;
     }
     setVariantInventories((prev) => {
-      if (
-        prev.some(
-          (row) =>
-            row.colorValue === colorRow.value &&
-            row.gaugeValue === normalizedGauge.value,
-        )
-      ) {
+      if (prev.some((row) => row.colorValue === colorRow.value && row.gaugeValue === normalizedGauge.value)) {
         showErrorToast("이미 같은 색상에 추가된 게이지입니다.");
         return prev;
       }
@@ -355,18 +277,11 @@ export default function ProductEditClient({
   };
   const removeVariantForColor = (colorValue: string, gaugeValue: string) =>
     setVariantInventories((prev) =>
-      prev.filter(
-        (row) =>
-          !(row.colorValue === colorValue && row.gaugeValue === gaugeValue),
-      ),
+      prev.filter((row) => !(row.colorValue === colorValue && row.gaugeValue === gaugeValue)),
     );
   const removeColorOption = (colorValue: string) => {
-    setColorInventories((prev) =>
-      prev.filter((row) => row.value !== colorValue),
-    );
-    setVariantInventories((prev) =>
-      prev.filter((row) => row.colorValue !== colorValue),
-    );
+    setColorInventories((prev) => prev.filter((row) => row.value !== colorValue));
+    setVariantInventories((prev) => prev.filter((row) => row.colorValue !== colorValue));
     setGaugeInputsByColor((prev) => {
       const next = { ...prev };
       delete next[colorValue];
@@ -389,13 +304,9 @@ export default function ProductEditClient({
     return { value, label, colorHex };
   };
   const handleAddCustomColor = () => {
-    const normalized = normalizeCustomColorInput(
-      customColorName,
-      customColorHexTouched ? customColorHex : "",
-    );
+    const normalized = normalizeCustomColorInput(customColorName, customColorHexTouched ? customColorHex : "");
     if (!normalized) return showErrorToast("색상명을 입력해주세요.");
-    if (normalized.colorHex === null)
-      return showErrorToast("색상 미리보기 값이 올바르지 않습니다.");
+    if (normalized.colorHex === null) return showErrorToast("색상 미리보기 값이 올바르지 않습니다.");
     const labelLower = normalized.label.trim().toLowerCase();
     const duplicated = colorInventories.some(
       (row) =>
@@ -429,17 +340,12 @@ export default function ProductEditClient({
     setSearchKeywordsInput(keywords.join(", "));
   };
   const gaugeSummaryRows = useMemo(() => {
-    const values = Array.from(
-      new Set(variantInventories.map((row) => row.gaugeValue)),
-    );
+    const values = Array.from(new Set(variantInventories.map((row) => row.gaugeValue)));
     return values.map((value) => {
-      const variantGaugeLabel = variantInventories.find(
-        (variant) => variant.gaugeValue === value,
-      )?.gaugeLabel;
+      const variantGaugeLabel = variantInventories.find((variant) => variant.gaugeValue === value)?.gaugeLabel;
       return {
         value,
-        label:
-          formatPlainGaugeLabel(value) || variantGaugeLabel || `${value}mm`,
+        label: formatPlainGaugeLabel(value) || variantGaugeLabel || `${value}mm`,
       };
     });
   }, [variantInventories]);
@@ -494,9 +400,7 @@ export default function ProductEditClient({
     setBasicInfo(nextBasicInfo);
 
     // 검색 키워드 초기값
-    const nextSearchKeywordsInput = Array.isArray(p.searchKeywords)
-      ? p.searchKeywords.join(", ")
-      : "";
+    const nextSearchKeywordsInput = Array.isArray(p.searchKeywords) ? p.searchKeywords.join(", ") : "";
 
     setSearchKeywordsInput(nextSearchKeywordsInput);
     const gaugeInventoryRows =
@@ -547,18 +451,13 @@ export default function ProductEditClient({
               })()
             : [];
     setColorInventories(colorInventoryRows);
-    const hasExistingVariants =
-      Array.isArray(p.variantInventories) && p.variantInventories.length > 0;
+    const hasExistingVariants = Array.isArray(p.variantInventories) && p.variantInventories.length > 0;
     let nextVariantInventories: ProductVariantInventory[] = [];
 
     if (hasExistingVariants) {
       const existingVariants = p.variantInventories ?? [];
-      const colorMetaMap = new Map(
-        colorInventoryRows.map((row) => [row.value, row]),
-      );
-      const gaugeMetaMap = new Map(
-        gaugeInventoryRows.map((row) => [row.value, row]),
-      );
+      const colorMetaMap = new Map(colorInventoryRows.map((row) => [row.value, row]));
+      const gaugeMetaMap = new Map(gaugeInventoryRows.map((row) => [row.value, row]));
       const normalizedVariantMap = new Map<string, ProductVariantInventory>();
 
       existingVariants.forEach((row) => {
@@ -572,14 +471,8 @@ export default function ProductEditClient({
           colorLabel: colorMeta?.label ?? row.colorLabel,
           colorHex: colorMeta?.colorHex ?? row.colorHex,
           colorImage: row.colorImage ?? colorMeta?.image ?? "",
-          gaugeLabel:
-            formatPlainGaugeLabel(row.gaugeValue) ||
-            row.gaugeLabel ||
-            gaugeMeta?.label,
-          stock:
-            Number.isFinite(Number(row.stock)) && Number(row.stock) >= 0
-              ? Number(row.stock)
-              : 0,
+          gaugeLabel: formatPlainGaugeLabel(row.gaugeValue) || row.gaugeLabel || gaugeMeta?.label,
+          stock: Number.isFinite(Number(row.stock)) && Number(row.stock) >= 0 ? Number(row.stock) : 0,
           isSoldOut: Boolean(row.isSoldOut),
           showWhenSoldOut: row.showWhenSoldOut !== false,
         });
@@ -595,11 +488,7 @@ export default function ProductEditClient({
     }
     const nextTotalGaugeStock = nextVariantInventories
       .filter((row) => !row.isSoldOut)
-      .reduce(
-        (sum, row) =>
-          sum + (Number.isFinite(Number(row.stock)) ? Number(row.stock) : 0),
-        0,
-      );
+      .reduce((sum, row) => sum + (Number.isFinite(Number(row.stock)) ? Number(row.stock) : 0), 0);
     const hybridState = normalizeHybridState(p);
     setHybridMain(hybridState.hybridMain);
     setHybridCross(hybridState.hybridCross);
@@ -660,13 +549,9 @@ export default function ProductEditClient({
 
   const uploadProductImageFile = async (file: File): Promise<string | null> => {
     const fileName = sanitizeUploadFileName(file.name);
-    const { error } = await supabase.storage
-      .from("tennis-images")
-      .upload(fileName, file);
+    const { error } = await supabase.storage.from("tennis-images").upload(fileName, file);
     if (error) return null;
-    const { data: publicData } = supabase.storage
-      .from("tennis-images")
-      .getPublicUrl(fileName);
+    const { data: publicData } = supabase.storage.from("tennis-images").getPublicUrl(fileName);
     return publicData?.publicUrl ?? null;
   };
 
@@ -679,9 +564,7 @@ export default function ProductEditClient({
 
     if (totalSelected > availableSlots) {
       e.target.value = "";
-      showErrorToast(
-        `최대 ${MAX_PRODUCT_IMAGE_COUNT}장까지만 업로드할 수 있습니다. (${availableSlots}장만 추가 가능)`,
-      );
+      showErrorToast(`최대 ${MAX_PRODUCT_IMAGE_COUNT}장까지만 업로드할 수 있습니다. (${availableSlots}장만 추가 가능)`);
     }
 
     const filesToUpload = Array.from(files).slice(0, availableSlots);
@@ -690,9 +573,7 @@ export default function ProductEditClient({
     for (const file of filesToUpload) {
       const imageUrl = await uploadProductImageFile(file);
       if (!imageUrl) {
-        showErrorToast(
-          "이미지 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.",
-        );
+        showErrorToast("이미지 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.");
         continue;
       }
       setImages((prev) => [...prev, imageUrl]);
@@ -702,10 +583,7 @@ export default function ProductEditClient({
     e.target.value = "";
   };
 
-  const handleUploadColorImage = async (
-    colorValue: string,
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleUploadColorImage = async (colorValue: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
@@ -713,20 +591,12 @@ export default function ProductEditClient({
     setUploading(false);
     e.target.value = "";
     if (!imageUrl) {
-      showErrorToast(
-        "색상 이미지 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.",
-      );
+      showErrorToast("색상 이미지 업로드에 실패했습니다. 잠시 후 다시 시도해 주세요.");
       return;
     }
-    setColorInventories((prev) =>
-      prev.map((row) =>
-        row.value === colorValue ? { ...row, image: imageUrl } : row,
-      ),
-    );
+    setColorInventories((prev) => prev.map((row) => (row.value === colorValue ? { ...row, image: imageUrl } : row)));
     setVariantInventories((prev) =>
-      prev.map((row) =>
-        row.colorValue === colorValue ? { ...row, colorImage: imageUrl } : row,
-      ),
+      prev.map((row) => (row.colorValue === colorValue ? { ...row, colorImage: imageUrl } : row)),
     );
   };
 
@@ -756,12 +626,7 @@ export default function ProductEditClient({
       color: prev.color || hybridMain.color || prev.color,
       length: prev.length || "12",
     }));
-  }, [
-    basicInfo.material,
-    hybridMain.brand,
-    hybridMain.gauge,
-    hybridMain.color,
-  ]);
+  }, [basicInfo.material, hybridMain.brand, hybridMain.gauge, hybridMain.color]);
 
   const handleSetMainImage = (index: number) => {
     setImages((prev) => reorderMainImage(prev, index));
@@ -813,8 +678,7 @@ export default function ProductEditClient({
     ],
   );
 
-  const isDirty =
-    baselineRef.current !== null && baselineRef.current !== snapshot;
+  const isDirty = baselineRef.current !== null && baselineRef.current !== snapshot;
   useUnsavedChangesGuard(isDirty && !submitting && !uploading && !deleting);
 
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
@@ -855,15 +719,12 @@ export default function ProductEditClient({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (submitting || submitRef.current || deleting || deleteRef.current)
-      return;
+    if (submitting || submitRef.current || deleting || deleteRef.current) return;
 
     submitRef.current = true;
     try {
       if (uploading) {
-        showErrorToast(
-          "이미지 업로드 중입니다. 업로드 완료 후 다시 시도해 주세요.",
-        );
+        showErrorToast("이미지 업로드 중입니다. 업로드 완료 후 다시 시도해 주세요.");
         return;
       }
 
@@ -945,30 +806,19 @@ export default function ProductEditClient({
       }
 
       const hasColorWithoutVariant = colorInventories.some(
-        (colorRow) =>
-          !variantInventories.some(
-            (variant) => variant.colorValue === colorRow.value,
-          ),
+        (colorRow) => !variantInventories.some((variant) => variant.colorValue === colorRow.value),
       );
       if (hasColorWithoutVariant) {
         goToStep("options");
         showErrorToast("각 색상마다 최소 1개 이상의 게이지를 추가해주세요.");
         return;
       }
-      if (
-        variantInventories.some(
-          (row) => !Number.isFinite(Number(row.stock)) || Number(row.stock) < 0,
-        )
-      ) {
+      if (variantInventories.some((row) => !Number.isFinite(Number(row.stock)) || Number(row.stock) < 0)) {
         goToStep("options");
         showErrorToast("조합 재고 수량은 0 이상 숫자로 입력해주세요.");
         return;
       }
-      if (
-        variantInventories.some(
-          (row) => !row.isSoldOut && Number(row.stock) < 1,
-        )
-      ) {
+      if (variantInventories.some((row) => !row.isSoldOut && Number(row.stock) < 1)) {
         goToStep("options");
         showErrorToast("품절이 아닌 조합은 재고 수량을 1개 이상 입력해주세요.");
         return;
@@ -1022,16 +872,8 @@ export default function ProductEditClient({
       };
 
       if (basicInfo.material === "hybrid") {
-        const hasMain =
-          hybridMain.brand ||
-          hybridMain.name ||
-          hybridMain.gauge ||
-          hybridMain.color;
-        const hasCross =
-          hybridCross.brand ||
-          hybridCross.name ||
-          hybridCross.gauge ||
-          hybridCross.color;
+        const hasMain = hybridMain.brand || hybridMain.name || hybridMain.gauge || hybridMain.color;
+        const hasCross = hybridCross.brand || hybridCross.name || hybridCross.gauge || hybridCross.color;
         if (hasMain || hasCross) {
           specifications.hybrid = {
             main: { ...hybridMain },
@@ -1048,24 +890,17 @@ export default function ProductEditClient({
         ...row,
         stock: Math.max(0, Number(row.stock) || 0),
         isSoldOut: Boolean(row.isSoldOut),
-        colorImage:
-          row.colorImage ??
-          colorInventories.find((c) => c.value === row.colorValue)?.image ??
-          "",
+        colorImage: row.colorImage ?? colorInventories.find((c) => c.value === row.colorValue)?.image ?? "",
         showWhenSoldOut: row.showWhenSoldOut !== false,
       }));
       const normalizedColorInventories = colorInventories.map((row) => {
         const colorMeta = colors.find((c) => c.id === row.value);
-        const colorRows = normalizedVariants.filter(
-          (variant) => variant.colorValue === row.value,
-        );
+        const colorRows = normalizedVariants.filter((variant) => variant.colorValue === row.value);
         const sellableStock = colorRows
           .filter((variant) => !variant.isSoldOut && variant.stock > 0)
           .reduce((sum, variant) => sum + variant.stock, 0);
         const isSoldOut =
-          colorRows.length === 0 ||
-          colorRows.every((variant) => variant.isSoldOut) ||
-          sellableStock === 0;
+          colorRows.length === 0 || colorRows.every((variant) => variant.isSoldOut) || sellableStock === 0;
         return {
           value: colorMeta?.id ?? row.value,
           label: colorMeta?.name ?? row.label ?? row.value,
@@ -1075,40 +910,25 @@ export default function ProductEditClient({
           isSoldOut,
         };
       });
-      const gaugeSummaryValues = Array.from(
-        new Set(normalizedVariants.map((variant) => variant.gaugeValue)),
-      );
+      const gaugeSummaryValues = Array.from(new Set(normalizedVariants.map((variant) => variant.gaugeValue)));
       const normalizedGaugeInventories = gaugeSummaryValues.map((value) => {
         const row = gaugeInventories.find((item) => item.value === value);
         const gaugeMeta = gauges.find((g) => g.value === value);
-        const variantGaugeLabel = normalizedVariants.find(
-          (variant) => variant.gaugeValue === value,
-        )?.gaugeLabel;
-        const gaugeRows = normalizedVariants.filter(
-          (variant) => variant.gaugeValue === value,
-        );
+        const variantGaugeLabel = normalizedVariants.find((variant) => variant.gaugeValue === value)?.gaugeLabel;
+        const gaugeRows = normalizedVariants.filter((variant) => variant.gaugeValue === value);
         const sellableStock = gaugeRows
           .filter((variant) => !variant.isSoldOut && variant.stock > 0)
           .reduce((sum, variant) => sum + variant.stock, 0);
         const isSoldOut =
-          gaugeRows.length === 0 ||
-          gaugeRows.every((variant) => variant.isSoldOut) ||
-          sellableStock === 0;
+          gaugeRows.length === 0 || gaugeRows.every((variant) => variant.isSoldOut) || sellableStock === 0;
         return {
           value: gaugeMeta?.value ?? value,
-          label:
-            formatPlainGaugeLabel(value) ||
-            variantGaugeLabel ||
-            row?.label ||
-            gaugeMeta?.name ||
-            `${value}mm`,
+          label: formatPlainGaugeLabel(value) || variantGaugeLabel || row?.label || gaugeMeta?.name || `${value}mm`,
           stock: sellableStock,
           isSoldOut,
         };
       });
-      const gaugeOptions = Array.from(
-        new Set(normalizedVariants.map((row) => row.gaugeValue)),
-      );
+      const gaugeOptions = Array.from(new Set(normalizedVariants.map((row) => row.gaugeValue)));
       const normalizedGauge = gaugeOptions[0] ?? basicInfo.gauge ?? "";
       const normalizedGaugeStockTotal = normalizedVariants
         .filter((variant) => !variant.isSoldOut && variant.stock > 0)
@@ -1143,10 +963,7 @@ export default function ProductEditClient({
 
         additionalFeatures,
 
-        images: [
-          ...images.slice(mainImageIndex, mainImageIndex + 1),
-          ...images.filter((_, i) => i !== mainImageIndex),
-        ],
+        images: [...images.slice(mainImageIndex, mainImageIndex + 1), ...images.filter((_, i) => i !== mainImageIndex)],
         inventory: {
           ...inventory,
           stock: normalizedGaugeStockTotal,
@@ -1168,8 +985,7 @@ export default function ProductEditClient({
               body: JSON.stringify(product),
             }),
           successMessage: "상품이 수정되었습니다.",
-          fallbackErrorMessage:
-            "알 수 없는 오류가 발생했습니다. 관리자에게 문의하세요",
+          fallbackErrorMessage: "알 수 없는 오류가 발생했습니다. 관리자에게 문의하세요",
         });
 
         if (!result) return;
@@ -1183,14 +999,7 @@ export default function ProductEditClient({
   };
 
   const handleDelete = () => {
-    if (
-      uploading ||
-      submitting ||
-      submitRef.current ||
-      deleting ||
-      deleteRef.current
-    )
-      return;
+    if (uploading || submitting || submitRef.current || deleting || deleteRef.current) return;
     setDeleteDialogOpen(true);
   };
 
@@ -1219,29 +1028,20 @@ export default function ProductEditClient({
   }, [variantInventories]);
 
   const hasRequiredBasicInfo =
-    basicInfo.name.trim().length > 0 &&
-    basicInfo.price > 0 &&
-    basicInfo.description.trim().length > 0;
+    basicInfo.name.trim().length > 0 && basicInfo.price > 0 && basicInfo.description.trim().length > 0;
 
   const hasColorOptions = colorInventories.length > 0;
 
   const hasColorWithoutVariant = colorInventories.some(
-    (colorRow) =>
-      !variantInventories.some(
-        (variant) => variant.colorValue === colorRow.value,
-      ),
+    (colorRow) => !variantInventories.some((variant) => variant.colorValue === colorRow.value),
   );
 
-  const hasVariantOptions =
-    variantInventories.length > 0 && !hasColorWithoutVariant;
+  const hasVariantOptions = variantInventories.length > 0 && !hasColorWithoutVariant;
 
   const hasValidVariantStocks =
-    variantInventories.length > 0 &&
-    variantInventories.every((row) => row.isSoldOut || Number(row.stock) >= 1);
+    variantInventories.length > 0 && variantInventories.every((row) => row.isSoldOut || Number(row.stock) >= 1);
 
-  const hasValidPerformanceValues = Object.values(features).every(
-    (value) => value >= 1 && value <= 100,
-  );
+  const hasValidPerformanceValues = Object.values(features).every((value) => value >= 1 && value <= 100);
 
   const hasValidInventorySettings =
     inventory.lowStock >= 0 &&
@@ -1281,8 +1081,7 @@ export default function ProductEditClient({
   const readyToSubmit = formReadinessChecks.every((item) => item.done);
 
   if (error) return <div className="p-6">상품 불러오기 실패</div>;
-  if (!data?.product && !isLoading)
-    return <div className="p-6">상품 정보를 찾을 수 없습니다.</div>;
+  if (!data?.product && !isLoading) return <div className="p-6">상품 정보를 찾을 수 없습니다.</div>;
 
   return (
     <>
@@ -1297,19 +1096,14 @@ export default function ProductEditClient({
                     <Package className="h-7 w-7 text-primary" />
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                      스트링 수정
-                    </h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground">스트링 수정</h1>
                     <p className="mt-0.5 text-sm text-muted-foreground">
                       {basicInfo.name || "상품 정보를 불러오는 중..."}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <StepIndicator
-                    current={currentStepIndex + 1}
-                    total={STEPS.length}
-                  />
+                  <StepIndicator current={currentStepIndex + 1} total={STEPS.length} />
                   <Button
                     type="button"
                     variant="destructive"
@@ -1326,26 +1120,17 @@ export default function ProductEditClient({
             </div>
             {!isInitialClientLoading && (
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                {PRODUCT_EDIT_WORKFLOW_GUIDES.map(
-                  ({ icon: Icon, title, description }) => (
-                    <div
-                      key={title}
-                      className="rounded-xl border border-border/60 bg-card/70 p-4 shadow-sm"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {title}
-                        </p>
+                {PRODUCT_EDIT_WORKFLOW_GUIDES.map(({ icon: Icon, title, description }) => (
+                  <div key={title} className="rounded-xl border border-border/60 bg-card/70 p-4 shadow-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                        <Icon className="h-4 w-4" />
                       </div>
-                      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                        {description}
-                      </p>
+                      <p className="text-sm font-semibold text-foreground">{title}</p>
                     </div>
-                  ),
-                )}
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{description}</p>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -1367,33 +1152,23 @@ export default function ProductEditClient({
                   <div className="rounded-xl border border-border/60 bg-card/70 p-4 shadow-sm">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          현재 단계: {currentStep.label}
-                        </p>
+                        <p className="text-sm font-semibold text-foreground">현재 단계: {currentStep.label}</p>
                         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                          수정한 내용은 단계 이동 중에도 유지됩니다. 최종 저장
-                          전 옵션/재고/이미지를 함께 확인하세요.
+                          수정한 내용은 단계 이동 중에도 유지됩니다. 최종 저장 전 옵션/재고/이미지를 함께 확인하세요.
                         </p>
                       </div>
-                      <Badge
-                        variant={readyToSubmit ? "success" : "outline"}
-                        className="w-fit"
-                      >
+                      <Badge variant={readyToSubmit ? "success" : "outline"} className="w-fit">
                         {readyToSubmit ? "수정 저장 준비 완료" : "수정 중"}
                       </Badge>
                     </div>
                   </div>
 
                   <div className="rounded-xl border border-border/60 bg-muted/20 p-4 shadow-sm">
-                    <p className="text-sm font-semibold text-foreground">
-                      현재 입력 요약
-                    </p>
+                    <p className="text-sm font-semibold text-foreground">현재 입력 요약</p>
                     <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                       <p>색상 옵션: {colorInventories.length}개</p>
                       <p>게이지 조합: {variantInventories.length}개</p>
-                      <p>
-                        총 재고: {totalGaugeStock.toLocaleString("ko-KR")}개
-                      </p>
+                      <p>총 재고: {totalGaugeStock.toLocaleString("ko-KR")}개</p>
                       <p>
                         이미지: {images.length} / {MAX_PRODUCT_IMAGE_COUNT}장
                       </p>
@@ -1417,8 +1192,7 @@ export default function ProductEditClient({
                             <FormFieldGroup columns={2}>
                               <div className="space-y-2">
                                 <Label htmlFor="string-name">
-                                  스트링명{" "}
-                                  <span className="text-destructive">*</span>
+                                  스트링명 <span className="text-destructive">*</span>
                                 </Label>
                                 <Input
                                   id="string-name"
@@ -1434,9 +1208,7 @@ export default function ProductEditClient({
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label htmlFor="string-sku">
-                                  SKU (재고 관리 코드)
-                                </Label>
+                                <Label htmlFor="string-sku">SKU (재고 관리 코드)</Label>
                                 <Input
                                   id="string-sku"
                                   placeholder="예: STR-LUX-001"
@@ -1453,17 +1225,13 @@ export default function ProductEditClient({
                             </FormFieldGroup>
 
                             <div className="space-y-2">
-                              <Label htmlFor="string-search-keywords">
-                                검색 키워드 (쉼표로 구분)
-                              </Label>
+                              <Label htmlFor="string-search-keywords">검색 키워드 (쉼표로 구분)</Label>
                               <div className="flex flex-col gap-2 md:flex-row md:items-center">
                                 <Input
                                   id="string-search-keywords"
                                   placeholder="예: 챔피언, 챔피언스 초이스, 듀오, ALU"
                                   value={searchKeywordsInput}
-                                  onChange={(e) =>
-                                    setSearchKeywordsInput(e.target.value)
-                                  }
+                                  onChange={(e) => setSearchKeywordsInput(e.target.value)}
                                   className="h-11"
                                 />
                                 <Button
@@ -1477,15 +1245,12 @@ export default function ProductEditClient({
                                 </Button>
                               </div>
                               <p className="text-xs text-muted-foreground">
-                                검색창에서 이 키워드들로도 상품을 찾을 수
-                                있습니다
+                                검색창에서 이 키워드들로도 상품을 찾을 수 있습니다
                               </p>
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="string-short-description">
-                                짧은 설명
-                              </Label>
+                              <Label htmlFor="string-short-description">짧은 설명</Label>
                               <Textarea
                                 id="string-short-description"
                                 placeholder="스트링에 대한 짧은 설명을 입력하세요"
@@ -1502,8 +1267,7 @@ export default function ProductEditClient({
 
                             <div className="space-y-2">
                               <Label htmlFor="string-description">
-                                상세 설명{" "}
-                                <span className="text-destructive">*</span>
+                                상세 설명 <span className="text-destructive">*</span>
                               </Label>
                               <Textarea
                                 id="string-description"
@@ -1531,14 +1295,9 @@ export default function ProductEditClient({
                               <Label htmlFor="string-brand">브랜드</Label>
                               <Select
                                 value={basicInfo.brand}
-                                onValueChange={(value) =>
-                                  setBasicInfo({ ...basicInfo, brand: value })
-                                }
+                                onValueChange={(value) => setBasicInfo({ ...basicInfo, brand: value })}
                               >
-                                <SelectTrigger
-                                  id="string-brand"
-                                  className="h-11"
-                                >
+                                <SelectTrigger id="string-brand" className="h-11">
                                   <SelectValue placeholder="브랜드 선택" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -1561,18 +1320,12 @@ export default function ProductEditClient({
                                   })
                                 }
                               >
-                                <SelectTrigger
-                                  id="string-material"
-                                  className="h-11"
-                                >
+                                <SelectTrigger id="string-material" className="h-11">
                                   <SelectValue placeholder="소재 선택" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {materials.map((material) => (
-                                    <SelectItem
-                                      key={material.id}
-                                      value={material.id}
-                                    >
+                                    <SelectItem key={material.id} value={material.id}>
                                       {material.name}
                                     </SelectItem>
                                   ))}
@@ -1580,19 +1333,12 @@ export default function ProductEditClient({
                               </Select>
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="string-color">
-                                대표 색상(목록/필터용)
-                              </Label>
+                              <Label htmlFor="string-color">대표 색상(목록/필터용)</Label>
                               <Select
                                 value={basicInfo.color}
-                                onValueChange={(value) =>
-                                  setBasicInfo({ ...basicInfo, color: value })
-                                }
+                                onValueChange={(value) => setBasicInfo({ ...basicInfo, color: value })}
                               >
-                                <SelectTrigger
-                                  id="string-color"
-                                  className="h-11"
-                                >
+                                <SelectTrigger id="string-color" className="h-11">
                                   <SelectValue placeholder="색상 선택" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -1604,31 +1350,23 @@ export default function ProductEditClient({
                                 </SelectContent>
                               </Select>
                               <p className="text-xs text-muted-foreground">
-                                실제 구매 색상은 구매 옵션에서 색상별로
-                                관리됩니다.
+                                실제 구매 색상은 구매 옵션에서 색상별로 관리됩니다.
                               </p>
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="string-length">길이 (m)</Label>
                               <Select
                                 value={basicInfo.length}
-                                onValueChange={(value) =>
-                                  setBasicInfo({ ...basicInfo, length: value })
-                                }
+                                onValueChange={(value) => setBasicInfo({ ...basicInfo, length: value })}
                               >
-                                <SelectTrigger
-                                  id="string-length"
-                                  className="h-11"
-                                >
+                                <SelectTrigger id="string-length" className="h-11">
                                   <SelectValue placeholder="길이 선택" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="12.2">12.2m</SelectItem>
                                   <SelectItem value="12">12m</SelectItem>
                                   <SelectItem value="11.7">11.7m</SelectItem>
-                                  <SelectItem value="6.1">
-                                    6.1m (하프셋)
-                                  </SelectItem>
+                                  <SelectItem value="6.1">6.1m (하프셋)</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
@@ -1644,9 +1382,7 @@ export default function ProductEditClient({
                             <div className="grid gap-6 md:grid-cols-2">
                               {/* Main String */}
                               <div className="space-y-4 rounded-lg border border-border/60 bg-muted/20 p-4">
-                                <h4 className="font-semibold text-foreground">
-                                  메인 (Mains)
-                                </h4>
+                                <h4 className="font-semibold text-foreground">메인 (Mains)</h4>
                                 <div className="space-y-3">
                                   <div className="space-y-1.5">
                                     <Label>브랜드</Label>
@@ -1736,9 +1472,7 @@ export default function ProductEditClient({
 
                               {/* Cross String */}
                               <div className="space-y-4 rounded-lg border border-border/60 bg-muted/20 p-4">
-                                <h4 className="font-semibold text-foreground">
-                                  크로스 (Crosses)
-                                </h4>
+                                <h4 className="font-semibold text-foreground">크로스 (Crosses)</h4>
                                 <div className="space-y-3">
                                   <div className="space-y-1.5">
                                     <Label>브랜드</Label>
@@ -1840,23 +1574,15 @@ export default function ProductEditClient({
                                 가격 <span className="text-destructive">*</span>
                               </Label>
                               <div className="relative">
-                                <Input
+                                <FormattedNumberInput
                                   id="string-regular-price"
-                                  type="text"
                                   placeholder="0"
-                                  value={basicInfo.price.toLocaleString()}
-                                  onChange={(e) => {
-                                    const raw = e.target.value.replace(
-                                      /,/g,
-                                      "",
-                                    );
-                                    const numeric = Number(raw);
-                                    if (!isNaN(numeric)) {
-                                      setBasicInfo({
-                                        ...basicInfo,
-                                        price: numeric,
-                                      });
-                                    }
+                                  value={basicInfo.price}
+                                  onValueChange={(price) => {
+                                    setBasicInfo({
+                                      ...basicInfo,
+                                      price,
+                                    });
                                   }}
                                   className="h-11 pr-8"
                                 />
@@ -1879,36 +1605,21 @@ export default function ProductEditClient({
                                       sideOffset={4}
                                       className={adminFormHintTooltipClass}
                                     >
-                                      <p>
-                                        해당 스트링을 이용한 장착 서비스 비용을
-                                        입력하세요.
-                                      </p>
+                                      <p>해당 스트링을 이용한 장착 서비스 비용을 입력하세요.</p>
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
                               </Label>
                               <div className="relative">
-                                <Input
+                                <FormattedNumberInput
                                   id="string-stringing-fee"
-                                  type="text"
                                   placeholder="0"
-                                  value={
-                                    basicInfo.mountingFee != null
-                                      ? basicInfo.mountingFee.toLocaleString()
-                                      : ""
-                                  }
-                                  onChange={(e) => {
-                                    const raw = e.target.value.replace(
-                                      /,/g,
-                                      "",
-                                    );
-                                    const numeric = Number(raw);
-                                    if (!isNaN(numeric)) {
-                                      setBasicInfo({
-                                        ...basicInfo,
-                                        mountingFee: numeric,
-                                      });
-                                    }
+                                  value={basicInfo.mountingFee ?? 0}
+                                  onValueChange={(mountingFee) => {
+                                    setBasicInfo({
+                                      ...basicInfo,
+                                      mountingFee,
+                                    });
                                   }}
                                   className="h-11 pr-8"
                                 />
@@ -1918,25 +1629,17 @@ export default function ProductEditClient({
                               </div>
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="string-shipping-fee">
-                                배송비
-                              </Label>
+                              <Label htmlFor="string-shipping-fee">배송비</Label>
                               <div className="relative">
-                                <Input
+                                <FormattedNumberInput
                                   id="string-shipping-fee"
-                                  type="number"
-                                  min={0}
-                                  step={1}
                                   placeholder="3000"
                                   value={basicInfo.shippingFee}
-                                  onChange={(e) => {
-                                    const numeric = Number(e.target.value);
-                                    if (!isNaN(numeric)) {
-                                      setBasicInfo({
-                                        ...basicInfo,
-                                        shippingFee: Math.max(0, numeric),
-                                      });
-                                    }
+                                  onValueChange={(shippingFee) => {
+                                    setBasicInfo({
+                                      ...basicInfo,
+                                      shippingFee: Math.max(0, shippingFee),
+                                    });
                                   }}
                                   className="h-11 pr-8"
                                 />
@@ -1944,9 +1647,7 @@ export default function ProductEditClient({
                                   원
                                 </span>
                               </div>
-                              <p className="text-xs text-muted-foreground">
-                                0 입력 시 무료배송
-                              </p>
+                              <p className="text-xs text-muted-foreground">0 입력 시 무료배송</p>
                             </div>
                           </FormFieldGroup>
                         </FormSection>
@@ -1963,25 +1664,19 @@ export default function ProductEditClient({
                         >
                           <div className="space-y-6">
                             <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-                              <p className="text-sm font-semibold text-foreground">
-                                구매 옵션 수정 순서
-                              </p>
+                              <p className="text-sm font-semibold text-foreground">구매 옵션 수정 순서</p>
                               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                                먼저 색상 옵션을 확인하고, 각 색상 카드 안에서
-                                판매할 게이지와 재고를 수정하세요. 품절이 아닌
-                                조합은 재고가 1개 이상이어야 저장할 수 있습니다.
+                                먼저 색상 옵션을 확인하고, 각 색상 카드 안에서 판매할 게이지와 재고를 수정하세요. 품절이
+                                아닌 조합은 재고가 1개 이상이어야 저장할 수 있습니다.
                               </p>
                             </div>
                             {shouldShowLegacyVariantGuide && (
                               <div className="flex items-start gap-3 rounded-lg border border-warning/50 bg-warning/12 p-4">
                                 <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
                                 <div className="text-sm text-foreground">
-                                  <p className="font-medium">
-                                    색상별 게이지 재고 설정 필요
-                                  </p>
+                                  <p className="font-medium">색상별 게이지 재고 설정 필요</p>
                                   <p className="text-muted-foreground">
-                                    기존 상품은 색상별 게이지 재고가 설정되어
-                                    있지 않습니다. 색상×게이지 조합별 재고를
+                                    기존 상품은 색상별 게이지 재고가 설정되어 있지 않습니다. 색상×게이지 조합별 재고를
                                     다시 입력한 뒤 저장해 주세요.
                                   </p>
                                 </div>
@@ -1990,18 +1685,13 @@ export default function ProductEditClient({
 
                             {/* Color Selection */}
                             <div className="space-y-3">
-                              <Label className="text-base font-semibold">
-                                색상 옵션
-                              </Label>
+                              <Label className="text-base font-semibold">색상 옵션</Label>
                               <p className="text-sm text-muted-foreground">
-                                사용 가능한 색상을 선택하고 색상별 게이지 조합
-                                재고를 설정하세요.
+                                사용 가능한 색상을 선택하고 색상별 게이지 조합 재고를 설정하세요.
                               </p>
                               <div className="flex flex-wrap gap-2">
                                 {colors.map((color) => {
-                                  const selected = colorInventories.some(
-                                    (row) => row.value === color.id,
-                                  );
+                                  const selected = colorInventories.some((row) => row.value === color.id);
                                   return (
                                     <Button
                                       key={color.id}
@@ -2024,8 +1714,7 @@ export default function ProductEditClient({
                                       }}
                                       className={cn(
                                         "gap-2",
-                                        selected &&
-                                          "border-border/70 bg-muted/50 text-foreground",
+                                        selected && "border-border/70 bg-muted/50 text-foreground",
                                       )}
                                     >
                                       {color.hex && (
@@ -2034,9 +1723,7 @@ export default function ProductEditClient({
                                           style={{ backgroundColor: color.hex }}
                                         />
                                       )}
-                                      {selected
-                                        ? `${color.name} (추가됨)`
-                                        : color.name}
+                                      {selected ? `${color.name} (추가됨)` : color.name}
                                     </Button>
                                   );
                                 })}
@@ -2044,27 +1731,19 @@ export default function ProductEditClient({
 
                               {/* Custom Color Input */}
                               <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
-                                <Label className="mb-3 block font-medium">
-                                  색상 직접 추가
-                                </Label>
+                                <Label className="mb-3 block font-medium">색상 직접 추가</Label>
                                 <div className="flex flex-col gap-3 md:flex-row md:items-end">
                                   <div className="flex-1">
-                                    <Label className="mb-1.5 block text-xs text-muted-foreground">
-                                      색상명
-                                    </Label>
+                                    <Label className="mb-1.5 block text-xs text-muted-foreground">색상명</Label>
                                     <Input
                                       placeholder="예: 네온 옐로우"
                                       value={customColorName}
-                                      onChange={(e) =>
-                                        setCustomColorName(e.target.value)
-                                      }
+                                      onChange={(e) => setCustomColorName(e.target.value)}
                                       className="h-10"
                                     />
                                   </div>
                                   <div>
-                                    <Label className="mb-1.5 block text-xs text-muted-foreground">
-                                      색상 미리보기
-                                    </Label>
+                                    <Label className="mb-1.5 block text-xs text-muted-foreground">색상 미리보기</Label>
                                     <Input
                                       type="color"
                                       value={customColorHex}
@@ -2075,11 +1754,7 @@ export default function ProductEditClient({
                                       className="h-10 w-14 cursor-pointer p-1"
                                     />
                                   </div>
-                                  <Button
-                                    type="button"
-                                    onClick={handleAddCustomColor}
-                                    className="h-10"
-                                  >
+                                  <Button type="button" onClick={handleAddCustomColor} className="h-10">
                                     <Plus className="mr-2 h-4 w-4" />
                                     추가
                                   </Button>
@@ -2090,8 +1765,7 @@ export default function ProductEditClient({
                                 <div className="rounded-lg border border-dashed border-border/60 bg-muted/10 p-6 text-center">
                                   <Palette className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
                                   <p className="text-sm text-muted-foreground">
-                                    선택된 색상이 없습니다. 위 색상 목록에서
-                                    사용할 색상을 선택하세요.
+                                    선택된 색상이 없습니다. 위 색상 목록에서 사용할 색상을 선택하세요.
                                   </p>
                                 </div>
                               )}
@@ -2099,11 +1773,8 @@ export default function ProductEditClient({
                               {/* Color Cards */}
                               <div className="space-y-4">
                                 {colorInventories.map((row) => {
-                                  const colorMeta = colors.find(
-                                    (c) => c.id === row.value,
-                                  );
-                                  const resolvedHex =
-                                    colorMeta?.hex ?? row.colorHex ?? "";
+                                  const colorMeta = colors.find((c) => c.id === row.value);
+                                  const resolvedHex = colorMeta?.hex ?? row.colorHex ?? "";
                                   return (
                                     <div
                                       key={row.value}
@@ -2116,23 +1787,16 @@ export default function ProductEditClient({
                                             style={
                                               resolvedHex
                                                 ? {
-                                                    backgroundColor:
-                                                      resolvedHex,
+                                                    backgroundColor: resolvedHex,
                                                   }
                                                 : undefined
                                             }
                                           />
                                           <span className="font-semibold text-foreground">
-                                            {colorMeta?.name ??
-                                              row.label ??
-                                              row.value}
+                                            {colorMeta?.name ?? row.label ?? row.value}
                                           </span>
-                                          <Badge
-                                            variant="secondary"
-                                            className="text-xs"
-                                          >
-                                            재고 {getColorTotalStock(row.value)}
-                                            개
+                                          <Badge variant="secondary" className="text-xs">
+                                            재고 {getColorTotalStock(row.value)}개
                                           </Badge>
                                         </div>
                                         <Button
@@ -2171,13 +1835,9 @@ export default function ProductEditClient({
                                           )}
                                         </div>
                                         <div className="flex-1">
-                                          <Label className="mb-1 block text-sm">
-                                            색상 이미지
-                                          </Label>
+                                          <Label className="mb-1 block text-sm">색상 이미지</Label>
                                           <p className="mb-2 text-xs text-muted-foreground">
-                                            색상 이미지를 등록하면 상품 상세에서
-                                            해당 색상 선택 시 이미지가
-                                            전환됩니다.
+                                            색상 이미지를 등록하면 상품 상세에서 해당 색상 선택 시 이미지가 전환됩니다.
                                           </p>
                                           <div className="flex gap-2">
                                             <Input
@@ -2185,23 +1845,14 @@ export default function ProductEditClient({
                                               accept="image/*"
                                               className="hidden"
                                               id={`edit-color-image-${row.value}`}
-                                              onChange={(e) =>
-                                                void handleUploadColorImage(
-                                                  row.value,
-                                                  e,
-                                                )
-                                              }
+                                              onChange={(e) => void handleUploadColorImage(row.value, e)}
                                             />
                                             <Button
                                               type="button"
                                               variant="outline"
                                               size="sm"
                                               onClick={() =>
-                                                document
-                                                  .getElementById(
-                                                    `edit-color-image-${row.value}`,
-                                                  )
-                                                  ?.click()
+                                                document.getElementById(`edit-color-image-${row.value}`)?.click()
                                               }
                                             >
                                               <Upload className="mr-1 h-4 w-4" />
@@ -2215,22 +1866,18 @@ export default function ProductEditClient({
                                                 onClick={() => {
                                                   setColorInventories((prev) =>
                                                     prev.map((item) =>
-                                                      item.value === row.value
-                                                        ? { ...item, image: "" }
-                                                        : item,
+                                                      item.value === row.value ? { ...item, image: "" } : item,
                                                     ),
                                                   );
-                                                  setVariantInventories(
-                                                    (prev) =>
-                                                      prev.map((variant) =>
-                                                        variant.colorValue ===
-                                                        row.value
-                                                          ? {
-                                                              ...variant,
-                                                              colorImage: "",
-                                                            }
-                                                          : variant,
-                                                      ),
+                                                  setVariantInventories((prev) =>
+                                                    prev.map((variant) =>
+                                                      variant.colorValue === row.value
+                                                        ? {
+                                                            ...variant,
+                                                            colorImage: "",
+                                                          }
+                                                        : variant,
+                                                    ),
                                                   );
                                                 }}
                                               >
@@ -2248,22 +1895,15 @@ export default function ProductEditClient({
                                       <div className="space-y-3">
                                         <div className="flex flex-col gap-2 md:flex-row">
                                           <div className="flex-1">
-                                            <Label className="mb-1 block text-sm">
-                                              게이지 추가
-                                            </Label>
+                                            <Label className="mb-1 block text-sm">게이지 추가</Label>
                                             <Input
                                               placeholder="예: 1.25 (mm는 자동으로 붙습니다)"
-                                              value={
-                                                gaugeInputsByColor[row.value] ??
-                                                ""
-                                              }
+                                              value={gaugeInputsByColor[row.value] ?? ""}
                                               onChange={(e) =>
-                                                setGaugeInputsByColor(
-                                                  (prev) => ({
-                                                    ...prev,
-                                                    [row.value]: e.target.value,
-                                                  }),
-                                                )
+                                                setGaugeInputsByColor((prev) => ({
+                                                  ...prev,
+                                                  [row.value]: e.target.value,
+                                                }))
                                               }
                                               className="h-10"
                                             />
@@ -2271,9 +1911,7 @@ export default function ProductEditClient({
                                           <div className="flex items-end">
                                             <Button
                                               type="button"
-                                              onClick={() =>
-                                                addVariantForColor(row)
-                                              }
+                                              onClick={() => addVariantForColor(row)}
                                               className="h-10"
                                             >
                                               <Plus className="mr-1 h-4 w-4" />
@@ -2283,21 +1921,15 @@ export default function ProductEditClient({
                                         </div>
 
                                         {/* Variant List */}
-                                        {variantInventories.filter(
-                                          (variant) =>
-                                            variant.colorValue === row.value,
-                                        ).length === 0 ? (
+                                        {variantInventories.filter((variant) => variant.colorValue === row.value)
+                                          .length === 0 ? (
                                           <p className="text-sm text-muted-foreground">
                                             아직 추가된 게이지가 없습니다.
                                           </p>
                                         ) : (
                                           <div className="space-y-2">
                                             {variantInventories
-                                              .filter(
-                                                (variant) =>
-                                                  variant.colorValue ===
-                                                  row.value,
-                                              )
+                                              .filter((variant) => variant.colorValue === row.value)
                                               .map((variantRow) => (
                                                 <div
                                                   key={`${row.value}-${variantRow.gaugeValue}`}
@@ -2307,44 +1939,30 @@ export default function ProductEditClient({
                                                     variant="outline"
                                                     className="shrink-0 self-start md:self-center"
                                                   >
-                                                    {variantRow.gaugeLabel ??
-                                                      variantRow.gaugeValue}
+                                                    {variantRow.gaugeLabel ?? variantRow.gaugeValue}
                                                   </Badge>
                                                   <div className="flex flex-1 flex-wrap items-center gap-3">
                                                     <div className="flex items-center gap-2">
-                                                      <Label className="text-xs text-muted-foreground">
-                                                        재고
-                                                      </Label>
+                                                      <Label className="text-xs text-muted-foreground">재고</Label>
                                                       <Input
                                                         type="number"
                                                         min={0}
                                                         className="h-8 w-20"
-                                                        value={
-                                                          variantRow.stock ?? 0
-                                                        }
+                                                        value={variantRow.stock ?? 0}
                                                         onChange={(e) =>
                                                           updateVariantStock(
                                                             row.value,
                                                             variantRow.gaugeValue,
-                                                            Number(
-                                                              e.target.value,
-                                                            ),
+                                                            Number(e.target.value),
                                                           )
                                                         }
                                                       />
-                                                      <span className="text-xs text-muted-foreground">
-                                                        개
-                                                      </span>
+                                                      <span className="text-xs text-muted-foreground">개</span>
                                                     </div>
                                                     <label className="flex items-center gap-1.5 text-sm">
                                                       <Checkbox
-                                                        checked={
-                                                          variantRow.isSoldOut ??
-                                                          true
-                                                        }
-                                                        onCheckedChange={(
-                                                          checked,
-                                                        ) =>
+                                                        checked={variantRow.isSoldOut ?? true}
+                                                        onCheckedChange={(checked) =>
                                                           updateVariantSoldOut(
                                                             row.value,
                                                             variantRow.gaugeValue,
@@ -2356,13 +1974,8 @@ export default function ProductEditClient({
                                                     </label>
                                                     <label className="flex items-center gap-1.5 text-sm">
                                                       <Checkbox
-                                                        checked={
-                                                          variantRow.showWhenSoldOut !==
-                                                          false
-                                                        }
-                                                        onCheckedChange={(
-                                                          checked,
-                                                        ) =>
+                                                        checked={variantRow.showWhenSoldOut !== false}
+                                                        onCheckedChange={(checked) =>
                                                           updateVariantShowWhenSoldOut(
                                                             row.value,
                                                             variantRow.gaugeValue,
@@ -2378,10 +1991,7 @@ export default function ProductEditClient({
                                                     variant="ghost"
                                                     size="sm"
                                                     onClick={() =>
-                                                      removeVariantForColor(
-                                                        row.value,
-                                                        variantRow.gaugeValue,
-                                                      )
+                                                      removeVariantForColor(row.value, variantRow.gaugeValue)
                                                     }
                                                     className="shrink-0 text-destructive hover:bg-destructive/10"
                                                   >
@@ -2401,12 +2011,9 @@ export default function ProductEditClient({
                             {/* Gauge Summary */}
                             {gaugeSummaryRows.length > 0 && (
                               <div className="space-y-3">
-                                <Label className="text-base font-semibold">
-                                  전체 사용 게이지 요약
-                                </Label>
+                                <Label className="text-base font-semibold">전체 사용 게이지 요약</Label>
                                 <p className="text-sm text-muted-foreground">
-                                  실제 추가/삭제는 각 색상 카드 안에서
-                                  관리됩니다.
+                                  실제 추가/삭제는 각 색상 카드 안에서 관리됩니다.
                                 </p>
                                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                   {gaugeSummaryRows.map((gaugeRow) => (
@@ -2414,13 +2021,8 @@ export default function ProductEditClient({
                                       key={gaugeRow.value}
                                       className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 p-3"
                                     >
-                                      <span className="font-medium">
-                                        {gaugeRow.label ?? gaugeRow.value}
-                                      </span>
-                                      <Badge variant="secondary">
-                                        총 {getGaugeTotalStock(gaugeRow.value)}
-                                        개
-                                      </Badge>
+                                      <span className="font-medium">{gaugeRow.label ?? gaugeRow.value}</span>
+                                      <Badge variant="secondary">총 {getGaugeTotalStock(gaugeRow.value)}개</Badge>
                                     </div>
                                   ))}
                                 </div>
@@ -2445,41 +2047,31 @@ export default function ProductEditClient({
                                 id="power-rating"
                                 label="반발력"
                                 value={features.power}
-                                onChange={(v) =>
-                                  setFeatures({ ...features, power: v })
-                                }
+                                onChange={(v) => setFeatures({ ...features, power: v })}
                               />
                               <PerformanceSlider
                                 id="control-rating"
                                 label="컨트롤"
                                 value={features.control}
-                                onChange={(v) =>
-                                  setFeatures({ ...features, control: v })
-                                }
+                                onChange={(v) => setFeatures({ ...features, control: v })}
                               />
                               <PerformanceSlider
                                 id="spin-rating"
                                 label="스핀"
                                 value={features.spin}
-                                onChange={(v) =>
-                                  setFeatures({ ...features, spin: v })
-                                }
+                                onChange={(v) => setFeatures({ ...features, spin: v })}
                               />
                               <PerformanceSlider
                                 id="durability-rating"
                                 label="내구성"
                                 value={features.durability}
-                                onChange={(v) =>
-                                  setFeatures({ ...features, durability: v })
-                                }
+                                onChange={(v) => setFeatures({ ...features, durability: v })}
                               />
                               <PerformanceSlider
                                 id="comfort-rating"
                                 label="편안함"
                                 value={features.comfort}
-                                onChange={(v) =>
-                                  setFeatures({ ...features, comfort: v })
-                                }
+                                onChange={(v) => setFeatures({ ...features, comfort: v })}
                               />
                             </div>
                             <div className="lg:pl-4">
@@ -2495,9 +2087,7 @@ export default function ProductEditClient({
                         >
                           <div className="grid gap-6 md:grid-cols-2">
                             <div className="space-y-4">
-                              <h4 className="font-semibold text-foreground">
-                                플레이어 레벨
-                              </h4>
+                              <h4 className="font-semibold text-foreground">플레이어 레벨</h4>
                               <div className="space-y-3">
                                 {[
                                   {
@@ -2530,10 +2120,7 @@ export default function ProductEditClient({
                                         })
                                       }
                                     />
-                                    <Label
-                                      htmlFor={`player-${item.id}`}
-                                      className="flex-1 cursor-pointer"
-                                    >
+                                    <Label htmlFor={`player-${item.id}`} className="flex-1 cursor-pointer">
                                       {item.label}
                                     </Label>
                                   </div>
@@ -2542,9 +2129,7 @@ export default function ProductEditClient({
                             </div>
 
                             <div className="space-y-4">
-                              <h4 className="font-semibold text-foreground">
-                                플레이 스타일
-                              </h4>
+                              <h4 className="font-semibold text-foreground">플레이 스타일</h4>
                               <div className="space-y-3">
                                 {[
                                   {
@@ -2582,10 +2167,7 @@ export default function ProductEditClient({
                                         })
                                       }
                                     />
-                                    <Label
-                                      htmlFor={`style-${item.id}`}
-                                      className="flex-1 cursor-pointer"
-                                    >
+                                    <Label htmlFor={`style-${item.id}`} className="flex-1 cursor-pointer">
                                       {item.label}
                                     </Label>
                                   </div>
@@ -2605,9 +2187,7 @@ export default function ProductEditClient({
                             placeholder="스트링의 추가 특성이나 장점을 입력하세요"
                             className="min-h-[120px] resize-none"
                             value={additionalFeatures}
-                            onChange={(e) =>
-                              setAdditionalFeatures(e.target.value)
-                            }
+                            onChange={(e) => setAdditionalFeatures(e.target.value)}
                           />
                         </FormSection>
                       </div>
@@ -2627,16 +2207,13 @@ export default function ProductEditClient({
                                 재고 수량은 구매 옵션에서 자동 합산됩니다
                               </p>
                               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                                색상·게이지 조합별 재고가 전체 재고로
-                                합산됩니다. 이 단계에서는 재고 부족 기준,
+                                색상·게이지 조합별 재고가 전체 재고로 합산됩니다. 이 단계에서는 재고 부족 기준,
                                 추천/신상품/할인 노출 여부를 확인하세요.
                               </p>
                             </div>
                             <FormFieldGroup columns={2}>
                               <div className="space-y-2">
-                                <Label htmlFor="string-stock">
-                                  총 재고 수량
-                                </Label>
+                                <Label htmlFor="string-stock">총 재고 수량</Label>
                                 <Input
                                   id="string-stock"
                                   type="text"
@@ -2650,19 +2227,14 @@ export default function ProductEditClient({
                                 </p>
                               </div>
                               <div className="space-y-2">
-                                <Label htmlFor="string-low-stock">
-                                  재고 부족 알림 기준
-                                </Label>
+                                <Label htmlFor="string-low-stock">재고 부족 알림 기준</Label>
                                 <Input
                                   id="string-low-stock"
                                   type="text"
                                   placeholder="0"
                                   value={inventory.lowStock.toLocaleString()}
                                   onChange={(e) => {
-                                    const raw = e.target.value.replace(
-                                      /,/g,
-                                      "",
-                                    );
+                                    const raw = e.target.value.replace(/,/g, "");
                                     const numeric = Number(raw);
                                     if (!isNaN(numeric)) {
                                       setInventory({
@@ -2680,9 +2252,7 @@ export default function ProductEditClient({
                               <Label>재고 상태</Label>
                               <RadioGroup
                                 value={inventory.status}
-                                onValueChange={(value) =>
-                                  setInventory({ ...inventory, status: value })
-                                }
+                                onValueChange={(value) => setInventory({ ...inventory, status: value })}
                                 className="flex flex-wrap gap-4"
                               >
                                 {[
@@ -2690,18 +2260,9 @@ export default function ProductEditClient({
                                   { value: "outofstock", label: "품절" },
                                   { value: "backorder", label: "입고 예정" },
                                 ].map((item) => (
-                                  <div
-                                    key={item.value}
-                                    className="flex items-center gap-2"
-                                  >
-                                    <RadioGroupItem
-                                      value={item.value}
-                                      id={item.value}
-                                    />
-                                    <Label
-                                      htmlFor={item.value}
-                                      className="cursor-pointer"
-                                    >
+                                  <div key={item.value} className="flex items-center gap-2">
+                                    <RadioGroupItem value={item.value} id={item.value} />
+                                    <Label htmlFor={item.value} className="cursor-pointer">
                                       {item.label}
                                     </Label>
                                   </div>
@@ -2717,10 +2278,7 @@ export default function ProductEditClient({
                                   onCheckedChange={setShowGaugeStockToUser}
                                 />
                                 <div>
-                                  <Label
-                                    htmlFor="show-gauge-stock"
-                                    className="cursor-pointer"
-                                  >
+                                  <Label htmlFor="show-gauge-stock" className="cursor-pointer">
                                     사용자에게 게이지별 재고 수량 노출
                                   </Label>
                                 </div>
@@ -2737,15 +2295,10 @@ export default function ProductEditClient({
                                   }
                                 />
                                 <div>
-                                  <Label
-                                    htmlFor="string-manage-stock"
-                                    className="cursor-pointer"
-                                  >
+                                  <Label htmlFor="string-manage-stock" className="cursor-pointer">
                                     재고 관리 사용
                                   </Label>
-                                  <p className="text-xs text-muted-foreground">
-                                    판매 시 재고 자동 감소
-                                  </p>
+                                  <p className="text-xs text-muted-foreground">판매 시 재고 자동 감소</p>
                                 </div>
                               </div>
                               <div className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/10 p-4">
@@ -2760,15 +2313,10 @@ export default function ProductEditClient({
                                   }
                                 />
                                 <div>
-                                  <Label
-                                    htmlFor="string-backorders"
-                                    className="cursor-pointer"
-                                  >
+                                  <Label htmlFor="string-backorders" className="cursor-pointer">
                                     품절 시 주문 허용
                                   </Label>
-                                  <p className="text-xs text-muted-foreground">
-                                    재고가 없어도 주문 가능
-                                  </p>
+                                  <p className="text-xs text-muted-foreground">재고가 없어도 주문 가능</p>
                                 </div>
                               </div>
                             </div>
@@ -2793,10 +2341,7 @@ export default function ProductEditClient({
                                     })
                                   }
                                 />
-                                <Label
-                                  htmlFor="string-featured"
-                                  className="cursor-pointer"
-                                >
+                                <Label htmlFor="string-featured" className="cursor-pointer">
                                   추천 상품
                                 </Label>
                               </div>
@@ -2811,10 +2356,7 @@ export default function ProductEditClient({
                                     })
                                   }
                                 />
-                                <Label
-                                  htmlFor="string-new"
-                                  className="cursor-pointer"
-                                >
+                                <Label htmlFor="string-new" className="cursor-pointer">
                                   신상품
                                 </Label>
                               </div>
@@ -2829,30 +2371,20 @@ export default function ProductEditClient({
                                     })
                                   }
                                 />
-                                <Label
-                                  htmlFor="string-sale"
-                                  className="cursor-pointer"
-                                >
+                                <Label htmlFor="string-sale" className="cursor-pointer">
                                   할인 상품
                                 </Label>
                               </div>
                               <div className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/10 p-4 md:col-span-3">
-                                <Switch
-                                  id="string-visible"
-                                  checked={isVisible}
-                                  onCheckedChange={setIsVisible}
-                                />
+                                <Switch id="string-visible" checked={isVisible} onCheckedChange={setIsVisible} />
                                 <div className="space-y-1">
-                                  <Label
-                                    htmlFor="string-visible"
-                                    className="cursor-pointer"
-                                  >
+                                  <Label htmlFor="string-visible" className="cursor-pointer">
                                     일반 사용자에게 상품 노출
                                   </Label>
                                   {!isVisible && (
                                     <p className="text-xs text-muted-foreground">
-                                      끄면 관리자 화면에서만 보이며, 일반 회원의
-                                      목록/상세/추천/결제 경로에서 차단됩니다.
+                                      끄면 관리자 화면에서만 보이며, 일반 회원의 목록/상세/추천/결제 경로에서
+                                      차단됩니다.
                                     </p>
                                   )}
                                 </div>
@@ -2861,27 +2393,16 @@ export default function ProductEditClient({
 
                             {inventory.isSale && (
                               <div className="space-y-2">
-                                <Label htmlFor="string-sale-price">
-                                  할인가
-                                </Label>
+                                <Label htmlFor="string-sale-price">할인가</Label>
                                 <div className="relative max-w-xs">
-                                  <Input
+                                  <FormattedNumberInput
                                     id="string-sale-price"
-                                    type="text"
-                                    value={inventory.salePrice.toLocaleString()}
-                                    onChange={(e) => {
-                                      const rawValue = e.target.value.replace(
-                                        /,/g,
-                                        "",
-                                      );
-                                      const numeric = Number(rawValue);
-
-                                      if (!isNaN(numeric)) {
-                                        setInventory({
-                                          ...inventory,
-                                          salePrice: numeric,
-                                        });
-                                      }
+                                    value={inventory.salePrice}
+                                    onValueChange={(salePrice) => {
+                                      setInventory({
+                                        ...inventory,
+                                        salePrice,
+                                      });
                                     }}
                                     placeholder="0"
                                     className="h-11 pr-8"
@@ -2912,9 +2433,7 @@ export default function ProductEditClient({
                                   key={index}
                                   className={cn(
                                     "relative aspect-square overflow-hidden rounded-lg border",
-                                    index === 0
-                                      ? "ring-2 ring-primary"
-                                      : "bg-muted/40",
+                                    index === 0 ? "ring-2 ring-primary" : "bg-muted/40",
                                   )}
                                 >
                                   <img
@@ -2935,11 +2454,7 @@ export default function ProductEditClient({
                                   </Button>
 
                                   {/* Primary badge */}
-                                  {index === 0 && (
-                                    <Badge className="absolute left-1 top-1">
-                                      대표
-                                    </Badge>
-                                  )}
+                                  {index === 0 && <Badge className="absolute left-1 top-1">대표</Badge>}
 
                                   {/* Set as primary button */}
                                   {index !== 0 && (
@@ -2960,8 +2475,7 @@ export default function ProductEditClient({
                               <label
                                 className={cn(
                                   "flex aspect-square cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 transition-colors hover:bg-muted/40",
-                                  isMaxReached &&
-                                    "pointer-events-none opacity-50",
+                                  isMaxReached && "pointer-events-none opacity-50",
                                 )}
                               >
                                 {uploading ? (
@@ -2969,21 +2483,14 @@ export default function ProductEditClient({
                                 ) : (
                                   <Upload className="mb-2 h-6 w-6 text-muted-foreground" />
                                 )}
-                                <span className="text-sm text-muted-foreground">
-                                  이미지 추가
-                                </span>
+                                <span className="text-sm text-muted-foreground">이미지 추가</span>
                                 <input
                                   type="file"
                                   accept="image/*"
                                   multiple
                                   onChange={handleAddImage}
                                   className="hidden"
-                                  disabled={
-                                    isMaxReached ||
-                                    uploading ||
-                                    submitting ||
-                                    deleting
-                                  }
+                                  disabled={isMaxReached || uploading || submitting || deleting}
                                 />
                               </label>
                             </div>
@@ -2996,10 +2503,7 @@ export default function ProductEditClient({
                                     최대 4장까지 업로드 가능합니다.
                                   </TooltipTrigger>
                                   <TooltipContent>
-                                    <p>
-                                      최적의 표시를 위해 1000x1000 픽셀 이상의
-                                      정사각형 이미지를 사용하세요.
-                                    </p>
+                                    <p>최적의 표시를 위해 1000x1000 픽셀 이상의 정사각형 이미지를 사용하세요.</p>
                                   </TooltipContent>
                                 </Tooltip>
                               </TooltipProvider>
@@ -3009,17 +2513,12 @@ export default function ProductEditClient({
                         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
                           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                              <p className="text-base font-semibold text-foreground">
-                                수정 저장 전 체크리스트
-                              </p>
+                              <p className="text-base font-semibold text-foreground">수정 저장 전 체크리스트</p>
                               <p className="mt-1 text-sm text-muted-foreground">
-                                아래 항목이 모두 완료되어야 상품 수정이 안전하게
-                                저장됩니다.
+                                아래 항목이 모두 완료되어야 상품 수정이 안전하게 저장됩니다.
                               </p>
                             </div>
-                            <Badge
-                              variant={readyToSubmit ? "success" : "outline"}
-                            >
+                            <Badge variant={readyToSubmit ? "success" : "outline"}>
                               {readyToSubmit ? "수정 가능" : "확인 필요"}
                             </Badge>
                           </div>
@@ -3030,25 +2529,16 @@ export default function ProductEditClient({
                                 key={item.label}
                                 className={cn(
                                   "rounded-lg border px-3 py-2",
-                                  item.done
-                                    ? "border-primary/30 bg-primary/5"
-                                    : "border-warning/30 bg-warning/10",
+                                  item.done ? "border-primary/30 bg-primary/5" : "border-warning/30 bg-warning/10",
                                 )}
                               >
                                 <div className="flex items-center justify-between gap-2">
-                                  <p className="text-sm font-medium text-foreground">
-                                    {item.label}
-                                  </p>
-                                  <Badge
-                                    variant={item.done ? "success" : "outline"}
-                                    className="shrink-0"
-                                  >
+                                  <p className="text-sm font-medium text-foreground">{item.label}</p>
+                                  <Badge variant={item.done ? "success" : "outline"} className="shrink-0">
                                     {item.done ? "완료" : "확인필요"}
                                   </Badge>
                                 </div>
-                                <p className="mt-1 text-xs text-muted-foreground">
-                                  {item.description}
-                                </p>
+                                <p className="mt-1 text-xs text-muted-foreground">{item.description}</p>
                               </div>
                             ))}
                           </div>
@@ -3062,12 +2552,8 @@ export default function ProductEditClient({
                     <ProductPreviewCard
                       basicInfo={{
                         name: basicInfo.name,
-                        brand:
-                          brands.find((b) => b.id === basicInfo.brand)?.name ??
-                          basicInfo.brand,
-                        material:
-                          materials.find((m) => m.id === basicInfo.material)
-                            ?.name ?? basicInfo.material,
+                        brand: brands.find((b) => b.id === basicInfo.brand)?.name ?? basicInfo.brand,
+                        material: materials.find((m) => m.id === basicInfo.material)?.name ?? basicInfo.material,
                         price: basicInfo.price,
                         shortDescription: basicInfo.shortDescription,
                       }}
