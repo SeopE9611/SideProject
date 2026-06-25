@@ -1,3 +1,5 @@
+import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-policy";
+import { redirect } from "next/navigation";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +13,10 @@ export const metadata = {
 };
 
 export default function BrandBoardPage() {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    redirect("/board?closed=community");
+  }
+
   return (
     <div className="min-h-screen bg-muted/30">
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10 space-y-8">

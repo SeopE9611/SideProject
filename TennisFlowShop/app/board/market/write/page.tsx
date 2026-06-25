@@ -1,3 +1,4 @@
+import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-policy";
 import FreeBoardWriteClient from "@/app/board/market/_components/FreeBoardWriteClient";
 import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { redirect } from "next/navigation";
@@ -9,6 +10,10 @@ export const metadata = {
 };
 // 서버 컴포넌트에서 로그인 여부를 먼저 확인
 export default async function FreeBoardWritePage() {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    redirect("/board?closed=community");
+  }
+
   const user = await getCurrentUser();
 
   // 비회원이면 로그인 페이지로 보냄

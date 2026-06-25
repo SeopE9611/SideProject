@@ -32,6 +32,7 @@ import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { communityBoardClosedResponse, isClosedCommunityType } from "@/lib/community/community-board-policy";
 
 const COMMUNITY_KIND_VALUES = ["free", "market", "gear", "brand"] as const;
 type CommunityKindParam = (typeof COMMUNITY_KIND_VALUES)[number];
@@ -287,6 +288,10 @@ export async function GET(req: NextRequest) {
   const type: BoardType = typeParam === "qna" ? "qna" : "notice";
 
   const communityKind = parseCommunityKindParam(kindParam);
+
+  if (isClosedCommunityType(kindParam) || isClosedCommunityType(typeParam) || isClosedCommunityType(rawCategory)) {
+    return communityBoardClosedResponse();
+  }
 
   if (communityKind) {
     const db = await getDb();
@@ -568,6 +573,10 @@ export async function POST(req: NextRequest) {
     );
   }
   const body = parsed.data;
+
+  if (isClosedCommunityType(body.type) || isClosedCommunityType(body.category)) {
+    return communityBoardClosedResponse();
+  }
 
   if (body.type === "free" || body.type === "market" || body.type === "gear") {
     const db = await getDb();

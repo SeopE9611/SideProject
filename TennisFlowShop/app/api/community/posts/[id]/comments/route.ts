@@ -13,6 +13,7 @@ import {
 } from "@/lib/community-display-name";
 import type { CommunityComment } from "@/lib/types/community";
 import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from "@/lib/sanitize";
+import { COMMUNITY_BOARDS_ENABLED, communityBoardClosedResponse } from "@/lib/community/community-board-policy";
 
 // -------------------------- 유틸: 인증/작성자 이름 ---------------------------
 
@@ -66,6 +67,9 @@ function getTimeValue(value: unknown) {
 // ----------------------------- GET: 댓글 목록 -------------------------------
 
 export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    return communityBoardClosedResponse();
+  }
   const stop = startTimer();
   const meta = reqMeta(req);
   const { id } = await ctx.params;
@@ -220,6 +224,9 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string 
 // ----------------------------- POST: 댓글 작성 ------------------------------
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    return communityBoardClosedResponse();
+  }
   const csrf = verifyCommunityCsrf(req);
   if (!csrf.ok) {
     return csrf.response;

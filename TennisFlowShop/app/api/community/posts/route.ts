@@ -22,6 +22,7 @@ import {
   getValidCommunityUserObjectIds,
   resolveCommunityDisplayName,
 } from "@/lib/community-display-name";
+import { COMMUNITY_BOARDS_ENABLED, communityBoardClosedResponse } from "@/lib/community/community-board-policy";
 import type {
   AccessTokenPayload,
   CommunityListResponseDto,
@@ -120,6 +121,9 @@ function findFirstInvalidAssetUrl(input: {
 
 // 커뮤니티 게시글 리스트 조회
 export async function GET(req: NextRequest) {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    return communityBoardClosedResponse();
+  }
   const stop = startTimer();
   const meta = reqMeta(req);
   const db = await getDb();
@@ -261,6 +265,9 @@ export async function GET(req: NextRequest) {
  *   (추후 비회원/닉네임 기반 익명 작성 허용도 확장 가능)
  */
 export async function POST(req: NextRequest) {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    return communityBoardClosedResponse();
+  }
   const csrf = verifyCommunityCsrf(req);
   if (!csrf.ok) {
     return csrf.response;

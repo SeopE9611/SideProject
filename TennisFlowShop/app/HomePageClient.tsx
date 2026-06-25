@@ -26,7 +26,6 @@ import { useRouter } from "next/navigation";
 import { MdSportsTennis } from "react-icons/md";
 
 const HomeNoticePreview = dynamic(() => import("@/components/HomeNoticePreview"));
-const HomeMarketPreview = dynamic(() => import("@/components/HomeMarketPreview"));
 
 // 타입 정의: API에서 내려오는 제품 구조 (현재 프로젝트의 응답 필드에 맞춰 정의)
 type ApiProduct = {
@@ -267,7 +266,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   const racketsSectionRef = useRef<HTMLElement | null>(null);
   const hasInitialProducts = Boolean(initialHomeData?.products);
   const hasInitialRackets = Boolean(initialHomeData?.rackets);
-  const hasInitialCommunity = Boolean(initialHomeData?.notices || initialHomeData?.marketPosts);
+  const hasInitialCommunity = Boolean(initialHomeData?.notices);
   const [shouldLoadCommunity, setShouldLoadCommunity] = useState(hasInitialCommunity);
   const [shouldLoadStrings, setShouldLoadStrings] = useState(hasInitialProducts);
   const [shouldLoadRackets, setShouldLoadRackets] = useState(hasInitialRackets);
@@ -858,34 +857,24 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </SiteContainer>
       </section>
 
-      {/* 공지사항/중고거래 섹션 */}
+      {/* 공지사항 섹션 */}
       <section ref={communitySectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <SectionHeader
-            title="소식 & 커뮤니티"
-            description="공지사항과 중고 거래 최신 소식을 확인하세요"
+            title="소식"
+            description="공지사항 최신 소식을 확인하세요"
             align="center"
             className="mb-8 bp-sm:mb-10"
           />
-          <div className="grid gap-5 bp-sm:gap-6 bp-xl:grid-cols-2">
+          <div className="mx-auto max-w-3xl">
             {shouldLoadCommunity ? (
-              <>
-                <HomeNoticePreview initialItems={initialHomeData?.notices} />
-                <HomeMarketPreview initialItems={initialHomeData?.marketPosts} />
-              </>
+              <HomeNoticePreview initialItems={initialHomeData?.notices} />
             ) : (
-              <>
-                <PublicSurface
-                  variant="muted"
-                  padding="none"
-                  className="h-[300px] animate-pulse border-border/60"
-                />
-                <PublicSurface
-                  variant="muted"
-                  padding="none"
-                  className="h-[300px] animate-pulse border-border/60"
-                />
-              </>
+              <PublicSurface
+                variant="muted"
+                padding="none"
+                className="h-[300px] animate-pulse border-border/60"
+              />
             )}
           </div>
         </SiteContainer>

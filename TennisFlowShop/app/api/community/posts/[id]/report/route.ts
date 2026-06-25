@@ -13,6 +13,7 @@ import {
   verifyCommunityCsrf,
 } from "@/lib/community/security";
 import type { CommunityReportDocument } from "@/lib/types/community-report";
+import { COMMUNITY_BOARDS_ENABLED, communityBoardClosedResponse } from "@/lib/community/community-board-policy";
 
 // 로그인된 사용자 정보 가져오기 (없으면 null)
 async function getAuthPayload() {
@@ -51,6 +52,9 @@ type ReportInput = z.infer<typeof reportSchema>;
 // POST: 게시글 신고 생성
 // -----------------------------------------------------------------------
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    return communityBoardClosedResponse();
+  }
   const stop = startTimer();
   const meta = reqMeta(req);
 

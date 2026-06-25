@@ -61,18 +61,6 @@ export const menuSections: MenuSection[] = [
         href: "/board",
       },
       {
-        name: "자유게시판",
-        href: "/board/free",
-      },
-      {
-        name: "중고거래",
-        href: "/board/market",
-      },
-      {
-        name: "장비 사용기",
-        href: "/board/gear",
-      },
-      {
         name: "리뷰",
         href: "/reviews",
       },

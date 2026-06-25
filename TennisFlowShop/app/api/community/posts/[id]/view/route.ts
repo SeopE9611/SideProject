@@ -8,6 +8,7 @@ import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { baseCookie } from "@/lib/cookieOptions";
 import {
+import { COMMUNITY_BOARDS_ENABLED, communityBoardClosedResponse } from "@/lib/community/community-board-policy";
   COMMUNITY_RATE_LIMIT_POLICIES,
   enforceCommunityRateLimit,
   verifyCommunityCsrf,
@@ -178,6 +179,9 @@ async function tryAcquireViewSlot(
 // 조회수 +1 전용 API
 // POST /api/community/posts/:id/view
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    return communityBoardClosedResponse();
+  }
   const stop = startTimer();
   const meta = reqMeta(req);
 

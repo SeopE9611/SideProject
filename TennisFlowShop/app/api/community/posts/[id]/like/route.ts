@@ -7,6 +7,7 @@ import { getDb } from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { logInfo, reqMeta, startTimer } from "@/lib/logger";
 import {
+import { COMMUNITY_BOARDS_ENABLED, communityBoardClosedResponse } from "@/lib/community/community-board-policy";
   COMMUNITY_RATE_LIMIT_POLICIES,
   enforceCommunityRateLimit,
   verifyCommunityCsrf,
@@ -34,6 +35,9 @@ async function getAuthUserId() {
 }
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    return communityBoardClosedResponse();
+  }
   const stop = startTimer();
   const meta = reqMeta(req);
 

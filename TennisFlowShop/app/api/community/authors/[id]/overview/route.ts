@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
+import { COMMUNITY_BOARDS_ENABLED, communityBoardClosedResponse } from "@/lib/community/community-board-policy";
 
 export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    return communityBoardClosedResponse();
+  }
   const { id } = await ctx.params;
 
   // ObjectId 유효성 검사
