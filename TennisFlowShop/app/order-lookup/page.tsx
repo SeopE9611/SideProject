@@ -216,7 +216,7 @@ export default function OrderLookupPage() {
     <div className="min-h-full bg-background">
       <PublicPageHero
         align="center"
-        eyebrow="Guest order lookup"
+        eyebrow="비회원 주문 조회"
         title="비회원 주문 조회"
         description="주문번호를 몰라도 주문 시 입력한 이름, 이메일, 연락처로 주문/신청 상태와 다음 해야 할 일을 확인할 수 있어요."
       >

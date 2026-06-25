@@ -12,9 +12,10 @@ import {
   MapPin,
   Shield,
   Bell,
-  Settings,
   AlertTriangle,
 } from "lucide-react";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero, PublicSurface } from "@/components/public";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -330,60 +331,32 @@ export default function ProfileClient({ user }: Props) {
   };
 
   return (
-    <div className="relative min-h-full bg-background">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-5 dark:opacity-10 bg-cross-line-pattern"
+    <div className="min-h-full bg-background">
+      <PublicPageHero
+        eyebrow="계정 설정"
+        title="회원정보 수정"
+        description="개인정보를 안전하게 관리하세요"
+        actions={
+          <Button asChild variant="outline" className="w-full gap-2 sm:w-auto">
+            <Link
+              href="/mypage"
+              onClick={(e) => {
+                if (confirmLeaveIfDirty()) return;
+                e.preventDefault();
+              }}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              마이페이지로 돌아가기
+            </Link>
+          </Button>
+        }
       />
 
-      <div className="relative overflow-hidden bg-muted/30 dark:bg-card/40 text-foreground border-b border-border">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-overlay/10"
-        ></div>
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-          <div className="absolute top-10 left-10 w-20 h-20 bg-card/10 rounded-full animate-pulse" />
-          <div className="absolute top-32 right-20 w-16 h-16 bg-card/5 rounded-full" />
-          <div className="absolute bottom-20 left-1/4 w-12 h-12 bg-card/10 rounded-full animate-pulse" />
-        </div>
-
-        <div className="relative container mx-auto px-4 py-10 md:py-16">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-4 md:gap-6 mb-6 md:mb-8">
-              <Link
-                href="/mypage"
-                className="inline-flex items-center text-foreground/80 hover:text-primary transition-colors font-medium"
-                onClick={(e) => {
-                  if (confirmLeaveIfDirty()) return;
-                  e.preventDefault();
-                }}
-              >
-                <ArrowLeft className="mr-2 h-5 w-5" />
-                마이페이지로 돌아가기
-              </Link>
-            </div>
-
-            <div className="flex items-center gap-4 md:gap-6">
-              <div className="bg-card rounded-2xl p-4 md:p-6 border border-border shadow-sm">
-                <Settings className="h-12 w-12" />
-              </div>
-              <div>
-                <h1 className="text-4xl md:text-5xl font-black mb-2 text-foreground">
-                  회원정보 수정
-                </h1>
-                <p className="text-xl text-muted-foreground">개인정보를 안전하게 관리하세요</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8 md:py-12">
-        <div className="max-w-4xl mx-auto">
+      <SiteContainer className="py-8 md:py-12">
+        <div className="mx-auto max-w-4xl">
           <Tabs defaultValue="profile" className="space-y-6 md:space-y-8">
-            <Card className="border border-border shadow-sm bg-card">
-              <CardContent className="p-6">
-                <TabsList className="grid w-full grid-cols-5 h-auto p-1 bg-muted">
+            <PublicSurface padding="sm">
+                <TabsList className="grid h-auto w-full grid-cols-2 bg-muted p-1 sm:grid-cols-5">
                   <TabsTrigger
                     value="profile"
                     className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md"
@@ -420,8 +393,7 @@ export default function ProfileClient({ user }: Props) {
                     <span className="text-xs font-medium">설정</span>
                   </TabsTrigger>
                 </TabsList>
-              </CardContent>
-            </Card>
+            </PublicSurface>
 
             <TabsContent value="profile">
               <Card className="border border-border shadow-sm bg-card">
@@ -900,7 +872,7 @@ export default function ProfileClient({ user }: Props) {
             </TabsContent>
           </Tabs>
         </div>
-      </div>
+      </SiteContainer>
     </div>
   );
 }

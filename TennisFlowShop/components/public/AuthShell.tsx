@@ -8,9 +8,17 @@ export type AuthShellProps = {
   children: ReactNode;
   footer?: ReactNode;
   className?: string;
+  panelClassName?: string;
 };
 
-export function AuthShell({ title, description, children, footer, className }: AuthShellProps) {
+export function AuthShell({
+  title,
+  description,
+  children,
+  footer,
+  className,
+  panelClassName,
+}: AuthShellProps) {
   const titleId = useId();
 
   return (
@@ -21,7 +29,12 @@ export function AuthShell({ title, description, children, footer, className }: A
         className,
       )}
     >
-      <div className="w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-sm sm:p-8">
+      <div
+        className={cn(
+          "w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-sm sm:p-8",
+          panelClassName,
+        )}
+      >
         <header className="mb-6 space-y-2 text-center">
           <h1
             id={titleId}
