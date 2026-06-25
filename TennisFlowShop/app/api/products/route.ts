@@ -195,11 +195,12 @@ export async function GET(req: NextRequest) {
     }
 
     // 기본 목록은 품절 상품을 제외한다.
-    // 상품 카드/스트링 선택에서 쓰는 hasSelectableStringStock 기준과 같은 재고 소스
-    // (variant → gauge → color → inventory.manageStock)를 서버 쿼리에서 반영해 페이징 개수가 줄어들지 않게 한다.
+    // ProductCard의 품절 판정과 어긋나지 않도록 inventory.status=outofstock도 제외하고,
+    // 옵션 재고는 variant → gauge → color → inventory.manageStock 순서로 서버 쿼리에 반영한다.
     if (!includeSoldOut) {
       (filter as any).$and = [
         ...(((filter as any).$and as any[]) ?? []),
+        { "inventory.status": { $ne: "outofstock" } },
         {
           $or: [
             {
