@@ -356,43 +356,43 @@ export default function ProfileClient({ user }: Props) {
         <div className="mx-auto max-w-4xl">
           <Tabs defaultValue="profile" className="space-y-6 md:space-y-8">
             <PublicSurface padding="sm">
-                <TabsList className="grid h-auto w-full grid-cols-2 bg-muted p-1 sm:grid-cols-5">
-                  <TabsTrigger
-                    value="profile"
-                    className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md"
-                  >
-                    <User className="h-5 w-5" />
-                    <span className="text-ui-label font-medium">기본정보</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="password"
-                    className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md"
-                  >
-                    <Shield className="h-5 w-5" />
-                    <span className="text-ui-label font-medium">비밀번호</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="address"
-                    className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md"
-                  >
-                    <MapPin className="h-5 w-5" />
-                    <span className="text-ui-label font-medium">배송지</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="tennis-profile"
-                    className="flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-ui-label font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-md"
-                  >
-                    <MdSportsTennis className="h-5 w-5" />
-                    <span className="text-ui-label font-medium">테니스 프로필</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="preferences"
-                    className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md"
-                  >
-                    <Bell className="h-5 w-5" />
-                    <span className="text-ui-label font-medium">설정</span>
-                  </TabsTrigger>
-                </TabsList>
+              <TabsList className="grid h-auto w-full grid-cols-2 bg-muted p-1 sm:grid-cols-5">
+                <TabsTrigger
+                  value="profile"
+                  className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md"
+                >
+                  <User className="h-5 w-5" />
+                  <span className="text-ui-label font-medium">기본정보</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="password"
+                  className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md"
+                >
+                  <Shield className="h-5 w-5" />
+                  <span className="text-ui-label font-medium">비밀번호</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="address"
+                  className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md"
+                >
+                  <MapPin className="h-5 w-5" />
+                  <span className="text-ui-label font-medium">배송지</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="tennis-profile"
+                  className="flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-ui-label font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-md"
+                >
+                  <MdSportsTennis className="h-5 w-5" />
+                  <span className="text-ui-label font-medium">테니스 프로필</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="preferences"
+                  className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md"
+                >
+                  <Bell className="h-5 w-5" />
+                  <span className="text-ui-label font-medium">설정</span>
+                </TabsTrigger>
+              </TabsList>
             </PublicSurface>
 
             <TabsContent value="profile">
@@ -807,7 +807,9 @@ export default function ProfileClient({ user }: Props) {
                         <AlertTriangle className="h-6 w-6 text-destructive" />
                       </div>
                       <div>
-                        <CardTitle className="text-ui-section-title text-destructive">회원 탈퇴</CardTitle>
+                        <CardTitle className="text-ui-section-title text-destructive">
+                          회원 탈퇴
+                        </CardTitle>
                         <CardDescription>
                           계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.
                         </CardDescription>
