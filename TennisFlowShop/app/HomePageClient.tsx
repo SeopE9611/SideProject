@@ -211,11 +211,11 @@ const SITUATION_ACTIONS: Record<SituationKey, SituationAction> = {
   },
   newRacket: {
     eyebrow: "신규 장착",
-    title: "새 라켓에 맞는 스트링을 선택하세요",
-    description: "라켓과 플레이 스타일에 맞춰 스트링과 텐션을 선택해 장착할 수 있습니다.",
+    title: "새 라켓에 맞는 스트링을 함께 준비하세요",
+    description: "라켓을 먼저 고른 뒤 플레이 스타일에 맞는 스트링과 텐션을 선택할 수 있습니다.",
     ctas: [
-      { label: "스트링 선택하기", href: "/products", primary: true },
-      { label: "교체서비스 신청", href: "/services/apply" },
+      { label: "라켓 둘러보기", href: "/rackets", primary: true },
+      { label: "스트링 선택하기", href: "/products" },
     ],
   },
   unsure: {
@@ -730,7 +730,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     aria-pressed={isActive}
                     onClick={() => setActiveSituation(situation.key)}
                     className={cn(
-                      "group flex min-h-32 flex-col gap-3 rounded-2xl border bg-card p-4 text-left shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-h-36 bp-sm:p-5",
+                      "group flex min-h-28 flex-col gap-2.5 rounded-2xl border bg-card p-3.5 text-left shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-h-36 bp-sm:gap-3 bp-sm:p-5",
                       isActive
                         ? "border-primary/50 bg-primary/5 shadow-md"
                         : "border-border/60 hover:border-primary/30",
@@ -754,19 +754,19 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               })}
             </div>
 
-            <PublicSurface padding="md" className="flex h-full flex-col justify-between border-primary/20 bg-primary/5 bp-sm:p-6">
+            <PublicSurface padding="md" className="flex h-full flex-col justify-between border-primary/20 bg-primary/5 p-4 bp-sm:p-6">
               <div>
                 <span className="inline-flex rounded-full bg-background px-3 py-1 text-ui-label font-semibold text-primary shadow-sm">
                   {activeSituationAction.eyebrow}
                 </span>
-                <h3 className="mt-4 break-keep text-ui-card-title-lg font-semibold text-foreground bp-sm:text-ui-section-title">
+                <h3 className="mt-3 break-keep text-ui-card-title-lg font-semibold text-foreground bp-sm:mt-4 bp-sm:text-ui-section-title">
                   {activeSituationAction.title}
                 </h3>
-                <p className="mt-3 break-keep text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body">
+                <p className="mt-2.5 break-keep text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:mt-3 bp-sm:text-ui-body">
                   {activeSituationAction.description}
                 </p>
               </div>
-              <div className="mt-6 grid gap-2 bp-sm:grid-cols-2 bp-lg:grid-cols-1 bp-xl:grid-cols-2">
+              <div className="mt-5 grid gap-2 bp-sm:mt-6 bp-sm:grid-cols-2 bp-lg:grid-cols-1 bp-xl:grid-cols-2">
                 {activeSituationAction.ctas.map((cta) => (
                   <Button
                     key={cta.label}
@@ -894,8 +894,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <Tags className="h-5 w-5" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-ui-card-title font-semibold text-foreground">장착비 안내</p>
-                  <p className="text-ui-body-sm text-muted-foreground">교체 비용과 옵션을 확인하세요.</p>
+                  <p className="text-ui-card-title font-semibold text-foreground">비용 기준 확인</p>
+                  <p className="text-ui-body-sm text-muted-foreground">장착비와 서비스 옵션을 미리 확인하세요.</p>
                 </div>
               </Link>
               <Link
@@ -906,8 +906,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <Clock className="h-5 w-5" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-ui-card-title font-semibold text-foreground">운영 시간/매장 안내</p>
-                  <p className="text-ui-body-sm text-muted-foreground">방문 전 운영 정보를 확인하세요.</p>
+                  <p className="text-ui-card-title font-semibold text-foreground">운영 정보 확인</p>
+                  <p className="text-ui-body-sm text-muted-foreground">방문 전 운영 시간과 접수 방식을 확인하세요.</p>
                 </div>
               </Link>
               <Link
@@ -918,7 +918,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <Search className="h-5 w-5" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-ui-card-title font-semibold text-foreground">Q&A 문의</p>
+                  <p className="text-ui-card-title font-semibold text-foreground">문의하기</p>
                   <p className="text-ui-body-sm text-muted-foreground">궁금한 점을 남기고 답변을 받아보세요.</p>
                 </div>
               </Link>
@@ -930,8 +930,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <Star className="h-5 w-5" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-ui-card-title font-semibold text-foreground">고객 후기</p>
-                  <p className="text-ui-body-sm text-muted-foreground">실사용 후기를 가볍게 확인하세요.</p>
+                  <p className="text-ui-card-title font-semibold text-foreground">이용 후기</p>
+                  <p className="text-ui-body-sm text-muted-foreground">실제 이용자의 후기를 확인하세요.</p>
                 </div>
               </Link>
             </div>
