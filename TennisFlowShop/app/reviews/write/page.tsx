@@ -3,11 +3,18 @@
 import type React from "react";
 
 import ApplicationStatusBadge from "@/app/features/stringing-applications/components/ApplicationStatusBadge";
+import SiteContainer from "@/components/layout/SiteContainer";
+import {
+  EmptyState,
+  PublicPageHero,
+  PublicSurface,
+  ResultState,
+  SummaryCard,
+} from "@/components/public";
 import PhotosReorderGrid from "@/components/reviews/PhotosReorderGrid";
 import PhotosUploader from "@/components/reviews/PhotosUploader";
 import LoginGate from "@/components/system/LoginGate";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
@@ -875,27 +882,28 @@ export default function ReviewWritePage() {
   // 비회원 차단
   if (!allowGuestCheckout && !authChecked) {
     return (
-      <div className="min-h-screen bg-muted/30">
-        <div className="mx-auto max-w-4xl px-4 py-6 md:py-8">
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <Card className="rounded-2xl border-border bg-card">
-              <CardContent className="space-y-4 p-4 md:p-6">
-                <Skeleton className="h-7 w-40" />
-                <Skeleton className="h-4 w-64 max-w-full" />
-                <Skeleton className="h-28 w-full" />
-                <Skeleton className="h-36 w-full" />
-                <Skeleton className="h-11 w-full sm:w-36" />
-              </CardContent>
-            </Card>
-            <Card className="rounded-2xl border-border bg-card">
-              <CardContent className="space-y-4 p-4 md:p-6">
-                <Skeleton className="h-5 w-28" />
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-4 w-5/6" />
-              </CardContent>
-            </Card>
+      <div className="min-h-screen bg-background">
+        <PublicPageHero
+          eyebrow="리뷰 작성"
+          title="후기 작성"
+          description="구매 또는 서비스 이용 경험을 바탕으로 다른 사용자에게 도움이 되는 후기를 남겨주세요."
+        />
+        <SiteContainer className="py-6 md:py-8">
+          <div className="mx-auto grid max-w-4xl gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <PublicSurface className="space-y-4">
+              <Skeleton className="h-7 w-40" />
+              <Skeleton className="h-4 w-64 max-w-full" />
+              <Skeleton className="h-28 w-full" />
+              <Skeleton className="h-36 w-full" />
+              <Skeleton className="h-11 w-full sm:w-36" />
+            </PublicSurface>
+            <PublicSurface className="space-y-4">
+              <Skeleton className="h-5 w-28" />
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+            </PublicSurface>
           </div>
-        </div>
+        </SiteContainer>
       </div>
     );
   }
@@ -904,33 +912,40 @@ export default function ReviewWritePage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="mx-auto max-w-4xl px-4 py-6 md:py-8">
-        <header className="mb-5 md:mb-6">
-          <p className="text-sm font-medium text-muted-foreground">
-            {mode === "product"
-              ? "상품 후기"
-              : mode === "service"
-                ? "상품+교체서비스 후기"
-                : "리뷰 작성"}
-          </p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-            리뷰 작성
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground md:text-base">
-            {mode === "service"
-              ? "상품과 교체서비스 경험을 함께 평가해주세요."
-              : mode === "product"
-                ? "이용 경험을 남겨주세요."
-                : "구매확정 또는 수령확인이 완료된 내역에서 후기를 작성할 수 있습니다."}
-          </p>
-        </header>
-
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start xl:grid-cols-[minmax(0,1fr)_300px]">
+    <div className="min-h-screen bg-background">
+      <PublicPageHero
+        eyebrow="리뷰 작성"
+        title="후기 작성"
+        description="구매 또는 서비스 이용 경험을 바탕으로 다른 사용자에게 도움이 되는 후기를 남겨주세요."
+        actions={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => confirmLeaveIfDirty(() => router.replace("/reviews"))}
+              className="w-full sm:w-auto"
+            >
+              리뷰 목록
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => confirmLeaveIfDirty(() => router.replace("/mypage?tab=orders"))}
+              className="w-full sm:w-auto"
+            >
+              마이페이지
+            </Button>
+          </>
+        }
+      />
+      <SiteContainer className="py-6 md:py-8">
+        <div className="mx-auto grid max-w-4xl gap-4 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start xl:grid-cols-[minmax(0,1fr)_300px]">
           <main className="min-w-0 lg:order-1">
-            <Card className="rounded-2xl border-border bg-card shadow-sm">
-              <CardContent className="p-4 md:p-6">
-                <form onSubmit={onSubmit} className="space-y-6">
+            <SummaryCard
+              title="후기 내용 작성"
+              description="별점, 이용 경험, 사진을 입력해 후기를 등록해 주세요."
+            >
+              <form onSubmit={onSubmit} className="space-y-6">
                   {mode === "service" && (
                     <section className="rounded-2xl border border-border bg-muted/20 p-4">
                       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -1059,8 +1074,12 @@ export default function ReviewWritePage() {
                   </section>
 
                   {state !== "ok" && (mode !== "invalid" || state === "serviceLinkedOrder") && (
-                    <div className="rounded-2xl border border-border bg-muted/30 p-4 text-sm text-foreground">
-                      {state === "loading" && "작성 가능 여부를 확인하고 있습니다."}
+                    <ResultState
+                      status={state === "error" || state === "unauthorized" ? "error" : "info"}
+                      title="후기 작성 상태를 확인해 주세요"
+                      description={state === "loading" ? "작성 가능 여부를 확인하고 있습니다." : undefined}
+                      className="rounded-2xl border border-border bg-muted/30 px-4 py-8"
+                    >
                       {state === "notPurchased" && (
                         <div className="space-y-2">
                           <p className="font-medium">작성 가능한 이용 내역이 없습니다.</p>
@@ -1098,24 +1117,34 @@ export default function ReviewWritePage() {
                       )}
                       {state === "unauthorized" && "로그인이 필요합니다."}
                       {state === "error" && "접근 확인 중 문제가 발생했어요."}
-                    </div>
+                    </ResultState>
                   )}
 
                   {mode === "invalid" && state !== "serviceLinkedOrder" && (
-                    <div className="rounded-2xl border border-border bg-muted/30 p-4 text-sm text-foreground">
-                      <p className="font-medium">작성할 후기를 찾을 수 없어요.</p>
-                      <p className="mt-1 text-muted-foreground">
-                        구매확정 또는 수령확인이 완료된 내역에서 후기를 작성할 수 있습니다.
-                      </p>
-                    </div>
+                    <EmptyState
+                      title="작성할 후기를 찾을 수 없어요"
+                      description="구매확정 또는 수령확인이 완료된 내역에서 후기를 작성할 수 있습니다."
+                      action={
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            confirmLeaveIfDirty(() => router.replace("/mypage?tab=orders"))
+                          }
+                          className="w-full sm:w-auto"
+                        >
+                          마이페이지에서 확인
+                        </Button>
+                      }
+                    />
                   )}
 
-                  <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end">
+                  <div className="flex flex-col-reverse gap-2 border-t border-border pt-5 sm:flex-row sm:justify-end">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => confirmLeaveIfDirty(goPrimary)}
-                      className="order-2 h-9 w-full overflow-hidden whitespace-nowrap rounded-xl bg-transparent sm:order-1 sm:w-auto"
+                      className="h-9 w-full overflow-hidden whitespace-nowrap rounded-xl bg-transparent sm:w-auto"
                     >
                       {mode === "product"
                         ? "상품 상세"
@@ -1129,7 +1158,7 @@ export default function ReviewWritePage() {
                       onClick={() =>
                         confirmLeaveIfDirty(() => router.replace("/mypage?tab=orders"))
                       }
-                      className="order-3 h-9 w-full overflow-hidden whitespace-nowrap rounded-xl sm:order-2 sm:w-auto"
+                      className="h-9 w-full overflow-hidden whitespace-nowrap rounded-xl sm:w-auto"
                     >
                       마이페이지
                     </Button>
@@ -1138,20 +1167,18 @@ export default function ReviewWritePage() {
                       type="submit"
                       disabled={locked || isUploading}
                       aria-disabled={locked || isUploading}
-                      className="order-1 h-9 w-full overflow-hidden whitespace-nowrap rounded-xl font-semibold sm:order-3 sm:w-auto"
+                      className="h-9 w-full overflow-hidden whitespace-nowrap rounded-xl font-semibold sm:w-auto"
                     >
                       {isUploading ? "이미지 업로드 중..." : "리뷰 등록"}
                     </Button>
                   </div>
-                </form>
-              </CardContent>
-            </Card>
+              </form>
+            </SummaryCard>
           </main>
 
           <aside className="min-w-0 space-y-4 lg:order-2">
-            <Card className="rounded-2xl border-border bg-card shadow-sm">
-              <CardContent className="space-y-4 p-4 md:p-5">
-                <div className="flex items-start justify-between gap-3">
+            <PublicSurface className="space-y-4" padding="md">
+              <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-muted-foreground">리뷰 대상</p>
                     <h2 className="mt-1 break-keep text-lg font-semibold text-foreground">
@@ -1309,22 +1336,19 @@ export default function ReviewWritePage() {
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+            </PublicSurface>
 
-            <Card className="rounded-2xl border-border bg-card shadow-sm">
-              <CardContent className="space-y-2 p-4 md:p-5">
-                <h2 className="text-sm font-semibold text-foreground">작성 기준</h2>
+            <PublicSurface className="space-y-2" padding="md">
+              <h2 className="text-sm font-semibold text-foreground">작성 기준</h2>
                 <ul className="space-y-1 text-sm text-muted-foreground">
                   <li>• 실제 사용 경험을 중심으로 작성해주세요.</li>
                   <li>• 사진은 선택 사항이며 최대 5장까지 등록됩니다.</li>
                   <li>• 하나의 이용 내역에는 하나의 후기만 작성할 수 있습니다.</li>
-                </ul>
-              </CardContent>
-            </Card>
+              </ul>
+            </PublicSurface>
           </aside>
         </div>
-      </div>
+      </SiteContainer>
     </div>
   );
 }

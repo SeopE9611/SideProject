@@ -32,4 +32,5 @@ export default function ReviewsPage() {
         <ReviewsClient />
       </SiteContainer>
     </div>
-  );}
+  );
+}

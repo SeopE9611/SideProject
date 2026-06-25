@@ -304,13 +304,13 @@ export default function LoginPageClient() {
       panelClassName={activeTab === "register" ? "max-w-2xl" : "max-w-md"}
     >
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <div className="border-b border-border px-4 py-3 md:px-5">
+        <div className="border-b border-border px-4 py-3 md:px-5">
               <TabsList className="grid h-11 w-full grid-cols-2">
                 <TabsTrigger value="login">로그인</TabsTrigger>
                 <TabsTrigger value="register">회원가입</TabsTrigger>
               </TabsList>
-            </div>
-            {activeTab === "login" && (
+        </div>
+        {activeTab === "login" && (
               <TabsContent value="login" forceMount className="mt-0 p-4 md:p-5">
                 <div className="space-y-4">
                   <div className="text-center">
@@ -510,8 +510,8 @@ export default function LoginPageClient() {
               </TabsContent>
             )}
 
-            <RegisterTabPanel
-              isSocialOauthRegister={isSocialOauthRegister}
+        <RegisterTabPanel
+          isSocialOauthRegister={isSocialOauthRegister}
               oauthProvider={oauthProvider}
               oauthToken={oauthToken}
               onKakaoOAuth={handleKakaoOAuth}
@@ -519,8 +519,8 @@ export default function LoginPageClient() {
               onSwitchToLoginTab={() => setActiveTab("login")}
               onRegisterDirtyChange={setRegisterDirty}
               onRegisterSubmittingChange={setRegisterSubmitting}
-              resetSignal={registerResetSignal}
-            />
+          resetSignal={registerResetSignal}
+        />
       </Tabs>
     </AuthShell>
   );
