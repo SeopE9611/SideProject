@@ -129,10 +129,10 @@ export default function ReviewsClient() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-5 md:space-y-6">
-        {/* Control panel */}
-        <Card className="overflow-hidden border-border bg-card shadow-sm">
+      {/* Control panel */}
+      <Card className="overflow-hidden border-border bg-card shadow-sm">
           <div className="h-px bg-border" />
-          <CardContent className="p-4 md:p-6">
+        <CardContent className="p-4 md:p-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-center">
               {/* Tabs with tennis court styling */}
               <Tabs
@@ -221,10 +221,10 @@ export default function ReviewsClient() {
               </div>
             </div>
           </CardContent>
-        </Card>
+      </Card>
 
-        {/* Loading skeleton */}
-        {isFirstLoading && (
+      {/* Loading skeleton */}
+      {isFirstLoading && (
           <div className="grid grid-cols-1 gap-4 md:gap-5 lg:grid-cols-2">
             <ReviewSkeleton />
             <div className="hidden lg:block">
@@ -233,8 +233,8 @@ export default function ReviewsClient() {
           </div>
         )}
 
-        {/* Results area */}
-        {!isFirstLoading && (
+      {/* Results area */}
+      {!isFirstLoading && (
           <>
             {items.length > 0 ? (
               <div className="grid grid-cols-1 gap-4 md:gap-5 lg:grid-cols-2">
@@ -282,7 +282,7 @@ export default function ReviewsClient() {
               )}
             </div>
           </>
-        )}
+      )}
     </div>
   );
 }
