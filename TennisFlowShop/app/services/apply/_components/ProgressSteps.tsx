@@ -44,12 +44,12 @@ export default function ProgressSteps({ steps, currentStep }: Props) {
               </div>
               <div className="mt-2 min-h-[32px] text-center sm:min-h-[44px]">
                 <p
-                  className={`whitespace-nowrap text-[11px] font-medium leading-tight sm:text-sm ${currentStep >= step.id ? "text-primary" : "text-muted-foreground"}`}
+                  className={`whitespace-nowrap text-ui-micro font-medium leading-tight sm:text-ui-body-sm ${currentStep >= step.id ? "text-primary" : "text-muted-foreground"}`}
                 >
                   <span className="block sm:hidden">{compactTitle}</span>
                   <span className="hidden sm:block">{step.title}</span>
                 </p>
-                <p className="text-xs text-muted-foreground mt-1 hidden sm:block">
+                <p className="text-ui-label text-muted-foreground mt-1 hidden sm:block">
                   {step.description}
                 </p>
               </div>

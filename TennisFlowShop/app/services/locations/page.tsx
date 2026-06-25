@@ -82,20 +82,20 @@ export default function LocationsPage() {
                 <div className="space-y-4">
                   <div className="flex items-start gap-2">
                     <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">{location.address}</span>
+                    <span className="text-ui-body-sm">{location.address}</span>
                   </div>
 
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="text-sm font-mono">{location.phone}</span>
+                    <span className="text-ui-body-sm font-mono">{location.phone}</span>
                   </div>
 
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <span className="text-sm font-semibold">운영시간</span>
+                      <span className="text-ui-body-sm font-semibold">운영시간</span>
                     </div>
-                    <div className="ml-6 space-y-1 text-sm text-muted-foreground">
+                    <div className="ml-6 space-y-1 text-ui-body-sm text-muted-foreground">
                       <div>평일: {location.hours.weekday}</div>
                       <div>토요일: {location.hours.weekend}</div>
                       <div>일요일/공휴일: {location.hours.holiday}</div>
@@ -105,9 +105,9 @@ export default function LocationsPage() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Train className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <span className="text-sm font-semibold">교통</span>
+                      <span className="text-ui-body-sm font-semibold">교통</span>
                     </div>
-                    <div className="ml-6 space-y-1 text-sm text-muted-foreground">
+                    <div className="ml-6 space-y-1 text-ui-body-sm text-muted-foreground">
                       {location.transport.map((info, i) => (
                         <div key={i}>{info}</div>
                       ))}
@@ -115,12 +115,12 @@ export default function LocationsPage() {
                   </div>
 
                   <PublicSurface variant="muted" padding="sm" className="rounded-lg">
-                    <p className="text-sm font-medium text-primary">{location.specialNote}</p>
+                    <p className="text-ui-body-sm font-medium text-primary">{location.specialNote}</p>
                   </PublicSurface>
 
                   <div className="flex flex-wrap gap-1">
                     {location.services.map((service, i) => (
-                      <Badge key={i} variant="secondary" className="text-xs">
+                      <Badge key={i} variant="secondary" className="text-ui-label">
                         {service}
                       </Badge>
                     ))}
@@ -142,14 +142,14 @@ export default function LocationsPage() {
         </div>
 
         {/* <div className="mb-16">
-          <h2 className="font-bold text-2xl text-foreground mb-8 text-center">예약 절차</h2>
+          <h2 className="font-semibold text-ui-page-title text-foreground mb-8 text-center">예약 절차</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {reservationSteps.map((step, index) => (
               <Card key={index} className="text-center hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-6">
-                  <div className="w-12 h-12 bg-secondary text-foreground rounded-full border border-border flex items-center justify-center mx-auto mb-4 text-lg font-bold">{step.step}</div>
+                  <div className="w-12 h-12 bg-secondary text-foreground rounded-full border border-border flex items-center justify-center mx-auto mb-4 text-ui-card-title-lg font-semibold">{step.step}</div>
                   <h3 className="font-semibold text-foreground mb-2">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground">{step.description}</p>
+                  <p className="text-ui-body-sm text-muted-foreground">{step.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -160,28 +160,28 @@ export default function LocationsPage() {
           <CardContent className="p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <h3 className="text-xl font-bold text-foreground mb-4">예약 및 상담</h3>
+                <h3 className="text-ui-section-title font-semibold text-foreground mb-4">예약 및 상담</h3>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <Phone className="h-5 w-5 text-primary" />
                     <div>
                       <div className="font-semibold">전화 예약</div>
-                      <div className="text-sm text-muted-foreground">010-5218-5248</div>
-                      <div className="text-xs text-muted-foreground">평일 09:00-18:00, 토요일 09:00-12:00</div>
+                      <div className="text-ui-body-sm text-muted-foreground">010-5218-5248</div>
+                      <div className="text-ui-label text-muted-foreground">평일 09:00-18:00, 토요일 09:00-12:00</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <Calendar className="h-5 w-5 text-primary" />
                     <div>
                       <div className="font-semibold">온라인 신청</div>
-                      <div className="text-sm text-muted-foreground">스트링 교체 신청서 작성</div>
+                      <div className="text-ui-body-sm text-muted-foreground">스트링 교체 신청서 작성</div>
                     </div>
                   </div>
                 </div>
               </div>
               <div>
-                <h3 className="text-xl font-bold text-foreground mb-4">서비스 특징</h3>
-                <ul className="space-y-2 text-sm">
+                <h3 className="text-ui-section-title font-semibold text-foreground mb-4">서비스 특징</h3>
+                <ul className="space-y-2 text-ui-body-sm">
                   <li className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 bg-primary rounded-full" />
                     전문가 직접 서비스

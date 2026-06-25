@@ -272,7 +272,7 @@ export default function PackageCheckoutButton({
     <>
       <Button
         onClick={handleSubmit}
-        className="h-14 w-full text-base font-semibold shadow-sm transition-[box-shadow,background-color,border-color] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 sm:text-lg"
+        className="h-14 w-full text-ui-body-lg font-semibold shadow-sm transition-[box-shadow,background-color,border-color] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 sm:text-ui-card-title-lg"
         size="lg"
         disabled={disabled || isSubmitting}
       >

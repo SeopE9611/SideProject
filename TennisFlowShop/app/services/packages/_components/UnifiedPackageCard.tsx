@@ -78,10 +78,10 @@ export default function UnifiedPackageCard({
           </div>
         </div>
         <div className="mb-5 flex min-h-[94px] flex-col justify-start">
-          <h3 className="line-clamp-2 text-xl font-bold leading-tight break-keep text-balance bp-xl:text-2xl">
+          <h3 className="line-clamp-2 text-ui-section-title font-semibold leading-tight break-keep text-balance bp-xl:text-ui-section-title-lg">
             {pkg.title}
           </h3>
-          <p className="mt-2 line-clamp-3 min-h-[66px] text-sm break-keep leading-relaxed text-muted-foreground">
+          <p className="mt-2 line-clamp-3 min-h-[66px] text-ui-body-sm break-keep leading-relaxed text-muted-foreground">
             {pkg.description}
           </p>
         </div>
@@ -138,19 +138,19 @@ export default function UnifiedPackageCard({
           className={`grid gap-3 ${showTotalPrice ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-2"}`}
         >
           <div className="rounded-xl border border-border bg-muted/30 p-3 text-center">
-            <div className="text-xl font-bold text-foreground">{pkg.sessions}회</div>
-            <div className="text-sm text-muted-foreground">이용 회차</div>
+            <div className="text-ui-section-title font-semibold text-foreground">{pkg.sessions}회</div>
+            <div className="text-ui-body-sm text-muted-foreground">이용 회차</div>
           </div>
           <div className="rounded-xl border border-border bg-muted/30 p-3 text-center">
-            <div className="text-xl font-bold text-foreground">{pkg.validityPeriod}</div>
-            <div className="text-sm text-muted-foreground">유효기간</div>
+            <div className="text-ui-section-title font-semibold text-foreground">{pkg.validityPeriod}</div>
+            <div className="text-ui-body-sm text-muted-foreground">유효기간</div>
           </div>
           {showTotalPrice && (
             <div className="rounded-xl border border-border bg-muted/30 p-3 text-center">
-              <div className="text-xl font-bold text-foreground">
+              <div className="text-ui-section-title font-semibold text-foreground">
                 {pkg.price.toLocaleString()}원
               </div>
-              <div className="text-sm text-muted-foreground">총 금액</div>
+              <div className="text-ui-body-sm text-muted-foreground">총 금액</div>
             </div>
           )}
         </div>
@@ -164,7 +164,7 @@ export default function UnifiedPackageCard({
             {pkg.features.slice(0, 4).map((feature, idx) => (
               <li
                 key={`${pkg.id}-feature-${idx}`}
-                className="flex items-start break-keep text-sm leading-relaxed"
+                className="flex items-start break-keep text-ui-body-sm leading-relaxed"
               >
                 <div
                   className={`mr-3 mt-2 h-2 w-2 flex-shrink-0 rounded-full ${PACKAGE_VARIANT_DOT_CLASS[pkg.variant]}`}
@@ -180,7 +180,7 @@ export default function UnifiedPackageCard({
             <Gift className="mr-2 h-4 w-4 text-muted-foreground" />
             혜택 요약
           </h4>
-          <div className="space-y-1 text-sm text-muted-foreground">
+          <div className="space-y-1 text-ui-body-sm text-muted-foreground">
             {pkg.benefits.slice(0, 4).map((benefit, idx) => (
               <div key={`${pkg.id}-benefit-${idx}`}>• {benefit}</div>
             ))}
@@ -207,7 +207,7 @@ export default function UnifiedPackageCard({
               </Link>
             </Button>
             {ctaHelperText ? (
-              <p className="text-center text-sm text-muted-foreground">{ctaHelperText}</p>
+              <p className="text-center text-ui-body-sm text-muted-foreground">{ctaHelperText}</p>
             ) : null}
           </div>
         )}

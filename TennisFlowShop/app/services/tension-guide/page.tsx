@@ -398,14 +398,14 @@ export default function TensionGuidePage() {
           <TabsList className="mx-auto grid h-auto w-full min-w-[20rem] max-w-2xl grid-cols-4 bg-muted p-1">
             <TabsTrigger
               value="calculator"
-              className="gap-1 whitespace-nowrap py-2 text-xs bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-xs bp-md:text-sm"
+              className="gap-1 whitespace-nowrap py-2 text-ui-label bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-ui-label bp-md:text-ui-body-sm"
             >
               <BarChart3 className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
               <span className="hidden bp-sm:inline">텐션</span> 계산기
             </TabsTrigger>
             <TabsTrigger
               value="levels"
-              className="gap-1 whitespace-nowrap py-2 text-xs bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-xs bp-md:text-sm"
+              className="gap-1 whitespace-nowrap py-2 text-ui-label bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-ui-label bp-md:text-ui-body-sm"
             >
               <Users className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
               <span className="bp-xs:hidden">수준별</span>
@@ -413,7 +413,7 @@ export default function TensionGuidePage() {
             </TabsTrigger>
             <TabsTrigger
               value="strings"
-              className="gap-1 whitespace-nowrap py-2 text-xs bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-xs bp-md:text-sm"
+              className="gap-1 whitespace-nowrap py-2 text-ui-label bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-ui-label bp-md:text-ui-body-sm"
             >
               <Layers className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
               <span className="bp-xs:hidden">스트링</span>
@@ -421,7 +421,7 @@ export default function TensionGuidePage() {
             </TabsTrigger>
             <TabsTrigger
               value="tips"
-              className="gap-1 whitespace-nowrap py-2 text-xs bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-xs bp-md:text-sm"
+              className="gap-1 whitespace-nowrap py-2 text-ui-label bp-sm:gap-1.5 bp-sm:py-3 bp-sm:text-ui-label bp-md:text-ui-body-sm"
             >
               <Lightbulb className="h-3 w-3 bp-sm:h-4 bp-sm:w-4" />
               <span className="bp-xs:hidden">팁</span>
@@ -446,7 +446,7 @@ export default function TensionGuidePage() {
                 >
                   {/* 성별 선택 */}
                   <div>
-                    <label className="block text-sm font-semibold text-foreground mb-3">성별</label>
+                    <label className="block text-ui-body-sm font-semibold text-foreground mb-3">성별</label>
                     <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-sm:gap-3">
                       {[
                         {
@@ -466,11 +466,11 @@ export default function TensionGuidePage() {
                           className={`p-3 bp-sm:p-4 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 text-left ${gender === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
                         >
                           <div
-                            className={`font-medium text-sm ${gender === option.id ? "text-primary" : "text-foreground"}`}
+                            className={`font-medium text-ui-body-sm ${gender === option.id ? "text-primary" : "text-foreground"}`}
                           >
                             {option.label}
                           </div>
-                          <div className="text-xs text-muted-foreground mt-1">{option.desc}</div>
+                          <div className="text-ui-label text-muted-foreground mt-1">{option.desc}</div>
                         </button>
                       ))}
                     </div>
@@ -478,7 +478,7 @@ export default function TensionGuidePage() {
 
                   {/* 스윙 스피드 선택 */}
                   <div>
-                    <label className="block text-sm font-semibold text-foreground mb-3">
+                    <label className="block text-ui-body-sm font-semibold text-foreground mb-3">
                       스윙 스피드
                     </label>
                     <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-sm:gap-3">
@@ -489,11 +489,11 @@ export default function TensionGuidePage() {
                           className={`p-2 bp-sm:p-3 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 ${swingSpeed === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
                         >
                           <div
-                            className={`font-medium text-xs bp-sm:text-sm ${swingSpeed === option.id ? "text-primary" : "text-foreground"}`}
+                            className={`font-medium text-ui-label bp-sm:text-ui-body-sm ${swingSpeed === option.id ? "text-primary" : "text-foreground"}`}
                           >
                             {option.label}
                           </div>
-                          <div className="text-xs text-foreground/80 mt-1 hidden bp-sm:block">
+                          <div className="text-ui-label text-foreground/80 mt-1 hidden bp-sm:block">
                             {option.desc}
                           </div>
                         </button>
@@ -502,7 +502,7 @@ export default function TensionGuidePage() {
                   </div>
                   {/* 스트링 타입 선택 */}
                   <div>
-                    <label className="block text-sm font-semibold text-foreground mb-3">
+                    <label className="block text-ui-body-sm font-semibold text-foreground mb-3">
                       스트링 타입
                     </label>
                     <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-sm:gap-3">
@@ -517,12 +517,12 @@ export default function TensionGuidePage() {
                               className={`h-4 w-4 ${stringType === st.id ? "text-primary" : "text-muted-foreground"}`}
                             />
                             <span
-                              className={`font-medium text-sm ${stringType === st.id ? "text-primary" : "text-foreground"}`}
+                              className={`font-medium text-ui-body-sm ${stringType === st.id ? "text-primary" : "text-foreground"}`}
                             >
                               {st.name}
                             </span>
                           </div>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-ui-label text-muted-foreground">
                             여 {st.ranges.female.min}~{st.ranges.female.max}LB · 남{" "}
                             {st.ranges.male.min}~{st.ranges.male.max}LB
                           </span>
@@ -533,7 +533,7 @@ export default function TensionGuidePage() {
 
                   {/* 플레이 스타일 선택 */}
                   <div>
-                    <label className="block text-sm font-semibold text-foreground mb-3">
+                    <label className="block text-ui-body-sm font-semibold text-foreground mb-3">
                       플레이 스타일
                     </label>
                     <div className="grid grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-md:grid-cols-3 bp-sm:gap-3">
@@ -544,11 +544,11 @@ export default function TensionGuidePage() {
                           className={`p-2 bp-sm:p-3 rounded-xl transition-[background-color,color,border-color,box-shadow,opacity] duration-200 ${playStyle === option.id ? "bg-secondary ring-2 ring-ring shadow-sm" : "bg-muted/50 dark:bg-muted/50 hover:bg-muted dark:hover:bg-muted hover:shadow-sm"}`}
                         >
                           <div
-                            className={`font-medium text-xs bp-sm:text-sm ${playStyle === option.id ? "text-primary" : "text-foreground"}`}
+                            className={`font-medium text-ui-label bp-sm:text-ui-body-sm ${playStyle === option.id ? "text-primary" : "text-foreground"}`}
                           >
                             {option.label}
                           </div>
-                          <div className="text-xs text-foreground/80 mt-1 hidden bp-sm:block">
+                          <div className="text-ui-label text-foreground/80 mt-1 hidden bp-sm:block">
                             {option.desc}
                           </div>
                         </button>
@@ -570,11 +570,11 @@ export default function TensionGuidePage() {
                   className="border border-border shadow-sm bg-muted/40 dark:bg-muted/30 overflow-hidden"
                 >
                   <div className="text-center mb-6 bp-md:mb-8">
-                    <div className="text-5xl bp-sm:text-6xl bp-md:text-7xl font-bold text-primary mb-2 ">
+                    <div className="text-ui-page-title-lg font-semibold text-primary mb-2 ">
                       {calculatedTension}LB
                     </div>
                     <div
-                      className={`text-base bp-md:text-lg font-medium ${getTensionFeedback().color}`}
+                      className={`text-ui-body-lg bp-md:text-ui-card-title-lg font-medium ${getTensionFeedback().color}`}
                     >
                       {getTensionFeedback().text}
                     </div>
@@ -582,7 +582,7 @@ export default function TensionGuidePage() {
 
                   {/* 텐션 시각화 */}
                   <div className="mb-6 bp-md:mb-8">
-                    <div className="flex justify-between text-xs text-muted-foreground mb-2">
+                    <div className="flex justify-between text-ui-label text-muted-foreground mb-2">
                       <span>42LB</span>
                       <span>56LB</span>
                     </div>
@@ -592,7 +592,7 @@ export default function TensionGuidePage() {
                         style={{ left: `${gaugePosition}%` }}
                       />
                     </div>
-                    <div className="flex justify-between text-xs mt-2">
+                    <div className="flex justify-between text-ui-label mt-2">
                       <span className="text-primary">파워</span>
                       <span className="text-muted-foreground">컨트롤</span>
                     </div>
@@ -606,21 +606,21 @@ export default function TensionGuidePage() {
                         추천 범위 (선택 성별 기준)
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-ui-body-sm text-muted-foreground">
                       최종 추천 텐션 {calculatedTension}LB · {selectedRange.min}
                       LB ~ {selectedRange.max}LB
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <Badge
                         variant="secondary"
-                        className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug"
+                        className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-ui-label leading-snug"
                       >
                         {gender === "female" ? "여자" : "남자"} {selectedRange.min}~
                         {selectedRange.max}LB
                       </Badge>
                       <Badge
                         variant="outline"
-                        className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug"
+                        className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-ui-label leading-snug"
                       >
                         {oppositeGender === "female" ? "여자" : "남자"} {oppositeRange.min}~
                         {oppositeRange.max}LB
@@ -635,33 +635,33 @@ export default function TensionGuidePage() {
                       <span className="font-medium text-foreground">계산 근거</span>
                     </div>
                     <ul className="space-y-2">
-                      <li className="flex items-center justify-between text-sm">
+                      <li className="flex items-center justify-between text-ui-body-sm">
                         <span className="text-muted-foreground">기준점</span>
                         <span className="font-medium text-foreground">{selectedRange.base}LB</span>
                       </li>
-                      <li className="flex items-center justify-between text-sm">
+                      <li className="flex items-center justify-between text-ui-body-sm">
                         <span className="text-muted-foreground">플레이 스타일 보정</span>
                         <span className="font-medium text-foreground">
                           {styleAdjust > 0 ? `+${styleAdjust}` : styleAdjust}
                           LB
                         </span>
                       </li>
-                      <li className="flex items-center justify-between text-sm">
+                      <li className="flex items-center justify-between text-ui-body-sm">
                         <span className="text-muted-foreground">스윙 스피드 보정</span>
                         <span className="font-medium text-foreground">
                           {speedAdjust > 0 ? `+${speedAdjust}` : speedAdjust}
                           LB
                         </span>
                       </li>
-                      <li className="flex items-center justify-between text-sm">
+                      <li className="flex items-center justify-between text-ui-body-sm">
                         <span className="text-muted-foreground">중간 계산값 (raw value)</span>
                         <span className="font-medium text-foreground">{rawTensionValue}LB</span>
                       </li>
-                      <li className="flex items-center justify-between text-sm">
+                      <li className="flex items-center justify-between text-ui-body-sm">
                         <span className="text-muted-foreground">{clampReason.label}</span>
                         <span className="font-medium text-foreground">{clampReason.value}LB</span>
                       </li>
-                      <li className="pt-2 border-t border-border flex items-center justify-between text-sm">
+                      <li className="pt-2 border-t border-border flex items-center justify-between text-ui-body-sm">
                         <span className="text-foreground font-medium">최종 추천</span>
                         <span className="text-primary font-semibold">{calculatedTension}LB</span>
                       </li>
@@ -696,10 +696,10 @@ export default function TensionGuidePage() {
                       >
                         <factor.icon className={`h-4 w-4 mt-0.5 flex-shrink-0 ${factor.color}`} />
                         <div>
-                          <div className="text-xs bp-sm:text-xs font-medium text-foreground">
+                          <div className="text-ui-label bp-sm:text-ui-label font-medium text-foreground">
                             {factor.factor}
                           </div>
-                          <div className="text-xs bp-sm:text-xs text-primary font-semibold">
+                          <div className="text-ui-label bp-sm:text-ui-label text-primary font-semibold">
                             {factor.adjustment}
                           </div>
                         </div>
@@ -733,19 +733,19 @@ export default function TensionGuidePage() {
                             <IconComponent className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 bp-md:h-7 bp-md:w-7 text-primary" />
                           </div>
                           <div>
-                            <h3 className="text-base bp-sm:text-lg bp-md:text-xl mb-1 font-semibold text-card-foreground">
+                            <h3 className="text-ui-body-lg bp-sm:text-ui-card-title-lg bp-md:text-ui-section-title mb-1 font-semibold text-card-foreground">
                               {player.type}
                             </h3>
                             <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                               <Badge
                                 variant="secondary"
-                                className="shrink-0 whitespace-nowrap text-xs bp-md:text-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1"
+                                className="shrink-0 whitespace-nowrap text-ui-label bp-md:text-ui-body-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1"
                               >
                                 여자 {player.femaleTension}
                               </Badge>
                               <Badge
                                 variant="outline"
-                                className="shrink-0 whitespace-nowrap text-xs bp-md:text-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1"
+                                className="shrink-0 whitespace-nowrap text-ui-label bp-md:text-ui-body-sm px-2 bp-md:px-3 py-0.5 bp-md:py-1"
                               >
                                 남자 {player.maleTension}
                               </Badge>
@@ -758,7 +758,7 @@ export default function TensionGuidePage() {
                       </div>
                     </div>
                     <div className="p-5 pt-0 sm:p-6 sm:pt-0">
-                      <p className="text-sm bp-md:text-base text-muted-foreground mb-3 bp-md:mb-4">
+                      <p className="text-ui-body-sm bp-md:text-ui-body-lg text-muted-foreground mb-3 bp-md:mb-4">
                         {player.description}
                       </p>
 
@@ -766,7 +766,7 @@ export default function TensionGuidePage() {
                       <div className="mb-3 bp-md:mb-4">
                         <div className="space-y-2">
                           <div>
-                            <div className="flex items-center justify-between text-xs bp-sm:text-xs mb-1">
+                            <div className="flex items-center justify-between text-ui-label bp-sm:text-ui-label mb-1">
                               <span className="text-muted-foreground">여자</span>
                               <span className="text-muted-foreground">
                                 {player.femaleRange[0]}~{player.femaleRange[1]}
@@ -783,7 +783,7 @@ export default function TensionGuidePage() {
                             </div>
                           </div>
                           <div>
-                            <div className="flex items-center justify-between text-xs bp-sm:text-xs mb-1">
+                            <div className="flex items-center justify-between text-ui-label bp-sm:text-ui-label mb-1">
                               <span className="text-muted-foreground">남자</span>
                               <span className="text-muted-foreground">
                                 {player.maleRange[0]}~{player.maleRange[1]}LB
@@ -798,7 +798,7 @@ export default function TensionGuidePage() {
                               />
                             </div>
                           </div>
-                          <div className="flex justify-between text-xs bp-sm:text-xs text-muted-foreground">
+                          <div className="flex justify-between text-ui-label bp-sm:text-ui-label text-muted-foreground">
                             <span>{tensionAxis.min}LB</span>
                             <span>{tensionAxis.max}LB</span>
                           </div>
@@ -809,7 +809,7 @@ export default function TensionGuidePage() {
                         {player.characteristics.map((char, i) => (
                           <span
                             key={i}
-                            className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap px-2 py-1 bg-muted rounded-full text-xs bp-sm:text-xs text-muted-foreground"
+                            className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap px-2 py-1 bg-muted rounded-full text-ui-label bp-sm:text-ui-label text-muted-foreground"
                           >
                             <CheckCircle2 className="h-3 w-3 text-primary" />
                             {char}
@@ -821,7 +821,7 @@ export default function TensionGuidePage() {
                         <div className="mt-3 bp-md:mt-4 pt-3 bp-md:pt-4 border-t border-border animate-in fade-in">
                           <div className="flex items-start gap-2 bg-muted/50 dark:bg-muted/40 p-3 rounded-lg">
                             <Lightbulb className="h-4 w-4 bp-md:h-5 bp-md:w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                            <p className="text-xs bp-md:text-sm text-foreground">
+                            <p className="text-ui-label bp-md:text-ui-body-sm text-foreground">
                               {player.recommended}
                             </p>
                           </div>
@@ -846,7 +846,7 @@ export default function TensionGuidePage() {
                   <div className={`h-1.5 bp-md:h-2 ${string.color}`} />
                   <div className="p-5 pb-3 bp-md:pb-4 sm:p-6 sm:pb-4">
                     <div className="flex items-center justify-between flex-wrap gap-2">
-                      <h3 className="flex items-center gap-2 bp-sm:gap-3 text-base bp-sm:text-lg bp-md:text-xl font-semibold text-card-foreground">
+                      <h3 className="flex items-center gap-2 bp-sm:gap-3 text-ui-body-lg bp-sm:text-ui-card-title-lg bp-md:text-ui-section-title font-semibold text-card-foreground">
                         <div
                           className={`w-8 h-8 bp-sm:w-9 bp-sm:h-9 bp-md:w-10 bp-md:h-10 ${string.color} rounded-lg bp-md:rounded-xl flex items-center justify-center`}
                         >
@@ -857,44 +857,44 @@ export default function TensionGuidePage() {
                     </div>
                   </div>
                   <div className="space-y-3 bp-md:space-y-4 p-5 pt-0 sm:p-6 sm:pt-0">
-                    <p className="text-sm text-muted-foreground">{string.characteristics}</p>
+                    <p className="text-ui-body-sm text-muted-foreground">{string.characteristics}</p>
 
                     <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                       <Badge
                         variant="secondary"
-                        className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug"
+                        className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-ui-label leading-snug"
                       >
                         여자 {string.ranges.female.min}~{string.ranges.female.max}LB
                       </Badge>
                       <Badge
                         variant="outline"
-                        className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-xs leading-snug"
+                        className="max-w-[10rem] shrink-0 whitespace-normal break-keep text-left text-ui-label leading-snug"
                       >
                         남자 {string.ranges.male.min}~{string.ranges.male.max}LB
                       </Badge>
                     </div>
 
                     {string.helperText && (
-                      <p className="text-xs text-muted-foreground">{string.helperText}</p>
+                      <p className="text-ui-label text-muted-foreground">{string.helperText}</p>
                     )}
 
                     <div>
                       <div>
-                        <h4 className="text-xs bp-md:text-sm font-semibold text-primary mb-2 flex items-center gap-1">
+                        <h4 className="text-ui-label bp-md:text-ui-body-sm font-semibold text-primary mb-2 flex items-center gap-1">
                           <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4" /> 장점
                         </h4>
                         <ul className="space-y-2">
                           {string.pros.map((pro: StringPro, i: number) => (
                             <li
                               key={i}
-                              className="text-xs text-foreground/80 flex items-start gap-2"
+                              className="text-ui-label text-foreground/80 flex items-start gap-2"
                             >
                               <div className="w-1 h-1 bg-foreground/50 rounded-full flex-shrink-0 mt-1.5" />
                               {typeof pro === "string" ? (
                                 <span>{pro}</span>
                               ) : (
                                 <div>
-                                  <p className="font-semibold text-foreground text-xs bp-sm:text-sm">
+                                  <p className="font-semibold text-foreground text-ui-label bp-sm:text-ui-body-sm">
                                     {pro.title}
                                   </p>
                                   <p className="text-foreground/80">{pro.description}</p>
@@ -910,10 +910,10 @@ export default function TensionGuidePage() {
                       <div className="flex items-start gap-2">
                         <Info className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="text-xs bp-md:text-sm font-medium text-foreground mb-0.5 bp-md:mb-1">
+                          <p className="text-ui-label bp-md:text-ui-body-sm font-medium text-foreground mb-0.5 bp-md:mb-1">
                             텐션 조정 팁
                           </p>
-                          <p className="text-xs bp-sm:text-sm text-foreground/80">
+                          <p className="text-ui-label bp-sm:text-ui-body-sm text-foreground/80">
                             {string.adjustment}
                           </p>
                         </div>
@@ -922,7 +922,7 @@ export default function TensionGuidePage() {
 
                     <div className="flex items-center gap-2 pt-1 bp-md:pt-2">
                       <Target className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-muted-foreground" />
-                      <span className="text-xs bp-sm:text-sm text-foreground/80">
+                      <span className="text-ui-label bp-sm:text-ui-body-sm text-foreground/80">
                         추천: {string.bestFor}
                       </span>
                     </div>
@@ -953,28 +953,28 @@ export default function TensionGuidePage() {
                         <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-primary rotate-180" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-sm bp-md:text-base text-foreground">
+                        <h4 className="font-semibold text-ui-body-sm bp-md:text-ui-body-lg text-foreground">
                           낮은 텐션
                         </h4>
-                        <p className="text-xs bp-md:text-sm text-muted-foreground">
+                        <p className="text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                           파워와 편안함 중심
                         </p>
                       </div>
                     </div>
                     <ul className="space-y-1.5 bp-md:space-y-2">
-                      <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
+                      <li className="flex items-start gap-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                         <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
                         스트링 베드가 더 많이 휘어져 볼에 더 많은 에너지를 전달합니다
                       </li>
-                      <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
+                      <li className="flex items-start gap-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                         <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
                         스윗스팟이 넓어져 미스히트 시에도 괜찮은 샷이 나옵니다
                       </li>
-                      <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
+                      <li className="flex items-start gap-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                         <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
                         팔과 어깨에 가해지는 충격이 줄어들어 부상 위험이 감소합니다
                       </li>
-                      <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
+                      <li className="flex items-start gap-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                         <AlertTriangle className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                         정밀한 컨트롤이 어려울 수 있습니다
                       </li>
@@ -988,28 +988,28 @@ export default function TensionGuidePage() {
                         <TrendingUp className="h-5 w-5 bp-md:h-6 bp-md:w-6 text-muted-foreground" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-sm bp-md:text-base text-foreground">
+                        <h4 className="font-semibold text-ui-body-sm bp-md:text-ui-body-lg text-foreground">
                           높은 텐션
                         </h4>
-                        <p className="text-xs bp-md:text-sm text-muted-foreground">
+                        <p className="text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                           컨트롤과 정밀함 중심
                         </p>
                       </div>
                     </div>
                     <ul className="space-y-1.5 bp-md:space-y-2">
-                      <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
+                      <li className="flex items-start gap-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                         <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
                         스트링 베드가 단단해져 정밀한 샷 컨트롤이 가능합니다
                       </li>
-                      <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
+                      <li className="flex items-start gap-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                         <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
                         스핀 생성이 용이하고 볼의 궤적을 예측하기 쉽습니다
                       </li>
-                      <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
+                      <li className="flex items-start gap-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                         <CheckCircle2 className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-primary mt-0.5 flex-shrink-0" />
                         강한 스윙 스피드를 가진 선수에게 적합합니다
                       </li>
-                      <li className="flex items-start gap-2 text-xs bp-md:text-sm text-muted-foreground">
+                      <li className="flex items-start gap-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                         <AlertTriangle className="h-3 w-3 bp-md:h-4 bp-md:w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                         팔에 무리가 갈 수 있으며 파워가 줄어들 수 있습니다
                       </li>
@@ -1030,10 +1030,10 @@ export default function TensionGuidePage() {
                   className="bg-secondary border-border"
                   contentClassName="space-y-2 bp-md:space-y-3"
                 >
-                  <p className="text-xs bp-md:text-sm text-foreground">
+                  <p className="text-ui-label bp-md:text-ui-body-sm text-foreground">
                     스트링은 장착 후 지속적으로 텐션이 감소합니다.
                   </p>
-                  <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground">
+                  <ul className="space-y-1.5 bp-md:space-y-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                     <li className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
                       첫 24시간: 10-15% 손실
@@ -1059,10 +1059,10 @@ export default function TensionGuidePage() {
                   className="bg-secondary border-border"
                   contentClassName="space-y-2 bp-md:space-y-3"
                 >
-                  <p className="text-xs bp-md:text-sm text-foreground">
+                  <p className="text-ui-label bp-md:text-ui-body-sm text-foreground">
                     올바른 보관은 스트링 수명과 텐션 유지에 중요합니다.
                   </p>
-                  <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground">
+                  <ul className="space-y-1.5 bp-md:space-y-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                     <li className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-foreground/50 rounded-full flex-shrink-0" />
                       직사광선 피하기
@@ -1088,10 +1088,10 @@ export default function TensionGuidePage() {
                   className="bg-muted/50 dark:bg-muted/40 border-border bp-sm:col-span-2 bp-lg:col-span-1"
                   contentClassName="space-y-2 bp-md:space-y-3"
                 >
-                  <p className="text-xs bp-md:text-sm text-muted-foreground">
+                  <p className="text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                     다음 신호가 나타나면 교체를 고려하세요.
                   </p>
-                  <ul className="space-y-1.5 bp-md:space-y-2 text-xs bp-md:text-sm text-muted-foreground">
+                  <ul className="space-y-1.5 bp-md:space-y-2 text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                     <li className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 bp-md:w-2 bp-md:h-2 bg-muted-foreground/60 rounded-full flex-shrink-0" />
                       탄력 감소 느낌
@@ -1121,38 +1121,38 @@ export default function TensionGuidePage() {
               >
                 <div className="space-y-4 bp-md:space-y-6">
                   <div className="border-b border-border pb-3 bp-md:pb-4">
-                    <h4 className="font-semibold text-sm bp-md:text-base text-foreground mb-1.5 bp-md:mb-2">
+                    <h4 className="font-semibold text-ui-body-sm bp-md:text-ui-body-lg text-foreground mb-1.5 bp-md:mb-2">
                       메인과 크로스 텐션을 다르게 해야 하나요?
                     </h4>
-                    <p className="text-xs bp-md:text-sm text-muted-foreground">
+                    <p className="text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                       반드시 필요하지는 않지만, 일부 선수들은 메인을 크로스보다 2-4LB 높게
                       설정합니다. 이는 스윗스팟을 확장하고 컨트롤과 파워의 균형을 맞추는 데 도움이
                       됩니다.
                     </p>
                   </div>
                   <div className="border-b border-border pb-3 bp-md:pb-4">
-                    <h4 className="font-semibold text-sm bp-md:text-base text-foreground mb-1.5 bp-md:mb-2">
+                    <h4 className="font-semibold text-ui-body-sm bp-md:text-ui-body-lg text-foreground mb-1.5 bp-md:mb-2">
                       새 라켓에는 어떤 텐션으로 시작해야 하나요?
                     </h4>
-                    <p className="text-xs bp-md:text-sm text-muted-foreground">
+                    <p className="text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                       라켓 제조사가 권장하는 텐션 범위의 중간값으로 시작하는 것이 좋습니다. 이후
                       플레이 느낌에 따라 2-4LB씩 조절해 나가세요.
                     </p>
                   </div>
                   <div className="border-b border-border pb-3 bp-md:pb-4">
-                    <h4 className="font-semibold text-sm bp-md:text-base text-foreground mb-1.5 bp-md:mb-2">
+                    <h4 className="font-semibold text-ui-body-sm bp-md:text-ui-body-lg text-foreground mb-1.5 bp-md:mb-2">
                       텐션을 자주 바꿔도 되나요?
                     </h4>
-                    <p className="text-xs bp-md:text-sm text-muted-foreground">
+                    <p className="text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                       일관된 텐션을 유지하는 것이 플레이 향상에 도움이 됩니다. 하지만 계절 변화나
                       코트 조건에 따라 2-4LB 정도 조절하는 것은 권장됩니다.
                     </p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-sm bp-md:text-base text-foreground mb-1.5 bp-md:mb-2">
+                    <h4 className="font-semibold text-ui-body-sm bp-md:text-ui-body-lg text-foreground mb-1.5 bp-md:mb-2">
                       프로 선수들은 어떤 텐션을 사용하나요?
                     </h4>
-                    <p className="text-xs bp-md:text-sm text-muted-foreground">
+                    <p className="text-ui-label bp-md:text-ui-body-sm text-muted-foreground">
                       프로 선수들은 보통 51-60LB 범위를 사용합니다. 일반적인 인식과 달리 매우 높은
                       텐션을 사용하지 않는 경우가 많습니다. 중요한 것은 자신의 플레이 스타일에 맞는
                       텐션을 찾는 것입니다.
@@ -1172,10 +1172,10 @@ export default function TensionGuidePage() {
           <div className="p-4 bp-sm:p-6 bp-md:p-10 bp-lg:p-12">
             <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
               <div className="text-center bp-md:text-left">
-                <h3 className="font-bold text-xl bp-sm:text-2xl bp-md:text-3xl mb-2 text-foreground">
+                <h3 className="font-semibold text-ui-section-title bp-sm:text-ui-section-title-lg bp-md:text-ui-page-title-lg mb-2 text-foreground">
                   최적의 텐션으로 스트링 서비스를 받아보세요
                 </h3>
-                <p className="text-muted-foreground text-sm bp-md:text-base bp-lg:text-lg">
+                <p className="text-muted-foreground text-ui-body-sm bp-md:text-ui-body-lg bp-lg:text-ui-card-title-lg">
                   스트링어가 정밀하게 작업해 드립니다
                 </p>
               </div>
@@ -1200,10 +1200,10 @@ export default function TensionGuidePage() {
           <div className="p-4 bp-sm:p-6 bp-md:p-10 bp-lg:p-12">
             <div className="flex flex-col bp-md:flex-row items-center justify-between gap-4 bp-md:gap-6">
               <div className="text-center bp-md:text-left">
-                <h3 className="font-bold text-xl bp-sm:text-2xl bp-md:text-3xl mb-2 text-foreground">
+                <h3 className="font-semibold text-ui-section-title bp-sm:text-ui-section-title-lg bp-md:text-ui-page-title-lg mb-2 text-foreground">
                   나에게 맞는 라켓을 찾아보세요
                 </h3>
-                <p className="text-muted-foreground text-sm bp-md:text-base bp-lg:text-lg">
+                <p className="text-muted-foreground text-ui-body-sm bp-md:text-ui-body-lg bp-lg:text-ui-card-title-lg">
                   라켓 검색을 활용해 나의 라켓을 선택해보세요
                 </p>
               </div>

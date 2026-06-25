@@ -67,7 +67,7 @@ export default function StringCheckboxes({
               />
               <span className="font-medium">{item.name}</span>
             </div>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-ui-body-sm text-muted-foreground">
               {item.mountingFee?.toLocaleString()}원
             </span>
           </label>

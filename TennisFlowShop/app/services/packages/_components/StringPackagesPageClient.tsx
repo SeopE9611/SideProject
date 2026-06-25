@@ -132,14 +132,14 @@ export default function StringPackagesPageClient({
           contentClassName="pt-4"
         >
           <div className="grid gap-4 lg:grid-cols-[1.15fr_1fr] lg:items-center">
-            <ol className="grid gap-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+            <ol className="grid gap-3 text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body-lg">
               {[
                 "패키지별 횟수와 유효기간을 비교합니다.",
                 "선택한 패키지를 주문하고 결제합니다.",
                 "교체서비스 신청 시 보유 횟수에서 사용합니다.",
               ].map((step, index) => (
                 <li key={step} className="flex min-w-0 gap-3 break-keep">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-ui-label font-semibold text-primary">
                     {index + 1}
                   </span>
                   <span className="min-w-0 break-words">{step}</span>
@@ -155,7 +155,7 @@ export default function StringPackagesPageClient({
                   <div className="shrink-0 text-primary">{benefit.icon}</div>
                   <div className="min-w-0">
                     <p className="font-semibold text-foreground">{benefit.title}</p>
-                    <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
+                    <p className="mt-1 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
                       {benefit.description}
                     </p>
                   </div>
@@ -191,11 +191,11 @@ export default function StringPackagesPageClient({
               variant="muted"
               className="mx-auto mb-6 max-w-3xl text-left sm:text-center"
             >
-              <p className="text-sm font-semibold text-foreground">추가 구매가 제한되어 있습니다</p>
-              <p className="mt-2 break-keep text-sm leading-relaxed text-muted-foreground">
+              <p className="text-ui-body-sm font-semibold text-foreground">추가 구매가 제한되어 있습니다</p>
+              <p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
                 {ownershipBlockedMessage}
               </p>
-              <p className="mt-1 break-keep text-xs leading-relaxed text-muted-foreground">
+              <p className="mt-1 break-keep text-ui-label leading-relaxed text-muted-foreground">
                 {cardBlockedHelperText}
               </p>
             </PublicSurface>
@@ -261,10 +261,10 @@ export default function StringPackagesPageClient({
                   key={index}
                   className="h-full transition-shadow duration-200 hover:shadow-md"
                 >
-                  <h3 className="break-keep text-lg font-semibold leading-tight text-foreground">
+                  <h3 className="break-keep text-ui-card-title-lg font-semibold leading-tight text-foreground">
                     Q. {faq.question}
                   </h3>
-                  <p className="mt-2 break-keep text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
                     A. {faq.answer}
                   </p>
                 </PublicSurface>
