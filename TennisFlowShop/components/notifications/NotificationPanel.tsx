@@ -13,7 +13,7 @@ export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onCl
   const router = useRouter();
   const { items, unreadCount, status, markAsRead, markAllAsRead } = useNotificationList({
     enabled,
-    limit: 10,
+    limit: 5,
   });
 
   const handleItemClick = async (id: string, href: string | null) => {

@@ -6,12 +6,23 @@ import { useEffect, useState } from "react";
 import { useSWRConfig } from "swr";
 
 import { NotificationItem } from "@/components/notifications/NotificationItem";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { NotificationListItem } from "@/lib/hooks/useNotificationList";
-import { showErrorToast } from "@/lib/toast";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
 const LIMIT = 20;
 
@@ -51,6 +62,7 @@ export default function NotificationsClient() {
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isMarkingAll, setIsMarkingAll] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -137,6 +149,32 @@ export default function NotificationsClient() {
     }
   };
 
+  const deleteAllNotifications = async () => {
+    try {
+      setIsDeletingAll(true);
+      const res = await fetch("/api/notifications", {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        throw new Error(`알림 전체 삭제 실패 (${res.status})`);
+      }
+
+      setItems([]);
+      setUnreadCount(0);
+      setHasMore(false);
+      setNextCursor(null);
+      await globalMutate("/api/notifications/unread-count");
+      showSuccessToast("알림 기록을 모두 삭제했습니다.");
+    } catch (error) {
+      console.error(error);
+      showErrorToast("알림 삭제에 실패했습니다.");
+    } finally {
+      setIsDeletingAll(false);
+    }
+  };
+
   const handleItemClick = async (item: NotificationListItem) => {
     try {
       if (!item.readAt) await markAsRead(item.id);
@@ -168,15 +206,48 @@ export default function NotificationsClient() {
                 </p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              disabled={unreadCount <= 0 || isMarkingAll}
-              onClick={markAllAsRead}
-              className="w-full gap-2 sm:w-auto"
-            >
-              {isMarkingAll && <Loader2 className="h-4 w-4 animate-spin" />}
-              모두 읽음
-            </Button>
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+              <Button
+                variant="outline"
+                disabled={unreadCount <= 0 || isMarkingAll || isDeletingAll}
+                onClick={markAllAsRead}
+                className="w-full gap-2 sm:w-auto"
+              >
+                {isMarkingAll && <Loader2 className="h-4 w-4 animate-spin" />}
+                모두 읽음
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    disabled={items.length <= 0 || isDeletingAll}
+                    className="w-full gap-2 sm:w-auto"
+                  >
+                    {isDeletingAll && <Loader2 className="h-4 w-4 animate-spin" />}
+                    전체 삭제
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>알림 기록을 모두 삭제할까요?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      삭제된 알림은 목록에서 사라지며 되돌릴 수 없습니다.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel disabled={isDeletingAll}>취소</AlertDialogCancel>
+                    <AlertDialogAction
+                      disabled={isDeletingAll}
+                      className="gap-2 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={deleteAllNotifications}
+                    >
+                      {isDeletingAll && <Loader2 className="h-4 w-4 animate-spin" />}
+                      전체 삭제
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">

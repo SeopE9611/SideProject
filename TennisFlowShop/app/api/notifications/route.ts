@@ -63,3 +63,33 @@ export async function GET(req: NextRequest) {
     { headers: NO_STORE },
   );
 }
+
+export async function DELETE() {
+  const userId = await getCurrentUserId();
+  if (!userId || !ObjectId.isValid(userId)) {
+    return NextResponse.json(
+      { ok: false, error: "Unauthorized" },
+      { status: 401, headers: NO_STORE },
+    );
+  }
+
+  const now = new Date();
+  const db = await getDb();
+  const result = await db.collection<UserNotificationDoc>("user_notifications").updateMany(
+    {
+      userId: new ObjectId(userId),
+      $or: [{ archivedAt: null }, { archivedAt: { $exists: false } }],
+    },
+    {
+      $set: {
+        archivedAt: now,
+        readAt: now,
+      },
+    },
+  );
+
+  return NextResponse.json(
+    { ok: true, modifiedCount: result.modifiedCount },
+    { headers: NO_STORE },
+  );
+}
