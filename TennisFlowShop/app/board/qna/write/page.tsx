@@ -874,15 +874,20 @@ export default function QnaWritePage() {
               </div>
             </CardContent>
 
-            <CardFooter className="flex justify-between p-4 md:p-8 border-t bg-muted/50 dark:bg-muted/20">
-              <Button variant="outline" asChild size="lg" className="px-8 bg-transparent">
+            <CardFooter className="flex flex-col gap-2 border-t bg-muted/50 p-4 bp-sm:flex-row bp-sm:flex-wrap bp-sm:justify-between md:p-8 dark:bg-muted/20">
+              <Button
+                variant="outline"
+                asChild
+                size="lg"
+                className="w-full bg-transparent px-8 bp-sm:w-auto"
+              >
                 <Link href="/board/qna" onClick={guardLinkLeave}>
                   취소
                 </Link>
               </Button>
               <Button
                 size="lg"
-                className="px-8 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+                className="w-full bg-primary px-8 text-primary-foreground hover:bg-primary/90 disabled:opacity-60 bp-sm:w-auto"
                 onClick={handleSubmit}
                 disabled={submitting}
               >
