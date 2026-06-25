@@ -23,6 +23,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
+import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-flags";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
 import { cn } from "@/lib/utils";
 import {
@@ -385,6 +386,13 @@ const Header = () => {
     ],
 
     boards: [
+      ...(COMMUNITY_BOARDS_ENABLED
+        ? [
+            { name: "자유게시판", href: "/board/free" },
+            { name: "중고거래", href: "/board/market" },
+            { name: "장비 사용기", href: "/board/gear" },
+          ]
+        : []),
       { name: "리뷰", href: "/reviews" },
     ],
   };

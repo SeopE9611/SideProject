@@ -857,16 +857,16 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </SiteContainer>
       </section>
 
-      {/* 공지사항 섹션 */}
+      {/* 이용 안내 섹션 */}
       <section ref={communitySectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <SectionHeader
-            title="소식"
-            description="공지사항 최신 소식을 확인하세요"
+            title="이용 안내"
+            description="공지사항, 스트링 교체 신청, 가격 안내, 문의까지 필요한 메뉴를 빠르게 확인하세요."
             align="center"
             className="mb-8 bp-sm:mb-10"
           />
-          <div className="mx-auto max-w-3xl">
+          <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] bp-lg:items-stretch">
             {shouldLoadCommunity ? (
               <HomeNoticePreview initialItems={initialHomeData?.notices} />
             ) : (
@@ -876,6 +876,56 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 className="h-[300px] animate-pulse border-border/60"
               />
             )}
+            <div className="grid gap-3 bp-sm:grid-cols-2">
+              <Link
+                href="/board/notice"
+                className={cn(surfaceCardInteractiveClass, "group flex min-h-32 flex-col justify-between p-5")}
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
+                  <BookOpen className="h-5 w-5" />
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-ui-card-title font-semibold text-foreground">공지사항</p>
+                  <p className="text-ui-body-sm text-muted-foreground">운영 안내와 중요 소식을 확인하세요.</p>
+                </div>
+              </Link>
+              <Link
+                href="/services/apply"
+                className={cn(surfaceCardInteractiveClass, "group flex min-h-32 flex-col justify-between p-5")}
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
+                  <Wrench className="h-5 w-5" />
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-ui-card-title font-semibold text-foreground">스트링 교체 신청</p>
+                  <p className="text-ui-body-sm text-muted-foreground">보유 장비 교체 서비스를 신청하세요.</p>
+                </div>
+              </Link>
+              <Link
+                href="/services/pricing"
+                className={cn(surfaceCardInteractiveClass, "group flex min-h-32 flex-col justify-between p-5")}
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
+                  <Tags className="h-5 w-5" />
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-ui-card-title font-semibold text-foreground">가격 안내</p>
+                  <p className="text-ui-body-sm text-muted-foreground">장착 비용과 서비스 옵션을 확인하세요.</p>
+                </div>
+              </Link>
+              <Link
+                href="/board/qna"
+                className={cn(surfaceCardInteractiveClass, "group flex min-h-32 flex-col justify-between p-5")}
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
+                  <Search className="h-5 w-5" />
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-ui-card-title font-semibold text-foreground">Q&A 문의</p>
+                  <p className="text-ui-body-sm text-muted-foreground">궁금한 점을 남기고 답변을 받아보세요.</p>
+                </div>
+              </Link>
+            </div>
           </div>
         </SiteContainer>
       </section>

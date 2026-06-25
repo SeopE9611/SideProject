@@ -1,3 +1,13 @@
+import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-flags";
+
+const communityBoardLinks = COMMUNITY_BOARDS_ENABLED
+  ? [
+      { name: "자유게시판", href: "/board/free" },
+      { name: "중고거래", href: "/board/market" },
+      { name: "장비 사용기", href: "/board/gear" },
+    ]
+  : [];
+
 export const NAV_FLAGS = {
   /** 재질 카테고리(스트링 타입) 노출 온/오프 */
   SHOW_MATERIAL_MENU: false,
@@ -51,8 +61,9 @@ export const NAV_LINKS = {
     { name: "Q&A 문의", href: "/board/qna" },
   ],
 
-  /** 커뮤니티형 게시판(지금은 리뷰만, 앞으로 자유게시판/브랜드 게시판 등 확장 예정) */
+  /** 커뮤니티형 게시판: 닫힘 상태에서는 리뷰만, 열림 상태에서는 주요 게시판 링크 복구 */
   boards: [
+    ...communityBoardLinks,
     { name: "리뷰", href: "/reviews" },
   ],
 } as const;
