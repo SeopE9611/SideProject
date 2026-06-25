@@ -125,8 +125,8 @@ export default function MessageComposeDialog({
               <Send className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <DialogTitle className="text-lg">쪽지 보내기</DialogTitle>
-              <DialogDescription className="flex items-center gap-1.5 text-sm mt-1">
+              <DialogTitle className="text-ui-card-title-lg">쪽지 보내기</DialogTitle>
+              <DialogDescription className="flex items-center gap-1.5 text-ui-body-sm mt-1">
                 <User className="h-3.5 w-3.5" />
                 <span>
                   받는 사람: <span className="font-medium text-foreground">{receiverLabel}</span>
@@ -138,7 +138,7 @@ export default function MessageComposeDialog({
 
         <div className="grid gap-5 py-4">
           <div className="grid gap-2.5">
-            <label htmlFor="message-title" className="text-sm font-semibold text-foreground">
+            <label htmlFor="message-title" className="text-ui-body-sm font-semibold text-foreground">
               제목
             </label>
             <Input
@@ -151,7 +151,7 @@ export default function MessageComposeDialog({
           </div>
 
           <div className="grid gap-2.5">
-            <label htmlFor="message-body" className="text-sm font-semibold text-foreground">
+            <label htmlFor="message-body" className="text-ui-body-sm font-semibold text-foreground">
               내용
             </label>
             <Textarea

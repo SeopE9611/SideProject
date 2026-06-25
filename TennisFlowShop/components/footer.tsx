@@ -326,7 +326,7 @@ const Footer = () => {
                   </div>
 
                   <div className="space-y-1.5 text-left">
-                    <div className="font-brand-bold text-ui-section-title font-bold tracking-normal text-foreground">
+                    <div className="font-brand-bold text-ui-section-title font-semibold tracking-normal text-foreground">
                       도깨비테니스
                     </div>
                   </div>

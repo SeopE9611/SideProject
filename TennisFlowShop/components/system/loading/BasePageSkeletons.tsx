@@ -17,7 +17,7 @@ export function FullPageSpinner({
     <div className={cn("grid place-items-center", minHeightClassName, className)}>
       <div className="flex flex-col items-center gap-3">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
-        <p className="text-sm text-muted-foreground">{label}</p>
+        <p className="text-ui-body-sm text-muted-foreground">{label}</p>
       </div>
     </div>
   );

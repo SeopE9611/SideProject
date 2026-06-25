@@ -28,8 +28,8 @@ export default function RefundAccountFields({
   return (
     <div className="space-y-3 rounded-md border border-border/60 bg-muted/30 p-3">
       <div>
-        <p className="text-sm font-semibold text-foreground">환불 계좌 정보</p>
-        {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
+        <p className="text-ui-body-sm font-semibold text-foreground">환불 계좌 정보</p>
+        {description && <p className="mt-1 text-ui-label text-muted-foreground">{description}</p>}
       </div>
 
       <div className="space-y-2">

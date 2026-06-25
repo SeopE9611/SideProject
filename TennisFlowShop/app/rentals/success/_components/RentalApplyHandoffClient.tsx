@@ -59,8 +59,8 @@ export default function RentalApplyHandoffClient({
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-success/30 bg-success/10 text-success dark:bg-success/15">
             <CheckCircle2 className="h-7 w-7" />
           </div>
-          <CardTitle className="text-2xl bp-sm:text-3xl">대여 신청 접수 완료</CardTitle>
-          <CardDescription className="text-base">
+          <CardTitle className="text-ui-page-title bp-sm:text-ui-page-title-lg">대여 신청 접수 완료</CardTitle>
+          <CardDescription className="text-ui-body">
             대여 신청이 정상적으로 접수되었습니다.
             <br />
             교체 서비스 신청서 작성을 진행해주세요.
@@ -69,18 +69,18 @@ export default function RentalApplyHandoffClient({
 
         <CardContent className="space-y-4">
           <div className="rounded-lg bg-muted p-4 flex items-center justify-between gap-3">
-            <div className="text-sm text-muted-foreground">대여 번호</div>
-            <div className="font-mono text-sm font-semibold">{rentalId}</div>
+            <div className="text-ui-body-sm text-muted-foreground">대여 번호</div>
+            <div className="font-mono text-ui-body-sm font-semibold">{rentalId}</div>
           </div>
 
           <div className="rounded-lg border border-border bg-secondary p-4 text-foreground">
             <div className="flex items-start gap-2">
               <Clock className="mt-0.5 h-4 w-4" />
               <div className="flex-1">
-                <div className="text-sm font-semibold text-foreground">
+                <div className="text-ui-body-sm font-semibold text-foreground">
                   스트링 교체 신청서로 이동 중
                 </div>
-                <div className="mt-1 text-xs text-foreground">
+                <div className="mt-1 text-ui-label text-foreground">
                   {cancelled ? (
                     <>자동 이동이 취소되었습니다. 준비되면 아래 버튼으로 이동해 주세요.</>
                   ) : (
@@ -122,7 +122,7 @@ export default function RentalApplyHandoffClient({
             </>
           )}
 
-          <p className="text-xs text-muted-foreground text-center">
+          <p className="text-ui-label text-muted-foreground text-center">
             대여 내역은 마이페이지에서 언제든지 확인할 수 있으며, 최종 결제/입금 계좌/요금 요약 등은
             신청서 제출 후 성공 페이지에서 안내됩니다.
           </p>

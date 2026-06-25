@@ -45,9 +45,9 @@ export default function MaskedBlock({
 
       {/* 위층(안내문 오버레이) */}
       <div className="absolute inset-0 grid place-items-center">
-        <div className="flex items-center gap-2 rounded-md bg-card/85 backdrop-blur px-3 py-2 text-sm text-foreground ring-1 ring-border shadow-sm">
+        <div className="flex items-center gap-2 rounded-md bg-card/85 backdrop-blur px-3 py-2 text-ui-body-sm text-foreground ring-1 ring-border shadow-sm">
           <Shield className="h-4 w-4 text-muted-foreground" />
-          <span className="text-[13px]">{label}</span>
+          <span className="text-ui-caption">{label}</span>
         </div>
       </div>
     </div>

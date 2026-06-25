@@ -45,10 +45,10 @@ const uiToPayment: Record<CurrentStatusUI, PaymentStatus> = {
 };
 
 const BADGE_CLASS: Record<CurrentStatusUI, string> = {
-  활성: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary rounded px-2 py-0.5 text-xs",
+  활성: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary rounded px-2 py-0.5 text-ui-label",
   비활성:
-    "bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground rounded px-2 py-0.5 text-xs",
-  취소: "bg-destructive/10 text-destructive dark:bg-destructive/15 dark:text-destructive rounded px-2 py-0.5 text-xs",
+    "bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground rounded px-2 py-0.5 text-ui-label",
+  취소: "bg-destructive/10 text-destructive dark:bg-destructive/15 dark:text-destructive rounded px-2 py-0.5 text-ui-label",
 };
 
 export default function PackageCurrentStatusSelect({
@@ -169,7 +169,7 @@ export default function PackageCurrentStatusSelect({
             <div className="space-y-1.5">
               <Label>사유 선택</Label>
               <select
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-ui-body-sm"
                 value={reasonType}
                 onChange={(e) => setReasonType(e.target.value)}
                 disabled={saving}
@@ -207,14 +207,14 @@ export default function PackageCurrentStatusSelect({
 
           <DialogFooter>
             <button
-              className="inline-flex items-center rounded-md border px-3 py-2 text-sm"
+              className="inline-flex items-center rounded-md border px-3 py-2 text-ui-body-sm"
               onClick={() => setShowDialog(false)}
               disabled={saving}
             >
               취소
             </button>
             <button
-              className="inline-flex items-center rounded-md bg-primary text-primary-foreground px-3 py-2 text-sm"
+              className="inline-flex items-center rounded-md bg-primary text-primary-foreground px-3 py-2 text-ui-body-sm"
               onClick={() => {
                 const reason = [reasonType, reasonText].filter(Boolean).join(" / ");
                 if (!isRestoreDialog) setSelected("취소");

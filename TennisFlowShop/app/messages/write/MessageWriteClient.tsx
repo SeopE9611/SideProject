@@ -82,7 +82,7 @@ export default function MessageWriteClient({ me, toUser }: { me: SafeUser; toUse
         className="mx-auto max-w-4xl"
         contentClassName="space-y-5"
       >
-          <div className="text-sm text-muted-foreground" data-cy="message-recipient">
+          <div className="text-ui-body-sm text-muted-foreground" data-cy="message-recipient">
             받는 사람:{" "}
             <span className="font-medium text-foreground">{toUser?.name ?? "알 수 없음"}</span>
           </div>
@@ -125,7 +125,7 @@ export default function MessageWriteClient({ me, toUser }: { me: SafeUser; toUse
             </Button>
           </div>
 
-          <div className="text-xs text-muted-foreground">
+          <div className="text-ui-label text-muted-foreground">
             스팸 방지를 위해 “게시글 5개 + 댓글 5개” 조건 및 레이트리밋이 적용됩니다. (관리자는
             예외)
           </div>

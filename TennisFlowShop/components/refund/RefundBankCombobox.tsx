@@ -83,14 +83,14 @@ export default function RefundBankCombobox({
 
         <div ref={listRef} className="max-h-64 overflow-y-auto rounded-md border border-border/60">
           {filteredBanks.length === 0 && (
-            <p className="px-3 py-2 text-sm text-muted-foreground">검색 결과가 없습니다.</p>
+            <p className="px-3 py-2 text-ui-body-sm text-muted-foreground">검색 결과가 없습니다.</p>
           )}
 
           {filteredBanks.map((bank) => (
             <button
               key={bank.code}
               type="button"
-              className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-muted"
+              className="flex w-full items-center justify-between px-3 py-2 text-left text-ui-body-sm hover:bg-muted"
               onClick={() => {
                 onChange(bank.code);
                 setOpen(false);

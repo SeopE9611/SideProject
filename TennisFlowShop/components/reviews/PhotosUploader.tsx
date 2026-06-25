@@ -190,7 +190,7 @@ export default function PhotosUploader({
           disabled={isUploading}
         />
         {isUploading && (
-          <span className="inline-flex items-center text-xs text-muted-foreground">
+          <span className="inline-flex items-center text-ui-label text-muted-foreground">
             <Loader2 className="mr-1 h-3 w-3 animate-spin" />
             업로드 중…
           </span>
@@ -250,7 +250,7 @@ export default function PhotosUploader({
 
       {/* 네트워크 경고(옵션): 오프라인이면 즉시 표시 */}
       {!navigator.onLine && (
-        <div className="flex items-center gap-1 text-xs text-primary">
+        <div className="flex items-center gap-1 text-ui-label text-primary">
           <AlertCircle className="w-3 h-3" />
           오프라인 상태예요. 연결 후 다시 시도해 주세요.
         </div>

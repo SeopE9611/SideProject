@@ -192,7 +192,7 @@ export default function RentalsSuccessClient({ data }: Props) {
           {hasStateMismatch && (
             <Card className="border border-warning/40 bg-warning/10 shadow-sm">
               <CardHeader className="bg-warning/10">
-                <CardTitle className="text-base text-warning">접수 상태 확인 중</CardTitle>
+                <CardTitle className="text-ui-body text-warning">접수 상태 확인 중</CardTitle>
                 <CardDescription className="text-warning/90">
                   최신 상태 동기화 중입니다. 잠시 후 새로고침하거나 마이페이지에서 최종 상태를
                   확인해 주세요.
@@ -203,16 +203,16 @@ export default function RentalsSuccessClient({ data }: Props) {
 
           <Card className="overflow-hidden border border-border bg-card shadow-md">
             <div className="bg-muted/30 p-4 md:p-6">
-              <CardTitle className="flex items-center gap-3 text-2xl">
+              <CardTitle className="flex items-center gap-3 text-ui-page-title">
                 <Package className="h-6 w-6 text-primary" />
                 대여 정보
                 {withService && (
-                  <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                  <span className="rounded-full border border-border px-2 py-0.5 text-ui-label font-medium text-muted-foreground">
                     교체서비스 포함
                   </span>
                 )}
               </CardTitle>
-              <CardDescription className="mt-2 text-lg">
+              <CardDescription className="mt-2 text-ui-card-title-lg">
                 {withService
                   ? "접수된 대여 및 교체서비스 정보를 함께 확인하세요."
                   : isPickup
@@ -221,7 +221,7 @@ export default function RentalsSuccessClient({ data }: Props) {
               </CardDescription>
             </div>
             <CardContent className="p-4 md:p-6">
-              <div className="space-y-4 rounded-lg border border-border bg-muted/20 p-4 text-sm">
+              <div className="space-y-4 rounded-lg border border-border bg-muted/20 p-4 text-ui-body-sm">
                 <p>
                   <span className="text-muted-foreground">대여 접수번호:</span>{" "}
                   <span className="font-mono font-semibold text-foreground">
@@ -254,8 +254,8 @@ export default function RentalsSuccessClient({ data }: Props) {
                 )}
               </div>
 
-              <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground">
-                <h3 className="font-bold text-foreground">다음 단계</h3>
+              <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-ui-body-sm text-muted-foreground">
+                <h3 className="font-semibold text-foreground">다음 단계</h3>
                 <p className="mt-2 leading-relaxed">
                   {isPickup
                     ? "매장 방문 전 대여 상태를 확인하고 신분증을 준비해주세요."
@@ -269,7 +269,7 @@ export default function RentalsSuccessClient({ data }: Props) {
               <Separator className="my-4 md:my-6" />
 
               <div className="mb-4 md:mb-6">
-                <h3 className="mb-4 flex items-center gap-2 text-lg font-bold">
+                <h3 className="mb-4 flex items-center gap-2 text-ui-card-title-lg font-semibold">
                   <Package className="h-5 w-5 text-foreground" /> 대여 라켓
                 </h3>
                 <div className="rounded-lg border border-border bg-muted/30 p-4">
@@ -281,10 +281,10 @@ export default function RentalsSuccessClient({ data }: Props) {
                           : "라켓 정보 없음"}
                       </p>
                       <div className="mt-1 flex items-center gap-2">
-                        <Badge variant={badgeToneVariant("brand")} className="px-2 py-0.5 text-xs">
+                        <Badge variant={badgeToneVariant("brand")} className="px-2 py-0.5 text-ui-label">
                           상태 {data.racket?.condition}
                         </Badge>
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-ui-body-sm text-muted-foreground">
                           대여 기간: {data.period}일
                         </span>
                       </div>
@@ -297,8 +297,8 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <>
                   <Separator className="my-4 md:my-6" />
                   <div className="space-y-3">
-                    <h3 className="text-lg font-bold text-foreground">교체서비스 정보</h3>
-                    <div className="space-y-2 rounded-lg border border-border bg-background p-4 text-sm">
+                    <h3 className="text-ui-card-title-lg font-semibold text-foreground">교체서비스 정보</h3>
+                    <div className="space-y-2 rounded-lg border border-border bg-background p-4 text-ui-body-sm">
                       <p>
                         <span className="text-muted-foreground">접수 방식:</span>{" "}
                         <span className="font-semibold text-foreground">
@@ -343,19 +343,19 @@ export default function RentalsSuccessClient({ data }: Props) {
               <Separator className="my-4 md:my-6" />
 
               <div className="space-y-4">
-                <h3 className="text-lg font-bold text-foreground">금액 정보</h3>
+                <h3 className="text-ui-card-title-lg font-semibold text-foreground">금액 정보</h3>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">대여 수수료</span>
-                  <span className="text-lg font-semibold">{data.fee.toLocaleString()}원</span>
+                  <span className="text-ui-card-title-lg font-semibold">{data.fee.toLocaleString()}원</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">보증금</span>
-                  <span className="text-lg font-semibold">{data.deposit.toLocaleString()}원</span>
+                  <span className="text-ui-card-title-lg font-semibold">{data.deposit.toLocaleString()}원</span>
                 </div>
                 {data.stringPrice > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">스트링 상품</span>
-                    <span className="text-lg font-semibold">
+                    <span className="text-ui-card-title-lg font-semibold">
                       {data.stringPrice.toLocaleString()}원
                     </span>
                   </div>
@@ -363,18 +363,18 @@ export default function RentalsSuccessClient({ data }: Props) {
                 {data.stringingFee > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">교체서비스</span>
-                    <span className="text-lg font-semibold">
+                    <span className="text-ui-card-title-lg font-semibold">
                       {data.stringingFee.toLocaleString()}원
                     </span>
                   </div>
                 )}
                 <Separator />
                 <div className="rounded-xl border border-border bg-muted/30 p-4 md:p-6">
-                  <div className="flex items-center justify-between text-2xl font-bold">
+                  <div className="flex items-center justify-between text-ui-page-title font-semibold">
                     <span className="text-foreground">총 결제 금액</span>
                     <span className="text-primary">{total.toLocaleString()}원</span>
                   </div>
-                  <p className="mt-2 text-sm text-muted-foreground">
+                  <p className="mt-2 text-ui-body-sm text-muted-foreground">
                     * 반납 완료 후 보증금 환불 (연체/파손 시 차감)
                   </p>
                 </div>
@@ -383,9 +383,9 @@ export default function RentalsSuccessClient({ data }: Props) {
               <Separator className="my-4 md:my-6" />
 
               <div className="space-y-3">
-                <h3 className="text-lg font-bold text-foreground">결제 정보</h3>
+                <h3 className="text-ui-card-title-lg font-semibold text-foreground">결제 정보</h3>
                 {isNicePaid ? (
-                  <div className="rounded-lg border border-border bg-background p-4 text-sm space-y-1">
+                  <div className="rounded-lg border border-border bg-background p-4 text-ui-body-sm space-y-1">
                     <p className="text-muted-foreground">결제가 완료되었습니다.</p>
                     <div>
                       결제수단: <b>{paymentMethodLabel}</b>
@@ -408,7 +408,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                     )}
                   </div>
                 ) : (
-                  <div className="rounded-lg border border-border bg-background p-4 text-sm">
+                  <div className="rounded-lg border border-border bg-background p-4 text-ui-body-sm">
                     <p className="text-muted-foreground">
                       아래 계좌로 입금해 주세요. 입금 확인 후 결제완료로 상태가 변경됩니다.
                     </p>
@@ -437,11 +437,11 @@ export default function RentalsSuccessClient({ data }: Props) {
               <Separator className="my-4 md:my-6" />
 
               <div className="space-y-3">
-                <h3 className="flex items-center gap-2 text-lg font-bold text-foreground">
+                <h3 className="flex items-center gap-2 text-ui-card-title-lg font-semibold text-foreground">
                   <MapPin className="h-5 w-5 text-foreground" />
                   수령 정보
                 </h3>
-                <div className="space-y-2 rounded-lg border border-border bg-background p-4 text-sm">
+                <div className="space-y-2 rounded-lg border border-border bg-background p-4 text-ui-body-sm">
                   {isPickup ? (
                     <>
                       <p>
@@ -493,11 +493,11 @@ export default function RentalsSuccessClient({ data }: Props) {
               <Separator className="my-4 md:my-6" />
 
               <div className="space-y-3">
-                <h3 className="flex items-center gap-2 text-lg font-bold text-foreground">
+                <h3 className="flex items-center gap-2 text-ui-card-title-lg font-semibold text-foreground">
                   <Undo2 className="h-5 w-5 text-foreground" />
                   보증금 환급 계좌
                 </h3>
-                <div className="rounded-lg border border-border bg-background p-4 text-sm">
+                <div className="rounded-lg border border-border bg-background p-4 text-ui-body-sm">
                   <p className="text-muted-foreground">
                     반납 완료 후 아래 계좌로 보증금을 환급해 드립니다.
                   </p>
@@ -576,7 +576,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                       <h4 className="mb-1 font-semibold text-foreground">
                         {isPickup ? "방문 수령 안내" : "배송 안내"}
                       </h4>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-ui-body-sm text-muted-foreground">
                         {isPickup
                           ? "입금 확인 후 매장에서 수령 준비가 진행됩니다."
                           : "결제 완료 후 배송이 시작됩니다."}
@@ -587,7 +587,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                     <Clock className="mt-0.5 h-5 w-5 text-muted-foreground" />
                     <div>
                       <h4 className="mb-1 font-semibold text-foreground">대여 기간</h4>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-ui-body-sm text-muted-foreground">
                         대여 기간은 {data.period}일입니다. 반납 기한을 꼭 지켜주세요.
                       </p>
                     </div>
@@ -598,7 +598,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                     <Shield className="mt-0.5 h-5 w-5 text-foreground" />
                     <div>
                       <h4 className="mb-1 font-semibold text-foreground">보증금 환불</h4>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-ui-body-sm text-muted-foreground">
                         반납 완료 시 보증금이 환불됩니다. 연체 또는 파손 시 차감될 수 있습니다.
                       </p>
                     </div>
@@ -607,7 +607,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                     <Phone className="mt-0.5 h-5 w-5 text-muted-foreground" />
                     <div>
                       <h4 className="mb-1 font-semibold text-foreground">고객 지원</h4>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-ui-body-sm text-muted-foreground">
                         대여 관련 문의사항은 고객센터(010-5218-5248)로 연락주세요.
                       </p>
                     </div>

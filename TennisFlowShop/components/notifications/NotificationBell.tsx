@@ -47,7 +47,7 @@ export function NotificationBell({
     >
       <Bell className={cn(mode === "desktop" ? "!h-5 !w-5" : "h-5 w-5")} aria-hidden="true" />
       {unreadCount > 0 && (
-        <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+        <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-ui-micro font-semibold text-destructive-foreground">
           {badge}
         </span>
       )}
@@ -72,7 +72,7 @@ export function NotificationBell({
       >
         <Bell className="h-5 w-5" aria-hidden="true" />
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-ui-micro font-semibold text-destructive-foreground">
             {badge}
           </span>
         )}

@@ -133,10 +133,10 @@ export default function LoginGate({
                 <LogIn className="h-7 w-7" />
               </div>
 
-              <h1 className="mb-2 break-keep text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+              <h1 className="mb-2 break-keep text-ui-page-title font-semibold tracking-tight text-foreground md:text-ui-page-title-lg">
                 로그인이 필요합니다.
               </h1>
-              <p className="break-keep text-sm leading-relaxed text-muted-foreground md:text-base">
+              <p className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground md:text-ui-body">
                 {v.description}
               </p>
 

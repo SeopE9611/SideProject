@@ -1053,15 +1053,15 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   <Search className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-base bp-sm:text-lg font-bold text-foreground">라켓 검색</div>
-                  <p className="mt-1.5 text-sm bp-sm:text-base text-muted-foreground leading-relaxed">
+                  <div className="text-ui-body bp-sm:text-ui-card-title-lg font-semibold text-foreground">라켓 검색</div>
+                  <p className="mt-1.5 text-ui-body-sm bp-sm:text-ui-body text-muted-foreground leading-relaxed">
                     <span className="block bp-sm:inline">헤드/무게/밸런스/RA/SW</span>
                     <span className="block bp-sm:inline bp-sm:ml-1">범위로 중고 라켓을 빠르게 좁혀보세요.</span>
                   </p>
                 </div>
               </div>
 
-              <div className="shrink-0 inline-flex items-center justify-center rounded-xl border border-border/70 bg-card px-5 py-2.5 text-sm bp-sm:text-base font-semibold text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md">
+              <div className="shrink-0 inline-flex items-center justify-center rounded-xl border border-border/70 bg-card px-5 py-2.5 text-ui-body-sm bp-sm:text-ui-body font-semibold text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md">
                 바로가기
               </div>
             </div>

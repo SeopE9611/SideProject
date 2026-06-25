@@ -233,7 +233,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
                 <div className="lg:col-span-5">
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/40">
-                    <div className="break-keep text-sm font-medium text-muted-foreground">
+                    <div className="break-keep text-ui-body-sm font-medium text-muted-foreground">
                       총{" "}
                       <span className="text-foreground font-semibold">
                         {typeof total === "number" ? total : "-"}
@@ -241,7 +241,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                       개
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground hidden sm:inline">
+                      <span className="text-ui-label text-muted-foreground hidden sm:inline">
                         {page} / {totalPages}
                       </span>
                       <div className="flex gap-1">
@@ -345,7 +345,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                 <div className="min-w-0 flex-1">
                                   <div
                                     className={cn(
-                                      "line-clamp-2 break-keep text-sm leading-tight",
+                                      "line-clamp-2 break-keep text-ui-body-sm leading-tight",
                                       isUnread
                                         ? "font-semibold text-foreground"
                                         : "font-medium text-foreground/90",
@@ -354,7 +354,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                     {m.title || "(제목 없음)"}
                                   </div>
 
-                                  <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                                  <div className="flex items-center gap-2 mt-1 text-ui-label text-muted-foreground">
                                     <div className="flex items-center gap-1">
                                       <User className="h-3 w-3" />
                                       <span className="truncate max-w-[100px]">{counterpart}</span>
@@ -368,7 +368,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                     </div>
                                   </div>
 
-                                  <p className="mt-2 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                                  <p className="mt-2 text-ui-label text-muted-foreground line-clamp-2 leading-relaxed">
                                     {m.snippet}
                                   </p>
                                 </div>
@@ -377,7 +377,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                               {isUnread && (
                                 <Badge
                                   variant="brand"
-                                  className="shrink-0 px-2 py-1 text-xs font-semibold leading-none"
+                                  className="shrink-0 px-2 py-1 text-ui-label font-semibold leading-none"
                                 >
                                   NEW
                                 </Badge>
@@ -412,19 +412,19 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
                     {selectedId && !detailLoading && !detail && (
                       <div className="flex items-center justify-center h-[400px] text-center p-6 md:p-8">
-                        <p className="text-sm text-muted-foreground">쪽지를 불러오지 못했습니다.</p>
+                        <p className="text-ui-body-sm text-muted-foreground">쪽지를 불러오지 못했습니다.</p>
                       </div>
                     )}
 
                     {detail && (
                       <div className="p-4 md:p-6">
                         <div className="pb-4 border-b border-border/40">
-                          <h2 className="text-xl font-semibold text-foreground leading-tight mb-3">
+                          <h2 className="text-ui-section-title font-semibold text-foreground leading-tight mb-3">
                             {detail.title || "(제목 없음)"}
                           </h2>
 
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
+                            <div className="flex flex-col gap-1.5 text-ui-body-sm text-muted-foreground">
                               <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
                                 <User className="h-4 w-4" />
                                 <span>
@@ -482,7 +482,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
                         <div className="pt-4 md:pt-6">
                           <div className="prose prose-sm max-w-none">
-                            <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+                            <div className="whitespace-pre-wrap text-ui-body-sm leading-relaxed text-foreground/90">
                               {detail.body}
                             </div>
                           </div>
