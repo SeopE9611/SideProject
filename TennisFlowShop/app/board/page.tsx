@@ -16,6 +16,7 @@ import useSWR from "swr";
 import SiteContainer from "@/components/layout/SiteContainer";
 import AsyncState from "@/components/system/AsyncState";
 import { Skeleton } from "@/components/ui/skeleton";
+import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-flags";
 import {
   badgeBaseOutlined,
   badgeSizeSm,
@@ -503,11 +504,35 @@ function CommunityIntroCard() {
 
       <CardContent className="p-4 md:p-6 space-y-4 text-ui-body-sm text-muted-foreground">
         <p>공지사항, Q&A, 구매·서비스 후기를 한 곳에서 둘러볼 수 있어요.</p>
-        <p className="text-ui-label text-muted-foreground/80">
-          커뮤니티 게시판은 운영 정책 변경으로 일시 중단되었습니다.
-        </p>
+        {!COMMUNITY_BOARDS_ENABLED && (
+          <p className="text-ui-label text-muted-foreground/80">
+            커뮤니티 게시판은 운영 정책 변경으로 일시 중단되었습니다.
+          </p>
+        )}
 
         <div className="grid gap-2 sm:grid-cols-3">
+          {COMMUNITY_BOARDS_ENABLED && (
+            <>
+              <Button asChild variant="outline" size="sm" className="w-full justify-between">
+                <Link href="/board/free">
+                  <span>자유게시판</span>
+                  <ArrowRight className="h-3 w-3 ml-1" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="w-full justify-between">
+                <Link href="/board/market">
+                  <span>중고거래</span>
+                  <ArrowRight className="h-3 w-3 ml-1" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="w-full justify-between">
+                <Link href="/board/gear">
+                  <span>장비 사용기</span>
+                  <ArrowRight className="h-3 w-3 ml-1" />
+                </Link>
+              </Button>
+            </>
+          )}
           <Button asChild variant="outline" size="sm" className="w-full justify-between">
             <Link href="/reviews">
               <span>구매·서비스 후기</span>

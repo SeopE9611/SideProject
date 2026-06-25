@@ -1,3 +1,13 @@
+import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-flags";
+
+const communityBoardLinks = COMMUNITY_BOARDS_ENABLED
+  ? [
+      { name: "자유게시판", href: "/board/free" },
+      { name: "중고거래", href: "/board/market" },
+      { name: "장비 사용기", href: "/board/gear" },
+    ]
+  : [];
+
 export type MenuLink = { name: string; href: string };
 export type MenuSection = {
   id: "strings" | "service" | "packages" | "boards";
@@ -60,6 +70,7 @@ export const menuSections: MenuSection[] = [
         name: "게시판 홈",
         href: "/board",
       },
+      ...communityBoardLinks,
       {
         name: "리뷰",
         href: "/reviews",
