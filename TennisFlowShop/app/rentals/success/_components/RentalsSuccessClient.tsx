@@ -273,15 +273,18 @@ export default function RentalsSuccessClient({ data }: Props) {
                   <Package className="h-5 w-5 text-foreground" /> 대여 라켓
                 </h3>
                 <div className="rounded-lg border border-border bg-muted/30 p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-foreground">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="min-w-0 break-words font-semibold text-foreground">
                         {data.racket
                           ? `${racketBrandLabel(data.racket.brand)} ${data.racket.model}`
                           : "라켓 정보 없음"}
                       </p>
-                      <div className="mt-1 flex items-center gap-2">
-                        <Badge variant={badgeToneVariant("brand")} className="px-2 py-0.5 text-ui-label">
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
+                        <Badge
+                          variant={badgeToneVariant("brand")}
+                          className="px-2 py-0.5 text-ui-label"
+                        >
                           상태 {data.racket?.condition}
                         </Badge>
                         <span className="text-ui-body-sm text-muted-foreground">
@@ -297,7 +300,9 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <>
                   <Separator className="my-4 md:my-6" />
                   <div className="space-y-3">
-                    <h3 className="text-ui-card-title-lg font-semibold text-foreground">교체서비스 정보</h3>
+                    <h3 className="text-ui-card-title-lg font-semibold text-foreground">
+                      교체서비스 정보
+                    </h3>
                     <div className="space-y-2 rounded-lg border border-border bg-background p-4 text-ui-body-sm">
                       <p>
                         <span className="text-muted-foreground">접수 방식:</span>{" "}
@@ -346,11 +351,15 @@ export default function RentalsSuccessClient({ data }: Props) {
                 <h3 className="text-ui-card-title-lg font-semibold text-foreground">금액 정보</h3>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">대여 수수료</span>
-                  <span className="text-ui-card-title-lg font-semibold">{data.fee.toLocaleString()}원</span>
+                  <span className="text-ui-card-title-lg font-semibold">
+                    {data.fee.toLocaleString()}원
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">보증금</span>
-                  <span className="text-ui-card-title-lg font-semibold">{data.deposit.toLocaleString()}원</span>
+                  <span className="text-ui-card-title-lg font-semibold">
+                    {data.deposit.toLocaleString()}원
+                  </span>
                 </div>
                 {data.stringPrice > 0 && (
                   <div className="flex items-center justify-between">
