@@ -290,7 +290,9 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
         }
 
         // 신청서 쪽 원본 상태 문자열
-        const rawAppCancelStatus = (app as any).cancelRequest?.status as string | undefined;
+        const rawAppCancelStatus =
+          ((app as any).cancelRequest?.status as string | undefined) ??
+          ((app as any).status === "취소" && (app as any).adminCancel ? "approved" : undefined);
         const appRefundAccount = (app as any)?.cancelRequest?.refundAccount ?? null;
 
         let cancelStatus: "requested" | "approved" | "rejected" | undefined;

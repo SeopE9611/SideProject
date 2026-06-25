@@ -16,6 +16,7 @@ import {
 import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
 import clientPromise, { getDb } from "@/lib/mongodb";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
+import { cancelNicePaymentByTid } from "@/lib/payments/nice/server";
 import { revertConsumption } from "@/lib/passes.service";
 import {
   buildCancelRefundSubject,
@@ -186,6 +187,7 @@ type AdminCancelRefundContext = {
   refundMethod:
     | "package_restore"
     | "nicepay_cancel_required"
+    | "nicepay_cancelled"
     | "manual_bank_refund_required"
     | "none"
     | "manual_review_required";
@@ -257,7 +259,7 @@ function resolveAdminCancelRefundContext(appDoc: any): AdminCancelRefundContext 
       paymentProviderAtCancel,
       refundRequired: true,
       refundMethod: "nicepay_cancel_required",
-      refundNote: "카드 결제 취소 처리가 별도로 필요합니다.",
+      refundNote: "NICEPAY 결제취소 연동 확인 대상입니다.",
     };
   }
 
@@ -285,6 +287,205 @@ function resolveAdminCancelRefundContext(appDoc: any): AdminCancelRefundContext 
     refundRequired: true,
     refundMethod: "manual_review_required",
     refundNote: "결제수단 확인 후 환불 필요 여부를 수동 검토해야 합니다.",
+  };
+}
+
+function isStandaloneStringingApplication(appDoc: any): boolean {
+  const paymentSource = String(appDoc?.paymentSource ?? "").trim();
+  return (
+    !appDoc?.orderId &&
+    !appDoc?.rentalId &&
+    !paymentSource.startsWith("order:") &&
+    !paymentSource.startsWith("rental:")
+  );
+}
+
+function pickStandaloneStringingNiceOrderId(appDoc: any): string {
+  const paymentInfo = appDoc?.paymentInfo ?? {};
+  return String(
+    paymentInfo?.rawSummary?.orderId ??
+      paymentInfo?.orderId ??
+      appDoc?.niceOrderId ??
+      appDoc?.paymentOrderId ??
+      "",
+  ).trim();
+}
+
+function buildApprovedStringingCancelRequest(params: {
+  appDoc: any;
+  now: Date;
+  adminUserId: string;
+  mode: "request_approve" | "admin_direct";
+  reason?: string;
+}) {
+  const existingReq = params.appDoc?.cancelRequest ?? {};
+  if (params.mode === "admin_direct") {
+    return {
+      ...existingReq,
+      status: "approved" as const,
+      reasonCode: "관리자 직접 취소",
+      reasonText: params.reason ?? "",
+      requestedAt: existingReq.requestedAt ?? params.now,
+      processedAt: params.now,
+      handledAt: params.now,
+      processedByAdminId: params.adminUserId,
+      approvedAt: params.now,
+    };
+  }
+
+  return {
+    ...existingReq,
+    status: "approved" as const,
+    reasonCode: existingReq.reasonCode ?? "기타",
+    reasonText: existingReq.reasonText ?? "",
+    requestedAt: existingReq.requestedAt ?? params.now,
+    processedAt: params.now,
+    handledAt: params.now,
+    processedByAdminId: params.adminUserId,
+    approvedAt: params.now,
+  };
+}
+
+async function prepareStandaloneStringingCancellation(params: {
+  appDoc: any;
+  now: Date;
+  adminUserId: string;
+  mode: "request_approve" | "admin_direct";
+  reason?: string;
+}) {
+  const { appDoc, now, mode } = params;
+  const paymentInfo = appDoc?.paymentInfo ?? {};
+  const normalizedProvider = normalizePaymentProvider(paymentInfo?.provider);
+  const tid = String(paymentInfo?.tid ?? "").trim();
+  const shouldCancelViaNice =
+    isStandaloneStringingApplication(appDoc) &&
+    normalizedProvider === "nicepay" &&
+    Boolean(tid) &&
+    appDoc?.paymentStatus === "결제완료";
+
+  const updatedCancelRequest = buildApprovedStringingCancelRequest(params);
+  const paymentUpdateFields: Record<string, unknown> = {
+    paymentStatus: "결제취소",
+    paymentInfo: {
+      ...(paymentInfo ?? {}),
+      status: "canceled",
+    },
+  };
+  let niceCancelMetadata: Record<string, unknown> = {
+    niceCancelAttempted: false,
+    niceCancelSucceeded: false,
+  };
+  let niceCancelSucceeded = false;
+
+  if (shouldCancelViaNice) {
+    const clientKey = String(
+      process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "",
+    ).trim();
+    const secretKey = String(process.env.NICEPAY_SECRET_KEY ?? "").trim();
+
+    if (!clientKey || !secretKey) {
+      return {
+        ok: false as const,
+        response: NextResponse.json(
+          {
+            ok: false,
+            errorCode: "NICE_CANCEL_CONFIG_MISSING",
+            message: "NICE 취소 설정이 누락되어 취소를 진행할 수 없습니다. 환경설정을 확인해 주세요.",
+          },
+          { status: 502 },
+        ),
+      };
+    }
+
+    const niceOrderId = pickStandaloneStringingNiceOrderId(appDoc);
+    if (!niceOrderId) {
+      return {
+        ok: false as const,
+        response: NextResponse.json(
+          {
+            ok: false,
+            errorCode: "NICE_ORDER_ID_REQUIRED",
+            message: "NICE 취소에 필요한 주문번호(orderId)가 없어 자동 취소를 진행할 수 없습니다.",
+          },
+          { status: 400 },
+        ),
+      };
+    }
+
+    try {
+      const cancelRaw = await cancelNicePaymentByTid({
+        tid,
+        orderId: niceOrderId,
+        reason:
+          mode === "request_approve"
+            ? "관리자 교체서비스 신청 취소 요청 승인 처리"
+            : "관리자 교체서비스 신청 직접 취소 처리",
+        clientKey,
+        secretKey,
+      });
+      const resultCode = String(cancelRaw.resultCode ?? cancelRaw.ResultCode ?? "").trim();
+      const resultMsg = String(cancelRaw.resultMsg ?? cancelRaw.ResultMsg ?? "").trim();
+      if (resultCode !== "0000") {
+        return {
+          ok: false as const,
+          response: NextResponse.json(
+            {
+              ok: false,
+              errorCode: "NICE_CANCEL_FAILED",
+              message: resultMsg || "NICE 결제 취소가 완료되지 않아 신청 취소를 반영할 수 없습니다.",
+              data: { resultCode: resultCode || null, resultMsg: resultMsg || null },
+            },
+            { status: 400 },
+          ),
+        };
+      }
+
+      const canceledAt =
+        String(cancelRaw.canceledAt ?? cancelRaw.cancelDate ?? cancelRaw.CancelDate ?? "").trim() ||
+        now.toISOString();
+      const pgStatus = String(cancelRaw.status ?? "canceled").trim() || "canceled";
+      paymentUpdateFields.paymentInfo = {
+        ...(paymentInfo ?? {}),
+        status: "canceled",
+        niceSync: {
+          ...(paymentInfo?.niceSync ?? {}),
+          lastSyncedAt: now.toISOString(),
+          source: mode === "request_approve" ? "stringing_cancel_approve" : "stringing_admin_direct_cancel",
+          pgStatus,
+          resultCode: resultCode || "0000",
+          resultMsg: resultMsg || null,
+          canceledAt,
+        },
+      };
+      niceCancelSucceeded = true;
+      niceCancelMetadata = {
+        niceCancelAttempted: true,
+        niceCancelSucceeded: true,
+        niceCancelResultCode: resultCode || "0000",
+        refundMethod: "nicepay_cancelled",
+      };
+    } catch (error: any) {
+      const httpStatus = Number(error?.httpStatus ?? 0);
+      return {
+        ok: false as const,
+        response: NextResponse.json(
+          {
+            ok: false,
+            errorCode: "NICE_CANCEL_FAILED",
+            message: error?.resultMsg || error?.message || "NICE 결제 취소 중 오류가 발생했습니다.",
+          },
+          { status: httpStatus >= 400 && httpStatus < 500 ? 400 : 502 },
+        ),
+      };
+    }
+  }
+
+  return {
+    ok: true as const,
+    updatedCancelRequest,
+    paymentUpdateFields,
+    niceCancelSucceeded,
+    niceCancelMetadata,
   };
 }
 
@@ -1098,16 +1299,30 @@ export async function handleGetStringingApplication(req: Request, id: string) {
       packageInfo,
       packageConsumptions,
       // 신청 취소 요청 정보
-      cancelRequest: app.cancelRequest
-        ? {
-            status: normalizeCancelStatus(app.cancelRequest.status),
-            reasonCode: app.cancelRequest.reasonCode ?? undefined,
-            reasonText: app.cancelRequest.reasonText ?? undefined,
-            requestedAt: app.cancelRequest.requestedAt ?? null,
-            handledAt: app.cancelRequest.handledAt ?? null,
-            refundAccount: app.cancelRequest.refundAccount ?? null,
-          }
-        : { status: "none", refundAccount: null },
+      cancelRequest: (() => {
+        const effectiveCancelRequest =
+          app.cancelRequest ??
+          ((app as any).status === "취소" && (app as any).adminCancel
+            ? {
+                status: "approved",
+                reasonCode: "관리자 직접 취소",
+                reasonText: (app as any).adminCancel.reason ?? "",
+                requestedAt: (app as any).adminCancel.canceledAt ?? (app as any).updatedAt ?? null,
+                handledAt: (app as any).adminCancel.canceledAt ?? null,
+                refundAccount: null,
+              }
+            : null);
+        return effectiveCancelRequest
+          ? {
+              status: normalizeCancelStatus(effectiveCancelRequest.status),
+              reasonCode: effectiveCancelRequest.reasonCode ?? undefined,
+              reasonText: effectiveCancelRequest.reasonText ?? undefined,
+              requestedAt: effectiveCancelRequest.requestedAt ?? null,
+              handledAt: effectiveCancelRequest.handledAt ?? null,
+              refundAccount: effectiveCancelRequest.refundAccount ?? null,
+            }
+          : { status: "none", refundAccount: null };
+      })(),
 
       history: (app.history ?? []).map((record: HistoryRecord) => ({
         status: record.status,
@@ -1750,7 +1965,13 @@ export async function handleStringingCancelApprove(
     if (!appDoc) {
       return NextResponse.json({ error: "신청서를 찾을 수 없습니다." }, { status: 404 });
     }
-    if (appDoc.orderId || appDoc.rentalId) {
+    const paymentSource = String(appDoc.paymentSource ?? "").trim();
+    if (
+      appDoc.orderId ||
+      appDoc.rentalId ||
+      paymentSource.startsWith("order:") ||
+      paymentSource.startsWith("rental:")
+    ) {
       return NextResponse.json(
         {
           error:
@@ -1767,6 +1988,14 @@ export async function handleStringingCancelApprove(
     }
 
     const now = new Date();
+    const cancellation = await prepareStandaloneStringingCancellation({
+      appDoc,
+      now,
+      adminUserId: adminAuth.userId,
+      mode: "request_approve",
+    });
+    if (!cancellation.ok) return cancellation.response;
+
     const variantRestore = await restoreStringingVariantStockIfNeeded(db, appDoc, now);
     const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, appDoc, now);
     const colorRestore = await restoreStringingColorStockIfNeeded(db, appDoc, now);
@@ -1795,12 +2024,12 @@ export async function handleStringingCancelApprove(
       }
     }
 
-    // 신청 상태를 "취소"로 변경 + cancelRequest 상태 업데이트
+    // 신청 상태를 "취소"로 변경 + 결제/취소요청 상태 정리
     await col.updateOne({ _id }, {
       $set: {
         status: "취소",
-        "cancelRequest.status": "approved",
-        "cancelRequest.approvedAt": now,
+        cancelRequest: cancellation.updatedCancelRequest,
+        ...cancellation.paymentUpdateFields,
         ...variantRestore.setFields,
         ...gaugeRestore.setFields,
         ...colorRestore.setFields,
@@ -1852,10 +2081,15 @@ export async function handleStringingCancelApprove(
       actorRole: "admin",
       reasonCode: appDoc.cancelRequest?.reasonCode ?? null,
       status: "approved",
+      metadata: cancellation.niceCancelMetadata,
     });
 
+    const updated = await col.findOne({ _id });
+
     return NextResponse.json({
+      ok: true,
       success: true,
+      application: updated,
       gaugeStockRestore: gaugeRestore.restored ? "restored" : gaugeRestore.skippedReason,
       colorStockRestore: colorRestore.restored ? "restored" : colorRestore.skippedReason,
     });
@@ -1938,6 +2172,15 @@ export async function handleStringingAdminCancel(
 
     const now = new Date();
     const refundContext = resolveAdminCancelRefundContext(appDoc);
+    const cancellation = await prepareStandaloneStringingCancellation({
+      appDoc,
+      now,
+      adminUserId: adminAuth.userId,
+      mode: "admin_direct",
+      reason,
+    });
+    if (!cancellation.ok) return cancellation.response;
+
     const variantRestore = await restoreStringingVariantStockIfNeeded(db, appDoc, now);
     const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, appDoc, now);
     const colorRestore = await restoreStringingColorStockIfNeeded(
@@ -1958,10 +2201,13 @@ export async function handleStringingAdminCancel(
       }
     }
 
+    const adminCancelRefundNote = cancellation.niceCancelSucceeded
+      ? "NICEPAY 결제취소가 완료되었습니다."
+      : refundContext.refundNote;
     const historyEntry: HistoryRecord = {
       status: "취소",
       date: now,
-      description: `관리자가 직접 신청을 취소했습니다. 취소 사유: ${reason} ${refundContext.refundNote}`,
+      description: `관리자가 직접 신청을 취소했습니다. 취소 사유: ${reason} ${adminCancelRefundNote}`,
     };
 
     await col.updateOne(
@@ -1969,6 +2215,8 @@ export async function handleStringingAdminCancel(
       {
         $set: {
           status: "취소",
+          cancelRequest: cancellation.updatedCancelRequest,
+          ...cancellation.paymentUpdateFields,
           adminCancel: {
             reason,
             canceledAt: now,
@@ -1976,9 +2224,9 @@ export async function handleStringingAdminCancel(
             paymentStatusAtCancel: refundContext.paymentStatusAtCancel,
             paymentMethodAtCancel: refundContext.paymentMethodAtCancel,
             paymentProviderAtCancel: refundContext.paymentProviderAtCancel,
-            refundRequired: refundContext.refundRequired,
-            refundMethod: refundContext.refundMethod,
-            refundNote: refundContext.refundNote,
+            refundRequired: cancellation.niceCancelSucceeded ? false : refundContext.refundRequired,
+            refundMethod: cancellation.niceCancelSucceeded ? "nicepay_cancelled" : refundContext.refundMethod,
+            refundNote: adminCancelRefundNote,
           },
           ...variantRestore.setFields,
           ...gaugeRestore.setFields,
@@ -2005,8 +2253,8 @@ export async function handleStringingAdminCancel(
           paymentStatusAtCancel: refundContext.paymentStatusAtCancel,
           paymentMethodAtCancel: refundContext.paymentMethodAtCancel,
           paymentProviderAtCancel: refundContext.paymentProviderAtCancel,
-          refundRequired: refundContext.refundRequired,
-          refundMethod: refundContext.refundMethod,
+          refundRequired: cancellation.niceCancelSucceeded ? false : refundContext.refundRequired,
+          refundMethod: cancellation.niceCancelSucceeded ? "nicepay_cancelled" : refundContext.refundMethod,
           metadata: {
             actor: {
               id: String(adminAuth.userId),
@@ -2035,17 +2283,19 @@ export async function handleStringingAdminCancel(
       reasonCode: "admin_direct_cancel",
       status: "approved",
       metadata: {
-        refundRequired: refundContext.refundRequired,
-        refundMethod: refundContext.refundMethod,
+        refundRequired: cancellation.niceCancelSucceeded ? false : refundContext.refundRequired,
+        refundMethod: cancellation.niceCancelSucceeded ? "nicepay_cancelled" : refundContext.refundMethod,
         paymentStatusAtCancel: refundContext.paymentStatusAtCancel,
         paymentMethodAtCancel: refundContext.paymentMethodAtCancel,
         paymentProviderAtCancel: refundContext.paymentProviderAtCancel,
+        ...cancellation.niceCancelMetadata,
       },
     });
 
     const updated = await col.findOne({ _id });
 
     return NextResponse.json({
+      ok: true,
       success: true,
       application: updated,
       gaugeStockRestore: gaugeRestore.restored ? "restored" : gaugeRestore.skippedReason,
