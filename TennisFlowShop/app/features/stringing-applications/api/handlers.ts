@@ -81,6 +81,16 @@ type LinkedPaymentPayload = {
     lastSyncedAt?: string | null;
     pgStatus?: string | null;
     source?: string | null;
+    resultCode?: string | null;
+    resultMsg?: string | null;
+    canceledAt?: string | null;
+    cancelAmount?: number | null;
+  } | null;
+  rawSummary?: {
+    orderId?: string | null;
+    resultCode?: string | null;
+    resultMsg?: string | null;
+    goodsName?: string | null;
   } | null;
 };
 
@@ -168,6 +178,31 @@ function buildLinkedPaymentFromDoc(
           lastSyncedAt: toIsoOrNull(niceSyncRaw.lastSyncedAt),
           pgStatus: typeof niceSyncRaw.pgStatus === "string" ? niceSyncRaw.pgStatus : null,
           source: typeof niceSyncRaw.source === "string" ? niceSyncRaw.source : null,
+          resultCode: typeof niceSyncRaw.resultCode === "string" ? niceSyncRaw.resultCode : null,
+          resultMsg: typeof niceSyncRaw.resultMsg === "string" ? niceSyncRaw.resultMsg : null,
+          canceledAt: toIsoOrNull(niceSyncRaw.canceledAt),
+          cancelAmount:
+            typeof niceSyncRaw.cancelAmount === "number" ? niceSyncRaw.cancelAmount : null,
+        }
+      : null,
+    rawSummary: paymentInfo?.rawSummary
+      ? {
+          orderId:
+            typeof paymentInfo.rawSummary.orderId === "string"
+              ? paymentInfo.rawSummary.orderId
+              : null,
+          resultCode:
+            typeof paymentInfo.rawSummary.resultCode === "string"
+              ? paymentInfo.rawSummary.resultCode
+              : null,
+          resultMsg:
+            typeof paymentInfo.rawSummary.resultMsg === "string"
+              ? paymentInfo.rawSummary.resultMsg
+              : null,
+          goodsName:
+            typeof paymentInfo.rawSummary.goodsName === "string"
+              ? paymentInfo.rawSummary.goodsName
+              : null,
         }
       : null,
   };
@@ -1213,6 +1248,7 @@ export async function handleGetStringingApplication(req: Request, id: string) {
           cardLabel: null,
           approvedAt: toIsoOrNull((app as any).packageRedeemedAt),
           niceSync: null,
+          rawSummary: null,
         }
       : (paymentSourceRaw.startsWith("order:") || app.orderId) && order
         ? buildLinkedPaymentFromDoc("order", order)
@@ -1222,17 +1258,89 @@ export async function handleGetStringingApplication(req: Request, id: string) {
               source: "application",
               status: typeof app.paymentStatus === "string" ? app.paymentStatus : null,
               method: typeof app.paymentMethod === "string" ? app.paymentMethod : null,
-              provider: null,
-              easyPayProvider: null,
-              tid: null,
-              bank: typeof app.shippingInfo?.bank === "string" ? app.shippingInfo.bank : null,
+              provider:
+                typeof (app as any).paymentInfo?.provider === "string"
+                  ? (app as any).paymentInfo.provider
+                  : null,
+              easyPayProvider:
+                typeof (app as any).paymentInfo?.easyPayProvider === "string"
+                  ? (app as any).paymentInfo.easyPayProvider
+                  : null,
+              tid:
+                typeof (app as any).paymentInfo?.tid === "string"
+                  ? (app as any).paymentInfo.tid
+                  : null,
+              bank:
+                typeof (app as any).paymentInfo?.bank === "string"
+                  ? (app as any).paymentInfo.bank
+                  : typeof app.shippingInfo?.bank === "string"
+                    ? app.shippingInfo.bank
+                    : null,
               depositor:
-                typeof app.shippingInfo?.depositor === "string" ? app.shippingInfo.depositor : null,
-              cardDisplayName: null,
-              cardCompany: null,
-              cardLabel: null,
-              approvedAt: null,
-              niceSync: null,
+                typeof (app as any).paymentInfo?.depositor === "string"
+                  ? (app as any).paymentInfo.depositor
+                  : typeof app.shippingInfo?.depositor === "string"
+                    ? app.shippingInfo.depositor
+                    : null,
+              cardDisplayName:
+                typeof (app as any).paymentInfo?.cardDisplayName === "string"
+                  ? (app as any).paymentInfo.cardDisplayName
+                  : null,
+              cardCompany:
+                typeof (app as any).paymentInfo?.cardCompany === "string"
+                  ? (app as any).paymentInfo.cardCompany
+                  : null,
+              cardLabel:
+                typeof (app as any).paymentInfo?.cardLabel === "string"
+                  ? (app as any).paymentInfo.cardLabel
+                  : null,
+              approvedAt: toIsoOrNull((app as any).paymentInfo?.approvedAt),
+              niceSync: (app as any).paymentInfo?.niceSync
+                ? {
+                    lastSyncedAt: toIsoOrNull((app as any).paymentInfo.niceSync.lastSyncedAt),
+                    pgStatus:
+                      typeof (app as any).paymentInfo.niceSync.pgStatus === "string"
+                        ? (app as any).paymentInfo.niceSync.pgStatus
+                        : null,
+                    source:
+                      typeof (app as any).paymentInfo.niceSync.source === "string"
+                        ? (app as any).paymentInfo.niceSync.source
+                        : null,
+                    resultCode:
+                      typeof (app as any).paymentInfo.niceSync.resultCode === "string"
+                        ? (app as any).paymentInfo.niceSync.resultCode
+                        : null,
+                    resultMsg:
+                      typeof (app as any).paymentInfo.niceSync.resultMsg === "string"
+                        ? (app as any).paymentInfo.niceSync.resultMsg
+                        : null,
+                    canceledAt: toIsoOrNull((app as any).paymentInfo.niceSync.canceledAt),
+                    cancelAmount:
+                      typeof (app as any).paymentInfo.niceSync.cancelAmount === "number"
+                        ? (app as any).paymentInfo.niceSync.cancelAmount
+                        : null,
+                  }
+                : null,
+              rawSummary: (app as any).paymentInfo?.rawSummary
+                ? {
+                    orderId:
+                      typeof (app as any).paymentInfo.rawSummary.orderId === "string"
+                        ? (app as any).paymentInfo.rawSummary.orderId
+                        : null,
+                    resultCode:
+                      typeof (app as any).paymentInfo.rawSummary.resultCode === "string"
+                        ? (app as any).paymentInfo.rawSummary.resultCode
+                        : null,
+                    resultMsg:
+                      typeof (app as any).paymentInfo.rawSummary.resultMsg === "string"
+                        ? (app as any).paymentInfo.rawSummary.resultMsg
+                        : null,
+                    goodsName:
+                      typeof (app as any).paymentInfo.rawSummary.goodsName === "string"
+                        ? (app as any).paymentInfo.rawSummary.goodsName
+                        : null,
+                  }
+                : null,
             };
 
     return NextResponse.json({

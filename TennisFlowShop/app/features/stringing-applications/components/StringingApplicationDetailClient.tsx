@@ -140,6 +140,16 @@ interface ApplicationDetail {
       lastSyncedAt?: string | null;
       pgStatus?: string | null;
       source?: string | null;
+      resultCode?: string | null;
+      resultMsg?: string | null;
+      canceledAt?: string | null;
+      cancelAmount?: number | null;
+    } | null;
+    rawSummary?: {
+      orderId?: string | null;
+      resultCode?: string | null;
+      resultMsg?: string | null;
+      goodsName?: string | null;
     } | null;
   } | null;
   totalPrice: number;
@@ -422,6 +432,7 @@ export default function StringingApplicationDetailClient({
   // 교체 확정 전용 로딩 상태
   const [isConfirmSubmitting, setIsConfirmSubmitting] = useState(false);
   const [isLineDetailsExpanded, setIsLineDetailsExpanded] = useState(true);
+  const [isSyncingNice, setIsSyncingNice] = useState(false);
 
   // 1) 버튼에서 모달 여는 함수
   const handleOpenCancelDialog = () => {
@@ -692,6 +703,27 @@ export default function StringingApplicationDetailClient({
       revalidateOnReconnect: false,
     },
   );
+
+  const handleNiceSync = async () => {
+    if (!data?.id || isSyncingNice) return;
+    setIsSyncingNice(true);
+    try {
+      const res = await fetch(`/api/applications/stringing/${data.id}/payment-sync`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json?.success) {
+        throw new Error(json?.error || "PG 상태 재동기화에 실패했습니다.");
+      }
+      await mutate();
+      showSuccessToast("결제 상태 재동기화를 완료했습니다.");
+    } catch (error: any) {
+      showErrorToast(error?.message || "PG 상태 재동기화 중 오류가 발생했습니다.");
+    } finally {
+      setIsSyncingNice(false);
+    }
+  };
   useEffect(() => {
     const lineCount = Array.isArray(data?.lines) ? data.lines.length : 0;
     setIsLineDetailsExpanded(lineCount <= 3);
@@ -941,6 +973,11 @@ export default function StringingApplicationDetailClient({
   const normalizedPaymentProvider = String(linkedPayment?.provider ?? "")
     .trim()
     .toLowerCase();
+  const canSyncStandaloneNicePayment =
+    isAdmin &&
+    !isLinkedPayment &&
+    normalizedPaymentProvider === "nicepay" &&
+    Boolean(String(linkedPayment?.tid ?? "").trim());
   const needsCancelRefundAccount =
     !packageApplied && paymentStatus === "결제완료" && normalizedPaymentProvider !== "nicepay";
   const noCancelRefundAccountMessage = packageApplied
@@ -2374,7 +2411,20 @@ export default function StringingApplicationDetailClient({
                           paymentCardLabel={linkedPayment?.cardLabel}
                           approvedAt={linkedPayment?.approvedAt ?? null}
                           paymentNiceSync={linkedPayment?.niceSync ?? null}
+                          niceOrderId={linkedPayment?.rawSummary?.orderId ?? null}
                         />
+                        {canSyncStandaloneNicePayment && (
+                          <div className="mt-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleNiceSync}
+                              disabled={isSyncingNice}
+                            >
+                              {isSyncingNice ? "PG 상태 동기화 중..." : "PG 상태 다시 확인"}
+                            </Button>
+                          </div>
+                        )}
                         {isOrderLinkedApplication && (
                           <p className="mt-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-ui-label leading-relaxed text-foreground/80">
                             결제는 연결 주문에서 처리되었습니다. 주문 결제에 포함된

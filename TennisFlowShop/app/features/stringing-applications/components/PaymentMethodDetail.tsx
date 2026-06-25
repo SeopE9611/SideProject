@@ -17,7 +17,12 @@ interface PaymentMethodDetailProps {
     lastSyncedAt?: string | null;
     pgStatus?: string | null;
     source?: string | null;
+    resultCode?: string | null;
+    resultMsg?: string | null;
+    canceledAt?: string | null;
+    cancelAmount?: number | null;
   } | null;
+  niceOrderId?: string | null;
 }
 
 const EASY_PAY_PROVIDER_LABEL_MAP: Record<string, string> = {
@@ -121,6 +126,7 @@ export default function PaymentMethodDetail({
   paymentCardLabel,
   approvedAt,
   paymentNiceSync,
+  niceOrderId,
 }: PaymentMethodDetailProps) {
   const bankInfo = bankKey ? bankLabelMap[bankKey] : null;
   const isTossPayment =
@@ -141,6 +147,8 @@ export default function PaymentMethodDetail({
     paymentCardCompany,
   });
   const approvedAtLabel = formatApprovedAt(approvedAt);
+  const canceledAtLabel = formatApprovedAt(paymentNiceSync?.canceledAt);
+  const lastSyncedAtLabel = formatApprovedAt(paymentNiceSync?.lastSyncedAt);
   const resolvedMethodLabel = isPackagePayment ? "패키지 사용" : String(method ?? "").trim();
   const shouldShowBankBox = !isPackagePayment && !isTossPayment && !isNicePayment && !!bankInfo;
 
@@ -182,6 +190,11 @@ export default function PaymentMethodDetail({
             {paymentTid && (
               <div className="text-ui-body-sm text-muted-foreground">거래 TID: {paymentTid}</div>
             )}
+            {niceOrderId && (
+              <div className="text-ui-body-sm text-muted-foreground">
+                NICE 주문번호: {niceOrderId}
+              </div>
+            )}
             {approvedAtLabel && (
               <div className="text-ui-body-sm text-muted-foreground">승인 시각: {approvedAtLabel}</div>
             )}
@@ -190,9 +203,21 @@ export default function PaymentMethodDetail({
                 PG 상태: {paymentNiceSync.pgStatus}
               </div>
             )}
-            {paymentNiceSync?.lastSyncedAt && (
+            {(paymentNiceSync?.resultCode || paymentNiceSync?.resultMsg) && (
               <div className="text-ui-body-sm text-muted-foreground">
-                최근 동기화: {new Date(paymentNiceSync.lastSyncedAt).toLocaleString("ko-KR")}
+                PG 결과: {[paymentNiceSync.resultCode, paymentNiceSync.resultMsg]
+                  .filter(Boolean)
+                  .join(" / ")}
+              </div>
+            )}
+            {canceledAtLabel && (
+              <div className="text-ui-body-sm text-muted-foreground">
+                PG 취소일시: {canceledAtLabel}
+              </div>
+            )}
+            {lastSyncedAtLabel && (
+              <div className="text-ui-body-sm text-muted-foreground">
+                마지막 동기화: {lastSyncedAtLabel}
               </div>
             )}
           </div>
