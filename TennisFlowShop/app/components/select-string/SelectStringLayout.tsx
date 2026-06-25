@@ -325,7 +325,7 @@ export default function SelectStringLayout({
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="line-clamp-2 min-w-0 break-keep text-ui-body-sm font-semibold leading-tight text-foreground">
+            <h3 className="line-clamp-2 min-w-0 break-words text-ui-body-sm font-semibold leading-tight text-foreground">
               {racket.name}
             </h3>
             {flowType === "rental" && rentalPeriod && (
@@ -373,11 +373,11 @@ export default function SelectStringLayout({
               <span className="text-ui-body-sm font-medium text-foreground">번들 수량</span>
               <span className="text-ui-label text-muted-foreground">최대 {maxQty}개</span>
             </div>
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-ui-label text-muted-foreground leading-relaxed">
+            <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+              <p className="min-w-0 break-keep text-ui-label leading-relaxed text-muted-foreground">
                 라켓과 스트링이 동일 수량으로 결제됩니다
               </p>
-              <div className="flex items-center gap-1">
+              <div className="flex shrink-0 items-center gap-1">
                 <Button
                   type="button"
                   variant="outline"
@@ -586,7 +586,7 @@ export default function SelectStringLayout({
                   개의 스트링
                 </span>
               )}
-              <span className="break-keep text-ui-label">
+              <span className="min-w-0 break-keep text-ui-label">
                 {flowType === "rental"
                   ? "대여 라켓에 장착할 스트링을 선택하세요"
                   : "브랜드·가격·옵션을 확인한 뒤 원하는 스트링을 선택하세요"}
