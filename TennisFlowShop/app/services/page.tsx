@@ -578,7 +578,7 @@ export default async function ServicesPage() {
                 <p>
                   하이브리드는 단일 재질이 아닌 조합 방식으로, 단일 재질 가격대와 분리해 안내합니다.
                 </p>
-                <p className="whitespace-nowrap tabular-nums">
+                <p className="break-words tabular-nums">
                   등록된 하이브리드 상품: {hybridGuide.count.toLocaleString()}개
                 </p>
               </div>
