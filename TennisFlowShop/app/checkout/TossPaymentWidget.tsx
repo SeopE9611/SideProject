@@ -122,9 +122,9 @@ export default function TossPaymentWidget({
   return (
     <div className="space-y-3">
       {!ready && !loadError && (
-        <p className="text-sm text-muted-foreground">결제위젯을 불러오는 중입니다…</p>
+        <p className="text-ui-body-sm text-muted-foreground">결제위젯을 불러오는 중입니다…</p>
       )}
-      {loadError && <p className="text-sm text-destructive">{loadError}</p>}
+      {loadError && <p className="text-ui-body-sm text-destructive">{loadError}</p>}
       <div id="toss-payment-widget" className="min-h-20" />
       <div id="toss-payment-agreement" className="min-h-12" />
     </div>

@@ -132,33 +132,33 @@ export default function CheckoutStringingCompactEditor({
       <AccordionItem value="detail" className="border-none">
         <AccordionTrigger
           value="detail"
-          className="group rounded-xl border border-primary/20 bg-primary/5 px-3 py-3 text-left text-sm font-semibold transition-[border-color,background-color] hover:bg-primary/5 bp-sm:px-4"
+          className="group rounded-xl border border-primary/20 bg-primary/5 px-3 py-3 text-left text-ui-body-sm font-medium transition-[border-color,background-color] hover:bg-primary/5 bp-sm:px-4"
         >
           <span className="flex min-w-0 flex-1 flex-col gap-1">
             <span className="inline-flex items-center gap-2 text-foreground">
               <Settings2 className="h-4 w-4 text-primary/80" />
               작업 정보 입력
             </span>
-            <span className="break-keep text-xs font-normal leading-relaxed text-muted-foreground">
+            <span className="break-keep text-ui-label font-normal leading-relaxed text-muted-foreground">
               라켓명과 텐션은 교체서비스 접수 필수 정보입니다.
             </span>
           </span>
           <Badge
             variant="secondary"
-            className="shrink-0 whitespace-nowrap border border-border bg-card text-[11px]"
+            className="shrink-0 whitespace-nowrap border border-border bg-card text-ui-micro"
           >
             필수
           </Badge>
         </AccordionTrigger>
         <AccordionContent value="detail" className="space-y-4 pb-4 pt-4">
           <section className="space-y-3 rounded-lg border border-border bg-muted/30 p-3 bp-sm:p-4">
-            <p className="text-sm font-semibold text-foreground">방문 예약</p>
+            <p className="text-ui-body-sm font-medium text-foreground">방문 예약</p>
             {isVisit ? (
               <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label
                     htmlFor="checkout-preferred-date"
-                    className="text-xs text-muted-foreground"
+                    className="text-ui-label text-muted-foreground"
                   >
                     희망 날짜
                   </Label>
@@ -180,11 +180,11 @@ export default function CheckoutStringingCompactEditor({
                   <div className="space-y-0.5">
                     <Label
                       htmlFor="checkout-preferred-time"
-                      className="text-xs font-medium text-foreground"
+                      className="text-ui-label font-medium text-foreground"
                     >
                       희망 시간
                     </Label>
-                    <p className="break-keep text-xs text-muted-foreground">
+                    <p className="break-keep text-ui-label text-muted-foreground">
                       가능한 시간대 중 한 슬롯을 선택해주세요.
                     </p>
                   </div>
@@ -207,7 +207,7 @@ export default function CheckoutStringingCompactEditor({
                     formData.preferredTime &&
                     visitSlotCountUi > 0 &&
                     visitDurationMinutesUi && (
-                      <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5 text-xs text-foreground">
+                      <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5 text-ui-label text-foreground">
                         <p className="font-medium text-foreground">
                           <Clock3 className="mr-1 inline h-3.5 w-3.5 text-primary" />
                           예상 소요:{" "}
@@ -221,7 +221,7 @@ export default function CheckoutStringingCompactEditor({
                 </div>
               </div>
             ) : (
-              <p className="break-keep text-xs text-muted-foreground">
+              <p className="break-keep text-ui-label text-muted-foreground">
                 현재 접수 방식은 방문 예약이 필요하지 않습니다.
               </p>
             )}
@@ -230,12 +230,12 @@ export default function CheckoutStringingCompactEditor({
           <section className="space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground">라켓 작업 정보</p>
-                <p className="break-keep text-xs text-muted-foreground">
+                <p className="text-ui-body-sm font-medium text-foreground">라켓 작업 정보</p>
+                <p className="break-keep text-ui-label text-muted-foreground">
                   라켓명, 메인/크로스 텐션을 입력하세요.
                 </p>
               </div>
-              <Badge variant="outline" className="shrink-0 border-border text-[11px]">
+              <Badge variant="outline" className="shrink-0 border-border text-ui-micro">
                 {lineCount}자루
               </Badge>
             </div>
@@ -244,11 +244,11 @@ export default function CheckoutStringingCompactEditor({
               <div className="rounded-lg border border-border bg-muted/20 p-3">
                 <div className="mb-3 flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                   <div>
-                    <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                    <p className="inline-flex items-center gap-1.5 text-ui-label font-semibold text-foreground">
                       <Sparkles className="h-3.5 w-3.5 text-primary/80" />
                       공통 입력
                     </p>
-                    <p className="mt-0.5 break-keep text-xs text-muted-foreground">
+                    <p className="mt-0.5 break-keep text-ui-label text-muted-foreground">
                       여러 라켓의 텐션과 메모를 한 번에 채웁니다.
                     </p>
                   </div>
@@ -257,7 +257,7 @@ export default function CheckoutStringingCompactEditor({
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-7 shrink-0 border-border px-2 text-xs"
+                      className="h-7 shrink-0 border-border px-2 text-ui-label"
                       onClick={applyFirstLineTensionToAll}
                     >
                       첫 라켓 텐션 → 전체
@@ -265,7 +265,7 @@ export default function CheckoutStringingCompactEditor({
                     <Button
                       type="button"
                       size="sm"
-                      className="h-7 shrink-0 px-2 text-xs"
+                      className="h-7 shrink-0 px-2 text-ui-label"
                       onClick={() => applyBulkToAllLines()}
                     >
                       입력값 → 전체
@@ -274,13 +274,13 @@ export default function CheckoutStringingCompactEditor({
                 </div>
                 <div className="grid grid-cols-1 gap-2.5 bp-sm:grid-cols-2">
                   <Input
-                    className="h-9 px-3 text-sm"
+                    className="h-9 px-3 text-ui-body-sm"
                     value={bulkTensionMain}
                     onChange={(e) => setBulkTensionMain(toNumberText(e.target.value))}
                     placeholder="공통 메인 텐션"
                   />
                   <Input
-                    className="h-9 px-3 text-sm"
+                    className="h-9 px-3 text-ui-body-sm"
                     value={bulkTensionCross}
                     onChange={(e) => setBulkTensionCross(toNumberText(e.target.value))}
                     placeholder="공통 크로스 텐션"
@@ -290,7 +290,7 @@ export default function CheckoutStringingCompactEditor({
                       value={bulkLineNote}
                       onChange={(e) => setBulkLineNote(e.target.value)}
                       placeholder="공통 작업 요청사항"
-                      className="min-h-[68px] px-3 py-2.5 text-sm"
+                      className="min-h-[68px] px-3 py-2.5 text-ui-body-sm"
                     />
                   </div>
                 </div>
@@ -350,33 +350,33 @@ export default function CheckoutStringingCompactEditor({
                     <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                       <div className="min-w-0 space-y-1">
                         <div className="flex min-w-0 flex-wrap items-center gap-2">
-                          <p className="line-clamp-2 break-keep text-sm font-semibold text-foreground">
+                          <p className="line-clamp-2 break-keep text-ui-body-sm font-medium text-foreground">
                             {displayTitle}
                           </p>
                           {lineCount > 1 && (
-                            <span className="shrink-0 whitespace-nowrap rounded-full border border-border bg-muted/30 px-2 py-0.5 text-[11px] text-muted-foreground">
+                            <span className="shrink-0 whitespace-nowrap rounded-full border border-border bg-muted/30 px-2 py-0.5 text-ui-micro text-muted-foreground">
                               {index + 1}번째 라켓
                             </span>
                           )}
                         </div>
-                        <p className="line-clamp-1 break-keep text-xs text-muted-foreground">
+                        <p className="line-clamp-1 break-keep text-ui-label text-muted-foreground">
                           {line.stringName}
                         </p>
                       </div>
                       <div className="flex shrink-0 flex-wrap items-center gap-2 bp-sm:justify-end">
-                        <span className="whitespace-nowrap text-xs font-medium text-foreground">
+                        <span className="whitespace-nowrap text-ui-label font-medium text-foreground">
                           장착비 {formatWon(line.mountingFee)}
                         </span>
                         <Badge
                           variant={isComplete ? "success" : "secondary"}
-                          className="whitespace-nowrap border border-border bg-muted/30 text-[11px]"
+                          className="whitespace-nowrap border border-border bg-muted/30 text-ui-micro"
                         >
                           {isComplete ? "입력 완료" : "필수 정보 미입력"}
                         </Badge>
                       </div>
                     </div>
 
-                    <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 rounded-lg border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground [&>span]:break-keep">
+                    <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 rounded-lg border border-border bg-muted/30 px-3 py-2 text-ui-label text-muted-foreground [&>span]:break-keep">
                       <span>{racketName ? previewText(racketName, "") : "라켓명 입력 필요"}</span>
                       <span>{tensionSummary}</span>
                       {note && <span>요청 {previewText(note, "")}</span>}
@@ -386,7 +386,7 @@ export default function CheckoutStringingCompactEditor({
                       <div className="space-y-1.5">
                         <Label
                           htmlFor={`checkout-racket-name-${line.id}`}
-                          className="text-xs font-medium text-foreground"
+                          className="text-ui-label font-medium text-foreground"
                         >
                           라켓명 <span className="text-destructive">*</span>
                         </Label>
@@ -405,7 +405,7 @@ export default function CheckoutStringingCompactEditor({
                           onBlur={() => touchLineField(lineKey, "racketType")}
                         />
                         {visibleLineErrors.racketType && (
-                          <p className="text-xs text-destructive">{visibleLineErrors.racketType}</p>
+                          <p className="text-ui-label text-destructive">{visibleLineErrors.racketType}</p>
                         )}
                       </div>
 
@@ -413,7 +413,7 @@ export default function CheckoutStringingCompactEditor({
                         <div className="space-y-1.5">
                           <Label
                             htmlFor={`checkout-tension-main-${line.id}`}
-                            className="text-xs font-medium text-foreground"
+                            className="text-ui-label font-medium text-foreground"
                           >
                             메인 텐션 <span className="text-destructive">*</span>
                           </Label>
@@ -437,7 +437,7 @@ export default function CheckoutStringingCompactEditor({
                             onBlur={() => touchLineField(lineKey, "tensionMain")}
                           />
                           {visibleLineErrors.tensionMain && (
-                            <p className="text-xs text-destructive">
+                            <p className="text-ui-label text-destructive">
                               {visibleLineErrors.tensionMain}
                             </p>
                           )}
@@ -445,7 +445,7 @@ export default function CheckoutStringingCompactEditor({
                         <div className="space-y-1.5">
                           <Label
                             htmlFor={`checkout-tension-cross-${line.id}`}
-                            className="text-xs font-medium text-foreground"
+                            className="text-ui-label font-medium text-foreground"
                           >
                             크로스 텐션 <span className="text-destructive">*</span>
                           </Label>
@@ -469,7 +469,7 @@ export default function CheckoutStringingCompactEditor({
                             onBlur={() => touchLineField(lineKey, "tensionCross")}
                           />
                           {visibleLineErrors.tensionCross && (
-                            <p className="text-xs text-destructive">
+                            <p className="text-ui-label text-destructive">
                               {visibleLineErrors.tensionCross}
                             </p>
                           )}
@@ -479,7 +479,7 @@ export default function CheckoutStringingCompactEditor({
                       <div className="space-y-1.5">
                         <Label
                           htmlFor={`checkout-line-note-${line.id}`}
-                          className="text-xs font-medium text-foreground"
+                          className="text-ui-label font-medium text-foreground"
                         >
                           작업 요청사항 <span className="text-muted-foreground">선택</span>
                         </Label>

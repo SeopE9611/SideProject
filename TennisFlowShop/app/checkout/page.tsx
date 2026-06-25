@@ -1426,15 +1426,15 @@ export default function CheckoutPage() {
             )}
 
             {/* <div className="flex items-center gap-6 text-sm">
- <div className="flex items-center gap-2 text-sm">
+ <div className="flex items-center gap-2 text-ui-body-sm">
  <Shield className="h-4 w-4 text-foreground" />
  <span>SSL 보안 결제</span>
  </div>
- <div className="flex items-center gap-2 text-sm">
+ <div className="flex items-center gap-2 text-ui-body-sm">
  <Truck className="h-4 w-4 text-primary" />
  <span>빠른 배송</span>
  </div>
- <div className="flex items-center gap-2 text-sm">
+ <div className="flex items-center gap-2 text-ui-body-sm">
  <Star className="h-4 w-4 text-foreground" />
  <span>상품별 배송비 정책 적용</span>
  </div>
@@ -1864,10 +1864,10 @@ export default function CheckoutPage() {
                         <MapPin className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg bp-sm:text-xl font-bold">
+                        <CardTitle className="text-ui-card-title-lg font-semibold">
                           {needsShippingAddress ? "배송 정보" : "수령/연락 정보"}
                         </CardTitle>
-                        <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">
+                        <CardDescription className="mt-0.5 text-ui-label bp-sm:text-ui-body-sm">
                           {needsShippingAddress
                             ? "배송과 연락에 필요한 정보를 입력하세요."
                             : "방문 수령 안내를 받을 연락처를 입력하세요."}
@@ -1881,7 +1881,7 @@ export default function CheckoutPage() {
                         <div className="space-y-2">
                           <Label
                             htmlFor="recipient-name"
-                            className="flex items-center gap-2 text-sm font-medium"
+                            className="flex items-center gap-2 text-ui-label font-medium"
                           >
                             <UserIcon className="h-4 w-4 text-muted-foreground" />
                             수령인 이름
@@ -1900,7 +1900,7 @@ export default function CheckoutPage() {
                           />
                           <div className="min-h-[18px]">
                             {showNameError && (
-                              <p className="text-xs text-destructive animate-in fade-in slide-in-from-top-1">
+                              <p className="text-ui-label text-destructive animate-in fade-in slide-in-from-top-1">
                                 {fieldErrors.name}
                               </p>
                             )}
@@ -1909,7 +1909,7 @@ export default function CheckoutPage() {
                         <div className="space-y-2">
                           <Label
                             htmlFor="recipient-email"
-                            className="flex items-center gap-2 text-sm font-medium"
+                            className="flex items-center gap-2 text-ui-label font-medium"
                           >
                             <Mail className="h-4 w-4 text-muted-foreground" />
                             이메일
@@ -1929,7 +1929,7 @@ export default function CheckoutPage() {
                           />
                           <div className="min-h-[18px]">
                             {showEmailError && (
-                              <p className="text-xs text-destructive animate-in fade-in slide-in-from-top-1">
+                              <p className="text-ui-label text-destructive animate-in fade-in slide-in-from-top-1">
                                 {fieldErrors.email}
                               </p>
                             )}
@@ -1938,7 +1938,7 @@ export default function CheckoutPage() {
                         <div className="space-y-2 md:col-span-2">
                           <Label
                             htmlFor="recipient-phone"
-                            className="flex items-center gap-2 text-sm font-medium"
+                            className="flex items-center gap-2 text-ui-label font-medium"
                           >
                             <Phone className="h-4 w-4 text-muted-foreground" />
                             연락처
@@ -1958,7 +1958,7 @@ export default function CheckoutPage() {
                           />
                           <div className="min-h-[18px]">
                             {showPhoneError && (
-                              <p className="text-xs text-destructive animate-in fade-in slide-in-from-top-1">
+                              <p className="text-ui-label text-destructive animate-in fade-in slide-in-from-top-1">
                                 {fieldErrors.phone}
                               </p>
                             )}
@@ -1971,7 +1971,7 @@ export default function CheckoutPage() {
                           <div className="space-y-2">
                             <Label
                               htmlFor="address-postal"
-                              className="flex items-center gap-2 text-sm"
+                              className="flex items-center gap-2 text-ui-body-sm"
                             >
                               <Home className="h-4 w-4 text-foreground" />
                               우편번호
@@ -2005,7 +2005,7 @@ export default function CheckoutPage() {
                             {/* 에러 메시지 영역 */}
                             <div className="min-h-[16px]">
                               {showPostalCodeError && (
-                                <p className="text-xs text-destructive">{fieldErrors.postalCode}</p>
+                                <p className="text-ui-label text-destructive">{fieldErrors.postalCode}</p>
                               )}
                             </div>
                           </div>
@@ -2040,7 +2040,7 @@ export default function CheckoutPage() {
                             />
                             <div className="min-h-[16px]">
                               {showAddressDetailError && (
-                                <p className="text-xs text-destructive">
+                                <p className="text-ui-label text-destructive">
                                   {fieldErrors.addressDetail}
                                 </p>
                               )}
@@ -2050,7 +2050,7 @@ export default function CheckoutPage() {
                           <div className="space-y-2">
                             <Label
                               htmlFor="delivery-request"
-                              className="flex items-center gap-2 text-sm"
+                              className="flex items-center gap-2 text-ui-body-sm"
                             >
                               <MessageSquare className="h-4 w-4 text-foreground" />
                               배송 요청사항
@@ -2074,13 +2074,13 @@ export default function CheckoutPage() {
                               />
                               <label
                                 htmlFor="save-address"
-                                className={`text-sm font-medium ${!user ? "text-muted-foreground" : "text-foreground"}`}
+                                className={`text-ui-label font-medium ${!user ? "text-muted-foreground" : "text-foreground"}`}
                               >
                                 이 배송지 정보를 저장
                               </label>
                             </div>
                             {!user && (
-                              <p className="text-sm text-foreground/80 ml-6 mt-1">
+                              <p className="text-ui-body-sm text-foreground/80 ml-6 mt-1">
                                 로그인 후 배송지 정보를 저장할 수 있습니다.
                               </p>
                             )}
@@ -2110,8 +2110,8 @@ export default function CheckoutPage() {
                         <CreditCard className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg bp-sm:text-xl font-bold">결제 정보</CardTitle>
-                        <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">
+                        <CardTitle className="text-ui-card-title-lg font-semibold">결제 정보</CardTitle>
+                        <CardDescription className="mt-0.5 text-ui-label bp-sm:text-ui-body-sm">
                           포인트와 패키지 적용 후 결제수단을 선택하세요.
                         </CardDescription>
                       </div>
@@ -2125,7 +2125,7 @@ export default function CheckoutPage() {
                           할인 및 혜택
                         </Label>
                         <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-3.5 bp-sm:p-4">
-                          <div className="flex justify-between items-center text-sm">
+                          <div className="flex justify-between items-center text-ui-body-sm">
                             <span className="text-muted-foreground">사용 가능 포인트</span>
                             <span className="font-semibold">
                               {user
@@ -2138,18 +2138,18 @@ export default function CheckoutPage() {
                             </span>
                           </div>
                           {user && pointsFetchError && (
-                            <p className="text-xs text-destructive">
+                            <p className="text-ui-label text-destructive">
                               포인트 정보를 불러오지 못했습니다.
                             </p>
                           )}
                           {user && !pointsFetchError && resolvedPointsDebt > 0 && (
-                            <p className="text-xs text-destructive">
+                            <p className="text-ui-label text-destructive">
                               회수 예정 포인트(채무): {resolvedPointsDebt.toLocaleString()}P →
                               적립금이 먼저 상계됩니다.
                             </p>
                           )}
                           <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-2 text-sm">
+                            <div className="flex items-center gap-2 text-ui-body-sm">
                               <Checkbox
                                 id="useAllPoints"
                                 checked={useAllPoints}
@@ -2173,12 +2173,12 @@ export default function CheckoutPage() {
                               />
                               <Label
                                 htmlFor="useAllPoints"
-                                className="text-sm font-medium cursor-pointer"
+                                className="text-ui-label font-medium cursor-pointer"
                               >
                                 전액 사용
                               </Label>
                             </div>
-                            <div className="flex items-center gap-2 text-sm">
+                            <div className="flex items-center gap-2 text-ui-body-sm">
                               <Input
                                 type="text"
                                 inputMode="numeric"
@@ -2230,10 +2230,10 @@ export default function CheckoutPage() {
                                   setPointsToUse(clamped);
                                 }}
                               />
-                              <span className="break-keep text-sm text-foreground/80">P</span>
+                              <span className="break-keep text-ui-body-sm text-foreground/80">P</span>
                             </div>
                           </div>
-                          <p className="break-keep text-sm text-foreground/80">
+                          <p className="break-keep text-ui-body-sm text-foreground/80">
                             배송비에는 적용되지 않습니다. 최대 {maxPointsToUse.toLocaleString()}P
                             사용 가능
                           </p>
@@ -2305,7 +2305,7 @@ export default function CheckoutPage() {
                           )}
                         </RadioGroup>
                         {nicePaymentsEnabled && isZeroPayableAmount && (
-                          <p className="break-keep text-sm text-foreground/80">
+                          <p className="break-keep text-ui-body-sm text-foreground/80">
                             결제 예정 금액이 0원인 경우 카드/간편결제를 사용할 수 없습니다.
                           </p>
                         )}
@@ -2347,7 +2347,7 @@ export default function CheckoutPage() {
                             />
                             <div className="min-h-[16px]">
                               {showDepositorError && (
-                                <p className="text-xs text-destructive">{fieldErrors.depositor}</p>
+                                <p className="text-ui-label text-destructive">{fieldErrors.depositor}</p>
                               )}
                             </div>
                           </div>
@@ -2357,16 +2357,16 @@ export default function CheckoutPage() {
                               <Shield className="h-5 w-5 text-primary" />
                               <p className="font-semibold text-foreground">무통장입금 안내</p>
                             </div>
-                            <ul className="space-y-2 text-sm text-foreground">
-                              <li className="flex items-start gap-2 text-sm leading-relaxed bp-sm:text-base">
+                            <ul className="space-y-2 text-ui-body-sm text-foreground">
+                              <li className="flex items-start gap-2 text-ui-body-sm leading-relaxed bp-sm:text-ui-body">
                                 <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
                                 주문 후 24시간 이내에 입금해 주셔야 주문이 정상 처리됩니다.
                               </li>
-                              <li className="flex items-start gap-2 text-sm leading-relaxed bp-sm:text-base">
+                              <li className="flex items-start gap-2 text-ui-body-sm leading-relaxed bp-sm:text-ui-body">
                                 <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
                                 입금자명이 주문자명과 다를 경우, 고객센터로 연락 부탁드립니다.
                               </li>
-                              <li className="flex items-start gap-2 text-sm leading-relaxed bp-sm:text-base">
+                              <li className="flex items-start gap-2 text-ui-body-sm leading-relaxed bp-sm:text-ui-body">
                                 <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" />
                                 {needsShippingAddress
                                   ? "입금 확인 후 배송이 시작됩니다."
@@ -2391,10 +2391,10 @@ export default function CheckoutPage() {
                         <CheckCircle className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg bp-sm:text-xl font-bold">
+                        <CardTitle className="text-ui-card-title-lg font-semibold">
                           주문자 동의
                         </CardTitle>
-                        <CardDescription className="mt-0.5 text-xs bp-sm:text-sm">
+                        <CardDescription className="mt-0.5 text-ui-label bp-sm:text-ui-body-sm">
                           필수 약관에 동의하면 결제를 진행할 수 있습니다.
                         </CardDescription>
                       </div>
@@ -2423,7 +2423,7 @@ export default function CheckoutPage() {
                           }}
                           className="h-5 w-5"
                         />
-                        <span className="min-w-0 break-words text-base font-bold text-foreground bp-sm:text-lg">
+                        <span className="min-w-0 break-words text-ui-card-title font-semibold text-foreground bp-sm:text-ui-card-title-lg">
                           전체 동의
                         </span>
                       </label>
@@ -2476,14 +2476,14 @@ export default function CheckoutPage() {
                                     setAgreeAll(true);
                                 }}
                               />
-                              <span className="min-w-0 break-words text-sm font-medium text-foreground">
+                              <span className="min-w-0 break-words text-ui-body-sm font-medium text-foreground">
                                 {item.label}
                               </span>
                             </label>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 shrink-0 px-2.5 text-sm text-foreground/80 hover:text-foreground bp-sm:px-3"
+                              className="h-8 shrink-0 px-2.5 text-ui-body-sm text-foreground/80 hover:text-foreground bp-sm:px-3"
                               asChild
                             >
                               <Link href={item.href} target="_blank" rel="noopener noreferrer">
@@ -2521,15 +2521,15 @@ export default function CheckoutPage() {
                 <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-3 py-2.5 shadow-lg backdrop-blur bp-md:hidden pb-[calc(env(safe-area-inset-bottom)+0.625rem)]">
                   <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-xs text-muted-foreground">결제 예정 금액</p>
-                      <p className="whitespace-nowrap text-lg font-bold tabular-nums text-foreground">
+                      <p className="text-ui-label text-muted-foreground">결제 예정 금액</p>
+                      <p className="whitespace-nowrap text-ui-price-lg font-semibold tabular-nums text-foreground">
                         {payableTotalPrice.toLocaleString()}원
                       </p>
                     </div>
                     <Button
                       type="button"
                       variant="default"
-                      className="min-h-10 shrink-0 whitespace-normal break-keep px-3 text-xs leading-snug bp-sm:text-sm"
+                      className="min-h-10 shrink-0 whitespace-normal break-keep px-3 text-ui-label leading-snug bp-sm:text-ui-body-sm"
                       wrap="responsive"
                       onClick={() => {
                         requestStringingValidationMessages();
@@ -2553,7 +2553,7 @@ export default function CheckoutPage() {
                       fieldErrors.bundle ||
                       (isMountingFeeReady && fieldErrors.composition) ||
                       hasStringingLineErrors) && (
-                      <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-sm text-destructive dark:bg-destructive/20">
+                      <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-ui-body-sm text-destructive dark:bg-destructive/20">
                         <p className="font-semibold mb-1">확인 필요</p>
                         {fieldErrors.items && <p>• {fieldErrors.items}</p>}
                         {fieldErrors.bundle && <p>• {fieldErrors.bundle}</p>}
@@ -2581,11 +2581,11 @@ export default function CheckoutPage() {
                               href="/cart"
                               data-no-unsaved-guard
                               onClick={onLeaveCartClick}
-                              className="inline-flex items-center justify-center rounded-md bg-muted/50 dark:bg-card/60 px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
+                              className="inline-flex items-center justify-center rounded-md bg-muted/50 dark:bg-card/60 px-3 py-2 text-ui-body-sm font-medium text-foreground hover:bg-muted"
                             >
                               장바구니로 가서 정리하기
                             </Link>
-                            <span className="break-keep text-sm text-foreground/80">
+                            <span className="break-keep text-ui-body-sm text-foreground/80">
                               정리 후 다시 이 페이지로 돌아와 주문을 진행해주세요.
                             </span>
                           </div>
@@ -2703,7 +2703,7 @@ export default function CheckoutPage() {
                       <div className="absolute inset-0 grid place-items-center">
                         <div className="flex items-center gap-3 rounded-xl bg-card/90 px-4 py-3 shadow">
                           <Loader2 className="h-5 w-5 animate-spin" />
-                          <span className="text-sm">주문을 처리하고 있어요…</span>
+                          <span className="text-ui-body-sm">주문을 처리하고 있어요…</span>
                         </div>
                       </div>
                     </div>
