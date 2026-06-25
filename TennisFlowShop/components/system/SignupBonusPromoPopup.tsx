@@ -114,7 +114,7 @@ export default function SignupBonusPromoPopup({ promo, onPrimaryClick }: Props) 
         <div className="relative overflow-hidden border-b border-primary/20 bg-primary/10 px-6 py-12 text-foreground dark:bg-primary/20">
           <div className="relative z-10 pr-32">
             <div className="text-ui-body-sm font-semibold opacity-90">가입 이벤트</div>
-            <div className="mt-2 text-ui-page-title font-black">
+            <div className="mt-2 text-ui-page-title font-semibold">
               회원가입 시 {promo.amount.toLocaleString("ko-KR")}P 지급
             </div>
             <div className="mt-2 text-ui-body-sm text-muted-foreground">

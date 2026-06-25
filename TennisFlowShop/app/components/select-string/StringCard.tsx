@@ -201,11 +201,11 @@ export function StringCard({
       <div className={cn("flex flex-1 flex-col", isRacketPurchaseDesign ? "p-3 bp-md:p-4" : "p-4")}>
         {/* Title & Price */}
         <div className="mb-3 space-y-1.5">
-          <h3 className="line-clamp-2 min-w-0 break-keep text-ui-body-sm font-semibold leading-tight text-foreground bp-md:text-ui-body">
+          <h3 className="line-clamp-2 min-w-0 break-words text-ui-body-sm font-semibold leading-tight text-foreground bp-md:text-ui-body">
             {product.name}
           </h3>
           {product.shortDescription && (
-            <p className="line-clamp-2 break-keep text-ui-label text-muted-foreground">
+            <p className="line-clamp-2 min-w-0 break-words text-ui-label text-muted-foreground">
               {product.shortDescription}
             </p>
           )}
@@ -240,10 +240,10 @@ export function StringCard({
         {/* Color Selector */}
         {hasColorRows && (
           <div className="mb-3 space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="flex min-w-0 items-center justify-between gap-2">
               <span className="text-ui-label font-medium text-foreground">색상</span>
               {selectedColorRow && (
-                <span className="text-ui-label text-muted-foreground">
+                <span className="min-w-0 break-words text-right text-ui-label text-muted-foreground">
                   {getColorLabel(selectedColorRow)}
                 </span>
               )}
@@ -363,7 +363,9 @@ export function StringCard({
           {canShowStockHint && (
             <p className="text-ui-label font-medium text-warning">남은 수량 {effectiveStock}개</p>
           )}
-          {isShort && !isSoldOut && <p className="text-ui-label text-destructive">구매 가능 수량 초과</p>}
+          {isShort && !isSoldOut && (
+            <p className="text-ui-label text-destructive">구매 가능 수량 초과</p>
+          )}
         </div>
 
         {/* CTA Button */}
