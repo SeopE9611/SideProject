@@ -16,6 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { badgeToneVariant } from "@/lib/badge-style";
 import { bankLabelMap, racketBrandLabel } from "@/lib/constants";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
+import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 import { shortenId } from "@/lib/shorten";
 import {
   ArrowRight,
@@ -169,12 +170,19 @@ export default function RentalsSuccessClient({ data }: Props) {
     "";
   const refundBankLabel = refundBankKey ? getRefundBankLabel(refundBankKey) : null;
 
-  const isNicePaid = data.paymentInfo?.provider === "nicepay" || data.payment?.method === "nicepay";
-  const paymentMethodLabel = isNicePaid
-    ? data.paymentInfo?.easyPayProvider
-      ? `카드/간편결제 (${data.paymentInfo.easyPayProvider})`
-      : "카드/간편결제"
-    : "무통장입금";
+  const paymentSummary = getPaymentDisplaySummary({
+    method: data.paymentInfo?.method ?? data.payment?.method,
+    provider: data.paymentInfo?.provider ?? data.payment?.method,
+    easyPayProvider: data.paymentInfo?.easyPayProvider ?? data.paymentInfo?.rawSummary?.easyPay?.provider,
+    cardDisplayName: data.paymentInfo?.cardDisplayName,
+    cardCompany: data.paymentInfo?.cardCompany,
+    cardLabel: data.paymentInfo?.cardLabel,
+    niceCard: data.paymentInfo?.niceCard,
+    rawSummary: data.paymentInfo?.rawSummary,
+    bank: data.paymentInfo?.bank,
+    depositor: data.paymentInfo?.depositor,
+  });
+  const paymentMethodLabel = paymentSummary.userLabel;
   return (
     <div className="min-h-full bg-muted/30">
       <SiteContainer variant="wide" className="py-8 md:py-12">

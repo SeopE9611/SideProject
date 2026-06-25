@@ -1,4 +1,5 @@
 import { bankLabelMap } from "@/lib/constants";
+import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 
 interface PaymentMethodDetailProps {
   method: string;
@@ -16,85 +17,6 @@ interface PaymentMethodDetailProps {
     pgStatus?: string | null;
     source?: string | null;
   } | null;
-}
-
-const EASY_PAY_PROVIDER_LABEL_MAP: Record<string, string> = {
-  TOSSPAY: "토스페이",
-  KAKAOPAY: "카카오페이",
-  NAVERPAY: "네이버페이",
-  PAYCO: "페이코",
-  SAMSUNGPAY: "삼성페이",
-  LGPAY: "LG페이",
-};
-
-function getTossMethodLabel(method?: string, easyPayProvider?: string | null) {
-  const normalized = String(method ?? "")
-    .trim()
-    .toUpperCase();
-  const hasEasyPayProvider = Boolean(String(easyPayProvider ?? "").trim());
-
-  if (normalized.includes("CARD") && (normalized.includes("EASY") || hasEasyPayProvider)) {
-    return "카드/간편결제";
-  }
-  if (normalized.includes("EASY") || hasEasyPayProvider) {
-    return "간편결제";
-  }
-  if (normalized.includes("CARD")) {
-    return "카드 결제";
-  }
-  return "카드/간편결제";
-}
-
-function getNiceMethodLabel(method?: string, easyPayProvider?: string | null) {
-  const normalized = String(method ?? "")
-    .trim()
-    .toUpperCase();
-  const hasEasyPayProvider = Boolean(String(easyPayProvider ?? "").trim());
-
-  if (normalized.includes("CARD") && (normalized.includes("EASY") || hasEasyPayProvider)) {
-    return "카드/간편결제";
-  }
-  if (normalized.includes("EASY") || hasEasyPayProvider) {
-    return "간편결제";
-  }
-  if (normalized.includes("VBANK")) {
-    return "가상계좌";
-  }
-  if (normalized.includes("BANK")) {
-    return "계좌이체";
-  }
-  if (
-    normalized.includes("CELLPHONE") ||
-    normalized.includes("MOBILE") ||
-    normalized.includes("PHONE")
-  ) {
-    return "휴대폰 결제";
-  }
-  if (normalized.includes("CARD")) {
-    return "카드 결제";
-  }
-  return "카드/간편결제";
-}
-
-function getEasyPayProviderLabel(easyPayProvider?: string | null) {
-  const normalized = String(easyPayProvider ?? "")
-    .trim()
-    .toUpperCase();
-  if (!normalized) return null;
-  return EASY_PAY_PROVIDER_LABEL_MAP[normalized] ?? normalized;
-}
-
-function getCardDisplayName(params: {
-  paymentCardDisplayName?: string | null;
-  paymentCardLabel?: string | null;
-  paymentCardCompany?: string | null;
-}) {
-  return (
-    String(params.paymentCardDisplayName ?? "").trim() ||
-    String(params.paymentCardLabel ?? "").trim() ||
-    String(params.paymentCardCompany ?? "").trim() ||
-    ""
-  );
 }
 
 export default function PaymentMethodDetail({
@@ -119,15 +41,17 @@ export default function PaymentMethodDetail({
       .trim()
       .toLowerCase() === "nicepay";
   const bankInfo = bankKey ? bankLabelMap[bankKey] : null;
-  const tossMethodLabel = getTossMethodLabel(method, easyPayProvider);
-  const niceMethodLabel = getNiceMethodLabel(method, easyPayProvider);
-  const easyPayProviderLabel = getEasyPayProviderLabel(easyPayProvider);
-  const statusLabel = paymentStatus === "결제완료" ? "결제완료" : paymentStatus;
-  const cardDisplayName = getCardDisplayName({
-    paymentCardDisplayName,
-    paymentCardLabel,
-    paymentCardCompany,
+  const paymentSummary = getPaymentDisplaySummary({
+    method,
+    provider: paymentProvider,
+    easyPayProvider,
+    cardDisplayName: paymentCardDisplayName,
+    cardCompany: paymentCardCompany,
+    cardLabel: paymentCardLabel,
+    bank: bankKey,
+    depositor,
   });
+  const statusLabel = paymentStatus === "결제완료" ? "결제완료" : paymentStatus;
 
   return (
     <div className="space-y-2">
@@ -135,10 +59,10 @@ export default function PaymentMethodDetail({
       <div className="flex flex-col gap-1">
         {isTossPayment ? (
           <div className="mt-1 rounded-md border border-border bg-muted/60 dark:bg-card px-3 py-2 text-ui-body-sm text-foreground/90 leading-relaxed space-y-1">
-            <div className="font-semibold text-foreground">{tossMethodLabel}</div>
-            <div className="text-ui-body-sm text-muted-foreground">결제 제공사: Toss Payments</div>
-            {easyPayProviderLabel && (
-              <div className="text-ui-body-sm text-muted-foreground">간편결제: {easyPayProviderLabel}</div>
+            <div className="font-semibold text-foreground">{paymentSummary.userLabel}</div>
+            <div className="text-ui-body-sm text-muted-foreground">결제 제공사: {paymentSummary.providerLabel}</div>
+            {paymentSummary.easyPayProviderLabel && (
+              <div className="text-ui-body-sm text-muted-foreground">간편결제: {paymentSummary.easyPayProviderLabel}</div>
             )}
             {statusLabel && (
               <div className="text-ui-body-sm text-muted-foreground">결제 상태: {statusLabel}</div>
@@ -146,11 +70,10 @@ export default function PaymentMethodDetail({
           </div>
         ) : isNicePayment ? (
           <div className="mt-1 rounded-md border border-border bg-muted/60 dark:bg-card px-3 py-2 text-ui-body-sm text-foreground/90 leading-relaxed space-y-1">
-            <div className="font-semibold text-foreground">{niceMethodLabel}</div>
-            {cardDisplayName && (
-              <div className="text-ui-body-sm text-muted-foreground">카드사: {cardDisplayName}</div>
+            <div className="font-semibold text-foreground">{paymentSummary.userLabel}</div>
+            {paymentSummary.cardDisplayName && (
+              <div className="text-ui-body-sm text-muted-foreground">카드사: {paymentSummary.cardDisplayName}</div>
             )}
-            <div className="text-ui-body-sm text-muted-foreground">결제수단: 카드/간편결제</div>
             {statusLabel && (
               <div className="text-ui-body-sm text-muted-foreground">결제 상태: {statusLabel}</div>
             )}
@@ -170,14 +93,14 @@ export default function PaymentMethodDetail({
           </div>
         ) : bankInfo ? (
           <div className="mt-1 rounded-md border border-border bg-muted/60 dark:bg-card px-3 py-2 text-ui-body-sm text-foreground/90 leading-relaxed space-y-1">
-            <div className="font-semibold text-foreground">{method || "무통장입금"}</div>
+            <div className="font-semibold text-foreground">무통장입금</div>
             <div className="font-medium text-foreground">{bankInfo.label}</div>
             <div className="font-mono tracking-wide text-foreground">{bankInfo.account}</div>
             <div className="text-ui-body-sm text-muted-foreground">예금주: {bankInfo.holder}</div>
           </div>
         ) : (
           <div className="mt-1 rounded-md border border-border bg-muted/60 dark:bg-card px-3 py-2 text-ui-body-sm text-foreground/90 leading-relaxed">
-            {method || "결제 정보 확인 필요"}
+            {paymentSummary.userLabel}
           </div>
         )}
         {!isTossPayment && !isNicePayment && !bankInfo && bankKey && (
