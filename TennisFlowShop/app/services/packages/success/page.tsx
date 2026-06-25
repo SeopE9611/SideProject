@@ -180,16 +180,16 @@ export default async function PackageSuccessPage({
               <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-card shadow-sm">
                 <CheckCircle className="h-8 w-8 text-primary" />
               </div>
-              <h1 className="mb-3 text-2xl font-bold sm:text-3xl md:text-4xl">
+              <h1 className="mb-3 text-ui-page-title font-semibold sm:text-ui-page-title-lg md:text-ui-page-title-lg">
                 {isOnlinePayment ? "패키지 결제가 완료되었습니다" : "패키지 주문이 접수되었습니다"}
               </h1>
-              <p className="mx-auto mb-5 max-w-2xl break-keep text-base leading-relaxed text-muted-foreground sm:text-lg">
+              <p className="mx-auto mb-5 max-w-2xl break-keep text-ui-body-lg leading-relaxed text-muted-foreground sm:text-ui-card-title-lg">
                 {isOnlinePayment
                   ? "결제가 확인되어 패키지가 즉시 활성화되었습니다. 아래에서 주문 요약과 다음 행동을 확인해주세요."
                   : "주문 정보가 접수되었습니다. 입금 확인 후 패키지가 활성화되며, 활성화 전에는 패키지 사용이 제한됩니다."}
               </p>
 
-              <div className="flex flex-wrap justify-center gap-2 text-sm sm:gap-3">
+              <div className="flex flex-wrap justify-center gap-2 text-ui-body-sm sm:gap-3">
                 <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5">
                   <Shield className="h-4 w-4 text-success" />
                   <span>{isOnlinePayment ? "결제 완료" : "주문 접수"}</span>
@@ -208,7 +208,7 @@ export default async function PackageSuccessPage({
             {/* 패키지 활성화 안내 */}
             <div className="mx-auto mt-6 max-w-4xl">
               <PublicSurface className="space-y-4">
-                <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 text-ui-body-sm md:grid-cols-3">
                   <div className="rounded-xl border border-border bg-muted/40 p-4">
                     <p className="font-semibold text-foreground">
                       {isOnlinePayment ? "결제 완료" : "주문 접수"}
@@ -263,15 +263,15 @@ export default async function PackageSuccessPage({
             <SummaryCard
               className="overflow-hidden"
               title={
-                <span className="flex items-center gap-3 text-xl sm:text-2xl">
+                <span className="flex items-center gap-3 text-ui-section-title sm:text-ui-section-title-lg">
                   <Package className="h-6 w-6 text-primary" />
                   패키지 주문 정보
                 </span>
               }
               description={
-                <span className="break-all text-sm text-muted-foreground">
+                <span className="break-all text-ui-body-sm text-muted-foreground">
                   주문 번호:{" "}
-                  <span className="font-mono text-xs font-semibold text-primary sm:text-sm">
+                  <span className="font-mono text-ui-label font-semibold text-primary sm:text-ui-body-sm">
                     {packageOrder._id.toString()}
                   </span>
                 </span>
@@ -308,7 +308,7 @@ export default async function PackageSuccessPage({
                   <PublicSurface variant="muted" padding="sm" className="flex items-center gap-3">
                     <Clock className="h-5 w-5 text-primary" />
                     <div>
-                      <p className="text-sm text-muted-foreground">주문일자</p>
+                      <p className="text-ui-body-sm text-muted-foreground">주문일자</p>
                       <p className="font-semibold text-foreground">
                         {new Date(packageOrder.createdAt).toLocaleDateString("ko-KR", {
                           year: "numeric",
@@ -322,7 +322,7 @@ export default async function PackageSuccessPage({
                   <PublicSurface variant="muted" padding="sm" className="flex items-center gap-3">
                     <CreditCard className="h-5 w-5 text-primary" />
                     <div className="min-w-0">
-                      <p className="text-sm text-muted-foreground">결제 방법</p>
+                      <p className="text-ui-body-sm text-muted-foreground">결제 방법</p>
                       <p className="break-words font-semibold text-foreground">
                         {paymentMethodLabel}
                       </p>
@@ -331,14 +331,14 @@ export default async function PackageSuccessPage({
                   <PublicSurface variant="muted" padding="sm" className="flex items-center gap-3">
                     <CheckCircle className="h-5 w-5 text-primary" />
                     <div>
-                      <p className="text-sm text-muted-foreground">결제/활성화 상태</p>
+                      <p className="text-ui-body-sm text-muted-foreground">결제/활성화 상태</p>
                       <p className="font-semibold text-foreground">
                         {isPaid ? "결제 완료 · 활성화 완료" : "입금 확인 대기 · 활성화 대기"}
                       </p>
                     </div>
                   </PublicSurface>
                   <PublicSurface variant="muted" padding="sm">
-                    <div className="flex items-end justify-between gap-4 text-lg font-bold sm:text-xl">
+                    <div className="flex items-end justify-between gap-4 text-ui-card-title-lg font-semibold sm:text-ui-section-title">
                       <span className="text-foreground">총 결제 금액</span>
                       <span className="shrink-0 text-primary">
                         {formatPrice(packageOrder.totalPrice)}원
@@ -351,17 +351,17 @@ export default async function PackageSuccessPage({
                   <PublicSurface variant="muted" padding="sm">
                     <div className="flex items-center gap-2 mb-4">
                       <CreditCard className="h-5 w-5 text-primary" />
-                      <h3 className="font-bold text-primary">입금 계좌 정보</h3>
+                      <h3 className="font-semibold text-primary">입금 계좌 정보</h3>
                     </div>
                     {paymentInfo?.bank && bankLabelMap[paymentInfo.bank] ? (
                       <PublicSurface variant="default" padding="sm" className="space-y-2">
                         <div className="font-semibold text-foreground">
                           {bankLabelMap[paymentInfo.bank].label}
                         </div>
-                        <div className="break-all font-mono text-lg font-bold text-primary">
+                        <div className="break-all font-mono text-ui-card-title-lg font-semibold text-primary">
                           {bankLabelMap[paymentInfo.bank].account}
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-ui-body-sm text-muted-foreground">
                           예금주: {bankLabelMap[paymentInfo.bank].holder}
                         </div>
                       </PublicSurface>
@@ -369,7 +369,7 @@ export default async function PackageSuccessPage({
                       <p className="text-muted-foreground">선택된 은행 없음</p>
                     )}
                     <div className="mt-4 rounded-lg border border-border bg-card p-3">
-                      <p className="text-sm font-semibold text-foreground">
+                      <p className="text-ui-body-sm font-semibold text-foreground">
                         입금 기한: {new Date(packageOrder.createdAt).toLocaleDateString("ko-KR")}{" "}
                         23:59까지
                       </p>
@@ -377,11 +377,11 @@ export default async function PackageSuccessPage({
                   </PublicSurface>
                 ) : (
                   <PublicSurface variant="muted" padding="sm">
-                    <h3 className="font-bold text-primary mb-3">
+                    <h3 className="font-semibold text-primary mb-3">
                       {isNicePayment ? "카드/간편결제 정보" : "토스 결제 정보"}
                     </h3>
-                    <p className="text-sm text-muted-foreground">결제 상태: 결제 완료</p>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-ui-body-sm text-muted-foreground">결제 상태: 결제 완료</p>
+                    <p className="text-ui-body-sm text-muted-foreground mt-1">
                       승인 시각:{" "}
                       {paymentInfo?.approvedAt
                         ? new Date(paymentInfo.approvedAt).toLocaleString("ko-KR")
@@ -395,27 +395,27 @@ export default async function PackageSuccessPage({
 
               {/* 신청자 정보 */}
               <div className="mb-6">
-                <h3 className="flex items-center gap-2 font-bold text-lg mb-4 text-foreground">
+                <h3 className="flex items-center gap-2 font-semibold text-ui-card-title-lg mb-4 text-foreground">
                   <MapPin className="h-5 w-5 text-primary" />
                   신청자 정보
                 </h3>
                 <PublicSurface variant="muted" padding="sm" className="space-y-2">
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="min-w-0">
-                      <span className="text-sm text-muted-foreground">신청자:</span>
+                      <span className="text-ui-body-sm text-muted-foreground">신청자:</span>
                       <span className="ml-2 break-words font-semibold text-foreground">
                         {serviceInfo?.name || "정보 없음"}
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <span className="text-sm text-muted-foreground">연락처:</span>
+                      <span className="text-ui-body-sm text-muted-foreground">연락처:</span>
                       <span className="ml-2 break-words font-semibold text-foreground">
                         {formatKoreanPhone(serviceInfo?.phone) || "정보 없음"}
                       </span>
                     </div>
                   </div>
                   <div className="min-w-0">
-                    <span className="text-sm text-muted-foreground">이메일:</span>
+                    <span className="text-ui-body-sm text-muted-foreground">이메일:</span>
                     <span className="ml-2 break-words font-semibold text-foreground">
                       {serviceInfo?.email || "정보 없음"}
                     </span>
@@ -423,7 +423,7 @@ export default async function PackageSuccessPage({
 
                   {serviceInfo?.serviceRequest && (
                     <div className="min-w-0">
-                      <span className="text-sm text-muted-foreground">서비스 요청사항:</span>
+                      <span className="text-ui-body-sm text-muted-foreground">서비스 요청사항:</span>
                       <span className="ml-2 break-words font-semibold text-foreground">
                         {serviceInfo.serviceRequest}
                       </span>
@@ -457,7 +457,7 @@ export default async function PackageSuccessPage({
                       <h4 className="font-semibold text-primary mb-1">
                         {isTossPayment || isNicePayment ? "결제 안내" : "입금 안내"}
                       </h4>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-ui-body-sm text-muted-foreground">
                         {isOnlinePayment
                           ? `${isNicePayment ? "카드/간편" : "토스"} 결제가 완료되어 패키지가 즉시 활성화되었습니다.`
                           : "입금 확인 후 패키지가 활성화되며, 활성화 전에는 패키지를 사용할 수 없습니다."}
@@ -468,7 +468,7 @@ export default async function PackageSuccessPage({
                     <Calendar className="h-5 w-5 text-primary mt-0.5" />
                     <div>
                       <h4 className="font-semibold text-primary mb-1">사용 안내</h4>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-ui-body-sm text-muted-foreground">
                         교체서비스 신청이 완료되면 패키지 이용 횟수가 1회 차감됩니다.
                       </p>
                     </div>
@@ -479,7 +479,7 @@ export default async function PackageSuccessPage({
                     <Star className="h-5 w-5 text-primary mt-0.5" />
                     <div>
                       <h4 className="font-semibold text-foreground mb-1">유효기간</h4>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-ui-body-sm text-muted-foreground">
                         패키지는 {packageCard.validityPeriod} 동안 유효하며, 기간 내 모든 횟수를
                         이용해주세요.
                       </p>
@@ -489,7 +489,7 @@ export default async function PackageSuccessPage({
                     <Phone className="h-5 w-5 text-primary mt-0.5" />
                     <div>
                       <h4 className="font-semibold text-primary mb-1">고객 지원</h4>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-ui-body-sm text-muted-foreground">
                         패키지 관련 문의는 고객센터(010-5218-5248)로 연락해주세요.
                       </p>
                     </div>

@@ -90,13 +90,13 @@ export default async function Page({
         <Card className="w-full max-w-xl border border-border bg-card shadow-sm">
           <CardContent className="space-y-5 p-6 text-center sm:p-8">
             <AlertTriangle className="h-12 w-12 mx-auto text-muted-foreground" />
-            <h2 className="text-2xl font-bold">현재 패키지 추가 구매가 제한됩니다</h2>
+            <h2 className="text-ui-page-title font-semibold">현재 패키지 추가 구매가 제한됩니다</h2>
             <p className="text-muted-foreground">
               {blocking.kind === "pending_order"
                 ? "진행 중인 패키지 주문(결제대기)이 있어 추가 구매할 수 없습니다. 기존 주문 상태를 먼저 확인해주세요."
                 : "현재 사용 가능한 패키지가 있어 추가 구매할 수 없습니다. 기존 패키지 이용이 종료된 뒤 다시 구매해주세요."}
             </p>
-            <div className="rounded-lg border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
+            <div className="rounded-lg border border-border bg-muted/40 p-3 text-ui-body-sm text-muted-foreground">
               {blocking.kind === "pending_order" ? (
                 <>
                   현재 상태: {String(blocking.pendingOrder.paymentStatus ?? "-")} /{" "}

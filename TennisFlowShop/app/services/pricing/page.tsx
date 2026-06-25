@@ -145,18 +145,18 @@ export default async function PricingPage() {
                     <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
                       <Icon className="h-5 w-5 text-foreground" />
                     </div>
-                    <h3 className="text-lg font-semibold leading-tight text-foreground">
+                    <h3 className="text-ui-card-title-lg font-semibold leading-tight text-foreground">
                       {service.name}
                     </h3>
-                    <div className="text-2xl font-bold text-foreground">{service.price}</div>
-                    <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+                    <div className="text-ui-page-title font-semibold text-foreground">{service.price}</div>
+                    <div className="text-ui-body-sm text-muted-foreground flex items-center justify-center gap-1">
                       <Clock className="h-4 w-4" /> 소요시간: {service.time}
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground break-keep">{service.description}</p>
+                  <p className="text-ui-body-sm text-muted-foreground break-keep">{service.description}</p>
                   <ul className="space-y-1">
                     {service.features.map((feature) => (
-                      <li key={feature} className="text-sm flex items-center gap-2 break-keep">
+                      <li key={feature} className="text-ui-body-sm flex items-center gap-2 break-keep">
                         <Check className="h-4 w-4 text-success" />
                         <span>{feature}</span>
                       </li>
@@ -169,7 +169,7 @@ export default async function PricingPage() {
           <PublicSurface
             variant="muted"
             padding="sm"
-            className="text-sm text-muted-foreground space-y-1 break-keep"
+            className="text-ui-body-sm text-muted-foreground space-y-1 break-keep"
           >
             <p>• {STRINGING_POLICY_TEXT.product}</p>
             <p>• {STRINGING_POLICY_TEXT.package}</p>
@@ -213,26 +213,26 @@ export default async function PricingPage() {
                       등록 상품 {category.count.toLocaleString("ko-KR")}개
                     </Badge>
                   }
-                  contentClassName="space-y-4 text-sm"
+                  contentClassName="space-y-4 text-ui-body-sm"
                 >
                   {hasProducts ? (
                     <>
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-1">
                         <PublicSurface variant="muted" padding="sm">
-                          <p className="text-xs font-medium text-muted-foreground">상품가</p>
+                          <p className="text-ui-label font-medium text-muted-foreground">상품가</p>
                           <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">
                             {productPriceRange}
                           </p>
                         </PublicSurface>
                         <PublicSurface variant="muted" padding="sm">
-                          <p className="text-xs font-medium text-muted-foreground">장착비</p>
+                          <p className="text-ui-label font-medium text-muted-foreground">장착비</p>
                           <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">
                             {mountingFeeRange}
                           </p>
                         </PublicSurface>
                       </div>
                       <div className="space-y-2">
-                        <p className="text-xs font-medium text-muted-foreground">대표 브랜드</p>
+                        <p className="text-ui-label font-medium text-muted-foreground">대표 브랜드</p>
                         <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                           {category.brands.length ? (
                             category.brands.map((brand) => (
@@ -245,14 +245,14 @@ export default async function PricingPage() {
                               </Badge>
                             ))
                           ) : (
-                            <span className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">
+                            <span className="text-ui-body-sm leading-relaxed text-muted-foreground bp-md:text-ui-body-lg">
                               데이터 없음
                             </span>
                           )}
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <p className="text-xs font-medium text-muted-foreground">대표 상품</p>
+                        <p className="text-ui-label font-medium text-muted-foreground">대표 상품</p>
                         <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                           {category.productNames.length ? (
                             category.productNames.map((name) => (
@@ -265,7 +265,7 @@ export default async function PricingPage() {
                               </Badge>
                             ))
                           ) : (
-                            <span className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">
+                            <span className="text-ui-body-sm leading-relaxed text-muted-foreground bp-md:text-ui-body-lg">
                               데이터 없음
                             </span>
                           )}
@@ -289,31 +289,31 @@ export default async function PricingPage() {
             <Card className="border-dashed bg-muted/30">
               <CardHeader>
                 <div className="flex flex-wrap items-center gap-2">
-                  <CardTitle className="text-base">기타/미분류 상품</CardTitle>
+                  <CardTitle className="text-ui-body-lg">기타/미분류 상품</CardTitle>
                   <Badge variant="secondary">보조 분류</Badge>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-ui-body-sm text-muted-foreground">
                   기타/미분류는 주요 소재 분류에 자동 매칭되지 않은 상품입니다. 등록 상품과 소재값을 확인해 필요하면 관리자 상품 정보에서 소재 분류를 정리해 주세요.
                 </p>
               </CardHeader>
-              <CardContent className="space-y-4 text-sm text-muted-foreground">
+              <CardContent className="space-y-4 text-ui-body-sm text-muted-foreground">
                 <div className="grid gap-3 md:grid-cols-3">
                   <div className="rounded-xl border border-border bg-card p-3">
-                    <p className="text-xs font-medium">등록 상품</p>
+                    <p className="text-ui-label font-medium">등록 상품</p>
                     <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">{otherSummary.count.toLocaleString("ko-KR")}개</p>
                   </div>
                   <div className="rounded-xl border border-border bg-card p-3">
-                    <p className="text-xs font-medium">상품가</p>
+                    <p className="text-ui-label font-medium">상품가</p>
                     <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">{formatRange(otherSummary.minPrice, otherSummary.maxPrice, "가격 데이터 확인 필요")}</p>
                   </div>
                   <div className="rounded-xl border border-border bg-card p-3">
-                    <p className="text-xs font-medium">장착비</p>
+                    <p className="text-ui-label font-medium">장착비</p>
                     <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">{formatMountingFeeRange(otherSummary.minMountingFee, otherSummary.maxMountingFee, "장착비 미등록")}</p>
                   </div>
                 </div>
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="space-y-2">
-                    <p className="text-xs font-medium">대표 브랜드</p>
+                    <p className="text-ui-label font-medium">대표 브랜드</p>
                     <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                       {otherSummary.brands.length ? (
                         otherSummary.brands.map((brand) => (
@@ -327,7 +327,7 @@ export default async function PricingPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-xs font-medium">대표 상품</p>
+                    <p className="text-ui-label font-medium">대표 상품</p>
                     <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                       {otherSummary.productNames.length ? (
                         otherSummary.productNames.map((name) => (
@@ -341,7 +341,7 @@ export default async function PricingPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-xs font-medium">등록 소재값</p>
+                    <p className="text-ui-label font-medium">등록 소재값</p>
                     <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                       {otherSummary.materialLabels.length ? (
                         otherSummary.materialLabels.map((material) => (
@@ -362,8 +362,8 @@ export default async function PricingPage() {
 
         {/* <section className="space-y-4 md:space-y-6">
           <div className="text-center">
-            <h2 className="text-xl font-bold bp-md:text-2xl">하이브리드 조합 안내</h2>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">하이브리드는 단일 소재 가격표와 분리해 조합 기준으로 안내합니다.</p>
+            <h2 className="text-ui-section-title font-semibold bp-md:text-ui-section-title-lg">하이브리드 조합 안내</h2>
+            <p className="mt-2 text-ui-body-sm leading-relaxed text-muted-foreground">하이브리드는 단일 소재 가격표와 분리해 조합 기준으로 안내합니다.</p>
           </div>
           <Card className="transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary/30 hover:shadow-md">
             <CardHeader>
@@ -372,23 +372,23 @@ export default async function PricingPage() {
                 하이브리드는 메인/크로스 스트링 조합입니다
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-sm">
+            <CardContent className="space-y-4 text-ui-body-sm">
               <div className="space-y-2 text-muted-foreground leading-relaxed">
                 <p>하이브리드는 하나의 소재가 아니라 메인/크로스 스트링 조합입니다.</p>
                 <p>따라서 단일 소재 가격표와 1:1로 비교하기보다 선택한 조합 기준으로 최종 금액을 확인해야 합니다.</p>
               </div>
               <div className="grid gap-3 md:grid-cols-3">
                 <div className="rounded-xl border border-border bg-muted/30 p-3">
-                  <p className="text-xs font-medium text-muted-foreground">등록 상품 수</p>
+                  <p className="text-ui-label font-medium text-muted-foreground">등록 상품 수</p>
                   <p className="mt-1 break-keep tabular-nums font-semibold text-foreground">{hybridGuide.count.toLocaleString("ko-KR")}개</p>
                 </div>
                 <div className="rounded-xl border border-border bg-muted/30 p-3 md:col-span-2">
-                  <p className="text-xs font-medium text-muted-foreground">대표 조합</p>
+                  <p className="text-ui-label font-medium text-muted-foreground">대표 조합</p>
                   <p className="mt-1 line-clamp-2 break-words font-semibold text-foreground">{hybridGuide.representativeMaterials.length ? hybridGuide.representativeMaterials.join(", ") : "데이터 없음"}</p>
                 </div>
               </div>
               <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">대표 상품</p>
+                <p className="text-ui-label font-medium text-muted-foreground">대표 상품</p>
                 <div className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-1">
                   {hybridGuide.representativeProducts.length ? (
                     hybridGuide.representativeProducts.map((name) => (
@@ -397,7 +397,7 @@ export default async function PricingPage() {
                       </Badge>
                     ))
                   ) : (
-                    <span className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">데이터 없음</span>
+                    <span className="text-ui-body-sm leading-relaxed text-muted-foreground bp-md:text-ui-body-lg">데이터 없음</span>
                   )}
                 </div>
               </div>
@@ -421,7 +421,7 @@ export default async function PricingPage() {
                     {service.policy}
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">{service.description}</p>
+                <p className="text-ui-body-sm text-muted-foreground mt-1">{service.description}</p>
               </PublicSurface>
             ))}
           </SummaryCard>
@@ -433,7 +433,7 @@ export default async function PricingPage() {
                 예약 정책 안내
               </span>
             }
-            contentClassName="space-y-2 text-sm leading-relaxed text-muted-foreground"
+            contentClassName="space-y-2 text-ui-body-sm leading-relaxed text-muted-foreground"
           >
             <p>• 일반 소요 시간은 30~60분이며, 예약 상황에 따라 달라질 수 있습니다.</p>
             <p>• 스트링 교체는 예약제 운영이므로 신청서 또는 문의 후 방문해 주세요.</p>
@@ -442,9 +442,9 @@ export default async function PricingPage() {
 
         <PublicSurface
           variant="muted"
-          className="space-y-2 text-sm leading-relaxed text-muted-foreground"
+          className="space-y-2 text-ui-body-sm leading-relaxed text-muted-foreground"
         >
-          <h2 className="flex items-center gap-2 break-keep text-lg font-semibold leading-snug text-foreground">
+          <h2 className="flex items-center gap-2 break-keep text-ui-card-title-lg font-semibold leading-snug text-foreground">
             <Zap className="h-5 w-5" />
             주의사항 / FAQ
           </h2>

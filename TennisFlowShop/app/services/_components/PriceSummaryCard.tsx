@@ -203,21 +203,21 @@ export default function PriceSummaryCard({
     >
       {/* 선택 요약 */}
       <div className="grid grid-cols-1 gap-3 rounded-xl border border-border bg-muted/20 p-4">
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center justify-between text-ui-body-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <CalendarDays className="h-4 w-4" />
             <span>희망일</span>
           </div>
           <span className="tabular-nums">{preferredDate || "—"}</span>
         </div>
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center justify-between text-ui-body-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Clock3 className="h-4 w-4" />
             <span>시간대</span>
           </div>
           <span className="tabular-nums">{preferredTime || "—"}</span>
         </div>
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center justify-between text-ui-body-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <MethodIcon className="h-4 w-4" />
             <span>수거 방식</span>
@@ -228,9 +228,9 @@ export default function PriceSummaryCard({
 
       {hasWorkLines && (
         <div className="space-y-2 rounded-xl border border-border bg-card p-3">
-          <div className="flex flex-wrap items-center justify-between gap-1.5 text-sm">
+          <div className="flex flex-wrap items-center justify-between gap-1.5 text-ui-body-sm">
             <span className="font-semibold text-foreground">작업 {workLines?.length ?? 0}자루</span>
-            <span className="text-xs leading-tight text-muted-foreground">1자루 = 교체 1회</span>
+            <span className="text-ui-label leading-tight text-muted-foreground">1자루 = 교체 1회</span>
           </div>
           <div className="space-y-2">
             {visibleWorkLines.map((line, index) => {
@@ -242,12 +242,12 @@ export default function PriceSummaryCard({
               return (
                 <div
                   key={`${racketName}-${index}`}
-                  className="rounded-lg bg-muted/30 p-2 text-xs leading-relaxed"
+                  className="rounded-lg bg-muted/30 p-2 text-ui-label leading-relaxed"
                 >
                   <p className="truncate font-medium text-foreground">
                     {index + 1}. {racketName} / {stringName}
                   </p>
-                  <p className="mt-0.5 break-words text-[11px] leading-snug text-muted-foreground">
+                  <p className="mt-0.5 break-words text-ui-micro leading-snug text-muted-foreground">
                     <span>{tension}</span>
                     <span className="mx-1">/</span>
                     <span>{won(Number(line.mountingFee ?? 0))}</span>
@@ -256,7 +256,7 @@ export default function PriceSummaryCard({
               );
             })}
             {hiddenWorkLineCount > 0 && (
-              <p className="text-xs text-muted-foreground">외 {hiddenWorkLineCount}건</p>
+              <p className="text-ui-label text-muted-foreground">외 {hiddenWorkLineCount}건</p>
             )}
           </div>
         </div>
@@ -266,7 +266,7 @@ export default function PriceSummaryCard({
         rows={rows}
         footer={
           usingPackage ? (
-            <p className="text-[11px]">※ 패키지 적용 시 교체비가 무료입니다.</p>
+            <p className="text-ui-micro">※ 패키지 적용 시 교체비가 무료입니다.</p>
           ) : undefined
         }
       />

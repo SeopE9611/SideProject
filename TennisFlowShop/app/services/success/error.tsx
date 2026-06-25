@@ -19,14 +19,14 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
           <div className="mb-4 grid h-12 w-12 place-content-center rounded-xl bg-destructive text-destructive-foreground">
             <AlertTriangle className="h-6 w-6" />
           </div>
-          <CardTitle className="text-2xl font-bold tracking-normal">
+          <CardTitle className="text-ui-page-title font-semibold tracking-normal">
             처리 중 오류가 발생했어요
           </CardTitle>
-          <p className="text-sm text-muted-foreground">잠시 후 다시 시도해 주세요.</p>
+          <p className="text-ui-body-sm text-muted-foreground">잠시 후 다시 시도해 주세요.</p>
         </CardHeader>
 
         <CardContent className="pt-0">
-          <p className="rounded-md border border-border bg-muted px-3 py-2 text-xs text-foreground">
+          <p className="rounded-md border border-border bg-muted px-3 py-2 text-ui-label text-foreground">
             문제가 지속되면 잠시 후 페이지를 새로고침해 주세요.
           </p>
         </CardContent>

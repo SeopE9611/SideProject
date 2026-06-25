@@ -20,11 +20,11 @@ export default function OrderPrefillBadge({ orderId, rentalId }: OrderPrefillBad
           <span className="font-semibold text-primary">프리필</span>
         </div>
         <span className="h-4 w-px bg-primary/40" />
-        <span className="text-sm text-muted-foreground">{typeLabel}</span>
-        <code className="max-w-full truncate rounded border border-border bg-card px-2 py-0.5 font-mono text-xs text-primary">
+        <span className="text-ui-body-sm text-muted-foreground">{typeLabel}</span>
+        <code className="max-w-full truncate rounded border border-border bg-card px-2 py-0.5 font-mono text-ui-label text-primary">
           {resolvedId}
         </code>
-        <span className="text-sm text-muted-foreground">기준으로 자동 채워짐</span>
+        <span className="text-ui-body-sm text-muted-foreground">기준으로 자동 채워짐</span>
       </div>
     </div>
   );

@@ -119,7 +119,7 @@ export default function PackageTossCheckoutButton({
 
   return (
     <div className="space-y-2 w-full">
-      <Button onClick={handleClick} className="w-full h-14 text-lg" disabled={isDisabled}>
+      <Button onClick={handleClick} className="w-full h-14 text-ui-card-title-lg" disabled={isDisabled}>
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -130,17 +130,17 @@ export default function PackageTossCheckoutButton({
         )}
       </Button>
       {blockedByZeroAmount && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-ui-label text-muted-foreground">
           최종 결제금액이 0원이라 토스 결제를 사용할 수 없습니다.
         </p>
       )}
-      {widgetLoadError && <p className="text-xs text-destructive">{widgetLoadError}</p>}
+      {widgetLoadError && <p className="text-ui-label text-destructive">{widgetLoadError}</p>}
       {!widgetLoadError && !widgetReady && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-ui-label text-muted-foreground">
           결제위젯 준비 중입니다. 잠시 후 다시 시도해주세요.
         </p>
       )}
-      {inlineError && <p className="text-xs text-destructive">{inlineError}</p>}
+      {inlineError && <p className="text-ui-label text-destructive">{inlineError}</p>}
     </div>
   );
 }

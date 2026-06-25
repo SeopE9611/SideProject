@@ -35,7 +35,7 @@ export default function TimeSlotSelector({
   if (!selectedDate) {
     return (
       <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">※ 먼저 장착 희망일을 선택해주세요.</p>
+        <p className="text-ui-body-sm text-muted-foreground">※ 먼저 장착 희망일을 선택해주세요.</p>
       </div>
     );
   }
@@ -45,11 +45,11 @@ export default function TimeSlotSelector({
   if (errorMessage) {
     return (
       <div className="space-y-2">
-        <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-foreground">
+        <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-ui-body-sm text-foreground">
           {errorMessage}
         </div>
         {/* 필요하면 이 날짜에서는 선택 불가임을 한번 더 안내 */}
-        <p className="text-xs text-muted-foreground">다른 날짜를 선택해주세요.</p>
+        <p className="text-ui-label text-muted-foreground">다른 날짜를 선택해주세요.</p>
       </div>
     );
   }
@@ -58,7 +58,7 @@ export default function TimeSlotSelector({
     return (
       <div className="space-y-2" aria-busy={isLoading ? true : undefined}>
         {/* 빈 그리드를 노출하지 않아 휴무/비영업일을 버그로 오해하지 않게 한다. */}
-        <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-foreground">
+        <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-ui-body-sm text-foreground">
           해당 날짜는 예약 가능한 시간이 없습니다(휴무/영업시간 없음). 다른 날짜를 선택해주세요.
         </div>
       </div>
@@ -71,7 +71,7 @@ export default function TimeSlotSelector({
       className="space-y-3.5 rounded-lg border border-border/70 bg-muted/10 p-3.5"
       aria-busy={isLoading ? true : undefined}
     >
-      <p className="text-[11px] font-medium tracking-wide text-muted-foreground">예약 가능 시간</p>
+      <p className="text-ui-micro font-medium tracking-wide text-muted-foreground">예약 가능 시간</p>
       <div className="relative">
         <div
           className={[
@@ -93,7 +93,7 @@ export default function TimeSlotSelector({
             const reason = isPast ? "종료" : isReserved ? "예약됨" : isBlocked ? "연속 불가" : null;
 
             const baseBtn =
-              "w-full rounded-lg border px-3 py-2.5 text-sm leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 bp-sm:min-h-11";
+              "w-full rounded-lg border px-3 py-2.5 text-ui-body-sm leading-tight transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 bp-sm:min-h-11";
 
             if (disabled) {
               return (
@@ -110,7 +110,7 @@ export default function TimeSlotSelector({
                   }
                   className={
                     baseBtn +
-                    " cursor-not-allowed border-border/80 bg-muted/50 text-[11px] text-muted-foreground bp-sm:text-xs"
+                    " cursor-not-allowed border-border/80 bg-muted/50 text-ui-micro text-muted-foreground bp-sm:text-ui-label"
                   }
                   aria-disabled
                 >
@@ -150,7 +150,7 @@ export default function TimeSlotSelector({
         )}
       </div>
 
-      <p className="mt-0.5 text-[11px] text-muted-foreground">
+      <p className="mt-0.5 text-ui-micro text-muted-foreground">
         🔒 비활성 시간은 종료/예약됨/연속 불가 사유로 선택할 수 없습니다.
       </p>
     </div>

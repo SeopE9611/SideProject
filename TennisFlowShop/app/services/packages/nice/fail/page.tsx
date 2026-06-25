@@ -113,14 +113,14 @@ export default async function PackageNiceFailPage({
           </>
         }
       >
-        <div className="space-y-3 text-sm text-muted-foreground">
+        <div className="space-y-3 text-ui-body-sm text-muted-foreground">
           {guide.accent === "warning" && (
             <p className="text-warning">
               중복 결제를 막기 위해 같은 패키지로 반복 결제하지 마시고, 패키지 내역 또는 관리자 확인
               후 진행해주세요.
             </p>
           )}
-          <div className="space-y-1 text-xs">
+          <div className="space-y-1 text-ui-label">
             <p>오류 코드: {code}</p>
             {rawMessage ? <p>참고 메시지: {rawMessage}</p> : null}
           </div>

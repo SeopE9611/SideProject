@@ -1671,11 +1671,11 @@ export default function StringServiceApplyPage() {
           <div className="mx-auto max-w-xl">
             <div className="inline-flex items-center gap-2 rounded-md border border-border/60 bg-muted/30 px-3 py-2">
               <span className="h-2 w-2 rounded-full bg-muted-foreground/70" />
-              <p className="text-sm font-medium text-foreground">
+              <p className="text-ui-body-sm font-medium text-foreground">
                 로그인 상태를 확인하고 있습니다.
               </p>
             </div>
-            <p className="mt-3 text-sm text-muted-foreground">
+            <p className="mt-3 text-ui-body-sm text-muted-foreground">
               잠시만 기다려주세요. 확인이 끝나면 신청 화면 또는 로그인 안내로 자동 이동합니다.
             </p>
           </div>
@@ -1736,7 +1736,7 @@ export default function StringServiceApplyPage() {
                 className={`group flex h-full min-w-0 flex-col rounded-2xl border bg-card p-4 text-left shadow-sm transition-[border-color,background-color,box-shadow] duration-200 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${index === 0 ? "border-primary/40 bg-primary/5" : "border-border"}`}
               >
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <span className="text-xs font-semibold text-muted-foreground">
+                  <span className="text-ui-label font-semibold text-muted-foreground">
                     {item.stepLabel}
                   </span>
                   <Badge
@@ -1751,22 +1751,22 @@ export default function StringServiceApplyPage() {
                     {item.icon}
                   </div>
                   <div className="min-w-0">
-                    <h3 className="break-keep text-base font-semibold leading-snug text-foreground">
+                    <h3 className="break-keep text-ui-body-lg font-semibold leading-snug text-foreground">
                       {item.title}
                     </h3>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">
+                    <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground break-keep">
                       {item.target}
                     </p>
                   </div>
                 </div>
                 <div className="rounded-xl border border-border bg-muted/30 p-3">
-                  <p className="text-xs font-semibold text-primary">다음 진행</p>
-                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-keep">
+                  <p className="text-ui-label font-semibold text-primary">다음 진행</p>
+                  <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground break-keep">
                     {item.steps}
                   </p>
                 </div>
                 <div className="mt-auto pt-4">
-                  <span className="inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-center text-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
+                  <span className="inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-center text-ui-body-sm font-semibold text-foreground transition-colors group-hover:bg-secondary">
                     <span className="break-keep whitespace-normal">{item.cta}</span>
                     <svg
                       className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1"
@@ -1791,10 +1791,10 @@ export default function StringServiceApplyPage() {
             <PublicSurface variant="muted" padding="none">
               <div className="flex h-full flex-col gap-4 p-4 bp-sm:p-5">
                 <div className="space-y-1.5">
-                  <p className="text-sm font-semibold text-foreground break-keep">
+                  <p className="text-ui-body-sm font-semibold text-foreground break-keep">
                     이미 구매하거나 대여한 내역이 있나요?
                   </p>
-                  <p className="text-sm text-muted-foreground leading-relaxed break-keep">
+                  <p className="text-ui-body-sm text-muted-foreground leading-relaxed break-keep">
                     마이페이지 주문/대여 내역에서 신청 가능한 항목을 선택해 교체서비스를 이어서
                     신청할 수 있습니다.
                   </p>
@@ -1823,10 +1823,10 @@ export default function StringServiceApplyPage() {
             <PublicSurface variant="muted" padding="none">
               <div className="flex h-full flex-col gap-4 p-4 bp-sm:p-5 bp-md:flex-row bp-md:items-center bp-md:justify-between">
                 <div className="space-y-1.5">
-                  <p className="text-sm font-semibold text-foreground break-keep">
+                  <p className="text-ui-body-sm font-semibold text-foreground break-keep">
                     어떤 스트링을 골라야 할지 고민된다면
                   </p>
-                  <p className="text-sm text-muted-foreground leading-relaxed break-keep">
+                  <p className="text-ui-body-sm text-muted-foreground leading-relaxed break-keep">
                     스트링 선택이 어렵다면 플레이 성향에 맞는 추천을 먼저 확인해보세요.
                   </p>
                 </div>
@@ -1862,7 +1862,7 @@ export default function StringServiceApplyPage() {
             <div className="mx-auto w-full md:w-[800px]">
               {paymentError ? (
                 <PublicSurface
-                  className="mb-4 border-destructive/30 bg-destructive/10 text-sm text-destructive"
+                  className="mb-4 border-destructive/30 bg-destructive/10 text-ui-body-sm text-destructive"
                   padding="sm"
                 >
                   <p className="font-semibold">카드/간편결제가 완료되지 않았습니다.</p>
@@ -1872,7 +1872,7 @@ export default function StringServiceApplyPage() {
                       : "결제 상태를 확인할 수 없습니다. 다시 시도하거나 매장에 문의해 주세요."}
                   </p>
                   {paymentErrorMessage ? (
-                    <p className="mt-1 text-xs opacity-80">{paymentErrorMessage}</p>
+                    <p className="mt-1 text-ui-label opacity-80">{paymentErrorMessage}</p>
                   ) : null}
                 </PublicSurface>
               ) : null}
@@ -1889,11 +1889,11 @@ export default function StringServiceApplyPage() {
                             <button
                               type="button"
                               onClick={() => safePush("/mypage?tab=orders")}
-                              className="px-3 py-2 text-xs font-medium rounded-lg border border-border text-foreground hover:bg-card transition-colors"
+                              className="px-3 py-2 text-ui-label font-medium rounded-lg border border-border text-foreground hover:bg-card transition-colors"
                             >
                               주문 상세에서 확인
                             </button>
-                            <span className="px-3 py-2 text-xs text-muted-foreground">
+                            <span className="px-3 py-2 text-ui-label text-muted-foreground">
                               신청 내역은 주문 상세에서 확인할 수 있습니다.
                             </span>
                           </div>
@@ -1907,7 +1907,7 @@ export default function StringServiceApplyPage() {
 
                   {formData.selectedGauge && formData.stringTypes.length > 0 ? (
                     <PublicSurface
-                      className="mt-3 mb-4 text-xs text-muted-foreground"
+                      className="mt-3 mb-4 text-ui-label text-muted-foreground"
                       variant="muted"
                       padding="sm"
                     >

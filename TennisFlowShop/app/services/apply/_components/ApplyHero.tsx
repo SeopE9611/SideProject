@@ -8,7 +8,7 @@ export default function ApplyHero() {
     <PublicPageHero
       align="center"
       eyebrow={
-        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3 py-1.5 text-sm font-medium text-foreground">
+        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3 py-1.5 text-ui-body-sm font-medium text-foreground">
           <Wrench className="h-4 w-4" />
           교체서비스
         </span>

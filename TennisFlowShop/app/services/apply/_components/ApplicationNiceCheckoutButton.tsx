@@ -131,9 +131,9 @@ export default function ApplicationNiceCheckoutButton({
         카드/간편결제로 신청 완료
       </Button>
       {!scriptReady && (
-        <p className="text-xs text-muted-foreground">카드/간편결제창을 준비 중입니다.</p>
+        <p className="text-ui-label text-muted-foreground">카드/간편결제창을 준비 중입니다.</p>
       )}
-      {inlineError && <p className="text-xs text-destructive">{inlineError}</p>}
+      {inlineError && <p className="text-ui-label text-destructive">{inlineError}</p>}
     </div>
   );
 }

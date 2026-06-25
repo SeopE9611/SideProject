@@ -39,18 +39,18 @@ export default function Step3PaymentInfoRentalReadonly({
 
       <Card className="rounded-2xl border border-border">
         <CardHeader className="space-y-2 p-4 sm:p-6">
-          <CardTitle className="flex items-center gap-2 text-base">
+          <CardTitle className="flex items-center gap-2 text-ui-body-lg">
             <ReceiptText className="h-4 w-4 shrink-0" />
             대여 결제 요약
           </CardTitle>
-          <CardDescription className="text-sm">
+          <CardDescription className="text-ui-body-sm">
             대여 결제에 <span className="font-medium">스트링 상품</span>과{" "}
             <span className="font-medium">교체 서비스 비용</span>까지 포함되어 있어 추가 결제정보
             입력이 필요하지 않습니다.
-            {/* {rentalId ? <span className="ml-1 text-xs text-muted-foreground">(rentalId: {rentalId})</span> : null} */}
+            {/* {rentalId ? <span className="ml-1 text-ui-label text-muted-foreground">(rentalId: {rentalId})</span> : null} */}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3 p-4 pt-0 text-sm sm:p-6 sm:pt-0">
+        <CardContent className="space-y-3 p-4 pt-0 text-ui-body-sm sm:p-6 sm:pt-0">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-muted-foreground">보증금</span>
             <span className="font-medium tabular-nums">{won(deposit)}</span>
