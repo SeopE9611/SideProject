@@ -7,7 +7,8 @@ export type CancelRefundEventType =
   | "order_cancel_request_approved"
   | "stringing_cancel_request_created"
   | "stringing_cancel_request_rejected"
-  | "stringing_cancel_request_approved";
+  | "stringing_cancel_request_approved"
+  | "stringing_admin_direct_cancelled";
 
 type SubjectType = "user" | "guest_order" | "guest_application";
 type TargetType = "order" | "stringing_application";
