@@ -7,6 +7,7 @@ import { OrderStatusBadge } from "./OrderStatusBadge";
 import PaymentMethodDetail from "@/app/mypage/orders/_components/PaymentMethodDetail";
 import RequestEditForm from "@/app/mypage/orders/_components/RequestEditForm";
 import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero, SummaryCard } from "@/components/public";
 import OrderReviewCTA from "@/components/reviews/OrderReviewCTA";
 import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
@@ -814,119 +815,132 @@ export default function OrderDetailClient({
 
   return (
     <main className="w-full">
+      <PublicPageHero
+        eyebrow="마이페이지"
+        title="주문 상세"
+        description="주문번호, 주문 상태, 다음 해야 할 일을 한눈에 확인할 수 있습니다."
+        className="rounded-2xl border border-border bg-card py-6 shadow-sm bp-sm:py-8"
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push(backUrl ?? "/mypage?tab=orders")}
+              className="h-9 w-full overflow-hidden whitespace-nowrap border-border bg-background hover:border-primary/30 bp-sm:w-auto"
+            >
+              <span className="bp-sm:hidden">목록</span>
+              <span className="hidden bp-sm:inline">주문 목록으로 돌아가기</span>
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+
+            <Button
+              variant={isEditMode ? "destructive" : "outline"}
+              size="sm"
+              onClick={() => setIsEditMode((m) => !m)}
+              disabled={!canUserEdit}
+              className={cn(
+                "h-9 w-full whitespace-nowrap bp-sm:w-auto",
+                !isEditMode &&
+                  "border-border bg-background hover:bg-primary/10 dark:hover:bg-primary/20",
+              )}
+            >
+              <Pencil className="mr-1 h-4 w-4" />
+              {isEditMode ? "수정 종료" : "주문 정보 수정"}
+            </Button>
+
+            {canShowCancelButton && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setCancelDialogOpen(true)}
+                className="h-9 w-full overflow-hidden whitespace-nowrap bp-sm:w-auto"
+              >
+                주문 취소 요청
+              </Button>
+            )}
+          </>
+        }
+      >
+        <div className="flex w-full flex-col gap-4 rounded-2xl border border-border bg-background/70 p-4 bp-sm:p-5">
+          <div className="flex min-w-0 items-start gap-4">
+            <div className="shrink-0 rounded-xl border border-border bg-muted/40 p-3">
+              <ShoppingCart className="h-8 w-8 text-primary" />
+            </div>
+            <div className="min-w-0 space-y-1">
+              <p className="break-keep text-sm font-medium text-foreground">
+                {hasLinkedStringingApps || orderDetail.shippingInfo?.withStringService
+                  ? "스트링 구매 + 교체서비스"
+                  : "상품 주문"}
+              </p>
+              <p className="break-all text-sm text-muted-foreground" title={orderId}>
+                주문번호: #{orderId.slice(-6).toUpperCase()}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-xl:grid-cols-4">
+            <SummaryCard
+              className="rounded-xl bg-muted/20 shadow-none"
+              contentClassName="p-3 bp-sm:p-4"
+            >
+              <div className="mb-2 flex items-center space-x-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">주문일시</span>
+              </div>
+              <p className="break-keep text-base font-semibold tabular-nums text-foreground bp-sm:text-lg">
+                {formatDate(orderDetail.date)}
+              </p>
+            </SummaryCard>
+
+            <SummaryCard
+              className="rounded-xl bg-muted/20 shadow-none"
+              contentClassName="p-3 bp-sm:p-4"
+            >
+              <div className="mb-2 flex items-center space-x-2">
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">총 결제금액</span>
+              </div>
+              <p className="break-keep text-base font-semibold tabular-nums text-foreground bp-sm:text-lg">
+                {formatCurrency(orderDetail.total)}
+              </p>
+            </SummaryCard>
+
+            <SummaryCard
+              className="rounded-xl bg-muted/20 shadow-none"
+              contentClassName="p-3 bp-sm:p-4"
+            >
+              <div className="mb-2 flex items-center space-x-2">
+                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">대표 상품</span>
+              </div>
+              <p className="line-clamp-2 min-w-0 break-keep text-base font-semibold text-foreground bp-sm:text-lg">
+                {orderDetail.items?.[0]?.name ?? "주문 상품"}
+                {orderDetail.items.length > 1 ? ` 외 ${orderDetail.items.length - 1}건` : ""}
+              </p>
+            </SummaryCard>
+
+            <SummaryCard
+              className="rounded-xl bg-muted/20 shadow-none"
+              contentClassName="p-3 bp-sm:p-4"
+            >
+              <div className="mb-2 flex items-center space-x-2">
+                <Truck className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">주문 상태</span>
+              </div>
+              <OrderStatusBadge
+                orderId={orderId}
+                initialStatus={orderDetail.status}
+                shippingMethod={orderDetail.shippingInfo}
+              />
+            </SummaryCard>
+          </div>
+        </div>
+      </PublicPageHero>
+
       <SiteContainer
         variant="wide"
         className="space-y-4 px-0 py-4 bp-sm:space-y-5 bp-sm:px-4 bp-sm:py-5 bp-md:px-6 bp-lg:px-0"
       >
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm bp-sm:p-5 bp-lg:p-6">
-          {/* 헤더: 제목과 액션 버튼 */}
-          <div className="flex flex-col gap-4 bp-lg:flex-row bp-lg:items-start bp-lg:justify-between bp-lg:gap-5">
-            {/* 제목 섹션 */}
-            <div className="flex min-w-0 flex-1 items-center gap-4">
-              <div className="shrink-0 rounded-xl border border-border bg-muted/40 p-3">
-                <ShoppingCart className="h-8 w-8 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="break-keep text-xl font-bold leading-tight text-foreground bp-sm:text-3xl">
-                  주문 상세
-                </h1>
-                <p className="mt-1 break-keep text-sm text-muted-foreground" title={orderId}>
-                  {hasLinkedStringingApps || orderDetail.shippingInfo?.withStringService
-                    ? "스트링 구매 + 교체서비스"
-                    : "상품 주문"}{" "}
-                  · 주문번호: #{orderId.slice(-6).toUpperCase()}
-                </p>
-              </div>
-            </div>
-
-            {/* 액션 버튼 섹션 */}
-            <div className="grid w-full shrink-0 grid-cols-1 gap-2 bp-sm:grid-cols-2 bp-lg:flex bp-lg:w-auto bp-lg:flex-wrap bp-lg:justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push(backUrl ?? "/mypage?tab=orders")}
-                className="h-9 w-full overflow-hidden whitespace-nowrap border-border bg-background hover:border-primary/30 bp-lg:w-auto"
-              >
-                <span className="bp-sm:hidden">목록</span>
-                <span className="hidden bp-sm:inline">주문 목록으로 돌아가기</span>
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-
-              <Button
-                variant={isEditMode ? "destructive" : "outline"}
-                size="sm"
-                onClick={() => setIsEditMode((m) => !m)}
-                disabled={!canUserEdit}
-                className={cn(
-                  isEditMode
-                    ? ""
-                    : "h-9 w-full whitespace-nowrap bg-background border-border hover:bg-primary/10 dark:hover:bg-primary/20 bp-lg:w-auto",
-                )}
-              >
-                <Pencil className="mr-1 h-4 w-4" />
-                {isEditMode ? "수정 종료" : "주문 정보 수정"}
-              </Button>
-
-              {canShowCancelButton && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setCancelDialogOpen(true)}
-                  className="h-9 w-full overflow-hidden whitespace-nowrap bp-sm:col-span-2 bp-lg:w-auto"
-                >
-                  주문 취소 요청
-                </Button>
-              )}
-            </div>
-          </div>
-          {/* 주문 상태 및 요약 섹션 */}
-          <div className="mt-5 bp-sm:mt-6">
-            <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-xl:grid-cols-4">
-              <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
-                <div className="flex items-center space-x-2 mb-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">주문일시</span>
-                </div>
-                <p className="break-keep text-base font-semibold tabular-nums text-foreground bp-sm:text-lg">
-                  {formatDate(orderDetail.date)}
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
-                <div className="flex items-center space-x-2 mb-2">
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">총 결제금액</span>
-                </div>
-                <p className="break-keep text-base font-semibold tabular-nums text-foreground bp-sm:text-lg">
-                  {formatCurrency(orderDetail.total)}
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
-                <div className="mb-2 flex items-center space-x-2">
-                  <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">대표 상품</span>
-                </div>
-                <p className="line-clamp-2 min-w-0 break-keep text-base font-semibold text-foreground bp-sm:text-lg">
-                  {orderDetail.items?.[0]?.name ?? "주문 상품"}
-                  {orderDetail.items.length > 1 ? ` 외 ${orderDetail.items.length - 1}건` : ""}
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-border bg-muted/20 p-3 bp-sm:p-4">
-                <div className="flex items-center space-x-2 mb-2">
-                  <Truck className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">주문 상태</span>
-                </div>
-                <OrderStatusBadge
-                  orderId={orderId}
-                  initialStatus={orderDetail.status}
-                  shippingMethod={orderDetail.shippingInfo}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
         {nextTodo && (
           <NextTodoCallout
             label={nextTodo.label}
