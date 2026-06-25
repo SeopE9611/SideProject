@@ -86,12 +86,26 @@ type Props = {
       status?: string | null;
       provider?: string | null;
       method?: string | null;
+      bank?: string | null;
+      depositor?: string | null;
       tid?: string | null;
       approvedAt?: string | null;
       easyPayProvider?: string | null;
       cardDisplayName?: string | null;
       cardCompany?: string | null;
       cardLabel?: string | null;
+      niceCard?: {
+        displayName?: string | null;
+        cardName?: string | null;
+        issuerName?: string | null;
+        issuerCode?: string | null;
+        acquirerName?: string | null;
+        acquirerCode?: string | null;
+        cardCode?: string | null;
+      } | null;
+      rawSummary?: {
+        easyPay?: { provider?: string | null } | null;
+      } | null;
     } | null;
     shipping?: {
       name?: string | null;
@@ -183,6 +197,16 @@ export default function RentalsSuccessClient({ data }: Props) {
     depositor: data.paymentInfo?.depositor,
   });
   const paymentMethodLabel = paymentSummary.userLabel;
+  const normalizedPaymentProvider = String(data.paymentInfo?.provider ?? "")
+    .trim()
+    .toLowerCase();
+  const normalizedPaymentStatus = String(data.paymentStatus ?? data.paymentInfo?.status ?? "")
+    .trim()
+    .toLowerCase();
+  const isOnlinePayment =
+    normalizedPaymentProvider === "nicepay" || normalizedPaymentProvider === "tosspayments";
+  const isOnlinePaid =
+    isOnlinePayment && ["paid", "결제완료"].includes(normalizedPaymentStatus);
   return (
     <div className="min-h-full bg-muted/30">
       <SiteContainer variant="wide" className="py-8 md:py-12">
@@ -401,7 +425,7 @@ export default function RentalsSuccessClient({ data }: Props) {
 
               <div className="space-y-3">
                 <h3 className="text-ui-card-title-lg font-semibold text-foreground">결제 정보</h3>
-                {isNicePaid ? (
+                {isOnlinePaid ? (
                   <div className="rounded-lg border border-border bg-background p-4 text-ui-body-sm space-y-1">
                     <p className="text-muted-foreground">결제가 완료되었습니다.</p>
                     <div>
@@ -416,11 +440,6 @@ export default function RentalsSuccessClient({ data }: Props) {
                     {data.paymentInfo?.cardCompany && (
                       <div>
                         카드사: <b>{data.paymentInfo.cardCompany}</b>
-                      </div>
-                    )}
-                    {data.paymentInfo?.tid && (
-                      <div>
-                        TID: <b>{data.paymentInfo.tid}</b>
                       </div>
                     )}
                   </div>

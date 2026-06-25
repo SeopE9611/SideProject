@@ -37,6 +37,7 @@ export interface PackageOrder {
     depositor?: string | null;
     paymentKey?: string;
     tid?: string;
+    easyPayProvider?: string | null;
     cardDisplayName?: string | null;
     cardCompany?: string | null;
     cardLabel?: string | null;

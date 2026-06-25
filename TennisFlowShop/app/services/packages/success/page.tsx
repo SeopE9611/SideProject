@@ -154,6 +154,11 @@ export default async function PackageSuccessPage({
   });
   const paymentMethodLabel = paymentSummary.userLabel;
   const isPaid = String(packageOrder.paymentStatus ?? "") === "결제완료";
+  const normalizedPaymentProvider = String(paymentInfo?.provider ?? "")
+    .trim()
+    .toLowerCase();
+  const isNicePayment = normalizedPaymentProvider === "nicepay";
+  const isTossPayment = normalizedPaymentProvider === "tosspayments";
 
   const packageCard = normalizePackageCardData({
     id: String(packageInfo.id ?? ""),
