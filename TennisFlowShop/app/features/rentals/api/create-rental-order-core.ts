@@ -1,4 +1,8 @@
-import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
+import {
+  productVisibilityFilterFor,
+  racketVisibilityFilterFor,
+  type VisibilityViewer,
+} from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
 import { createStringingApplicationFromRental } from "@/app/features/stringing-applications/api/create-from-rental";
 import { ensureStringingTTLIndexes } from "@/app/features/stringing-applications/api/indexes";
@@ -37,8 +41,10 @@ async function applyRentalVariantInventoryDeduction(params: {
   quantity: number;
   productName: string;
   product: any;
+  visibilityViewer: VisibilityViewer;
 }) {
-  const { db, session, productId, selectedColor, selectedGauge, quantity, product } = params;
+  const { db, session, productId, selectedColor, selectedGauge, quantity, product, visibilityViewer } =
+    params;
   const variantInventories = Array.isArray(product?.variantInventories)
     ? product.variantInventories
     : [];
@@ -60,7 +66,7 @@ async function applyRentalVariantInventoryDeduction(params: {
   const stockUpdateResult = await db.collection("products").updateOne(
     {
       _id: productId,
-      ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+      ...productVisibilityFilterFor(visibilityViewer),
       "inventory.stock": { $gte: quantity },
       variantInventories: {
         $elemMatch: {
@@ -144,6 +150,7 @@ export async function createRentalOrderCore(params: {
   idemKey?: string;
   initialStatus?: "pending" | "paid";
   paidMetadata?: RentalPaidMetadata;
+  visibilityViewer?: VisibilityViewer;
 }) {
   const {
     db,
@@ -153,6 +160,7 @@ export async function createRentalOrderCore(params: {
     idemKey,
     initialStatus = "pending",
     paidMetadata,
+    visibilityViewer: providedVisibilityViewer,
   } = params;
   const rentalOrders = db.collection("rental_orders");
 
@@ -191,6 +199,8 @@ export async function createRentalOrderCore(params: {
 
   if (!ObjectId.isValid(racketId)) throw new Error("BAD_RACKET_ID");
   if (![7, 15, 30].includes(days)) throw new Error("허용되지 않는 대여 기간");
+
+  const visibilityViewer = providedVisibilityViewer ?? (await getVisibilityViewerFromCookies());
 
   if (
     payment?.method === "bank_transfer" &&
@@ -246,7 +256,7 @@ export async function createRentalOrderCore(params: {
   const racket = await db.collection("used_rackets").findOne(
     {
       _id: racketObjectId,
-      ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+      ...racketVisibilityFilterFor(visibilityViewer),
     },
     { projection: { brand: 1, model: 1, quantity: 1, status: 1, rental: 1 } },
   );
@@ -303,7 +313,7 @@ export async function createRentalOrderCore(params: {
     const s = await db.collection("products").findOne(
       {
         _id: stringObjectId,
-        ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+        ...productVisibilityFilterFor(visibilityViewer),
       },
       {
         projection: {
@@ -541,13 +551,14 @@ export async function createRentalOrderCore(params: {
                 quantity: stringQuantity,
                 productName: stringingSnap.name,
                 product,
+                visibilityViewer,
               });
             } else if (stringingSnap.selectedGauge && stringingSnap.selectedColor) {
               if (stringingHasManagedColorInventories) {
                 const stockUpdateResult = await db.collection("products").updateOne(
                   {
                     _id: stringingSnap.stringId,
-                    ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+                    ...productVisibilityFilterFor(visibilityViewer),
                     "inventory.stock": { $gte: stringQuantity },
                     gaugeInventories: {
                       $elemMatch: {
@@ -587,7 +598,7 @@ export async function createRentalOrderCore(params: {
                 const stockUpdateResult = await db.collection("products").updateOne(
                   {
                     _id: stringingSnap.stringId,
-                    ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+                    ...productVisibilityFilterFor(visibilityViewer),
                     "inventory.stock": { $gte: stringQuantity },
                     gaugeInventories: {
                       $elemMatch: {
@@ -613,7 +624,7 @@ export async function createRentalOrderCore(params: {
               const stockUpdateResult = await db.collection("products").updateOne(
                 {
                   _id: stringingSnap.stringId,
-                  ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+                  ...productVisibilityFilterFor(visibilityViewer),
                   "inventory.stock": { $gte: stringQuantity },
                   gaugeInventories: {
                     $elemMatch: {
@@ -639,7 +650,7 @@ export async function createRentalOrderCore(params: {
                 const stockUpdateResult = await db.collection("products").updateOne(
                   {
                     _id: stringingSnap.stringId,
-                    ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+                    ...productVisibilityFilterFor(visibilityViewer),
                     "inventory.stock": { $gte: stringQuantity },
                     colorInventories: {
                       $elemMatch: {
@@ -664,7 +675,7 @@ export async function createRentalOrderCore(params: {
                 const stockUpdateResult = await db.collection("products").updateOne(
                   {
                     _id: stringingSnap.stringId,
-                    ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+                    ...productVisibilityFilterFor(visibilityViewer),
                     "inventory.stock": { $gte: stringQuantity },
                   },
                   {
@@ -748,7 +759,7 @@ export async function createRentalOrderCore(params: {
           const rack = await db.collection("used_rackets").findOne(
             {
               _id: racketObjectId,
-              ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+              ...racketVisibilityFilterFor(visibilityViewer),
             },
             { projection: { quantity: 1 } },
           );
@@ -757,7 +768,7 @@ export async function createRentalOrderCore(params: {
             await db.collection("used_rackets").updateOne(
               {
                 _id: racketObjectId,
-                ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+                ...racketVisibilityFilterFor(visibilityViewer),
               },
               { $set: { status: "rented", updatedAt: new Date() } },
               { session },

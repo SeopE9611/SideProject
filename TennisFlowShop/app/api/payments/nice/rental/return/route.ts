@@ -4,6 +4,7 @@ import {
 } from "@/app/features/rentals/api/create-rental-order-core";
 import { signOrderAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
+import { getVisibilityViewerFromUserId } from "@/lib/public-visibility-viewer";
 import {
   approveNicePaymentByTid,
   cancelNicePaymentByTid,
@@ -474,6 +475,9 @@ export async function POST(req: Request) {
       const card = extractNiceCardInfo(approvedRaw);
       const easyPayProvider = extractNiceEasyPayProvider(approvedRaw);
       const rentalPayloadAny = rentalPayload as Record<string, any>;
+      const visibilityViewer = session.userId
+        ? await getVisibilityViewerFromUserId(db, session.userId)
+        : { isAdmin: false };
       const rental = await createRentalOrderCore({
         db,
         client,
@@ -485,6 +489,7 @@ export async function POST(req: Request) {
         },
         idemKey: `nice:rental:${orderId}`,
         initialStatus: "paid",
+        visibilityViewer,
         paidMetadata: {
           paidAt: new Date(),
           paymentStatus: "결제완료",
