@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import HeroSlider from "@/components/HeroSlider";
 import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
-import { InteractiveCard } from "@/components/public/InteractiveCard";
 import { PublicSurface } from "@/components/public/PublicSurface";
 import { SectionHeader } from "@/components/public/SectionHeader";
 import SignupBonusPromoPopup from "@/components/system/SignupBonusPromoPopup";
@@ -19,11 +18,10 @@ import {
   SIGNUP_BONUS_START_DATE,
 } from "@/lib/points.policy";
 import { cn } from "@/lib/utils";
-import { BadgeCheck, BookOpen, Package, Search, Tags, Wrench } from "lucide-react";
+import { BadgeCheck, BookOpen, Clock, HelpCircle, Package, Plus, Scissors, Search, Star, Tags, Wrench } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MdSportsTennis } from "react-icons/md";
 
 const HomeNoticePreview = dynamic(() => import("@/components/HomeNoticePreview"));
 
@@ -178,6 +176,68 @@ const getBrandTabClass = (isActive: boolean) =>
       : "border-border/60 bg-card text-foreground hover:border-border hover:shadow-md",
   );
 
+
+type SituationKey = "broken" | "newRacket" | "unsure" | "price";
+
+type SituationCta = {
+  label: string;
+  href: string;
+  primary?: boolean;
+};
+
+type SituationAction = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  ctas: SituationCta[];
+};
+
+const SITUATIONS = [
+  { key: "broken", icon: Scissors, label: "스트링이 끊어졌어요" },
+  { key: "newRacket", icon: Plus, label: "새 라켓에 매고 싶어요" },
+  { key: "unsure", icon: HelpCircle, label: "어떤 스트링이 맞는지 몰라요" },
+  { key: "price", icon: Tags, label: "가격이 궁금해요" },
+] as const;
+
+const SITUATION_ACTIONS: Record<SituationKey, SituationAction> = {
+  broken: {
+    eyebrow: "빠른 교체",
+    title: "끊어진 스트링은 빠르게 접수하세요",
+    description: "보유 장비로 교체서비스를 신청하면 방문 또는 택배로 접수할 수 있습니다.",
+    ctas: [
+      { label: "교체서비스 신청", href: "/services/apply", primary: true },
+      { label: "장착비 보기", href: "/services/pricing" },
+    ],
+  },
+  newRacket: {
+    eyebrow: "신규 장착",
+    title: "새 라켓에 맞는 스트링을 선택하세요",
+    description: "라켓과 플레이 스타일에 맞춰 스트링과 텐션을 선택해 장착할 수 있습니다.",
+    ctas: [
+      { label: "스트링 선택하기", href: "/products", primary: true },
+      { label: "교체서비스 신청", href: "/services/apply" },
+    ],
+  },
+  unsure: {
+    eyebrow: "맞춤 탐색",
+    title: "처음이라면 추천 스트링부터 확인하세요",
+    description: "반발력, 컨트롤, 내구성 기준으로 스트링을 비교하고 선택할 수 있습니다.",
+    ctas: [
+      { label: "추천 스트링 보기", href: "/products", primary: true },
+      { label: "Q&A 문의", href: "/board/qna" },
+    ],
+  },
+  price: {
+    eyebrow: "가격 안내",
+    title: "장착비와 서비스 비용을 먼저 확인하세요",
+    description: "스트링 교체 전 장착 비용과 서비스 옵션을 확인할 수 있습니다.",
+    ctas: [
+      { label: "가격 안내 보기", href: "/services/pricing", primary: true },
+      { label: "패키지 보기", href: "/services/packages" },
+    ],
+  },
+};
+
 type HomePageClientProps = {
   initialHomeData?: HomePreviewData | null;
 };
@@ -185,6 +245,7 @@ type HomePageClientProps = {
 export default function Home({ initialHomeData }: HomePageClientProps) {
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
   const [activeStringBrand, setActiveStringBrand] = useState<StringBrandKey>("all");
+  const [activeSituation, setActiveSituation] = useState<SituationKey>("broken");
   const router = useRouter();
   const stringBrandRailRef = useRef<HTMLDivElement>(null);
   const racketBrandRailRef = useRef<HTMLDivElement>(null);
@@ -561,6 +622,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
 
   const usedRacketsLoading = Boolean(racketsLoadingByBrand[activeBrand]);
   const usedRacketsError = Boolean(racketsErrorByBrand[activeBrand]);
+  const activeSituationAction = SITUATION_ACTIONS[activeSituation];
   const racketTotal = racketTotalsByBrand[activeBrand] ?? usedRacketsItems.length;
   const hasMoreRacketProducts = racketTotal > usedRacketsItems.length;
 
@@ -645,124 +707,79 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         )}
       </SiteContainer>
 
-      {/* 목적 선택 */}
+      {/* 상황 선택 */}
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <SectionHeader
             eyebrow="처음 오셨다면 여기서 시작하세요"
-            title="무엇을 도와드릴까요?"
-            description="원하는 목적을 고르면 바로 이동할 수 있어요."
+            title="지금 어떤 도움이 필요하세요?"
+            description="상황을 선택하면 다음 행동을 바로 안내해 드려요."
             align="center"
             className="mb-8 bp-sm:mb-10"
           />
-          <div className="grid gap-4 bp-sm:gap-5 bp-md:gap-6 grid-cols-1 bp-md:grid-cols-2 bp-xl:grid-cols-3">
-            <InteractiveCard
-              href="/services/apply"
-              className="group relative flex h-full flex-col gap-4 border-primary/40 bg-primary/5 bp-sm:p-6 bp-md:p-7"
-            >
-              <BadgeCheck className="absolute right-5 top-5 h-5 w-5 text-primary" />
-              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
-                <Wrench className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
-              </div>
+          <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.78fr)] bp-lg:items-stretch">
+            <div className="grid grid-cols-2 gap-3 bp-sm:gap-4 bp-md:grid-cols-4 bp-lg:grid-cols-2">
+              {SITUATIONS.map((situation) => {
+                const Icon = situation.icon;
+                const isActive = activeSituation === situation.key;
+
+                return (
+                  <button
+                    key={situation.key}
+                    type="button"
+                    aria-pressed={isActive}
+                    onClick={() => setActiveSituation(situation.key)}
+                    className={cn(
+                      "group flex min-h-32 flex-col gap-3 rounded-2xl border bg-card p-4 text-left shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-h-36 bp-sm:p-5",
+                      isActive
+                        ? "border-primary/50 bg-primary/5 shadow-md"
+                        : "border-border/60 hover:border-primary/30",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex h-11 w-11 items-center justify-center rounded-2xl border transition-[background-color,color,border-color,box-shadow,opacity] duration-300",
+                        isActive
+                          ? "border-primary/40 bg-primary text-primary-foreground"
+                          : "border-border/60 bg-secondary text-foreground group-hover:shadow-md",
+                      )}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="break-keep text-ui-body-sm font-semibold leading-relaxed text-foreground bp-sm:text-ui-card-title">
+                      {situation.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <PublicSurface padding="md" className="flex h-full flex-col justify-between border-primary/20 bg-primary/5 bp-sm:p-6">
               <div>
-                <p className="mb-1 text-ui-caption font-medium text-primary">빠른 신청</p>
-                <h3 className="break-keep text-ui-card-title font-medium text-foreground bp-sm:text-ui-card-title-lg">
-                  보유 장비로 교체서비스 신청
+                <span className="inline-flex rounded-full bg-background px-3 py-1 text-ui-label font-semibold text-primary shadow-sm">
+                  {activeSituationAction.eyebrow}
+                </span>
+                <h3 className="mt-4 break-keep text-ui-card-title-lg font-semibold text-foreground bp-sm:text-ui-section-title">
+                  {activeSituationAction.title}
                 </h3>
-                <p className="mt-2 text-ui-body-sm leading-relaxed text-muted-foreground">
-                  이미 보유한 라켓이나 스트링으로 교체 작업만 맡길 때 선택하세요.
+                <p className="mt-3 break-keep text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body">
+                  {activeSituationAction.description}
                 </p>
               </div>
-            </InteractiveCard>
-
-            <InteractiveCard
-              href="/products?from=apply"
-              className="group flex h-full flex-col gap-4 bp-sm:p-6 bp-md:p-7"
-            >
-              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
-                <Package className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
+              <div className="mt-6 grid gap-2 bp-sm:grid-cols-2 bp-lg:grid-cols-1 bp-xl:grid-cols-2">
+                {activeSituationAction.ctas.map((cta) => (
+                  <Button
+                    key={cta.label}
+                    asChild
+                    variant={cta.primary ? "default" : "outline"}
+                    size="tall"
+                    className="w-full"
+                  >
+                    <Link href={cta.href}>{cta.label}</Link>
+                  </Button>
+                ))}
               </div>
-              <div>
-                <h3 className="break-keep text-ui-card-title font-medium text-foreground bp-sm:text-ui-card-title-lg">
-                  새{"\u00A0"}스트링으로 교체서비스 신청
-                </h3>
-                <p className="mt-2 text-ui-body-sm leading-relaxed text-muted-foreground">
-                  스트링을 새로 선택하고 교체서비스까지 한{"\u00A0"}번에 진행합니다.
-                </p>
-              </div>
-            </InteractiveCard>
-
-            <InteractiveCard
-              href="/rackets?from=apply"
-              className="group flex h-full flex-col gap-4 bp-sm:p-6 bp-md:p-7"
-            >
-              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
-                <Tags className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
-              </div>
-              <div>
-                <h3 className="break-keep text-ui-card-title font-medium text-foreground bp-sm:text-ui-card-title-lg">
-                  라켓{"\u00A0"}구매/대여 + 스트링 선택
-                </h3>
-                <p className="mt-2 text-ui-body-sm leading-relaxed text-muted-foreground">
-                  라켓을 구매하거나 대여한 뒤 스트링을 선택해 교체서비스까지 함께 진행합니다.
-                </p>
-              </div>
-            </InteractiveCard>
-
-            <InteractiveCard
-              href="/academy"
-              className="group flex h-full flex-col gap-4 bp-sm:p-6 bp-md:p-7"
-            >
-              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
-                <BookOpen className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
-              </div>
-              <div>
-                <h3 className="break-keep text-ui-card-title font-medium text-foreground bp-sm:text-ui-card-title-lg">
-                  아카데미 / 레슨 신청
-                </h3>
-                <p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
-                  아카데미 클래스와 레슨 안내를 확인하세요.
-                </p>
-              </div>
-            </InteractiveCard>
-
-            <InteractiveCard
-              href="/academy"
-              className="group flex h-full flex-col gap-4 bp-sm:p-6 bp-md:p-7"
-            >
-              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
-                <Search className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
-              </div>
-              <div className="flex flex-1 flex-col gap-4">
-                <div>
-                  <h3 className="break-keep text-ui-card-title font-medium text-foreground bp-sm:text-ui-card-title-lg">
-                    <span className="whitespace-nowrap">주문/신청 상태 확인</span>
-                  </h3>
-                  <p className="mt-2 text-ui-body-sm leading-relaxed text-muted-foreground">
-                    마이페이지에서 진행 상태를 확인할 수 있어요.
-                  </p>
-                </div>
-              </div>
-            </InteractiveCard>
-
-            <InteractiveCard
-              href="/rackets/finder"
-              className="group flex h-full flex-col gap-4 bp-sm:p-6 bp-md:p-7"
-            >
-              <div className={cn("h-12 w-12 bp-sm:h-14 bp-sm:w-14", surfaceIconWrapClass)}>
-                <MdSportsTennis className="h-5 w-5 bp-sm:h-6 bp-sm:w-6" />
-              </div>
-              <div className="flex flex-1 flex-col gap-4">
-                <div>
-                  <h3 className="break-keep text-ui-card-title font-medium text-foreground bp-sm:text-ui-card-title-lg">
-                    라켓 검색
-                  </h3>
-                  <p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
-                    원하는 조건으로 중고 라켓을 정교하게 찾아보세요.
-                  </p>
-                </div>
-              </div>
-            </InteractiveCard>
+            </PublicSurface>
           </div>
         </SiteContainer>
       </section>
@@ -845,14 +862,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 </p>
               </div>
             </div>
-            <div className="text-center">
-              <Button asChild variant="default" size="tall" className="px-6 bp-sm:px-8">
-                <Link href="/services/apply">
-                  <Wrench className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                  보유 장비로 교체서비스 신청
-                </Link>
-              </Button>
-            </div>
           </PublicSurface>
         </SiteContainer>
       </section>
@@ -862,7 +871,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         <SiteContainer>
           <SectionHeader
             title="이용 안내"
-            description="공지사항, 스트링 교체 신청, 가격 안내, 문의까지 필요한 메뉴를 빠르게 확인하세요."
+            description="운영 소식은 간단히 확인하고, 필요한 안내 메뉴로 이동하세요."
             align="center"
             className="mb-8 bp-sm:mb-10"
           />
@@ -873,56 +882,56 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               <PublicSurface
                 variant="muted"
                 padding="none"
-                className="h-[300px] animate-pulse border-border/60"
+                className="h-[260px] animate-pulse border-border/60"
               />
             )}
             <div className="grid gap-3 bp-sm:grid-cols-2">
               <Link
-                href="/board/notice"
-                className={cn(surfaceCardInteractiveClass, "group flex min-h-32 flex-col justify-between p-5")}
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
-                  <BookOpen className="h-5 w-5" />
-                </div>
-                <div className="space-y-1.5">
-                  <p className="text-ui-card-title font-semibold text-foreground">공지사항</p>
-                  <p className="text-ui-body-sm text-muted-foreground">운영 안내와 중요 소식을 확인하세요.</p>
-                </div>
-              </Link>
-              <Link
-                href="/services/apply"
-                className={cn(surfaceCardInteractiveClass, "group flex min-h-32 flex-col justify-between p-5")}
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
-                  <Wrench className="h-5 w-5" />
-                </div>
-                <div className="space-y-1.5">
-                  <p className="text-ui-card-title font-semibold text-foreground">스트링 교체 신청</p>
-                  <p className="text-ui-body-sm text-muted-foreground">보유 장비 교체 서비스를 신청하세요.</p>
-                </div>
-              </Link>
-              <Link
                 href="/services/pricing"
-                className={cn(surfaceCardInteractiveClass, "group flex min-h-32 flex-col justify-between p-5")}
+                className={cn(surfaceCardInteractiveClass, "group flex min-h-28 items-center gap-4 p-5")}
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
                   <Tags className="h-5 w-5" />
                 </div>
-                <div className="space-y-1.5">
-                  <p className="text-ui-card-title font-semibold text-foreground">가격 안내</p>
-                  <p className="text-ui-body-sm text-muted-foreground">장착 비용과 서비스 옵션을 확인하세요.</p>
+                <div className="space-y-1">
+                  <p className="text-ui-card-title font-semibold text-foreground">장착비 안내</p>
+                  <p className="text-ui-body-sm text-muted-foreground">교체 비용과 옵션을 확인하세요.</p>
+                </div>
+              </Link>
+              <Link
+                href="/services/locations"
+                className={cn(surfaceCardInteractiveClass, "group flex min-h-28 items-center gap-4 p-5")}
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
+                  <Clock className="h-5 w-5" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-ui-card-title font-semibold text-foreground">운영 시간/매장 안내</p>
+                  <p className="text-ui-body-sm text-muted-foreground">방문 전 운영 정보를 확인하세요.</p>
                 </div>
               </Link>
               <Link
                 href="/board/qna"
-                className={cn(surfaceCardInteractiveClass, "group flex min-h-32 flex-col justify-between p-5")}
+                className={cn(surfaceCardInteractiveClass, "group flex min-h-28 items-center gap-4 p-5")}
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
                   <Search className="h-5 w-5" />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <p className="text-ui-card-title font-semibold text-foreground">Q&A 문의</p>
                   <p className="text-ui-body-sm text-muted-foreground">궁금한 점을 남기고 답변을 받아보세요.</p>
+                </div>
+              </Link>
+              <Link
+                href="/reviews"
+                className={cn(surfaceCardInteractiveClass, "group flex min-h-28 items-center gap-4 p-5")}
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
+                  <Star className="h-5 w-5" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-ui-card-title font-semibold text-foreground">고객 후기</p>
+                  <p className="text-ui-body-sm text-muted-foreground">실사용 후기를 가볍게 확인하세요.</p>
                 </div>
               </Link>
             </div>
