@@ -420,18 +420,23 @@ export default function FreeBoardEditClient({ id }: Props) {
           </div>
 
           {/* 우측 상단: 뒤로가기 */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap">
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="gap-2 text-ui-label sm:text-ui-body-sm"
+              className="w-full gap-2 text-ui-label bp-sm:w-auto sm:text-ui-body-sm"
               onClick={() => confirmLeaveIfDirty(() => router.back())}
             >
               <ArrowLeft className="h-4 w-4" />
               <span>이전으로</span>
             </Button>
-            <Button asChild variant="outline" size="sm" className="gap-2 text-ui-label sm:text-ui-body-sm">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="w-full gap-2 text-ui-label bp-sm:w-auto sm:text-ui-body-sm"
+            >
               <Link href="/board/gear" onClick={onLeaveLinkClick}>
                 <MessageSquare className="h-4 w-4" />
                 <span>목록으로</span>
@@ -654,12 +659,12 @@ export default function FreeBoardEditClient({ id }: Props) {
               )}
 
               {/* 하단 버튼 */}
-              <div className="flex justify-end gap-2">
+              <div className="flex flex-col justify-end gap-2 bp-sm:flex-row bp-sm:flex-wrap">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  className={cn("gap-2")}
+                  className={cn("w-full gap-2 bp-sm:w-auto")}
                   disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                   onClick={() => confirmLeaveIfDirty(() => router.push(`/board/gear/${id}`))}
                 >
@@ -669,7 +674,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                 <Button
                   type="submit"
                   size="sm"
-                  className={cn("gap-2")}
+                  className={cn("w-full gap-2 bp-sm:w-auto")}
                   disabled={isSubmitting || isUploadingImages || isUploadingFiles}
                 >
                   {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}

@@ -965,17 +965,22 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
               </div>
             </CardContent>
 
-            <CardFooter className="flex justify-between border-t bg-card p-4 md:p-8">
-              <Button variant="outline" asChild size="lg" className="px-8 bg-transparent">
+            <CardFooter className="flex flex-col gap-2 border-t bg-card p-4 bp-sm:flex-row bp-sm:flex-wrap bp-sm:justify-between md:p-8">
+              <Button
+                variant="outline"
+                asChild
+                size="lg"
+                className="w-full bg-transparent px-8 bp-sm:w-auto"
+              >
                 <Link href={listHref} onClick={guardLeave}>
                   취소
                 </Link>
               </Button>
-              <div className="flex space-x-3">
+              <div className="flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap">
                 <Button
                   variant="outline"
                   size="lg"
-                  className="px-6 border-border text-primary hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent"
+                  className="w-full border-border bg-transparent px-6 text-primary hover:bg-primary/10 bp-sm:w-auto dark:hover:bg-primary/20"
                 >
                   임시저장
                 </Button>
@@ -983,7 +988,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                   size="lg"
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="px-8 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+                  className="w-full bg-primary px-8 text-primary-foreground hover:bg-primary/90 disabled:opacity-60 bp-sm:w-auto"
                 >
                   {submitting
                     ? editId
