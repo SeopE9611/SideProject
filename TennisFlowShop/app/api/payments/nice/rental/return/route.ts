@@ -41,6 +41,10 @@ function toFailUrl(code: string, message?: string, options?: { racketId?: string
   return `/rentals/nice/fail?${qs.toString()}`;
 }
 
+function redirect303(req: Request, path: string) {
+  return NextResponse.redirect(new URL(path, req.url), { status: 303 });
+}
+
 async function parseRequestPayload(req: Request): Promise<Record<string, string>> {
   const contentType = req.headers.get("content-type") || "";
   if (
@@ -94,19 +98,15 @@ export async function POST(req: Request) {
     const signature = pick(raw, "signature", "Signature");
 
     if (!orderId)
-      return NextResponse.redirect(
-        new URL(toFailUrl("INVALID_QUERY", "orderId 값이 누락되었습니다."), req.url),
-      );
+      return redirect303(req, toFailUrl("INVALID_QUERY", "orderId 값이 누락되었습니다."));
 
     const client = await clientPromise;
     const db = client.db();
     await ensureTossPaymentSessionIndexes(db);
     const col = tossPaymentSessions(db);
-    const session = await col.findOne({ niceOrderId: orderId });
+    let session = await col.findOne({ niceOrderId: orderId });
     if (!session)
-      return NextResponse.redirect(
-        new URL(toFailUrl("SESSION_NOT_FOUND", "결제 세션을 찾을 수 없습니다."), req.url),
-      );
+      return redirect303(req, toFailUrl("SESSION_NOT_FOUND", "결제 세션을 찾을 수 없습니다."));
 
     const failOptions = {
       racketId:
@@ -115,20 +115,95 @@ export async function POST(req: Request) {
           : undefined,
     };
     if (session.provider !== "nicepay" || session.flowType !== "rental_order") {
-      return NextResponse.redirect(
-        new URL(
-          toFailUrl("SESSION_NOT_FOUND", "라켓 대여 Nice 결제 세션이 아닙니다.", failOptions),
-          req.url,
-        ),
+      return redirect303(
+        req,
+        toFailUrl("SESSION_NOT_FOUND", "라켓 대여 Nice 결제 세션이 아닙니다.", failOptions),
       );
     }
     if (session.status === "approved" && session.mongoOrderId) {
-      return NextResponse.redirect(
-        new URL(`/rentals/success?id=${encodeURIComponent(session.mongoOrderId)}`, req.url),
+      return redirect303(req, `/rentals/success?id=${encodeURIComponent(session.mongoOrderId)}`);
+    }
+
+    if (session.status === "failed") {
+      return redirect303(
+        req,
+        toFailUrl(
+          session.failureCode || "APPROVE_FAILED",
+          session.failureMessage || "이미 실패 처리된 결제 세션입니다.",
+          failOptions,
+        ),
+      );
+    }
+
+    if (session.status === "approve_succeeded_order_failed") {
+      return redirect303(
+        req,
+        toFailUrl(
+          "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+          session.failureMessage || "승인 이후 대여 처리 실패 상태입니다.",
+          failOptions,
+        ),
+      );
+    }
+
+    if (session.status === "approve_succeeded_auto_cancel_succeeded") {
+      return redirect303(
+        req,
+        toFailUrl(
+          "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+          "승인 후 대여 처리 실패로 자동 취소가 완료되었습니다.",
+          failOptions,
+        ),
+      );
+    }
+
+    if (session.status === "approve_succeeded_auto_cancel_failed") {
+      return redirect303(
+        req,
+        toFailUrl(
+          "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+          "승인 후 대여 처리 실패가 발생했고 자동 취소 상태 확인이 필요합니다.",
+          failOptions,
+        ),
       );
     }
 
     const now = new Date();
+    if (session.status === "processing") {
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+
+      const latest = await col.findOne({ niceOrderId: orderId });
+
+      if (latest?.status === "approved" && latest.mongoOrderId) {
+        return redirect303(req, `/rentals/success?id=${encodeURIComponent(latest.mongoOrderId)}`);
+      }
+
+      if (
+        latest?.status === "approve_succeeded_order_failed" ||
+        latest?.status === "approve_succeeded_auto_cancel_succeeded" ||
+        latest?.status === "approve_succeeded_auto_cancel_failed" ||
+        latest?.status === "failed"
+      ) {
+        return redirect303(
+          req,
+          toFailUrl(
+            latest.failureCode || "PAYMENT_PROCESSING_FAILED",
+            latest.failureMessage || "결제 처리 결과를 확인해주세요.",
+            failOptions,
+          ),
+        );
+      }
+
+      return redirect303(
+        req,
+        toFailUrl(
+          "PAYMENT_PROCESSING",
+          "결제 처리가 진행 중입니다. 중복 결제하지 말고 잠시 후 주문 내역을 확인해주세요.",
+          failOptions,
+        ),
+      );
+    }
+
     if (session.expiresAt && session.expiresAt.getTime() < now.getTime()) {
       await col.updateOne(
         { _id: session._id },
@@ -142,13 +217,72 @@ export async function POST(req: Request) {
           },
         },
       );
-      return NextResponse.redirect(
-        new URL(
-          toFailUrl("SESSION_EXPIRED", "결제 세션 유효시간이 만료되었습니다.", failOptions),
-          req.url,
+      return redirect303(
+        req,
+        toFailUrl("SESSION_EXPIRED", "결제 세션 유효시간이 만료되었습니다.", failOptions),
+      );
+    }
+
+    if (session.status !== "ready") {
+      return redirect303(
+        req,
+        toFailUrl(
+          "INVALID_PAYMENT_SESSION_STATUS",
+          "이미 처리 중이거나 처리 완료된 결제 세션입니다.",
+          failOptions,
         ),
       );
     }
+
+    const claimedSession = await col.findOneAndUpdate(
+      {
+        _id: session._id,
+        status: "ready",
+      },
+      {
+        $set: {
+          status: "processing",
+          processingStartedAt: now,
+          updatedAt: now,
+        },
+      },
+      { returnDocument: "after" },
+    );
+
+    if (!claimedSession) {
+      const latest = await col.findOne({ niceOrderId: orderId });
+
+      if (latest?.status === "approved" && latest.mongoOrderId) {
+        return redirect303(req, `/rentals/success?id=${encodeURIComponent(latest.mongoOrderId)}`);
+      }
+
+      if (
+        latest?.status === "approve_succeeded_order_failed" ||
+        latest?.status === "approve_succeeded_auto_cancel_succeeded" ||
+        latest?.status === "approve_succeeded_auto_cancel_failed" ||
+        latest?.status === "failed"
+      ) {
+        return redirect303(
+          req,
+          toFailUrl(
+            latest.failureCode || "PAYMENT_PROCESSING_FAILED",
+            latest.failureMessage || "결제 처리 결과를 확인해주세요.",
+            failOptions,
+          ),
+        );
+      }
+
+      return redirect303(
+        req,
+        toFailUrl(
+          "PAYMENT_SESSION_ALREADY_PROCESSING",
+          "결제 처리가 이미 진행 중입니다. 중복 결제하지 말고 주문 내역을 확인해주세요.",
+          failOptions,
+        ),
+      );
+    }
+
+    session = claimedSession;
 
     const markFailure = async (
       stage: TossPaymentFailureStage,
@@ -174,11 +308,9 @@ export async function POST(req: Request) {
 
     if (authResultCode !== "0000") {
       await markFailure("verify_auth", "AUTH_FAILED", authResultMsg || "인증 결제에 실패했습니다.");
-      return NextResponse.redirect(
-        new URL(
-          toFailUrl("AUTH_FAILED", authResultMsg || "인증 결제에 실패했습니다.", failOptions),
-          req.url,
-        ),
+      return redirect303(
+        req,
+        toFailUrl("AUTH_FAILED", authResultMsg || "인증 결제에 실패했습니다.", failOptions),
       );
     }
 
@@ -192,11 +324,9 @@ export async function POST(req: Request) {
       clientId !== prepared.clientId
     ) {
       await markFailure("verify_auth", "AUTH_FAILED", "인증 응답 필수값 검증에 실패했습니다.");
-      return NextResponse.redirect(
-        new URL(
-          toFailUrl("AUTH_FAILED", "인증 응답 필수값 검증에 실패했습니다.", failOptions),
-          req.url,
-        ),
+      return redirect303(
+        req,
+        toFailUrl("AUTH_FAILED", "인증 응답 필수값 검증에 실패했습니다.", failOptions),
       );
     }
 
@@ -207,11 +337,9 @@ export async function POST(req: Request) {
       prepared.orderId !== orderId
     ) {
       await markFailure("verify_auth", "AMOUNT_MISMATCH", "결제 금액 검증에 실패했습니다.");
-      return NextResponse.redirect(
-        new URL(
-          toFailUrl("AMOUNT_MISMATCH", "결제 금액 검증에 실패했습니다.", failOptions),
-          req.url,
-        ),
+      return redirect303(
+        req,
+        toFailUrl("AMOUNT_MISMATCH", "결제 금액 검증에 실패했습니다.", failOptions),
       );
     }
 
@@ -219,11 +347,9 @@ export async function POST(req: Request) {
     const approveApiBase = getApproveApiBase();
     if (!clientKey || !secretKey) {
       await markFailure("approve_payment", "APPROVE_FAILED", "결제 승인 설정이 올바르지 않습니다.");
-      return NextResponse.redirect(
-        new URL(
-          toFailUrl("APPROVE_FAILED", "결제 승인 설정이 올바르지 않습니다.", failOptions),
-          req.url,
-        ),
+      return redirect303(
+        req,
+        toFailUrl("APPROVE_FAILED", "결제 승인 설정이 올바르지 않습니다.", failOptions),
       );
     }
 
@@ -242,11 +368,9 @@ export async function POST(req: Request) {
         "APPROVE_FAILED",
         error?.message || "승인 처리에 실패했습니다.",
       );
-      return NextResponse.redirect(
-        new URL(
-          toFailUrl("APPROVE_FAILED", error?.message || "승인 처리에 실패했습니다.", failOptions),
-          req.url,
-        ),
+      return redirect303(
+        req,
+        toFailUrl("APPROVE_FAILED", error?.message || "승인 처리에 실패했습니다.", failOptions),
       );
     }
 
@@ -254,9 +378,7 @@ export async function POST(req: Request) {
     if (approveResultCode !== "0000") {
       const message = pick(approvedRaw, "resultMsg", "ResultMsg") || "승인 처리에 실패했습니다.";
       await markFailure("approve_payment", "APPROVE_FAILED", message, approvedRaw);
-      return NextResponse.redirect(
-        new URL(toFailUrl("APPROVE_FAILED", message, failOptions), req.url),
-      );
+      return redirect303(req, toFailUrl("APPROVE_FAILED", message, failOptions));
     }
 
     const rentalPayload = session.rentalPayload as RentalCreatePayload | undefined;
@@ -275,14 +397,12 @@ export async function POST(req: Request) {
           },
         },
       );
-      return NextResponse.redirect(
-        new URL(
-          toFailUrl(
-            "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
-            "결제 승인 후 주문 처리에 실패했습니다.",
-            failOptions,
-          ),
-          req.url,
+      return redirect303(
+        req,
+        toFailUrl(
+          "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+          "결제 승인 후 주문 처리에 실패했습니다.",
+          failOptions,
         ),
       );
     }
@@ -347,8 +467,7 @@ export async function POST(req: Request) {
         },
       );
 
-      const redirectUrl = new URL(`/rentals/success?id=${encodeURIComponent(rental.id)}`, req.url);
-      const res = NextResponse.redirect(redirectUrl);
+      const res = redirect303(req, `/rentals/success?id=${encodeURIComponent(rental.id)}`);
       if (!session.userId) {
         const token = signOrderAccessToken({ rentalId: rental.id });
         res.cookies.set("orderAccessToken", token, {
@@ -420,19 +539,15 @@ export async function POST(req: Request) {
           },
         );
       }
-      return NextResponse.redirect(
-        new URL(
-          toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", failureMessage, failOptions),
-          req.url,
-        ),
+      return redirect303(
+        req,
+        toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", failureMessage, failOptions),
       );
     }
   } catch (error: any) {
-    return NextResponse.redirect(
-      new URL(
-        toFailUrl("SERVER_ERROR", error?.message || "카드/간편결제 처리 중 오류가 발생했습니다."),
-        req.url,
-      ),
+    return redirect303(
+      req,
+      toFailUrl("SERVER_ERROR", error?.message || "카드/간편결제 처리 중 오류가 발생했습니다."),
     );
   }
 }
