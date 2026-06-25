@@ -421,47 +421,6 @@ async function handleNiceRacketReturn(req: Request) {
       return redirect303(req, toFailUrl("APPROVE_FAILED", message, fallbackPath));
     }
 
-    const racketPayload = session.racketPayload;
-    if (
-      !racketPayload?.racketId ||
-      !Array.isArray(racketPayload.items) ||
-      !racketPayload.shippingInfo
-    ) {
-      await col.updateOne(
-        { _id: session._id },
-        {
-          $set: {
-            status: "approve_succeeded_order_failed",
-            failureStage: "create_order_after_approve",
-            failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
-            failureMessage: "결제 승인 후 라켓 주문 데이터를 복원하지 못했습니다.",
-            niceAuthRaw: raw,
-            niceApprovedRaw: approvedRaw,
-            updatedAt: new Date(),
-          },
-        },
-      );
-      return redirect303(
-        req,
-        toFailUrl(
-          "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
-          "결제 승인 후 주문 처리에 실패했습니다.",
-          fallbackPath,
-        ),
-      );
-    }
-
-    const createOrderPayload = {
-      items: racketPayload.items,
-      shippingInfo: racketPayload.shippingInfo,
-      totalPrice: racketPayload.totalPrice,
-      shippingFee: racketPayload.shippingFee,
-      paymentInfo: racketPayload.paymentInfo,
-      servicePickupMethod: racketPayload.servicePickupMethod,
-      guestInfo: racketPayload.guestInfo ?? undefined,
-      expectedPayableAmount: amount,
-    };
-
     const tryAutoCancelAfterApprove = async (
       failureMessage: string,
       failureStage: TossPaymentFailureStage,
@@ -522,6 +481,49 @@ async function handleNiceRacketReturn(req: Request) {
           },
         );
       }
+    };
+
+    const racketPayload = session.racketPayload;
+    if (
+      !racketPayload?.racketId ||
+      !Array.isArray(racketPayload.items) ||
+      !racketPayload.shippingInfo
+    ) {
+      const failureMessage = "결제 승인 후 라켓 주문 데이터를 복원하지 못했습니다.";
+      await col.updateOne(
+        { _id: session._id },
+        {
+          $set: {
+            status: "approve_succeeded_order_failed",
+            failureStage: "create_order_after_approve",
+            failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+            failureMessage,
+            niceAuthRaw: raw,
+            niceApprovedRaw: approvedRaw,
+            updatedAt: new Date(),
+          },
+        },
+      );
+      await tryAutoCancelAfterApprove(failureMessage, "create_order_after_approve");
+      return redirect303(
+        req,
+        toFailUrl(
+          "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+          "결제 승인 후 주문 처리에 실패했습니다.",
+          fallbackPath,
+        ),
+      );
+    }
+
+    const createOrderPayload = {
+      items: racketPayload.items,
+      shippingInfo: racketPayload.shippingInfo,
+      totalPrice: racketPayload.totalPrice,
+      shippingFee: racketPayload.shippingFee,
+      paymentInfo: racketPayload.paymentInfo,
+      servicePickupMethod: racketPayload.servicePickupMethod,
+      guestInfo: racketPayload.guestInfo ?? undefined,
+      expectedPayableAmount: amount,
     };
 
     const idemKey = `nice:racket:${orderId}`;
