@@ -412,6 +412,9 @@ export default function StringingApplicationDetailClient({
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [isRejectSubmitting, setIsRejectSubmitting] = useState(false);
+  const [isAdminCancelDialogOpen, setIsAdminCancelDialogOpen] = useState(false);
+  const [adminCancelReason, setAdminCancelReason] = useState("");
+  const [isAdminCancelSubmitting, setIsAdminCancelSubmitting] = useState(false);
 
   // 취소 요청 철회 로딩 상태
   const [isWithdrawingCancel, setIsWithdrawingCancel] = useState(false);
@@ -580,6 +583,51 @@ export default function StringingApplicationDetailClient({
         showErrorToast("취소 거절 중 오류가 발생했습니다.");
       } finally {
         setIsRejectSubmitting(false);
+      }
+    });
+  };
+
+  const handleConfirmAdminCancel = () => {
+    const reason = adminCancelReason.trim();
+    if (!reason) {
+      showErrorToast("관리자 취소 사유를 입력해주세요.");
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        setIsAdminCancelSubmitting(true);
+
+        const res = await fetch(`/api/applications/stringing/${applicationId}/admin-cancel`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reason }),
+          credentials: "include",
+        });
+
+        if (!res.ok) {
+          const parsed = await res.json().catch(() => null);
+          const message =
+            parsed && typeof parsed.error === "string"
+              ? parsed.error
+              : "신청 직접 취소에 실패했습니다.";
+          console.error("admin-cancel failed", res.status, parsed);
+          throw new Error(message);
+        }
+
+        showSuccessToast("신청을 직접 취소했습니다.");
+        await mutate();
+        if (historyMutateRef.current) {
+          await historyMutateRef.current();
+        }
+        router.refresh();
+        setIsAdminCancelDialogOpen(false);
+        setAdminCancelReason("");
+      } catch (err) {
+        console.error(err);
+        showErrorToast(err instanceof Error ? err.message : "신청 직접 취소 중 오류가 발생했습니다.");
+      } finally {
+        setIsAdminCancelSubmitting(false);
       }
     });
   };
@@ -896,7 +944,6 @@ export default function StringingApplicationDetailClient({
   );
 
   const isCancelRequested = rawCancelStatus === "requested";
-
   // 확정 여부 필드가 서버에서 내려온다는 전제
   const isUserConfirmed = Boolean((data as any).userConfirmedAt);
 
@@ -939,6 +986,14 @@ export default function StringingApplicationDetailClient({
   // 주문 취소 요청 여부
   const hasOrderCancelRequested =
     data.orderCancelStatus === "requested" || data.orderCancelStatus === "요청";
+
+  const canAdminDirectCancel =
+    isAdmin &&
+    !isCancelled &&
+    !isLinkedApplication &&
+    !hasOrderCancelRequested &&
+    !isCancelRequested &&
+    ["검토 중", "접수완료"].includes(data.status);
 
   const backQuery = new URLSearchParams(backUrl.split("?")[1] ?? "");
   const ordersScope = backQuery.get("scope");
@@ -1970,6 +2025,16 @@ export default function StringingApplicationDetailClient({
                                 취소 거절
                               </Button>
                             </>
+                          ) : canAdminDirectCancel ? (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => setIsAdminCancelDialogOpen(true)}
+                              disabled={isPending}
+                            >
+                              <XCircle className="mr-1 h-4 w-4" />
+                              신청 직접 취소
+                            </Button>
                           ) : (
                             <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground/80">
                               {isLinkedApplication
@@ -3270,6 +3335,56 @@ export default function StringingApplicationDetailClient({
                 disabled={isRejectSubmitting}
               >
                 {isRejectSubmitting ? "처리 중..." : "거절 확정"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* 관리자: 신청 직접 취소 모달 */}
+      {isAdmin && (
+        <Dialog
+          open={isAdminCancelDialogOpen}
+          onOpenChange={(open) => {
+            setIsAdminCancelDialogOpen(open);
+            if (!open) {
+              setAdminCancelReason("");
+            }
+          }}
+        >
+          <DialogContent className="max-w-md">
+            <DialogTitle className="text-lg font-semibold">신청을 직접 취소할까요?</DialogTitle>
+            <p className="mt-2 text-sm text-foreground/80">
+              고객 취소 요청 없이 관리자가 단독 교체서비스 신청을 취소합니다. 취소 후 신청 상태는
+              취소로 변경되며 처리 이력에 사유가 남습니다.
+            </p>
+
+            <div className="mt-4 space-y-2">
+              <label className="block text-sm font-medium text-foreground">
+                취소 사유 <span className="text-destructive">*</span>
+              </label>
+              <textarea
+                className="mt-1 w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                placeholder="예: 고객과 유선 확인 후 신청 취소 처리"
+                value={adminCancelReason}
+                onChange={(e) => setAdminCancelReason(e.target.value)}
+              />
+            </div>
+
+            <div className="mt-4 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsAdminCancelDialogOpen(false)}
+                disabled={isAdminCancelSubmitting}
+              >
+                닫기
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleConfirmAdminCancel}
+                disabled={isAdminCancelSubmitting || adminCancelReason.trim().length === 0}
+              >
+                {isAdminCancelSubmitting ? "처리 중..." : "신청 직접 취소"}
               </Button>
             </div>
           </DialogContent>

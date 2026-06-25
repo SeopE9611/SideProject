@@ -1761,6 +1761,173 @@ export async function handleStringingCancelApprove(
   }
 }
 
+// ======== 스트링 신청서 관리자 직접 취소 (관리자) ========
+export async function handleStringingAdminCancel(
+  req: Request,
+  { params }: { params: { id: string } },
+) {
+  try {
+    const adminAuth = await requireAdminUserFromAccessToken();
+    if (!adminAuth.ok) return adminAuth.response;
+
+    const { id } = params;
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
+
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch {
+      body = {};
+    }
+
+    const reason = typeof body?.reason === "string" ? body.reason.trim() : "";
+    if (!reason) {
+      return NextResponse.json({ error: "관리자 취소 사유를 입력해주세요." }, { status: 400 });
+    }
+
+    const db = adminAuth.db;
+    const col = db.collection("stringing_applications");
+    const _id = new ObjectId(id);
+
+    const appDoc: any = await col.findOne({ _id });
+    if (!appDoc) {
+      return NextResponse.json({ error: "신청서를 찾을 수 없습니다." }, { status: 404 });
+    }
+
+    if (appDoc.status === "취소") {
+      return NextResponse.json({ error: "이미 취소된 신청입니다." }, { status: 400 });
+    }
+
+    if (appDoc.status === "교체완료") {
+      return NextResponse.json({ error: "교체완료 상태의 신청은 직접 취소할 수 없습니다." }, { status: 400 });
+    }
+
+    if (appDoc.status === "작업 중") {
+      return NextResponse.json(
+        { error: "작업 중 상태의 신청은 운영상 위험하므로 직접 취소할 수 없습니다." },
+        { status: 400 },
+      );
+    }
+
+    const cancellableStatuses = new Set(["검토 중", "접수완료"]);
+    if (!cancellableStatuses.has(String(appDoc.status ?? ""))) {
+      return NextResponse.json(
+        { error: "검토 중 또는 접수완료 상태의 신청만 직접 취소할 수 있습니다." },
+        { status: 400 },
+      );
+    }
+
+    if (appDoc.orderId || appDoc.rentalId) {
+      return NextResponse.json(
+        { error: "주문/대여와 연결된 신청서는 해당 주문/대여 상세에서 취소 처리해야 합니다." },
+        { status: 409 },
+      );
+    }
+
+    const now = new Date();
+    const variantRestore = await restoreStringingVariantStockIfNeeded(db, appDoc, now);
+    const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, appDoc, now);
+    const colorRestore = await restoreStringingColorStockIfNeeded(
+      db,
+      appDoc,
+      now,
+      "admin_direct_cancel",
+    );
+    if (variantRestore.errorResponse) return variantRestore.errorResponse;
+    if (gaugeRestore.errorResponse) return gaugeRestore.errorResponse;
+    if (colorRestore.errorResponse) return colorRestore.errorResponse;
+
+    if (appDoc.packageApplied && appDoc.packagePassId) {
+      try {
+        await revertConsumption(db, appDoc.packagePassId as ObjectId, _id);
+      } catch (e) {
+        console.error("[handleStringingAdminCancel] revertConsumption error", e);
+      }
+    }
+
+    const historyEntry: HistoryRecord = {
+      status: "취소",
+      date: now,
+      description: `관리자가 직접 신청을 취소했습니다. 취소 사유: ${reason}`,
+    };
+
+    await col.updateOne(
+      { _id },
+      {
+        $set: {
+          status: "취소",
+          adminCancel: {
+            reason,
+            canceledAt: now,
+            canceledBy: adminAuth.userId,
+          },
+          ...variantRestore.setFields,
+          ...gaugeRestore.setFields,
+          ...colorRestore.setFields,
+        },
+        $push: { history: historyEntry as any },
+      } as any,
+    );
+
+    await appendAdminAudit(
+      db,
+      {
+        type: "stringing_admin_direct_cancelled",
+        actorId: adminAuth.userId,
+        targetId: id,
+        message: "관리자 교체서비스 신청 직접 취소",
+        diff: {
+          targetType: "stringing_application",
+          applicationId: id,
+          actorRole: "admin",
+          prevStatus: appDoc.status ?? null,
+          nextStatus: "취소",
+          reasonTextPreview: toReasonPreview(reason),
+          metadata: {
+            actor: {
+              id: String(adminAuth.userId),
+              email: null,
+              name: null,
+              role: "admin",
+            },
+          },
+        },
+      },
+      req,
+    );
+
+    const subject = buildCancelRefundSubject({
+      userId: (appDoc as any).userId ? String((appDoc as any).userId) : null,
+      applicationId: id,
+    });
+
+    await recordCancelRefundSignal(db, {
+      eventType: "stringing_admin_direct_cancelled",
+      subjectKey: subject.subjectKey,
+      subjectType: subject.subjectType,
+      targetType: "stringing_application",
+      targetId: id,
+      actorRole: "admin",
+      reasonCode: "admin_direct_cancel",
+      status: "approved",
+    });
+
+    const updated = await col.findOne({ _id });
+
+    return NextResponse.json({
+      success: true,
+      application: updated,
+      gaugeStockRestore: gaugeRestore.restored ? "restored" : gaugeRestore.skippedReason,
+      colorStockRestore: colorRestore.restored ? "restored" : colorRestore.skippedReason,
+    });
+  } catch (error) {
+    console.error("[handleStringingAdminCancel] error", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
 // ======== 스트링 신청서 취소 요청 "거절" (관리자) ========
 export async function handleStringingCancelReject(
   req: Request,
