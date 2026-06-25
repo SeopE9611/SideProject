@@ -76,6 +76,7 @@ type Filters = {
    */
   purpose?: string;
   exposure?: string;
+  includeSoldOut?: boolean;
 };
 
 type ResponseShape = {
@@ -108,6 +109,7 @@ function buildQueryString(filters: Filters, page: number) {
   if (filters.maxPrice !== undefined) params.set("maxPrice", String(filters.maxPrice));
   if (filters.purpose) params.set("purpose", filters.purpose);
   if (filters.exposure && filters.exposure !== "all") params.set("exposure", filters.exposure);
+  if (filters.includeSoldOut === true) params.set("includeSoldOut", "true");
   params.set("page", String(page));
   return params.toString();
 }
