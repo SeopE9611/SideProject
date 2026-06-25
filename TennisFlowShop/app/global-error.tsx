@@ -31,7 +31,7 @@ export default function GlobalError({
               <AlertTriangle className="h-7 w-7" />
             </div>
 
-            <h1 className="mb-2 text-3xl font-extrabold tracking-normal">
+            <h1 className="mb-2 text-ui-page-title font-semibold tracking-normal">
               <span className="text-destructive">서비스</span>에 오류가 발생했어요
             </h1>
             <p className="leading-relaxed text-muted-foreground">
@@ -39,13 +39,13 @@ export default function GlobalError({
             </p>
 
             {isDev && (
-              <pre className="mt-4 max-h-48 overflow-auto rounded-xl border border-border bg-muted p-4 text-xs text-foreground">
+              <pre className="mt-4 max-h-48 overflow-auto rounded-xl border border-border bg-muted p-4 text-ui-label text-foreground">
                 {String(error?.message ?? error)}
               </pre>
             )}
 
             <div className="mt-4">
-              <Badge variant="warning" className="px-2.5 py-1 text-xs font-medium">
+              <Badge variant="warning" className="px-2.5 py-1 text-ui-caption font-medium">
                 일시적인 오류일 수 있습니다
               </Badge>
             </div>

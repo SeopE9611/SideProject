@@ -16,7 +16,7 @@ export default function SocialAuthButtons({
   isRegisterMode = false,
 }: Props) {
   const baseButtonClass =
-    "w-full h-12 bg-card border border-border text-foreground hover:bg-muted dark:hover:bg-muted font-semibold text-[15px] flex items-center justify-center gap-3 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed";
+    "w-full h-12 bg-card border border-border text-foreground hover:bg-muted dark:hover:bg-muted text-ui-body-sm font-semibold flex items-center justify-center gap-3 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed";
 
   return (
     <div className="space-y-3">

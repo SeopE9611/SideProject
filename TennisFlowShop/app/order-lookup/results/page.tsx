@@ -259,11 +259,11 @@ export default function OrderLookupResultsPage() {
           >
             {fieldErrors && (
               <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-foreground dark:bg-destructive/15">
-                <p className="mb-2 text-sm font-semibold text-destructive">입력값 오류 상세</p>
+                <p className="mb-2 text-ui-label font-semibold text-destructive">입력값 오류 상세</p>
                 <ul className="list-disc space-y-1 pl-5">
                   {Object.entries(fieldErrors).map(([field, msgs]) =>
                     (msgs ?? []).map((msg, i) => (
-                      <li key={`${field}-${i}`} className="text-sm text-destructive">
+                      <li key={`${field}-${i}`} className="text-ui-label text-destructive">
                         <span className="font-medium">{FIELD_LABELS[field] ?? field}:</span> {msg}
                       </li>
                     )),
@@ -296,7 +296,7 @@ export default function OrderLookupResultsPage() {
           <div className="mb-6 md:mb-8">
             <Link
               href="/order-lookup"
-              className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors group"
+              className="inline-flex items-center text-ui-body-sm text-muted-foreground hover:text-primary transition-colors group"
             >
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
               이전 페이지로 돌아가기
@@ -308,10 +308,10 @@ export default function OrderLookupResultsPage() {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-secondary rounded-full mb-4 mx-auto border border-border/60">
                 <ShoppingBag className="w-6 h-6 text-foreground" />
               </div>
-              <CardTitle className="text-2xl font-bold text-foreground">
+              <CardTitle className="text-ui-card-title-lg font-semibold text-foreground">
                 <span className="text-primary">주문</span> 내역
               </CardTitle>
-              <CardDescription className="text-base">
+              <CardDescription className="text-ui-body">
                 {displayName}님의 주문 내역입니다
               </CardDescription>
             </CardHeader>
@@ -352,13 +352,13 @@ export default function OrderLookupResultsPage() {
                           <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4 md:mb-6">
                             <div className="flex items-center mb-4 lg:mb-0">
                               <div className="flex-shrink-0 w-12 h-12 bg-secondary rounded-full flex items-center justify-center mr-4 border border-border/60">
-                                <span className="text-foreground font-bold">#{index + 1}</span>
+                                <span className="text-foreground font-semibold">#{index + 1}</span>
                               </div>
                               <div>
-                                <h3 className="font-semibold text-lg text-foreground">
+                                <h3 className="font-semibold text-ui-card-title-lg text-foreground">
                                   주문번호: {order.orderNumber}
                                 </h3>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-ui-body-sm text-muted-foreground">
                                   주문일자: {order.orderDate}
                                 </p>
                               </div>
@@ -370,7 +370,7 @@ export default function OrderLookupResultsPage() {
                                     getLookupOrderStatusLabel(order.status, order.shippingInfo),
                                   ),
                                 )}
-                                className="gap-1 px-3 py-1.5 text-sm font-medium"
+                                className="gap-1 px-3 py-1.5 text-ui-label font-medium"
                               >
                                 {getStatusIcon(displayStatus, isVisitPickup)}
                                 {displayStatus}
@@ -379,7 +379,7 @@ export default function OrderLookupResultsPage() {
                           </div>
 
                           {nextActionText && (
-                            <div className="mb-4 rounded-lg bg-muted/40 px-3 py-2 text-xs text-muted-foreground md:mb-6">
+                            <div className="mb-4 rounded-lg bg-muted/40 px-3 py-2 text-ui-label text-muted-foreground md:mb-6">
                               {nextActionText}
                             </div>
                           )}
@@ -389,7 +389,7 @@ export default function OrderLookupResultsPage() {
                             <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
                               <User className="h-5 w-5 text-primary flex-shrink-0" />
                               <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground mb-1">수령인</p>
+                                <p className="text-ui-label text-muted-foreground mb-1">수령인</p>
                                 <p className="font-medium text-foreground truncate">
                                   {order.recipient}
                                 </p>
@@ -399,7 +399,7 @@ export default function OrderLookupResultsPage() {
                             <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
                               <Phone className="h-5 w-5 text-success flex-shrink-0" />
                               <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground mb-1">연락처</p>
+                                <p className="text-ui-label text-muted-foreground mb-1">연락처</p>
                                 <p className="font-medium text-foreground truncate">
                                   {order.contactNumber}
                                 </p>
@@ -409,7 +409,7 @@ export default function OrderLookupResultsPage() {
                             <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
                               <Calendar className="h-5 w-5 text-foreground flex-shrink-0" />
                               <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground mb-1">주문일자</p>
+                                <p className="text-ui-label text-muted-foreground mb-1">주문일자</p>
                                 <p className="font-medium text-foreground">{order.orderDate}</p>
                               </div>
                             </div>
@@ -417,8 +417,8 @@ export default function OrderLookupResultsPage() {
                             <div className="flex items-center gap-3 p-3 bg-secondary rounded-lg border border-border">
                               <CreditCard className="h-5 w-5 text-primary flex-shrink-0" />
                               <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground mb-1">결제금액</p>
-                                <p className="font-bold text-foreground">
+                                <p className="text-ui-label text-muted-foreground mb-1">결제금액</p>
+                                <p className="font-semibold text-foreground">
                                   {formatCurrency(order.totalAmount)}
                                 </p>
                               </div>
@@ -441,7 +441,7 @@ export default function OrderLookupResultsPage() {
                               <>
                                 {!hasStringingApplication ? (
                                   <div className="flex flex-col items-end gap-2">
-                                    <p className="text-xs text-muted-foreground">
+                                    <p className="text-ui-label text-muted-foreground">
                                       {isVisitPickup
                                         ? "방문수령 주문의 교체서비스 신청이 가능합니다."
                                         : "택배 기반 교체서비스 신청이 가능합니다."}
@@ -462,12 +462,12 @@ export default function OrderLookupResultsPage() {
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <div className="inline-flex h-10 items-center justify-center rounded-md border border-border bg-secondary px-4 py-2 text-sm font-semibold text-foreground cursor-default">
+                                        <div className="inline-flex h-10 items-center justify-center rounded-md border border-border bg-secondary px-4 py-2 text-ui-body-sm font-semibold text-foreground cursor-default">
                                           <CheckCircle2 className="w-4 h-4 mr-2" />
                                           교체서비스 신청서 접수 완료
                                         </div>
                                       </TooltipTrigger>
-                                      <TooltipContent side="top" className="text-sm">
+                                      <TooltipContent side="top" className="text-ui-body-sm">
                                         {isVisitPickup
                                           ? "이미 접수된 신청서가 존재합니다. 방문수령 장착은 접수된 내용으로 진행됩니다."
                                           : "이미 접수된 신청서가 존재합니다. 택배 장착 서비스는 접수된 내용으로 진행됩니다."}

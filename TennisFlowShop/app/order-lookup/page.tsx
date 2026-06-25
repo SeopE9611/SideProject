@@ -231,7 +231,7 @@ export default function OrderLookupPage() {
             <Link
               href="/login"
               onClick={onLeaveToLoginClick}
-              className="inline-flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground group"
+              className="inline-flex items-center text-ui-label font-medium text-muted-foreground transition-colors hover:text-foreground group"
             >
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
               이전 페이지로 돌아가기
@@ -239,7 +239,7 @@ export default function OrderLookupPage() {
           </div>
 
           <SummaryCard
-            className="order-2 text-sm text-muted-foreground lg:order-none lg:sticky lg:top-24"
+            className="order-2 text-ui-body-sm text-muted-foreground lg:order-none lg:sticky lg:top-24"
             contentClassName="space-y-2"
             title="조회 후 확인할 수 있는 정보"
           >
@@ -256,8 +256,8 @@ export default function OrderLookupPage() {
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-secondary rounded-full mb-4 mx-auto border border-border/60">
                   <Package className="w-6 h-6 text-foreground" />
                 </div>
-                <CardTitle className="text-2xl font-bold text-foreground">주문 정보 입력</CardTitle>
-                <CardDescription className="text-base text-muted-foreground">
+                <CardTitle className="text-ui-card-title-lg font-semibold text-foreground">주문 정보 입력</CardTitle>
+                <CardDescription className="text-ui-body text-muted-foreground">
                   주문 시 입력하신 정보를 통해 주문 내역을 확인하실 수 있습니다
                 </CardDescription>
               </CardHeader>
@@ -268,7 +268,7 @@ export default function OrderLookupPage() {
                 <CardContent className="space-y-4 md:space-y-6 pt-6 md:pt-8">
                   {/* Name Field */}
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-sm font-medium flex items-center gap-2">
+                    <Label htmlFor="name" className="text-ui-label font-medium flex items-center gap-2">
                       <User className="w-4 h-4 text-primary" />
                       이름 <span className="text-destructive">*</span>
                     </Label>
@@ -285,7 +285,7 @@ export default function OrderLookupPage() {
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     </div>
                     {errors.name && (
-                      <p className="text-sm text-destructive flex items-center gap-1">
+                      <p className="text-ui-label text-destructive flex items-center gap-1">
                         <span className="w-1 h-1 bg-destructive rounded-full"></span>
                         {errors.name}
                       </p>
@@ -294,7 +294,7 @@ export default function OrderLookupPage() {
 
                   {/* Email Field */}
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium flex items-center gap-2">
+                    <Label htmlFor="email" className="text-ui-label font-medium flex items-center gap-2">
                       <Mail className="w-4 h-4 text-primary" />
                       이메일 <span className="text-destructive">*</span>
                     </Label>
@@ -312,7 +312,7 @@ export default function OrderLookupPage() {
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     </div>
                     {errors.email && (
-                      <p className="text-sm text-destructive flex items-center gap-1">
+                      <p className="text-ui-label text-destructive flex items-center gap-1">
                         <span className="w-1 h-1 bg-destructive rounded-full"></span>
                         {errors.email}
                       </p>
@@ -321,7 +321,7 @@ export default function OrderLookupPage() {
 
                   {/* Phone Field */}
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-sm font-medium flex items-center gap-2">
+                    <Label htmlFor="phone" className="text-ui-label font-medium flex items-center gap-2">
                       <Phone className="w-4 h-4 text-primary" />
                       전화번호 (선택)
                     </Label>
@@ -338,12 +338,12 @@ export default function OrderLookupPage() {
                       <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     </div>
                     {errors.phone && (
-                      <p className="text-sm text-destructive flex items-center gap-1">
+                      <p className="text-ui-label text-destructive flex items-center gap-1">
                         <span className="w-1 h-1 bg-destructive rounded-full"></span>
                         {errors.phone}
                       </p>
                     )}
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <p className="text-ui-label text-muted-foreground flex items-center gap-1">
                       <Shield className="w-3 h-3" />
                       주문 시 입력하신 전화번호를 입력해주세요.
                     </p>
@@ -355,14 +355,14 @@ export default function OrderLookupPage() {
                       <div className="flex-shrink-0">
                         <Clock className="w-5 h-5 text-primary mt-0.5" />
                       </div>
-                      <div className="text-sm">
+                      <div className="text-ui-body-sm">
                         <p className="font-medium text-foreground mb-1">조회 가능한 주문</p>
                         <p className="text-muted-foreground">
                           최근 6개월 이내의 주문 내역을 조회하실 수 있습니다.
                         </p>
                       </div>
                     </div>
-                    <div className="mt-4 border-t border-border pt-4 text-sm">
+                    <div className="mt-4 border-t border-border pt-4 text-ui-body-sm">
                       <p className="font-medium text-foreground mb-2">조회 전 확인해주세요</p>
                       <ul className="space-y-1.5 text-muted-foreground">
                         <li className="flex items-start gap-2">
@@ -395,7 +395,7 @@ export default function OrderLookupPage() {
                   {lookupNotice && (
                     <div
                       className={cn(
-                        "w-full rounded-lg border p-4 text-sm",
+                        "w-full rounded-lg border p-4 text-ui-body-sm",
                         lookupNotice.type === "error"
                           ? "border-destructive/40 bg-destructive/5 text-destructive"
                           : "border-border bg-muted/40 text-foreground",
@@ -407,16 +407,16 @@ export default function OrderLookupPage() {
                           ? "주문을 찾지 못했어요"
                           : "조회 중 문제가 발생했어요"}
                       </p>
-                      <p className="mt-1 text-sm">{lookupNotice.message}</p>
+                      <p className="mt-1 text-ui-body-sm">{lookupNotice.message}</p>
                       {lookupNotice.type === "empty" && (
                         <>
-                          <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
+                          <ul className="mt-3 space-y-1.5 text-ui-body-sm text-muted-foreground">
                             <li>• 주문자 이름에 띄어쓰기나 오타가 없는지 확인해주세요.</li>
                             <li>• 주문 당시 사용한 이메일 주소인지 확인해주세요.</li>
                             <li>• 전화번호를 입력했다면 주문 당시 번호와 같은지 확인해주세요.</li>
                             <li>• 최근 6개월 이내 주문인지 확인해주세요.</li>
                           </ul>
-                          <p className="mt-3 text-sm text-muted-foreground">
+                          <p className="mt-3 text-ui-body-sm text-muted-foreground">
                             계속 조회되지 않는다면
                             <Link
                               href="/board/qna/write"
@@ -448,7 +448,7 @@ export default function OrderLookupPage() {
                     )}
                   </Button>
 
-                  <p className="text-xs text-center text-muted-foreground">
+                  <p className="text-ui-caption text-center text-muted-foreground">
                     회원이신가요?{" "}
                     <Link href="/login" className="text-primary hover:text-primary font-medium">
                       로그인하기
@@ -465,7 +465,7 @@ export default function OrderLookupPage() {
                   <Shield className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="font-semibold text-foreground mb-2">안전한 조회</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-ui-body-sm text-muted-foreground">
                   개인정보 보호를 위한 안전한 주문 조회 시스템
                 </p>
               </div>
@@ -475,7 +475,7 @@ export default function OrderLookupPage() {
                   <Clock className="w-6 h-6 text-success" />
                 </div>
                 <h3 className="font-semibold text-foreground mb-2">실시간 조회</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-ui-body-sm text-muted-foreground">
                   최신 주문 상태를 실시간으로 확인 가능
                 </p>
               </div>
@@ -485,7 +485,7 @@ export default function OrderLookupPage() {
                   <Package className="w-6 h-6 text-foreground" />
                 </div>
                 <h3 className="font-semibold text-foreground mb-2">상세 정보</h3>
-                <p className="text-sm text-muted-foreground">배송 추적부터 결제 정보까지 한눈에</p>
+                <p className="text-ui-body-sm text-muted-foreground">배송 추적부터 결제 정보까지 한눈에</p>
               </div>
             </div>
           </div>

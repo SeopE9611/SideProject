@@ -44,13 +44,13 @@ export default function AuthGatePage() {
       <div className="absolute inset-0 bg-overlay/70" />
       <div className="relative h-full flex items-center justify-center p-4">
         <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 space-y-4 shadow-sm">
-          <h1 className="text-xl font-semibold">🔒 아직 개발 단계입니다</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-ui-section-title font-semibold">🔒 아직 개발 단계입니다</h1>
+          <p className="text-ui-body-sm text-muted-foreground">
             접근하려면 개발자 전용 비밀번호를 입력하세요.
           </p>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">비밀번호</label>
+            <label className="text-ui-label font-medium">비밀번호</label>
             <input
               type="password"
               value={pw}
@@ -61,7 +61,7 @@ export default function AuthGatePage() {
             />
           </div>
 
-          {msg && <p className="text-sm text-destructive">{msg}</p>}
+          {msg && <p className="text-ui-label text-destructive">{msg}</p>}
 
           <button
             type="button"
@@ -72,7 +72,7 @@ export default function AuthGatePage() {
             {loading ? "확인 중…" : "입장하기"}
           </button>
 
-          <p className="text-xs text-muted-foreground text-center">
+          <p className="text-ui-label text-muted-foreground text-center">
             인증에 성공하면 {redirect} 로 이동합니다.
           </p>
         </div>

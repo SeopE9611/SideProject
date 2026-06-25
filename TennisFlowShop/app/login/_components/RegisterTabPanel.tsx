@@ -561,8 +561,8 @@ export default function RegisterTabPanel({
     <TabsContent value="register" className="mt-0 p-4 md:p-5">
       <div className="space-y-5">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-foreground">회원가입</h2>
-          <p className="mt-2 break-keep text-sm leading-relaxed text-muted-foreground">
+          <h2 className="text-ui-page-title font-semibold text-foreground">회원가입</h2>
+          <p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
             {isSocialOauthRegister
               ? "가입 완료를 위해 필요한 정보만 입력해주세요."
               : "계정 생성에 필요한 정보를 입력해주세요."}
@@ -571,7 +571,7 @@ export default function RegisterTabPanel({
 
         <form onSubmit={handleRegister} className="space-y-5">
           {registerFormError && (
-            <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+            <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-ui-label text-destructive">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <span className="break-keep">{registerFormError}</span>
             </div>
@@ -580,7 +580,7 @@ export default function RegisterTabPanel({
             <div className="md:col-span-2 space-y-2">
               <Label
                 htmlFor="register-email-id"
-                className="flex items-center gap-2 text-sm font-medium text-foreground"
+                className="flex items-center gap-2 text-ui-label font-medium text-foreground"
               >
                 <Mail className="h-4 w-4 text-foreground" />
                 이메일 주소
@@ -706,13 +706,13 @@ export default function RegisterTabPanel({
                 {(registerFieldErrors.emailId || registerFieldErrors.emailDomain) && (
                   <div className="space-y-1">
                     {registerFieldErrors.emailId && (
-                      <p className="flex items-center gap-1 text-sm text-destructive">
+                      <p className="flex items-center gap-1 text-ui-label text-destructive">
                         <AlertCircle className="h-4 w-4" />
                         {registerFieldErrors.emailId}
                       </p>
                     )}
                     {registerFieldErrors.emailDomain && (
-                      <p className="flex items-center gap-1 text-sm text-destructive">
+                      <p className="flex items-center gap-1 text-ui-label text-destructive">
                         <AlertCircle className="h-4 w-4" />
                         {registerFieldErrors.emailDomain}
                       </p>
@@ -721,7 +721,7 @@ export default function RegisterTabPanel({
                 )}
 
                 {isSocialOauthRegister && (
-                  <div className="flex items-center gap-2 text-sm text-foreground">
+                  <div className="flex items-center gap-2 text-ui-label text-foreground">
                     <CheckCircle className="h-4 w-4" />
                     소셜 로그인 이메일이 자동으로 입력되었습니다.
                   </div>
@@ -729,7 +729,7 @@ export default function RegisterTabPanel({
 
                 {!isSocialOauthRegister && isEmailAvailable !== null && (
                   <div
-                    className={`flex items-center gap-2 text-sm ${isEmailAvailable ? "text-foreground" : "text-destructive"}`}
+                    className={`flex items-center gap-2 text-ui-label ${isEmailAvailable ? "text-foreground" : "text-destructive"}`}
                   >
                     {isEmailAvailable ? (
                       <CheckCircle className="h-4 w-4" />
@@ -779,7 +779,7 @@ export default function RegisterTabPanel({
                     </Button>
                   </div>
                   {registerFieldErrors.password && (
-                    <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
+                    <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
                       <AlertCircle className="h-4 w-4" />
                       <span className="whitespace-pre-line">{registerFieldErrors.password}</span>
                     </div>
@@ -820,7 +820,7 @@ export default function RegisterTabPanel({
                     </Button>
                   </div>
                   {password && confirmPassword && password !== confirmPassword && (
-                    <div className="flex items-center gap-2 text-sm text-destructive">
+                    <div className="flex items-center gap-2 text-ui-label text-destructive">
                       <AlertCircle className="h-4 w-4" />
                       비밀번호가 일치하지 않습니다.
                     </div>
@@ -850,7 +850,7 @@ export default function RegisterTabPanel({
                 />
               </div>
               {registerFieldErrors.name && (
-                <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
+                <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
                   <AlertCircle className="h-4 w-4" />
                   <span className="whitespace-pre-line">{registerFieldErrors.name}</span>
                 </div>
@@ -879,7 +879,7 @@ export default function RegisterTabPanel({
                 />
               </div>
               {registerFieldErrors.phone && (
-                <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
+                <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
                   <AlertCircle className="h-4 w-4" />
                   <span className="whitespace-pre-line">{registerFieldErrors.phone}</span>
                 </div>
@@ -909,7 +909,7 @@ export default function RegisterTabPanel({
                 className="bg-muted cursor-not-allowed max-w-xs h-12 border-border"
               />
               {registerFieldErrors.postalCode && (
-                <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
+                <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
                   <AlertCircle className="h-4 w-4" />
                   <span className="whitespace-pre-line">{registerFieldErrors.postalCode}</span>
                 </div>
@@ -926,7 +926,7 @@ export default function RegisterTabPanel({
                 className="bg-muted cursor-not-allowed h-12 border-border"
               />
               {registerFieldErrors.address && (
-                <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
+                <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
                   <AlertCircle className="h-4 w-4" />
                   <span className="whitespace-pre-line">{registerFieldErrors.address}</span>
                 </div>
@@ -952,7 +952,7 @@ export default function RegisterTabPanel({
             </div>
           </div>
           {registerFieldErrors.addressDetail && (
-            <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
+            <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
               <AlertCircle className="h-4 w-4" />
               <span className="whitespace-pre-line">{registerFieldErrors.addressDetail}</span>
             </div>
@@ -1002,7 +1002,7 @@ export default function RegisterTabPanel({
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-border" />
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
+                <div className="relative flex justify-center text-ui-label uppercase">
                   <span className="bg-card dark:bg-muted px-4 text-foreground font-medium">
                     SNS 계정으로 가입
                   </span>

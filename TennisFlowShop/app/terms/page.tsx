@@ -114,19 +114,19 @@ export default function TermsPage() {
         <SiteContainer className="max-w-4xl bp-lg:max-w-4xl py-8 md:py-10">
           <Link
             href="/"
-            className="mb-6 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="mb-6 inline-flex items-center text-ui-label text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             홈으로 돌아가기
           </Link>
 
           <div className="space-y-3">
-            <h1 className="break-keep text-3xl font-bold tracking-tight md:text-4xl">이용약관</h1>
+            <h1 className="break-keep text-ui-page-title font-semibold tracking-tight bp-sm:text-ui-page-title-lg">이용약관</h1>
             <p className="max-w-3xl break-keep text-muted-foreground leading-relaxed">
               도깨비테니스 웹사이트 이용에 관한 약관입니다. 서비스 이용 전 반드시 읽어주시기
               바랍니다.
             </p>
-            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-2 text-ui-label text-muted-foreground">
               <RefreshCw className="h-4 w-4" />
               <span>최종 업데이트: 2025년 10월 14일</span>
             </div>
@@ -151,7 +151,7 @@ export default function TermsPage() {
               <PublicSurface key={section.id} id={section.id} className="scroll-mt-20 space-y-4">
                 <div className="flex items-start gap-3">
                   <Icon className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
-                  <h2 className="break-keep text-xl font-semibold tracking-tight md:text-2xl">
+                  <h2 className="break-keep text-ui-card-title-lg font-semibold tracking-tight">
                     {section.title}
                   </h2>
                 </div>
@@ -168,7 +168,7 @@ export default function TermsPage() {
           <PublicSurface variant="muted" className="space-y-4">
             <div className="flex items-start gap-3">
               <UserCheck className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
-              <h2 className="break-keep text-xl font-semibold tracking-tight md:text-2xl">
+              <h2 className="break-keep text-ui-card-title-lg font-semibold tracking-tight">
                 약관 동의 안내
               </h2>
             </div>
@@ -191,7 +191,7 @@ export default function TermsPage() {
 
       <div className="mt-10 border-t">
         <SiteContainer className="max-w-4xl bp-lg:max-w-4xl py-8 md:py-10">
-          <div className="flex flex-col items-start justify-between gap-4 text-sm text-muted-foreground sm:flex-row sm:items-center">
+          <div className="flex flex-col items-start justify-between gap-4 text-ui-label text-muted-foreground sm:flex-row sm:items-center">
             <p>&copy; {new Date().getFullYear()} 도깨비테니스. All rights reserved.</p>
             <div className="flex items-center gap-4">
               <Link href="/terms" className="text-foreground">
