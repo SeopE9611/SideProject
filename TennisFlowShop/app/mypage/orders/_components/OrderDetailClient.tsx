@@ -867,12 +867,12 @@ export default function OrderDetailClient({
               <ShoppingCart className="h-8 w-8 text-primary" />
             </div>
             <div className="min-w-0 space-y-1">
-              <p className="break-keep text-sm font-medium text-foreground">
+              <p className="break-keep text-ui-body-sm font-medium text-foreground">
                 {hasLinkedStringingApps || orderDetail.shippingInfo?.withStringService
                   ? "스트링 구매 + 교체서비스"
                   : "상품 주문"}
               </p>
-              <p className="break-all text-sm text-muted-foreground" title={orderId}>
+              <p className="break-all text-ui-body-sm text-muted-foreground" title={orderId}>
                 주문번호: #{orderId.slice(-6).toUpperCase()}
               </p>
             </div>
@@ -885,9 +885,9 @@ export default function OrderDetailClient({
             >
               <div className="mb-2 flex items-center space-x-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">주문일시</span>
+                <span className="text-ui-body-sm font-medium text-foreground">주문일시</span>
               </div>
-              <p className="break-keep text-base font-semibold tabular-nums text-foreground bp-sm:text-lg">
+              <p className="break-keep text-ui-body font-semibold tabular-nums text-foreground bp-sm:text-ui-card-title-lg">
                 {formatDate(orderDetail.date)}
               </p>
             </SummaryCard>
@@ -898,9 +898,9 @@ export default function OrderDetailClient({
             >
               <div className="mb-2 flex items-center space-x-2">
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">총 결제금액</span>
+                <span className="text-ui-body-sm font-medium text-foreground">총 결제금액</span>
               </div>
-              <p className="break-keep text-base font-semibold tabular-nums text-foreground bp-sm:text-lg">
+              <p className="break-keep text-ui-body font-semibold tabular-nums text-foreground bp-sm:text-ui-card-title-lg">
                 {formatCurrency(orderDetail.total)}
               </p>
             </SummaryCard>
@@ -911,9 +911,9 @@ export default function OrderDetailClient({
             >
               <div className="mb-2 flex items-center space-x-2">
                 <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">대표 상품</span>
+                <span className="text-ui-body-sm font-medium text-foreground">대표 상품</span>
               </div>
-              <p className="line-clamp-2 min-w-0 break-keep text-base font-semibold text-foreground bp-sm:text-lg">
+              <p className="line-clamp-2 min-w-0 break-keep text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
                 {orderDetail.items?.[0]?.name ?? "주문 상품"}
                 {orderDetail.items.length > 1 ? ` 외 ${orderDetail.items.length - 1}건` : ""}
               </p>
@@ -925,7 +925,7 @@ export default function OrderDetailClient({
             >
               <div className="mb-2 flex items-center space-x-2">
                 <Truck className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">주문 상태</span>
+                <span className="text-ui-body-sm font-medium text-foreground">주문 상태</span>
               </div>
               <OrderStatusBadge
                 orderId={orderId}
@@ -951,7 +951,7 @@ export default function OrderDetailClient({
         )}
         {/* 취소 요청 상태 안내 배너 */}
         {cancelLabel && (
-          <div className="mb-4 flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between rounded-lg border border-border bg-muted px-4 py-3 text-sm text-foreground">
+          <div className="mb-4 flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between rounded-lg border border-border bg-muted px-4 py-3 text-ui-body-sm text-foreground">
             <span className="min-w-0 break-words">{cancelLabel}</span>
 
             {canWithdrawCancelRequest && (
@@ -1031,20 +1031,20 @@ export default function OrderDetailClient({
                             <div className="flex flex-wrap items-center gap-2">
                               <Badge
                                 variant={badgeToneVariant(getApplicationStatusTone(app.status))}
-                                className="px-2 py-0.5 text-xs font-medium"
+                                className="px-2 py-0.5 text-ui-label font-medium"
                               >
                                 {app.status ?? "상태 미정"}
                               </Badge>
-                              <span className="text-sm font-semibold text-foreground">
+                              <span className="text-ui-body-sm font-semibold text-foreground">
                                 {app.receptionLabel ?? "접수 방식 확인 중"}
                               </span>
                               {linkedStringingApps.length > 1 ? (
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-ui-label text-muted-foreground">
                                   신청 {appIndex + 1}
                                 </span>
                               ) : null}
                             </div>
-                            <div className="grid gap-2 text-sm text-foreground bp-sm:grid-cols-2">
+                            <div className="grid gap-2 text-ui-body-sm text-foreground bp-sm:grid-cols-2">
                               <p>
                                 <span className="text-muted-foreground">희망 일시:</span>{" "}
                                 {reservationLabel}
@@ -1080,7 +1080,7 @@ export default function OrderDetailClient({
                         </div>
 
                         <div className="mt-4 space-y-3">
-                          <p className="text-sm font-semibold text-foreground">라켓 정보</p>
+                          <p className="text-ui-body-sm font-semibold text-foreground">라켓 정보</p>
                           <div className="grid gap-3 bp-md:grid-cols-2">
                             {displayLines.map((line, lineIndex) => {
                               const racketLabel =
@@ -1098,7 +1098,7 @@ export default function OrderDetailClient({
                               return (
                                 <div
                                   key={line.id ?? `${app.id}-${lineIndex}`}
-                                  className="rounded-lg border border-border/70 bg-card p-3 text-sm"
+                                  className="rounded-lg border border-border/70 bg-card p-3 text-ui-body-sm"
                                 >
                                   <div className="flex items-center justify-between gap-2">
                                     <div className="min-w-0">
@@ -1106,14 +1106,14 @@ export default function OrderDetailClient({
                                         {racketCardTitle}
                                       </p>
                                       {isMultipleLines ? (
-                                        <p className="text-xs text-muted-foreground">
+                                        <p className="text-ui-label text-muted-foreground">
                                           {lineIndex + 1}번째 라켓
                                         </p>
                                       ) : null}
                                     </div>
                                     <Badge
                                       variant="outline"
-                                      className="max-w-[14rem] shrink-0 whitespace-normal break-keep text-left text-[11px] leading-snug"
+                                      className="max-w-[14rem] shrink-0 whitespace-normal break-keep text-left text-ui-micro leading-snug"
                                     >
                                       {stringName}
                                     </Badge>
@@ -1170,7 +1170,7 @@ export default function OrderDetailClient({
                         </div>
 
                         {appNeedsTracking ? (
-                          <div className="mt-4 rounded-lg border border-border bg-primary/5 p-3 text-sm dark:bg-primary/10">
+                          <div className="mt-4 rounded-lg border border-border bg-primary/5 p-3 text-ui-body-sm dark:bg-primary/10">
                             <div className="flex flex-wrap items-start justify-between gap-3">
                               <div>
                                 <p className="font-semibold text-foreground">라켓 발송</p>
@@ -1219,7 +1219,7 @@ export default function OrderDetailClient({
                         <div className="mt-3 text-right">
                           <Link
                             href={getApplicationHref(app.id)}
-                            className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                            className="text-ui-label text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                           >
                             기존 신청서 보기
                           </Link>
@@ -1230,7 +1230,7 @@ export default function OrderDetailClient({
                 ) : !isOrderCanceled && totalSlots > 0 && remainingSlots > 0 ? (
                   <div className="rounded-xl border border-warning/30 bg-warning/10 p-4 text-warning dark:bg-warning/15">
                     <p className="font-semibold">이 주문은 교체서비스 신청 대상입니다.</p>
-                    <p className="mt-1 text-sm">
+                    <p className="mt-1 text-ui-body-sm">
                       총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를 사용했으며, 남은 교체
                       가능 스트링은 <strong>{remainingSlots}</strong>개입니다.
                     </p>
@@ -1243,7 +1243,7 @@ export default function OrderDetailClient({
                     </Button>
                   </div>
                 ) : (
-                  <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
+                  <div className="rounded-xl border border-border bg-muted/20 p-4 text-ui-body-sm text-muted-foreground">
                     연결된 교체서비스 신청 정보를 확인 중입니다.
                   </div>
                 )}
@@ -1261,7 +1261,7 @@ export default function OrderDetailClient({
 
         <div id="reviews-cta" className="mt-4">
           {serviceLinkedOrder ? (
-            <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
+            <div className="rounded-xl border border-border bg-muted/20 p-4 text-ui-body-sm text-muted-foreground">
               이 이용 건은 교체서비스 이용 경험에 대한 서비스 리뷰를 작성할 수 있습니다.
             </div>
           ) : allReviewed ? (
@@ -1270,7 +1270,7 @@ export default function OrderDetailClient({
                 <CheckCircle className="h-6 w-6" />
                 <div>
                   <p className="font-semibold text-foreground">이 주문은 리뷰를 작성하였습니다.</p>
-                  <p className="text-sm text-foreground">내가 작성한 리뷰를 확인할 수 있어요.</p>
+                  <p className="text-ui-body-sm text-foreground">내가 작성한 리뷰를 확인할 수 있어요.</p>
                 </div>
               </div>
               <Button
@@ -1289,11 +1289,11 @@ export default function OrderDetailClient({
                   <p className="font-semibold text-warning">
                     이 주문은 리뷰를 작성하지 않았습니다.
                   </p>
-                  <p className="text-sm text-warning">
+                  <p className="text-ui-body-sm text-warning">
                     아래 ‘리뷰 작성하기’를 눌러 상품별로 리뷰를 남겨주세요.
                   </p>
                   {/* 방문 수령 주문은 배송완료 대신 수령 완료 문구로 안내 */}
-                  <p className="text-sm text-destructive">
+                  <p className="text-ui-body-sm text-destructive">
                     ※
                     {isVisitPickup
                       ? "상품을 구매확정하면 [리뷰 작성] 버튼이 나타납니다."
@@ -1352,7 +1352,7 @@ export default function OrderDetailClient({
                   <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                     <User className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="text-sm text-foreground/80">이름</p>
+                      <p className="text-ui-body-sm text-foreground/80">이름</p>
                       <p className="font-semibold text-foreground">
                         {orderDetail.customer.name ?? "이름 없음"}
                       </p>
@@ -1362,7 +1362,7 @@ export default function OrderDetailClient({
                   <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                     <Mail className="h-4 w-4 text-muted-foreground" />
                     <div className="min-w-0">
-                      <p className="text-sm text-foreground/80">이메일</p>
+                      <p className="text-ui-body-sm text-foreground/80">이메일</p>
                       <p className="break-words font-semibold text-foreground">
                         {orderDetail.customer.email ?? "이메일 없음"}
                       </p>
@@ -1372,7 +1372,7 @@ export default function OrderDetailClient({
                   <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                     <Phone className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <p className="text-sm text-foreground/80">전화번호</p>
+                      <p className="text-ui-body-sm text-foreground/80">전화번호</p>
                       <p className="font-semibold text-foreground">
                         {formatKoreanPhone(orderDetail.customer.phone) || "전화번호 없음"}
                       </p>
@@ -1382,17 +1382,17 @@ export default function OrderDetailClient({
                   <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                     <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
                     <div className="min-w-0">
-                      <p className="text-sm text-foreground/80">주소</p>
+                      <p className="text-ui-body-sm text-foreground/80">주소</p>
                       <p className="break-words font-semibold text-foreground">
                         {orderDetail.customer.address ?? "주소 없음"}
                       </p>
                       {orderDetail.customer.addressDetail && (
-                        <p className="text-sm text-foreground/80 mt-1">
+                        <p className="text-ui-body-sm text-foreground/80 mt-1">
                           {orderDetail.customer.addressDetail}
                         </p>
                       )}
                       {orderDetail.customer.postalCode && (
-                        <p className="text-sm text-foreground/80">
+                        <p className="text-ui-body-sm text-foreground/80">
                           우편번호: {orderDetail.customer.postalCode}
                         </p>
                       )}
@@ -1448,17 +1448,17 @@ export default function OrderDetailClient({
                           <p className="font-medium text-foreground">
                             {index + 1}. {step.title}
                           </p>
-                          <Badge className={cn("px-2 py-0.5 text-xs", tone.badge)}>
+                          <Badge className={cn("px-2 py-0.5 text-ui-label", tone.badge)}>
                             {getTimelineStateLabel(step.state)}
                           </Badge>
                         </div>
-                        <p className="mt-1 text-sm text-muted-foreground">{step.description}</p>
+                        <p className="mt-1 text-ui-body-sm text-muted-foreground">{step.description}</p>
                       </div>
                     </div>
                   </div>
                 );
               })}
-              <div className="space-y-1 text-xs text-muted-foreground">
+              <div className="space-y-1 text-ui-label text-muted-foreground">
                 <p>이 타임라인은 현재 상태 기준 안내입니다.</p>
                 <p>자세한 변경 기록은 아래 처리 이력에서 확인할 수 있습니다.</p>
                 {shouldShowStringingTimelineHint && (
@@ -1485,7 +1485,7 @@ export default function OrderDetailClient({
                 <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                   <Truck className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-foreground/80">
+                    <p className="text-ui-body-sm text-foreground/80">
                       {isVisitPickup ? "수령 방법" : "배송 방법"}
                     </p>
                     <p className="font-semibold text-foreground">{shippingMethodLabel}</p>
@@ -1495,7 +1495,7 @@ export default function OrderDetailClient({
                 <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-foreground/80">예상 수령일</p>
+                    <p className="text-ui-body-sm text-foreground/80">예상 수령일</p>
                     <p className="font-semibold text-foreground">
                       {orderDetail.shippingInfo?.estimatedDate
                         ? formatDate(orderDetail.shippingInfo.estimatedDate)
@@ -1505,7 +1505,7 @@ export default function OrderDetailClient({
                 </div>
 
                 {!showDeliveryOnlyFields && (
-                  <p className="text-sm text-foreground/80">
+                  <p className="text-ui-body-sm text-foreground/80">
                     방문 수령 주문은 매장 안내에 따라 준비 완료 후 수령해주세요.
                   </p>
                 )}
@@ -1514,7 +1514,7 @@ export default function OrderDetailClient({
                   <>
                     <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                       <div>
-                        <p className="text-sm text-foreground/80">택배사</p>
+                        <p className="text-ui-body-sm text-foreground/80">택배사</p>
                         <p className="font-semibold text-foreground">
                           {getCourierDisplayName(orderDetail.shippingInfo.invoice.courier)}
                         </p>
@@ -1522,7 +1522,7 @@ export default function OrderDetailClient({
                     </div>
                     <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                       <div>
-                        <p className="text-sm text-foreground/80">운송장 번호</p>
+                        <p className="text-ui-body-sm text-foreground/80">운송장 번호</p>
                         <p className="break-words font-semibold text-foreground">
                           {orderDetail.shippingInfo.invoice.trackingNumber}
                         </p>
@@ -1537,7 +1537,7 @@ export default function OrderDetailClient({
                       </div>
                     )}
                     {!isTrackingLoading && !trackingError && trackingData && (
-                      <div className="space-y-2 p-3 bg-muted rounded-lg text-sm">
+                      <div className="space-y-2 p-3 bg-muted rounded-lg text-ui-body-sm">
                         {trackingData.success && trackingData.supported ? (
                           <>
                             <p className="text-foreground">
@@ -1557,7 +1557,7 @@ export default function OrderDetailClient({
                               </p>
                             )}
                             {shouldShowTrackingStatusNotice && (
-                              <div className="space-y-0.5 rounded-md bg-background/70 px-2.5 py-1.5 text-xs leading-relaxed text-muted-foreground">
+                              <div className="space-y-0.5 rounded-md bg-background/70 px-2.5 py-1.5 text-ui-label leading-relaxed text-muted-foreground">
                                 <p>실시간 배송 상태는 택배사 기준이며,</p>
                                 <p>주문 상태와 다를 수 있습니다.</p>
                               </div>
@@ -1582,7 +1582,7 @@ export default function OrderDetailClient({
                       </div>
                     )}
                     {trackingError && (
-                      <p className="text-sm text-destructive">
+                      <p className="text-ui-body-sm text-destructive">
                         {getTrackingErrorMessage(trackingData, trackingError)}
                       </p>
                     )}
@@ -1593,8 +1593,8 @@ export default function OrderDetailClient({
                   <div className="rounded-lg border border-border bg-primary/5 p-3 dark:bg-primary/10">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold text-foreground">라켓 발송 정보</p>
-                        <p className="text-xs text-foreground/75">
+                        <p className="text-ui-body-sm font-semibold text-foreground">라켓 발송 정보</p>
+                        <p className="text-ui-label text-foreground/75">
                           매장으로 보내는 라켓의 택배 등록 상태를 확인할 수 있어요.
                         </p>
                       </div>
@@ -1610,7 +1610,7 @@ export default function OrderDetailClient({
                       </Button>
                     </div>
 
-                    <div className="mt-3 grid gap-2 text-sm text-foreground bp-sm:grid-cols-2">
+                    <div className="mt-3 grid gap-2 text-ui-body-sm text-foreground bp-sm:grid-cols-2">
                       <p>
                         <span className="text-muted-foreground">상태:</span> {selfShipStatusLabel}
                       </p>
@@ -1645,7 +1645,7 @@ export default function OrderDetailClient({
               <div className="space-y-4">
                 <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
                   <div>
-                    <p className="text-sm text-foreground/80">결제 상태</p>
+                    <p className="text-ui-body-sm text-foreground/80">결제 상태</p>
                     {(() => {
                       const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
                       return (
@@ -1675,8 +1675,8 @@ export default function OrderDetailClient({
 
                 <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg border border-border">
                   <div>
-                    <p className="text-sm text-foreground/80">결제 금액</p>
-                    <p className="text-xl font-bold text-primary">
+                    <p className="text-ui-body-sm text-foreground/80">결제 금액</p>
+                    <p className="text-ui-section-title font-semibold text-primary">
                       {formatCurrency(orderDetail.total)}
                     </p>
                   </div>
@@ -1714,21 +1714,21 @@ export default function OrderDetailClient({
                       <h4 className="line-clamp-2 break-keep font-semibold text-foreground">
                         {item.name}
                       </h4>
-                      <p className="break-keep text-sm text-foreground/80">
+                      <p className="break-keep text-ui-body-sm text-foreground/80">
                         수량: {item.quantity}개
                       </p>
                       {item.selectedStringName && (
-                        <p className="text-xs text-foreground/70">
+                        <p className="text-ui-label text-foreground/70">
                           선택 스트링: {item.selectedStringName}
                         </p>
                       )}
                       {item.selectedGauge && (
-                        <p className="text-xs text-foreground/70">
+                        <p className="text-ui-label text-foreground/70">
                           게이지: {formatGaugeLabel(item.selectedGauge)}
                         </p>
                       )}
                       {(item.selectedColorLabel || item.selectedColor) && (
-                        <p className="flex items-center gap-2 text-xs text-foreground/70">
+                        <p className="flex items-center gap-2 text-ui-label text-foreground/70">
                           <span>색상:</span>
                           {item.selectedColorHex && (
                             <span
@@ -1748,16 +1748,16 @@ export default function OrderDetailClient({
                         가격: {formatCurrency(item.price)}
                       </p>
                       {typeof item.stringPrice === "number" && item.stringPrice > 0 && (
-                        <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
+                        <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
                           스트링 가격: {formatCurrency(item.stringPrice)}
                         </p>
                       )}
                       {typeof item.mountingFee === "number" && item.mountingFee > 0 && (
-                        <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
+                        <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
                           장착비: {formatCurrency(item.mountingFee)}
                         </p>
                       )}
-                      <p className="whitespace-nowrap text-sm tabular-nums text-foreground/80">
+                      <p className="whitespace-nowrap text-ui-body-sm tabular-nums text-foreground/80">
                         상품 소계: {formatCurrency(item.price * item.quantity)}
                       </p>
                       <div className="mt-2">

@@ -36,7 +36,7 @@ export default function StringingApplicationDetailSkeleton() {
             <CardHeader className="pb-3">
               <Skeleton className="h-6 w-32 rounded-md" /> {/* 고객 정보 타이틀 */}
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+            <CardContent className="space-y-2 text-ui-body-sm">
               <Skeleton className="h-4 w-1/2 rounded-md" />
               <Skeleton className="h-4 w-2/3 rounded-md" />
               <Skeleton className="h-4 w-1/3 rounded-md" />
@@ -50,7 +50,7 @@ export default function StringingApplicationDetailSkeleton() {
             <CardHeader className="pb-3">
               <Skeleton className="h-6 w-32 rounded-md" /> {/* 결제 정보 타이틀 */}
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+            <CardContent className="space-y-2 text-ui-body-sm">
               <Skeleton className="h-4 w-1/2 rounded-md" />
               <Skeleton className="h-4 w-2/5 rounded-md" />
               <Skeleton className="h-4 w-1/3 rounded-md" />
@@ -62,7 +62,7 @@ export default function StringingApplicationDetailSkeleton() {
             <CardHeader className="pb-3">
               <Skeleton className="h-6 w-40 rounded-md" /> {/* 스트링 정보 타이틀 */}
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+            <CardContent className="space-y-2 text-ui-body-sm">
               <Skeleton className="h-4 w-1/3 rounded-md" /> {/* 희망 일시 */}
               <Skeleton className="h-4 w-2/3 rounded-md" /> {/* 스트링 정보 */}
               <Skeleton className="h-4 w-1/4 rounded-md" /> {/* 라켓 종류 */}

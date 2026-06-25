@@ -726,9 +726,9 @@ export default function ActivityFeed() {
             <div className="rounded-lg bg-border p-2">
               <Activity className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-muted-foreground" />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-muted-foreground">전체</span>
+            <span className="text-ui-label bp-sm:text-ui-body-sm font-medium text-muted-foreground">전체</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-foreground">{counts.all}</div>
+          <div className="text-ui-page-title bp-sm:text-ui-page-title-lg font-semibold text-foreground">{counts.all}</div>
         </div>
 
         <div className="rounded-xl bp-sm:rounded-2xl bg-muted/30 p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
@@ -736,9 +736,9 @@ export default function ActivityFeed() {
             <div className="rounded-lg border border-primary/20 bg-primary/10 p-2 dark:bg-primary/20">
               <Clock className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-primary">진행중</span>
+            <span className="text-ui-label bp-sm:text-ui-body-sm font-medium text-primary">진행중</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-primary">{counts.active}</div>
+          <div className="text-ui-page-title bp-sm:text-ui-page-title-lg font-semibold text-primary">{counts.active}</div>
         </div>
 
         <div className="rounded-xl bp-sm:rounded-2xl bg-muted/30 p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
@@ -746,9 +746,9 @@ export default function ActivityFeed() {
             <div className="rounded-lg bg-success/10 dark:bg-success/15 p-2">
               <CheckCircle2 className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-success" />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-success">완료</span>
+            <span className="text-ui-label bp-sm:text-ui-body-sm font-medium text-success">완료</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-success">{counts.done}</div>
+          <div className="text-ui-page-title bp-sm:text-ui-page-title-lg font-semibold text-success">{counts.done}</div>
         </div>
 
         <div className="rounded-xl bp-sm:rounded-2xl bg-muted/30 p-4 bp-sm:p-6 border border-border/50 activity-card-hover">
@@ -756,9 +756,9 @@ export default function ActivityFeed() {
             <div className="rounded-lg bg-muted p-2">
               <AlertCircle className="h-4 w-4 bp-sm:h-5 bp-sm:w-5 text-primary" />
             </div>
-            <span className="text-xs bp-sm:text-sm font-medium text-primary">액션 필요</span>
+            <span className="text-ui-label bp-sm:text-ui-body-sm font-medium text-primary">액션 필요</span>
           </div>
-          <div className="text-2xl bp-sm:text-3xl font-bold text-primary">{counts.action}</div>
+          <div className="text-ui-page-title bp-sm:text-ui-page-title-lg font-semibold text-primary">{counts.action}</div>
         </div>
       </div>
 
@@ -788,7 +788,7 @@ export default function ActivityFeed() {
         <div className="flex flex-wrap items-center gap-2 bp-sm:gap-3">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">상태:</span>
+            <span className="text-ui-body-sm font-medium text-foreground">상태:</span>
           </div>
           <Button
             size="sm"
@@ -815,7 +815,7 @@ export default function ActivityFeed() {
             완료
           </Button>
           <div className="h-4 w-px bg-border dark:bg-card mx-1" />
-          <span className="text-sm font-medium text-foreground">종류:</span>
+          <span className="text-ui-body-sm font-medium text-foreground">종류:</span>
           <Button
             size="sm"
             variant={kindFilter === "all" ? "default" : "outline"}
@@ -883,10 +883,10 @@ export default function ActivityFeed() {
                     <AlertCircle className="h-5 w-5 text-primary" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-base bp-sm:text-lg font-bold text-primary truncate">
+                    <h3 className="text-ui-body bp-sm:text-ui-card-title-lg font-semibold text-primary truncate">
                       해야 할 일
                     </h3>
-                    <p className="text-xs text-primary truncate">
+                    <p className="text-ui-label text-primary truncate">
                       {actionTop.length}건의 액션 필요
                     </p>
                   </div>
@@ -934,7 +934,7 @@ export default function ActivityFeed() {
                             <div className="flex items-center gap-2 mb-1">
                               <Badge
                                 variant={statusBadgeSpec(g).variant}
-                                className="text-xs rounded-md"
+                                className="text-ui-label rounded-md"
                               >
                                 {primaryStatusLabel(g)}
                               </Badge>
@@ -944,16 +944,16 @@ export default function ActivityFeed() {
                                     getApplicationStatusBadgeSpec(applicationStatusLabel(app))
                                       .variant
                                   }
-                                  className="text-xs rounded-md font-medium"
+                                  className="text-ui-label rounded-md font-medium"
                                 >
                                   교체 {applicationStatusLabel(app)}
                                 </Badge>
                               )}
-                              <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+                              <span className="whitespace-nowrap text-ui-label tabular-nums text-muted-foreground">
                                 {formatDate(date)}
                               </span>
                             </div>
-                            <h4 className="font-semibold text-foreground text-sm bp-sm:text-base truncate">
+                            <h4 className="font-semibold text-foreground text-ui-body-sm bp-sm:text-ui-body truncate">
                               {title}
                             </h4>
                           </div>
@@ -966,7 +966,7 @@ export default function ActivityFeed() {
                             <span
                               key={i}
                               className={cn(
-                                "text-xs px-2 py-1 rounded-md font-medium",
+                                "text-ui-label px-2 py-1 rounded-md font-medium",
                                 m.className,
                               )}
                             >
@@ -1058,10 +1058,10 @@ export default function ActivityFeed() {
                     <TrendingUp className="h-5 w-5 text-primary" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-base bp-sm:text-lg font-bold text-primary truncate">
+                    <h3 className="text-ui-body bp-sm:text-ui-card-title-lg font-semibold text-primary truncate">
                       진행중
                     </h3>
-                    <p className="text-xs text-primary truncate">{activeTop.length}건의 활동</p>
+                    <p className="text-ui-label text-primary truncate">{activeTop.length}건의 활동</p>
                   </div>
                 </div>
                 <Button
@@ -1099,7 +1099,7 @@ export default function ActivityFeed() {
                           <div className="flex items-center gap-2 mb-1">
                             <Badge
                               variant={statusBadgeSpec(g).variant}
-                              className="text-xs rounded-md"
+                              className="text-ui-label rounded-md"
                             >
                               {primaryStatusLabel(g)}
                             </Badge>
@@ -1108,16 +1108,16 @@ export default function ActivityFeed() {
                                 variant={
                                   getApplicationStatusBadgeSpec(applicationStatusLabel(app)).variant
                                 }
-                                className="text-xs rounded-md font-medium"
+                                className="text-ui-label rounded-md font-medium"
                               >
                                 교체 {applicationStatusLabel(app)}
                               </Badge>
                             )}
-                            <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+                            <span className="whitespace-nowrap text-ui-label tabular-nums text-muted-foreground">
                               {formatDate(date)}
                             </span>
                           </div>
-                          <h4 className="font-semibold text-foreground text-sm bp-sm:text-base truncate">
+                          <h4 className="font-semibold text-foreground text-ui-body-sm bp-sm:text-ui-body truncate">
                             {title}
                           </h4>
                         </div>
@@ -1129,7 +1129,7 @@ export default function ActivityFeed() {
                             <span
                               key={i}
                               className={cn(
-                                "text-xs px-2 py-1 rounded-md font-medium",
+                                "text-ui-label px-2 py-1 rounded-md font-medium",
                                 m.className,
                               )}
                             >
@@ -1182,10 +1182,10 @@ export default function ActivityFeed() {
         {visible.length === 0 ? (
           <div className="rounded-2xl bg-muted p-12 bp-sm:p-16 text-center">
             <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg bp-sm:text-xl font-semibold text-foreground mb-2">
+            <h3 className="text-ui-card-title-lg bp-sm:text-ui-section-title font-semibold text-foreground mb-2">
               표시할 활동이 없습니다
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-ui-body-sm text-muted-foreground">
               필터를 조정하거나 검색어를 변경해보세요.
             </p>
           </div>
@@ -1203,10 +1203,10 @@ export default function ActivityFeed() {
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="h-px flex-1 bg-muted/30" />
                     <div className="rounded-full bg-muted px-4 py-2 border border-border">
-                      <span className="text-sm font-semibold text-foreground">
+                      <span className="text-ui-body-sm font-semibold text-foreground">
                         {formatDayHeader(dayKey)}
                       </span>
-                      <span className="text-xs text-foreground/75 ml-2">{dayItems.length}건</span>
+                      <span className="text-ui-label text-foreground/75 ml-2">{dayItems.length}건</span>
                     </div>
                     <div className="h-px flex-1 bg-muted/30" />
                   </div>
@@ -1264,7 +1264,7 @@ export default function ActivityFeed() {
                             <div className="flex-1 min-w-0 space-y-2.5 bp-sm:space-y-3">
                               <div className="flex flex-col gap-3 border-b border-border/60 pb-3 bp-md:flex-row bp-md:items-start bp-md:justify-between">
                                 <div className="min-w-0 flex-1">
-                                  <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                  <div className="mb-2 flex flex-wrap items-center gap-2 text-ui-label text-muted-foreground">
                                     <span className="inline-flex bp-sm:hidden rounded-lg bg-muted p-2 shrink-0">
                                       {kindIcon(g.kind)}
                                     </span>
@@ -1279,7 +1279,7 @@ export default function ActivityFeed() {
                                     ) : null}
                                   </div>
 
-                                  <h3 className="line-clamp-2 break-keep text-base font-semibold leading-snug text-foreground bp-sm:text-lg">
+                                  <h3 className="line-clamp-2 break-keep text-ui-body font-semibold leading-snug text-foreground bp-sm:text-ui-card-title-lg">
                                     {title}
                                   </h3>
                                 </div>
@@ -1287,14 +1287,14 @@ export default function ActivityFeed() {
                                 <div className="flex flex-wrap items-center gap-2 bp-md:max-w-[46%] bp-md:justify-end">
                                   <Badge
                                     variant={statusBadgeSpec(g).variant}
-                                    className="shrink-0 rounded-md text-xs font-medium"
+                                    className="shrink-0 rounded-md text-ui-label font-medium"
                                   >
                                     {primaryStatusLabel(g)}
                                   </Badge>
                                   {g.kind === "order" && g.order?.paymentStatus && (
                                     <Badge
                                       variant={paymentBadgeSpec(g)?.variant ?? "neutral"}
-                                      className="shrink-0 rounded-md text-xs font-medium"
+                                      className="shrink-0 rounded-md text-ui-label font-medium"
                                     >
                                       {getMypagePaymentStatusLabel(g.order?.paymentStatus)}
                                     </Badge>
@@ -1305,7 +1305,7 @@ export default function ActivityFeed() {
                                         getApplicationStatusBadgeSpec(applicationStatusLabel(app))
                                           .variant
                                       }
-                                      className="shrink-0 rounded-md text-xs font-medium"
+                                      className="shrink-0 rounded-md text-ui-label font-medium"
                                     >
                                       교체 {applicationStatusLabel(app)}
                                     </Badge>
@@ -1313,7 +1313,7 @@ export default function ActivityFeed() {
                                   {hasAction && (
                                     <Badge
                                       variant={getWorkflowMetaBadgeSpec("action_required").variant}
-                                      className="shrink-0 rounded-md text-xs font-medium"
+                                      className="shrink-0 rounded-md text-ui-label font-medium"
                                     >
                                       액션 필요
                                     </Badge>
@@ -1330,15 +1330,15 @@ export default function ActivityFeed() {
                                           variant={
                                             getWorkflowMetaBadgeSpec("action_required").variant
                                           }
-                                          className="rounded-md text-[11px] font-medium"
+                                          className="rounded-md text-ui-micro font-medium"
                                         >
                                           해야 할 일
                                         </Badge>
-                                        <p className="text-sm font-semibold text-foreground">
+                                        <p className="text-ui-body-sm font-semibold text-foreground">
                                           {shippingLabel}
                                         </p>
                                       </div>
-                                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                                      <p className="mt-1 text-ui-label leading-relaxed text-muted-foreground">
                                         교체서비스 진행을 위해 운송장 정보를 확인해 주세요.
                                       </p>
                                     </div>
@@ -1348,38 +1348,38 @@ export default function ActivityFeed() {
 
                               <div className="grid grid-cols-2 gap-2 rounded-xl border border-border/60 bg-muted/20 p-2 bp-md:grid-cols-4">
                                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                                  <p className="text-[11px] font-medium text-muted-foreground">
+                                  <p className="text-ui-micro font-medium text-muted-foreground">
                                     결제 금액
                                   </p>
-                                  <p className="mt-1 truncate text-sm font-semibold tabular-nums text-foreground">
+                                  <p className="mt-1 truncate text-ui-body-sm font-semibold tabular-nums text-foreground">
                                     {typeof groupAmount(g) === "number"
                                       ? `${groupAmount(g)!.toLocaleString()}원`
                                       : "-"}
                                   </p>
                                 </div>
                                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                                  <p className="text-[11px] font-medium text-muted-foreground">
+                                  <p className="text-ui-micro font-medium text-muted-foreground">
                                     진행 상태
                                   </p>
-                                  <p className="mt-1 truncate text-sm font-semibold text-foreground">
+                                  <p className="mt-1 truncate text-ui-body-sm font-semibold text-foreground">
                                     {primaryStatusLabel(g)}
                                   </p>
                                 </div>
                                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                                  <p className="text-[11px] font-medium text-muted-foreground">
+                                  <p className="text-ui-micro font-medium text-muted-foreground">
                                     결제 상태
                                   </p>
-                                  <p className="mt-1 truncate text-sm font-semibold text-foreground">
+                                  <p className="mt-1 truncate text-ui-body-sm font-semibold text-foreground">
                                     {g.kind === "order"
                                       ? getMypagePaymentStatusLabel(g.order?.paymentStatus)
                                       : "-"}
                                   </p>
                                 </div>
                                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                                  <p className="text-[11px] font-medium text-muted-foreground">
+                                  <p className="text-ui-micro font-medium text-muted-foreground">
                                     수령 방법
                                   </p>
-                                  <p className="mt-1 truncate text-sm font-semibold text-foreground">
+                                  <p className="mt-1 truncate text-ui-body-sm font-semibold text-foreground">
                                     {g.kind === "order"
                                       ? isVisitPickupOrder({
                                           shippingMethod: g.order?.shippingMethod,
@@ -1397,7 +1397,7 @@ export default function ActivityFeed() {
                                     <span
                                       key={i}
                                       className={cn(
-                                        "rounded-lg border px-2.5 py-1 text-xs font-medium",
+                                        "rounded-lg border px-2.5 py-1 text-ui-label font-medium",
                                         m.className,
                                       )}
                                     >
@@ -1607,7 +1607,7 @@ export default function ActivityFeed() {
 
       {total > 0 && flat.length > 0 && (
         <div className="text-center pt-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-ui-body-sm text-muted-foreground">
             전체 {total}건 중 {flat.length}건 로딩됨
           </p>
         </div>

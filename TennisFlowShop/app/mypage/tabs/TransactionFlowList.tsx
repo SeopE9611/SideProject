@@ -920,13 +920,13 @@ export default function TransactionFlowList() {
         <div className="rounded-xl border border-border bg-muted/30 px-3 py-2.5">
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 shrink-0 text-primary" />
-            <p className="break-keep text-xs font-medium text-foreground">
+            <p className="break-keep text-ui-label font-medium text-foreground">
               지금 처리할 수 있는 구매확정, 운송장, 후기 작성 항목만 모았습니다.
             </p>
           </div>
         </div>
       ) : null}
-      <p className="break-keep text-xs text-muted-foreground">
+      <p className="break-keep text-ui-label text-muted-foreground">
         주문·대여와 연결된 교체서비스를 함께 확인할 수 있습니다.
       </p>
       {items.length === 0 ? (
@@ -1100,19 +1100,19 @@ export default function TransactionFlowList() {
               >
                 <div className="flex min-w-0 items-start justify-between gap-3 md:hidden">
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-foreground">
+                    <p className="text-ui-body-sm font-semibold text-foreground">
                       {displayUserStatusLabel}
                     </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
+                    <p className="mt-0.5 text-ui-label text-muted-foreground">
                       {formatDate(displayDateValue)} · {displayMetaLabel}
                     </p>
                   </div>
                 </div>
                 <div className="hidden min-w-0 md:block">
-                  <span className="text-xs tabular-nums text-muted-foreground">
+                  <span className="text-ui-label tabular-nums text-muted-foreground">
                     {formatDate(displayDateValue)}
                   </span>
-                  <span className="mt-1 block text-xs font-medium text-muted-foreground/70">
+                  <span className="mt-1 block text-ui-label font-medium text-muted-foreground/70">
                     {displayMetaLabel}
                   </span>
                 </div>
@@ -1121,11 +1121,11 @@ export default function TransactionFlowList() {
                 <div className="flex min-w-0 flex-col gap-1.5">
                   <Link href={detailHref} className="inline-flex max-w-full items-start gap-1.5">
                     <FlowIcon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                    <span className="line-clamp-2 break-keep text-sm font-semibold text-foreground transition-colors hover:text-primary bp-sm:text-base">
+                    <span className="line-clamp-2 break-keep text-ui-body-sm font-semibold text-foreground transition-colors hover:text-primary bp-sm:text-ui-body">
                       {displayTitle}
                     </span>
                   </Link>
-                  <p className="break-keep text-xs tabular-nums text-muted-foreground bp-sm:text-sm">
+                  <p className="break-keep text-ui-label tabular-nums text-muted-foreground bp-sm:text-ui-body-sm">
                     {heroSummary}
                     {heroSubSummary ? ` · ${heroSubSummary}` : ""}
                     {standaloneApplicationIdMeta}
@@ -1135,7 +1135,7 @@ export default function TransactionFlowList() {
                   shouldShowFlowBadge ||
                   showLinkedStatusBadge ||
                   isCancelRequested ? (
-                    <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-xs">
+                    <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-ui-label">
                       {linkedFlowBadgeLabel ? (
                         <Badge variant="secondary" className="shrink-0 whitespace-nowrap">
                           {linkedFlowBadgeLabel}
@@ -1167,7 +1167,7 @@ export default function TransactionFlowList() {
                   ) : null}
 
                   {linkedStringSummary || linkedApplicationStatusLabel ? (
-                    <p className="line-clamp-2 break-keep text-xs leading-relaxed text-muted-foreground bp-sm:line-clamp-none">
+                    <p className="line-clamp-2 break-keep text-ui-label leading-relaxed text-muted-foreground bp-sm:line-clamp-none">
                       {[
                         linkedStringSummary,
                         linkedApplicationStatusLabel
@@ -1180,12 +1180,12 @@ export default function TransactionFlowList() {
                   ) : null}
 
                   {todoPrimaryReason && nextActionText ? (
-                    <p className="line-clamp-2 break-keep text-xs leading-relaxed bp-sm:line-clamp-none">
+                    <p className="line-clamp-2 break-keep text-ui-label leading-relaxed bp-sm:line-clamp-none">
                       <span className="font-semibold text-primary">{todoPrimaryReason}</span>
                       <span className="text-muted-foreground"> · {nextActionText}</span>
                     </p>
                   ) : nextActionText ? (
-                    <p className="line-clamp-2 break-keep text-xs leading-relaxed text-muted-foreground bp-sm:line-clamp-none">
+                    <p className="line-clamp-2 break-keep text-ui-label leading-relaxed text-muted-foreground bp-sm:line-clamp-none">
                       {nextActionText}
                     </p>
                   ) : null}
@@ -1638,14 +1638,14 @@ export default function TransactionFlowList() {
                         </div>
 
                         {inlineActions.length > 0 || secondaryActions.length > 0 ? (
-                          <div className="grid w-full grid-cols-2 gap-2 md:flex md:w-full md:flex-col md:items-stretch [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-2.5 [&_a]:text-center [&_a]:text-xs [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap md:[&_a]:h-8 md:[&_a]:px-3 [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-2.5 [&_button]:text-center [&_button]:text-xs [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap md:[&_button]:h-8 md:[&_button]:px-3">
+                          <div className="grid w-full grid-cols-2 gap-2 md:flex md:w-full md:flex-col md:items-stretch [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-2.5 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap md:[&_a]:h-8 md:[&_a]:px-3 [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-2.5 [&_button]:text-center [&_button]:text-ui-label [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap md:[&_button]:h-8 md:[&_button]:px-3">
                             {inlineActions.map((action) => (
                               <Fragment key={action.key}>{action.node}</Fragment>
                             ))}
                             {secondaryActions.length > 0 ? (
                               <button
                                 type="button"
-                                className={`group relative flex h-9 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 md:h-8 md:px-3 ${
+                                className={`group relative flex h-9 items-center justify-center gap-1.5 rounded-lg border px-2.5 text-ui-label font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 md:h-8 md:px-3 ${
                                   isSecondaryOpen
                                     ? "border-border bg-muted text-foreground shadow-none"
                                     : "border-border bg-background text-muted-foreground hover:bg-card hover:text-foreground"
@@ -1669,7 +1669,7 @@ export default function TransactionFlowList() {
                           </div>
                         ) : null}
                         {secondaryActions.length > 0 && isSecondaryOpen ? (
-                          <div className="hidden w-full grid-cols-1 gap-1.5 rounded-xl border border-border/60 bg-muted/20 px-2 py-2 md:grid [&_a]:h-8 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-3 [&_a]:text-center [&_a]:text-xs [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-3 [&_button]:text-center [&_button]:text-xs [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap">
+                          <div className="hidden w-full grid-cols-1 gap-1.5 rounded-xl border border-border/60 bg-muted/20 px-2 py-2 md:grid [&_a]:h-8 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-3 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-3 [&_button]:text-center [&_button]:text-ui-label [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap">
                             {secondaryActions.map((action) => (
                               <Fragment key={action.key}>{action.node}</Fragment>
                             ))}
@@ -1677,7 +1677,7 @@ export default function TransactionFlowList() {
                         ) : null}
                       </div>
                       {secondaryActions.length > 0 && isSecondaryOpen ? (
-                        <div className="col-span-full grid w-full grid-cols-2 gap-2 rounded-xl border border-border/60 bg-muted/20 px-3 py-2 md:hidden [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-2.5 [&_a]:text-center [&_a]:text-xs [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-2.5 [&_button]:text-center [&_button]:text-xs [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap">
+                        <div className="col-span-full grid w-full grid-cols-2 gap-2 rounded-xl border border-border/60 bg-muted/20 px-3 py-2 md:hidden [&_a]:h-9 [&_a]:w-full [&_a]:min-w-0 [&_a]:justify-center [&_a]:overflow-hidden [&_a]:px-2.5 [&_a]:text-center [&_a]:text-ui-label [&_a]:font-medium [&_a]:leading-none [&_a]:whitespace-nowrap [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:justify-center [&_button]:overflow-hidden [&_button]:px-2.5 [&_button]:text-center [&_button]:text-ui-label [&_button]:font-medium [&_button]:leading-none [&_button]:whitespace-nowrap">
                           {secondaryActions.map((action) => (
                             <Fragment key={action.key}>{action.node}</Fragment>
                           ))}

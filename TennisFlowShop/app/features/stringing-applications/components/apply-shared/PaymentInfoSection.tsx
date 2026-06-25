@@ -74,8 +74,8 @@ export default function PaymentInfoSection({
                 <h3
                   className={
                     packageInsufficient
-                      ? "text-sm font-semibold text-foreground"
-                      : "text-sm font-semibold text-primary"
+                      ? "text-ui-body-sm font-semibold text-foreground"
+                      : "text-ui-body-sm font-semibold text-primary"
                   }
                 >
                   패키지 자동 적용
@@ -87,7 +87,7 @@ export default function PaymentInfoSection({
 
               {/* 본문 설명 */}
               {packageInsufficient ? (
-                <p className="mt-2 text-sm leading-relaxed text-foreground">
+                <p className="mt-2 text-ui-body-sm leading-relaxed text-foreground">
                   현재 패키지 남은 횟수는{" "}
                   <span className="font-semibold">{packageRemaining}회</span>
                   로, 이번 교체에 필요한 횟수(
@@ -99,21 +99,21 @@ export default function PaymentInfoSection({
                   진행됩니다.
                 </p>
               ) : usingPackage ? (
-                <p className="mt-2 text-sm text-foreground leading-relaxed">
+                <p className="mt-2 text-ui-body-sm text-foreground leading-relaxed">
                   이번 신청에는 패키지가 자동으로 적용됩니다.{" "}
                   <span className="font-semibold text-primary">교체비는 0원</span>
                   으로 처리되며, 패키지에서{" "}
                   <span className="font-semibold">{requiredPassCount}회</span>가 차감됩니다.
                 </p>
               ) : (
-                <p className="mt-2 text-sm text-foreground leading-relaxed">
+                <p className="mt-2 text-ui-body-sm text-foreground leading-relaxed">
                   패키지로 결제할 수 있는 상태입니다. 필요하다면 아래 옵션을 해제하여 이번 신청에도
                   패키지를 사용할 수 있습니다.
                 </p>
               )}
 
               {/* 숫자 요약 뱃지들 */}
-              <div className="mt-3 flex flex-wrap gap-2 text-xs tabular-nums">
+              <div className="mt-3 flex flex-wrap gap-2 text-ui-label tabular-nums">
                 <Badge variant="info">필요 {requiredPassCount}회</Badge>
                 <Badge variant="info">잔여 {packagePreview.remaining}회</Badge>
                 {packagePreview.expiresAt && (
@@ -134,7 +134,7 @@ export default function PaymentInfoSection({
 
                 return (
                   <div className="mt-4">
-                    <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="mb-1 flex items-center justify-between text-ui-label text-muted-foreground">
                       <span>
                         총 {total}회 중 <span className="font-medium text-foreground">{used}</span>
                         회 사용
@@ -164,8 +164,8 @@ export default function PaymentInfoSection({
                   htmlFor="package-optout"
                   className={
                     formData.packageOptOut
-                      ? "cursor-pointer text-xs text-muted-foreground"
-                      : "cursor-pointer text-xs text-foreground"
+                      ? "cursor-pointer text-ui-label text-muted-foreground"
+                      : "cursor-pointer text-ui-label text-foreground"
                   }
                 >
                   이번 신청에는 패키지 <span className="font-medium">사용 안 함</span>
@@ -185,7 +185,7 @@ export default function PaymentInfoSection({
               <div className="font-medium text-foreground">
                 패키지가 없거나 잔여 횟수가 없습니다.
               </div>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground">
                 패키지를 보유하면 교체비가 무료입니다. (배송/추가옵션비 제외)
               </p>
             </div>
@@ -196,7 +196,7 @@ export default function PaymentInfoSection({
       {!usingPackage && (
         <div className="space-y-6">
           <PublicSurface variant="muted" padding="sm" className="space-y-3">
-            <Label className="text-sm font-medium">결제수단</Label>
+            <Label className="text-ui-body-sm font-medium">결제수단</Label>
             <label
               className={`flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border p-4 shadow-sm transition-colors hover:bg-muted/50 focus-within:ring-2 focus-within:ring-ring ${
                 formData.paymentMethod === "bank_transfer"
@@ -236,7 +236,7 @@ export default function PaymentInfoSection({
           {formData.paymentMethod === "bank_transfer" && (
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="shippingBank" className="text-sm font-medium">
+                <Label htmlFor="shippingBank" className="text-ui-body-sm font-medium">
                   은행 선택 <span className="text-destructive">*</span>
                 </Label>
                 <select
@@ -264,7 +264,7 @@ export default function PaymentInfoSection({
                       padding="sm"
                       className="flex flex-wrap items-center justify-between gap-2 rounded-lg p-3"
                     >
-                      <span className="text-sm text-muted-foreground">은행</span>
+                      <span className="text-ui-body-sm text-muted-foreground">은행</span>
                       <span className="font-medium text-foreground">
                         {(bankLabelMap as any)[formData.shippingBank].label}
                       </span>
@@ -273,7 +273,7 @@ export default function PaymentInfoSection({
                       padding="sm"
                       className="flex flex-wrap items-center justify-between gap-2 rounded-lg p-3"
                     >
-                      <span className="text-sm text-muted-foreground">계좌번호</span>
+                      <span className="text-ui-body-sm text-muted-foreground">계좌번호</span>
                       <span className="break-all font-mono font-medium tabular-nums text-foreground">
                         {(bankLabelMap as any)[formData.shippingBank].account}
                       </span>
@@ -282,7 +282,7 @@ export default function PaymentInfoSection({
                       padding="sm"
                       className="flex flex-wrap items-center justify-between gap-2 rounded-lg p-3"
                     >
-                      <span className="text-sm text-muted-foreground">예금주</span>
+                      <span className="text-ui-body-sm text-muted-foreground">예금주</span>
                       <span className="font-medium text-foreground">
                         {(bankLabelMap as any)[formData.shippingBank].holder}
                       </span>
@@ -292,7 +292,7 @@ export default function PaymentInfoSection({
               ) : null}
 
               <div className="space-y-2">
-                <Label htmlFor="shippingDepositor" className="text-sm font-medium">
+                <Label htmlFor="shippingDepositor" className="text-ui-body-sm font-medium">
                   입금자명 <span className="text-destructive">*</span>
                 </Label>
                 <Input

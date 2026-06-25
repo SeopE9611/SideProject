@@ -193,33 +193,33 @@ function CartOptionChangeContent({
           />
           <div className="min-w-0 flex-1">
             <p className="line-clamp-2 font-medium text-foreground">{item.name}</p>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-ui-body-sm text-muted-foreground">
               판매가{" "}
               <span className="font-semibold text-foreground">{formatKRW(item.price)}원</span>
             </p>
             {mountingFee > 0 && (
-              <p className="mt-0.5 text-xs text-muted-foreground">
+              <p className="mt-0.5 text-ui-label text-muted-foreground">
                 교체서비스 {formatKRW(mountingFee)}원 / 개
               </p>
             )}
           </div>
         </div>
-        <div className="rounded-xl bg-muted/20 p-3 text-sm text-muted-foreground">
+        <div className="rounded-xl bg-muted/20 p-3 text-ui-body-sm text-muted-foreground">
           현재 옵션: {item.selectedGauge ? `게이지 ${formatGaugeLabel(item.selectedGauge)}` : ""}
           {item.selectedGauge && (item.selectedColorLabel || item.selectedColor) ? " · " : ""}
           {item.selectedColorLabel ||
             item.selectedColor ||
             (!item.selectedGauge ? "기본 옵션" : "")}
         </div>
-        {loading && <p className="text-sm text-muted-foreground">옵션 정보를 불러오는 중...</p>}
+        {loading && <p className="text-ui-body-sm text-muted-foreground">옵션 정보를 불러오는 중...</p>}
         {error && (
-          <p className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</p>
+          <p className="rounded-lg bg-destructive/10 p-3 text-ui-body-sm text-destructive">{error}</p>
         )}
         {!loading && !error && product && (
           <>
             {hasColorOptions && (
               <section className="space-y-2">
-                <h3 className="text-sm font-semibold text-foreground">색상 선택</h3>
+                <h3 className="text-ui-body-sm font-semibold text-foreground">색상 선택</h3>
                 <div className="flex flex-wrap gap-2">
                   {colorRows.map((row) => {
                     const variantsForColor = getVariantsByColor(product, row.value);
@@ -249,7 +249,7 @@ function CartOptionChangeContent({
                           />
                         )}
                         {getColorLabel(row)}
-                        {isColorDisabled && <span className="ml-1 text-[11px]">품절</span>}
+                        {isColorDisabled && <span className="ml-1 text-ui-micro">품절</span>}
                       </Button>
                     );
                   })}
@@ -258,7 +258,7 @@ function CartOptionChangeContent({
             )}
             {hasGaugeOptions && (
               <section className="space-y-2">
-                <h3 className="text-sm font-semibold text-foreground">게이지 선택</h3>
+                <h3 className="text-ui-body-sm font-semibold text-foreground">게이지 선택</h3>
                 <div className="flex flex-wrap gap-2">
                   {gaugeRows.map((row) => {
                     const disabled =
@@ -281,7 +281,7 @@ function CartOptionChangeContent({
                         onClick={() => setSelectedGauge(row.value)}
                       >
                         {getGaugeLabel(row)}
-                        {disabled && <span className="ml-1 text-[11px]">품절</span>}
+                        {disabled && <span className="ml-1 text-ui-micro">품절</span>}
                       </Button>
                     );
                   })}
@@ -289,7 +289,7 @@ function CartOptionChangeContent({
               </section>
             )}
             <div
-              className={`rounded-xl p-3 text-sm ${Number(stock ?? 0) < item.quantity || isSoldOut ? "bg-destructive/10 text-destructive" : "bg-muted/20 text-muted-foreground"}`}
+              className={`rounded-xl p-3 text-ui-body-sm ${Number(stock ?? 0) < item.quantity || isSoldOut ? "bg-destructive/10 text-destructive" : "bg-muted/20 text-muted-foreground"}`}
             >
               선택 조합 재고: <span className="font-semibold">{Number(stock ?? 0)}개</span>
               {Number(stock ?? 0) < item.quantity && (
@@ -340,8 +340,8 @@ export default function CartOptionChangeOverlay({
         >
           <div className="mx-auto mt-3 h-1.5 w-10 rounded-full bg-muted-foreground/30" />
           <div className="px-5 pb-1 pt-4">
-            <h2 className="text-lg font-semibold">옵션 변경</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <h2 className="text-ui-card-title-lg font-semibold">옵션 변경</h2>
+            <p className="mt-1 text-ui-body-sm text-muted-foreground">
               변경할 색상과 게이지를 선택해주세요.
             </p>
           </div>

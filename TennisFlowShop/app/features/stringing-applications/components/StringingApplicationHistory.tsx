@@ -184,10 +184,10 @@ export default function StringingApplicationHistory({
       <CardHeader className="pb-3 border-b border-border/60 bg-muted/30 dark:bg-card rounded-t-xl">
         <div className="flex items-center gap-2">
           <Calendar className="h-5 w-5 text-foreground" />
-          <CardTitle className="text-lg font-semibold bp-sm:text-xl">처리 이력</CardTitle>
+          <CardTitle className="text-ui-card-title-lg font-semibold bp-sm:text-ui-section-title">처리 이력</CardTitle>
         </div>
 
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground break-words">
+        <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground break-words">
           최신 변경이 맨 위에 표시됩니다.
         </p>
       </CardHeader>
@@ -231,7 +231,7 @@ export default function StringingApplicationHistory({
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-col gap-1 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between bp-sm:gap-3">
                     <span className="break-keep font-semibold leading-snug">{log.status}</span>
-                    <span className="text-xs text-muted-foreground bp-sm:shrink-0 bp-sm:text-sm">
+                    <span className="text-ui-label text-muted-foreground bp-sm:shrink-0 bp-sm:text-ui-body-sm">
                       {new Intl.DateTimeFormat("ko-KR", {
                         year: "numeric",
                         month: "2-digit",
@@ -247,7 +247,7 @@ export default function StringingApplicationHistory({
                     const detail = detailWithParen ? detailWithParen.replace(/\)$/, "") : "";
 
                     return (
-                      <p className="mt-1 text-sm leading-relaxed text-foreground break-words">
+                      <p className="mt-1 text-ui-body-sm leading-relaxed text-foreground break-words">
                         {main?.trim()}
                         {detail && (
                           <span className="ml-1 font-medium text-primary">({detail})</span>
@@ -271,7 +271,7 @@ export default function StringingApplicationHistory({
             >
               이전
             </Button>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-ui-body-sm text-muted-foreground">
               {page} / {totalPages}
             </span>
             <Button

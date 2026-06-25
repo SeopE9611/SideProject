@@ -650,17 +650,17 @@ export default function OrdersClient() {
       <div className="mb-4 rounded-xl border border-border/70 bg-muted/20 px-4 py-3 shadow-sm">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <details className="group min-w-0">
-            <summary className="cursor-pointer list-none text-sm font-medium text-foreground [&::-webkit-details-marker]:hidden">
+            <summary className="cursor-pointer list-none text-ui-body-sm font-medium text-foreground [&::-webkit-details-marker]:hidden">
               업무 가이드 · 우선 처리 기준 보기
             </summary>
-            <p className="mt-2 max-w-4xl text-sm leading-relaxed text-muted-foreground break-keep">
+            <p className="mt-2 max-w-4xl text-ui-body-sm leading-relaxed text-muted-foreground break-keep">
               결제 대기와 배송 미등록 건을 먼저 확인하고, 취소 요청은 환불 계좌 준비 여부를 함께
               검토하세요. 통합 주문의 배송 정보는 연결된 교체서비스 신청서에서 관리합니다.
             </p>
           </details>
           <Link
             href="/admin/operations"
-            className="inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-border bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-border bg-background px-3 text-ui-label font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             오늘 처리함 보기
           </Link>
@@ -671,14 +671,14 @@ export default function OrdersClient() {
       <Card className={cn("mb-4 px-4 py-4 lg:px-5", adminSurface.filterCard)}>
         <CardHeader className="pb-2.5">
           <CardTitle>주문 찾기</CardTitle>
-          <CardDescription className="text-xs">
+          <CardDescription className="text-ui-label">
             빠른 보기로 우선 처리 대상을 찾거나 상세 조건으로 좁혀보세요.
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-1">
           <div className="flex flex-col gap-4">
             <div>
-              <p className="mb-2 text-xs font-medium text-foreground/80">빠른 보기</p>
+              <p className="mb-2 text-ui-label font-medium text-foreground/80">빠른 보기</p>
               <div className="flex flex-wrap gap-2">
                 {[
                   ["all", "전체"],
@@ -713,7 +713,7 @@ export default function OrdersClient() {
                 <Input
                   type="search"
                   placeholder="주문/신청 ID, 고객명, 이메일 검색..."
-                  className="pl-8 text-xs h-9 w-full"
+                  className="pl-8 text-ui-label h-9 w-full"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -751,7 +751,7 @@ export default function OrdersClient() {
         </CardContent>
       </Card>
 
-      <div className="mb-4 flex flex-col gap-2 rounded-xl border border-border/70 bg-card px-4 py-3 text-sm shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-4 flex flex-col gap-2 rounded-xl border border-border/70 bg-card px-4 py-3 text-ui-body-sm shadow-sm sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
           <span className="font-semibold text-foreground">현재 보기: {quickViewLabel}</span>
           {searchTerm.trim() ? (
@@ -779,13 +779,13 @@ export default function OrdersClient() {
       <Card className={cn("px-4 py-4 lg:px-5", adminSurface.tableCard)}>
         <CardHeader className="pb-2 pt-1">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-medium">주문 목록</CardTitle>
-            <p className="text-xs text-muted-foreground">
+            <CardTitle className="text-ui-body font-medium">주문 목록</CardTitle>
+            <p className="text-ui-label text-muted-foreground">
               {data ? `총 ${data.total}개의 주문` : "목록을 불러오는 중…"}
             </p>
           </div>
           {/* 운영자용: 빠른 구분 범례와 상세 도움말 */}
-          <div className="mt-1.5 flex flex-col gap-2 text-sm text-foreground/75">
+          <div className="mt-1.5 flex flex-col gap-2 text-ui-body-sm text-foreground/75">
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge
                 className={cn(
@@ -828,10 +828,10 @@ export default function OrdersClient() {
                 단독
               </Badge>
               <details className="group w-full sm:w-auto">
-                <summary className="inline-flex h-7 cursor-pointer list-none items-center rounded-md border border-border/60 bg-card px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/30 hover:text-foreground [&::-webkit-details-marker]:hidden">
+                <summary className="inline-flex h-7 cursor-pointer list-none items-center rounded-md border border-border/60 bg-card px-2.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted/30 hover:text-foreground [&::-webkit-details-marker]:hidden">
                   주문·신청 구분 안내
                 </summary>
-                <div className="mt-2 rounded-lg border border-border/60 bg-muted/20 p-3 text-xs leading-5 text-muted-foreground">
+                <div className="mt-2 rounded-lg border border-border/60 bg-muted/20 p-3 text-ui-label leading-5 text-muted-foreground">
                   <ul className="space-y-1">
                     <li>
                       <strong className="font-medium text-foreground">주문:</strong> 상품 구매,
@@ -868,7 +868,7 @@ export default function OrdersClient() {
           </div>
         </CardHeader>
         <CardContent className="relative min-h-[420px] overflow-x-auto scrollbar-hidden pr-2">
-          <Table className="min-w-[1040px] table-fixed border-separate text-xs [border-spacing-block:0.4rem] [border-spacing-inline:0]">
+          <Table className="min-w-[1040px] table-fixed border-separate text-ui-label [border-spacing-block:0.4rem] [border-spacing-inline:0]">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
                 <TableHead className={cn(thClasses, "w-[150px]")}>주문 ID</TableHead>
@@ -1112,7 +1112,7 @@ export default function OrdersClient() {
                                     ]}
                                   />
                                   {isLinkedProductOrder && linkedApplication && (
-                                    <p className="text-sm text-foreground/75">
+                                    <p className="text-ui-body-sm text-foreground/75">
                                       신청 상태: {linkedApplication.status}
                                     </p>
                                   )}
@@ -1143,25 +1143,25 @@ export default function OrdersClient() {
                                   </div>
 
                                   {hasCancelRequest && (
-                                    <p className="mt-2 text-sm text-primary">
+                                    <p className="mt-2 text-ui-body-sm text-primary">
                                       취소 요청이 접수된 항목입니다.
                                     </p>
                                   )}
                                   {cancelQuickSignal && (
-                                    <p className="mt-1 text-sm text-foreground/75">
+                                    <p className="mt-1 text-ui-body-sm text-foreground/75">
                                       {cancelQuickSignal.label === "검토 가능"
                                         ? "환불 계좌 준비가 완료되어 검토 가능합니다."
                                         : "환불 계좌 확인이 필요합니다."}
                                     </p>
                                   )}
                                   {cancelQuickSignal && order.refundBankLabel && (
-                                    <p className="mt-1 text-sm text-foreground/75">
+                                    <p className="mt-1 text-ui-body-sm text-foreground/75">
                                       환불 은행: {order.refundBankLabel}
                                     </p>
                                   )}
                                   {order.__type === "stringing_application" &&
                                     order.stringSummary && (
-                                      <p className="mt-1 text-sm text-foreground/75">
+                                      <p className="mt-1 text-ui-body-sm text-foreground/75">
                                         장착 상품: {order.stringSummary}
                                       </p>
                                     )}
@@ -1172,7 +1172,7 @@ export default function OrdersClient() {
                                       const color = getMetaSelectedColorLabel(meta);
                                       if (!gauge && !color) return null;
                                       return (
-                                        <p className="mt-1 text-sm text-foreground/75">
+                                        <p className="mt-1 text-ui-body-sm text-foreground/75">
                                           {gauge && `게이지 ${gauge}`}
                                           {gauge && color ? " · " : ""}
                                           {color && `색상 ${color}`}
@@ -1180,33 +1180,33 @@ export default function OrdersClient() {
                                       );
                                     })()}
 
-                                  <p className="mt-2 text-sm text-foreground/75">
+                                  <p className="mt-2 text-ui-body-sm text-foreground/75">
                                     주문/신청 시나리오:{" "}
                                     <span className="font-medium text-foreground">
                                       {flow.label}
                                     </span>
                                   </p>
-                                  <p className="mt-1 text-sm text-foreground/75">
+                                  <p className="mt-1 text-ui-body-sm text-foreground/75">
                                     {settlement.label}
                                   </p>
-                                  <p className="mt-1 text-sm text-foreground/75">
+                                  <p className="mt-1 text-ui-body-sm text-foreground/75">
                                     포함 범위: 주문 + 신청 (대여 제외)
                                   </p>
 
                                   {isLinkedProductOrder && (
-                                    <p className="mt-2 text-sm text-foreground/75">
+                                    <p className="mt-2 text-ui-body-sm text-foreground/75">
                                       연결: 교체서비스 신청서와 통합 처리(같은 테두리 색)
                                     </p>
                                   )}
                                   {isLinkedProductOrder && linkedApplication && (
                                     <>
                                       {linkedReceptionLabel && (
-                                        <p className="mt-1 text-sm text-foreground/75">
+                                        <p className="mt-1 text-ui-body-sm text-foreground/75">
                                           접수 방식: {linkedReceptionLabel}
                                         </p>
                                       )}
                                       {linkedApplication.stringSummary && (
-                                        <p className="mt-1 text-sm text-foreground/75">
+                                        <p className="mt-1 text-ui-body-sm text-foreground/75">
                                           스트링: {linkedApplication.stringSummary}
                                         </p>
                                       )}
@@ -1220,7 +1220,7 @@ export default function OrdersClient() {
                                           ) || getSelectedColorLabel(linkedApplication as any);
                                         if (!gauge && !color) return null;
                                         return (
-                                          <p className="mt-1 text-sm text-foreground/75">
+                                          <p className="mt-1 text-ui-body-sm text-foreground/75">
                                             {gauge && `게이지 ${gauge}`}
                                             {gauge && color ? " · " : ""}
                                             {color && `색상 ${color}`}
@@ -1228,12 +1228,12 @@ export default function OrdersClient() {
                                         );
                                       })()}
                                       {(linkedApplication as any)?.tensionSummary && (
-                                        <p className="mt-1 text-sm text-foreground/75">
+                                        <p className="mt-1 text-ui-body-sm text-foreground/75">
                                           텐션: {(linkedApplication as any).tensionSummary}
                                         </p>
                                       )}
                                       {(linkedApplication as any)?.reservationLabel && (
-                                        <p className="mt-1 text-sm text-foreground/75">
+                                        <p className="mt-1 text-ui-body-sm text-foreground/75">
                                           예약: {(linkedApplication as any).reservationLabel}
                                         </p>
                                       )}
@@ -1241,7 +1241,7 @@ export default function OrdersClient() {
                                   )}
                                   {order.__type === "stringing_application" &&
                                     order.linkedOrderId && (
-                                      <p className="mt-1 text-sm text-foreground/75">
+                                      <p className="mt-1 text-ui-body-sm text-foreground/75">
                                         연결 주문:{" "}
                                         <span className="font-mono">
                                           {shortenId(order.linkedOrderId)}
@@ -1265,19 +1265,19 @@ export default function OrdersClient() {
                               </span>
                               {/*  탈퇴한 회원 레이블 (기존 getDisplayUserType) */}
                               {getDisplayUserType(order) && (
-                                <span className="ml-1 shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+                                <span className="ml-1 shrink-0 whitespace-nowrap text-ui-label text-muted-foreground">
                                   {getDisplayUserType(order)}
                                 </span>
                               )}
                               {/*  비회원 레이블 */}
                               {order.customer.name.endsWith("(비회원)") && (
-                                <span className="ml-1 shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+                                <span className="ml-1 shrink-0 whitespace-nowrap text-ui-label text-muted-foreground">
                                   (비회원)
                                 </span>
                               )}
                             </span>
                             <span
-                              className="block max-w-full truncate text-sm text-foreground/75"
+                              className="block max-w-full truncate text-ui-body-sm text-foreground/75"
                               title={order.customer.email}
                             >
                               {order.customer.email}

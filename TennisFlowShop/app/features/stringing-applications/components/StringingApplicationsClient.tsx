@@ -58,9 +58,9 @@
 //             return (
 //               <Card key={app._id}>
 //                 <CardHeader>
-//                   <CardTitle className="text-base font-semibold">{app.name}</CardTitle>
+//                   <CardTitle className="text-ui-body font-semibold">{app.name}</CardTitle>
 //                 </CardHeader>
-//                 <CardContent className="space-y-1 text-sm">
+//                 <CardContent className="space-y-1 text-ui-body-sm">
 //                   <div className="text-muted-foreground flex items-center gap-1">
 //                     {/* 취소요청 상태일 때만 경고 아이콘 표시 */}
 //                     {hasCancelRequest && <AlertTriangle className="h-3 w-3 text-primary" aria-hidden="true" />}
@@ -69,9 +69,9 @@
 
 //                   {/* 이 신청이 어느 주문에서 생성되었는지 표시 */}
 //                   {orderId && (
-//                     <div className="text-xs text-muted-foreground flex items-center gap-2">
+//                     <div className="text-ui-label text-muted-foreground flex items-center gap-2">
 //                       <Link href={`/admin/orders/${orderId}`}>
-//                         <Badge variant="outline" className="text-[11px]">
+//                         <Badge variant="outline" className="text-ui-micro">
 //                           연결된 주문 상세 보기
 //                         </Badge>
 //                       </Link>

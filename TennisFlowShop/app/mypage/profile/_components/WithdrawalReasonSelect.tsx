@@ -85,7 +85,7 @@ export default function WithdrawalReasonSelect({ onSubmit }: WithdrawalReasonSel
       <button
         onClick={handleSubmit}
         disabled={submitting}
-        className={`px-4 py-2 text-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive/90 rounded-md ${submitting ? "opacity-60 cursor-not-allowed" : ""}`}
+        className={`px-4 py-2 text-ui-body-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive/90 rounded-md ${submitting ? "opacity-60 cursor-not-allowed" : ""}`}
       >
         탈퇴하기
       </button>

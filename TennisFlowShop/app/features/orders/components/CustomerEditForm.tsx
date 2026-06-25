@@ -84,12 +84,12 @@ export default function CustomerEditForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium">이름</label>
+        <label className="block text-ui-body-sm font-medium">이름</label>
         <Input {...register("name", { required: "필수 입력입니다." })} />
-        {errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>}
+        {errors.name && <p className="text-destructive text-ui-label">{errors.name.message}</p>}
       </div>
       <div>
-        <label className="block text-sm font-medium">이메일</label>
+        <label className="block text-ui-body-sm font-medium">이메일</label>
         <Input
           {...register("email", {
             required: "필수 입력입니다.",
@@ -99,14 +99,14 @@ export default function CustomerEditForm({
             },
           })}
         />
-        {errors.email && <p className="text-destructive text-xs">{errors.email.message}</p>}
+        {errors.email && <p className="text-destructive text-ui-label">{errors.email.message}</p>}
       </div>
       <div>
-        <label className="block text-sm font-medium">전화번호</label>
+        <label className="block text-ui-body-sm font-medium">전화번호</label>
         <Input {...register("phone", { required: "필수 입력입니다." })} />
       </div>
       <div>
-        <label className="block text-sm font-medium">우편번호</label>
+        <label className="block text-ui-body-sm font-medium">우편번호</label>
         <div className="flex gap-2">
           <Input readOnly {...register("postalCode", { required: "필수 입력입니다." })} />
           <Button type="button" size="sm" onClick={handleOpenPostcode}>
@@ -114,16 +114,16 @@ export default function CustomerEditForm({
           </Button>
         </div>
         {errors.postalCode && (
-          <p className="text-destructive text-xs">{errors.postalCode.message}</p>
+          <p className="text-destructive text-ui-label">{errors.postalCode.message}</p>
         )}
       </div>
       <div>
-        <label className="block text-sm font-medium">기본 주소</label>
+        <label className="block text-ui-body-sm font-medium">기본 주소</label>
         <Textarea readOnly {...register("address", { required: "필수 입력입니다." })} rows={2} />
-        {errors.address && <p className="text-destructive text-xs">{errors.address.message}</p>}
+        {errors.address && <p className="text-destructive text-ui-label">{errors.address.message}</p>}
       </div>
       <div>
-        <label className="block text-sm font-medium">상세 주소</label>
+        <label className="block text-ui-body-sm font-medium">상세 주소</label>
         <Input {...register("addressDetail")} placeholder="예: 101호, 건물명" />
       </div>
       <div className="flex justify-end gap-2">

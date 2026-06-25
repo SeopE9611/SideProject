@@ -146,7 +146,7 @@ export default function RentalsList() {
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-border bg-secondary md:mb-6">
             <Briefcase className="h-10 w-10 text-foreground" />
           </div>
-          <h3 className="mb-2 text-xl font-semibold text-foreground">대여 내역이 없습니다</h3>
+          <h3 className="mb-2 text-ui-section-title font-semibold text-foreground">대여 내역이 없습니다</h3>
           <p className="text-muted-foreground">
             아직 대여하신 라켓이 없습니다. 지금 바로 라켓을 대여해보세요!
           </p>
@@ -195,10 +195,10 @@ export default function RentalsList() {
             <CardContent className="relative space-y-4 p-4 md:p-6">
               <div className="flex flex-col gap-3 border-b border-border/60 pb-4 md:flex-row md:items-start md:justify-between">
                 <div className="min-w-0 flex-1">
-                  <h3 className="line-clamp-2 break-keep text-base font-semibold text-foreground">
+                  <h3 className="line-clamp-2 break-keep text-ui-body font-semibold text-foreground">
                     {rentalTitle}
                   </h3>
-                  <p className="mt-1 text-xs tabular-nums text-muted-foreground">
+                  <p className="mt-1 text-ui-label tabular-nums text-muted-foreground">
                     대여 기간 {r.days}일
                     {rentalMetaDate ? ` · 최근 업데이트 ${formatDate(rentalMetaDate)}` : ""}
                   </p>
@@ -208,7 +208,7 @@ export default function RentalsList() {
                   {getStatusIcon(r.status)}
                   <Badge
                     variant={getStatusBadgeVariant(r.status)}
-                    className="shrink-0 whitespace-nowrap px-3 py-1 text-xs font-medium"
+                    className="shrink-0 whitespace-nowrap px-3 py-1 text-ui-label font-medium"
                   >
                     {r.depositRefundedAt
                       ? "보증금 환급 완료"
@@ -222,7 +222,7 @@ export default function RentalsList() {
                 </div>
               </div>
 
-              <div className="flex flex-nowrap items-center gap-2 overflow-x-auto text-xs">
+              <div className="flex flex-nowrap items-center gap-2 overflow-x-auto text-ui-label">
                 {r.stringingApplicationId ? (
                   <Badge variant="outline" className="shrink-0 whitespace-nowrap">
                     교체서비스 신청서 연결됨
@@ -242,7 +242,7 @@ export default function RentalsList() {
                 <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                    <div className="text-ui-label uppercase tracking-wide text-muted-foreground">
                       대여 수수료
                     </div>
                     <div className="whitespace-nowrap font-medium tabular-nums text-foreground">
@@ -254,7 +254,7 @@ export default function RentalsList() {
                 <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                   <Package className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                    <div className="text-ui-label uppercase tracking-wide text-muted-foreground">
                       보증금
                     </div>
                     <div className="whitespace-nowrap font-medium tabular-nums text-foreground">
@@ -266,7 +266,7 @@ export default function RentalsList() {
                 <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                   <CreditCard className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                    <div className="text-ui-label uppercase tracking-wide text-muted-foreground">
                       총 결제 예상
                     </div>
                     <div className="whitespace-nowrap font-medium tabular-nums text-foreground">
@@ -279,7 +279,7 @@ export default function RentalsList() {
                   <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                     <Package className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                      <div className="text-ui-label uppercase tracking-wide text-muted-foreground">
                         스트링 상품
                       </div>
                       <div className="font-medium text-foreground">
@@ -293,7 +293,7 @@ export default function RentalsList() {
                   <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                     <Package className="h-4 w-4 text-muted-foreground" />
                     <div>
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                      <div className="text-ui-label uppercase tracking-wide text-muted-foreground">
                         교체서비스 비용
                       </div>
                       <div className="font-medium text-foreground">
@@ -377,7 +377,7 @@ export default function RentalsList() {
             더 보기
           </Button>
         ) : flat.length ? (
-          <span className="text-sm text-foreground/80">마지막 페이지입니다</span>
+          <span className="text-ui-body-sm text-foreground/80">마지막 페이지입니다</span>
         ) : null}
       </div>
 

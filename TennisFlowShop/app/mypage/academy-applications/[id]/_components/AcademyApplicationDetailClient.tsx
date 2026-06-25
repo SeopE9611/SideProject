@@ -161,9 +161,9 @@ function InfoBox({
 }) {
   return (
     <div className={`min-w-0 rounded-xl border border-border bg-background p-3 ${className}`}>
-      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+      <dt className="text-ui-label font-medium text-muted-foreground">{label}</dt>
       <dd
-        className={`mt-1 min-w-0 break-words text-sm font-medium text-foreground ${
+        className={`mt-1 min-w-0 break-words text-ui-body-sm font-medium text-foreground ${
           multiline ? "whitespace-pre-wrap leading-relaxed" : "leading-6"
         }`}
       >
@@ -180,14 +180,14 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
     return (
       <Card className="rounded-2xl border border-border bg-card shadow-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
             <GraduationCap className="h-5 w-5 text-primary" />
             클래스 정보
           </CardTitle>
           <CardDescription>선택 클래스 없이 접수된 일반 아카데미 신청입니다.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm leading-relaxed text-muted-foreground">
+          <div className="rounded-xl border border-border bg-muted/20 p-4 text-ui-body-sm leading-relaxed text-muted-foreground">
             담당자가 상담을 통해 적합한 수업을 안내해드립니다.
           </div>
         </CardContent>
@@ -198,7 +198,7 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
   return (
     <Card className="rounded-2xl border border-border bg-card shadow-sm">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
+        <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
           <GraduationCap className="h-5 w-5 text-primary" />
           클래스 정보
         </CardTitle>
@@ -208,11 +208,11 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
         <div className="rounded-xl border border-border bg-muted/20 p-4">
           <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
             <div className="min-w-0">
-              <p className="break-keep text-lg font-semibold leading-snug text-foreground">
+              <p className="break-keep text-ui-card-title-lg font-semibold leading-snug text-foreground">
                 {displayValue(classSnapshot.name)}
               </p>
               {classSnapshot.description ? (
-                <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-muted-foreground">
+                <p className="mt-2 whitespace-pre-wrap break-words text-ui-body-sm leading-relaxed text-muted-foreground">
                   {classSnapshot.description}
                 </p>
               ) : null}
@@ -240,13 +240,13 @@ function ClassInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
             }
           />
           <div className="rounded-xl border border-border bg-background p-3 bp-sm:col-span-2">
-            <dt className="flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <dt className="flex items-center gap-1 text-ui-label font-medium uppercase tracking-wide text-muted-foreground">
               <WalletCards className="h-3.5 w-3.5" /> 기준 수강료
             </dt>
-            <dd className="mt-1 text-sm font-semibold tabular-nums text-foreground">
+            <dd className="mt-1 text-ui-body-sm font-semibold tabular-nums text-foreground">
               {formatPrice(classSnapshot.price)}
             </dd>
-            <dd className="mt-2 break-keep text-xs leading-5 text-muted-foreground">
+            <dd className="mt-2 break-keep text-ui-label leading-5 text-muted-foreground">
               수강료는 상담 내용에 따라 최종 확인될 수 있으며, 등록 확정 후 현장에서 결제를
               안내해드립니다.
             </dd>
@@ -261,7 +261,7 @@ function ApplicationInfoCard({ item }: { item: AcademyCustomerApplicationDetail 
   return (
     <Card className="rounded-2xl border border-border bg-card shadow-sm">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
+        <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
           <UserRound className="h-5 w-5 text-primary" />
           신청자 정보
         </CardTitle>
@@ -291,7 +291,7 @@ function RequestInfoCard({ item }: { item: AcademyCustomerApplicationDetail }) {
   return (
     <Card className="rounded-2xl border border-border bg-card shadow-sm">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
+        <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
           <MessageSquareText className="h-5 w-5 text-primary" />
           레슨 목표 및 요청사항
         </CardTitle>
@@ -448,23 +448,23 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           </Button>
           <div className="flex flex-col gap-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
             <div className="min-w-0 space-y-2">
-              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2 text-ui-body-sm text-muted-foreground">
                 <CalendarDays className="h-4 w-4 text-primary" />
                 <span>신청일 {formatDateTime(item.createdAt)}</span>
                 <span aria-hidden="true">·</span>
                 <span>접수번호 {formatReceiptId(item._id)}</span>
               </div>
-              <h1 className="break-keep text-2xl font-bold leading-tight text-foreground bp-sm:text-3xl">
+              <h1 className="break-keep text-ui-page-title font-semibold leading-tight text-foreground bp-sm:text-ui-page-title-lg">
                 {item.classSnapshot?.name || "아카데미 클래스 신청"}
               </h1>
-              <p className="break-keep text-sm text-muted-foreground">
+              <p className="break-keep text-ui-body-sm text-muted-foreground">
                 신청 진행 상황과 상담 안내를 확인할 수 있습니다.
               </p>
             </div>
             <Badge
               variant={badgeToneVariant(statusTone)}
               wrap="normal"
-              className="w-fit shrink-0 text-sm"
+              className="w-fit shrink-0 text-ui-body-sm"
             >
               {item.statusLabel}
             </Badge>
@@ -472,10 +472,10 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
           <div className="rounded-xl border border-border bg-muted/20 p-4">
             <div className="flex flex-wrap items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-muted-foreground">현재 상태</span>
+              <span className="text-ui-body-sm font-medium text-muted-foreground">현재 상태</span>
               <Badge variant={badgeToneVariant(statusTone)}>{item.statusLabel}</Badge>
             </div>
-            <p className="mt-3 break-keep text-sm leading-relaxed text-foreground">
+            <p className="mt-3 break-keep text-ui-body-sm leading-relaxed text-foreground">
               {getStatusDescription(item.status)}
             </p>
           </div>
@@ -489,33 +489,33 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
       {item.customerMessage ? (
         <Card className="rounded-2xl border border-border bg-card shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
               <MessageSquareText className="h-5 w-5 text-primary" />
               관리자 안내
             </CardTitle>
             <CardDescription>도깨비테니스 담당자가 남긴 안내입니다.</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="whitespace-pre-wrap break-words rounded-xl border border-border bg-muted/20 p-4 text-sm leading-relaxed text-foreground">
+            <p className="whitespace-pre-wrap break-words rounded-xl border border-border bg-muted/20 p-4 text-ui-body-sm leading-relaxed text-foreground">
               {item.customerMessage}
             </p>
           </CardContent>
         </Card>
       ) : (
-        <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
+        <p className="rounded-xl border border-border bg-card p-4 text-ui-body-sm text-muted-foreground shadow-sm">
           아직 등록된 관리자 안내가 없습니다.
         </p>
       )}
 
       <Card className="rounded-2xl border border-border bg-card shadow-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2 text-ui-card-title-lg">
             <WalletCards className="h-5 w-5 text-primary" />
             현장결제 안내
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="rounded-xl border border-border bg-muted/20 p-4 break-keep text-sm leading-relaxed text-foreground">
+          <p className="rounded-xl border border-border bg-muted/20 p-4 break-keep text-ui-body-sm leading-relaxed text-foreground">
             아카데미 수강료는 신청 단계에서 결제되지 않습니다. 상담 후 등록이 확정되면 첫 방문 또는
             안내된 일정에 맞춰 현장에서 결제해 주세요.
           </p>
@@ -524,7 +524,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
 
       <Card className="rounded-2xl border border-border bg-card shadow-sm">
         <CardHeader>
-          <CardTitle className="text-lg">신청 관리</CardTitle>
+          <CardTitle className="text-ui-card-title-lg">신청 관리</CardTitle>
           <CardDescription>
             신청 내용을 확인한 뒤 필요한 경우 신청 취소를 진행해 주세요.
           </CardDescription>
@@ -532,13 +532,13 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         <CardContent className="space-y-4">
           {isCancelled ? (
             <div className="space-y-3">
-              <div className="space-y-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+              <div className="space-y-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-ui-body-sm text-destructive">
                 <p className="font-medium">
                   이미 취소된 신청입니다. 다시 수강을 원하시면 아카데미 페이지에서 새로 신청해
                   주세요.
                 </p>
                 {item.cancelReasonLabel ? (
-                  <p className="text-xs leading-5 text-destructive/85">
+                  <p className="text-ui-label leading-5 text-destructive/85">
                     취소 사유: {item.cancelReasonLabel}
                     {item.cancelReasonDetail ? ` - ${item.cancelReasonDetail}` : ""}
                   </p>
@@ -613,7 +613,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                 </AlertDialogHeader>
                 <div className="space-y-4 py-1">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium" htmlFor="academy-cancel-reason">
+                    <label className="text-ui-body-sm font-medium" htmlFor="academy-cancel-reason">
                       취소 사유 <span className="text-destructive">*</span>
                     </label>
                     <Select
@@ -635,7 +635,7 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                   </div>
                   {cancelReason === "other" ? (
                     <div className="space-y-2">
-                      <label className="text-sm font-medium" htmlFor="academy-cancel-detail">
+                      <label className="text-ui-body-sm font-medium" htmlFor="academy-cancel-detail">
                         상세 사유 <span className="text-muted-foreground">(선택)</span>
                       </label>
                       <Textarea
@@ -647,12 +647,12 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                         placeholder="운영자에게 전달할 내용을 간단히 입력해 주세요."
                         disabled={isCancelling}
                       />
-                      <p className="text-right text-xs text-muted-foreground">
+                      <p className="text-right text-ui-label text-muted-foreground">
                         {cancelReasonDetail.length}/{CANCEL_REASON_DETAIL_MAX_LENGTH}
                       </p>
                     </div>
                   ) : null}
-                  <p className="break-keep rounded-xl border border-border/60 bg-muted/30 p-3 text-xs leading-5 text-muted-foreground">
+                  <p className="break-keep rounded-xl border border-border/60 bg-muted/30 p-3 text-ui-label leading-5 text-muted-foreground">
                     취소 사유는 운영자가 신청 내역을 확인하고 안내를 개선하는 데 사용됩니다.
                   </p>
                 </div>

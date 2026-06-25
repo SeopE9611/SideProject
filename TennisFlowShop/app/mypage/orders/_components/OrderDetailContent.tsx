@@ -94,7 +94,7 @@
 //                     주문 목록으로 돌아가기
 //                   </Link>
 //                 </Button>
-//                 <h1 className="text-3xl font-bold tracking-normal md:text-4xl">주문 상세 정보</h1>
+//                 <h1 className="text-ui-page-title-lg font-semibold tracking-normal md:text-ui-page-title-lg">주문 상세 정보</h1>
 //                 <p className="mt-1 text-muted-foreground">주문 ID: {orderId}</p>
 //               </div>
 //             </div>
@@ -125,25 +125,25 @@
 //                   <CardContent>
 //                     <div className="space-y-3">
 //                       <div>
-//                         <div className="text-sm font-medium">이름</div>
+//                         <div className="text-ui-body-sm font-medium">이름</div>
 //                         <div>{orderDetail.customer?.name ?? '이름 없음'}</div>
 //                       </div>
 //                       <div>
-//                         <div className="text-sm font-medium flex items-center">
+//                         <div className="text-ui-body-sm font-medium flex items-center">
 //                           <Mail className="mr-1 h-3.5 w-3.5" />
 //                           이메일
 //                         </div>
 //                         <div>{orderDetail.customer?.email ?? '이메일 없음'}</div>
 //                       </div>
 //                       <div>
-//                         <div className="text-sm font-medium flex items-center">
+//                         <div className="text-ui-body-sm font-medium flex items-center">
 //                           <Phone className="mr-1 h-3.5 w-3.5" />
 //                           전화번호
 //                         </div>
 //                         <div>{orderDetail.customer?.phone ?? '전화번호 없음'}</div>
 //                       </div>
 //                       <div>
-//                         <div className="text-sm font-medium flex items-center">
+//                         <div className="text-ui-body-sm font-medium flex items-center">
 //                           <MapPin className="mr-1 h-3.5 w-3.5" />
 //                           주소
 //                         </div>
@@ -153,7 +153,7 @@
 //                   </CardContent>
 //                 </Card>
 //               ) : (
-//                 <div className="text-center text-sm text-destructive italic">고객 정보가 없습니다.</div>
+//                 <div className="text-center text-ui-body-sm text-destructive italic">고객 정보가 없습니다.</div>
 //               )}
 //               {/* 배송 정보 */}
 //               <Card className="rounded-xl border-border bg-card shadow-md px-2 py-3">
@@ -166,11 +166,11 @@
 //                 <CardContent>
 //                   <div className="space-y-3">
 //                     <div>
-//                       <div className="text-sm font-medium">배송 방법</div>
+//                       <div className="text-ui-body-sm font-medium">배송 방법</div>
 //                       <div>{shippingMethodMap[orderDetail.shippingInfo?.shippingMethod] ?? '정보 없음'}</div>
 //                     </div>
 //                     <div>
-//                       <div className="text-sm font-medium flex items-center">
+//                       <div className="text-ui-body-sm font-medium flex items-center">
 //                         <Calendar className="mr-1 h-3.5 w-3.5" />
 //                         예상 수령일
 //                       </div>
@@ -179,11 +179,11 @@
 //                     {orderDetail.shippingInfo?.invoice?.trackingNumber && (
 //                       <>
 //                         <div>
-//                           <div className="text-sm font-medium">택배사</div>
+//                           <div className="text-ui-body-sm font-medium">택배사</div>
 //                           <div>{courierMap[orderDetail.shippingInfo.invoice.courier] ?? '미지정'}</div>
 //                         </div>
 //                         <div>
-//                           <div className="text-sm font-medium">운송장 번호</div>
+//                           <div className="text-ui-body-sm font-medium">운송장 번호</div>
 //                           <div>{orderDetail.shippingInfo.invoice.trackingNumber}</div>
 //                         </div>
 //                       </>
@@ -202,18 +202,18 @@
 //                 <CardContent>
 //                   <div className="space-y-3">
 //                     <div>
-//                       <div className="text-sm font-medium">결제 상태</div>
+//                       <div className="text-ui-body-sm font-medium">결제 상태</div>
 //                       <div>
 //                         <Badge className={paymentStatusColors[orderDetail.paymentStatus]}>{orderDetail.paymentStatus}</Badge>
 //                       </div>
 //                     </div>
 //                     <div>
-//                       <div className="text-sm font-medium">결제 방법</div>
+//                       <div className="text-ui-body-sm font-medium">결제 방법</div>
 //                       <div>{orderDetail.paymentMethod}</div>
 //                     </div>
 //                     <div>
-//                       <div className="text-sm font-medium">결제 금액</div>
-//                       <div className="text-lg font-bold">{formatCurrency(orderDetail.total)}</div>
+//                       <div className="text-ui-body-sm font-medium">결제 금액</div>
+//                       <div className="text-ui-card-title-lg font-semibold">{formatCurrency(orderDetail.total)}</div>
 //                     </div>
 //                   </div>
 //                 </CardContent>
@@ -228,7 +228,7 @@
 //                 </CardHeader>
 //                 <CardContent>
 //                   <div className="rounded-xl border border-border shadow-sm overflow-hidden">
-//                     <table className="w-full text-sm">
+//                     <table className="w-full text-ui-body-sm">
 //                       <thead className="bg-muted text-foreground">
 //                         <tr>
 //                           <th className="px-4 py-3 text-left font-medium">상품/서비스</th>
@@ -252,7 +252,7 @@
 //                           <td colSpan={3} className="px-4 py-3 text-right font-medium">
 //                             총 합계
 //                           </td>
-//                           <td className="px-4 py-3 text-right text-lg font-bold">{formatCurrency(orderDetail.total)}</td>
+//                           <td className="px-4 py-3 text-right text-ui-card-title-lg font-semibold">{formatCurrency(orderDetail.total)}</td>
 //                         </tr>
 //                       </tfoot>
 //                     </table>
@@ -267,9 +267,9 @@
 //                 </CardHeader>
 //                 <CardContent>
 //                   {orderDetail.shippingInfo?.deliveryRequest ? (
-//                     <p className="whitespace-pre-line text-sm text-foreground">{orderDetail.shippingInfo.deliveryRequest}</p>
+//                     <p className="whitespace-pre-line text-ui-body-sm text-foreground">{orderDetail.shippingInfo.deliveryRequest}</p>
 //                   ) : (
-//                     <p className="text-sm text-muted-foreground">요청사항이 입력되지 않았습니다.</p>
+//                     <p className="text-ui-body-sm text-muted-foreground">요청사항이 입력되지 않았습니다.</p>
 //                   )}
 //                 </CardContent>
 //               </Card>

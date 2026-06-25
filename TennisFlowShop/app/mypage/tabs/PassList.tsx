@@ -122,28 +122,28 @@ export default function PassList() {
               <div className="line-clamp-2 break-keep font-semibold">
                 {p.planTitle ?? "교체 서비스 패키지"} {p.packageSize}회권
               </div>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-ui-body-sm text-muted-foreground">
                 구매일 {new Date(p.purchasedAt).toLocaleDateString()}
               </div>
               {/* 대기/종료 상태에서 오해를 줄이기 위한 안내 문구 */}
               {p.status === "pending_activation" && (
-                <div className="text-sm text-muted-foreground">
+                <div className="text-ui-body-sm text-muted-foreground">
                   구매하신 패키지는 현재 활성화 대기 중입니다. 처리 완료 후 사용 가능한 상태로
                   표시됩니다.
                 </div>
               )}
               {p.status === "pending_payment" && (
-                <div className="text-sm text-muted-foreground">
+                <div className="text-ui-body-sm text-muted-foreground">
                   구매하신 패키지가 입금 확인 중입니다.
                 </div>
               )}
               {(p.status === "ended" || p.status === "expired" || p.status === "cancelled") && (
-                <div className="text-sm text-muted-foreground">
+                <div className="text-ui-body-sm text-muted-foreground">
                   현재는 사용이 종료된 패키지입니다.
                 </div>
               )}
               {p.status === "active" && p.expiresAt && (
-                <div className="text-sm text-muted-foreground">
+                <div className="text-ui-body-sm text-muted-foreground">
                   만료일 {new Date(p.expiresAt).toLocaleDateString()}
                 </div>
               )}
@@ -152,7 +152,7 @@ export default function PassList() {
           <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
             {statusBadge(p)}
             {p.expiresAt && (
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1 text-ui-body-sm text-muted-foreground">
                 <Clock className="h-4 w-4" />
                 {dday === null ? "계산중" : dday >= 0 ? `D-${dday}` : `만료됨`}
               </div>
@@ -169,13 +169,13 @@ export default function PassList() {
                   style={{ width: `${remainPct}%` }}
                 />
               </div>
-              <div className="mt-2 text-sm tabular-nums text-muted-foreground">
+              <div className="mt-2 text-ui-body-sm tabular-nums text-muted-foreground">
                 사용 {p.usedCount} / 총 {p.packageSize} · 잔여 {p.remainingCount}
               </div>
             </div>
 
             {p.recentUsages?.length > 0 && (
-              <div className="mt-3 text-sm text-muted-foreground">
+              <div className="mt-3 text-ui-body-sm text-muted-foreground">
                 최근 사용{" "}
                 {p.recentUsages.slice(-3).map((u, idx) => (
                   <span key={idx} className="mr-2">
@@ -207,10 +207,10 @@ export default function PassList() {
             <div className="bg-muted/50 rounded-full p-4 mb-4">
               <Ticket className="h-8 w-8 bp-sm:h-10 bp-sm:w-10 text-muted-foreground" />
             </div>
-            <p className="text-base font-medium text-center mb-1">
+            <p className="text-ui-body font-medium text-center mb-1">
               보유 중인 패키지 이용권이 없습니다.
             </p>
-            <p className="text-sm text-muted-foreground text-center">
+            <p className="text-ui-body-sm text-muted-foreground text-center">
               패키지를 구매하고 활성화 시 여기에 표시됩니다
             </p>
           </div>

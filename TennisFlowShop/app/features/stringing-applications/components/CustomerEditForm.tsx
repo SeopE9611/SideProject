@@ -87,7 +87,7 @@ export default function CustomerEditForm({
       <div>
         <Label htmlFor="name">이름</Label>
         <Input id="name" {...register("name", { required: "필수 입력입니다." })} />
-        {errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>}
+        {errors.name && <p className="text-destructive text-ui-label">{errors.name.message}</p>}
       </div>
 
       <div>
@@ -102,13 +102,13 @@ export default function CustomerEditForm({
             },
           })}
         />
-        {errors.email && <p className="text-destructive text-xs">{errors.email.message}</p>}
+        {errors.email && <p className="text-destructive text-ui-label">{errors.email.message}</p>}
       </div>
 
       <div>
         <Label htmlFor="phone">전화번호</Label>
         <Input id="phone" {...register("phone", { required: "필수 입력입니다." })} />
-        {errors.phone && <p className="text-destructive text-xs">{errors.phone.message}</p>}
+        {errors.phone && <p className="text-destructive text-ui-label">{errors.phone.message}</p>}
       </div>
 
       <div>
@@ -124,7 +124,7 @@ export default function CustomerEditForm({
           </Button>
         </div>
         {errors.postalCode && (
-          <p className="text-destructive text-xs">{errors.postalCode.message}</p>
+          <p className="text-destructive text-ui-label">{errors.postalCode.message}</p>
         )}
       </div>
 
@@ -136,7 +136,7 @@ export default function CustomerEditForm({
           {...register("address", { required: "필수 입력입니다." })}
           rows={2}
         />
-        {errors.address && <p className="text-destructive text-xs">{errors.address.message}</p>}
+        {errors.address && <p className="text-destructive text-ui-label">{errors.address.message}</p>}
       </div>
       <div>
         <Label htmlFor="addressDetail">상세주소</Label>

@@ -362,35 +362,35 @@ export default function ProfileClient({ user }: Props) {
                     className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md"
                   >
                     <User className="h-5 w-5" />
-                    <span className="text-xs font-medium">기본정보</span>
+                    <span className="text-ui-label font-medium">기본정보</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="password"
                     className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md"
                   >
                     <Shield className="h-5 w-5" />
-                    <span className="text-xs font-medium">비밀번호</span>
+                    <span className="text-ui-label font-medium">비밀번호</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="address"
                     className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md"
                   >
                     <MapPin className="h-5 w-5" />
-                    <span className="text-xs font-medium">배송지</span>
+                    <span className="text-ui-label font-medium">배송지</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="tennis-profile"
-                    className="flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-md"
+                    className="flex flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-ui-label font-medium text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-md"
                   >
                     <MdSportsTennis className="h-5 w-5" />
-                    <span className="text-xs font-medium">테니스 프로필</span>
+                    <span className="text-ui-label font-medium">테니스 프로필</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="preferences"
                     className="flex flex-col items-center gap-2 py-3 data-[state=active]:bg-card dark:data-[state=active]:bg-card data-[state=active]:shadow-md"
                   >
                     <Bell className="h-5 w-5" />
-                    <span className="text-xs font-medium">설정</span>
+                    <span className="text-ui-label font-medium">설정</span>
                   </TabsTrigger>
                 </TabsList>
             </PublicSurface>
@@ -403,7 +403,7 @@ export default function ProfileClient({ user }: Props) {
                       <User className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl">기본정보</CardTitle>
+                      <CardTitle className="text-ui-section-title">기본정보</CardTitle>
                       <CardDescription>개인정보를 수정할 수 있습니다.</CardDescription>
                     </div>
                   </div>
@@ -412,7 +412,7 @@ export default function ProfileClient({ user }: Props) {
                   <div className="flex items-center gap-4 md:gap-6">
                     <Avatar className="h-24 w-24 border-2 border-border shadow-sm">
                       <AvatarImage src="/placeholder.svg?height=96&width=96" alt="프로필 이미지" />
-                      <AvatarFallback className="text-2xl bg-secondary text-foreground">
+                      <AvatarFallback className="text-ui-page-title bg-secondary text-foreground">
                         {profileData.name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
@@ -426,7 +426,7 @@ export default function ProfileClient({ user }: Props) {
                         <Camera className="mr-2 h-4 w-4" />
                         이미지 변경
                       </Button>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-ui-body-sm text-muted-foreground">
                         JPG, PNG 파일만 업로드 가능합니다
                       </p>
                     </div>
@@ -451,7 +451,7 @@ export default function ProfileClient({ user }: Props) {
                         placeholder="이름을 입력해주세요"
                       />
                       {/* 소셜 가입/연동 제공자 표시 (표시용) */}
-                      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-ui-label text-muted-foreground">
                         <span className="font-medium">가입/연동:</span>
                         {socialProviders.length ? (
                           <>
@@ -532,7 +532,7 @@ export default function ProfileClient({ user }: Props) {
                       <Shield className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl">비밀번호 변경</CardTitle>
+                      <CardTitle className="text-ui-section-title">비밀번호 변경</CardTitle>
                       <CardDescription>
                         보안을 위해 정기적으로 비밀번호를 변경해주세요.
                       </CardDescription>
@@ -573,7 +573,7 @@ export default function ProfileClient({ user }: Props) {
                       }
                       className="h-12 border-border focus:border-border dark:focus:border-border"
                     />
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-ui-body-sm text-muted-foreground">
                       8자 이상, 영문/숫자 조합으로 입력해주세요. (특수문자는 선택)
                     </p>
                   </div>
@@ -617,7 +617,7 @@ export default function ProfileClient({ user }: Props) {
                       <MapPin className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl">배송지 관리</CardTitle>
+                      <CardTitle className="text-ui-section-title">배송지 관리</CardTitle>
                       <CardDescription>기본 배송지 정보를 관리할 수 있습니다.</CardDescription>
                     </div>
                   </div>
@@ -707,7 +707,7 @@ export default function ProfileClient({ user }: Props) {
                         <Bell className="h-6 w-6 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-xl">마케팅 수신 동의</CardTitle>
+                        <CardTitle className="text-ui-section-title">마케팅 수신 동의</CardTitle>
                         <CardDescription>
                           마케팅 정보 수신 방법을 선택할 수 있습니다.
                         </CardDescription>
@@ -720,7 +720,7 @@ export default function ProfileClient({ user }: Props) {
                         <Label htmlFor="email-marketing" className="font-medium text-foreground">
                           이메일 수신
                         </Label>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-ui-body-sm text-muted-foreground">
                           할인 쿠폰, 신상품 소식을 이메일로 받아보세요.
                         </p>
                       </div>
@@ -744,7 +744,7 @@ export default function ProfileClient({ user }: Props) {
                         <Label htmlFor="sms-marketing" className="font-medium text-foreground">
                           SMS 수신
                         </Label>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-ui-body-sm text-muted-foreground">
                           주문 상태, 배송 정보를 SMS로 받아보세요.
                         </p>
                       </div>
@@ -768,7 +768,7 @@ export default function ProfileClient({ user }: Props) {
                         <Label htmlFor="push-marketing" className="font-medium text-foreground">
                           앱 푸시 알림
                         </Label>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-ui-body-sm text-muted-foreground">
                           앱을 통해 실시간 알림을 받아보세요.
                         </p>
                       </div>
@@ -807,7 +807,7 @@ export default function ProfileClient({ user }: Props) {
                         <AlertTriangle className="h-6 w-6 text-destructive" />
                       </div>
                       <div>
-                        <CardTitle className="text-xl text-destructive">회원 탈퇴</CardTitle>
+                        <CardTitle className="text-ui-section-title text-destructive">회원 탈퇴</CardTitle>
                         <CardDescription>
                           계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.
                         </CardDescription>
@@ -848,10 +848,10 @@ export default function ProfileClient({ user }: Props) {
                       <div className="text-center">
                         <div className="bg-destructive/10 dark:bg-destructive/15 border border-destructive/30 rounded-xl p-4 md:p-6 mb-4 md:mb-6">
                           <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
-                          <h3 className="text-lg font-semibold text-destructive mb-2">
+                          <h3 className="text-ui-card-title-lg font-semibold text-destructive mb-2">
                             정말로 탈퇴하시겠습니까?
                           </h3>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-ui-body-sm text-muted-foreground">
                             탈퇴 시 모든 개인정보와 이용기록이 삭제되며, 복구할 수 없습니다.
                           </p>
                         </div>

@@ -295,7 +295,7 @@ export default function OrderList() {
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 shadow-lg">
             <ShoppingBag className="h-10 w-10 text-primary" />
           </div>
-          <h3 className="mb-2 text-xl font-semibold text-foreground">주문 내역이 없습니다</h3>
+          <h3 className="mb-2 text-ui-section-title font-semibold text-foreground">주문 내역이 없습니다</h3>
           <p className="text-muted-foreground">
             아직 주문하신 상품이 없습니다. 지금 바로 쇼핑을 시작해보세요!
           </p>
@@ -408,16 +408,16 @@ export default function OrderList() {
                     <ShoppingBag className="h-6 w-6 text-primary" />
                   </div>
                   <div className="min-w-0">
-                    <div className="mb-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <div className="mb-1 flex flex-wrap items-center gap-2 text-ui-label text-muted-foreground">
                       <span className="rounded-md bg-muted/60 px-2 py-1 font-medium text-foreground">
                         주문
                       </span>
                       <span className="break-all tabular-nums">주문번호 {order.id}</span>
                     </div>
-                    <h3 className="line-clamp-2 break-keep text-base font-semibold leading-snug text-foreground bp-sm:text-lg">
+                    <h3 className="line-clamp-2 break-keep text-ui-body font-semibold leading-snug text-foreground bp-sm:text-ui-card-title-lg">
                       {getOrderCompositionTitle(order)}
                     </h3>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm tabular-nums text-muted-foreground">
+                    <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-ui-body-sm tabular-nums text-muted-foreground">
                       <Calendar className="h-3 w-3 shrink-0" />
                       {formatDate(order.date)}
                     </div>
@@ -429,7 +429,7 @@ export default function OrderList() {
                   {getStatusIcon(order.status, isVisitPickupOrder(order.shippingInfo))}
                   <Badge
                     variant={getOrderStatusBadgeSpec(order.status).variant}
-                    className="shrink-0 whitespace-nowrap rounded-md px-3 py-1 text-xs font-medium"
+                    className="shrink-0 whitespace-nowrap rounded-md px-3 py-1 text-ui-label font-medium"
                   >
                     {getOrderStatusLabelForDisplay(order.status, order.shippingInfo)}
                   </Badge>
@@ -438,7 +438,7 @@ export default function OrderList() {
                   {order.stringingApplicationId ? (
                     <Badge
                       variant={getWorkflowMetaBadgeSpec("application_linked").variant}
-                      className="shrink-0 rounded-md px-2 py-0.5 text-[11px] font-semibold"
+                      className="shrink-0 rounded-md px-2 py-0.5 text-ui-micro font-semibold"
                     >
                       신청서 연결됨
                     </Badge>
@@ -448,7 +448,7 @@ export default function OrderList() {
                   {order.cancelStatus === "requested" && (
                     <Badge
                       variant={getWorkflowMetaBadgeSpec("cancel_requested").variant}
-                      className="shrink-0 whitespace-nowrap rounded-md text-[11px] font-medium"
+                      className="shrink-0 whitespace-nowrap rounded-md text-ui-micro font-medium"
                     >
                       취소 요청됨
                     </Badge>
@@ -461,7 +461,7 @@ export default function OrderList() {
                 <div className="mb-4 flex items-center gap-3 rounded-xl border border-border/60 bg-muted/30 p-3">
                   <User className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="text-xs text-foreground/75 uppercase tracking-wide">주문자</div>
+                    <div className="text-ui-label text-foreground/75 uppercase tracking-wide">주문자</div>
                     <div className="font-medium text-foreground">{order.userSnapshot.name}</div>
                   </div>
                 </div>
@@ -471,7 +471,7 @@ export default function OrderList() {
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">
                   <Package className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">주문 상품</span>
+                  <span className="text-ui-body-sm font-medium text-foreground">주문 상품</span>
                 </div>
                 <div className="space-y-2">
                   {order.items.map((item, index) => (
@@ -492,10 +492,10 @@ export default function OrderList() {
 
                       {/* 상품명 + 가격/수량 (모바일에서 자연스럽게 줄바꿈) */}
                       <div className="min-w-0 flex-1">
-                        <div className="line-clamp-2 break-keep text-sm font-medium text-foreground">
+                        <div className="line-clamp-2 break-keep text-ui-body-sm font-medium text-foreground">
                           {item.name}
                         </div>
-                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-foreground/75">
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-ui-label text-foreground/75">
                           <span className="whitespace-nowrap tabular-nums">
                             {(item.price ?? 0).toLocaleString()}원
                           </span>
@@ -507,7 +507,7 @@ export default function OrderList() {
                           const color = getSelectedColorLabel(item);
                           if (!gauge && !color) return null;
                           return (
-                            <div className="mt-1 text-xs text-foreground/70">
+                            <div className="mt-1 text-ui-label text-foreground/70">
                               {gauge && `게이지 ${gauge}`}
                               {gauge && color ? " · " : ""}
                               {color && `색상 ${color}`}
@@ -522,28 +522,28 @@ export default function OrderList() {
 
               <div className="mb-4 grid grid-cols-2 gap-2 rounded-xl border border-border/60 bg-muted/20 p-2 bp-md:grid-cols-4">
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                  <p className="text-[11px] font-medium text-muted-foreground">결제 금액</p>
-                  <p className="mt-1 truncate text-sm font-semibold tabular-nums text-foreground">
+                  <p className="text-ui-micro font-medium text-muted-foreground">결제 금액</p>
+                  <p className="mt-1 truncate text-ui-body-sm font-semibold tabular-nums text-foreground">
                     {typeof order.totalPrice === "number"
                       ? `${order.totalPrice.toLocaleString()}원`
                       : "정보 없음"}
                   </p>
                 </div>
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                  <p className="text-[11px] font-medium text-muted-foreground">주문 상태</p>
-                  <p className="mt-1 truncate text-sm font-semibold text-foreground">
+                  <p className="text-ui-micro font-medium text-muted-foreground">주문 상태</p>
+                  <p className="mt-1 truncate text-ui-body-sm font-semibold text-foreground">
                     {getOrderStatusLabelForDisplay(order.status, order.shippingInfo)}
                   </p>
                 </div>
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                  <p className="text-[11px] font-medium text-muted-foreground">교체서비스</p>
-                  <p className="mt-1 truncate text-sm font-semibold text-foreground">
+                  <p className="text-ui-micro font-medium text-muted-foreground">교체서비스</p>
+                  <p className="mt-1 truncate text-ui-body-sm font-semibold text-foreground">
                     {order.shippingInfo?.withStringService ? "포함" : "미포함"}
                   </p>
                 </div>
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                  <p className="text-[11px] font-medium text-muted-foreground">수령 방법</p>
-                  <p className="mt-1 truncate text-sm font-semibold text-foreground">
+                  <p className="text-ui-micro font-medium text-muted-foreground">수령 방법</p>
+                  <p className="mt-1 truncate text-ui-body-sm font-semibold text-foreground">
                     {isVisitPickupOrder(order.shippingInfo) ? "방문 수령" : "배송"}
                   </p>
                 </div>
@@ -551,7 +551,7 @@ export default function OrderList() {
 
               {/* Footer */}
               <div className="flex flex-col gap-4 border-t border-border/60 pt-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-ui-body-sm text-muted-foreground">
                   <CreditCard className="h-4 w-4" />
                   <span className="font-medium">결제 요약</span>
                 </div>
@@ -603,11 +603,11 @@ export default function OrderList() {
                           </span>
                         </TooltipTrigger>
                         {isConfirmed ? (
-                          <TooltipContent side="top" className="text-sm">
+                          <TooltipContent side="top" className="text-ui-body-sm">
                             이미 구매확정된 주문입니다.
                           </TooltipContent>
                         ) : !isDelivered ? (
-                          <TooltipContent side="top" className="text-sm">
+                          <TooltipContent side="top" className="text-ui-body-sm">
                             배송완료 후 구매확정이 가능합니다.
                           </TooltipContent>
                         ) : null}
@@ -643,12 +643,12 @@ export default function OrderList() {
                       ) : (
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <div className="inline-flex h-9 items-center justify-center rounded-md border border-border bg-muted px-4 py-2 text-sm font-semibold text-foreground dark:border-border">
+                            <div className="inline-flex h-9 items-center justify-center rounded-md border border-border bg-muted px-4 py-2 text-ui-body-sm font-semibold text-foreground dark:border-border">
                               <CheckCircle className="mr-1 h-3 w-3" />
                               {stringServiceCTALabel}
                             </div>
                           </TooltipTrigger>
-                          <TooltipContent side="top" className="text-sm">
+                          <TooltipContent side="top" className="text-ui-body-sm">
                             이미 신청이 완료된 주문입니다
                           </TooltipContent>
                         </Tooltip>
@@ -835,7 +835,7 @@ export default function OrderList() {
             더 보기
           </Button>
         ) : items.length ? (
-          <span className="text-sm text-foreground/80">마지막 페이지입니다</span>
+          <span className="text-ui-body-sm text-foreground/80">마지막 페이지입니다</span>
         ) : null}
       </div>
 

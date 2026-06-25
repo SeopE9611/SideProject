@@ -82,7 +82,7 @@ export default function Wishlist() {
     return (
       <Card className="border-border bg-card shadow-sm">
         <CardContent className="p-8 md:p-12 text-center">
-          <h3 className="mb-2 text-xl font-semibold">위시리스트를 불러오지 못했습니다</h3>
+          <h3 className="mb-2 text-ui-section-title font-semibold">위시리스트를 불러오지 못했습니다</h3>
           <p className="text-muted-foreground">잠시 후 다시 시도해주세요.</p>
         </CardContent>
       </Card>
@@ -96,7 +96,7 @@ export default function Wishlist() {
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
             <Heart className="h-10 w-10" />
           </div>
-          <h3 className="mb-2 text-xl font-semibold">위시리스트가 비어있습니다</h3>
+          <h3 className="mb-2 text-ui-section-title font-semibold">위시리스트가 비어있습니다</h3>
           <p className="mb-6 text-muted-foreground">
             마음에 드는 상품을 위시리스트에 추가해보세요!
           </p>
@@ -132,10 +132,10 @@ export default function Wishlist() {
                   <div className="line-clamp-2 min-h-10 break-keep font-semibold text-foreground hover:underline">
                     {it.name}
                   </div>
-                  <div className="mt-1 text-sm tabular-nums text-muted-foreground">
+                  <div className="mt-1 text-ui-body-sm tabular-nums text-muted-foreground">
                     {it.price.toLocaleString()}원
                   </div>
-                  <div className="mt-2 space-y-0.5 text-xs text-muted-foreground">
+                  <div className="mt-2 space-y-0.5 text-ui-label text-muted-foreground">
                     {it.hasSelectedOption ? (
                       <>
                         {it.selectedColorLabel && <div>색상: {it.selectedColorLabel}</div>}
@@ -199,7 +199,7 @@ export default function Wishlist() {
             더 보기
           </Button>
         ) : (
-          <span className="text-sm text-muted-foreground">마지막 페이지입니다</span>
+          <span className="text-ui-body-sm text-muted-foreground">마지막 페이지입니다</span>
         )}
       </div>
     </div>

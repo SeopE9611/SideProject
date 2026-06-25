@@ -16,7 +16,7 @@ interface Props {
 export function PaymentStatusFilter({ value, onChange }: Props) {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="w-full h-9 text-xs">
+      <SelectTrigger className="w-full h-9 text-ui-label">
         <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
         <SelectValue placeholder="결제 상태 전체" />
       </SelectTrigger>

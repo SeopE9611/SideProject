@@ -129,10 +129,10 @@ export default function AcademyApplicationMypageShell({ user, children }: Props)
                 <User className="h-6 w-6 bp-sm:h-8 bp-sm:w-8" />
               </div>
               <div className="flex-1 min-w-0">
-                <h1 className="text-2xl bp-sm:text-3xl bp-lg:text-4xl font-bold mb-1 text-foreground truncate">
+                <h1 className="text-ui-page-title bp-sm:text-ui-page-title-lg bp-lg:text-ui-page-title-lg font-semibold mb-1 text-foreground truncate">
                   안녕하세요, {user.name}님!
                 </h1>
-                <p className="text-sm bp-sm:text-base bp-lg:text-xl text-foreground">
+                <p className="text-ui-body-sm bp-sm:text-ui-body bp-lg:text-ui-section-title text-foreground">
                   도깨비테니스의 회원이 되어주셔서 감사합니다
                 </p>
               </div>
@@ -141,36 +141,36 @@ export default function AcademyApplicationMypageShell({ user, children }: Props)
             <div className="grid grid-cols-2 bp-lg:grid-cols-4 gap-3 bp-sm:gap-4 bp-lg:gap-6">
               <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                 <Trophy className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
-                <div className="text-xl bp-sm:text-2xl font-bold mb-1">
+                <div className="text-ui-section-title bp-sm:text-ui-page-title font-semibold mb-1">
                   {summaryLoading ? (
                     <Skeleton className="mx-auto h-7 w-10" />
                   ) : (
                     (summary?.activityFlowCount ?? "-")
                   )}
                 </div>
-                <div className="text-xs bp-sm:text-sm text-muted-foreground">전체 이용 내역</div>
+                <div className="text-ui-label bp-sm:text-ui-body-sm text-muted-foreground">전체 이용 내역</div>
               </div>
               <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                 <Target className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
-                <div className="text-xl bp-sm:text-2xl font-bold mb-1">
+                <div className="text-ui-section-title bp-sm:text-ui-page-title font-semibold mb-1">
                   {summaryLoading ? (
                     <Skeleton className="mx-auto h-7 w-10" />
                   ) : (
                     (summary?.applicationsCount ?? "-")
                   )}
                 </div>
-                <div className="text-xs bp-sm:text-sm text-muted-foreground">교체서비스 신청</div>
+                <div className="text-ui-label bp-sm:text-ui-body-sm text-muted-foreground">교체서비스 신청</div>
               </div>
               <div className="bg-muted rounded-xl bp-sm:rounded-2xl p-4 bp-sm:p-6 text-center border border-border">
                 <ClipboardList className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary" />
-                <div className="text-xl bp-sm:text-2xl font-bold mb-1">
+                <div className="text-ui-section-title bp-sm:text-ui-page-title font-semibold mb-1">
                   {summaryLoading ? (
                     <Skeleton className="mx-auto h-7 w-10" />
                   ) : (
                     (summary?.ordersCount ?? "-")
                   )}
                 </div>
-                <div className="text-xs bp-sm:text-sm text-muted-foreground">상품 주문</div>
+                <div className="text-ui-label bp-sm:text-ui-body-sm text-muted-foreground">상품 주문</div>
               </div>
               <button
                 type="button"
@@ -187,27 +187,27 @@ export default function AcademyApplicationMypageShell({ user, children }: Props)
                 aria-label="지금 처리할 일 목록으로 이동"
               >
                 <ListTodo className="h-6 w-6 bp-sm:h-8 bp-sm:w-8 mx-auto mb-2 bp-sm:mb-3 text-primary transition-transform group-hover:scale-105" />
-                <div className="text-xl bp-sm:text-2xl font-bold mb-1">
+                <div className="text-ui-section-title bp-sm:text-ui-page-title font-semibold mb-1">
                   {summaryLoading ? (
                     <Skeleton className="mx-auto h-7 w-10" />
                   ) : (
                     (summary?.todoCount ?? "-")
                   )}
                 </div>
-                <div className="text-xs bp-sm:text-sm text-muted-foreground group-hover:text-foreground">
+                <div className="text-ui-label bp-sm:text-ui-body-sm text-muted-foreground group-hover:text-foreground">
                   지금 처리할 일
                 </div>
                 {summaryLoading ? (
                   <Skeleton className="mx-auto mt-2 h-3 w-24" />
                 ) : (
-                  <div className="mt-1 text-[11px] font-medium text-foreground/75 bp-sm:text-xs">
+                  <div className="mt-1 text-ui-micro font-medium text-foreground/75 bp-sm:text-ui-label">
                     {todoCardDescription}
                   </div>
                 )}
               </button>
             </div>
             {summaryError ? (
-              <p className="mt-3 text-xs text-muted-foreground">
+              <p className="mt-3 text-ui-label text-muted-foreground">
                 일부 지표를 불러오지 못해 숫자를 &quot;-&quot;로 표시하고 있어요. 잠시 후 다시
                 확인해 주세요.
               </p>
@@ -227,15 +227,15 @@ export default function AcademyApplicationMypageShell({ user, children }: Props)
                       <User className="h-6 w-6 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg truncate">{user.name}</CardTitle>
+                      <CardTitle className="text-ui-card-title-lg truncate">{user.name}</CardTitle>
                       <div className="flex items-center gap-2 flex-wrap mt-1">
-                        <span className="text-sm text-foreground truncate">{user.email}</span>
+                        <span className="text-ui-body-sm text-foreground truncate">{user.email}</span>
                         {user.oauthProviders?.length ? (
                           <>
                             {user.oauthProviders.includes("kakao") && (
                               <Badge
                                 variant={getSocialProviderBadgeSpec("kakao").variant}
-                                className="text-xs py-0 px-2 h-5"
+                                className="text-ui-label py-0 px-2 h-5"
                               >
                                 카카오
                               </Badge>
@@ -243,14 +243,14 @@ export default function AcademyApplicationMypageShell({ user, children }: Props)
                             {user.oauthProviders.includes("naver") && (
                               <Badge
                                 variant={getSocialProviderBadgeSpec("naver").variant}
-                                className="text-xs py-0 px-2 h-5"
+                                className="text-ui-label py-0 px-2 h-5"
                               >
                                 네이버
                               </Badge>
                             )}
                           </>
                         ) : (
-                          <span className="text-xs text-muted-foreground">일반 계정</span>
+                          <span className="text-ui-label text-muted-foreground">일반 계정</span>
                         )}
                       </div>
                     </div>
@@ -277,7 +277,7 @@ export default function AcademyApplicationMypageShell({ user, children }: Props)
                       >
                         <Link href={href}>
                           <Icon className="h-4 w-4 bp-sm:h-5 bp-sm:w-5" />
-                          <span className="text-xs bp-sm:text-sm font-medium whitespace-nowrap">
+                          <span className="text-ui-label bp-sm:text-ui-body-sm font-medium whitespace-nowrap">
                             {label}
                           </span>
                         </Link>
@@ -294,8 +294,8 @@ export default function AcademyApplicationMypageShell({ user, children }: Props)
                       <GraduationCap className="h-5 w-5 bp-sm:h-6 bp-sm:w-6 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg bp-sm:text-xl">클래스 신청</CardTitle>
-                      <CardDescription className="text-sm text-foreground/80">
+                      <CardTitle className="text-ui-card-title-lg bp-sm:text-ui-section-title">클래스 신청</CardTitle>
+                      <CardDescription className="text-ui-body-sm text-foreground/80">
                         도깨비테니스 아카데미 클래스 신청 상세와 진행 상태를 확인하세요.
                       </CardDescription>
                     </div>

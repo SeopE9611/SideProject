@@ -309,31 +309,31 @@ export default function OrderShippingInfoDialog({
           />
         ) : isVisitPickup ? (
           <div className="space-y-4">
-            <div className="space-y-1 text-sm">
+            <div className="space-y-1 text-ui-body-sm">
               <div className="font-medium">수령 방법</div>
               <div className="text-muted-foreground">방문 수령</div>
             </div>
 
-            <div className="space-y-1 text-sm">
+            <div className="space-y-1 text-ui-body-sm">
               <div className="font-medium">예상 수령일</div>
               <div className="text-muted-foreground">
                 {formatDate(displayData?.shippingInfo?.estimatedDate)}
               </div>
             </div>
 
-            <div className="space-y-1 text-sm">
+            <div className="space-y-1 text-ui-body-sm">
               <div className="font-medium">현재 상태</div>
               <div className="text-muted-foreground">{displayStatusLabel || "상태 미정"}</div>
             </div>
 
             <Separator />
 
-            <p className="text-sm text-muted-foreground">
+            <p className="text-ui-body-sm text-muted-foreground">
               방문 수령 주문입니다. 준비 완료 후 매장에서 수령해주세요.
             </p>
           </div>
         ) : !hasInvoice ? (
-          <div className="space-y-2 text-sm">
+          <div className="space-y-2 text-ui-body-sm">
             <p className="text-muted-foreground">
               아직 운송장(택배사/운송장번호) 정보가 등록되지 않았습니다.
             </p>
@@ -362,7 +362,7 @@ export default function OrderShippingInfoDialog({
 
             <Separator />
 
-            <div className="space-y-1 text-sm">
+            <div className="space-y-1 text-ui-body-sm">
               <div className="font-medium">수령인</div>
               <div className="text-muted-foreground">
                 {[displayData?.shippingInfo?.name, displayData?.shippingInfo?.phone]
@@ -371,13 +371,13 @@ export default function OrderShippingInfoDialog({
               </div>
             </div>
 
-            <div className="space-y-1 text-sm">
+            <div className="space-y-1 text-ui-body-sm">
               <div className="font-medium">주소</div>
               <div className="text-muted-foreground">{addressText || "-"}</div>
             </div>
 
             {displayData?.shippingInfo?.deliveryRequest ? (
-              <div className="space-y-1 text-sm">
+              <div className="space-y-1 text-ui-body-sm">
                 <div className="font-medium">배송 요청사항</div>
                 <div className="text-muted-foreground">
                   {displayData.shippingInfo.deliveryRequest}
@@ -386,7 +386,7 @@ export default function OrderShippingInfoDialog({
             ) : null}
 
             {shouldShowTrackingSummarySkeleton ? (
-              <div className="space-y-2 rounded-md border border-border bg-muted/50 p-3 text-sm">
+              <div className="space-y-2 rounded-md border border-border bg-muted/50 p-3 text-ui-body-sm">
                 <Skeleton className="h-4 w-32" />
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-4 w-28" />
@@ -395,7 +395,7 @@ export default function OrderShippingInfoDialog({
             ) : null}
 
             {!isTrackingLoading && !trackingError && trackingData ? (
-              <div className="space-y-2 rounded-md border border-border bg-muted/50 p-3 text-sm">
+              <div className="space-y-2 rounded-md border border-border bg-muted/50 p-3 text-ui-body-sm">
                 {trackingData.success && trackingData.supported ? (
                   <>
                     <p className="text-foreground">
@@ -415,7 +415,7 @@ export default function OrderShippingInfoDialog({
                       </p>
                     ) : null}
                     {shouldShowTrackingStatusNotice ? (
-                      <div className="space-y-0.5 rounded-md bg-background/70 px-2.5 py-1.5 text-xs leading-relaxed text-muted-foreground">
+                      <div className="space-y-0.5 rounded-md bg-background/70 px-2.5 py-1.5 text-ui-label leading-relaxed text-muted-foreground">
                         <p>실시간 배송 상태는 택배사 기준이며,</p>
                         <p>주문 상태와 다를 수 있습니다.</p>
                       </div>
@@ -440,13 +440,13 @@ export default function OrderShippingInfoDialog({
             ) : null}
 
             {trackingError ? (
-              <p className="text-sm text-destructive">
+              <p className="text-ui-body-sm text-destructive">
                 {getTrackingErrorMessage(trackingData, trackingError)}
               </p>
             ) : null}
 
             {invoice?.updatedAt ? (
-              <div className="text-xs text-muted-foreground">
+              <div className="text-ui-label text-muted-foreground">
                 운송장 업데이트: {new Date(invoice.updatedAt).toLocaleString()}
               </div>
             ) : null}

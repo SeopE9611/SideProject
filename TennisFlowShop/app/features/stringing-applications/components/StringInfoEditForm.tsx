@@ -232,7 +232,7 @@ export default function StringInfoEditForm({
             />
             {/* [추가] 안내 문구 */}
             {enableTime && isValidDate(date) && timeSlots.length === 0 && (
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-ui-label text-muted-foreground mt-1">
                 선택 가능한 시간이 없습니다. 날짜를 다시 선택해보세요.
               </p>
             )}
@@ -255,7 +255,7 @@ export default function StringInfoEditForm({
               onCustomInputChange={setCustomStringType}
               disabled={!enableStrings}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-ui-label text-muted-foreground">
               ※ 두 개 이상의 스트링을 교체 원하신 경우, “직접 입력”을 선택하세요.
             </p>
           </div>
