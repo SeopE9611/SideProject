@@ -450,6 +450,15 @@ async function handleNiceStringingReturn(req: Request) {
     }
 
     const card = extractNiceCardInfo(approvedRaw);
+    const confirmedCard = card
+      ? {
+          issuerCode: card.issuerCode ?? undefined,
+          acquirerCode: card.acquirerCode ?? undefined,
+          issuerName: card.issuerName ?? undefined,
+          acquirerName: card.acquirerName ?? undefined,
+          cardName: card.cardName ?? card.displayName ?? undefined,
+        }
+      : undefined;
     const easyPayProvider = extractNiceEasyPayProvider(approvedRaw);
     const updateResult = await db.collection("stringing_applications").updateOne(
       {
@@ -504,7 +513,7 @@ async function handleNiceStringingReturn(req: Request) {
             method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
             totalAmount: amount,
             approvedAt: now,
-            card: card ?? undefined,
+            card: confirmedCard,
             easyPay: easyPayProvider ? { provider: easyPayProvider, amount } : undefined,
           },
           updatedAt: now,
