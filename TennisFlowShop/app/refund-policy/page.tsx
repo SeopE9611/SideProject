@@ -71,14 +71,14 @@ export default function RefundPolicyPage() {
     <main className="py-8 md:py-12">
       <SiteContainer className="max-w-4xl bp-lg:max-w-4xl">
         <PublicSurface padding="lg" className="space-y-3">
-          <p className="text-sm font-medium text-primary">Policy</p>
-          <h1 className="break-keep text-3xl font-bold tracking-tight md:text-4xl">
+          <p className="text-ui-label font-medium text-primary">Policy</p>
+          <h1 className="break-keep text-ui-page-title font-semibold tracking-tight bp-sm:text-ui-page-title-lg">
             환불 및 취소 정책
           </h1>
           <p className="max-w-3xl break-keep text-muted-foreground leading-relaxed">
             주문, 교체서비스, 패키지, 대여 이용 전 취소와 환불 기준을 확인해주세요.
           </p>
-          <p className="max-w-3xl break-keep text-sm text-muted-foreground leading-relaxed">
+          <p className="max-w-3xl break-keep text-ui-body-sm text-muted-foreground leading-relaxed">
             정책은 운영 상황과 결제수단에 따라 일부 달라질 수 있으며, 자세한 확인이 필요한 경우
             고객센터 Q&A로 문의해주세요.
           </p>
@@ -87,8 +87,8 @@ export default function RefundPolicyPage() {
         <section className="mt-8 space-y-4 md:space-y-5">
           {sections.map((section) => (
             <PublicSurface key={section.title}>
-              <h2 className="break-keep text-lg font-semibold tracking-tight">{section.title}</h2>
-              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-muted-foreground md:text-base">
+              <h2 className="break-keep text-ui-card-title-lg font-semibold tracking-tight">{section.title}</h2>
+              <ul className="mt-3 list-disc space-y-2 pl-5 text-ui-body-sm leading-relaxed text-muted-foreground">
                 {section.items.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
@@ -98,12 +98,12 @@ export default function RefundPolicyPage() {
         </section>
 
         <PublicSurface variant="muted" className="mt-8">
-          <h2 className="break-keep text-lg font-semibold tracking-tight">문의 안내</h2>
-          <p className="mt-2 max-w-3xl break-keep text-sm text-muted-foreground leading-relaxed">
+          <h2 className="break-keep text-ui-card-title-lg font-semibold tracking-tight">문의 안내</h2>
+          <p className="mt-2 max-w-3xl break-keep text-ui-body-sm text-muted-foreground leading-relaxed">
             최종 환불 가능 여부와 금액은 주문/서비스 상태 확인 후 안내드리며, 필요 시 운영 정책
             기준에 따라 추가 확인이 진행될 수 있습니다.
           </p>
-          <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-relaxed text-muted-foreground md:text-base">
+          <ul className="mt-4 list-disc space-y-2 pl-5 text-ui-body-sm leading-relaxed text-muted-foreground">
             <li>
               고객센터:{" "}
               <Link href="/support" className="break-all underline underline-offset-4">

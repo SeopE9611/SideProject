@@ -314,14 +314,14 @@ export default function LoginPageClient() {
           <TabsContent value="login" forceMount className="mt-0 p-4 md:p-5">
             <div className="space-y-4">
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-foreground">로그인</h2>
-                <p className="mt-2 break-keep text-sm leading-relaxed text-muted-foreground">
+                <h2 className="text-ui-page-title font-semibold text-foreground">로그인</h2>
+                <p className="mt-2 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
                   간편 로그인 또는 이메일로 계속 진행하세요.
                 </p>
               </div>
 
               <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
-                <p className="text-sm font-semibold text-foreground text-center">간편 로그인</p>
+                <p className="text-ui-body-sm font-semibold text-foreground text-center">간편 로그인</p>
                 <SocialAuthButtons
                   onKakaoClick={handleKakaoOAuth}
                   onNaverClick={handleNaverOAuth}
@@ -332,7 +332,7 @@ export default function LoginPageClient() {
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-border" />
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
+                <div className="relative flex justify-center text-ui-label uppercase">
                   <span className="bg-card dark:bg-muted px-4 text-foreground font-medium">
                     이메일 로그인
                   </span>
@@ -348,7 +348,7 @@ export default function LoginPageClient() {
                 data-cy="login-form"
               >
                 {loginFormError && (
-                  <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+                  <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-ui-label text-destructive">
                     <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                     <div className="whitespace-pre-line break-keep">{loginFormError}</div>
                   </div>
@@ -379,7 +379,7 @@ export default function LoginPageClient() {
                     />
                   </div>
                   {loginFieldErrors.email && (
-                    <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
+                    <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
                       <AlertCircle className="h-4 w-4" />
                       <span className="whitespace-pre-line">{loginFieldErrors.email}</span>
                     </div>
@@ -421,7 +421,7 @@ export default function LoginPageClient() {
                     </Button>
                   </div>
                   {loginFieldErrors.password && (
-                    <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
+                    <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
                       <AlertCircle className="h-4 w-4" />
                       <span className="whitespace-pre-line">{loginFieldErrors.password}</span>
                     </div>
@@ -429,7 +429,7 @@ export default function LoginPageClient() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 text-sm text-foreground">
+                  <label className="flex items-center gap-2 text-ui-label text-foreground">
                     <input
                       type="checkbox"
                       checked={saveEmail}
@@ -446,7 +446,7 @@ export default function LoginPageClient() {
                         e.stopPropagation();
                       }
                     }}
-                    className="text-sm text-foreground hover:text-foreground dark:hover:text-foreground hover:underline"
+                    className="text-ui-label text-foreground hover:text-foreground dark:hover:text-foreground hover:underline"
                   >
                     비밀번호 찾기
                   </Link>
@@ -469,7 +469,7 @@ export default function LoginPageClient() {
                 </Button>
               </form>
 
-              <div className="text-center text-xs text-muted-foreground">
+              <div className="text-center text-ui-label text-muted-foreground">
                 일반 회원가입이 필요하신가요?{" "}
                 <button
                   type="button"
@@ -485,7 +485,7 @@ export default function LoginPageClient() {
                   <div className="mb-4 rounded-xl border border-border/60 bg-muted/30 p-4">
                     <div className="flex items-center justify-center gap-2 mb-3">
                       <Shield className="h-5 w-5 text-foreground" />
-                      <p className="text-sm font-semibold text-foreground">
+                      <p className="text-ui-body-sm font-semibold text-foreground">
                         비회원도 주문하실 수 있습니다
                       </p>
                     </div>

@@ -196,7 +196,7 @@ export default function ForceChangePasswordClient() {
     >
       <form onSubmit={onSubmit} className="space-y-4 md:space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="newPassword" className="text-sm font-medium">
+          <Label htmlFor="newPassword" className="text-ui-label font-medium">
             새 비밀번호 <span className="text-destructive">*</span>
           </Label>
           <Input
@@ -219,10 +219,10 @@ export default function ForceChangePasswordClient() {
                 : ""
             }
           />
-          <p className="min-h-[18px] text-sm text-destructive">{fieldErrors.newPassword ?? ""}</p>
+          <p className="min-h-[18px] text-ui-label text-destructive">{fieldErrors.newPassword ?? ""}</p>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword" className="text-sm font-medium">
+          <Label htmlFor="confirmPassword" className="text-ui-label font-medium">
             새 비밀번호 확인 <span className="text-destructive">*</span>
           </Label>
           <Input
@@ -245,7 +245,7 @@ export default function ForceChangePasswordClient() {
                 : ""
             }
           />
-          <p className="min-h-[18px] text-sm text-destructive">{fieldErrors.confirm ?? ""}</p>
+          <p className="min-h-[18px] text-ui-label text-destructive">{fieldErrors.confirm ?? ""}</p>
         </div>
         <Button
           type="submit"

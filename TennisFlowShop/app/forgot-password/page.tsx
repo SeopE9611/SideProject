@@ -68,7 +68,7 @@ export default function ForgotPasswordPage() {
   const backLink = (
     <Link
       href="/login"
-      className="inline-flex items-center font-medium text-muted-foreground hover:text-foreground hover:underline"
+      className="inline-flex items-center text-ui-label font-medium text-muted-foreground hover:text-foreground hover:underline"
       onClick={(e) => {
         if (confirmLeaveIfDirty()) return;
         e.preventDefault();
@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
       <form onSubmit={handleSubmit} className="space-y-5">
         {!isSubmitted ? (
           <div className="space-y-2">
-            <Label htmlFor="email" className="font-medium text-foreground">
+            <Label htmlFor="email" className="text-ui-label font-medium text-foreground">
               이메일
             </Label>
 
@@ -117,10 +117,10 @@ export default function ForgotPasswordPage() {
               여기서도 "이메일이 실제 가입된 계정인지"를 노출하지 않도록
               확정적 표현 대신 조건형 문구를 사용합니다.
             */}
-            <p className="mb-2 text-sm font-semibold text-foreground">
+            <p className="mb-2 text-ui-body-sm font-semibold text-foreground">
               {email}이 가입된 계정이라면 비밀번호 재설정 링크를 발송했습니다.
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-ui-label text-muted-foreground">
               이메일이 도착하지 않았다면 스팸함도 함께 확인해주세요.
             </p>
           </div>
