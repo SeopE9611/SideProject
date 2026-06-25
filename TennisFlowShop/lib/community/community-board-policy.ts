@@ -6,7 +6,7 @@ export const CLOSED_COMMUNITY_TYPES = ["free", "brand", "market", "gear"] as con
 
 export type ClosedCommunityType = (typeof CLOSED_COMMUNITY_TYPES)[number];
 
-export function isClosedCommunityType(value: unknown): value is ClosedCommunityType {
+export function isClosedCommunityType(value: unknown): boolean {
   return (
     !COMMUNITY_BOARDS_ENABLED &&
     typeof value === "string" &&
