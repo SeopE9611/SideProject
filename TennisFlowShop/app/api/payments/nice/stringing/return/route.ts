@@ -5,7 +5,11 @@ import {
   extractNiceCardInfo,
   extractNiceEasyPayProvider,
 } from "@/lib/payments/nice/server";
-import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
+import {
+  ensureTossPaymentSessionIndexes,
+  tossPaymentSessions,
+  type TossPaymentFailureStage,
+} from "@/lib/payments/toss/session";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 
@@ -54,6 +58,10 @@ function failUrl(code: string, message: string, applicationId?: string | null) {
   return `/services/apply?${query.toString()}`;
 }
 
+function redirect303(req: Request, path: string) {
+  return NextResponse.redirect(new URL(path, req.url), { status: 303 });
+}
+
 function approveCredentials() {
   return {
     clientKey: String(process.env.NICEPAY_CLIENT_KEY ?? process.env.NICEPAY_CLIENT_ID ?? "").trim(),
@@ -82,22 +90,167 @@ async function handleNiceStringingReturn(req: Request) {
     const db = client.db();
     await ensureTossPaymentSessionIndexes(db);
     const sessions = tossPaymentSessions(db);
-    const session = await sessions.findOne({ niceOrderId: orderId });
+    let session = await sessions.findOne({ niceOrderId: orderId });
     if (!session || session.flowType !== "stringing_application") {
-      return NextResponse.redirect(
-        new URL(failUrl("SESSION_NOT_FOUND", "결제 세션을 찾을 수 없습니다."), req.url),
-      );
+      return redirect303(req, failUrl("SESSION_NOT_FOUND", "결제 세션을 찾을 수 없습니다."));
     }
     safeApplicationId = String(session.applicationId ?? "") || null;
 
-    const markFailed = async (message: string) => {
+    const toSuccessUrl = (applicationId: string) =>
+      `/services/success?applicationId=${encodeURIComponent(applicationId)}`;
+
+    if (session.status === "approved" && session.mongoOrderId) {
+      return redirect303(req, toSuccessUrl(session.mongoOrderId));
+    }
+
+    if (
+      session.status === "failed" ||
+      session.status === "approve_succeeded_order_failed" ||
+      session.status === "approve_succeeded_auto_cancel_succeeded" ||
+      session.status === "approve_succeeded_auto_cancel_failed"
+    ) {
+      return redirect303(
+        req,
+        failUrl(
+          session.failureCode || "PAYMENT_PROCESSING_FAILED",
+          session.failureMessage || "결제 처리 결과를 확인해주세요.",
+          safeApplicationId,
+        ),
+      );
+    }
+
+    const now = new Date();
+    if (session.status === "processing") {
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+
+      const latest = await sessions.findOne({ niceOrderId: orderId });
+
+      if (latest?.status === "approved" && latest.mongoOrderId) {
+        return redirect303(req, toSuccessUrl(latest.mongoOrderId));
+      }
+
+      if (
+        latest?.status === "approve_succeeded_order_failed" ||
+        latest?.status === "approve_succeeded_auto_cancel_succeeded" ||
+        latest?.status === "approve_succeeded_auto_cancel_failed" ||
+        latest?.status === "failed"
+      ) {
+        return redirect303(
+          req,
+          failUrl(
+            latest.failureCode || "PAYMENT_PROCESSING_FAILED",
+            latest.failureMessage || "결제 처리 결과를 확인해주세요.",
+            safeApplicationId,
+          ),
+        );
+      }
+
+      return redirect303(
+        req,
+        failUrl(
+          "PAYMENT_PROCESSING",
+          "결제 처리가 진행 중입니다. 중복 결제하지 말고 잠시 후 신청 내역을 확인해주세요.",
+          safeApplicationId,
+        ),
+      );
+    }
+
+    if (session.expiresAt && session.expiresAt.getTime() < now.getTime()) {
       await sessions.updateOne(
         { _id: session._id },
         {
           $set: {
             status: "failed",
-            failureMessage: message,
+            failureStage: "session_expired_before_confirm",
+            failureCode: "SESSION_EXPIRED",
+            failureMessage: "결제 세션 유효시간이 만료되었습니다.",
+            updatedAt: now,
+          },
+        },
+      );
+      return redirect303(
+        req,
+        failUrl("SESSION_EXPIRED", "결제 세션 유효시간이 만료되었습니다.", safeApplicationId),
+      );
+    }
+
+    if (session.status !== "ready") {
+      return redirect303(
+        req,
+        failUrl(
+          "INVALID_PAYMENT_SESSION_STATUS",
+          "이미 처리 중이거나 처리 완료된 결제 세션입니다.",
+          safeApplicationId,
+        ),
+      );
+    }
+
+    const claimedSession = await sessions.findOneAndUpdate(
+      {
+        _id: session._id,
+        status: "ready",
+      },
+      {
+        $set: {
+          status: "processing",
+          processingStartedAt: now,
+          updatedAt: now,
+        },
+      },
+      { returnDocument: "after" },
+    );
+
+    if (!claimedSession) {
+      const latest = await sessions.findOne({ niceOrderId: orderId });
+
+      if (latest?.status === "approved" && latest.mongoOrderId) {
+        return redirect303(req, toSuccessUrl(latest.mongoOrderId));
+      }
+
+      if (
+        latest?.status === "approve_succeeded_order_failed" ||
+        latest?.status === "approve_succeeded_auto_cancel_succeeded" ||
+        latest?.status === "approve_succeeded_auto_cancel_failed" ||
+        latest?.status === "failed"
+      ) {
+        return redirect303(
+          req,
+          failUrl(
+            latest.failureCode || "PAYMENT_PROCESSING_FAILED",
+            latest.failureMessage || "결제 처리 결과를 확인해주세요.",
+            safeApplicationId,
+          ),
+        );
+      }
+
+      return redirect303(
+        req,
+        failUrl(
+          "PAYMENT_SESSION_ALREADY_PROCESSING",
+          "결제 처리가 이미 진행 중입니다. 중복 결제하지 말고 잠시 후 신청 내역을 확인해주세요.",
+          safeApplicationId,
+        ),
+      );
+    }
+
+    session = claimedSession;
+
+    const markFailed = async (params: {
+      stage: TossPaymentFailureStage;
+      code: string;
+      message: string;
+      includeApproveRaw?: Record<string, string>;
+    }) => {
+      await sessions.updateOne(
+        { _id: session._id },
+        {
+          $set: {
+            status: "failed",
+            failureStage: params.stage,
+            failureCode: params.code,
+            failureMessage: params.message,
             niceAuthRaw: raw,
+            ...(params.includeApproveRaw ? { niceApprovedRaw: params.includeApproveRaw } : {}),
             updatedAt: new Date(),
           },
         },
@@ -105,44 +258,173 @@ async function handleNiceStringingReturn(req: Request) {
     };
 
     const prepared = session.nicePrepared;
-    if (
-      authResultCode !== "0000" ||
-      !tid ||
-      !authToken ||
-      !signature ||
-      !clientId ||
-      !prepared ||
-      prepared.clientId !== clientId ||
-      prepared.orderId !== orderId ||
-      session.amount !== amount ||
-      amount <= 0
-    ) {
-      await markFailed("결제 인증 또는 금액 검증에 실패했습니다.");
-      return NextResponse.redirect(
-        new URL(
-          failUrl("AUTH_FAILED", "카드/간편결제 인증에 실패했습니다.", safeApplicationId),
-          req.url,
-        ),
+    if (authResultCode !== "0000") {
+      await markFailed({
+        stage: "verify_auth",
+        code: "AUTH_FAILED",
+        message: "카드/간편결제 인증에 실패했습니다.",
+      });
+      return redirect303(
+        req,
+        failUrl("AUTH_FAILED", "카드/간편결제 인증에 실패했습니다.", safeApplicationId),
+      );
+    }
+
+    if (!tid || !authToken || !signature || !clientId || !prepared) {
+      await markFailed({
+        stage: "verify_auth",
+        code: "AUTH_FAILED",
+        message: "인증 응답 필수값 검증에 실패했습니다.",
+      });
+      return redirect303(
+        req,
+        failUrl("AUTH_FAILED", "인증 응답 필수값 검증에 실패했습니다.", safeApplicationId),
+      );
+    }
+
+    if (prepared.clientId !== clientId) {
+      await markFailed({
+        stage: "verify_auth",
+        code: "AUTH_FAILED",
+        message: "인증 응답 가맹점 검증에 실패했습니다.",
+      });
+      return redirect303(
+        req,
+        failUrl("AUTH_FAILED", "인증 응답 가맹점 검증에 실패했습니다.", safeApplicationId),
+      );
+    }
+
+    if (prepared.orderId !== orderId || session.amount !== amount || amount <= 0) {
+      await markFailed({
+        stage: "verify_auth",
+        code: "AMOUNT_MISMATCH",
+        message: "결제 금액 검증에 실패했습니다.",
+      });
+      return redirect303(
+        req,
+        failUrl("AMOUNT_MISMATCH", "결제 금액 검증에 실패했습니다.", safeApplicationId),
       );
     }
 
     const credentials = approveCredentials();
-    const approvedRaw = await approveNicePaymentByTid({
-      tid,
-      amount,
-      ...credentials,
-    });
-    if (pick(approvedRaw, "resultCode", "ResultCode") !== "0000") {
-      await markFailed(
-        pick(approvedRaw, "resultMsg", "ResultMsg") || "카드/간편결제 승인에 실패했습니다.",
-      );
-      return NextResponse.redirect(
-        new URL(
-          failUrl("APPROVE_FAILED", "카드/간편결제 승인에 실패했습니다.", safeApplicationId),
-          req.url,
-        ),
+    if (!credentials.clientKey || !credentials.secretKey) {
+      await markFailed({
+        stage: "approve_payment",
+        code: "APPROVE_FAILED",
+        message: "결제 승인 설정이 올바르지 않습니다.",
+      });
+      return redirect303(
+        req,
+        failUrl("APPROVE_FAILED", "결제 승인 설정이 올바르지 않습니다.", safeApplicationId),
       );
     }
+
+    let approvedRaw: Record<string, string>;
+    try {
+      approvedRaw = await approveNicePaymentByTid({
+        tid,
+        amount,
+        ...credentials,
+      });
+    } catch (error: any) {
+      const message = error?.message || "카드/간편결제 승인에 실패했습니다.";
+      await markFailed({
+        stage: "approve_payment",
+        code: "APPROVE_FAILED",
+        message,
+      });
+      return redirect303(req, failUrl("APPROVE_FAILED", message, safeApplicationId));
+    }
+
+    if (pick(approvedRaw, "resultCode", "ResultCode") !== "0000") {
+      const message =
+        pick(approvedRaw, "resultMsg", "ResultMsg") || "카드/간편결제 승인에 실패했습니다.";
+      await markFailed({
+        stage: "approve_payment",
+        code: "APPROVE_FAILED",
+        message,
+        includeApproveRaw: approvedRaw,
+      });
+      return redirect303(req, failUrl("APPROVE_FAILED", message, safeApplicationId));
+    }
+
+    const tryAutoCancelAfterApprove = async (
+      failureMessage: string,
+      failureStage: TossPaymentFailureStage,
+    ) => {
+      try {
+        const canceled = await cancelNicePaymentByTid({
+          tid,
+          orderId,
+          reason: "승인 후 내부 스트링 신청 처리 실패로 자동 취소",
+          ...credentials,
+        });
+        const cancelCode = pick(canceled, "resultCode", "ResultCode");
+        const cancelMsg = pick(canceled, "resultMsg", "ResultMsg");
+        const canceledOk = cancelCode === "0000";
+        await sessions.updateOne(
+          { _id: session._id },
+          {
+            $set: {
+              status: canceledOk
+                ? "approve_succeeded_auto_cancel_succeeded"
+                : "approve_succeeded_auto_cancel_failed",
+              failureStage,
+              failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+              failureMessage,
+              niceAuthRaw: raw,
+              niceApprovedRaw: approvedRaw,
+              updatedAt: new Date(),
+              niceAutoCancel: {
+                attemptedAt: new Date(),
+                resultCode: cancelCode || "UNKNOWN",
+                resultMsg: cancelMsg || undefined,
+                status: canceledOk ? "succeeded" : "failed",
+              },
+            },
+          },
+        );
+      } catch (cancelError: any) {
+        await sessions.updateOne(
+          { _id: session._id },
+          {
+            $set: {
+              status: "approve_succeeded_auto_cancel_failed",
+              failureStage,
+              failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+              failureMessage,
+              niceAuthRaw: raw,
+              niceApprovedRaw: approvedRaw,
+              updatedAt: new Date(),
+              niceAutoCancel: {
+                attemptedAt: new Date(),
+                resultCode: "ERROR",
+                resultMsg: cancelError?.message || "자동 취소 중 오류가 발생했습니다.",
+                status: "failed",
+              },
+            },
+          },
+        );
+      }
+    };
+
+    const markOrderFailedAndCancel = async (failureMessage: string) => {
+      await sessions.updateOne(
+        { _id: session._id },
+        {
+          $set: {
+            status: "approve_succeeded_order_failed",
+            failureStage: "create_order_after_approve",
+            failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+            failureMessage,
+            niceAuthRaw: raw,
+            niceApprovedRaw: approvedRaw,
+            updatedAt: new Date(),
+          },
+        },
+      );
+      await tryAutoCancelAfterApprove(failureMessage, "create_order_after_approve");
+    };
 
     const applicationId = String(session.applicationId ?? "");
     const application = ObjectId.isValid(applicationId)
@@ -156,26 +438,17 @@ async function handleNiceStringingReturn(req: Request) {
       application.servicePaid ||
       Number(application.totalPrice ?? 0) !== amount
     ) {
-      await cancelNicePaymentByTid({
-        tid,
-        orderId,
-        reason: "스트링 신청 결제 상태 검증 실패",
-        ...credentials,
-      });
-      await markFailed("결제 승인 후 신청 상태 검증에 실패했습니다.");
-      return NextResponse.redirect(
-        new URL(
-          failUrl(
-            "APPLICATION_INVALID",
-            "신청 상태가 변경되어 카드/간편결제가 취소되었습니다.",
-            safeApplicationId,
-          ),
-          req.url,
+      await markOrderFailedAndCancel("결제 승인 후 신청 상태 검증에 실패했습니다.");
+      return redirect303(
+        req,
+        failUrl(
+          "APPLICATION_INVALID",
+          "신청 상태가 변경되어 카드/간편결제가 취소되었습니다.",
+          safeApplicationId,
         ),
       );
     }
 
-    const now = new Date();
     const card = extractNiceCardInfo(approvedRaw);
     const easyPayProvider = extractNiceEasyPayProvider(approvedRaw);
     const updateResult = await db.collection("stringing_applications").updateOne(
@@ -210,18 +483,10 @@ async function handleNiceStringingReturn(req: Request) {
     );
 
     if (!updateResult.modifiedCount) {
-      await cancelNicePaymentByTid({
-        tid,
-        orderId,
-        reason: "스트링 신청 결제 반영 실패",
-        ...credentials,
-      });
-      await markFailed("결제 승인 후 신청서 반영에 실패했습니다.");
-      return NextResponse.redirect(
-        new URL(
-          failUrl("UPDATE_FAILED", "카드/간편결제 반영에 실패했습니다.", safeApplicationId),
-          req.url,
-        ),
+      await markOrderFailedAndCancel("결제 승인 후 신청서 반영에 실패했습니다.");
+      return redirect303(
+        req,
+        failUrl("UPDATE_FAILED", "카드/간편결제 반영에 실패했습니다.", safeApplicationId),
       );
     }
 
@@ -231,25 +496,30 @@ async function handleNiceStringingReturn(req: Request) {
         $set: {
           status: "approved",
           mongoOrderId: applicationId,
+          paymentKey: tid,
           niceAuthRaw: raw,
           niceApprovedRaw: approvedRaw,
+          confirmedPaymentSummary: {
+            orderId,
+            method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
+            totalAmount: amount,
+            approvedAt: now,
+            card: card ?? undefined,
+            easyPay: easyPayProvider ? { provider: easyPayProvider, amount } : undefined,
+          },
           updatedAt: now,
         },
       },
     );
 
-    return NextResponse.redirect(
-      new URL(`/services/success?applicationId=${encodeURIComponent(applicationId)}`, req.url),
-    );
+    return redirect303(req, toSuccessUrl(applicationId));
   } catch (error: any) {
-    return NextResponse.redirect(
-      new URL(
-        failUrl(
-          "PAYMENT_ERROR",
-          error?.message || "카드/간편결제 처리 중 오류가 발생했습니다.",
-          safeApplicationId,
-        ),
-        req.url,
+    return redirect303(
+      req,
+      failUrl(
+        "PAYMENT_ERROR",
+        error?.message || "카드/간편결제 처리 중 오류가 발생했습니다.",
+        safeApplicationId,
       ),
     );
   }
