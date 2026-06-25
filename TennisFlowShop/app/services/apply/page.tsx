@@ -110,6 +110,7 @@ export default function StringServiceApplyPage() {
   const [lockedRacketQuantity, setLockedRacketQuantity] = useState<number | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isIntentionalSubmitFlow, setIsIntentionalSubmitFlow] = useState(false);
   const [order, setOrder] = useState<Order | null>(null);
   const [rentalAmount, setRentalAmount] = useState<null | {
     deposit?: number;
@@ -847,8 +848,10 @@ export default function StringServiceApplyPage() {
     baselineRef.current = fingerprint;
   }, [prefillReady, fingerprint]);
 
-  useUnsavedChangesGuard(isDirty);
-  useBackNavigationGuard(isDirty);
+  const guardEnabled = isDirty && !isSubmitting && !isIntentionalSubmitFlow;
+
+  useUnsavedChangesGuard(guardEnabled);
+  useBackNavigationGuard(guardEnabled);
   const safePush = (href: string) => {
     if (isDirty && !window.confirm(UNSAVED_CHANGES_MESSAGE)) return;
     router.push(href);
@@ -1517,6 +1520,7 @@ export default function StringServiceApplyPage() {
       setApplicationId(result.applicationId);
 
       if (navigateOnSuccess) {
+        setIsIntentionalSubmitFlow(true);
         showSuccessToast("신청이 완료되었습니다!");
         router.push(`/services/success?applicationId=${encodeURIComponent(result.applicationId)}`);
       }
@@ -1963,6 +1967,8 @@ export default function StringServiceApplyPage() {
                             disabled={isSubmitting || isOrderSlotBlocked}
                             payableAmount={checkoutTotal}
                             submitApplication={() => doSubmit(false)}
+                            onPaymentFlowStart={() => setIsIntentionalSubmitFlow(true)}
+                            onPaymentFlowEnd={() => setIsIntentionalSubmitFlow(false)}
                           />
                         ) : undefined
                       }

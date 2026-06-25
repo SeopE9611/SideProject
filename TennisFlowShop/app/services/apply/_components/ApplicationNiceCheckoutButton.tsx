@@ -29,15 +29,21 @@ type NicePrepareResponse = {
   error?: string;
 };
 
+type ApplicationNiceCheckoutButtonProps = {
+  disabled: boolean;
+  payableAmount: number;
+  submitApplication: () => Promise<string | null>;
+  onPaymentFlowStart?: () => void;
+  onPaymentFlowEnd?: () => void;
+};
+
 export default function ApplicationNiceCheckoutButton({
   disabled,
   payableAmount,
   submitApplication,
-}: {
-  disabled: boolean;
-  payableAmount: number;
-  submitApplication: () => Promise<string | null>;
-}) {
+  onPaymentFlowStart,
+  onPaymentFlowEnd,
+}: ApplicationNiceCheckoutButtonProps) {
   const [loading, setLoading] = useState(false);
   const [scriptReady, setScriptReady] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
@@ -78,10 +84,12 @@ export default function ApplicationNiceCheckoutButton({
     if (isDisabled) return;
     setLoading(true);
     setInlineError(null);
+    onPaymentFlowStart?.();
 
     try {
       const applicationId = await submitApplication();
       if (!applicationId) {
+        onPaymentFlowEnd?.();
         setLoading(false);
         return;
       }
@@ -114,11 +122,13 @@ export default function ApplicationNiceCheckoutButton({
         buyerTel: prepared.nice.buyerTel,
         buyerEmail: prepared.nice.buyerEmail,
         fnError: (result: any) => {
+          onPaymentFlowEnd?.();
           setInlineError(String(result?.errorMsg || result?.message || "결제가 취소되었습니다."));
           setLoading(false);
         },
       });
     } catch (error: any) {
+      onPaymentFlowEnd?.();
       setInlineError(error?.message || "카드/간편결제 요청에 실패했습니다.");
       setLoading(false);
     }
