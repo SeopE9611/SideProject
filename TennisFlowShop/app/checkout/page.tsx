@@ -324,11 +324,6 @@ function FinalPaymentConfirmCard({
     <SummaryCard
       title="최종 결제 확인"
       description="결제 예정 금액과 입금 정보를 마지막으로 확인하세요"
-      action={
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-          <Shield className="h-5 w-5" />
-        </div>
-      }
       contentClassName="space-y-5"
     >
       <PriceSummary rows={priceSummaryRows} />
