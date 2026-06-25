@@ -786,11 +786,14 @@ export default function RentalsCheckoutClient({
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-ui-body-sm text-muted-foreground">대여 라켓</div>
-                    <h3 className="min-w-0 break-keep font-semibold text-foreground">
+                    <h3 className="min-w-0 break-words font-semibold text-foreground">
                       {rentalRacketName}
                     </h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant={badgeToneVariant("neutral")} className="px-2 py-0.5 text-ui-label">
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <Badge
+                        variant={badgeToneVariant("neutral")}
+                        className="px-2 py-0.5 text-ui-label"
+                      >
                         상태 {initial.racket?.condition}
                       </Badge>
                       <span className="text-ui-label text-foreground/75">
@@ -865,8 +868,8 @@ export default function RentalsCheckoutClient({
 
                 {/* 구매 체크아웃과 동일하게: 수령 방식 카드 안에서 "스트링 교체 옵션"을 같이 묶어 표시 */}
                 <div className="bg-muted p-4 rounded-lg border border-border">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1">
+                  <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+                    <div className="min-w-0 space-y-1">
                       <p className="font-medium text-foreground">스트링 교체 서비스 (선택)</p>
                       <p className="text-ui-body-sm text-foreground">
                         {deliveryMethod === "방문수령"
@@ -878,6 +881,7 @@ export default function RentalsCheckoutClient({
                     <Button
                       type="button"
                       variant={selectedString ? "outline" : "default"}
+                      className="w-full bp-sm:w-auto"
                       onClick={() =>
                         pushIfSafe(
                           `/rentals/${initial.racketId}/select-string?period=${initial.period}`,
@@ -894,7 +898,9 @@ export default function RentalsCheckoutClient({
                         <div className="text-ui-label font-medium text-muted-foreground">
                           선택한 스트링
                         </div>
-                        <div className="font-semibold text-foreground">{selectedString.name}</div>
+                        <div className="min-w-0 break-words font-semibold text-foreground">
+                          {selectedString.name}
+                        </div>
                         {selectedGauge ? (
                           <div className="text-ui-body-sm text-foreground/80">
                             게이지: {formatGaugeLabel(selectedGauge)}
@@ -1191,7 +1197,9 @@ export default function RentalsCheckoutClient({
                     </Label>
                     <div className="rounded-lg border border-border bg-secondary/30 p-4 space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-ui-body-sm font-semibold text-foreground">포인트 사용</span>
+                        <span className="text-ui-body-sm font-semibold text-foreground">
+                          포인트 사용
+                        </span>
                         <span className="text-ui-label text-foreground/75">
                           {pointsStatus === "ready"
                             ? `사용 가능 ${pointsAvailable.toLocaleString()}P`
@@ -1343,7 +1351,10 @@ export default function RentalsCheckoutClient({
                           setAgreeRefund(newValue);
                         }}
                       />
-                      <label htmlFor="agree-all" className="font-semibold text-ui-card-title-lg text-foreground">
+                      <label
+                        htmlFor="agree-all"
+                        className="font-semibold text-ui-card-title-lg text-foreground"
+                      >
                         전체 동의
                       </label>
                     </div>
@@ -1388,7 +1399,10 @@ export default function RentalsCheckoutClient({
                               else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
                             }}
                           />
-                          <label htmlFor={item.id} className="text-ui-body-sm font-medium text-foreground">
+                          <label
+                            htmlFor={item.id}
+                            className="text-ui-body-sm font-medium text-foreground"
+                          >
                             {item.label}
                           </label>
                         </div>
