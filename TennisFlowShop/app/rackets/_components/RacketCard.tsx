@@ -370,7 +370,7 @@ const RacketCard = React.memo(
                 </div>
                 <Link href={`/rackets/${racket.id}`} className="block min-w-0">
                   <h3
-                    className="line-clamp-2 break-keep text-ui-body font-medium leading-snug text-foreground transition-colors hover:text-primary bp-sm:text-ui-section-title bp-lg:line-clamp-3"
+                    className="line-clamp-2 break-words text-ui-body font-medium leading-snug text-foreground transition-colors hover:text-primary bp-sm:text-ui-section-title bp-lg:line-clamp-3"
                     title={racket.model}
                   >
                     {racket.model}
@@ -432,7 +432,7 @@ const RacketCard = React.memo(
           </div>
           <Link href={`/rackets/${racket.id}`} className="block min-w-0">
             <CardTitle
-              className="mb-2 line-clamp-2 break-keep text-ui-body leading-snug text-foreground transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:text-ui-card-title-lg bp-md:text-ui-section-title bp-lg:line-clamp-3"
+              className="mb-2 line-clamp-2 break-words text-ui-body leading-snug text-foreground transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:text-ui-card-title-lg bp-md:text-ui-section-title bp-lg:line-clamp-3"
               title={racket.model}
             >
               {racket.model}

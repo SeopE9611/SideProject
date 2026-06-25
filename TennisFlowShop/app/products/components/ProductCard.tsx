@@ -412,7 +412,7 @@ const ProductCard = React.memo(
                     {brandLabel}
                   </div>
                   <h3
-                    className="mb-2 line-clamp-2 break-keep text-ui-body font-medium text-foreground sm:text-ui-card-title-lg md:text-ui-section-title bp-lg:line-clamp-3"
+                    className="mb-2 line-clamp-2 break-words text-ui-body font-medium text-foreground sm:text-ui-card-title-lg md:text-ui-section-title bp-lg:line-clamp-3"
                     title={product.name}
                   >
                     {product.name}
@@ -546,7 +546,7 @@ const ProductCard = React.memo(
                 {brandLabel}
               </div>
               <CardTitle
-                className="mb-2 line-clamp-2 break-keep text-ui-body-sm font-medium leading-snug text-foreground transition-colors group-hover:text-foreground sm:text-ui-body bp-lg:line-clamp-3"
+                className="mb-2 line-clamp-2 break-words text-ui-body-sm font-medium leading-snug text-foreground transition-colors group-hover:text-foreground sm:text-ui-body bp-lg:line-clamp-3"
                 title={product.name}
               >
                 {product.name}

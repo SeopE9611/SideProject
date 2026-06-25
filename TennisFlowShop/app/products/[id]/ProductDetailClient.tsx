@@ -1310,7 +1310,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <span className="inline-block max-w-full truncate text-ui-body-sm sm:text-ui-body text-muted-foreground font-medium mb-2">
                       {productBrandLabel}
                     </span>
-                    <h1 className="min-w-0 text-balance break-keep text-ui-section-title font-semibold leading-tight tracking-normal text-foreground sm:text-ui-page-title bp-lg:text-ui-page-title-lg">
+                    <h1 className="min-w-0 text-balance break-words text-ui-section-title font-semibold leading-tight tracking-normal text-foreground sm:text-ui-page-title bp-lg:text-ui-page-title-lg">
                       {product.name}
                     </h1>
                     <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -1332,7 +1332,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="flex items-baseline gap-3 flex-wrap">
                       <span className="whitespace-nowrap tabular-nums text-ui-price-lg font-semibold text-foreground tracking-normal">
                         {displayPrice.toLocaleString()}
-                        <span className="text-ui-section-title sm:text-ui-page-title font-medium ml-0.5">원</span>
+                        <span className="text-ui-section-title sm:text-ui-page-title font-medium ml-0.5">
+                          원
+                        </span>
                       </span>
                       {isSale && (
                         <>
@@ -1374,7 +1376,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     {visibleColorRows.length > 0 && (
                       <div className={cn("space-y-3 p-3.5", detailSurfaceSubtleInnerClass)}>
                         <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
-                          <span className="text-ui-body-sm font-semibold text-foreground">색상 선택</span>
+                          <span className="text-ui-body-sm font-semibold text-foreground">
+                            색상 선택
+                          </span>
                           {selectedColorLabel && (
                             <span
                               className="min-w-0 break-words text-ui-label text-muted-foreground"
@@ -1516,7 +1520,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     {isStringProduct && gaugeRows.length > 0 && (
                       <div className={cn("space-y-3 p-3.5", detailSurfaceSubtleInnerClass)}>
                         <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
-                          <span className="text-ui-body-sm font-semibold text-foreground">게이지 선택</span>
+                          <span className="text-ui-body-sm font-semibold text-foreground">
+                            게이지 선택
+                          </span>
                           {gaugeOptions.length === 1 && (
                             <span className="text-ui-label text-muted-foreground">자동 선택</span>
                           )}
@@ -1543,7 +1549,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           </SelectContent>
                         </Select>
                         {hasVariantInventories && variantHasNoSellableGauge && (
-                          <p className="text-ui-label text-destructive">선택 가능한 게이지가 없습니다.</p>
+                          <p className="text-ui-label text-destructive">
+                            선택 가능한 게이지가 없습니다.
+                          </p>
                         )}
                       </div>
                     )}
@@ -2273,7 +2281,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       상품 문의
                     </h3>
                   </div>
-                  <Button asChild variant="secondary" className="text-ui-label sm:text-ui-body-sm h-9 sm:h-10">
+                  <Button
+                    asChild
+                    variant="secondary"
+                    className="text-ui-label sm:text-ui-body-sm h-9 sm:h-10"
+                  >
                     <Link
                       href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}
                     >
@@ -2288,7 +2300,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   </div>
                 )}
                 {qnaError && (
-                  <div className="text-ui-body-sm text-destructive">문의 목록을 불러오지 못했습니다.</div>
+                  <div className="text-ui-body-sm text-destructive">
+                    문의 목록을 불러오지 못했습니다.
+                  </div>
                 )}
 
                 {!qnaLoading && !qnaError && (

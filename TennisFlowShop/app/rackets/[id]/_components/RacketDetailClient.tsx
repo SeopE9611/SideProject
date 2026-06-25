@@ -611,7 +611,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     <>
                       <span className="whitespace-nowrap tabular-nums text-ui-price-lg font-semibold tracking-normal text-foreground">
                         {salePrice.toLocaleString()}
-                        <span className="ml-0.5 text-ui-section-title font-medium sm:text-ui-page-title">원</span>
+                        <span className="ml-0.5 text-ui-section-title font-medium sm:text-ui-page-title">
+                          원
+                        </span>
                       </span>
                       <span className="whitespace-nowrap tabular-nums text-ui-card-title-lg text-muted-foreground/60 line-through sm:text-ui-section-title">
                         {racket.price?.toLocaleString()}원
@@ -623,7 +625,9 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   ) : (
                     <span className="whitespace-nowrap tabular-nums text-ui-price-lg font-semibold tracking-normal text-foreground">
                       {racket.price?.toLocaleString()}
-                      <span className="ml-0.5 text-ui-section-title font-medium sm:text-ui-page-title">원</span>
+                      <span className="ml-0.5 text-ui-section-title font-medium sm:text-ui-page-title">
+                        원
+                      </span>
                     </span>
                   )}
                 </div>
