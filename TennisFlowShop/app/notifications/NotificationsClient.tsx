@@ -63,6 +63,7 @@ export default function NotificationsClient() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isMarkingAll, setIsMarkingAll] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -165,8 +166,14 @@ export default function NotificationsClient() {
       setUnreadCount(0);
       setHasMore(false);
       setNextCursor(null);
+      await globalMutate(
+        (key) => typeof key === "string" && key.startsWith("/api/notifications?"),
+        undefined,
+        { revalidate: true },
+      );
       await globalMutate("/api/notifications/unread-count");
       showSuccessToast("알림 기록을 모두 삭제했습니다.");
+      setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error(error);
       showErrorToast("알림 삭제에 실패했습니다.");
@@ -216,7 +223,13 @@ export default function NotificationsClient() {
                 {isMarkingAll && <Loader2 className="h-4 w-4 animate-spin" />}
                 모두 읽음
               </Button>
-              <AlertDialog>
+              <AlertDialog
+                open={isDeleteDialogOpen}
+                onOpenChange={(open) => {
+                  if (isDeletingAll) return;
+                  setIsDeleteDialogOpen(open);
+                }}
+              >
                 <AlertDialogTrigger asChild>
                   <Button
                     variant="destructive"
@@ -239,7 +252,10 @@ export default function NotificationsClient() {
                     <AlertDialogAction
                       disabled={isDeletingAll}
                       className="gap-2 bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      onClick={deleteAllNotifications}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        void deleteAllNotifications();
+                      }}
                     >
                       {isDeletingAll && <Loader2 className="h-4 w-4 animate-spin" />}
                       전체 삭제
