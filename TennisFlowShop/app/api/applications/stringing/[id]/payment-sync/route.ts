@@ -152,6 +152,24 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
         { status: 404 },
       );
     }
+
+    const paymentSource = String((application as any)?.paymentSource ?? "").trim();
+    if (
+      (application as any)?.orderId ||
+      (application as any)?.rentalId ||
+      paymentSource.startsWith("order:") ||
+      paymentSource.startsWith("rental:")
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          code: "LINKED_APPLICATION_PAYMENT_SYNC_FORBIDDEN",
+          error: "주문/대여와 연결된 신청서는 연결된 주문/대여 상세에서 PG 상태를 확인해주세요.",
+        },
+        { status: 409 },
+      );
+    }
+
     const tid = String((application as any)?.paymentInfo?.tid ?? "").trim();
     const provider = String((application as any)?.paymentInfo?.provider ?? "")
       .trim()

@@ -2412,6 +2412,7 @@ export default function StringingApplicationDetailClient({
                           approvedAt={linkedPayment?.approvedAt ?? null}
                           paymentNiceSync={linkedPayment?.niceSync ?? null}
                           niceOrderId={linkedPayment?.rawSummary?.orderId ?? null}
+                          showAdminPgDetails={isAdmin}
                         />
                         {canSyncStandaloneNicePayment && (
                           <div className="mt-3">
