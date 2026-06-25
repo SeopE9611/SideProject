@@ -608,9 +608,11 @@ export default function StringingApplicationDetailClient({
         if (!res.ok) {
           const parsed = await res.json().catch(() => null);
           const message =
-            parsed && typeof parsed.error === "string"
-              ? parsed.error
-              : "신청 직접 취소에 실패했습니다.";
+            parsed && typeof parsed.message === "string"
+              ? parsed.message
+              : parsed && typeof parsed.error === "string"
+                ? parsed.error
+                : "신청 직접 취소에 실패했습니다.";
           console.error("admin-cancel failed", res.status, parsed);
           throw new Error(message);
         }
@@ -3426,8 +3428,11 @@ export default function StringingApplicationDetailClient({
               취소로 변경되며 처리 이력에 사유가 남습니다.
             </p>
             <p className="mt-2 text-ui-body-sm text-foreground/80">
-              신청 상태만 취소로 변경됩니다. 결제완료 건은 카드 취소 또는 수동 환불 처리가 별도로
-              필요할 수 있습니다.
+              카드/NICEPAY 결제완료 건은 취소 처리 시 결제사 취소가 함께 진행됩니다. 결제사
+              취소에 실패하면 신청 상태는 변경되지 않습니다.
+            </p>
+            <p className="mt-1 text-ui-body-sm text-foreground/80">
+              무통장 결제완료 건은 관리자 확인 후 결제취소 상태로 전환됩니다.
             </p>
             {packageApplied && (
               <p className="mt-1 text-ui-body-sm text-foreground/80">
