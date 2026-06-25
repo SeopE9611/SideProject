@@ -336,7 +336,7 @@ export default function FreeBoardEditClient({ id }: Props) {
         <div className="container mx-auto px-4 py-8">
           <Card className="border border-border bg-card shadow-md dark:bg-card">
             <CardContent className="space-y-4 p-6">
-              <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
+              <div className="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-ui-body-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
                 해당 글을 찾을 수 없습니다. 삭제되었거나 주소가 잘못되었을 수 있습니다.
               </div>
               <div className="flex justify-end gap-2">
@@ -360,7 +360,7 @@ export default function FreeBoardEditClient({ id }: Props) {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             {/* 브레드크럼: 게시판 > 자유 게시판 > 글 수정 */}
-            <div className="mb-1 text-sm text-muted-foreground">
+            <div className="mb-1 text-ui-body-sm text-muted-foreground">
               <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
               <Link
@@ -373,14 +373,14 @@ export default function FreeBoardEditClient({ id }: Props) {
               <span className="mx-1">›</span>
               <span>글 수정</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-normal text-foreground md:text-3xl">
+            <h1 className="text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
               자유 게시판 글 수정
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground md:text-base">
+            <p className="mt-1 text-ui-body-sm text-muted-foreground md:text-ui-body-lg">
               기존에 작성한 글의 내용을 수정합니다. 제목과 내용을 확인한 뒤 저장해 주세요.
             </p>
             {/* 이탈 경고(고정 노출) */}
-            <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
+            <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-ui-body-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
               <AlertTriangle className="mt-0.5 h-4 w-4 flex-none" />
               <p className="leading-relaxed">
                 <span className="font-semibold">주의:</span> 수정 중에 다른 페이지로 이동하거나
@@ -396,13 +396,13 @@ export default function FreeBoardEditClient({ id }: Props) {
               type="button"
               variant="ghost"
               size="sm"
-              className="gap-2 text-xs sm:text-sm"
+              className="gap-2 text-ui-label sm:text-ui-body-sm"
               onClick={() => confirmLeaveIfDirty(() => router.back())}
             >
               <ArrowLeft className="h-4 w-4" />
               <span>이전으로</span>
             </Button>
-            <Button asChild variant="outline" size="sm" className="gap-2 text-xs sm:text-sm">
+            <Button asChild variant="outline" size="sm" className="gap-2 text-ui-label sm:text-ui-body-sm">
               <Link href="/board/free" onClick={onLeaveLinkClick}>
                 <MessageSquare className="h-4 w-4" />
                 <span>목록으로</span>
@@ -414,7 +414,7 @@ export default function FreeBoardEditClient({ id }: Props) {
         {/* 본문 카드 (수정 폼) */}
         <Card className="border border-border bg-card shadow-md dark:bg-card">
           <CardHeader className="space-y-1 border-b border-border pb-4 dark:border-border">
-            <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
+            <CardTitle className="flex items-center gap-2 text-ui-body-lg font-semibold text-foreground">
               <MessageSquare className="h-4 w-4 text-success" />
               <span>글 내용 수정</span>
             </CardTitle>
@@ -450,14 +450,14 @@ export default function FreeBoardEditClient({ id }: Props) {
                 {/* 분류 선택 */}
                 <div className="space-y-2">
                   <Label>분류</Label>
-                  <div className="flex flex-wrap gap-2 text-xs">
+                  <div className="flex flex-wrap gap-2 text-ui-label">
                     {CATEGORY_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
                         type="button"
                         onClick={() => setCategory(opt.value)}
                         className={cn(
-                          "rounded-full border px-2 py-0.5 text-[11px]",
+                          "rounded-full border px-2 py-0.5 text-ui-caption",
                           category === opt.value
                             ? "border-border bg-secondary text-foreground dark:border-border dark:bg-secondary dark:text-foreground"
                             : "border-border text-muted-foreground dark:border-border dark:text-muted-foreground",
@@ -490,7 +490,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                     onChange={(e) => setContent(e.target.value)}
                     disabled={isSubmitting}
                   />
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-ui-label text-muted-foreground">
                     신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해
                     주세요.
                   </p>
@@ -508,7 +508,7 @@ export default function FreeBoardEditClient({ id }: Props) {
 
                     {/* 이미지 업로드 탭 */}
                     <TabsContent value="image" className="pt-4 space-y-2">
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-ui-label text-muted-foreground">
                         최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로 사용됩니다.
                       </p>
                       <ImageUploader
@@ -543,10 +543,10 @@ export default function FreeBoardEditClient({ id }: Props) {
                         }}
                       >
                         <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-ui-body-sm text-muted-foreground">
                           클릭하여 파일을 선택하거나, 이 영역으로 드래그하여 업로드할 수 있어요.
                         </p>
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-ui-label text-muted-foreground">
                           이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당 최대 {MAX_SIZE_MB}MB,
                           최대 {MAX_FILES}개, 현재 {totalAttachmentCount}/{MAX_FILES}개)
                         </p>
@@ -576,7 +576,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                       {/* 새로 선택한 파일 카드 목록 */}
                       {selectedFiles.length > 0 && (
                         <div className="space-y-2">
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-ui-label text-muted-foreground">
                             새로 첨부할 파일 ({selectedFiles.length}개)
                           </p>
                           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -585,7 +585,7 @@ export default function FreeBoardEditClient({ id }: Props) {
                                 key={`${file.name}-${index}`}
                                 className="group relative flex flex-col justify-between rounded-lg bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
                               >
-                                <div className="flex-1 flex flex-col gap-1 text-xs">
+                                <div className="flex-1 flex flex-col gap-1 text-ui-label">
                                   <span className="font-medium truncate" title={file.name}>
                                     {file.name}
                                   </span>
@@ -612,13 +612,13 @@ export default function FreeBoardEditClient({ id }: Props) {
 
                 {/* 에러 메시지 */}
                 {errorMsg && (
-                  <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15 dark:text-destructive">
+                  <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-ui-body-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15 dark:text-destructive">
                     {errorMsg}
                   </div>
                 )}
 
                 {conflictOpen && (
-                  <div className="rounded-md border border-border bg-muted px-3 py-3 text-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
+                  <div className="rounded-md border border-border bg-muted px-3 py-3 text-ui-body-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
                     <p className="font-semibold">동시 수정 충돌이 감지되었습니다.</p>
                     <p className="mt-1">
                       최신 글을 다시 조회한 뒤, 현재 작성 중인 내용과 비교해서 필요한 부분만 반영해

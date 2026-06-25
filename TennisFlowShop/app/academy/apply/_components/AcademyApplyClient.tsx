@@ -145,8 +145,8 @@ function SectionCard({
               </div>
             )}
             <div className="min-w-0">
-              {title && <h2 className="text-base font-semibold text-foreground">{title}</h2>}
-              {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
+              {title && <h2 className="text-ui-body-lg font-semibold text-foreground">{title}</h2>}
+              {description && <p className="mt-0.5 text-ui-body-sm text-muted-foreground">{description}</p>}
             </div>
           </div>
         </div>
@@ -171,14 +171,14 @@ function FormField({
 }) {
   return (
     <div className="min-w-0 space-y-2.5">
-      <Label className="text-sm font-medium text-foreground">
+      <Label className="text-ui-body-sm font-medium text-foreground">
         {label}
         {required && <span className="ml-1 text-destructive">*</span>}
       </Label>
       {children}
-      {hint && !error && <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p>}
+      {hint && !error && <p className="text-ui-label leading-relaxed text-muted-foreground">{hint}</p>}
       {error && (
-        <p className="flex items-center gap-1.5 text-sm font-medium leading-relaxed text-destructive">
+        <p className="flex items-center gap-1.5 text-ui-body-sm font-medium leading-relaxed text-destructive">
           <AlertCircle className="h-3.5 w-3.5" />
           {error}
         </p>
@@ -212,7 +212,7 @@ function CustomSelect({
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
         className={cn(
-          "flex w-full min-w-0 items-center justify-between rounded-xl border bg-background px-4 py-3 text-left text-sm transition-all",
+          "flex w-full min-w-0 items-center justify-between rounded-xl border bg-background px-4 py-3 text-left text-ui-body-sm transition-all",
           "hover:border-border focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
           error ? "border-destructive" : "border-border/60",
           disabled && "cursor-not-allowed opacity-50",
@@ -248,9 +248,9 @@ function CustomSelect({
                   option.value === value && "bg-muted",
                 )}
               >
-                <span className="text-sm font-medium text-foreground">{option.label}</span>
+                <span className="text-ui-body-sm font-medium text-foreground">{option.label}</span>
                 {option.description && (
-                  <span className="text-xs text-muted-foreground">{option.description}</span>
+                  <span className="text-ui-label text-muted-foreground">{option.description}</span>
                 )}
               </button>
             ))}
@@ -528,7 +528,7 @@ export default function AcademyApplyClient({
           description="회원정보 기준으로 자동 입력됩니다"
         >
           <div className="mb-5 rounded-xl border border-border bg-muted/20 p-4">
-            <p className="break-keep text-xs leading-relaxed text-muted-foreground">
+            <p className="break-keep text-ui-label leading-relaxed text-muted-foreground">
               정보 변경이 필요하시면{" "}
               <Link
                 href="/mypage/profile"
@@ -674,7 +674,7 @@ export default function AcademyApplyClient({
                         onClick={() => toggleDay(day)}
                         disabled={isSubmitting || isSelectedClassClosed}
                         className={cn(
-                          "flex min-w-0 flex-col items-center justify-center rounded-xl border py-3 text-sm font-medium transition-all",
+                          "flex min-w-0 flex-col items-center justify-center rounded-xl border py-3 text-ui-body-sm font-medium transition-all",
                           "hover:border-primary/50 hover:bg-primary/5",
                           "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                           isSelected
@@ -684,7 +684,7 @@ export default function AcademyApplyClient({
                             "cursor-not-allowed opacity-50",
                         )}
                       >
-                        <span className="text-xs">{day}</span>
+                        <span className="text-ui-label">{day}</span>
                       </button>
                     );
                   })}
@@ -743,10 +743,10 @@ export default function AcademyApplyClient({
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0 space-y-1.5">
-              <p className="text-sm font-medium text-foreground">
+              <p className="text-ui-body-sm font-medium text-foreground">
                 신청서 제출 준비가 완료되셨나요?
               </p>
-              <p className="break-keep text-xs leading-relaxed text-muted-foreground">
+              <p className="break-keep text-ui-label leading-relaxed text-muted-foreground">
                 신청 단계에서는 결제가 진행되지 않습니다. 등록 확정 후 현장에서 안내드립니다.
               </p>
             </div>

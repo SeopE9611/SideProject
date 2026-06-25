@@ -47,7 +47,7 @@ function Stars({
           key={n}
           type="button"
           aria-label={`${n}점`}
-          className={`text-3xl transition-all duration-200 ${value >= n ? "text-warning scale-110" : "text-foreground"} hover:scale-125 hover:text-warning`}
+          className={`text-ui-page-title-lg transition-all duration-200 ${value >= n ? "text-warning scale-110" : "text-foreground"} hover:scale-125 hover:text-warning`}
           onClick={() => onChange?.(n)}
         >
           ★
@@ -950,10 +950,10 @@ export default function ReviewWritePage() {
                   <section className="rounded-2xl border border-border bg-muted/20 p-4">
                     <div className="flex flex-wrap items-end justify-between gap-3">
                       <div className="min-w-0">
-                        <Label className="block text-sm font-semibold text-foreground">
+                        <Label className="block text-ui-body-sm font-semibold text-foreground">
                           리뷰 대상 선택
                         </Label>
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-ui-label text-muted-foreground">
                           {showAllApps
                             ? "전체 신청서를 표시합니다. 작성 가능한 항목만 선택할 수 있습니다."
                             : "작성 가능한 신청서만 표시합니다."}
@@ -962,14 +962,14 @@ export default function ReviewWritePage() {
                       <button
                         type="button"
                         onClick={() => setShowAllApps((v) => !v)}
-                        className="shrink-0 text-xs font-medium text-foreground underline underline-offset-4 hover:text-muted-foreground"
+                        className="shrink-0 text-ui-label font-medium text-foreground underline underline-offset-4 hover:text-muted-foreground"
                       >
                         {showAllApps ? "작성 가능만 보기" : "전체 신청서 보기"}
                       </button>
                     </div>
 
                     <select
-                      className="mt-3 h-10 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring"
+                      className="mt-3 h-10 w-full rounded-xl border border-border bg-card px-3 text-ui-body-sm text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring"
                       value={selectedAppId ?? ""}
                       onChange={(e) => {
                         const nextId = e.target.value || null;
@@ -1014,16 +1014,16 @@ export default function ReviewWritePage() {
 
                 <section className="space-y-3">
                   <div>
-                    <Label className="text-base font-semibold text-foreground">
+                    <Label className="text-ui-body-lg font-semibold text-foreground">
                       별점을 선택해주세요
                     </Label>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className="mt-1 text-ui-body-sm text-muted-foreground">
                       사용 경험을 가장 잘 나타내는 점수를 선택하세요.
                     </p>
                   </div>
                   <div className="rounded-2xl border border-border bg-muted/20 px-4 py-3">
                     <Stars value={rating} onChange={setRating} disabled={locked} />
-                    <div className="mt-3 text-center text-sm font-medium text-foreground">
+                    <div className="mt-3 text-center text-ui-body-sm font-medium text-foreground">
                       {rating}점
                     </div>
                   </div>
@@ -1031,8 +1031,8 @@ export default function ReviewWritePage() {
 
                 <section className="space-y-3">
                   <div className="flex items-end justify-between gap-3">
-                    <Label className="text-base font-semibold text-foreground">후기 내용</Label>
-                    <span className="text-xs text-muted-foreground tabular-nums">
+                    <Label className="text-ui-body-lg font-semibold text-foreground">후기 내용</Label>
+                    <span className="text-ui-label text-muted-foreground tabular-nums">
                       {content.length} / 1000자
                     </span>
                   </div>
@@ -1047,8 +1047,8 @@ export default function ReviewWritePage() {
 
                 <section className="space-y-3">
                   <div>
-                    <Label className="text-base font-semibold text-foreground">사진 첨부</Label>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <Label className="text-ui-body-lg font-semibold text-foreground">사진 첨부</Label>
+                    <p className="mt-1 text-ui-body-sm text-muted-foreground">
                       선택 사항이며 최대 5장까지 등록할 수 있습니다.
                     </p>
                   </div>
@@ -1066,7 +1066,7 @@ export default function ReviewWritePage() {
                       disabled={locked || isUploading}
                     />
                     {isUploading && (
-                      <div className="mt-2 text-xs text-muted-foreground">이미지 업로드 중...</div>
+                      <div className="mt-2 text-ui-label text-muted-foreground">이미지 업로드 중...</div>
                     )}
                   </div>
                 </section>
@@ -1178,13 +1178,13 @@ export default function ReviewWritePage() {
             <PublicSurface className="space-y-4" padding="md">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-xs font-medium text-muted-foreground">리뷰 대상</p>
-                  <h2 className="mt-1 break-keep text-lg font-semibold text-foreground">
+                  <p className="text-ui-label font-medium text-muted-foreground">리뷰 대상</p>
+                  <h2 className="mt-1 break-keep text-ui-card-title-lg font-semibold text-foreground">
                     {targetTitle}
                   </h2>
                 </div>
                 {badge && (
-                  <span className="shrink-0 rounded-full border border-border bg-muted px-2.5 py-1 text-xs font-medium text-foreground">
+                  <span className="shrink-0 rounded-full border border-border bg-muted px-2.5 py-1 text-ui-label font-medium text-foreground">
                     {badge}
                   </span>
                 )}
@@ -1202,18 +1202,18 @@ export default function ReviewWritePage() {
                         className="object-cover"
                       />
                     ) : (
-                      <div className="grid h-full w-full place-items-center text-xs text-muted-foreground">
+                      <div className="grid h-full w-full place-items-center text-ui-label text-muted-foreground">
                         IMG
                       </div>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="line-clamp-2 break-words text-sm font-medium text-foreground">
+                    <p className="line-clamp-2 break-words text-ui-body-sm font-medium text-foreground">
                       {currentMeta.name}
                     </p>
-                    <p className="mt-1 text-xs text-muted-foreground">구매확정 완료</p>
+                    <p className="mt-1 text-ui-label text-muted-foreground">구매확정 완료</p>
                     {resolvedOrderId && (
-                      <p className="mt-1 break-all text-xs text-muted-foreground">
+                      <p className="mt-1 break-all text-ui-label text-muted-foreground">
                         주문번호 {resolvedOrderId}
                       </p>
                     )}
@@ -1225,16 +1225,16 @@ export default function ReviewWritePage() {
                 <div className="rounded-2xl border border-border bg-muted/30 p-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground">교체서비스 신청 정보</p>
+                      <p className="text-ui-body-sm font-medium text-foreground">교체서비스 신청 정보</p>
                       {selectedApp.createdAt && (
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-ui-label text-muted-foreground">
                           신청일 {formatKoDateTime(selectedApp.createdAt)}
                         </p>
                       )}
                     </div>
                     {selectedApp.status && <ApplicationStatusBadge status={selectedApp.status} />}
                   </div>
-                  <dl className="mt-3 space-y-2 text-sm">
+                  <dl className="mt-3 space-y-2 text-ui-body-sm">
                     {(formatYMD(selectedApp.preferredDate) ||
                       formatHM(selectedApp.preferredTime)) && (
                       <div className="flex justify-between gap-3">
@@ -1274,7 +1274,7 @@ export default function ReviewWritePage() {
                       </div>
                     )}
                   </dl>
-                  <p className="mt-3 break-all text-xs text-muted-foreground">
+                  <p className="mt-3 break-all text-ui-label text-muted-foreground">
                     신청번호 {selectedApp._id}
                   </p>
                 </div>
@@ -1282,9 +1282,9 @@ export default function ReviewWritePage() {
 
               {mode === "product" && orderItems && orderItems.length > 1 && (
                 <div className="space-y-2 border-t border-border pt-4">
-                  <div className="flex items-center justify-between gap-3 text-sm">
+                  <div className="flex items-center justify-between gap-3 text-ui-body-sm">
                     <span className="font-medium text-foreground">이 주문의 다른 상품</span>
-                    <span className="text-xs text-muted-foreground">미작성 {remainingCount}개</span>
+                    <span className="text-ui-label text-muted-foreground">미작성 {remainingCount}개</span>
                   </div>
                   <div className="space-y-2">
                     {orderItems.map((it) => {
@@ -1305,23 +1305,23 @@ export default function ReviewWritePage() {
                                 className="object-cover"
                               />
                             ) : (
-                              <div className="grid h-full w-full place-items-center text-[10px] text-muted-foreground">
+                              <div className="grid h-full w-full place-items-center text-ui-micro text-muted-foreground">
                                 IMG
                               </div>
                             )}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="line-clamp-1 break-words text-xs font-medium text-foreground">
+                            <p className="line-clamp-1 break-words text-ui-label font-medium text-foreground">
                               {it.name}
                             </p>
-                            <p className="text-[11px] text-muted-foreground">{statusText}</p>
+                            <p className="text-ui-caption text-muted-foreground">{statusText}</p>
                           </div>
                           {!isCurrent && !it.reviewed && (
                             <Button
                               size="sm"
                               variant="ghost"
                               onClick={() => switchProduct(it.productId)}
-                              className="h-8 shrink-0 px-2 text-xs"
+                              className="h-8 shrink-0 px-2 text-ui-label"
                             >
                               작성
                             </Button>
@@ -1335,8 +1335,8 @@ export default function ReviewWritePage() {
             </PublicSurface>
 
             <PublicSurface className="space-y-2" padding="md">
-              <h2 className="text-sm font-semibold text-foreground">작성 기준</h2>
-              <ul className="space-y-1 text-sm text-muted-foreground">
+              <h2 className="text-ui-body-sm font-semibold text-foreground">작성 기준</h2>
+              <ul className="space-y-1 text-ui-body-sm text-muted-foreground">
                 <li>• 실제 사용 경험을 중심으로 작성해주세요.</li>
                 <li>• 사진은 선택 사항이며 최대 5장까지 등록됩니다.</li>
                 <li>• 하나의 이용 내역에는 하나의 후기만 작성할 수 있습니다.</li>

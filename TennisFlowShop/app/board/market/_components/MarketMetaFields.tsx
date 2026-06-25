@@ -42,7 +42,7 @@ const onNum = (v: string) => {
 };
 
 const selectCls =
-  "h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50";
+  "h-10 w-full rounded-md border border-input bg-background px-3 text-ui-body-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50";
 
 export default function MarketMetaFields({
   category,
@@ -64,8 +64,8 @@ export default function MarketMetaFields({
       {/* ── 섹션 1: 거래 핵심 정보 ── */}
       <div className="rounded-xl border border-border bg-card shadow-sm">
         <div className="border-b border-border px-5 py-4 md:px-6">
-          <h3 className="text-sm font-semibold text-foreground">거래 핵심 정보</h3>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
+          <h3 className="text-ui-body-sm font-semibold text-foreground">거래 핵심 정보</h3>
+          <p className="mt-0.5 text-ui-caption text-muted-foreground">
             구매자가 가장 먼저 확인하는 판매 조건입니다.
           </p>
         </div>
@@ -73,7 +73,7 @@ export default function MarketMetaFields({
         <div className="px-5 py-5 md:px-6 space-y-5">
           {/* 판매가 - 가장 강조 */}
           <div className="space-y-2">
-            <Label className="text-sm font-semibold">
+            <Label className="text-ui-body-sm font-semibold">
               판매가 <span className="text-destructive">*</span>
             </Label>
             <div className="relative">
@@ -90,19 +90,19 @@ export default function MarketMetaFields({
                 }
                 disabled={disabled}
                 className={cn(
-                  "h-12 pr-10 text-lg font-semibold placeholder:text-muted-foreground/60",
+                  "h-12 pr-10 text-ui-card-title-lg font-semibold placeholder:text-muted-foreground/60",
                   fieldErrors?.price ? "border-destructive focus-visible:border-destructive" : "",
                 )}
               />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ui-body-sm font-medium text-muted-foreground">
                 원
               </span>
             </div>
             {fieldErrors?.price ? (
-              <p className="text-xs text-destructive">{fieldErrors.price}</p>
+              <p className="text-ui-label text-destructive">{fieldErrors.price}</p>
             ) : null}
             <p
-              className={`text-xs ${hasValidPrice ? "text-muted-foreground" : "text-muted-foreground"}`}
+              className={`text-ui-label ${hasValidPrice ? "text-muted-foreground" : "text-muted-foreground"}`}
             >
               {priceDisplay ? (
                 <>
@@ -117,7 +117,7 @@ export default function MarketMetaFields({
           {/* 판매 상태 / 상태 등급 - 2열 */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label className="text-sm">
+              <Label className="text-ui-body-sm">
                 판매 상태 <span className="text-destructive">*</span>
               </Label>
               <select
@@ -134,7 +134,7 @@ export default function MarketMetaFields({
               </select>
             </div>
             <div className="space-y-2">
-              <Label className="text-sm">
+              <Label className="text-ui-body-sm">
                 상태 등급 <span className="text-destructive">*</span>
               </Label>
               <select
@@ -154,7 +154,7 @@ export default function MarketMetaFields({
 
           {/* 상태 메모 - 독립 블록 */}
           <div className="space-y-2">
-            <Label className="text-sm">상태 설명</Label>
+            <Label className="text-ui-body-sm">상태 설명</Label>
             <Textarea
               value={value.conditionNote ?? ""}
               onChange={(e) => onChange({ ...value, conditionNote: e.target.value })}
@@ -162,7 +162,7 @@ export default function MarketMetaFields({
               className="min-h-[100px] resize-y placeholder:text-muted-foreground/60"
               placeholder="ex: 프레임 상단에 생활 스크래치가 있고, 그립은 최근 교체했습니다."
             />
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-ui-caption text-muted-foreground">
               실물 상태를 솔직하게 적을수록 거래 신뢰도가 올라갑니다.
             </p>
           </div>
@@ -173,8 +173,8 @@ export default function MarketMetaFields({
       {category === "racket" && (
         <div className="rounded-xl border border-border bg-card shadow-sm">
           <div className="border-b border-border px-5 py-4 md:px-6">
-            <h3 className="text-sm font-semibold text-foreground">라켓 상세 정보</h3>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">
+            <h3 className="text-ui-body-sm font-semibold text-foreground">라켓 상세 정보</h3>
+            <p className="mt-0.5 text-ui-caption text-muted-foreground">
               모델명은 필수이며, 나머지 스펙은 아는 범위에서만 입력하면 됩니다.
             </p>
           </div>
@@ -182,12 +182,12 @@ export default function MarketMetaFields({
           <div className="px-5 py-5 md:px-6 space-y-6">
             {/* 핵심 스펙 */}
             <div>
-              <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <p className="mb-3 text-ui-caption font-medium uppercase tracking-wider text-muted-foreground">
                 핵심 스펙
               </p>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2 sm:col-span-2">
-                  <Label className="text-sm">
+                  <Label className="text-ui-body-sm">
                     모델명 <span className="text-destructive">*</span>
                   </Label>
                   <Input
@@ -213,7 +213,7 @@ export default function MarketMetaFields({
                     )}
                   />
                   {fieldErrors?.modelName ? (
-                    <p className="text-xs text-destructive">{fieldErrors.modelName}</p>
+                    <p className="text-ui-label text-destructive">{fieldErrors.modelName}</p>
                   ) : null}
                 </div>
                 {(
@@ -224,7 +224,7 @@ export default function MarketMetaFields({
                   ] as const
                 ).map(({ key, ph }) => (
                   <div className="space-y-2" key={key}>
-                    <Label className="text-sm">{getMarketRacketFieldLabel(key)}</Label>
+                    <Label className="text-ui-body-sm">{getMarketRacketFieldLabel(key)}</Label>
                     <Input
                       type="number"
                       placeholder={ph}
@@ -251,7 +251,7 @@ export default function MarketMetaFields({
 
             {/* 선택 스펙 */}
             <div>
-              <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <p className="mb-3 text-ui-caption font-medium uppercase tracking-wider text-muted-foreground">
                 선택 스펙
               </p>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -263,7 +263,7 @@ export default function MarketMetaFields({
                   ] as const
                 ).map(({ key, ph }) => (
                   <div className="space-y-2" key={key}>
-                    <Label className="text-sm">{getMarketRacketFieldLabel(key)}</Label>
+                    <Label className="text-ui-body-sm">{getMarketRacketFieldLabel(key)}</Label>
                     <Input
                       type="number"
                       placeholder={ph}
@@ -283,7 +283,7 @@ export default function MarketMetaFields({
                   </div>
                 ))}
                 <div className="space-y-2">
-                  <Label className="text-sm">스트링 패턴</Label>
+                  <Label className="text-ui-body-sm">스트링 패턴</Label>
                   <select
                     className={selectCls}
                     value={value.racketSpec?.pattern ?? ""}
@@ -308,7 +308,7 @@ export default function MarketMetaFields({
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm">그립 사이즈</Label>
+                  <Label className="text-ui-body-sm">그립 사이즈</Label>
                   <select
                     className={selectCls}
                     value={value.racketSpec?.gripSize ?? ""}
@@ -342,8 +342,8 @@ export default function MarketMetaFields({
       {category === "string" && (
         <div className="rounded-xl border border-border bg-card shadow-sm">
           <div className="border-b border-border px-5 py-4 md:px-6">
-            <h3 className="text-sm font-semibold text-foreground">스트링 상세 정보</h3>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">
+            <h3 className="text-ui-body-sm font-semibold text-foreground">스트링 상세 정보</h3>
+            <p className="mt-0.5 text-ui-caption text-muted-foreground">
               모델명은 필수이며, 세부 옵션은 아는 범위에서만 작성해도 됩니다.
             </p>
           </div>
@@ -351,7 +351,7 @@ export default function MarketMetaFields({
           <div className="px-5 py-5 md:px-6">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2 sm:col-span-2">
-                <Label className="text-sm">
+                <Label className="text-ui-body-sm">
                   모델명 <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -377,11 +377,11 @@ export default function MarketMetaFields({
                   )}
                 />
                 {fieldErrors?.modelName ? (
-                  <p className="text-xs text-destructive">{fieldErrors.modelName}</p>
+                  <p className="text-ui-label text-destructive">{fieldErrors.modelName}</p>
                 ) : null}
               </div>
               <div className="space-y-2">
-                <Label className="text-sm">재질</Label>
+                <Label className="text-ui-body-sm">재질</Label>
                 <select
                   className={selectCls}
                   value={value.stringSpec?.material ?? ""}
@@ -406,7 +406,7 @@ export default function MarketMetaFields({
                 </select>
               </div>
               <div className="space-y-2">
-                <Label className="text-sm">게이지</Label>
+                <Label className="text-ui-body-sm">게이지</Label>
                 <select
                   className={selectCls}
                   value={value.stringSpec?.gauge ?? ""}
@@ -431,7 +431,7 @@ export default function MarketMetaFields({
                 </select>
               </div>
               <div className="space-y-2">
-                <Label className="text-sm">색상</Label>
+                <Label className="text-ui-body-sm">색상</Label>
                 <select
                   className={selectCls}
                   value={value.stringSpec?.color ?? ""}
@@ -456,7 +456,7 @@ export default function MarketMetaFields({
                 </select>
               </div>
               <div className="space-y-2">
-                <Label className="text-sm">길이</Label>
+                <Label className="text-ui-body-sm">길이</Label>
                 <select
                   className={selectCls}
                   value={value.stringSpec?.length ?? ""}

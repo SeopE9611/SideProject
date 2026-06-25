@@ -246,7 +246,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
     <div className="min-h-screen bg-muted/30">
       <div className="container mx-auto px-4 sm:px-6 py-7 sm:py-9 md:py-10 space-y-5 sm:space-y-7">
         <div className="space-y-3 sm:space-y-5">
-          <div className="text-sm text-muted-foreground">
+          <div className="text-ui-body-sm text-muted-foreground">
             <span className="font-medium text-primary">고객센터</span>
             <span className="mx-1">›</span>
             <span>{sectionLabel}</span>
@@ -265,10 +265,10 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                   <Bell className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold leading-tight tracking-normal text-foreground sm:text-2xl md:text-[2rem]">
+                  <h1 className="text-ui-section-title font-semibold leading-tight tracking-normal text-foreground sm:text-ui-page-title md:text-ui-page-title-lg">
                     {pageTitle}
                   </h1>
-                  <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                  <p className="text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body-lg">
                     {pageDescription}
                   </p>
                 </div>
@@ -296,8 +296,8 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
               )}
               {error && (
                 <div className="text-center py-8 space-y-3">
-                  <div className="text-destructive text-lg font-semibold">{errorTitle}</div>
-                  <p className="text-sm text-muted-foreground">{errorBody}</p>
+                  <div className="text-destructive text-ui-card-title-lg font-semibold">{errorTitle}</div>
+                  <p className="text-ui-body-sm text-muted-foreground">{errorBody}</p>
                   <div className="grid grid-cols-1 gap-2 sm:inline-flex sm:grid-cols-none sm:items-center sm:justify-center">
                     {(error as FetchError | undefined)?.status === 401 && (
                       <Button asChild>
@@ -361,12 +361,12 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 flex-shrink-0 mt-1">
                         <Bell className="h-5 w-5" />
                       </div>
-                      <h1 className="min-w-0 text-xl font-bold leading-tight text-foreground sm:text-2xl md:text-3xl">
+                      <h1 className="min-w-0 text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title md:text-ui-page-title-lg">
                         {notice.title}
                       </h1>
                     </div>
 
-                    <div className="grid gap-2 text-sm text-muted-foreground sm:flex sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-2">
+                    <div className="grid gap-2 text-ui-body-sm text-muted-foreground sm:flex sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-2">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
                         <span className="font-medium">작성일</span>
@@ -425,7 +425,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                     <section className="space-y-4">
                       <div className="flex items-center gap-2">
                         <ImageIcon className="h-5 w-5" />
-                        <h2 className="text-xl font-semibold text-foreground">이미지</h2>
+                        <h2 className="text-ui-section-title font-semibold text-foreground">이미지</h2>
                       </div>
 
                       {imageAtts.length === 1 ? (
@@ -506,7 +506,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                     <section className="space-y-4">
                       <div className="flex items-center gap-2">
                         <FileText className="h-5 w-5" />
-                        <h2 className="text-xl font-semibold text-foreground">첨부파일</h2>
+                        <h2 className="text-ui-section-title font-semibold text-foreground">첨부파일</h2>
                       </div>
 
                       <div className="grid gap-3">
@@ -538,7 +538,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                                     {name}
                                   </div>
                                   {size && (
-                                    <div className="break-words text-sm text-muted-foreground">
+                                    <div className="break-words text-ui-body-sm text-muted-foreground">
                                       {size}
                                     </div>
                                   )}
@@ -639,8 +639,8 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                         <div className="flex w-full items-start gap-3">
                           <Icon className="mt-0.5 h-4 w-4 shrink-0" />
                           <div className="min-w-0">
-                            <p className="text-xs text-muted-foreground">{label}</p>
-                            <p className="line-clamp-2 text-sm font-medium text-foreground">
+                            <p className="text-ui-label text-muted-foreground">{label}</p>
+                            <p className="line-clamp-2 text-ui-body-sm font-medium text-foreground">
                               {target.title}
                             </p>
                           </div>
@@ -650,8 +650,8 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
                       <span className="flex w-full items-start gap-3 text-muted-foreground">
                         <Icon className="mt-0.5 h-4 w-4 shrink-0" />
                         <span className="min-w-0">
-                          <span className="block text-xs">{label}</span>
-                          <span className="block line-clamp-1 text-sm">이동할 글이 없습니다.</span>
+                          <span className="block text-ui-label">{label}</span>
+                          <span className="block line-clamp-1 text-ui-body-sm">이동할 글이 없습니다.</span>
                         </span>
                       </span>
                     )}

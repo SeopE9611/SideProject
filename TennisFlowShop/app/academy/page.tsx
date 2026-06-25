@@ -281,7 +281,7 @@ export default async function AcademyPage() {
               asChild
               size="lg"
               wrap="responsive"
-              className="h-12 w-full px-8 text-base bp-sm:w-auto"
+              className="h-12 w-full px-8 text-ui-body-lg bp-sm:w-auto"
             >
               <Link
                 href={
@@ -297,7 +297,7 @@ export default async function AcademyPage() {
               size="lg"
               variant="outline"
               wrap="responsive"
-              className="h-12 w-full px-8 text-base bp-sm:w-auto"
+              className="h-12 w-full px-8 text-ui-body-lg bp-sm:w-auto"
             >
               <Link href="/board/qna/write?category=academy">
                 <MessageCircle className="mr-2 h-5 w-5" />
@@ -311,7 +311,7 @@ export default async function AcademyPage() {
           {["1:1 맞춤 레슨", "유연한 일정 조율", "레벨별 맞춤 커리큘럼"].map((item) => (
             <div
               key={item}
-              className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-foreground shadow-sm"
+              className="rounded-xl border border-border bg-card px-4 py-3 text-ui-body-sm font-medium text-foreground shadow-sm"
             >
               {item}
             </div>
@@ -351,8 +351,8 @@ export default async function AcademyPage() {
                       </Badge>
                     </div>
                     <div className="space-y-2">
-                      <CardTitle className="text-xl">{program.category}</CardTitle>
-                      <p className="break-keep text-sm leading-relaxed text-muted-foreground">
+                      <CardTitle className="text-ui-section-title">{program.category}</CardTitle>
+                      <p className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
                         {program.description}
                       </p>
                     </div>
@@ -366,11 +366,11 @@ export default async function AcademyPage() {
                         <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
                           <div className="min-w-0">
                             <p className="break-keep font-semibold text-foreground">{item.title}</p>
-                            <p className="break-keep break-words text-sm leading-relaxed text-muted-foreground">
+                            <p className="break-keep break-words text-ui-body-sm leading-relaxed text-muted-foreground">
                               {item.detail}
                             </p>
                           </div>
-                          <p className="shrink-0 whitespace-nowrap tabular-nums text-lg font-bold text-primary">
+                          <p className="shrink-0 whitespace-nowrap tabular-nums text-ui-card-title-lg font-semibold text-primary">
                             {item.price}
                           </p>
                         </div>
@@ -386,14 +386,14 @@ export default async function AcademyPage() {
         {/* Contact Section */}
         <section className="space-y-6" aria-labelledby="academy-contact-heading">
           <div className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-wider text-primary">Contact</p>
+            <p className="text-ui-body-sm font-semibold uppercase tracking-wider text-primary">Contact</p>
             <h2
               id="academy-contact-heading"
-              className="text-2xl font-bold tracking-tight text-foreground md:text-3xl"
+              className="text-ui-page-title font-semibold tracking-tight text-foreground md:text-ui-page-title-lg"
             >
               상담 문의
             </h2>
-            <p className="max-w-2xl break-words text-base leading-relaxed text-muted-foreground">
+            <p className="max-w-2xl break-words text-ui-body-lg leading-relaxed text-muted-foreground">
               레슨 유형, 시간표, 수강 시작 가능일이 궁금하다면 담당자에게 문의해 주세요. 상담 후
               등록이 확정되면 첫 방문 시 현장에서 결제를 안내합니다.
             </p>
@@ -411,14 +411,14 @@ export default async function AcademyPage() {
                   </div>
                   <div className="min-w-0 flex-1 space-y-1.5">
                     <div className="flex min-w-0 flex-wrap items-center gap-2">
-                      <h3 className="break-keep text-xl font-semibold leading-tight text-foreground">
+                      <h3 className="break-keep text-ui-section-title font-semibold leading-tight text-foreground">
                         {contact.name}
                       </h3>
                       <Badge variant="outline">{contact.role}</Badge>
                     </div>
                     <a
                       href={`tel:${contact.phone.replaceAll("-", "")}`}
-                      className="inline-flex min-w-0 items-center gap-2 break-keep text-lg font-medium text-primary transition-colors hover:text-primary/80"
+                      className="inline-flex min-w-0 items-center gap-2 break-keep text-ui-card-title-lg font-medium text-primary transition-colors hover:text-primary/80"
                     >
                       <Phone className="h-4 w-4" />
                       {contact.phone}
@@ -480,18 +480,18 @@ export default async function AcademyPage() {
                           {academyClass.levelLabel}
                         </Badge>
                       </div>
-                      <CardTitle className="text-balance break-keep text-xl leading-tight">
+                      <CardTitle className="text-balance break-keep text-ui-section-title leading-tight">
                         {academyClass.name}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-1 flex-col gap-4 pt-0">
-                      <p className="whitespace-pre-line break-words text-sm leading-relaxed text-muted-foreground">
+                      <p className="whitespace-pre-line break-words text-ui-body-sm leading-relaxed text-muted-foreground">
                         {academyClass.description ||
                           "도깨비테니스에서 레벨과 목표에 맞춰 안내하는 아카데미 클래스입니다."}
                       </p>
 
                       <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-4">
-                        <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] gap-3 text-sm">
+                        <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] gap-3 text-ui-body-sm">
                           <User className="h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             강사
@@ -500,7 +500,7 @@ export default async function AcademyPage() {
                             {academyClass.instructorName || "상담 후 안내"}
                           </span>
                         </div>
-                        <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] gap-3 text-sm">
+                        <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] gap-3 text-ui-body-sm">
                           <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             장소
@@ -509,23 +509,23 @@ export default async function AcademyPage() {
                             {academyClass.location || "상담 후 안내"}
                           </span>
                         </div>
-                        <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] items-start gap-3 text-sm">
+                        <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] items-start gap-3 text-ui-body-sm">
                           <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             일정
                           </span>
                           <div className="min-w-0 space-y-1 whitespace-normal break-keep break-words leading-relaxed">
-                            <p className="text-sm font-semibold text-foreground">
+                            <p className="text-ui-body-sm font-semibold text-foreground">
                               {scheduleDisplay.daysText}
                             </p>
                             {scheduleDisplay.timeText && (
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-ui-body-sm text-muted-foreground">
                                 {scheduleDisplay.timeText}
                               </p>
                             )}
                           </div>
                         </div>
-                        <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] gap-3 text-sm">
+                        <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] gap-3 text-ui-body-sm">
                           <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             정원
@@ -536,7 +536,7 @@ export default async function AcademyPage() {
                               : "상담 후 안내"}
                           </span>
                         </div>
-                        <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] gap-3 text-sm">
+                        <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] gap-3 text-ui-body-sm">
                           <Wallet className="h-4 w-4 shrink-0 text-muted-foreground" />
                           <span className="shrink-0 whitespace-nowrap break-keep font-medium text-foreground">
                             가격
@@ -605,11 +605,11 @@ export default async function AcademyPage() {
         {/* FAQ Section */}
         <section className="space-y-8">
           <div className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-wider text-primary">FAQ</p>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+            <p className="text-ui-body-sm font-semibold uppercase tracking-wider text-primary">FAQ</p>
+            <h2 className="text-ui-page-title font-semibold tracking-tight text-foreground md:text-ui-page-title-lg">
               자주 묻는 질문
             </h2>
-            <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
+            <p className="max-w-2xl text-ui-body-lg leading-relaxed text-muted-foreground">
               레슨 문의 전 자주 확인하는 내용을 정리했습니다.
             </p>
           </div>
@@ -621,15 +621,15 @@ export default async function AcademyPage() {
                 className="group rounded-2xl border border-border bg-card shadow-sm transition-colors hover:border-primary/30"
               >
                 <CardHeader className="pb-3">
-                  <CardTitle className="flex items-start gap-3 text-base font-semibold">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                  <CardTitle className="flex items-start gap-3 text-ui-body-lg font-semibold">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-ui-body-sm font-semibold text-primary">
                       {index + 1}
                     </span>
                     <span className="text-balance leading-relaxed">{faq.question}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <p className="pl-10 text-sm leading-relaxed text-muted-foreground">
+                  <p className="pl-10 text-ui-body-sm leading-relaxed text-muted-foreground">
                     {faq.answer}
                   </p>
                 </CardContent>
@@ -644,10 +644,10 @@ export default async function AcademyPage() {
             <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
               <MessageCircle className="h-7 w-7 text-primary" />
             </div>
-            <h2 className="text-balance text-xl font-bold tracking-tight text-foreground md:text-2xl lg:text-3xl">
+            <h2 className="text-balance text-ui-section-title font-semibold tracking-tight text-foreground md:text-ui-page-title lg:text-ui-page-title-lg">
               나에게 맞는 레슨이 궁금하다면 문의해 주세요
             </h2>
-            <p className="text-pretty text-sm leading-relaxed text-muted-foreground bp-sm:text-base">
+            <p className="text-pretty text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">
               도깨비테니스 아카데미가 레벨, 목표, 가능한 일정을 확인해 상담을 도와드리고, 등록 확정
               후 현장에서 결제를 안내해드립니다.
             </p>

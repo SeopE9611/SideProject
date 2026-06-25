@@ -186,7 +186,7 @@ export default function ReviewsClient() {
             </Select>
 
             {/* Photo filter checkbox */}
-            <label className="inline-flex items-center gap-2 text-sm font-medium text-foreground">
+            <label className="inline-flex items-center gap-2 text-ui-body-sm font-medium text-foreground">
               <Checkbox
                 checked={hasPhoto}
                 onCheckedChange={(v) => setHasPhoto(Boolean(v))}
@@ -272,7 +272,7 @@ export default function ReviewsClient() {
                 )}
               </Button>
             ) : (
-              <div className="text-sm text-muted-foreground py-6 text-center">
+              <div className="text-ui-body-sm text-muted-foreground py-6 text-center">
                 마지막 페이지입니다
               </div>
             )}

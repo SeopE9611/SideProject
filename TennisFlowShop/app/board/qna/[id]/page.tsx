@@ -207,7 +207,7 @@ export default function QnaDetailPage() {
     <div className="min-h-screen bg-muted/30">
       <div className="container mx-auto px-4 py-5 md:py-7 space-y-5 md:space-y-7">
         <div className="space-y-3 md:space-y-5">
-          <div className="text-sm text-muted-foreground">
+          <div className="text-ui-body-sm text-muted-foreground">
             <span className="font-medium text-primary">고객센터</span>
             <span className="mx-1">›</span>
             <span>Q&amp;A</span>
@@ -226,10 +226,10 @@ export default function QnaDetailPage() {
                   <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <div>
-                  <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-normal text-foreground">
+                  <h1 className="text-ui-page-title sm:text-ui-page-title-lg md:text-ui-page-title-lg font-semibold tracking-normal text-foreground">
                     고객센터 · Q&amp;A
                   </h1>
-                  <p className="text-sm sm:text-base text-muted-foreground">
+                  <p className="text-ui-body-sm sm:text-ui-body-lg text-muted-foreground">
                     Q&amp;A 목록에서 선택한 상세 문의와 답변을 확인하실 수 있습니다.
                   </p>
                 </div>
@@ -261,7 +261,7 @@ export default function QnaDetailPage() {
               )}
               {!isLoading && error && (
                 <div className="space-y-3">
-                  <h1 className="break-keep text-2xl font-bold leading-tight text-foreground sm:text-3xl">
+                  <h1 className="break-keep text-ui-page-title font-semibold leading-tight text-foreground sm:text-ui-page-title-lg">
                     {errorTitle}
                   </h1>
                 </div>
@@ -279,7 +279,7 @@ export default function QnaDetailPage() {
                       {qna.isSecret && (
                         <Badge
                           variant="secondary"
-                          className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-xs"
+                          className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-ui-label"
                         >
                           <Lock className="h-3 w-3" /> 비밀글
                         </Badge>
@@ -307,15 +307,15 @@ export default function QnaDetailPage() {
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-secondary text-foreground shadow-sm flex-shrink-0 mt-1">
                       <MessageSquare className="h-5 w-5" />
                     </div>
-                    <h1 className="break-keep text-2xl font-bold leading-tight text-foreground sm:text-3xl">
+                    <h1 className="break-keep text-ui-page-title font-semibold leading-tight text-foreground sm:text-ui-page-title-lg">
                       {qna.title}
                     </h1>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground sm:text-sm md:gap-6 [&>div]:shrink-0 [&>div]:whitespace-nowrap">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-ui-label text-muted-foreground sm:text-ui-body-sm md:gap-6 [&>div]:shrink-0 [&>div]:whitespace-nowrap">
                     <div className="flex shrink-0 items-center gap-2 whitespace-nowrap">
                       <Avatar className="h-7 w-7 border-2 border-border">
-                        <AvatarFallback className="text-xs font-medium bg-muted text-foreground">
+                        <AvatarFallback className="text-ui-label font-medium bg-muted text-foreground">
                           {(qna.authorName ?? "익명").slice(0, 1)}
                         </AvatarFallback>
                       </Avatar>
@@ -376,7 +376,7 @@ export default function QnaDetailPage() {
                     <section className="space-y-4">
                       <div className="flex items-center gap-2">
                         <FileText className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold text-foreground">첨부파일</h3>
+                        <h3 className="text-ui-card-title-lg font-semibold text-foreground">첨부파일</h3>
                         <Badge variant="secondary">{qna.attachments.length}개</Badge>
                       </div>
 
@@ -422,7 +422,7 @@ export default function QnaDetailPage() {
                                 href={url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary"
+                                className="flex items-center gap-2 text-ui-body-sm font-medium text-primary hover:text-primary"
                               >
                                 <FileText className="h-4 w-4 flex-shrink-0" />
                                 <span className="truncate">{name}</span>
@@ -483,7 +483,7 @@ export default function QnaDetailPage() {
             <CardHeader className="border-b border-border bg-muted/50">
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-semibold text-foreground">관리자 답변 작성</h2>
+                <h2 className="text-ui-card-title-lg font-semibold text-foreground">관리자 답변 작성</h2>
               </div>
             </CardHeader>
             <CardContent className="p-4 md:p-6 space-y-4">
@@ -526,7 +526,7 @@ export default function QnaDetailPage() {
                     <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
                       <MessageCircle className="h-4 w-4 text-primary" />
                     </div>
-                    <h2 className="text-xl font-bold text-foreground">관리자 답변</h2>
+                    <h2 className="text-ui-section-title font-semibold text-foreground">관리자 답변</h2>
                     <Badge
                       variant="success"
                       className={`${badgeBaseOutlined} ${badgeSizeSm} ${badgeToneClass("success")}`}
@@ -571,10 +571,10 @@ export default function QnaDetailPage() {
                   )}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground sm:text-sm md:gap-6 [&>div]:shrink-0 [&>div]:whitespace-nowrap">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-ui-label text-muted-foreground sm:text-ui-body-sm md:gap-6 [&>div]:shrink-0 [&>div]:whitespace-nowrap">
                   <div className="flex items-center gap-2">
                     <Avatar className="h-6 w-6 border border-border">
-                      <AvatarFallback className="text-xs font-medium bg-muted text-foreground">
+                      <AvatarFallback className="text-ui-label font-medium bg-muted text-foreground">
                         {(qna.answer.authorName ?? "관리자").slice(0, 1)}
                       </AvatarFallback>
                     </Avatar>
@@ -632,7 +632,7 @@ export default function QnaDetailPage() {
         )}
 
         <div className="pt-4 space-y-3 border-t border-border">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-ui-body-sm text-muted-foreground">
             Q&amp;A는 비밀글/권한 정책이 있어 이전 글/다음 글 이동 대신 목록 중심으로 이동을
             제공합니다.
           </p>

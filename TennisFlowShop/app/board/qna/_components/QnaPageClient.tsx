@@ -48,9 +48,9 @@ const LABEL_TO_CODE: Record<string, string> = Object.fromEntries(
   Object.entries(CODE_TO_LABEL).map(([code, label]) => [label, code]),
 );
 const qnaMobileTitleClampClass =
-  "min-w-0 flex-1 line-clamp-2 break-keep text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
+  "min-w-0 flex-1 line-clamp-2 break-keep text-ui-body-sm font-semibold leading-snug sm:line-clamp-1 sm:text-ui-body-lg";
 const qnaMobileMetaWrapClass =
-  "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground [&>span]:shrink-0 [&>span]:whitespace-nowrap";
+  "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-ui-label text-muted-foreground [&>span]:shrink-0 [&>span]:whitespace-nowrap";
 const qnaStatusBadgeWrapClass = "shrink-0 self-start";
 
 type QnaItem = {
@@ -415,17 +415,17 @@ export default function QnaPageClient({
                 <MessageSquare className="h-5 w-5" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl md:text-[2rem] font-bold tracking-normal text-foreground">
+                <h1 className="text-ui-page-title sm:text-ui-page-title-lg md:text-ui-page-title-lg font-semibold tracking-normal text-foreground">
                   고객센터 · Q&amp;A
                 </h1>
-                <p className="text-sm sm:text-base text-muted-foreground">
+                <p className="text-ui-body-sm sm:text-ui-body-lg text-muted-foreground">
                   도깨비테니스 고객센터에서 궁금한 점을 문의하고, 답변을 받아보실 수 있습니다.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-sm">
+          <div className="rounded-2xl border border-border bg-card p-4 text-ui-body-sm text-muted-foreground shadow-sm">
             <p className="font-semibold text-foreground">문의 유형을 먼저 확인해주세요</p>
             <p className="mt-1">
               상품 문의, 주문/배송 문의, 교체서비스 문의, 아카데미 문의, 기타 문의 중 가까운 유형을
@@ -439,8 +439,8 @@ export default function QnaPageClient({
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-foreground">전체 문의</p>
-                    <p className="text-2xl font-bold text-foreground">{total}</p>
+                    <p className="text-ui-body-sm font-medium text-foreground">전체 문의</p>
+                    <p className="text-ui-page-title font-semibold text-foreground">{total}</p>
                   </div>
                   <div className="bg-success/10 dark:bg-success/15 rounded-xl p-2">
                     <MessageSquare className="h-5 w-5 text-success" />
@@ -453,8 +453,8 @@ export default function QnaPageClient({
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-foreground">답변 완료</p>
-                    <p className="text-2xl font-bold text-foreground">{answeredCount}</p>
+                    <p className="text-ui-body-sm font-medium text-foreground">답변 완료</p>
+                    <p className="text-ui-page-title font-semibold text-foreground">{answeredCount}</p>
                   </div>
                   <div className="bg-success/10 dark:bg-success/15 rounded-xl p-2">
                     <CheckCircle className="h-5 w-5 text-success" />
@@ -467,8 +467,8 @@ export default function QnaPageClient({
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-foreground">답변 대기</p>
-                    <p className="text-2xl font-bold text-foreground">{waitingCount}</p>
+                    <p className="text-ui-body-sm font-medium text-foreground">답변 대기</p>
+                    <p className="text-ui-page-title font-semibold text-foreground">{waitingCount}</p>
                   </div>
                   <div className="bg-warning/10 dark:bg-warning/15 rounded-xl p-2">
                     <Clock className="h-5 w-5 text-warning" />
@@ -481,8 +481,8 @@ export default function QnaPageClient({
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-foreground">총 조회수</p>
-                    <p className="text-2xl font-bold text-foreground">{totalViews}</p>
+                    <p className="text-ui-body-sm font-medium text-foreground">총 조회수</p>
+                    <p className="text-ui-page-title font-semibold text-foreground">{totalViews}</p>
                   </div>
                   <div className="bg-muted rounded-xl p-2">
                     <Users className="h-5 w-5 text-foreground" />
@@ -498,7 +498,7 @@ export default function QnaPageClient({
             <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                 <MessageSquare className="h-5 w-5 shrink-0 text-success sm:h-6 sm:w-6" />
-                <CardTitle className="whitespace-nowrap break-keep text-lg font-semibold leading-tight sm:text-xl md:text-2xl">
+                <CardTitle className="whitespace-nowrap break-keep text-ui-card-title-lg font-semibold leading-tight sm:text-ui-section-title md:text-ui-page-title">
                   Q&amp;A 목록
                 </CardTitle>
                 {(isBusy || isValidating) && (
@@ -523,7 +523,7 @@ export default function QnaPageClient({
           <div className="border-b border-border bg-muted/20 px-4 py-4 sm:px-5 md:px-6">
             <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex min-w-0 flex-col gap-2 md:flex-row md:items-center">
-                <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <span className="shrink-0 text-ui-label font-semibold uppercase tracking-wide text-muted-foreground">
                   필터
                 </span>
                 <div className="grid w-full min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 md:w-auto">
@@ -545,7 +545,7 @@ export default function QnaPageClient({
                     }}
                   >
                     <SelectTrigger
-                      className="h-9 w-full bg-card text-sm md:h-10 md:w-[150px]"
+                      className="h-9 w-full bg-card text-ui-body-sm md:h-10 md:w-[150px]"
                       aria-label="문의 분류"
                     >
                       <SelectValue placeholder="문의 분류" />
@@ -584,7 +584,7 @@ export default function QnaPageClient({
                     }}
                   >
                     <SelectTrigger
-                      className="h-9 w-full bg-card text-sm md:h-10 md:w-[140px]"
+                      className="h-9 w-full bg-card text-ui-body-sm md:h-10 md:w-[140px]"
                       aria-label="답변 상태"
                     >
                       <SelectValue placeholder="답변 상태" />
@@ -599,7 +599,7 @@ export default function QnaPageClient({
               </div>
 
               <div className="flex min-w-0 flex-col gap-2 lg:ml-auto lg:flex-row lg:items-center">
-                <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground lg:sr-only">
+                <span className="shrink-0 text-ui-label font-semibold uppercase tracking-wide text-muted-foreground lg:sr-only">
                   검색
                 </span>
                 <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row lg:w-auto">
@@ -612,7 +612,7 @@ export default function QnaPageClient({
                     }
                   >
                     <SelectTrigger
-                      className="h-9 w-full bg-card text-sm sm:w-[130px] md:h-10"
+                      className="h-9 w-full bg-card text-ui-body-sm sm:w-[130px] md:h-10"
                       aria-label="검색 기준"
                     >
                       <SelectValue placeholder="검색 기준" />
@@ -630,7 +630,7 @@ export default function QnaPageClient({
                     <Input
                       type="search"
                       placeholder="검색어를 입력하세요"
-                      className="h-9 w-full min-w-0 bg-card pl-10 text-sm md:h-10"
+                      className="h-9 w-full min-w-0 bg-card pl-10 text-ui-body-sm md:h-10"
                       value={inputKeyword}
                       onChange={(e) => setInputKeyword(e.target.value)}
                       onKeyDown={(e) => {
@@ -672,7 +672,7 @@ export default function QnaPageClient({
                           field: "all",
                         });
                       }}
-                      className="h-9 shrink-0 whitespace-nowrap text-sm md:h-10"
+                      className="h-9 shrink-0 whitespace-nowrap text-ui-body-sm md:h-10"
                       disabled={isBusy}
                     >
                       전체 보기
@@ -696,7 +696,7 @@ export default function QnaPageClient({
                       });
                     }}
                     variant="outline"
-                    className="h-9 shrink-0 whitespace-nowrap text-sm md:h-10"
+                    className="h-9 shrink-0 whitespace-nowrap text-ui-body-sm md:h-10"
                     disabled={isBusy}
                   >
                     {isBusy && (
@@ -797,7 +797,7 @@ export default function QnaPageClient({
                                 {qna.isSecret && (
                                   <Badge
                                     variant="secondary"
-                                    className="shrink-0 text-xs inline-flex items-center gap-1"
+                                    className="shrink-0 text-ui-label inline-flex items-center gap-1"
                                   >
                                     <Lock className="h-3 w-3" />
                                     비밀글

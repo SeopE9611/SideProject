@@ -160,8 +160,8 @@ export default function SupportFaqSearch() {
             <HelpCircle className="h-5 w-5 text-muted-foreground" />
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="break-keep text-xl font-semibold text-foreground">자주 묻는 질문</h2>
-            <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
+            <h2 className="break-keep text-ui-section-title font-semibold text-foreground">자주 묻는 질문</h2>
+            <p className="mt-1 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
               자주 묻는 내용을 먼저 확인해보세요.
             </p>
           </div>
@@ -184,7 +184,7 @@ export default function SupportFaqSearch() {
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               placeholder="검색어를 입력하세요"
-              className="h-12 min-w-0 border-border bg-background pl-11 pr-10 text-base focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="h-12 min-w-0 border-border bg-background pl-11 pr-10 text-ui-body-lg focus-visible:ring-0 focus-visible:ring-offset-0"
               aria-label="자주 묻는 질문 검색"
             />
             {searchQuery && (
@@ -210,7 +210,7 @@ export default function SupportFaqSearch() {
                 type="button"
                 onClick={() => setSelectedCategory(category)}
                 className={cn(
-                  "rounded-full px-4 py-2 text-sm font-medium break-keep transition-all",
+                  "rounded-full px-4 py-2 text-ui-body-sm font-medium break-keep transition-all",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   isActive
                     ? "bg-foreground text-background"
@@ -231,8 +231,8 @@ export default function SupportFaqSearch() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
               <Search className="h-6 w-6 text-muted-foreground" />
             </div>
-            <p className="break-keep text-base font-medium text-foreground">검색 결과가 없습니다</p>
-            <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
+            <p className="break-keep text-ui-body-lg font-medium text-foreground">검색 결과가 없습니다</p>
+            <p className="mt-1 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
               다른 검색어를 입력하거나 Q&A 문의로 남겨주세요.
             </p>
             <Button asChild className="mt-4 w-full sm:w-auto" size="sm" wrap="responsive">
@@ -255,18 +255,18 @@ export default function SupportFaqSearch() {
                     <span className="flex min-w-0 flex-1 flex-col items-start gap-2 text-left">
                       <Badge
                         variant="secondary"
-                        className="px-2 py-0.5 text-xs font-normal break-keep"
+                        className="px-2 py-0.5 text-ui-label font-normal break-keep"
                       >
                         {faq.category}
                       </Badge>
-                      <span className="min-w-0 break-keep break-words text-sm font-medium leading-relaxed text-foreground sm:text-base">
+                      <span className="min-w-0 break-keep break-words text-ui-body-sm font-medium leading-relaxed text-foreground sm:text-ui-body-lg">
                         {faq.question}
                       </span>
                     </span>
                   </AccordionTrigger>
                   <AccordionContent
                     value={faq.id}
-                    className="whitespace-pre-line break-keep break-words pb-4 text-sm leading-relaxed text-muted-foreground"
+                    className="whitespace-pre-line break-keep break-words pb-4 text-ui-body-sm leading-relaxed text-muted-foreground"
                   >
                     {faq.answer}
                   </AccordionContent>
@@ -275,14 +275,14 @@ export default function SupportFaqSearch() {
             </Accordion>
 
             {hiddenFaqCount > 0 && (
-              <p className="break-keep py-2 text-center text-sm leading-relaxed text-muted-foreground">
+              <p className="break-keep py-2 text-center text-ui-body-sm leading-relaxed text-muted-foreground">
                 {visibleFaqs.length}개의 질문을 표시 중입니다. 더 많은 질문은 검색하거나 카테고리를
                 선택해 확인하세요.
               </p>
             )}
 
             <div className="flex flex-col items-center justify-center gap-3 border-t border-border pt-4 sm:flex-row">
-              <span className="break-keep text-center text-sm text-muted-foreground">
+              <span className="break-keep text-center text-ui-body-sm text-muted-foreground">
                 원하는 답변을 찾지 못하셨나요?
               </span>
               <Button

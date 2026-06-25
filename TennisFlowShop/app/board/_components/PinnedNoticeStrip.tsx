@@ -2,7 +2,7 @@ import { Bell, Pin } from "lucide-react";
 import Link from "next/link";
 
 const pinnedNoticeMobileTitleClampClass =
-  "line-clamp-2 text-[13px] font-medium leading-snug text-foreground group-hover:text-primary sm:line-clamp-1";
+  "line-clamp-2 text-ui-label font-medium leading-snug text-foreground group-hover:text-primary sm:line-clamp-1";
 
 import { Badge } from "@/components/ui/badge";
 
@@ -36,8 +36,8 @@ export default function PinnedNoticeStrip({ items }: { items: PinnedNoticeItem[]
           <Bell className="h-3.5 w-3.5" />
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-foreground">중요 안내 · 공지사항</p>
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-ui-body-sm font-semibold text-foreground">중요 안내 · 공지사항</p>
+          <p className="text-ui-micro text-muted-foreground">
             운영팀이 고정한 공지입니다. 게시판 이용 전 한 번 확인해 주세요.
           </p>
         </div>
@@ -50,12 +50,12 @@ export default function PinnedNoticeStrip({ items }: { items: PinnedNoticeItem[]
             href={`/board/notice/${notice._id}`}
             className="group flex items-start gap-2 rounded-md border border-primary/15 bg-background/70 px-2.5 py-1.5 transition-colors hover:bg-primary/[0.07] dark:bg-background/60"
           >
-            <Badge variant="brand" className="mt-0.5 shrink-0 px-1.5 py-0 text-[10px] leading-4">
+            <Badge variant="brand" className="mt-0.5 shrink-0 px-1.5 py-0 text-ui-micro leading-4">
               <Pin className="h-3 w-3" />
             </Badge>
             <div className="min-w-0 flex-1">
               <p className={pinnedNoticeMobileTitleClampClass}>{notice.title}</p>
-              <p className="mt-0 text-[10px] leading-tight text-muted-foreground">
+              <p className="mt-0 text-ui-micro leading-tight text-muted-foreground">
                 {fmtDate(notice.createdAt)}
               </p>
             </div>

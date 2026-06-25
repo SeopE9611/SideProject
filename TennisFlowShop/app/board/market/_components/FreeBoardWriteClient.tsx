@@ -584,7 +584,7 @@ export default function FreeBoardWriteClient() {
   const checklistDoneCount = checklist.filter((item) => item.ok).length;
 
   const selectCls =
-    "h-10 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50";
+    "h-10 w-full rounded-md border border-input bg-background px-3 text-ui-body-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50";
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -592,7 +592,7 @@ export default function FreeBoardWriteClient() {
         {/* ── 상단 헤더 ── */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="mb-1 text-sm text-muted-foreground">
+            <div className="mb-1 text-ui-body-sm text-muted-foreground">
               <span className="font-medium text-primary">게시판</span>
               <span className="mx-1">{">"}</span>
               <Link
@@ -605,10 +605,10 @@ export default function FreeBoardWriteClient() {
               <span className="mx-1">{">"}</span>
               <span className="text-foreground">상품 등록</span>
             </div>
-            <h1 className="break-keep text-2xl font-bold tracking-normal text-foreground md:text-3xl">
+            <h1 className="break-keep text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
               상품 등록
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-ui-body-sm text-muted-foreground">
               테니스 라켓, 스트링, 장비를 판매해 보세요.
             </p>
           </div>
@@ -634,8 +634,8 @@ export default function FreeBoardWriteClient() {
                     <Tag className="h-4 w-4" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-foreground">상품 기본 정보</h2>
-                    <p className="text-sm text-foreground/75">
+                    <h2 className="text-ui-body-sm font-semibold text-foreground">상품 기본 정보</h2>
+                    <p className="text-ui-body-sm text-foreground/75">
                       판매할 상품의 분류와 브랜드를 선택하세요.
                     </p>
                   </div>
@@ -643,7 +643,7 @@ export default function FreeBoardWriteClient() {
                 <div className="px-5 py-5 md:px-6 space-y-5">
                   {/* 분류 */}
                   <div className="space-y-2" ref={categoryRef}>
-                    <Label className="text-sm">
+                    <Label className="text-ui-body-sm">
                       분류 <span className="text-destructive">*</span>
                     </Label>
                     <div className="flex flex-wrap gap-2">
@@ -665,7 +665,7 @@ export default function FreeBoardWriteClient() {
                               }));
                           }}
                           className={cn(
-                            "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors",
+                            "rounded-full border px-4 py-1.5 text-ui-body-sm font-medium transition-colors",
                             category === opt.value
                               ? "border-primary bg-secondary text-foreground"
                               : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground",
@@ -676,14 +676,14 @@ export default function FreeBoardWriteClient() {
                       ))}
                     </div>
                     {fieldErrors.category ? (
-                      <p className="text-xs text-destructive">{fieldErrors.category}</p>
+                      <p className="text-ui-label text-destructive">{fieldErrors.category}</p>
                     ) : null}
                   </div>
 
                   {/* 브랜드 */}
                   {isMarketBrandCategory(category) && (
                     <div className="space-y-2" ref={brandRef}>
-                      <Label className="text-sm">
+                      <Label className="text-ui-body-sm">
                         브랜드 <span className="text-destructive">*</span>
                       </Label>
                       <select
@@ -710,9 +710,9 @@ export default function FreeBoardWriteClient() {
                         ))}
                       </select>
                       {fieldErrors.brand ? (
-                        <p className="text-xs text-destructive">{fieldErrors.brand}</p>
+                        <p className="text-ui-label text-destructive">{fieldErrors.brand}</p>
                       ) : null}
-                      <p className="text-sm text-foreground/75">
+                      <p className="text-ui-body-sm text-foreground/75">
                         라켓/스트링 글은 브랜드 선택이 필수입니다.
                       </p>
                     </div>
@@ -741,14 +741,14 @@ export default function FreeBoardWriteClient() {
                     <FileText className="h-4 w-4" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-foreground">게시글 내용</h2>
-                    <p className="text-sm text-foreground/75">제목과 상세 설명을 작성하세요.</p>
+                    <h2 className="text-ui-body-sm font-semibold text-foreground">게시글 내용</h2>
+                    <p className="text-ui-body-sm text-foreground/75">제목과 상세 설명을 작성하세요.</p>
                   </div>
                 </div>
                 <div className="px-5 py-5 md:px-6 space-y-5">
                   {/* 제목 */}
                   <div className="space-y-2">
-                    <Label htmlFor="title" className="text-sm font-semibold">
+                    <Label htmlFor="title" className="text-ui-body-sm font-semibold">
                       제목 <span className="text-destructive">*</span>
                     </Label>
                     <Input
@@ -767,25 +767,25 @@ export default function FreeBoardWriteClient() {
                       maxLength={TITLE_MAX}
                       placeholder="ex: 윌슨 블레이드 98 16x19 판매합니다"
                       className={cn(
-                        "h-11 text-base placeholder:text-muted-foreground/60",
+                        "h-11 text-ui-body-lg placeholder:text-muted-foreground/60",
                         fieldErrors.title
                           ? "border-destructive focus-visible:border-destructive focus-visible:ring-ring"
                           : "",
                       )}
                     />
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-foreground/75">
+                      <span className="text-ui-body-sm text-foreground/75">
                         {title.trim().length}/{TITLE_MAX}
                       </span>
                       {fieldErrors.title ? (
-                        <p className="text-xs text-destructive">{fieldErrors.title}</p>
+                        <p className="text-ui-label text-destructive">{fieldErrors.title}</p>
                       ) : null}
                     </div>
                   </div>
 
                   {/* 내용 */}
                   <div className="space-y-2">
-                    <Label htmlFor="content" className="text-sm font-semibold">
+                    <Label htmlFor="content" className="text-ui-body-sm font-semibold">
                       내용 <span className="text-destructive">*</span>
                     </Label>
                     <Textarea
@@ -813,11 +813,11 @@ export default function FreeBoardWriteClient() {
                       }
                     />
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-foreground/75">
+                      <span className="text-ui-body-sm text-foreground/75">
                         {content.trim().length}/{CONTENT_MAX}
                       </span>
                       {fieldErrors.content ? (
-                        <p className="text-xs text-destructive">{fieldErrors.content}</p>
+                        <p className="text-ui-label text-destructive">{fieldErrors.content}</p>
                       ) : null}
                     </div>
                   </div>
@@ -834,15 +834,15 @@ export default function FreeBoardWriteClient() {
                     <ImageIcon className="h-4 w-4" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-foreground">판매 이미지 / 파일</h2>
-                    <p className="text-sm text-foreground/75">
+                    <h2 className="text-ui-body-sm font-semibold text-foreground">판매 이미지 / 파일</h2>
+                    <p className="text-ui-body-sm text-foreground/75">
                       실물 사진을 첨부하면 거래 성사율이 높아집니다.
                     </p>
                   </div>
                 </div>
                 <div className="px-5 py-5 md:px-6 space-y-4">
                   {fieldErrors.attachments ? (
-                    <p className="text-xs text-destructive">{fieldErrors.attachments}</p>
+                    <p className="text-ui-label text-destructive">{fieldErrors.attachments}</p>
                   ) : null}
 
                   <Tabs defaultValue="image" className="w-full">
@@ -859,7 +859,7 @@ export default function FreeBoardWriteClient() {
 
                     {/* 이미지 */}
                     <TabsContent value="image" className="pt-4 space-y-3">
-                      <div className="rounded-lg border border-border bg-muted/30 px-4 py-2.5 text-[12px] text-muted-foreground">
+                      <div className="rounded-lg border border-border bg-muted/30 px-4 py-2.5 text-ui-caption text-muted-foreground">
                         <span className="font-medium text-foreground">
                           첫 번째 이미지가 대표 이미지
                         </span>
@@ -894,10 +894,10 @@ export default function FreeBoardWriteClient() {
                         }}
                       >
                         <Upload className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-ui-body-sm text-muted-foreground">
                           파일을 드래그하거나 클릭하여 업로드
                         </p>
-                        <p className="mt-1 text-sm text-foreground/75">
+                        <p className="mt-1 text-ui-body-sm text-foreground/75">
                           문서 파일만 가능 (파일당 최대 {MAX_SIZE_MB}MB, 최대 {MAX_FILES}개)
                         </p>
                         <Button
@@ -925,7 +925,7 @@ export default function FreeBoardWriteClient() {
 
                       {selectedFiles.length > 0 && (
                         <div className="space-y-2">
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-ui-label text-muted-foreground">
                             첨부된 파일 ({selectedFiles.length}/{MAX_FILES})
                           </p>
                           <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
@@ -934,7 +934,7 @@ export default function FreeBoardWriteClient() {
                                 key={`${file.name}-${index}`}
                                 className="group relative flex flex-col justify-between rounded-lg border border-border bg-muted/20 px-3 py-2.5 transition hover:border-primary/30"
                               >
-                                <div className="flex flex-col gap-0.5 text-xs">
+                                <div className="flex flex-col gap-0.5 text-ui-label">
                                   <span
                                     className="truncate font-medium text-foreground"
                                     title={file.name}
@@ -1000,12 +1000,12 @@ export default function FreeBoardWriteClient() {
                       isCompactSticky && "px-4 py-2.5",
                     )}
                   >
-                    <h3 className="text-sm font-semibold text-foreground">등록 요약</h3>
+                    <h3 className="text-ui-body-sm font-semibold text-foreground">등록 요약</h3>
                   </div>
                   <div
                     className={cn(
-                      "px-5 py-4 space-y-3 text-sm",
-                      isCompactSticky && "px-4 py-3 space-y-2 text-[13px]",
+                      "px-5 py-4 space-y-3 text-ui-body-sm",
+                      isCompactSticky && "px-4 py-3 space-y-2 text-ui-label",
                     )}
                   >
                     <div className="flex items-center justify-between">
@@ -1078,8 +1078,8 @@ export default function FreeBoardWriteClient() {
                   </Button>
                   <p
                     className={cn(
-                      "px-1 text-[11px] leading-relaxed text-muted-foreground",
-                      isCompactSticky && "text-[10px] leading-snug",
+                      "px-1 text-ui-caption leading-relaxed text-muted-foreground",
+                      isCompactSticky && "text-ui-micro leading-snug",
                     )}
                   >
                     등록 버튼을 누르면 현재 입력 내용이 게시글로 저장됩니다.
@@ -1096,8 +1096,8 @@ export default function FreeBoardWriteClient() {
                       isCompactSticky && "px-4 py-2.5",
                     )}
                   >
-                    <h3 className="text-sm font-semibold text-foreground">등록 전 확인</h3>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <h3 className="text-ui-body-sm font-semibold text-foreground">등록 전 확인</h3>
+                    <div className="flex items-center gap-2 text-ui-label text-muted-foreground">
                       <span>
                         {checklistDoneCount}/{checklist.length} 완료
                       </span>
@@ -1117,7 +1117,7 @@ export default function FreeBoardWriteClient() {
                       )}
                     >
                       {checklist.map((item) => (
-                        <div key={item.label} className="flex items-center gap-2 text-sm">
+                        <div key={item.label} className="flex items-center gap-2 text-ui-body-sm">
                           <div
                             className={cn(
                               "flex h-4 w-4 items-center justify-center rounded-full",
@@ -1131,7 +1131,7 @@ export default function FreeBoardWriteClient() {
                           <span
                             className={cn(
                               item.ok ? "text-foreground" : "text-muted-foreground",
-                              isCompactSticky && "text-[13px]",
+                              isCompactSticky && "text-ui-label",
                             )}
                           >
                             {item.label}
@@ -1143,7 +1143,7 @@ export default function FreeBoardWriteClient() {
                 </div>
 
                 {errorMsg && (
-                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-xs text-destructive">
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-ui-label text-destructive">
                     {errorMsg}
                   </div>
                 )}
