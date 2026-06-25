@@ -1836,7 +1836,7 @@ export default function CheckoutPage() {
                       </label>
                     </RadioGroup>
                     {withStringService && (
-                      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-ui-body-sm text-muted-foreground">
+                      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-ui-body-sm text-muted-foreground bp-md:text-ui-body">
                         <p className="font-medium text-foreground">교체서비스 진행 안내</p>
                         <p className="mt-1 break-keep">
                           {deliveryMethod === "택배수령"
