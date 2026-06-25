@@ -24,6 +24,8 @@ type ProductDoc = {
     comfort?: number;
   };
   inventory?: {
+    stock?: number;
+    manageStock?: boolean;
     isFeatured?: boolean;
     isNew?: boolean;
     isSale?: boolean;
@@ -157,6 +159,7 @@ export async function GET(req: NextRequest) {
     const isFeatured = params.get("isFeatured"); // 'true' | 'false'
     const exposure = params.get("exposure") || "all";
     const exclude = params.get("exclude"); // string(ObjectId)
+    const includeSoldOut = params.get("includeSoldOut") === "true";
 
     // 페이징
     const page = Math.max(1, Number(params.get("page") || "1"));
@@ -189,6 +192,67 @@ export async function GET(req: NextRequest) {
         return { "inventory.isSale": true };
       });
       (filter as any).$and = [...(((filter as any).$and as any[]) ?? []), { $or: exposureOr }];
+    }
+
+    // 기본 목록은 품절 상품을 제외한다.
+    // 상품 카드/스트링 선택에서 쓰는 hasSelectableStringStock 기준과 같은 재고 소스
+    // (variant → gauge → color → inventory.manageStock)를 서버 쿼리에서 반영해 페이징 개수가 줄어들지 않게 한다.
+    if (!includeSoldOut) {
+      (filter as any).$and = [
+        ...(((filter as any).$and as any[]) ?? []),
+        {
+          $or: [
+            {
+              variantInventories: {
+                $elemMatch: {
+                  isSoldOut: { $ne: true },
+                  stock: { $gt: 0 },
+                },
+              },
+            },
+            {
+              $and: [
+                { $or: [{ variantInventories: { $exists: false } }, { variantInventories: { $size: 0 } }] },
+                {
+                  gaugeInventories: {
+                    $elemMatch: {
+                      isSoldOut: { $ne: true },
+                      stock: { $gt: 0 },
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              $and: [
+                { $or: [{ variantInventories: { $exists: false } }, { variantInventories: { $size: 0 } }] },
+                { $or: [{ gaugeInventories: { $exists: false } }, { gaugeInventories: { $size: 0 } }] },
+                {
+                  colorInventories: {
+                    $elemMatch: {
+                      isSoldOut: { $ne: true },
+                      stock: { $gt: 0 },
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              $and: [
+                { $or: [{ variantInventories: { $exists: false } }, { variantInventories: { $size: 0 } }] },
+                { $or: [{ gaugeInventories: { $exists: false } }, { gaugeInventories: { $size: 0 } }] },
+                { $or: [{ colorInventories: { $exists: false } }, { colorInventories: { $size: 0 } }] },
+                {
+                  $or: [
+                    { "inventory.manageStock": { $ne: true } },
+                    { "inventory.stock": { $gt: 0 } },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ];
     }
 
     // 가격 범위 필터(기존 훅(useInfiniteProducts)에서 이미 사용중인 파라미터를 서버에서 반영)

@@ -74,6 +74,7 @@ export default function FilterableProductList({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const isApplyFlow = searchParams.get("from") === "apply";
+  const includeSoldOut = searchParams.get("includeSoldOut") === "true";
 
   // 정렬 / 뷰 모드
   const [sortOption, setSortOption] = useState("latest");
@@ -260,6 +261,7 @@ export default function FilterableProductList({
     maxPrice: maxPriceParam,
     purpose: isApplyFlow ? "stringing" : undefined,
     exposure: serializeBenefitFilters(exposureFilter) ?? "all",
+    includeSoldOut,
   });
 
   /**
@@ -285,6 +287,7 @@ export default function FilterableProductList({
       priceRange[0],
       priceRange[1],
       exposureFilter.join(","),
+      includeSoldOut ? "includeSoldOut" : "excludeSoldOut",
     ].join("|");
   }, [
     selectedBrand,
@@ -298,6 +301,7 @@ export default function FilterableProductList({
     exposureFilter,
     sortOption,
     priceRange,
+    includeSoldOut,
   ]);
 
   // 필터 키가 바뀌는 "그 순간"에 전환 플래그 ON (페인트 전에 실행)
@@ -380,6 +384,20 @@ export default function FilterableProductList({
   const handleClearInput = useCallback(() => {
     setSearchQuery("");
   }, []);
+
+  const handleToggleIncludeSoldOut = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (includeSoldOut) {
+      params.delete("includeSoldOut");
+    } else {
+      params.set("includeSoldOut", "true");
+    }
+
+    const newSearch = params.toString();
+    lastSerializedRef.current = newSearch;
+    setIsUiTransitioning(true);
+    router.replace(`${pathname}${newSearch ? `?${newSearch}` : ""}`, { scroll: false });
+  }, [includeSoldOut, pathname, router, searchParams]);
 
   // draft를 현재 applied(selectedXXX) 상태로 동기화 (Sheet 열 때 / 취소할 때 사용)
   const syncDraftFromApplied = useCallback(() => {
@@ -535,6 +553,7 @@ export default function FilterableProductList({
     setOrDelete("comfort", selectedComfort !== null ? String(selectedComfort) : null);
     setOrDelete("q", submittedQuery ? submittedQuery : null);
     setOrDelete("exposure", serializeBenefitFilters(exposureFilter));
+    setOrDelete("includeSoldOut", includeSoldOut ? "true" : null);
 
     // 기본값이면 URL에 굳이 남기지 않기(기존 동작 유지)
     setOrDelete("sort", sortOption && sortOption !== "latest" ? sortOption : null);
@@ -562,6 +581,7 @@ export default function FilterableProductList({
     viewMode,
     isMobileViewport,
     priceRange,
+    includeSoldOut,
     router,
     pathname,
     searchParams,
@@ -860,21 +880,37 @@ export default function FilterableProductList({
             )}
 
             <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-3 shadow-sm bp-sm:flex-row bp-sm:items-center">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (showFilters) cancelFiltersSheet();
-                  else openFiltersSheet();
-                }}
-                className="h-10 w-full min-w-[88px] shrink-0 whitespace-nowrap border-border px-3 hover:bg-muted/30 bp-sm:h-9 bp-sm:w-auto"
-                aria-expanded={showFilters}
-                aria-label={showFilters ? "필터 닫기" : "필터 열기"}
-              >
-                <Filter className="mr-2 h-4 w-4" />
-                필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
-              </Button>
+              <div className="flex w-full flex-wrap items-center gap-2 bp-sm:w-auto bp-sm:flex-nowrap">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (showFilters) cancelFiltersSheet();
+                    else openFiltersSheet();
+                  }}
+                  className="h-10 min-w-[88px] shrink-0 whitespace-nowrap border-border px-3 hover:bg-muted/30 bp-sm:h-9"
+                  aria-expanded={showFilters}
+                  aria-label={showFilters ? "필터 닫기" : "필터 열기"}
+                >
+                  <Filter className="mr-2 h-4 w-4" />
+                  필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
+                </Button>
+                <Button
+                  type="button"
+                  variant={includeSoldOut ? "outline" : "default"}
+                  size="sm"
+                  onClick={handleToggleIncludeSoldOut}
+                  className={cn(
+                    "h-10 shrink-0 whitespace-nowrap px-3 bp-sm:h-9",
+                    includeSoldOut && "border-border hover:bg-muted/30",
+                  )}
+                  aria-pressed={!includeSoldOut}
+                  aria-label={includeSoldOut ? "품절 상품 포함 중" : "품절 상품 제외 중"}
+                >
+                  품절 제외
+                </Button>
+              </div>
               <div className="flex w-full min-w-0 flex-1 items-center justify-end gap-3 bp-sm:ml-auto bp-sm:w-auto bp-sm:flex-initial">
                 {/* 뷰 모드 토글 */}
                 {!isMobileViewport && (
