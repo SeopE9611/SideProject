@@ -538,6 +538,18 @@ async function handleNicePackageReturn(req: Request) {
     }
 
     const packageOrders = db.collection("packageOrders");
+    const niceCard = extractNiceCardInfo(approvedRaw);
+    const easyPayProvider = extractNiceEasyPayProvider(approvedRaw);
+    const paymentCardSummary = niceCard
+      ? {
+          issuerCode: niceCard.issuerCode ?? undefined,
+          acquirerCode: niceCard.acquirerCode ?? undefined,
+          issuerName: niceCard.issuerName ?? undefined,
+          acquirerName: niceCard.acquirerName ?? undefined,
+          cardName: niceCard.cardName ?? undefined,
+        }
+      : undefined;
+    const paymentEasyPaySummary = easyPayProvider ? { provider: easyPayProvider } : undefined;
     const insertRes = await packageOrders.insertOne({
       userId: new ObjectId(String(session.userId)),
       createdAt: now,
@@ -564,29 +576,21 @@ async function handleNicePackageReturn(req: Request) {
         provider: "nicepay",
         method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
         approvedAt: new Date(),
-        cardDisplayName: extractNiceCardInfo(approvedRaw)?.displayName ?? extractNiceCardInfo(approvedRaw)?.cardName ?? extractNiceCardInfo(approvedRaw)?.issuerName ?? extractNiceCardInfo(approvedRaw)?.acquirerName ?? undefined,
-        cardCompany: extractNiceCardInfo(approvedRaw)?.issuerName ?? extractNiceCardInfo(approvedRaw)?.acquirerName ?? undefined,
-        cardLabel: extractNiceCardInfo(approvedRaw)?.cardName ?? extractNiceCardInfo(approvedRaw)?.displayName ?? undefined,
-        niceCard: extractNiceCardInfo(approvedRaw) ?? undefined,
-        easyPayProvider: extractNiceEasyPayProvider(approvedRaw) ?? undefined,
+        cardDisplayName:
+          niceCard?.displayName ??
+          niceCard?.cardName ??
+          niceCard?.issuerName ??
+          niceCard?.acquirerName ??
+          undefined,
+        cardCompany: niceCard?.issuerName ?? niceCard?.acquirerName ?? undefined,
+        cardLabel: niceCard?.cardName ?? niceCard?.displayName ?? undefined,
+        niceCard: niceCard ?? undefined,
+        easyPayProvider: easyPayProvider ?? undefined,
         rawSummary: {
           orderId,
           totalAmount: amount,
-          card: (() => {
-            const niceCard = extractNiceCardInfo(approvedRaw);
-            if (!niceCard) return undefined;
-            return {
-              issuerCode: niceCard.issuerCode ?? undefined,
-              acquirerCode: niceCard.acquirerCode ?? undefined,
-              issuerName: niceCard.issuerName ?? undefined,
-              acquirerName: niceCard.acquirerName ?? undefined,
-              cardName: niceCard.cardName ?? undefined,
-            };
-          })(),
-          easyPay: (() => {
-            const provider = extractNiceEasyPayProvider(approvedRaw);
-            return provider ? { provider } : undefined;
-          })(),
+          card: paymentCardSummary,
+          easyPay: paymentEasyPaySummary,
         },
         tid,
       },
@@ -612,29 +616,21 @@ async function handleNicePackageReturn(req: Request) {
           provider: "nicepay",
           method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
           approvedAt: new Date(),
-          cardDisplayName: extractNiceCardInfo(approvedRaw)?.displayName ?? extractNiceCardInfo(approvedRaw)?.cardName ?? extractNiceCardInfo(approvedRaw)?.issuerName ?? extractNiceCardInfo(approvedRaw)?.acquirerName ?? undefined,
-          cardCompany: extractNiceCardInfo(approvedRaw)?.issuerName ?? extractNiceCardInfo(approvedRaw)?.acquirerName ?? undefined,
-          cardLabel: extractNiceCardInfo(approvedRaw)?.cardName ?? extractNiceCardInfo(approvedRaw)?.displayName ?? undefined,
-          niceCard: extractNiceCardInfo(approvedRaw) ?? undefined,
-          easyPayProvider: extractNiceEasyPayProvider(approvedRaw) ?? undefined,
+          cardDisplayName:
+            niceCard?.displayName ??
+            niceCard?.cardName ??
+            niceCard?.issuerName ??
+            niceCard?.acquirerName ??
+            undefined,
+          cardCompany: niceCard?.issuerName ?? niceCard?.acquirerName ?? undefined,
+          cardLabel: niceCard?.cardName ?? niceCard?.displayName ?? undefined,
+          niceCard: niceCard ?? undefined,
+          easyPayProvider: easyPayProvider ?? undefined,
           rawSummary: {
             orderId,
             totalAmount: amount,
-            card: (() => {
-              const niceCard = extractNiceCardInfo(approvedRaw);
-              if (!niceCard) return undefined;
-              return {
-                issuerCode: niceCard.issuerCode ?? undefined,
-                acquirerCode: niceCard.acquirerCode ?? undefined,
-                issuerName: niceCard.issuerName ?? undefined,
-                acquirerName: niceCard.acquirerName ?? undefined,
-                cardName: niceCard.cardName ?? undefined,
-              };
-            })(),
-            easyPay: (() => {
-              const provider = extractNiceEasyPayProvider(approvedRaw);
-              return provider ? { provider } : undefined;
-            })(),
+            card: paymentCardSummary,
+            easyPay: paymentEasyPaySummary,
           },
           tid,
         },
