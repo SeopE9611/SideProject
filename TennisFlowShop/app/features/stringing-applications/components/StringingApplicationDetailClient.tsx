@@ -3,7 +3,6 @@
 import ApplicationStatusBadge from "@/app/features/stringing-applications/components/ApplicationStatusBadge";
 import { ApplicationStatusSelect } from "@/app/features/stringing-applications/components/ApplicationStatusSelect";
 import CustomerEditForm from "@/app/features/stringing-applications/components/CustomerEditForm";
-import { NextTodoCallout } from "@/app/mypage/_components/OrdersScopeContextNav";
 import PaymentEditForm from "@/app/features/stringing-applications/components/PaymentEditForm";
 import PaymentMethodDetail from "@/app/features/stringing-applications/components/PaymentMethodDetail";
 import RequirementsEditForm from "@/app/features/stringing-applications/components/RequirementsEditForm";
@@ -15,7 +14,9 @@ import {
   getStringingAddressReadLabels,
   orderShippingMethodLabel,
 } from "@/app/features/stringing-applications/lib/fulfillment-labels";
+import { NextTodoCallout } from "@/app/mypage/_components/OrdersScopeContextNav";
 import { useStringingStore } from "@/app/store/stringingStore";
+import { adminSurface } from "@/components/admin/admin-typography";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
@@ -43,7 +44,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { inferNextActionForOperationItem } from "@/lib/admin/next-action-guidance";
-import { adminSurface } from "@/components/admin/admin-typography";
 import {
   badgeBase,
   badgeSizeSm,
@@ -56,11 +56,11 @@ import {
   normalizeAdminCancelRequestStatus,
 } from "@/lib/cancel-request/admin-cancel-request-view";
 import { readCancelRequestError } from "@/lib/cancel-request/refund-account-client";
+import { stringColorLabel } from "@/lib/constants";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
-import { stringColorLabel } from "@/lib/constants";
-import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -68,8 +68,8 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
-  CreditCard,
   Copy,
+  CreditCard,
   Edit3,
   Mail,
   MapPin,
@@ -522,9 +522,16 @@ export default function StringingApplicationDetailClient({
         });
 
         if (!res.ok) {
-          const msg = await res.text().catch(() => "");
-          console.error("cancel-approve failed", res.status, msg);
-          throw new Error("취소 승인 실패");
+          const parsed = await res.json().catch(() => null);
+          const message =
+            parsed && typeof parsed.message === "string"
+              ? parsed.message
+              : parsed && typeof parsed.error === "string"
+                ? parsed.error
+                : "취소 승인에 실패했습니다.";
+
+          console.error("cancel-approve failed", res.status, parsed);
+          throw new Error(message);
         }
 
         showSuccessToast("취소 요청을 승인했습니다.");
@@ -534,7 +541,7 @@ export default function StringingApplicationDetailClient({
         }
       } catch (err) {
         console.error(err);
-        showErrorToast("취소 승인 중 오류가 발생했습니다.");
+        showErrorToast(err instanceof Error ? err.message : "취소 승인 중 오류가 발생했습니다.");
       }
     });
   };
@@ -3428,8 +3435,8 @@ export default function StringingApplicationDetailClient({
               취소로 변경되며 처리 이력에 사유가 남습니다.
             </p>
             <p className="mt-2 text-ui-body-sm text-foreground/80">
-              카드/NICEPAY 결제완료 건은 취소 처리 시 결제사 취소가 함께 진행됩니다. 결제사
-              취소에 실패하면 신청 상태는 변경되지 않습니다.
+              카드/NICEPAY 결제완료 건은 취소 처리 시 결제사 취소가 함께 진행됩니다. 결제사 취소에
+              실패하면 신청 상태는 변경되지 않습니다.
             </p>
             <p className="mt-1 text-ui-body-sm text-foreground/80">
               무통장 결제완료 건은 관리자 확인 후 결제취소 상태로 전환됩니다.
