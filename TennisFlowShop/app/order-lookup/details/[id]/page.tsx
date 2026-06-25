@@ -73,6 +73,14 @@ interface OrderDetail {
   }[];
   paymentInfo?: {
     method: string;
+    provider?: string | null;
+    easyPayProvider?: string | null;
+    cardDisplayName?: string | null;
+    cardCompany?: string | null;
+    cardLabel?: string | null;
+    niceCard?: unknown;
+    rawSummary?: unknown;
+    depositor?: string | null;
     bank?: "shinhan" | "kookmin" | "woori";
   };
   totalPrice: number;
@@ -465,6 +473,15 @@ export default function OrderDetailPage() {
     bank: orderPaymentInfo?.bank,
     depositor: orderPaymentInfo?.depositor,
   });
+  const normalizedProvider = String(order.paymentInfo?.provider ?? "")
+    .trim()
+    .toLowerCase();
+  const isOnlinePayment =
+    normalizedProvider === "nicepay" ||
+    normalizedProvider === "tosspayments" ||
+    normalizedProvider === "toss";
+  const hasBankInfo = Boolean(order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank]);
+  const shouldShowBankInfo = !isOnlinePayment && hasBankInfo;
   const paymentSource = String(order.paymentMethod ?? orderPaymentInfo?.method ?? "")
     .trim()
     .toLowerCase();
@@ -759,26 +776,24 @@ export default function OrderDetailPage() {
                     <div>
                       <p className="text-ui-body-sm text-muted-foreground mb-2">결제수단</p>
                       <p className="mb-3 font-semibold text-foreground">{paymentDisplaySummary.userLabel}</p>
-                      <p className="text-ui-body-sm text-muted-foreground mb-2">입금 계좌</p>
-                      {order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (
-                        <div className="rounded-lg border border-border bg-secondary/40 p-4">
-                          <div className="space-y-2">
-                            <p className="font-semibold text-foreground">
-                              무통장입금
-                            </p>
-                            <p className="font-semibold text-foreground">
-                              {bankLabelMap[order.paymentInfo.bank].label}
-                            </p>
-                            <p className="font-mono text-foreground">
-                              {bankLabelMap[order.paymentInfo.bank].account}
-                            </p>
-                            <p className="text-ui-body-sm text-muted-foreground">
-                              예금주: {bankLabelMap[order.paymentInfo.bank].holder}
-                            </p>
+                      {shouldShowBankInfo && order.paymentInfo?.bank && (
+                        <>
+                          <p className="text-ui-body-sm text-muted-foreground mb-2">입금 계좌</p>
+                          <div className="rounded-lg border border-border bg-secondary/40 p-4">
+                            <div className="space-y-2">
+                              <p className="font-semibold text-foreground">무통장입금</p>
+                              <p className="font-semibold text-foreground">
+                                {bankLabelMap[order.paymentInfo.bank].label}
+                              </p>
+                              <p className="font-mono text-foreground">
+                                {bankLabelMap[order.paymentInfo.bank].account}
+                              </p>
+                              <p className="text-ui-body-sm text-muted-foreground">
+                                예금주: {bankLabelMap[order.paymentInfo.bank].holder}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground">선택된 은행 없음</p>
+                        </>
                       )}
                     </div>
                   </div>

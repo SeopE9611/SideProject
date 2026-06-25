@@ -18,6 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 import { buildCheckoutSuccessLinks } from "@/lib/checkout-success-links";
 import { bankLabelMap } from "@/lib/constants";
+import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import clientPromise from "@/lib/mongodb";
 import {
@@ -102,72 +103,6 @@ function getReceptionLabel(collectionMethod?: string | null): string {
   if (collectionMethod === "visit") return "방문 접수";
   if (collectionMethod === "courier_pickup") return "자가 발송(택배)";
   return "발송 접수";
-}
-
-const EASY_PAY_PROVIDER_LABEL_MAP: Record<string, string> = {
-  TOSSPAY: "토스페이",
-  KAKAOPAY: "카카오페이",
-  NAVERPAY: "네이버페이",
-  PAYCO: "페이코",
-  SAMSUNGPAY: "삼성페이",
-  LGPAY: "LG페이",
-};
-
-function getTossMethodLabel(method?: string, easyPayProvider?: string | null) {
-  const normalizedMethod = String(method ?? "")
-    .trim()
-    .toUpperCase();
-  const hasEasyPayProvider = Boolean(String(easyPayProvider ?? "").trim());
-
-  if (
-    normalizedMethod.includes("CARD") &&
-    (normalizedMethod.includes("EASY") || hasEasyPayProvider)
-  ) {
-    return "카드/간편결제";
-  }
-  if (normalizedMethod.includes("EASY") || hasEasyPayProvider) {
-    return "간편결제";
-  }
-  if (normalizedMethod.includes("CARD")) {
-    return "카드 결제";
-  }
-  return "카드/간편결제";
-}
-
-function getNiceMethodLabel(method?: string, easyPayProvider?: string | null) {
-  const normalizedMethod = String(method ?? "")
-    .trim()
-    .toUpperCase();
-  const normalizedEasyPayProvider = String(easyPayProvider ?? "")
-    .trim()
-    .toUpperCase();
-
-  if (
-    normalizedMethod.includes("CARD") &&
-    (normalizedMethod.includes("EASY") || Boolean(normalizedEasyPayProvider))
-  ) {
-    return "카드/간편결제";
-  }
-  if (normalizedMethod.includes("EASY") || Boolean(normalizedEasyPayProvider)) {
-    return "간편결제";
-  }
-  if (normalizedMethod.includes("VBANK")) {
-    return "가상계좌";
-  }
-  if (normalizedMethod.includes("BANK")) {
-    return "계좌이체";
-  }
-  if (
-    normalizedMethod.includes("CELLPHONE") ||
-    normalizedMethod.includes("MOBILE") ||
-    normalizedMethod.includes("PHONE")
-  ) {
-    return "휴대폰 결제";
-  }
-  if (normalizedMethod.includes("CARD")) {
-    return "카드 결제";
-  }
-  return "카드/간편결제";
 }
 
 // verifyAccessToken은 throw 가능 → 안전하게 null 처리(500 방지)
@@ -565,22 +500,24 @@ export default async function CheckoutSuccessPage({
     const paymentProvider = String(order.paymentInfo?.provider ?? "")
       .trim()
       .toLowerCase();
-    const paymentMethodRaw = String(order.paymentInfo?.method ?? "").trim();
-    const easyPayProviderRaw = String(order.paymentInfo?.rawSummary?.easyPay?.provider ?? "")
-      .trim()
-      .toUpperCase();
-    const easyPayProviderLabel = easyPayProviderRaw
-      ? (EASY_PAY_PROVIDER_LABEL_MAP[easyPayProviderRaw] ?? easyPayProviderRaw)
-      : null;
-    const isTossPayment = paymentProvider === "tosspayments";
+    const paymentSummary = getPaymentDisplaySummary({
+      method: order.paymentInfo?.method,
+      provider: order.paymentInfo?.provider,
+      easyPayProvider:
+        order.paymentInfo?.easyPayProvider ?? order.paymentInfo?.rawSummary?.easyPay?.provider,
+      cardDisplayName: order.paymentInfo?.cardDisplayName,
+      cardCompany: order.paymentInfo?.cardCompany,
+      cardLabel: order.paymentInfo?.cardLabel,
+      niceCard: order.paymentInfo?.niceCard,
+      rawSummary: order.paymentInfo?.rawSummary,
+      bank: order.paymentInfo?.bank,
+      depositor: order.paymentInfo?.depositor,
+    });
+    const easyPayProviderLabel = paymentSummary.easyPayProviderLabel;
+    const cardDisplayName = paymentSummary.cardDisplayName;
+    const isTossPayment = paymentProvider === "tosspayments" || paymentProvider === "toss";
     const isNicePayment = paymentProvider === "nicepay";
-    const paymentMethodLabel = isZeroPayment
-      ? "결제 불필요"
-      : isTossPayment
-        ? getTossMethodLabel(paymentMethodRaw, easyPayProviderRaw)
-        : isNicePayment
-          ? getNiceMethodLabel(paymentMethodRaw, easyPayProviderRaw)
-          : "무통장입금";
+    const paymentMethodLabel = isZeroPayment ? "결제 불필요" : paymentSummary.userLabel;
 
     console.info("[checkout][success][render_success_with_details]", {
       orderId,
@@ -746,9 +683,14 @@ export default async function CheckoutSuccessPage({
                                   결제 제공사: Toss Payments
                                 </p>
                               )}
-                              {isNicePayment && (
+                              {isNicePayment && cardDisplayName && (
                                 <p className="text-ui-body-sm text-muted-foreground">
-                                  결제수단: 카드/간편결제
+                                  카드사: {cardDisplayName}
+                                </p>
+                              )}
+                              {isNicePayment && !cardDisplayName && easyPayProviderLabel && (
+                                <p className="text-ui-body-sm text-muted-foreground">
+                                  간편결제: {easyPayProviderLabel}
                                 </p>
                               )}
                             </>
@@ -815,10 +757,12 @@ export default async function CheckoutSuccessPage({
                               {paymentMethodLabel}
                             </span>
                           </p>
-                          <p>
-                            <span className="text-muted-foreground">결제 수단:</span>{" "}
-                            <span className="font-semibold text-foreground">카드/간편결제</span>
-                          </p>
+                          {cardDisplayName && (
+                            <p>
+                              <span className="text-muted-foreground">카드사:</span>{" "}
+                              <span className="font-semibold text-foreground">{cardDisplayName}</span>
+                            </p>
+                          )}
                           {easyPayProviderLabel && (
                             <p>
                               <span className="text-muted-foreground">간편결제:</span>{" "}
