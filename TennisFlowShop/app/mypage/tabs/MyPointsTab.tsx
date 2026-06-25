@@ -166,7 +166,7 @@ export default function MyPointsTab() {
                   {stats.recentTrend !== 0 && (
                     <Badge
                       variant="secondary"
-                      className="bg-card/20 backdrop-blur-sm text-foreground border-0 px-2 py-0.5 text-xs"
+                      className="bg-card/20 backdrop-blur-sm text-foreground border-0 px-2 py-0.5 text-ui-label"
                     >
                       {stats.recentTrend > 0 ? (
                         <TrendingUp className="h-3 w-3 mr-1" />
@@ -179,14 +179,14 @@ export default function MyPointsTab() {
                   )}
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-primary">보유 포인트</p>
-                  <p className="text-xl bp-sm:text-2xl bp-lg:text-3xl font-black tracking-normal">
+                  <p className="text-ui-label font-medium text-primary">보유 포인트</p>
+                  <p className="text-ui-section-title bp-sm:text-ui-page-title bp-lg:text-ui-page-title-lg font-semibold tracking-normal">
                     {pointsBalance === null ? "-" : `${fmt(pointsBalance)}P`}
                   </p>
                   {typeof pointsDebt === "number" && pointsDebt > 0 && pointsBalance !== null && (
-                    <p className="text-xs text-primary flex items-center gap-1">
+                    <p className="text-ui-label text-primary flex items-center gap-1">
                       <span>사용 가능:</span>
-                      <span className="font-bold">
+                      <span className="font-semibold">
                         {fmt(Math.max(0, pointsBalance - pointsDebt))}P
                       </span>
                     </p>
@@ -206,13 +206,13 @@ export default function MyPointsTab() {
                   <TrendingUp className="h-4 w-4 text-primary opacity-50" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">
+                  <p className="text-ui-label font-medium text-muted-foreground">
                     적립 포인트 (이번 페이지)
                   </p>
-                  <p className="text-xl bp-sm:text-2xl bp-lg:text-3xl font-black text-primary">
+                  <p className="text-ui-section-title bp-sm:text-ui-page-title bp-lg:text-ui-page-title-lg font-semibold text-primary">
                     +{fmt(stats.earned)}
                   </p>
-                  <p className="text-xs text-muted-foreground">전체 기준</p>
+                  <p className="text-ui-label text-muted-foreground">전체 기준</p>
                 </div>
               </CardContent>
             </Card>
@@ -228,13 +228,13 @@ export default function MyPointsTab() {
                   <TrendingDown className="h-4 w-4 text-destructive opacity-50" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">
+                  <p className="text-ui-label font-medium text-muted-foreground">
                     사용 포인트 (이번 페이지)
                   </p>
-                  <p className="text-xl bp-sm:text-2xl bp-lg:text-3xl font-black text-destructive">
+                  <p className="text-ui-section-title bp-sm:text-ui-page-title bp-lg:text-ui-page-title-lg font-semibold text-destructive">
                     -{fmt(stats.spent)}
                   </p>
-                  <p className="text-xs text-muted-foreground">전체 기준</p>
+                  <p className="text-ui-label text-muted-foreground">전체 기준</p>
                 </div>
               </CardContent>
             </Card>
@@ -248,8 +248,8 @@ export default function MyPointsTab() {
                     <Calendar className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg bp-sm:text-xl">포인트 내역</CardTitle>
-                    <p className="text-xs bp-sm:text-sm text-muted-foreground mt-0.5">
+                    <CardTitle className="text-ui-card-title-lg bp-sm:text-ui-section-title">포인트 내역</CardTitle>
+                    <p className="text-ui-label bp-sm:text-ui-body-sm text-muted-foreground mt-0.5">
                       전체 {hasResolvedTotal ? data.total : "-"}건
                     </p>
                   </div>
@@ -269,8 +269,8 @@ export default function MyPointsTab() {
                   <div className="bg-muted/50 rounded-full p-4 mb-4">
                     <Coins className="h-8 w-8 bp-sm:h-10 bp-sm:w-10 text-muted-foreground" />
                   </div>
-                  <p className="text-base font-medium text-center mb-1">포인트 내역이 없습니다</p>
-                  <p className="text-sm text-muted-foreground text-center">
+                  <p className="text-ui-body font-medium text-center mb-1">포인트 내역이 없습니다</p>
+                  <p className="text-ui-body-sm text-muted-foreground text-center">
                     포인트를 적립하거나 사용하면 여기에 표시됩니다
                   </p>
                 </div>
@@ -297,26 +297,26 @@ export default function MyPointsTab() {
                           <div className="flex-1 min-w-0 space-y-1.5 bp-sm:space-y-2">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span
-                                className={`text-base bp-sm:text-lg font-bold tabular-nums ${it.amount >= 0 ? "text-primary" : "text-destructive"}`}
+                                className={`text-ui-body bp-sm:text-ui-card-title-lg font-semibold tabular-nums ${it.amount >= 0 ? "text-primary" : "text-destructive"}`}
                               >
                                 {it.amount >= 0 ? "+" : ""}
                                 {fmt(it.amount)}P
                               </span>
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="outline" className="text-ui-label">
                                 {pointTxTypeLabel(it.type)}
                               </Badge>
                               <Badge
                                 variant={it.status === "confirmed" ? "default" : "secondary"}
-                                className="text-xs"
+                                className="text-ui-label"
                               >
                                 {pointTxStatusLabel(it.status)}
                               </Badge>
                             </div>
 
                             {it.reason && it.reason.trim().length >= 2 ? (
-                              <p className="text-sm text-foreground line-clamp-1">{it.reason}</p>
+                              <p className="text-ui-body-sm text-foreground line-clamp-1">{it.reason}</p>
                             ) : fallbackReason(it.type) ? (
-                              <p className="text-sm text-muted-foreground line-clamp-1">
+                              <p className="text-ui-body-sm text-muted-foreground line-clamp-1">
                                 {fallbackReason(it.type)}
                               </p>
                             ) : null}
@@ -328,7 +328,7 @@ export default function MyPointsTab() {
                               if (ref.kind === "order") {
                                 return (
                                   <Link
-                                    className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline underline-offset-4 font-medium group/link"
+                                    className="inline-flex items-center gap-1.5 text-ui-label text-primary hover:underline underline-offset-4 font-medium group/link"
                                     href={`/mypage/orders/${ref.orderId}`}
                                   >
                                     <span>
@@ -342,7 +342,7 @@ export default function MyPointsTab() {
 
                               if (ref.kind === "review") {
                                 return (
-                                  <span className="text-xs text-muted-foreground">
+                                  <span className="text-ui-label text-muted-foreground">
                                     리뷰: <span className="font-mono">{shortId(ref.reviewId)}</span>
                                   </span>
                                 );
@@ -354,7 +354,7 @@ export default function MyPointsTab() {
                         </div>
 
                         <div className="shrink-0 text-left bp-sm:text-right">
-                          <p className="text-xs bp-sm:text-sm text-muted-foreground whitespace-nowrap">
+                          <p className="text-ui-label bp-sm:text-ui-body-sm text-muted-foreground whitespace-nowrap">
                             {safeLocalDateTime(it.createdAt)}
                           </p>
                         </div>
@@ -368,7 +368,7 @@ export default function MyPointsTab() {
             {shouldShowRows && (
               <div className="border-t bg-muted/30 dark:bg-card/30 px-4 bp-sm:px-6 py-4">
                 <div className="flex items-center justify-between gap-4">
-                  <p className="text-sm text-muted-foreground tabular-nums">
+                  <p className="text-ui-body-sm text-muted-foreground tabular-nums">
                     <span className="hidden bp-sm:inline">페이지 </span>
                     <span className="font-semibold text-foreground">{page}</span>
                     <span className="mx-1">/</span>

@@ -414,7 +414,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
 
       <div className="space-y-6">
         {/* <div className="space-y-2">
-          <Label htmlFor="racketType" className="text-sm font-medium">
+          <Label htmlFor="racketType" className="text-ui-body-sm font-medium">
             라켓 종류 <span className="text-destructive">*</span>
           </Label>
           <Input id="racketType" name="racketType" value={formData.racketType} onChange={handleInputChange} placeholder="예: 윌슨 프로 스태프 97" className="focus:ring-2 focus:ring-ring transition-all duration-200" />
@@ -423,7 +423,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
         <div className="space-y-4">
           {!canEditStandaloneWorkLines && (
             <div>
-              <Label className="text-sm font-medium">
+              <Label className="text-ui-body-sm font-medium">
                 스트링 종류 <span className="text-destructive">*</span>
               </Label>
               <div className="mt-2 space-y-2">
@@ -460,7 +460,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                       <div className="min-w-0 flex-1 flex flex-col">
                         {/* 상단 라벨 + 포함/미포함 배지(대여 비-주문에서만) */}
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-xs font-semibold text-primary">
+                          <span className="text-ui-label font-semibold text-primary">
                             {rentalId
                               ? "대여 신청에서 선택한 스트링"
                               : "상품 상세에서 선택한 스트링"}
@@ -469,17 +469,17 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                           {isRentalNonOrder && (
                             <Badge
                               variant={isLockedIdSelected ? "secondary" : "destructive"}
-                              className="h-5 px-2 text-[11px]"
+                              className="h-5 px-2 text-ui-micro"
                             >
                               {isLockedIdSelected ? "포함됨" : "미포함"}
                             </Badge>
                           )}
                         </div>
 
-                        <span className="text-sm font-medium leading-relaxed text-foreground break-words">
+                        <span className="text-ui-body-sm font-medium leading-relaxed text-foreground break-words">
                           {pdpProduct?.name ?? "선택한 스트링으로 신청 중입니다."}
                         </span>
-                        <span className="mt-1 text-xs leading-relaxed text-muted-foreground break-keep">
+                        <span className="mt-1 text-ui-label leading-relaxed text-muted-foreground break-keep">
                           {rentalId
                             ? "대여 신청 시 선택한 스트링 기준으로 진행됩니다."
                             : "이 신청서는 위 스트링을 기준으로 장착 서비스가 진행됩니다."}
@@ -491,7 +491,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     {isRentalNonOrder && !isLockedIdSelected && (
                       <PublicSurface
                         padding="sm"
-                        className="mt-3 rounded-md border-destructive/30 bg-destructive/15 p-3 text-xs text-destructive dark:bg-destructive/20"
+                        className="mt-3 rounded-md border-destructive/30 bg-destructive/15 p-3 text-ui-label text-destructive dark:bg-destructive/20"
                       >
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div className="leading-relaxed">
@@ -507,7 +507,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                             type="button"
                             variant="outline"
                             size="sm"
-                            className="h-8 shrink-0 px-3 text-xs whitespace-nowrap"
+                            className="h-8 shrink-0 px-3 text-ui-label whitespace-nowrap"
                             onClick={() =>
                               handleStringTypesChange(
                                 Array.from(
@@ -531,28 +531,28 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
             <PublicSurface
               variant="muted"
               padding="sm"
-              className="mb-3 py-3 text-sm text-foreground dark:bg-card/40 dark:text-foreground"
+              className="mb-3 py-3 text-ui-body-sm text-foreground dark:bg-card/40 dark:text-foreground"
             >
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <span className="font-medium">이 주문에서 남은 교체 가능 횟수</span>
                 <span className="font-semibold">{orderRemainingSlots}회</span>
                 {typeof orderStringService?.totalSlots === "number" &&
                   typeof orderStringService?.usedSlots === "number" && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-ui-label text-muted-foreground">
                       (총 {orderStringService.totalSlots} / 사용 {orderStringService.usedSlots})
                     </span>
                   )}
               </div>
 
               {isOrderSlotBlocked && (
-                <p className="mt-1 text-xs text-destructive">
+                <p className="mt-1 text-ui-label text-destructive">
                   이 주문은 더 이상 교체 신청을 진행할 수 없습니다. 추가 스트링 구매 후 다시 시도해
                   주세요.
                 </p>
               )}
 
               {(isOrderSlotBlocked || lineCount >= orderRemainingSlots) && (
-                <p className="mt-2 text-sm text-foreground/75">
+                <p className="mt-2 text-ui-body-sm text-foreground/75">
                   * 이 신청서는 <span className="font-medium">현재 주문 기준</span>으로만
                   진행됩니다. 추가 구매는 새 주문으로 진행되며, 이 신청서에는 자동으로 반영되지
                   않습니다.
@@ -561,7 +561,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
             </PublicSurface>
           )}
           {orderId && (
-            <p className="mb-2 text-xs leading-relaxed text-muted-foreground break-keep">
+            <p className="mb-2 text-ui-label leading-relaxed text-muted-foreground break-keep">
               이번 신청서는 <span className="font-semibold">보유 라켓</span>도 포함해{" "}
               <span className="font-semibold">여러{"\u00A0"}자루</span>를 한{"\u00A0"}번에 접수할 수
               있습니다. 아래에서 사용할 스트링을 선택해 주세요.
@@ -619,8 +619,8 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
             <PublicSurface variant="muted" padding="sm" className="space-y-3">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-foreground">작업 항목</p>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground break-keep">
+                  <p className="text-ui-body-sm font-semibold text-foreground">작업 항목</p>
+                  <p className="mt-1 text-ui-label leading-relaxed text-muted-foreground break-keep">
                     라켓 1자루당 작업 항목 1개를 작성합니다. 스트링이 다르면 항목별로 스트링명을
                     다르게 입력하세요.
                   </p>
@@ -643,7 +643,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 </Button>
               </div>
               {lineCount >= 10 && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-ui-label text-muted-foreground">
                   작업 항목은 최대 10개까지 추가할 수 있습니다.
                 </p>
               )}
@@ -661,7 +661,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
           >
             <div className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/50 p-3 dark:border-border">
-                <span className="text-sm text-muted-foreground">기본 장착비</span>
+                <span className="text-ui-body-sm text-muted-foreground">기본 장착비</span>
                 <span className="font-semibold tabular-nums text-foreground">
                   {formData.stringTypes.includes("custom")
                     ? price.toLocaleString("ko-KR") + "원"
@@ -673,7 +673,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
 
               {/* 주문 기반 진입 + 스트링 선택 완료 시 상세 안내 */}
               {orderId && order && lineCount > 0 && (
-                <div className="mt-3 space-y-2 text-xs text-muted-foreground">
+                <div className="mt-3 space-y-2 text-ui-label text-muted-foreground">
                   <p>
                     이번 신청에서 장착할 라켓 수:{" "}
                     <span className="font-semibold">{lineCount}자루</span>
@@ -697,7 +697,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                               <Input
                                 id="useQty-custom"
                                 type="number"
-                                className="h-7 w-16 px-2 py-1 text-right text-xs border-border rounded-md focus:ring-ring"
+                                className="h-7 w-16 px-2 py-1 text-right text-ui-label border-border rounded-md focus:ring-ring"
                                 min={0}
                                 max={99}
                                 value={useQty}
@@ -736,7 +736,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         >
                           <span className="truncate">
                             • {item.name}{" "}
-                            <span className="text-[11px] text-primary/80 dark:text-primary/80">
+                            <span className="text-ui-micro text-primary/80 dark:text-primary/80">
                               (구매 {orderQty}개 중)
                             </span>
                           </span>
@@ -747,7 +747,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                             <Input
                               id={`useQty-${id}`}
                               type="number"
-                              className={`h-7 w-16 px-2 py-1 text-right text-xs border-border rounded-md focus:ring-ring ${lockOrderUseQty ? "cursor-not-allowed bg-muted text-muted-foreground dark:bg-card/40 dark:text-muted-foreground" : ""}`}
+                              className={`h-7 w-16 px-2 py-1 text-right text-ui-label border-border rounded-md focus:ring-ring ${lockOrderUseQty ? "cursor-not-allowed bg-muted text-muted-foreground dark:bg-card/40 dark:text-muted-foreground" : ""}`}
                               min={0}
                               max={
                                 typeof orderRemainingSlots === "number" && !lockOrderUseQty
@@ -771,7 +771,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                             {typeof orderRemainingSlots === "number" && !lockOrderUseQty && (
                               <Badge
                                 variant="outline"
-                                className="h-7 px-2 text-xs leading-none"
+                                className="h-7 px-2 text-ui-label leading-none"
                                 title={
                                   isLimitedByRemaining
                                     ? "남은 교체 가능 횟수 기준으로 제한됩니다."
@@ -787,7 +787,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     })}
                   </div>
                   {lockOrderUseQty && (
-                    <p className="text-sm text-foreground/75">
+                    <p className="text-ui-body-sm text-foreground/75">
                       * 번들(라켓+스트링) 주문은 주문 수량과 자동 동기화되며, 여기서 변경할 수
                       없습니다.
                     </p>
@@ -806,7 +806,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 <PublicSurface
                   variant="muted"
                   padding="sm"
-                  className="mt-3 rounded-md bg-muted/40 p-3 text-sm text-foreground/75"
+                  className="mt-3 rounded-md bg-muted/40 p-3 text-ui-body-sm text-foreground/75"
                 >
                   <p>
                     최종 결제 금액은 우측 요금 요약의{" "}
@@ -818,7 +818,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
 
               {/* (대여/PDP) 비-주문 기반 진입 시 스트링 사용 개수 입력(구매 UX와 동일한 리스트 형태) */}
               {canShowQty && lineCount > 0 && (
-                <div className="mt-3 space-y-2 text-xs text-muted-foreground">
+                <div className="mt-3 space-y-2 text-ui-label text-muted-foreground">
                   <p>
                     이번 신청에서 장착할 라켓 수:{" "}
                     <span className="font-semibold text-foreground">{lineCount}자루</span>
@@ -843,7 +843,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                             <span className="truncate">
                               • {name}{" "}
                               {typeof maxNonOrderQty === "number" ? (
-                                <span className="text-[11px] text-primary/80 dark:text-primary/80">
+                                <span className="text-ui-micro text-primary/80 dark:text-primary/80">
                                   (가용 {maxNonOrderQty}개 중)
                                 </span>
                               ) : null}
@@ -855,7 +855,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                               <Input
                                 id={`useQty-${id}`}
                                 type="number"
-                                className="h-7 w-16 px-2 py-1 text-right text-xs border-border rounded-md focus:ring-ring"
+                                className="h-7 w-16 px-2 py-1 text-right text-ui-label border-border rounded-md focus:ring-ring"
                                 min={0}
                                 max={maxQty}
                                 value={useQty}
@@ -870,7 +870,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                   </div>
 
                   {typeof maxNonOrderQty === "number" && (
-                    <p className="text-sm text-foreground/75">
+                    <p className="text-ui-body-sm text-foreground/75">
                       사용 개수는 <span className="font-semibold">{maxNonOrderQty}개</span>를 초과할
                       수 없습니다
                       {limitReasons.length ? ` (기준: ${limitReasons.join(", ")})` : ""}.
@@ -881,7 +881,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
 
               {/* 주문 기반 진입 + 스트링 1개만 선택 시 상세 안내 */}
               {orderId && selectedOrderItem && lineCount === 1 && (
-                <div className="mt-1 text-sm text-foreground/75 space-y-1">
+                <div className="mt-1 text-ui-body-sm text-foreground/75 space-y-1">
                   {(() => {
                     // 스트링 금액: PDP 통합모드면 pdpStringPrice 우선, 아니면 주문 item 가격 사용
                     const stringPrice = isCombinedPdpMode
@@ -921,24 +921,24 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 <div className="mt-0.5">
                   <Ticket className="h-4 w-4 text-foreground" />
                 </div>
-                <div className="min-w-0 flex-1 text-[12px] leading-relaxed break-keep">
+                <div className="min-w-0 flex-1 text-ui-label leading-relaxed break-keep">
                   <div className="mb-1 flex flex-wrap items-center gap-2">
-                    <span className="text-base font-semibold tracking-normal text-foreground">
+                    <span className="text-ui-body font-semibold tracking-normal text-foreground">
                       패키지 사용 가능 여부
                     </span>
 
                     {packagePreview?.has ? (
                       canApplyPackage ? (
-                        <Badge variant="success" className="h-5 text-xs font-medium">
+                        <Badge variant="success" className="h-5 text-ui-label font-medium">
                           자동 적용 대상
                         </Badge>
                       ) : (
-                        <Badge variant="warning" className="h-5 text-xs font-medium">
+                        <Badge variant="warning" className="h-5 text-ui-label font-medium">
                           이번 구성에는 적용 불가
                         </Badge>
                       )
                     ) : (
-                      <Badge variant="secondary" className="h-5 text-xs font-medium">
+                      <Badge variant="secondary" className="h-5 text-ui-label font-medium">
                         보유 패키지 없음
                       </Badge>
                     )}
@@ -946,14 +946,14 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
 
                   {packagePreview?.has ? (
                     packageInsufficient ? (
-                      <p className="text-sm text-foreground">
+                      <p className="text-ui-body-sm text-foreground">
                         현재 남은 횟수는 <span className="font-semibold">{packageRemaining}회</span>
                         이고, 이번 신청에는{" "}
                         <span className="font-semibold">{requiredPassCount}회</span>가 필요하여
                         패키지가 자동 적용되지 않습니다.
                       </p>
                     ) : (
-                      <p className="text-sm text-foreground">
+                      <p className="text-ui-body-sm text-foreground">
                         이번 신청에는 패키지로{" "}
                         <span className="font-semibold">{requiredPassCount}회</span>가 필요합니다.
                         현재 남은 횟수는 <span className="font-semibold">{packageRemaining}회</span>
@@ -961,13 +961,13 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                       </p>
                     )
                   ) : (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-ui-body-sm text-muted-foreground">
                       현재 보유 중인 패키지가 없어 이번 신청은 일반 교체비 기준으로 결제됩니다.
                     </p>
                   )}
 
                   {packagePreview?.has && (
-                    <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    <div className="mt-1 flex flex-wrap gap-2 text-ui-label text-muted-foreground">
                       <span>필요 {requiredPassCount}회</span>
                       <span className="h-3 w-px bg-muted/80" />
                       <span>잔여 {packageRemaining}회</span>
@@ -990,7 +990,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
         {lineCount > 0 && (
           <SummaryCard
             title={
-              <span className="text-base font-semibold text-foreground">
+              <span className="text-ui-body font-semibold text-foreground">
                 라켓·스트링별 작업 정보
               </span>
             }
@@ -1019,8 +1019,8 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
               <PublicSurface variant="muted" padding="sm">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0 sm:min-w-[220px]">
-                    <p className="text-sm font-semibold text-foreground">일괄 입력</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
+                    <p className="text-ui-body-sm font-semibold text-foreground">일괄 입력</p>
+                    <p className="mt-0.5 text-ui-label text-muted-foreground">
                       같은 텐션/요청사항이면 한{"\u00A0"}번에 적용할 수 있어요.
                     </p>
                   </div>
@@ -1030,7 +1030,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-9 w-full px-3 text-xs whitespace-nowrap"
+                      className="h-9 w-full px-3 text-ui-label whitespace-nowrap"
                       onClick={applyFirstLineTensionToAll}
                       disabled={lineCount < 2}
                     >
@@ -1039,7 +1039,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                     <Button
                       type="button"
                       size="sm"
-                      className="h-9 w-full px-3 text-xs whitespace-nowrap"
+                      className="h-9 w-full px-3 text-ui-label whitespace-nowrap"
                       onClick={() => applyBulkToAllLines()}
                       disabled={lineCount < 1}
                     >
@@ -1050,39 +1050,39 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
 
                 <div className="mt-3 grid gap-3 md:grid-cols-3">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-foreground">
+                    <Label className="text-ui-label font-medium text-foreground">
                       공통 메인 텐션(LB)
                     </Label>
                     <Input
                       value={bulkTensionMain}
                       onChange={(e) => setBulkTensionMain(e.target.value)}
                       placeholder="예: 53"
-                      className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                      className="h-9 text-ui-body-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-foreground">
+                    <Label className="text-ui-label font-medium text-foreground">
                       공통 크로스 텐션(LB)
                     </Label>
                     <Input
                       value={bulkTensionCross}
                       onChange={(e) => setBulkTensionCross(e.target.value)}
                       placeholder="예: 51"
-                      className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                      className="h-9 text-ui-body-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                     />
                   </div>
 
                   <div className="space-y-1.5 md:col-span-3">
-                    <Label className="text-xs font-medium text-foreground">공통 메모 (선택)</Label>
+                    <Label className="text-ui-label font-medium text-foreground">공통 메모 (선택)</Label>
                     <Textarea
                       value={bulkLineNote}
                       onChange={(e) => setBulkLineNote(e.target.value)}
                       rows={2}
-                      className="text-sm resize-none border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                      className="text-ui-body-sm resize-none border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                       placeholder="예: 전부 동일 텐션으로 부탁드립니다. / 오버그립 제거하지 말아주세요 등"
                     />
-                    <p className="text-sm text-foreground/75">
+                    <p className="text-ui-body-sm text-foreground/75">
                       ※ 공통 메모를 비워두면 기존 라켓별 메모는 유지됩니다.
                     </p>
                   </div>
@@ -1099,9 +1099,9 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 <div className="flex min-w-0 items-center justify-between gap-2 border-b border-border bg-muted/30 px-4 py-3">
                   <div className="flex min-w-0 items-center gap-2.5">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary shadow-sm">
-                      <span className="text-sm font-bold text-primary">{index + 1}</span>
+                      <span className="text-ui-body-sm font-semibold text-primary">{index + 1}</span>
                     </div>
-                    <span className="min-w-0 truncate text-sm font-medium text-foreground">
+                    <span className="min-w-0 truncate text-ui-body-sm font-medium text-foreground">
                       {line.racketType?.trim() || `라켓 ${index + 1}`}
                     </span>
                   </div>
@@ -1112,7 +1112,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         className="flex max-w-[120px] items-center gap-1.5 px-2.5 py-1 sm:max-w-[200px]"
                       >
                         <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                        <span className="truncate text-xs font-medium">{line.stringName}</span>
+                        <span className="truncate text-ui-label font-medium">{line.stringName}</span>
                       </Badge>
                     )}
                     {canEditStandaloneWorkLines && lineCount > 1 && (
@@ -1120,7 +1120,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="h-8 gap-1 px-2 text-xs text-destructive hover:text-destructive"
+                        className="h-8 gap-1 px-2 text-ui-label text-destructive hover:text-destructive"
                         onClick={() => removeStandaloneWorkLine(index)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -1134,7 +1134,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                 <div className="p-4 space-y-4">
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium text-foreground">라켓 이름/별칭</Label>
+                      <Label className="text-ui-label font-medium text-foreground">라켓 이름/별칭</Label>
                       <Input
                         value={line.racketType ?? ""}
                         onChange={(e) => handleLineFieldChange(index, "racketType", e.target.value)}
@@ -1143,55 +1143,55 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                             ? "예: 윌슨 블레이드 98, 첫 번째 라켓 등"
                             : "예: 라켓1"
                         }
-                        className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                        className="h-9 text-ui-body-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                       />
                     </div>
 
                     {canEditStandaloneWorkLines && (
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-foreground">스트링명</Label>
+                        <Label className="text-ui-label font-medium text-foreground">스트링명</Label>
                         <Input
                           value={line.stringName ?? ""}
                           onChange={(e) =>
                             handleLineFieldChange(index, "stringName", e.target.value)
                           }
                           placeholder="예: 알루파워 러프, RPM Blast, 보유 스트링 등"
-                          className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                          className="h-9 text-ui-body-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                         />
                       </div>
                     )}
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium text-foreground">메인 텐션(LB)</Label>
+                      <Label className="text-ui-label font-medium text-foreground">메인 텐션(LB)</Label>
                       <Input
                         value={line.tensionMain ?? ""}
                         onChange={(e) =>
                           handleLineFieldChange(index, "tensionMain", e.target.value)
                         }
                         placeholder="예: 53"
-                        className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                        className="h-9 text-ui-body-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium text-foreground">크로스 텐션(LB)</Label>
+                      <Label className="text-ui-label font-medium text-foreground">크로스 텐션(LB)</Label>
                       <Input
                         value={line.tensionCross ?? ""}
                         onChange={(e) =>
                           handleLineFieldChange(index, "tensionCross", e.target.value)
                         }
                         placeholder="예: 51"
-                        className="h-9 text-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                        className="h-9 text-ui-body-sm border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                       />
                     </div>
                   </div>
 
                   {/* 라켓별 메모 */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium text-foreground">작업 메모 (선택)</Label>
+                    <Label className="text-ui-label font-medium text-foreground">작업 메모 (선택)</Label>
                     <Textarea
                       value={line.note ?? ""}
                       onChange={(e) => handleLineFieldChange(index, "note", e.target.value)}
                       rows={2}
-                      className="text-sm resize-none border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
+                      className="text-ui-body-sm resize-none border-border focus-visible:ring-ring dark:focus-visible:ring-ring"
                       placeholder="요청사항을 적어 두셔도 좋습니다."
                     />
                   </div>
@@ -1204,7 +1204,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
         {normalizeCollection(formData.collectionMethod) === "visit" && (
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="preferredDate" className="text-sm font-medium">
+              <Label htmlFor="preferredDate" className="text-ui-body-sm font-medium">
                 장착 희망일 <span className="text-destructive">*</span>
               </Label>
               <Input
@@ -1223,7 +1223,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                   <PublicSurface
                     variant="muted"
                     padding="sm"
-                    className="mt-3 rounded-lg px-3 py-2 text-xs leading-relaxed text-foreground md:text-[13px]"
+                    className="mt-3 rounded-lg px-3 py-2 text-ui-label leading-relaxed text-foreground md:text-ui-label"
                   >
                     <p className="font-medium">
                       이번 방문 예상 소요 시간:{" "}
@@ -1232,7 +1232,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
                         : `약 ${visitDurationMinutesUi}분`}{" "}
                       ({visitSlotCountUi}슬롯)
                     </p>
-                    <p className="mt-0.5 text-sm text-foreground/75 leading-relaxed">
+                    <p className="mt-0.5 text-ui-body-sm text-foreground/75 leading-relaxed">
                       선택하신 시간부터 연속으로 작업이 진행되며,&nbsp; 해당 시간대에는 다른 예약이
                       불가능합니다.
                     </p>
@@ -1241,7 +1241,7 @@ export default function MountingInfoSection(props: MountingInfoSectionProps) {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm font-medium">
+              <Label className="text-ui-body-sm font-medium">
                 희망 시간대<span className="text-destructive">*</span>
               </Label>
               <TimeSlotSelector

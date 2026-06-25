@@ -85,11 +85,11 @@ export default function QnAList() {
             <MessageCircleQuestion className="h-7 w-7 text-muted-foreground" />
           </div>
 
-          <h3 className="text-base font-semibold text-foreground bp-sm:text-lg">
+          <h3 className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
             문의 내역이 없습니다
           </h3>
 
-          <p className="mt-1 break-keep text-sm text-muted-foreground">
+          <p className="mt-1 break-keep text-ui-body-sm text-muted-foreground">
             궁금한 점이 있다면 문의를 남겨주세요.
           </p>
 
@@ -168,7 +168,7 @@ export default function QnAList() {
             </div>
 
             <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-2 text-sm text-foreground/80">
+              <div className="flex items-center gap-2 text-ui-body-sm text-foreground/80">
                 <Calendar className="h-4 w-4" />
                 <span>{qna.date}</span>
               </div>
@@ -196,7 +196,7 @@ export default function QnAList() {
             더 보기
           </Button>
         ) : qnas.length ? (
-          <span className="text-sm text-foreground/80">마지막 페이지입니다</span>
+          <span className="text-ui-body-sm text-foreground/80">마지막 페이지입니다</span>
         ) : null}
       </div>
 

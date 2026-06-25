@@ -135,7 +135,7 @@ export default function OrderStatusSelect({ orderId, currentStatus, shippingInfo
         - 구매확정: 사용자가 주문 완료를 확정한 상태
       */}
       {isLocked ? (
-        <div className="px-3 py-2 border rounded-md bg-muted text-muted-foreground text-sm italic">
+        <div className="px-3 py-2 border rounded-md bg-muted text-muted-foreground text-ui-body-sm italic">
           {isConfirmed ? "구매확정됨 (변경 불가)" : "취소됨 (변경 불가)"}
         </div>
       ) : (
@@ -153,7 +153,7 @@ export default function OrderStatusSelect({ orderId, currentStatus, shippingInfo
           </SelectContent>
         </Select>
       )}
-      <p className="mt-1 text-[11px] text-muted-foreground">
+      <p className="mt-1 text-ui-micro text-muted-foreground">
         {isVisitPickup
           ? '취소는 수령 전 단계에서만 사용하고, 수령 완료 이후 금전 반환은 상태 "환불"로 처리하세요.'
           : '취소는 배송 전 단계에서만 사용하고, 배송 이후 금전 반환은 상태 "환불"로 처리하세요.'}

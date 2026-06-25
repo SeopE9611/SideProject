@@ -40,7 +40,7 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
   if (hasDataError) {
     return (
       <Card variant="muted" className={clsx("mt-6", className)}>
-        <CardContent className="p-4 text-sm text-muted-foreground">
+        <CardContent className="p-4 text-ui-body-sm text-muted-foreground">
           위시리스트를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
         </CardContent>
       </Card>
@@ -50,7 +50,7 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
   if (isLoading && !hasResolvedData) {
     return (
       <Card variant="muted" className={clsx("mt-6", className)}>
-        <CardContent className="p-4 text-sm text-muted-foreground">
+        <CardContent className="p-4 text-ui-body-sm text-muted-foreground">
           위시리스트를 불러오는 중입니다.
         </CardContent>
       </Card>
@@ -143,12 +143,12 @@ export default function WishlistSidebar({ className, variant = "sidebar" }: Prop
               <div className="flex-1 min-w-0">
                 <Link
                   href={`/products/${it.id}`}
-                  className="block line-clamp-2 break-keep text-[15px] font-medium transition-colors hover:text-primary hover:underline"
+                  className="block line-clamp-2 break-keep text-ui-body-sm font-medium transition-colors hover:text-primary hover:underline"
                 >
                   {it.name}
                 </Link>
-                <div className="text-sm text-muted-foreground">{it.price.toLocaleString()}원</div>
-                <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                <div className="text-ui-body-sm text-muted-foreground">{it.price.toLocaleString()}원</div>
+                <div className="mt-1 space-y-0.5 text-ui-label text-muted-foreground">
                   {it.hasSelectedOption ? (
                     <>
                       {it.selectedColorLabel && <div>색상: {it.selectedColorLabel}</div>}

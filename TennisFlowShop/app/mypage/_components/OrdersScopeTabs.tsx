@@ -59,7 +59,7 @@ export default function OrdersScopeTabs({ activeScope, className }: OrdersScopeT
               href={item.href}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "group relative -mb-px flex min-w-fit items-center whitespace-nowrap border-b-2 px-0.5 py-3 text-sm",
+                "group relative -mb-px flex min-w-fit items-center whitespace-nowrap border-b-2 px-0.5 py-3 text-ui-body-sm",
                 "transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2",
                 isActive
                   ? "border-foreground font-semibold text-foreground"

@@ -295,10 +295,10 @@ export default function MypageClient({ user }: Props) {
               >
                 <div className="flex min-w-0 items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+                    <p className="text-ui-label font-semibold uppercase tracking-[0.14em] text-primary">
                       해야 할 일
                     </p>
-                    <h2 className="mt-1 break-keep text-lg font-semibold text-foreground bp-sm:text-xl">
+                    <h2 className="mt-1 break-keep text-ui-card-title-lg font-semibold text-foreground bp-sm:text-ui-section-title">
                       {summaryLoading ? (
                         <span className="block">
                           <Skeleton className="h-6 w-40" />
@@ -309,7 +309,7 @@ export default function MypageClient({ user }: Props) {
                         "현재 처리할 일이 없습니다"
                       )}
                     </h2>
-                    <p className="mt-1 line-clamp-2 break-keep text-sm text-muted-foreground">
+                    <p className="mt-1 line-clamp-2 break-keep text-ui-body-sm text-muted-foreground">
                       {hasTodoItems
                         ? "후기, 배송, 확정이 필요한 내역만 모았습니다."
                         : "새로 처리할 내역이 없습니다."}
@@ -328,9 +328,9 @@ export default function MypageClient({ user }: Props) {
 
             <SummaryCard contentClassName="px-4 py-3 bp-sm:px-5 bp-sm:py-4">
               <div className="mb-3 flex items-center justify-between gap-3">
-                <p className="text-sm font-semibold text-foreground">내 활동</p>
+                <p className="text-ui-body-sm font-semibold text-foreground">내 활동</p>
                 {hasSummaryError ? (
-                  <span className="text-xs text-muted-foreground">일부 지표 오류</span>
+                  <span className="text-ui-label text-muted-foreground">일부 지표 오류</span>
                 ) : null}
               </div>
 
@@ -342,10 +342,10 @@ export default function MypageClient({ user }: Props) {
                     onClick={() => router.push(item.href, { scroll: false })}
                     className="min-w-0 rounded-xl border border-border bg-muted/30 px-2 py-2 text-center transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
-                    <span className="block text-base font-semibold tabular-nums text-foreground">
+                    <span className="block text-ui-body font-semibold tabular-nums text-foreground">
                       {summaryLoading ? "-" : (item.value ?? 0)}
                     </span>
-                    <span className="mt-0.5 block break-keep text-xs text-muted-foreground">
+                    <span className="mt-0.5 block break-keep text-ui-label text-muted-foreground">
                       {item.label}
                     </span>
                   </button>
@@ -372,7 +372,7 @@ export default function MypageClient({ user }: Props) {
             <Tabs value={currentTab} onValueChange={handleTabChange}>
               <Card className="mb-3 border-border bg-card shadow-sm bp-sm:mb-4 bp-lg:hidden">
                 <CardContent className="p-2.5 bp-sm:p-3">
-                  <p className="mb-2 px-1 text-xs font-medium text-muted-foreground">
+                  <p className="mb-2 px-1 text-ui-label font-medium text-muted-foreground">
                     내 상세 내역
                   </p>
                   <div>
@@ -382,7 +382,7 @@ export default function MypageClient({ user }: Props) {
                         className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
                         <ClipboardList className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                        <span className="text-center text-xs font-medium leading-tight break-keep bp-md:text-sm">
+                        <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
                           <span className="bp-lg:hidden">거래/이용</span>
                           <span className="hidden bp-lg:inline">거래/이용 내역</span>
                         </span>
@@ -393,7 +393,7 @@ export default function MypageClient({ user }: Props) {
                         className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
                         <GraduationCap className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                        <span className="text-center text-xs font-medium leading-tight break-keep bp-md:text-sm">
+                        <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
                           <span className="bp-lg:hidden">클래스</span>
                           <span className="hidden bp-lg:inline">클래스 신청</span>
                         </span>
@@ -404,7 +404,7 @@ export default function MypageClient({ user }: Props) {
                         className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
                         <Heart className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                        <span className="text-center text-xs font-medium leading-tight break-keep bp-md:text-sm">
+                        <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
                           <span className="bp-lg:hidden">찜</span>
                           <span className="hidden bp-lg:inline">찜한 상품</span>
                         </span>
@@ -415,7 +415,7 @@ export default function MypageClient({ user }: Props) {
                         className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
                         <MessageSquare className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                        <span className="text-center text-xs font-medium leading-tight break-keep bp-md:text-sm">
+                        <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
                           <span className="bp-lg:hidden">리뷰</span>
                           <span className="hidden bp-lg:inline">리뷰 관리</span>
                         </span>
@@ -426,7 +426,7 @@ export default function MypageClient({ user }: Props) {
                         className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
                         <MessageCircleQuestion className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                        <span className="text-center text-xs font-medium leading-tight break-keep bp-md:text-sm">
+                        <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
                           <span className="bp-lg:hidden">Q&A</span>
                           <span className="hidden bp-lg:inline">Q&A 내역</span>
                         </span>
@@ -437,7 +437,7 @@ export default function MypageClient({ user }: Props) {
                         className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
                         <Ticket className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                        <span className="text-center text-xs font-medium leading-tight bp-md:text-sm">
+                        <span className="text-center text-ui-label font-medium leading-tight bp-md:text-ui-body-sm">
                           패키지
                         </span>
                       </TabsTrigger>
@@ -447,7 +447,7 @@ export default function MypageClient({ user }: Props) {
                         className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
                         <ReceiptCent className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
-                        <span className="text-center text-xs font-medium leading-tight break-keep bp-md:text-sm">
+                        <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
                           <span className="bp-lg:hidden">포인트</span>
                           <span className="hidden bp-lg:inline">적립 포인트</span>
                         </span>
@@ -463,10 +463,10 @@ export default function MypageClient({ user }: Props) {
                   <CardHeader className="border-b border-border bg-card px-4 py-3 bp-sm:px-5 bp-sm:py-4">
                     <div className="flex min-w-0 items-center justify-between gap-3">
                       <div className="min-w-0">
-                        <CardTitle className="text-base font-semibold text-foreground bp-sm:text-lg">
+                        <CardTitle className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
                           거래/이용 내역
                         </CardTitle>
-                        <CardDescription className="mt-0.5 text-xs text-muted-foreground bp-md:text-sm">
+                        <CardDescription className="mt-0.5 text-ui-label text-muted-foreground bp-md:text-ui-body-sm">
                           상태와 다음 행동을 확인하세요.
                         </CardDescription>
                       </div>
@@ -519,10 +519,10 @@ export default function MypageClient({ user }: Props) {
                         <GraduationCap className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base font-semibold text-foreground bp-sm:text-lg">
+                        <CardTitle className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
                           클래스 신청
                         </CardTitle>
-                        <CardDescription className="mt-0.5 text-xs text-muted-foreground bp-sm:text-sm">
+                        <CardDescription className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
                           도깨비테니스 아카데미 클래스 신청 내역을 확인하세요.
                         </CardDescription>
                       </div>
@@ -543,10 +543,10 @@ export default function MypageClient({ user }: Props) {
                         <Heart className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base font-semibold text-foreground bp-sm:text-lg">
+                        <CardTitle className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
                           위시리스트
                         </CardTitle>
-                        <CardDescription className="mt-0.5 text-xs text-muted-foreground bp-sm:text-sm">
+                        <CardDescription className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
                           찜한 상품 목록을 확인하실 수 있습니다.
                         </CardDescription>
                       </div>
@@ -567,10 +567,10 @@ export default function MypageClient({ user }: Props) {
                         <MessageSquare className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base font-semibold text-foreground bp-sm:text-lg">
+                        <CardTitle className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
                           리뷰 관리
                         </CardTitle>
-                        <CardDescription className="mt-0.5 text-xs text-muted-foreground bp-sm:text-sm">
+                        <CardDescription className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
                           작성한 리뷰를 확인하고 관리하실 수 있습니다.
                         </CardDescription>
                       </div>
@@ -591,10 +591,10 @@ export default function MypageClient({ user }: Props) {
                         <MessageCircleQuestion className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base font-semibold text-foreground bp-sm:text-lg">
+                        <CardTitle className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
                           Q&A 내역
                         </CardTitle>
-                        <CardDescription className="mt-0.5 text-xs text-muted-foreground bp-sm:text-sm">
+                        <CardDescription className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
                           문의 내역을 확인하고 답변을 받으실 수 있습니다.
                         </CardDescription>
                       </div>
@@ -615,10 +615,10 @@ export default function MypageClient({ user }: Props) {
                         <Ticket className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base font-semibold text-foreground bp-sm:text-lg">
+                        <CardTitle className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
                           패키지
                         </CardTitle>
-                        <CardDescription className="mt-0.5 text-xs text-muted-foreground bp-sm:text-sm">
+                        <CardDescription className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
                           보유 중인 패키지를 확인하실 수 있습니다.
                         </CardDescription>
                       </div>
@@ -639,10 +639,10 @@ export default function MypageClient({ user }: Props) {
                         <ReceiptCent className="h-4 w-4 text-primary bp-sm:h-5 bp-sm:w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base font-semibold text-foreground bp-sm:text-lg">
+                        <CardTitle className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
                           적립 포인트
                         </CardTitle>
-                        <CardDescription className="mt-0.5 text-xs text-muted-foreground bp-sm:text-sm">
+                        <CardDescription className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
                           포인트 적립 및 사용 내역을 확인하실 수 있습니다.
                         </CardDescription>
                       </div>

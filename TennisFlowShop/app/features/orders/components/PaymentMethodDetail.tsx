@@ -131,61 +131,61 @@ export default function PaymentMethodDetail({
 
   return (
     <div className="space-y-2">
-      <div className="text-sm font-medium text-foreground">결제 방식</div>
+      <div className="text-ui-body-sm font-medium text-foreground">결제 방식</div>
       <div className="flex flex-col gap-1">
         {isTossPayment ? (
-          <div className="mt-1 rounded-md border border-border bg-muted/60 dark:bg-card px-3 py-2 text-sm text-foreground/90 leading-relaxed space-y-1">
+          <div className="mt-1 rounded-md border border-border bg-muted/60 dark:bg-card px-3 py-2 text-ui-body-sm text-foreground/90 leading-relaxed space-y-1">
             <div className="font-semibold text-foreground">{tossMethodLabel}</div>
-            <div className="text-sm text-muted-foreground">결제 제공사: Toss Payments</div>
+            <div className="text-ui-body-sm text-muted-foreground">결제 제공사: Toss Payments</div>
             {easyPayProviderLabel && (
-              <div className="text-sm text-muted-foreground">간편결제: {easyPayProviderLabel}</div>
+              <div className="text-ui-body-sm text-muted-foreground">간편결제: {easyPayProviderLabel}</div>
             )}
             {statusLabel && (
-              <div className="text-sm text-muted-foreground">결제 상태: {statusLabel}</div>
+              <div className="text-ui-body-sm text-muted-foreground">결제 상태: {statusLabel}</div>
             )}
           </div>
         ) : isNicePayment ? (
-          <div className="mt-1 rounded-md border border-border bg-muted/60 dark:bg-card px-3 py-2 text-sm text-foreground/90 leading-relaxed space-y-1">
+          <div className="mt-1 rounded-md border border-border bg-muted/60 dark:bg-card px-3 py-2 text-ui-body-sm text-foreground/90 leading-relaxed space-y-1">
             <div className="font-semibold text-foreground">{niceMethodLabel}</div>
             {cardDisplayName && (
-              <div className="text-sm text-muted-foreground">카드사: {cardDisplayName}</div>
+              <div className="text-ui-body-sm text-muted-foreground">카드사: {cardDisplayName}</div>
             )}
-            <div className="text-sm text-muted-foreground">결제수단: 카드/간편결제</div>
+            <div className="text-ui-body-sm text-muted-foreground">결제수단: 카드/간편결제</div>
             {statusLabel && (
-              <div className="text-sm text-muted-foreground">결제 상태: {statusLabel}</div>
+              <div className="text-ui-body-sm text-muted-foreground">결제 상태: {statusLabel}</div>
             )}
             {paymentTid && (
-              <div className="text-sm text-muted-foreground">거래 TID: {paymentTid}</div>
+              <div className="text-ui-body-sm text-muted-foreground">거래 TID: {paymentTid}</div>
             )}
             {paymentNiceSync?.pgStatus && (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-ui-body-sm text-muted-foreground">
                 PG 상태: {paymentNiceSync.pgStatus}
               </div>
             )}
             {paymentNiceSync?.lastSyncedAt && (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-ui-body-sm text-muted-foreground">
                 최근 동기화: {new Date(paymentNiceSync.lastSyncedAt).toLocaleString("ko-KR")}
               </div>
             )}
           </div>
         ) : bankInfo ? (
-          <div className="mt-1 rounded-md border border-border bg-muted/60 dark:bg-card px-3 py-2 text-sm text-foreground/90 leading-relaxed space-y-1">
+          <div className="mt-1 rounded-md border border-border bg-muted/60 dark:bg-card px-3 py-2 text-ui-body-sm text-foreground/90 leading-relaxed space-y-1">
             <div className="font-semibold text-foreground">{method || "무통장입금"}</div>
             <div className="font-medium text-foreground">{bankInfo.label}</div>
             <div className="font-mono tracking-wide text-foreground">{bankInfo.account}</div>
-            <div className="text-sm text-muted-foreground">예금주: {bankInfo.holder}</div>
+            <div className="text-ui-body-sm text-muted-foreground">예금주: {bankInfo.holder}</div>
           </div>
         ) : (
-          <div className="mt-1 rounded-md border border-border bg-muted/60 dark:bg-card px-3 py-2 text-sm text-foreground/90 leading-relaxed">
+          <div className="mt-1 rounded-md border border-border bg-muted/60 dark:bg-card px-3 py-2 text-ui-body-sm text-foreground/90 leading-relaxed">
             {method || "결제 정보 확인 필요"}
           </div>
         )}
         {!isTossPayment && !isNicePayment && !bankInfo && bankKey && (
-          <div className="text-sm">{bankKey}</div>
+          <div className="text-ui-body-sm">{bankKey}</div>
         )}
         {!isTossPayment && !isNicePayment && depositor && (
           <div>
-            <div className="text-sm font-medium">입금자명</div>
+            <div className="text-ui-body-sm font-medium">입금자명</div>
             <div>{depositor}</div>
           </div>
         )}

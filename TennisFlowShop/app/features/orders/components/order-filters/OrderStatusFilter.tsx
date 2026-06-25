@@ -17,7 +17,7 @@ interface Props {
 export function OrderStatusFilter({ value, onChange }: Props) {
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="w-full h-9 text-xs">
+      <SelectTrigger className="w-full h-9 text-ui-label">
         <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
         <SelectValue placeholder="주문 상태 전체" />
       </SelectTrigger>

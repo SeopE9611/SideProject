@@ -138,8 +138,8 @@ function getStatusVariant(status: string) {
 function InfoItem({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="rounded-xl border border-border/50 bg-background p-3">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="mt-1 break-words text-sm font-medium text-foreground">{value?.trim() || "-"}</p>
+      <p className="text-ui-label font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-1 break-words text-ui-body-sm font-medium text-foreground">{value?.trim() || "-"}</p>
     </div>
   );
 }
@@ -228,7 +228,7 @@ export default function AcademyApplicationsTab() {
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 md:mb-6">
             <GraduationCap className="h-10 w-10 text-primary" />
           </div>
-          <h3 className="mb-2 text-xl font-semibold text-foreground">
+          <h3 className="mb-2 text-ui-section-title font-semibold text-foreground">
             아직 신청한 아카데미 클래스가 없습니다.
           </h3>
           <p className="mb-6 text-muted-foreground">
@@ -257,13 +257,13 @@ export default function AcademyApplicationsTab() {
             <CardContent className="space-y-4 p-4 md:p-6">
               <div className="flex flex-col gap-3 border-b border-border/60 pb-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                 <div className="min-w-0 space-y-1">
-                  <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-2 text-ui-body-sm text-muted-foreground">
                     <GraduationCap className="h-4 w-4 text-primary" />
                     <span>클래스 신청</span>
                     <span>·</span>
                     <span>신청일 {formatDateTime(application.appliedAt)}</span>
                   </div>
-                  <h3 className="line-clamp-2 break-keep text-lg font-semibold text-foreground">
+                  <h3 className="line-clamp-2 break-keep text-ui-card-title-lg font-semibold text-foreground">
                     {application.classSnapshot?.name || "아카데미 클래스 신청"}
                   </h3>
                 </div>
@@ -295,35 +295,35 @@ export default function AcademyApplicationsTab() {
               </div>
 
               {isCancelled ? (
-                <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive">
+                <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-ui-body-sm font-medium text-destructive">
                   취소된 신청입니다. 필요하면 마이페이지에서 기록을 삭제할 수 있습니다.
                 </div>
               ) : null}
 
               {isExpanded && application.classSnapshot ? (
                 <div className="rounded-xl border border-border/60 bg-muted/30 p-3">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <div className="flex items-center gap-2 text-ui-body-sm font-semibold text-foreground">
                     <GraduationCap className="h-4 w-4 text-primary" />
                     선택 클래스
                   </div>
                   <p className="mt-2 break-keep font-semibold text-foreground">
                     {application.classSnapshot.name || "클래스명 미입력"}
                   </p>
-                  <dl className="mt-3 grid gap-2 text-sm text-muted-foreground bp-sm:grid-cols-2">
+                  <dl className="mt-3 grid gap-2 text-ui-body-sm text-muted-foreground bp-sm:grid-cols-2">
                     <div className="rounded-lg bg-background p-3">
-                      <dt className="text-xs uppercase tracking-wide">수업 유형</dt>
+                      <dt className="text-ui-label uppercase tracking-wide">수업 유형</dt>
                       <dd className="mt-0.5 font-medium text-foreground">
                         {application.classSnapshot.lessonTypeLabel || "미선택"}
                       </dd>
                     </div>
                     <div className="rounded-lg bg-background p-3">
-                      <dt className="text-xs uppercase tracking-wide">레벨</dt>
+                      <dt className="text-ui-label uppercase tracking-wide">레벨</dt>
                       <dd className="mt-0.5 font-medium text-foreground">
                         {application.classSnapshot.levelLabel || "미선택"}
                       </dd>
                     </div>
                     <div className="rounded-lg bg-background p-3">
-                      <dt className="flex items-center gap-1 text-xs uppercase tracking-wide">
+                      <dt className="flex items-center gap-1 text-ui-label uppercase tracking-wide">
                         <CalendarDays className="h-3.5 w-3.5" /> 일정
                       </dt>
                       <dd className="mt-0.5 break-keep font-medium text-foreground">
@@ -331,7 +331,7 @@ export default function AcademyApplicationsTab() {
                       </dd>
                     </div>
                     <div className="rounded-lg bg-background p-3">
-                      <dt className="flex items-center gap-1 text-xs uppercase tracking-wide">
+                      <dt className="flex items-center gap-1 text-ui-label uppercase tracking-wide">
                         <MapPin className="h-3.5 w-3.5" /> 장소
                       </dt>
                       <dd className="mt-0.5 break-keep font-medium text-foreground">
@@ -339,14 +339,14 @@ export default function AcademyApplicationsTab() {
                       </dd>
                     </div>
                     <div className="rounded-lg bg-background p-3 bp-sm:col-span-2">
-                      <dt className="flex items-center gap-1 text-xs uppercase tracking-wide">
+                      <dt className="flex items-center gap-1 text-ui-label uppercase tracking-wide">
                         <WalletCards className="h-3.5 w-3.5" /> 기준 수강료
                       </dt>
                       <dd className="mt-0.5 font-medium text-foreground">
                         {formatPrice(application.classSnapshot.price)}
                       </dd>
                       {!isCancelled ? (
-                        <dd className="mt-1 break-keep text-xs text-muted-foreground">
+                        <dd className="mt-1 break-keep text-ui-label text-muted-foreground">
                           수강료는 상담 내용에 따라 최종 확인될 수 있습니다. 등록 확정 후 현장에서
                           결제를 안내해드립니다.
                         </dd>
@@ -374,11 +374,11 @@ export default function AcademyApplicationsTab() {
 
               {isExpanded && application.customerMessage ? (
                 <div className="rounded-xl border border-info/30 bg-info/10 p-3 text-info dark:bg-info/15">
-                  <div className="flex items-center gap-2 text-sm font-semibold">
+                  <div className="flex items-center gap-2 text-ui-body-sm font-semibold">
                     <MessageSquareText className="h-4 w-4" />
                     관리자 안내
                   </div>
-                  <p className="mt-2 whitespace-pre-wrap break-words text-sm">
+                  <p className="mt-2 whitespace-pre-wrap break-words text-ui-body-sm">
                     {application.customerMessage}
                   </p>
                 </div>

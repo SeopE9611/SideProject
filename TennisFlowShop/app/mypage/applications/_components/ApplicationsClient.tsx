@@ -568,10 +568,10 @@ export default function ApplicationsClient() {
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <h3 className="line-clamp-2 break-keep text-base font-semibold text-foreground">
+                    <h3 className="line-clamp-2 break-keep text-ui-body font-semibold text-foreground">
                       {title}
                     </h3>
-                    <p className="mt-1 whitespace-nowrap text-xs tabular-nums text-foreground/75">
+                    <p className="mt-1 whitespace-nowrap text-ui-label tabular-nums text-foreground/75">
                       {app.type} · 신청일 {formatDateTime(app.appliedAt)}
                     </p>
                   </div>
@@ -588,7 +588,7 @@ export default function ApplicationsClient() {
                       {isAcademyLesson ? (
                         <Badge
                           variant={getAcademyStatusVariant(app.status)}
-                          className="shrink-0 whitespace-nowrap text-[11px] font-medium"
+                          className="shrink-0 whitespace-nowrap text-ui-micro font-medium"
                         >
                           {displayStatus}
                         </Badge>
@@ -599,7 +599,7 @@ export default function ApplicationsClient() {
                     {isCancelRequested ? (
                       <Badge
                         variant="warning"
-                        className="shrink-0 whitespace-nowrap text-[11px] font-medium"
+                        className="shrink-0 whitespace-nowrap text-ui-micro font-medium"
                       >
                         취소 요청됨
                       </Badge>
@@ -607,7 +607,7 @@ export default function ApplicationsClient() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 text-xs">
+                <div className="flex flex-wrap items-center gap-2 text-ui-label">
                   {metaLinkLabel ? (
                     <Badge variant="outline" className="shrink-0 whitespace-nowrap">
                       {metaLinkLabel}
@@ -633,7 +633,7 @@ export default function ApplicationsClient() {
                         <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                           <Clock className="h-4 w-4 text-muted-foreground" />
                           <div>
-                            <p className="text-xs font-medium text-muted-foreground">방문 예약</p>
+                            <p className="text-ui-label font-medium text-muted-foreground">방문 예약</p>
                             <p className="whitespace-nowrap font-medium tabular-nums text-foreground">
                               {visitTimeLabel}
                             </p>
@@ -643,7 +643,7 @@ export default function ApplicationsClient() {
                         <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                           <MdSportsTennis className="h-4 w-4 text-muted-foreground" />
                           <div>
-                            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                            <p className="text-ui-label uppercase tracking-wide text-muted-foreground">
                               신청 대상
                             </p>
                             <p className="line-clamp-2 break-keep font-medium text-foreground">
@@ -656,7 +656,7 @@ export default function ApplicationsClient() {
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <Package className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                          <p className="text-ui-label uppercase tracking-wide text-muted-foreground">
                             스트링
                           </p>
                           <p className="line-clamp-2 break-keep font-medium text-foreground">
@@ -670,7 +670,7 @@ export default function ApplicationsClient() {
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <MdSportsTennis className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                          <p className="text-ui-label uppercase tracking-wide text-muted-foreground">
                             희망 레슨 유형
                           </p>
                           <p className="font-medium text-foreground">
@@ -682,7 +682,7 @@ export default function ApplicationsClient() {
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <User className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                          <p className="text-ui-label uppercase tracking-wide text-muted-foreground">
                             현재 실력
                           </p>
                           <p className="font-medium text-foreground">
@@ -694,7 +694,7 @@ export default function ApplicationsClient() {
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <Clock className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                          <p className="text-ui-label uppercase tracking-wide text-muted-foreground">
                             희망 요일
                           </p>
                           <p className="break-words font-medium text-foreground">
@@ -706,7 +706,7 @@ export default function ApplicationsClient() {
                       <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
                         <Phone className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                          <p className="text-ui-label uppercase tracking-wide text-muted-foreground">
                             희망 시간대
                           </p>
                           <p className="break-words font-medium text-foreground">
@@ -719,46 +719,46 @@ export default function ApplicationsClient() {
                 </div>
 
                 {isAcademyLesson ? (
-                  <div className="space-y-3 rounded-xl border border-border/50 bg-muted/20 p-3 text-sm text-foreground">
+                  <div className="space-y-3 rounded-xl border border-border/50 bg-muted/20 p-3 text-ui-body-sm text-foreground">
                     <p className="text-muted-foreground">
                       신청 내용 확인 후 도깨비테니스에서 상담을 도와드립니다.
                     </p>
 
                     {app.classSnapshot ? (
                       <div className="rounded-xl border border-border/50 bg-background p-3">
-                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        <p className="text-ui-label font-medium uppercase tracking-wide text-muted-foreground">
                           선택 클래스
                         </p>
                         <p className="mt-1 break-keep font-semibold text-foreground">
                           {app.classSnapshot.name || "클래스명 미입력"}
                         </p>
-                        <dl className="mt-3 grid gap-2 text-sm text-muted-foreground md:grid-cols-2">
+                        <dl className="mt-3 grid gap-2 text-ui-body-sm text-muted-foreground md:grid-cols-2">
                           <div>
-                            <dt className="text-xs uppercase tracking-wide">수업 유형</dt>
+                            <dt className="text-ui-label uppercase tracking-wide">수업 유형</dt>
                             <dd className="mt-0.5 font-medium text-foreground">
                               {app.classSnapshot.lessonTypeLabel || "미선택"}
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs uppercase tracking-wide">레벨</dt>
+                            <dt className="text-ui-label uppercase tracking-wide">레벨</dt>
                             <dd className="mt-0.5 font-medium text-foreground">
                               {app.classSnapshot.levelLabel || "미선택"}
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs uppercase tracking-wide">일정</dt>
+                            <dt className="text-ui-label uppercase tracking-wide">일정</dt>
                             <dd className="mt-0.5 break-keep font-medium text-foreground">
                               {app.classSnapshot.scheduleText || "상담 후 조율"}
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs uppercase tracking-wide">장소</dt>
+                            <dt className="text-ui-label uppercase tracking-wide">장소</dt>
                             <dd className="mt-0.5 break-keep font-medium text-foreground">
                               {app.classSnapshot.location || "상담 후 안내"}
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs uppercase tracking-wide">수강료</dt>
+                            <dt className="text-ui-label uppercase tracking-wide">수강료</dt>
                             <dd className="mt-0.5 font-medium text-foreground">
                               {formatAcademyClassPrice(app.classSnapshot.price)}
                             </dd>
@@ -769,7 +769,7 @@ export default function ApplicationsClient() {
 
                     {app.lessonGoal ? (
                       <div>
-                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        <p className="text-ui-label font-medium uppercase tracking-wide text-muted-foreground">
                           레슨 목표
                         </p>
                         <p className="mt-1 whitespace-pre-wrap break-words">{app.lessonGoal}</p>
@@ -777,7 +777,7 @@ export default function ApplicationsClient() {
                     ) : null}
                     {app.requestMemo ? (
                       <div>
-                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        <p className="text-ui-label font-medium uppercase tracking-wide text-muted-foreground">
                           요청사항
                         </p>
                         <p className="mt-1 whitespace-pre-wrap break-words">{app.requestMemo}</p>
@@ -785,7 +785,7 @@ export default function ApplicationsClient() {
                     ) : null}
                     {app.customerMessage ? (
                       <div className="rounded-lg border border-info/30 bg-info/10 p-3 text-info dark:bg-info/15">
-                        <p className="text-xs font-semibold">관리자 안내</p>
+                        <p className="text-ui-label font-semibold">관리자 안내</p>
                         <p className="mt-1 whitespace-pre-wrap break-words">
                           {app.customerMessage}
                         </p>
@@ -795,7 +795,7 @@ export default function ApplicationsClient() {
                 ) : null}
 
                 {isStringService && isLinkedApplication ? (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-ui-body-sm text-muted-foreground">
                     {hasOrderLink
                       ? "이 교체서비스는 연결된 주문의 구매확정과 함께 처리됩니다."
                       : "이 교체서비스는 연결된 대여의 수령확인과 함께 처리됩니다."}
@@ -837,13 +837,13 @@ export default function ApplicationsClient() {
 
                   {canShowInboundTracking ? (
                     <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 sm:col-span-2 md:w-full">
-                      <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-sm">
+                      <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-ui-body-sm">
                         <span className="font-medium text-foreground">운송장 상태</span>
                         <Badge variant={hasTracking ? "outline" : "default"}>
                           {hasTracking ? "등록됨" : "등록 필요"}
                         </Badge>
                       </div>
-                      <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+                      <p className="mb-3 text-ui-label leading-relaxed text-muted-foreground">
                         {hasTracking
                           ? "등록된 운송장을 수정할 수 있습니다."
                           : "라켓을 보내신 뒤 운송장을 등록해 주세요."}
@@ -979,7 +979,7 @@ export default function ApplicationsClient() {
             더 보기
           </Button>
         ) : applications.length ? (
-          <span className="text-sm text-foreground/80">마지막 페이지입니다</span>
+          <span className="text-ui-body-sm text-foreground/80">마지막 페이지입니다</span>
         ) : null}
       </div>
 

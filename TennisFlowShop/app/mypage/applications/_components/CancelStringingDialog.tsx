@@ -169,7 +169,7 @@ const CancelStringingDialog = ({
               disabled={isSubmitting}
             />
           ) : (
-            <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-sm text-muted-foreground">
+            <div className="rounded-md border border-border/60 bg-muted/30 p-3 text-ui-body-sm text-muted-foreground">
               {noRefundAccountMessage}
             </div>
           )}

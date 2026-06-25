@@ -115,7 +115,7 @@ const StarsInput = ({ value, onChange }: { value: number; onChange: (v: number) 
           type="button"
           aria-label={`${n}점`}
           onClick={() => onChange(n)}
-          className={`text-xl leading-none transition-transform hover:scale-[1.06] ${value >= n ? "text-warning" : "text-muted-foreground/60 dark:text-muted-foreground"}`}
+          className={`text-ui-section-title leading-none transition-transform hover:scale-[1.06] ${value >= n ? "text-warning" : "text-muted-foreground/60 dark:text-muted-foreground"}`}
         >
           ★
         </button>
@@ -468,7 +468,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
                     </h3>
                     <div className="flex flex-wrap items-center gap-2">
                       <Stars rating={it.rating} />
-                      <span className="text-sm font-medium text-warning">
+                      <span className="text-ui-body-sm font-medium text-warning">
                         {Number(it.rating).toFixed(1)}
                       </span>
                       {it.status === "hidden" && (
@@ -548,11 +548,11 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
 
               {/* 푸터 */}
               <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-2 text-sm text-foreground/80">
+                <div className="flex items-center gap-2 text-ui-body-sm text-foreground/80">
                   <Calendar className="h-4 w-4" />
                   <span>{(it.createdAt || "").slice(0, 10)}</span>
                 </div>
-                <div className="flex items-center gap-1 text-xs text-foreground/75">
+                <div className="flex items-center gap-1 text-ui-label text-foreground/75">
                   <Package className="h-3.5 w-3.5" />
                   <span>{it.type === "product" ? "상품 후기" : "교체서비스 후기"}</span>
                 </div>
@@ -566,7 +566,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
             <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted/20">
               <Star className="h-6 w-6 text-warning" />
             </div>
-            <h3 className="mb-2 text-lg font-semibold text-foreground">
+            <h3 className="mb-2 text-ui-card-title-lg font-semibold text-foreground">
               {swrItems.length > 0 ? "조건에 맞는 리뷰가 없습니다" : "작성한 리뷰가 없습니다"}
             </h3>
             <p className="mb-4 md:mb-6 text-muted-foreground">
@@ -585,7 +585,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
             더 보기
           </Button>
         ) : itemsToRender.length ? (
-          <span className="text-sm text-foreground/80">마지막 페이지입니다</span>
+          <span className="text-ui-body-sm text-foreground/80">마지막 페이지입니다</span>
         ) : null}
       </div>
 
@@ -616,12 +616,12 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
 
           <div className="space-y-4">
             <div>
-              <label className="text-sm block mb-1">별점</label>
+              <label className="text-ui-body-sm block mb-1">별점</label>
               <StarsInput value={editRating} onChange={setEditRating} />
             </div>
 
             <div>
-              <label className="text-sm block mb-1">내용</label>
+              <label className="text-ui-body-sm block mb-1">내용</label>
               <Textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
@@ -630,7 +630,7 @@ export default function ReviewList({ reviews = [] }: ReviewListProps) {
             </div>
 
             <div>
-              <div className="text-sm mb-2">사진 (선택, 최대 5장)</div>
+              <div className="text-ui-body-sm mb-2">사진 (선택, 최대 5장)</div>
               <PhotosUploader
                 key={editing?._id ?? "new"}
                 value={editPhotos}

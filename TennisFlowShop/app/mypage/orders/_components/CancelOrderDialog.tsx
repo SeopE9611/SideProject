@@ -267,7 +267,7 @@ const CancelOrderDialog = ({
         <div className="space-y-2 py-4">
           {/* 연결된 교체 서비스 신청 경고 메시지 */}
           {confirmWithStringing && (
-            <div className="mb-2 rounded-md border border-border bg-muted px-3 py-2 text-xs text-foreground">
+            <div className="mb-2 rounded-md border border-border bg-muted px-3 py-2 text-ui-label text-foreground">
               <div className="mb-1 font-semibold">교체 서비스 신청도 함께 취소됩니다.</div>
               <p>
                 이 주문으로 접수된 교체 서비스 신청
@@ -313,7 +313,7 @@ const CancelOrderDialog = ({
               disabled={isSubmitting}
             />
           ) : (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-ui-label text-muted-foreground">
               이 주문은 환불계좌 입력 없이 취소 사유만으로 요청할 수 있습니다.
             </p>
           )}

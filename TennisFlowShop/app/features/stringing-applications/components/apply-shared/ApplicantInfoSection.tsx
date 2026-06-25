@@ -149,7 +149,7 @@ export default function ApplicantInfoSection({
 
   // 에러 텍스트는 "있을 때만" 렌더 (불필요한 상시 여백 제거)
   const errorText = (key: string) => (touched[key] && fieldErrors[key] ? fieldErrors[key] : "");
-  const errCls = "mt-1 px-3 text-xs leading-tight text-destructive";
+  const errCls = "mt-1 px-3 text-ui-label leading-tight text-destructive";
 
   return (
     <div className="relative space-y-5">
@@ -158,8 +158,8 @@ export default function ApplicantInfoSection({
           <User className="h-5 w-5 text-foreground" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-foreground">신청자/수령 정보</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h2 className="text-ui-section-title font-semibold text-foreground">신청자/수령 정보</h2>
+          <p className="mt-1 text-ui-body-sm text-muted-foreground">
             먼저 라켓을 전달할 방식을 선택하고 필요한 연락처를 확인해주세요.
           </p>
         </div>
@@ -167,15 +167,15 @@ export default function ApplicantInfoSection({
 
       <PublicSurface variant="muted" padding="sm">
         <div className="mb-3">
-          <h3 className="text-base font-semibold text-foreground">고객 정보</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h3 className="text-ui-body font-semibold text-foreground">고객 정보</h3>
+          <p className="mt-1 text-ui-body-sm text-muted-foreground">
             접수와 안내에 사용할 기본 정보입니다.
           </p>
         </div>
         {/* 기본 정보: 2열 */}
         <div className="grid gap-x-6 gap-y-3 md:grid-cols-2">
           <div className="space-y-1">
-            <Label htmlFor="name" className="text-sm font-medium">
+            <Label htmlFor="name" className="text-ui-body-sm font-medium">
               신청인 이름 <span className="text-destructive">*</span>
             </Label>
             <Input
@@ -192,7 +192,7 @@ export default function ApplicantInfoSection({
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="email" className="text-sm font-medium">
+            <Label htmlFor="email" className="text-ui-body-sm font-medium">
               이메일 <span className="text-destructive">*</span>
             </Label>
             <Input
@@ -210,7 +210,7 @@ export default function ApplicantInfoSection({
           </div>
 
           <div className="md:col-span-2 space-y-1">
-            <Label htmlFor="phone" className="text-sm font-medium">
+            <Label htmlFor="phone" className="text-ui-body-sm font-medium">
               연락처 <span className="text-destructive">*</span>
             </Label>
             <Input
@@ -238,10 +238,10 @@ export default function ApplicantInfoSection({
       <PublicSurface variant="muted" padding="sm">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>
-            <Label className="text-base font-semibold text-foreground">
+            <Label className="text-ui-body font-semibold text-foreground">
               수령/전달 방식 <span className="text-destructive">*</span>
             </Label>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-ui-body-sm text-muted-foreground">
               택배로 보내거나 매장 방문으로 접수할 수 있습니다.
             </p>
           </div>
@@ -249,7 +249,7 @@ export default function ApplicantInfoSection({
 
         {/* {normalizeCollection(formData.collectionMethod) === 'self_ship' && applicationId && (
           <div
-            className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition text-sm peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-secondary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring"
+            className="block cursor-pointer rounded-xl border border-border bg-card px-4 py-3 shadow-sm hover:bg-background dark:hover:bg-card transition text-ui-body-sm peer-data-[state=checked]:border-border peer-data-[state=checked]:bg-secondary peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-ring"
           >
             <div className="font-semibold mb-1 text-foreground">자가 발송 안내</div>
             <p className="mb-3 text-foreground">편의점/우체국 등으로 직접 발송하실 수 있어요. 운송장/포장 가이드는 아래 버튼에서 확인하세요.</p>
@@ -337,7 +337,7 @@ export default function ApplicantInfoSection({
                   className={`h-4 w-4 shrink-0 text-primary transition-opacity ${formData.collectionMethod === "self_ship" ? "opacity-100" : "opacity-0"}`}
                 />
               </div>
-              <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-1 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
                 편의점/우체국 등
               </p>
             </Label>
@@ -364,7 +364,7 @@ export default function ApplicantInfoSection({
                   className={`h-4 w-4 shrink-0 text-primary transition-opacity ${normalizeCollection(formData.collectionMethod) === "visit" ? "opacity-100" : "opacity-0"}`}
                 />
               </div>
-              <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-1 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
                 방문 가능 시간대만 선택
               </p>
             </Label>
@@ -374,7 +374,7 @@ export default function ApplicantInfoSection({
           <PublicSurface
             variant="muted"
             padding="sm"
-            className="mt-2 rounded-lg text-xs text-muted-foreground"
+            className="mt-2 rounded-lg text-ui-label text-muted-foreground"
           >
             라켓 구매 단계에서 선택한 접수 방식은 변경할 수 없습니다.
           </PublicSurface>
@@ -384,13 +384,13 @@ export default function ApplicantInfoSection({
       <PublicSurface variant="muted" padding="sm">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="text-base font-semibold text-foreground">배송/방문 정보</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <h3 className="text-ui-body font-semibold text-foreground">배송/방문 정보</h3>
+            <p className="mt-1 text-ui-body-sm text-muted-foreground">
               선택한 방식에 따라 필요한 입력만 표시됩니다.
             </p>
           </div>
 
-          <span className="shrink-0 whitespace-nowrap rounded-full border border-border bg-background px-2 py-0.5 text-[11px] font-medium leading-5 text-muted-foreground">
+          <span className="shrink-0 whitespace-nowrap rounded-full border border-border bg-background px-2 py-0.5 text-ui-micro font-medium leading-5 text-muted-foreground">
             {isVisitSelected ? "방문" : "택배 발송"}
           </span>
         </div>
@@ -399,14 +399,14 @@ export default function ApplicantInfoSection({
             <PublicSurface
               variant="muted"
               padding="sm"
-              className="rounded-lg text-xs text-muted-foreground"
+              className="rounded-lg text-ui-label text-muted-foreground"
             >
               {collectionVisitNotice}
             </PublicSurface>
           ) : (
             <>
               <div className="space-y-1">
-                <Label htmlFor="shippingPostcode" className="text-sm font-medium">
+                <Label htmlFor="shippingPostcode" className="text-ui-body-sm font-medium">
                   우편번호 <span className="text-destructive">*</span>
                 </Label>
                 <div className="flex flex-col gap-2 md:flex-row md:items-center">
@@ -437,7 +437,7 @@ export default function ApplicantInfoSection({
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="shippingAddress" className="text-sm font-medium">
+                <Label htmlFor="shippingAddress" className="text-ui-body-sm font-medium">
                   주소 <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -455,7 +455,7 @@ export default function ApplicantInfoSection({
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="shippingAddressDetail" className="text-sm font-medium">
+                <Label htmlFor="shippingAddressDetail" className="text-ui-body-sm font-medium">
                   상세 주소
                 </Label>
                 <Input
@@ -492,7 +492,7 @@ export default function ApplicantInfoSection({
         >
           <div className="flex items-start space-x-3">
             <Shield className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
-            <div className="text-sm">
+            <div className="text-ui-body-sm">
               <p className="font-medium text-warning mb-1">정보 유지 안내</p>
               <ul className="list-disc space-y-1 pl-4 text-foreground">
                 <li>신청자 정보는 주문 당시 정보 기준으로 유지됩니다.</li>

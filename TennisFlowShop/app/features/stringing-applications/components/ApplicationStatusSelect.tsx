@@ -75,7 +75,7 @@ export function ApplicationStatusSelect({
           <SelectItem key={status} value={status}>
             <Badge
               variant={badgeToneVariant(getApplicationStatusTone(status))}
-              className="px-2 py-1 rounded text-xs"
+              className="px-2 py-1 rounded text-ui-label"
             >
               {status}
             </Badge>

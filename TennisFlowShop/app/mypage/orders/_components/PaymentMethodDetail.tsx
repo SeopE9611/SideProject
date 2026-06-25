@@ -129,41 +129,41 @@ export default function PaymentMethodDetail({
 
   return (
     <div className="space-y-2">
-      <div className="text-sm font-medium">결제 방식</div>
+      <div className="text-ui-body-sm font-medium">결제 방식</div>
       <div className="flex flex-col gap-1">
         {isTossPayment ? (
-          <div className="mt-1 rounded-md bg-muted px-3 py-2 text-sm text-foreground leading-relaxed border border-border space-y-1">
+          <div className="mt-1 rounded-md bg-muted px-3 py-2 text-ui-body-sm text-foreground leading-relaxed border border-border space-y-1">
             <div className="font-semibold">{tossMethodLabel}</div>
-            <div className="text-sm">결제 제공사: Toss Payments</div>
+            <div className="text-ui-body-sm">결제 제공사: Toss Payments</div>
             {easyPayProviderLabel && (
-              <div className="text-sm">간편결제: {easyPayProviderLabel}</div>
+              <div className="text-ui-body-sm">간편결제: {easyPayProviderLabel}</div>
             )}
-            {statusLabel && <div className="text-sm">결제 상태: {statusLabel}</div>}
+            {statusLabel && <div className="text-ui-body-sm">결제 상태: {statusLabel}</div>}
           </div>
         ) : isNicePayment ? (
-          <div className="mt-1 rounded-md bg-muted px-3 py-2 text-sm text-foreground leading-relaxed border border-border space-y-1">
+          <div className="mt-1 rounded-md bg-muted px-3 py-2 text-ui-body-sm text-foreground leading-relaxed border border-border space-y-1">
             <div className="font-semibold">{niceMethodLabel}</div>
-            {cardDisplayName && <div className="text-sm">결제 수단: {cardDisplayName}</div>}
-            {statusLabel && <div className="text-sm">결제 상태: {statusLabel}</div>}
+            {cardDisplayName && <div className="text-ui-body-sm">결제 수단: {cardDisplayName}</div>}
+            {statusLabel && <div className="text-ui-body-sm">결제 상태: {statusLabel}</div>}
           </div>
         ) : bankInfo ? (
-          <div className="mt-1 rounded-md bg-muted px-3 py-2 text-sm text-foreground leading-relaxed border border-border space-y-1">
+          <div className="mt-1 rounded-md bg-muted px-3 py-2 text-ui-body-sm text-foreground leading-relaxed border border-border space-y-1">
             <div className="font-semibold">{method || "무통장입금"}</div>
             <div className="font-medium">{bankInfo.label}</div>
             <div className="font-mono tracking-wide">{bankInfo.account}</div>
-            <div className="text-sm">예금주: {bankInfo.holder}</div>
+            <div className="text-ui-body-sm">예금주: {bankInfo.holder}</div>
           </div>
         ) : (
-          <div className="mt-1 rounded-md bg-muted px-3 py-2 text-sm text-foreground leading-relaxed border border-border">
+          <div className="mt-1 rounded-md bg-muted px-3 py-2 text-ui-body-sm text-foreground leading-relaxed border border-border">
             {method || "결제 정보 확인 필요"}
           </div>
         )}
         {!isTossPayment && !isNicePayment && !bankInfo && bankKey && (
-          <div className="text-sm">{bankKey}</div>
+          <div className="text-ui-body-sm">{bankKey}</div>
         )}
         {!isTossPayment && !isNicePayment && depositor && (
           <div>
-            <div className="text-sm font-medium">입금자명</div>
+            <div className="text-ui-body-sm font-medium">입금자명</div>
             <div>{depositor}</div>
           </div>
         )}

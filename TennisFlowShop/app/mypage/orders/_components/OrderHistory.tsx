@@ -169,7 +169,7 @@ export default function OrderHistory({
     <Card className="md:col-span-3 rounded-xl border-border bg-card shadow-md">
       <CardHeader className="pb-3">
         <CardTitle>처리 이력</CardTitle>
-        <p className="text-sm text-muted-foreground">최신 변경이 맨 위에 표시됩니다.</p>
+        <p className="text-ui-body-sm text-muted-foreground">최신 변경이 맨 위에 표시됩니다.</p>
       </CardHeader>
       <CardContent>
         {/* 로딩 중일 때 스켈레톤 5줄 */}
@@ -220,11 +220,11 @@ export default function OrderHistory({
                 <div className="flex-1">
                   <div className="flex justify-between">
                     <span className="font-semibold">{displayStatus}</span>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-ui-body-sm text-muted-foreground">
                       {formatHistoryDate(item.date)}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
+                  <p className="mt-1 text-ui-body-sm text-muted-foreground">{item.description}</p>
                 </div>
               </div>
             );
@@ -242,7 +242,7 @@ export default function OrderHistory({
             >
               이전
             </Button>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-ui-body-sm text-muted-foreground">
               {page} / {totalPages}
             </span>
             <Button

@@ -52,7 +52,7 @@ export default function FinalRequestSection({
         >
           <div className="flex items-start gap-3">
             <Shield className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
-            <div className="min-w-0 text-sm">
+            <div className="min-w-0 text-ui-body-sm">
               <p className="mb-1 font-medium text-warning">📢 안내사항</p>
               <p className="break-keep leading-relaxed text-foreground">
                 신청자/배송 정보는 <span className="font-semibold">주문 당시 정보</span>를 기준으로
@@ -75,7 +75,7 @@ export default function FinalRequestSection({
         >
           <div className="flex items-start gap-3">
             <Shield className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-            <div className="min-w-0 text-sm">
+            <div className="min-w-0 text-ui-body-sm">
               <p className="mb-1 font-medium text-foreground">📢 안내사항</p>
               <p className="break-keep leading-relaxed text-foreground">
                 배송/연락처 정보는 상단에서 입력한{" "}
@@ -103,7 +103,7 @@ export default function FinalRequestSection({
           >
             {packageInsufficient ? "패키지 적용 불가" : usingPackage ? "패키지 적용" : "일반 결제"}
           </Badge>
-          <p className="min-w-0 flex-1 break-keep text-sm leading-relaxed text-foreground">
+          <p className="min-w-0 flex-1 break-keep text-ui-body-sm leading-relaxed text-foreground">
             {packageInsufficient
               ? "이번 신청은 패키지 잔여 부족으로 일반 결제로 진행됩니다."
               : usingPackage
@@ -115,7 +115,7 @@ export default function FinalRequestSection({
 
       {/* 추가 요청사항 */}
       <PublicSurface padding="sm" className="space-y-3 sm:p-5">
-        <Label htmlFor="requirements" className="text-sm font-medium">
+        <Label htmlFor="requirements" className="text-ui-body-sm font-medium">
           추가 요청사항 (선택)
         </Label>
         <Textarea
@@ -126,7 +126,7 @@ export default function FinalRequestSection({
           placeholder="예) 특정 텐션 유지, 프레임 상태 체크 요청 등"
           className="min-h-[140px] resize-y bg-card leading-relaxed focus-visible:ring-ring"
         />
-        <p className="break-keep text-xs leading-relaxed text-muted-foreground">
+        <p className="break-keep text-ui-label leading-relaxed text-muted-foreground">
           {context === "checkout"
             ? "장착 관련 요청이나 전달이 필요한 메모가 있다면 이곳에 남겨주세요."
             : "요청사항이 많거나 중요한 정보(주소 변경, 연락처 변경 등)가 있다면 이곳에 남겨주세요."}
