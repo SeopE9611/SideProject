@@ -23,6 +23,7 @@ interface PaymentMethodDetailProps {
     cancelAmount?: number | null;
   } | null;
   niceOrderId?: string | null;
+  showAdminPgDetails?: boolean;
 }
 
 const EASY_PAY_PROVIDER_LABEL_MAP: Record<string, string> = {
@@ -127,6 +128,7 @@ export default function PaymentMethodDetail({
   approvedAt,
   paymentNiceSync,
   niceOrderId,
+  showAdminPgDetails = false,
 }: PaymentMethodDetailProps) {
   const bankInfo = bankKey ? bankLabelMap[bankKey] : null;
   const isTossPayment =
@@ -187,10 +189,10 @@ export default function PaymentMethodDetail({
             {paymentStatus && (
               <div className="text-ui-body-sm text-muted-foreground">결제 상태: {paymentStatus}</div>
             )}
-            {paymentTid && (
+            {showAdminPgDetails && paymentTid && (
               <div className="text-ui-body-sm text-muted-foreground">거래 TID: {paymentTid}</div>
             )}
-            {niceOrderId && (
+            {showAdminPgDetails && niceOrderId && (
               <div className="text-ui-body-sm text-muted-foreground">
                 NICE 주문번호: {niceOrderId}
               </div>
@@ -198,24 +200,25 @@ export default function PaymentMethodDetail({
             {approvedAtLabel && (
               <div className="text-ui-body-sm text-muted-foreground">승인 시각: {approvedAtLabel}</div>
             )}
-            {paymentNiceSync?.pgStatus && (
+            {showAdminPgDetails && paymentNiceSync?.pgStatus && (
               <div className="text-ui-body-sm text-muted-foreground">
                 PG 상태: {paymentNiceSync.pgStatus}
               </div>
             )}
-            {(paymentNiceSync?.resultCode || paymentNiceSync?.resultMsg) && (
-              <div className="text-ui-body-sm text-muted-foreground">
-                PG 결과: {[paymentNiceSync.resultCode, paymentNiceSync.resultMsg]
-                  .filter(Boolean)
-                  .join(" / ")}
-              </div>
-            )}
-            {canceledAtLabel && (
+            {showAdminPgDetails &&
+              (paymentNiceSync?.resultCode || paymentNiceSync?.resultMsg) && (
+                <div className="text-ui-body-sm text-muted-foreground">
+                  PG 결과: {[paymentNiceSync.resultCode, paymentNiceSync.resultMsg]
+                    .filter(Boolean)
+                    .join(" / ")}
+                </div>
+              )}
+            {showAdminPgDetails && canceledAtLabel && (
               <div className="text-ui-body-sm text-muted-foreground">
                 PG 취소일시: {canceledAtLabel}
               </div>
             )}
-            {lastSyncedAtLabel && (
+            {showAdminPgDetails && lastSyncedAtLabel && (
               <div className="text-ui-body-sm text-muted-foreground">
                 마지막 동기화: {lastSyncedAtLabel}
               </div>
