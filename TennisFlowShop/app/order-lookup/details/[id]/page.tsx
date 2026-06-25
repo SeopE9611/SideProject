@@ -549,8 +549,8 @@ export default function OrderDetailPage() {
 
           {nextActionText && (
             <PublicSurface variant="muted" className="mb-6 md:mb-8">
-              <p className="text-ui-body-sm font-medium text-foreground">현재 진행 안내</p>
-              <p className="mt-1 text-ui-body-sm text-muted-foreground">{nextActionText}</p>
+              <p className="text-ui-body-sm font-medium text-foreground bp-md:text-ui-body">현재 진행 안내</p>
+              <p className="mt-1 text-ui-body-sm text-muted-foreground bp-md:text-ui-body">{nextActionText}</p>
             </PublicSurface>
           )}
 

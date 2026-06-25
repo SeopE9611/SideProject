@@ -316,13 +316,13 @@ export default async function ServicesPage() {
                     <h3 className="break-keep text-ui-card-title font-medium leading-snug text-foreground bp-sm:text-ui-card-title-lg">
                       {item.title}
                     </h3>
-                    <p className="mt-3 break-words text-ui-body-sm leading-relaxed text-muted-foreground">
+                    <p className="mt-3 break-words text-ui-body-sm leading-relaxed text-muted-foreground bp-md:text-ui-body">
                       {item.description}
                     </p>
 
                     <PublicSurface variant="muted" padding="sm" className="mt-4">
                       <p className="text-ui-caption font-medium text-primary">진행 순서</p>
-                      <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground">
+                      <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground bp-md:text-ui-body">
                         {item.steps}
                       </p>
                     </PublicSurface>
@@ -346,7 +346,7 @@ export default async function ServicesPage() {
                     <h3 className="break-keep text-ui-card-title-lg font-semibold text-foreground bp-sm:text-ui-section-title">
                       잘 모르겠다면 상담과 안내를 먼저 확인하세요
                     </h3>
-                    <p className="text-ui-body-sm leading-relaxed text-muted-foreground">
+                    <p className="text-ui-body-sm leading-relaxed text-muted-foreground bp-md:text-ui-body">
                       추천 도우미, 가격 안내, FAQ, 전화 상담을 한{"\u00A0"}
                       곳에 모았습니다. 테니스 스트링 쇼핑은 첫 번째 신청 카드에서 바로 이어갈 수
                       있어요.
@@ -358,7 +358,7 @@ export default async function ServicesPage() {
                         <p className="text-ui-body-sm font-medium text-foreground">
                           {notice.title}
                         </p>
-                        <p className="mt-1 text-ui-label leading-relaxed text-muted-foreground">
+                        <p className="mt-1 text-ui-label leading-relaxed text-muted-foreground bp-md:text-ui-body-sm">
                           {notice.description}
                         </p>
                       </PublicSurface>
@@ -377,7 +377,7 @@ export default async function ServicesPage() {
                         <span className="min-w-0 break-keep">{link.label}</span>
                         <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
                       </span>
-                      <span className="mt-2 break-words text-ui-body-sm leading-relaxed text-muted-foreground">
+                      <span className="mt-2 break-words text-ui-body-sm leading-relaxed text-muted-foreground bp-md:text-ui-body">
                         {link.helper}
                       </span>
                     </InteractiveCard>
