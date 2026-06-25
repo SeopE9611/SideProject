@@ -126,7 +126,12 @@ export default function ApplicationNiceCheckoutButton({
 
   return (
     <div className="space-y-2">
-      <Button type="button" onClick={handleClick} disabled={isDisabled}>
+      <Button
+        type="button"
+        onClick={handleClick}
+        disabled={isDisabled}
+        className="w-full sm:w-auto"
+      >
         {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
         카드/간편결제로 신청 완료
       </Button>
