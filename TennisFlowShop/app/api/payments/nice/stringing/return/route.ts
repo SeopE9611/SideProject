@@ -26,22 +26,45 @@ function pick(raw: Record<string, string>, ...keys: string[]) {
 
 async function parsePayload(req: Request): Promise<Record<string, string>> {
   const contentType = req.headers.get("content-type") || "";
+
   if (
     contentType.includes("application/x-www-form-urlencoded") ||
     contentType.includes("multipart/form-data")
   ) {
     const formData = await req.formData();
-    return Object.fromEntries(
-      Array.from(formData.entries()).map(([key, value]) => [
-        key,
-        typeof value === "string" ? value : "",
-      ]),
-    );
+    const obj: Record<string, string> = {};
+    for (const [key, value] of formData.entries()) {
+      obj[key] = typeof value === "string" ? value : "";
+    }
+    return obj;
   }
+
   if (contentType.includes("application/json")) {
-    return (await req.json().catch(() => ({}))) as Record<string, string>;
+    const json = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+    return Object.entries(json).reduce<Record<string, string>>((acc, [key, value]) => {
+      acc[key] =
+        typeof value === "string"
+          ? value
+          : value === undefined || value === null
+            ? ""
+            : String(value);
+      return acc;
+    }, {});
   }
-  return Object.fromEntries(new URL(req.url).searchParams.entries());
+
+  if (req.method.toUpperCase() === "POST") {
+    const text = await req.text().catch(() => "");
+    if (text.trim()) {
+      return Object.fromEntries(new URLSearchParams(text));
+    }
+  }
+
+  const url = new URL(req.url);
+  const obj: Record<string, string> = {};
+  url.searchParams.forEach((value, key) => {
+    obj[key] = value;
+  });
+  return obj;
 }
 
 function failUrl(code: string, message: string, applicationId?: string | null) {
@@ -77,13 +100,14 @@ function approveCredentials() {
 async function handleNiceStringingReturn(req: Request) {
   const raw = await parsePayload(req);
   let safeApplicationId: string | null = null;
-  const orderId = pick(raw, "orderId", "OrderId");
-  const tid = pick(raw, "tid", "Tid");
+  const authResultCode = pick(raw, "authResultCode", "AuthResultCode", "resultCode", "ResultCode");
+  const authResultMsg = pick(raw, "authResultMsg", "AuthResultMsg", "resultMsg", "ResultMsg");
+  const tid = pick(raw, "tid", "TID", "TxTid");
+  const clientId = pick(raw, "clientId", "ClientId", "CID");
+  const orderId = pick(raw, "orderId", "OrderId", "MOID", "Moid");
   const amount = Math.floor(Number(pick(raw, "amount", "Amt") || 0));
-  const authResultCode = pick(raw, "resultCode", "ResultCode", "authResultCode");
   const authToken = pick(raw, "authToken", "AuthToken");
   const signature = pick(raw, "signature", "Signature");
-  const clientId = pick(raw, "clientId", "ClientId");
 
   try {
     const client = await clientPromise;
@@ -259,15 +283,13 @@ async function handleNiceStringingReturn(req: Request) {
 
     const prepared = session.nicePrepared;
     if (authResultCode !== "0000") {
+      const authFailureMessage = authResultMsg || "카드/간편결제 인증에 실패했습니다.";
       await markFailed({
         stage: "verify_auth",
         code: "AUTH_FAILED",
-        message: "카드/간편결제 인증에 실패했습니다.",
+        message: authFailureMessage,
       });
-      return redirect303(
-        req,
-        failUrl("AUTH_FAILED", "카드/간편결제 인증에 실패했습니다.", safeApplicationId),
-      );
+      return redirect303(req, failUrl("AUTH_FAILED", authFailureMessage, safeApplicationId));
     }
 
     if (!tid || !authToken || !signature || !clientId || !prepared) {
