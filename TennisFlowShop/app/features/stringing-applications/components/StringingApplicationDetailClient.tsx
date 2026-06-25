@@ -1266,7 +1266,12 @@ export default function StringingApplicationDetailClient({
                     : "flex flex-col gap-4 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between bp-sm:mb-6",
                 )}
               >
-                <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+                <div
+                  className={cn(
+                    "flex min-w-0 gap-3 sm:gap-4",
+                    isAdmin ? "items-center" : "items-start",
+                  )}
+                >
                   <div className="shrink-0 rounded-xl border border-border bg-muted/40 p-3">
                     {isAdmin ? (
                       <Settings className="h-8 w-8 text-foreground" />
@@ -1274,7 +1279,10 @@ export default function StringingApplicationDetailClient({
                       <Target className="h-8 w-8 text-foreground" />
                     )}
                   </div>
-                  <div className="min-w-0">
+                  <div className={cn("min-w-0", !isAdmin && "space-y-2")}>
+                    {!isAdmin && (
+                      <div className="text-ui-label font-medium text-primary">마이페이지</div>
+                    )}
                     <h1
                       className={cn(
                         "break-keep leading-tight tracking-normal text-foreground",
@@ -1285,6 +1293,11 @@ export default function StringingApplicationDetailClient({
                     >
                       {isAdmin ? "교체서비스 신청 상세 관리" : "교체서비스 신청 상세"}
                     </h1>
+                    {!isAdmin && (
+                      <p className="max-w-2xl text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body">
+                        신청 상태, 예약 정보, 배송/수령 단계와 다음 해야 할 일을 한눈에 확인할 수 있습니다.
+                      </p>
+                    )}
                     {isAdmin ? (
                       <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-foreground/75">
                         <span className="font-medium text-foreground/90">
@@ -1311,7 +1324,7 @@ export default function StringingApplicationDetailClient({
                         </Button>
                       </div>
                     ) : (
-                      <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                      <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm text-muted-foreground">
                         <ApplicationStatusBadge status={data.status} />
                         <Badge variant="outline" className={cn(badgeBase, badgeSizeSm, "bg-card")}>
                           {applicationContext.label}
@@ -1329,18 +1342,19 @@ export default function StringingApplicationDetailClient({
                 <TooltipProvider>
                   <div
                     className={cn(
-                      "grid w-full grid-cols-1 gap-1.5 bp-sm:grid-cols-2 bp-lg:flex bp-lg:w-auto bp-lg:flex-wrap bp-lg:items-center bp-lg:justify-end",
-                      isAdmin &&
-                        "bp-sm:[&>*:first-child]:col-span-2 bp-lg:[&>*:first-child]:col-span-1",
-                      !isAdmin &&
-                        "bp-sm:[&>*:first-child]:col-span-2 bp-lg:[&>*:first-child]:col-span-1",
+                      isAdmin
+                        ? "grid w-full grid-cols-1 gap-1.5 bp-sm:grid-cols-2 bp-lg:flex bp-lg:w-auto bp-lg:flex-wrap bp-lg:items-center bp-lg:justify-end bp-sm:[&>*:first-child]:col-span-2 bp-lg:[&>*:first-child]:col-span-1"
+                        : "flex w-full flex-col gap-2 bp-sm:w-auto bp-sm:flex-row bp-sm:flex-wrap bp-sm:items-center bp-lg:justify-end",
                     )}
                   >
                     <Button
                       asChild
                       variant="outline"
                       size="sm"
-                      className="h-8 w-full overflow-hidden whitespace-nowrap border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground bp-lg:mr-1 bp-lg:h-9 bp-lg:w-auto"
+                      className={cn(
+                        "h-8 w-full overflow-hidden whitespace-nowrap border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground bp-lg:mr-1 bp-lg:h-9",
+                        isAdmin ? "bp-lg:w-auto" : "bp-sm:w-auto",
+                      )}
                     >
                       <Link href={backUrl}>
                         <span className="sm:hidden">목록</span>
@@ -1355,7 +1369,7 @@ export default function StringingApplicationDetailClient({
                         asChild
                         variant="outline"
                         size="sm"
-                        className="h-8 w-full overflow-hidden whitespace-nowrap border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground bp-lg:h-9 bp-lg:w-auto"
+                        className="h-8 w-full overflow-hidden whitespace-nowrap border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground bp-sm:w-auto bp-lg:h-9"
                       >
                         <Link href={inboundTrackingHref}>
                           <Truck className="w-4 h-4 mr-2" />
@@ -1381,17 +1395,28 @@ export default function StringingApplicationDetailClient({
 
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="inline-block w-full bp-lg:w-auto">
+                        <span
+                          className={cn(
+                            "inline-block w-full",
+                            isAdmin ? "bp-lg:w-auto" : "bp-sm:w-auto",
+                          )}
+                        >
                           <Button
                             variant={isEditMode ? "destructive" : "outline"}
                             size="sm"
                             disabled={!isEditableAllowed}
                             className={
                               !isEditableAllowed
-                                ? "w-full cursor-not-allowed opacity-50 bp-lg:w-auto"
+                                ? cn(
+                                    "w-full cursor-not-allowed opacity-50",
+                                    isAdmin ? "bp-lg:w-auto" : "bp-sm:w-auto",
+                                  )
                                 : isEditMode
-                                  ? "w-full bp-lg:w-auto"
-                                  : "w-full border-border bg-card hover:bg-muted bp-lg:w-auto"
+                                  ? cn("w-full", isAdmin ? "bp-lg:w-auto" : "bp-sm:w-auto")
+                                  : cn(
+                                      "w-full border-border bg-card hover:bg-muted",
+                                      isAdmin ? "bp-lg:w-auto" : "bp-sm:w-auto",
+                                    )
                             }
                             onClick={() => {
                               if (!isEditableAllowed) return;
@@ -1415,7 +1440,7 @@ export default function StringingApplicationDetailClient({
                         applicationId={data.id}
                         status={data.status}
                         userConfirmedAt={data.userConfirmedAt ?? null}
-                        className="h-8 w-full overflow-hidden whitespace-nowrap px-3 text-sm bp-lg:h-9 bp-lg:w-auto"
+                        className="h-8 w-full overflow-hidden whitespace-nowrap px-3 text-sm bp-sm:w-auto bp-lg:h-9"
                       />
                     )}
 
@@ -1426,7 +1451,7 @@ export default function StringingApplicationDetailClient({
                         variant="outline"
                         disabled={!canConfirmExchange || isConfirmSubmitting}
                         onClick={handleConfirmExchange}
-                        className="h-8 w-full overflow-hidden whitespace-nowrap border-primary/30 text-primary hover:bg-primary/10 bp-lg:h-9 bp-lg:w-auto"
+                        className="h-8 w-full overflow-hidden whitespace-nowrap border-primary/30 text-primary hover:bg-primary/10 bp-sm:w-auto bp-lg:h-9"
                       >
                         <CheckCircle2 className="w-4 h-4 mr-2" />
                         {isConfirmSubmitting
