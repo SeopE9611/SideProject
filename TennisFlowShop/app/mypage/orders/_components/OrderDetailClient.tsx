@@ -1270,7 +1270,9 @@ export default function OrderDetailClient({
                 <CheckCircle className="h-6 w-6" />
                 <div>
                   <p className="font-semibold text-foreground">이 주문은 리뷰를 작성하였습니다.</p>
-                  <p className="text-ui-body-sm text-foreground">내가 작성한 리뷰를 확인할 수 있어요.</p>
+                  <p className="text-ui-body-sm text-foreground">
+                    내가 작성한 리뷰를 확인할 수 있어요.
+                  </p>
                 </div>
               </div>
               <Button
@@ -1452,7 +1454,9 @@ export default function OrderDetailClient({
                             {getTimelineStateLabel(step.state)}
                           </Badge>
                         </div>
-                        <p className="mt-1 text-ui-body-sm text-muted-foreground">{step.description}</p>
+                        <p className="mt-1 text-ui-body-sm text-muted-foreground">
+                          {step.description}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -1520,10 +1524,10 @@ export default function OrderDetailClient({
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
-                      <div>
+                    <div className="flex min-w-0 items-start gap-3 rounded-lg bg-muted p-3">
+                      <div className="min-w-0">
                         <p className="text-ui-body-sm text-foreground/80">운송장 번호</p>
-                        <p className="break-words font-semibold text-foreground">
+                        <p className="break-all font-semibold text-foreground">
                           {orderDetail.shippingInfo.invoice.trackingNumber}
                         </p>
                       </div>
@@ -1593,7 +1597,9 @@ export default function OrderDetailClient({
                   <div className="rounded-lg border border-border bg-primary/5 p-3 dark:bg-primary/10">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="space-y-1">
-                        <p className="text-ui-body-sm font-semibold text-foreground">라켓 발송 정보</p>
+                        <p className="text-ui-body-sm font-semibold text-foreground">
+                          라켓 발송 정보
+                        </p>
                         <p className="text-ui-label text-foreground/75">
                           매장으로 보내는 라켓의 택배 등록 상태를 확인할 수 있어요.
                         </p>
@@ -1618,7 +1624,7 @@ export default function OrderDetailClient({
                         <span className="text-muted-foreground">택배사:</span>{" "}
                         {selfShipCourierLabel}
                       </p>
-                      <p>
+                      <p className="min-w-0 break-all">
                         <span className="text-muted-foreground">운송장 번호:</span>{" "}
                         {selfShipTrackingNoLabel}
                       </p>
