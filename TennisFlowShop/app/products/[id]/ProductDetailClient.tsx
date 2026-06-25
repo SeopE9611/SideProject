@@ -975,12 +975,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
           <>
             {allowGuestCheckout ? (
               <>
-                <p className="text-sm">비회원이신 경우 로그인 또는</p>
-                <p className="text-sm">비회원 주문하기로 진행하세요.</p>
+                <p className="text-ui-body-sm">비회원이신 경우 로그인 또는</p>
+                <p className="text-ui-body-sm">비회원 주문하기로 진행하세요.</p>
               </>
             ) : (
               <>
-                <p className="text-sm">로그인 후 주문을 진행해주세요.</p>
+                <p className="text-ui-body-sm">로그인 후 주문을 진행해주세요.</p>
               </>
             )}
           </>
@@ -1125,7 +1125,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       onClick={handleWishlist}
       size="lg"
       className={cn(
-        "h-auto min-h-12 w-full text-sm sm:text-base",
+        "h-auto min-h-12 w-full text-ui-body-sm sm:text-ui-body",
         isWishlisted
           ? "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/15"
           : "bg-background",
@@ -1184,7 +1184,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
       <div className="relative border-b border-border/60 bg-card/70 py-4 text-foreground sm:py-5">
         <SiteContainer variant="wide" className="relative">
           <div className="flex min-w-0 items-center justify-between gap-3">
-            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-sm sm:gap-2.5 sm:text-base">
+            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-ui-body-sm sm:gap-2.5 sm:text-ui-body">
               <Link
                 href="/"
                 className="text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
@@ -1206,7 +1206,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
             <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
               <Button
                 variant="ghost"
-                className="h-9 whitespace-nowrap rounded-xl px-2.5 text-sm text-muted-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-muted/50 hover:text-foreground sm:px-3"
+                className="h-9 whitespace-nowrap rounded-xl px-2.5 text-ui-body-sm text-muted-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-muted/50 hover:text-foreground sm:px-3"
                 onClick={() => router.back()}
               >
                 <ArrowLeft className="mr-1.5 h-4 w-4" />
@@ -1307,10 +1307,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 <div className="space-y-5 sm:space-y-6">
                   {/* 브랜드와 제품명 */}
                   <div>
-                    <span className="inline-block max-w-full truncate text-sm sm:text-base text-muted-foreground font-medium mb-2">
+                    <span className="inline-block max-w-full truncate text-ui-body-sm sm:text-ui-body text-muted-foreground font-medium mb-2">
                       {productBrandLabel}
                     </span>
-                    <h1 className="min-w-0 text-balance break-keep text-xl font-bold leading-tight tracking-normal text-foreground sm:text-2xl bp-lg:text-3xl">
+                    <h1 className="min-w-0 text-balance break-keep text-ui-section-title font-semibold leading-tight tracking-normal text-foreground sm:text-ui-page-title bp-lg:text-ui-page-title-lg">
                       {product.name}
                     </h1>
                     <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -1322,7 +1322,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           />
                         ))}
                       </div>
-                      <span className="whitespace-nowrap text-sm text-muted-foreground sm:text-base">
+                      <span className="whitespace-nowrap text-ui-body-sm text-muted-foreground sm:text-ui-body">
                         {averageRating.toFixed(1)} ({reviewsLen}개 리뷰)
                       </span>
                     </div>
@@ -1330,23 +1330,23 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                   <div className="space-y-3">
                     <div className="flex items-baseline gap-3 flex-wrap">
-                      <span className="whitespace-nowrap tabular-nums text-3xl sm:text-4xl font-bold text-foreground tracking-normal">
+                      <span className="whitespace-nowrap tabular-nums text-ui-price-lg font-semibold text-foreground tracking-normal">
                         {displayPrice.toLocaleString()}
-                        <span className="text-xl sm:text-2xl font-medium ml-0.5">원</span>
+                        <span className="text-ui-section-title sm:text-ui-page-title font-medium ml-0.5">원</span>
                       </span>
                       {isSale && (
                         <>
-                          <span className="whitespace-nowrap tabular-nums text-lg sm:text-xl text-muted-foreground/60 line-through">
+                          <span className="whitespace-nowrap tabular-nums text-ui-card-title-lg sm:text-ui-section-title text-muted-foreground/60 line-through">
                             {regularPrice.toLocaleString()}원
                           </span>
-                          <span className="shrink-0 whitespace-nowrap text-sm font-semibold text-destructive bg-destructive/10 px-2.5 py-1 rounded-lg">
+                          <span className="shrink-0 whitespace-nowrap text-ui-body-sm font-semibold text-destructive bg-destructive/10 px-2.5 py-1 rounded-lg">
                             {saleRate}% OFF
                           </span>
                         </>
                       )}
                     </div>
                     {canCheckoutWithService && (
-                      <div className="grid gap-2 rounded-xl border border-border bg-muted/20 p-3 text-sm sm:text-base">
+                      <div className="grid gap-2 rounded-xl border border-border bg-muted/20 p-3 text-ui-body-sm sm:text-ui-body">
                         <div className="flex items-center justify-between gap-3">
                           <span className="text-muted-foreground">상품가</span>
                           <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">
@@ -1358,11 +1358,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <Wrench className="h-3.5 w-3.5 shrink-0" />
                             교체서비스 포함
                           </span>
-                          <span className="whitespace-nowrap tabular-nums font-bold text-primary">
+                          <span className="whitespace-nowrap tabular-nums font-semibold text-primary">
                             {serviceTotal.toLocaleString()}원
                           </span>
                         </div>
-                        <p className="break-keep text-xs text-muted-foreground">
+                        <p className="break-keep text-ui-label text-muted-foreground">
                           상품가 {qtyTotal.toLocaleString()}원 + 장착비{" "}
                           {mountingFee.toLocaleString()}원
                         </p>
@@ -1374,10 +1374,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     {visibleColorRows.length > 0 && (
                       <div className={cn("space-y-3 p-3.5", detailSurfaceSubtleInnerClass)}>
                         <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
-                          <span className="text-sm font-semibold text-foreground">색상 선택</span>
+                          <span className="text-ui-body-sm font-semibold text-foreground">색상 선택</span>
                           {selectedColorLabel && (
                             <span
-                              className="min-w-0 break-words text-xs text-muted-foreground"
+                              className="min-w-0 break-words text-ui-label text-muted-foreground"
                               title={selectedColorLabel}
                             >
                               현재 색상: {selectedColorLabel}
@@ -1409,7 +1409,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 disabled={soldOut}
                                 onClick={() => setSelectedColor(row.value)}
                                 className={cn(
-                                  "relative flex h-16 w-16 shrink-0 snap-start items-center justify-center overflow-hidden rounded-lg border bg-background text-xs text-foreground transition",
+                                  "relative flex h-16 w-16 shrink-0 snap-start items-center justify-center overflow-hidden rounded-lg border bg-background text-ui-label text-foreground transition",
                                   isSelected ? "border-foreground" : "border-border/60",
                                   soldOut && "cursor-not-allowed opacity-45",
                                 )}
@@ -1434,7 +1434,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                   </span>
                                 )}
                                 {soldOut && (
-                                  <span className="absolute bottom-0 left-0 right-0 bg-background/85 text-[10px] font-medium">
+                                  <span className="absolute bottom-0 left-0 right-0 bg-background/85 text-ui-micro font-medium">
                                     품절
                                   </span>
                                 )}
@@ -1445,7 +1445,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       </div>
                     )}
                     <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3">
-                      <span className="whitespace-nowrap text-sm font-semibold text-foreground">
+                      <span className="whitespace-nowrap text-ui-body-sm font-semibold text-foreground">
                         수량 선택
                       </span>
 
@@ -1466,7 +1466,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           <Minus className="h-4 w-4" />
                         </Button>
 
-                        <span className="tabular-nums w-10 sm:w-12 select-none text-center font-bold text-lg sm:text-xl">
+                        <span className="tabular-nums w-10 sm:w-12 select-none text-center font-semibold text-ui-card-title-lg sm:text-ui-section-title">
                           {quantity}
                         </span>
 
@@ -1503,7 +1503,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           )}
                         >
                           <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <span className="break-keep text-sm leading-relaxed text-muted-foreground sm:text-base">
+                          <span className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body">
                             현재 남은 수량이{" "}
                             <span className="font-semibold text-foreground">
                               {product.inventory.stock}개
@@ -1516,9 +1516,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     {isStringProduct && gaugeRows.length > 0 && (
                       <div className={cn("space-y-3 p-3.5", detailSurfaceSubtleInnerClass)}>
                         <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
-                          <span className="text-sm font-semibold text-foreground">게이지 선택</span>
+                          <span className="text-ui-body-sm font-semibold text-foreground">게이지 선택</span>
                           {gaugeOptions.length === 1 && (
-                            <span className="text-xs text-muted-foreground">자동 선택</span>
+                            <span className="text-ui-label text-muted-foreground">자동 선택</span>
                           )}
                         </div>
                         <Select value={selectedGauge} onValueChange={setSelectedGauge}>
@@ -1543,13 +1543,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           </SelectContent>
                         </Select>
                         {hasVariantInventories && variantHasNoSellableGauge && (
-                          <p className="text-xs text-destructive">선택 가능한 게이지가 없습니다.</p>
+                          <p className="text-ui-label text-destructive">선택 가능한 게이지가 없습니다.</p>
                         )}
                       </div>
                     )}
 
                     {isStringProduct && (
-                      <div className="rounded-xl border border-border bg-muted/20 p-3 text-sm leading-relaxed text-muted-foreground">
+                      <div className="rounded-xl border border-border bg-muted/20 p-3 text-ui-body-sm leading-relaxed text-muted-foreground">
                         <p className="font-semibold text-foreground">
                           교체서비스 신청용 스트링입니다.
                         </p>
@@ -1621,7 +1621,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 <Button
                                   variant="outline"
                                   size="lg"
-                                  className="h-auto min-h-12 w-full whitespace-normal break-keep text-sm sm:text-base"
+                                  className="h-auto min-h-12 w-full whitespace-normal break-keep text-ui-body-sm sm:text-ui-body"
                                   onClick={handleAddToCart}
                                   disabled={
                                     loading ||
@@ -1660,7 +1660,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 <Button
                                   variant="outline"
                                   size="lg"
-                                  className="h-auto min-h-12 w-full whitespace-normal break-keep text-sm sm:text-base"
+                                  className="h-auto min-h-12 w-full whitespace-normal break-keep text-ui-body-sm sm:text-ui-body"
                                   onClick={handleAddToCart}
                                   disabled={
                                     loading ||
@@ -1690,21 +1690,21 @@ export default function ProductDetailClient({ product }: { product: any }) {
         <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-5 sm:gap-6 mt-8 sm:mt-10">
           <Card className="min-w-0 rounded-3xl border border-border bg-card shadow-sm">
             <CardHeader className="pb-4 sm:pb-5 p-5 sm:p-6">
-              <CardTitle className="flex items-center gap-2.5 break-keep text-lg font-semibold leading-snug text-foreground sm:text-xl">
+              <CardTitle className="flex items-center gap-2.5 break-keep text-ui-card-title-lg font-semibold leading-snug text-foreground sm:text-ui-section-title">
                 <Target className="h-5 w-5 sm:h-6 sm:w-6" />
                 추천 정보 & 특성
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5 sm:space-y-6 p-5 sm:p-6 pt-0">
               <div>
-                <h4 className="mb-3 break-keep text-sm font-semibold text-foreground sm:mb-4 sm:text-base">
+                <h4 className="mb-3 break-keep text-ui-body-sm font-semibold text-foreground sm:mb-4 sm:text-ui-body">
                   추천 대상
                 </h4>
                 <div className="space-y-2 sm:space-y-2.5">
                   {selectedPlayerTypes.length > 0 && (
                     <div
                       className={cn(
-                        "flex flex-col items-start gap-2 p-3 text-sm sm:flex-row sm:items-start sm:gap-3 sm:text-base",
+                        "flex flex-col items-start gap-2 p-3 text-ui-body-sm sm:flex-row sm:items-start sm:gap-3 sm:text-ui-body",
                         detailSurfaceInfoItemClass,
                       )}
                     >
@@ -1722,7 +1722,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   {selectedPlayStyles.length > 0 && (
                     <div
                       className={cn(
-                        "flex flex-col items-start gap-2 p-3 text-sm sm:flex-row sm:items-start sm:gap-3 sm:text-base",
+                        "flex flex-col items-start gap-2 p-3 text-ui-body-sm sm:flex-row sm:items-start sm:gap-3 sm:text-ui-body",
                         detailSurfaceInfoItemClass,
                       )}
                     >
@@ -1741,13 +1741,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
               </div>
 
               <div>
-                <h4 className="mb-3 break-keep text-sm font-semibold text-foreground sm:mb-4 sm:text-base">
+                <h4 className="mb-3 break-keep text-ui-body-sm font-semibold text-foreground sm:mb-4 sm:text-ui-body">
                   추가 특성
                 </h4>
                 {additionalFeaturesText ? (
                   <p
                     className={cn(
-                      "whitespace-pre-line break-keep break-words p-3 text-sm leading-relaxed text-muted-foreground sm:text-base",
+                      "whitespace-pre-line break-keep break-words p-3 text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body",
                       detailSurfaceSubtleInnerClass,
                     )}
                   >
@@ -1756,7 +1756,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 ) : (
                   <p
                     className={cn(
-                      "p-3 text-sm italic text-muted-foreground sm:text-base",
+                      "p-3 text-ui-body-sm italic text-muted-foreground sm:text-ui-body",
                       detailSurfaceSubtleInnerClass,
                     )}
                   >
@@ -1769,7 +1769,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
           <Card className="min-w-0 rounded-3xl border border-border bg-card shadow-sm">
             <CardHeader className="pb-4 sm:pb-5 p-5 sm:p-6">
-              <CardTitle className="flex items-center gap-2.5 break-keep text-lg font-semibold leading-snug text-foreground sm:text-xl">
+              <CardTitle className="flex items-center gap-2.5 break-keep text-ui-card-title-lg font-semibold leading-snug text-foreground sm:text-ui-section-title">
                 <Activity className="h-5 w-5 sm:h-6 sm:w-6" />
                 성능 특성
               </CardTitle>
@@ -1790,7 +1790,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               <TabsList className="grid h-auto w-full grid-cols-2 gap-1 border-b border-border bg-muted/30 p-1 sm:gap-1.5 sm:p-1.5 md:grid-cols-4">
                 <TabsTrigger
                   value="description"
-                  className="h-12 min-w-0 rounded-xl px-2 text-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-base md:h-16 md:text-lg"
+                  className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16 md:text-ui-card-title-lg"
                 >
                   <FileText className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">상품 설명</span>
@@ -1798,7 +1798,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </TabsTrigger>
                 <TabsTrigger
                   value="specifications"
-                  className="h-12 min-w-0 rounded-xl px-2 text-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-base md:h-16 md:text-lg"
+                  className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16 md:text-ui-card-title-lg"
                 >
                   <Settings className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">상세 스펙</span>
@@ -1806,7 +1806,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </TabsTrigger>
                 <TabsTrigger
                   value="reviews"
-                  className="h-12 min-w-0 rounded-xl px-2 text-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-base md:h-16 md:text-lg"
+                  className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16 md:text-ui-card-title-lg"
                 >
                   <Star className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">리뷰</span>
@@ -1815,7 +1815,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                 </TabsTrigger>
                 <TabsTrigger
                   value="qna"
-                  className="h-12 min-w-0 rounded-xl px-2 text-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-base md:h-16 md:text-lg"
+                  className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16 md:text-ui-card-title-lg"
                 >
                   <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
                   <span className="hidden sm:inline">문의</span>
@@ -1830,12 +1830,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="w-10 sm:w-12 h-10 sm:h-12 border border-border/60 bg-secondary text-foreground rounded-lg flex items-center justify-center">
                       <FileText className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
-                    <h3 className="break-keep text-xl font-bold leading-tight text-foreground sm:text-2xl">
+                    <h3 className="break-keep text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title">
                       상품 설명
                     </h3>
                   </div>
                   <div className="rounded-xl border border-border bg-muted/30 p-4 sm:rounded-2xl sm:p-6">
-                    <p className="whitespace-pre-line break-words text-sm leading-relaxed text-muted-foreground sm:text-base">
+                    <p className="whitespace-pre-line break-words text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body">
                       {product.description ||
                         "이 제품은 최고급 소재로 제작된 프리미엄 테니스 스트링입니다. 뛰어난 반발력과 내구성을 자랑하며, 모든 레벨의 플레이어에게 적합합니다. 전문적인 장착 서비스와 함께 최상의 테니스 경험을 제공합니다."}
                     </p>
@@ -1849,7 +1849,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="w-10 sm:w-12 h-10 sm:h-12 border border-border/60 bg-secondary text-foreground rounded-lg flex items-center justify-center">
                       <Settings className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
-                    <h3 className="break-keep text-xl font-bold leading-tight text-foreground sm:text-2xl">
+                    <h3 className="break-keep text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title">
                       상세 스펙
                     </h3>
                   </div>
@@ -1866,10 +1866,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4"
                           >
                             <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                              <span className="font-semibold text-foreground text-sm sm:text-base">
+                              <span className="font-semibold text-foreground text-ui-body-sm sm:text-ui-body">
                                 {key}
                               </span>
-                              <span className="min-w-0 break-words text-left text-muted-foreground font-medium text-sm sm:text-right sm:text-base">
+                              <span className="min-w-0 break-words text-left text-muted-foreground font-medium text-ui-body-sm sm:text-right sm:text-ui-body">
                                 {String(displayValue)}
                               </span>
                             </div>
@@ -1886,7 +1886,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             <div className="w-9 sm:w-10 h-9 sm:h-10 border border-border/60 bg-secondary text-foreground rounded-lg flex items-center justify-center">
                               <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
                             </div>
-                            <h4 className="text-lg sm:text-xl font-bold text-foreground">
+                            <h4 className="text-ui-card-title-lg sm:text-ui-section-title font-semibold text-foreground">
                               하이브리드 구성
                             </h4>
                           </div>
@@ -1894,13 +1894,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                             {/* 메인 */}
                             <div className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
-                              <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">
+                              <div className="text-ui-label sm:text-ui-body-sm text-muted-foreground mb-0.5 sm:mb-1">
                                 메인(Mains)
                               </div>
-                              <div className="font-medium text-sm sm:text-base">
+                              <div className="font-medium text-ui-body-sm sm:text-ui-body">
                                 {hMainBrand ?? ""} {hMain?.name ?? ""}
                               </div>
-                              <div className="text-xs sm:text-sm text-muted-foreground">
+                              <div className="text-ui-label sm:text-ui-body-sm text-muted-foreground">
                                 {hMainGauge ? `게이지: ${hMainGauge}` : null}
                                 {hMainColor ? ` · 색상: ${hMainColor}` : null}
                               </div>
@@ -1908,13 +1908,13 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
                             {/* 크로스 */}
                             <div className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
-                              <div className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">
+                              <div className="text-ui-label sm:text-ui-body-sm text-muted-foreground mb-0.5 sm:mb-1">
                                 크로스(Crosses)
                               </div>
-                              <div className="font-medium text-sm sm:text-base">
+                              <div className="font-medium text-ui-body-sm sm:text-ui-body">
                                 {hCrossBrand ?? ""} {hCross?.name ?? ""}
                               </div>
-                              <div className="text-xs sm:text-sm text-muted-foreground">
+                              <div className="text-ui-label sm:text-ui-body-sm text-muted-foreground">
                                 {hCrossGauge ? `게이지: ${hCrossGauge}` : null}
                                 {hCrossColor ? ` · 색상: ${hCrossColor}` : null}
                               </div>
@@ -1934,7 +1934,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 rounded-lg flex items-center justify-center">
                         <Star className="h-4 w-4 sm:h-6 sm:w-6 text-primary" />
                       </div>
-                      <h3 className="break-keep text-xl font-bold leading-tight text-foreground sm:text-2xl">
+                      <h3 className="break-keep text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title">
                         고객 리뷰
                       </h3>
                     </div>
@@ -1943,7 +1943,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         asChild={canWriteFromProductReviewTab}
                         variant="secondary"
                         disabled={!canWriteFromProductReviewTab}
-                        className="h-9 text-xs sm:h-10 sm:text-sm"
+                        className="h-9 text-ui-label sm:h-10 sm:text-ui-body-sm"
                       >
                         {canWriteFromProductReviewTab ? (
                           <Link href={productReviewHref}>
@@ -1957,7 +1957,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           </span>
                         )}
                       </Button>
-                      <p className="max-w-xs break-keep text-xs text-muted-foreground sm:text-right">
+                      <p className="max-w-xs break-keep text-ui-label text-muted-foreground sm:text-right">
                         {productReviewHelper}
                       </p>
                     </div>
@@ -1974,17 +1974,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             {busyReviewId === String(review._id) && (
                               <div className="absolute inset-0 bg-card/70 dark:bg-background/40 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                <span className="ml-2 text-sm">변경 중...</span>
+                                <span className="ml-2 text-ui-body-sm">변경 중...</span>
                               </div>
                             )}
 
                             <div className="mb-3 flex min-w-0 flex-wrap items-start justify-between gap-3 sm:mb-4">
                               <div className="flex min-w-0 items-center gap-3">
-                                <div className="w-10 h-10 bg-secondary border border-border/60 rounded-full flex items-center justify-center text-foreground font-bold text-lg shadow-sm">
+                                <div className="w-10 h-10 bg-secondary border border-border/60 rounded-full flex items-center justify-center text-foreground font-semibold text-ui-card-title-lg shadow-sm">
                                   {review.user?.charAt(0) || "U"}
                                 </div>
                                 <div className="min-w-0">
-                                  <div className="break-words font-bold text-foreground text-sm sm:text-base">
+                                  <div className="break-words font-semibold text-foreground text-ui-body-sm sm:text-ui-body">
                                     {review.type === "service"
                                       ? "상품+교체서비스 후기"
                                       : review.status === "hidden"
@@ -2004,7 +2004,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                         />
                                       ))}
                                     </div>
-                                    <span className="text-xs sm:text-sm text-muted-foreground">
+                                    <span className="text-ui-label sm:text-ui-body-sm text-muted-foreground">
                                       {review.date || "2099-01-01"}
                                     </span>
                                   </div>
@@ -2192,7 +2192,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                               return (
                                 <div className="space-y-3 sm:space-y-4">
                                   <div className="rounded-xl border border-border bg-muted/30 p-3 sm:p-4">
-                                    <p className="break-keep break-words text-sm leading-relaxed text-muted-foreground sm:text-base">
+                                    <p className="break-keep break-words text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body">
                                       {review.content}
                                     </p>
                                   </div>
@@ -2214,7 +2214,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                             className="object-cover"
                                           />
                                           {i === 3 && review.photos.length > 4 && (
-                                            <div className="absolute inset-0 bg-background/80 text-foreground border border-border text-xs font-bold flex items-center justify-center">
+                                            <div className="absolute inset-0 bg-background/80 text-foreground border border-border text-ui-label font-semibold flex items-center justify-center">
                                               +{review.photos.length - 3}
                                             </div>
                                           )}
@@ -2233,17 +2233,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card sm:mb-5 sm:h-14 sm:w-14">
                           <Star className="h-6 w-6 text-foreground sm:h-7 sm:w-7" />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">
+                        <h3 className="text-ui-card-title-lg sm:text-ui-section-title font-semibold text-foreground mb-2">
                           아직 리뷰가 없습니다
                         </h3>
-                        <p className="mb-6 text-base text-muted-foreground sm:text-lg">
+                        <p className="mb-6 text-ui-body text-muted-foreground sm:text-ui-card-title-lg">
                           {productReviewHelper}
                         </p>
                         <Button
                           asChild={canWriteFromProductReviewTab}
                           variant="secondary"
                           disabled={!canWriteFromProductReviewTab}
-                          className="px-6 py-2 text-sm sm:px-8 sm:py-3 sm:text-base"
+                          className="px-6 py-2 text-ui-body-sm sm:px-8 sm:py-3 sm:text-ui-body"
                         >
                           {canWriteFromProductReviewTab ? (
                             <Link href={productReviewHref}>
@@ -2269,11 +2269,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
                     <div className="w-10 sm:w-12 h-10 sm:h-12 bg-muted/30 text-foreground rounded-lg flex items-center justify-center">
                       <MessageSquare className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
-                    <h3 className="break-keep text-xl font-bold leading-tight text-foreground sm:text-2xl">
+                    <h3 className="break-keep text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title">
                       상품 문의
                     </h3>
                   </div>
-                  <Button asChild variant="secondary" className="text-xs sm:text-sm h-9 sm:h-10">
+                  <Button asChild variant="secondary" className="text-ui-label sm:text-ui-body-sm h-9 sm:h-10">
                     <Link
                       href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}
                     >
@@ -2288,7 +2288,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   </div>
                 )}
                 {qnaError && (
-                  <div className="text-sm text-destructive">문의 목록을 불러오지 못했습니다.</div>
+                  <div className="text-ui-body-sm text-destructive">문의 목록을 불러오지 못했습니다.</div>
                 )}
 
                 {!qnaLoading && !qnaError && (
@@ -2298,16 +2298,16 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card sm:mb-5 sm:h-14 sm:w-14">
                           <MessageSquare className="h-6 w-6 text-foreground sm:h-7 sm:w-7" />
                         </div>
-                        <h4 className="text-lg sm:text-xl font-bold text-foreground mb-2">
+                        <h4 className="text-ui-card-title-lg sm:text-ui-section-title font-semibold text-foreground mb-2">
                           아직 문의가 없습니다
                         </h4>
-                        <p className="text-muted-foreground mb-6 text-base sm:text-lg">
+                        <p className="text-muted-foreground mb-6 text-ui-body sm:text-ui-card-title-lg">
                           첫 번째 문의를 남겨보세요!
                         </p>
                         <Button
                           asChild
                           variant="secondary"
-                          className="px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base"
+                          className="px-6 sm:px-8 py-2 sm:py-3 text-ui-body-sm sm:text-ui-body"
                         >
                           <Link
                             href={`/board/qna/write?productId=${product._id}&productName=${encodeURIComponent(product.name)}`}
@@ -2348,10 +2348,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                           {q.answer ? "답변 완료" : "답변 대기"}
                                         </Badge>
                                       </div>
-                                      <div className="line-clamp-2 min-w-0 break-keep break-words text-sm font-semibold leading-relaxed text-foreground hover:text-foreground sm:text-base">
+                                      <div className="line-clamp-2 min-w-0 break-keep break-words text-ui-body-sm font-semibold leading-relaxed text-foreground hover:text-foreground sm:text-ui-body">
                                         {q.title}
                                       </div>
-                                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground sm:gap-x-4">
+                                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-ui-body-sm text-muted-foreground sm:gap-x-4">
                                         <span>{q.authorName ?? "익명"}</span>
                                         <span>{fmtDate(q.createdAt)}</span>
                                       </div>
@@ -2387,7 +2387,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
         <div ref={relatedSectionRef} className="mt-8 space-y-6 sm:mt-12 sm:space-y-8">
           <Card className="rounded-2xl border border-border bg-card shadow-sm sm:rounded-3xl">
             <CardHeader className="p-5 pb-3 sm:p-6 sm:pb-4">
-              <CardTitle className="break-keep text-lg font-semibold leading-snug sm:text-xl">
+              <CardTitle className="break-keep text-ui-card-title-lg font-semibold leading-snug sm:text-ui-section-title">
                 관련 상품
               </CardTitle>
             </CardHeader>

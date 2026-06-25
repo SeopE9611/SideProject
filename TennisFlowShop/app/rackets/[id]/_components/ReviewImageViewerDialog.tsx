@@ -46,7 +46,7 @@ export default function ReviewImageViewerDialog({
                 이전
               </Button>
 
-              <div className="text-sm text-muted-foreground">
+              <div className="text-ui-body-sm text-muted-foreground">
                 {index + 1} / {images.length}
               </div>
 

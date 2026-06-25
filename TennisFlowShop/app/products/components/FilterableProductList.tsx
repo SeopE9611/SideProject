@@ -53,7 +53,7 @@ const DEFAULT_MAX_PRICE = 200000;
 const DEFAULT_PRICE_RANGE: [number, number] = [DEFAULT_MIN_PRICE, DEFAULT_MAX_PRICE];
 
 const activeFilterChipClass =
-  "inline-flex max-w-[220px] shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-border bg-muted px-2.5 py-1 text-xs text-foreground";
+  "inline-flex max-w-[220px] shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-border bg-muted px-2.5 py-1 text-ui-label text-foreground";
 const activeFilterRemoveButtonClass =
   "shrink-0 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
@@ -695,31 +695,31 @@ export default function FilterableProductList({
             <SummaryCard className="overflow-hidden" contentClassName="p-4 bp-sm:p-5">
               <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-end bp-sm:justify-between">
                 <div className="min-w-0 space-y-1">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+                  <p className="text-ui-label font-semibold uppercase tracking-[0.14em] text-primary">
                     String Catalog
                   </p>
                   <div
-                    className="flex min-h-6 flex-wrap items-center gap-x-1 text-base font-semibold tabular-nums text-foreground bp-sm:text-lg"
+                    className="flex min-h-6 flex-wrap items-center gap-x-1 text-ui-body font-semibold tabular-nums text-foreground bp-sm:text-ui-card-title-lg"
                     aria-live="polite"
                   >
                     {productCountPrefix}{" "}
                     {isCountLoading ? (
                       <Skeleton className="inline-block h-5 w-12 align-middle" />
                     ) : (
-                      <span className="font-bold text-primary">{total}</span>
+                      <span className="font-semibold text-primary">{total}</span>
                     )}
                     개
                     {isCountLoading ? (
                       <Skeleton className="inline-block h-5 w-10 align-middle" />
                     ) : (
-                      <span className="ml-1 text-sm font-normal text-muted-foreground">
+                      <span className="ml-1 text-ui-body-sm font-normal text-muted-foreground">
                         (표시중 {loadedCount}개)
                       </span>
                     )}
                   </div>
                 </div>
                 {isBackgroundRefreshing ? (
-                  <span className="w-fit rounded-full border border-border bg-muted/30 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                  <span className="w-fit rounded-full border border-border bg-muted/30 px-2.5 py-1 text-ui-label font-medium text-muted-foreground">
                     조회 중...
                   </span>
                 ) : null}
@@ -728,13 +728,13 @@ export default function FilterableProductList({
             {activeFiltersCount > 0 && (
               <div className="rounded-2xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-foreground">적용 중인 조건</p>
+                  <p className="text-ui-body-sm font-medium text-foreground">적용 중인 조건</p>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     onClick={handleResetAll}
-                    className="h-7 whitespace-nowrap px-2 text-xs"
+                    className="h-7 whitespace-nowrap px-2 text-ui-label"
                   >
                     전체 초기화
                   </Button>
@@ -902,7 +902,7 @@ export default function FilterableProductList({
                   size="sm"
                   onClick={handleToggleIncludeSoldOut}
                   className={cn(
-                    "h-10 shrink-0 whitespace-nowrap rounded-full px-3 text-sm transition-colors bp-sm:h-9",
+                    "h-10 shrink-0 whitespace-nowrap rounded-full px-3 text-ui-body-sm transition-colors bp-sm:h-9",
                     !includeSoldOut
                       ? "border-border bg-muted text-foreground shadow-sm hover:bg-muted/80"
                       : "border-border bg-background text-muted-foreground hover:bg-muted/30",
@@ -945,7 +945,7 @@ export default function FilterableProductList({
 
                 {/* 정렬 */}
                 <Select value={sortOption} onValueChange={setSortOption}>
-                  <SelectTrigger className="h-10 min-w-0 flex-1 rounded-xl border-border bg-background text-sm focus:border-border bp-sm:h-9 bp-sm:w-[180px] bp-sm:flex-none dark:focus:border-border">
+                  <SelectTrigger className="h-10 min-w-0 flex-1 rounded-xl border-border bg-background text-ui-body-sm focus:border-border bp-sm:h-9 bp-sm:w-[180px] bp-sm:flex-none dark:focus:border-border">
                     <SelectValue placeholder="정렬" />
                   </SelectTrigger>
                   <SelectContent className="border-border dark:bg-card">
@@ -1071,7 +1071,7 @@ export default function FilterableProductList({
               )}
 
               {!hasMore && productsList.length > 0 && (
-                <p className="mt-6 text-center text-sm text-muted-foreground">
+                <p className="mt-6 text-center text-ui-body-sm text-muted-foreground">
                   모든 상품을 불러왔습니다.
                 </p>
               )}

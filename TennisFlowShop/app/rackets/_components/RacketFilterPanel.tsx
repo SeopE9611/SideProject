@@ -105,18 +105,18 @@ export default function RacketFilterPanel({
         >
           <div className="mb-5 flex items-center justify-between">
             <div className="flex gap-2 items-center">
-              <h2 className="font-bold text-xl text-foreground">필터</h2>
+              <h2 className="font-semibold text-ui-section-title text-foreground">필터</h2>
             </div>
             <div className="flex gap-2">
               {activeFiltersCount > 0 && (
-                <Button variant="ghost" size="sm" onClick={onReset} className="text-xs">
+                <Button variant="ghost" size="sm" onClick={onReset} className="text-ui-label">
                   초기화 ({activeFiltersCount})
                 </Button>
               )}
             </div>
           </div>
 
-          <p className="mb-4 rounded-xl border border-border bg-muted/20 px-3 py-2 text-xs leading-relaxed text-muted-foreground break-keep">
+          <p className="mb-4 rounded-xl border border-border bg-muted/20 px-3 py-2 text-ui-label leading-relaxed text-muted-foreground break-keep">
             {onClose
               ? "선택 후 검색/적용을 누르면 결과에 반영됩니다."
               : "조건을 선택하면 목록에 바로 반영됩니다."}
@@ -162,7 +162,7 @@ export default function RacketFilterPanel({
 
           {/* 브랜드 */}
           <div className="mb-5 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
-            <Label htmlFor="brand" className="block text-sm font-medium text-foreground">
+            <Label htmlFor="brand" className="block text-ui-body-sm font-medium text-foreground">
               브랜드
             </Label>
             <Select
@@ -185,8 +185,8 @@ export default function RacketFilterPanel({
 
           {/* 상태 등급 */}
           <div className="mb-5 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
-            <Label className="text-sm font-medium text-foreground">상태 등급</Label>
-            <p className="text-xs text-muted-foreground leading-relaxed break-keep">
+            <Label className="text-ui-body-sm font-medium text-foreground">상태 등급</Label>
+            <p className="text-ui-label text-muted-foreground leading-relaxed break-keep">
               A는 사용감이 적은 최상급, B는 일반 사용감이 있는 양호, C는 사용감이 비교적 있는 보통
               상태입니다.
             </p>
@@ -208,13 +208,13 @@ export default function RacketFilterPanel({
 
           {/* 이용 유형 */}
           <div className="mb-5 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
-            <Label className="text-sm font-medium text-foreground">이용 유형</Label>
+            <Label className="text-ui-body-sm font-medium text-foreground">이용 유형</Label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setRentOnly(false)}
                 className={cn(
-                  "rounded-md border px-3 py-2 text-sm font-medium transition-colors",
+                  "rounded-md border px-3 py-2 text-ui-body-sm font-medium transition-colors",
                   !rentOnly
                     ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
                     : "border-border bg-card text-muted-foreground hover:bg-muted",
@@ -226,7 +226,7 @@ export default function RacketFilterPanel({
                 type="button"
                 onClick={() => setRentOnly(true)}
                 className={cn(
-                  "rounded-md border px-3 py-2 text-sm font-medium transition-colors",
+                  "rounded-md border px-3 py-2 text-ui-body-sm font-medium transition-colors",
                   rentOnly
                     ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
                     : "border-border bg-card text-muted-foreground hover:bg-muted",
@@ -239,14 +239,14 @@ export default function RacketFilterPanel({
 
           {/* 혜택 */}
           <div className="mb-5 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
-            <Label className="text-sm font-medium text-foreground">혜택</Label>
+            <Label className="text-ui-body-sm font-medium text-foreground">혜택</Label>
             <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-4">
               <Button
                 type="button"
                 variant={exposureFilter.length === 0 ? "default" : "outline"}
                 size="sm"
                 onClick={() => onExposureChange([])}
-                className="h-9 whitespace-nowrap px-2 text-xs bp-sm:text-sm"
+                className="h-9 whitespace-nowrap px-2 text-ui-label bp-sm:text-ui-body-sm"
               >
                 전체
               </Button>
@@ -265,7 +265,7 @@ export default function RacketFilterPanel({
                           : [...exposureFilter, option.value],
                       )
                     }
-                    className="h-9 whitespace-nowrap px-2 text-xs bp-sm:text-sm"
+                    className="h-9 whitespace-nowrap px-2 text-ui-label bp-sm:text-ui-body-sm"
                     aria-pressed={isActive}
                   >
                     {option.label}
@@ -277,7 +277,7 @@ export default function RacketFilterPanel({
 
           {/* 가격대 */}
           <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-3">
-            <Label className="text-sm font-medium text-foreground">가격대</Label>
+            <Label className="text-ui-body-sm font-medium text-foreground">가격대</Label>
             <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-3">
               {RACKET_PRICE_PRESETS.map((preset) => {
                 const effectiveMin = priceMin ?? 0;
@@ -299,7 +299,7 @@ export default function RacketFilterPanel({
                       onChangePriceMax(preset.range[1]);
                     }}
                     className={cn(
-                      "min-w-0 w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-md border px-2 py-1.5 text-[11px] transition-colors bp-sm:text-xs",
+                      "min-w-0 w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-md border px-2 py-1.5 text-ui-caption transition-colors bp-sm:text-ui-label",
                       isActive
                         ? "border-primary bg-primary/15 text-primary dark:bg-primary/30 dark:text-primary-foreground"
                         : "border-border bg-card text-muted-foreground hover:bg-muted",

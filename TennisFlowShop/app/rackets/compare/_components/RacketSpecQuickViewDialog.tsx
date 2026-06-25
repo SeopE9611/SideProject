@@ -95,7 +95,7 @@ function HintIcon({ text }: { text: string }) {
       </TooltipTrigger>
       <TooltipContent
         className={cn(
-          "max-w-[280px] text-xs leading-relaxed",
+          "max-w-[280px] text-ui-label leading-relaxed",
           "bg-card text-card-foreground shadow-lg",
           "rounded-lg px-3 py-2",
         )}
@@ -150,7 +150,7 @@ function SpecRow({
         </div>
         <span
           className={cn(
-            "text-xs font-medium bp-sm:text-sm",
+            "text-ui-label font-medium bp-sm:text-ui-body-sm",
             "text-muted-foreground transition-colors duration-200",
             "group-hover:text-foreground",
           )}
@@ -161,7 +161,7 @@ function SpecRow({
       </div>
       <div
         className={cn(
-          "text-sm font-semibold tabular-nums bp-sm:text-base",
+          "text-ui-body-sm font-semibold tabular-nums bp-sm:text-ui-body",
           "text-foreground transition-colors duration-200",
           specKey === "price" && value !== "-" && "text-primary",
         )}
@@ -255,16 +255,16 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
           <div className={cn("absolute inset-x-0 top-0 h-1", "bg-secondary")} />
           <DialogHeader className="px-4 pt-5 pb-3 bp-sm:px-6 bp-sm:pt-6 bp-sm:pb-4">
             <DialogTitle className="flex flex-wrap items-center gap-2 bp-sm:gap-3">
-              <span className="text-base font-bold text-foreground bp-sm:text-lg">
+              <span className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
                 {racket.model}
               </span>
-              <span className="text-xs text-muted-foreground bp-sm:text-sm">{brandText}</span>
+              <span className="text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">{brandText}</span>
               <div className="flex items-center gap-1.5">
                 {racket.year ? (
                   <Badge
                     variant="secondary"
                     className={cn(
-                      "h-5 px-2 text-[10px] font-medium",
+                      "h-5 px-2 text-ui-micro font-medium",
                       "bg-secondary/80 text-foreground",
                       "transition-colors duration-200",
                     )}
@@ -276,7 +276,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                   <Badge
                     variant="outline"
                     className={cn(
-                      "h-5 px-2 text-[10px] font-medium",
+                      "h-5 px-2 text-ui-micro font-medium",
                       "border-muted-foreground/30 text-muted-foreground",
                       "transition-colors duration-200",
                     )}
@@ -324,7 +324,7 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                     />
                   </>
                 ) : (
-                  <span className="text-xs text-muted-foreground">No Image</span>
+                  <span className="text-ui-label text-muted-foreground">No Image</span>
                 )}
               </div>
             </div>
@@ -336,8 +336,8 @@ export default function RacketSpecQuickViewDialog({ racket, trigger }: Props) {
                 <div
                   className={cn(
                     "flex items-start gap-2 rounded-lg px-3 py-2.5",
-                    "bg-muted/40 text-xs leading-relaxed text-muted-foreground",
-                    "bp-sm:text-sm",
+                    "bg-muted/40 text-ui-label leading-relaxed text-muted-foreground",
+                    "bp-sm:text-ui-body-sm",
                   )}
                 >
                   <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />

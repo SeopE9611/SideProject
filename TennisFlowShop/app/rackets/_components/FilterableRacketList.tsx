@@ -68,7 +68,7 @@ const RACKETS_PAGE_SIZE = 12;
 const brands = RACKET_BRANDS.map(({ value, label }) => ({ value, label }));
 
 const activeFilterChipClass =
-  "inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-border bg-muted px-2 py-1 text-xs";
+  "inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-border bg-muted px-2 py-1 text-ui-label";
 
 const parsePriceParam = (value: string | null): number | null => {
   if (!value) return null;
@@ -578,25 +578,25 @@ export default function FilterableRacketList({
               contentClassName="space-y-4"
             >
               <div
-                className="min-w-0 break-keep rounded-xl border border-border bg-muted/20 px-4 py-3 text-sm font-semibold tabular-nums text-foreground bp-sm:text-base"
+                className="min-w-0 break-keep rounded-xl border border-border bg-muted/20 px-4 py-3 text-ui-body-sm font-semibold tabular-nums text-foreground bp-sm:text-ui-body"
                 aria-live="polite"
               >
                 {racketCountPrefix}{" "}
                 {isInitialLikeLoading ? (
                   <Skeleton className="inline-block h-5 w-12 align-middle" />
                 ) : (
-                  <span className="font-bold text-primary">{total}</span>
+                  <span className="font-semibold text-primary">{total}</span>
                 )}
                 {racketCountSuffix}
                 {isInitialLikeLoading ? (
                   <Skeleton className="ml-2 inline-block h-5 w-10 align-middle" />
                 ) : (
-                  <span className="ml-2 text-sm text-muted-foreground">
+                  <span className="ml-2 text-ui-body-sm text-muted-foreground">
                     (표시중 {visibleProducts.length}개)
                   </span>
                 )}
                 {isBackgroundRefreshing ? (
-                  <span className="ml-2 text-xs font-medium text-muted-foreground">조회 중...</span>
+                  <span className="ml-2 text-ui-label font-medium text-muted-foreground">조회 중...</span>
                 ) : null}
               </div>
 
@@ -647,7 +647,7 @@ export default function FilterableRacketList({
 
                   <div className="min-w-0 flex-1 bp-sm:w-[180px] bp-sm:flex-none">
                     <Select value={sortOption} onValueChange={setSortOption}>
-                      <SelectTrigger className="h-10 w-full min-w-0 rounded-lg border border-border bg-card text-sm focus:border-border bp-sm:h-9 dark:focus:border-border">
+                      <SelectTrigger className="h-10 w-full min-w-0 rounded-lg border border-border bg-card text-ui-body-sm focus:border-border bp-sm:h-9 dark:focus:border-border">
                         <SelectValue placeholder="정렬" />
                       </SelectTrigger>
                       <SelectContent className="dark:border-border dark:bg-card">
@@ -690,7 +690,7 @@ export default function FilterableRacketList({
                     variant="ghost"
                     size="sm"
                     onClick={handleResetAll}
-                    className="h-7 shrink-0 whitespace-nowrap px-2 text-xs"
+                    className="h-7 shrink-0 whitespace-nowrap px-2 text-ui-label"
                   >
                     전체 초기화
                   </Button>
@@ -777,7 +777,7 @@ export default function FilterableRacketList({
               )}
               <div ref={sentinelRef} className="h-1 w-full" aria-hidden />
               {!hasMore && (
-                <p className="mt-6 text-center text-sm text-muted-foreground">
+                <p className="mt-6 text-center text-ui-body-sm text-muted-foreground">
                   모든 라켓을 불러왔습니다.
                 </p>
               )}

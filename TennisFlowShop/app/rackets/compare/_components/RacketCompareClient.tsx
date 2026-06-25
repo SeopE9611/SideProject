@@ -216,8 +216,8 @@ export default function RacketCompareClient() {
               <Scale className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl bp-sm:text-2xl font-bold">라켓 비교</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">
+              <h1 className="text-ui-section-title bp-sm:text-ui-page-title font-semibold">라켓 비교</h1>
+              <p className="text-ui-body-sm text-muted-foreground mt-0.5">
                 최소 2개 ~ 최대 4개까지 스펙을 표로 비교합니다.
               </p>
             </div>
@@ -262,16 +262,16 @@ export default function RacketCompareClient() {
           <div className="rounded-xl border border-border bg-card overflow-hidden">
             <div className="border-b border-border bg-secondary/60 px-4 py-3 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">비교할 라켓이 부족합니다</span>
+              <span className="text-ui-body-sm font-medium text-primary">비교할 라켓이 부족합니다</span>
             </div>
             <div className="p-4 space-y-4">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-ui-body-sm text-muted-foreground">
                 비교는 최소 2개부터 가능합니다. (현재 {list.length}개)
               </p>
 
               {list.length > 0 && (
                 <div className="space-y-3">
-                  <div className="text-sm font-medium">현재 선택된 라켓</div>
+                  <div className="text-ui-body-sm font-medium">현재 선택된 라켓</div>
                   <div className="flex flex-wrap gap-2">
                     {list.map((r, idx) => (
                       <div
@@ -299,7 +299,7 @@ export default function RacketCompareClient() {
                               unoptimized
                             />
                           ) : (
-                            <span className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">
+                            <span className="flex h-full w-full items-center justify-center text-ui-micro text-muted-foreground">
                               No Image
                             </span>
                           )}
@@ -308,17 +308,17 @@ export default function RacketCompareClient() {
                           <div className="flex items-center gap-1.5">
                             <Link
                               href={`/rackets/${r.id}`}
-                              className="text-sm font-medium hover:text-primary hover:underline"
+                              className="text-ui-body-sm font-medium hover:text-primary hover:underline"
                             >
                               {r.model}
                             </Link>
                             {idx === 0 && (
-                              <Badge variant="info" className="h-4 px-1.5 text-[10px]">
+                              <Badge variant="info" className="h-4 px-1.5 text-ui-micro">
                                 기준
                               </Badge>
                             )}
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-ui-label text-muted-foreground">
                             {racketBrandLabel(r.brand)}
                           </div>
                         </div>
@@ -349,13 +349,13 @@ export default function RacketCompareClient() {
               <Badge variant="info" className="rounded-lg px-3 py-1">
                 선택 {list.length} / 4
               </Badge>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-ui-body-sm text-muted-foreground">
                 각 열 상단의 X로 개별 제거 가능합니다.
               </span>
             </div>
 
             <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
-              <table className="w-full text-sm">
+              <table className="w-full text-ui-body-sm">
                 <thead>
                   <tr className="bg-muted/30 dark:bg-muted/20">
                     <th className="p-4 text-left text-muted-foreground w-[160px]">
@@ -371,7 +371,7 @@ export default function RacketCompareClient() {
                               <Info className="h-4 w-4" />
                             </button>
                           </TooltipTrigger>
-                          <TooltipContent className="max-w-[280px] text-xs leading-relaxed">
+                          <TooltipContent className="max-w-[280px] text-ui-label leading-relaxed">
                             배경 막대는 현재 비교 대상들 내에서의 상대 위치(최소~최대)입니다. ±는 첫
                             번째(기준) 라켓 대비 차이입니다.
                           </TooltipContent>
@@ -395,12 +395,12 @@ export default function RacketCompareClient() {
                                 }
                               />
                               {idx === 0 && (
-                                <Badge variant="info" className="h-5 px-2 text-[10px]">
+                                <Badge variant="info" className="h-5 px-2 text-ui-micro">
                                   기준
                                 </Badge>
                               )}
                             </div>
-                            <div className="text-xs text-muted-foreground font-normal">
+                            <div className="text-ui-label text-muted-foreground font-normal">
                               {racketBrandLabel(r.brand)}
                             </div>
                           </div>
@@ -432,10 +432,10 @@ export default function RacketCompareClient() {
                                 unoptimized
                               />
                             ) : (
-                              <span className="text-[10px] text-muted-foreground">No Image</span>
+                              <span className="text-ui-micro text-muted-foreground">No Image</span>
                             )}
                           </div>
-                          <div className="text-xs text-muted-foreground font-normal">
+                          <div className="text-ui-label text-muted-foreground font-normal">
                             {r.year ? `${r.year}년` : "-"} / {r.condition ? r.condition : "-"}
                           </div>
                         </div>
@@ -470,7 +470,7 @@ export default function RacketCompareClient() {
                                     <Info className="h-3.5 w-3.5" />
                                   </button>
                                 </TooltipTrigger>
-                                <TooltipContent className="max-w-[260px] text-xs leading-relaxed">
+                                <TooltipContent className="max-w-[260px] text-ui-label leading-relaxed">
                                   {row.hint}
                                 </TooltipContent>
                               </Tooltip>
@@ -555,7 +555,7 @@ export default function RacketCompareClient() {
                                 <div className="font-semibold">{valueText}</div>
 
                                 {!isBaseCol && delta !== null && (
-                                  <div className={cn("mt-0.5 text-[11px] font-medium", deltaClass)}>
+                                  <div className={cn("mt-0.5 text-ui-caption font-medium", deltaClass)}>
                                     {sign}
                                     {deltaAbsText}
                                     {pctText ? ` (${pctText})` : ""}
@@ -563,7 +563,7 @@ export default function RacketCompareClient() {
                                 )}
 
                                 {!isBaseCol && delta === null && (
-                                  <div className="mt-0.5 text-[11px] text-muted-foreground">
+                                  <div className="mt-0.5 text-ui-caption text-muted-foreground">
                                     비교 불가
                                   </div>
                                 )}

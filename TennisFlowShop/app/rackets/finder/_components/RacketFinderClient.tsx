@@ -226,8 +226,8 @@ function RangeField({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-        <span className="text-sm font-medium text-foreground">{label}</span>
-        <span className="ml-auto text-right text-sm font-semibold text-primary tabular-nums">
+        <span className="text-ui-body-sm font-medium text-foreground">{label}</span>
+        <span className="ml-auto text-right text-ui-body-sm font-semibold text-primary tabular-nums">
           {value[0].toLocaleString()}
           {suffix ?? ""} ~ {value[1].toLocaleString()}
           {suffix ?? ""}
@@ -255,7 +255,7 @@ function SectionLabel({
   return (
     <div className="flex items-center gap-2 pb-2">
       {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
-      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      <span className="text-ui-label font-semibold uppercase tracking-wider text-muted-foreground">
         {children}
       </span>
     </div>
@@ -638,7 +638,7 @@ export default function RacketFinderClient() {
               <label
                 key={patternOption.value}
                 className={cn(
-                  "flex cursor-pointer items-start gap-2 rounded-lg px-3 py-2 text-sm leading-snug transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
+                  "flex cursor-pointer items-start gap-2 rounded-lg px-3 py-2 text-ui-body-sm leading-snug transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
                   "bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50",
                   checked && "bg-secondary ring-1 ring-border",
                 )}
@@ -659,7 +659,7 @@ export default function RacketFinderClient() {
                   {patternOption.label.includes("(") ? (
                     <>
                       <span className="block">{patternOption.label.split(" (")[0]}</span>
-                      <span className="block text-xs text-muted-foreground">
+                      <span className="block text-ui-label text-muted-foreground">
                         {patternOption.label.split(" (")[1]?.replace(")", "")}
                       </span>
                     </>
@@ -683,7 +683,7 @@ export default function RacketFinderClient() {
               <label
                 key={gripOption.value}
                 className={cn(
-                  "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
+                  "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-ui-body-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-200",
                   "bg-background/50 dark:bg-background/30 hover:bg-background/80 dark:hover:bg-background/50",
                   checked && "bg-secondary ring-1 ring-border",
                 )}
@@ -712,7 +712,7 @@ export default function RacketFinderClient() {
       <div className="space-y-4 pt-4 border-t border-muted/50">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <span className="text-ui-label font-semibold uppercase tracking-wider text-muted-foreground">
             상세 검색
           </span>
         </div>
@@ -729,10 +729,10 @@ export default function RacketFinderClient() {
             onCheckedChange={(v) => setDraft((p) => ({ ...p, strict: !!v }))}
           />
           <div className="flex-1">
-            <div className={cn("text-sm font-medium", draft.strict && "text-primary")}>
+            <div className={cn("text-ui-body-sm font-medium", draft.strict && "text-primary")}>
               정확도 모드
             </div>
-            <div className="text-xs text-muted-foreground">스펙 누락 상품 제외</div>
+            <div className="text-ui-label text-muted-foreground">스펙 누락 상품 제외</div>
           </div>
           {draft.strict && <Sparkles className="h-4 w-4 text-primary" />}
         </label>
@@ -754,8 +754,8 @@ export default function RacketFinderClient() {
             <Search className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-normal text-foreground">라켓 검색</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-ui-page-title font-semibold tracking-normal text-foreground">라켓 검색</h1>
+            <p className="text-ui-body-sm text-muted-foreground">
               스펙 범위로 원하는 중고 라켓을 빠르게 찾아보세요
             </p>
           </div>
@@ -773,7 +773,7 @@ export default function RacketFinderClient() {
               variant="ghost"
               size="sm"
               onClick={reset}
-              className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
+              className="h-8 px-2 text-ui-label text-muted-foreground hover:text-foreground"
             >
               <RotateCcw className="mr-1 h-3 w-3" />
               초기화
@@ -801,7 +801,7 @@ export default function RacketFinderClient() {
                   className="flex max-h-[88dvh] flex-col gap-0 overflow-hidden rounded-t-3xl p-0"
                 >
                   <SheetHeader className="border-b border-border px-4 pb-3 pt-4 text-left">
-                    <SheetTitle className="flex items-center gap-2 text-base">
+                    <SheetTitle className="flex items-center gap-2 text-ui-body">
                       <Filter className="h-4 w-4 text-primary" />
                       라켓 필터
                     </SheetTitle>
@@ -845,7 +845,7 @@ export default function RacketFinderClient() {
               )}
             </div>
 
-            <div className="flex min-w-0 items-center justify-between gap-2 text-sm text-muted-foreground">
+            <div className="flex min-w-0 items-center justify-between gap-2 text-ui-body-sm text-muted-foreground">
               <div className="flex min-w-0 items-center gap-2">
                 {hasSearched ? (
                   <>
@@ -916,7 +916,7 @@ export default function RacketFinderClient() {
               {chips.map((c) => (
                 <div
                   key={c.id}
-                  className="group inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                  className="group inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1.5 text-ui-label font-medium text-foreground transition-colors hover:bg-muted"
                 >
                   <span className="max-w-[200px] truncate">{c.text}</span>
                   <button
@@ -946,13 +946,13 @@ export default function RacketFinderClient() {
                         ? "-"
                         : `${(total ?? 0).toLocaleString()}개`}
                   </Badge>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-ui-body-sm text-muted-foreground">
                     페이지 {isLoading || hasDataError ? "-" : page} /{" "}
                     {hasResolvedTotalPages ? totalPages : "-"}
                   </span>
                 </>
               ) : (
-                <span className="text-sm text-muted-foreground">
+                <span className="text-ui-body-sm text-muted-foreground">
                   필터를 선택하고 검색 버튼을 눌러주세요
                 </span>
               )}
@@ -1020,7 +1020,7 @@ export default function RacketFinderClient() {
           </div>
 
           {error && (
-            <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive dark:bg-destructive/15">
+            <div className="rounded-xl bg-destructive/10 p-4 text-ui-body-sm text-destructive dark:bg-destructive/15">
               조회 중 오류가 발생했습니다.
             </div>
           )}
@@ -1030,8 +1030,8 @@ export default function RacketFinderClient() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary">
                 <Search className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">검색을 시작해보세요</h3>
-              <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+              <h3 className="text-ui-card-title-lg font-semibold text-foreground mb-2">검색을 시작해보세요</h3>
+              <p className="text-ui-body-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
                 왼쪽 필터에서 원하는 스펙 범위를 설정하고{" "}
                 <span className="font-medium text-foreground">검색하기</span> 버튼을 눌러주세요.
                 정확도 모드를 활성화하면 스펙 정보가 누락된 라켓은 제외됩니다.
@@ -1063,7 +1063,7 @@ export default function RacketFinderClient() {
             </div>
           ) : error ? (
             <div className="rounded-2xl bg-destructive/10 p-6 text-center dark:bg-destructive/15">
-              <p className="text-sm text-destructive">
+              <p className="text-ui-body-sm text-destructive">
                 데이터를 불러오지 못했습니다. 콘솔/네트워크 탭에서 응답을 확인해주세요.
               </p>
             </div>
@@ -1072,8 +1072,8 @@ export default function RacketFinderClient() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
                 <Search className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">검색 결과 없음</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="text-ui-card-title-lg font-semibold text-foreground mb-2">검색 결과 없음</h3>
+              <p className="text-ui-body-sm text-muted-foreground">
                 조건에 맞는 라켓이 없습니다. 필터 범위를 완화하거나 정확도 모드를 끄고 다시
                 시도해보세요.
               </p>

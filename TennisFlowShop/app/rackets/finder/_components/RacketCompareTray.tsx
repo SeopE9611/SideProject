@@ -42,11 +42,11 @@ export default function RacketCompareTray() {
                     <Scale className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold">
+                    <div className="text-ui-body-sm font-semibold">
                       라켓 비교
                       <span className="ml-1.5 text-primary">({items.length}/4)</span>
                     </div>
-                    <div className="text-xs text-muted-foreground hidden bp-sm:block">
+                    <div className="text-ui-label text-muted-foreground hidden bp-sm:block">
                       최소 2개부터 비교 가능
                     </div>
                   </div>
@@ -86,7 +86,7 @@ export default function RacketCompareTray() {
                           "flex h-16 bp-sm:h-18 items-center justify-center rounded-lg",
                           "bg-muted/30",
                           "ring-1 ring-dashed ring-muted-foreground/20",
-                          "text-xs text-muted-foreground/60",
+                          "text-ui-label text-muted-foreground/60",
                         )}
                       >
                         <Plus className="mr-1 h-3 w-3" />
@@ -119,15 +119,15 @@ export default function RacketCompareTray() {
                             unoptimized
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">
+                          <div className="flex h-full w-full items-center justify-center text-ui-micro text-muted-foreground">
                             No Image
                           </div>
                         )}
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-xs font-medium">{title}</div>
-                        <div className="truncate text-[11px] text-muted-foreground">
+                        <div className="truncate text-ui-label font-medium">{title}</div>
+                        <div className="truncate text-ui-caption text-muted-foreground">
                           {brandText}
                         </div>
                       </div>

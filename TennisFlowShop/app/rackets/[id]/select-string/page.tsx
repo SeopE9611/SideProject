@@ -55,7 +55,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   if (!ObjectId.isValid(id)) {
     return (
       <SiteContainer variant="wide" className="py-10">
-        <h1 className="text-lg font-semibold">라켓을 찾을 수 없습니다.</h1>
+        <h1 className="text-ui-card-title-lg font-semibold">라켓을 찾을 수 없습니다.</h1>
       </SiteContainer>
     );
   }
@@ -67,7 +67,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   if (!doc) {
     return (
       <SiteContainer variant="wide" className="py-10">
-        <h1 className="text-lg font-semibold">라켓을 찾을 수 없습니다.</h1>
+        <h1 className="text-ui-card-title-lg font-semibold">라켓을 찾을 수 없습니다.</h1>
       </SiteContainer>
     );
   }
@@ -94,9 +94,9 @@ export default async function Page({ params }: { params: Promise<Params> }) {
         : "현재 판매 가능한 상태가 아닙니다.";
     return (
       <SiteContainer variant="wide" className="py-10 space-y-2">
-        <h1 className="text-lg font-semibold">현재 구매할 수 없는 라켓입니다.</h1>
-        <p className="text-sm text-muted-foreground">{reasonLabel}</p>
-        <a className="text-sm underline" href={`/rackets/${id}`}>
+        <h1 className="text-ui-card-title-lg font-semibold">현재 구매할 수 없는 라켓입니다.</h1>
+        <p className="text-ui-body-sm text-muted-foreground">{reasonLabel}</p>
+        <a className="text-ui-body-sm underline" href={`/rackets/${id}`}>
           상세로 돌아가기
         </a>
       </SiteContainer>

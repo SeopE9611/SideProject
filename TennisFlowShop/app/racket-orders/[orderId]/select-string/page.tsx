@@ -75,10 +75,10 @@ export default async function SelectStringPage({ params }: PageProps) {
           <Badge variant="secondary" className="rounded-full">
             라켓 주문 스트링 선택
           </Badge>
-          <h1 className="break-keep text-2xl font-semibold tracking-tight md:text-3xl">
+          <h1 className="break-keep text-ui-page-title font-semibold tracking-tight md:text-ui-page-title-lg">
             주문 라켓에 장착할 스트링을 선택하세요
           </h1>
-          <p className="break-keep text-sm leading-relaxed text-muted-foreground">
+          <p className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
             기존 라켓 주문에 연결할 스트링과 옵션을 선택한 뒤 장착 정보 입력 단계로 진행합니다.
           </p>
         </div>
@@ -86,18 +86,18 @@ export default async function SelectStringPage({ params }: PageProps) {
         <section className="rounded-2xl border border-border bg-card p-4 shadow-sm md:p-5">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div className="min-w-0 space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">주문 라켓</p>
-              <h2 className="break-keep text-base font-semibold text-foreground md:text-lg">
+              <p className="text-ui-label font-medium text-muted-foreground">주문 라켓</p>
+              <h2 className="break-keep text-ui-body font-semibold text-foreground md:text-ui-card-title-lg">
                 {racketName}
               </h2>
-              <p className="break-all font-mono text-xs text-muted-foreground">
+              <p className="break-all font-mono text-ui-label text-muted-foreground">
                 주문 ID: {orderId}
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-sm md:min-w-56">
+            <div className="grid grid-cols-2 gap-2 text-ui-body-sm md:min-w-56">
               {racketQuantity != null && (
                 <div className="rounded-xl border border-border bg-muted/20 px-3 py-2">
-                  <p className="text-xs text-muted-foreground">수량</p>
+                  <p className="text-ui-label text-muted-foreground">수량</p>
                   <p className="mt-1 font-semibold tabular-nums">
                     {racketQuantity.toLocaleString()}개
                   </p>
@@ -105,7 +105,7 @@ export default async function SelectStringPage({ params }: PageProps) {
               )}
               {racketPrice != null && (
                 <div className="rounded-xl border border-border bg-muted/20 px-3 py-2">
-                  <p className="text-xs text-muted-foreground">라켓 금액</p>
+                  <p className="text-ui-label text-muted-foreground">라켓 금액</p>
                   <p className="mt-1 font-semibold tabular-nums">
                     {racketPrice.toLocaleString()}원
                   </p>
@@ -113,7 +113,7 @@ export default async function SelectStringPage({ params }: PageProps) {
               )}
             </div>
           </div>
-          <div className="mt-4 rounded-xl border border-border bg-muted/20 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+          <div className="mt-4 rounded-xl border border-border bg-muted/20 px-3 py-2 text-ui-label leading-relaxed text-muted-foreground">
             선택한 스트링은 위 주문 라켓과 연결되어 교체서비스 신청에 사용됩니다.
           </div>
         </section>

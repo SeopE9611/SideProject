@@ -80,10 +80,10 @@ function PerformanceSummary({ entries }: { entries: ReturnType<typeof getFeature
 
   return (
     <section className="rounded-xl border border-border bg-muted/20 px-3 py-2.5">
-      <p className="mb-1.5 text-[10px] font-semibold tracking-wide text-muted-foreground">
+      <p className="mb-1.5 text-ui-micro font-semibold tracking-wide text-muted-foreground">
         성능 요약
       </p>
-      <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] sm:text-xs">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-ui-caption sm:text-ui-label">
         {entries.map((feature, index) => (
           <div
             key={feature.key}
@@ -242,7 +242,7 @@ const ProductCard = React.memo(
     const soldOutOverlay = isSoldOut ? (
       <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-background/35">
         <div className="absolute inset-0 flex items-center justify-center bg-background/40">
-          <Badge variant="secondary" className="text-sm font-semibold">
+          <Badge variant="secondary" className="text-ui-body-sm font-semibold">
             품절
           </Badge>
         </div>
@@ -259,8 +259,8 @@ const ProductCard = React.memo(
         {isSale ? (
           <>
             <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
-              <span className="text-[11px] text-muted-foreground">할인가</span>
-              <span className="whitespace-nowrap text-lg font-bold text-foreground bp-sm:text-xl">
+              <span className="text-ui-caption text-muted-foreground">할인가</span>
+              <span className="whitespace-nowrap text-ui-price font-semibold text-foreground bp-sm:text-ui-price-lg">
                 {displayPrice.toLocaleString()}원
               </span>
             </div>
@@ -270,13 +270,13 @@ const ProductCard = React.memo(
                 align === "right" && "justify-end",
               )}
             >
-              <span className="text-[11px] text-muted-foreground">정가</span>
-              <span className="whitespace-nowrap text-xs text-muted-foreground line-through">
+              <span className="text-ui-caption text-muted-foreground">정가</span>
+              <span className="whitespace-nowrap text-ui-label text-muted-foreground line-through">
                 {regularPrice.toLocaleString()}원
               </span>
               <Badge
                 variant="outline"
-                className={cn("shrink-0 whitespace-nowrap text-xs", badgeToneClass("danger"))}
+                className={cn("shrink-0 whitespace-nowrap text-ui-label", badgeToneClass("danger"))}
               >
                 {saleRate}% OFF
               </Badge>
@@ -284,8 +284,8 @@ const ProductCard = React.memo(
           </>
         ) : (
           <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
-            <span className="text-[11px] text-muted-foreground">판매가</span>
-            <span className="whitespace-nowrap text-lg font-bold text-foreground bp-sm:text-xl">
+            <span className="text-ui-caption text-muted-foreground">판매가</span>
+            <span className="whitespace-nowrap text-ui-price font-semibold text-foreground bp-sm:text-ui-price-lg">
               {displayPrice.toLocaleString()}원
             </span>
           </div>
@@ -406,20 +406,20 @@ const ProductCard = React.memo(
               <div className="mb-4 flex flex-col gap-3">
                 <div className="min-w-0 flex-1">
                   <div
-                    className="mb-1 max-w-full truncate text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground sm:text-sm"
+                    className="mb-1 max-w-full truncate text-ui-label font-semibold uppercase tracking-[0.08em] text-muted-foreground sm:text-ui-body-sm"
                     title={brandLabel}
                   >
                     {brandLabel}
                   </div>
                   <h3
-                    className="mb-2 line-clamp-2 break-keep text-base font-bold text-foreground sm:text-lg md:text-xl bp-lg:line-clamp-3"
+                    className="mb-2 line-clamp-2 break-keep text-ui-body font-medium text-foreground sm:text-ui-card-title-lg md:text-ui-section-title bp-lg:line-clamp-3"
                     title={product.name}
                   >
                     {product.name}
                   </h3>
                   <div className="flex items-center gap-2">
                     <RatingStars avg={ratingAvg} starClassName="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="text-xs text-muted-foreground sm:text-sm">
+                    <span className="text-ui-label text-muted-foreground sm:text-ui-body-sm">
                       ({ratingCount})
                     </span>
                   </div>
@@ -437,7 +437,7 @@ const ProductCard = React.memo(
                   variant="default"
                   size="sm"
                   wrap="responsive"
-                  className="w-full text-xs sm:text-sm"
+                  className="w-full text-ui-label sm:text-ui-body-sm"
                 >
                   <Link href={detailHref}>
                     <Eye className="w-3 h-3 bp-sm:w-4 bp-sm:h-4 mr-1.5" />
@@ -454,7 +454,7 @@ const ProductCard = React.memo(
                     variant="outline"
                     onClick={handleStringSingleBuy}
                     disabled={isSoldOut}
-                    className="h-9 whitespace-nowrap sm:h-10 text-xs sm:text-sm"
+                    className="h-9 whitespace-nowrap sm:h-10 text-ui-label sm:text-ui-body-sm"
                   >
                     레거시 단품 구매
                   </Button>
@@ -463,7 +463,7 @@ const ProductCard = React.memo(
               {shouldShowStandaloneServiceBadge && (
                 <Badge
                   variant="secondary"
-                  className="mt-2 w-fit shrink-0 whitespace-nowrap rounded-full border-border bg-muted/30 text-[11px]"
+                  className="mt-2 w-fit shrink-0 whitespace-nowrap rounded-full border-border bg-muted/30 text-ui-caption"
                 >
                   교체서비스 전용
                 </Badge>
@@ -540,13 +540,13 @@ const ProductCard = React.memo(
           >
             <div>
               <div
-                className="mb-1.5 max-w-full truncate text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground"
+                className="mb-1.5 max-w-full truncate text-ui-label font-semibold uppercase tracking-[0.08em] text-muted-foreground"
                 title={brandLabel}
               >
                 {brandLabel}
               </div>
               <CardTitle
-                className="mb-2 line-clamp-2 break-keep text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-foreground sm:text-base bp-lg:line-clamp-3"
+                className="mb-2 line-clamp-2 break-keep text-ui-body-sm font-medium leading-snug text-foreground transition-colors group-hover:text-foreground sm:text-ui-body bp-lg:line-clamp-3"
                 title={product.name}
               >
                 {product.name}
@@ -555,7 +555,7 @@ const ProductCard = React.memo(
 
             <div className="mb-3 flex items-center gap-1.5">
               <RatingStars avg={ratingAvg} starClassName="w-3 h-3" />
-              <span className="text-xs text-muted-foreground">({ratingCount})</span>
+              <span className="text-ui-label text-muted-foreground">({ratingCount})</span>
             </div>
 
             <div className="mb-4">
@@ -573,7 +573,7 @@ const ProductCard = React.memo(
               type="button"
               variant="outline"
               wrap="responsive"
-              className="h-10 rounded-xl text-sm"
+              className="h-10 rounded-xl text-ui-body-sm"
             >
               <Link href={detailHref}>
                 <Eye className="h-4 w-4 mr-1.5" />
@@ -588,7 +588,7 @@ const ProductCard = React.memo(
             <Button
               type="button"
               variant="outline"
-              className="h-10 w-full rounded-xl px-3 text-center text-xs whitespace-nowrap sm:text-sm"
+              className="h-10 w-full rounded-xl px-3 text-center text-ui-label whitespace-nowrap sm:text-ui-body-sm"
               onClick={handleStringSingleBuy}
               disabled={isSoldOut}
             >
@@ -597,7 +597,7 @@ const ProductCard = React.memo(
           )}
 
           {/* {shouldShowStandaloneServiceBadge && (
-            <Badge variant="secondary" className="w-fit text-[11px]">
+            <Badge variant="secondary" className="w-fit text-ui-caption">
               교체서비스 전용
             </Badge>
           )} */}

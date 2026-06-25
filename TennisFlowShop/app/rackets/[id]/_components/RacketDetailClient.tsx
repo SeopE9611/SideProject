@@ -431,7 +431,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
       <div className="relative border-b border-border/60 bg-card/70 py-4 text-foreground sm:py-5">
         <SiteContainer variant="wide" className="relative">
           <div className="flex min-w-0 items-center justify-between gap-3">
-            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-sm sm:gap-2.5 sm:text-base">
+            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden text-ui-body-sm sm:gap-2.5 sm:text-ui-body">
               <Link
                 href="/"
                 className="shrink-0 whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground"
@@ -454,7 +454,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
             <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
               <Button
                 variant="ghost"
-                className="h-9 whitespace-nowrap rounded-xl px-2.5 text-sm text-muted-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-muted/50 hover:text-foreground sm:px-3"
+                className="h-9 whitespace-nowrap rounded-xl px-2.5 text-ui-body-sm text-muted-foreground transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-muted/50 hover:text-foreground sm:px-3"
                 onClick={() => router.back()}
               >
                 <ArrowLeft className="mr-1.5 h-4 w-4" />
@@ -582,7 +582,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                         : `재고 ${stock.available}개`}
                     </Badge>
                   </div>
-                  <h1 className="min-w-0 break-words text-2xl font-bold leading-tight text-foreground lg:text-3xl">
+                  <h1 className="min-w-0 break-words text-ui-page-title font-semibold leading-tight text-foreground lg:text-ui-page-title-lg">
                     {racket.model}
                   </h1>
                 </div>
@@ -597,7 +597,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       />
                     ))}
                   </div>
-                  <span className="whitespace-nowrap text-sm text-muted-foreground sm:text-base">
+                  <span className="whitespace-nowrap text-ui-body-sm text-muted-foreground sm:text-ui-body">
                     {averageRating.toFixed(1)} ({reviewCount}개 리뷰)
                   </span>
                 </div>
@@ -609,25 +609,25 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
                   {hasSalePrice ? (
                     <>
-                      <span className="whitespace-nowrap tabular-nums text-3xl font-bold tracking-normal text-foreground sm:text-4xl">
+                      <span className="whitespace-nowrap tabular-nums text-ui-price-lg font-semibold tracking-normal text-foreground">
                         {salePrice.toLocaleString()}
-                        <span className="ml-0.5 text-xl font-medium sm:text-2xl">원</span>
+                        <span className="ml-0.5 text-ui-section-title font-medium sm:text-ui-page-title">원</span>
                       </span>
-                      <span className="whitespace-nowrap tabular-nums text-lg text-muted-foreground/60 line-through sm:text-xl">
+                      <span className="whitespace-nowrap tabular-nums text-ui-card-title-lg text-muted-foreground/60 line-through sm:text-ui-section-title">
                         {racket.price?.toLocaleString()}원
                       </span>
-                      <span className="shrink-0 whitespace-nowrap rounded-lg bg-destructive/10 px-2.5 py-1 text-sm font-semibold text-destructive">
+                      <span className="shrink-0 whitespace-nowrap rounded-lg bg-destructive/10 px-2.5 py-1 text-ui-body-sm font-semibold text-destructive">
                         {discountRate}% OFF
                       </span>
                     </>
                   ) : (
-                    <span className="whitespace-nowrap tabular-nums text-3xl font-bold tracking-normal text-foreground sm:text-4xl">
+                    <span className="whitespace-nowrap tabular-nums text-ui-price-lg font-semibold tracking-normal text-foreground">
                       {racket.price?.toLocaleString()}
-                      <span className="ml-0.5 text-xl font-medium sm:text-2xl">원</span>
+                      <span className="ml-0.5 text-ui-section-title font-medium sm:text-ui-page-title">원</span>
                     </span>
                   )}
                 </div>
-                <div className="grid gap-2 text-sm sm:text-base">
+                <div className="grid gap-2 text-ui-body-sm sm:text-ui-body">
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-muted-foreground">배송비</span>
                     <span className="whitespace-nowrap tabular-nums font-semibold text-foreground">
@@ -644,7 +644,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     </div>
                   )}
                 </div>
-                <div className="rounded-xl border border-border bg-card p-3 text-xs leading-relaxed text-muted-foreground">
+                <div className="rounded-xl border border-border bg-card p-3 text-ui-label leading-relaxed text-muted-foreground">
                   * 중고 상품 특성상 단순 변심 환불이 제한될 수 있어요.
                 </div>
               </div>
@@ -652,10 +652,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               {/* CTA 영역 */}
               <div ref={rentSectionRef} className="space-y-4 border-t border-border pt-5">
                 <div className="rounded-xl border border-border bg-muted/20 p-4">
-                  <h2 className="text-base font-bold text-foreground">
+                  <h2 className="text-ui-body font-semibold text-foreground">
                     이 라켓으로 무엇을 할까요?
                   </h2>
-                  <p className="mt-1 break-keep text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-1 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
                     구매 시 다음 단계에서 스트링을 선택하고 장착 정보를 함께 확인합니다. 라켓만 바로
                     결제되지 않아요.
                   </p>
@@ -716,7 +716,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <Button
                     variant="outline"
-                    className={`min-h-11 min-w-0 rounded-xl whitespace-normal break-keep px-2 text-sm ${isCompared ? "bg-secondary border-border text-foreground hover:bg-secondary/80" : "bg-card border-border text-foreground"}`}
+                    className={`min-h-11 min-w-0 rounded-xl whitespace-normal break-keep px-2 text-ui-body-sm ${isCompared ? "bg-secondary border-border text-foreground hover:bg-secondary/80" : "bg-card border-border text-foreground"}`}
                     onClick={toggleCompare}
                     disabled={!racketId}
                     title={
@@ -733,7 +733,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
                   <Button
                     variant="outline"
-                    className="min-h-11 min-w-0 rounded-xl whitespace-normal break-keep px-2 text-sm"
+                    className="min-h-11 min-w-0 rounded-xl whitespace-normal break-keep px-2 text-ui-body-sm"
                     onClick={() => router.push("/rackets/compare")}
                     disabled={compareCount < 2}
                     title={compareCount < 2 ? "비교는 최소 2개부터 가능합니다." : undefined}
@@ -743,7 +743,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                 </div>
 
                 {racket?.rental?.enabled === false && racket?.rental?.disabledReason && (
-                  <div className="mt-3 break-keep rounded-xl border border-border bg-muted/20 p-3 text-sm text-foreground">
+                  <div className="mt-3 break-keep rounded-xl border border-border bg-muted/20 p-3 text-ui-body-sm text-foreground">
                     대여 불가 사유: {racket.rental.disabledReason}
                   </div>
                 )}
@@ -753,7 +753,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
             <div>
               <Link
                 href="/rackets"
-                className="text-sm text-primary hover:underline inline-flex items-center"
+                className="text-ui-body-sm text-primary hover:underline inline-flex items-center"
               >
                 <ArrowLeft className="mr-1 h-3 w-3" />
                 목록으로
@@ -773,21 +773,21 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               <TabsList className="grid h-auto w-full grid-cols-3 gap-1 border-b border-border bg-muted/30 p-1 sm:gap-1.5 sm:p-1.5">
                 <TabsTrigger
                   value="description"
-                  className="h-12 min-w-0 rounded-xl px-2 text-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-base md:h-16"
+                  className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16"
                 >
                   <FileText className="mr-1.5 h-4 w-4 shrink-0 sm:mr-2 sm:h-5 sm:w-5" />
                   상품 설명
                 </TabsTrigger>
                 <TabsTrigger
                   value="specifications"
-                  className="h-12 min-w-0 rounded-xl px-2 text-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-base md:h-16"
+                  className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16"
                 >
                   <Settings className="mr-1.5 h-4 w-4 shrink-0 sm:mr-2 sm:h-5 sm:w-5" />
                   상세 스펙
                 </TabsTrigger>
                 <TabsTrigger
                   value="reviews"
-                  className="h-12 min-w-0 rounded-xl px-2 text-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-base md:h-16"
+                  className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16"
                 >
                   <Star className="mr-1.5 h-4 w-4 shrink-0 sm:mr-2 sm:h-5 sm:w-5" />
                   리뷰
@@ -801,12 +801,12 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border/60 bg-secondary text-foreground sm:h-12 sm:w-12">
                       <FileText className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
-                    <h3 className="break-keep text-xl font-bold leading-tight text-foreground sm:text-2xl">
+                    <h3 className="break-keep text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title">
                       상품 설명
                     </h3>
                   </div>
                   <div className="rounded-xl border border-border bg-muted/30 p-4 sm:rounded-2xl sm:p-6">
-                    <p className="break-words break-keep text-sm leading-relaxed text-muted-foreground sm:text-base">
+                    <p className="break-words break-keep text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body">
                       {racketBrandLabel(racket.brand)} {racket.model} 중고 라켓입니다. 상태 등급은{" "}
                       {usedBadgeMeta("condition", racket.condition).label}이며, 전문가의 검수를 거쳐
                       안전하게 사용하실 수 있습니다.
@@ -822,7 +822,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border/60 bg-secondary text-foreground sm:h-12 sm:w-12">
                       <Settings className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
-                    <h3 className="break-keep text-xl font-bold leading-tight text-foreground sm:text-2xl">
+                    <h3 className="break-keep text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title">
                       상세 스펙
                     </h3>
                   </div>
@@ -831,10 +831,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     {racket.spec?.weight && (
                       <div className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
                         <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                          <span className="text-sm font-semibold text-foreground sm:text-base">
+                          <span className="text-ui-body-sm font-semibold text-foreground sm:text-ui-body">
                             무게
                           </span>
-                          <span className="min-w-0 break-words text-left text-sm font-medium text-muted-foreground sm:text-right sm:text-base">
+                          <span className="min-w-0 break-words text-left text-ui-body-sm font-medium text-muted-foreground sm:text-right sm:text-ui-body">
                             {racket.spec.weight} g
                           </span>
                         </div>
@@ -843,10 +843,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     {racket.spec?.balance && (
                       <div className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
                         <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                          <span className="text-sm font-semibold text-foreground sm:text-base">
+                          <span className="text-ui-body-sm font-semibold text-foreground sm:text-ui-body">
                             밸런스
                           </span>
-                          <span className="min-w-0 break-words text-left text-sm font-medium text-muted-foreground sm:text-right sm:text-base">
+                          <span className="min-w-0 break-words text-left text-ui-body-sm font-medium text-muted-foreground sm:text-right sm:text-ui-body">
                             {racket.spec.balance} mm
                           </span>
                         </div>
@@ -855,10 +855,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     {racket.spec?.headSize && (
                       <div className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
                         <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                          <span className="text-sm font-semibold text-foreground sm:text-base">
+                          <span className="text-ui-body-sm font-semibold text-foreground sm:text-ui-body">
                             헤드사이즈
                           </span>
-                          <span className="min-w-0 break-words text-left text-sm font-medium text-muted-foreground sm:text-right sm:text-base">
+                          <span className="min-w-0 break-words text-left text-ui-body-sm font-medium text-muted-foreground sm:text-right sm:text-ui-body">
                             {racket.spec.headSize} in²
                           </span>
                         </div>
@@ -867,11 +867,11 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     {racket.spec?.pattern && (
                       <div className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
                         <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                          <span className="text-sm font-semibold text-foreground sm:text-base">
+                          <span className="text-ui-body-sm font-semibold text-foreground sm:text-ui-body">
                             패턴
                           </span>
                           {/* raw value(g2/16x19 등)를 그대로 노출하지 않고 공통 라벨로 통일 */}
-                          <span className="min-w-0 break-words text-left text-sm font-medium text-muted-foreground sm:text-right sm:text-base">
+                          <span className="min-w-0 break-words text-left text-ui-body-sm font-medium text-muted-foreground sm:text-right sm:text-ui-body">
                             {stringPatternLabel(String(racket.spec.pattern))}
                           </span>
                         </div>
@@ -880,11 +880,11 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     {racket.spec?.gripSize && (
                       <div className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
                         <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                          <span className="text-sm font-semibold text-foreground sm:text-base">
+                          <span className="text-ui-body-sm font-semibold text-foreground sm:text-ui-body">
                             그립
                           </span>
                           {/* g2/G2/별칭 입력값이 와도 사용자에게는 읽기 쉬운 라벨로 표시 */}
-                          <span className="min-w-0 break-words text-left text-sm font-medium text-muted-foreground sm:text-right sm:text-base">
+                          <span className="min-w-0 break-words text-left text-ui-body-sm font-medium text-muted-foreground sm:text-right sm:text-ui-body">
                             {gripSizeLabel(String(racket.spec.gripSize))}
                           </span>
                         </div>
@@ -892,10 +892,10 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     )}
                     <div className="rounded-xl border border-border bg-muted/30 p-3.5 sm:p-4">
                       <div className="flex min-w-0 flex-col items-start gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                        <span className="text-sm font-semibold text-foreground sm:text-base">
+                        <span className="text-ui-body-sm font-semibold text-foreground sm:text-ui-body">
                           상태
                         </span>
-                        <span className="min-w-0 break-words text-left text-sm font-medium text-muted-foreground sm:text-right sm:text-base">
+                        <span className="min-w-0 break-words text-left text-ui-body-sm font-medium text-muted-foreground sm:text-right sm:text-ui-body">
                           상태: {usedBadgeMeta("condition", racket.condition).label}
                         </span>
                       </div>
@@ -910,7 +910,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted/30 text-primary sm:h-12 sm:w-12">
                         <Star className="h-4 w-4 sm:h-6 sm:w-6" />
                       </div>
-                      <h3 className="break-keep text-xl font-bold leading-tight text-foreground sm:text-2xl">
+                      <h3 className="break-keep text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title">
                         고객 리뷰
                       </h3>
                     </div>
@@ -918,7 +918,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     <Button
                       asChild
                       variant="outline"
-                      className="h-9 shrink-0 border border-border bg-secondary text-xs text-foreground shadow-sm hover:bg-secondary/80 sm:h-10 sm:text-sm"
+                      className="h-9 shrink-0 border border-border bg-secondary text-ui-label text-foreground shadow-sm hover:bg-secondary/80 sm:h-10 sm:text-ui-body-sm"
                     >
                       <Link href={`/reviews/write?productId=${racketId}`}>
                         <Pencil className="mr-1.5 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
@@ -937,13 +937,13 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                           <CardContent className="space-y-3 p-4 sm:p-6">
                             <div className="flex min-w-0 flex-wrap items-start justify-between gap-3 sm:gap-4">
                               <div className="flex min-w-0 items-start gap-3">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border/60 bg-secondary text-sm font-bold text-foreground">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border/60 bg-secondary text-ui-body-sm font-semibold text-foreground">
                                   {(review?.user ?? "익명").slice(0, 1)}
                                 </div>
 
                                 <div className="min-w-0">
                                   <div className="flex min-w-0 flex-wrap items-center gap-2">
-                                    <div className="min-w-0 break-words font-bold text-foreground sm:truncate">
+                                    <div className="min-w-0 break-words font-semibold text-foreground sm:truncate">
                                       {review?.status === "hidden"
                                         ? review?.ownedByMe
                                           ? `${review?.user ?? "내 리뷰"} (비공개)`
@@ -952,14 +952,14 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                     </div>
 
                                     {review?.status === "hidden" && (
-                                      <Badge variant="outline" className="shrink-0 text-xs">
+                                      <Badge variant="outline" className="shrink-0 text-ui-label">
                                         비공개
                                       </Badge>
                                     )}
                                   </div>
 
                                   {review?.date ? (
-                                    <div className="text-xs text-muted-foreground mt-0.5">
+                                    <div className="text-ui-label text-muted-foreground mt-0.5">
                                       {review.date}
                                     </div>
                                   ) : null}
@@ -1141,7 +1141,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                             {review?.masked ? (
                               <MaskedBlock />
                             ) : (
-                              <p className="whitespace-pre-line break-words text-sm leading-relaxed text-foreground">
+                              <p className="whitespace-pre-line break-words text-ui-body-sm leading-relaxed text-foreground">
                                 {review?.content || ""}
                               </p>
                             )}
@@ -1165,7 +1165,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                                     />
                                     {/* 4장 넘어가면 +N 표시 */}
                                     {i === 3 && review.photos.length > 4 ? (
-                                      <div className="absolute inset-0 flex items-center justify-center bg-foreground/45 text-sm font-semibold text-background">
+                                      <div className="absolute inset-0 flex items-center justify-center bg-foreground/45 text-ui-body-sm font-semibold text-background">
                                         +{review.photos.length - 4}
                                       </div>
                                     ) : null}
@@ -1176,7 +1176,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
 
                             {/* 작업 중 오버레이 */}
                             {busyReviewId && String(busyReviewId) === String(review?._id) ? (
-                              <div className="flex items-center gap-2 pt-2 text-xs text-muted-foreground">
+                              <div className="flex items-center gap-2 pt-2 text-ui-label text-muted-foreground">
                                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                 처리 중...
                               </div>
@@ -1186,7 +1186,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                       ))}
                     </div>
                   ) : (
-                    <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm text-muted-foreground sm:rounded-2xl sm:p-6">
+                    <div className="rounded-xl border border-border bg-muted/30 p-4 text-ui-body-sm text-muted-foreground sm:rounded-2xl sm:p-6">
                       아직 등록된 리뷰가 없습니다.
                     </div>
                   )}

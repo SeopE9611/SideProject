@@ -77,7 +77,7 @@ export default function ProductFeatureRadarChart({ scores }: Props) {
               y={center + (radius + 22) * Math.sin(point.angle)}
               textAnchor="middle"
               dominantBaseline="middle"
-              className="fill-foreground text-[11px]"
+              className="fill-foreground text-ui-caption"
             >
               {point.label}
             </text>
@@ -85,7 +85,7 @@ export default function ProductFeatureRadarChart({ scores }: Props) {
         </svg>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 text-sm">
+      <div className="grid grid-cols-2 gap-2 text-ui-body-sm">
         {PRODUCT_FEATURE_ITEMS.map((item) => (
           <div
             key={item.key}

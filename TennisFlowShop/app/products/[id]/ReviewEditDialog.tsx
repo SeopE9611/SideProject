@@ -89,7 +89,7 @@ export default function ReviewEditDialog({
                   </button>
                 );
               })}
-              <span className="ml-2 text-sm text-muted-foreground">
+              <span className="ml-2 text-ui-body-sm text-muted-foreground">
                 {typeof editForm.rating === "number" ? editForm.rating : 0}/5
               </span>
             </div>
@@ -121,12 +121,12 @@ export default function ReviewEditDialog({
         </div>
 
         <DialogFooter className="gap-2">
-          <button type="button" className="px-4 py-2 rounded-md border text-sm" onClick={onClose}>
+          <button type="button" className="px-4 py-2 rounded-md border text-ui-body-sm" onClick={onClose}>
             취소
           </button>
           <button
             type="button"
-            className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm"
+            className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-ui-body-sm"
             onClick={onSubmit}
           >
             저장
