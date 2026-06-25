@@ -738,10 +738,10 @@ export default function RentalsCheckoutClient({
               <Badge className="rounded-full">3 신청 확인</Badge>
             </div>
             <div className="space-y-2">
-              <h1 className="break-keep text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+              <h1 className="break-keep text-ui-page-title font-semibold tracking-tight text-foreground md:text-ui-page-title-lg">
                 대여 신청 정보 확인
               </h1>
-              <p className="break-keep text-sm leading-relaxed text-muted-foreground md:text-base">
+              <p className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground md:text-ui-body">
                 대여 라켓, 선택한 스트링 옵션, 수령 정보와 예상 금액을 확인한 뒤 대여 신청을
                 완료하세요.
               </p>
@@ -759,7 +759,7 @@ export default function RentalsCheckoutClient({
             {/* 대여 상품 정보 */}
             <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
               <div className="border-b border-border bg-muted/30 p-4 md:p-6">
-                <CardTitle className="flex items-center gap-3 text-lg">
+                <CardTitle className="flex items-center gap-3 text-ui-card-title-lg">
                   <Package className="h-5 w-5 text-primary" />
                   대여 라켓 확인
                 </CardTitle>
@@ -785,19 +785,19 @@ export default function RentalsCheckoutClient({
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm text-muted-foreground">대여 라켓</div>
+                    <div className="text-ui-body-sm text-muted-foreground">대여 라켓</div>
                     <h3 className="min-w-0 break-keep font-semibold text-foreground">
                       {rentalRacketName}
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant={badgeToneVariant("neutral")} className="px-2 py-0.5 text-xs">
+                      <Badge variant={badgeToneVariant("neutral")} className="px-2 py-0.5 text-ui-label">
                         상태 {initial.racket?.condition}
                       </Badge>
-                      <span className="text-xs text-foreground/75">
+                      <span className="text-ui-label text-foreground/75">
                         대여 기간 {initial.period}일
                       </span>
                     </div>
-                    <div className="mt-3 grid gap-2 text-sm text-muted-foreground bp-sm:grid-cols-2">
+                    <div className="mt-3 grid gap-2 text-ui-body-sm text-muted-foreground bp-sm:grid-cols-2">
                       <span className="flex items-center justify-between gap-3 rounded-xl bg-card px-3 py-2">
                         <span>대여료</span>
                         <span className="tabular-nums text-foreground">
@@ -841,7 +841,7 @@ export default function RentalsCheckoutClient({
                       className="flex-1 cursor-pointer font-medium"
                     >
                       택배 수령 (자택 또는 지정 장소로 배송)
-                      <div className="text-xs text-foreground/75 mt-1">
+                      <div className="text-ui-label text-foreground/75 mt-1">
                         대여 신청 완료 후 택배 발송으로 진행됩니다.
                       </div>
                     </Label>
@@ -855,7 +855,7 @@ export default function RentalsCheckoutClient({
                       className="flex-1 cursor-pointer font-medium"
                     >
                       오프라인 매장 방문 (도깨비테니스 샵에서 직접 수령)
-                      <div className="text-xs text-foreground/75 mt-1">
+                      <div className="text-ui-label text-foreground/75 mt-1">
                         스트링 교체를 함께 신청하면 방문 접수 기준으로 처리됩니다.
                       </div>
                     </Label>
@@ -868,7 +868,7 @@ export default function RentalsCheckoutClient({
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1">
                       <p className="font-medium text-foreground">스트링 교체 서비스 (선택)</p>
-                      <p className="text-sm text-foreground">
+                      <p className="text-ui-body-sm text-foreground">
                         {deliveryMethod === "방문수령"
                           ? "매장에서 대여 라켓에 스트링을 장착한 뒤 방문 수령으로 준비합니다."
                           : "매장에서 대여 라켓에 스트링을 장착한 뒤 고객님께 발송합니다."}
@@ -891,21 +891,21 @@ export default function RentalsCheckoutClient({
                   <div className="mt-3 rounded-lg border border-border p-4 bg-card">
                     {selectedString ? (
                       <div className="space-y-1">
-                        <div className="text-xs font-medium text-muted-foreground">
+                        <div className="text-ui-label font-medium text-muted-foreground">
                           선택한 스트링
                         </div>
                         <div className="font-semibold text-foreground">{selectedString.name}</div>
                         {selectedGauge ? (
-                          <div className="text-sm text-foreground/80">
+                          <div className="text-ui-body-sm text-foreground/80">
                             게이지: {formatGaugeLabel(selectedGauge)}
                           </div>
                         ) : null}
                         {normalizedSelectedColor ? (
-                          <div className="text-sm text-foreground/80">
+                          <div className="text-ui-body-sm text-foreground/80">
                             색상: {normalizedSelectedColor}
                           </div>
                         ) : null}
-                        <div className="mt-2 grid gap-1 text-sm text-foreground/80 bp-sm:grid-cols-2">
+                        <div className="mt-2 grid gap-1 text-ui-body-sm text-foreground/80 bp-sm:grid-cols-2">
                           <span>
                             스트링{" "}
                             {selectedString.regularPrice &&
@@ -925,7 +925,7 @@ export default function RentalsCheckoutClient({
                                 </span>
                                 <Badge
                                   variant="destructive"
-                                  className="w-fit text-[10px] tabular-nums"
+                                  className="w-fit text-ui-micro tabular-nums"
                                 >
                                   {selectedString.discountRate}% OFF
                                 </Badge>
@@ -936,13 +936,13 @@ export default function RentalsCheckoutClient({
                           </span>
                         </div>
 
-                        <div className="mt-3 rounded-md bg-muted/70 p-3 text-xs text-foreground/80">
+                        <div className="mt-3 rounded-md bg-muted/70 p-3 text-ui-label text-foreground/80">
                           대여 라켓은 반납 대상이며, 선택한 스트링은 구매 상품으로 결제됩니다.
                           교체서비스 비용은 스트링 장착 작업 비용입니다.
                         </div>
                       </div>
                     ) : (
-                      <div className="text-sm text-foreground/80">
+                      <div className="text-ui-body-sm text-foreground/80">
                         현재는 <b>교체서비스 미선택</b> 상태입니다. 필요하면 "스트링 선택"을 눌러
                         교체서비스를 함께 진행할 수 있습니다.
                       </div>
@@ -962,7 +962,7 @@ export default function RentalsCheckoutClient({
             {/* 배송 정보 */}
             <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
               <div className="border-b border-border bg-muted/30 p-4 md:p-6">
-                <CardTitle className="flex items-center gap-3 text-lg">
+                <CardTitle className="flex items-center gap-3 text-ui-card-title-lg">
                   <MapPin className="h-5 w-5 text-foreground" />
                   {isVisitPickup ? "수령/연락 정보" : "배송 정보"}
                 </CardTitle>
@@ -1088,7 +1088,7 @@ export default function RentalsCheckoutClient({
             {/* 결제 정보 */}
             <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
               <div className="border-b border-border bg-muted/30 p-4 md:p-6">
-                <CardTitle className="flex items-center gap-3 text-lg">
+                <CardTitle className="flex items-center gap-3 text-ui-card-title-lg">
                   <CreditCard className="h-5 w-5 text-foreground" />
                   결제/입금 안내
                 </CardTitle>
@@ -1166,7 +1166,7 @@ export default function RentalsCheckoutClient({
                           <Shield className="h-5 w-5 text-primary" />
                           <p className="font-semibold text-foreground">무통장입금 안내</p>
                         </div>
-                        <ul className="space-y-2 text-sm text-foreground">
+                        <ul className="space-y-2 text-ui-body-sm text-foreground">
                           <li className="flex items-center gap-2">
                             <CheckCircle className="h-4 w-4" />
                             대여 신청 후 24시간 이내에 입금해 주셔야 신청이 정상 처리됩니다.
@@ -1191,8 +1191,8 @@ export default function RentalsCheckoutClient({
                     </Label>
                     <div className="rounded-lg border border-border bg-secondary/30 p-4 space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-foreground">포인트 사용</span>
-                        <span className="text-xs text-foreground/75">
+                        <span className="text-ui-body-sm font-semibold text-foreground">포인트 사용</span>
+                        <span className="text-ui-label text-foreground/75">
                           {pointsStatus === "ready"
                             ? `사용 가능 ${pointsAvailable.toLocaleString()}P`
                             : pointsStatus === "loading"
@@ -1204,15 +1204,15 @@ export default function RentalsCheckoutClient({
                       </div>
 
                       {!userId ? (
-                        <div className="text-sm text-foreground/80">
+                        <div className="text-ui-body-sm text-foreground/80">
                           로그인 시 포인트 사용이 가능합니다.
                         </div>
                       ) : pointsStatus === "loading" ? (
-                        <div className="text-sm text-foreground/80">
+                        <div className="text-ui-body-sm text-foreground/80">
                           포인트를 불러오는 중입니다.
                         </div>
                       ) : pointsStatus === "error" ? (
-                        <div className="text-sm text-destructive">
+                        <div className="text-ui-body-sm text-destructive">
                           포인트 조회에 실패했습니다. 새로고침 후 다시 시도해주세요.
                         </div>
                       ) : (
@@ -1232,7 +1232,7 @@ export default function RentalsCheckoutClient({
                             />
                             <label
                               htmlFor="use-all-points"
-                              className="text-sm text-foreground cursor-pointer"
+                              className="text-ui-body-sm text-foreground cursor-pointer"
                             >
                               전액 사용 (보증금 제외)
                             </label>
@@ -1258,7 +1258,7 @@ export default function RentalsCheckoutClient({
                             className="border-border"
                           />
 
-                          <div className="text-xs text-foreground/75">
+                          <div className="text-ui-label text-foreground/75">
                             보증금({initial.deposit.toLocaleString()}원)에는 포인트가 적용되지
                             않습니다. (최대 {normalizePoints(maxPointsToUse).toLocaleString()}P)
                           </div>
@@ -1313,7 +1313,7 @@ export default function RentalsCheckoutClient({
                 </div>
                 {/* 안내 */}
                 <div className="bg-muted rounded-lg p-4">
-                  <p className="text-sm text-foreground">
+                  <p className="text-ui-body-sm text-foreground">
                     반납 완료 후 보증금이 환급됩니다. 파손/연체 시 약관에 따라 차감될 수 있습니다.
                   </p>
                 </div>
@@ -1343,7 +1343,7 @@ export default function RentalsCheckoutClient({
                           setAgreeRefund(newValue);
                         }}
                       />
-                      <label htmlFor="agree-all" className="font-semibold text-lg text-foreground">
+                      <label htmlFor="agree-all" className="font-semibold text-ui-card-title-lg text-foreground">
                         전체 동의
                       </label>
                     </div>
@@ -1388,7 +1388,7 @@ export default function RentalsCheckoutClient({
                               else if (agreeTerms && agreePrivacy && agreeRefund) setAgreeAll(true);
                             }}
                           />
-                          <label htmlFor={item.id} className="text-sm font-medium text-foreground">
+                          <label htmlFor={item.id} className="text-ui-body-sm font-medium text-foreground">
                             {item.label}
                           </label>
                         </div>
@@ -1415,7 +1415,7 @@ export default function RentalsCheckoutClient({
             <div>
               <Card className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
                 <div className="border-b border-border bg-muted/30 p-4 text-foreground md:p-6">
-                  <CardTitle className="flex items-center gap-3 text-xl">
+                  <CardTitle className="flex items-center gap-3 text-ui-section-title">
                     <div className="rounded-full border border-border bg-card p-2">
                       <CreditCard className="h-5 w-5" />
                     </div>
@@ -1463,14 +1463,14 @@ export default function RentalsCheckoutClient({
                     {appliedPoints > 0 && (
                       <div className="flex justify-between items-center">
                         <span className="text-foreground/80">포인트 사용</span>
-                        <span className="font-semibold text-lg text-destructive">
+                        <span className="font-semibold text-ui-card-title-lg text-destructive">
                           - {appliedPoints.toLocaleString()}P
                         </span>
                       </div>
                     )}
 
                     <Separator />
-                    <div className="flex items-center justify-between text-xl font-bold">
+                    <div className="flex items-center justify-between text-ui-section-title font-semibold">
                       <span>예상 결제 금액</span>
                       <span className="text-foreground">{payableTotal.toLocaleString()}원</span>
                     </div>
@@ -1481,7 +1481,7 @@ export default function RentalsCheckoutClient({
                       <Shield className="h-4 w-4" />
                       <span className="font-semibold">보증금 안내</span>
                     </div>
-                    <p className="text-sm text-foreground">
+                    <p className="text-ui-body-sm text-foreground">
                       반납 완료 시 보증금이 환불됩니다. 연체 또는 파손 시 차감될 수 있습니다.
                     </p>
                   </div>
@@ -1491,7 +1491,7 @@ export default function RentalsCheckoutClient({
                       <Truck className="h-4 w-4" />
                       <span className="font-semibold">대여 안내</span>
                     </div>
-                    <div className="text-sm text-foreground space-y-1">
+                    <div className="text-ui-body-sm text-foreground space-y-1">
                       <p>• 대여 기간: {initial.period}일</p>
                       <p>• 대여 신청 완료 후 배송이 시작됩니다.</p>
                       <p>• 반납 기한을 꼭 지켜주세요.</p>
@@ -1595,7 +1595,7 @@ export default function RentalsCheckoutClient({
                     <div className="absolute inset-0 grid place-items-center">
                       <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
                         <Loader2 className="h-5 w-5 animate-spin" />
-                        <span className="text-sm">대여 신청을 처리하고 있어요…</span>
+                        <span className="text-ui-body-sm">대여 신청을 처리하고 있어요…</span>
                       </div>
                     </div>
                   </div>

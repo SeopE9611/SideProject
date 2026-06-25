@@ -50,8 +50,8 @@ export default function RecentViewedItems({
       <Card className="rounded-3xl border border-border/60 bg-card shadow-sm">
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
-            <CardTitle className="text-lg sm:text-xl">{title}</CardTitle>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <CardTitle className="text-ui-card-title-lg sm:text-ui-section-title">{title}</CardTitle>
+            <p className="mt-1 text-ui-body-sm text-muted-foreground">
               최근 확인한 스트링과 라켓을 다시 확인해보세요.
             </p>
           </div>

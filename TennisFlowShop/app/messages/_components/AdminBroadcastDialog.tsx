@@ -121,8 +121,8 @@ export default function AdminBroadcastDialog({
               <Bell className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <DialogTitle className="text-lg">전체 공지 보내기</DialogTitle>
-              <DialogDescription className="text-sm mt-1">
+              <DialogTitle className="text-ui-card-title-lg">전체 공지 보내기</DialogTitle>
+              <DialogDescription className="text-ui-body-sm mt-1">
                 관리자 권한으로 전체 사용자에게 안내 쪽지를 발송합니다.
               </DialogDescription>
             </div>
@@ -131,7 +131,7 @@ export default function AdminBroadcastDialog({
 
         <div className="grid gap-5 py-4">
           <div className="grid gap-2.5">
-            <label htmlFor="broadcast-title" className="text-sm font-semibold text-foreground">
+            <label htmlFor="broadcast-title" className="text-ui-body-sm font-semibold text-foreground">
               제목
             </label>
             <Input
@@ -144,7 +144,7 @@ export default function AdminBroadcastDialog({
           </div>
 
           <div className="grid gap-2.5">
-            <label htmlFor="broadcast-body" className="text-sm font-semibold text-foreground">
+            <label htmlFor="broadcast-body" className="text-ui-body-sm font-semibold text-foreground">
               내용
             </label>
             <Textarea
@@ -160,7 +160,7 @@ export default function AdminBroadcastDialog({
           <div className="grid gap-2.5">
             <label
               htmlFor="expire-days"
-              className="text-sm font-semibold text-foreground flex items-center gap-2"
+              className="text-ui-body-sm font-semibold text-foreground flex items-center gap-2"
             >
               <Calendar className="h-4 w-4" />
               자동 삭제 (일)
@@ -173,7 +173,7 @@ export default function AdminBroadcastDialog({
               placeholder="예) 30 (0이면 만료 없음)"
               className="h-10"
             />
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-ui-label text-muted-foreground leading-relaxed">
               0이면 만료가 없고, 숫자를 입력하면 해당 일수 이후 자동 삭제(TTL)됩니다.
             </p>
           </div>

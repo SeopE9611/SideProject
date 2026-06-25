@@ -517,7 +517,7 @@ const Header = () => {
                   priority
                 />
               </div>
-              <div className="min-w-0 truncate whitespace-nowrap font-brand-bold text-lg font-bold text-foreground">
+              <div className="min-w-0 truncate whitespace-nowrap font-brand-bold text-ui-card-title-lg font-semibold text-foreground">
                 도깨비테니스
               </div>
             </Link>
@@ -1022,7 +1022,7 @@ const Header = () => {
                     priority
                   />
                 </div>
-                <div className="font-brand-bold font-bold text-[15px] tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">
+                <div className="font-brand-bold font-semibold text-ui-body tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">
                   도깨비테니스
                 </div>
               </Link>
@@ -1091,7 +1091,7 @@ const Header = () => {
                     />
                   </div>
 
-                  <div className="font-brand-bold font-bold text-2xl xl:text-[28px] tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">
+                  <div className="font-brand-bold font-semibold text-ui-page-title xl:text-ui-page-title-lg tracking-normal text-foreground group-hover:text-foreground transition-colors whitespace-nowrap">
                     도깨비테니스
                   </div>
                 </Link>

@@ -39,8 +39,8 @@ export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onCl
     <div className="flex h-full max-h-[min(520px,80vh)] w-full flex-col">
       <div className="flex items-start justify-between gap-3 px-4 py-3">
         <div>
-          <h2 className="text-base font-bold">알림</h2>
-          <p className="text-xs text-muted-foreground">
+          <h2 className="text-ui-body font-semibold">알림</h2>
+          <p className="text-ui-label text-muted-foreground">
             읽지 않은 알림 {unreadCount.toLocaleString()}개
           </p>
         </div>
@@ -59,11 +59,11 @@ export function NotificationPanel({ enabled, onClose }: { enabled: boolean; onCl
             </div>
           ))
         ) : status === "error" ? (
-          <div className="px-4 py-10 text-center text-sm text-muted-foreground">
+          <div className="px-4 py-10 text-center text-ui-body-sm text-muted-foreground">
             알림을 불러오지 못했습니다.
           </div>
         ) : items.length === 0 ? (
-          <div className="px-4 py-10 text-center text-sm text-muted-foreground">
+          <div className="px-4 py-10 text-center text-ui-body-sm text-muted-foreground">
             새 알림이 없습니다.
           </div>
         ) : (

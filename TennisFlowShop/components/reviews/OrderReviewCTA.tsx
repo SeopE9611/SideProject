@@ -67,7 +67,7 @@ export default function OrderReviewCTA({
   // CTA + 배지
   const unreviewedBadge =
     unreviewedCount && unreviewedCount > 0 ? (
-      <Badge variant="neutral" className="text-[11px]">
+      <Badge variant="neutral" className="text-ui-caption">
         미작성 {unreviewedCount}개
       </Badge>
     ) : null;

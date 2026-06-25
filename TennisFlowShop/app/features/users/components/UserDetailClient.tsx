@@ -66,8 +66,8 @@ export default function UserDetailClient({ id, baseUrl }: Props) {
             <User className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{u.name || "(이름없음)"}</h1>
-            <p className="text-sm text-muted-foreground">{u.email}</p>
+            <h1 className="text-ui-page-title font-semibold">{u.name || "(이름없음)"}</h1>
+            <p className="text-ui-body-sm text-muted-foreground">{u.email}</p>
           </div>
         </div>
 
@@ -88,27 +88,27 @@ export default function UserDetailClient({ id, baseUrl }: Props) {
         <CardContent className="space-y-3">
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">권한:</span>
+            <span className="text-ui-body-sm">권한:</span>
             <Badge variant="outline" className="shrink-0">
               {u.role === "admin" ? "관리자" : "일반"}
             </Badge>
           </div>
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">가입일:</span>
-            <span className="text-sm text-foreground">
+            <span className="text-ui-body-sm">가입일:</span>
+            <span className="text-ui-body-sm text-foreground">
               {u.createdAt ? new Date(u.createdAt).toLocaleString() : "-"}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">마지막 로그인:</span>
-            <span className="text-sm text-foreground">
+            <span className="text-ui-body-sm">마지막 로그인:</span>
+            <span className="text-ui-body-sm text-foreground">
               {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : "-"}
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm">상태:</span>
+            <span className="text-ui-body-sm">상태:</span>
             {u.isDeleted ? (
               <Badge variant="destructive" className="border-transparent">
                 삭제됨
@@ -131,15 +131,15 @@ export default function UserDetailClient({ id, baseUrl }: Props) {
         <CardContent className="space-y-3">
           <div className="flex items-center gap-2">
             <Mail className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">{u.email || "-"}</span>
+            <span className="text-ui-body-sm">{u.email || "-"}</span>
           </div>
           <div className="flex items-center gap-2">
             <Phone className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">{u.phone || "-"}</span>
+            <span className="text-ui-body-sm">{u.phone || "-"}</span>
           </div>
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">
+            <span className="text-ui-body-sm">
               {u.postalCode ? `[${u.postalCode}] ` : ""}
               {(u.address || "") + (u.addressDetail ? ` ${u.addressDetail}` : "") || "-"}
             </span>

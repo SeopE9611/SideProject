@@ -73,11 +73,11 @@ export default function PhotosReorderGrid({
             className="h-full w-full object-cover select-none pointer-events-none"
             draggable={false}
           />
-          <span className="absolute top-1 left-1 text-[10px] px-1.5 py-0.5 rounded bg-overlay/60 text-foreground">
+          <span className="absolute top-1 left-1 text-ui-micro px-1.5 py-0.5 rounded bg-overlay/60 text-foreground">
             {idx + 1}
           </span>
           {!disabled && (
-            <span className="absolute bottom-1 right-1 text-[10px] px-1 py-0.5 rounded bg-card/80 text-foreground shadow">
+            <span className="absolute bottom-1 right-1 text-ui-micro px-1 py-0.5 rounded bg-card/80 text-foreground shadow">
               드래그
             </span>
           )}

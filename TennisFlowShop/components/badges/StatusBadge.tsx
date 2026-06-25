@@ -26,7 +26,7 @@ export default function StatusBadge({
     <Comp
       className={cn(
         badgeVariants({ variant: "neutral" }),
-        "rounded px-2 py-0.5 text-xs font-medium shadow-sm",
+        "rounded px-2 py-0.5 text-ui-caption font-medium shadow-sm",
         meta.className,
         className,
       )}

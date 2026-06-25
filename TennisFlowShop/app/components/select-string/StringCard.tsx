@@ -190,7 +190,7 @@ export function StringCard({
         )}
         {isSoldOut && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm">
-            <Badge variant="secondary" className="text-sm font-semibold">
+            <Badge variant="secondary" className="text-ui-body-sm font-semibold">
               품절
             </Badge>
           </div>
@@ -201,36 +201,36 @@ export function StringCard({
       <div className={cn("flex flex-1 flex-col", isRacketPurchaseDesign ? "p-3 bp-md:p-4" : "p-4")}>
         {/* Title & Price */}
         <div className="mb-3 space-y-1.5">
-          <h3 className="line-clamp-2 min-w-0 break-keep text-sm font-semibold leading-tight text-foreground bp-md:text-base">
+          <h3 className="line-clamp-2 min-w-0 break-keep text-ui-body-sm font-semibold leading-tight text-foreground bp-md:text-ui-body">
             {product.name}
           </h3>
           {product.shortDescription && (
-            <p className="line-clamp-2 break-keep text-xs text-muted-foreground">
+            <p className="line-clamp-2 break-keep text-ui-label text-muted-foreground">
               {product.shortDescription}
             </p>
           )}
           {hasSalePrice ? (
             <div className="space-y-1 tabular-nums">
               <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                <span className="text-xs font-medium text-muted-foreground">할인가</span>
-                <span className="text-lg font-bold text-foreground">
+                <span className="text-ui-label font-medium text-muted-foreground">할인가</span>
+                <span className="text-ui-card-title-lg font-semibold text-foreground">
                   {getEffectiveProductPrice(product).toLocaleString()}원
                 </span>
               </div>
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-ui-label">
                 <span className="text-muted-foreground">정가</span>
                 <span className="text-muted-foreground line-through">
                   {regularPrice.toLocaleString()}원
                 </span>
-                <Badge variant="destructive" className="text-[10px]">
+                <Badge variant="destructive" className="text-ui-micro">
                   {discountRate}% OFF
                 </Badge>
               </div>
             </div>
           ) : (
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 tabular-nums">
-              <span className="text-xs font-medium text-muted-foreground">판매가</span>
-              <span className="text-lg font-bold text-foreground">
+              <span className="text-ui-label font-medium text-muted-foreground">판매가</span>
+              <span className="text-ui-card-title-lg font-semibold text-foreground">
                 {getEffectiveProductPrice(product).toLocaleString()}원
               </span>
             </div>
@@ -241,9 +241,9 @@ export function StringCard({
         {hasColorRows && (
           <div className="mb-3 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-foreground">색상</span>
+              <span className="text-ui-label font-medium text-foreground">색상</span>
               {selectedColorRow && (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-ui-label text-muted-foreground">
                   {getColorLabel(selectedColorRow)}
                 </span>
               )}
@@ -305,12 +305,12 @@ export function StringCard({
                         style={{ backgroundColor: row.colorHex }}
                       />
                     ) : (
-                      <span className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">
+                      <span className="flex h-full w-full items-center justify-center text-ui-micro text-muted-foreground">
                         {label.charAt(0)}
                       </span>
                     )}
                     {soldOut && (
-                      <span className="absolute inset-0 flex items-center justify-center bg-background/60 text-[8px] font-medium text-destructive">
+                      <span className="absolute inset-0 flex items-center justify-center bg-background/60 text-ui-micro font-medium text-destructive">
                         X
                       </span>
                     )}
@@ -318,7 +318,7 @@ export function StringCard({
                 );
               })}
               {colorRows.length > 6 && (
-                <span className="flex h-10 items-center px-1 text-xs text-muted-foreground bp-md:h-11">
+                <span className="flex h-10 items-center px-1 text-ui-label text-muted-foreground bp-md:h-11">
                   +{colorRows.length - 6}
                 </span>
               )}
@@ -329,9 +329,9 @@ export function StringCard({
         {/* Gauge Selector */}
         {hasGaugeRows && (
           <div className="mb-3 space-y-2">
-            <span className="text-xs font-medium text-foreground">게이지</span>
+            <span className="text-ui-label font-medium text-foreground">게이지</span>
             <Select value={selectedGauge} onValueChange={onGaugeChange}>
-              <SelectTrigger className="h-10 text-xs">
+              <SelectTrigger className="h-10 text-ui-label">
                 <SelectValue placeholder="게이지 선택" />
               </SelectTrigger>
               <SelectContent>
@@ -361,9 +361,9 @@ export function StringCard({
         {/* Stock hints */}
         <div className="mt-auto space-y-1">
           {canShowStockHint && (
-            <p className="text-xs font-medium text-warning">남은 수량 {effectiveStock}개</p>
+            <p className="text-ui-label font-medium text-warning">남은 수량 {effectiveStock}개</p>
           )}
-          {isShort && !isSoldOut && <p className="text-xs text-destructive">구매 가능 수량 초과</p>}
+          {isShort && !isSoldOut && <p className="text-ui-label text-destructive">구매 가능 수량 초과</p>}
         </div>
 
         {/* CTA Button */}
@@ -391,7 +391,7 @@ export function StringCard({
           </Link>
         </Button>
         {ctaSubLabel && (
-          <p className="mt-1.5 text-center text-[11px] text-muted-foreground">{ctaSubLabel}</p>
+          <p className="mt-1.5 text-center text-ui-caption text-muted-foreground">{ctaSubLabel}</p>
         )}
       </div>
     </div>

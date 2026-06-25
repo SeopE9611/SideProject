@@ -58,20 +58,20 @@ export function NotificationItem({
         <span className="flex min-w-0 flex-wrap items-center gap-2">
           <Badge
             variant={unread ? "brand" : "secondary"}
-            className="h-5 shrink-0 px-1.5 text-[10px]"
+            className="h-5 shrink-0 px-1.5 text-ui-micro"
           >
             {TYPE_LABEL[item.type] ?? "알림"}
           </Badge>
-          <span className="shrink-0 text-xs text-muted-foreground">
+          <span className="shrink-0 text-ui-label text-muted-foreground">
             {relativeTime(item.createdAt)}
           </span>
-          {unread && <span className="text-xs font-medium text-primary">읽지 않음</span>}
+          {unread && <span className="text-ui-label font-medium text-primary">읽지 않음</span>}
         </span>
-        <span className="block line-clamp-2 break-keep text-sm font-semibold leading-5 text-foreground">
+        <span className="block line-clamp-2 break-keep text-ui-body-sm font-semibold leading-5 text-foreground">
           {item.title}
         </span>
         {item.body && (
-          <span className="line-clamp-2 break-words text-xs leading-5 text-muted-foreground">
+          <span className="line-clamp-2 break-words text-ui-label leading-5 text-muted-foreground">
             {item.body}
           </span>
         )}

@@ -387,11 +387,11 @@ function SelfShipForm({
     <div className="min-h-screen bg-muted/30 py-8 md:py-12">
       <div className="mx-auto max-w-3xl px-4">
         <header className="mb-6 text-center md:mb-8">
-          <p className="mb-2 text-sm font-semibold text-primary">라켓 발송 정보</p>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          <p className="mb-2 text-ui-body-sm font-semibold text-primary">라켓 발송 정보</p>
+          <h1 className="text-ui-page-title font-semibold tracking-tight text-foreground sm:text-ui-page-title-lg">
             {isLoading ? "라켓 발송 정보" : isEdit ? "라켓 발송 정보 수정" : "라켓 발송 정보 등록"}
           </h1>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+          <p className="mt-3 text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body">
             {isLoading
               ? "배송 정보를 불러오는 중입니다."
               : "매장으로 보내는 라켓의 택배사와 운송장 번호를 입력해 주세요."}
@@ -408,10 +408,10 @@ function SelfShipForm({
               </div>
             ) : (
               <div className="space-y-1.5">
-                <h2 className="text-base font-semibold text-foreground">
+                <h2 className="text-ui-body font-semibold text-foreground">
                   아직 발송 전이라면 나중에 등록할 수 있습니다.
                 </h2>
-                <p className="text-sm leading-relaxed text-muted-foreground">
+                <p className="text-ui-body-sm leading-relaxed text-muted-foreground">
                   라켓 발송 후 택배사와 송장번호를 입력해 주세요. 발송일과 메모는 선택 항목입니다.
                 </p>
               </div>
@@ -448,7 +448,7 @@ function SelfShipForm({
                 <div className="space-y-2">
                   <Label
                     htmlFor="courier"
-                    className="text-base font-semibold text-foreground flex items-center gap-2"
+                    className="text-ui-body font-semibold text-foreground flex items-center gap-2"
                   >
                     <Truck className="w-4 h-4 text-primary" />
                     택배사
@@ -471,7 +471,7 @@ function SelfShipForm({
                   >
                     <SelectTrigger
                       id="courier"
-                      className={`h-12 text-base focus:ring-2 focus:ring-ring dark:focus:ring-ring ${fieldErrors.courier ? "border-destructive focus:border-destructive" : "border-border focus:border-border"}`}
+                      className={`h-12 text-ui-body focus:ring-2 focus:ring-ring dark:focus:ring-ring ${fieldErrors.courier ? "border-destructive focus:border-destructive" : "border-border focus:border-border"}`}
                     >
                       <SelectValue placeholder="택배사를 선택하세요" />
                     </SelectTrigger>
@@ -483,7 +483,7 @@ function SelfShipForm({
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="min-h-[18px] text-sm text-destructive">
+                  <p className="min-h-[18px] text-ui-body-sm text-destructive">
                     {fieldErrors.courier ?? ""}
                   </p>
                 </div>
@@ -492,7 +492,7 @@ function SelfShipForm({
                 <div className="space-y-2">
                   <Label
                     htmlFor="trackingNo"
-                    className="text-base font-semibold text-foreground flex items-center gap-2"
+                    className="text-ui-body font-semibold text-foreground flex items-center gap-2"
                   >
                     <FileText className="w-4 h-4 text-foreground" />
                     송장번호
@@ -503,9 +503,9 @@ function SelfShipForm({
                     value={form.trackingNo}
                     onChange={onChange("trackingNo")}
                     placeholder="예: 1234567890"
-                    className={`h-12 text-base focus:ring-2 focus:ring-ring dark:focus:ring-ring ${fieldErrors.trackingNo ? "border-destructive focus:border-destructive" : "border-border focus:border-border dark:focus:border-border"}`}
+                    className={`h-12 text-ui-body focus:ring-2 focus:ring-ring dark:focus:ring-ring ${fieldErrors.trackingNo ? "border-destructive focus:border-destructive" : "border-border focus:border-border dark:focus:border-border"}`}
                   />
-                  <p className="min-h-[18px] text-sm text-destructive">
+                  <p className="min-h-[18px] text-ui-body-sm text-destructive">
                     {fieldErrors.trackingNo ?? ""}
                   </p>
                 </div>
@@ -514,18 +514,18 @@ function SelfShipForm({
                 <div className="space-y-2">
                   <Label
                     htmlFor="shippedAt"
-                    className="text-base font-semibold text-foreground flex items-center gap-2"
+                    className="text-ui-body font-semibold text-foreground flex items-center gap-2"
                   >
                     <Calendar className="w-4 h-4 text-primary dark:text-foreground" />
                     발송일
-                    <span className="text-xs text-muted-foreground font-normal">(선택사항)</span>
+                    <span className="text-ui-label text-muted-foreground font-normal">(선택사항)</span>
                   </Label>
                   <Input
                     id="shippedAt"
                     type="date"
                     value={form.shippedAt ?? ""}
                     onChange={onChange("shippedAt")}
-                    className="h-12 text-base border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring"
+                    className="h-12 text-ui-body border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring"
                   />
                 </div>
 
@@ -533,11 +533,11 @@ function SelfShipForm({
                 <div className="space-y-2">
                   <Label
                     htmlFor="note"
-                    className="text-base font-semibold text-foreground flex items-center gap-2"
+                    className="text-ui-body font-semibold text-foreground flex items-center gap-2"
                   >
                     <FileText className="w-4 h-4 text-muted-foreground" />
                     메모
-                    <span className="text-xs text-muted-foreground font-normal">(선택사항)</span>
+                    <span className="text-ui-label text-muted-foreground font-normal">(선택사항)</span>
                   </Label>
                   <Textarea
                     id="note"
@@ -545,7 +545,7 @@ function SelfShipForm({
                     onChange={onChange("note")}
                     placeholder="포장 상태, 수거 관련 참고사항 등을 입력해 주세요"
                     rows={4}
-                    className="text-base border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring resize-none"
+                    className="text-ui-body border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring resize-none"
                   />
                 </div>
               </div>
@@ -565,7 +565,7 @@ function SelfShipForm({
                     variant="outline"
                     onClick={() => confirmLeaveIfDirty(() => history.back())}
                     disabled={submitting}
-                    className="flex-1 h-12 text-base border-border hover:bg-background dark:hover:bg-card"
+                    className="flex-1 h-12 text-ui-body border-border hover:bg-background dark:hover:bg-card"
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     돌아가기
@@ -575,7 +575,7 @@ function SelfShipForm({
                     variant="outline"
                     onClick={() => confirmLeaveIfDirty(() => router.push(applyUrl))}
                     disabled={submitting}
-                    className="flex-1 h-12 text-base border-border hover:bg-background dark:hover:bg-card"
+                    className="flex-1 h-12 text-ui-body border-border hover:bg-background dark:hover:bg-card"
                   >
                     <Clock className="w-4 h-4 mr-2" />
                     나중에 등록할게요
@@ -583,7 +583,7 @@ function SelfShipForm({
                   <Button
                     type="submit"
                     disabled={submitting}
-                    className="flex-1 h-12 text-base bg-primary text-primary-foreground hover:bg-primary/90 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 h-12 text-ui-body bg-primary text-primary-foreground hover:bg-primary/90 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitting ? (
                       <>

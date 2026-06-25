@@ -300,7 +300,7 @@ export default function SelectStringLayout({
           <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
             <Check className="h-3.5 w-3.5 text-primary" />
           </div>
-          <span className="text-sm font-semibold text-foreground">
+          <span className="text-ui-body-sm font-semibold text-foreground">
             {flowType === "rental" ? "대여 라켓 요약" : "선택된 라켓"}
           </span>
         </div>
@@ -325,11 +325,11 @@ export default function SelectStringLayout({
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="line-clamp-2 min-w-0 break-keep text-sm font-semibold leading-tight text-foreground">
+            <h3 className="line-clamp-2 min-w-0 break-keep text-ui-body-sm font-semibold leading-tight text-foreground">
               {racket.name}
             </h3>
             {flowType === "rental" && rentalPeriod && (
-              <div className="mt-2 inline-flex rounded-full border border-border bg-muted/30 px-2.5 py-1 text-xs text-muted-foreground">
+              <div className="mt-2 inline-flex rounded-full border border-border bg-muted/30 px-2.5 py-1 text-ui-label text-muted-foreground">
                 대여 기간{" "}
                 <span className="ml-1 font-medium tabular-nums text-foreground">
                   {rentalPeriod}일
@@ -339,23 +339,23 @@ export default function SelectStringLayout({
             {flowType === "purchase" && racket.price != null && (
               <div className="mt-2 space-y-1 tabular-nums">
                 <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                  <span className="text-xs font-medium text-muted-foreground">
+                  <span className="text-ui-label font-medium text-muted-foreground">
                     {racket.regularPrice && racket.regularPrice > racket.price
                       ? "할인가"
                       : "판매가"}
                   </span>
-                  <span className="text-base font-bold text-foreground">
+                  <span className="text-ui-body font-semibold text-foreground">
                     {racket.price.toLocaleString()}원
                   </span>
                 </div>
                 {racket.regularPrice && racket.regularPrice > racket.price && (
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-ui-label">
                     <span className="text-muted-foreground">정가</span>
                     <span className="text-muted-foreground line-through">
                       {racket.regularPrice.toLocaleString()}원
                     </span>
                     {racket.discountRate && racket.discountRate > 0 && (
-                      <Badge variant="destructive" className="text-[10px]">
+                      <Badge variant="destructive" className="text-ui-micro">
                         {racket.discountRate}% OFF
                       </Badge>
                     )}
@@ -370,11 +370,11 @@ export default function SelectStringLayout({
         {showQuantityControls && (
           <div className="mt-5 rounded-xl border border-border bg-secondary/30 p-4">
             <div className="mb-3 flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground">번들 수량</span>
-              <span className="text-xs text-muted-foreground">최대 {maxQty}개</span>
+              <span className="text-ui-body-sm font-medium text-foreground">번들 수량</span>
+              <span className="text-ui-label text-muted-foreground">최대 {maxQty}개</span>
             </div>
             <div className="flex items-center justify-between gap-3">
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <p className="text-ui-label text-muted-foreground leading-relaxed">
                 라켓과 스트링이 동일 수량으로 결제됩니다
               </p>
               <div className="flex items-center gap-1">
@@ -395,7 +395,7 @@ export default function SelectStringLayout({
                   max={maxQty}
                   value={workCount}
                   onChange={(e) => setWorkCount(clampWorkCount(Number(e.target.value)))}
-                  className="h-8 w-14 text-center text-sm"
+                  className="h-8 w-14 text-center text-ui-body-sm"
                 />
                 <Button
                   type="button"
@@ -424,7 +424,7 @@ export default function SelectStringLayout({
         )}
 
         {/* Info Text */}
-        <div className="mt-4 rounded-xl border border-border bg-muted/20 p-3 text-xs leading-relaxed text-muted-foreground">
+        <div className="mt-4 rounded-xl border border-border bg-muted/20 p-3 text-ui-label leading-relaxed text-muted-foreground">
           <p className="font-semibold text-foreground">다음 단계 안내</p>
           <p className="mt-1 break-keep">
             {flowType === "rental"
@@ -457,7 +457,7 @@ export default function SelectStringLayout({
           {backLink && (
             <Link
               href={backLink}
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="inline-flex items-center gap-2 text-ui-body-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               <ArrowLeft className="h-4 w-4" />
               <span>뒤로 가기</span>
@@ -481,15 +481,15 @@ export default function SelectStringLayout({
             <div>
               <h1
                 className={cn(
-                  "break-keep font-bold tracking-tight text-foreground",
+                  "break-keep font-semibold tracking-tight text-foreground",
                   isRacketPurchaseDesign || isRentalDesign
-                    ? "text-2xl bp-md:text-3xl"
-                    : "text-2xl bp-md:text-3xl bp-lg:text-4xl",
+                    ? "text-ui-page-title bp-md:text-ui-page-title-lg"
+                    : "text-ui-page-title bp-md:text-ui-page-title-lg bp-lg:text-ui-page-title-lg",
                 )}
               >
                 {headerTitle}
               </h1>
-              <p className="mt-2 max-w-3xl break-keep text-sm leading-relaxed text-muted-foreground bp-md:text-base">
+              <p className="mt-2 max-w-3xl break-keep text-ui-body-sm leading-relaxed text-muted-foreground bp-md:text-ui-body">
                 {headerDescription}
               </p>
             </div>
@@ -576,7 +576,7 @@ export default function SelectStringLayout({
             <div className="bp-lg:hidden">{renderSelectedRacketSummary()}</div>
 
             {/* Product Count */}
-            <div className="flex flex-col gap-1 rounded-2xl border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+            <div className="flex flex-col gap-1 rounded-2xl border border-border bg-muted/30 px-4 py-3 text-ui-body-sm text-muted-foreground bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
               {isLoadingInitial ? (
                 <Skeleton className="inline-block h-4 w-24" />
               ) : (
@@ -586,7 +586,7 @@ export default function SelectStringLayout({
                   개의 스트링
                 </span>
               )}
-              <span className="break-keep text-xs">
+              <span className="break-keep text-ui-label">
                 {flowType === "rental"
                   ? "대여 라켓에 장착할 스트링을 선택하세요"
                   : "브랜드·가격·옵션을 확인한 뒤 원하는 스트링을 선택하세요"}
@@ -615,12 +615,12 @@ export default function SelectStringLayout({
             ) : filteredProducts.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card py-16 shadow-sm text-center">
                 <ShoppingBag className="mb-4 h-12 w-12 text-muted-foreground/40" />
-                <p className="text-lg font-semibold text-foreground">
+                <p className="text-ui-card-title-lg font-semibold text-foreground">
                   {products?.length === 0
                     ? "사용 가능한 스트링이 없습니다"
                     : "조건에 맞는 스트링이 없습니다"}
                 </p>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-2 text-ui-body-sm text-muted-foreground">
                   {products?.length === 0
                     ? "스트링 상품의 장착 서비스 설정을 확인해주세요"
                     : "검색어 또는 필터를 변경해보세요"}

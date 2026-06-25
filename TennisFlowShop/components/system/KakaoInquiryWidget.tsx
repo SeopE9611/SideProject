@@ -288,7 +288,7 @@ export default function KakaoInquiryWidget() {
               <div ref={guidePanelRef} className="relative">
                 <Card className="relative w-[min(320px,calc(100vw-2rem))] border-border shadow-xl bp-sm:w-[340px]">
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-semibold">무엇을 하러 오셨나요?</CardTitle>
+                    <CardTitle className="text-ui-body-sm font-semibold">무엇을 하러 오셨나요?</CardTitle>
                     <button
                       type="button"
                       aria-label="닫기"
@@ -300,7 +300,7 @@ export default function KakaoInquiryWidget() {
                   </CardHeader>
 
                   <CardContent className="space-y-2.5 bp-sm:space-y-3">
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-ui-body-sm text-muted-foreground">
                       원하는 목적을 선택하면 필요한 단계로 바로 이동할 수 있어요.
                     </p>
                     <div className="grid gap-2">
@@ -314,12 +314,12 @@ export default function KakaoInquiryWidget() {
                         <Link
                           key={href}
                           href={href}
-                          className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold transition-colors hover:bg-muted bp-sm:py-2.5"
+                          className="rounded-lg border border-border bg-card px-3 py-2 text-ui-body-sm font-semibold transition-colors hover:bg-muted bp-sm:py-2.5"
                           onClick={() => setPanel(null)}
                         >
                           <span className="block whitespace-nowrap text-foreground">{label}</span>
                           {description ? (
-                            <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+                            <span className="mt-0.5 block text-ui-label font-normal text-muted-foreground">
                               {description}
                             </span>
                           ) : null}
@@ -378,7 +378,7 @@ export default function KakaoInquiryWidget() {
                   ].join(" ")}
                 >
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-semibold">버그 제보</CardTitle>
+                    <CardTitle className="text-ui-body-sm font-semibold">버그 제보</CardTitle>
                     <button
                       type="button"
                       aria-label="닫기"
@@ -390,12 +390,12 @@ export default function KakaoInquiryWidget() {
                   </CardHeader>
 
                   <CardContent className="space-y-2.5 bp-sm:space-y-3">
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-ui-body-sm text-muted-foreground">
                       사이트 이용 중 문제가 생겼거나 버그를 발견하셨나요? 아래 개발자의 오픈채팅으로
                       제보해주시면 빠르게 확인할게요.
                     </p>
 
-                    <div className="rounded-md bg-muted/60 p-3 text-xs text-muted-foreground">
+                    <div className="rounded-md bg-muted/60 p-3 text-ui-label text-muted-foreground">
                       <div className="font-medium text-foreground">
                         제보 시 함께 적어주면 좋아요
                       </div>
@@ -410,7 +410,7 @@ export default function KakaoInquiryWidget() {
                       type="button"
                       onClick={openBugChat}
                       className={[
-                        "w-full rounded-md py-3 text-sm font-semibold",
+                        "w-full rounded-md py-3 text-ui-body-sm font-semibold",
                         "bg-primary text-primary-foreground",
                         "hover:bg-primary/90",
                         "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
@@ -470,9 +470,9 @@ export default function KakaoInquiryWidget() {
                   ].join(" ")}
                 >
                   <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-semibold">
+                    <CardTitle className="text-ui-body-sm font-semibold">
                       문의하기{" "}
-                      <span className="ml-1 text-xs font-normal text-muted-foreground">
+                      <span className="ml-1 text-ui-label font-normal text-muted-foreground">
                         (카카오톡 1:1)
                       </span>
                     </CardTitle>
@@ -487,7 +487,7 @@ export default function KakaoInquiryWidget() {
                   </CardHeader>
 
                   <CardContent className="space-y-2.5 bp-sm:space-y-3">
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-ui-body-sm text-muted-foreground">
                       카카오톡 채널로 1:1 문의를 남겨주세요. 운영시간 외에는 답변이 늦을 수 있어요.
                     </p>
 
@@ -495,7 +495,7 @@ export default function KakaoInquiryWidget() {
                       type="button"
                       onClick={openKakaoChat}
                       className={[
-                        "w-full rounded-md py-3 text-sm font-semibold",
+                        "w-full rounded-md py-3 text-ui-body-sm font-semibold",
                         "bg-primary text-primary-foreground",
                         "hover:bg-primary/90",
                         "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",

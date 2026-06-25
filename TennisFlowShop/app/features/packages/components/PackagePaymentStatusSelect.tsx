@@ -31,12 +31,12 @@ const PAYMENT_STATUS_OPTIONS = ["결제대기", "결제완료", "결제취소"] 
 
 const badgeClass: Record<string, string> = {
   결제완료:
-    "bg-primary/10 text-primary border border-border rounded-md px-2 py-1 text-xs font-medium dark:bg-primary/20",
+    "bg-primary/10 text-primary border border-border rounded-md px-2 py-1 text-ui-label font-medium dark:bg-primary/20",
   결제대기:
-    "bg-warning/10 text-warning border border-border rounded-md px-2 py-1 text-xs font-medium dark:bg-warning/15",
+    "bg-warning/10 text-warning border border-border rounded-md px-2 py-1 text-ui-label font-medium dark:bg-warning/15",
   결제취소:
-    "bg-destructive/10 text-destructive border border-destructive/30 rounded-md px-2 py-1 text-xs font-medium dark:bg-destructive/15",
-  취소: "bg-destructive/10 text-destructive border border-destructive/30 rounded-md px-2 py-1 text-xs font-medium dark:bg-destructive/15",
+    "bg-destructive/10 text-destructive border border-destructive/30 rounded-md px-2 py-1 text-ui-label font-medium dark:bg-destructive/15",
+  취소: "bg-destructive/10 text-destructive border border-destructive/30 rounded-md px-2 py-1 text-ui-label font-medium dark:bg-destructive/15",
 };
 
 export default function PackagePaymentStatusSelect({
@@ -138,7 +138,7 @@ export default function PackagePaymentStatusSelect({
             <div className="space-y-1.5">
               <Label>사유 선택</Label>
               <select
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-ui-body-sm"
                 value={reasonType}
                 onChange={(e) => setReasonType(e.target.value)}
               >
@@ -174,7 +174,7 @@ export default function PackagePaymentStatusSelect({
 
           <DialogFooter className="gap-2">
             <button
-              className="px-3 py-2 text-sm rounded-md border"
+              className="px-3 py-2 text-ui-body-sm rounded-md border"
               onClick={() => {
                 setShowDialog(false);
                 setPendingStatus(null);
@@ -186,7 +186,7 @@ export default function PackagePaymentStatusSelect({
               취소
             </button>
             <button
-              className="px-3 py-2 text-sm rounded-md bg-primary text-primary-foreground"
+              className="px-3 py-2 text-ui-body-sm rounded-md bg-primary text-primary-foreground"
               onClick={() => {
                 if (!pendingStatus) return;
 
