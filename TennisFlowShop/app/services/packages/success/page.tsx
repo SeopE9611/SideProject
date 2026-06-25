@@ -7,6 +7,7 @@ import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
 import LoginGate from "@/components/system/LoginGate";
 import { PublicSurface, SummaryCard } from "@/components/public";
 import { Button } from "@/components/ui/button";
+import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 import { formatKoreanPhone } from "@/lib/phone";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { bankLabelMap } from "@/lib/constants";
@@ -139,15 +140,19 @@ export default async function PackageSuccessPage({
   const packageInfo = packageOrder.packageInfo;
   const serviceInfo = packageOrder.serviceInfo;
   const paymentInfo = packageOrder.paymentInfo;
-  const paymentProvider = String(paymentInfo?.provider ?? "manual_bank_transfer");
-  const isTossPayment = paymentProvider === "tosspayments";
-  const isNicePayment = paymentProvider === "nicepay";
-  const niceEasyPayProvider = String(paymentInfo?.rawSummary?.easyPay?.provider ?? "").trim();
-  const paymentMethodLabel = isTossPayment
-    ? `토스페이먼츠 (${String(paymentInfo?.method || "CARD")})`
-    : isNicePayment
-      ? `카드/간편결제${niceEasyPayProvider ? ` (${niceEasyPayProvider})` : ""}`
-      : "무통장입금";
+  const paymentSummary = getPaymentDisplaySummary({
+    method: paymentInfo?.method,
+    provider: paymentInfo?.provider ?? "manual_bank_transfer",
+    easyPayProvider: paymentInfo?.easyPayProvider ?? paymentInfo?.rawSummary?.easyPay?.provider,
+    cardDisplayName: paymentInfo?.cardDisplayName,
+    cardCompany: paymentInfo?.cardCompany,
+    cardLabel: paymentInfo?.cardLabel,
+    niceCard: paymentInfo?.niceCard,
+    rawSummary: paymentInfo?.rawSummary,
+    bank: paymentInfo?.bank,
+    depositor: paymentInfo?.depositor,
+  });
+  const paymentMethodLabel = paymentSummary.userLabel;
   const isPaid = String(packageOrder.paymentStatus ?? "") === "결제완료";
 
   const packageCard = normalizePackageCardData({

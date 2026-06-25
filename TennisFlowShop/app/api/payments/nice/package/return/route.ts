@@ -564,6 +564,11 @@ async function handleNicePackageReturn(req: Request) {
         provider: "nicepay",
         method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
         approvedAt: new Date(),
+        cardDisplayName: extractNiceCardInfo(approvedRaw)?.displayName ?? extractNiceCardInfo(approvedRaw)?.cardName ?? extractNiceCardInfo(approvedRaw)?.issuerName ?? extractNiceCardInfo(approvedRaw)?.acquirerName ?? undefined,
+        cardCompany: extractNiceCardInfo(approvedRaw)?.issuerName ?? extractNiceCardInfo(approvedRaw)?.acquirerName ?? undefined,
+        cardLabel: extractNiceCardInfo(approvedRaw)?.cardName ?? extractNiceCardInfo(approvedRaw)?.displayName ?? undefined,
+        niceCard: extractNiceCardInfo(approvedRaw) ?? undefined,
+        easyPayProvider: extractNiceEasyPayProvider(approvedRaw) ?? undefined,
         rawSummary: {
           orderId,
           totalAmount: amount,
@@ -607,6 +612,11 @@ async function handleNicePackageReturn(req: Request) {
           provider: "nicepay",
           method: pick(approvedRaw, "payMethod", "PayMethod") || "card",
           approvedAt: new Date(),
+          cardDisplayName: extractNiceCardInfo(approvedRaw)?.displayName ?? extractNiceCardInfo(approvedRaw)?.cardName ?? extractNiceCardInfo(approvedRaw)?.issuerName ?? extractNiceCardInfo(approvedRaw)?.acquirerName ?? undefined,
+          cardCompany: extractNiceCardInfo(approvedRaw)?.issuerName ?? extractNiceCardInfo(approvedRaw)?.acquirerName ?? undefined,
+          cardLabel: extractNiceCardInfo(approvedRaw)?.cardName ?? extractNiceCardInfo(approvedRaw)?.displayName ?? undefined,
+          niceCard: extractNiceCardInfo(approvedRaw) ?? undefined,
+          easyPayProvider: extractNiceEasyPayProvider(approvedRaw) ?? undefined,
           rawSummary: {
             orderId,
             totalAmount: amount,

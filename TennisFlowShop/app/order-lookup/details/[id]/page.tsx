@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { badgeToneVariant, getOrderStatusTone } from "@/lib/badge-style";
 import { bankLabelMap } from "@/lib/constants";
+import { getPaymentDisplaySummary } from "@/lib/payments/payment-display";
 import { formatKoreanPhone } from "@/lib/phone";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import {
@@ -451,7 +452,20 @@ export default function OrderDetailPage() {
   const normalizedStatus = String(order.status ?? "")
     .trim()
     .toLowerCase();
-  const paymentSource = String(order.paymentMethod ?? order.paymentInfo?.method ?? "")
+  const orderPaymentInfo = order.paymentInfo as Record<string, unknown> | undefined;
+  const paymentDisplaySummary = getPaymentDisplaySummary({
+    method: order.paymentMethod ?? orderPaymentInfo?.method,
+    provider: orderPaymentInfo?.provider,
+    easyPayProvider: orderPaymentInfo?.easyPayProvider,
+    cardDisplayName: orderPaymentInfo?.cardDisplayName,
+    cardCompany: orderPaymentInfo?.cardCompany,
+    cardLabel: orderPaymentInfo?.cardLabel,
+    niceCard: orderPaymentInfo?.niceCard,
+    rawSummary: orderPaymentInfo?.rawSummary,
+    bank: orderPaymentInfo?.bank,
+    depositor: orderPaymentInfo?.depositor,
+  });
+  const paymentSource = String(order.paymentMethod ?? orderPaymentInfo?.method ?? "")
     .trim()
     .toLowerCase();
 
@@ -743,12 +757,14 @@ export default function OrderDetailPage() {
                       </div>
                     </div>
                     <div>
+                      <p className="text-ui-body-sm text-muted-foreground mb-2">결제수단</p>
+                      <p className="mb-3 font-semibold text-foreground">{paymentDisplaySummary.userLabel}</p>
                       <p className="text-ui-body-sm text-muted-foreground mb-2">입금 계좌</p>
                       {order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (
                         <div className="rounded-lg border border-border bg-secondary/40 p-4">
                           <div className="space-y-2">
                             <p className="font-semibold text-foreground">
-                              {order.paymentInfo.method}
+                              무통장입금
                             </p>
                             <p className="font-semibold text-foreground">
                               {bankLabelMap[order.paymentInfo.bank].label}

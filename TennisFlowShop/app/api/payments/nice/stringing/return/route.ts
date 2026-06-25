@@ -500,8 +500,10 @@ async function handleNiceStringingReturn(req: Request) {
             approvedAt: now,
             tid,
             easyPayProvider: easyPayProvider || null,
+            cardDisplayName: card?.displayName ?? card?.cardName ?? card?.issuerName ?? card?.acquirerName ?? null,
             cardCompany: card?.issuerName ?? null,
             cardLabel: card?.cardName ?? null,
+            niceCard: card ?? null,
             rawSummary: {
               orderId,
               totalAmount: amount,
