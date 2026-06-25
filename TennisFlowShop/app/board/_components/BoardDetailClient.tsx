@@ -1674,7 +1674,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     {/* 가격 헤더 영역 */}
                     <div className="border-b border-border bg-muted/40 px-5 py-4 md:px-6">
                       <p className="mb-1 text-ui-label font-medium text-muted-foreground">판매 가격</p>
-                      <p className="text-ui-page-title-lg font-extrabold tracking-normal text-foreground">
+                      <p className="text-ui-page-title-lg font-semibold tracking-normal text-foreground">
                         {item.marketMeta.price?.toLocaleString?.() ?? "-"}
                         <span className="ml-0.5 text-ui-card-title-lg font-semibold">원</span>
                       </p>

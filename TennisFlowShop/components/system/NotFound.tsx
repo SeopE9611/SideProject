@@ -8,7 +8,7 @@ export default function NotFound() {
       <div className="mx-auto max-w-md text-center space-y-8">
         {/* 404 숫자 */}
         <div>
-          <h1 className="text-8xl font-extrabold text-primary">404</h1>
+          <h1 className="text-ui-page-title-lg font-semibold text-primary">404</h1>
         </div>
 
         {/* 제목 */}
