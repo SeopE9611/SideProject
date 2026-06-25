@@ -239,7 +239,7 @@ export default function ReviewCard({
         {busy && (
           <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-card/80">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
-            <span className="ml-2 text-sm text-primary">변경 중...</span>
+            <span className="ml-2 text-ui-body-sm text-primary">변경 중...</span>
           </div>
         )}
 
@@ -258,7 +258,7 @@ export default function ReviewCard({
               {item.type === "product" ? "상품 후기" : "교체서비스 후기"}
             </Badge>
             {!!headerTitle && (
-              <span className="line-clamp-1 max-w-full min-w-0 text-sm font-semibold text-foreground sm:max-w-[320px]">
+              <span className="line-clamp-1 max-w-full min-w-0 text-ui-body-sm font-semibold text-foreground sm:max-w-[320px]">
                 {headerTitle}
               </span>
             )}
@@ -359,9 +359,9 @@ export default function ReviewCard({
         </div>
 
         {/* Author info with tennis styling */}
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-2 text-ui-label">
           <div className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-secondary text-foreground">
-            <span className="font-bold text-[10px]">{displayName.charAt(0).toUpperCase()}</span>
+            <span className="font-semibold text-ui-micro">{displayName.charAt(0).toUpperCase()}</span>
           </div>
           <span className="font-medium text-muted-foreground">{displayName}</span>
         </div>
@@ -376,7 +376,7 @@ export default function ReviewCard({
               />
             ))}
           </div>
-          <span className="ml-1 text-sm font-bold text-foreground">{item.rating}/5</span>
+          <span className="ml-1 text-ui-body-sm font-semibold text-foreground">{item.rating}/5</span>
         </div>
 
         {/* Content */}
@@ -384,7 +384,7 @@ export default function ReviewCard({
           <MaskedBlock className="mt-1" />
         ) : (
           <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
-            <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">
+            <p className="whitespace-pre-wrap break-words text-ui-body-sm leading-relaxed text-foreground">
               {item.content}
             </p>
           </div>
@@ -393,7 +393,7 @@ export default function ReviewCard({
         {/* Photo thumbnails */}
         {Array.isArray(item.photos) && item.photos.length > 0 && (
           <div className="flex flex-col gap-3 rounded-xl border border-border/60 bg-muted/20 p-3 sm:flex-row sm:items-center sm:justify-between">
-            <span className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <span className="inline-flex items-center gap-2 text-ui-label font-medium text-muted-foreground">
               <ImageIcon className="h-4 w-4 text-primary" />
               사진 {item.photos.length}장
             </span>
@@ -417,7 +417,7 @@ export default function ReviewCard({
                     className="object-cover"
                   />
                   {idx === 3 && item.photos.length > 4 && (
-                    <div className="absolute inset-0 bg-overlay/60 text-foreground text-[10px] font-bold flex items-center justify-center">
+                    <div className="absolute inset-0 bg-overlay/60 text-foreground text-ui-micro font-semibold flex items-center justify-center">
                       +{item.photos.length - 3}
                     </div>
                   )}
@@ -447,7 +447,7 @@ export default function ReviewCard({
           </Button>
 
           {/* 날짜 */}
-          <time className="whitespace-nowrap rounded-full border border-border/60 bg-secondary px-2 py-1 text-xs font-medium text-muted-foreground sm:ml-auto shrink-0 tabular-nums">
+          <time className="whitespace-nowrap rounded-full border border-border/60 bg-secondary px-2 py-1 text-ui-label font-medium text-muted-foreground sm:ml-auto shrink-0 tabular-nums">
             {fmt(item.createdAt)}
           </time>
         </div>
@@ -511,7 +511,7 @@ export default function ReviewCard({
                     </button>
                   );
                 })}
-                <span className="ml-2 text-sm text-muted-foreground">
+                <span className="ml-2 text-ui-body-sm text-muted-foreground">
                   {typeof editForm.rating === "number" ? editForm.rating : 0}/5
                 </span>
               </div>
@@ -546,14 +546,14 @@ export default function ReviewCard({
           <DialogFooter className="gap-2">
             <button
               type="button"
-              className="px-4 py-2 rounded-md border text-sm"
+              className="px-4 py-2 rounded-md border text-ui-body-sm"
               onClick={closeEdit}
             >
               취소
             </button>
             <button
               type="button"
-              className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm"
+              className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-ui-body-sm"
               onClick={submitEdit}
             >
               저장

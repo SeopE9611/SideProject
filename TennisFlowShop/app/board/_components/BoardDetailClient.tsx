@@ -226,7 +226,7 @@ function CommentItem({
         <div className="flex items-center gap-3">
           <div className="flex flex-col gap-0.5">
             {comment.status === "deleted" ? (
-              <span className="text-sm font-semibold text-muted-foreground">
+              <span className="text-ui-body-sm font-semibold text-muted-foreground">
                 {comment.nickname ?? "회원"}
               </span>
             ) : (
@@ -234,7 +234,7 @@ function CommentItem({
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="text-left text-sm font-semibold text-foreground underline-offset-4 hover:underline dark:text-foreground"
+                    className="text-left text-ui-body-sm font-semibold text-foreground underline-offset-4 hover:underline dark:text-foreground"
                   >
                     {comment.nickname ?? "회원"}
                   </button>
@@ -259,7 +259,7 @@ function CommentItem({
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
-            <span className="text-xs text-foreground/75">
+            <span className="text-ui-label text-foreground/75">
               {new Date(comment.createdAt).toLocaleString("ko-KR", {
                 year: "2-digit",
                 month: "2-digit",
@@ -276,7 +276,7 @@ function CommentItem({
               <>
                 <button
                   type="button"
-                  className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-foreground"
+                  className="rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-foreground"
                   onClick={() =>
                     isReply ? onStartEditReply(comment) : onStartEditComment(comment.id)
                   }
@@ -285,7 +285,7 @@ function CommentItem({
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive dark:text-muted-foreground dark:hover:bg-destructive/20 dark:hover:text-destructive"
+                  className="rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive dark:text-muted-foreground dark:hover:bg-destructive/20 dark:hover:text-destructive"
                   onClick={() => onDeleteComment(comment.id)}
                 >
                   삭제
@@ -295,7 +295,7 @@ function CommentItem({
             {!isCommentAuthor && (
               <button
                 type="button"
-                className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted dark:hover:text-muted-foreground"
+                className="rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted dark:hover:text-muted-foreground"
                 onClick={() => onOpenCommentReport(comment)}
               >
                 신고
@@ -305,14 +305,14 @@ function CommentItem({
         )}
       </div>
       {isDeleted ? (
-        <p className="text-sm italic text-muted-foreground">삭제된 댓글입니다.</p>
+        <p className="text-ui-body-sm italic text-muted-foreground">삭제된 댓글입니다.</p>
       ) : isEditing ? (
         <div className="space-y-2.5">
           <Textarea
             ref={isReply ? replyEditInputRef : commentEditInputRef}
             data-comment-edit-id={!isReply ? comment.id : undefined}
             data-reply-edit-id={isReply ? comment.id : undefined}
-            className="min-h-[80px] resize-none border-border text-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring"
+            className="min-h-[80px] resize-none border-border text-ui-body-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring"
             defaultValue={comment.content}
             onChange={(e) =>
               isReply
@@ -328,7 +328,7 @@ function CommentItem({
               size="sm"
               onClick={() => (isReply ? onCancelEditReply(comment.id) : onCancelEditComment())}
               disabled={isCommentSubmitting}
-              className="h-9 w-full bg-transparent px-4 text-xs sm:w-auto"
+              className="h-9 w-full bg-transparent px-4 text-ui-label sm:w-auto"
             >
               취소
             </Button>
@@ -336,7 +336,7 @@ function CommentItem({
               type="button"
               size="sm"
               disabled={isCommentSubmitting}
-              className="h-9 w-full bg-primary px-4 text-xs text-primary-foreground hover:bg-primary/90 sm:w-auto"
+              className="h-9 w-full bg-primary px-4 text-ui-label text-primary-foreground hover:bg-primary/90 sm:w-auto"
               onClick={() =>
                 onSaveEdit(
                   comment.id,
@@ -352,7 +352,7 @@ function CommentItem({
           </div>
         </div>
       ) : (
-        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground/85">
+        <p className="whitespace-pre-wrap break-words text-ui-body-sm leading-relaxed text-foreground/85">
           {comment.content}
         </p>
       )}
@@ -360,7 +360,7 @@ function CommentItem({
         <div className="mt-3">
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-foreground"
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted dark:hover:text-foreground"
             onClick={() => onStartReply(comment.id)}
           >
             <MessageSquare className="h-3.5 w-3.5" />
@@ -379,13 +379,13 @@ function CommentItem({
           <Textarea
             ref={replyInputRef}
             data-reply-composer-id={comment.id}
-            className="min-h-[70px] resize-none border-border bg-card text-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring"
+            className="min-h-[70px] resize-none border-border bg-card text-ui-body-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring"
             defaultValue={replyDraft}
             onChange={(e) => onReplyDraftChange(comment.id, e.currentTarget.value)}
             disabled={isReplySubmitting}
             placeholder={`@${comment.nickname ?? "회원"} 님께 답글을 남겨 보세요.`}
           />
-          {replyError && <p className="text-xs text-destructive">{replyError}</p>}
+          {replyError && <p className="text-ui-label text-destructive">{replyError}</p>}
           <div className="flex flex-col justify-end gap-2 sm:flex-row">
             <Button
               type="button"
@@ -393,7 +393,7 @@ function CommentItem({
               size="sm"
               onClick={() => onReplyCancel(comment.id)}
               disabled={isReplySubmitting}
-              className="h-8 px-4 text-xs"
+              className="h-8 px-4 text-ui-label"
             >
               취소
             </Button>
@@ -401,7 +401,7 @@ function CommentItem({
               type="submit"
               size="sm"
               disabled={isReplySubmitting}
-              className="h-9 w-full bg-primary px-4 text-xs text-primary-foreground hover:bg-primary/90 sm:w-auto"
+              className="h-9 w-full bg-primary px-4 text-ui-label text-primary-foreground hover:bg-primary/90 sm:w-auto"
             >
               {isReplySubmitting ? "작성 중..." : "등록"}
             </Button>
@@ -1423,7 +1423,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
         {/* 상단 헤더 (브레드크럼 + 버튼) */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="mb-1 text-sm text-foreground/80">
+            <div className="mb-1 text-ui-body-sm text-foreground/80">
               <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
               <Link
@@ -1435,10 +1435,10 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               <span className="mx-1">›</span>
               <span>글 상세</span>
             </div>
-            <h1 className="break-keep text-2xl font-bold tracking-normal text-foreground md:text-3xl">
+            <h1 className="break-keep text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
               {config.boardTitle} 글 상세
             </h1>
-            <p className="mt-1 text-sm text-foreground/80 md:text-base">
+            <p className="mt-1 text-ui-body-sm text-foreground/80 md:text-ui-body-lg">
               {config.boardTitle}에 작성된 글의 상세 내용을 확인할 수 있습니다.
             </p>
           </div>
@@ -1495,9 +1495,9 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
             <CardHeader className="space-y-4 border-b bg-muted/30 p-4 sm:p-6">
               <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex-1 space-y-2">
-                  <CardTitle className="min-w-0 break-keep text-xl font-semibold leading-tight text-foreground sm:text-2xl md:text-3xl">
+                  <CardTitle className="min-w-0 break-keep text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title md:text-ui-page-title-lg">
                     {typeof item.postNo === "number" && (
-                      <span className="mr-2 text-sm font-semibold tabular-nums text-muted-foreground">
+                      <span className="mr-2 text-ui-body-sm font-semibold tabular-nums text-muted-foreground">
                         {item.postNo}
                       </span>
                     )}
@@ -1513,7 +1513,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     </Badge>
 
                     {config.brandOptionsByCategory?.[item.category ?? ""] && item.brand ? (
-                      <span className="mr-2 inline-flex max-w-[10rem] shrink-0 items-center truncate whitespace-nowrap rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground dark:text-muted">
+                      <span className="mr-2 inline-flex max-w-[10rem] shrink-0 items-center truncate whitespace-nowrap rounded-full bg-muted px-2 py-0.5 text-ui-caption font-semibold text-muted-foreground dark:text-muted">
                         {config.brandLabelMap?.[item.brand] ?? item.brand}
                       </span>
                     ) : null}
@@ -1521,7 +1521,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     {item.title}
                   </CardTitle>
 
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs leading-relaxed text-muted-foreground md:text-sm [&>span]:shrink-0 [&>span]:whitespace-nowrap">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-ui-label leading-relaxed text-muted-foreground md:text-ui-body-sm [&>span]:shrink-0 [&>span]:whitespace-nowrap">
                     {/* 작성자 */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -1673,10 +1673,10 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
                     {/* 가격 헤더 영역 */}
                     <div className="border-b border-border bg-muted/40 px-5 py-4 md:px-6">
-                      <p className="mb-1 text-xs font-medium text-muted-foreground">판매 가격</p>
-                      <p className="text-3xl font-extrabold tracking-normal text-foreground">
+                      <p className="mb-1 text-ui-label font-medium text-muted-foreground">판매 가격</p>
+                      <p className="text-ui-page-title-lg font-extrabold tracking-normal text-foreground">
                         {item.marketMeta.price?.toLocaleString?.() ?? "-"}
-                        <span className="ml-0.5 text-lg font-semibold">원</span>
+                        <span className="ml-0.5 text-ui-card-title-lg font-semibold">원</span>
                       </p>
                       {/* 판매상태 / 상품상태 배지 */}
                       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -1717,15 +1717,15 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                       </div>
                     </div>
                     {/* 보조 메타 정보 2열 그리드 */}
-                    <div className="grid grid-cols-2 divide-x divide-border text-sm md:grid-cols-4">
+                    <div className="grid grid-cols-2 divide-x divide-border text-ui-body-sm md:grid-cols-4">
                       <div className="px-4 py-3 md:px-5">
-                        <p className="mb-0.5 text-sm text-foreground/75">브랜드</p>
+                        <p className="mb-0.5 text-ui-body-sm text-foreground/75">브랜드</p>
                         <p className="font-semibold text-foreground">
                           {getMarketBrandLabel(item.brand) || "-"}
                         </p>
                       </div>
                       <div className="px-4 py-3 md:px-5">
-                        <p className="mb-0.5 text-sm text-foreground/75">모델명</p>
+                        <p className="mb-0.5 text-ui-body-sm text-foreground/75">모델명</p>
                         <p className="font-semibold text-foreground">
                           {marketText(
                             item.marketMeta.racketSpec?.modelName ??
@@ -1734,7 +1734,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                         </p>
                       </div>
                       <div className="px-4 py-3 md:px-5 border-t border-border md:border-t-0">
-                        <p className="mb-0.5 text-sm text-foreground/75">카테고리</p>
+                        <p className="mb-0.5 text-ui-body-sm text-foreground/75">카테고리</p>
                         <p className="font-semibold text-foreground">
                           {config.categoryMap[item.category ?? ""]
                             ? getCategoryBadgeText(config.categoryMap[item.category ?? ""])
@@ -1742,7 +1742,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                         </p>
                       </div>
                       <div className="px-4 py-3 md:px-5 border-t border-border md:border-t-0">
-                        <p className="mb-0.5 text-sm text-foreground/75">등록일</p>
+                        <p className="mb-0.5 text-ui-body-sm text-foreground/75">등록일</p>
                         <p className="font-semibold text-foreground">
                           {fmtDateTime(item.createdAt)}
                         </p>
@@ -1754,12 +1754,12 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   {item.marketMeta.conditionNote ? (
                     <div className="rounded-xl border border-border bg-card px-5 py-4 shadow-sm md:px-6">
                       <div className="mb-2 flex items-center gap-2">
-                        <span className="text-sm font-semibold text-foreground">상태 설명</span>
-                        <span className="text-sm text-foreground/75">
+                        <span className="text-ui-body-sm font-semibold text-foreground">상태 설명</span>
+                        <span className="text-ui-body-sm text-foreground/75">
                           판매자가 작성한 실물 컨디션 메모입니다.
                         </span>
                       </div>
-                      <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/85">
+                      <p className="whitespace-pre-wrap text-ui-body-sm leading-relaxed text-foreground/85">
                         {item.marketMeta.conditionNote}
                       </p>
                     </div>
@@ -1768,13 +1768,13 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   {/* ── 3. 세부 스펙 (타일 그리드) ── */}
                   {(item.category === "racket" || item.category === "string") && (
                     <div className="rounded-xl border border-border bg-card px-5 py-4 shadow-sm md:px-6">
-                      <p className="mb-4 text-sm font-semibold text-foreground">세부 스펙</p>
+                      <p className="mb-4 text-ui-body-sm font-semibold text-foreground">세부 스펙</p>
 
                       {item.category === "racket" ? (
                         <div className="space-y-4">
                           {/* 기본 프레임 정보 */}
                           <div>
-                            <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                            <p className="mb-2 text-ui-caption font-medium uppercase tracking-wider text-muted-foreground">
                               프레임 정보
                             </p>
                             <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
@@ -1790,10 +1790,10 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                                   key={key}
                                   className="rounded-lg border border-border bg-muted/30 px-3 py-2.5"
                                 >
-                                  <p className="text-sm text-foreground/75">
+                                  <p className="text-ui-body-sm text-foreground/75">
                                     {getMarketRacketFieldLabel(key)}
                                   </p>
-                                  <p className="mt-0.5 text-sm font-semibold text-foreground">
+                                  <p className="mt-0.5 text-ui-body-sm font-semibold text-foreground">
                                     {marketNumberText(item.marketMeta!.racketSpec?.[key], unit)}
                                   </p>
                                 </div>
@@ -1802,7 +1802,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                           </div>
                           {/* 플레이 성향 정보 */}
                           <div>
-                            <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                            <p className="mb-2 text-ui-caption font-medium uppercase tracking-wider text-muted-foreground">
                               플레이 성향
                             </p>
                             <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
@@ -1819,27 +1819,27 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                                   key={key}
                                   className="rounded-lg border border-border bg-muted/30 px-3 py-2.5"
                                 >
-                                  <p className="text-sm text-foreground/75">
+                                  <p className="text-ui-body-sm text-foreground/75">
                                     {getMarketRacketFieldLabel(key)}
                                   </p>
-                                  <p className="mt-0.5 text-sm font-semibold text-foreground">
+                                  <p className="mt-0.5 text-ui-body-sm font-semibold text-foreground">
                                     {marketNumberText(item.marketMeta!.racketSpec?.[key], unit)}
                                   </p>
                                 </div>
                               ))}
                               <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
-                                <p className="text-sm text-foreground/75">
+                                <p className="text-ui-body-sm text-foreground/75">
                                   {getMarketRacketFieldLabel("pattern")}
                                 </p>
-                                <p className="mt-0.5 text-sm font-semibold text-foreground">
+                                <p className="mt-0.5 text-ui-body-sm font-semibold text-foreground">
                                   {marketText(item.marketMeta.racketSpec?.pattern)}
                                 </p>
                               </div>
                               <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
-                                <p className="text-sm text-foreground/75">
+                                <p className="text-ui-body-sm text-foreground/75">
                                   {getMarketRacketFieldLabel("gripSize")}
                                 </p>
-                                <p className="mt-0.5 text-sm font-semibold text-foreground">
+                                <p className="mt-0.5 text-ui-body-sm font-semibold text-foreground">
                                   {marketText(item.marketMeta.racketSpec?.gripSize)}
                                 </p>
                               </div>
@@ -1850,27 +1850,27 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                         /* 스트링 스펙 */
                         <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
                           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
-                            <p className="text-sm text-foreground/75">재질</p>
-                            <p className="mt-0.5 text-sm font-semibold text-foreground">
+                            <p className="text-ui-body-sm text-foreground/75">재질</p>
+                            <p className="mt-0.5 text-ui-body-sm font-semibold text-foreground">
                               {getMarketStringMaterialLabel(item.marketMeta.stringSpec?.material) ||
                                 "-"}
                             </p>
                           </div>
                           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
-                            <p className="text-sm text-foreground/75">게이지</p>
-                            <p className="mt-0.5 text-sm font-semibold text-foreground">
+                            <p className="text-ui-body-sm text-foreground/75">게이지</p>
+                            <p className="mt-0.5 text-ui-body-sm font-semibold text-foreground">
                               {marketText(item.marketMeta.stringSpec?.gauge)}
                             </p>
                           </div>
                           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
-                            <p className="text-sm text-foreground/75">색상</p>
-                            <p className="mt-0.5 text-sm font-semibold text-foreground">
+                            <p className="text-ui-body-sm text-foreground/75">색상</p>
+                            <p className="mt-0.5 text-ui-body-sm font-semibold text-foreground">
                               {getMarketStringColorLabel(item.marketMeta.stringSpec?.color) || "-"}
                             </p>
                           </div>
                           <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
-                            <p className="text-sm text-foreground/75">길이</p>
-                            <p className="mt-0.5 text-sm font-semibold text-foreground">
+                            <p className="text-ui-body-sm text-foreground/75">길이</p>
+                            <p className="mt-0.5 text-ui-body-sm font-semibold text-foreground">
                               {getMarketStringLengthLabel(item.marketMeta.stringSpec?.length) ||
                                 "-"}
                             </p>
@@ -1905,7 +1905,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               )}
 
               {/* 본문 */}
-              <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+              <div className="whitespace-pre-wrap text-ui-body-sm leading-relaxed text-foreground">
                 {item.content}
               </div>
 
@@ -1914,8 +1914,8 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 <div className="mt-8 space-y-3 border-t border-border pt-4">
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-semibold text-foreground">첨부파일</span>
-                    <span className="text-xs text-foreground/75">{attachments.length}개</span>
+                    <span className="text-ui-body-sm font-semibold text-foreground">첨부파일</span>
+                    <span className="text-ui-label text-foreground/75">{attachments.length}개</span>
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -1935,7 +1935,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                       return (
                         <div
                           key={`${url}-${index}`}
-                          className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-3 py-2 text-xs shadow-sm dark:border-border"
+                          className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-3 py-2 text-ui-label shadow-sm dark:border-border"
                         >
                           <div className="flex min-w-0 flex-1 items-center gap-3">
                             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border border-border bg-secondary">
@@ -1945,7 +1945,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                               <div className="truncate font-medium text-foreground" title={name}>
                                 {name}
                               </div>
-                              {size && <div className="text-sm text-foreground/75">{size}</div>}
+                              {size && <div className="text-ui-body-sm text-foreground/75">{size}</div>}
                             </div>
                           </div>
 
@@ -2001,8 +2001,8 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                           <div className="flex w-full items-start gap-3">
                             <Icon className="mt-0.5 h-4 w-4 shrink-0" />
                             <div className="min-w-0">
-                              <p className="text-xs text-foreground/75">{label}</p>
-                              <p className="line-clamp-2 break-keep text-sm font-medium text-foreground">
+                              <p className="text-ui-label text-foreground/75">{label}</p>
+                              <p className="line-clamp-2 break-keep text-ui-body-sm font-medium text-foreground">
                                 {target.title}
                               </p>
                             </div>
@@ -2012,8 +2012,8 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                         <span className="flex w-full items-start gap-3 text-muted-foreground">
                           <Icon className="mt-0.5 h-4 w-4 shrink-0" />
                           <span className="min-w-0">
-                            <span className="block text-xs">{label}</span>
-                            <span className="block line-clamp-1 text-sm">
+                            <span className="block text-ui-label">{label}</span>
+                            <span className="block line-clamp-1 text-ui-body-sm">
                               이동할 글이 없습니다.
                             </span>
                           </span>
@@ -2025,7 +2025,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               </section>
 
               {/* 안내 문구 */}
-              <p className="mt-6 text-xs text-foreground/75">
+              <p className="mt-6 text-ui-label text-foreground/75">
                 게시글 이용 시 커뮤니티 가이드를 준수해 주세요. 신고가 반복되는 경우 글이 숨김
                 처리될 수 있습니다.
               </p>
@@ -2044,7 +2044,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 <DialogContent className="max-w-md">
                   <DialogHeader>
                     <DialogTitle>이 게시글을 신고하시겠습니까?</DialogTitle>
-                    <p className="text-sm text-foreground/80">
+                    <p className="text-ui-body-sm text-foreground/80">
                       허위 신고 또는 악의적 신고는 이용 제한 대상이 될 수 있습니다.
                     </p>
                   </DialogHeader>
@@ -2098,7 +2098,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
                   <div className="space-y-2">
                     {targetComment && (
-                      <div className="rounded-md border bg-muted px-3 py-2 text-xs text-foreground/75">
+                      <div className="rounded-md border bg-muted px-3 py-2 text-ui-label text-foreground/75">
                         <div className="font-medium mb-1">
                           신고 대상: {targetComment.nickname ?? "회원"}
                         </div>
@@ -2144,7 +2144,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     size="sm"
                     onClick={handleToggleLike}
                     disabled={isLiking}
-                    className="h-10 w-full gap-2 text-sm sm:w-auto sm:min-w-[160px]"
+                    className="h-10 w-full gap-2 text-ui-body-sm sm:w-auto sm:min-w-[160px]"
                   >
                     <ThumbsUp className="h-4 w-4" />
                     {isLiking
@@ -2160,7 +2160,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                       asChild
                       variant="outline"
                       size="sm"
-                      className="h-10 w-full text-sm sm:w-auto sm:min-w-[100px]"
+                      className="h-10 w-full text-ui-body-sm sm:w-auto sm:min-w-[100px]"
                     >
                       <Link href={listHref} onClick={onNavLinkClick}>
                         목록으로
@@ -2170,7 +2170,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                       asChild
                       variant="default"
                       size="sm"
-                      className="h-10 w-full text-sm sm:w-auto sm:min-w-[100px]"
+                      className="h-10 w-full text-ui-body-sm sm:w-auto sm:min-w-[100px]"
                     >
                       <Link href={`${config.routePrefix}/write`} onClick={onNavLinkClick}>
                         새 글 작성
@@ -2186,10 +2186,10 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
         {!isLoading && !error && item && (
           <Card className="overflow-hidden border border-border bg-card shadow-sm">
             <CardHeader className="border-b border-border bg-muted/50 px-4 py-4 sm:px-6">
-              <CardTitle className="flex items-center gap-3 text-base font-semibold text-foreground">
+              <CardTitle className="flex items-center gap-3 text-ui-body-lg font-semibold text-foreground">
                 <MessageSquare className="h-5 w-5 text-muted-foreground" />
                 <span>댓글</span>
-                <span className="flex h-6 min-w-[28px] items-center justify-center rounded-full bg-primary px-2.5 text-sm font-medium text-primary-foreground">
+                <span className="flex h-6 min-w-[28px] items-center justify-center rounded-full bg-primary px-2.5 text-ui-body-sm font-medium text-primary-foreground">
                   {totalComments}
                 </span>
               </CardTitle>
@@ -2201,18 +2201,18 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   <>
                     <Textarea
                       id="comment"
-                      className="min-h-[100px] resize-none border-border text-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring"
+                      className="min-h-[100px] resize-none border-border text-ui-body-sm focus-visible:ring-1 focus-visible:ring-ring dark:border-border dark:focus-visible:ring-ring"
                       placeholder="댓글을 입력하세요."
                       value={commentContent}
                       onChange={(e) => setCommentContent(e.target.value)}
                       disabled={isCommentSubmitting}
                     />
-                    {commentError && <p className="text-xs text-destructive">{commentError}</p>}
+                    {commentError && <p className="text-ui-label text-destructive">{commentError}</p>}
                     <div className="flex justify-end">
                       <Button
                         type="button"
                         size="sm"
-                        className="h-9 bg-primary px-5 text-sm text-primary-foreground hover:bg-primary/90"
+                        className="h-9 bg-primary px-5 text-ui-body-sm text-primary-foreground hover:bg-primary/90"
                         disabled={isCommentSubmitting}
                         onClick={handleSubmitComment}
                       >
@@ -2226,7 +2226,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 ) : (
                   <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 px-4 py-3.5 dark:border-border">
                     <MessageSquare className="h-5 w-5 text-muted-foreground" />
-                    <p className="text-sm text-foreground/80">
+                    <p className="text-ui-body-sm text-foreground/80">
                       로그인 후 댓글을 작성할 수 있습니다.
                     </p>
                   </div>
@@ -2260,7 +2260,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                 {!isCommentsLoading && comments.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-10 md:py-16 text-center">
                     <MessageSquare className="mb-3 h-12 w-12 text-muted-foreground" />
-                    <p className="text-sm font-medium text-muted-foreground">
+                    <p className="text-ui-body-sm font-medium text-muted-foreground">
                       첫 댓글을 남겨보세요
                     </p>
                   </div>
@@ -2428,7 +2428,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                             <button
                               type="button"
                               onClick={() => toggleRootReplies(c.id)}
-                              className="ml-10 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
+                              className="ml-10 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-ui-label font-medium text-muted-foreground transition-colors hover:bg-muted dark:text-muted-foreground dark:hover:bg-muted"
                             >
                               {isExpanded ? (
                                 <span>답글 접기</span>
@@ -2448,7 +2448,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
                 {!isCommentsLoading && totalCommentPages > 1 && (
                   <div className="flex items-center justify-between rounded-lg border-t border-border bg-muted/50 px-4 py-3">
-                    <span className="text-xs font-medium text-muted-foreground">
+                    <span className="text-ui-label font-medium text-muted-foreground">
                       {commentPage} / {totalCommentPages}
                     </span>
                     <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-nowrap">
@@ -2458,7 +2458,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                         size="sm"
                         disabled={commentPage <= 1}
                         onClick={() => setCommentPage((p) => Math.max(1, p - 1))}
-                        className="h-8 px-4 text-xs"
+                        className="h-8 px-4 text-ui-label"
                       >
                         이전
                       </Button>
@@ -2468,7 +2468,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                         size="sm"
                         disabled={commentPage >= totalCommentPages}
                         onClick={() => setCommentPage((p) => Math.min(totalCommentPages, p + 1))}
-                        className="h-8 px-4 text-xs"
+                        className="h-8 px-4 text-ui-label"
                       >
                         다음
                       </Button>
@@ -2491,7 +2491,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
           >
             <DialogContent className="max-w-5xl max-h-screen overflow-y-auto">
               <DialogHeader className="pb-4 border-b border-border">
-                <DialogTitle className="text-lg font-semibold text-foreground">
+                <DialogTitle className="text-ui-card-title-lg font-semibold text-foreground">
                   작성자 프로필
                 </DialogTitle>
                 {authorTarget?.nickname
@@ -2521,10 +2521,10 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
               {!isAuthorLoading && (
                 <Tabs defaultValue="community" className="w-full mt-2">
                   <TabsList className="grid w-full grid-cols-2 h-10">
-                    <TabsTrigger value="community" className="text-sm">
+                    <TabsTrigger value="community" className="text-ui-body-sm">
                       작성자 프로필
                     </TabsTrigger>
-                    <TabsTrigger value="tennis" className="text-sm">
+                    <TabsTrigger value="tennis" className="text-ui-body-sm">
                       테니스 프로필
                     </TabsTrigger>
                   </TabsList>
@@ -2533,13 +2533,13 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   <TabsContent value="community" className="mt-5 md:mt-6 space-y-4 md:space-y-6">
                     {/* 기본 정보 */}
                     <div className="space-y-3">
-                      <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">
+                      <h3 className="text-ui-body-sm font-semibold text-foreground pb-2 border-b border-border">
                         기본 정보
                       </h3>
-                      <div className="space-y-2 text-sm">
+                      <div className="space-y-2 text-ui-body-sm">
                         <div className="flex items-center gap-2">
                           <span className="text-muted-foreground w-20">이름</span>
-                          <span className="text-sm font-medium">
+                          <span className="text-ui-body-sm font-medium">
                             {authorTarget?.nickname ?? "회원"}
                           </span>
                         </div>
@@ -2557,19 +2557,19 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     {/* 활동량 */}
                     {authorOverview && (
                       <div className="space-y-3">
-                        <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">
+                        <h3 className="text-ui-body-sm font-semibold text-foreground pb-2 border-b border-border">
                           커뮤니티 활동
                         </h3>
                         <div className="flex gap-4 md:gap-6">
                           <div className="flex-1 rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
-                            <div className="text-xs text-foreground/75 mb-1">작성 글</div>
-                            <div className="text-2xl font-semibold text-foreground">
+                            <div className="text-ui-label text-foreground/75 mb-1">작성 글</div>
+                            <div className="text-ui-page-title font-semibold text-foreground">
                               {authorOverview.stats.posts}
                             </div>
                           </div>
                           <div className="flex-1 rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
-                            <div className="text-xs text-foreground/75 mb-1">작성댓글</div>
-                            <div className="text-2xl font-semibold text-foreground">
+                            <div className="text-ui-label text-foreground/75 mb-1">작성댓글</div>
+                            <div className="text-ui-page-title font-semibold text-foreground">
                               {authorOverview.stats.comments}
                             </div>
                           </div>
@@ -2580,14 +2580,14 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                     {/* 최근 작성 글 */}
                     {authorOverview?.recentPosts?.length ? (
                       <div className="space-y-3">
-                        <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">
+                        <h3 className="text-ui-body-sm font-semibold text-foreground pb-2 border-b border-border">
                           최근 작성 글
                         </h3>
                         <ul className="space-y-2">
                           {authorOverview.recentPosts.map((p) => (
                             <li
                               key={p.id}
-                              className="flex items-center justify-between gap-3 text-sm hover:bg-muted/50 dark:hover:bg-background/40 rounded-md p-2 -mx-2 transition-colors"
+                              className="flex items-center justify-between gap-3 text-ui-body-sm hover:bg-muted/50 dark:hover:bg-background/40 rounded-md p-2 -mx-2 transition-colors"
                             >
                               <Link
                                 href={`${config.routePrefix}/${p.id}`}
@@ -2595,7 +2595,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                               >
                                 {p.title || "(제목 없음)"}
                               </Link>
-                              <span className="shrink-0 text-xs text-foreground/75">
+                              <span className="shrink-0 text-ui-label text-foreground/75">
                                 {new Date(p.createdAt).toLocaleDateString("ko-KR")}
                               </span>
                             </li>
@@ -2603,7 +2603,7 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                         </ul>
                       </div>
                     ) : (
-                      <p className="text-sm text-foreground/80 text-center py-4">
+                      <p className="text-ui-body-sm text-foreground/80 text-center py-4">
                         아직 활동 기록이 없거나, 공개 게시글이 없습니다.
                       </p>
                     )}
@@ -2612,32 +2612,32 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
                   {/* 테니스 탭 */}
                   <TabsContent value="tennis" className="mt-5 md:mt-6">
                     {!authorOverview?.tennisProfile ? (
-                      <div className="text-sm text-foreground/80 text-center py-8">
+                      <div className="text-ui-body-sm text-foreground/80 text-center py-8">
                         작성자가 테니스 프로필을 공개하지 않았습니다.
                       </div>
                     ) : (
                       <div className="space-y-4 md:space-y-6">
                         {/* 기본 정보 */}
                         <div className="space-y-3">
-                          <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">
+                          <h3 className="text-ui-body-sm font-semibold text-foreground pb-2 border-b border-border">
                             플레이어 정보
                           </h3>
                           <div className="grid grid-cols-3 gap-4">
                             <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
-                              <div className="text-xs text-foreground/75 mb-1">실력</div>
-                              <div className="text-sm font-medium text-foreground">
+                              <div className="text-ui-label text-foreground/75 mb-1">실력</div>
+                              <div className="text-ui-body-sm font-medium text-foreground">
                                 {label(LEVEL_LABEL, authorOverview.tennisProfile.level)}
                               </div>
                             </div>
                             <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
-                              <div className="text-xs text-foreground/75 mb-1">사용 손</div>
-                              <div className="text-sm font-medium text-foreground">
+                              <div className="text-ui-label text-foreground/75 mb-1">사용 손</div>
+                              <div className="text-ui-body-sm font-medium text-foreground">
                                 {label(HAND_LABEL, authorOverview.tennisProfile.hand)}
                               </div>
                             </div>
                             <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-3">
-                              <div className="text-xs text-foreground/75 mb-1">스타일</div>
-                              <div className="text-sm font-medium text-foreground">
+                              <div className="text-ui-label text-foreground/75 mb-1">스타일</div>
+                              <div className="text-ui-body-sm font-medium text-foreground">
                                 {label(STYLE_LABEL, authorOverview.tennisProfile.playStyle)}
                               </div>
                             </div>
@@ -2646,11 +2646,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
                         {/* 라켓 */}
                         <div className="space-y-3">
-                          <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">
+                          <h3 className="text-ui-body-sm font-semibold text-foreground pb-2 border-b border-border">
                             메인 라켓
                           </h3>
                           <div className="rounded-lg border border-border p-4">
-                            <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-ui-body-sm">
                               <div className="flex items-center gap-2">
                                 <span className="text-muted-foreground w-16">브랜드</span>
                                 <span className="text-foreground font-medium">
@@ -2681,11 +2681,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
                         {/* 스트링 */}
                         <div className="space-y-3">
-                          <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">
+                          <h3 className="text-ui-body-sm font-semibold text-foreground pb-2 border-b border-border">
                             메인 스트링
                           </h3>
                           <div className="rounded-lg border border-border p-4">
-                            <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-ui-body-sm">
                               <div className="flex items-center gap-2">
                                 <span className="text-muted-foreground w-20">브랜드</span>
                                 <span className="text-foreground font-medium">
@@ -2732,11 +2732,11 @@ export default function BoardDetailClient({ id, config }: Props & { config: Boar
 
                         {/* 소개 */}
                         <div className="space-y-3">
-                          <h3 className="text-sm font-semibold text-foreground pb-2 border-b border-border">
+                          <h3 className="text-ui-body-sm font-semibold text-foreground pb-2 border-b border-border">
                             소개
                           </h3>
                           <div className="rounded-lg border border-border bg-muted/50 dark:bg-background/40 p-4">
-                            <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">
+                            <p className="text-ui-body-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">
                               {authorOverview.tennisProfile.note?.trim()
                                 ? authorOverview.tennisProfile.note
                                 : "소개를 입력하지 않았습니다."}

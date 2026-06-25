@@ -318,7 +318,7 @@ export default function FreeBoardWriteClient() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             {/* 브레드크럼: 게시판 > 장비 사용기 > 글쓰기 */}
-            <div className="mb-1 text-sm text-muted-foreground">
+            <div className="mb-1 text-ui-body-sm text-muted-foreground">
               <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
               <Link
@@ -331,10 +331,10 @@ export default function FreeBoardWriteClient() {
               <span className="mx-1">›</span>
               <span>글쓰기</span>
             </div>
-            <h1 className="break-keep text-2xl font-bold tracking-normal text-foreground md:text-3xl">
+            <h1 className="break-keep text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
               장비 사용기 글쓰기
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground md:text-base">
+            <p className="mt-1 text-ui-body-sm text-muted-foreground md:text-ui-body-lg">
               다른 이용자들이 함께 볼 수 있다는 점을 고려해, 예의를 지키는 표현을 사용해 주세요.
             </p>
           </div>
@@ -363,7 +363,7 @@ export default function FreeBoardWriteClient() {
                 disabled={isSubmitting}
                 maxLength={TITLE_MAX}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-ui-label text-muted-foreground">
                 {title.trim().length}/{TITLE_MAX}
               </p>
             </div>
@@ -374,7 +374,7 @@ export default function FreeBoardWriteClient() {
               {/* 분류 선택 */}
               <div className="space-y-2">
                 <Label>분류</Label>
-                <div className="flex flex-wrap gap-2 rounded-xl border border-border bg-muted/30 p-3 text-sm">
+                <div className="flex flex-wrap gap-2 rounded-xl border border-border bg-muted/30 p-3 text-ui-body-sm">
                   {CATEGORY_OPTIONS.map((opt) => (
                     <button
                       key={opt.value}
@@ -404,10 +404,10 @@ export default function FreeBoardWriteClient() {
                   disabled={isSubmitting}
                   maxLength={CONTENT_MAX}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-ui-label text-muted-foreground">
                   {content.trim().length}/{CONTENT_MAX}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 text-ui-label text-muted-foreground">
                   신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해
                   주세요.
                 </p>
@@ -425,7 +425,7 @@ export default function FreeBoardWriteClient() {
 
                   {/* 이미지 업로드 탭 */}
                   <TabsContent value="image" className="pt-4 space-y-2">
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-ui-label text-muted-foreground">
                       최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로 사용됩니다.
                     </p>
                     <ImageUploader
@@ -460,10 +460,10 @@ export default function FreeBoardWriteClient() {
                       }}
                     >
                       <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-ui-body-sm text-muted-foreground">
                         클릭하여 파일을 선택하거나, 이 영역으로 드래그하여 업로드할 수 있어요.
                       </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="mt-1 text-ui-label text-muted-foreground">
                         이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당 최대 {MAX_SIZE_MB}MB,
                         최대 {MAX_FILES}개)
                       </p>
@@ -493,7 +493,7 @@ export default function FreeBoardWriteClient() {
                     {/* 선택된 파일 카드 목록 */}
                     {selectedFiles.length > 0 && (
                       <div className="space-y-2">
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-ui-label text-muted-foreground">
                           첨부된 파일 ({selectedFiles.length}/{MAX_FILES})
                         </p>
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
@@ -502,7 +502,7 @@ export default function FreeBoardWriteClient() {
                               key={`${file.name}-${index}`}
                               className="group relative flex flex-col justify-between rounded-lg bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
                             >
-                              <div className="flex-1 flex flex-col gap-1 text-xs">
+                              <div className="flex-1 flex flex-col gap-1 text-ui-label">
                                 <span className="font-medium truncate" title={file.name}>
                                   {file.name}
                                 </span>
@@ -528,7 +528,7 @@ export default function FreeBoardWriteClient() {
               </div>
 
               {/* 에러 메시지 */}
-              {/* {errorMsg && <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">{errorMsg}</div>} */}
+              {/* {errorMsg && <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-ui-body-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">{errorMsg}</div>} */}
 
               {/* 버튼 영역 */}
               <div className="flex flex-col-reverse items-stretch justify-end gap-2 border-t border-border pt-4 sm:flex-row sm:items-center">

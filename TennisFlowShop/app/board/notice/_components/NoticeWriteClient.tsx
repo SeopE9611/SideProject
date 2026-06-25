@@ -611,22 +611,22 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                 <Bell className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">
+                <h1 className="text-ui-page-title-lg md:text-ui-page-title-lg font-semibold tracking-normal text-foreground">
                   {pageHeading}
                 </h1>
-                <p className="text-lg text-muted-foreground">{pageDescription}</p>
+                <p className="text-ui-card-title-lg text-muted-foreground">{pageDescription}</p>
               </div>
             </div>
           </div>
           {editId && detailError && (
-            <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
+            <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-ui-body-sm text-destructive dark:border-destructive/40 dark:bg-destructive/15">
               {isEventMode
                 ? "이벤트 내용을 불러오지 못했습니다. (권한/네트워크를 확인해주세요)"
                 : "공지 내용을 불러오지 못했습니다. (권한/네트워크를 확인해주세요)"}
             </div>
           )}
           {editId && conflictError && (
-            <div className="flex flex-col gap-3 rounded-md border border-border bg-muted p-3 text-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
+            <div className="flex flex-col gap-3 rounded-md border border-border bg-muted p-3 text-ui-body-sm text-muted-foreground dark:border-border dark:bg-muted dark:text-muted-foreground">
               <p>{conflictError}</p>
               <div>
                 <Button
@@ -655,11 +655,11 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
             </CardHeader>
             <CardContent className="space-y-6 p-4 md:space-y-8 md:p-8">
               <div className="space-y-3">
-                <Label htmlFor="category" className="text-base font-semibold">
+                <Label htmlFor="category" className="text-ui-body-lg font-semibold">
                   카테고리 <span className="text-destructive">*</span>
                 </Label>
                 {isEventMode ? (
-                  <div className="flex h-12 items-center rounded-md border border-border bg-muted/40 px-3 text-sm">
+                  <div className="flex h-12 items-center rounded-md border border-border bg-muted/40 px-3 text-ui-body-sm">
                     <Badge variant="success" className="mr-2">
                       이벤트
                     </Badge>
@@ -703,7 +703,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
               </div>
 
               <div className="space-y-3">
-                <Label htmlFor="title" className="text-base font-semibold">
+                <Label htmlFor="title" className="text-ui-body-lg font-semibold">
                   제목 <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -713,12 +713,12 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                   placeholder={
                     isEventMode ? "이벤트 제목을 입력해주세요" : "공지사항 제목을 입력해주세요"
                   }
-                  className="h-12 bg-card text-base"
+                  className="h-12 bg-card text-ui-body-lg"
                 />
               </div>
 
               <div className="space-y-3">
-                <Label htmlFor="content" className="text-base font-semibold">
+                <Label htmlFor="content" className="text-ui-body-lg font-semibold">
                   내용 <span className="text-destructive">*</span>
                 </Label>
                 <Textarea
@@ -728,13 +728,13 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                   placeholder={
                     isEventMode ? "이벤트 내용을 작성해주세요" : "공지사항 내용을 작성해주세요"
                   }
-                  className="min-h-[300px] bg-card text-base resize-none"
+                  className="min-h-[300px] bg-card text-ui-body-lg resize-none"
                 />
               </div>
               {/* 기존 첨부 (수정 모드에서만 표시) */}
               {editId && existingAttachments.length > 0 && (
                 <div className="space-y-2">
-                  <Label className="text-base font-semibold">기존 첨부</Label>
+                  <Label className="text-ui-body-lg font-semibold">기존 첨부</Label>
                   <ul className="divide-y rounded-lg border bg-card">
                     {existingAttachments.map((att, idx) => {
                       const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(att.url);
@@ -751,15 +751,15 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                                 className="h-10 w-10 rounded object-cover border"
                               />
                             ) : (
-                              <div className="h-10 w-10 flex items-center justify-center rounded border text-xs text-muted-foreground">
+                              <div className="h-10 w-10 flex items-center justify-center rounded border text-ui-label text-muted-foreground">
                                 FILE
                               </div>
                             )}
                             <div className="min-w-0">
-                              <div className="truncate text-sm font-medium">
+                              <div className="truncate text-ui-body-sm font-medium">
                                 {att.name ?? att.url}
                               </div>
-                              <div className="text-xs text-muted-foreground">
+                              <div className="text-ui-label text-muted-foreground">
                                 {att.size ? `${(att.size / 1024).toFixed(0)} KB` : ""}
                               </div>
                             </div>
@@ -769,7 +769,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                               href={att.url}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-xs underline text-primary"
+                              className="text-ui-label underline text-primary"
                             >
                               열기
                             </a>
@@ -789,7 +789,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                       );
                     })}
                   </ul>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-ui-label text-muted-foreground">
                     * ‘제거’를 누르면 저장 시 해당 첨부가 게시물에서 제외됩니다.
                     {` `}
                     {`(옵션) 스토리지 파일 삭제도 활성화되면 실제 파일도 함께 삭제됩니다.`}
@@ -798,7 +798,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
               )}
 
               <div className="space-y-3">
-                <Label htmlFor="image" className="text-base font-semibold">
+                <Label htmlFor="image" className="text-ui-body-lg font-semibold">
                   첨부파일 (선택사항)
                 </Label>
                 <div className="space-y-4">
@@ -821,7 +821,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                     }}
                   >
                     <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground mb-2">
+                    <p className="text-ui-body-sm text-muted-foreground mb-2">
                       클릭하여 이미지 또는 파일을 선택하거나 드래그하여 업로드하세요
                     </p>
                     <input
@@ -850,7 +850,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                   {/* 미리보기 썸네일 */}
                   {selectedFiles.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-sm font-medium text-foreground">
+                      <p className="text-ui-body-sm font-medium text-foreground">
                         첨부된 파일 ({selectedFiles.length}/5)
                       </p>
 
@@ -882,13 +882,13 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                                 )
                               ) : (
                                 <div className="h-28 flex flex-col items-center justify-center gap-1 px-2 text-center">
-                                  <div className="text-[11px] font-medium truncate max-w-[90%]">
+                                  <div className="text-ui-caption font-medium truncate max-w-[90%]">
                                     {file.name}
                                   </div>
                                   <a
                                     href={url ?? "#"}
                                     download={file.name}
-                                    className="pointer-events-auto inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] bg-muted text-foreground hover:bg-muted/80 transition"
+                                    className="pointer-events-auto inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-ui-caption bg-muted text-foreground hover:bg-muted/80 transition"
                                   >
                                     다운로드
                                   </a>
@@ -896,7 +896,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                               )}
 
                               {/* 파일 크기 */}
-                              <div className="absolute left-2 bottom-2 text-[11px] px-1.5 py-0.5 rounded bg-card">
+                              <div className="absolute left-2 bottom-2 text-ui-caption px-1.5 py-0.5 rounded bg-card">
                                 {(file.size / 1024 / 1024).toFixed(2)} MB
                               </div>
 
@@ -934,7 +934,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                     </div>
                   )}
                   {/* 제한 안내 뱃지 */}
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-ui-label text-muted-foreground">
                     • 최대 5개 / 파일당 최대 10MB
                     <br />• 지원 형식: 이미지(JPG/PNG/GIF/WEBP), 문서(PDF/DOC/DOCX)
                   </div>
@@ -951,12 +951,12 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
                 <div className="space-y-1">
                   <label
                     htmlFor="pinned"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex items-center"
+                    className="text-ui-body-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex items-center"
                   >
                     <Pin className="h-4 w-4 mr-1 text-primary" />
                     상단 고정
                   </label>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-ui-label text-muted-foreground">
                     {isEventMode
                       ? "중요한 이벤트를 게시판 상단에 고정하여 표시합니다."
                       : "중요한 공지사항을 게시판 상단에 고정하여 표시합니다."}

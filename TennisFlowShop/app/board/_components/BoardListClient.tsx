@@ -147,7 +147,7 @@ const fmtDateTime = (v: string | Date) =>
 const boardListMobileTitleClampClass =
   "line-clamp-2 break-keep font-medium leading-snug text-foreground";
 const boardListMobileMetaWrapClass =
-  "mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 text-xs leading-relaxed text-foreground/75 [&_span]:shrink-0 [&_span]:whitespace-nowrap";
+  "mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 text-ui-label leading-relaxed text-foreground/75 [&_span]:shrink-0 [&_span]:whitespace-nowrap";
 
 // 판매상태 배지 variant 매핑
 function saleStatusBadgeVariant(status?: string | null): "success" | "warning" | "neutral" {
@@ -168,9 +168,9 @@ function conditionGradeBadgeVariant(
 
 // 공통 폼 컨트롤 스타일
 const selectClass =
-  "h-8 w-full rounded-md border border-border bg-background px-2.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+  "h-8 w-full rounded-md border border-border bg-background px-2.5 text-ui-label text-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 const inputClass =
-  "h-8 w-full rounded-md border border-border bg-background px-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+  "h-8 w-full rounded-md border border-border bg-background px-2.5 text-ui-label text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 
 // 범위형 필터 그룹 컴포넌트
 function RangeFilterGroup({
@@ -202,21 +202,21 @@ function RangeFilterGroup({
   };
   return (
     <div className="space-y-1">
-      <label className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+      <label className="flex items-center gap-1 text-ui-caption font-medium text-muted-foreground">
         {label}
         {unit && <span className="font-normal text-muted-foreground/70">({unit})</span>}
       </label>
       <div className="flex items-center gap-1">
         <input
           placeholder={minPlaceholder}
-          className="h-8 w-full min-w-0 rounded-md border border-border bg-background px-2 text-xs tabular-nums text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring"
+          className="h-8 w-full min-w-0 rounded-md border border-border bg-background px-2 text-ui-label tabular-nums text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring"
           value={minValue}
           onChange={handleMin}
         />
-        <span className="shrink-0 text-xs text-foreground/75">~</span>
+        <span className="shrink-0 text-ui-label text-foreground/75">~</span>
         <input
           placeholder={maxPlaceholder}
-          className="h-8 w-full min-w-0 rounded-md border border-border bg-background px-2 text-xs tabular-nums text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring"
+          className="h-8 w-full min-w-0 rounded-md border border-border bg-background px-2 text-ui-label tabular-nums text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-ring"
           value={maxValue}
           onChange={handleMax}
         />
@@ -241,7 +241,7 @@ function FilterSelectGroup({
 }) {
   return (
     <div className="space-y-1">
-      <label className="text-[11px] font-medium text-muted-foreground">{label}</label>
+      <label className="text-ui-caption font-medium text-muted-foreground">{label}</label>
       <select className={selectClass} value={value} onChange={(e) => onChange(e.target.value)}>
         <option value="">{placeholder}</option>
         {options.map((o) => {
@@ -272,7 +272,7 @@ function FilterInputGroup({
 }) {
   return (
     <div className="space-y-1">
-      <label className="text-[11px] font-medium text-muted-foreground">{label}</label>
+      <label className="text-ui-caption font-medium text-muted-foreground">{label}</label>
       <input
         className={inputClass}
         value={value}
@@ -802,15 +802,15 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             {/* 브레드크럼: 게시판 > 자유 게시판 */}
-            <div className="mb-1 text-sm text-foreground">
+            <div className="mb-1 text-ui-body-sm text-foreground">
               <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
               <span>{config.boardTitle}</span>
             </div>
-            <h1 className="font-bold text-2xl tracking-normal text-foreground md:text-3xl">
+            <h1 className="font-semibold text-ui-page-title tracking-normal text-foreground md:text-ui-page-title-lg">
               {config.boardTitle}
             </h1>
-            <p className="mt-1 text-sm text-foreground md:text-base">{config.boardDescription}</p>
+            <p className="mt-1 text-ui-body-sm text-foreground md:text-ui-body-lg">{config.boardDescription}</p>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -844,10 +844,10 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
           <CardHeader className="flex flex-col gap-3 border-b border-border bg-muted/30 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div className="flex items-center gap-3">
               <div>
-                <CardTitle className="text-sm font-semibold md:text-base">
+                <CardTitle className="text-ui-body-sm font-semibold md:text-ui-body-lg">
                   {config.boardTitle}
                 </CardTitle>
-                <p className="mt-0.5 text-xs text-foreground/75">{config.cardDescription}</p>
+                <p className="mt-0.5 text-ui-label text-foreground/75">{config.cardDescription}</p>
               </div>
             </div>
           </CardHeader>
@@ -857,14 +857,14 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
             {!error && (
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-xs text-foreground/75">
+                  <div className="text-ui-label text-foreground/75">
                     총{" "}
                     <span className="font-semibold">
                       {hasResolvedTotal ? (total ?? 0).toLocaleString() : "-"}
                     </span>
                     개의 글이 있습니다.
                   </div>
-                  <div className="flex items-center gap-2 text-xs">
+                  <div className="flex items-center gap-2 text-ui-label">
                     <span className="hidden text-muted-foreground sm:inline">정렬:</span>
                     <div className="inline-flex overflow-hidden rounded-md border border-border bg-background">
                       {[
@@ -880,7 +880,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                             setPage(1);
                           }}
                           className={[
-                            "px-3 py-1.5 text-xs sm:text-[13px]",
+                            "px-3 py-1.5 text-ui-label sm:text-ui-label",
                             "transition-colors",
                             "border-r border-border last:border-r-0",
                             sort === opt.value
@@ -898,7 +898,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                 {/* 카테고리 필터 */}
                 <div className="sm:hidden space-y-1.5">
                   <label
-                    className="text-xs font-medium text-foreground"
+                    className="text-ui-label font-medium text-foreground"
                     htmlFor="board-category-mobile"
                   >
                     분류
@@ -906,7 +906,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                   <Select value={category} onValueChange={handleCategoryChange}>
                     <SelectTrigger
                       id="board-category-mobile"
-                      className="h-10 w-full min-w-0 rounded-lg text-sm [&>span]:break-keep [&>span]:whitespace-nowrap"
+                      className="h-10 w-full min-w-0 rounded-lg text-ui-body-sm [&>span]:break-keep [&>span]:whitespace-nowrap"
                     >
                       <SelectValue placeholder="전체" />
                     </SelectTrigger>
@@ -936,7 +936,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                             type="button"
                             onClick={() => handleCategoryChange(cat.value)}
                             className={[
-                              "shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium break-keep whitespace-nowrap",
+                              "shrink-0 rounded-lg px-3 py-1.5 text-ui-label font-medium break-keep whitespace-nowrap",
                               "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                               active
                                 ? "bg-foreground text-background shadow-sm"
@@ -951,7 +951,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                   </div>
                 </div>
                 {config.brandOptionsByCategory?.[category] && (
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <div className="flex flex-wrap items-center gap-2 text-ui-label">
                     <span className="text-foreground">브랜드:</span>
                     {[{ value: "", label: "전체" }, ...config.brandOptionsByCategory[category]].map(
                       (o) => {
@@ -986,9 +986,9 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                     >
                       <div className="flex items-center gap-2">
                         <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium text-foreground">상세 필터</span>
+                        <span className="text-ui-body-sm font-medium text-foreground">상세 필터</span>
                         {activeMarketFilterCount > 0 && (
-                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold tabular-nums text-primary-foreground">
+                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-ui-caption font-semibold tabular-nums text-primary-foreground">
                             {activeMarketFilterCount}
                           </span>
                         )}
@@ -997,7 +997,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         {activeMarketFilterCount > 0 && (
                           <button
                             type="button"
-                            className="hidden text-xs text-foreground/75 underline-offset-2 hover:text-foreground hover:underline md:inline"
+                            className="hidden text-ui-label text-foreground/75 underline-offset-2 hover:text-foreground hover:underline md:inline"
                             onClick={(e) => {
                               e.stopPropagation();
                               resetMarketFilters();
@@ -1022,7 +1022,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         {getActiveFilterChips(searchParams).map((chip) => (
                           <span
                             key={chip.key}
-                            className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary px-2 py-0.5 text-[11px] text-foreground"
+                            className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary px-2 py-0.5 text-ui-caption text-foreground"
                           >
                             {chip.label}
                             <button
@@ -1037,7 +1037,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         ))}
                         <button
                           type="button"
-                          className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs text-foreground/75 hover:text-foreground"
+                          className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-ui-label text-foreground/75 hover:text-foreground"
                           onClick={resetMarketFilters}
                         >
                           <X className="h-3 w-3" />
@@ -1057,8 +1057,8 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       <div className="px-4 py-3">
                         <div className="mb-3 flex items-center gap-2">
                           <div className="h-1 w-1 rounded-full bg-primary" />
-                          <span className="text-xs font-semibold text-foreground">기본 필터</span>
-                          <span className="text-xs text-foreground/75">판매상태, 등급, 가격</span>
+                          <span className="text-ui-label font-semibold text-foreground">기본 필터</span>
+                          <span className="text-ui-label text-foreground/75">판매상태, 등급, 가격</span>
                         </div>
                         <div className="grid grid-cols-2 gap-x-3 gap-y-2.5 sm:grid-cols-3">
                           <FilterSelectGroup
@@ -1119,12 +1119,12 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           >
                             <summary className="mb-3 flex cursor-pointer list-none flex-wrap items-center gap-2">
                               <div className="h-1 w-1 rounded-full bg-info" />
-                              <span className="text-xs font-semibold text-foreground">
+                              <span className="text-ui-label font-semibold text-foreground">
                                 라켓 상세 조건
                               </span>
-                              <span className="text-xs text-foreground/75">모델, 스펙, 사이즈</span>
+                              <span className="text-ui-label text-foreground/75">모델, 스펙, 사이즈</span>
                               {hasRacketDetailApplied && (
-                                <span className="shrink-0 rounded bg-info/15 px-1.5 py-0.5 text-[10px] font-medium text-info">
+                                <span className="shrink-0 rounded bg-info/15 px-1.5 py-0.5 text-ui-micro font-medium text-info">
                                   적용됨
                                 </span>
                               )}
@@ -1242,14 +1242,14 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           >
                             <summary className="mb-3 flex cursor-pointer list-none flex-wrap items-center gap-2">
                               <div className="h-1 w-1 rounded-full bg-info" />
-                              <span className="text-xs font-semibold text-foreground">
+                              <span className="text-ui-label font-semibold text-foreground">
                                 스트링 상세 조건
                               </span>
-                              <span className="text-xs text-foreground/75">
+                              <span className="text-ui-label text-foreground/75">
                                 모델, 재질, 게이지, 색상
                               </span>
                               {hasStringDetailApplied && (
-                                <span className="shrink-0 rounded bg-info/15 px-1.5 py-0.5 text-[10px] font-medium text-info">
+                                <span className="shrink-0 rounded bg-info/15 px-1.5 py-0.5 text-ui-micro font-medium text-info">
                                   적용됨
                                 </span>
                               )}
@@ -1333,7 +1333,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
                       {/* ── 필터 액션 바 ── */}
                       <div className="flex items-center justify-between border-t border-border bg-muted/30 px-4 py-2">
-                        <span className="text-xs text-foreground/75">
+                        <span className="text-ui-label text-foreground/75">
                           {activeMarketFilterCount > 0
                             ? `${activeMarketFilterCount}개 조건 적용됨`
                             : "조건을 선택하고 적용하세요"}
@@ -1343,7 +1343,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="h-7 gap-1 px-2 text-xs text-foreground/75"
+                            className="h-7 gap-1 px-2 text-ui-label text-foreground/75"
                             onClick={resetMarketFilters}
                           >
                             <RotateCcw className="h-3 w-3" />
@@ -1352,7 +1352,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           <Button
                             type="button"
                             size="sm"
-                            className="h-7 gap-1 px-3 text-xs"
+                            className="h-7 gap-1 px-3 text-ui-label"
                             onClick={applyMarketFilters}
                           >
                             <Search className="h-3 w-3" />
@@ -1366,7 +1366,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
               </div>
             )}
             {authorId && (
-              <div className="flex items-center gap-2 text-sm">
+              <div className="flex items-center gap-2 text-ui-body-sm">
                 <span>현재: {authorName ? `${authorName}님의 글` : "특정 작성자 글"} 보는 중</span>
                 <Button
                   variant="outline"
@@ -1431,10 +1431,10 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
             {shouldShowRows && (
               <>
                 {/* 데스크탑: 테이블형 리스트 */}
-                <div className="hidden text-sm md:block">
+                <div className="hidden text-ui-body-sm md:block">
                   {/* 헤더 행 */}
                   {config.boardType === "market" ? (
-                    <div className="grid grid-cols-[52px_76px_minmax(0,1fr)_120px_84px_104px_96px_64px] items-center rounded-t-xl border-b border-border bg-muted/40 px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    <div className="grid grid-cols-[52px_76px_minmax(0,1fr)_120px_84px_104px_96px_64px] items-center rounded-t-xl border-b border-border bg-muted/40 px-4 py-3 text-ui-caption font-semibold uppercase tracking-wide text-muted-foreground">
                       <div className="text-center">No.</div>
                       <div className="text-center">분류</div>
                       <div>상품 정보</div>
@@ -1449,7 +1449,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       </div>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-[64px_88px_minmax(0,1fr)_128px_140px_72px_72px_72px] items-center rounded-t-xl border-b border-border bg-muted/40 px-4 py-3 text-xs font-semibold text-muted-foreground">
+                    <div className="grid grid-cols-[64px_88px_minmax(0,1fr)_128px_140px_72px_72px_72px] items-center rounded-t-xl border-b border-border bg-muted/40 px-4 py-3 text-ui-label font-semibold text-muted-foreground">
                       <div className="text-center">번호</div>
                       <div className="text-center">분류</div>
                       <div>제목</div>
@@ -1472,12 +1472,12 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           key={post.id}
                           href={buildDetailHref(post.postNo ?? post.id)}
                           className={[
-                            "group grid grid-cols-[52px_76px_minmax(0,1fr)_120px_84px_104px_96px_64px] items-center px-4 py-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            "group grid grid-cols-[52px_76px_minmax(0,1fr)_120px_84px_104px_96px_64px] items-center px-4 py-3 text-ui-body-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             isSold ? "opacity-45 hover:opacity-65" : "hover:bg-muted/40",
                           ].join(" ")}
                         >
                           {/* 번호 */}
-                          <div className="text-center text-[11px] tabular-nums text-muted-foreground">
+                          <div className="text-center text-ui-caption tabular-nums text-muted-foreground">
                             {typeof post.postNo === "number" ? post.postNo : "-"}
                           </div>
 
@@ -1485,7 +1485,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           <div className="flex items-center justify-center">
                             <Badge
                               variant={getBoardCategoryTone(config.boardType, post.category)}
-                              className="shrink-0 whitespace-nowrap px-1.5 py-0 text-[10px] leading-4"
+                              className="shrink-0 whitespace-nowrap px-1.5 py-0 text-ui-micro leading-4"
                             >
                               {config.categoryMap[post.category ?? ""]
                                 ? getCategoryBadgeText(config.categoryMap[post.category ?? ""])
@@ -1496,11 +1496,11 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           {/* 상품 정보: 제목 + 브랜드/모델/등급 */}
                           <div className="min-w-0 pr-3">
                             <div className="flex items-center gap-1">
-                              <span className="line-clamp-2 min-w-0 break-keep text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-primary">
+                              <span className="line-clamp-2 min-w-0 break-keep text-ui-body-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-primary">
                                 {post.title}
                               </span>
                               {post.commentsCount ? (
-                                <span className="shrink-0 text-[11px] font-medium text-primary">
+                                <span className="shrink-0 text-ui-caption font-medium text-primary">
                                   [{post.commentsCount}]
                                 </span>
                               ) : null}
@@ -1518,7 +1518,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                               )}
                             </div>
                             {post.marketMeta && (
-                              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-foreground/75">
+                              <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-ui-label text-foreground/75">
                                 {post.brand && (
                                   <span className="shrink-0 whitespace-nowrap font-medium text-muted-foreground">
                                     {getMarketBrandLabel(post.brand)}
@@ -1536,7 +1536,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                                     variant={conditionGradeBadgeVariant(
                                       post.marketMeta.conditionGrade,
                                     )}
-                                    className="shrink-0 whitespace-nowrap px-1 py-0 text-[10px] leading-3.5"
+                                    className="shrink-0 whitespace-nowrap px-1 py-0 text-ui-micro leading-3.5"
                                   >
                                     {post.marketMeta.conditionGrade}급
                                   </Badge>
@@ -1548,14 +1548,14 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           {/* 가격 - 가장 눈에 띄게 */}
                           <div className="pr-1 text-right">
                             {post.marketMeta?.price != null ? (
-                              <span className="shrink-0 whitespace-nowrap text-sm font-bold tabular-nums text-foreground">
+                              <span className="shrink-0 whitespace-nowrap text-ui-body-sm font-semibold tabular-nums text-foreground">
                                 {post.marketMeta.price.toLocaleString()}
-                                <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">
+                                <span className="ml-0.5 text-ui-micro font-normal text-muted-foreground">
                                   원
                                 </span>
                               </span>
                             ) : (
-                              <span className="text-xs text-foreground/75">-</span>
+                              <span className="text-ui-label text-foreground/75">-</span>
                             )}
                           </div>
 
@@ -1564,7 +1564,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                             {post.marketMeta?.saleStatus && (
                               <Badge
                                 variant={saleStatusBadgeVariant(post.marketMeta.saleStatus)}
-                                className="shrink-0 whitespace-nowrap px-1.5 py-0 text-[10px] leading-4"
+                                className="shrink-0 whitespace-nowrap px-1.5 py-0 text-ui-micro leading-4"
                               >
                                 {getMarketSaleStatusLabel(post.marketMeta.saleStatus)}
                               </Badge>
@@ -1572,7 +1572,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           </div>
 
                           {/* 판매자 */}
-                          <div className="truncate text-center text-[11px]">
+                          <div className="truncate text-center text-ui-caption">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <button
@@ -1638,12 +1638,12 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           </div>
 
                           {/* 등록일 */}
-                          <div className="whitespace-nowrap text-center text-xs text-foreground/75">
+                          <div className="whitespace-nowrap text-center text-ui-label text-foreground/75">
                             {fmtDateTime(post.createdAt)}
                           </div>
 
                           {/* 조회/추천 */}
-                          <div className="text-center text-[11px] tabular-nums text-muted-foreground">
+                          <div className="text-center text-ui-caption tabular-nums text-muted-foreground">
                             {post.views ?? 0}
                             <span className="text-border/60">/</span>
                             {post.likes ?? 0}
@@ -1653,10 +1653,10 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         <Link
                           key={post.id}
                           href={buildDetailHref(post.postNo ?? post.id)}
-                          className="grid grid-cols-[60px_80px_minmax(0,1fr)_120px_140px_70px_70px_70px] items-center px-4 py-3 text-sm transition-colors hover:bg-muted/50"
+                          className="grid grid-cols-[60px_80px_minmax(0,1fr)_120px_140px_70px_70px_70px] items-center px-4 py-3 text-ui-body-sm transition-colors hover:bg-muted/50"
                         >
                           {/* 번호 */}
-                          <div className="text-center text-xs tabular-nums text-muted-foreground">
+                          <div className="text-center text-ui-label tabular-nums text-muted-foreground">
                             {typeof post.postNo === "number" ? post.postNo : "-"}
                           </div>
 
@@ -1671,7 +1671,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                                 : "분류 없음"}
                             </Badge>
                             {config.brandOptionsByCategory?.[post.category ?? ""] && post.brand ? (
-                              <span className="text-xs text-foreground/75">
+                              <span className="text-ui-label text-foreground/75">
                                 {getMarketBrandLabel(post.brand)}
                               </span>
                             ) : null}
@@ -1684,7 +1684,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                                 {post.title}
                               </span>
                               {post.commentsCount ? (
-                                <span className="text-xs text-primary">[{post.commentsCount}]</span>
+                                <span className="text-ui-label text-primary">[{post.commentsCount}]</span>
                               ) : null}
                               {post.images && post.images.length > 0 && (
                                 <ImageIcon
@@ -1702,7 +1702,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           </div>
 
                           {/* 글쓴이 */}
-                          <div className="truncate text-center text-xs">
+                          <div className="truncate text-center text-ui-label">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <button
@@ -1770,22 +1770,22 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           </div>
 
                           {/* 작성일 */}
-                          <div className="whitespace-nowrap text-center text-xs text-foreground/75">
+                          <div className="whitespace-nowrap text-center text-ui-label text-foreground/75">
                             {fmtDateTime(post.createdAt)}
                           </div>
 
                           {/* 댓글 수 */}
-                          <div className="whitespace-nowrap text-center text-xs text-foreground/75">
+                          <div className="whitespace-nowrap text-center text-ui-label text-foreground/75">
                             {post.commentsCount ?? 0}
                           </div>
 
                           {/* 조회 수 */}
-                          <div className="whitespace-nowrap text-center text-xs text-foreground/75">
+                          <div className="whitespace-nowrap text-center text-ui-label text-foreground/75">
                             {post.views ?? 0}
                           </div>
 
                           {/* 추천 수 */}
-                          <div className="whitespace-nowrap text-center text-xs text-foreground/75">
+                          <div className="whitespace-nowrap text-center text-ui-label text-foreground/75">
                             {post.likes ?? 0}
                           </div>
                         </Link>
@@ -1815,14 +1815,14 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                             {post.marketMeta?.saleStatus && (
                               <Badge
                                 variant={saleStatusBadgeVariant(post.marketMeta.saleStatus)}
-                                className="shrink-0 whitespace-nowrap px-1.5 py-0 text-[10px] leading-4"
+                                className="shrink-0 whitespace-nowrap px-1.5 py-0 text-ui-micro leading-4"
                               >
                                 {getMarketSaleStatusLabel(post.marketMeta.saleStatus)}
                               </Badge>
                             )}
                             <Badge
                               variant={getBoardCategoryTone(config.boardType, post.category)}
-                              className="shrink-0 whitespace-nowrap px-1.5 py-0 text-[10px] leading-4"
+                              className="shrink-0 whitespace-nowrap px-1.5 py-0 text-ui-micro leading-4"
                             >
                               {config.categoryMap[post.category ?? ""]
                                 ? getCategoryBadgeText(config.categoryMap[post.category ?? ""])
@@ -1831,7 +1831,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                             {post.marketMeta?.conditionGrade && (
                               <Badge
                                 variant={conditionGradeBadgeVariant(post.marketMeta.conditionGrade)}
-                                className="shrink-0 whitespace-nowrap px-1 py-0 text-[10px] leading-3.5"
+                                className="shrink-0 whitespace-nowrap px-1 py-0 text-ui-micro leading-3.5"
                               >
                                 {post.marketMeta.conditionGrade}급
                               </Badge>
@@ -1839,9 +1839,9 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           </div>
                           {/* 가격 - 모바일에서도 가장 눈에 띄게 */}
                           {post.marketMeta?.price != null && (
-                            <span className="shrink-0 whitespace-nowrap text-sm font-bold tabular-nums text-foreground">
+                            <span className="shrink-0 whitespace-nowrap text-ui-body-sm font-semibold tabular-nums text-foreground">
                               {post.marketMeta.price.toLocaleString()}
-                              <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">
+                              <span className="ml-0.5 text-ui-micro font-normal text-muted-foreground">
                                 원
                               </span>
                             </span>
@@ -1850,11 +1850,11 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
                         {/* 제목 */}
                         <div className="mt-1.5 flex items-start gap-1.5">
-                          <span className={`${boardListMobileTitleClampClass} text-[13px]`}>
+                          <span className={`${boardListMobileTitleClampClass} text-ui-label`}>
                             {post.title}
                           </span>
                           {post.commentsCount ? (
-                            <span className="mt-px shrink-0 text-[11px] font-medium text-primary">
+                            <span className="mt-px shrink-0 text-ui-caption font-medium text-primary">
                               [{post.commentsCount}]
                             </span>
                           ) : null}
@@ -1871,7 +1871,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           (post.brand ||
                             post.marketMeta.racketSpec?.modelName ||
                             post.marketMeta.stringSpec?.modelName) && (
-                            <div className="mt-1 text-xs text-foreground/75">
+                            <div className="mt-1 text-ui-label text-foreground/75">
                               {post.brand && (
                                 <span className="font-medium">
                                   {getMarketBrandLabel(post.brand)}
@@ -1897,7 +1897,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                           )}
 
                         {/* 하단 메타 */}
-                        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 border-t border-border/40 pt-2 text-xs leading-relaxed text-muted-foreground">
+                        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 border-t border-border/40 pt-2 text-ui-label leading-relaxed text-muted-foreground">
                           <span>
                             {post.nickname || "회원"} &middot; {fmtDateTime(post.createdAt)}
                           </span>
@@ -1920,8 +1920,8 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         className="block rounded-lg border border-border bg-card px-3 py-3 transition-colors hover:border-primary/30 active:bg-muted/40"
                       >
                         {/* 1줄: 번호 + 분류 뱃지 */}
-                        <div className="flex items-center gap-2 text-xs text-foreground/75">
-                          <span className="text-[11px] tabular-nums">
+                        <div className="flex items-center gap-2 text-ui-label text-foreground/75">
+                          <span className="text-ui-caption tabular-nums">
                             {typeof post.postNo === "number" ? post.postNo : "-"}
                           </span>
                           <Badge
@@ -1936,7 +1936,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
 
                         {/* 2줄: 제목 */}
                         <div className="mt-1.5 flex items-start gap-1.5">
-                          <span className={`${boardListMobileTitleClampClass} text-sm`}>
+                          <span className={`${boardListMobileTitleClampClass} text-ui-body-sm`}>
                             {post.title}
                           </span>
                           {post.images && post.images.length > 0 && (
@@ -1992,7 +1992,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                         onChange={(e) =>
                           setSearchType(e.target.value as "title" | "author" | "title_content")
                         }
-                        className="h-9 w-full rounded-md border border-border bg-background px-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring sm:w-32"
+                        className="h-9 w-full rounded-md border border-border bg-background px-2 text-ui-body-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring sm:w-32"
                       >
                         <option value="title_content">제목+내용</option>
                         <option value="title">제목</option>
@@ -2001,7 +2001,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                       <input
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
-                        className="h-9 w-full flex-1 rounded-md border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        className="h-9 w-full flex-1 rounded-md border border-border bg-background px-3 text-ui-body-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                         placeholder="검색어를 입력하세요"
                       />
                       <div className="flex shrink-0 items-center gap-2">
@@ -2115,7 +2115,7 @@ export default function BoardListClient({ config }: { config: BoardTypeConfig })
                             value={pageJump}
                             onChange={(e) => setPageJump(e.target.value)}
                             placeholder="페이지"
-                            className="h-10 w-20 rounded-md border border-border bg-background px-2 text-xs focus:ring-2 focus:ring-ring focus:border-border"
+                            className="h-10 w-20 rounded-md border border-border bg-background px-2 text-ui-label focus:ring-2 focus:ring-ring focus:border-border"
                           />
                           <Button type="submit" variant="outline" size="sm" className="h-10 px-2">
                             이동

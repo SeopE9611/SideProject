@@ -46,7 +46,7 @@ function AdminNoticeWriteButton({ href, label }: { href: string; label: string }
       asChild
       size="sm"
       variant="outline"
-      className="h-9 w-full shrink-0 whitespace-nowrap text-sm sm:h-10 sm:w-auto sm:text-base"
+      className="h-9 w-full shrink-0 whitespace-nowrap text-ui-body-sm sm:h-10 sm:w-auto sm:text-ui-body-lg"
     >
       <Link href={href}>
         <Plus className="mr-1.5 h-4 w-4 shrink-0 sm:mr-2 sm:h-5 sm:w-5" />
@@ -119,9 +119,9 @@ export default function NoticeListClient({
       .replace(/\.\s/g, ".")
       .replace(/\.$/, "");
   const noticeMobileTitleClampClass =
-    "flex-1 min-w-0 line-clamp-2 break-keep text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
+    "flex-1 min-w-0 line-clamp-2 break-keep text-ui-body-sm font-semibold leading-snug sm:line-clamp-1 sm:text-ui-body-lg";
   const noticeMobileMetaWrapClass =
-    "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-muted-foreground [&>span]:shrink-0 [&>span]:whitespace-nowrap";
+    "flex flex-wrap items-center gap-x-3.5 gap-y-1 text-ui-label text-muted-foreground [&>span]:shrink-0 [&>span]:whitespace-nowrap";
 
   // 목록 불러오기 (핀 우선 + 최신, 서버에서 정렬됨)
   // 입력용 상태 (타이핑 중)
@@ -317,10 +317,10 @@ export default function NoticeListClient({
                 <HeaderIcon className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <div>
-                <h1 className="break-keep text-2xl font-bold leading-tight tracking-normal text-foreground sm:text-3xl md:text-[2rem]">
+                <h1 className="break-keep text-ui-page-title font-semibold leading-tight tracking-normal text-foreground sm:text-ui-page-title-lg md:text-ui-page-title-lg">
                   {pageTitle}
                 </h1>
-                <p className="break-keep text-sm text-muted-foreground sm:text-base">
+                <p className="break-keep text-ui-body-sm text-muted-foreground sm:text-ui-body-lg">
                   {pageDescription}
                 </p>
               </div>
@@ -333,7 +333,7 @@ export default function NoticeListClient({
             <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                 <HeaderIcon className="h-5 w-5 shrink-0 text-primary sm:h-6 sm:w-6" />
-                <CardTitle className="whitespace-nowrap break-keep text-lg font-bold sm:text-xl md:text-2xl">
+                <CardTitle className="whitespace-nowrap break-keep text-ui-card-title-lg font-semibold sm:text-ui-section-title md:text-ui-page-title">
                   {listTitle}
                 </CardTitle>
               </div>
@@ -345,13 +345,13 @@ export default function NoticeListClient({
           <div className="border-b bg-muted/20 px-4 py-3 sm:px-5 md:px-6">
             <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
-                <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <span className="shrink-0 text-ui-label font-semibold uppercase tracking-wide text-muted-foreground">
                   필터
                 </span>
                 <div className="w-full sm:w-[170px] sm:shrink-0">
                   <Select value={inputField} onValueChange={(v) => setInputField(v as any)}>
                     <SelectTrigger
-                      className="h-9 w-full bg-card text-sm sm:h-10 sm:text-base"
+                      className="h-9 w-full bg-card text-ui-body-sm sm:h-10 sm:text-ui-body-lg"
                       aria-label="검색 조건"
                     >
                       <SelectValue placeholder="검색 조건" />
@@ -386,7 +386,7 @@ export default function NoticeListClient({
                   <Input
                     type="search"
                     placeholder="검색어를 입력하세요"
-                    className="h-9 w-full min-w-0 bg-card pl-10 text-sm sm:h-10 sm:pl-12 sm:text-base"
+                    className="h-9 w-full min-w-0 bg-card pl-10 text-ui-body-sm sm:h-10 sm:pl-12 sm:text-ui-body-lg"
                     value={inputKeyword}
                     onChange={(e) => setInputKeyword(e.target.value)}
                   />
@@ -395,7 +395,7 @@ export default function NoticeListClient({
                   type="submit"
                   size="sm"
                   variant="outline"
-                  className="h-9 w-full shrink-0 whitespace-nowrap text-sm sm:h-10 sm:w-auto sm:text-base lg:w-auto"
+                  className="h-9 w-full shrink-0 whitespace-nowrap text-ui-body-sm sm:h-10 sm:w-auto sm:text-ui-body-lg lg:w-auto"
                   disabled={isBusy}
                 >
                   {isBusy && (
@@ -588,8 +588,8 @@ export default function NoticeListClient({
                     size="sm"
                     className={
                       pageNumber === page
-                        ? "h-10 w-10 sm:h-12 sm:w-12 bg-secondary text-foreground border-border text-sm sm:text-base"
-                        : "h-10 w-10 sm:h-12 sm:w-12 bg-card text-sm sm:text-base"
+                        ? "h-10 w-10 sm:h-12 sm:w-12 bg-secondary text-foreground border-border text-ui-body-sm sm:text-ui-body-lg"
+                        : "h-10 w-10 sm:h-12 sm:w-12 bg-card text-ui-body-sm sm:text-ui-body-lg"
                     }
                     onClick={() => movePage(pageNumber)}
                     disabled={isBusy}
@@ -639,7 +639,7 @@ export default function NoticeListClient({
                     value={pageJump}
                     onChange={(e) => setPageJump(e.target.value)}
                     placeholder="페이지"
-                    className="h-10 w-20 sm:h-12 rounded-md border border-border bg-card px-2 text-xs sm:text-sm dark:border-border dark:bg-card"
+                    className="h-10 w-20 sm:h-12 rounded-md border border-border bg-card px-2 text-ui-label sm:text-ui-body-sm dark:border-border dark:bg-card"
                   />
                   <Button
                     type="submit"

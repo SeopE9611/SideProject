@@ -31,9 +31,9 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 const boardMobileTitleClampClass =
-  "flex-1 min-w-0 line-clamp-2 text-sm font-semibold leading-snug sm:line-clamp-1 sm:text-base";
+  "flex-1 min-w-0 line-clamp-2 text-ui-body-sm font-semibold leading-snug sm:line-clamp-1 sm:text-ui-body-lg";
 const boardMobileMetaWrapClass =
-  "flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground";
+  "flex flex-wrap items-center gap-x-3 gap-y-1 text-ui-label text-muted-foreground";
 
 type BoardKind = "free" | "market" | "gear";
 
@@ -134,7 +134,7 @@ function CommunityLatestCard({
         <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             {icon}
-            <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">
+            <span className="text-ui-card-title-lg sm:text-ui-section-title md:text-ui-page-title font-semibold leading-tight break-keep">
               {title}
             </span>
           </div>
@@ -161,7 +161,7 @@ function CommunityLatestCard({
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <div className="py-6 md:py-8 text-center text-sm text-muted-foreground">
+            <div className="py-6 md:py-8 text-center text-ui-body-sm text-muted-foreground">
               {emptyText}
             </div>
           ) : (
@@ -338,7 +338,7 @@ function NoticeCard({
         <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Bell className="h-5 w-5 text-primary" />
-            <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">
+            <span className="text-ui-card-title-lg sm:text-ui-section-title md:text-ui-page-title font-semibold leading-tight break-keep">
               공지사항
             </span>
           </div>
@@ -460,9 +460,9 @@ function NoticeCard({
                     </div>
 
                     {!!notice.excerpt && (
-                      <p className="text-sm text-muted-foreground mb-2">{notice.excerpt}</p>
+                      <p className="text-ui-body-sm text-muted-foreground mb-2">{notice.excerpt}</p>
                     )}
-                    <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                    <div className="flex items-center space-x-4 text-ui-label text-muted-foreground">
                       <span>{fmt(notice.createdAt)}</span>
                       <span className="flex items-center">
                         <Eye className="h-3 w-3 mr-1" />
@@ -497,7 +497,7 @@ function QnaCard({
         <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <MessageSquare className="h-5 w-5 text-success" />
-            <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">
+            <span className="text-ui-card-title-lg sm:text-ui-section-title md:text-ui-page-title font-semibold leading-tight break-keep">
               Q&amp;A
             </span>
           </div>
@@ -568,7 +568,7 @@ function QnaCard({
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                    <div className="flex items-center space-x-4 text-ui-label text-muted-foreground">
                       <span>{qna.authorName ?? "익명"}</span>
                       <span>{fmt(qna.createdAt)}</span>
                       <span className="flex items-center">
@@ -604,7 +604,7 @@ function ReviewCard({
         <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Star className="h-5 w-5 text-foreground" />
-            <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">
+            <span className="text-ui-card-title-lg sm:text-ui-section-title md:text-ui-page-title font-semibold leading-tight break-keep">
               리뷰
             </span>
           </div>
@@ -630,7 +630,7 @@ function ReviewCard({
           ) : isLoading ? (
             <FiveLineSkeleton />
           ) : items.length === 0 ? (
-            <div className="py-6 md:py-8 text-center text-sm text-muted-foreground">
+            <div className="py-6 md:py-8 text-center text-ui-body-sm text-muted-foreground">
               등록된 리뷰가 없습니다.
             </div>
           ) : (
@@ -656,7 +656,7 @@ function ReviewCard({
                         {reviewExcerpt(review)}
                       </Link>
                     </div>
-                    <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                    <div className="flex items-center space-x-4 text-ui-label text-muted-foreground">
                       <span>{review.userName ?? "익명"}</span>
                       <span>{fmt(review.createdAt)}</span>
                       <span className="flex items-center">
@@ -682,14 +682,14 @@ function CommunityIntroCard() {
         <CardTitle className="flex items-center justify-between">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <MessageSquare className="h-5 w-5 text-foreground" />
-            <span className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">
+            <span className="text-ui-card-title-lg sm:text-ui-section-title md:text-ui-page-title font-semibold leading-tight break-keep">
               커뮤니티 게시판
             </span>
           </div>
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="p-4 md:p-6 space-y-4 text-sm text-muted-foreground">
+      <CardContent className="p-4 md:p-6 space-y-4 text-ui-body-sm text-muted-foreground">
         <p>자유게시판, 중고거래, 장비 사용기, 구매·서비스 후기를 한 곳에서 둘러볼 수 있어요.</p>
 
         <div className="grid gap-2 sm:grid-cols-4">
@@ -790,11 +790,11 @@ export default function BoardPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
               <MessageSquare className="h-6 w-6" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">
+            <h1 className="text-ui-page-title-lg md:text-ui-page-title-lg font-semibold tracking-normal text-foreground">
               커뮤니티
             </h1>
           </div>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-ui-card-title-lg text-muted-foreground max-w-2xl mx-auto">
             커뮤니티는 자유게시판, 중고거래, 장비 사용기, 리뷰처럼 이용자끼리 정보를 나누는
             공간입니다. 주문/서비스 문의는 고객센터를 이용해주세요.
           </p>

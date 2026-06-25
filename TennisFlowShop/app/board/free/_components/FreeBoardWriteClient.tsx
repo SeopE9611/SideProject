@@ -393,7 +393,7 @@ export default function FreeBoardWriteClient() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             {/* 브레드크럼: 게시판 > 자유 게시판 > 글쓰기 */}
-            <div className="mb-1 text-sm text-muted-foreground">
+            <div className="mb-1 text-ui-body-sm text-muted-foreground">
               <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
               <Link
@@ -406,10 +406,10 @@ export default function FreeBoardWriteClient() {
               <span className="mx-1">›</span>
               <span>글쓰기</span>
             </div>
-            <h1 className="break-keep text-2xl font-bold tracking-normal text-foreground md:text-3xl">
+            <h1 className="break-keep text-ui-page-title font-semibold tracking-normal text-foreground md:text-ui-page-title-lg">
               자유 게시판 글쓰기
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground md:text-base">
+            <p className="mt-1 text-ui-body-sm text-muted-foreground md:text-ui-body-lg">
               테니스 관련 질문, 정보 공유, 후기, 잡담 등 다양한 이야기를 자유롭게 남겨 보세요.
             </p>
           </div>
@@ -443,9 +443,9 @@ export default function FreeBoardWriteClient() {
                 maxLength={TITLE_MAX}
               />
               {fieldErrors.title ? (
-                <p className="text-xs text-destructive">{fieldErrors.title}</p>
+                <p className="text-ui-label text-destructive">{fieldErrors.title}</p>
               ) : null}
-              <p className="text-xs text-muted-foreground">
+              <p className="text-ui-label text-muted-foreground">
                 {title.trim().length}/{TITLE_MAX}
               </p>
             </div>
@@ -456,7 +456,7 @@ export default function FreeBoardWriteClient() {
               {/* 분류 선택 */}
               <div className="space-y-2" ref={categoryRef}>
                 <Label>분류</Label>
-                <div className="flex flex-wrap gap-2 rounded-xl border border-border bg-muted/30 p-3 text-sm">
+                <div className="flex flex-wrap gap-2 rounded-xl border border-border bg-muted/30 p-3 text-ui-body-sm">
                   {CATEGORY_OPTIONS.map((opt) => (
                     <button
                       key={opt.value}
@@ -481,7 +481,7 @@ export default function FreeBoardWriteClient() {
                   ))}
                 </div>
                 {fieldErrors.category ? (
-                  <p className="text-xs text-destructive">{fieldErrors.category}</p>
+                  <p className="text-ui-label text-destructive">{fieldErrors.category}</p>
                 ) : null}
               </div>
 
@@ -505,13 +505,13 @@ export default function FreeBoardWriteClient() {
                   maxLength={CONTENT_MAX}
                 />
                 {fieldErrors.content ? (
-                  <p className="text-xs text-destructive">{fieldErrors.content}</p>
+                  <p className="text-ui-label text-destructive">{fieldErrors.content}</p>
                 ) : null}
-                <p className="text-xs text-muted-foreground">
+                <p className="text-ui-label text-muted-foreground">
                   {content.trim().length}/{CONTENT_MAX}
                 </p>
 
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 text-ui-label text-muted-foreground">
                   신청/주문 문의 등 개인 정보가 필요한 내용은 고객센터 Q&amp;A 게시판을 활용해
                   주세요.
                 </p>
@@ -521,7 +521,7 @@ export default function FreeBoardWriteClient() {
               <div className="space-y-3" ref={attachmentsRef}>
                 <Label>첨부 (선택)</Label>
                 {fieldErrors.attachments ? (
-                  <p className="text-xs text-destructive">{fieldErrors.attachments}</p>
+                  <p className="text-ui-label text-destructive">{fieldErrors.attachments}</p>
                 ) : null}
                 <Tabs defaultValue="image" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
@@ -531,7 +531,7 @@ export default function FreeBoardWriteClient() {
 
                   {/* 이미지 업로드 탭 */}
                   <TabsContent value="image" className="pt-4 space-y-2">
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-ui-label text-muted-foreground">
                       최대 5장까지 업로드할 수 있으며, 첫 번째 이미지가 대표로 사용됩니다.
                     </p>
                     <ImageUploader
@@ -566,10 +566,10 @@ export default function FreeBoardWriteClient() {
                       }}
                     >
                       <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-ui-body-sm text-muted-foreground">
                         클릭하여 파일을 선택하거나, 이 영역으로 드래그하여 업로드할 수 있어요.
                       </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="mt-1 text-ui-label text-muted-foreground">
                         이미지 파일은 이미지 탭에서 업로드해 주세요. (파일당 최대 {MAX_SIZE_MB}MB,
                         최대 {MAX_FILES}개)
                       </p>
@@ -599,7 +599,7 @@ export default function FreeBoardWriteClient() {
                     {/* 선택된 파일 카드 목록 */}
                     {selectedFiles.length > 0 && (
                       <div className="space-y-2">
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-ui-label text-muted-foreground">
                           첨부된 파일 ({selectedFiles.length}/{MAX_FILES})
                         </p>
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
@@ -608,7 +608,7 @@ export default function FreeBoardWriteClient() {
                               key={`${file.name}-${index}`}
                               className="group relative flex flex-col justify-between rounded-lg bg-card px-3 py-2 shadow-sm hover:shadow-md ring-1 ring-ring hover:ring-2 hover:ring-ring transition"
                             >
-                              <div className="flex-1 flex flex-col gap-1 text-xs">
+                              <div className="flex-1 flex flex-col gap-1 text-ui-label">
                                 <span className="font-medium truncate" title={file.name}>
                                   {file.name}
                                 </span>

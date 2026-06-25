@@ -17,15 +17,15 @@ export default function HotBoardPage() {
         {/* 헤더 영역 */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="min-w-0">
-            <div className="mb-1 text-sm text-muted-foreground">
+            <div className="mb-1 text-ui-body-sm text-muted-foreground">
               <span className="font-medium text-success">게시판</span>
               <span className="mx-1">›</span>
               <span>인기글 모아보기</span>
             </div>
-            <h1 className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep tracking-normal text-foreground">
+            <h1 className="text-ui-card-title-lg sm:text-ui-section-title md:text-ui-page-title font-semibold leading-tight break-keep tracking-normal text-foreground">
               인기글 모아보기 (준비중)
             </h1>
-            <p className="mt-1 text-sm md:text-base text-muted-foreground">
+            <p className="mt-1 text-ui-body-sm md:text-ui-body-lg text-muted-foreground">
               조회수, 댓글 수, 공감 수 등을 기준으로 인기 게시글을 큐레이션하는 페이지입니다. 현재
               기능을 준비하고 있습니다.
             </p>
@@ -39,22 +39,22 @@ export default function HotBoardPage() {
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-warning/10 shadow-lg dark:bg-warning/15">
                 <Flame className="h-5 w-5 text-warning" />
               </div>
-              <CardTitle className="text-lg sm:text-xl md:text-2xl font-semibold leading-tight break-keep">
+              <CardTitle className="text-ui-card-title-lg sm:text-ui-section-title md:text-ui-page-title font-semibold leading-tight break-keep">
                 인기글 모아보기 기능을 준비 중입니다
               </CardTitle>
             </div>
-            <span className="ml-auto shrink-0 text-xs md:text-sm rounded-full border px-3 py-1 text-muted-foreground dark:border-border bg-card">
+            <span className="ml-auto shrink-0 text-ui-label md:text-ui-body-sm rounded-full border px-3 py-1 text-muted-foreground dark:border-border bg-card">
               Coming Soon
             </span>
           </CardHeader>
-          <CardContent className="p-6 space-y-3 text-sm md:text-base text-muted-foreground">
+          <CardContent className="p-6 space-y-3 text-ui-body-sm md:text-ui-body-lg text-muted-foreground">
             <p>추후 다음과 같은 기준으로 인기글을 보여줄 예정입니다:</p>
             <ul className="list-disc pl-5 space-y-1">
               <li>조회수 상위 게시글</li>
               <li>댓글/답글 수가 많은 활발한 게시글</li>
               <li>공감/좋아요 수가 높은 하이라이트 게시글</li>
             </ul>
-            <p className="pt-2 text-xs md:text-sm text-muted-foreground">
+            <p className="pt-2 text-ui-label md:text-ui-body-sm text-muted-foreground">
               기능 오픈 전까지는 리뷰 게시판에서 인기 있는 후기들을 먼저 확인해 보실 수 있습니다.
             </p>
             <Button asChild size="sm" className="mt-2">

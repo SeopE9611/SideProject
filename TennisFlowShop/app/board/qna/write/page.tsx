@@ -512,10 +512,10 @@ export default function QnaWritePage() {
                 <MessageSquare className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold tracking-normal text-foreground">
+                <h1 className="text-ui-page-title-lg md:text-ui-page-title-lg font-semibold tracking-normal text-foreground">
                   문의하기
                 </h1>
-                <p className="text-lg text-muted-foreground">궁금한 점을 자세히 작성해주세요</p>
+                <p className="text-ui-card-title-lg text-muted-foreground">궁금한 점을 자세히 작성해주세요</p>
               </div>
             </div>
           </div>
@@ -529,7 +529,7 @@ export default function QnaWritePage() {
             </CardHeader>
             <CardContent className="p-4 md:p-8 space-y-6 md:space-y-8">
               <div ref={categoryWrapRef} className="space-y-3">
-                <Label htmlFor="category" className="text-base font-semibold">
+                <Label htmlFor="category" className="text-ui-body-lg font-semibold">
                   카테고리 <span className="text-destructive">*</span>
                 </Label>
                 <Select
@@ -556,12 +556,12 @@ export default function QnaWritePage() {
                   </SelectContent>
                 </Select>
                 {fieldErrors.category && (
-                  <p className="text-sm text-destructive">{fieldErrors.category}</p>
+                  <p className="text-ui-body-sm text-destructive">{fieldErrors.category}</p>
                 )}
 
                 {/* 상품 상세에서 진입한 프리필이 있으면 안내 뱃지 */}
                 {preProductId && (
-                  <div className="mt-2 text-sm text-muted-foreground flex items-center gap-2">
+                  <div className="mt-2 text-ui-body-sm text-muted-foreground flex items-center gap-2">
                     <Badge variant="secondary">프리필</Badge>
                     <span>
                       선택된 상품: <strong>{preProductName || preProductId}</strong>
@@ -580,12 +580,12 @@ export default function QnaWritePage() {
 
               {category === "product" && !preProductId && (
                 <div ref={productWrapRef} className="space-y-4">
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-ui-body-sm text-muted-foreground">
                     <span className="font-medium">상품 선택</span> — 본인이 구매했던 상품 또는 전체
                     상품에서 선택하세요.
                   </div>
                   {fieldErrors.product && (
-                    <p className="text-sm text-destructive">{fieldErrors.product}</p>
+                    <p className="text-ui-body-sm text-destructive">{fieldErrors.product}</p>
                   )}
 
                   {/* 탭처럼 보이는 간단한 토글 */}
@@ -594,18 +594,18 @@ export default function QnaWritePage() {
                     <div className="rounded-lg border border-border p-4">
                       <div className="font-semibold mb-3">내 구매상품</div>
                       {!me && (
-                        <div className="mb-2 text-xs text-muted-foreground">
+                        <div className="mb-2 text-ui-label text-muted-foreground">
                           로그인하면 "내 구매상품" 목록을 불러와 빠르게 선택할 수 있어요.
                         </div>
                       )}
                       {me && ordersError && (
-                        <div className="mb-2 text-sm text-destructive">
+                        <div className="mb-2 text-ui-body-sm text-destructive">
                           구매 상품 목록을 불러오지 못했습니다. 네트워크 상태를 확인해주세요.
                         </div>
                       )}
                       <div className="space-y-2 max-h-60 overflow-auto">
                         {me && myProducts.length === 0 && (
-                          <div className="text-sm text-muted-foreground">구매 이력이 없습니다.</div>
+                          <div className="text-ui-body-sm text-muted-foreground">구매 이력이 없습니다.</div>
                         )}
                         {myProducts.map((p) => (
                           <button
@@ -618,7 +618,7 @@ export default function QnaWritePage() {
                             className={`w-full text-left px-3 py-2 rounded hover:bg-muted dark:hover:bg-card ${product?.id === p.id ? "ring-2 ring-ring" : ""}`}
                           >
                             <div className="font-medium">{p.name}</div>
-                            <div className="text-xs text-muted-foreground">{p.id}</div>
+                            <div className="text-ui-label text-muted-foreground">{p.id}</div>
                           </button>
                         ))}
                       </div>
@@ -638,10 +638,10 @@ export default function QnaWritePage() {
                       </div>
                       <div className="space-y-2 max-h-60 overflow-auto">
                         {!q.trim() && (
-                          <div className="text-sm text-muted-foreground">검색어를 입력하세요.</div>
+                          <div className="text-ui-body-sm text-muted-foreground">검색어를 입력하세요.</div>
                         )}
                         {q.trim() && searchProducts.length === 0 && (
-                          <div className="text-sm text-muted-foreground">검색 결과가 없습니다.</div>
+                          <div className="text-ui-body-sm text-muted-foreground">검색 결과가 없습니다.</div>
                         )}
                         {searchProducts.map((p) => (
                           <button
@@ -654,7 +654,7 @@ export default function QnaWritePage() {
                             className={`w-full text-left px-3 py-2 rounded hover:bg-muted dark:hover:bg-card ${product?.id === p.id ? "ring-2 ring-ring" : ""}`}
                           >
                             <div className="font-medium">{p.name}</div>
-                            <div className="text-xs text-muted-foreground">{p.id}</div>
+                            <div className="text-ui-label text-muted-foreground">{p.id}</div>
                           </button>
                         ))}
                       </div>
@@ -663,7 +663,7 @@ export default function QnaWritePage() {
 
                   {/* 현재 선택된 상품 미리보기/해제 */}
                   {product && (
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-ui-body-sm">
                       <Badge variant="secondary">선택됨</Badge>
                       <span>
                         <strong>{product.name}</strong> ({product.id})
@@ -682,7 +682,7 @@ export default function QnaWritePage() {
               )}
 
               <div className="space-y-3">
-                <Label htmlFor="title" className="text-base font-semibold">
+                <Label htmlFor="title" className="text-ui-body-lg font-semibold">
                   제목 <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -694,15 +694,15 @@ export default function QnaWritePage() {
                     clearErrors("title");
                   }}
                   placeholder="문의 제목을 작성해주세요(4자이상)"
-                  className="h-12 bg-card dark:bg-muted text-base"
+                  className="h-12 bg-card dark:bg-muted text-ui-body-lg"
                 />
                 {fieldErrors.title && (
-                  <p className="text-sm text-destructive">{fieldErrors.title}</p>
+                  <p className="text-ui-body-sm text-destructive">{fieldErrors.title}</p>
                 )}
               </div>
 
               <div className="space-y-3">
-                <Label htmlFor="content" className="text-base font-semibold">
+                <Label htmlFor="content" className="text-ui-body-lg font-semibold">
                   문의 내용 <span className="text-destructive">*</span>
                 </Label>
                 <Textarea
@@ -714,18 +714,18 @@ export default function QnaWritePage() {
                     clearErrors("content");
                   }}
                   placeholder="문의하실 내용을 자세히 작성해주세요(10자 이상)"
-                  className="min-h-[200px] bg-card dark:bg-muted text-base resize-none"
+                  className="min-h-[200px] bg-card dark:bg-muted text-ui-body-lg resize-none"
                 />
                 {fieldErrors.content && (
-                  <p className="text-sm text-destructive">{fieldErrors.content}</p>
+                  <p className="text-ui-body-sm text-destructive">{fieldErrors.content}</p>
                 )}
-                <p className="text-sm text-muted-foreground">
+                <p className="text-ui-body-sm text-muted-foreground">
                   상세한 정보를 제공해주시면 더 정확한 답변을 드릴 수 있습니다.
                 </p>
               </div>
 
               <div ref={imagesWrapRef} className="space-y-3">
-                <Label htmlFor="image" className="text-base font-semibold">
+                <Label htmlFor="image" className="text-ui-body-lg font-semibold">
                   이미지 첨부 (선택사항)
                 </Label>
                 <div className="space-y-4">
@@ -742,7 +742,7 @@ export default function QnaWritePage() {
                     }
                   >
                     <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground mb-2">
+                    <p className="text-ui-body-sm text-muted-foreground mb-2">
                       클릭하여 이미지를 선택하거나 드래그하여 업로드하세요
                     </p>
                     <Input
@@ -768,13 +768,13 @@ export default function QnaWritePage() {
                     </Button>
                   </div>
                   {fieldErrors.images && (
-                    <p className="text-sm text-destructive">{fieldErrors.images}</p>
+                    <p className="text-ui-body-sm text-destructive">{fieldErrors.images}</p>
                   )}
 
                   {/* 미리보기 썸네일 */}
                   {selectedFiles.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-sm font-medium text-foreground">
+                      <p className="text-ui-body-sm font-medium text-foreground">
                         첨부된 파일 ({selectedFiles.length}/3)
                       </p>
 
@@ -801,13 +801,13 @@ export default function QnaWritePage() {
                                   <div className="h-28 rounded bg-muted dark:bg-card animate-pulse" />
                                 )
                               ) : (
-                                <div className="h-28 flex items-center justify-center text-xs text-muted-foreground px-2 text-center">
+                                <div className="h-28 flex items-center justify-center text-ui-label text-muted-foreground px-2 text-center">
                                   {file.name}
                                 </div>
                               )}
 
                               {/* 파일 크기 */}
-                              <div className="absolute left-2 bottom-2 text-[11px] px-1.5 py-0.5 rounded bg-card dark:bg-card">
+                              <div className="absolute left-2 bottom-2 text-ui-caption px-1.5 py-0.5 rounded bg-card dark:bg-card">
                                 {(file.size / 1024 / 1024).toFixed(2)} MB
                               </div>
 
@@ -846,7 +846,7 @@ export default function QnaWritePage() {
                     </div>
                   )}
                   {/* 제한 안내 뱃지 */}
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-ui-label text-muted-foreground">
                     • 최대 3개 / 파일당 최대 5MB
                     <br />• 지원 형식: 이미지(JPG/PNG/GIF/WEBP)
                   </div>
@@ -863,11 +863,11 @@ export default function QnaWritePage() {
                 <div className="space-y-1">
                   <label
                     htmlFor="private"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    className="text-ui-body-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                   >
                     비공개 문의로 작성
                   </label>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-ui-label text-muted-foreground">
                     비공개로 설정하면 작성자와 관리자만 내용을 볼 수 있습니다.
                   </p>
                 </div>

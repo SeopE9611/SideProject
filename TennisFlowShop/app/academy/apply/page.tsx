@@ -280,7 +280,7 @@ export default async function AcademyApplyPage({
                   {notices.map((notice, index) => (
                     <li
                       key={index}
-                      className="flex items-start gap-2 text-sm leading-relaxed text-muted-foreground"
+                      className="flex items-start gap-2 text-ui-body-sm leading-relaxed text-muted-foreground"
                     >
                       <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50" />
                       <span>{notice}</span>
@@ -319,7 +319,7 @@ export default async function AcademyApplyPage({
                   <div className="border-b border-border bg-muted/30 px-5 py-4 md:px-6">
                     <div className="flex flex-wrap items-center gap-2">
                       <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${selectedClass.status === "closed" ? "bg-muted text-muted-foreground" : "bg-success/10 text-success"}`}
+                        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-ui-label font-medium ${selectedClass.status === "closed" ? "bg-muted text-muted-foreground" : "bg-success/10 text-success"}`}
                       >
                         {selectedClass.status === "closed" ? (
                           <Clock className="h-3 w-3" />
@@ -328,10 +328,10 @@ export default async function AcademyApplyPage({
                         )}
                         {selectedClass.statusLabel}
                       </span>
-                      <span className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
+                      <span className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-ui-label font-medium text-muted-foreground">
                         {selectedClass.lessonTypeLabel}
                       </span>
-                      <span className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
+                      <span className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-ui-label font-medium text-muted-foreground">
                         {selectedClass.levelLabel}
                       </span>
                     </div>
@@ -340,14 +340,14 @@ export default async function AcademyApplyPage({
                   {/* Class Content */}
                   <div className="p-5 md:p-6">
                     <div className="mb-4">
-                      <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      <p className="mb-1 text-ui-label font-medium uppercase tracking-wider text-muted-foreground">
                         선택한 클래스
                       </p>
-                      <h3 className="text-xl font-semibold text-foreground">
+                      <h3 className="text-ui-section-title font-semibold text-foreground">
                         {selectedClass.name}
                       </h3>
                       {selectedClass.description && (
-                        <p className="mt-2 whitespace-pre-line break-keep break-words text-sm leading-relaxed text-muted-foreground">
+                        <p className="mt-2 whitespace-pre-line break-keep break-words text-ui-body-sm leading-relaxed text-muted-foreground">
                           {selectedClass.description}
                         </p>
                       )}
@@ -358,10 +358,10 @@ export default async function AcademyApplyPage({
                       <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/20 p-3">
                         <Users className="h-4 w-4 shrink-0 text-muted-foreground" />
                         <div className="min-w-0">
-                          <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">
+                          <p className="shrink-0 whitespace-nowrap break-keep text-ui-label text-muted-foreground">
                             정원
                           </p>
-                          <p className="min-w-0 whitespace-nowrap break-keep text-sm font-medium text-foreground tabular-nums">
+                          <p className="min-w-0 whitespace-nowrap break-keep text-ui-body-sm font-medium text-foreground tabular-nums">
                             {formatClassCapacity(selectedClass.capacity)}
                           </p>
                         </div>
@@ -369,10 +369,10 @@ export default async function AcademyApplyPage({
                       <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/20 p-3">
                         <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
                         <div className="min-w-0">
-                          <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">
+                          <p className="shrink-0 whitespace-nowrap break-keep text-ui-label text-muted-foreground">
                             장소
                           </p>
-                          <p className="min-w-0 whitespace-normal break-keep break-words text-sm font-medium text-foreground">
+                          <p className="min-w-0 whitespace-normal break-keep break-words text-ui-body-sm font-medium text-foreground">
                             {selectedClass.location || "상담 후 안내"}
                           </p>
                         </div>
@@ -380,14 +380,14 @@ export default async function AcademyApplyPage({
                       <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/20 p-3">
                         <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                         <div className="min-w-0 space-y-0.5 whitespace-normal break-keep break-words">
-                          <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">
+                          <p className="shrink-0 whitespace-nowrap break-keep text-ui-label text-muted-foreground">
                             일정
                           </p>
-                          <p className="text-sm font-semibold text-foreground">
+                          <p className="text-ui-body-sm font-semibold text-foreground">
                             {selectedClassSchedule?.daysText}
                           </p>
                           {selectedClassSchedule?.timeText && (
-                            <p className="text-sm font-medium text-muted-foreground">
+                            <p className="text-ui-body-sm font-medium text-muted-foreground">
                               {selectedClassSchedule.timeText}
                             </p>
                           )}
@@ -396,10 +396,10 @@ export default async function AcademyApplyPage({
                       <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/20 p-3">
                         <Wallet className="h-4 w-4 shrink-0 text-muted-foreground" />
                         <div className="min-w-0">
-                          <p className="shrink-0 whitespace-nowrap break-keep text-xs text-muted-foreground">
+                          <p className="shrink-0 whitespace-nowrap break-keep text-ui-label text-muted-foreground">
                             수강료
                           </p>
-                          <p className="min-w-0 whitespace-nowrap break-keep text-sm font-medium text-foreground tabular-nums">
+                          <p className="min-w-0 whitespace-nowrap break-keep text-ui-body-sm font-medium text-foreground tabular-nums">
                             {formatClassPrice(selectedClass.price)}
                           </p>
                         </div>
@@ -409,7 +409,7 @@ export default async function AcademyApplyPage({
                     {/* Closed Class Notice */}
                     {selectedClass.status === "closed" && (
                       <div className="mt-4 rounded-xl border border-border bg-muted/20 p-4">
-                        <p className="mb-3 text-sm leading-relaxed text-muted-foreground">
+                        <p className="mb-3 text-ui-body-sm leading-relaxed text-muted-foreground">
                           이 클래스는 현재 모집이 마감되었습니다. 문의하기를 통해 다음 모집 일정을
                           확인해 주세요.
                         </p>
@@ -434,7 +434,7 @@ export default async function AcademyApplyPage({
                         <h3 className="font-semibold text-foreground">
                           클래스 정보를 찾을 수 없습니다
                         </h3>
-                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                        <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground">
                           선택한 클래스 정보를 찾을 수 없어 일반 레슨 신청으로 접수됩니다. 특정
                           클래스를 신청하려면 아카데미 페이지에서 모집 중인 클래스를 다시 선택해
                           주세요.
