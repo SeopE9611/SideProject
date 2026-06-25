@@ -26,6 +26,7 @@ type ProductDoc = {
   inventory?: {
     stock?: number;
     manageStock?: boolean;
+    status?: string;
     isFeatured?: boolean;
     isNew?: boolean;
     isSale?: boolean;
