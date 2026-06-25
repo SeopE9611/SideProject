@@ -68,10 +68,10 @@ export default async function RacketsPage({
           <PublicSurface variant="elevated" padding="sm" className="mb-4">
             <div className="flex flex-col gap-3 bp-md:flex-row bp-md:items-center bp-md:justify-between">
               <div className="min-w-0">
-                <p className="break-keep text-sm font-semibold text-foreground bp-sm:text-base">
+                <p className="break-keep text-ui-body-sm font-semibold text-foreground bp-sm:text-ui-body">
                   라켓 선택 후 스트링 장착까지 이어집니다
                 </p>
-                <p className="mt-0.5 break-keep text-xs leading-relaxed text-muted-foreground">
+                <p className="mt-0.5 break-keep text-ui-label leading-relaxed text-muted-foreground">
                   구매는 스트링 선택 후 결제로, 대여는 기간 선택 후 장착 설정으로 이동합니다.
                 </p>
               </div>

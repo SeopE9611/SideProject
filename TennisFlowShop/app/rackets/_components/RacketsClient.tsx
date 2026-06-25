@@ -60,18 +60,18 @@ export default function RacketsClient() {
     <div className="mx-auto max-w-6xl space-y-4 p-4 md:space-y-6">
       {/* 상단 타이틀 + 간단 필터 */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold">중고 라켓</h1>
+        <h1 className="text-ui-page-title font-semibold">중고 라켓</h1>
         <div className="flex gap-2">
           <input
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
             placeholder="라켓 브랜드(예: Yonex)"
-            className="h-9 w-48 rounded border px-3 text-sm"
+            className="h-9 w-48 rounded border px-3 text-ui-body-sm"
           />
           <select
             value={cond ?? ""}
             onChange={(e) => setCond(e.target.value)}
-            className="h-9 rounded border px-2 text-sm"
+            className="h-9 rounded border px-2 text-ui-body-sm"
           >
             <option value="">상태(전체)</option>
             <option value="A">A (최상)</option>
@@ -111,7 +111,7 @@ export default function RacketsClient() {
                     className="object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-ui-body-sm">
                     이미지 준비중
                   </div>
                 )}
@@ -122,17 +122,17 @@ export default function RacketsClient() {
                 )}
               </div>
               <div className="p-3 space-y-1">
-                <div className="text-sm text-muted-foreground">{racketBrandLabel(it.brand)}</div>
+                <div className="text-ui-body-sm text-muted-foreground">{racketBrandLabel(it.brand)}</div>
                 <div className="font-medium group-hover:underline">{it.model}</div>
-                <div className="text-sm">
+                <div className="text-ui-body-sm">
                   상태: <span className="font-semibold">{it.condition}</span>
                 </div>
-                <div className="text-base font-semibold">{it.price.toLocaleString()}원</div>
+                <div className="text-ui-body font-semibold">{it.price.toLocaleString()}원</div>
                 {it.rental?.enabled ? (
                   // 라켓별 진행중 대여 수 조회
                   <RacketAvailBadge id={it.id} />
                 ) : (
-                  <div className="text-xs text-destructive">대여 불가</div>
+                  <div className="text-ui-label text-destructive">대여 불가</div>
                 )}
               </div>
             </Link>
@@ -158,7 +158,7 @@ function RacketAvailBadge({ id }: { id: string }) {
   const avail = Math.max(0, Number(data?.available ?? qty - Number(data?.count ?? 0)));
   const soldOut = avail <= 0;
   return (
-    <div className={`text-xs ${soldOut ? "text-destructive" : "text-primary"}`}>
+    <div className={`text-ui-label ${soldOut ? "text-destructive" : "text-primary"}`}>
       {qty > 1
         ? soldOut
           ? `대여 중 (0/${qty})`

@@ -104,7 +104,7 @@ function ConditionBadge({ state }: { state: string }) {
   return (
     <Badge
       variant="neutral"
-      className={cn("rounded px-2 py-0.5 text-xs font-medium shadow-sm", meta.className)}
+      className={cn("rounded px-2 py-0.5 text-ui-label font-medium shadow-sm", meta.className)}
     >
       상태: {meta.label}
     </Badge>
@@ -124,7 +124,7 @@ function RacketAvailBadge({
     return (
       <Badge
         variant={badgeToneVariant("neutral")}
-        className="px-2 py-1 text-xs font-medium whitespace-nowrap animate-pulse"
+        className="px-2 py-1 text-ui-label font-medium whitespace-nowrap animate-pulse"
       >
         라켓 가용수량 확인중
       </Badge>
@@ -136,7 +136,7 @@ function RacketAvailBadge({
     return (
       <Badge
         variant={badgeToneVariant("neutral")}
-        className="px-2 py-1 text-xs font-medium whitespace-nowrap"
+        className="px-2 py-1 text-ui-label font-medium whitespace-nowrap"
       >
         라켓 가용수량 (0/0)
       </Badge>
@@ -148,7 +148,7 @@ function RacketAvailBadge({
     return (
       <Badge
         variant={badgeToneVariant("danger")}
-        className="px-2 py-1 text-xs font-medium whitespace-nowrap"
+        className="px-2 py-1 text-ui-label font-medium whitespace-nowrap"
       >
         라켓 가용수량 (0/{qty})
       </Badge>
@@ -158,7 +158,7 @@ function RacketAvailBadge({
   return (
     <Badge
       variant={badgeToneVariant("brand")}
-      className="px-2 py-1 text-xs font-medium whitespace-nowrap"
+      className="px-2 py-1 text-ui-label font-medium whitespace-nowrap"
     >
       라켓 가용수량 ({avail}/{qty})
     </Badge>
@@ -225,8 +225,8 @@ const RacketCard = React.memo(
         {hasSalePrice ? (
           <>
             <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
-              <span className="text-[11px] text-muted-foreground">할인가</span>
-              <span className="whitespace-nowrap text-lg font-bold text-foreground bp-sm:text-xl">
+              <span className="text-ui-caption text-muted-foreground">할인가</span>
+              <span className="whitespace-nowrap text-ui-price font-semibold text-foreground bp-sm:text-ui-price-lg">
                 {salePrice.toLocaleString()}원
               </span>
             </div>
@@ -236,13 +236,13 @@ const RacketCard = React.memo(
                 align === "right" && "justify-end",
               )}
             >
-              <span className="text-[11px] text-muted-foreground">정가</span>
-              <span className="whitespace-nowrap text-xs text-muted-foreground line-through">
+              <span className="text-ui-caption text-muted-foreground">정가</span>
+              <span className="whitespace-nowrap text-ui-label text-muted-foreground line-through">
                 {racket.price.toLocaleString()}원
               </span>
               <Badge
                 variant="outline"
-                className={cn("shrink-0 whitespace-nowrap text-xs", benefitBadgeClass.off)}
+                className={cn("shrink-0 whitespace-nowrap text-ui-label", benefitBadgeClass.off)}
               >
                 {discountRate}% OFF
               </Badge>
@@ -250,8 +250,8 @@ const RacketCard = React.memo(
           </>
         ) : (
           <div className={cn("flex items-baseline gap-1.5", align === "right" && "justify-end")}>
-            <span className="text-[11px] text-muted-foreground">판매가</span>
-            <span className="whitespace-nowrap text-lg font-bold text-foreground bp-sm:text-xl">
+            <span className="text-ui-caption text-muted-foreground">판매가</span>
+            <span className="whitespace-nowrap text-ui-price font-semibold text-foreground bp-sm:text-ui-price-lg">
               {racket.price.toLocaleString()}원
             </span>
           </div>
@@ -263,7 +263,7 @@ const RacketCard = React.memo(
       const compact = options?.compact ?? false;
       const buttonClassName = cn(
         "inline-flex w-full min-w-0 items-center justify-center gap-1.5 rounded-lg px-2.5 text-center font-semibold [&_svg]:mr-0 [&_svg]:shrink-0",
-        compact ? "text-[12px] bp-sm:text-xs bp-md:text-sm" : "text-sm",
+        compact ? "text-ui-caption bp-sm:text-ui-label bp-md:text-ui-body-sm" : "text-ui-body-sm",
       );
       const disabledButtonClassName = cn(
         buttonClassName,
@@ -363,14 +363,14 @@ const RacketCard = React.memo(
             <div className="flex min-w-0 flex-1 flex-col p-4 bp-sm:p-5 bp-md:p-6 bp-lg:py-7">
               <div className="min-w-0">
                 <div
-                  className="mb-1.5 max-w-full truncate text-sm font-medium text-muted-foreground bp-sm:text-base"
+                  className="mb-1.5 max-w-full truncate text-ui-body-sm font-medium text-muted-foreground bp-sm:text-ui-body"
                   title={displayBrandLabel}
                 >
                   {displayBrandLabel}
                 </div>
                 <Link href={`/rackets/${racket.id}`} className="block min-w-0">
                   <h3
-                    className="line-clamp-2 break-keep text-lg font-bold leading-snug text-foreground transition-colors hover:text-primary bp-sm:text-xl bp-lg:line-clamp-3"
+                    className="line-clamp-2 break-keep text-ui-body font-medium leading-snug text-foreground transition-colors hover:text-primary bp-sm:text-ui-section-title bp-lg:line-clamp-3"
                     title={racket.model}
                   >
                     {racket.model}
@@ -392,7 +392,7 @@ const RacketCard = React.memo(
                   asChild
                   size="sm"
                   variant="outline"
-                  className="h-10 w-full justify-center whitespace-nowrap rounded-lg bg-background text-xs font-semibold bp-sm:text-sm"
+                  className="h-10 w-full justify-center whitespace-nowrap rounded-lg bg-background text-ui-label font-semibold bp-sm:text-ui-body-sm"
                 >
                   <Link href={`/rackets/${racket.id}`} onClick={(e) => e.stopPropagation()}>
                     <Eye className="mr-1.5 h-4 w-4 shrink-0" />
@@ -425,14 +425,14 @@ const RacketCard = React.memo(
         </Link>
         <CardContent className="flex flex-1 flex-col p-4 bp-sm:p-6">
           <div
-            className="mb-2 max-w-full truncate text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground bp-sm:text-sm"
+            className="mb-2 max-w-full truncate text-ui-label font-semibold uppercase tracking-[0.08em] text-muted-foreground bp-sm:text-ui-body-sm"
             title={displayBrandLabel}
           >
             {displayBrandLabel}
           </div>
           <Link href={`/rackets/${racket.id}`} className="block min-w-0">
             <CardTitle
-              className="mb-2 line-clamp-2 break-keep text-base leading-snug text-foreground transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:text-lg bp-md:text-xl bp-lg:line-clamp-3"
+              className="mb-2 line-clamp-2 break-keep text-ui-body leading-snug text-foreground transition-colors group-hover:text-primary dark:group-hover:text-primary bp-sm:text-ui-card-title-lg bp-md:text-ui-section-title bp-lg:line-clamp-3"
               title={racket.model}
             >
               {racket.model}

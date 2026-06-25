@@ -84,22 +84,22 @@ export default function RentDialog({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto border border-border bg-card shadow-sm sm:max-w-md">
           <DialogHeader className="pr-8 text-left">
-            <DialogTitle className="text-xl font-bold text-foreground">대여 기간 선택</DialogTitle>
-            <DialogDescription className="break-keep text-sm text-muted-foreground">
+            <DialogTitle className="text-ui-section-title font-semibold text-foreground">대여 기간 선택</DialogTitle>
+            <DialogDescription className="break-keep text-ui-body-sm text-muted-foreground">
               스트링 선택 단계로 이동하기 전 대여 기간을 선택해 주세요.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="rounded-xl border border-border bg-muted/20 p-4">
-              <div className="mb-1 text-sm text-muted-foreground">선택한 라켓</div>
+              <div className="mb-1 text-ui-body-sm text-muted-foreground">선택한 라켓</div>
               <div className="min-w-0 break-keep font-semibold text-foreground">
                 {brand} {model}
               </div>
             </div>
 
             <div className="space-y-3">
-              <div className="text-sm font-semibold text-foreground">기간 선택</div>
+              <div className="text-ui-body-sm font-semibold text-foreground">기간 선택</div>
               <div className="grid grid-cols-3 gap-2">
                 {[7, 15, 30].map((d) => {
                   const selected = period === d;
@@ -110,7 +110,7 @@ export default function RentDialog({
                       type="button"
                       onClick={() => setPeriod(d as 7 | 15 | 30)}
                       className={cn(
-                        "h-12 rounded-xl border px-2 text-sm font-semibold transition-colors",
+                        "h-12 rounded-xl border px-2 text-ui-body-sm font-semibold transition-colors",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                         selected
                           ? "border-primary/40 bg-primary/5 text-primary"
@@ -126,19 +126,19 @@ export default function RentDialog({
 
             <div className="space-y-3 rounded-xl border border-border bg-background p-4">
               <div className="flex items-center justify-between gap-3">
-                <span className="min-w-0 break-keep text-sm text-muted-foreground">대여료</span>
-                <span className="shrink-0 whitespace-nowrap text-right font-bold text-foreground tabular-nums">
+                <span className="min-w-0 break-keep text-ui-body-sm text-muted-foreground">대여료</span>
+                <span className="shrink-0 whitespace-nowrap text-right font-semibold text-foreground tabular-nums">
                   {fee.toLocaleString()}원
                 </span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span className="min-w-0 break-keep text-sm text-muted-foreground">보증금</span>
-                <span className="shrink-0 whitespace-nowrap text-right font-bold text-foreground tabular-nums">
+                <span className="min-w-0 break-keep text-ui-body-sm text-muted-foreground">보증금</span>
+                <span className="shrink-0 whitespace-nowrap text-right font-semibold text-foreground tabular-nums">
                   {(rental.deposit ?? 0).toLocaleString()}원
                 </span>
               </div>
               <div className="border-t border-border pt-3">
-                <div className="break-keep text-xs leading-relaxed text-muted-foreground">
+                <div className="break-keep text-ui-label leading-relaxed text-muted-foreground">
                   * 반납 완료 시 보증금 환불 (연체/파손 시 차감)
                 </div>
               </div>

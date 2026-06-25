@@ -133,7 +133,7 @@ export default function StringRecommendClient() {
           description={
             <div className="space-y-2 break-keep leading-relaxed">
               <p>간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을 안내해드릴게요.</p>
-              <p className="text-sm">
+              <p className="text-ui-body-sm">
                 추천 결과는 선택을 돕기 위한 참고 정보이며, 실제 텐션과 세팅은 라켓 상태와 사용
                 습관에 따라 달라질 수 있어요.
               </p>
@@ -143,7 +143,7 @@ export default function StringRecommendClient() {
       </PublicSurface>
       <Card className="sticky top-16 z-30 rounded-2xl border border-border/80 bg-card/95 shadow-sm backdrop-blur md:top-20">
         <CardContent className="p-3.5 sm:p-4 md:p-5">
-          <p className="break-keep text-sm text-muted-foreground">
+          <p className="break-keep text-ui-body-sm text-muted-foreground">
             {RECOMMEND_QUESTIONS.length}개 중 {answeredCount}개 답변 완료
           </p>
           <div className="mt-2 h-2 w-full rounded-full bg-muted">
@@ -166,12 +166,12 @@ export default function StringRecommendClient() {
         ))}
       </div>
       {isLoadingProducts ? (
-        <div className="rounded-2xl border border-border bg-card p-4 text-sm leading-relaxed text-muted-foreground">
+        <div className="rounded-2xl border border-border bg-card p-4 text-ui-body-sm leading-relaxed text-muted-foreground">
           추천에 사용할 스트링 정보를 불러오는 중...
         </div>
       ) : null}
       {productsError ? (
-        <div className="rounded-2xl border border-border bg-card p-4 text-sm leading-relaxed text-destructive">
+        <div className="rounded-2xl border border-border bg-card p-4 text-ui-body-sm leading-relaxed text-destructive">
           {productsError}
         </div>
       ) : null}
@@ -196,9 +196,9 @@ export default function StringRecommendClient() {
       {hasSubmitted ? (
         <Card className="rounded-2xl border-primary/30 bg-muted/30">
           <CardHeader className="p-5 pb-3 sm:p-6 sm:pb-4">
-            <CardTitle className="break-keep text-xl">선택한 조건</CardTitle>
+            <CardTitle className="break-keep text-ui-section-title">선택한 조건</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 p-5 pt-0 text-sm sm:p-6 sm:pt-0">
+          <CardContent className="space-y-2 p-5 pt-0 text-ui-body-sm sm:p-6 sm:pt-0">
             {selectedSummary.map((item) => (
               <p
                 key={item.id}
@@ -223,7 +223,7 @@ export default function StringRecommendClient() {
       {hasSubmitted && results.length === 0 ? (
         <Card className="rounded-2xl">
           <CardContent className="p-5 sm:p-6">
-            <p className="break-keep text-sm text-muted-foreground">
+            <p className="break-keep text-ui-body-sm text-muted-foreground">
               조건에 맞는 추천 상품을 찾지 못했어요.
             </p>
             <Button asChild variant="outline" className="mt-3 w-full sm:w-auto" type="button">
@@ -232,7 +232,7 @@ export default function StringRecommendClient() {
           </CardContent>
         </Card>
       ) : null}
-      <div className="flex flex-col gap-2 rounded-2xl border border-border bg-card p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-2 rounded-2xl border border-border bg-card p-4 text-ui-body-sm sm:flex-row sm:items-center sm:justify-between">
         <Link href="/services/tension-guide" className="break-keep text-primary hover:underline">
           텐션 가이드 보기
         </Link>

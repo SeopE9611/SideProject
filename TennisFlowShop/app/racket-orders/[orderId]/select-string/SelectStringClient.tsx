@@ -355,12 +355,12 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
       <div className="rounded-2xl border border-border bg-muted/30 px-4 py-3">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-base font-semibold text-foreground">장착할 스트링 선택</h2>
-            <p className="break-keep text-sm text-muted-foreground">
+            <h2 className="text-ui-body font-semibold text-foreground">장착할 스트링 선택</h2>
+            <p className="break-keep text-ui-body-sm text-muted-foreground">
               색상과 게이지를 확인한 뒤 원하는 스트링으로 다음 단계에 진행하세요.
             </p>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-ui-body-sm text-muted-foreground">
             총{" "}
             <span className="font-semibold text-foreground tabular-nums">
               {mountableProducts.length}
@@ -447,11 +447,11 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
               className="flex h-full min-w-0 flex-col rounded-2xl border border-border bg-card p-4 shadow-sm transition-colors hover:border-primary/40 hover:bg-muted/20"
             >
               <div className="space-y-1.5">
-                <h3 className="line-clamp-2 break-keep text-base font-semibold leading-tight text-foreground">
+                <h3 className="line-clamp-2 break-keep text-ui-body font-semibold leading-tight text-foreground">
                   {p.name}
                 </h3>
-                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
-                  <span className="text-xs font-medium text-muted-foreground">스트링 금액</span>
+                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-ui-body-sm">
+                  <span className="text-ui-label font-medium text-muted-foreground">스트링 금액</span>
                   <span className="font-semibold tabular-nums text-foreground">
                     {typeof p.price === "number"
                       ? `${p.price.toLocaleString()}원`
@@ -459,7 +459,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                   </span>
                 </div>
                 {typeof p.mountingFee === "number" && (
-                  <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-ui-label text-muted-foreground">
                     <span>장착비</span>
                     <span className="tabular-nums">{p.mountingFee.toLocaleString()}원</span>
                   </div>
@@ -468,9 +468,9 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
 
               <div className="mt-4 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="text-xs font-medium">색상</div>
+                  <div className="text-ui-label font-medium">색상</div>
                   {selectedColor ? (
-                    <div className="truncate text-xs text-muted-foreground">
+                    <div className="truncate text-ui-label text-muted-foreground">
                       {selectedColorLabel}
                     </div>
                   ) : null}
@@ -524,7 +524,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                         }))
                       }
                       className={cn(
-                        "flex min-h-9 max-w-full items-center gap-2 rounded-xl border px-2.5 py-1.5 text-xs transition-colors",
+                        "flex min-h-9 max-w-full items-center gap-2 rounded-xl border px-2.5 py-1.5 text-ui-label transition-colors",
                         selectedColor === row.value
                           ? "border-primary/40 bg-primary/5 text-foreground"
                           : "border-border bg-card hover:border-primary/50",
@@ -552,9 +552,9 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
               {gaugeRows.length > 0 && (
                 <div className="mt-3 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="text-xs font-medium">게이지</div>
+                    <div className="text-ui-label font-medium">게이지</div>
                     {selectedGauge ? (
-                      <div className="truncate text-xs text-muted-foreground">
+                      <div className="truncate text-ui-label text-muted-foreground">
                         {selectedGaugeLabel}
                       </div>
                     ) : null}
@@ -568,7 +568,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                       }))
                     }
                   >
-                    <SelectTrigger className="h-10 w-full rounded-xl text-xs">
+                    <SelectTrigger className="h-10 w-full rounded-xl text-ui-label">
                       <SelectValue placeholder="게이지를 선택하세요" />
                     </SelectTrigger>
                     <SelectContent>
@@ -584,7 +584,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                             key={`${p._id}-${row.value}`}
                             value={row.value}
                             disabled={soldOut}
-                            className="text-xs"
+                            className="text-ui-label"
                           >{`${getGaugeLabel(row)}${suffix}`}</SelectItem>
                         );
                       })}
@@ -592,7 +592,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                   </Select>
                 </div>
               )}
-              <div className="mt-3 rounded-xl border border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+              <div className="mt-3 rounded-xl border border-border bg-muted/20 px-3 py-2 text-ui-label text-muted-foreground">
                 <div className="flex items-center justify-between gap-3">
                   <span>선택한 옵션</span>
                   <span className="min-w-0 truncate text-right text-foreground">

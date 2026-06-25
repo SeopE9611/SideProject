@@ -176,7 +176,7 @@ export default function RacketNiceCheckoutButton({
 
   return (
     <div className="space-y-2 w-full">
-      <Button onClick={handleClick} className="w-full text-sm" disabled={isDisabled}>
+      <Button onClick={handleClick} className="w-full text-ui-body-sm" disabled={isDisabled}>
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -187,17 +187,17 @@ export default function RacketNiceCheckoutButton({
         )}
       </Button>
       {blockedByZeroAmount && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-ui-label text-muted-foreground">
           최종 결제금액이 0원이라 카드/간편결제를 사용할 수 없습니다.
         </p>
       )}
       {!scriptError && !scriptReady && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-ui-label text-muted-foreground">
           카드/간편결제창을 준비 중입니다. 잠시 후 다시 시도해주세요.
         </p>
       )}
-      {scriptError && <p className="text-xs text-destructive">{scriptError}</p>}
-      {inlineError && <p className="text-xs text-destructive">{inlineError}</p>}
+      {scriptError && <p className="text-ui-label text-destructive">{scriptError}</p>}
+      {inlineError && <p className="text-ui-label text-destructive">{inlineError}</p>}
     </div>
   );
 }

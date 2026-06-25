@@ -34,38 +34,38 @@ export default function StringRecommendResultCard({
           {product.image ? (
             <Image src={product.image} alt={product.name} fill className="object-cover" />
           ) : (
-            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+            <div className="flex h-full items-center justify-center text-ui-body-sm text-muted-foreground">
               이미지 없음
             </div>
           )}
         </div>
         <div className="min-w-0 space-y-2">
-          <p className="break-keep text-xs text-muted-foreground">
+          <p className="break-keep text-ui-label text-muted-foreground">
             {stringBrandLabel(product.brand) || "브랜드 정보 없음"}
           </p>
-          <CardTitle className="break-keep break-words text-base leading-snug">
+          <CardTitle className="break-keep break-words text-ui-body leading-snug">
             {product.name}
           </CardTitle>
           {isSale ? (
             <div className="space-y-1 tabular-nums">
               <div className="flex flex-wrap items-baseline gap-1.5">
-                <span className="text-[11px] text-muted-foreground">할인가</span>
-                <span className="text-sm font-semibold">{displayPrice.toLocaleString()}원</span>
+                <span className="text-ui-caption text-muted-foreground">할인가</span>
+                <span className="text-ui-body-sm font-semibold">{displayPrice.toLocaleString()}원</span>
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-[11px] text-muted-foreground">정가</span>
-                <span className="text-xs text-muted-foreground line-through">
+                <span className="text-ui-caption text-muted-foreground">정가</span>
+                <span className="text-ui-label text-muted-foreground line-through">
                   {regularPrice.toLocaleString()}원
                 </span>
-                <Badge variant="destructive" className="text-[10px]">
+                <Badge variant="destructive" className="text-ui-micro">
                   {saleRate}% OFF
                 </Badge>
               </div>
             </div>
           ) : (
-            <p className="text-sm font-semibold">{displayPrice.toLocaleString()}원</p>
+            <p className="text-ui-body-sm font-semibold">{displayPrice.toLocaleString()}원</p>
           )}
-          <p className="break-keep text-xs leading-relaxed text-muted-foreground">
+          <p className="break-keep text-ui-label leading-relaxed text-muted-foreground">
             소재 {stringMaterialLabel(product.material) || "-"} · 게이지{" "}
             {formatGaugeLabel(primaryGauge) || "-"}
           </p>
@@ -79,7 +79,7 @@ export default function StringRecommendResultCard({
             </Badge>
           ))}
         </div>
-        <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-muted-foreground">
+        <ul className="list-disc space-y-1 pl-5 text-ui-body-sm leading-relaxed text-muted-foreground">
           {result.reasons.map((reason) => (
             <li key={reason} className="break-keep">
               {reason}
@@ -87,7 +87,7 @@ export default function StringRecommendResultCard({
           ))}
         </ul>
         {result.matchSummary && result.matchSummary.length > 0 ? (
-          <div className="rounded-xl border border-border bg-background p-3 text-sm leading-relaxed">
+          <div className="rounded-xl border border-border bg-background p-3 text-ui-body-sm leading-relaxed">
             <p className="break-keep font-medium">추천 기준</p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {result.matchSummary.map((item) => (
@@ -103,7 +103,7 @@ export default function StringRecommendResultCard({
             </div>
           </div>
         ) : null}
-        <div className="rounded-xl border border-border bg-muted/40 p-3 text-sm leading-relaxed">
+        <div className="rounded-xl border border-border bg-muted/40 p-3 text-ui-body-sm leading-relaxed">
           <p className="break-keep font-medium">
             {result.tensionRange.label}: {result.tensionRange.min}~{result.tensionRange.max} lbs
           </p>
@@ -121,7 +121,7 @@ export default function StringRecommendResultCard({
             <Link href={productHref}>상세 보기</Link>
           </Button>
         </div>
-        <p className="break-keep text-xs leading-relaxed text-muted-foreground">
+        <p className="break-keep text-ui-label leading-relaxed text-muted-foreground">
           상세 페이지에서 스트링 정보를 확인한 뒤 교체서비스 신청을 이어서 진행할 수 있어요.
         </p>
       </CardFooter>

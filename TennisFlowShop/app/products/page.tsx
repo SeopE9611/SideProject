@@ -48,10 +48,10 @@ export default async function ProductsPage({
           className="mb-4 flex flex-col gap-4 bp-sm:mb-6 md:flex-row md:items-center md:justify-between"
         >
           <div className="min-w-0 space-y-1">
-            <p className="text-balance text-sm font-semibold text-foreground">
+            <p className="text-balance text-ui-body-sm font-semibold text-foreground">
               어떤 스트링이 맞을지 모르겠나요?
             </p>
-            <p className="break-words text-sm leading-relaxed text-muted-foreground">
+            <p className="break-words text-ui-body-sm leading-relaxed text-muted-foreground">
               간단한 질문에 답하면 플레이 성향에 맞는 스트링 선택 방향을 확인할 수 있어요.
             </p>
           </div>
@@ -64,14 +64,14 @@ export default async function ProductsPage({
           <PublicSurface className="mb-4 bp-sm:mb-6">
             <div className="flex flex-col gap-5">
               <div className="min-w-0 space-y-2">
-                <p className="text-sm bp-sm:text-base font-semibold text-foreground">
+                <p className="text-ui-body-sm bp-sm:text-ui-body font-semibold text-foreground">
                   1단계: 장착할 스트링을 선택해주세요
                 </p>
-                <p className="text-xs leading-relaxed text-muted-foreground bp-sm:text-sm">
+                <p className="text-ui-label leading-relaxed text-muted-foreground bp-sm:text-ui-body-sm">
                   선택 후 결제 화면에서 수령 방식과 장착 요청사항을 입력합니다. 결제와 함께
                   교체서비스 신청이 접수됩니다.
                 </p>
-                <p className="text-xs text-muted-foreground bp-sm:text-sm">
+                <p className="text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
                   현재 스트링 단품 구매는 운영하지 않으며, 스트링 교체 신청과 함께 이용할 수
                   있습니다.
                 </p>

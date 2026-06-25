@@ -75,19 +75,19 @@ function ProductDetailLoadError({ id }: { id: string }) {
         <p className="font-semibold text-destructive">
           상품 정보를 불러오지 못했습니다. 일시적인 연결 문제일 수 있어요.
         </p>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-ui-body-sm text-muted-foreground">
           잠시 후 다시 시도해 주세요. 문제가 계속되면 관리자에게 문의해 주세요.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
             href={`/products/${id}`}
-            className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
+            className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-ui-body-sm font-medium text-primary-foreground"
           >
             다시 시도
           </Link>
           <Link
             href="/products"
-            className="inline-flex items-center rounded-md border border-border px-3 py-2 text-sm font-medium"
+            className="inline-flex items-center rounded-md border border-border px-3 py-2 text-ui-body-sm font-medium"
           >
             스트링 목록으로 돌아가기
           </Link>
@@ -100,7 +100,7 @@ function ProductDetailLoadError({ id }: { id: string }) {
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!ObjectId.isValid(id)) {
-    return <div className="p-6 text-destructive font-bold">상품을 찾을 수 없습니다</div>;
+    return <div className="p-6 text-destructive font-semibold">상품을 찾을 수 없습니다</div>;
   }
   const productObjectId = new ObjectId(id);
   let db;
@@ -169,7 +169,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   }
 
   if (!product)
-    return <div className="p-6 text-destructive font-bold">상품을 찾을 수 없습니다</div>;
+    return <div className="p-6 text-destructive font-semibold">상품을 찾을 수 없습니다</div>;
 
   // 최신 리뷰 10개 (숨김 포함) — 서버에서 보안 마스킹
   let reviews: Array<Record<string, unknown>> = [];
