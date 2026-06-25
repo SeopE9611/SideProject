@@ -13,10 +13,10 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import HeroCourtBackdrop from "@/components/system/HeroCourtBackdrop";
+import { EmptyState } from "@/components/public";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, X, MessageSquareText, Trophy, Target } from "lucide-react";
+import { Loader2, X, MessageSquareText, Target } from "lucide-react";
 import ReviewCard from "./ReviewCard";
 import ReviewSkeleton from "./ReviewSkeleton";
 import { getAuxiliaryMetaBadgeSpec } from "@/lib/badge-style";
@@ -128,26 +128,8 @@ export default function ReviewsClient() {
   };
 
   return (
-    <div className="relative min-h-screen bg-background">
-      {/* Tennis court background pattern */}
-      <HeroCourtBackdrop opacity="soft" className="h-full w-full text-muted-foreground" />
-
-      <div className="relative z-10 container mx-auto max-w-5xl space-y-5 px-4 py-6 md:space-y-6 md:py-8">
-        {/* Header with tennis theme */}
-        <div className="mb-5 space-y-2 text-center md:mb-6">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card shadow-sm">
-              <Trophy className="h-5 w-5 text-primary" />
-            </div>
-            <h1 className="break-keep text-2xl font-bold text-foreground md:text-3xl">고객 리뷰</h1>
-          </div>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            장비 사용 후기와 교체서비스 경험을 확인하세요. 문의가 필요하다면 고객센터 Q&A를
-            이용해주세요.
-          </p>
-        </div>
-
-        {/* Control panel with tennis court styling */}
+    <div className="mx-auto max-w-5xl space-y-5 md:space-y-6">
+        {/* Control panel */}
         <Card className="overflow-hidden border-border bg-card shadow-sm">
           <div className="h-px bg-border" />
           <CardContent className="p-4 md:p-6">
@@ -267,17 +249,11 @@ export default function ReviewsClient() {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center gap-3 py-10 text-center md:py-14">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/30">
-                  <MessageSquareText className="h-6 w-6 text-muted-foreground" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold text-foreground">리뷰가 없습니다</h3>
-                  <p className="text-sm text-muted-foreground">
-                    조건에 맞는 리뷰를 찾을 수 없습니다.
-                  </p>
-                </div>
-              </div>
+              <EmptyState
+                icon={<MessageSquareText className="h-8 w-8" />}
+                title="리뷰가 없습니다"
+                description="조건에 맞는 리뷰를 찾을 수 없습니다."
+              />
             )}
 
             {/* Load more button */}
@@ -307,7 +283,6 @@ export default function ReviewsClient() {
             </div>
           </>
         )}
-      </div>
     </div>
   );
 }

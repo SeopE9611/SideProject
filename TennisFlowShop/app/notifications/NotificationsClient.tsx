@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSWRConfig } from "swr";
 
+import SiteContainer from "@/components/layout/SiteContainer";
+import { EmptyState, PublicPageHero, ResultState, SummaryCard } from "@/components/public";
 import { NotificationItem } from "@/components/notifications/NotificationItem";
 import {
   AlertDialog,
@@ -18,7 +20,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { NotificationListItem } from "@/lib/hooks/useNotificationList";
@@ -197,76 +198,67 @@ export default function NotificationsClient() {
   const showEmpty = status === "ready" && items.length === 0;
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-6 md:py-8">
-      <Card className="border-border bg-card shadow-sm">
-        <CardHeader className="border-b border-border/60 bg-secondary/70">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-secondary">
-                <Bell className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <CardTitle className="text-xl font-semibold">알림</CardTitle>
-                <p className="mt-0.5 break-keep text-sm text-muted-foreground">
-                  시간순으로 도착한 활동과 안내를 확인하세요 · 읽지 않은 알림{" "}
-                  {unreadCount.toLocaleString()}개
-                </p>
-              </div>
-            </div>
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-              <Button
-                variant="outline"
-                disabled={unreadCount <= 0 || isMarkingAll || isDeletingAll}
-                onClick={markAllAsRead}
-                className="w-full gap-2 sm:w-auto"
-              >
-                {isMarkingAll && <Loader2 className="h-4 w-4 animate-spin" />}
-                모두 읽음
-              </Button>
-              <AlertDialog
-                open={isDeleteDialogOpen}
-                onOpenChange={(open) => {
-                  if (isDeletingAll) return;
-                  setIsDeleteDialogOpen(open);
-                }}
-              >
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="destructive"
-                    disabled={items.length <= 0 || isDeletingAll}
-                    className="w-full gap-2 sm:w-auto"
+    <div className="min-h-full bg-background">
+      <PublicPageHero
+        eyebrow="알림 센터"
+        title="알림"
+        description={`시간순으로 도착한 활동과 안내를 확인하세요 · 읽지 않은 알림 ${unreadCount.toLocaleString()}개`}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              disabled={unreadCount <= 0 || isMarkingAll || isDeletingAll}
+              onClick={markAllAsRead}
+              className="w-full gap-2 sm:w-auto"
+            >
+              {isMarkingAll && <Loader2 className="h-4 w-4 animate-spin" />}
+              모두 읽음
+            </Button>
+            <AlertDialog
+              open={isDeleteDialogOpen}
+              onOpenChange={(open) => {
+                if (isDeletingAll) return;
+                setIsDeleteDialogOpen(open);
+              }}
+            >
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  disabled={items.length <= 0 || isDeletingAll}
+                  className="w-full gap-2 sm:w-auto"
+                >
+                  {isDeletingAll && <Loader2 className="h-4 w-4 animate-spin" />}
+                  전체 삭제
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>알림 기록을 모두 삭제할까요?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    삭제된 알림은 목록에서 사라지며 되돌릴 수 없습니다.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isDeletingAll}>취소</AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={isDeletingAll}
+                    className="gap-2 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      void deleteAllNotifications();
+                    }}
                   >
                     {isDeletingAll && <Loader2 className="h-4 w-4 animate-spin" />}
                     전체 삭제
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>알림 기록을 모두 삭제할까요?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      삭제된 알림은 목록에서 사라지며 되돌릴 수 없습니다.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isDeletingAll}>취소</AlertDialogCancel>
-                    <AlertDialogAction
-                      disabled={isDeletingAll}
-                      className="gap-2 bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      onClick={(event) => {
-                        event.preventDefault();
-                        void deleteAllNotifications();
-                      }}
-                    >
-                      {isDeletingAll && <Loader2 className="h-4 w-4 animate-spin" />}
-                      전체 삭제
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
+        }
+      />
+      <SiteContainer className="py-6 md:py-8">
+        <SummaryCard className="mx-auto max-w-5xl" contentClassName="p-0">
           {status === "loading" ? (
             <div className="space-y-2 p-3 md:p-4">
               {Array.from({ length: 6 }).map((_, index) => (
@@ -278,13 +270,19 @@ export default function NotificationsClient() {
               ))}
             </div>
           ) : status === "error" ? (
-            <div className="m-4 rounded-xl border border-border bg-muted/30 px-4 py-16 text-center text-sm text-muted-foreground">
-              알림을 불러오지 못했습니다. 잠시 후 다시 확인해주세요.
-            </div>
+            <ResultState
+              status="error"
+              title="알림을 불러오지 못했습니다"
+              description="잠시 후 다시 확인해주세요."
+              className="py-12"
+            />
           ) : showEmpty ? (
-            <div className="m-4 rounded-xl border border-border bg-muted/30 px-4 py-16 text-center text-sm text-muted-foreground">
-              새 알림이 없습니다. 중요한 안내가 도착하면 이곳에 표시됩니다.
-            </div>
+            <EmptyState
+              icon={<Bell className="h-8 w-8" />}
+              title="새 알림이 없습니다"
+              description="중요한 안내가 도착하면 이곳에 표시됩니다."
+              className="m-4"
+            />
           ) : (
             <div className="space-y-2 p-3 md:p-4">
               {items.map((item) => (
@@ -308,8 +306,8 @@ export default function NotificationsClient() {
               </div>
             </>
           )}
-        </CardContent>
-      </Card>
+        </SummaryCard>
+      </SiteContainer>
     </div>
   );
 }

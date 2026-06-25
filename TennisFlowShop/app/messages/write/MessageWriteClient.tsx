@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { SummaryCard } from "@/components/public";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -69,21 +70,18 @@ export default function MessageWriteClient({ me, toUser }: { me: SafeUser; toUse
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-6 md:py-8">
-      <Card className="border-border bg-card shadow-sm" data-cy="message-write-card">
-        <CardHeader className="flex flex-col gap-3 border-b border-border/60 bg-secondary/70 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="text-lg">쪽지 보내기</CardTitle>
-            <p className="mt-1 break-keep text-sm text-muted-foreground">
-              받는 사람과 내용을 확인한 뒤 쪽지를 전송하세요.
-            </p>
-          </div>
+    <SiteContainer className="py-6 md:py-8">
+      <SummaryCard
+        title="쪽지 보내기"
+        description="받는 사람과 내용을 확인한 뒤 쪽지를 전송하세요."
+        action={
           <Button variant="outline" onClick={() => confirmLeaveIfDirty(() => router.back())}>
             뒤로
           </Button>
-        </CardHeader>
-
-        <CardContent className="space-y-5 p-4 md:p-6">
+        }
+        className="mx-auto max-w-4xl"
+        contentClassName="space-y-5"
+      >
           <div className="text-sm text-muted-foreground" data-cy="message-recipient">
             받는 사람:{" "}
             <span className="font-medium text-foreground">{toUser?.name ?? "알 수 없음"}</span>
@@ -117,11 +115,12 @@ export default function MessageWriteClient({ me, toUser }: { me: SafeUser; toUse
             <Button
               data-cy="message-cancel"
               variant="outline"
+              className="w-full sm:w-auto"
               onClick={() => confirmLeaveIfDirty(() => router.push("/messages"))}
             >
               취소
             </Button>
-            <Button data-cy="message-submit" disabled={!canSubmit || loading} onClick={submit}>
+            <Button data-cy="message-submit" className="w-full sm:w-auto" disabled={!canSubmit || loading} onClick={submit}>
               {loading ? "전송 중…" : "전송"}
             </Button>
           </div>
@@ -130,8 +129,7 @@ export default function MessageWriteClient({ me, toUser }: { me: SafeUser; toUse
             스팸 방지를 위해 “게시글 5개 + 댓글 5개” 조건 및 레이트리밋이 적용됩니다. (관리자는
             예외)
           </div>
-        </CardContent>
-      </Card>
-    </div>
+      </SummaryCard>
+    </SiteContainer>
   );
 }

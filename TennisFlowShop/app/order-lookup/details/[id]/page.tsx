@@ -515,7 +515,7 @@ export default function OrderDetailPage() {
     <div className="min-h-full bg-background">
       <PublicPageHero
         align="center"
-        eyebrow="Guest order detail"
+        eyebrow="비회원 주문 상세"
         title="주문 상세 정보"
         description={`주문번호 ${order._id.slice(-8)}의 현재 상태와 다음 해야 할 일을 확인하세요.`}
       >

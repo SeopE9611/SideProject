@@ -11,8 +11,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { EmptyState, PublicPageHero, ResultState, SummaryCard } from "@/components/public";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMessageDetail } from "@/lib/hooks/useMessageDetail";
@@ -173,41 +174,33 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-6 md:py-8">
-      <Card className="border-border bg-card shadow-sm">
-        <CardHeader className="border-b border-border/60 bg-secondary/70">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-secondary">
-                <Mail className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <CardTitle className="text-xl font-semibold">쪽지함</CardTitle>
-                <p className="text-sm text-muted-foreground mt-0.5">메시지를 확인하고 관리하세요</p>
-              </div>
-            </div>
-
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-              <Button asChild variant="outline" className="w-full gap-2 sm:w-auto">
-                <Link href="/messages/write">
-                  <Send className="h-4 w-4" />새 쪽지 작성
-                </Link>
+    <div className="min-h-full bg-background">
+      <PublicPageHero
+        eyebrow="메시지"
+        title="쪽지함"
+        description="메시지를 확인하고 관리하세요"
+        actions={
+          <>
+            <Button asChild variant="outline" className="w-full gap-2 sm:w-auto">
+              <Link href="/messages/write">
+                <Send className="h-4 w-4" />새 쪽지 작성
+              </Link>
+            </Button>
+            {user.role === "admin" && (
+              <Button
+                variant="default"
+                onClick={() => setBroadcastOpen(true)}
+                className="w-full gap-2 sm:w-auto"
+              >
+                <Bell className="h-4 w-4" />
+                전체 공지 보내기
               </Button>
-              {user.role === "admin" && (
-                <Button
-                  variant="default"
-                  onClick={() => setBroadcastOpen(true)}
-                  className="w-full gap-2 sm:w-auto"
-                >
-                  <Bell className="h-4 w-4" />
-                  전체 공지 보내기
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-4 md:p-6">
+            )}
+          </>
+        }
+      />
+      <SiteContainer className="py-6 md:py-8" variant="wide">
+        <SummaryCard className="mx-auto max-w-7xl" contentClassName="p-4 md:p-6">
           <Tabs
             value={tab}
             onValueChange={(v) => {
@@ -296,17 +289,20 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                     )}
 
                     {hasDataError && (
-                      <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
-                        <Clock className="h-3.5 w-3.5" />
-                        <span>{errorMessage || "쪽지 목록을 불러오지 못했습니다."}</span>
-                      </div>
+                      <ResultState
+                        status="error"
+                        title="쪽지 목록을 불러오지 못했습니다"
+                        description={errorMessage || "잠시 후 다시 확인해주세요."}
+                        className="py-8"
+                      />
                     )}
 
                     {shouldShowEmptyState && (
-                      <div className="flex flex-col items-center justify-center py-8 md:py-12 text-center border border-border/30 rounded-lg bg-muted/20">
-                        <Mail className="h-12 w-12 text-muted-foreground/40 mb-3" />
-                        <p className="text-sm text-muted-foreground">아직 쪽지가 없습니다.</p>
-                      </div>
+                      <EmptyState
+                        icon={<Mail className="h-8 w-8" />}
+                        title="아직 쪽지가 없습니다"
+                        description="새 쪽지가 도착하면 이곳에 표시됩니다."
+                      />
                     )}
 
                     {!isLoading &&
@@ -396,16 +392,12 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                 <div className="lg:col-span-7">
                   <div className="min-h-[400px] rounded-lg border border-border/60 bg-card">
                     {!selectedId && (
-                      <div className="flex flex-col items-center justify-center h-[400px] text-center p-6 md:p-8">
-                        <div className="h-16 w-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                          <Mail className="h-8 w-8 text-muted-foreground/40" />
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          쪽지를 선택하면
-                          <br />
-                          이곳에서 상세 내용을 볼 수 있습니다.
-                        </p>
-                      </div>
+                      <EmptyState
+                        icon={<Mail className="h-8 w-8" />}
+                        title="쪽지를 선택해 주세요"
+                        description="쪽지를 선택하면 이곳에서 상세 내용을 볼 수 있습니다."
+                        className="h-[400px] justify-center border-0 bg-transparent"
+                      />
                     )}
 
                     {selectedId && detailLoading && (
@@ -502,8 +494,8 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
               </div>
             </TabsContent>
           </Tabs>
-        </CardContent>
-      </Card>
+        </SummaryCard>
+      </SiteContainer>
 
       {/* 답장 다이얼로그는 실제 열릴 때만 로드 */}
       {replyOpen && replyToUserId && (

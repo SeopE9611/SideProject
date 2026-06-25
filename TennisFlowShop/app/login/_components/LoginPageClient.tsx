@@ -2,8 +2,8 @@
 
 import SocialAuthButtons from "@/app/login/_components/SocialAuthButtons";
 import { useAuthStore } from "@/app/store/authStore";
+import { AuthShell } from "@/components/public";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -278,40 +278,32 @@ export default function LoginPageClient() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8 md:py-12">
-      <div className={`mx-auto w-full ${activeTab === "register" ? "max-w-2xl" : "max-w-md"}`}>
-        <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300">
-          <div className="border-b border-border bg-muted/30 p-4 text-foreground md:p-5">
-            <div className="text-center">
-              <div className="mx-auto mb-3 flex justify-center">
-                <div className="relative h-14 w-14 shrink-0 overflow-hidden">
-                  <Image
-                    src="/brand/symbol-logo-light.png"
-                    alt="도깨비테니스 로고"
-                    fill
-                    className="object-contain dark:hidden"
-                    priority
-                  />
-                  <Image
-                    src="/brand/symbol-logo-dark.png"
-                    alt="도깨비테니스 로고"
-                    fill
-                    className="hidden object-contain dark:block"
-                    priority
-                  />
-                </div>
-              </div>
-
-              <h1 className="text-xl font-bold tracking-tight text-foreground">
-                도깨비테니스 계정
-              </h1>
-              <p className="mt-1 text-sm font-medium text-muted-foreground">
-                로그인 또는 회원가입을 선택해 계속 진행하세요
-              </p>
-            </div>
-          </div>
-
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+    <AuthShell
+      title={
+        <span className="flex flex-col items-center gap-3">
+          <span className="relative h-14 w-14 shrink-0 overflow-hidden">
+            <Image
+              src="/brand/symbol-logo-light.png"
+              alt="도깨비테니스 로고"
+              fill
+              className="object-contain dark:hidden"
+              priority
+            />
+            <Image
+              src="/brand/symbol-logo-dark.png"
+              alt="도깨비테니스 로고"
+              fill
+              className="hidden object-contain dark:block"
+              priority
+            />
+          </span>
+          <span>도깨비테니스 계정</span>
+        </span>
+      }
+      description="로그인 또는 회원가입을 선택해 계속 진행하세요"
+      panelClassName={activeTab === "register" ? "max-w-2xl" : "max-w-md"}
+    >
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <div className="border-b border-border px-4 py-3 md:px-5">
               <TabsList className="grid h-11 w-full grid-cols-2">
                 <TabsTrigger value="login">로그인</TabsTrigger>
@@ -529,9 +521,7 @@ export default function LoginPageClient() {
               onRegisterSubmittingChange={setRegisterSubmitting}
               resetSignal={registerResetSignal}
             />
-          </Tabs>
-        </Card>
-      </div>
-    </div>
+      </Tabs>
+    </AuthShell>
   );
 }

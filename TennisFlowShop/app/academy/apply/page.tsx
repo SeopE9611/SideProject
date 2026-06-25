@@ -4,7 +4,6 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
-  Info,
   MapPin,
   Users,
   Wallet,
@@ -15,6 +14,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import AcademyApplyClient from "@/app/academy/apply/_components/AcademyApplyClient";
+import SiteContainer from "@/components/layout/SiteContainer";
+import { PublicPageHero, ResultState, SummaryCard } from "@/components/public";
 import { Button } from "@/components/ui/button";
 import { getAcademyScheduleDisplay } from "@/lib/academy-display";
 import { getCurrentUserId } from "@/lib/hooks/get-current-user";
@@ -252,49 +253,29 @@ export default async function AcademyApplyPage({
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <section className="border-b border-border bg-muted/30">
-        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 md:py-10">
-          {/* Breadcrumb */}
-          <nav className="mb-5">
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-              className="gap-2 text-muted-foreground hover:text-foreground"
-            >
-              <Link href="/academy">
-                <ArrowLeft className="h-4 w-4" />
-                아카데미로 돌아가기
-              </Link>
-            </Button>
-          </nav>
-
-          <div className="flex flex-col gap-4">
-            <div className="text-sm font-medium text-primary">도깨비테니스 아카데미</div>
-
-            <h1 className="text-balance text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-              아카데미 신청서
-            </h1>
-
-            <p className="max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
-              신청서를 남겨주시면 도깨비테니스에서 일정과 수강 방식을 확인한 뒤 상담을 도와드립니다.
-            </p>
-          </div>
-        </div>
-      </section>
+      <PublicPageHero
+        eyebrow="도깨비테니스 아카데미"
+        title="아카데미 신청서"
+        description="신청서를 남겨주시면 도깨비테니스에서 일정과 수강 방식을 확인한 뒤 상담을 도와드립니다."
+        actions={
+          <Button asChild variant="outline" className="w-full gap-2 sm:w-auto">
+            <Link href="/academy">
+              <ArrowLeft className="h-4 w-4" />
+              아카데미로 돌아가기
+            </Link>
+          </Button>
+        }
+      />
 
       {/* Main Content */}
-      <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 md:py-10">
-        <div className="space-y-6">
+      <SiteContainer className="py-8 md:py-10">
+        <div className="mx-auto max-w-5xl space-y-6">
           {/* Notice Card */}
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
-            <div className="flex items-start gap-4">
-              <div className="shrink-0 rounded-xl bg-muted/30 p-2.5">
-                <Info className="h-5 w-5 text-primary" />
-              </div>
-              <div className="space-y-3">
-                <h2 className="text-base font-semibold text-foreground">신청 전 안내사항</h2>
+          <SummaryCard
+            title="신청 전 안내사항"
+            description="신청 전 아래 내용을 확인해 주세요."
+            contentClassName="pt-0"
+          >
                 <ul className="space-y-2">
                   {notices.map((notice, index) => (
                     <li
@@ -306,40 +287,27 @@ export default async function AcademyApplyPage({
                     </li>
                   ))}
                 </ul>
-              </div>
-            </div>
-          </div>
+          </SummaryCard>
 
           {/* Duplicate Application Warning */}
           {duplicateApplication ? (
-            <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
-              <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
-                <div className="shrink-0 rounded-xl bg-muted/30 p-3">
-                  <AlertCircle className="h-6 w-6 text-warning" />
-                </div>
-                <div className="flex-1 space-y-3">
-                  <div>
-                    <h2 className="text-lg font-semibold text-foreground">
-                      이미 신청한 클래스입니다
-                    </h2>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                      기존 신청 내역에서 진행 상태를 확인해 주세요. 같은 클래스는 진행 중인 신청이
-                      있을 때 중복 신청할 수 없습니다.
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                    <Button asChild>
-                      <a href={`/mypage/academy-applications/${duplicateApplication.id}`}>
-                        신청 내역 보기
-                      </a>
-                    </Button>
-                    <Button asChild variant="outline">
-                      <a href="/academy">아카데미로 돌아가기</a>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ResultState
+              status="warning"
+              title="이미 신청한 클래스입니다"
+              description="기존 신청 내역에서 진행 상태를 확인해 주세요. 같은 클래스는 진행 중인 신청이 있을 때 중복 신청할 수 없습니다."
+              actions={
+                <>
+                  <Button asChild>
+                    <a href={`/mypage/academy-applications/${duplicateApplication.id}`}>
+                      신청 내역 보기
+                    </a>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <a href="/academy">아카데미로 돌아가기</a>
+                  </Button>
+                </>
+              }
+            />
           ) : (
             <>
               {/* Selected Class Info */}
@@ -490,7 +458,7 @@ export default async function AcademyApplyPage({
             </>
           )}
         </div>
-      </section>
+      </SiteContainer>
     </main>
   );
 }
