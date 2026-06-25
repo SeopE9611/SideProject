@@ -1,18 +1,21 @@
-import { NextRequest, NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
 import { createHash, randomUUID } from "crypto";
+import { ObjectId } from "mongodb";
+import { NextRequest, NextResponse } from "next/server";
 
-import { getDb } from "@/lib/mongodb";
-import { logInfo, reqMeta, startTimer } from "@/lib/logger";
-import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth.utils";
-import { baseCookie } from "@/lib/cookieOptions";
 import {
-import { COMMUNITY_BOARDS_ENABLED, communityBoardClosedResponse } from "@/lib/community/community-board-policy";
+  COMMUNITY_BOARDS_ENABLED,
+  communityBoardClosedResponse,
+} from "@/lib/community/community-board-policy";
+import {
   COMMUNITY_RATE_LIMIT_POLICIES,
   enforceCommunityRateLimit,
   verifyCommunityCsrf,
 } from "@/lib/community/security";
+import { baseCookie } from "@/lib/cookieOptions";
+import { logInfo, reqMeta, startTimer } from "@/lib/logger";
+import { getDb } from "@/lib/mongodb";
+import { cookies } from "next/headers";
 
 // 비로그인 뷰어를 서버에서 식별하기 위한 익명 쿠키 키
 const COMMUNITY_ANON_VIEWER_COOKIE = "communityAnonViewerId";
