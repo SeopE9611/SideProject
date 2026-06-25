@@ -23,6 +23,7 @@ export type CancelRefundRiskSignalInput = {
   actorRole: ActorRole;
   reasonCode?: string | null;
   status?: string | null;
+  metadata?: Record<string, unknown> | null;
 };
 
 export function buildCancelRefundSubject(params: {
@@ -81,6 +82,7 @@ export async function recordCancelRefundSignal(db: Db, input: CancelRefundRiskSi
           lastActorRole: input.actorRole,
           lastReasonCode: input.reasonCode ?? null,
           lastStatus: input.status ?? null,
+          metadata: input.metadata ?? null,
           updatedAt: now,
         },
         $inc: { count: 1 },

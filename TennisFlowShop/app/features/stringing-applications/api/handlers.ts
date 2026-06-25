@@ -178,10 +178,114 @@ type StringingCancelPaymentContext = {
   provider: string;
 };
 
+type AdminCancelRefundContext = {
+  paymentStatusAtCancel: string | null;
+  paymentMethodAtCancel: string | null;
+  paymentProviderAtCancel: string | null;
+  refundRequired: boolean;
+  refundMethod:
+    | "package_restore"
+    | "nicepay_cancel_required"
+    | "manual_bank_refund_required"
+    | "none"
+    | "manual_review_required";
+  refundNote: string;
+};
+
 function normalizePaymentProvider(raw: unknown): string {
   return String(raw ?? "")
     .trim()
     .toLowerCase();
+}
+
+function resolveAdminCancelRefundContext(appDoc: any): AdminCancelRefundContext {
+  const packageApplied = Boolean(appDoc?.packageApplied || appDoc?.packageInfo?.applied);
+  const paymentInfo = appDoc?.paymentInfo ?? {};
+  const paymentStatusAtCancel =
+    normalizeLinkedPaymentStatus(appDoc?.paymentStatus ?? paymentInfo?.status) ??
+    (typeof appDoc?.paymentStatus === "string" && appDoc.paymentStatus.trim()
+      ? appDoc.paymentStatus.trim()
+      : null);
+  const paymentMethodAtCancel =
+    typeof appDoc?.paymentMethod === "string" && appDoc.paymentMethod.trim()
+      ? appDoc.paymentMethod.trim()
+      : typeof paymentInfo?.method === "string" && paymentInfo.method.trim()
+        ? paymentInfo.method.trim()
+        : null;
+  const paymentProviderAtCancel =
+    typeof paymentInfo?.provider === "string" && paymentInfo.provider.trim()
+      ? paymentInfo.provider.trim()
+      : typeof appDoc?.paymentProvider === "string" && appDoc.paymentProvider.trim()
+        ? appDoc.paymentProvider.trim()
+        : null;
+
+  if (packageApplied) {
+    return {
+      paymentStatusAtCancel,
+      paymentMethodAtCancel,
+      paymentProviderAtCancel,
+      refundRequired: false,
+      refundMethod: "package_restore",
+      refundNote: "패키지 사용 회차 복원 대상입니다.",
+    };
+  }
+
+  if (paymentStatusAtCancel !== "결제완료") {
+    return {
+      paymentStatusAtCancel,
+      paymentMethodAtCancel,
+      paymentProviderAtCancel,
+      refundRequired: false,
+      refundMethod: "none",
+      refundNote: "결제 전 상태로 별도 환불 처리는 필요하지 않습니다.",
+    };
+  }
+
+  const paymentMethod = normalizePaymentProvider(paymentMethodAtCancel);
+  const paymentProvider = normalizePaymentProvider(paymentProviderAtCancel);
+  const paymentText = `${paymentMethod} ${paymentProvider} ${normalizePaymentProvider(paymentInfo?.tid)} ${normalizePaymentProvider(paymentInfo?.cardCompany)} ${normalizePaymentProvider(paymentInfo?.cardLabel)}`;
+
+  if (
+    paymentProvider === "nicepay" ||
+    paymentMethod === "nicepay" ||
+    paymentText.includes("card") ||
+    paymentText.includes("카드")
+  ) {
+    return {
+      paymentStatusAtCancel,
+      paymentMethodAtCancel,
+      paymentProviderAtCancel,
+      refundRequired: true,
+      refundMethod: "nicepay_cancel_required",
+      refundNote: "카드 결제 취소 처리가 별도로 필요합니다.",
+    };
+  }
+
+  if (
+    paymentMethod.includes("bank") ||
+    paymentMethod.includes("무통장") ||
+    paymentMethod.includes("계좌") ||
+    paymentProvider.includes("bank") ||
+    paymentProvider.includes("은행")
+  ) {
+    return {
+      paymentStatusAtCancel,
+      paymentMethodAtCancel,
+      paymentProviderAtCancel,
+      refundRequired: true,
+      refundMethod: "manual_bank_refund_required",
+      refundNote: "수동 환불 처리가 별도로 필요합니다.",
+    };
+  }
+
+  return {
+    paymentStatusAtCancel,
+    paymentMethodAtCancel,
+    paymentProviderAtCancel,
+    refundRequired: true,
+    refundMethod: "manual_review_required",
+    refundNote: "결제수단 확인 후 환불 필요 여부를 수동 검토해야 합니다.",
+  };
 }
 
 function getObjectIdFromPaymentSource(
@@ -1819,7 +1923,13 @@ export async function handleStringingAdminCancel(
       );
     }
 
-    if (appDoc.orderId || appDoc.rentalId) {
+    const paymentSource = String(appDoc.paymentSource ?? "").trim();
+    if (
+      appDoc.orderId ||
+      appDoc.rentalId ||
+      paymentSource.startsWith("order:") ||
+      paymentSource.startsWith("rental:")
+    ) {
       return NextResponse.json(
         { error: "주문/대여와 연결된 신청서는 해당 주문/대여 상세에서 취소 처리해야 합니다." },
         { status: 409 },
@@ -1827,6 +1937,7 @@ export async function handleStringingAdminCancel(
     }
 
     const now = new Date();
+    const refundContext = resolveAdminCancelRefundContext(appDoc);
     const variantRestore = await restoreStringingVariantStockIfNeeded(db, appDoc, now);
     const gaugeRestore = await restoreStringingGaugeStockIfNeeded(db, appDoc, now);
     const colorRestore = await restoreStringingColorStockIfNeeded(
@@ -1850,7 +1961,7 @@ export async function handleStringingAdminCancel(
     const historyEntry: HistoryRecord = {
       status: "취소",
       date: now,
-      description: `관리자가 직접 신청을 취소했습니다. 취소 사유: ${reason}`,
+      description: `관리자가 직접 신청을 취소했습니다. 취소 사유: ${reason} ${refundContext.refundNote}`,
     };
 
     await col.updateOne(
@@ -1862,6 +1973,12 @@ export async function handleStringingAdminCancel(
             reason,
             canceledAt: now,
             canceledBy: adminAuth.userId,
+            paymentStatusAtCancel: refundContext.paymentStatusAtCancel,
+            paymentMethodAtCancel: refundContext.paymentMethodAtCancel,
+            paymentProviderAtCancel: refundContext.paymentProviderAtCancel,
+            refundRequired: refundContext.refundRequired,
+            refundMethod: refundContext.refundMethod,
+            refundNote: refundContext.refundNote,
           },
           ...variantRestore.setFields,
           ...gaugeRestore.setFields,
@@ -1885,6 +2002,11 @@ export async function handleStringingAdminCancel(
           prevStatus: appDoc.status ?? null,
           nextStatus: "취소",
           reasonTextPreview: toReasonPreview(reason),
+          paymentStatusAtCancel: refundContext.paymentStatusAtCancel,
+          paymentMethodAtCancel: refundContext.paymentMethodAtCancel,
+          paymentProviderAtCancel: refundContext.paymentProviderAtCancel,
+          refundRequired: refundContext.refundRequired,
+          refundMethod: refundContext.refundMethod,
           metadata: {
             actor: {
               id: String(adminAuth.userId),
@@ -1912,6 +2034,13 @@ export async function handleStringingAdminCancel(
       actorRole: "admin",
       reasonCode: "admin_direct_cancel",
       status: "approved",
+      metadata: {
+        refundRequired: refundContext.refundRequired,
+        refundMethod: refundContext.refundMethod,
+        paymentStatusAtCancel: refundContext.paymentStatusAtCancel,
+        paymentMethodAtCancel: refundContext.paymentMethodAtCancel,
+        paymentProviderAtCancel: refundContext.paymentProviderAtCancel,
+      },
     });
 
     const updated = await col.findOne({ _id });
