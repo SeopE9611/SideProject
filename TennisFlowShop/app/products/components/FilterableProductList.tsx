@@ -3,8 +3,8 @@
 import { FilterPanel } from "@/app/products/components/FilterPanel";
 import ProductCard from "@/app/products/components/ProductCard";
 import { useInfiniteProducts } from "@/app/products/hooks/useInfiniteProducts";
-import AsyncState from "@/components/system/AsyncState";
 import { EmptyState, SummaryCard } from "@/components/public";
+import AsyncState from "@/components/system/AsyncState";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -15,14 +15,14 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { stringMaterialLabel } from "@/lib/constants";
 import {
   formatBenefitFilterLabel,
   parseBenefitFilters,
   serializeBenefitFilters,
 } from "@/lib/benefit-labels";
+import { stringMaterialLabel } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { Filter, Grid3X3, List, Search } from "lucide-react";
+import { Check, Filter, Grid3X3, List, Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 // 브랜드 리스트
@@ -898,16 +898,19 @@ export default function FilterableProductList({
                 </Button>
                 <Button
                   type="button"
-                  variant={includeSoldOut ? "outline" : "default"}
+                  variant="outline"
                   size="sm"
                   onClick={handleToggleIncludeSoldOut}
                   className={cn(
-                    "h-10 shrink-0 whitespace-nowrap px-3 bp-sm:h-9",
-                    includeSoldOut && "border-border hover:bg-muted/30",
+                    "h-10 shrink-0 whitespace-nowrap rounded-full px-3 text-sm transition-colors bp-sm:h-9",
+                    !includeSoldOut
+                      ? "border-border bg-muted text-foreground shadow-sm hover:bg-muted/80"
+                      : "border-border bg-background text-muted-foreground hover:bg-muted/30",
                   )}
                   aria-pressed={!includeSoldOut}
                   aria-label={includeSoldOut ? "품절 상품 포함 중" : "품절 상품 제외 중"}
                 >
+                  {!includeSoldOut && <Check className="mr-1.5 h-3.5 w-3.5" />}
                   품절 제외
                 </Button>
               </div>
