@@ -13,6 +13,7 @@ import {
   verifyCommunityCsrf,
 } from "@/lib/community/security";
 import type { CommunityReportDocument } from "@/lib/types/community-report";
+import { COMMUNITY_BOARDS_ENABLED, communityBoardClosedResponse } from "@/lib/community/community-board-policy";
 
 // 1) 인증 페이로드 유틸
 async function getAuthPayload() {
@@ -51,6 +52,9 @@ type ReportInput = z.infer<typeof reportSchema>;
 // POST /api/community/comments/[id]/report
 // -----------------------------------------------------------------------
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    return communityBoardClosedResponse();
+  }
   const stop = startTimer();
   const meta = reqMeta(req);
 

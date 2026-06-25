@@ -261,15 +261,14 @@ async function safe<T>(source: string, loader: () => Promise<T>) {
 async function loadHomePreviewData(): Promise<HomePreviewData | null> {
   // 홈 공개 미리보기 데이터는 사용자별 쿠키/인증과 무관하므로 서버에서 짧게 캐시해
   // 첫 진입 후 클라이언트 중복 fetch 의존도를 낮춘다.
-  const [products, rackets, notices, marketPosts] = await Promise.all([
+  const [products, rackets, notices] = await Promise.all([
     safe("products", loadProducts),
     safe("rackets", loadRackets),
     safe("notices", loadNotices),
-    safe("marketPosts", loadMarketPosts),
   ]);
 
-  if (!products && !rackets && !notices && !marketPosts) return null;
-  return { products, rackets, notices, marketPosts };
+  if (!products && !rackets && !notices) return null;
+  return { products, rackets, notices };
 }
 
 export const getHomePreviewData = loadHomePreviewData;

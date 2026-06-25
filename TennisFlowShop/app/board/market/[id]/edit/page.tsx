@@ -1,3 +1,5 @@
+import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-policy";
+import { redirect } from "next/navigation";
 import FreeBoardEditClient from "@/app/board/market/[id]/edit/_components/FreeBoardEditClient";
 
 type Props = {
@@ -10,6 +12,10 @@ export const metadata = {
 };
 
 export default async function FreeBoardEditPage({ params }: Props) {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    redirect("/board?closed=community");
+  }
+
   const { id } = await params;
 
   return <FreeBoardEditClient id={id} />;

@@ -153,12 +153,6 @@ const quickActions: QuickActionProps[] = [
     description: "레슨 일정 및 수강료",
     href: "/board/qna/write?category=academy",
   },
-  {
-    icon: ShoppingBag,
-    title: "중고거래",
-    description: "중고 장비 거래",
-    href: "/board/market",
-  },
 ];
 
 function QuickActionCard({

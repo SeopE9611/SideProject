@@ -5,11 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ArrowRight,
   Bell,
-  Dumbbell,
   Eye,
   MessageSquare,
   Plus,
-  ShoppingBag,
   Star,
   Pin,
 } from "lucide-react";
@@ -22,197 +20,11 @@ import {
   badgeBaseOutlined,
   badgeSizeSm,
   getAnswerStatusBadgeSpec,
-  getBoardCategoryTone,
   getNoticeCategoryBadgeSpec,
   getQnaCategoryBadgeSpec,
   getReviewTypeBadgeSpec,
 } from "@/lib/badge-style";
 import Link from "next/link";
-import type { ReactNode } from "react";
-
-const boardMobileTitleClampClass =
-  "flex-1 min-w-0 line-clamp-2 text-ui-body-sm font-semibold leading-snug sm:line-clamp-1 sm:text-ui-body-lg";
-const boardMobileMetaWrapClass =
-  "flex flex-wrap items-center gap-x-3 gap-y-1 text-ui-label text-muted-foreground";
-
-type BoardKind = "free" | "market" | "gear";
-
-type CommunityListItem = {
-  id: string;
-  title: string;
-  createdAt: string | Date;
-  nickname: string;
-  category?: string | null;
-  views?: number;
-  commentsCount?: number;
-};
-
-function getBoardCategoryLabel(kind: BoardKind, category?: string | null) {
-  const c = category ?? "";
-
-  if (kind === "free") {
-    switch (c) {
-      case "general":
-        return "자유";
-      case "info":
-        return "정보";
-      case "qna":
-        return "질문";
-      case "tip":
-        return "노하우";
-      case "etc":
-        return "기타";
-      default:
-        return c ? c : "분류";
-    }
-  }
-
-  if (kind === "market") {
-    switch (c) {
-      case "racket":
-        return "라켓";
-      case "string":
-        return "스트링";
-      case "equipment":
-        return "일반장비";
-      default:
-        return c ? c : "분류";
-    }
-  }
-
-  switch (c) {
-    case "racket":
-      return "라켓";
-    case "string":
-      return "스트링";
-    case "shoes":
-      return "테니스화";
-    case "bag":
-      return "가방";
-    case "apparel":
-      return "의류";
-    case "grip":
-      return "그립";
-    case "accessory":
-      return "악세서리";
-    case "ball":
-      return "테니스볼";
-    case "other":
-      return "기타";
-    default:
-      return c ? c : "분류";
-  }
-}
-function CommunityLatestCard({
-  kind,
-  title,
-  icon,
-  headerClassName,
-  listHref,
-  writeHref,
-  items,
-  isLoading,
-  error,
-  onRetry,
-  emptyText,
-}: {
-  kind: BoardKind;
-  title: string;
-  icon: ReactNode;
-  headerClassName: string;
-  listHref: string;
-  writeHref: string;
-  items: CommunityListItem[];
-  isLoading?: boolean;
-  error?: any;
-  onRetry?: () => void;
-  emptyText: string;
-}) {
-  return (
-    <Card className="border border-border bg-card shadow-sm">
-      <CardHeader className={`${headerClassName} border-b p-4 sm:p-5 md:p-6`}>
-        <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-            {icon}
-            <span className="text-ui-card-title-lg sm:text-ui-section-title md:text-ui-page-title font-semibold leading-tight break-keep">
-              {title}
-            </span>
-          </div>
-          <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <Button asChild variant="ghost" size="sm" className="min-h-10 whitespace-nowrap">
-              <Link href={writeHref}>
-                <Plus className="h-4 w-4 mr-1" />
-                글쓰기
-              </Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm" className="min-h-10 whitespace-nowrap">
-              <Link href={listHref}>
-                전체보기 <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </CardTitle>
-      </CardHeader>
-
-      <CardContent className="p-4 md:p-6">
-        <div className="space-y-4">
-          {error ? (
-            <ErrorBox message={`${title} 불러오기에 실패했습니다.`} onRetry={onRetry} />
-          ) : isLoading ? (
-            <FiveLineSkeleton />
-          ) : items.length === 0 ? (
-            <div className="py-6 md:py-8 text-center text-ui-body-sm text-muted-foreground">
-              {emptyText}
-            </div>
-          ) : (
-            items.map((post) => (
-              <div key={post.id} className="border-b border-border last:border-0 pb-4 last:pb-0">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 mb-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap min-w-0">
-                        {!!post.category && (
-                          <Badge
-                            variant={getBoardCategoryTone(kind, post.category)}
-                            className={`${badgeSizeSm} shrink-0`}
-                            title={post.category ?? undefined}
-                          >
-                            {getBoardCategoryLabel(kind, post.category)}
-                          </Badge>
-                        )}
-
-                        <Link
-                          href={`${listHref}/${post.id}`}
-                          className={`${boardMobileTitleClampClass} text-foreground transition-colors hover:opacity-80`}
-                        >
-                          {post.title}
-                        </Link>
-                      </div>
-                    </div>
-
-                    <div className={boardMobileMetaWrapClass}>
-                      <span>{post.nickname ?? "익명"}</span>
-                      <span>{fmt(post.createdAt)}</span>
-                      <span className="flex items-center">
-                        <Eye className="h-3 w-3 mr-1" />
-                        {post.views ?? 0}
-                      </span>
-                      <span className="flex items-center">
-                        <MessageSquare className="h-3 w-3 mr-1" />
-                        {post.commentsCount ?? 0}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 // 공용 스켈레톤
 function FiveLineSkeleton() {
   return (
@@ -690,55 +502,20 @@ function CommunityIntroCard() {
       </CardHeader>
 
       <CardContent className="p-4 md:p-6 space-y-4 text-ui-body-sm text-muted-foreground">
-        <p>자유게시판, 중고거래, 장비 사용기, 구매·서비스 후기를 한 곳에서 둘러볼 수 있어요.</p>
+        <p>공지사항, Q&A, 구매·서비스 후기를 한 곳에서 둘러볼 수 있어요.</p>
+        <p className="text-ui-label text-muted-foreground/80">
+          커뮤니티 게시판은 운영 정책 변경으로 일시 중단되었습니다.
+        </p>
 
-        <div className="grid gap-2 sm:grid-cols-4">
+        <div className="grid gap-2 sm:grid-cols-3">
           <Button asChild variant="outline" size="sm" className="w-full justify-between">
             <Link href="/reviews">
               <span>구매·서비스 후기</span>
               <ArrowRight className="h-3 w-3 ml-1" />
             </Link>
           </Button>
-
-          <Button asChild variant="outline" size="sm" className="w-full justify-between">
-            <Link href="/board/free">
-              <span>자유게시판</span>
-              <ArrowRight className="h-3 w-3 ml-1" />
-            </Link>
-          </Button>
-
-          <Button asChild variant="outline" size="sm" className="w-full justify-between">
-            <Link href="/board/market">
-              <span>중고거래</span>
-              <ArrowRight className="h-3 w-3 ml-1" />
-            </Link>
-          </Button>
-
-          <Button asChild variant="outline" size="sm" className="w-full justify-between">
-            <Link href="/board/gear">
-              <span>장비 사용기</span>
-              <ArrowRight className="h-3 w-3 ml-1" />
-            </Link>
-          </Button>
         </div>
 
-        {/* <div className="pt-1">
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Button asChild variant="outline" size="sm" className="w-full justify-between border-dashed">
-              <Link href="/board/hot">
-                <span>인기글 모아보기</span>
-                <ArrowRight className="h-3 w-3 ml-1" />
-              </Link>
-            </Button>
-
-            <Button asChild variant="outline" size="sm" className="w-full justify-between border-dashed">
-              <Link href="/board/brands">
-                <span>브랜드별 게시판</span>
-                <ArrowRight className="h-3 w-3 ml-1" />
-              </Link>
-            </Button>
-          </div>
-        </div> */}
       </CardContent>
     </Card>
   );
@@ -754,30 +531,6 @@ export default function BoardPage() {
   } = useSWR("/api/reviews?type=all&withHidden=mask&sort=latest&limit=5", fetcher);
 
   const reviews = Array.isArray(rData?.items) ? (rData.items as ReviewItem[]) : [];
-  // 자유/중고/사용기 최신글 5개
-  const {
-    data: fData,
-    error: fError,
-    isLoading: fLoading,
-    mutate: mutateFree,
-  } = useSWR("/api/boards?kind=free&sort=latest&limit=5&page=1", fetcher);
-  const {
-    data: mData,
-    error: mError,
-    isLoading: mLoading,
-    mutate: mutateMarket,
-  } = useSWR("/api/boards?kind=market&sort=latest&limit=5&page=1", fetcher);
-  const {
-    data: gData,
-    error: gError,
-    isLoading: gLoading,
-    mutate: mutateGear,
-  } = useSWR("/api/boards?kind=gear&sort=latest&limit=5&page=1", fetcher);
-
-  const freePosts = Array.isArray(fData?.items) ? (fData.items as CommunityListItem[]) : [];
-  const marketPosts = Array.isArray(mData?.items) ? (mData.items as CommunityListItem[]) : [];
-  const gearPosts = Array.isArray(gData?.items) ? (gData.items as CommunityListItem[]) : [];
-
   return (
     <div className="min-h-screen bg-muted/30">
       <SiteContainer
@@ -795,8 +548,8 @@ export default function BoardPage() {
             </h1>
           </div>
           <p className="text-ui-card-title-lg text-muted-foreground max-w-2xl mx-auto">
-            커뮤니티는 자유게시판, 중고거래, 장비 사용기, 리뷰처럼 이용자끼리 정보를 나누는
-            공간입니다. 주문/서비스 문의는 고객센터를 이용해주세요.
+            공지사항, Q&A, 리뷰를 한 곳에서 확인할 수 있습니다. 주문/서비스 문의는 고객센터를
+            이용해주세요.
           </p>
         </div>
 
@@ -804,55 +557,13 @@ export default function BoardPage() {
         {/* 커뮤니티 허브 카드 (맨 위) */}
         <CommunityIntroCard />
 
-        {/* 최신글 섹션 4개: 리뷰 → 자게 → 중고 → 사용기 */}
+        {/* 최신 리뷰 섹션 */}
         <div className="space-y-5 bp-md:space-y-6">
           <ReviewCard
             items={reviews}
             isLoading={rLoading}
             error={rError}
             onRetry={() => mutateReviews()}
-          />
-
-          <CommunityLatestCard
-            kind="free"
-            title="자유게시판"
-            icon={<MessageSquare className="h-5 w-5 text-foreground" />}
-            headerClassName="bg-muted/50 dark:bg-card/40 border-b border-border"
-            listHref="/board/free"
-            writeHref="/board/free/write"
-            items={freePosts}
-            isLoading={fLoading}
-            error={fError}
-            onRetry={() => mutateFree()}
-            emptyText="등록된 자유게시판 글이 없습니다."
-          />
-
-          <CommunityLatestCard
-            kind="market"
-            title="중고거래"
-            icon={<ShoppingBag className="h-5 w-5 text-primary" />}
-            headerClassName="bg-muted/50 dark:bg-card/40 border-b border-border"
-            listHref="/board/market"
-            writeHref="/board/market/write"
-            items={marketPosts}
-            isLoading={mLoading}
-            error={mError}
-            onRetry={() => mutateMarket()}
-            emptyText="등록된 중고거래 글이 없습니다."
-          />
-
-          <CommunityLatestCard
-            kind="gear"
-            title="장비 사용기"
-            icon={<Dumbbell className="h-5 w-5 text-primary" />}
-            headerClassName="bg-muted/50 dark:bg-card/40 border-b border-border"
-            listHref="/board/gear"
-            writeHref="/board/gear/write"
-            items={gearPosts}
-            isLoading={gLoading}
-            error={gError}
-            onRetry={() => mutateGear()}
-            emptyText="등록된 장비 사용기 글이 없습니다."
           />
         </div>
       </SiteContainer>

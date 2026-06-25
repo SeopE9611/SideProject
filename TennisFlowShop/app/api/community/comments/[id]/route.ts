@@ -8,6 +8,7 @@ import { getDb } from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { normalizeSanitizedContent, sanitizeHtml, validateSanitizedLength } from "@/lib/sanitize";
 import { verifyCommunityCsrf } from "@/lib/community/security";
+import { COMMUNITY_BOARDS_ENABLED, communityBoardClosedResponse } from "@/lib/community/community-board-policy";
 
 // 공통: 인증 페이로드
 async function getAuthPayload() {
@@ -38,6 +39,9 @@ const updateCommentSchema = z.object({
 // --------------------------- PATCH: 댓글 수정 ---------------------------
 
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    return communityBoardClosedResponse();
+  }
   const csrf = verifyCommunityCsrf(req);
   if (!csrf.ok) {
     return csrf.response;
@@ -130,6 +134,9 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 // --------------------------- DELETE: 댓글 삭제 ---------------------------
 
 export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    return communityBoardClosedResponse();
+  }
   const csrf = verifyCommunityCsrf(req);
   if (!csrf.ok) {
     return csrf.response;

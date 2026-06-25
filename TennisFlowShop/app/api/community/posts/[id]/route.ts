@@ -14,11 +14,15 @@ import { validateBoardAssetUrl } from "@/lib/boards-community-url-policy";
 import { classifyBoardPatchFailure } from "@/lib/boards-patch-conflict";
 import { normalizeMarketMeta } from "@/lib/market";
 import { resolveCommunityDisplayName } from "@/lib/community-display-name";
+import { COMMUNITY_BOARDS_ENABLED, communityBoardClosedResponse } from "@/lib/community/community-board-policy";
 
 // ---------------------------------------------------------------------------
 // GET: 게시글 상세
 // ---------------------------------------------------------------------------
 export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    return communityBoardClosedResponse();
+  }
   const stop = startTimer();
   const meta = reqMeta(req);
 
@@ -274,6 +278,9 @@ function findFirstInvalidAssetUrl(input: {
 }
 
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    return communityBoardClosedResponse();
+  }
   const csrf = verifyCommunityCsrf(req);
   if (!csrf.ok) {
     return csrf.response;
@@ -529,6 +536,9 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
 // ---------------------------------------------------------------------------
 
 export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    return communityBoardClosedResponse();
+  }
   const csrf = verifyCommunityCsrf(req);
   if (!csrf.ok) {
     return csrf.response;

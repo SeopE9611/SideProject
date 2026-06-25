@@ -1,3 +1,5 @@
+import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-policy";
+import { redirect } from "next/navigation";
 import { MARKET_BOARD_CONFIG } from "@/app/board/_components/board-config";
 import FreeBoardDetailClient from "@/app/board/market/[id]/_components/FreeBoardDetailClient";
 
@@ -11,6 +13,10 @@ export const metadata = {
 };
 
 export default async function FreeBoardDetailPage({ params }: Props) {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    redirect("/board?closed=community");
+  }
+
   const { id } = await params;
 
   return <FreeBoardDetailClient id={id} config={MARKET_BOARD_CONFIG} />;

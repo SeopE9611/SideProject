@@ -1,3 +1,5 @@
+import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-policy";
+import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Flame } from "lucide-react";
@@ -11,6 +13,10 @@ export const metadata = {
 };
 
 export default function HotBoardPage() {
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    redirect("/board?closed=community");
+  }
+
   return (
     <div className="min-h-screen bg-muted/30">
       <div className="container mx-auto px-4 py-8 space-y-8">

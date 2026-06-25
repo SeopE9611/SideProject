@@ -1,3 +1,5 @@
+import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-policy";
+import { redirect } from "next/navigation";
 import { GEAR_BOARD_CONFIG } from "@/app/board/_components/board-config";
 import FreeBoardClient from "@/app/board/gear/_components/FreeBoardClient";
 import type { Metadata } from "next";
@@ -23,7 +25,9 @@ export const metadata: Metadata = {
 };
 
 export default function FreeBoardPage() {
-  // 서버 컴포넌트: metadata + 레이아웃 래퍼 역할
-  // 실제 데이터 로딩/상호작용은 FreeBoardClient에서 처리
+  if (!COMMUNITY_BOARDS_ENABLED) {
+    redirect("/board?closed=community");
+  }
+
   return <FreeBoardClient config={GEAR_BOARD_CONFIG} />;
 }
