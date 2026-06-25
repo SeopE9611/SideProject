@@ -305,220 +305,216 @@ export default function LoginPageClient() {
     >
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <div className="border-b border-border px-4 py-3 md:px-5">
-              <TabsList className="grid h-11 w-full grid-cols-2">
-                <TabsTrigger value="login">로그인</TabsTrigger>
-                <TabsTrigger value="register">회원가입</TabsTrigger>
-              </TabsList>
+          <TabsList className="grid h-11 w-full grid-cols-2">
+            <TabsTrigger value="login">로그인</TabsTrigger>
+            <TabsTrigger value="register">회원가입</TabsTrigger>
+          </TabsList>
         </div>
         {activeTab === "login" && (
-              <TabsContent value="login" forceMount className="mt-0 p-4 md:p-5">
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <h2 className="text-2xl font-bold text-foreground">로그인</h2>
-                    <p className="mt-2 break-keep text-sm leading-relaxed text-muted-foreground">
-                      간편 로그인 또는 이메일로 계속 진행하세요.
-                    </p>
-                  </div>
+          <TabsContent value="login" forceMount className="mt-0 p-4 md:p-5">
+            <div className="space-y-4">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-foreground">로그인</h2>
+                <p className="mt-2 break-keep text-sm leading-relaxed text-muted-foreground">
+                  간편 로그인 또는 이메일로 계속 진행하세요.
+                </p>
+              </div>
 
-                  <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
-                    <p className="text-sm font-semibold text-foreground text-center">간편 로그인</p>
-                    <SocialAuthButtons
-                      onKakaoClick={handleKakaoOAuth}
-                      onNaverClick={handleNaverOAuth}
+              <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
+                <p className="text-sm font-semibold text-foreground text-center">간편 로그인</p>
+                <SocialAuthButtons
+                  onKakaoClick={handleKakaoOAuth}
+                  onNaverClick={handleNaverOAuth}
+                />
+              </div>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card dark:bg-muted px-4 text-foreground font-medium">
+                    이메일 로그인
+                  </span>
+                </div>
+              </div>
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleLogin();
+                }}
+                className="space-y-4"
+                data-cy="login-form"
+              >
+                {loginFormError && (
+                  <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <div className="whitespace-pre-line break-keep">{loginFormError}</div>
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-foreground font-medium">
+                    이메일
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
+                    <Input
+                      id="email"
+                      data-cy="login-email"
+                      type="email"
+                      placeholder="이메일 주소를 입력하세요"
+                      onChange={(e) => {
+                        setLoginFieldErrors((prev) => ({
+                          ...prev,
+                          email: undefined,
+                        }));
+                        setLoginFormError("");
+                        const pwVal =
+                          (document.getElementById("password") as HTMLInputElement | null)?.value ??
+                          "";
+                        setLoginDirty(!!e.currentTarget.value.trim() || !!pwVal);
+                      }}
+                      className="pl-10 h-12 border-border focus:border-border focus:ring-ring dark:focus:border-border"
                     />
                   </div>
-
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t border-border" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-card dark:bg-muted px-4 text-foreground font-medium">
-                        이메일 로그인
-                      </span>
-                    </div>
-                  </div>
-
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handleLogin();
-                    }}
-                    className="space-y-4"
-                    data-cy="login-form"
-                  >
-                    {loginFormError && (
-                      <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
-                        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                        <div className="whitespace-pre-line break-keep">{loginFormError}</div>
-                      </div>
-                    )}
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-foreground font-medium">
-                        이메일
-                      </Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
-                        <Input
-                          id="email"
-                          data-cy="login-email"
-                          type="email"
-                          placeholder="이메일 주소를 입력하세요"
-                          onChange={(e) => {
-                            setLoginFieldErrors((prev) => ({
-                              ...prev,
-                              email: undefined,
-                            }));
-                            setLoginFormError("");
-                            const pwVal =
-                              (document.getElementById("password") as HTMLInputElement | null)
-                                ?.value ?? "";
-                            setLoginDirty(!!e.currentTarget.value.trim() || !!pwVal);
-                          }}
-                          className="pl-10 h-12 border-border focus:border-border focus:ring-ring dark:focus:border-border"
-                        />
-                      </div>
-                      {loginFieldErrors.email && (
-                        <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
-                          <AlertCircle className="h-4 w-4" />
-                          <span className="whitespace-pre-line">{loginFieldErrors.email}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="password" className="text-foreground font-medium">
-                        비밀번호
-                      </Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
-                        <Input
-                          id="password"
-                          data-cy="login-password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="비밀번호를 입력하세요"
-                          onChange={(e) => {
-                            setLoginFieldErrors((prev) => ({
-                              ...prev,
-                              password: undefined,
-                            }));
-                            setLoginFormError("");
-                            const emailVal =
-                              (document.getElementById("email") as HTMLInputElement | null)
-                                ?.value ?? "";
-                            setLoginDirty(!!emailVal.trim() || !!e.currentTarget.value);
-                          }}
-                          className="pl-10 pr-10 h-12 border-border focus:border-border focus:ring-ring dark:focus:border-border"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground hover:text-foreground dark:hover:text-foreground"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                      {loginFieldErrors.password && (
-                        <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
-                          <AlertCircle className="h-4 w-4" />
-                          <span className="whitespace-pre-line">{loginFieldErrors.password}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <label className="flex items-center gap-2 text-sm text-foreground">
-                        <input
-                          type="checkbox"
-                          checked={saveEmail}
-                          onChange={(e) => setSaveEmail(e.target.checked)}
-                          className="rounded border-border text-foreground focus:ring-ring"
-                        />
-                        이메일 저장
-                      </label>
-                      <Link
-                        href="/forgot-password"
-                        onClick={(e) => {
-                          if (!confirmLeaveIfDirty()) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                          }
-                        }}
-                        className="text-sm text-foreground hover:text-foreground dark:hover:text-foreground hover:underline"
-                      >
-                        비밀번호 찾기
-                      </Link>
-                    </div>
-
-                    <Button
-                      type="submit"
-                      className="h-12 w-full font-semibold"
-                      disabled={loginLoading}
-                      data-cy="login-submit"
-                    >
-                      {loginLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          로그인 중...
-                        </>
-                      ) : (
-                        "로그인"
-                      )}
-                    </Button>
-                  </form>
-
-                  <div className="text-center text-xs text-muted-foreground">
-                    일반 회원가입이 필요하신가요?{" "}
-                    <button
-                      type="button"
-                      onClick={() => handleTabChange("register")}
-                      className="font-medium text-foreground underline underline-offset-2 hover:text-foreground/80"
-                    >
-                      일반가입
-                    </button>
-                  </div>
-
-                  {showGuestLookup && (
-                    <div className="text-center">
-                      <div className="mb-4 rounded-xl border border-border/60 bg-muted/30 p-4">
-                        <div className="flex items-center justify-center gap-2 mb-3">
-                          <Shield className="h-5 w-5 text-foreground" />
-                          <p className="text-sm font-semibold text-foreground">
-                            비회원도 주문하실 수 있습니다
-                          </p>
-                        </div>
-                        <Button
-                          variant="outline"
-                          className="w-full border-border text-foreground hover:bg-muted dark:hover:bg-muted bg-transparent"
-                          onClick={() => {
-                            if (!confirmLeaveIfDirty()) return;
-                            router.push("/order-lookup");
-                          }}
-                        >
-                          비회원 주문 조회하기
-                        </Button>
-                      </div>
+                  {loginFieldErrors.email && (
+                    <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <span className="whitespace-pre-line">{loginFieldErrors.email}</span>
                     </div>
                   )}
                 </div>
-              </TabsContent>
-            )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-foreground font-medium">
+                    비밀번호
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground" />
+                    <Input
+                      id="password"
+                      data-cy="login-password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="비밀번호를 입력하세요"
+                      onChange={(e) => {
+                        setLoginFieldErrors((prev) => ({
+                          ...prev,
+                          password: undefined,
+                        }));
+                        setLoginFormError("");
+                        const emailVal =
+                          (document.getElementById("email") as HTMLInputElement | null)?.value ??
+                          "";
+                        setLoginDirty(!!emailVal.trim() || !!e.currentTarget.value);
+                      }}
+                      className="pl-10 pr-10 h-12 border-border focus:border-border focus:ring-ring dark:focus:border-border"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 text-foreground hover:text-foreground dark:hover:text-foreground"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  {loginFieldErrors.password && (
+                    <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <span className="whitespace-pre-line">{loginFieldErrors.password}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 text-sm text-foreground">
+                    <input
+                      type="checkbox"
+                      checked={saveEmail}
+                      onChange={(e) => setSaveEmail(e.target.checked)}
+                      className="rounded border-border text-foreground focus:ring-ring"
+                    />
+                    이메일 저장
+                  </label>
+                  <Link
+                    href="/forgot-password"
+                    onClick={(e) => {
+                      if (!confirmLeaveIfDirty()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }
+                    }}
+                    className="text-sm text-foreground hover:text-foreground dark:hover:text-foreground hover:underline"
+                  >
+                    비밀번호 찾기
+                  </Link>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="h-12 w-full font-semibold"
+                  disabled={loginLoading}
+                  data-cy="login-submit"
+                >
+                  {loginLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      로그인 중...
+                    </>
+                  ) : (
+                    "로그인"
+                  )}
+                </Button>
+              </form>
+
+              <div className="text-center text-xs text-muted-foreground">
+                일반 회원가입이 필요하신가요?{" "}
+                <button
+                  type="button"
+                  onClick={() => handleTabChange("register")}
+                  className="font-medium text-foreground underline underline-offset-2 hover:text-foreground/80"
+                >
+                  일반가입
+                </button>
+              </div>
+
+              {showGuestLookup && (
+                <div className="text-center">
+                  <div className="mb-4 rounded-xl border border-border/60 bg-muted/30 p-4">
+                    <div className="flex items-center justify-center gap-2 mb-3">
+                      <Shield className="h-5 w-5 text-foreground" />
+                      <p className="text-sm font-semibold text-foreground">
+                        비회원도 주문하실 수 있습니다
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full border-border text-foreground hover:bg-muted dark:hover:bg-muted bg-transparent"
+                      onClick={() => {
+                        if (!confirmLeaveIfDirty()) return;
+                        router.push("/order-lookup");
+                      }}
+                    >
+                      비회원 주문 조회하기
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        )}
 
         <RegisterTabPanel
           isSocialOauthRegister={isSocialOauthRegister}
-              oauthProvider={oauthProvider}
-              oauthToken={oauthToken}
-              onKakaoOAuth={handleKakaoOAuth}
-              onNaverOAuth={handleNaverOAuth}
-              onSwitchToLoginTab={() => setActiveTab("login")}
-              onRegisterDirtyChange={setRegisterDirty}
-              onRegisterSubmittingChange={setRegisterSubmitting}
+          oauthProvider={oauthProvider}
+          oauthToken={oauthToken}
+          onKakaoOAuth={handleKakaoOAuth}
+          onNaverOAuth={handleNaverOAuth}
+          onSwitchToLoginTab={() => setActiveTab("login")}
+          onRegisterDirtyChange={setRegisterDirty}
+          onRegisterSubmittingChange={setRegisterSubmitting}
           resetSignal={registerResetSignal}
         />
       </Tabs>
