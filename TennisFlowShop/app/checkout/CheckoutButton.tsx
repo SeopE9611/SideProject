@@ -471,7 +471,7 @@ export default function CheckoutButton({
             <p>
               라켓: {data?.racketQty ?? "-"}개, 스트링/교체: {data?.serviceQty ?? "-"}개
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-ui-body-sm text-muted-foreground">
               이전 단계(스트링 선택)에서 ‘번들 수량’을 다시 맞춰주세요.
             </p>
           </div>,
@@ -494,7 +494,7 @@ export default function CheckoutButton({
     <div className="w-full">
       <Button
         onClick={handleSubmit}
-        className="min-h-14 w-full text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl transition-all duration-300 bp-sm:text-lg"
+        className="min-h-14 w-full text-ui-body font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl transition-all duration-300 bp-sm:text-ui-card-title-lg"
         size="lg"
         wrap="responsive"
         disabled={disabled || isSubmitting}

@@ -34,17 +34,17 @@ export default function CheckoutStringingPaymentAddon({
   return (
     <div className="space-y-4 rounded-xl border border-border/70 bg-secondary/20 p-4 bp-sm:p-5">
       <div className="space-y-2">
-        <p className="text-sm font-medium text-foreground flex items-center gap-2">
+        <p className="text-ui-label font-medium text-foreground flex items-center gap-2">
           <Info className="h-4 w-4 text-primary" />
           교체서비스는 이번 주문과 함께 접수됩니다.
         </p>
-        <p className="text-xs text-foreground/75">
+        <p className="text-ui-label text-foreground/75">
           선택한 결제수단 기준으로 상품과 교체서비스 전체 주문에 적용됩니다.
         </p>
-        <p className="text-xs text-foreground/75">
+        <p className="text-ui-label text-foreground/75">
           패키지를 사용하지 않으면 교체서비스 비용이 결제금액에 포함됩니다.
         </p>
-        <p className="text-xs text-foreground/75">
+        <p className="text-ui-label text-foreground/75">
           패키지를 사용하면 보유 횟수에서 차감되고 결제금액에서 교체서비스 비용이 제외됩니다.
         </p>
       </div>
@@ -60,7 +60,7 @@ export default function CheckoutStringingPaymentAddon({
           <Ticket
             className={packageInsufficient ? "h-4 w-4 text-destructive" : "h-4 w-4 text-primary"}
           />
-          <p className="text-sm font-semibold text-foreground">교체서비스 패키지 적용 상태</p>
+          <p className="text-ui-body-sm font-medium text-foreground">교체서비스 패키지 적용 상태</p>
           <Badge
             variant="outline"
             className={
@@ -81,23 +81,23 @@ export default function CheckoutStringingPaymentAddon({
 
         {packagePreview.has ? (
           <>
-            <div className="flex flex-wrap gap-2 text-xs">
+            <div className="flex flex-wrap gap-2 text-ui-label">
               <Badge variant="outline">패키지 잔여 {packageRemaining}회</Badge>
               <Badge variant="outline">이번 신청 필요 {requiredPassCount}회</Badge>
             </div>
 
             {packageInsufficient ? (
-              <p className="text-xs text-destructive mt-2 flex items-start gap-1.5">
+              <p className="text-ui-label text-destructive mt-2 flex items-start gap-1.5">
                 <AlertTriangle className="h-3.5 w-3.5 mt-0.5" />
                 잔여 횟수가 부족하여 이번 주문의 교체서비스는 일반 결제로 접수됩니다.
               </p>
             ) : canApplyPackage ? (
-              <p className="text-xs text-foreground mt-2 flex items-start gap-1.5">
+              <p className="text-ui-label text-foreground mt-2 flex items-start gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5 mt-0.5 text-primary" />
                 잔여 횟수가 충분하여 패키지가 자동으로 적용됩니다.
               </p>
             ) : (
-              <p className="text-xs text-foreground/75 mt-2">
+              <p className="text-ui-label text-foreground/75 mt-2">
                 이번 주문에 적용 가능한 교체 횟수가 없어 일반 결제로 접수됩니다.
               </p>
             )}
@@ -111,7 +111,7 @@ export default function CheckoutStringingPaymentAddon({
                 />
                 <Label
                   htmlFor="checkout-package-optout"
-                  className="cursor-pointer text-xs text-foreground/75"
+                  className="cursor-pointer text-ui-label text-foreground/75"
                 >
                   이번 주문에서는 패키지 사용 안 함
                 </Label>
@@ -119,7 +119,7 @@ export default function CheckoutStringingPaymentAddon({
             )}
           </>
         ) : (
-          <p className="text-xs text-foreground/75">
+          <p className="text-ui-label text-foreground/75">
             사용 가능한 교체서비스 패키지가 없어 이번 주문의 교체서비스는 일반 결제로 접수됩니다.
           </p>
         )}

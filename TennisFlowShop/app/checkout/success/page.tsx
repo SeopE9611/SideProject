@@ -612,11 +612,11 @@ export default async function CheckoutSuccessPage({
                 className="overflow-hidden border border-border bg-card shadow-xl backdrop-blur-sm"
               >
                 <div className="border-b border-border bg-background p-6">
-                  <CardTitle className="flex flex-wrap items-center gap-3 break-keep text-xl leading-relaxed bp-sm:text-2xl">
+                  <CardTitle className="flex flex-wrap items-center gap-3 break-keep text-ui-section-title leading-relaxed bp-sm:text-ui-section-title-lg">
                     <Package className="h-6 w-6 text-primary" />
                     주문 정보
                     {withStringService && (
-                      <span className="rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                      <span className="rounded-full border border-border px-2 py-0.5 text-ui-caption font-medium text-muted-foreground">
                         교체서비스 포함
                       </span>
                     )}
@@ -632,13 +632,13 @@ export default async function CheckoutSuccessPage({
                 <CardContent className="p-4 md:p-6">
                   {/* 문서 정보 */}
                   <div className="mb-6">
-                    <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-foreground">
+                    <h3 className="mb-4 flex items-center gap-2 text-ui-card-title-lg font-semibold text-foreground">
                       <Shield className="h-5 w-5 text-primary" />
                       {withStringService ? "주문/신청 정보" : "문서 정보"}
                     </h3>
                     <div className="space-y-3 rounded-lg border border-border bg-background p-4">
                       <div>
-                        <span className="text-sm text-muted-foreground">주문 번호:</span>{" "}
+                        <span className="text-ui-body-sm text-muted-foreground">주문 번호:</span>{" "}
                         <span
                           data-cy="checkout-order-id"
                           className="break-all font-mono font-semibold text-foreground"
@@ -650,7 +650,7 @@ export default async function CheckoutSuccessPage({
                         hasSubmittedApplication &&
                         representativeStringingApplicationId && (
                           <div>
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-ui-body-sm text-muted-foreground">
                               교체서비스 신청 번호:
                             </span>{" "}
                             <span className="break-all font-mono font-semibold text-foreground">
@@ -659,7 +659,7 @@ export default async function CheckoutSuccessPage({
                           </div>
                         )}
                       {withStringService && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-ui-body-sm text-muted-foreground">
                           {hasSubmittedApplication
                             ? "주문과 함께 교체서비스 신청이 접수되었습니다."
                             : "현재 주문에 교체서비스가 포함되어 있습니다."}
@@ -681,8 +681,8 @@ export default async function CheckoutSuccessPage({
                   </div>
 
                   <div className="mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4 md:p-5">
-                    <h3 className="text-base font-bold text-foreground">다음 행동 안내</h3>
-                    <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted-foreground">
+                    <h3 className="text-ui-card-title font-semibold text-foreground">다음 행동 안내</h3>
+                    <ul className="mt-3 space-y-2 text-ui-body-sm leading-relaxed text-muted-foreground">
                       <li>• {nextActionStatusLabel}은 마이페이지에서 확인할 수 있습니다.</li>
                       {withStringService && (
                         <li>
@@ -714,7 +714,7 @@ export default async function CheckoutSuccessPage({
                       <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-4">
                         <Clock className="h-5 w-5 text-primary" />
                         <div>
-                          <p className="text-sm text-muted-foreground">주문일자</p>
+                          <p className="text-ui-body-sm text-muted-foreground">주문일자</p>
                           <p className="font-semibold text-foreground">
                             {new Date(order.createdAt).toLocaleDateString("ko-KR", {
                               year: "numeric",
@@ -728,13 +728,13 @@ export default async function CheckoutSuccessPage({
                       <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-4">
                         <CreditCard className="h-5 w-5 text-primary" />
                         <div>
-                          <p className="text-sm text-muted-foreground">결제 방법</p>
+                          <p className="text-ui-body-sm text-muted-foreground">결제 방법</p>
                           {isZeroPayment ? (
                             <>
                               <p className="font-semibold text-foreground">
                                 결제 완료 (결제 금액 0원)
                               </p>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-ui-body-sm text-muted-foreground">
                                 포인트 전액 사용 등으로 추가 입금이 필요하지 않습니다.
                               </p>
                             </>
@@ -742,12 +742,12 @@ export default async function CheckoutSuccessPage({
                             <>
                               <p className="font-semibold text-foreground">{paymentMethodLabel}</p>
                               {isTossPayment && (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-ui-body-sm text-muted-foreground">
                                   결제 제공사: Toss Payments
                                 </p>
                               )}
                               {isNicePayment && (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-ui-body-sm text-muted-foreground">
                                   결제수단: 카드/간편결제
                                 </p>
                               )}
@@ -760,19 +760,19 @@ export default async function CheckoutSuccessPage({
                     <div className="rounded-xl border border-border bg-background p-6">
                       <div className="flex items-center gap-2 mb-4">
                         <CreditCard className="h-5 w-5 text-primary" />
-                        <h3 className="font-bold text-foreground">
+                        <h3 className="font-semibold text-foreground">
                           {isTossPayment || isNicePayment ? "결제 완료 정보" : "입금 계좌 정보"}
                         </h3>
                       </div>
                       {isZeroPayment ? (
                         <div className="space-y-2 rounded-lg border border-border bg-card p-4">
                           <p className="font-semibold text-foreground">추가 입금 불필요</p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-ui-body-sm text-muted-foreground">
                             결제 금액이 0원으로 확인되어 입금 안내가 생략되었습니다.
                           </p>
                         </div>
                       ) : isTossPayment ? (
-                        <div className="space-y-2 rounded-lg border border-border bg-card p-4 text-sm">
+                        <div className="space-y-2 rounded-lg border border-border bg-card p-4 text-ui-body-sm">
                           <p>
                             <span className="text-muted-foreground">결제 상태:</span>{" "}
                             <span className="font-semibold text-foreground">
@@ -802,7 +802,7 @@ export default async function CheckoutSuccessPage({
                           </p>
                         </div>
                       ) : isNicePayment ? (
-                        <div className="space-y-2 rounded-lg border border-border bg-card p-4 text-sm">
+                        <div className="space-y-2 rounded-lg border border-border bg-card p-4 text-ui-body-sm">
                           <p>
                             <span className="text-muted-foreground">결제 상태:</span>{" "}
                             <span className="font-semibold text-foreground">
@@ -837,15 +837,15 @@ export default async function CheckoutSuccessPage({
                             <div className="font-semibold text-foreground">
                               {bankLabelMap[order.paymentInfo.bank].label}
                             </div>
-                            <div className="font-mono text-lg font-bold text-primary">
+                            <div className="font-mono text-ui-price font-semibold text-primary">
                               {bankLabelMap[order.paymentInfo.bank].account}
                             </div>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="text-ui-body-sm text-muted-foreground">
                               예금주: {bankLabelMap[order.paymentInfo.bank].holder}
                             </div>
                           </div>
                           <div className="mt-4 rounded-lg border border-border bg-card p-3">
-                            <p className="text-sm font-semibold text-primary">
+                            <p className="text-ui-body-sm font-semibold text-primary">
                               ⏰ 입금 기한: {new Date(order.createdAt).toLocaleDateString("ko-KR")}{" "}
                               23:59까지
                             </p>
@@ -861,7 +861,7 @@ export default async function CheckoutSuccessPage({
 
                   {/* 주문 상품 */}
                   <div className="mb-6">
-                    <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                    <h3 className="font-semibold text-ui-card-title-lg mb-4 flex items-center gap-2">
                       <Package className="h-5 w-5 text-primary" /> 주문 상품
                     </h3>
                     <div className="space-y-3">
@@ -879,16 +879,16 @@ export default async function CheckoutSuccessPage({
                               <p className="break-keep break-words font-semibold leading-relaxed text-foreground">
                                 {item.name}
                               </p>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-ui-body-sm text-muted-foreground">
                                 수량: {itemQuantity}개
                               </p>
                               {item.selectedGauge && (
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-ui-label text-muted-foreground">
                                   선택 옵션: 게이지 {formatGaugeLabel(item.selectedGauge)}
                                 </p>
                               )}
                               {(item.selectedColorLabel || item.selectedColor) && (
-                                <p className="flex min-w-0 flex-wrap items-center gap-2 text-xs leading-relaxed text-muted-foreground">
+                                <p className="flex min-w-0 flex-wrap items-center gap-2 text-ui-label leading-relaxed text-muted-foreground">
                                   <span>선택 옵션: 색상</span>
                                   {item.selectedColorHex && (
                                     <span
@@ -906,8 +906,8 @@ export default async function CheckoutSuccessPage({
                               )}
                             </div>
                             <div className="shrink-0 text-left bp-sm:text-right">
-                              <p className="text-lg font-bold text-primary">{totalItemPrice}원</p>
-                              <p className="text-sm text-muted-foreground">단가: {itemPrice}원</p>
+                              <p className="text-ui-price font-semibold text-primary">{totalItemPrice}원</p>
+                              <p className="text-ui-body-sm text-muted-foreground">단가: {itemPrice}원</p>
                             </div>
                           </div>
                         );
@@ -921,12 +921,12 @@ export default async function CheckoutSuccessPage({
                   {withStringService && (
                     <>
                       <div className="mb-6">
-                        <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-foreground">
+                        <h3 className="mb-4 flex items-center gap-2 text-ui-card-title-lg font-semibold text-foreground">
                           <Package className="h-5 w-5 text-primary" />
                           교체서비스 정보
                         </h3>
                         {hasSubmittedApplication && stringingSummary ? (
-                          <div className="space-y-2 rounded-lg border border-border bg-background p-4 text-sm text-foreground">
+                          <div className="space-y-2 rounded-lg border border-border bg-background p-4 text-ui-body-sm text-foreground">
                             <p>
                               <span className="text-muted-foreground">접수 방식:</span>{" "}
                               <span className="font-semibold">
@@ -1024,7 +1024,7 @@ export default async function CheckoutSuccessPage({
                           </div>
                         ) : (
                           <div className="space-y-3 rounded-lg border border-border bg-background p-4">
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-ui-body-sm text-muted-foreground">
                               {isVisitPickup
                                 ? "방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요."
                                 : "택배 수령을 선택하셨으므로 수거/반송을 통해 장착 서비스가 진행됩니다."}
@@ -1050,20 +1050,20 @@ export default async function CheckoutSuccessPage({
 
                   {/* 수령/배송 정보 */}
                   <div className="mb-6">
-                    <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-foreground">
+                    <h3 className="mb-4 flex items-center gap-2 text-ui-card-title-lg font-semibold text-foreground">
                       <MapPin className="h-5 w-5 text-primary" />
                       {getOrderDeliveryInfoTitle(order.shippingInfo)}
                     </h3>
                     <div className="space-y-2 rounded-lg border border-border bg-background p-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <span className="text-sm text-muted-foreground">수령인:</span>
+                          <span className="text-ui-body-sm text-muted-foreground">수령인:</span>
                           <span className="ml-2 font-semibold text-foreground">
                             {order.shippingInfo?.name || "정보 없음"}
                           </span>
                         </div>
                         <div>
-                          <span className="text-sm text-muted-foreground">연락처:</span>
+                          <span className="text-ui-body-sm text-muted-foreground">연락처:</span>
                           <span className="ml-2 font-semibold text-foreground">
                             {formatKoreanPhone(order.shippingInfo?.phone) || "정보 없음"}
                           </span>
@@ -1071,20 +1071,20 @@ export default async function CheckoutSuccessPage({
                       </div>
                       {showDeliveryOnlyFields && (
                         <div>
-                          <span className="text-sm text-muted-foreground">주소:</span>
+                          <span className="text-ui-body-sm text-muted-foreground">주소:</span>
                           <span className="ml-2 font-semibold text-foreground">
                             {order.shippingInfo?.address || "정보 없음"}
                           </span>
                         </div>
                       )}
                       {!showDeliveryOnlyFields && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-ui-body-sm text-muted-foreground">
                           매장 방문 시 주문번호를 제시해주세요.
                         </p>
                       )}
                       {showDeliveryOnlyFields && order.shippingInfo?.deliveryRequest && (
                         <div>
-                          <span className="text-sm text-muted-foreground">배송 요청사항:</span>
+                          <span className="text-ui-body-sm text-muted-foreground">배송 요청사항:</span>
                           <span className="ml-2 font-semibold text-foreground">
                             {order.shippingInfo.deliveryRequest}
                           </span>
@@ -1136,14 +1136,14 @@ export default async function CheckoutSuccessPage({
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between gap-3 pt-2 text-2xl font-bold">
+                      <div className="flex items-center justify-between gap-3 pt-2 text-ui-price-lg font-semibold">
                         <span className="min-w-0 break-words text-foreground">총 결제 금액</span>
                         <span className="shrink-0 whitespace-nowrap text-right tabular-nums text-primary">
                           {formatPrice(order.totalPrice)}원
                         </span>
                       </div>
 
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-ui-body-sm text-muted-foreground">
                         ({isVisitPickup ? "추가 비용" : "배송비"}{" "}
                         {formatPrice(normalizedShippingFee)}원 포함)
                       </p>
@@ -1192,7 +1192,7 @@ export default async function CheckoutSuccessPage({
                         <CreditCard className="mt-0.5 h-5 w-5 text-primary" />
                         <div>
                           <h4 className="mb-1 font-semibold text-foreground">입금 안내</h4>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-ui-body-sm text-muted-foreground">
                             주문하신 상품의 결제 금액을 위 계좌로 입금해주세요.
                           </p>
                         </div>
@@ -1203,7 +1203,7 @@ export default async function CheckoutSuccessPage({
                           <h4 className="mb-1 font-semibold text-foreground">
                             {isVisitPickup ? "방문 수령 안내" : "배송 안내"}
                           </h4>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-ui-body-sm text-muted-foreground">
                             {isVisitPickup
                               ? "입금 확인 후 매장에서 수령 준비가 진행됩니다."
                               : "입금 확인 후 배송이 시작됩니다."}
@@ -1216,7 +1216,7 @@ export default async function CheckoutSuccessPage({
                         <Star className="mt-0.5 h-5 w-5 text-primary" />
                         <div>
                           <h4 className="mb-1 font-semibold text-foreground">주문 확인</h4>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-ui-body-sm text-muted-foreground">
                             주문 내역은 마이페이지에서 확인하실 수 있습니다.
                           </p>
                         </div>
@@ -1225,7 +1225,7 @@ export default async function CheckoutSuccessPage({
                         <Phone className="mt-0.5 h-5 w-5 text-primary" />
                         <div>
                           <h4 className="mb-1 font-semibold text-foreground">고객 지원</h4>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-ui-body-sm text-muted-foreground">
                             {isVisitPickup
                               ? "방문 수령 관련 문의사항은 고객센터(010-5218-5248)로 연락주세요."
                               : "배송 관련 문의사항은 고객센터(010-5218-5248)로 연락주세요."}
@@ -1273,8 +1273,8 @@ export default async function CheckoutSuccessPage({
                 <div className="mb-4 md:mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm dark:bg-primary/20">
                   <CheckCircle className="h-12 w-12 text-foreground" />
                 </div>
-                <h1 className="text-3xl md:text-4xl font-bold mb-4">주문이 접수되었습니다</h1>
-                <p className="mb-4 md:mb-6 text-xl text-muted-foreground">
+                <h1 className="text-ui-page-title md:text-ui-page-title-lg font-semibold mb-4">주문이 접수되었습니다</h1>
+                <p className="mb-4 md:mb-6 text-ui-section-title text-muted-foreground">
                   결제가 정상 처리되었습니다.
                 </p>
               </div>
@@ -1285,13 +1285,13 @@ export default async function CheckoutSuccessPage({
             <div className="mx-auto max-w-2xl space-y-4">
               <Card className="border border-border bg-card shadow-xl">
                 <CardHeader className="border-b border-border bg-background">
-                  <CardTitle className="text-xl">주문 완료</CardTitle>
+                  <CardTitle className="text-ui-section-title">주문 완료</CardTitle>
                   <CardDescription>
                     주문 상세 정보를 불러오는 중 일시적인 문제가 발생했습니다. 잠시 후 다시
                     시도하거나 마이페이지에서 확인해주세요.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3 p-6 text-sm text-muted-foreground">
+                <CardContent className="space-y-3 p-6 text-ui-body-sm text-muted-foreground">
                   <p>
                     주문번호:{" "}
                     <span className="font-mono font-semibold text-foreground">{orderId}</span>

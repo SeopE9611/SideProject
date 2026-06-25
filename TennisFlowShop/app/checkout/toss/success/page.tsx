@@ -49,7 +49,7 @@ export default function TossCheckoutSuccessPage() {
     <SiteContainer className="flex min-h-[50vh]">
       <div className="mx-auto flex w-full max-w-xl flex-col items-center justify-center gap-3 text-center">
         <Loader2 className="h-6 w-6 animate-spin" />
-        <p className="text-sm text-muted-foreground">
+        <p className="text-ui-body-sm text-muted-foreground">
           결제 승인 처리 중입니다. 잠시만 기다려주세요.
         </p>
       </div>
