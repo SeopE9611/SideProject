@@ -381,8 +381,70 @@ export async function POST(req: Request) {
       return redirect303(req, toFailUrl("APPROVE_FAILED", message, failOptions));
     }
 
+    const tryAutoCancelAfterApprove = async (failureMessage: string) => {
+      try {
+        const canceled = await cancelNicePaymentByTid({
+          tid,
+          orderId,
+          reason: "승인 후 내부 주문 생성 실패로 자동 취소",
+          clientKey,
+          secretKey,
+          apiBaseUrl: approveApiBase,
+        });
+        const cancelCode = pick(canceled, "resultCode", "ResultCode");
+        const cancelMsg = pick(canceled, "resultMsg", "ResultMsg");
+        const canceledOk = cancelCode === "0000";
+        await col.updateOne(
+          { _id: session._id },
+          {
+            $set: {
+              status: canceledOk
+                ? "approve_succeeded_auto_cancel_succeeded"
+                : "approve_succeeded_auto_cancel_failed",
+              failureStage: "create_order_after_approve",
+              failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+              failureMessage,
+              niceAuthRaw: raw,
+              niceApprovedRaw: approvedRaw,
+              updatedAt: new Date(),
+              niceAutoCancel: {
+                attemptedAt: new Date(),
+                resultCode: cancelCode || "UNKNOWN",
+                resultMsg: cancelMsg || undefined,
+                status: canceledOk ? "succeeded" : "failed",
+              },
+            },
+          },
+        );
+      } catch (cancelError: any) {
+        await col.updateOne(
+          { _id: session._id },
+          {
+            $set: {
+              status: "approve_succeeded_auto_cancel_failed",
+              failureStage: "create_order_after_approve",
+              failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
+              failureMessage,
+              niceAuthRaw: raw,
+              niceApprovedRaw: approvedRaw,
+              updatedAt: new Date(),
+              niceAutoCancel: {
+                attemptedAt: new Date(),
+                resultCode: String(
+                  cancelError?.resultCode || cancelError?.code || "AUTO_CANCEL_REQUEST_ERROR",
+                ),
+                resultMsg: cancelError?.message || "자동 취소 중 오류가 발생했습니다.",
+                status: "failed",
+              },
+            },
+          },
+        );
+      }
+    };
+
     const rentalPayload = session.rentalPayload as RentalCreatePayload | undefined;
     if (!rentalPayload?.racketId || !rentalPayload?.days) {
+      const failureMessage = "결제 승인 후 대여 데이터를 복원하지 못했습니다.";
       await col.updateOne(
         { _id: session._id },
         {
@@ -390,13 +452,14 @@ export async function POST(req: Request) {
             status: "approve_succeeded_order_failed",
             failureStage: "create_order_after_approve",
             failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
-            failureMessage: "결제 승인 후 대여 데이터를 복원하지 못했습니다.",
+            failureMessage,
             niceAuthRaw: raw,
             niceApprovedRaw: approvedRaw,
             updatedAt: new Date(),
           },
         },
       );
+      await tryAutoCancelAfterApprove(failureMessage);
       return redirect303(
         req,
         toFailUrl(
@@ -481,64 +544,7 @@ export async function POST(req: Request) {
       return res;
     } catch (orderError: any) {
       const failureMessage = orderError?.message || "결제 승인 후 주문 생성에 실패했습니다.";
-      try {
-        const canceled = await cancelNicePaymentByTid({
-          tid,
-          orderId,
-          reason: "승인 후 내부 주문 생성 실패로 자동 취소",
-          clientKey,
-          secretKey,
-          apiBaseUrl: approveApiBase,
-        });
-        const cancelCode = pick(canceled, "resultCode", "ResultCode");
-        const cancelMsg = pick(canceled, "resultMsg", "ResultMsg");
-        const canceledOk = cancelCode === "0000";
-        await col.updateOne(
-          { _id: session._id },
-          {
-            $set: {
-              status: canceledOk
-                ? "approve_succeeded_auto_cancel_succeeded"
-                : "approve_succeeded_auto_cancel_failed",
-              failureStage: "create_order_after_approve",
-              failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
-              failureMessage,
-              niceAuthRaw: raw,
-              niceApprovedRaw: approvedRaw,
-              updatedAt: new Date(),
-              niceAutoCancel: {
-                attemptedAt: new Date(),
-                resultCode: cancelCode || "UNKNOWN",
-                resultMsg: cancelMsg || undefined,
-                status: canceledOk ? "succeeded" : "failed",
-              },
-            },
-          },
-        );
-      } catch (cancelError: any) {
-        await col.updateOne(
-          { _id: session._id },
-          {
-            $set: {
-              status: "approve_succeeded_auto_cancel_failed",
-              failureStage: "create_order_after_approve",
-              failureCode: "ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE",
-              failureMessage,
-              niceAuthRaw: raw,
-              niceApprovedRaw: approvedRaw,
-              updatedAt: new Date(),
-              niceAutoCancel: {
-                attemptedAt: new Date(),
-                resultCode: String(
-                  cancelError?.resultCode || cancelError?.code || "AUTO_CANCEL_REQUEST_ERROR",
-                ),
-                resultMsg: cancelError?.message || "자동 취소 중 오류가 발생했습니다.",
-                status: "failed",
-              },
-            },
-          },
-        );
-      }
+      await tryAutoCancelAfterApprove(failureMessage);
       return redirect303(
         req,
         toFailUrl("ORDER_CREATION_FAILED_AFTER_PAYMENT_APPROVE", failureMessage, failOptions),
