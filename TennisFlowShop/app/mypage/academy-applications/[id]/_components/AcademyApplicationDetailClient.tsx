@@ -1,6 +1,6 @@
 "use client";
 
-import AsyncState from "@/components/system/AsyncState";
+import { ResultState, SummaryCard } from "@/components/public";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -341,13 +341,15 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
             목록으로 돌아가기
           </Link>
         </Button>
-        <AsyncState
-          kind="error"
-          variant="card"
-          resourceName="클래스 신청 상세"
-          onAction={() => mutate()}
+        <ResultState
+          status="error"
           title="신청 내역을 찾을 수 없습니다."
           description="신청 번호가 올바르지 않거나 조회 권한이 없는 신청입니다."
+          actions={
+            <Button type="button" onClick={() => mutate()}>
+              다시 불러오기
+            </Button>
+          }
         />
       </div>
     );
@@ -438,49 +440,54 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
 
   return (
     <div className="mx-auto max-w-4xl space-y-4 md:space-y-6">
-      <Card className="rounded-2xl border border-border bg-card shadow-sm">
-        <CardContent className="space-y-4 p-4 md:p-6">
+      <SummaryCard
+        eyebrow="마이페이지"
+        title="아카데미 신청 상세"
+        description="신청 상태, 수업 정보, 일정과 다음 해야 할 일을 한눈에 확인할 수 있습니다."
+        action={
           <Button asChild variant="ghost" size="sm" className="w-fit px-0 hover:bg-transparent">
             <Link href="/mypage?tab=academy">
               <ArrowLeft className="h-4 w-4" />
               클래스 신청 목록
             </Link>
           </Button>
-          <div className="flex flex-col gap-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
-            <div className="min-w-0 space-y-2">
-              <div className="flex flex-wrap items-center gap-2 text-ui-body-sm text-muted-foreground">
-                <CalendarDays className="h-4 w-4 text-primary" />
-                <span>신청일 {formatDateTime(item.createdAt)}</span>
-                <span aria-hidden="true">·</span>
-                <span>접수번호 {formatReceiptId(item._id)}</span>
-              </div>
-              <h1 className="break-keep text-ui-page-title font-semibold leading-tight text-foreground bp-sm:text-ui-page-title-lg">
-                {item.classSnapshot?.name || "아카데미 클래스 신청"}
-              </h1>
-              <p className="break-keep text-ui-body-sm text-muted-foreground">
-                신청 진행 상황과 상담 안내를 확인할 수 있습니다.
-              </p>
+        }
+        contentClassName="space-y-4"
+      >
+        <div className="flex flex-col gap-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+          <div className="min-w-0 space-y-2">
+            <div className="flex flex-wrap items-center gap-2 text-ui-body-sm text-muted-foreground">
+              <CalendarDays className="h-4 w-4 text-primary" />
+              <span>신청일 {formatDateTime(item.createdAt)}</span>
+              <span aria-hidden="true">·</span>
+              <span className="min-w-0 break-all">접수번호 {formatReceiptId(item._id)}</span>
             </div>
-            <Badge
-              variant={badgeToneVariant(statusTone)}
-              wrap="normal"
-              className="w-fit shrink-0 text-ui-body-sm"
-            >
-              {item.statusLabel}
-            </Badge>
-          </div>
-          <div className="rounded-xl border border-border bg-muted/20 p-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span className="text-ui-body-sm font-medium text-muted-foreground">현재 상태</span>
-              <Badge variant={badgeToneVariant(statusTone)}>{item.statusLabel}</Badge>
-            </div>
-            <p className="mt-3 break-keep text-ui-body-sm leading-relaxed text-foreground">
-              {getStatusDescription(item.status)}
+            <h1 className="break-keep text-ui-page-title font-semibold leading-tight text-foreground bp-sm:text-ui-page-title-lg">
+              {item.classSnapshot?.name || "아카데미 클래스 신청"}
+            </h1>
+            <p className="break-keep text-ui-body-sm text-muted-foreground">
+              신청 진행 상황과 상담 안내를 확인할 수 있습니다.
             </p>
           </div>
-        </CardContent>
-      </Card>
+          <Badge
+            variant={badgeToneVariant(statusTone)}
+            wrap="normal"
+            className="w-fit shrink-0 text-ui-body-sm"
+          >
+            {item.statusLabel}
+          </Badge>
+        </div>
+        <div className="rounded-xl border border-border bg-muted/20 p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-primary" />
+            <span className="text-ui-body-sm font-medium text-muted-foreground">현재 상태</span>
+            <Badge variant={badgeToneVariant(statusTone)}>{item.statusLabel}</Badge>
+          </div>
+          <p className="mt-3 break-keep text-ui-body-sm leading-relaxed text-foreground">
+            {getStatusDescription(item.status)}
+          </p>
+        </div>
+      </SummaryCard>
 
       <ClassInfoCard item={item} />
       <ApplicationInfoCard item={item} />
@@ -635,7 +642,10 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                   </div>
                   {cancelReason === "other" ? (
                     <div className="space-y-2">
-                      <label className="text-ui-body-sm font-medium" htmlFor="academy-cancel-detail">
+                      <label
+                        className="text-ui-body-sm font-medium"
+                        htmlFor="academy-cancel-detail"
+                      >
                         상세 사유 <span className="text-muted-foreground">(선택)</span>
                       </label>
                       <Textarea
@@ -675,14 +685,14 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         </CardContent>
       </Card>
 
-      <div className="grid gap-2 bp-sm:grid-cols-3">
-        <Button asChild variant="outline" wrap="responsive" className="w-full">
+      <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:flex-wrap bp-sm:justify-end">
+        <Button asChild variant="outline" wrap="responsive" className="w-full bp-sm:w-auto">
           <Link href="/mypage?tab=academy">목록으로 돌아가기</Link>
         </Button>
-        <Button asChild variant="secondary" wrap="responsive" className="w-full">
+        <Button asChild variant="secondary" wrap="responsive" className="w-full bp-sm:w-auto">
           <Link href="/academy">아카데미 홈 보기</Link>
         </Button>
-        <Button asChild variant="default" wrap="responsive" className="w-full">
+        <Button asChild variant="default" wrap="responsive" className="w-full bp-sm:w-auto">
           <Link href="/board/qna/write?category=academy">
             <PhoneCall className="h-4 w-4" />
             문의하기
