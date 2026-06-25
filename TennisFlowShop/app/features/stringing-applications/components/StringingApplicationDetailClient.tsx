@@ -3358,6 +3358,15 @@ export default function StringingApplicationDetailClient({
               고객 취소 요청 없이 관리자가 단독 교체서비스 신청을 취소합니다. 취소 후 신청 상태는
               취소로 변경되며 처리 이력에 사유가 남습니다.
             </p>
+            <p className="mt-2 text-sm text-foreground/80">
+              신청 상태만 취소로 변경됩니다. 결제완료 건은 카드 취소 또는 수동 환불 처리가
+              별도로 필요할 수 있습니다.
+            </p>
+            {packageApplied && (
+              <p className="mt-1 text-sm text-foreground/80">
+                패키지 사용 신청은 취소 처리 시 사용 회차 복원 기준으로 처리됩니다.
+              </p>
+            )}
 
             <div className="mt-4 space-y-2">
               <label className="block text-sm font-medium text-foreground">
