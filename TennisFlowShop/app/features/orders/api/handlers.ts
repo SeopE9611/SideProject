@@ -18,7 +18,10 @@ import { findOneActivePassForUser } from "@/lib/passes.service";
 import { deductPoints } from "@/lib/points.service";
 import { getEffectiveProductPrice } from "@/lib/product-pricing";
 import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
-import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
+import {
+  getVisibilityViewerFromCookies,
+  getVisibilityViewerFromUserId,
+} from "@/lib/public-visibility-viewer";
 import { getEffectiveRacketPrice } from "@/lib/racket-pricing";
 import { normalizeEmailForSearch } from "@/lib/search-email";
 import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
@@ -369,6 +372,19 @@ export async function createOrder(
     const client = await clientPromise;
     const db = client.db();
     dbForDuplicateRecovery = db;
+    const shouldResolveViewerFromUserId =
+      executionContext?.source === "nicepay_return" && Boolean(executionContext.userIdOverride);
+    const visibilityViewer = shouldResolveViewerFromUserId
+      ? await getVisibilityViewerFromUserId(db, executionContext.userIdOverride)
+      : await getVisibilityViewerFromCookies();
+    if (executionContext?.source === "nicepay_return") {
+      console.info("[orders][createOrder][visibility_viewer]", {
+        source: executionContext.source,
+        hasUserIdOverride: Boolean(executionContext.userIdOverride),
+        visibilityViewerSource: shouldResolveViewerFromUserId ? "userIdOverride" : "cookies",
+        isAdminViewer: visibilityViewer.isAdmin === true,
+      });
+    }
 
     type OrderDoc = Omit<DBOrder, "_id"> & {
       idemKey?: string;
@@ -428,7 +444,7 @@ export async function createOrder(
           (await db.collection("products").findOne(
             {
               _id: productId,
-              ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+              ...productVisibilityFilterFor(visibilityViewer),
             },
             { session },
           ));
@@ -492,7 +508,7 @@ export async function createOrder(
         const variantUpdated = await db.collection("products").updateOne(
           {
             _id: productId,
-            ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+            ...productVisibilityFilterFor(visibilityViewer),
             "inventory.stock": { $gte: quantity },
             variantInventories: {
               $elemMatch: {
@@ -573,7 +589,7 @@ export async function createOrder(
           (await db.collection("products").findOne(
             {
               _id: productId,
-              ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+              ...productVisibilityFilterFor(visibilityViewer),
             },
             { session },
           ));
@@ -588,7 +604,7 @@ export async function createOrder(
         const colorUpdated = await db.collection("products").updateOne(
           {
             _id: productId,
-            ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+            ...productVisibilityFilterFor(visibilityViewer),
             colorInventories: {
               $elemMatch: {
                 value: selectedColor,
@@ -618,7 +634,7 @@ export async function createOrder(
         const productForColor = await db.collection("products").findOne(
           {
             _id: productId,
-            ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+            ...productVisibilityFilterFor(visibilityViewer),
           },
           { session },
         );
@@ -678,7 +694,7 @@ export async function createOrder(
             const product = await db.collection("products").findOne(
               {
                 _id: productId,
-                ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+                ...productVisibilityFilterFor(visibilityViewer),
               },
               { session },
             );
@@ -746,7 +762,7 @@ export async function createOrder(
               const gaugeUpdated = await db.collection("products").updateOne(
                 {
                   _id: productId,
-                  ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+                  ...productVisibilityFilterFor(visibilityViewer),
                   "inventory.stock": { $gte: quantity },
                   gaugeInventories: {
                     $elemMatch: {
@@ -815,7 +831,7 @@ export async function createOrder(
             await db.collection("products").updateOne(
               {
                 _id: productId,
-                ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+                ...productVisibilityFilterFor(visibilityViewer),
               },
               { $inc: { "inventory.stock": -quantity, sold: quantity } },
               { session },
@@ -830,7 +846,7 @@ export async function createOrder(
             const racket = await rackCol.findOne(
               {
                 _id: racketId,
-                ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+                ...racketVisibilityFilterFor(visibilityViewer),
               },
               {
                 projection: { status: 1, quantity: 1, brand: 1, model: 1 },
@@ -975,7 +991,7 @@ export async function createOrder(
               const prod = await db.collection("products").findOne(
                 {
                   _id: oid,
-                  ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+                  ...productVisibilityFilterFor(visibilityViewer),
                 },
                 { session },
               );
@@ -1020,7 +1036,7 @@ export async function createOrder(
             const racket = await db.collection("used_rackets").findOne(
               {
                 _id: rid,
-                ...racketVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+                ...racketVisibilityFilterFor(visibilityViewer),
               },
               { session },
             );
