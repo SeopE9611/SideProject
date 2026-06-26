@@ -10,6 +10,7 @@ import RequestEditForm from "@/app/features/orders/components/RequestEditForm";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
+import AdminStatusCard from "@/components/admin/AdminStatusCard";
 import { LinkedDocItem } from "@/components/admin/LinkedDocsCard";
 import LinkedFlowStageCard from "@/components/admin/LinkedFlowStageCard";
 import AsyncState from "@/components/system/AsyncState";
@@ -511,9 +512,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   const isCancelableByPolicy = isAdminCancelableOrderStatus(localStatus);
   const cancelPolicyMessage = getAdminCancelPolicyMessage(localStatus);
 
-  // 상단 요약 카드/배지 공통 클래스
-  const summaryCardClass =
-    "flex min-h-[116px] flex-col items-start justify-between gap-3 rounded-xl border border-border/70 bg-card p-4 shadow-sm";
+  // 상단 운영 콘솔 배지 공통 클래스
   const summaryBadgeClass = cn(
     badgeBase,
     badgeSizeSm,
@@ -1013,34 +1012,11 @@ export default function OrderDetailClient({ orderId }: Props) {
               </div>
             </div>
 
-            {/* 주문 요약 정보 */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
-              <div className={summaryCardClass}>
-                <div className="flex items-center space-x-2 mb-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-ui-body-sm font-medium text-muted-foreground">주문일시</span>
-                </div>
-                <p className="whitespace-nowrap text-ui-card-title-lg font-semibold tabular-nums text-foreground">
-                  {formatDate(orderDetail.date)}
-                </p>
-              </div>
-
-              <div className={summaryCardClass}>
-                <div className="flex items-center space-x-2 mb-2">
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-ui-body-sm font-medium text-muted-foreground">총 결제금액</span>
-                </div>
-                <p className="whitespace-nowrap text-ui-card-title-lg font-semibold tabular-nums text-foreground">
-                  {formatCurrency(orderDetail.total)}
-                </p>
-              </div>
-
-              <div className={summaryCardClass}>
-                <div className="flex items-center space-x-2 mb-2">
-                  <Package className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-ui-body-sm font-medium text-muted-foreground">주문 상태</span>
-                </div>
-                {(() => {
+            {/* 상태 요약 카드 */}
+            <div className={adminSurface.statusGrid}>
+              <AdminStatusCard
+                title="주문 상태"
+                value={(() => {
                   const st = getOrderStatusBadgeSpec(localStatus);
                   return (
                     <Badge variant={st.variant} className={summaryBadgeClass}>
@@ -1048,14 +1024,13 @@ export default function OrderDetailClient({ orderId }: Props) {
                     </Badge>
                   );
                 })()}
-              </div>
-
-              <div className={summaryCardClass}>
-                <div className="flex items-center space-x-2 mb-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-ui-body-sm font-medium text-muted-foreground">결제 상태</span>
-                </div>
-                {(() => {
+                description={`주문일 ${formatDate(orderDetail.date)}`}
+                icon={Package}
+                tone={isCancelRequested ? "danger" : "neutral"}
+              />
+              <AdminStatusCard
+                title="결제 상태"
+                value={(() => {
                   const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
                   return (
                     <Badge variant={pay.variant} className={summaryBadgeClass}>
@@ -1063,21 +1038,47 @@ export default function OrderDetailClient({ orderId }: Props) {
                     </Badge>
                   );
                 })()}
-              </div>
-              <div className={summaryCardClass}>
-                <div className="flex items-center space-x-2 mb-2">
-                  <Truck className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-ui-body-sm font-medium text-muted-foreground">수령/배송</span>
-                </div>
-                <Badge variant={shippingMethodBadge.variant} className={summaryBadgeClass}>
-                  {shippingMethodBadge.label}
-                </Badge>
-                {isShippingManagedByApplication && (
-                  <p className="mt-1 text-ui-body-sm text-foreground/75">
-                    고객 발송·반송 정보는 교체 작업에서 관리
-                  </p>
-                )}
-              </div>
+                description={`총 결제금액 ${formatCurrency(orderDetail.total)}`}
+                icon={CreditCard}
+                tone={needsPaymentCheck ? "warning" : "neutral"}
+              />
+              <AdminStatusCard
+                title="수령/배송"
+                value={
+                  <Badge variant={shippingMethodBadge.variant} className={summaryBadgeClass}>
+                    {shippingMethodBadge.label}
+                  </Badge>
+                }
+                description={
+                  isShippingManagedByApplication
+                    ? "고객 발송 라켓·반송 운송장은 교체 작업에서 관리"
+                    : hasShippingInfoRegistered
+                      ? "배송/수령 정보 등록됨"
+                      : "배송/수령 정보 확인 필요"
+                }
+                icon={Truck}
+                tone={needsShippingInfo ? "warning" : "neutral"}
+              />
+              {isLinkedStringingOrder ? (
+                <AdminStatusCard
+                  title="연결 교체 작업"
+                  value="주문에 포함된 교체 작업"
+                  description={
+                    latestLinkedApplication?.status
+                      ? `작업 상태 ${latestLinkedApplication.status}`
+                      : "교체 작업 문서 확인 필요"
+                  }
+                  icon={LinkIcon}
+                  tone="primary"
+                />
+              ) : (
+                <AdminStatusCard
+                  title="연결 교체 작업"
+                  value="교체 작업 없음"
+                  description="일반 주문으로 처리합니다."
+                  icon={LinkIcon}
+                />
+              )}
             </div>
             {/* 취소 요청 상태 안내 (관리자용) */}
             {cancelInfo && (
@@ -1113,26 +1114,6 @@ export default function OrderDetailClient({ orderId }: Props) {
               </div>
             )}
           </div>
-
-          {isLinkedStringingOrder && (
-            <Card className="mb-4 border border-primary/30 bg-primary/10 shadow-sm">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-ui-body text-primary">주문 기반 교체서비스</CardTitle>
-                <CardDescription className="space-y-1 text-ui-body-sm leading-relaxed text-foreground/80">
-                  <span className="block">
-                    이 주문은 상품 주문에 교체서비스가 포함된 주문입니다.
-                  </span>
-                  <span className="block">
-                    결제는 주문에서 처리되었습니다. 교체서비스 신청서는 주문에 포함된 작업 정보로
-                    확인하세요.
-                  </span>
-                  <span className="block">
-                    교체 작업 정보에서 라켓, 선택 스트링, 게이지, 색상, 텐션, 요청사항을 확인하세요.
-                  </span>
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          )}
 
           <Card className={cn("mb-6", getNextActionCardClass(nextActionGuide.tone))}>
             <CardHeader className="pb-3">
@@ -1216,136 +1197,99 @@ export default function OrderDetailClient({ orderId }: Props) {
                   </div>
                 </div>
               ) : null}
-              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-ui-body-sm font-semibold text-foreground">재고 운영 정보</p>
-                <div className="mt-2 space-y-1.5 text-ui-label leading-relaxed text-muted-foreground">
-                  <p>
-                    <span className="font-medium text-foreground">재고 차감 방식:</span>{" "}
-                    {isVariantStockMode ? "색상×게이지 조합 재고" : "기존 재고 방식"}
-                  </p>
-                  <p>
-                    {isVariantStockMode
-                      ? "선택한 색상과 게이지 조합 기준으로 재고가 차감되었습니다."
-                      : "기존 색상/게이지 재고 기준으로 처리된 주문입니다."}
-                  </p>
-                  {isVariantStockMode ? (
-                    <div className="space-y-1">
-                      {variantStockDeductionItems.map((item, index) => (
-                        <p key={`${item.name}-${index}`}>
-                          {item.name}: 색상{" "}
-                          {stringColorLabel(item.stockDeduction?.colorValue) || "-"} / 게이지{" "}
-                          {formatGaugeLabel(item.stockDeduction?.gaugeValue) || "-"}
-                        </p>
-                      ))}
-                    </div>
-                  ) : null}
-                  <p>
-                    <span className="font-medium text-foreground">조합 재고 복구:</span>{" "}
-                    {orderDetail.stockRestore?.variantStockRestoredAt
-                      ? "복구 완료"
-                      : "복구 정보 없음"}
-                  </p>
-                  {orderDetail.stockRestore?.variantStockRestoredAt ? (
-                    <p>
-                      {formatDateTime(orderDetail.stockRestore.variantStockRestoredAt)}
-                      {orderDetail.stockRestore.variantStockRestoreReason
-                        ? ` · ${orderDetail.stockRestore.variantStockRestoreReason}`
-                        : ""}
-                    </p>
-                  ) : isVariantStockMode && isCanceledState ? (
-                    <p className="text-muted-foreground/80">
-                      취소 처리 데이터에서 조합 재고 복구 시각이 확인되지 않았습니다.
-                    </p>
-                  ) : null}
-                </div>
-              </div>
             </CardContent>
           </Card>
 
-          {latestLinkedApplication?.id && latestLinkedApplication?.status && (
-            <Card
-              id="admin-order-linked"
-              className="mb-4 border border-primary/30 bg-primary/10 shadow-sm"
-            >
-              <CardContent className="p-4">
-                <div className="grid gap-2 md:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] md:items-center md:gap-4">
-                  <p className={cn(adminTypography.panelTitle, "text-primary")}>연결 처리 단계</p>
-                  <p className="text-ui-body-sm text-foreground/80">
-                    연결 단계:{" "}
-                    <span className="font-semibold text-foreground">{orderGuide.stage}</span>
-                  </p>
-                  <p className="text-ui-body-sm text-foreground md:text-right">
-                    다음 할 일: <span className="font-semibold">{orderGuide.nextAction}</span>
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {latestLinkedApplication?.id && latestLinkedApplication?.status && (
-            <LinkedFlowStageCard
-              className="mb-4 border border-border shadow-xl bg-card overflow-hidden"
-              orderId={orderId}
-              orderStatus={localStatus}
-              applicationStatus={latestLinkedApplication.status}
-              shippingInfo={orderDetail.shippingInfo}
-              disabled={Boolean(linkedStageBlockedReason)}
-              disabledReason={linkedStageBlockedReason}
-              onSaved={async () => {
-                await mutateOrder();
-                await mutateHistory();
-                router.refresh();
-              }}
-            />
-          )}
-
-          {/* 연결 문서 + 최신 접수 요약 통합 */}
-          {linkedDocs.length > 0 && (
-            <div className="mb-6">
-              <Card className={adminSurface.card}>
-                <CardHeader className="pb-2">
-                  <CardTitle className={adminTypography.panelTitle}>교체 작업 정보</CardTitle>
-                  <CardDescription className={adminTypography.meta}>
-                    통합 주문에 포함된 하위 작업 정보입니다. 장착 정보와 요청사항만 빠르게 확인하세요.
-                  </CardDescription>
+          {/* 연결 교체 작업 통합 패널 */}
+          {isLinkedStringingOrder && (
+            <div id="admin-order-linked" className="mb-6">
+              <Card className={cn(adminSurface.card, "border-primary/25")}>
+                <CardHeader className="pb-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <CardTitle className={adminTypography.sectionTitle}>
+                        주문에 포함된 교체 작업
+                      </CardTitle>
+                      <CardDescription className={cn("mt-1", adminTypography.meta)}>
+                        이 주문에는 교체 작업이 포함되어 있습니다. 결제는 주문 결제에 포함되며,
+                        진행 단계는 아래 연결 진행 단계에서 처리합니다.
+                      </CardDescription>
+                    </div>
+                    <Badge variant="outline" className="w-fit border-primary/30 text-primary">
+                      주문 결제에 포함됨
+                    </Badge>
+                  </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
+                  {latestLinkedApplication?.id && latestLinkedApplication?.status && (
+                    <div className="grid gap-2 rounded-xl border border-primary/20 bg-primary/5 p-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-center">
+                      <p className={adminTypography.bodyStrong}>
+                        연결 진행 단계: {orderGuide.stage || latestLinkedApplication.status}
+                      </p>
+                      <p className={cn("md:text-right", adminTypography.meta)}>
+                        다음 할 일:{" "}
+                        <span className="font-semibold text-foreground">{orderGuide.nextAction}</span>
+                      </p>
+                    </div>
+                  )}
+                  {latestLinkedApplication?.id && latestLinkedApplication?.status && (
+                    <LinkedFlowStageCard
+                      className="border border-border bg-card shadow-sm overflow-hidden"
+                      orderId={orderId}
+                      orderStatus={localStatus}
+                      applicationStatus={latestLinkedApplication.status}
+                      shippingInfo={orderDetail.shippingInfo}
+                      disabled={Boolean(linkedStageBlockedReason)}
+                      disabledReason={linkedStageBlockedReason}
+                      onSaved={async () => {
+                        await mutateOrder();
+                        await mutateHistory();
+                        router.refresh();
+                      }}
+                    />
+                  )}
                   <div className="grid gap-4 lg:grid-cols-2">
                     <div className="rounded-lg border border-border/60 bg-background/40 p-3">
                       <p className={cn("mb-2", adminTypography.panelTitle)}>교체 작업 문서</p>
                       <div className="space-y-2">
-                        {linkedDocs.map((doc) => (
-                          <div
-                            key={`${doc.kind}:${doc.id}`}
-                            className="flex flex-col gap-2 rounded-md border border-border/60 bg-card/70 p-2 sm:flex-row sm:items-center sm:justify-between"
-                          >
-                            <p className="text-ui-body-sm text-foreground/80">
-                              신청번호: <span className="font-mono text-foreground">{doc.id}</span>
-                            </p>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  void navigator.clipboard
-                                    .writeText(String(doc.id))
-                                    .then(() => {
-                                      showSuccessToast("ID가 복사되었습니다.");
-                                    })
-                                    .catch(() => {});
-                                }}
-                              >
-                                복사
-                              </Button>
-                              <Link href={doc.href}>
-                                <Button type="button" variant="outline" size="sm">
-                                  교체 작업 상세 보기
+                        {linkedDocs.length > 0 ? (
+                          linkedDocs.map((doc) => (
+                            <div
+                              key={`${doc.kind}:${doc.id}`}
+                              className="flex flex-col gap-2 rounded-md border border-border/60 bg-card/70 p-2 sm:flex-row sm:items-center sm:justify-between"
+                            >
+                              <p className="text-ui-body-sm text-foreground/80">
+                                신청번호: <span className="font-mono text-foreground">{doc.id}</span>
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    void navigator.clipboard
+                                      .writeText(String(doc.id))
+                                      .then(() => {
+                                        showSuccessToast("ID가 복사되었습니다.");
+                                      })
+                                      .catch(() => {});
+                                  }}
+                                >
+                                  복사
                                 </Button>
-                              </Link>
+                                <Link href={doc.href}>
+                                  <Button type="button" variant="outline" size="sm">
+                                    교체 작업 상세 보기
+                                  </Button>
+                                </Link>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))
+                        ) : (
+                          <p className={adminTypography.meta}>
+                            연결된 교체 작업 문서를 확인할 수 없습니다.
+                          </p>
+                        )}
                       </div>
                       <p className="mt-3 text-ui-label text-foreground/75">{latestPackageSummary}</p>
                     </div>
@@ -1472,6 +1416,59 @@ export default function OrderDetailClient({ orderId }: Props) {
               </Card>
             </div>
           )}
+
+          <Card className={cn("mb-6", adminSurface.cardMuted)}>
+            <CardHeader className="pb-2">
+              <CardTitle className={adminTypography.panelTitle}>재고 운영 정보</CardTitle>
+              <CardDescription className={adminTypography.meta}>
+                차감·복구 기준만 보조 정보로 확인합니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+                <div className="space-y-1.5 text-ui-label leading-relaxed text-muted-foreground">
+                  <p>
+                    <span className="font-medium text-foreground">재고 차감 방식:</span>{" "}
+                    {isVariantStockMode ? "색상×게이지 조합 재고" : "기존 재고 방식"}
+                  </p>
+                  <p>
+                    {isVariantStockMode
+                      ? "선택한 색상과 게이지 조합 기준으로 재고가 차감되었습니다."
+                      : "기존 색상/게이지 재고 기준으로 처리된 주문입니다."}
+                  </p>
+                  {isVariantStockMode ? (
+                    <div className="space-y-1">
+                      {variantStockDeductionItems.map((item, index) => (
+                        <p key={`${item.name}-${index}`}>
+                          {item.name}: 색상{" "}
+                          {stringColorLabel(item.stockDeduction?.colorValue) || "-"} / 게이지{" "}
+                          {formatGaugeLabel(item.stockDeduction?.gaugeValue) || "-"}
+                        </p>
+                      ))}
+                    </div>
+                  ) : null}
+                  <p>
+                    <span className="font-medium text-foreground">조합 재고 복구:</span>{" "}
+                    {orderDetail.stockRestore?.variantStockRestoredAt
+                      ? "복구 완료"
+                      : "복구 정보 없음"}
+                  </p>
+                  {orderDetail.stockRestore?.variantStockRestoredAt ? (
+                    <p>
+                      {formatDateTime(orderDetail.stockRestore.variantStockRestoredAt)}
+                      {orderDetail.stockRestore.variantStockRestoreReason
+                        ? ` · ${orderDetail.stockRestore.variantStockRestoreReason}`
+                        : ""}
+                    </p>
+                  ) : isVariantStockMode && isCanceledState ? (
+                    <p className="text-muted-foreground/80">
+                      취소 처리 데이터에서 조합 재고 복구 시각이 확인되지 않았습니다.
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* 주문 상태 및 요약 */}
           <Card className={cn("mb-6 overflow-hidden", adminSurface.cardMuted)}>
