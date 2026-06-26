@@ -20,6 +20,7 @@ import { adminSurface, adminTypography } from "@/components/admin/admin-typograp
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
+import AdminStatusCard from "@/components/admin/AdminStatusCard";
 import LinkedDocsCard, { LinkedDocItem } from "@/components/admin/LinkedDocsCard";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicPageHero, SummaryCard } from "@/components/public";
@@ -1236,12 +1237,12 @@ export default function StringingApplicationDetailClient({
                 };
   const recommendedActions = [
     {
-      label: isLinkedApplication ? linkedPaymentContextLabel : "결제 정보 확인",
+      label: isLinkedApplication ? "결제 문맥 확인" : "결제 정보 확인",
       href: "#admin-stringing-payment",
       show: true,
     },
     {
-      label: "고객 발송·반송 정보 확인",
+      label: "물류 정보 확인",
       href: "#admin-stringing-shipping",
       show: true,
     },
@@ -1249,11 +1250,6 @@ export default function StringingApplicationDetailClient({
       label: "취소 요청 확인",
       href: "#admin-stringing-cancel-request",
       show: hasCancelRequest,
-    },
-    {
-      label: "연결 문서 확인",
-      href: "#admin-stringing-linked-docs",
-      show: hasLinkedDocs,
     },
     { label: "처리 이력 보기", href: "#admin-stringing-history", show: true },
   ].filter((action) => action.show);
@@ -1269,12 +1265,6 @@ export default function StringingApplicationDetailClient({
   const latestProcessingDate = latestProcessingHistory?.date
     ? new Date(latestProcessingHistory.date).toLocaleString("ko-KR")
     : "-";
-
-  const linkedContextLabel = data.rentalId
-    ? "대여 + 신청 연결 업무"
-    : data.orderId
-      ? "주문 + 신청 연결 업무"
-      : "단독 신청 업무";
 
   // 일반 사용자도 편집 가능 상태일 때만 노출하고, 완료/취소 등엔 비활성화
   const completedLikeStatuses = ["교체완료", "반송완료", "완료", "DONE", "취소"];
@@ -1781,8 +1771,9 @@ export default function StringingApplicationDetailClient({
               )}
 
               {/* 신청 요약 정보 */}
-              <div
-                className={cn(
+              {!isAdmin && (
+                <div
+                  className={cn(
                   "grid grid-cols-1 gap-3 bp-sm:grid-cols-2",
                   isAdmin
                     ? "md:grid-cols-3 xl:grid-cols-6"
@@ -1952,6 +1943,7 @@ export default function StringingApplicationDetailClient({
                   </div>
                 )}
               </div>
+              )}
 
               <div
                 className={cn(
@@ -2092,155 +2084,112 @@ export default function StringingApplicationDetailClient({
             </div>
 
             {isAdmin && (
-              <Card className={cn("mb-6", getNextActionCardClass(nextActionGuide.tone))}>
-                <CardHeader className="pb-3">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <CardTitle className={adminTypography.panelTitle}>다음 작업</CardTitle>
-                      <CardDescription className="mt-1 text-ui-body-sm text-foreground/75">
-                        {nextActionGuide.title}
-                      </CardDescription>
+              <section className="mb-6 space-y-4" aria-label="관리자 운영 콘솔">
+                <div className={adminSurface.statusGrid}>
+                  <AdminStatusCard
+                    title="작업 상태"
+                    value={<ApplicationStatusBadge status={data.status} />}
+                    description={isLinkedApplication ? "부모 문서에 포함된 하위 교체 작업입니다." : "이 화면이 대표 처리 화면입니다."}
+                    icon={Settings}
+                    tone={isCancelled ? "danger" : "primary"}
+                  />
+                  <AdminStatusCard
+                    title="결제 문맥"
+                    value={linkedPaymentContextLabel}
+                    description={packageApplied ? "결제대기가 아니라 패키지 회차 차감으로 처리됩니다." : applicationContext.payment}
+                    icon={CreditCard}
+                    tone={packageApplied ? "success" : isLinkedApplication ? "primary" : "neutral"}
+                  />
+                  <AdminStatusCard
+                    title="접수 / 방문"
+                    value={visitTimeLabel}
+                    description={`신청일 ${new Date(data.requestedAt).toLocaleDateString()}`}
+                    icon={Calendar}
+                  />
+                  <AdminStatusCard
+                    title="입고 / 반송"
+                    value={inboundStatusLabel}
+                    description={shouldShowReturnMethod ? `반환 ${shippingMethodBadge.label}` : "부모 주문의 수령 방식 기준"}
+                    icon={Truck}
+                    tone={needsInboundTracking && !hasTracking ? "warning" : "neutral"}
+                  />
+                </div>
+
+                <Card className={cn(getNextActionCardClass(nextActionGuide.tone), adminSurface.nextAction)}>
+                  <CardHeader className="pb-3">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <CardTitle className={adminTypography.sectionTitle}>운영 콘솔 · 다음 작업</CardTitle>
+                        <CardDescription className={cn("mt-1", adminTypography.body)}>
+                          {applicationContext.description}
+                        </CardDescription>
+                      </div>
+                      <Badge variant="outline" className={cn(badgeBase, badgeSizeSm, "w-fit bg-card")}>
+                        {applicationContext.label}
+                      </Badge>
                     </div>
-                    <Badge variant="outline" className="w-fit">
-                      {nextActionGuide.tone === "urgent"
-                        ? "긴급"
-                        : nextActionGuide.tone === "warning"
-                          ? "확인 필요"
-                          : nextActionGuide.tone === "success"
-                            ? "정상"
-                            : "안내"}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-ui-body-sm leading-relaxed text-foreground/80">
-                    {nextActionGuide.description}
-                  </p>
-                  <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                    <p className={adminTypography.panelTitle}>주요 액션</p>
-                    <p className="mt-1 text-ui-label text-muted-foreground">
-                      현재 상태에서 바로 확인할 핵심 처리 동선입니다.
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
-                        <Button asChild size="sm">
-                          <Link href={nextActionGuide.actionHref}>
-                            {nextActionGuide.actionLabel}
-                          </Link>
-                        </Button>
-                      ) : null}
-                      {recommendedActions.map((action) => (
-                        <Button
-                          key={`${action.href}-${action.label}`}
-                          asChild
-                          size="sm"
-                          variant="outline"
-                          className="bg-transparent"
-                        >
-                          <a href={action.href}>{action.label}</a>
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                    <p className="text-ui-body-sm font-semibold text-foreground">최근 처리 이력</p>
-                    <div className="mt-2 grid gap-1.5 text-ui-label leading-relaxed text-muted-foreground sm:grid-cols-2">
-                      <p>
-                        <span className="font-medium text-foreground">마지막 처리:</span>{" "}
-                        {latestProcessingHistory?.status ?? "기록 없음"}
-                      </p>
-                      <p>
-                        <span className="font-medium text-foreground">처리 시각:</span>{" "}
-                        {latestProcessingDate}
-                      </p>
-                      {latestProcessingHistory?.description ? (
-                        <p className="sm:col-span-2">
-                          <span className="font-medium text-foreground">내용:</span>{" "}
-                          {latestProcessingHistory.description}
+                  </CardHeader>
+                  <CardContent className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.45fr)]">
+                    <div className="rounded-xl border border-border/60 bg-background/80 p-4">
+                      <p className={adminTypography.panelTitle}>현재 단계</p>
+                      <p className={cn("mt-1", adminTypography.bodyStrong)}>{appGuide.stage}</p>
+                      <p className={cn("mt-3", adminTypography.panelTitle)}>다음 작업</p>
+                      <p className={cn("mt-1", adminTypography.body)}>{nextActionGuide.title} · {nextActionGuide.description}</p>
+                      {isLinkedApplication ? (
+                        <p className={cn("mt-3 rounded-lg border border-primary/20 bg-primary/5 p-3", adminTypography.meta)}>
+                          상태 변경·취소·환불의 기준 문서는 이 신청서가 아니라 연결된 {data.orderId ? "주문" : "대여"}입니다. 아래 부모 문서 이동을 먼저 사용하세요.
                         </p>
                       ) : null}
                     </div>
-                  </div>
-                  <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                    <p className={adminTypography.panelTitle}>처리 기준</p>
-                    <div className="mt-2 grid gap-2 text-ui-label leading-relaxed text-muted-foreground sm:grid-cols-2">
-                      <p>
-                        <span className="font-medium text-foreground">요청 확인</span> · 고객
-                        요청사항과 스트링/장력 정보를 먼저 대조합니다.
-                      </p>
-                      <p>
-                        <span className="font-medium text-foreground">결제 문맥</span> · 단독
-                        결제인지, 주문/대여에 포함된 작업인지 확인합니다.
-                      </p>
-                      <p>
-                        <span className="font-medium text-foreground">물류 정보</span> ·{" "}
-                        {isLinkedApplication
-                          ? "고객 발송·반송 정보를 부모 문서와 함께 확인합니다."
-                          : "고객 발송·방문 접수·반송 정보를 이 화면에서 확인합니다."}
-                      </p>
-                      <p>
-                        <span className="font-medium text-foreground">상태 변경</span> · 단독
-                        신청서는 이 화면에서, 연결 작업은 부모 상세 흐름을 우선합니다.
-                      </p>
+                    <div className="rounded-xl border border-border/60 bg-background/80 p-4">
+                      <p className={adminTypography.panelTitle}>주요 액션</p>
+                      <div className="mt-3 grid gap-2">
+                        {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
+                          <Button asChild size="sm" className="w-full justify-center">
+                            <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
+                          </Button>
+                        ) : !isLinkedApplication && !isCancelled ? (
+                          <Button asChild size="sm" className="w-full justify-center">
+                            <a href="#admin-stringing-cancel">상태 변경 확인</a>
+                          </Button>
+                        ) : null}
+                        {recommendedActions.map((action) => (
+                          <Button key={`${action.href}-${action.label}`} asChild size="sm" variant="outline" className="w-full bg-transparent">
+                            <a href={action.href}>{action.label}</a>
+                          </Button>
+                        ))}
+                      </div>
+                      <div className="mt-4 border-t border-border/60 pt-3">
+                        <p className={adminTypography.panelTitle}>최근 처리 이력</p>
+                        <p className={cn("mt-1", adminTypography.meta)}>
+                          {latestProcessingHistory?.status ?? "기록 없음"} · {latestProcessingDate}
+                        </p>
+                        {latestProcessingHistory?.description ? (
+                          <p className={cn("mt-1 line-clamp-2", adminTypography.caption)}>{latestProcessingHistory.description}</p>
+                        ) : null}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {isAdmin && (
-              <Card className="mb-4 border border-primary/30 bg-primary/5 shadow-sm">
-                <CardHeader className="pb-3">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <CardTitle className="text-ui-body">{applicationContext.title}</CardTitle>
-                      <CardDescription className="mt-1 space-y-1 leading-relaxed">
-                        <span className="block">{applicationContext.description}</span>
-                        <span className="block">{applicationContext.payment}</span>
-                      </CardDescription>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className={cn(badgeBase, badgeSizeSm, "w-fit bg-card")}
-                    >
-                      {applicationContext.label}
-                    </Badge>
-                  </div>
-                </CardHeader>
-              </Card>
+                  </CardContent>
+                </Card>
+              </section>
             )}
 
             {isAdmin && linkedDocs.length > 0 && (
               <div id="admin-stringing-linked-docs" className="scroll-mt-6">
                 <LinkedDocsCard
-                  title="연결 문서 확인"
+                  title={data.orderId ? "부모 주문으로 이동" : "부모 대여로 이동"}
                   docs={linkedDocs}
-                  description={linkedDocsDescription}
-                  className="mb-4"
+                  description="이 신청서는 부모 문서에 포함된 하위 교체 작업입니다. 결제·취소·대표 진행은 부모 문서에서 확인하세요."
+                  className="mb-6"
                 />
               </div>
-            )}
-
-            {isAdmin && (data.orderId || data.rentalId) && (
-              <Card className="mb-8 border border-primary/20 bg-primary/5">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-ui-body">연결 업무 기준 관리자 할 일</CardTitle>
-                  <CardDescription>
-                    {linkedContextLabel} 문맥에서 현재 단계와 다음 액션을 안내합니다.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-1 text-ui-body-sm">
-                  <p className="text-muted-foreground">현재 단계: {appGuide.stage}</p>
-                  <p className="font-medium">다음 할 일: {appGuide.nextAction}</p>
-                </CardContent>
-              </Card>
             )}
 
             {/* 상태 카드 */}
             <Card id="admin-stringing-cancel" className={cn(detailCardClass, "mb-6 bp-sm:mb-8")}>
               <CardHeader className={detailCardHeaderClass}>
                 <div className="flex items-center justify-between gap-3">
-                  <CardTitle>{isAdmin ? "다음 작업" : "신청 상태"}</CardTitle>
+                  <CardTitle>{isAdmin ? "작업 상태 관리" : "신청 상태"}</CardTitle>
                   <ApplicationStatusBadge status={data.status} />
                 </div>
                 {isAdmin && (
