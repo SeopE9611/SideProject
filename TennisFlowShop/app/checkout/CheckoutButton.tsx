@@ -135,6 +135,7 @@ export default function CheckoutButton({
   onSubmittingChange,
   onBeforeSuccessNavigation,
   onSuccessNavigationAbort,
+  buttonId,
 }: {
   disabled: boolean;
   name: string;
@@ -161,6 +162,7 @@ export default function CheckoutButton({
   onSubmittingChange?: (submitting: boolean) => void;
   onBeforeSuccessNavigation?: () => void;
   onSuccessNavigationAbort?: () => void;
+  buttonId?: string;
 }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -493,6 +495,7 @@ export default function CheckoutButton({
   return (
     <div className="w-full">
       <Button
+        id={buttonId}
         onClick={handleSubmit}
         className="min-h-14 w-full text-ui-body font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-xl transition-all duration-300 bp-sm:text-ui-card-title-lg"
         size="lg"

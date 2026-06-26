@@ -10,6 +10,7 @@ import {
   getPackageVariantByIndex,
   toPackageVariant,
 } from "@/app/services/packages/_lib/packageVariant";
+import CheckoutBottomStickyBar from "@/components/checkout/CheckoutBottomStickyBar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -57,6 +58,9 @@ import PackageTossCheckoutButton from "./PackageTossCheckoutButton";
 // 클라이언트 유효성(UX용)
 type CheckoutField = "name" | "email" | "phone" | "depositor";
 type CheckoutFieldErrors = Partial<Record<CheckoutField, string>>;
+
+const PACKAGE_PRIMARY_PAY_BUTTON_ID = "package-primary-pay-button";
+const PACKAGE_PAYMENT_ACTION_ID = "package-checkout-payment-action";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
@@ -479,7 +483,7 @@ export default function PackageCheckoutClient({
         </div>
       </div>
 
-      <div className="container py-8 md:py-10">
+      <div className="container py-8 pb-[calc(96px+env(safe-area-inset-bottom))] md:py-10 lg:pb-10">
         <div
           className={`mx-auto grid max-w-6xl gap-5 md:gap-6 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start ${isCheckoutSubmitting ? "pointer-events-none" : ""}`}
           aria-busy={isCheckoutSubmitting}
@@ -1009,7 +1013,7 @@ export default function PackageCheckoutClient({
                 </span>
               </div>
             </CardContent>
-            <div className="flex flex-col gap-3 md:gap-4 p-4 md:p-6">
+            <div id={PACKAGE_PAYMENT_ACTION_ID} className="flex flex-col gap-3 md:gap-4 p-4 md:p-6">
               {ownershipBlockedMessage && (
                 <p className="text-ui-body-sm rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-destructive">
                   {ownershipBlockedMessage}
@@ -1022,6 +1026,7 @@ export default function PackageCheckoutClient({
               )}
               {selectedPackage && paymentMethod === "bank_transfer" && (
                 <PackageCheckoutButton
+                  buttonId={PACKAGE_PRIMARY_PAY_BUTTON_ID}
                   disabled={!canSubmit}
                   ownershipBlockedMessage={ownershipBlockedMessage}
                   packageInfo={selectedPackage}
@@ -1040,6 +1045,7 @@ export default function PackageCheckoutClient({
               )}
               {selectedPackage && tossPaymentsEnabled && paymentMethod === "tosspayments" && (
                 <PackageTossCheckoutButton
+                  buttonId={PACKAGE_PRIMARY_PAY_BUTTON_ID}
                   disabled={!canSubmit}
                   widgetReady={tossWidgetReady}
                   widgetLoadError={tossWidgetLoadError}
@@ -1056,6 +1062,7 @@ export default function PackageCheckoutClient({
               )}
               {selectedPackage && nicePaymentsEnabled && paymentMethod === "nicepay" && (
                 <PackageNiceCheckoutButton
+                  buttonId={PACKAGE_PRIMARY_PAY_BUTTON_ID}
                   disabled={!canSubmit}
                   payableAmount={Number(selectedPackage.price ?? 0)}
                   packageId={selectedPackage.id}
@@ -1086,6 +1093,25 @@ export default function PackageCheckoutClient({
             )}
           </Card>
         </div>
+        <CheckoutBottomStickyBar
+          amount={Number(selectedPackage?.price ?? 0)}
+          amountLabel="총 결제 금액"
+          label={paymentMethod === "bank_transfer" ? "패키지 주문" : "결제하기"}
+          disabled={!canSubmit || isCheckoutSubmitting || !selectedPackage}
+          loading={isCheckoutSubmitting}
+          ariaLabel="하단 패키지 결제 버튼"
+          onClick={() => {
+            const target = document.getElementById(PACKAGE_PRIMARY_PAY_BUTTON_ID);
+            if (target instanceof HTMLButtonElement && !target.disabled) {
+              target.click();
+              return;
+            }
+            document.getElementById(PACKAGE_PAYMENT_ACTION_ID)?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }}
+        />
       </div>
     </div>
   );

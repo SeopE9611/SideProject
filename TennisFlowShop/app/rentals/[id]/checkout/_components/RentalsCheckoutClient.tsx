@@ -6,6 +6,7 @@ import RentalCheckoutStringingRuntimeBridge from "@/app/rentals/[id]/checkout/_c
 import RentalCheckoutStringingSections from "@/app/rentals/[id]/checkout/_components/RentalCheckoutStringingSections";
 import RentalNiceCheckoutButton from "@/app/rentals/[id]/checkout/_components/RentalNiceCheckoutButton";
 import SiteContainer from "@/components/layout/SiteContainer";
+import CheckoutBottomStickyBar from "@/components/checkout/CheckoutBottomStickyBar";
 import RefundBankCombobox from "@/components/refund/RefundBankCombobox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,9 @@ declare global {
 
 // 제출 직전 최종 유효성 가드
 type PaymentBank = "kakao";
+const RENTAL_PRIMARY_PAY_BUTTON_ID = "rental-primary-pay-button";
+const RENTAL_PAYMENT_ACTION_ID = "rental-checkout-payment-action";
+
 type PaymentMethod = "bank_transfer" | "nicepay";
 const PAYMENT_BANKS = new Set<PaymentBank>(["kakao"]);
 const POSTAL_RE = /^\d{5}$/;
@@ -724,7 +728,7 @@ export default function RentalsCheckoutClient({
   };
 
   const renderCheckout = (rentalStringingAdapter?: RentalCheckoutStringingAdapter) => (
-    <div className="min-h-full bg-background">
+    <div className="min-h-full bg-background pb-[calc(96px+env(safe-area-inset-bottom))] lg:pb-0">
       <div className="border-b border-border bg-card text-foreground">
         <SiteContainer variant="wide" className="py-6 md:py-8">
           <div className="max-w-3xl space-y-3">
@@ -1512,13 +1516,14 @@ export default function RentalsCheckoutClient({
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="flex flex-col gap-4 p-4 md:p-6">
+                <CardFooter id={RENTAL_PAYMENT_ACTION_ID} className="flex flex-col gap-4 p-4 md:p-6">
                   {paymentMethod === "bank_transfer" ? (
                     <Button
+                      id={RENTAL_PRIMARY_PAY_BUTTON_ID}
                       onClick={() => onPay(rentalStringingAdapter)}
                       disabled={loading}
                       className={cn(
-                        "h-12 w-full break-keep bg-primary shadow-sm transition-[box-shadow,background-color,color] duration-200 hover:bg-primary/90 hover:shadow-sm",
+                        "h-14 w-full font-semibold break-keep bg-primary shadow-sm transition-[box-shadow,background-color,color] duration-200 hover:bg-primary/90 hover:shadow-sm",
                         loading && "opacity-50 cursor-not-allowed",
                       )}
                     >
@@ -1533,6 +1538,7 @@ export default function RentalsCheckoutClient({
                     </Button>
                   ) : (
                     <RentalNiceCheckoutButton
+                      buttonId={RENTAL_PRIMARY_PAY_BUTTON_ID}
                       disabled={loading}
                       payableAmount={payableTotal}
                       payload={{
@@ -1618,6 +1624,26 @@ export default function RentalsCheckoutClient({
             </div>
           </aside>
         </div>
+
+        <CheckoutBottomStickyBar
+          amount={payableTotal}
+          amountLabel="예상 결제 금액"
+          label={paymentMethod === "bank_transfer" ? "대여 신청하기" : "결제하기"}
+          disabled={loading}
+          loading={loading}
+          ariaLabel="하단 대여 결제 버튼"
+          onClick={() => {
+            const target = document.getElementById(RENTAL_PRIMARY_PAY_BUTTON_ID);
+            if (target instanceof HTMLButtonElement && !target.disabled) {
+              target.click();
+              return;
+            }
+            document.getElementById(RENTAL_PAYMENT_ACTION_ID)?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }}
+        />
       </SiteContainer>
     </div>
   );

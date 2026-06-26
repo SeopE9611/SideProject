@@ -2,6 +2,7 @@
 import CheckoutButton from "@/app/checkout/CheckoutButton";
 import NiceCheckoutButton from "@/app/checkout/NiceCheckoutButton";
 import CheckoutStringingRuntimeBridge from "@/app/checkout/_components/CheckoutStringingRuntimeBridge";
+import CheckoutBottomStickyBar from "@/components/checkout/CheckoutBottomStickyBar";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
 import type useCheckoutStringingServiceAdapter from "@/app/features/stringing-applications/hooks/useCheckoutStringingServiceAdapter";
 import {
@@ -16,7 +17,6 @@ import { usePdpBundleStore } from "@/app/store/pdpBundleStore";
 import SiteContainer from "@/components/layout/SiteContainer";
 import {
   PriceSummary,
-  PrimaryCTAGroup,
   SummaryCard,
   type PriceSummaryRow,
 } from "@/components/public";
@@ -74,6 +74,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
+
+const CHECKOUT_PRIMARY_PAY_BUTTON_ID = "checkout-primary-pay-button";
 
 const CheckoutStringingSectionFallback = () => (
   <div className="space-y-4 rounded-xl border border-border/50 bg-card p-4 bp-sm:p-5">
@@ -1449,7 +1451,7 @@ export default function CheckoutPage() {
             ) : (
               <div
                 className={cn(
-                  "space-y-6 pb-28 bp-md:pb-0",
+                  "space-y-6 pb-[calc(96px+env(safe-area-inset-bottom))] lg:pb-0",
                   isCheckoutSubmitting && "pointer-events-none",
                 )}
                 aria-busy={isCheckoutSubmitting}
@@ -2513,31 +2515,26 @@ export default function CheckoutPage() {
                   />
                 </div>
 
-                <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 px-3 py-2.5 shadow-lg backdrop-blur bp-md:hidden pb-[calc(env(safe-area-inset-bottom)+0.625rem)]">
-                  <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-ui-label text-muted-foreground">결제 예정 금액</p>
-                      <p className="whitespace-nowrap text-ui-price-lg font-semibold tabular-nums text-foreground">
-                        {payableTotalPrice.toLocaleString()}원
-                      </p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="default"
-                      className="min-h-10 shrink-0 whitespace-normal break-keep px-3 text-ui-label leading-snug bp-sm:text-ui-body-sm"
-                      wrap="responsive"
-                      onClick={() => {
-                        requestStringingValidationMessages();
-                        document.getElementById("checkout-payment-action")?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "start",
-                        });
-                      }}
-                    >
-                      결제 버튼으로 이동
-                    </Button>
-                  </div>
-                </div>
+                <CheckoutBottomStickyBar
+                  amount={payableTotalPrice}
+                  amountLabel="결제 예정 금액"
+                  label={paymentMethod === "bank-transfer" ? "주문 완료하기" : "결제하기"}
+                  disabled={!resolvedCanSubmit || isCheckoutSubmitting}
+                  loading={isCheckoutSubmitting}
+                  ariaLabel="하단 결제 버튼"
+                  onClick={() => {
+                    requestStringingValidationMessages();
+                    const target = document.getElementById(CHECKOUT_PRIMARY_PAY_BUTTON_ID);
+                    if (target instanceof HTMLButtonElement && !target.disabled) {
+                      target.click();
+                      return;
+                    }
+                    document.getElementById("checkout-payment-action")?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }}
+                />
 
                 <Card
                   id="checkout-payment-action"
@@ -2587,15 +2584,14 @@ export default function CheckoutPage() {
                         )}
                       </div>
                     )}
-                    <PrimaryCTAGroup
-                      className="w-full sm:w-full"
-                      primary={
-                        paymentMethod === "bank-transfer" ? (
+                    <div className="mx-auto w-full max-w-md">
+                      {paymentMethod === "bank-transfer" ? (
                           <div
                             onPointerDownCapture={requestStringingValidationMessages}
                             className="w-full"
                           >
                             <CheckoutButton
+                              buttonId={CHECKOUT_PRIMARY_PAY_BUTTON_ID}
                               disabled={!resolvedCanSubmit}
                               name={name}
                               phone={phone}
@@ -2633,6 +2629,7 @@ export default function CheckoutPage() {
                             className="w-full"
                           >
                             <NiceCheckoutButton
+                              buttonId={CHECKOUT_PRIMARY_PAY_BUTTON_ID}
                               disabled={!resolvedCanSubmit}
                               onBeforeSuccessNavigation={() =>
                                 setIsIntentionalSuccessNavigation(true)
@@ -2684,9 +2681,8 @@ export default function CheckoutPage() {
                               }}
                             />
                           </div>
-                        ) : null
-                      }
-                    />
+                        ) : null}
+                    </div>
                     {/* <Button variant="outline" className="w-full border-2 hover:bg-background dark:hover:bg-muted bg-transparent" asChild>
                       <Link href="/cart" data-no-unsaved-guard onClick={onLeaveCartClick}>
                         장바구니로 돌아가기

@@ -35,6 +35,7 @@ type Props = {
   payload: Record<string, unknown>;
   onBeforeSuccessNavigation?: () => void;
   onSuccessNavigationAbort?: () => void;
+  buttonId?: string;
 };
 
 export default function RentalNiceCheckoutButton({
@@ -43,6 +44,7 @@ export default function RentalNiceCheckoutButton({
   payload,
   onBeforeSuccessNavigation,
   onSuccessNavigationAbort,
+  buttonId,
 }: Props) {
   const [loading, setLoading] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
@@ -176,7 +178,7 @@ export default function RentalNiceCheckoutButton({
 
   return (
     <div className="space-y-2 w-full">
-      <Button onClick={handleClick} className="w-full h-12" disabled={isDisabled}>
+      <Button id={buttonId} onClick={handleClick} className="w-full h-14 font-semibold" disabled={isDisabled}>
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
