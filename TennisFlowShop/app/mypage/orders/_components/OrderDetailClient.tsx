@@ -655,10 +655,16 @@ export default function OrderDetailClient({
             : "waiting",
     },
     {
-      title: isVisitPickup ? "수령 준비" : "배송/수령 진행",
+      title: isVisitPickup
+        ? "방문 수령 준비"
+        : serviceLinkedOrder
+          ? "완성 라켓 배송 진행"
+          : "배송 진행",
       description: isVisitPickup
-        ? "매장 수령 준비 상태를 확인해주세요."
-        : "배송 정보를 확인해주세요.",
+        ? "방문 수령 준비 상태와 수령정보를 확인해주세요."
+        : serviceLinkedOrder
+          ? "완성 라켓 배송정보를 확인해주세요."
+          : "배송정보를 확인해주세요.",
       state: isDelivered || isCompleted ? "done" : isShipped ? "active" : "waiting",
     },
     {
@@ -715,7 +721,7 @@ export default function OrderDetailClient({
     shouldShowInboundShippingBlock && inboundShippingHref && !hasSelfShipTracking
       ? {
           label: "라켓 발송 운송장 등록이 필요합니다.",
-          description: "보유 라켓을 매장으로 보내고 운송장 번호를 등록해주세요.",
+          description: "보유 라켓을 매장으로 보내고 라켓 발송 운송장을 등록해주세요.",
           ctaLabel: "라켓 발송 운송장 등록",
           ctaHref: inboundShippingHref,
         }
@@ -1078,16 +1084,9 @@ export default function OrderDetailClient({
                               </p>
                             </div>
                           </div>
-                          {appNeedsTracking ? (
-                            <Button
-                              asChild
-                              size="sm"
-                              variant={appHasTracking ? "outline" : "default"}
-                              className="w-full shrink-0 bp-sm:w-auto"
-                            >
-                              <Link href={appShippingHref}>
-                                {appHasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}
-                              </Link>
+                          {appNeedsTracking && !appHasTracking ? (
+                            <Button asChild size="sm" className="w-full shrink-0 bp-sm:w-auto">
+                              <Link href={appShippingHref}>라켓 발송 운송장 등록</Link>
                             </Button>
                           ) : null}
                         </div>
@@ -1195,7 +1194,7 @@ export default function OrderDetailClient({
                                 asChild
                                 size="sm"
                                 variant="outline"
-                                className="h-8 w-full bp-sm:w-auto"
+                                className="h-8 w-full bg-transparent bp-sm:w-auto"
                               >
                                 <Link href={appShippingHref}>
                                   {appHasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}
@@ -1234,7 +1233,7 @@ export default function OrderDetailClient({
                             href={getApplicationHref(app.id)}
                             className="text-ui-label text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                           >
-                            기존 신청서 보기
+                            교체서비스 신청 내용 보기
                           </Link>
                         </div>
                       </div>
@@ -1434,7 +1433,7 @@ export default function OrderDetailClient({
             <CardHeader className="border-b border-border/60 bg-muted/30 rounded-t-xl">
               <CardTitle>주문 진행 타임라인</CardTitle>
               <CardDescription>
-                주문 접수부터 결제, 준비, 배송/수령, 완료까지의 흐름을 확인할 수 있습니다.
+                주문 접수부터 결제, 준비, 완성 라켓 배송/방문 수령, 완료까지의 흐름을 확인할 수 있습니다.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 pt-5">
@@ -1624,7 +1623,7 @@ export default function OrderDetailClient({
                         className="h-8 w-full bp-sm:w-auto"
                       >
                         <Link href={inboundShippingHref ?? "#"}>
-                          {hasSelfShipTracking ? "라켓 발송 수정" : "라켓 발송 등록"}
+                          {hasSelfShipTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}
                         </Link>
                       </Button>
                     </div>
