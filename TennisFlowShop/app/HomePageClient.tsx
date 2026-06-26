@@ -657,16 +657,19 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 <div className="overflow-hidden rounded-[1.5rem] border border-border/60 bg-background shadow-sm">
                   <HeroSlider slides={SLIDES} />
                 </div>
-                <div className="mt-3 grid gap-2 bp-sm:grid-cols-3">
+                <div className="mt-3 grid grid-cols-3 gap-1.5 bp-sm:gap-2">
                   {[
                     ["01", "선택", "브랜드·소재 비교"],
                     ["02", "접수", "방문·택배 입력"],
                     ["03", "장착", "작업 후 검수"],
                   ].map(([number, title, description]) => (
-                    <div key={number} className="rounded-2xl border border-border/60 bg-background/80 p-3">
-                      <span className="text-ui-label font-semibold text-primary">{number}</span>
-                      <p className="mt-1 text-ui-body-sm font-semibold text-foreground">{title}</p>
-                      <p className="mt-0.5 break-keep text-ui-label text-muted-foreground">{description}</p>
+                    <div
+                      key={number}
+                      className="flex items-center justify-center gap-1.5 rounded-full border border-border/60 bg-background/80 px-2.5 py-2 shadow-sm bp-sm:block bp-sm:rounded-2xl bp-sm:p-3"
+                    >
+                      <span className="text-ui-caption font-semibold text-primary bp-sm:text-ui-label">{number}</span>
+                      <p className="text-ui-label font-semibold text-foreground bp-sm:mt-1 bp-sm:text-ui-body-sm">{title}</p>
+                      <p className="mt-0.5 hidden break-keep text-ui-label text-muted-foreground bp-sm:block">{description}</p>
                     </div>
                   ))}
                 </div>
@@ -752,7 +755,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             align="center"
             className="mb-8 bp-sm:mb-10"
           />
-          <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4 bp-lg:grid-rows-2 bp-sm:gap-4">
+          <div className="grid gap-3 bp-sm:grid-cols-2 bp-sm:gap-4 bp-lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)] bp-lg:grid-rows-3">
             {SITUATIONS.map((situation) => {
               const Icon = situation.icon;
               const isPrimary = situation.key === "broken";
@@ -764,8 +767,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   className={cn(
                     "group flex flex-col justify-between rounded-3xl border border-border/60 bg-card p-5 shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:border-primary/30 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20",
                     isPrimary
-                      ? "min-h-56 bp-lg:col-span-2 bp-lg:row-span-2 bp-lg:p-7"
-                      : "min-h-36",
+                      ? "min-h-56 bp-lg:row-span-3 bp-lg:p-7"
+                      : "min-h-36 bp-lg:min-h-0",
                   )}
                 >
                   <span className={cn(
@@ -963,16 +966,24 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             padding="sm"
             className="mb-8 border-border/60 bg-muted/20 bp-sm:mb-10"
           >
-            <div className="mb-5 grid gap-3 bp-md:grid-cols-3">
+            <div className="mb-4 grid gap-3 bp-md:grid-cols-3 bp-sm:mb-5">
               {[
-                ["입문자 추천", "부드러운 타구감과 쉬운 컨트롤"],
-                ["스핀 추천", "회전량을 높이고 싶은 플레이어에게"],
-                ["내구성 추천", "자주 끊어지는 사용자에게"],
-              ].map(([title, description]) => (
-                <div key={title} className="rounded-2xl border border-border/60 bg-background/80 p-4 shadow-sm">
+                ["입문자 추천", "부드러운 타구감과 쉬운 컨트롤", "추천 상품 보기"],
+                ["스핀 추천", "회전량을 높이고 싶은 플레이어에게", "스핀형 보기"],
+                ["내구성 추천", "자주 끊어지는 사용자에게", "내구성형 보기"],
+              ].map(([title, description, cta]) => (
+                <Link
+                  key={title}
+                  href="/products"
+                  className="group rounded-2xl border border-border/60 bg-background/80 p-4 shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:border-primary/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-ring/20"
+                >
                   <p className="text-ui-card-title font-semibold text-foreground">{title}</p>
                   <p className="mt-1.5 break-keep text-ui-body-sm text-muted-foreground">{description}</p>
-                </div>
+                  <span className="mt-3 inline-flex items-center gap-1 text-ui-label font-semibold text-foreground/80 transition-colors group-hover:text-primary">
+                    {cta}
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </span>
+                </Link>
               ))}
             </div>
             <div className="flex justify-center">
