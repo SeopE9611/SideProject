@@ -231,8 +231,8 @@ export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGu
     if (isRentalPaid(item.statusLabel) && !isRentalOut(item.statusLabel)) {
       if (item.linkedApplicationStatus && !isAppDone(item.linkedApplicationStatus)) {
         return {
-          stage: "교체서비스 작업 단계",
-          nextAction: "교체서비스 작업 완료 필요",
+          stage: "교체 작업 단계",
+          nextAction: "교체 작업 단계 변경 필요",
         };
       }
       if (!item.hasOutboundTracking) {
@@ -260,20 +260,20 @@ export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGu
   if (item.kind === "stringing_application") {
     if (hasIncludedPaymentContext(item.paymentLabel) && isAppWaiting(item.statusLabel)) {
       return {
-        stage: "신청서 결제 문맥 검수 단계",
-        nextAction: "결제 문맥(패키지/주문/대여 포함) 확인 후 신청서 작업 상태 확인 필요",
+        stage: "통합 주문 단계 확인",
+        nextAction: "통합 주문의 현재 단계 확인 필요",
       };
     }
     if (isAppWaiting(item.statusLabel)) {
       return {
         stage: "신청서 접수/검토 단계",
-        nextAction: "신청서 작업 상태 확인 필요",
+        nextAction: "교체 작업 시작 처리 필요",
       };
     }
     if (isAppWorking(item.statusLabel)) {
       return {
         stage: "작업 진행 단계",
-        nextAction: "작업 완료 후 신청서 교체완료 처리 필요",
+        nextAction: "작업 완료 후 교체 완료 처리 필요",
       };
     }
     if (isAppDone(item.statusLabel)) {
@@ -289,12 +289,12 @@ export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGu
       if (!doneLike(item.paymentLabel)) {
         return {
           stage: "주문 결제 확인 단계",
-          nextAction: "주문 결제 확인 및 연결 신청서 진행 가능 여부 확인 필요",
+          nextAction: "주문 결제 확인 후 교체 작업 시작 가능 여부 확인 필요",
         };
       }
       return {
         stage: "주문 후속 처리 단계",
-        nextAction: "수령/배송 상태를 확인하고 연결 신청서 진행 상태를 점검하세요",
+        nextAction: "수령/배송 상태와 교체 작업 단계를 확인하세요",
       };
     }
     return inferStandaloneOrderGuide(item);
@@ -331,20 +331,20 @@ export function inferNextActionForOperationGroup(items: OpsLikeItem[]): NextActi
   if (order && app) {
     if (!doneLike(order.paymentLabel)) {
       return {
-        stage: "주문+신청 · 결제 확인 단계",
-        nextAction: "주문 결제 확인 및 신청 작업 가능 상태 점검 필요",
+        stage: "통합 주문 · 결제 확인 단계",
+        nextAction: "주문 결제 확인 후 교체 작업 시작 가능 여부 확인 필요",
       };
     }
     if (isAppWaiting(app.statusLabel)) {
       return {
-        stage: "주문+신청 · 신청 접수 단계",
-        nextAction: "신청서 작업 상태 확인 필요",
+        stage: "통합 주문 · 교체 작업 접수 단계",
+        nextAction: "교체 작업 시작 처리 필요",
       };
     }
     if (isAppWorking(app.statusLabel)) {
       return {
-        stage: "주문+신청 · 교체 작업 단계",
-        nextAction: "작업 완료 후 신청서 교체완료 처리 필요",
+        stage: "통합 주문 · 교체 작업 단계",
+        nextAction: "작업 완료 후 교체 완료 처리 필요",
       };
     }
   }
@@ -356,20 +356,20 @@ export function inferNextActionForOperationGroup(items: OpsLikeItem[]): NextActi
   if (rental && app) {
     if (isRentalPending(rental.statusLabel) || !doneLike(rental.paymentLabel)) {
       return {
-        stage: "Flow 7 · 결제 확인 단계",
+        stage: "대여+교체 · 결제 확인 단계",
         nextAction: "대여 결제 확인 필요",
       };
     }
     if (isAppWaiting(app.statusLabel)) {
       return {
-        stage: "Flow 7 · 신청 접수 단계",
-        nextAction: "신청서 작업 상태 확인 필요",
+        stage: "대여+교체 · 교체 작업 접수 단계",
+        nextAction: "교체 작업 시작 처리 필요",
       };
     }
     if (!isAppDone(app.statusLabel)) {
       return {
-        stage: "Flow 7 · 교체 작업 단계",
-        nextAction: "교체서비스 작업 완료 필요",
+        stage: "대여+교체 · 교체 작업 단계",
+        nextAction: "교체 작업 단계 변경 필요",
       };
     }
     if (
@@ -378,8 +378,8 @@ export function inferNextActionForOperationGroup(items: OpsLikeItem[]): NextActi
       !rental.hasOutboundTracking
     ) {
       return {
-        stage: "Flow 7 · 출고 준비 단계",
-        nextAction: "출고 정보 등록 필요",
+        stage: "대여+교체 · 출고 준비 단계",
+        nextAction: "대여 라켓 출고 정보 등록 필요",
       };
     }
     if (
@@ -388,7 +388,7 @@ export function inferNextActionForOperationGroup(items: OpsLikeItem[]): NextActi
       !isRentalOut(rental.statusLabel)
     ) {
       return {
-        stage: "Flow 7 · 인도 대기 단계",
+        stage: "대여+교체 · 인도 대기 단계",
         nextAction: "사용자가 수령하면 대여 시작 처리 필요",
       };
     }

@@ -23,7 +23,7 @@ import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
 import AdminTaskCard from "@/components/admin/AdminTaskCard";
 import { Section, SectionBody, SectionHeader } from "@/components/admin/Section";
-import { adminSurface } from "@/components/admin/admin-typography";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -103,8 +103,8 @@ function amountMeaningText(item: OpItem) {
 const PAGE_COPY = {
   title: "운영 업무",
   description:
-    "결제 확인, 취소 요청, 배송 누락, 교체서비스 작업 등 오늘 처리해야 할 운영 업무를 한곳에서 확인합니다.",
-  dailyTodoTitle: "오늘 처리",
+    "대표 주문·대여·단독 교체서비스 신청을 기준으로 오늘 처리할 운영 업무를 확인합니다.",
+  dailyTodoTitle: "오늘 처리할 대표 업무",
   dailyTodoLabels: {
     urgent: "긴급",
     caution: "확인 필요",
@@ -320,7 +320,7 @@ const QUICK_VIEWS: Array<{
   { key: "all", label: "전체", description: "모든 운영 업무를 확인합니다." },
   {
     key: "today",
-    label: "오늘 처리",
+    label: "대표 업무",
     description: "오늘 우선 확인해야 할 업무를 확인합니다.",
   },
   {
@@ -330,8 +330,8 @@ const QUICK_VIEWS: Array<{
   },
   {
     key: "paymentCheck",
-    label: "결제 확인",
-    description: "결제 확인·입금 확인이 필요한 건을 확인합니다.",
+    label: "결제 확인 필요",
+    description: "입금 또는 결제 확인이 필요한 처리 항목을 확인합니다.",
   },
   {
     key: "shippingMissing",
@@ -627,7 +627,7 @@ function stringSummaryText(item?: OpItem) {
 }
 
 const thClasses =
-  "px-4 py-2 text-left align-middle font-semibold text-foreground text-[11px] whitespace-nowrap";
+  "px-4 py-2 text-left align-middle font-semibold text-foreground text-xs whitespace-nowrap";
 const tdClasses = "px-4 py-2 align-top";
 const th = thClasses;
 const td = tdClasses;
@@ -1048,9 +1048,9 @@ export default function OperationsClient() {
         tone: "danger" as const,
       },
       {
-        title: "결제 확인",
+        title: "결제 확인 필요 항목",
         count: taskCounts?.paymentCheck ?? 0,
-        description: "입금/결제 대기 또는 동기화 확인이 필요한 건을 먼저 확인하세요.",
+        description: "대표 업무 안에서 입금 또는 결제 확인이 필요한 항목을 먼저 확인하세요.",
         action: "바로 처리",
         onClick: () => applyQuickView("paymentCheck"),
         tone: "warning" as const,
@@ -1066,18 +1066,18 @@ export default function OperationsClient() {
         tone: "warning" as const,
       },
       {
-        title: "배송/출고 누락",
+        title: "배송/반송 정보 미등록 항목",
         count: taskCounts?.shippingMissing ?? 0,
-        description: "배송지와 수령 방식을 확인하고 운송장 또는 방문 수령 정보를 정리하세요.",
+        description: "배송지와 수령 방식을 확인하고 운송장, 반송 또는 방문 수령 정보를 등록하세요.",
         action: "바로 처리",
         onClick: () => applyQuickView("shippingMissing"),
         tone: "warning" as const,
       },
       {
-        title: "교체서비스 작업",
+        title: "교체 작업 단계 확인",
         count: taskCounts?.stringingWork ?? 0,
         description:
-          "연결 건은 통합 주문 관리에서 진행 단계를 확인하고, 단독 신청서는 신청서 상세에서 처리하세요.",
+          "통합 주문의 교체 작업 단계와 단독 교체서비스 신청의 진행 상태를 확인하세요.",
         action: "업무 보기",
         onClick: () => {
           setKind("stringing_application");
@@ -1177,7 +1177,7 @@ export default function OperationsClient() {
                 key={action.title}
                 className="rounded-md border border-border/50 bg-background/80 px-2 py-1.5"
               >
-                <p className="text-[11px] font-semibold leading-tight text-foreground">
+                <p className={adminTypography.panelTitle}>
                   {action.title}
                 </p>
                 <p className="mt-0.5 line-clamp-1 text-xs leading-snug text-foreground/90">
@@ -1248,11 +1248,11 @@ export default function OperationsClient() {
 
         <Section className="mt-5">
           <SectionHeader
-            title="오늘 처리"
-            description="건수가 있는 항목부터 열어 처리하면 됩니다."
+            title="오늘 처리할 대표 업무"
+            description="주문·대여·단독 교체서비스 신청을 대표 업무로 보고, 결제·배송·교체 작업은 처리 신호로 확인합니다."
             aside={
               <p className="max-w-full break-words text-sm leading-relaxed text-muted-foreground sm:max-w-[360px] sm:text-right">
-                전체 처리 필요 기준입니다. 검색과 필터는 아래 목록에만 적용됩니다.
+                상단 카드는 대표 업무 흐름을 먼저 보여주며, 검색과 필터는 아래 목록에 적용됩니다.
               </p>
             }
           />
@@ -1302,9 +1302,9 @@ export default function OperationsClient() {
           </p>
           <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs leading-relaxed text-muted-foreground">
             <li>취소 요청을 먼저 확인합니다.</li>
-            <li>결제 대기/입금 확인 건을 처리합니다.</li>
-            <li>배송/출고 누락 건을 처리합니다.</li>
-            <li>교체서비스 작업 상태를 확인합니다.</li>
+            <li>결제 확인 필요 항목을 처리합니다.</li>
+            <li>배송/반송 정보 미등록 항목을 처리합니다.</li>
+            <li>통합 주문의 교체 작업 단계와 단독 교체서비스 신청 상태를 확인합니다.</li>
             <li>라켓 대여 반납/연체를 확인합니다.</li>
             <li>오프라인 미결제와 보정 필요 항목을 확인합니다.</li>
             <li>아카데미 상담 대기 건을 확인합니다.</li>
@@ -1314,7 +1314,7 @@ export default function OperationsClient() {
         <section className="mt-4 rounded-xl border border-border bg-card p-4 shadow-sm">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-base font-semibold text-foreground">오늘 업무 마감 요약</h2>
+              <h2 className={adminTypography.panelTitle}>오늘 업무 마감 요약</h2>
               <p className="text-xs text-muted-foreground">
                 오늘 처리한 업무와 남은 업무를 간단히 확인합니다.
               </p>
@@ -1322,7 +1322,7 @@ export default function OperationsClient() {
             <Badge variant="outline">{dailySummary?.date ?? "오늘"}</Badge>
           </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
             <Card className="border-border bg-background/70 shadow-none">
               <CardHeader className="p-3 pb-2">
                 <CardTitle className="text-sm font-semibold">오늘 처리</CardTitle>
@@ -1443,12 +1443,12 @@ export default function OperationsClient() {
               </p>
             </div>
           </AdminFilterBar>
-          <p className="mb-1 text-xs text-muted-foreground">
-            일반 업무는 업무 큐로 전환하고, 특정 이슈 집중 점검은 정밀 검수 모드를 사용하세요.
+          <p className={cn("mb-1", adminTypography.metaMuted)}>
+            일반 업무는 대표 업무 큐에서 처리하고, 연결 오류나 결제 불일치처럼 확인이 필요한 경우만 정밀 검수를 사용하세요.
           </p>
-          <p className="text-sm font-semibold text-foreground">정밀 검수 모드</p>
+          <p className={adminTypography.bodyStrong}>주의 항목 정밀 검수</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            결제 불일치, 연결 검수, 단독 신청처럼 특정 운영 이슈를 집중 점검합니다.
+            결제 불일치, 연결 검수, 단독 신청처럼 추가 확인이 필요한 신호만 좁혀 봅니다.
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
             <Button
@@ -1529,11 +1529,11 @@ export default function OperationsClient() {
             <div>
               <CardTitle>고급 필터</CardTitle>
               <CardDescription className="mt-1 text-xs">
-                고급 필터는 특정 고객, 문서 ID, 운영 흐름, 문제 유형을 직접 좁힐 때 사용합니다. 일반
-                처리는 위의 업무 큐를 먼저 사용하세요.
+                고급 필터는 특정 고객, 문서 ID, 운영 흐름, 문제 유형을 직접 좁힐 때만 사용합니다. 일반
+                처리는 위의 대표 업무 큐를 먼저 사용하세요.
               </CardDescription>
               {error && !shouldShowGlobalError && (
-                <p className="mt-1 text-[11px] text-warning">
+                <p className={cn("mt-1", adminTypography.warning)}>
                   검색 결과를 새로 불러오지 못해 이전 결과를 유지 중입니다. 잠시 후 다시 시도해
                   주세요.
                 </p>
@@ -1543,7 +1543,7 @@ export default function OperationsClient() {
                   <Badge className={cn(badgeBase, badgeSizeSm, "mt-2 " + badgeToneClass("brand"))}>
                     적용된 필터 {activeFilterCount}개
                   </Badge>
-                  <p className="mt-1 text-[11px] text-muted-foreground">
+                  <p className={cn("mt-1", adminTypography.metaMuted)}>
                     필터가 켜져 있어 일부 업무만 보입니다.
                   </p>
                 </>
@@ -1669,7 +1669,7 @@ export default function OperationsClient() {
                     <SelectItem value="8">패키지 구매</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="w-full text-[11px] leading-relaxed text-muted-foreground bp-sm:col-span-2 bp-md:col-span-3 bp-lg:col-span-5">
+                <p className={cn("w-full bp-sm:col-span-2 bp-md:col-span-3 bp-lg:col-span-5", adminTypography.metaMuted)}>
                   레거시 유형은 기존 데이터 확인용이며 신규 접수 흐름은 현재 운영하지 않습니다.
                 </p>
 
@@ -1734,7 +1734,7 @@ export default function OperationsClient() {
               {activePresetKey && (
                 <div className="mt-1 grid gap-2 rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs text-muted-foreground bp-sm:grid-cols-3">
                   <div>
-                    <p className="mb-1 text-[11px] font-semibold text-primary">현재 결과</p>
+                    <p className={cn("mb-1", adminTypography.caution)}>현재 결과</p>
                     <p className="text-sm font-medium text-foreground">
                       {typeof totalGroups === "number"
                         ? `${totalGroups.toLocaleString("ko-KR")}건`
@@ -1742,17 +1742,17 @@ export default function OperationsClient() {
                     </p>
                   </div>
                   <div>
-                    <p className="mb-1 text-[11px] font-semibold text-primary">우선 처리 이유</p>
+                    <p className={cn("mb-1", adminTypography.caution)}>우선 처리 이유</p>
                     <p>{PRESET_CONFIG[activePresetKey].helperText}</p>
                   </div>
                   <div>
-                    <p className="mb-1 text-[11px] font-semibold text-primary">다음 처리</p>
+                    <p className={cn("mb-1", adminTypography.caution)}>다음 처리</p>
                     <p>{PRESET_CONFIG[activePresetKey].nextAction}</p>
                   </div>
                 </div>
               )}
               <div className="pt-1">
-                <div className="flex items-center gap-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-1.5 text-[11px] leading-tight text-muted-foreground/90">
+                <div className="flex items-center gap-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-1.5 text-xs leading-relaxed text-muted-foreground/90">
                   <AlertTriangle className="h-3.5 w-3.5 text-warning" />
                   <span>
                     상태 배지는 목록에 보이는 <strong>주의 / 확인 필요</strong>만 사용합니다. 운영
@@ -2074,7 +2074,7 @@ export default function OperationsClient() {
                                       variant="ghost"
                                       className="mt-0.5 h-6 w-6 p-0"
                                       onClick={() => toggleGroup(g.key)}
-                                      title={isOpen ? "운영 참고 접기" : "운영 참고 펼치기"}
+                                      title={isOpen ? "하위 정보 접기" : "하위 정보 펼치기"}
                                     >
                                       {isOpen ? (
                                         <ChevronDown className="h-3.5 w-3.5" />
@@ -2121,7 +2121,7 @@ export default function OperationsClient() {
                                       type="button"
                                       variant="ghost"
                                       size="sm"
-                                      className="h-6 px-1 text-[11px] font-medium text-muted-foreground"
+                                      className="h-6 px-1 text-xs font-medium text-muted-foreground"
                                       onClick={() => toggleReason(g.key)}
                                     >
                                       {isReasonOpen
@@ -2274,11 +2274,11 @@ export default function OperationsClient() {
                                   <div className="overflow-hidden">
                                     <div className="mb-1.5 flex items-center gap-2">
                                       <ChevronDown className="h-3.5 w-3.5 text-primary" />
-                                      <p className="text-[11px] font-semibold text-foreground">
-                                        운영 참고 정보
+                                      <p className={adminTypography.panelTitle}>
+                                        통합 주문 하위 정보
                                       </p>
                                     </div>
-                                    <div className="grid grid-cols-4 gap-1.5 border-y border-border/50 bg-muted/10 px-2 py-1 text-[11px] font-medium text-muted-foreground/90">
+                                    <div className="grid grid-cols-4 gap-1.5 border-y border-border/50 bg-muted/10 px-2 py-1 text-xs font-medium text-foreground/75">
                                       <span>문서 · 상태</span>
                                       <span>처리 안내</span>
                                       <span className="text-right">금액</span>
@@ -2288,7 +2288,7 @@ export default function OperationsClient() {
                                       {g.items.map((item) => (
                                         <div
                                           key={`detail:${g.key}:${item.kind}:${item.id}`}
-                                          className="grid grid-cols-4 gap-1.5 px-2 py-1 text-[11px] leading-tight"
+                                          className="grid grid-cols-4 gap-1.5 px-2 py-1 text-xs leading-relaxed"
                                         >
                                           <div>
                                             <div className="flex items-center gap-1">
@@ -2349,7 +2349,7 @@ export default function OperationsClient() {
                                         </div>
                                       ))}
                                     </div>
-                                    <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] leading-tight text-muted-foreground/90">
+                                    <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs leading-relaxed text-muted-foreground/90">
                                       <span>
                                         기준 시각 {formatKST(g.createdAt ?? g.anchor.createdAt)}
                                       </span>
@@ -2478,10 +2478,10 @@ export default function OperationsClient() {
                             >
                               {priorityMeta.label}
                             </Badge>
-                            <span className="text-[11px] leading-tight text-foreground/80">
+                            <span className="text-xs leading-relaxed text-foreground/80">
                               {priorityMeta.description}
                             </span>
-                            <span className="text-[11px] leading-tight text-muted-foreground/90">
+                            <span className="text-xs leading-relaxed text-muted-foreground/90">
                               {g.items.length > 1 ? `${g.items.length}건 그룹` : "단일 건"}
                             </span>
                           </div>
@@ -2561,7 +2561,7 @@ export default function OperationsClient() {
                               type="button"
                               variant="ghost"
                               size="sm"
-                              className="h-6 px-1 text-[11px] font-medium text-foreground/75 hover:text-foreground"
+                              className="h-6 px-1 text-xs font-medium text-foreground/75 hover:text-foreground"
                               onClick={() => toggleReason(g.key)}
                             >
                               {isReasonOpen
@@ -2613,10 +2613,10 @@ export default function OperationsClient() {
                               type="button"
                               variant="ghost"
                               size="sm"
-                              className="ml-auto h-7 px-2 text-[11px] text-foreground/75 hover:text-foreground"
+                              className="ml-auto h-7 px-2 text-xs text-foreground/75 hover:text-foreground"
                               onClick={() => toggleGroup(g.key)}
                             >
-                              {isOpen ? "접기" : "운영 참고"}
+                              {isOpen ? "접기" : "하위 정보"}
                             </Button>
                           )}
                         </div>
@@ -2633,7 +2633,7 @@ export default function OperationsClient() {
                                 기준 시각: {formatKST(g.createdAt ?? g.anchor.createdAt)}
                               </p>
                               <div className="border border-border/50 bg-background/20">
-                                <div className="grid grid-cols-[1fr_auto] gap-1 border-b border-border/50 bg-muted/10 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+                                <div className="grid grid-cols-[1fr_auto] gap-1 border-b border-border/50 bg-muted/10 px-1.5 py-0.5 text-xs font-medium text-foreground/75">
                                   <span>문서 · 상태</span>
                                   <span className="text-right">금액</span>
                                 </div>
@@ -2641,7 +2641,7 @@ export default function OperationsClient() {
                                   {g.items.map((item) => (
                                     <div
                                       key={`m-detail:${g.key}:${item.kind}:${item.id}`}
-                                      className="grid grid-cols-[1fr_auto] gap-1 px-1.5 py-0.5 text-[11px] leading-snug"
+                                      className="grid grid-cols-[1fr_auto] gap-1 px-1.5 py-0.5 text-xs leading-snug"
                                     >
                                       <div>
                                         <div className="flex items-center gap-1">
@@ -2688,12 +2688,12 @@ export default function OperationsClient() {
                                 </div>
                               </div>
                               {amountMeaningText(g.anchor) ? (
-                                <p className="text-[11px] leading-tight text-muted-foreground/85 line-clamp-1">
+                                <p className="text-xs leading-relaxed text-muted-foreground/85 line-clamp-1">
                                   {amountMeaningText(g.anchor)}
                                 </p>
                               ) : null}
                               {g.primarySignal && (
-                                <p className="text-[11px] leading-tight text-muted-foreground/85">
+                                <p className="text-xs leading-relaxed text-muted-foreground/85">
                                   참고:{" "}
                                   {toOperatorSentence(
                                     g.primarySignal.description ?? g.primarySignal.title,
