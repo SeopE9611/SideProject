@@ -207,14 +207,35 @@ export default function RentalsSuccessClient({ data }: Props) {
     normalizedPaymentProvider === "nicepay" || normalizedPaymentProvider === "tosspayments";
   const isOnlinePaid =
     isOnlinePayment && ["paid", "결제완료"].includes(normalizedPaymentStatus);
+  const isBankTransfer = data.payment?.method === "bank_transfer";
+  const rentalDetailHref = `/mypage?tab=orders&flowType=rental&flowId=${encodeURIComponent(data.id)}&from=orders`;
+  const rentalProgressGuide = (() => {
+    if (withService) {
+      return {
+        status: "대여 라켓 준비 중",
+        todo: "사용자가 별도로 라켓을 발송하지 않아도 됩니다.",
+        next: "매장에서 대여 라켓에 스트링을 장착해 준비합니다.",
+      };
+    }
+    return {
+      status: isBankTransfer ? "입금 확인 대기" : isOnlinePaid ? "결제 확인 완료" : "대여 준비 중",
+      todo: isBankTransfer
+        ? "입금 확인 후 대여 준비가 진행됩니다."
+        : "대여 라켓 출고 또는 수령 준비를 기다려주세요.",
+      next: isPickup
+        ? "방문 전 수령 상태를 확인해주세요."
+        : "배송이 시작되면 마이페이지에서 확인할 수 있습니다.",
+    };
+  })();
+
   return (
     <div className="min-h-full bg-muted/30">
       <SiteContainer variant="wide" className="py-8 md:py-12">
         <ResultState
           status="success"
           icon={<CheckCircle className="h-6 w-6" />}
-          title="대여 신청 접수 완료"
-          description="신청이 정상 접수되었습니다. 결제 상태에 따라 출고가 진행됩니다."
+          title="대여 신청이 완료되었습니다"
+          description="현재 상태와 다음 단계, 대여 라켓 정보를 확인해주세요."
           className="py-8 sm:py-10"
         />
       </SiteContainer>
@@ -287,15 +308,34 @@ export default function RentalsSuccessClient({ data }: Props) {
               </div>
 
               <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-ui-body-sm text-muted-foreground">
-                <h3 className="font-semibold text-foreground">다음 단계</h3>
-                <p className="mt-2 leading-relaxed">
-                  {isPickup
-                    ? "매장 방문 전 대여 상태를 확인하고 신분증을 준비해주세요."
-                    : "배송이 시작되면 진행 상황을 마이페이지에서 확인할 수 있습니다."}
-                  {withService
-                    ? " 교체서비스가 포함된 경우 장착 상태도 함께 확인할 수 있어요."
-                    : ""}
-                </p>
+                <h3 className="font-semibold text-foreground">현재 상태와 다음 단계</h3>
+                <div className="mt-3 grid gap-3 leading-relaxed md:grid-cols-3">
+                  <div>
+                    <p className="font-semibold text-foreground">현재 상태</p>
+                    <p className="mt-1">{rentalProgressGuide.status}</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">지금 할 일</p>
+                    <p className="mt-1">{rentalProgressGuide.todo}</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">다음 단계</p>
+                    <p className="mt-1">{rentalProgressGuide.next}</p>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                  <Button asChild className="flex-1">
+                    <Link href={rentalDetailHref}>대여 내역 확인</Link>
+                  </Button>
+                  {withService && stringingApplicationHref && (
+                    <Button asChild variant="outline" className="flex-1">
+                      <Link href={stringingApplicationHref}>교체서비스 진행상태 확인</Link>
+                    </Button>
+                  )}
+                  <Button asChild variant="outline" className="flex-1">
+                    <Link href="/support">고객센터 문의하기</Link>
+                  </Button>
+                </div>
               </div>
 
               <Separator className="my-4 md:my-6" />
@@ -610,12 +650,12 @@ export default function RentalsSuccessClient({ data }: Props) {
                     <Truck className="mt-0.5 h-5 w-5 text-muted-foreground" />
                     <div>
                       <h4 className="mb-1 font-semibold text-foreground">
-                        {isPickup ? "방문 수령 안내" : "배송 안내"}
+                        {isPickup ? "방문 수령 안내" : "완성 라켓 배송 안내"}
                       </h4>
                       <p className="text-ui-body-sm text-muted-foreground">
                         {isPickup
                           ? "입금 확인 후 매장에서 수령 준비가 진행됩니다."
-                          : "결제 완료 후 배송이 시작됩니다."}
+                          : "결제 완료 후 대여 라켓 배송이 시작됩니다."}
                       </p>
                     </div>
                   </div>
