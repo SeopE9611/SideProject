@@ -1626,6 +1626,7 @@ export default function TransactionFlowList() {
                   if (
                     needsTrackingAction &&
                     actionableApplicationId &&
+                    !isDirectApplicationCard &&
                     (!primaryLinkedApplicationId ||
                       primaryLinkedApplicationId !== actionableApplicationId)
                   ) {
