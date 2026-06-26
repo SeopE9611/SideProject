@@ -338,7 +338,7 @@ const getApplicationTrackingLabel = (app?: ActivityApplicationSummary) => {
   if (!app) return "-";
   if (!app.inboundRequired) return "운송장 입력 대상 아님";
   if (!app.needsInboundTracking) return "운송장 입력 선택 사항";
-  return app.hasTracking ? "운송장 등록됨" : "운송장 등록 필요";
+  return app.hasTracking ? "라켓 발송 운송장 등록됨" : "라켓 발송 운송장 등록 필요";
 };
 
 const isRentalReturnShippingAvailable = (rental?: ActivityGroup["rental"]) => {
@@ -368,7 +368,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
     );
 
     if (isApplicationTrackingNeeded(actionableApplication)) {
-      return "운송장 등록 필요";
+      return "라켓 발송 운송장 등록 필요";
     }
 
     const isConfirmed =
@@ -413,7 +413,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
 
   if (isTerminalCanceledStatus(group.application?.status)) return null;
 
-  if (isApplicationTrackingNeeded(group.application)) return "운송장 등록 필요";
+  if (isApplicationTrackingNeeded(group.application)) return "라켓 발송 운송장 등록 필요";
   if (isApplicationConfirmNeeded(group.application)) return "교체서비스 확정 필요";
   if (group.application?.serviceReviewPending) {
     return "상품+교체서비스 후기 가능";
@@ -433,7 +433,7 @@ const getFlowNextActionText = (
     const todoMessageMap: Record<string, string> = {
       "구매확정 필요": "상품을 받으셨다면 구매확정을 진행해주세요.",
       "수령확인 필요": "반납 내용을 확인하고 수령확인을 진행해주세요.",
-      "운송장 등록 필요": "운송장 정보를 등록해주세요.",
+      "라켓 발송 운송장 등록 필요": "보유 라켓을 매장으로 보내고 운송장 번호를 등록해주세요.",
       "교체서비스 확정 필요": "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.",
       "후기를 남길 수 있어요": "구매확정된 상품은 후기를 작성할 수 있어요.",
       "상품 후기 작성 가능": "구매확정된 상품은 후기를 작성할 수 있어요.",
@@ -448,6 +448,15 @@ const getFlowNextActionText = (
 
   if (viewKind === "order") {
     const normalized = getMypageNormalizedStatus(group.order?.status);
+    const linkedApplication = group.application ?? group.order?.applicationSummaries?.[0];
+    if (linkedApplication?.inboundRequired === false) {
+      return linkedApplication.rentalId
+        ? "매장에서 대여 라켓에 스트링을 장착해 준비합니다. 사용자가 별도로 라켓을 발송하지 않아도 됩니다."
+        : "사용자가 별도로 라켓을 발송하지 않아도 됩니다. 매장에서 라켓에 스트링을 장착해 준비합니다.";
+    }
+    if (linkedApplication?.needsInboundTracking && linkedApplication?.hasTracking) {
+      return "등록한 운송장 기준으로 매장 도착 확인을 기다려주세요.";
+    }
     if (normalized === "취소요청" || normalized === "취소 요청")
       return "취소 요청이 접수되었습니다. 처리 결과를 기다려주세요.";
     if (normalized === "취소") return "취소가 완료되었습니다.";
@@ -460,7 +469,7 @@ const getFlowNextActionText = (
     if (normalized === "배송중") {
       return isVisitPickupOrder({ shippingMethod: group.order?.shippingMethod })
         ? "수령 준비 상태를 확인해주세요."
-        : "배송 정보를 확인해주세요.";
+        : "배송정보 확인은 매장에서 고객에게 보내는 배송/수령 정보입니다.";
     }
     if (normalized === "배송완료") return "상품을 받으셨다면 구매확정을 진행해주세요.";
     if (normalized === "구매확정") {
@@ -508,13 +517,15 @@ const getFlowNextActionText = (
     if (!group.rental?.stringingApplicationId && group.rental?.withStringService)
       return "교체서비스 신청을 이어서 진행해주세요.";
     if ((group.rental?.applicationSummaries ?? []).length > 0)
-      return "해당 신청서의 진행 정보를 확인해주세요.";
+      return "매장에서 대여 라켓에 스트링을 장착해 준비합니다. 사용자가 별도로 라켓을 발송하지 않아도 됩니다.";
     return null;
   }
 
   const app = group.application;
   const normalized = getMypageNormalizedStatus(app?.status);
   if (normalized === "취소") return "신청이 취소되었습니다.";
+  if (app?.inboundRequired === false) return app?.rentalId ? "매장에서 대여 라켓에 스트링을 장착해 준비합니다. 사용자가 별도로 라켓을 발송하지 않아도 됩니다." : "사용자가 별도로 라켓을 발송하지 않아도 됩니다. 매장에서 라켓에 스트링을 장착해 준비합니다.";
+  if (app?.needsInboundTracking && app?.hasTracking) return "등록한 운송장 기준으로 매장 도착 확인을 기다려주세요.";
   if (normalized === "접수완료") return "신청이 접수되었습니다. 검토를 기다려주세요.";
   if (normalized === "검토 중") return "신청 내용을 확인 중입니다. 안내를 기다려주세요.";
   if (normalized === "승인") return "신청이 확인되었습니다. 다음 안내를 기다려주세요.";
@@ -1270,8 +1281,8 @@ export default function TransactionFlowList() {
                             key="application-linked-order"
                             asChild
                             size="sm"
-                            variant="outline"
-                            className="bg-transparent"
+                            variant={applicationActionTarget.hasTracking ? "outline" : "default"}
+                            className={applicationActionTarget.hasTracking ? "bg-transparent" : undefined}
                           >
                             <Link
                               href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&${flowQuery}&focus=stringing`}
@@ -1314,7 +1325,11 @@ export default function TransactionFlowList() {
                       const isVisitPickup = isVisitPickupOrder({
                         shippingMethod: g.order?.shippingMethod,
                       });
-                      const shippingInfoLabel = isVisitPickup ? "수령정보 확인" : "배송정보 확인";
+                      const shippingInfoLabel = isVisitPickup
+                        ? "수령정보 확인"
+                        : linkedCount > 0
+                          ? "완성 라켓 배송정보 확인"
+                          : "배송정보 확인";
                       actions.push({
                         key: "order-shipping-info",
                         priority: 1,
@@ -1501,13 +1516,13 @@ export default function TransactionFlowList() {
                             key="application-shipping"
                             asChild
                             size="sm"
-                            variant="outline"
-                            className="bg-transparent"
+                            variant={applicationActionTarget.hasTracking ? "outline" : "default"}
+                            className={applicationActionTarget.hasTracking ? "bg-transparent" : undefined}
                           >
                             <Link
                               href={`/services/applications/${applicationActionTarget.id}/shipping?return=${encodeURIComponent(`/mypage?tab=orders&${flowQuery}`)}`}
                             >
-                              {applicationActionTarget.hasTracking ? "운송장 수정" : "운송장 등록"}
+                              {applicationActionTarget.hasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}
                             </Link>
                           </Button>
                         ),

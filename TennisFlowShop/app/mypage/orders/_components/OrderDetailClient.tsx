@@ -705,16 +705,32 @@ export default function OrderDetailClient({
       setIsConfirmingPurchase(false);
     }
   };
-  const nextTodo =
+  const nextTodo: {
+    label: string;
+    ctaLabel: string;
+    ctaHref?: string;
+    onCtaClick?: () => void;
+    description?: string;
+  } | null =
     shouldShowInboundShippingBlock && inboundShippingHref
       ? {
-          label: "라켓 운송장 등록",
-          ctaLabel: hasSelfShipTracking ? "라켓 발송 수정" : "라켓 발송 등록",
+          label: hasSelfShipTracking
+            ? "매장 입고 확인 중입니다."
+            : "라켓 발송 운송장 등록이 필요합니다.",
+          description: hasSelfShipTracking
+            ? "등록한 운송장 기준으로 매장 도착 확인을 기다려주세요."
+            : "보유 라켓을 매장으로 보내고 운송장 번호를 등록해주세요.",
+          ctaLabel: hasSelfShipTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록",
           ctaHref: inboundShippingHref,
         }
       : canConfirmPurchase
         ? {
-            label: "구매확정",
+            label: serviceLinkedOrder
+              ? "상품을 받으셨다면 구매확정을 진행해주세요."
+              : "구매확정이 필요합니다.",
+            description: serviceLinkedOrder
+              ? "완성 라켓 배송이 완료되었습니다. 상품을 받으셨다면 구매확정을 진행해주세요."
+              : "상품을 받으셨다면 구매확정을 진행해주세요.",
             ctaLabel: isConfirmingPurchase ? "처리 중..." : "구매확정",
             onCtaClick: handleConfirmPurchase,
           }
@@ -947,6 +963,7 @@ export default function OrderDetailClient({
             ctaLabel={nextTodo.ctaLabel}
             ctaHref={nextTodo.ctaHref}
             onCtaClick={nextTodo.onCtaClick}
+            description={nextTodo.description}
           />
         )}
         {/* 취소 요청 상태 안내 배너 */}
@@ -976,8 +993,8 @@ export default function OrderDetailClient({
                   <div>
                     <CardTitle>교체서비스 정보</CardTitle>
                     <CardDescription>
-                      이 주문과 함께 신청한 교체서비스 정보를 한 페이지에서 확인할 수 있으며, 연결된
-                      교체서비스는 주문 구매확정과 함께 처리됩니다.
+                      이 주문과 연결된 교체서비스 진행 상태입니다. 보유 라켓 발송이 필요한 경우 이곳에서
+                      라켓 발송 운송장을 등록할 수 있습니다.
                     </CardDescription>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -986,7 +1003,7 @@ export default function OrderDetailClient({
                       <Badge variant="secondary">교체서비스 연결</Badge>
                     ) : null}
                     {shouldShowInboundShippingBlock && !hasSelfShipTracking ? (
-                      <Badge variant="destructive">운송장 등록 필요</Badge>
+                      <Badge variant="destructive">라켓 발송 운송장 등록 필요</Badge>
                     ) : null}
                   </div>
                 </div>
@@ -1073,7 +1090,7 @@ export default function OrderDetailClient({
                               className="w-full shrink-0 bp-sm:w-auto"
                             >
                               <Link href={appShippingHref}>
-                                {appHasTracking ? "운송장 수정" : "운송장 등록"}
+                                {appHasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}
                               </Link>
                             </Button>
                           ) : null}
@@ -1173,7 +1190,7 @@ export default function OrderDetailClient({
                           <div className="mt-4 rounded-lg border border-border bg-primary/5 p-3 text-ui-body-sm dark:bg-primary/10">
                             <div className="flex flex-wrap items-start justify-between gap-3">
                               <div>
-                                <p className="font-semibold text-foreground">라켓 발송</p>
+                                <p className="font-semibold text-foreground">라켓 발송 정보</p>
                                 <p className="mt-1 text-muted-foreground">
                                   상태: {appHasTracking ? "등록 완료" : "미등록"}
                                 </p>
@@ -1185,7 +1202,7 @@ export default function OrderDetailClient({
                                 className="h-8 w-full bp-sm:w-auto"
                               >
                                 <Link href={appShippingHref}>
-                                  {appHasTracking ? "운송장 수정" : "운송장 등록"}
+                                  {appHasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}
                                 </Link>
                               </Button>
                             </div>
@@ -1476,7 +1493,7 @@ export default function OrderDetailClient({
             </CardContent>
           </Card>
 
-          {/* 배송 정보 */}
+          {/* 완성 라켓 배송/수령 정보 */}
           <Card variant="elevatedGradient">
             <CardHeader variant="sectionGradient">
               <CardTitle className="flex items-center space-x-2">
@@ -1526,7 +1543,7 @@ export default function OrderDetailClient({
                     </div>
                     <div className="flex min-w-0 items-start gap-3 rounded-lg bg-muted p-3">
                       <div className="min-w-0">
-                        <p className="text-ui-body-sm text-foreground/80">운송장 번호</p>
+                        <p className="text-ui-body-sm text-foreground/80">완성 라켓 운송장 번호</p>
                         <p className="break-all font-semibold text-foreground">
                           {orderDetail.shippingInfo.invoice.trackingNumber}
                         </p>
