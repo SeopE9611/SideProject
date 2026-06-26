@@ -1966,7 +1966,15 @@ export default function StringingApplicationDetailClient({
                   <AdminStatusCard
                     title="입고 / 반송"
                     value={inboundStatusLabel}
-                    description={shouldShowReturnMethod ? `반환 ${shippingMethodBadge.label}` : "부모 주문의 수령 방식 기준"}
+                    description={
+                      shouldShowReturnMethod
+                        ? `반환 ${shippingMethodBadge.label}`
+                        : isRentalLinkedApplication
+                          ? "부모 대여의 인도/반납 기준"
+                          : isOrderLinkedApplication
+                            ? "부모 주문의 수령 방식 기준"
+                            : "반송 방식 정보 없음"
+                    }
                     icon={Truck}
                     tone={needsInboundTracking && !hasTracking ? "warning" : "neutral"}
                   />
