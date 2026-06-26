@@ -631,33 +631,21 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     <Link href="/products">스트링 둘러보기</Link>
                   </Button>
                 </div>
-                <div className="mt-5 grid gap-2 border-y border-border/60 py-4 bp-sm:mt-6 bp-sm:grid-cols-3 bp-sm:gap-3">
-                  {[
-                    ["선택", "브랜드와 성향을 비교"],
-                    ["접수", "방문 또는 택배로 간편하게"],
-                    ["이용", "자주 교체하면 패키지로"],
-                  ].map(([title, description]) => (
-                    <div key={title} className="break-keep">
-                      <p className="text-ui-label font-semibold text-primary">{title}</p>
-                      <p className="mt-1 text-ui-body-sm text-muted-foreground">{description}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-4 grid grid-cols-3 gap-2 bp-sm:gap-3">
+                <div className="mt-4 flex flex-wrap gap-2 bp-sm:mt-5">
                   {["방문·택배 접수", "스트링/텐션 선택", "패키지 이용 가능"].map((point) => (
-                    <div
+                    <span
                       key={point}
-                      className="rounded-2xl border border-border/60 bg-background/80 px-3 py-3 text-center text-ui-label font-semibold text-foreground shadow-sm bp-sm:px-4"
+                      className="rounded-full border border-border/60 bg-muted/20 px-3 py-1.5 text-ui-label font-semibold text-muted-foreground"
                     >
                       {point}
-                    </div>
+                    </span>
                   ))}
                 </div>
               </div>
               <div className="border-t border-border/60 bg-muted/20 p-3 bp-sm:p-4 bp-lg:border-l bp-lg:border-t-0">
                 <div className="overflow-hidden rounded-[1.5rem] border border-border/60 bg-background shadow-sm">
                   <div className="[&>section>div]:mx-0 [&>section>div]:rounded-[1.5rem]">
-                    <HeroSlider slides={HOME_HERO_SLIDES} />
+                    <HeroSlider slides={HOME_HERO_SLIDES} slideClassName="h-[200px] bp-sm:h-[230px] bp-md-only:h-[320px] bp-lg:h-[360px]" />
                   </div>
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-1.5 bp-sm:gap-2">
@@ -780,7 +768,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   )}>
                     <Icon className="h-5 w-5" />
                   </span>
-                  <span>
+                  <span className="mt-5 block">
                     <span className="block break-keep text-ui-card-title font-semibold text-foreground">
                       {situation.label}
                     </span>
@@ -788,7 +776,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                       {situation.description}
                     </span>
                   </span>
-                  <span className="mt-5 inline-flex items-center gap-1 text-ui-label font-semibold text-foreground/80 transition-colors group-hover:text-primary">
+                  <span className="mt-auto inline-flex items-center gap-1 pt-5 text-ui-label font-semibold text-foreground/80 transition-colors group-hover:text-primary">
                     {isPrimary ? "교체서비스 신청하기" : "바로가기"}
                     <ChevronRight className="h-3.5 w-3.5" />
                   </span>
@@ -912,51 +900,39 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             <div className="grid gap-3 bp-sm:grid-cols-2">
               <Link
                 href="/services/pricing"
-                className={cn(surfaceCardInteractiveClass, "group flex min-h-28 items-center gap-4 p-5")}
+                className={cn(surfaceCardInteractiveClass, "group flex min-h-24 items-center gap-4 p-5")}
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
                   <Tags className="h-5 w-5" />
                 </div>
-                <div className="space-y-1">
-                  <p className="text-ui-card-title font-semibold text-foreground">비용 기준 확인</p>
-                  <p className="text-ui-body-sm text-muted-foreground">장착비와 서비스 옵션을 미리 확인하세요.</p>
-                </div>
+                <p className="break-keep text-ui-card-title font-semibold text-foreground">비용 기준 확인</p>
               </Link>
               <Link
                 href="/services/locations"
-                className={cn(surfaceCardInteractiveClass, "group flex min-h-28 items-center gap-4 p-5")}
+                className={cn(surfaceCardInteractiveClass, "group flex min-h-24 items-center gap-4 p-5")}
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
                   <Clock className="h-5 w-5" />
                 </div>
-                <div className="space-y-1">
-                  <p className="text-ui-card-title font-semibold text-foreground">운영 정보 확인</p>
-                  <p className="text-ui-body-sm text-muted-foreground">방문 전 운영 시간과 접수 방식을 확인하세요.</p>
-                </div>
+                <p className="break-keep text-ui-card-title font-semibold text-foreground">운영 정보 확인</p>
               </Link>
               <Link
                 href="/board/qna"
-                className={cn(surfaceCardInteractiveClass, "group flex min-h-28 items-center gap-4 p-5")}
+                className={cn(surfaceCardInteractiveClass, "group flex min-h-24 items-center gap-4 p-5")}
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
                   <Search className="h-5 w-5" />
                 </div>
-                <div className="space-y-1">
-                  <p className="text-ui-card-title font-semibold text-foreground">문의하기</p>
-                  <p className="text-ui-body-sm text-muted-foreground">궁금한 점을 남기고 답변을 받아보세요.</p>
-                </div>
+                <p className="break-keep text-ui-card-title font-semibold text-foreground">문의하기</p>
               </Link>
               <Link
                 href="/reviews"
-                className={cn(surfaceCardInteractiveClass, "group flex min-h-28 items-center gap-4 p-5")}
+                className={cn(surfaceCardInteractiveClass, "group flex min-h-24 items-center gap-4 p-5")}
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
                   <Star className="h-5 w-5" />
                 </div>
-                <div className="space-y-1">
-                  <p className="text-ui-card-title font-semibold text-foreground">이용 후기</p>
-                  <p className="text-ui-body-sm text-muted-foreground">실제 이용자의 후기를 확인하세요.</p>
-                </div>
+                <p className="break-keep text-ui-card-title font-semibold text-foreground">이용 후기</p>
               </Link>
             </div>
           </div>
