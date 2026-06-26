@@ -660,11 +660,18 @@ export default function AdminRentalDetailClient() {
   const latestProcessingAction = latestProcessingHistory?.action
     ? (rentalHistoryActionLabels[String(latestProcessingHistory.action)] ??
       String(latestProcessingHistory.action))
-    : "기록 없음";
-
-  const latestProcessingActor = getRentalHistoryActorLabel(latestProcessingHistory?.actor);
-
-  const latestProcessingDate = fmt(latestProcessingHistory?.at);
+    : null;
+  const latestProcessingActor = latestProcessingHistory?.actor?.role
+    ? getRentalHistoryActorLabel(latestProcessingHistory.actor)
+    : null;
+  const latestProcessingDate = latestProcessingHistory?.at ? fmt(latestProcessingHistory.at) : null;
+  const hasLatestProcessingSummary = Boolean(
+    latestProcessingAction ||
+      latestProcessingActor ||
+      latestProcessingDate ||
+      latestProcessingHistory?.from ||
+      latestProcessingHistory?.to,
+  );
   const effectiveStockDeduction = data?.stockDeduction ?? data?.stringing?.stockDeduction ?? null;
   const effectiveStockRestore = data?.stockRestore ?? data?.stringing?.stockRestore ?? null;
   const isVariantStockMode = effectiveStockDeduction?.mode === "variant";
@@ -853,9 +860,9 @@ export default function AdminRentalDetailClient() {
             <CardHeader className="pb-3">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <CardTitle className="text-base font-semibold">우선 처리 안내</CardTitle>
-                  <CardDescription className="mt-1 text-sm text-foreground/75">
-                    {nextActionGuide.title}
+                  <CardTitle className={adminTypography.panelTitle}>다음 작업</CardTitle>
+                  <CardDescription className={cn("mt-1", adminTypography.meta)}>
+                    지금 관리자가 먼저 해야 할 일만 요약합니다.
                   </CardDescription>
                 </div>
                 <Badge variant="outline" className="w-fit">
@@ -870,13 +877,16 @@ export default function AdminRentalDetailClient() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              <p className="text-sm leading-relaxed text-foreground/80">
-                {nextActionGuide.description}
-              </p>
+              <div className="rounded-xl border border-border/60 bg-background/70 p-4">
+                <p className={adminTypography.panelTitle}>{nextActionGuide.title}</p>
+                <p className={cn("mt-1 leading-relaxed", adminTypography.body)}>
+                  {nextActionGuide.description}
+                </p>
+              </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold text-foreground">권장 작업</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  현재 상태에서 관리자가 먼저 확인하면 좋은 작업입니다.
+                <p className={adminTypography.panelTitle}>주요 액션</p>
+                <p className={cn("mt-1", adminTypography.meta)}>
+                  다음 작업을 처리하기 위해 먼저 확인할 항목입니다.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
@@ -898,31 +908,46 @@ export default function AdminRentalDetailClient() {
                 </div>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold text-foreground">처리 정보</p>
-                <div className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
-                  <p>
-                    <span className="font-medium text-foreground">마지막 처리자:</span>{" "}
-                    {latestProcessingActor}
-                  </p>
-                  <p>
-                    <span className="font-medium text-foreground">마지막 처리:</span>{" "}
-                    {latestProcessingAction}
-                  </p>
-                  <p>
-                    <span className="font-medium text-foreground">처리 시각:</span>{" "}
-                    {latestProcessingDate}
-                  </p>
-                  {latestProcessingHistory?.from || latestProcessingHistory?.to ? (
-                    <p className="sm:col-span-2">
-                      <span className="font-medium text-foreground">상태 변화:</span>{" "}
-                      {latestProcessingHistory?.from ?? "-"} → {latestProcessingHistory?.to ?? "-"}
-                    </p>
-                  ) : null}
-                </div>
+                <p className={adminTypography.panelTitle}>최근 처리 이력</p>
+                {hasLatestProcessingSummary ? (
+                  <div
+                    className={cn(
+                      "mt-2 grid gap-1.5 leading-relaxed sm:grid-cols-2",
+                      adminTypography.meta,
+                    )}
+                  >
+                    {latestProcessingAction ? (
+                      <p>
+                        <span className="font-medium text-foreground">마지막 처리:</span>{" "}
+                        {latestProcessingAction}
+                      </p>
+                    ) : null}
+                    {latestProcessingDate ? (
+                      <p>
+                        <span className="font-medium text-foreground">처리 시각:</span>{" "}
+                        {latestProcessingDate}
+                      </p>
+                    ) : null}
+                    {latestProcessingActor ? (
+                      <p>
+                        <span className="font-medium text-foreground">처리자:</span>{" "}
+                        {latestProcessingActor}
+                      </p>
+                    ) : null}
+                    {latestProcessingHistory?.from || latestProcessingHistory?.to ? (
+                      <p className="sm:col-span-2">
+                        <span className="font-medium text-foreground">상태 변화:</span>{" "}
+                        {latestProcessingHistory?.from ?? "-"} → {latestProcessingHistory?.to ?? "-"}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : (
+                  <p className={cn("mt-2", adminTypography.meta)}>최근 처리 이력 없음</p>
+                )}
               </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold text-foreground">재고 운영 정보</p>
-                <div className="mt-2 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
+                <p className={adminTypography.panelTitle}>재고 운영 정보</p>
+                <div className={cn("mt-2 space-y-1.5 leading-relaxed", adminTypography.meta)}>
                   <p>
                     <span className="font-medium text-foreground">재고 차감 방식:</span>{" "}
                     {isVariantStockMode ? "색상×게이지 조합 재고" : "기존 재고 방식"}
@@ -951,14 +976,19 @@ export default function AdminRentalDetailClient() {
                 </div>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold text-foreground">라켓 대여 처리 참고 순서</p>
-                <ul className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
-                  <li>□ 결제 상태 확인</li>
-                  <li>□ 인도 운송장 또는 방문 수령 정보 확인</li>
-                  <li>□ 대여중 처리</li>
-                  <li>□ 반납 예정일 확인</li>
-                  <li>□ 반납 완료 처리</li>
-                  <li>□ 보증금 환불 상태 확인</li>
+                <p className={adminTypography.panelTitle}>처리 참고 순서</p>
+                <ul
+                  className={cn(
+                    "mt-2 grid list-disc gap-1.5 pl-4 leading-relaxed sm:grid-cols-2",
+                    adminTypography.meta,
+                  )}
+                >
+                  <li>결제 상태 확인</li>
+                  <li>인도 운송장 또는 방문 수령 정보 확인</li>
+                  <li>대여 시작 처리</li>
+                  <li>반납 예정일 확인</li>
+                  <li>반납 완료 처리</li>
+                  <li>보증금 환불 상태 확인</li>
                 </ul>
               </div>
             </CardContent>
