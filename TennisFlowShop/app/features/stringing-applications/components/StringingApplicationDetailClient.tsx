@@ -977,6 +977,15 @@ export default function StringingApplicationDetailClient({
       : isRentalLinkedApplication || paymentSourceRaw.startsWith("rental:")
         ? "대여 결제에 포함됨"
         : paymentStatus;
+  const shouldShowLinkedPaymentContextBadge =
+    packageApplied ||
+    isLinkedApplication ||
+    isLinkedPayment ||
+    paymentSourceRaw.startsWith("order:") ||
+    paymentSourceRaw.startsWith("rental:");
+  const paymentHeaderBadgeLabel = shouldShowLinkedPaymentContextBadge
+    ? linkedPaymentContextLabel
+    : paymentStatus;
   const normalizedPaymentProvider = String(linkedPayment?.provider ?? "")
     .trim()
     .toLowerCase();
@@ -1680,7 +1689,7 @@ export default function StringingApplicationDetailClient({
                   </div>
                   {isAdmin ? (
                     (() => {
-                      const pay = getPaymentStatusBadgeSpec(paymentStatus);
+                      const pay = getPaymentStatusBadgeSpec(linkedPaymentContextLabel);
                       return (
                         <Badge variant={pay.variant} className={summaryBadgeClass}>
                           {linkedPaymentContextLabel}
@@ -2372,10 +2381,10 @@ export default function StringingApplicationDetailClient({
                   </CardTitle>
                   <div className="flex items-center space-x-2">
                     {(() => {
-                      const pay = getPaymentStatusBadgeSpec(paymentStatus);
+                      const pay = getPaymentStatusBadgeSpec(paymentHeaderBadgeLabel);
                       return (
                         <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
-                          {paymentStatus}
+                          {paymentHeaderBadgeLabel}
                         </Badge>
                       );
                     })()}
