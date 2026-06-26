@@ -189,87 +189,36 @@ const getBrandTabClass = (isActive: boolean) =>
       : "border-border/60 bg-card text-foreground hover:border-border hover:shadow-md",
   );
 
-
-type SituationKey = "broken" | "newRacket" | "unsure" | "price";
-
-type SituationCta = {
-  label: string;
-  href: string;
-  primary?: boolean;
-};
-
-type SituationAction = {
-  eyebrow: string;
-  title: string;
-  description: string;
-  ctas: SituationCta[];
-};
-
 const SITUATIONS = [
   {
     key: "broken",
     icon: Scissors,
     label: "스트링 교체 신청",
     description: "보유 라켓을 방문·택배로 접수하고 교체를 시작해요.",
+    href: "/services/apply",
   },
   {
     key: "unsure",
     icon: HelpCircle,
     label: "내 라켓에 맞는 스트링 찾기",
     description: "플레이 스타일에 맞춰 스트링을 비교해 보세요.",
+    href: "/products",
   },
   {
     key: "price",
     icon: Tags,
     label: "패키지 이용권 보기",
     description: "자주 교체한다면 횟수형 패키지로 준비하세요.",
+    href: "/services/packages",
   },
   {
     key: "newRacket",
     icon: Plus,
     label: "중고 라켓 둘러보기",
     description: "검수된 라켓을 구매·대여하고 스트링까지 연결해요.",
+    href: "/rackets",
   },
 ] as const;
-
-const SITUATION_ACTIONS: Record<SituationKey, SituationAction> = {
-  broken: {
-    eyebrow: "빠른 교체",
-    title: "끊어진 스트링은 빠르게 접수하세요",
-    description: "보유 장비로 교체서비스를 신청하면 방문 또는 택배로 접수할 수 있습니다.",
-    ctas: [
-      { label: "교체서비스 신청", href: "/services/apply", primary: true },
-      { label: "장착비 보기", href: "/services/pricing" },
-    ],
-  },
-  newRacket: {
-    eyebrow: "신규 장착",
-    title: "새 라켓에 맞는 스트링을 함께 준비하세요",
-    description: "라켓을 먼저 고른 뒤 플레이 스타일에 맞는 스트링과 텐션을 선택할 수 있습니다.",
-    ctas: [
-      { label: "라켓 둘러보기", href: "/rackets", primary: true },
-      { label: "스트링 선택하기", href: "/products" },
-    ],
-  },
-  unsure: {
-    eyebrow: "맞춤 탐색",
-    title: "처음이라면 추천 스트링부터 확인하세요",
-    description: "반발력, 컨트롤, 내구성 기준으로 스트링을 비교하고 선택할 수 있습니다.",
-    ctas: [
-      { label: "추천 스트링 보기", href: "/products", primary: true },
-      { label: "Q&A 문의", href: "/board/qna" },
-    ],
-  },
-  price: {
-    eyebrow: "가격 안내",
-    title: "장착비와 서비스 비용을 먼저 확인하세요",
-    description: "스트링 교체 전 장착 비용과 서비스 옵션을 확인할 수 있습니다.",
-    ctas: [
-      { label: "가격 안내 보기", href: "/services/pricing", primary: true },
-      { label: "패키지 보기", href: "/services/packages" },
-    ],
-  },
-};
 
 type HomePageClientProps = {
   initialHomeData?: HomePreviewData | null;
@@ -685,7 +634,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   시작하세요.
                 </p>
                 <div className="mt-6 grid gap-2 bp-sm:flex bp-sm:flex-wrap bp-sm:gap-3">
-                  <Button asChild size="tall" className="bg-neutral-900 text-white hover:bg-neutral-800">
+                  <Button asChild size="tall">
                     <Link href="/services/apply">교체서비스 신청</Link>
                   </Button>
                   <Button asChild size="tall" variant="outline">
@@ -795,12 +744,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4 bp-sm:gap-4">
             {SITUATIONS.map((situation) => {
               const Icon = situation.icon;
-              const href = SITUATION_ACTIONS[situation.key].ctas[0]?.href ?? "/";
 
               return (
                 <Link
                   key={situation.key}
-                  href={href}
+                  href={situation.href}
                   className="group flex min-h-40 flex-col justify-between rounded-3xl border border-border/60 bg-card p-5 shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:border-primary/30 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20"
                 >
                   <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
