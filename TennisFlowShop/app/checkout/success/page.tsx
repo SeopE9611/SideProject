@@ -330,8 +330,10 @@ export default async function CheckoutSuccessPage({
         ? Boolean(representativeApp.needsInboundTracking)
         : inboundRequired && representativeApp?.collectionMethod !== "visit";
     const hasTracking = Boolean(
-      representativeApp?.shippingInfo?.selfShip?.trackingNumber ||
+      representativeApp?.shippingInfo?.selfShip?.trackingNo ||
+        representativeApp?.shippingInfo?.selfShip?.trackingNumber ||
         representativeApp?.shippingInfo?.selfShip?.invoiceNumber ||
+        representativeApp?.shippingInfo?.trackingNo ||
         representativeApp?.shippingInfo?.trackingNumber,
     );
     const applicationShippingHref = representativeStringingApplicationId
