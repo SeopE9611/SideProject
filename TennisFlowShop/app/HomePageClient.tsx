@@ -161,7 +161,7 @@ const PROMO_BANNERS: PromoBanner[] = (() => {
 const surfaceCardInteractiveClass =
   "rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg";
 const promoBannerClass =
-  "group relative block h-20 overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:h-24 bp-md:h-28 bp-lg:h-32";
+  "group relative block h-24 overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:h-28 bp-md:h-32 bp-lg:h-36";
 const surfaceIconWrapClass =
   "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md";
 const processStepSurfaceClass =
@@ -625,8 +625,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   const activeSituationAction = SITUATION_ACTIONS[activeSituation];
   const racketTotal = racketTotalsByBrand[activeBrand] ?? usedRacketsItems.length;
   const hasMoreRacketProducts = racketTotal > usedRacketsItems.length;
-  const shouldShowUsedRacketsSection =
-    !shouldLoadRackets || usedRacketsLoading || usedRacketsError || usedRacketsItems.length > 0;
 
   // throw new Error('[TEST] app/error.tsx 동작 확인용(홈 페이지)');
   return (
@@ -638,130 +636,15 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           router.push("/login?tab=register");
         }}
       />
-      {/* 랜딩 히어로 + 상황 선택 */}
-      <section className="py-7 bp-sm:py-9 bp-md:py-12">
-        <SiteContainer>
-          <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.35fr)] bp-lg:items-stretch">
-            <PublicSurface
-              padding="lg"
-              className="flex min-h-[360px] flex-col justify-between overflow-hidden border-primary/20 bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_42%),hsl(var(--card))] p-6 bp-sm:min-h-[360px] bp-sm:p-8 bp-lg:min-h-full bp-lg:p-9"
-            >
-              <div>
-                <span className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-ui-label font-semibold text-primary">
-                  스트링 교체 · 라켓 · 아카데미
-                </span>
-                <h1 className="mt-5 break-keep text-ui-hero-sm font-bold leading-tight tracking-tight text-foreground bp-sm:mt-6 bp-sm:text-ui-hero-md bp-md:text-ui-hero-lg bp-lg:text-[3.35rem]">
-                  내 라켓에 딱 맞는 스트링, 빠르고 정확하게 매드립니다
-                </h1>
-                <p className="mt-4 max-w-xl break-keep text-ui-body leading-relaxed text-muted-foreground bp-sm:mt-5 bp-sm:text-ui-card-title">
-                  방문도 택배도 OK. 도깨비테니스가 텐션부터 장착까지 책임집니다.
-                </p>
-              </div>
-              <div className="mt-7 grid gap-2.5 bp-sm:mt-8 bp-sm:grid-cols-2 bp-lg:grid-cols-1 bp-xl:grid-cols-2">
-                <Button asChild size="tall" className="w-full">
-                  <Link href="/services/apply">스트링 교체 신청</Link>
-                </Button>
-                <Button asChild variant="outline" size="tall" className="w-full bg-background/70">
-                  <Link href="/products">스트링 쇼핑하기</Link>
-                </Button>
-              </div>
-            </PublicSurface>
-
-            <PublicSurface padding="lg" className="p-5 bp-sm:p-6 bp-md:p-8">
-              <SectionHeader
-                eyebrow="처음 오셨다면 여기서 시작하세요"
-                title="지금 어떤 도움이 필요하세요?"
-                description="상황을 선택하면 다음 행동을 바로 안내해 드려요."
-                align="left"
-                className="mb-5 bp-sm:mb-6"
-              />
-              <div className="grid gap-4 bp-xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.9fr)] bp-xl:items-stretch">
-                <div className="grid grid-cols-2 gap-3 bp-sm:gap-4">
-                  {SITUATIONS.map((situation) => {
-                    const Icon = situation.icon;
-                    const isActive = activeSituation === situation.key;
-
-                    return (
-                      <button
-                        key={situation.key}
-                        type="button"
-                        aria-pressed={isActive}
-                        onClick={() => setActiveSituation(situation.key)}
-                        className={cn(
-                          "group flex min-h-28 flex-col gap-2.5 rounded-2xl border bg-card p-4 text-left shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-h-32 bp-sm:gap-3 bp-sm:p-5 bp-lg:min-h-36 bp-lg:p-6",
-                          isActive
-                            ? "border-primary/50 bg-primary/5 shadow-md"
-                            : "border-border/60 hover:border-primary/30",
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "flex h-11 w-11 items-center justify-center rounded-2xl border transition-[background-color,color,border-color,box-shadow,opacity] duration-300",
-                            isActive
-                              ? "border-primary/40 bg-primary text-primary-foreground"
-                              : "border-border/60 bg-secondary text-foreground group-hover:shadow-md",
-                          )}
-                        >
-                          <Icon className="h-5 w-5" />
-                        </span>
-                        <span className="break-keep text-ui-body-sm font-semibold leading-relaxed text-foreground bp-sm:text-ui-card-title">
-                          {situation.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="flex h-full flex-col justify-between rounded-2xl border border-primary/20 bg-primary/5 p-4 bp-sm:p-6">
-                  <div>
-                    <span className="inline-flex rounded-full bg-background px-3 py-1 text-ui-label font-semibold text-primary shadow-sm">
-                      {activeSituationAction.eyebrow}
-                    </span>
-                    <h3 className="mt-3 break-keep text-ui-card-title-lg font-semibold text-foreground bp-sm:mt-4 bp-sm:text-ui-section-title">
-                      {activeSituationAction.title}
-                    </h3>
-                    <p className="mt-2.5 break-keep text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:mt-3 bp-sm:text-ui-body">
-                      {activeSituationAction.description}
-                    </p>
-                  </div>
-                  <div className="mt-5 grid gap-2 bp-sm:mt-6 bp-sm:grid-cols-2 bp-xl:grid-cols-1 2xl:grid-cols-2">
-                    {activeSituationAction.ctas.map((cta) => (
-                      <Button
-                        key={cta.label}
-                        asChild
-                        variant={cta.primary ? "default" : "outline"}
-                        size="tall"
-                        className="w-full"
-                      >
-                        <Link href={cta.href}>{cta.label}</Link>
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </PublicSurface>
-          </div>
-        </SiteContainer>
-      </section>
-
-      {/* 프로모션/이벤트 배너 */}
+      {/* 상단 배너 + 히어로 하단 배너 */}
       <SiteContainer variant="wide" className="px-0">
-        <section className="pb-8 bp-sm:pb-10 bp-md:pb-12">
-          <div className="mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0">
-            <SectionHeader
-              eyebrow="프로모션"
-              title="이벤트와 추천 소식"
-              description="진행 중인 혜택과 추천 안내를 확인하세요."
-              align="center"
-              className="mb-5 bp-sm:mb-6"
-            />
-          </div>
-          <HeroSlider slides={SLIDES} variant="compact" />
-          {PROMO_BANNERS.length > 0 && (
-            <div className="mt-4 bp-sm:mt-5 bp-md:mt-6">
-              <div className="mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0">
-                <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-sm:gap-4 bp-md:grid-cols-4">
-                  {PROMO_BANNERS.map((b) => {
+        <HeroSlider slides={SLIDES} />
+        {/* 히어로 하단: 문의/광고 배너(운영값 있을 때만 노출) */}
+        {PROMO_BANNERS.length > 0 && (
+          <section className="mt-4 bp-sm:mt-5 bp-md:mt-6">
+            <div className="mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0">
+              <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-sm:gap-4 bp-md:grid-cols-4">
+                {PROMO_BANNERS.map((b) => {
                   const title = (b.label ?? "").split("\n")[0] || "광고 문의";
 
                   const inner = (
@@ -817,16 +700,92 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                       {inner}
                     </div>
                   );
-                  })}
-                </div>
+                })}
               </div>
             </div>
-          )}
-        </section>
+          </section>
+        )}
       </SiteContainer>
 
+      {/* 상황 선택 */}
+      <section className="py-10 bp-sm:py-12 bp-md:py-16">
+        <SiteContainer>
+          <SectionHeader
+            eyebrow="처음 오셨다면 여기서 시작하세요"
+            title="지금 어떤 도움이 필요하세요?"
+            description="상황을 선택하면 다음 행동을 바로 안내해 드려요."
+            align="center"
+            className="mb-8 bp-sm:mb-10"
+          />
+          <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.78fr)] bp-lg:items-stretch">
+            <div className="grid grid-cols-2 gap-3 bp-sm:gap-4 bp-md:grid-cols-4 bp-lg:grid-cols-2">
+              {SITUATIONS.map((situation) => {
+                const Icon = situation.icon;
+                const isActive = activeSituation === situation.key;
+
+                return (
+                  <button
+                    key={situation.key}
+                    type="button"
+                    aria-pressed={isActive}
+                    onClick={() => setActiveSituation(situation.key)}
+                    className={cn(
+                      "group flex min-h-28 flex-col gap-2.5 rounded-2xl border bg-card p-3.5 text-left shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-h-36 bp-sm:gap-3 bp-sm:p-5",
+                      isActive
+                        ? "border-primary/50 bg-primary/5 shadow-md"
+                        : "border-border/60 hover:border-primary/30",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex h-11 w-11 items-center justify-center rounded-2xl border transition-[background-color,color,border-color,box-shadow,opacity] duration-300",
+                        isActive
+                          ? "border-primary/40 bg-primary text-primary-foreground"
+                          : "border-border/60 bg-secondary text-foreground group-hover:shadow-md",
+                      )}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="break-keep text-ui-body-sm font-semibold leading-relaxed text-foreground bp-sm:text-ui-card-title">
+                      {situation.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <PublicSurface padding="md" className="flex h-full flex-col justify-between border-primary/20 bg-primary/5 p-4 bp-sm:p-6">
+              <div>
+                <span className="inline-flex rounded-full bg-background px-3 py-1 text-ui-label font-semibold text-primary shadow-sm">
+                  {activeSituationAction.eyebrow}
+                </span>
+                <h3 className="mt-3 break-keep text-ui-card-title-lg font-semibold text-foreground bp-sm:mt-4 bp-sm:text-ui-section-title">
+                  {activeSituationAction.title}
+                </h3>
+                <p className="mt-2.5 break-keep text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:mt-3 bp-sm:text-ui-body">
+                  {activeSituationAction.description}
+                </p>
+              </div>
+              <div className="mt-5 grid gap-2 bp-sm:mt-6 bp-sm:grid-cols-2 bp-lg:grid-cols-1 bp-xl:grid-cols-2">
+                {activeSituationAction.ctas.map((cta) => (
+                  <Button
+                    key={cta.label}
+                    asChild
+                    variant={cta.primary ? "default" : "outline"}
+                    size="tall"
+                    className="w-full"
+                  >
+                    <Link href={cta.href}>{cta.label}</Link>
+                  </Button>
+                ))}
+              </div>
+            </PublicSurface>
+          </div>
+        </SiteContainer>
+      </section>
+
       {/* 서비스 플로우 */}
-      <section className="py-8 bp-sm:py-10 bp-md:py-12">
+      <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <PublicSurface padding="lg" className="bp-md:p-10">
             <SectionHeader
@@ -907,8 +866,81 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </SiteContainer>
       </section>
 
+      {/* 이용 안내 섹션 */}
+      <section ref={communitySectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
+        <SiteContainer>
+          <SectionHeader
+            title="이용 안내"
+            description="운영 소식은 간단히 확인하고, 필요한 안내 메뉴로 이동하세요."
+            align="center"
+            className="mb-8 bp-sm:mb-10"
+          />
+          <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] bp-lg:items-stretch">
+            {shouldLoadCommunity ? (
+              <HomeNoticePreview initialItems={initialHomeData?.notices} />
+            ) : (
+              <PublicSurface
+                variant="muted"
+                padding="none"
+                className="h-[260px] animate-pulse border-border/60"
+              />
+            )}
+            <div className="grid gap-3 bp-sm:grid-cols-2">
+              <Link
+                href="/services/pricing"
+                className={cn(surfaceCardInteractiveClass, "group flex min-h-28 items-center gap-4 p-5")}
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
+                  <Tags className="h-5 w-5" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-ui-card-title font-semibold text-foreground">비용 기준 확인</p>
+                  <p className="text-ui-body-sm text-muted-foreground">장착비와 서비스 옵션을 미리 확인하세요.</p>
+                </div>
+              </Link>
+              <Link
+                href="/services/locations"
+                className={cn(surfaceCardInteractiveClass, "group flex min-h-28 items-center gap-4 p-5")}
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
+                  <Clock className="h-5 w-5" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-ui-card-title font-semibold text-foreground">운영 정보 확인</p>
+                  <p className="text-ui-body-sm text-muted-foreground">방문 전 운영 시간과 접수 방식을 확인하세요.</p>
+                </div>
+              </Link>
+              <Link
+                href="/board/qna"
+                className={cn(surfaceCardInteractiveClass, "group flex min-h-28 items-center gap-4 p-5")}
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
+                  <Search className="h-5 w-5" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-ui-card-title font-semibold text-foreground">문의하기</p>
+                  <p className="text-ui-body-sm text-muted-foreground">궁금한 점을 남기고 답변을 받아보세요.</p>
+                </div>
+              </Link>
+              <Link
+                href="/reviews"
+                className={cn(surfaceCardInteractiveClass, "group flex min-h-28 items-center gap-4 p-5")}
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
+                  <Star className="h-5 w-5" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-ui-card-title font-semibold text-foreground">이용 후기</p>
+                  <p className="text-ui-body-sm text-muted-foreground">실제 이용자의 후기를 확인하세요.</p>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </SiteContainer>
+      </section>
+
       {/* 스트링 섹션 */}
-      <section ref={stringsSectionRef} className="py-9 bp-sm:py-11 bp-md:py-14">
+      <section ref={stringsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
         <SiteContainer>
           <SectionHeader
             title="스트링"
@@ -994,94 +1026,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         </SiteContainer>
       </section>
 
-      {/* 이용 안내 섹션 */}
-      <section className="py-8 bp-sm:py-10 bp-md:py-12">
-        <SiteContainer>
-          <SectionHeader
-            title="이용 안내"
-            description="운영 소식은 간단히 확인하고, 필요한 안내 메뉴로 이동하세요."
-            align="center"
-            className="mb-8 bp-sm:mb-10"
-          />
-          <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
-            <Link
-                href="/services/pricing"
-                className={cn(surfaceCardInteractiveClass, "group flex min-h-28 items-center gap-4 p-5")}
-              >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
-                  <Tags className="h-5 w-5" />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-ui-card-title font-semibold text-foreground">비용 기준 확인</p>
-                  <p className="text-ui-body-sm text-muted-foreground">장착비와 서비스 옵션을 미리 확인하세요.</p>
-                </div>
-            </Link>
-            <Link
-                href="/services/locations"
-                className={cn(surfaceCardInteractiveClass, "group flex min-h-28 items-center gap-4 p-5")}
-              >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
-                  <Clock className="h-5 w-5" />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-ui-card-title font-semibold text-foreground">운영 정보 확인</p>
-                  <p className="text-ui-body-sm text-muted-foreground">방문 전 운영 시간과 접수 방식을 확인하세요.</p>
-                </div>
-            </Link>
-            <Link
-                href="/board/qna"
-                className={cn(surfaceCardInteractiveClass, "group flex min-h-28 items-center gap-4 p-5")}
-              >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
-                  <Search className="h-5 w-5" />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-ui-card-title font-semibold text-foreground">문의하기</p>
-                  <p className="text-ui-body-sm text-muted-foreground">궁금한 점을 남기고 답변을 받아보세요.</p>
-                </div>
-            </Link>
-            <Link
-                href="/reviews"
-                className={cn(surfaceCardInteractiveClass, "group flex min-h-28 items-center gap-4 p-5")}
-              >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
-                  <Star className="h-5 w-5" />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-ui-card-title font-semibold text-foreground">이용 후기</p>
-                  <p className="text-ui-body-sm text-muted-foreground">실제 이용자의 후기를 확인하세요.</p>
-                </div>
-            </Link>
-          </div>
-        </SiteContainer>
-      </section>
-
-      {/* 공지사항 섹션 */}
-      <section ref={communitySectionRef} className="py-8 bp-sm:py-10 bp-md:py-12">
-        <SiteContainer>
-          <SectionHeader
-            title="공지사항"
-            description="운영 소식은 하단에서 간단히 확인하세요."
-            align="center"
-            className="mb-6 bp-sm:mb-8"
-          />
-          <div className="mx-auto max-w-4xl">
-            {shouldLoadCommunity ? (
-              <HomeNoticePreview initialItems={initialHomeData?.notices} />
-            ) : (
-              <PublicSurface
-                variant="muted"
-                padding="none"
-                className="h-[220px] animate-pulse border-border/60"
-              />
-            )}
-          </div>
-        </SiteContainer>
-      </section>
-
       {/* 중고 라켓 섹션 */}
-      {shouldShowUsedRacketsSection && (
-        <section ref={racketsSectionRef} className="py-9 bp-sm:py-11 bp-md:py-14">
+      <section ref={racketsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
         <SiteContainer>
           <SectionHeader
             title="중고 라켓"
@@ -1143,8 +1089,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             showHeader={false}
           />
         </SiteContainer>
-        </section>
-      )}
+      </section>
 
       {/* 라켓 검색 바로가기 (Hero 아래 CTA 블록) */}
       {/* <section className="py-6 bp-sm:py-8">
