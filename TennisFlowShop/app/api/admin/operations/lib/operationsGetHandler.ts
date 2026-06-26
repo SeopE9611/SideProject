@@ -1973,6 +1973,7 @@ export async function handleAdminOperationsGet(req: Request) {
   const operationGroupCounts = {
     totalRepresentativeTasks: allGroups.filter((group) => group.anchorKind !== "package_purchase")
       .length,
+    // 현재 목록 화면에서는 실제 오늘 생성/변경 기준이 아니라 남은 대표 업무 큐 기준입니다.
     todayRepresentativeTasks: summaryAll.urgent + summaryAll.caution + summaryAll.pending,
   };
   const groupHas = (group: AdminOperationsGroup, predicate: (item: OpItem) => boolean) =>
@@ -2006,9 +2007,7 @@ export async function handleAdminOperationsGet(req: Request) {
           item.kind === "rental" && Boolean(item.rentalDueAt || item.nextAction?.includes("반납")),
       ),
     ).length,
-    linkedReview: allGroups.filter(
-      (group) => Boolean(group.linkedFlowStatusIssue) || group.items.length > 1,
-    ).length,
+    linkedReview: allGroups.filter((group) => Boolean(group.linkedFlowStatusIssue)).length,
     offline: 0,
     academyApplications: 0,
   };
