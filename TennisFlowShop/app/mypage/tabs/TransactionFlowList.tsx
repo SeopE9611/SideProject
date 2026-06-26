@@ -459,21 +459,6 @@ const getFlowNextActionText = (
     if (normalized === "취소") return "취소가 완료되었습니다.";
     if (normalized === "환불" || normalized === "환불 처리중")
       return "환불 진행 상태를 확인해주세요.";
-    if (linkedApplication?.inboundRequired === false) {
-      return linkedApplication.rentalId
-        ? "매장에서 대여 라켓에 스트링을 장착해 준비합니다. 사용자가 별도로 라켓을 발송하지 않아도 됩니다."
-        : "사용자가 별도로 라켓을 발송하지 않아도 됩니다. 매장에서 라켓에 스트링을 장착해 준비합니다.";
-    }
-    if (linkedApplication?.needsInboundTracking && !linkedApplication?.hasTracking) {
-      return "보유 라켓을 매장으로 보내고 라켓 발송 운송장을 등록해주세요.";
-    }
-    if (
-      linkedApplication?.needsInboundTracking &&
-      linkedApplication?.hasTracking &&
-      isApplicationBeforeWork(linkedApplication.status)
-    ) {
-      return "등록한 운송장 기준으로 매장 도착 확인을 기다려주세요.";
-    }
     if (normalized === "대기중") return "결제를 완료해주세요.";
     if (normalized === "결제완료") return "결제가 완료되었습니다. 상품 준비를 기다려주세요.";
     if (normalized === "처리중") {
@@ -508,6 +493,21 @@ const getFlowNextActionText = (
       }
 
       return null;
+    }
+    if (linkedApplication?.inboundRequired === false) {
+      return linkedApplication.rentalId
+        ? "매장에서 대여 라켓에 스트링을 장착해 준비합니다. 사용자가 별도로 라켓을 발송하지 않아도 됩니다."
+        : "사용자가 별도로 라켓을 발송하지 않아도 됩니다. 매장에서 라켓에 스트링을 장착해 준비합니다.";
+    }
+    if (linkedApplication?.needsInboundTracking && !linkedApplication?.hasTracking) {
+      return "보유 라켓을 매장으로 보내고 라켓 발송 운송장을 등록해주세요.";
+    }
+    if (
+      linkedApplication?.needsInboundTracking &&
+      linkedApplication?.hasTracking &&
+      isApplicationBeforeWork(linkedApplication.status)
+    ) {
+      return "등록한 운송장 기준으로 매장 도착 확인을 기다려주세요.";
     }
     return null;
   }
