@@ -1301,8 +1301,8 @@ export default function TransactionFlowList() {
                             key="application-linked-order"
                             asChild
                             size="sm"
-                            variant={applicationActionTarget.hasTracking ? "outline" : "default"}
-                            className={applicationActionTarget.hasTracking ? "bg-transparent" : undefined}
+                            variant="outline"
+                            className="bg-transparent"
                           >
                             <Link
                               href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&${flowQuery}&focus=stringing`}
