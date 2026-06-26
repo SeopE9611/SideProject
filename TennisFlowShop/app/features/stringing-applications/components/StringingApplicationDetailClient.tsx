@@ -1021,6 +1021,8 @@ export default function StringingApplicationDetailClient({
     !isUserConfirmed &&
     confirmableStatuses.includes(data.status);
   const showConfirmExchangeButton = !isLinkedApplication && (canConfirmExchange || isUserConfirmed);
+  const shouldShowHeaderConfirmButton =
+    !isAdmin && !isLinkedApplication && showConfirmExchangeButton && !canConfirmExchange;
   const userProgressSteps = [
     { key: "접수완료", label: "접수 완료" },
     { key: "검토 중", label: "검토 중" },
@@ -1507,7 +1509,7 @@ export default function StringingApplicationDetailClient({
                     )}
 
                     {/* 사용자: 교체확정 버튼(확정 가능 시, 또는 이미 확정된 경우에만 노출) */}
-                    {!isAdmin && !isLinkedApplication && showConfirmExchangeButton && (
+                    {shouldShowHeaderConfirmButton && (
                       <Button
                         size="sm"
                         variant="outline"
