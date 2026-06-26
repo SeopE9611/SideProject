@@ -6,7 +6,11 @@ import {
   OFFLINE_PACKAGE_ORDER_FILTER,
 } from "@/app/api/admin/offline/_lib/packageOrderOffline";
 import type { SidebarBadgeKey } from "@/components/admin/sidebar-navigation";
-import type { OperationTaskCounts } from "@/types/admin/operations";
+import type {
+  OperationGroupCounts,
+  OperationSignalCounts,
+  OperationTaskCounts,
+} from "@/types/admin/operations";
 
 type NavigationCounts = Partial<Record<SidebarBadgeKey, number>>;
 
@@ -423,6 +427,48 @@ async function safeCount(db: Db, collectionName: string, filter: Filter<Document
   }
 }
 
+const standaloneStringingNeedsActionFilter: Filter<Document> = {
+  $and: [
+    stringingNeedsActionFilter,
+    {
+      $or: [
+        { orderId: { $exists: false } },
+        { orderId: null },
+        { orderId: "" },
+      ],
+    },
+    {
+      $or: [
+        { rentalId: { $exists: false } },
+        { rentalId: null },
+        { rentalId: "" },
+      ],
+    },
+  ],
+};
+
+export function toOperationSignalCounts(taskCounts: OperationTaskCounts): OperationSignalCounts {
+  return { ...taskCounts };
+}
+
+export async function countAdminOperationGroupCounts(db: Db): Promise<OperationGroupCounts> {
+  const [orders, rentals, standaloneStringing] = await Promise.all([
+    safeCount(db, "orders", orderNeedsActionFilter, "representative order tasks"),
+    safeCount(db, "rental_orders", rentalNeedsActionFilter, "representative rental tasks"),
+    safeCount(
+      db,
+      "stringing_applications",
+      standaloneStringingNeedsActionFilter,
+      "representative standalone stringing tasks",
+    ),
+  ]);
+
+  return {
+    totalRepresentativeTasks: orders + rentals + standaloneStringing,
+    todayRepresentativeTasks: orders + rentals + standaloneStringing,
+  };
+}
+
 export async function countAdminOfflineNeedsAction(db: Db): Promise<number> {
   const [offlineUnpaidRecords, offlinePackageIssueReconcile, offlinePackageUsageReconcile] =
     await Promise.all([
@@ -502,9 +548,19 @@ export async function countAdminOperationTaskCounts(db: Db): Promise<OperationTa
 export async function countAdminNavigationSummary(db: Db): Promise<{
   counts: NavigationCounts;
   operationTaskCounts: OperationTaskCounts;
+  operationGroupCounts: OperationGroupCounts;
+  operationSignalCounts: OperationSignalCounts;
 }> {
-  const [orders, stringing, rentals, academyApplications, reviews, boards, operationTaskCounts] =
-    await Promise.all([
+  const [
+    orders,
+    stringing,
+    rentals,
+    academyApplications,
+    reviews,
+    boards,
+    operationTaskCounts,
+    operationGroupCounts,
+  ] = await Promise.all([
       safeCount(db, "orders", orderNeedsActionFilter, "orders needs action"),
       safeCount(db, "stringing_applications", stringingNeedsActionFilter, "stringing needs action"),
       safeCount(db, "rental_orders", rentalNeedsActionFilter, "rentals needs action"),
@@ -517,13 +573,13 @@ export async function countAdminNavigationSummary(db: Db): Promise<{
       safeCount(db, "reviews", reviewNeedsActionFilter, "reviews"),
       safeCount(db, "community_posts", boardNeedsActionFilter, "boards"),
       countAdminOperationTaskCounts(db),
+      countAdminOperationGroupCounts(db),
     ]);
 
   const orderAndStringing = orders + stringing;
   const offline = operationTaskCounts.offline;
   const operations =
-    orderAndStringing +
-    rentals +
+    operationGroupCounts.totalRepresentativeTasks +
     offline +
     operationTaskCounts.packagePaymentCheck +
     academyApplications +
@@ -541,5 +597,10 @@ export async function countAdminNavigationSummary(db: Db): Promise<{
     boards,
   };
 
-  return { counts, operationTaskCounts };
+  return {
+    counts,
+    operationTaskCounts,
+    operationGroupCounts,
+    operationSignalCounts: toOperationSignalCounts(operationTaskCounts),
+  };
 }

@@ -104,6 +104,23 @@ export type AdminOperationsSummary = {
   pending: number;
 };
 
+export type OperationGroupCounts = {
+  totalRepresentativeTasks: number;
+  todayRepresentativeTasks?: number;
+};
+
+export type OperationSignalCounts = {
+  cancelRequests: number;
+  paymentCheck: number;
+  packagePaymentCheck: number;
+  shippingMissing: number;
+  stringingWork: number;
+  rentalDue: number;
+  linkedReview: number;
+  offline: number;
+  academyApplications: number;
+};
+
 export type OperationTaskCounts = {
   cancelRequests: number;
   paymentCheck: number;
@@ -127,6 +144,8 @@ export type AdminDailyOperationsSummaryResponse = {
     total: number;
   };
   remaining: OperationTaskCounts & { total: number };
+  operationGroupCounts?: OperationGroupCounts;
+  operationSignalCounts?: OperationSignalCounts;
   attention: {
     urgentRemaining: number;
     watchRemaining: number;
@@ -153,6 +172,8 @@ export interface AdminOperationsListRequestDto {
 export interface AdminOperationsListResponseDto {
   summaryAll: AdminOperationsSummary;
   groups: AdminOperationsGroup[];
+  operationGroupCounts?: OperationGroupCounts;
+  operationSignalCounts?: OperationSignalCounts;
   pagination: {
     page: number;
     pageSize: number;

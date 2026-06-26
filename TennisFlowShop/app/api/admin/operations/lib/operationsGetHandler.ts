@@ -27,6 +27,7 @@ import type {
   AdminOperationsWarnSort,
   LinkedFlowStatusIssue,
   OperationSignal,
+  OperationSignalCounts,
   OperationSignalLevel,
 } from "@/types/admin/operations";
 import { enforceAdminRateLimit } from "@/lib/admin/adminRateLimit";
@@ -1969,6 +1970,49 @@ export async function handleAdminOperationsGet(req: Request) {
     { urgent: 0, caution: 0, pending: 0 },
   );
 
+  const operationGroupCounts = {
+    totalRepresentativeTasks: allGroups.filter((group) => group.anchorKind !== "package_purchase")
+      .length,
+    todayRepresentativeTasks: summaryAll.urgent + summaryAll.caution + summaryAll.pending,
+  };
+  const groupHas = (group: AdminOperationsGroup, predicate: (item: OpItem) => boolean) =>
+    group.items.some(predicate);
+  const operationSignalCounts: OperationSignalCounts = {
+    cancelRequests: allGroups.filter((group) =>
+      groupHas(group, (item) => item.cancel?.status === "requested"),
+    ).length,
+    paymentCheck: allGroups.filter(
+      (group) =>
+        hasPaymentPending(group) || groupHas(group, (item) => item.paymentLabel === "확인필요"),
+    ).length,
+    packagePaymentCheck: allGroups.filter((group) => group.anchorKind === "package_purchase")
+      .length,
+    shippingMissing: allGroups.filter((group) =>
+      groupHas(group, (item) =>
+        Boolean(item.nextAction?.includes("운송장") || item.nextAction?.includes("배송")),
+      ),
+    ).length,
+    stringingWork: allGroups.filter((group) =>
+      groupHas(
+        group,
+        (item) =>
+          item.kind === "stringing_application" && !String(item.statusLabel).includes("교체완료"),
+      ),
+    ).length,
+    rentalDue: allGroups.filter((group) =>
+      groupHas(
+        group,
+        (item) =>
+          item.kind === "rental" && Boolean(item.rentalDueAt || item.nextAction?.includes("반납")),
+      ),
+    ).length,
+    linkedReview: allGroups.filter(
+      (group) => Boolean(group.linkedFlowStatusIssue) || group.items.length > 1,
+    ).length,
+    offline: 0,
+    academyApplications: 0,
+  };
+
   groups = allGroups;
 
   if (warnFilter === "warn") groups = groups.filter((group) => isGroupWarn(group));
@@ -2000,6 +2044,8 @@ export async function handleAdminOperationsGet(req: Request) {
   const responseDto: AdminOperationsListResponseDto = {
     summaryAll,
     groups: pagedGroups,
+    operationGroupCounts,
+    operationSignalCounts,
     pagination: {
       page,
       pageSize,
