@@ -4,7 +4,7 @@ import AdminRentalHistory from "@/app/admin/rentals/_components/AdminRentalHisto
 import { derivePaymentStatus, deriveShippingStatus } from "@/app/features/rentals/utils/status";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
-import { adminSurface } from "@/components/admin/admin-typography";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,13 +15,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import AsyncState from "@/components/system/AsyncState";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
@@ -137,9 +130,6 @@ export default function AdminRentalDetailClient() {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [isSyncingNice, setIsSyncingNice] = useState(false);
-  const [selectedApplicationStatus, setSelectedApplicationStatus] = useState<
-    ApplicationStatus | ""
-  >("");
   const [isUpdatingApplicationStatus, setIsUpdatingApplicationStatus] = useState(false);
 
   const { data, error, isLoading, mutate } = useSWR(
@@ -220,8 +210,8 @@ export default function AdminRentalDetailClient() {
     if (result) await mutate();
   };
 
-  const onUpdateApplicationStatus = async () => {
-    if (!selectedApplicationStatus || isUpdatingApplicationStatus) return;
+  const onUpdateApplicationStatus = async (nextStatus: ApplicationStatus) => {
+    if (!nextStatus || isUpdatingApplicationStatus) return;
     setIsUpdatingApplicationStatus(true);
     try {
       const result = await runAdminActionWithToast({
@@ -231,14 +221,14 @@ export default function AdminRentalDetailClient() {
             {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ status: selectedApplicationStatus }),
+              body: JSON.stringify({ status: nextStatus }),
             },
           );
-          ensureAdminMutationSucceeded(json, "교체서비스 상태 변경 실패");
+          ensureAdminMutationSucceeded(json, "교체 작업 상태 변경 실패");
           return json;
         },
-        successMessage: `교체서비스 상태를 ${selectedApplicationStatus}(으)로 변경했습니다.`,
-        fallbackErrorMessage: "교체서비스 상태 변경 실패",
+        successMessage: `교체 작업 상태를 ${nextStatus}(으)로 변경했습니다.`,
+        fallbackErrorMessage: "교체 작업 상태 변경 실패",
       });
       if (result) await mutate();
     } finally {
@@ -588,34 +578,34 @@ export default function AdminRentalDetailClient() {
           tone: "urgent",
           title: "상태 순서 확인 필요",
           description:
-            "교체서비스가 완료되지 않았는데 대여가 출고 또는 반납 단계로 진행되었습니다. 교체서비스 상태와 처리 이력을 확인하세요.",
+            "교체 작업이 완료되지 않았는데 대여가 인도 또는 반납 단계로 진행되었습니다. 교체 작업 상태와 처리 이력을 확인하세요.",
         }
       : needsPaymentCheck
         ? {
             tone: "warning",
             title: "결제 상태 확인 필요",
-            description: "입금/결제 반영 여부를 확인한 뒤 출고 여부를 판단하세요.",
+            description: "입금/결제 반영 여부를 확인한 뒤 대여 라켓 인도 여부를 판단하세요.",
           }
         : isBeforeOut && hasLinkedApplication && !isStringingComplete
           ? {
               tone: "warning",
-              title: "교체서비스 작업 완료 필요",
-              description: "교체서비스가 완료된 뒤 출고 또는 대여 시작을 진행하세요.",
+              title: "교체 작업 완료 필요",
+              description: "대여에 포함된 교체 작업이 완료된 뒤 대여 라켓 인도 또는 대여 시작을 진행하세요.",
             }
           : isBeforeOut && !isVisitPickup && hasOutboundTracking
             ? {
                 tone: "warning",
-                title: "출고 완료 · 수령 확인 대기",
+                title: "인도 완료 · 수령 확인 대기",
                 description: "고객 수령 확인 후 대여를 시작하세요.",
               }
             : isBeforeOut
               ? {
                   tone: "warning",
-                  title: isVisitPickup ? "방문 수령 처리 필요" : "출고 운송장 등록 필요",
+                  title: isVisitPickup ? "방문 수령 처리 필요" : "인도 운송장 등록 필요",
                   description: isVisitPickup
                     ? "고객 방문 수령을 확인한 뒤 대여를 시작하세요."
-                    : "교체서비스 완료 상태를 확인한 뒤 출고 운송장을 등록하세요.",
-                  actionLabel: isVisitPickup ? undefined : "출고 운송장 등록/수정",
+                    : "교체 작업 완료 상태를 확인한 뒤 인도 운송장을 등록하세요.",
+                  actionLabel: isVisitPickup ? undefined : "인도 운송장 등록/수정",
                   actionHref: isVisitPickup ? undefined : `/admin/rentals/${id}/shipping-update`,
                 }
               : needsReturnCheck
@@ -634,9 +624,9 @@ export default function AdminRentalDetailClient() {
                   : hasLinkedApplication
                     ? {
                         tone: "info",
-                        title: "대여 라켓 장착 정보 확인",
+                        title: "대여에 포함된 교체 작업 확인",
                         description:
-                          "장착 스트링과 교체서비스 상태를 확인한 뒤 후속 처리를 진행하세요.",
+                          "대여 결제에 포함된 교체 작업 상태를 확인한 뒤 후속 처리를 진행하세요.",
                       }
                     : {
                         tone: "success",
@@ -646,14 +636,14 @@ export default function AdminRentalDetailClient() {
   const recommendedActions = [
     { label: "결제 정보 확인", href: "#admin-rental-payment", show: true },
     {
-      label: "출고/반납 운송장 확인",
+      label: "인도/반납 정보 확인",
       href: "#admin-rental-shipping",
       show: true,
     },
     { label: "반납 처리 확인", href: "#admin-rental-return", show: true },
     { label: "보증금 환불 확인", href: "#admin-rental-deposit", show: true },
     {
-      label: "대여 라켓 장착 정보 확인",
+      label: "교체 작업 정보 확인",
       href: "#admin-rental-linked-docs",
       show: hasLinkedApplication,
     },
@@ -679,7 +669,13 @@ export default function AdminRentalDetailClient() {
   const effectiveStockRestore = data?.stockRestore ?? data?.stringing?.stockRestore ?? null;
   const isVariantStockMode = effectiveStockDeduction?.mode === "variant";
   const isCanceledState = data?.status === "canceled" || data?.status === "cancelled";
-  const selectedApplicationStatusValue = selectedApplicationStatus || linkedApplicationStatus;
+  const currentApplicationStatusIndex = APPLICATION_STATUSES.indexOf(
+    linkedApplicationStatus as ApplicationStatus,
+  );
+  const nextApplicationStatus =
+    currentApplicationStatusIndex >= 0
+      ? (APPLICATION_STATUSES[currentApplicationStatusIndex + 1] ?? null)
+      : null;
   const applicationStatusBadge = getApplicationStatusBadgeSpec(linkedApplicationStatus);
   const canUpdateLinkedApplication = data?.status === "paid";
   const linkedApplicationLines = Array.isArray(linkedApplication?.lines)
@@ -761,8 +757,8 @@ export default function AdminRentalDetailClient() {
                     <Button variant="outline" size="sm" disabled className="h-8 whitespace-nowrap">
                       <Truck className="mr-2 h-4 w-4" />
                       {hasLinkedApplication && !isStringingComplete
-                        ? "교체서비스 완료 후 출고 가능"
-                        : "출고 운송장 등록 필요"}
+                        ? "교체 작업 완료 후 인도 가능"
+                        : "인도 운송장 등록 필요"}
                     </Button>
                   ) : (
                     <Button
@@ -774,8 +770,8 @@ export default function AdminRentalDetailClient() {
                       <Link href={`/admin/rentals/${id}/shipping-update`}>
                         <Truck className="h-4 w-4 mr-2" />
                         {data?.shipping?.outbound?.trackingNumber
-                          ? "출고 운송장 수정"
-                          : "출고 운송장 등록"}
+                          ? "인도 운송장 수정"
+                          : "인도 운송장 등록"}
                       </Link>
                     </Button>
                   ))}
@@ -823,21 +819,21 @@ export default function AdminRentalDetailClient() {
               <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
                 <div className="mb-2 flex items-center space-x-2">
                   <Wrench className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">교체서비스</span>
+                  <span className="text-sm font-medium text-foreground">교체 작업 상태</span>
                 </div>
                 <Badge
                   variant={applicationStatusBadge.variant}
                   className={cn(badgeBase, badgeSizeSm)}
                 >
                   {linkedApplicationStatus ||
-                    (hasStringingSummary ? "교체서비스 검토 중" : "교체서비스 없음")}
+                    (hasStringingSummary ? "교체 작업 검토 중" : "교체 작업 없음")}
                 </Badge>
               </div>
 
               <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
                 <div className="mb-2 flex items-center space-x-2">
                   <Truck className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">출고/반납</span>
+                  <span className="text-sm font-medium text-foreground">인도/반납</span>
                 </div>
                 <p className="text-sm font-semibold text-foreground">
                   {data.status === "returned"
@@ -845,8 +841,8 @@ export default function AdminRentalDetailClient() {
                     : data.status === "out"
                       ? "반납 필요"
                       : Outbound?.trackingNumber
-                        ? "출고 완료"
-                        : "출고 전"}
+                        ? "인도 완료"
+                        : "인도 전"}
                 </p>
                 <p className="mt-2 text-xs text-foreground/75">{pickupMethodLabel}</p>
               </div>
@@ -955,10 +951,10 @@ export default function AdminRentalDetailClient() {
                 </div>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-sm font-semibold text-foreground">라켓 대여 처리 체크리스트</p>
+                <p className="text-sm font-semibold text-foreground">라켓 대여 처리 참고 순서</p>
                 <ul className="mt-2 grid gap-1.5 text-xs leading-relaxed text-muted-foreground sm:grid-cols-2">
                   <li>□ 결제 상태 확인</li>
-                  <li>□ 출고 운송장 또는 방문 수령 정보 확인</li>
+                  <li>□ 인도 운송장 또는 방문 수령 정보 확인</li>
                   <li>□ 대여중 처리</li>
                   <li>□ 반납 예정일 확인</li>
                   <li>□ 반납 완료 처리</li>
@@ -1097,7 +1093,7 @@ export default function AdminRentalDetailClient() {
                       <Link
                         href={`/admin/applications/stringing/${encodeURIComponent(String(data.stringingApplicationId))}`}
                       >
-                        신청서 상세로 이동
+                        교체 작업 상세 보기
                       </Link>
                     </Button>
                   </div>
@@ -1114,10 +1110,10 @@ export default function AdminRentalDetailClient() {
               <CardHeader className="border-b bg-muted/30 pb-3">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <CardTitle className="text-base">대여 라켓 장착 정보</CardTitle>
+                    <CardTitle className="text-base">대여에 포함된 교체 작업</CardTitle>
                     <CardDescription className="mt-1 max-w-3xl leading-relaxed">
                       대여 라켓에 장착할 스트링, 게이지, 색상, 텐션, 요청사항과 작업 상태를 한곳에서
-                      확인합니다. 매장 보유 대여 라켓에 장착하는 대여 기반 교체서비스이며, 출고
+                      확인합니다. 매장 보유 대여 라켓에 장착하는 대여 기반 하위 작업이며, 인도
                       운송장과 반납 운송장은 아래 대여 정보에서 분리해 관리합니다.
                     </CardDescription>
                   </div>
@@ -1132,7 +1128,7 @@ export default function AdminRentalDetailClient() {
               <CardContent className="space-y-4 pt-4">
                 <div className="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3">
                   <p className="text-muted-foreground">
-                    신청서 ID:{" "}
+                    교체 작업 ID:{" "}
                     <span className="font-medium text-foreground">
                       {shortenId(String(linkedApplication.id))}
                     </span>
@@ -1171,10 +1167,10 @@ export default function AdminRentalDetailClient() {
                     </span>
                   </p>
                   <p className="text-muted-foreground sm:col-span-2 xl:col-span-3">
-                    결제 포함:{" "}
+                    결제 문맥:{" "}
                     <span className="font-medium text-foreground">
                       {linkedApplicationPaymentIncluded
-                        ? "대여 주문에 포함됨"
+                        ? "대여 결제에 포함됨"
                         : linkedApplication.paymentSource || "연결 정보 확인 필요"}
                     </span>
                   </p>
@@ -1182,60 +1178,49 @@ export default function AdminRentalDetailClient() {
 
                 <div className="rounded-lg border border-border/70 bg-muted/20 p-3 text-xs leading-relaxed text-muted-foreground">
                   <p>대여 결제 상태: 대여 주문의 결제 확인 여부</p>
-                  <p>교체서비스 상태: 스트링 장착 작업 진행 여부</p>
-                  <p>출고/대여 시작: 작업 완료 후 진행하는 운영 단계</p>
-                  <p>반납 상태: 대여 시작 이후 반납 관리</p>
+                  <p>교체 작업 상태: 스트링 장착 작업 진행 여부</p>
+                  <p>대여 라켓 인도/대여 시작: 작업 완료 후 진행하는 운영 단계</p>
+                  <p>대여 라켓 반납: 대여 시작 이후 반납 관리</p>
                 </div>
 
                 {data.status === "pending" ? (
                   <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">
-                    결제 확인 후 교체서비스 작업 상태를 변경하세요.
+                    결제 확인 후 대여에 포함된 교체 작업 상태를 변경하세요.
                   </p>
                 ) : data.status === "paid" && linkedApplicationStatus === "검토 중" ? (
                   <p className="rounded-md border border-info/40 bg-info/10 px-3 py-2 text-sm text-foreground">
-                    결제가 확인되었습니다. 교체서비스 작업 접수가 필요합니다.
+                    결제가 확인되었습니다. 대여에 포함된 교체 작업 접수가 필요합니다.
                   </p>
                 ) : data.status === "paid" && linkedApplicationStatus === "작업 중" ? (
                   <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">
-                    현재 장착 작업 중입니다. 교체완료 후 출고 또는 대여 시작을 진행하세요.
+                    현재 교체 작업 중입니다. 교체완료 후 대여 라켓 인도 또는 대여 시작을 진행하세요.
                   </p>
                 ) : data.status === "paid" && linkedApplicationStatus === "교체완료" ? (
                   <p className="rounded-md border border-info/40 bg-info/10 px-3 py-2 text-sm text-foreground">
-                    장착 작업이 완료되었습니다. 출고정보 등록 또는 대여 시작 단계를 진행할 수
+                    장착 작업이 완료되었습니다. 인도 정보 등록 또는 대여 시작 단계를 진행할 수
                     있습니다.
                   </p>
                 ) : ["out", "returned"].includes(data.status) &&
                   linkedApplicationStatus !== "교체완료" ? (
                   <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">
-                    상태 순서 확인 필요: 교체서비스가 완료되지 않았는데 대여가 출고 또는 반납 단계로
-                    진행되었습니다. 교체서비스 상태와 처리 이력을 확인하세요.
+                    상태 순서 확인 필요: 교체 작업이 완료되지 않았는데 대여가 인도 또는 반납 단계로
+                    진행되었습니다. 교체 작업 상태와 처리 이력을 확인하세요.
                   </p>
                 ) : null}
 
                 <div className="flex flex-col gap-3 rounded-lg border border-border/70 p-3 sm:flex-row sm:items-end sm:justify-between">
                   <div className="space-y-2">
-                    <p className="text-sm font-semibold text-foreground">변경할 작업 상태</p>
-                    <Select
-                      value={selectedApplicationStatusValue}
-                      onValueChange={(value) =>
-                        setSelectedApplicationStatus(value as ApplicationStatus)
-                      }
-                      disabled={!canUpdateLinkedApplication || isUpdatingApplicationStatus}
-                    >
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="상태 선택" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {APPLICATION_STATUSES.map((status) => (
-                          <SelectItem key={status} value={status}>
-                            {status}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">
-                      저장 시 {linkedApplicationStatus || "현재 상태"} →{" "}
-                      {selectedApplicationStatusValue || "선택 상태"}(으)로 변경됩니다.
+                    <p className={adminTypography.panelTitle}>교체 작업 진행 단계</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="outline" className="w-fit">
+                        현재: {linkedApplicationStatus || "상태 확인 필요"}
+                      </Badge>
+                      <Badge variant="outline" className="w-fit">
+                        다음: {nextApplicationStatus ?? "다음 단계 없음"}
+                      </Badge>
+                    </div>
+                    <p className={adminTypography.meta}>
+                      대여 결제에 포함된 하위 교체 작업만 다음 운영 단계로 변경합니다.
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -1243,7 +1228,7 @@ export default function AdminRentalDetailClient() {
                       <Link
                         href={`/admin/applications/stringing/${encodeURIComponent(String(linkedApplication.id))}`}
                       >
-                        교체서비스 상세
+                        교체 작업 상세 보기
                       </Link>
                     </Button>
                     <Button
@@ -1251,30 +1236,35 @@ export default function AdminRentalDetailClient() {
                       disabled={
                         !canUpdateLinkedApplication ||
                         isUpdatingApplicationStatus ||
-                        !selectedApplicationStatusValue ||
-                        selectedApplicationStatusValue === linkedApplicationStatus
+                        !nextApplicationStatus
                       }
-                      onClick={onUpdateApplicationStatus}
+                      onClick={() =>
+                        nextApplicationStatus && onUpdateApplicationStatus(nextApplicationStatus)
+                      }
                     >
-                      {isUpdatingApplicationStatus ? "저장 중…" : "작업 상태 저장"}
+                      {isUpdatingApplicationStatus
+                        ? "처리 중…"
+                        : nextApplicationStatus
+                          ? `${nextApplicationStatus} 처리`
+                          : "다음 단계 없음"}
                     </Button>
                   </div>
                 </div>
                 <div className="space-y-1 text-xs leading-relaxed text-muted-foreground">
                   <p>
-                    이 작업은 연결된 교체서비스 신청서의 작업 상태만 변경합니다. 대여 결제, 출고
+                    이 작업은 대여에 포함된 교체 작업 상태만 변경합니다. 대여 결제, 인도
                     운송장 등록, 대여 시작, 반납 처리는 기존 대여 액션에서 별도로 진행하세요.
                   </p>
                   <p>접수완료: 결제 확인 후 작업 접수 상태로 표시합니다.</p>
                   <p>작업 중: 실제 스트링 장착 작업이 시작된 상태입니다.</p>
-                  <p>교체완료: 장착 작업이 완료되어 출고 또는 수령 준비가 가능한 상태입니다.</p>
+                  <p>교체완료: 장착 작업이 완료되어 인도 또는 수령 준비가 가능한 상태입니다.</p>
                   {!canUpdateLinkedApplication && (
                     <p className="font-medium text-foreground">
                       {data.status === "returned"
-                        ? "반납 완료된 대여에서는 교체서비스 작업 상태를 변경할 수 없습니다."
+                        ? "반납 완료된 대여에서는 교체 작업 상태를 변경할 수 없습니다."
                         : data.status === "out"
-                          ? "대여 시작 후에는 교체서비스 상태를 읽기 전용으로 확인합니다."
-                          : "결제완료 상태에서 교체서비스 작업 상태를 변경할 수 있습니다."}
+                          ? "대여 시작 후에는 교체 작업 상태를 읽기 전용으로 확인합니다."
+                          : "결제완료 상태에서 교체 작업 상태를 변경할 수 있습니다."}
                     </p>
                   )}
                 </div>
@@ -1349,9 +1339,9 @@ export default function AdminRentalDetailClient() {
                 {data.status === "paid" && (
                   <p className="w-full text-xs text-muted-foreground">
                     {hasLinkedApplication && !isStringingComplete
-                      ? "이 대여는 교체서비스와 연결되어 있습니다. 교체서비스 상태가 `교체완료`가 된 뒤 출고 또는 대여 시작을 진행하세요."
+                      ? "이 대여에는 교체 작업이 포함되어 있습니다. 교체 작업 상태가 `교체완료`가 된 뒤 대여 라켓 인도 또는 대여 시작을 진행하세요."
                       : !isVisitPickup && !hasOutboundTracking
-                        ? "택배 배송 건은 출고 운송장을 등록한 뒤 수령 확인 / 대여 시작을 진행하세요."
+                        ? "택배 인도 건은 인도 운송장을 등록한 뒤 수령 확인 / 대여 시작을 진행하세요."
                         : "고객 수령 확인 후 대여를 시작할 수 있습니다."}
                   </p>
                 )}
@@ -1691,7 +1681,7 @@ export default function AdminRentalDetailClient() {
                     ),
                     "outbound-set": (
                       <span className="inline-flex px-2 py-0.5 rounded bg-muted text-foreground text-xs">
-                        출고 운송장
+                        인도 운송장
                       </span>
                     ),
                     "return-set": (
