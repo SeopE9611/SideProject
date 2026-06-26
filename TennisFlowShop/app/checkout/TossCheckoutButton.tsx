@@ -16,6 +16,7 @@ export default function TossCheckoutButton({
   onBeforeSuccessNavigation,
   onSuccessNavigationAbort,
   payload,
+  buttonId,
 }: {
   disabled: boolean;
   widgetReady: boolean;
@@ -25,6 +26,7 @@ export default function TossCheckoutButton({
   onBeforeSuccessNavigation?: () => void;
   onSuccessNavigationAbort?: () => void;
   payload: Record<string, unknown>;
+  buttonId?: string;
 }) {
   const [loading, setLoading] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
@@ -106,7 +108,7 @@ export default function TossCheckoutButton({
 
   return (
     <div className="space-y-2 w-full">
-      <Button onClick={handleClick} className="w-full h-14 text-ui-card-title-lg" disabled={isDisabled}>
+      <Button id={buttonId} onClick={handleClick} className="w-full h-14 text-ui-card-title-lg" disabled={isDisabled}>
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

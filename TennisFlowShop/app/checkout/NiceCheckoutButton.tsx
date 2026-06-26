@@ -37,12 +37,14 @@ export default function NiceCheckoutButton({
   payableAmount,
   onBeforeSuccessNavigation,
   onSuccessNavigationAbort,
+  buttonId,
 }: {
   disabled: boolean;
   payload: Record<string, unknown>;
   payableAmount: number;
   onBeforeSuccessNavigation?: () => void;
   onSuccessNavigationAbort?: () => void;
+  buttonId?: string;
 }) {
   const [loading, setLoading] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
@@ -180,7 +182,7 @@ export default function NiceCheckoutButton({
 
   return (
     <div className="space-y-2 w-full">
-      <Button onClick={handleClick} className="w-full h-14 text-ui-card-title-lg" disabled={isDisabled}>
+      <Button id={buttonId} onClick={handleClick} className="w-full h-14 text-ui-card-title-lg" disabled={isDisabled}>
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

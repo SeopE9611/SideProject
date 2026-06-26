@@ -40,6 +40,7 @@ type Props = {
   serviceRequest: string;
   onBeforeSuccessNavigation?: () => void;
   onSuccessNavigationAbort?: () => void;
+  buttonId?: string;
 };
 
 export default function PackageNiceCheckoutButton({
@@ -53,6 +54,7 @@ export default function PackageNiceCheckoutButton({
   serviceRequest,
   onBeforeSuccessNavigation,
   onSuccessNavigationAbort,
+  buttonId,
 }: Props) {
   const [loading, setLoading] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
@@ -194,7 +196,7 @@ export default function PackageNiceCheckoutButton({
 
   return (
     <div className="space-y-2 w-full">
-      <Button onClick={handleClick} className="w-full h-14 text-ui-card-title-lg" disabled={isDisabled}>
+      <Button id={buttonId} onClick={handleClick} className="w-full h-14 text-ui-card-title-lg" disabled={isDisabled}>
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -81,6 +81,7 @@ export default function PackageCheckoutButton({
   onSubmittingChange,
   onBeforeSuccessNavigation,
   onSuccessNavigationAbort,
+  buttonId,
 }: {
   disabled: boolean;
   ownershipBlockedMessage: string | null;
@@ -98,6 +99,7 @@ export default function PackageCheckoutButton({
   onSubmittingChange?: (submitting: boolean) => void;
   onBeforeSuccessNavigation?: () => void;
   onSuccessNavigationAbort?: () => void;
+  buttonId?: string;
 }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -271,6 +273,7 @@ export default function PackageCheckoutButton({
   return (
     <>
       <Button
+        id={buttonId}
         onClick={handleSubmit}
         className="h-14 w-full text-ui-body-lg font-semibold shadow-sm transition-[box-shadow,background-color,border-color] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60 sm:text-ui-card-title-lg"
         size="lg"
