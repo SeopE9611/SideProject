@@ -1,7 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import HeroSlider from "@/components/HeroSlider";
 import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicSurface } from "@/components/public/PublicSurface";
@@ -84,36 +83,6 @@ type BrandKey = (typeof BRAND_KEYS)[number];
 // 브랜드 탭 키(전체 + 상수)
 const STRING_BRAND_KEYS = ["all", ...STRING_BRANDS.map((b) => b.value)] as const;
 type StringBrandKey = (typeof STRING_BRAND_KEYS)[number];
-
-// 상단 배너 슬라이드 데이터
-const SLIDES = [
-  {
-    img: "dokkaebibanner.png",
-    // imgMobile: '',
-    alt: "이벤트",
-    href: "/board/event",
-    caption: "신규 입고 & 이벤트",
-    // objectPosition: 'center 20%',
-  },
-  {
-    img: "dokkaebibanner.png",
-    alt: "서비스",
-    href: "/services",
-    caption: "스트링 교체 신청",
-  },
-  {
-    img: "dokkaebibanner.png",
-    alt: "패키지",
-    href: "/services/packages",
-    caption: "스트링 패키지",
-  },
-  {
-    img: "dokkaebibanner.png",
-    alt: "라켓과 스트링 디테일",
-    href: "/products",
-    caption: "추천 스트링",
-  },
-];
 
 type PromoBanner = {
   key: string;
@@ -655,7 +624,13 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </div>
               <div className="border-t border-border/60 bg-muted/20 p-3 bp-sm:p-4 bp-lg:border-l bp-lg:border-t-0">
                 <div className="overflow-hidden rounded-[1.5rem] border border-border/60 bg-background shadow-sm">
-                  <HeroSlider slides={SLIDES} />
+                  <img
+                    src="/images/home/home-hero-stringing-workbench.png"
+                    alt="도깨비테니스 스트링 교체 작업대"
+                    className="h-64 w-full rounded-[1.5rem] object-cover bp-sm:h-80 bp-md:h-96 bp-lg:h-full bp-lg:min-h-[26rem] bp-lg:max-h-[34rem]"
+                    loading="eager"
+                    decoding="async"
+                  />
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-1.5 bp-sm:gap-2">
                   {[
@@ -806,6 +781,15 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               align="center"
               className="mb-8 bp-sm:mb-10"
             />
+            <div className="mb-5 overflow-hidden rounded-[1.5rem] border border-border/60 bg-background shadow-sm bp-sm:mb-6 bp-md:mb-8">
+              <img
+                src="/images/home/home-stringing-setup-clean.png"
+                alt="테니스 라켓과 스트링 교체 도구"
+                className="h-36 w-full object-cover bp-sm:h-44 bp-md:h-56"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
             <div className="grid gap-3 bp-sm:gap-4 bp-md:grid-cols-2 bp-lg:grid-cols-4">
               <div className={processStepSurfaceClass}>
                 <div className="relative mb-4">
@@ -966,6 +950,15 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             padding="sm"
             className="mb-8 border-border/60 bg-muted/20 bp-sm:mb-10"
           >
+            <div className="mb-4 overflow-hidden rounded-2xl border border-border/60 bg-background shadow-sm bp-sm:mb-5">
+              <img
+                src="/images/home/home-string-product-showcase.png"
+                alt="테니스 스트링 상품 쇼케이스"
+                className="h-32 w-full object-cover bp-sm:h-44 bp-md:h-52"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
             <div className="-mx-3 mb-4 flex gap-3 overflow-x-auto px-3 pb-2 [scrollbar-width:none] bp-sm:mx-0 bp-sm:grid bp-sm:grid-cols-3 bp-sm:px-0 bp-sm:pb-0 bp-sm:[scrollbar-width:auto] [&::-webkit-scrollbar]:hidden bp-sm:[&::-webkit-scrollbar]:block">
               {[
                 ["입문자 추천", "부드러운 타구감과 쉬운 컨트롤", "추천 상품 보기"],
