@@ -117,6 +117,12 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
   );
   const searchParams = useSearchParams();
   const returnTo = searchParams.get("return"); // 예: /mypage?tab=applications
+  const defaultReturnTo = `/mypage?${new URLSearchParams({
+    tab: "orders",
+    flowType: "application",
+    flowId: applicationId,
+    from: "orders",
+  }).toString()}`;
 
   if (error && !data) {
     return (
@@ -172,23 +178,23 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
           <ResultState
             status="info"
             icon={<AlertTriangle className="h-5 w-5" />}
-            title="운송장 입력이 필요하지 않은 신청입니다"
-            description="현재 신청은 고객 라켓 입고가 필요하지 않은 유형입니다. 운송장 입력 없이 진행됩니다."
+            title="라켓 발송이 필요하지 않은 신청입니다"
+            description="이 신청은 매장 보유 라켓 또는 대여 라켓 기준으로 처리되어 사용자가 별도로 라켓을 발송하지 않아도 됩니다."
             actions={
               <>
                 <Button
                   variant="outline"
-                  onClick={() => router.back()}
+                  onClick={() => router.push(returnTo ?? defaultReturnTo)}
                   className="w-full sm:w-auto"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   돌아가기
                 </Button>
                 <Button
-                  onClick={() => router.push(`/mypage/applications/${applicationId}`)}
+                  onClick={() => router.push(defaultReturnTo)}
                   className="w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
                 >
-                  신청 상세로 이동
+                  마이페이지로 돌아가기
                 </Button>
               </>
             }
@@ -259,17 +265,6 @@ function SelfShipForm({
     flowId: applicationId,
     from: "orders",
   }).toString()}`;
-
-  // 신청서로 돌아갈 URL (order/rental/single 문맥 유지)
-  const applyUrl = useMemo(() => {
-    const orderId = application?.orderId;
-    if (orderId) return `/services/apply?orderId=${orderId}`;
-
-    const rentalId = application?.rentalId;
-    if (rentalId) return `/services/apply?rentalId=${rentalId}`;
-
-    return "/services/apply?mode=single";
-  }, [application]);
 
   const [form, setForm] = useState<FormValues>(initial);
   useEffect(() => {
@@ -387,14 +382,13 @@ function SelfShipForm({
     <div className="min-h-screen bg-muted/30 py-8 md:py-12">
       <div className="mx-auto max-w-3xl px-4">
         <header className="mb-6 text-center md:mb-8">
-          <p className="mb-2 text-ui-body-sm font-semibold text-primary">라켓 발송 정보</p>
           <h1 className="text-ui-page-title font-semibold tracking-tight text-foreground sm:text-ui-page-title-lg">
-            {isLoading ? "라켓 발송 정보" : isEdit ? "라켓 발송 정보 수정" : "라켓 발송 정보 등록"}
+            {isLoading ? "라켓 발송 운송장 등록" : isEdit ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}
           </h1>
           <p className="mt-3 text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body">
             {isLoading
-              ? "배송 정보를 불러오는 중입니다."
-              : "매장으로 보내는 라켓의 택배사와 운송장 번호를 입력해 주세요."}
+              ? "라켓 발송 정보를 불러오는 중입니다."
+              : "매장으로 보내는 보유 라켓의 택배사와 송장번호를 입력해주세요."}
           </p>
         </header>
 
@@ -419,8 +413,8 @@ function SelfShipForm({
           </PublicSurface>
 
           <SummaryCard
-            eyebrow="배송 정보"
-            title="운송장 정보"
+            eyebrow="라켓 발송 정보"
+            title="라켓 발송 운송장"
             description="택배사 선택 → 송장번호 입력 → 필요한 경우 발송일과 메모 입력 후 저장해 주세요."
             contentClassName="space-y-4 md:space-y-6"
           >
@@ -573,12 +567,12 @@ function SelfShipForm({
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => confirmLeaveIfDirty(() => router.push(applyUrl))}
+                    onClick={() => confirmLeaveIfDirty(() => router.push(returnTo ?? defaultReturnTo))}
                     disabled={submitting}
                     className="flex-1 h-12 text-ui-body border-border hover:bg-background dark:hover:bg-card"
                   >
                     <Clock className="w-4 h-4 mr-2" />
-                    나중에 등록할게요
+                    마이페이지로 돌아가기
                   </Button>
                   <Button
                     type="submit"
