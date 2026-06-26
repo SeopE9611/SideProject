@@ -236,7 +236,7 @@ export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGu
         };
       }
       if (!item.hasOutboundTracking) {
-        return { stage: "출고 준비 단계", nextAction: "출고 운송장 등록 필요" };
+        return { stage: "인도 준비 단계", nextAction: "인도 운송장 등록 필요" };
       }
       return {
         stage: "수령 확인 대기 단계",
@@ -378,8 +378,8 @@ export function inferNextActionForOperationGroup(items: OpsLikeItem[]): NextActi
       !rental.hasOutboundTracking
     ) {
       return {
-        stage: "대여+교체 · 출고 준비 단계",
-        nextAction: "대여 라켓 출고 정보 등록 필요",
+        stage: "대여+교체 · 인도 준비 단계",
+        nextAction: "대여 라켓 인도 정보 등록 필요",
       };
     }
     if (

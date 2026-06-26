@@ -49,8 +49,8 @@ const FILTER_LABELS: Record<ActionFilter, string> = {
   all: "전체",
   paid: "결제 확인",
   out: "수령 확인 / 대여 시작",
-  "outbound-shipping-set": "출고 운송장 등록",
-  "outbound-shipping-updated": "출고 운송장 수정",
+  "outbound-shipping-set": "인도 운송장 등록",
+  "outbound-shipping-updated": "인도 운송장 수정",
   returned: "반납 완료",
   "cancel-request": "취소 요청",
   "cancel-approved": "취소 승인",
@@ -77,7 +77,7 @@ function getActionMeta(action: HistoryItem["action"], isVisitPickup: boolean) {
     case "outbound-shipping-set":
     case "outbound-shipping-updated":
       return {
-        label: action === "outbound-shipping-set" ? "출고 운송장 등록" : "출고 운송장 수정",
+        label: action === "outbound-shipping-set" ? "인도 운송장 등록" : "인도 운송장 수정",
         Icon: Truck,
         wrapperClasses: "border border-border bg-muted dark:bg-card",
         iconClasses: "text-foreground",
@@ -167,10 +167,10 @@ function getDescription(item: HistoryItem, isVisitPickup: boolean) {
   }
 
   if (item.action === "outbound-shipping-set") {
-    return `${actor}가 출고 운송장을 등록했습니다.`;
+    return `${actor}가 인도 운송장을 등록했습니다.`;
   }
   if (item.action === "outbound-shipping-updated") {
-    return `${actor}가 출고 운송장을 수정했습니다.`;
+    return `${actor}가 인도 운송장을 수정했습니다.`;
   }
   if (item.action === "out") {
     return isVisitPickup

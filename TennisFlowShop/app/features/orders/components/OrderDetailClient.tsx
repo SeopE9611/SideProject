@@ -1259,7 +1259,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                               className="flex flex-col gap-2 rounded-md border border-border/60 bg-card/70 p-2 sm:flex-row sm:items-center sm:justify-between"
                             >
                               <p className="text-ui-body-sm text-foreground/80">
-                                신청번호: <span className="font-mono text-foreground">{doc.id}</span>
+                                교체 작업 ID: <span className="font-mono text-foreground">{doc.id}</span>
                               </p>
                               <div className="flex items-center gap-2">
                                 <Button
