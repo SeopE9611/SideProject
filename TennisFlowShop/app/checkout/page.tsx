@@ -334,15 +334,15 @@ function FinalPaymentConfirmCard({
           결제 완료 후 교체서비스 신청 정보가 함께 접수됩니다.
         </p>
       )}
-      <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-3 text-ui-label text-foreground">
-        {paymentMethod === "bank-transfer" && (
+      {paymentMethod === "bank-transfer" && (
+        <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-3 text-ui-label text-foreground">
           <p className="text-muted-foreground">
             입금 계좌:{" "}
             {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.account ?? selectedBank}
             <span className="mt-1 block">입금자명: {depositor.trim() || "미입력"}</span>
           </p>
-        )}
-      </div>
+        </div>
+      )}
     </SummaryCard>
   );
 }
