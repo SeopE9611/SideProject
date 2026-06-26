@@ -15,7 +15,13 @@ type Slide = {
 const normalizeImageSrc = (src: string) =>
   src.startsWith("http") || src.startsWith("/") ? src : `/${src}`;
 
-export default function HeroSlider({ slides }: { slides: Slide[] }) {
+export default function HeroSlider({
+  slides,
+  slideClassName = "h-[200px] bp-sm:h-[240px] bp-md-only:h-[340px] bp-lg:h-[520px]",
+}: {
+  slides: Slide[];
+  slideClassName?: string;
+}) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "start" });
 
   useEffect(() => {
@@ -36,7 +42,7 @@ export default function HeroSlider({ slides }: { slides: Slide[] }) {
           {slides.map((s, i) => {
             const imageSrc = normalizeImageSrc(s.img);
             const body = (
-              <div className="relative h-[200px] /* ≤575 */ bp-sm:h-[240px] /* 576~767 */ bp-md-only:h-[340px] /* 768~1199 */ bp-lg:h-[520px] /* ≥1200 */ w-full flex-[0_0_100%] select-none">
+              <div className={`relative w-full flex-[0_0_100%] select-none ${slideClassName}`}>
                 {/* 원본 비율 유지 + 잘림 방지(cover → contain)
                     - grid place-items-center: 중앙 정렬
                     - max-w/max-h: 작은 이미지를 억지로 확대하지 않음(원본 크기 느낌 유지) */}
