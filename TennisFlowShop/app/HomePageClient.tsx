@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import HeroSlider from "@/components/HeroSlider";
 import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PublicSurface } from "@/components/public/PublicSurface";
@@ -139,6 +140,27 @@ const PROMO_BANNERS: PromoBanner[] = (() => {
     return [];
   }
 })();
+
+const HOME_HERO_SLIDES = [
+  {
+    img: "/images/home/home-hero-stringing-workbench.png",
+    alt: "도깨비테니스 스트링 교체 작업대",
+    href: "/services/apply",
+    caption: "스트링 교체 신청",
+  },
+  {
+    img: "/images/home/home-stringing-setup-clean.png",
+    alt: "테니스 라켓과 스트링 교체 도구",
+    href: "/services",
+    caption: "스트링 교체 프로세스",
+  },
+  {
+    img: "/images/home/home-string-product-showcase.png",
+    alt: "테니스 스트링 상품 쇼케이스",
+    href: "/products",
+    caption: "추천 스트링",
+  },
+];
 
 const surfaceCardInteractiveClass =
   "rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg";
@@ -624,13 +646,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </div>
               <div className="border-t border-border/60 bg-muted/20 p-3 bp-sm:p-4 bp-lg:border-l bp-lg:border-t-0">
                 <div className="overflow-hidden rounded-[1.5rem] border border-border/60 bg-background shadow-sm">
-                  <img
-                    src="/images/home/home-hero-stringing-workbench.png"
-                    alt="도깨비테니스 스트링 교체 작업대"
-                    className="h-64 w-full rounded-[1.5rem] object-cover bp-sm:h-80 bp-md:h-96 bp-lg:h-full bp-lg:min-h-[26rem] bp-lg:max-h-[34rem]"
-                    loading="eager"
-                    decoding="async"
-                  />
+                  <div className="[&>section>div]:mx-0 [&>section>div]:rounded-[1.5rem]">
+                    <HeroSlider slides={HOME_HERO_SLIDES} />
+                  </div>
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-1.5 bp-sm:gap-2">
                   {[
@@ -961,13 +979,18 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             </div>
             <div className="-mx-3 mb-4 flex gap-3 overflow-x-auto px-3 pb-2 [scrollbar-width:none] bp-sm:mx-0 bp-sm:grid bp-sm:grid-cols-3 bp-sm:px-0 bp-sm:pb-0 bp-sm:[scrollbar-width:auto] [&::-webkit-scrollbar]:hidden bp-sm:[&::-webkit-scrollbar]:block">
               {[
-                ["입문자 추천", "부드러운 타구감과 쉬운 컨트롤", "추천 상품 보기"],
-                ["스핀 추천", "회전량을 높이고 싶은 플레이어에게", "스핀형 보기"],
-                ["내구성 추천", "자주 끊어지는 사용자에게", "내구성형 보기"],
-              ].map(([title, description, cta]) => (
+                [
+                  "입문자 추천",
+                  "부드러운 타구감과 쉬운 컨트롤",
+                  "추천 상품 보기",
+                  "/products?comfort=80&control=70#product-list",
+                ],
+                ["스핀 추천", "회전량을 높이고 싶은 플레이어에게", "스핀형 보기", "/products?spin=80#product-list"],
+                ["내구성 추천", "자주 끊어지는 사용자에게", "내구성형 보기", "/products?durability=80#product-list"],
+              ].map(([title, description, cta, href]) => (
                 <Link
                   key={title}
-                  href="/products"
+                  href={href}
                   className="group min-w-[12.5rem] rounded-2xl border border-border/60 bg-background/80 p-3 shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:border-primary/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-w-0 bp-sm:p-4"
                 >
                   <p className="text-ui-card-title font-semibold text-foreground">{title}</p>
