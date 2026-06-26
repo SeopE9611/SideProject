@@ -18,9 +18,11 @@ const normalizeImageSrc = (src: string) =>
 export default function HeroSlider({
   slides,
   slideClassName = "h-[200px] bp-sm:h-[240px] bp-md-only:h-[340px] bp-lg:h-[520px]",
+  imageClassName = "object-contain",
 }: {
   slides: Slide[];
   slideClassName?: string;
+  imageClassName?: string;
 }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "start" });
 
@@ -51,7 +53,7 @@ export default function HeroSlider({
                     src={imageSrc}
                     alt={s.alt ?? `slide-${i + 1}`}
                     fill
-                    className="object-contain"
+                    className={imageClassName}
                     priority={i === 0}
                     sizes="(max-width: 575px) calc(100vw - 24px), (max-width: 767px) calc(100vw - 32px), (max-width: 1199px) calc(100vw - 48px), 1200px"
                   />

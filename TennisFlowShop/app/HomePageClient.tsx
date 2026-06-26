@@ -617,7 +617,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   Dokkaebi Tennis Stringing & Gear
                 </span>
                 <h1 className="mt-4 max-w-3xl break-keep text-ui-page-title font-semibold tracking-tight text-foreground bp-sm:mt-5 bp-md:text-ui-page-title-lg">
-                  내 라켓에 맞는 스트링 교체와 테니스 용품을 한 번에
+                  내 라켓에 맞는 스트링 교체와 테니스 용품을 <span className="whitespace-nowrap">한 번에</span>
                 </h1>
                 <p className="mt-4 max-w-2xl break-keep text-ui-body leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">
                   스트링 선택부터 교체 접수, 패키지 이용까지 도깨비테니스에서 편하게
@@ -645,7 +645,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               <div className="border-t border-border/60 bg-muted/20 p-3 bp-sm:p-4 bp-lg:border-l bp-lg:border-t-0">
                 <div className="overflow-hidden rounded-[1.5rem] border border-border/60 bg-background shadow-sm">
                   <div className="[&>section>div]:mx-0 [&>section>div]:rounded-[1.5rem]">
-                    <HeroSlider slides={HOME_HERO_SLIDES} slideClassName="h-[200px] bp-sm:h-[230px] bp-md-only:h-[320px] bp-lg:h-[360px]" />
+                    <HeroSlider
+                      slides={HOME_HERO_SLIDES}
+                      slideClassName="h-[200px] bp-sm:h-[230px] bp-md-only:h-[320px] bp-lg:h-[360px]"
+                      imageClassName="object-cover"
+                    />
                   </div>
                 </div>
                 <div className="mt-3 grid grid-cols-3 gap-1.5 bp-sm:gap-2">
@@ -1076,6 +1080,15 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             padding="sm"
             className="mb-8 border-border/60 bg-muted/20 bp-sm:mb-10"
           >
+            <div className="mb-4 overflow-hidden rounded-2xl border border-border/60 bg-background shadow-sm bp-sm:mb-5">
+              <img
+                src="/images/home/home-racket-section-showcase.png"
+                alt="도깨비 인증 중고 라켓 쇼케이스"
+                className="h-32 w-full object-cover bp-sm:h-40 bp-md:h-48"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
             <div className="flex justify-center">
               <div ref={racketBrandRailRef} className={brandRailClass}>
                 <button
