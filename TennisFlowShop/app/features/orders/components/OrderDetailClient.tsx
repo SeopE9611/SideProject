@@ -1269,9 +1269,9 @@ export default function OrderDetailClient({ orderId }: Props) {
             >
               <CardContent className="p-4">
                 <div className="grid gap-2 md:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] md:items-center md:gap-4">
-                  <p className={cn(adminTypography.panelTitle, "text-primary")}>현재 처리 단계</p>
+                  <p className={cn(adminTypography.panelTitle, "text-primary")}>연결 처리 단계</p>
                   <p className="text-ui-body-sm text-foreground/80">
-                    현재 단계:{" "}
+                    연결 단계:{" "}
                     <span className="font-semibold text-foreground">{orderGuide.stage}</span>
                   </p>
                   <p className="text-ui-body-sm text-foreground md:text-right">
@@ -1777,7 +1777,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 <CardTitle className="flex items-center">
                   <Truck className="mr-2 h-5 w-5 text-primary" />
                   {isShippingManagedByApplication
-                    ? "3. 교체서비스 수거·인도 정보"
+                    ? "고객 발송·반송 정보"
                     : getOrderDeliveryInfoTitle(orderDetail.shippingInfo)}
                 </CardTitle>
                 {isShippingManagedByApplication && (
