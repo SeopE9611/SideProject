@@ -1971,6 +1971,8 @@ export async function handleAdminOperationsGet(req: Request) {
   );
 
   const operationGroupCounts = {
+    // 대표 업무 합계는 주문·대여·단독 교체서비스 기준입니다.
+    // 패키지 구매는 결제 확인 항목으로 별도 집계해 UI에서 분리해서 보여줍니다.
     totalRepresentativeTasks: allGroups.filter((group) => group.anchorKind !== "package_purchase")
       .length,
     // 현재 목록 화면에서는 실제 오늘 생성/변경 기준이 아니라 남은 대표 업무 큐 기준입니다.

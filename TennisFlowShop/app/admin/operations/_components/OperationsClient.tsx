@@ -107,8 +107,8 @@ function amountMeaningText(item: OpItem) {
 const PAGE_COPY = {
   title: "운영 업무",
   description:
-    "대표 주문·대여·단독 교체서비스 신청을 기준으로 오늘 처리할 운영 업무를 확인합니다.",
-  dailyTodoTitle: "오늘 처리할 대표 업무",
+    "대표 업무와 결제·정산 확인 항목을 구분해 남은 운영 업무를 확인합니다.",
+  dailyTodoTitle: "남은 대표 업무",
   dailyTodoLabels: {
     urgent: "긴급",
     caution: "확인 필요",
@@ -325,7 +325,7 @@ const QUICK_VIEWS: Array<{
   {
     key: "today",
     label: "대표 업무",
-    description: "오늘 우선 확인해야 할 업무를 확인합니다.",
+    description: "주문·대여·단독 교체서비스 기준 대표 업무를 확인합니다.",
   },
   {
     key: "cancelRequests",
@@ -1074,9 +1074,10 @@ export default function OperationsClient() {
         tone: "warning" as const,
       },
       {
-        title: "패키지 결제/활성화",
+        title: "패키지 결제 확인",
         count: taskCounts?.packagePaymentCheck ?? 0,
-        description: "패키지 주문의 입금/결제 확인 후 이용권을 활성화하세요.",
+        description:
+          "대표 업무 합계에는 포함하지 않고, 확인 항목으로 별도 집계합니다. 입금/결제 확인 후 이용권을 활성화하세요.",
         action: "패키지 보기",
         onClick: () => {
           router.push("/admin/packages?preset=payment-check");
@@ -1266,11 +1267,11 @@ export default function OperationsClient() {
 
         <Section className="mt-5">
           <SectionHeader
-            title="오늘 처리할 대표 업무"
-            description="주문·대여·단독 교체서비스 신청을 대표 업무로 보고, 결제·배송·교체 작업은 처리 신호로 확인합니다."
+            title="대표 업무와 확인 항목"
+            description="대표 업무 합계는 주문·대여·단독 교체서비스 기준입니다. 패키지 결제 확인은 확인 항목으로 별도 집계됩니다."
             aside={
               <p className="max-w-full break-words text-sm leading-relaxed text-muted-foreground sm:max-w-[360px] sm:text-right">
-                상단 카드는 대표 업무 흐름을 먼저 보여주며, 검색과 필터는 아래 목록에 적용됩니다.
+                상단 합계와 확인 항목 카드는 집계 기준이 다르며, 검색과 필터는 아래 목록에 적용됩니다.
               </p>
             }
           />
@@ -1309,7 +1310,7 @@ export default function OperationsClient() {
         <details className="mt-3 rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-sm">
           <summary className="cursor-pointer font-semibold text-foreground">
             <span className="inline-flex items-center gap-2">
-              <span>오늘 업무 처리 순서</span>
+              <span>대표 업무·확인 항목 처리 순서</span>
               <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass("brand"))}>
                 권장 처리 순서
               </Badge>
@@ -1320,7 +1321,8 @@ export default function OperationsClient() {
           </p>
           <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs leading-relaxed text-muted-foreground">
             <li>취소 요청을 먼저 확인합니다.</li>
-            <li>결제 확인 필요 항목을 처리합니다.</li>
+            <li>대표 업무의 결제 확인 필요 항목을 처리합니다.</li>
+            <li>패키지 결제 확인 항목은 패키지 목록에서 별도로 처리합니다.</li>
             <li>배송/반송 정보 미등록 항목을 처리합니다.</li>
             <li>통합 주문의 교체 작업 단계와 단독 교체서비스 신청 상태를 확인합니다.</li>
             <li>라켓 대여 반납/연체를 확인합니다.</li>
@@ -1334,13 +1336,13 @@ export default function OperationsClient() {
             <div>
               <h2 className={adminTypography.panelTitle}>오늘 업무 마감 요약</h2>
               <p className="text-xs text-muted-foreground">
-                오늘 상태 변경 참고치와 남은 대표 업무를 구분해서 확인합니다.
+                오늘 상태 변경 참고치, 남은 대표 업무, 별도 확인 항목을 구분해서 확인합니다.
               </p>
             </div>
             <Badge variant="outline">{dailySummary?.date ?? "오늘"}</Badge>
           </div>
 
-          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          <div className="mt-3 grid gap-2 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
             <Card className="border-border bg-background/70 shadow-none">
               <CardHeader className="p-3 pb-2">
                 <CardTitle className="text-sm font-semibold">오늘 상태 변경 참고</CardTitle>
@@ -1373,22 +1375,38 @@ export default function OperationsClient() {
               <CardHeader className="p-3 pb-2">
                 <CardTitle className="text-sm font-semibold">남은 대표 업무</CardTitle>
                 <CardDescription className="text-2xl font-bold text-foreground">
-                  {dailySummaryValue(dailySummary?.operationGroupCounts?.totalRepresentativeTasks ?? representativeTotalCount)}
+                  {dailySummaryValue(
+                    dailySummary?.operationGroupCounts?.totalRepresentativeTasks ??
+                      representativeTotalCount,
+                  )}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-3 pt-0 text-xs leading-relaxed text-muted-foreground">
                 {dailySummary
                   ? [
                       dailySummaryInlineValue("취소", dailySummary.remaining.cancelRequests),
-                      dailySummaryInlineValue("하위 결제", dailySummary.remaining.paymentCheck),
-                      dailySummaryInlineValue("패키지", dailySummary.remaining.packagePaymentCheck),
-                      dailySummaryInlineValue("하위 배송", dailySummary.remaining.shippingMissing),
-                      dailySummaryInlineValue("하위 교체", dailySummary.remaining.stringingWork),
+                      dailySummaryInlineValue("결제", dailySummary.remaining.paymentCheck),
+                      dailySummaryInlineValue("배송", dailySummary.remaining.shippingMissing),
+                      dailySummaryInlineValue("교체", dailySummary.remaining.stringingWork),
                       dailySummaryInlineValue("반납", dailySummary.remaining.rentalDue),
                     ].join(" · ")
                   : dailySummaryError
                     ? "요약을 불러오지 못했습니다."
                     : "불러오는 중..."}
+              </CardContent>
+            </Card>
+
+            <Card className="border-border bg-background/70 shadow-none">
+              <CardHeader className="p-3 pb-2">
+                <CardTitle className="text-sm font-semibold">확인 항목</CardTitle>
+                <CardDescription className="text-2xl font-bold text-foreground">
+                  {dailySummaryValue(
+                    dailySummary?.remaining.packagePaymentCheck ?? taskCounts?.packagePaymentCheck,
+                  )}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-3 pt-0 text-xs leading-relaxed text-muted-foreground">
+                패키지 결제 확인은 대표 업무 합계에서 제외하고 별도 집계합니다.
               </CardContent>
             </Card>
 
