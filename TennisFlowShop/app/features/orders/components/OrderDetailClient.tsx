@@ -71,7 +71,7 @@ import {
   type TrackingSWRFetcherError,
 } from "@/lib/fetchers/trackingSWRFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { adminSurface } from "@/components/admin/admin-typography";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
 import { stringColorLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
@@ -715,6 +715,15 @@ export default function OrderDetailClient({ orderId }: Props) {
       : []),
   ]);
   const lowerPayment = String(orderDetail.paymentStatus ?? "").toLowerCase();
+  const isPaymentCompletedLike =
+    lowerPayment.includes("완료") ||
+    lowerPayment.includes("paid") ||
+    lowerPayment.includes("approved") ||
+    lowerPayment.includes("done");
+  const paymentStatusDisplayLabel =
+    isLinkedStringingOrder && isPaymentCompletedLike
+      ? "주문 결제에 포함됨"
+      : orderDetail.paymentStatus || "결제 상태 미확인";
   const needsPaymentCheck =
     lowerPayment.includes("대기") ||
     lowerPayment.includes("입금") ||
@@ -754,7 +763,7 @@ export default function OrderDetailClient({ orderId }: Props) {
               tone: "info",
               title: "주문에 포함된 교체서비스 확인",
               description:
-                "결제는 주문에서 처리되었습니다. 장착 정보와 요청사항은 연결 신청서에서 확인하세요.",
+                "결제는 주문에서 처리되었습니다. 장착 정보와 요청사항은 교체 작업 정보에서 확인하세요.",
             }
           : orderGuide.stage || isDoneLikeStatus
             ? {
@@ -776,7 +785,7 @@ export default function OrderDetailClient({ orderId }: Props) {
       show: isCancelRequested || Boolean(cancelInfo),
     },
     {
-      label: "장착 정보 보기",
+      label: "교체 작업 정보 보기",
       href: "#admin-order-linked",
       show: linkedDocs.length > 0 || Boolean(orderDetail.stringingApplicationId),
     },
@@ -910,7 +919,7 @@ export default function OrderDetailClient({ orderId }: Props) {
     // 배송정보/운송장은 신청서에서 단일 관리 → 신청서 배송등록 페이지로 이동
     if (isShippingManagedByApplication && linkedStringingAppId) {
       showSuccessToast(
-        "이 주문은 교체서비스 신청서와 연결되어 있어 라켓 발송 정보는 신청서에서 관리합니다.",
+        "이 주문은 교체서비스가 포함되어 있어 고객 발송 라켓과 반송 운송장은 교체 작업에서 관리합니다.",
       );
       router.push(`/admin/applications/stringing/${linkedStringingAppId}/shipping-update`);
       return;
@@ -996,7 +1005,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         ? "방문 수령 정보 수정하기"
                         : "방문 수령 정보 등록하기"
                     : isShippingManagedByApplication
-                      ? "라켓 발송 정보 확인"
+                      ? "고객 발송 라켓 확인"
                       : hasShippingInfoRegistered
                         ? "배송 정보 수정하기"
                         : "배송 정보 등록하기"}
@@ -1050,7 +1059,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
                   return (
                     <Badge variant={pay.variant} className={summaryBadgeClass}>
-                      {orderDetail.paymentStatus}
+                      {paymentStatusDisplayLabel}
                     </Badge>
                   );
                 })()}
@@ -1065,7 +1074,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 </Badge>
                 {isShippingManagedByApplication && (
                   <p className="mt-1 text-ui-body-sm text-foreground/75">
-                    출고/배송 정보는 연결 신청서에서 관리
+                    고객 발송·반송 정보는 교체 작업에서 관리
                   </p>
                 )}
               </div>
@@ -1118,7 +1127,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                     확인하세요.
                   </span>
                   <span className="block">
-                    연결 신청서에서 라켓, 선택 스트링, 게이지, 색상, 텐션, 요청사항을 확인하세요.
+                    교체 작업 정보에서 라켓, 선택 스트링, 게이지, 색상, 텐션, 요청사항을 확인하세요.
                   </span>
                 </CardDescription>
               </CardHeader>
@@ -1129,9 +1138,9 @@ export default function OrderDetailClient({ orderId }: Props) {
             <CardHeader className="pb-3">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <CardTitle className="text-ui-body font-semibold">우선 처리 안내</CardTitle>
-                  <CardDescription className="mt-1 text-ui-body-sm text-foreground/75">
-                    {nextActionGuide.title}
+                  <CardTitle className={adminTypography.panelTitle}>다음 작업</CardTitle>
+                  <CardDescription className={cn("mt-1", adminTypography.meta)}>
+                    현재 단계와 바로 처리할 액션만 요약합니다.
                   </CardDescription>
                 </div>
                 <Badge variant="outline" className="w-fit">
@@ -1147,15 +1156,20 @@ export default function OrderDetailClient({ orderId }: Props) {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="rounded-xl border border-border/60 bg-background/70 p-4">
-                <p className="text-ui-body font-semibold text-foreground">{nextActionGuide.title}</p>
-                <p className="mt-1 text-ui-body-sm leading-relaxed text-foreground/80">
-                  {nextActionGuide.description}
+                <p className={adminTypography.panelTitle}>현재 단계</p>
+                <p className={cn("mt-1", adminTypography.bodyStrong)}>
+                  {orderGuide.stage ||
+                    getOrderStatusLabelForDisplay(localStatus, orderDetail.shippingInfo)}
+                </p>
+                <p className={cn("mt-2", adminTypography.panelTitle)}>다음 작업</p>
+                <p className={cn("mt-1 leading-relaxed", adminTypography.body)}>
+                  {nextActionGuide.title} · {nextActionGuide.description}
                 </p>
               </div>
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-ui-body-sm font-semibold text-foreground">권장 작업</p>
-                <p className="mt-1 text-ui-label text-muted-foreground">
-                  현재 상태에서 관리자가 먼저 확인하면 좋은 작업입니다.
+                <p className={adminTypography.panelTitle}>주요 액션</p>
+                <p className={cn("mt-1", adminTypography.meta)}>
+                  결제대기 되돌리기 같은 역방향 변경은 일반 다음 작업으로 노출하지 않습니다.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
@@ -1176,32 +1190,32 @@ export default function OrderDetailClient({ orderId }: Props) {
                   ))}
                 </div>
               </div>
-              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-ui-body-sm font-semibold text-foreground">처리 정보</p>
-                <div className="mt-2 grid gap-1.5 text-ui-label leading-relaxed text-muted-foreground sm:grid-cols-2">
-                  <p>
-                    <span className="font-medium text-foreground">담당자:</span> 미지정
-                  </p>
-                  <p>
-                    <span className="font-medium text-foreground">마지막 처리자:</span> 이력에
-                    처리자 정보 없음
-                  </p>
-                  <p>
-                    <span className="font-medium text-foreground">마지막 처리:</span>{" "}
-                    {latestProcessingHistory?.status ?? "기록 없음"}
-                  </p>
-                  <p>
-                    <span className="font-medium text-foreground">처리 시각:</span>{" "}
-                    {latestProcessingDate}
-                  </p>
-                  {latestProcessingHistory?.description ? (
-                    <p className="sm:col-span-2">
-                      <span className="font-medium text-foreground">내용:</span>{" "}
-                      {latestProcessingHistory.description}
+              {latestProcessingHistory ? (
+                <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+                  <p className={adminTypography.panelTitle}>최근 처리 이력</p>
+                  <div
+                    className={cn(
+                      "mt-2 grid gap-1.5 leading-relaxed sm:grid-cols-2",
+                      adminTypography.meta,
+                    )}
+                  >
+                    <p>
+                      <span className="font-medium text-foreground">마지막 처리:</span>{" "}
+                      {latestProcessingHistory.status ?? "기록 없음"}
                     </p>
-                  ) : null}
+                    <p>
+                      <span className="font-medium text-foreground">처리 시각:</span>{" "}
+                      {latestProcessingDate}
+                    </p>
+                    {latestProcessingHistory.description ? (
+                      <p className="sm:col-span-2">
+                        <span className="font-medium text-foreground">내용:</span>{" "}
+                        {latestProcessingHistory.description}
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
-              </div>
+              ) : null}
               <div className="rounded-lg border border-border/60 bg-background/70 p-3">
                 <p className="text-ui-body-sm font-semibold text-foreground">재고 운영 정보</p>
                 <div className="mt-2 space-y-1.5 text-ui-label leading-relaxed text-muted-foreground">
@@ -1245,17 +1259,6 @@ export default function OrderDetailClient({ orderId }: Props) {
                   ) : null}
                 </div>
               </div>
-              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                <p className="text-ui-body-sm font-semibold text-foreground">주문 처리 체크리스트</p>
-                <ul className="mt-2 grid gap-1.5 text-ui-label leading-relaxed text-muted-foreground sm:grid-cols-2">
-                  <li>□ 결제 상태 확인</li>
-                  <li>□ 배송지/수령 방식 확인</li>
-                  <li>□ 운송장 또는 방문 수령 정보 확인</li>
-                  <li>□ 배송/수령 상태 변경</li>
-                  <li>□ 취소 요청이 있으면 환불 수단 확인</li>
-                  <li>□ 처리 이력 확인</li>
-                </ul>
-              </div>
             </CardContent>
           </Card>
 
@@ -1266,7 +1269,7 @@ export default function OrderDetailClient({ orderId }: Props) {
             >
               <CardContent className="p-4">
                 <div className="grid gap-2 md:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] md:items-center md:gap-4">
-                  <p className="text-ui-body-sm font-semibold text-primary">1. 진행 상태 관리</p>
+                  <p className={cn(adminTypography.panelTitle, "text-primary")}>현재 처리 단계</p>
                   <p className="text-ui-body-sm text-foreground/80">
                     현재 단계:{" "}
                     <span className="font-semibold text-foreground">{orderGuide.stage}</span>
@@ -1301,16 +1304,15 @@ export default function OrderDetailClient({ orderId }: Props) {
             <div className="mb-6">
               <Card className={adminSurface.card}>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-ui-body">4. 연결 신청서 · 장착 정보</CardTitle>
-                  <CardDescription>
-                    주문에 포함된 교체서비스 신청서입니다. 상품 정보와 분리해 장착 정보와 요청사항을
-                    확인하세요.
+                  <CardTitle className={adminTypography.panelTitle}>교체 작업 정보</CardTitle>
+                  <CardDescription className={adminTypography.meta}>
+                    통합 주문에 포함된 하위 작업 정보입니다. 장착 정보와 요청사항만 빠르게 확인하세요.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-4 lg:grid-cols-2">
                     <div className="rounded-lg border border-border/60 bg-background/40 p-3">
-                      <p className="mb-2 text-ui-body-sm font-semibold text-foreground">연결 신청서</p>
+                      <p className={cn("mb-2", adminTypography.panelTitle)}>교체 작업 문서</p>
                       <div className="space-y-2">
                         {linkedDocs.map((doc) => (
                           <div
@@ -1338,7 +1340,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                               </Button>
                               <Link href={doc.href}>
                                 <Button type="button" variant="outline" size="sm">
-                                  신청서 세부정보 보기
+                                  교체 작업 상세 보기
                                 </Button>
                               </Link>
                             </div>
@@ -1350,12 +1352,12 @@ export default function OrderDetailClient({ orderId }: Props) {
 
                     <div className="rounded-lg border border-border/60 bg-background/40 p-3">
                       <p className="mb-2 text-ui-body-sm font-semibold text-foreground">
-                        최신 신청 접수 요약
+                        최신 작업 접수 요약
                       </p>
                       <div className="grid gap-2 text-ui-body-sm sm:grid-cols-2">
                         {latestLinkedApplication?.status && (
                           <p>
-                            <span className="text-muted-foreground">신청 상태:</span>{" "}
+                            <span className="text-muted-foreground">작업 상태:</span>{" "}
                             <span className="font-medium text-foreground">
                               {latestLinkedApplication.status}
                             </span>
@@ -1430,9 +1432,11 @@ export default function OrderDetailClient({ orderId }: Props) {
                         )}
                         {typeof latestLinkedApplication?.totalPrice === "number" && (
                           <p>
-                            <span className="text-muted-foreground">금액:</span>{" "}
+                            <span className="text-muted-foreground">교체 비용:</span>{" "}
                             <span className="font-semibold text-foreground">
-                              {formatCurrency(latestLinkedApplication.totalPrice)}
+                              {isLinkedStringingOrder
+                                ? "주문 결제에 포함됨"
+                                : formatCurrency(latestLinkedApplication.totalPrice)}
                             </span>
                           </p>
                         )}
@@ -1474,7 +1478,7 @@ export default function OrderDetailClient({ orderId }: Props) {
             <CardHeader className="bg-muted/30 border-b pb-3">
               <div className="flex items-center justify-between gap-3">
                 <CardTitle>
-                  {isLinkedStringingOrder ? "2. 결제·취소/환불" : "주문 상태 관리"}
+                  {isLinkedStringingOrder ? "결제·취소·환불" : "주문 처리 정보"}
                 </CardTitle>
                 {(() => {
                   const st = getOrderStatusBadgeSpec(localStatus);
@@ -1660,13 +1664,13 @@ export default function OrderDetailClient({ orderId }: Props) {
           </Card>
 
           <div className="grid gap-4 xl:grid-cols-12">
-            {/* 고객 정보 */}
+            {/* 고객 및 수령 정보 */}
             <Card className={cn("overflow-hidden xl:col-span-6", adminSurface.tableCard)}>
               <CardHeader className="bg-muted/30 border-b pb-3">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <User className="h-5 w-5 text-foreground" />
-                    <span>고객 정보</span>
+                    <span>고객 및 수령 정보</span>
                   </div>
                   {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
                 </CardTitle>
@@ -1778,8 +1782,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 </CardTitle>
                 {isShippingManagedByApplication && (
                   <CardDescription>
-                    고객의 라켓 수거·인도에 필요한 정보를 연결 신청서 기준으로 확인하거나
-                    등록합니다. 진행 상태 변경은 연결 진행 단계에서 처리하세요.
+                    고객 발송 라켓, 입고 확인, 작업 완료 후 반송 운송장을 교체 작업 기준으로 확인하거나 등록합니다.
                   </CardDescription>
                 )}
               </CardHeader>
@@ -1791,7 +1794,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                       <div className="space-y-2">
                         <p className="font-medium">
                           이 주문은 교체서비스 신청서와 연결되어 있어{" "}
-                          {isVisitPickup ? "수령 준비 정보" : "라켓 발송 정보"}를 신청서에서
+                          {isVisitPickup ? "방문 접수·인도 정보" : "고객 발송 라켓 정보"}를 교체 작업에서
                           관리합니다.
                         </p>
                         <div className="flex items-center space-x-3 p-3 bg-card/70 dark:bg-card/30 rounded-lg border border-border/60 dark:border-border">
@@ -1804,7 +1807,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         {shouldShowLinkedSelfShipSummary && latestLinkedApplication && (
                           <div className="rounded-lg border border-border/60 bg-card/70 p-3 text-ui-body-sm dark:bg-card/30">
                             <p className="font-medium text-foreground">
-                              라켓 발송 상태:{" "}
+                              고객 발송 운송장:{" "}
                               {latestLinkedApplication.shippingInfo?.selfShip?.trackingNo
                                 ? "등록됨"
                                 : "미등록"}
@@ -1819,7 +1822,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         <div className="flex flex-wrap gap-2">
                           <Button size="sm" variant="outline" className="bg-transparent" asChild>
                             <Link href={`/admin/applications/stringing/${linkedStringingAppId}`}>
-                              신청서 세부정보 보기
+                              교체 작업 상세 보기
                             </Link>
                           </Button>
 
@@ -1835,12 +1838,12 @@ export default function OrderDetailClient({ orderId }: Props) {
                             <Truck className="mr-2 h-4 w-4" />
                             {isVisitPickup
                               ? "수령 준비 정보 등록/수정"
-                              : "라켓 발송 정보 확인/수정"}
+                              : "고객 발송·반송 정보 확인"}
                           </Button>
                         </div>
 
                         <p className="text-ui-label text-foreground/75">
-                          이 영역은 연결 신청서의 수거·인도 정보를 확인하거나 등록하는 곳입니다.
+                          이 영역은 고객 발송 라켓과 작업 완료 후 반송 정보를 확인하거나 등록하는 곳입니다.
                           주문과 신청서의 진행 상태는 연결 진행 단계에서 함께 변경하세요.
                         </p>
                       </div>
@@ -2017,7 +2020,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                             const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
                             return (
                               <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
-                                {orderDetail.paymentStatus}
+                                {paymentStatusDisplayLabel}
                               </Badge>
                             );
                           })()}
@@ -2220,7 +2223,7 @@ export default function OrderDetailClient({ orderId }: Props) {
             <CardHeader className="border-b bg-muted/30">
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5 text-primary" />
-                <span>주문 이력</span>
+                <span>처리 이력</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 lg:p-5">
