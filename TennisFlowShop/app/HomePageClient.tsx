@@ -616,13 +616,13 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           router.push("/login?tab=register");
         }}
       />
-      {/* 상단 배너 + 히어로 하단 배너 */}
+      {/* 상단 통합 랜딩 히어로 + 히어로 하단 배너 */}
       <SiteContainer variant="wide" className="px-0">
-        <HeroSlider slides={SLIDES} />
-        <section className="mx-3 mt-4 bp-sm:mx-4 bp-sm:mt-5 bp-md:mx-6 bp-md:mt-6 bp-lg:mx-0">
+        <section className="mx-3 pt-3 bp-sm:mx-4 bp-sm:pt-4 bp-md:mx-6 bp-md:pt-6 bp-lg:mx-0">
           <div className="overflow-hidden rounded-[2rem] border border-border/70 bg-card shadow-sm">
-            <div className="grid gap-0 bp-lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
-              <div className="p-6 bp-sm:p-8 bp-md:p-10">
+            <div className="grid gap-0 bp-lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] bp-lg:items-stretch">
+              <div className="flex flex-col justify-between p-5 bp-sm:p-8 bp-md:p-10">
+                <div>
                 <span className="inline-flex rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-ui-label font-semibold text-primary">
                   Dokkaebi Tennis Stringing & Gear
                 </span>
@@ -641,24 +641,35 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     <Link href="/products">스트링 둘러보기</Link>
                   </Button>
                 </div>
+                </div>
+                <div className="mt-6 grid grid-cols-3 gap-2 bp-sm:mt-8 bp-sm:gap-3">
+                  {["방문·택배 접수", "스트링/텐션 선택", "패키지 이용 가능"].map((point) => (
+                    <div
+                      key={point}
+                      className="rounded-2xl border border-border/60 bg-background/80 px-3 py-3 text-center text-ui-label font-semibold text-foreground shadow-sm bp-sm:px-4"
+                    >
+                      {point}
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="grid border-t border-border/60 bg-muted/20 p-4 bp-sm:grid-cols-3 bp-sm:p-5 bp-lg:grid-cols-1 bp-lg:border-l bp-lg:border-t-0">
-                {[
-                  ["01", "스트링 선택", "브랜드와 소재를 비교하고 장착 가능한 스트링을 고릅니다."],
-                  ["02", "교체 접수", "방문·택배 방식과 텐션 정보를 입력해 접수합니다."],
-                  ["03", "전문 장착", "작업 후 검수까지 진행하고 수령 안내를 드립니다."],
-                ].map(([number, title, description]) => (
-                  <div
-                    key={number}
-                    className="rounded-2xl border border-border/60 bg-background/80 p-4 shadow-sm bp-sm:min-h-36"
-                  >
-                    <span className="text-ui-label font-semibold text-primary">{number}</span>
-                    <p className="mt-2 text-ui-card-title font-semibold text-foreground">{title}</p>
-                    <p className="mt-1.5 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
-                      {description}
-                    </p>
-                  </div>
-                ))}
+              <div className="border-t border-border/60 bg-muted/20 p-3 bp-sm:p-4 bp-lg:border-l bp-lg:border-t-0">
+                <div className="overflow-hidden rounded-[1.5rem] border border-border/60 bg-background shadow-sm">
+                  <HeroSlider slides={SLIDES} />
+                </div>
+                <div className="mt-3 grid gap-2 bp-sm:grid-cols-3">
+                  {[
+                    ["01", "선택", "브랜드·소재 비교"],
+                    ["02", "접수", "방문·택배 입력"],
+                    ["03", "장착", "작업 후 검수"],
+                  ].map(([number, title, description]) => (
+                    <div key={number} className="rounded-2xl border border-border/60 bg-background/80 p-3">
+                      <span className="text-ui-label font-semibold text-primary">{number}</span>
+                      <p className="mt-1 text-ui-body-sm font-semibold text-foreground">{title}</p>
+                      <p className="mt-0.5 break-keep text-ui-label text-muted-foreground">{description}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -741,21 +752,30 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             align="center"
             className="mb-8 bp-sm:mb-10"
           />
-          <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4 bp-sm:gap-4">
+          <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4 bp-lg:grid-rows-2 bp-sm:gap-4">
             {SITUATIONS.map((situation) => {
               const Icon = situation.icon;
+              const isPrimary = situation.key === "broken";
 
               return (
                 <Link
                   key={situation.key}
                   href={situation.href}
-                  className="group flex min-h-40 flex-col justify-between rounded-3xl border border-border/60 bg-card p-5 shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:border-primary/30 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20"
+                  className={cn(
+                    "group flex flex-col justify-between rounded-3xl border border-border/60 bg-card p-5 shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:border-primary/30 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20",
+                    isPrimary
+                      ? "min-h-56 bp-lg:col-span-2 bp-lg:row-span-2 bp-lg:p-7"
+                      : "min-h-36",
+                  )}
                 >
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
-                    <Icon className="h-5 w-5" />
+                  <span className={cn(
+                    "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:bg-primary group-hover:text-primary-foreground",
+                    isPrimary ? "h-14 w-14" : "h-12 w-12",
+                  )}>
+                    <Icon className={cn(isPrimary ? "h-6 w-6" : "h-5 w-5")} />
                   </span>
                   <span>
-                    <span className="block break-keep text-ui-card-title font-semibold text-foreground">
+                    <span className={cn("block break-keep font-semibold text-foreground", isPrimary ? "text-ui-section-title" : "text-ui-card-title")}>
                       {situation.label}
                     </span>
                     <span className="mt-2 block break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
@@ -943,6 +963,18 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             padding="sm"
             className="mb-8 border-border/60 bg-muted/20 bp-sm:mb-10"
           >
+            <div className="mb-5 grid gap-3 bp-md:grid-cols-3">
+              {[
+                ["입문자 추천", "부드러운 타구감과 쉬운 컨트롤"],
+                ["스핀 추천", "회전량을 높이고 싶은 플레이어에게"],
+                ["내구성 추천", "자주 끊어지는 사용자에게"],
+              ].map(([title, description]) => (
+                <div key={title} className="rounded-2xl border border-border/60 bg-background/80 p-4 shadow-sm">
+                  <p className="text-ui-card-title font-semibold text-foreground">{title}</p>
+                  <p className="mt-1.5 break-keep text-ui-body-sm text-muted-foreground">{description}</p>
+                </div>
+              ))}
+            </div>
             <div className="flex justify-center">
               <div ref={stringBrandRailRef} className={brandRailClass}>
                 <button
@@ -1054,33 +1086,46 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               좌우 스와이프하거나 마우스 휠로 더 많은 브랜드를 볼 수 있어요.
             </p>
           </PublicSurface>
-          <HorizontalProducts
-            title="중고 라켓"
-            subtitle={
-              activeBrand === "all" ? "도깨비테니스 중고" : `${racketBrandLabel(activeBrand)} 중고`
-            }
-            items={usedRacketsItems.slice(0, 10)}
-            showMoreCard={hasMoreRacketProducts}
-            moreHref={activeBrand === "all" ? "/rackets" : `/rackets?brand=${activeBrand}`}
-            firstPageSlots={4}
-            moveMoreToSecondWhen5Plus={true}
-            loading={!shouldLoadRackets || usedRacketsLoading}
-            error={usedRacketsError}
-            onRetry={() => loadUsedRackets(activeBrand)}
-            emptyTitle={
-              activeBrand === "all"
-                ? "검수된 중고 라켓을 준비 중입니다"
-                : "해당 브랜드 중고 라켓이 없습니다"
-            }
-            emptyDescription={
-              activeBrand === "all"
-                ? "상태 확인이 끝난 라켓부터 순차적으로 소개해 드릴게요."
-                : "다른 브랜드를 선택해 보세요."
-            }
-            errorTitle="중고 라켓을 불러오지 못했어요"
-            errorDescription="네트워크/서버 상태를 확인 후 다시 시도해 주세요."
-            showHeader={false}
-          />
+          {shouldLoadRackets && !usedRacketsLoading && !usedRacketsError && usedRacketsItems.length === 0 ? (
+            <PublicSurface variant="muted" className="border-border/60 bg-muted/20 text-center">
+              <p className="text-ui-section-title font-semibold text-foreground">
+                {activeBrand === "all" ? "검수된 중고 라켓을 준비 중입니다." : "해당 브랜드 중고 라켓이 없습니다."}
+              </p>
+              <p className="mx-auto mt-3 max-w-xl break-keep text-ui-body text-muted-foreground">
+                {activeBrand === "all"
+                  ? "상태 확인이 끝난 라켓부터 순차적으로 소개해 드릴게요."
+                  : "다른 브랜드를 선택해 보세요."}
+              </p>
+            </PublicSurface>
+          ) : (
+            <HorizontalProducts
+              title="중고 라켓"
+              subtitle={
+                activeBrand === "all" ? "도깨비테니스 중고" : `${racketBrandLabel(activeBrand)} 중고`
+              }
+              items={usedRacketsItems.slice(0, 10)}
+              showMoreCard={hasMoreRacketProducts}
+              moreHref={activeBrand === "all" ? "/rackets" : `/rackets?brand=${activeBrand}`}
+              firstPageSlots={4}
+              moveMoreToSecondWhen5Plus={true}
+              loading={!shouldLoadRackets || usedRacketsLoading}
+              error={usedRacketsError}
+              onRetry={() => loadUsedRackets(activeBrand)}
+              emptyTitle={
+                activeBrand === "all"
+                  ? "검수된 중고 라켓을 준비 중입니다"
+                  : "해당 브랜드 중고 라켓이 없습니다"
+              }
+              emptyDescription={
+                activeBrand === "all"
+                  ? "상태 확인이 끝난 라켓부터 순차적으로 소개해 드릴게요."
+                  : "다른 브랜드를 선택해 보세요."
+              }
+              errorTitle="중고 라켓을 불러오지 못했어요"
+              errorDescription="네트워크/서버 상태를 확인 후 다시 시도해 주세요."
+              showHeader={false}
+            />
+          )}
         </SiteContainer>
       </section>
 
