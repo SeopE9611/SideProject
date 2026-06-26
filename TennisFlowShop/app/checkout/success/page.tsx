@@ -275,7 +275,7 @@ export default async function CheckoutSuccessPage({
                   { status: { $nin: submittedStatusExclusions } },
                 ],
               },
-              { projection: { _id: 1 }, sort: { createdAt: -1, _id: -1 } },
+              { projection: { _id: 1, inboundRequired: 1, needsInboundTracking: 1, shippingInfo: 1, collectionMethod: 1, status: 1, orderId: 1, rentalId: 1 }, sort: { createdAt: -1, _id: -1 } },
             ),
         })
       : null;
@@ -295,7 +295,7 @@ export default async function CheckoutSuccessPage({
                   _id: new ObjectId(orderStringingApplicationId),
                   status: { $nin: submittedStatusExclusions },
                 },
-                { projection: { _id: 1 } },
+                { projection: { _id: 1, inboundRequired: 1, needsInboundTracking: 1, shippingInfo: 1, collectionMethod: 1, status: 1, orderId: 1, rentalId: 1 } },
               ),
           })
         : null;
@@ -313,16 +313,81 @@ export default async function CheckoutSuccessPage({
     const isGuest = !isLoggedIn && (!order.userId || order.guest === true);
     const shouldShowApplyCta = withStringService && !hasSubmittedApplication;
     const isVisitPickup = isVisitPickupOrder(order.shippingInfo);
-    const nextActionStatusLabel = withStringService
-      ? "주문 상태와 교체서비스 진행 상황"
-      : "주문 상태와 배송/수령 진행 상황";
-    const nextActionGuidance = withStringService
-      ? isVisitPickup
-        ? "매장 방문 전 주문번호와 신청 상태를 확인해주세요."
-        : "택배 발송이 필요한 경우 라켓을 포장해 발송하고 운송장 정보를 등록해주세요."
-      : isVisitPickup
-        ? "매장 방문 전 주문번호와 수령 안내를 확인해주세요."
-        : "배송이 시작되면 마이페이지에서 배송 상태를 확인할 수 있습니다.";
+    const representativeApp = (orderLinkedSubmittedApp ?? latestSubmittedByOrderApp) as any;
+    const orderHasPurchasedRacket = Array.isArray(order.items)
+      ? order.items.some((it: any) => ["racket", "used_racket"].includes(String(it?.kind ?? "")))
+      : false;
+    const inboundRequired =
+      typeof representativeApp?.inboundRequired === "boolean"
+        ? Boolean(representativeApp.inboundRequired)
+        : representativeApp?.rentalId
+          ? false
+          : representativeApp?.orderId
+            ? !orderHasPurchasedRacket
+            : withStringService && !isVisitPickup;
+    const needsInboundTracking =
+      typeof representativeApp?.needsInboundTracking === "boolean"
+        ? Boolean(representativeApp.needsInboundTracking)
+        : inboundRequired && representativeApp?.collectionMethod !== "visit";
+    const hasTracking = Boolean(
+      representativeApp?.shippingInfo?.selfShip?.trackingNumber ||
+        representativeApp?.shippingInfo?.selfShip?.invoiceNumber ||
+        representativeApp?.shippingInfo?.trackingNumber,
+    );
+    const applicationShippingHref = representativeStringingApplicationId
+      ? `/services/applications/${representativeStringingApplicationId}/shipping?return=${encodeURIComponent(orderDetailHref)}`
+      : appHref;
+    const progressGuide = (() => {
+      if (withStringService && !hasSubmittedApplication) {
+        return {
+          status: "교체서비스 신청서 작성 필요",
+          todo: "장착 정보를 입력해 교체서비스 신청을 완료해주세요.",
+          next: "신청서가 접수되면 주문과 연결해 교체서비스 진행 상태를 안내합니다.",
+          primaryLabel: "교체서비스 신청서 작성하기",
+          primaryHref: appHref,
+        };
+      }
+      if (withStringService && needsInboundTracking && !hasTracking) {
+        return {
+          status: "라켓 발송 대기",
+          todo: "보유 라켓을 매장으로 보내고 라켓 발송 운송장을 등록해주세요.",
+          next: "매장에서 입고 확인 후 교체 작업을 진행합니다.",
+          primaryLabel: "라켓 발송 운송장 등록하기",
+          primaryHref: applicationShippingHref,
+        };
+      }
+      if (withStringService && needsInboundTracking && hasTracking) {
+        return {
+          status: "매장 입고 확인 중",
+          todo: "등록한 운송장 기준으로 매장 도착 확인을 기다려주세요.",
+          next: "매장에서 입고 확인 후 교체 작업을 진행합니다.",
+          primaryLabel: "마이페이지에서 진행상태 확인",
+          primaryHref: orderDetailHref,
+        };
+      }
+      if (withStringService && inboundRequired === false) {
+        return {
+          status: "매장 작업 대기",
+          todo: "사용자가 별도로 라켓을 발송하지 않아도 됩니다.",
+          next: orderHasPurchasedRacket
+            ? "매장에서 구매한 라켓에 스트링을 장착해 발송합니다."
+            : "매장에서 라켓에 스트링을 장착해 준비합니다.",
+          primaryLabel: "마이페이지에서 진행상태 확인",
+          primaryHref: orderDetailHref,
+        };
+      }
+      return {
+        status: isVisitPickup ? "결제 완료" : "결제 완료",
+        todo: isVisitPickup
+          ? "수령 준비가 완료되면 방문 수령 안내를 확인해주세요."
+          : "현재 추가로 진행할 작업은 없습니다.",
+        next: isVisitPickup
+          ? "매장에서 상품 수령 준비 후 수령정보 확인이 가능하도록 안내합니다."
+          : "배송이 시작되면 배송정보를 확인할 수 있습니다.",
+        primaryLabel: "마이페이지에서 진행상태 확인",
+        primaryHref: orderDetailHref,
+      };
+    })();
     const showDeliveryOnlyFields = shouldShowDeliveryOnlyFields(order.shippingInfo);
 
     let stringingSummary: StringingSummary | null = null;
@@ -536,7 +601,7 @@ export default async function CheckoutSuccessPage({
               status="success"
               icon={<CheckCircle className="h-6 w-6" />}
               title="주문이 완료되었습니다"
-              description="주문해주셔서 감사합니다. 아래에서 주문 번호, 결제 상태와 다음 단계 안내를 확인해주세요."
+              description={withStringService ? "주문과 연결된 교체서비스 진행 상태를 함께 확인해주세요." : "주문 번호와 결제 상태, 다음 단계를 확인해주세요."}
               className="py-8 sm:py-10"
             />
           </SiteContainer>
@@ -618,27 +683,26 @@ export default async function CheckoutSuccessPage({
                   </div>
 
                   <div className="mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4 md:p-5">
-                    <h3 className="text-ui-card-title font-semibold text-foreground">다음 행동 안내</h3>
-                    <ul className="mt-3 space-y-2 text-ui-body-sm leading-relaxed text-muted-foreground">
-                      <li>• {nextActionStatusLabel}은 마이페이지에서 확인할 수 있습니다.</li>
-                      {withStringService && (
-                        <li>
-                          • 교체서비스 신청도 함께 접수되었습니다. 수령/방문 안내에 따라 라켓을
-                          준비해주세요.
-                        </li>
-                      )}
-                      <li>• {nextActionGuidance}</li>
-                    </ul>
+                    <h3 className="text-ui-card-title font-semibold text-foreground">현재 상태와 다음 단계</h3>
+                    <div className="mt-3 grid gap-3 text-ui-body-sm leading-relaxed md:grid-cols-3">
+                      <div>
+                        <p className="font-semibold text-foreground">현재 상태</p>
+                        <p className="mt-1 text-muted-foreground">{progressGuide.status}</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground">지금 할 일</p>
+                        <p className="mt-1 text-muted-foreground">{progressGuide.todo}</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground">다음 단계</p>
+                        <p className="mt-1 text-muted-foreground">{progressGuide.next}</p>
+                      </div>
+                    </div>
                     <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                       <Button asChild className="min-h-11 flex-1" wrap="responsive">
-                        <Link href="/mypage">마이페이지에서 확인하기</Link>
+                        <Link href={progressGuide.primaryHref}>{progressGuide.primaryLabel}</Link>
                       </Button>
-                      <Button
-                        asChild
-                        variant="outline"
-                        className="min-h-11 flex-1"
-                        wrap="responsive"
-                      >
+                      <Button asChild variant="outline" className="min-h-11 flex-1" wrap="responsive">
                         <Link href="/support">고객센터 문의하기</Link>
                       </Button>
                     </div>
@@ -740,7 +804,7 @@ export default async function CheckoutSuccessPage({
                             </p>
                           )}
                           <p className="text-muted-foreground">
-                            결제가 정상 승인되어 주문이 완료되었습니다.
+                            결제가 정상 승인되었습니다. 추가 입금은 필요하지 않습니다.
                           </p>
                         </div>
                       ) : isNicePayment ? (
@@ -772,7 +836,7 @@ export default async function CheckoutSuccessPage({
                             </p>
                           )}
                           <p className="text-muted-foreground">
-                            결제가 정상 승인되어 주문이 완료되었습니다.
+                            결제가 정상 승인되었습니다. 추가 입금은 필요하지 않습니다.
                           </p>
                         </div>
                       ) : order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (

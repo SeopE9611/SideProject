@@ -21,7 +21,6 @@ import clientPromise from "@/lib/mongodb";
 import { formatKoreanPhone } from "@/lib/phone";
 import jwt from "jsonwebtoken";
 import {
-  ArrowRight,
   Award,
   Calendar,
   CheckCircle,
@@ -367,6 +366,56 @@ export default async function StringServiceSuccessPage(props: Props) {
     (application as any)?.paymentInfo?.provider === "nicepay" ||
     (application as any)?.paymentMethod === "nicepay";
 
+  const isOrderBasedApplication = Boolean(order);
+  const isRentalBasedApplication = Boolean(rental);
+  const mypageFlowHref = `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(String(application._id))}&from=orders`;
+  const shippingRegisterHref = `/services/applications/${applicationId}/shipping?return=${encodeURIComponent(mypageFlowHref)}`;
+  const progressGuide = (() => {
+    if (isRentalBasedApplication) {
+      return {
+        status: "대여 라켓 준비 중",
+        todo: "사용자가 별도로 라켓을 발송하지 않아도 됩니다.",
+        next: "매장에서 대여 라켓에 스트링을 장착해 준비합니다.",
+        primaryLabel: "마이페이지에서 진행상태 확인",
+        primaryHref: mypageFlowHref,
+      };
+    }
+    if (isOrderBasedApplication && inboundRequired === false) {
+      return {
+        status: "매장 작업 대기",
+        todo: "사용자가 별도로 라켓을 발송하지 않아도 됩니다.",
+        next: "매장에서 구매한 라켓에 스트링을 장착해 준비합니다.",
+        primaryLabel: "마이페이지에서 진행상태 확인",
+        primaryHref: mypageFlowHref,
+      };
+    }
+    if (needsInboundTracking) {
+      return {
+        status: "접수 완료",
+        todo: "보유 라켓을 매장으로 보내고 라켓 발송 운송장을 등록해주세요.",
+        next: "매장에서 입고 확인 후 교체 작업을 진행합니다.",
+        primaryLabel: "라켓 발송 운송장 등록하기",
+        primaryHref: shippingRegisterHref,
+      };
+    }
+    if (isVisit) {
+      return {
+        status: "방문 접수 완료",
+        todo: "예약/희망 일시에 맞춰 매장 방문을 준비해주세요.",
+        next: "매장에서 방문 접수 후 교체 작업을 진행합니다.",
+        primaryLabel: "마이페이지에서 진행상태 확인",
+        primaryHref: mypageFlowHref,
+      };
+    }
+    return {
+      status: "접수 완료",
+      todo: "현재 추가로 진행할 작업은 없습니다.",
+      next: "매장에서 신청 내용을 확인한 뒤 다음 진행 상태를 안내합니다.",
+      primaryLabel: "마이페이지에서 진행상태 확인",
+      primaryHref: mypageFlowHref,
+    };
+  })();
+
   // 로그인 여부 확인
   const refreshToken = cookieStore.get("refreshToken")?.value;
   let isLoggedIn = false;
@@ -388,8 +437,8 @@ export default async function StringServiceSuccessPage(props: Props) {
 
           <ResultState
             status="success"
-            title="신청이 완료되었습니다!"
-            description="도깨비테니스에서 확인 후 빠르게 연락드리겠습니다"
+            title="신청이 완료되었습니다"
+            description="현재 상태와 다음 단계, 필요한 작업을 확인해주세요."
             icon={<CheckCircle className="h-6 w-6" />}
             className="relative py-0 sm:py-4"
           >
@@ -399,35 +448,6 @@ export default async function StringServiceSuccessPage(props: Props) {
             </div>
           </ResultState>
 
-          {needsInboundTracking && (
-            <div className="mt-8 md:mt-10 max-w-2xl mx-auto px-4">
-              <PublicSurface variant="default" className="text-center">
-                <div className="flex items-center justify-center gap-3 mb-3 md:mb-4">
-                  <div className="rounded-full border border-border bg-secondary p-2 text-foreground">
-                    <Package className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="text-ui-section-title font-semibold text-foreground">운송장 등록 안내</h3>
-                </div>
-                <p className="text-muted-foreground mb-3 md:mb-4 leading-relaxed">
-                  <span className="font-semibold">라켓을 발송하신 뒤</span> 아래 버튼을 눌러
-                  운송장을 등록해 주세요.
-                  <br />
-                  <span className="text-ui-body-sm text-muted-foreground">
-                    (건너뛰고 마이페이지 → 신청내역 탭에서 등록도 가능합니다)
-                  </span>
-                </p>
-                <Button variant="default" className="font-semibold shadow-sm" asChild>
-                  <Link
-                    href={`/services/applications/${applicationId}/shipping`}
-                    className="flex items-center gap-2"
-                  >
-                    운송장 등록하기
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </PublicSurface>
-            </div>
-          )}
         </div>
 
         <div className="container mx-auto px-4 py-8 md:py-16">
@@ -445,10 +465,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                     >
                       <Link
                         data-cy="service-success-application-link"
-                        href={`/mypage?${new URLSearchParams({
-                          tab: "applications",
-                          applicationId: String(application._id),
-                        }).toString()}`}
+                        href={mypageFlowHref}
                       >
                         <FileText className="h-5 w-5 mr-2" />
                         신청 내역 보기
@@ -474,11 +491,8 @@ export default async function StringServiceSuccessPage(props: Props) {
                         <FileText className="h-6 w-6 mr-3 text-primary" />
                         신청 정보
                       </h2>
-                      <p className="text-ui-card-title-lg mt-2 text-muted-foreground">
-                        신청 번호:{" "}
-                        <span className="font-mono font-semibold text-primary">
-                          {application._id.toString()}
-                        </span>
+                      <p className="mt-2 text-ui-body-sm text-muted-foreground">
+                        신청 번호: <span className="font-mono">{application._id.toString()}</span>
                       </p>
                     </div>
                     <div className="text-right">
@@ -492,21 +506,24 @@ export default async function StringServiceSuccessPage(props: Props) {
 
                 <div className="p-4 md:p-8">
                   <div className="mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4 md:p-5">
-                    <h3 className="text-ui-body-lg font-semibold text-foreground">다음 단계</h3>
-                    <p className="mt-2 text-ui-body-sm leading-relaxed text-muted-foreground">
-                      {needsInboundTracking
-                        ? "라켓을 포장해 발송한 뒤 운송장 정보를 등록해주세요. 등록하면 진행 확인이 더 빨라집니다."
-                        : isVisit
-                          ? "선택한 방문 방식에 따라 매장에 방문해주세요. 방문 전 신청 상태를 확인해주세요."
-                          : "접수 상태는 마이페이지에서 확인할 수 있습니다. 추가 안내가 필요한 경우 연락드릴게요."}
-                    </p>
+                    <h3 className="text-ui-body-lg font-semibold text-foreground">현재 상태와 다음 단계</h3>
+                    <div className="mt-3 grid gap-3 text-ui-body-sm leading-relaxed md:grid-cols-3">
+                      <div>
+                        <p className="font-semibold text-foreground">현재 상태</p>
+                        <p className="mt-1 text-muted-foreground">{progressGuide.status}</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground">지금 할 일</p>
+                        <p className="mt-1 text-muted-foreground">{progressGuide.todo}</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground">다음 단계</p>
+                        <p className="mt-1 text-muted-foreground">{progressGuide.next}</p>
+                      </div>
+                    </div>
                     <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                       <Button asChild className="flex-1">
-                        <Link
-                          href={`/mypage?${new URLSearchParams({ tab: "applications", applicationId: String(application._id) }).toString()}`}
-                        >
-                          마이페이지에서 확인하기
-                        </Link>
+                        <Link href={progressGuide.primaryHref}>{progressGuide.primaryLabel}</Link>
                       </Button>
                       <Button asChild variant="outline" className="flex-1">
                         <Link href="/support">고객센터 문의하기</Link>
@@ -584,7 +601,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                         <p className="mt-2 text-ui-body-sm text-foreground">패키지 적용으로 입금 불필요</p>
                       ) : isNicePayment ? (
                         <p className="mt-2 text-ui-body-sm text-foreground">
-                          카드/간편결제 완료 · 별도 입금 불필요
+                          카드/간편결제 완료 · 추가 입금 불필요
                         </p>
                       ) : null}
                     </div>
@@ -824,7 +841,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                           카드/간편결제가 완료되었습니다.
                         </p>
                         <p className="mt-2 text-ui-body-sm text-foreground">
-                          별도 입금은 필요하지 않으며, 결제 완료 후 신청이 접수되었습니다.
+                          결제가 정상 승인되었습니다. 추가 입금은 필요하지 않습니다.
                         </p>
                       </div>
                     </div>
