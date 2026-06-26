@@ -1040,8 +1040,8 @@ export default function OperationsClient() {
   }, [activeFilterCount]);
 
   const taskCounts =
-    navigationSummary?.operationSignalCounts ??
     data?.operationSignalCounts ??
+    navigationSummary?.operationSignalCounts ??
     navigationSummary?.operationTaskCounts;
   const groupCounts = navigationSummary?.operationGroupCounts ?? data?.operationGroupCounts;
   const representativeTodayCount =
@@ -1112,9 +1112,9 @@ export default function OperationsClient() {
         tone: "warning" as const,
       },
       {
-        title: "연결 오류/확인 필요",
+        title: "연결 오류 확인",
         count: taskCounts?.linkedReview ?? 0,
-        description: "주문·교체서비스·대여 연결 문서와 표시된 확인 사유를 점검하세요.",
+        description: "주문·교체서비스·대여 연결 상태가 맞지 않는 업무를 점검하세요.",
         action: "바로 처리",
         onClick: () => applyQuickView("linkedReview"),
         tone: "warning" as const,
@@ -2131,7 +2131,7 @@ export default function OperationsClient() {
                                         className={cn(badgeBase, badgeSizeSm, "border-warning/40 text-warning")}
                                         title={toOperatorSentence(signal.description)}
                                       >
-                                        하위 신호 · {toOperatorSentence(signal.title)}
+                                        확인 항목 · {toOperatorSentence(signal.title)}
                                       </Badge>
                                     ))}
                                   </div>
@@ -2599,7 +2599,7 @@ export default function OperationsClient() {
                                 className={cn(badgeBase, badgeSizeSm, "border-warning/40 text-warning")}
                                 title={toOperatorSentence(signal.description)}
                               >
-                                하위 신호 · {toOperatorSentence(signal.title)}
+                                확인 항목 · {toOperatorSentence(signal.title)}
                               </Badge>
                             ))}
                           </div>

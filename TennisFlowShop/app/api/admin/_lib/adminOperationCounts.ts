@@ -448,6 +448,8 @@ const standaloneStringingNeedsActionFilter: Filter<Document> = {
 };
 
 export function toOperationSignalCounts(taskCounts: OperationTaskCounts): OperationSignalCounts {
+  // navigation-summary의 operationSignalCounts는 전역 raw task count 기반 참고치입니다.
+  // /admin/operations 목록 화면의 그룹 기준 신호 수는 목록 API 응답을 우선 사용합니다.
   return { ...taskCounts };
 }
 
@@ -465,6 +467,7 @@ export async function countAdminOperationGroupCounts(db: Db): Promise<OperationG
 
   return {
     totalRepresentativeTasks: orders + rentals + standaloneStringing,
+    // 실제 오늘 생성/변경 기준이 아니라 현재 남은 대표 업무 기준입니다.
     todayRepresentativeTasks: orders + rentals + standaloneStringing,
   };
 }
