@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { adminTypography } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
 
 type AdminTone = "neutral" | "success" | "warning" | "danger" | "info";
@@ -55,7 +56,7 @@ export default function AdminTaskCard({
       size="sm"
       variant="outline"
       wrap="responsive"
-      className="min-h-8 w-full bg-background/70 py-1 text-sm"
+      className={cn("min-h-8 w-full bg-background/70 py-1", adminTypography.actionLabel)}
       onClick={href ? undefined : onAction}
     >
       {href ? <Link href={href}>{actionLabel}</Link> : actionLabel}
@@ -77,16 +78,16 @@ export default function AdminTaskCard({
                 <Icon className="h-4 w-4" />
               </span>
             ) : null}
-            <CardTitle className="min-w-0 break-words text-sm font-semibold">{title}</CardTitle>
+            <CardTitle className={cn("min-w-0 break-words", adminTypography.panelTitle)}>{title}</CardTitle>
           </div>
-          <span className="shrink-0 whitespace-nowrap text-xl font-bold tabular-nums text-foreground">
+          <span className={cn("shrink-0 whitespace-nowrap", adminTypography.kpiValue)}>
             {typeof count === "number" ? `${count.toLocaleString("ko-KR")}건` : count}
           </span>
         </div>
-        <p className="min-h-[44px] break-words text-sm leading-relaxed text-foreground/80">
+        <p className={cn("min-h-[40px] break-words text-foreground/80", adminTypography.body)}>
           {description}
         </p>
-        {meta ? <div className="text-xs text-foreground/75">{meta}</div> : null}
+        {meta ? <div className={cn("text-foreground/75", adminTypography.meta)}>{meta}</div> : null}
       </CardHeader>
       {action ? <CardContent className="p-3 pt-0">{action}</CardContent> : null}
     </Card>

@@ -590,19 +590,28 @@ function resolvePrimaryActionTarget(group: {
     anchor.kind === "order" && items.some((item) => item.kind === "stringing_application");
 
   if (isIntegratedOrder) {
-    return { href: anchor.href, label: "통합 주문 관리" };
+    return { href: anchor.href, label: "통합 주문 다음 단계" };
   }
 
   if (anchor.kind === "order") {
-    return { href: anchor.href, label: "주문 처리" };
+    const next = anchor.nextAction ?? "";
+    if (next.includes("결제") || next.includes("입금")) return { href: anchor.href, label: "주문 결제 확인" };
+    if (next.includes("배송") || next.includes("운송장")) return { href: anchor.href, label: "배송 정보 등록" };
+    if (anchor.cancel?.status === "requested") return { href: anchor.href, label: "주문 취소 요청 검토" };
+    return { href: anchor.href, label: "주문 상세 확인" };
   }
   if (anchor.kind === "stringing_application") {
-    return { href: anchor.href, label: "신청서 처리" };
+    const next = anchor.nextAction ?? "";
+    if (next.includes("반송") || next.includes("운송장")) return { href: anchor.href, label: "반송 운송장 등록" };
+    return { href: anchor.href, label: "교체 작업 상태 확인" };
   }
   if (anchor.kind === "rental") {
-    return { href: anchor.href, label: "대여 처리" };
+    const next = anchor.nextAction ?? "";
+    if (next.includes("반납")) return { href: anchor.href, label: "대여 반납 확인" };
+    if (next.includes("인도") || next.includes("배송") || next.includes("운송장")) return { href: anchor.href, label: "대여 인도 처리" };
+    return { href: anchor.href, label: "대여 상세 확인" };
   }
-  return { href: anchor.href, label: "패키지 구매 확인" };
+  return { href: anchor.href, label: "패키지 결제 확인" };
 }
 
 function collectReviewReasons(g: { anchor: OpItem; items: OpItem[] }) {
@@ -1061,7 +1070,7 @@ export default function OperationsClient() {
         count: taskCounts?.cancelRequests ?? 0,
         description:
           "고객이 취소를 요청했습니다. 환불 계좌/결제수단을 확인한 뒤 승인 또는 거절하세요.",
-        action: "바로 처리",
+        action: "취소 요청 검토",
         onClick: () => applyQuickView("cancelRequests"),
         tone: "danger" as const,
       },
@@ -1069,7 +1078,7 @@ export default function OperationsClient() {
         title: "결제 확인 신호",
         count: taskCounts?.paymentCheck ?? 0,
         description: "대표 업무 안에서 입금 또는 결제 확인이 필요한 항목을 먼저 확인하세요.",
-        action: "바로 처리",
+        action: "결제 확인 처리",
         onClick: () => applyQuickView("paymentCheck"),
         tone: "warning" as const,
       },
@@ -1078,7 +1087,7 @@ export default function OperationsClient() {
         count: taskCounts?.packagePaymentCheck ?? 0,
         description:
           "대표 업무 합계에는 포함하지 않고, 확인 항목으로 별도 집계합니다. 입금/결제 확인 후 이용권을 활성화하세요.",
-        action: "패키지 보기",
+        action: "패키지 결제 확인",
         onClick: () => {
           router.push("/admin/packages?preset=payment-check");
         },
@@ -1088,7 +1097,7 @@ export default function OperationsClient() {
         title: "배송/반송 정보 신호",
         count: taskCounts?.shippingMissing ?? 0,
         description: "배송지와 수령 방식을 확인하고 운송장, 반송 또는 방문 수령 정보를 등록하세요.",
-        action: "바로 처리",
+        action: "운송장 등록 필요",
         onClick: () => applyQuickView("shippingMissing"),
         tone: "warning" as const,
       },
@@ -1097,7 +1106,7 @@ export default function OperationsClient() {
         count: taskCounts?.stringingWork ?? 0,
         description:
           "통합 주문의 교체 작업 단계와 단독 교체서비스 신청의 진행 상태를 확인하세요.",
-        action: "업무 보기",
+        action: "교체 단계 처리",
         onClick: () => {
           setKind("stringing_application");
           setPage(1);
@@ -1293,7 +1302,7 @@ export default function OperationsClient() {
                 count={taskCounts?.offline ?? 0}
                 description="오프라인 미결제, 패키지 발급 실패, 보정 필요 항목을 확인하세요."
                 tone="warning"
-                actionLabel="바로 처리"
+                actionLabel="미결제 보정"
                 href="/admin/offline/reconciliation"
               />
               <AdminTaskCard
@@ -1301,7 +1310,7 @@ export default function OperationsClient() {
                 count={taskCounts?.academyApplications ?? 0}
                 description="신규 신청, 검토 중, 상담 대기, 등록 확정 대기 건을 확인하세요."
                 tone="info"
-                actionLabel="바로 처리"
+                actionLabel="상담 대기 확인"
                 href="/admin/academy/applications"
               />
             </div>
@@ -2041,8 +2050,7 @@ export default function OperationsClient() {
                       const warnEmphasisClass = warn
                         ? "border-l-2 border-l-warning/60 bg-warning/[0.08]"
                         : "border-l-2 border-l-transparent";
-                      const stickyActionCellClass =
-                        "sticky right-0 z-10 bg-inherit shadow-[-8px_0_12px_-12px_hsl(var(--border))]";
+                      const stickyActionCellClass = "bg-inherit";
 
                       return (
                         <Fragment key={g.key}>
@@ -2065,10 +2073,10 @@ export default function OperationsClient() {
                                   >
                                     {priorityMeta.label}
                                   </Badge>
-                                  <span className="min-w-0 break-words text-xs text-foreground/80">
+                                  <span className={cn("min-w-0 break-words", adminTypography.rowMeta)}>
                                     {priorityMeta.description}
                                   </span>
-                                  <span className="text-xs text-foreground/80">
+                                  <span className={adminTypography.rowMeta}>
                                     {isGroup ? `${g.items.length}건 그룹` : "단일 건"}
                                   </span>
                                 </div>
@@ -2136,8 +2144,8 @@ export default function OperationsClient() {
                                 <p className="text-[15px] font-semibold leading-tight text-foreground line-clamp-1">
                                   {headline}
                                 </p>
-                                <p className="text-[12px] text-foreground/95 line-clamp-1">
-                                  <span className="font-semibold text-primary/90">다음 처리:</span>{" "}
+                                <p className={cn("line-clamp-1 text-foreground/95", adminTypography.bodyStrong)}>
+                                  <span className="font-semibold text-primary/90">다음 작업:</span>{" "}
                                   {nextActionText}
                                 </p>
                                 {g.signals.length > 0 && (
@@ -2292,7 +2300,7 @@ export default function OperationsClient() {
                                     asChild
                                     size="sm"
                                     variant="default"
-                                    className="h-8 min-w-[96px] justify-center px-2.5 text-xs font-semibold shadow-sm"
+                                    className={cn("h-9 min-w-[132px] justify-center px-3 shadow-sm", adminTypography.actionLabel)}
                                     title={groupGuide.nextAction ?? primaryActionTarget.label}
                                   >
                                     <Link href={primaryActionTarget.href} className="text-xs">
@@ -2530,7 +2538,7 @@ export default function OperationsClient() {
                   const anchorCancelQuickSignal = cancelQuickSignalSpec(g.anchor.cancel);
                   return (
                     <Card key={`m:${g.key}`} className="border-border shadow-sm">
-                      <CardContent className="space-y-1.5 p-1.5">
+                      <CardContent className="space-y-3 p-4">
                         <div className="space-y-0.5">
                           <div className="flex flex-wrap items-center gap-1.5">
                             <Badge
@@ -2604,8 +2612,8 @@ export default function OperationsClient() {
                         <p className="text-sm font-semibold text-foreground line-clamp-1">
                           {headline}
                         </p>
-                        <p className="text-[12px] text-foreground line-clamp-1">
-                          <span className="mr-1 font-semibold text-primary">다음 처리:</span>
+                        <p className={cn("line-clamp-2 text-foreground", adminTypography.bodyStrong)}>
+                          <span className="mr-1 font-semibold text-primary">다음 작업:</span>
                           {nextActionText}
                         </p>
                         {g.signals.length > 0 && (

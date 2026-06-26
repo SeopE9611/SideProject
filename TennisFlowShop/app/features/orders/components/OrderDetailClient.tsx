@@ -940,7 +940,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   <Settings className="h-8 w-8 text-primary" />
                 </div>
                 <div className="min-w-0">
-                  <h1 className="break-keep text-ui-section-title font-semibold leading-tight tracking-normal text-foreground sm:text-ui-page-title lg:text-ui-page-title-lg">
+                  <h1 className={adminTypography.pageTitle}>
                     주문 상세 관리
                   </h1>
                   <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-ui-body-sm text-foreground/75">
@@ -1177,7 +1177,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                       <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
                     </Button>
                   ) : null}
-                  {recommendedActions.map((action) => (
+                  {recommendedActions.slice(0, 2).map((action) => (
                     <Button
                       key={action.href}
                       asChild
@@ -1635,7 +1635,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                       </Label>
                       <Textarea
                         id="cancel-reject-memo"
-                        placeholder="예) 이미 출고 준비가 완료되어 취소가 어렵습니다."
+                        placeholder="예) 이미 배송 준비가 완료되어 취소가 어렵습니다."
                         value={rejectMemo}
                         onChange={(event) => setRejectMemo(event.target.value)}
                         disabled={isProcessingCancelRequest}

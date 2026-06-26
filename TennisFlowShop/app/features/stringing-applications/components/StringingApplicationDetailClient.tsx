@@ -1932,9 +1932,9 @@ export default function StringingApplicationDetailClient({
                     {nextActionGuide.description}
                   </p>
                   <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                    <p className="text-ui-body-sm font-semibold text-foreground">권장 작업</p>
+                    <p className={adminTypography.panelTitle}>주요 액션</p>
                     <p className="mt-1 text-ui-label text-muted-foreground">
-                      현재 상태에서 먼저 확인할 처리 참고 순서입니다.
+                      현재 상태에서 바로 확인할 핵심 처리 동선입니다.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
@@ -1977,22 +1977,13 @@ export default function StringingApplicationDetailClient({
                     </div>
                   </div>
                   <div className="rounded-lg border border-border/60 bg-background/70 p-3">
-                    <p className="text-ui-body-sm font-semibold text-foreground">
-                      처리 참고 순서
-                    </p>
-                    <ul className="mt-2 grid gap-1.5 text-ui-label leading-relaxed text-muted-foreground sm:grid-cols-2">
-                      <li>□ 고객 요청사항 확인</li>
-                      <li>□ 스트링/장력 정보 확인</li>
-                      <li>□ 결제 문맥 또는 연결 문서 확인</li>
-                      <li>
-                        □{" "}
-                        {isLinkedApplication
-                          ? "고객 발송·반송 정보 확인"
-                          : "고객 발송·방문 접수·반송 정보 확인"}
-                      </li>
-                      <li>□ 단독 신청서는 이 화면에서, 연결 작업은 부모 상세에서 상태 변경</li>
-                      <li>□ 완료 후 연결 주문/대여 상태 확인</li>
-                    </ul>
+                    <p className={adminTypography.panelTitle}>처리 기준</p>
+                    <div className="mt-2 grid gap-2 text-ui-label leading-relaxed text-muted-foreground sm:grid-cols-2">
+                      <p><span className="font-medium text-foreground">요청 확인</span> · 고객 요청사항과 스트링/장력 정보를 먼저 대조합니다.</p>
+                      <p><span className="font-medium text-foreground">결제 문맥</span> · 단독 결제인지, 주문/대여에 포함된 작업인지 확인합니다.</p>
+                      <p><span className="font-medium text-foreground">물류 정보</span> · {isLinkedApplication ? "고객 발송·반송 정보를 부모 문서와 함께 확인합니다." : "고객 발송·방문 접수·반송 정보를 이 화면에서 확인합니다."}</p>
+                      <p><span className="font-medium text-foreground">상태 변경</span> · 단독 신청서는 이 화면에서, 연결 작업은 부모 상세 흐름을 우선합니다.</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

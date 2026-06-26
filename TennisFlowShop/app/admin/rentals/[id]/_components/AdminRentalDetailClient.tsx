@@ -4,6 +4,7 @@ import AdminRentalHistory from "@/app/admin/rentals/_components/AdminRentalHisto
 import { derivePaymentStatus, deriveShippingStatus } from "@/app/features/rentals/utils/status";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
+import AdminStatusCard from "@/components/admin/AdminStatusCard";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -326,7 +327,7 @@ export default function AdminRentalDetailClient() {
       ? {
           title: "대여 취소 요청을 승인할까요?",
           description:
-            "고객의 대여 취소 요청을 승인합니다. 결제 수단에 따라 PG 취소 또는 환불 처리가 함께 진행될 수 있으며, 처리 후 상태가 변경됩니다. 보증금/환불 정보와 출고 상태, 결제 상태를 먼저 확인해주세요.",
+            "고객의 대여 취소 요청을 승인합니다. 결제 수단에 따라 PG 취소 또는 환불 처리가 함께 진행될 수 있으며, 처리 후 상태가 변경됩니다. 보증금/환불 정보와 인도 상태, 결제 상태를 먼저 확인해주세요.",
           confirmText: "취소 승인",
           eventKey: "admin-rental-detail-cancel-approve-confirm",
           eventMeta: { rentalId: id, currentStatus: data?.status },
@@ -719,10 +720,10 @@ export default function AdminRentalDetailClient() {
                   <Settings className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-semibold tracking-normal text-foreground lg:text-3xl">
+                  <h1 className={adminTypography.pageTitle}>
                     대여 상세 관리
                   </h1>
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-foreground/75">
+                  <div className={cn("mt-1 flex flex-wrap items-center gap-2 text-foreground/75", adminTypography.body)}>
                     <span>대여 ID: {shortenId(String(data.id))}</span>
                     <Button
                       type="button"
@@ -786,12 +787,11 @@ export default function AdminRentalDetailClient() {
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 lg:gap-4">
-              <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
-                <div className="mb-2 flex items-center space-x-2">
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">결제 상태</span>
-                </div>
-                {(() => {
+              <AdminStatusCard
+                title="결제 상태"
+                icon={CreditCard}
+                tone={needsPaymentCheck ? "warning" : "neutral"}
+                value={(() => {
                   const pay = getPaymentStatusBadgeSpec(paymentLabel);
                   return (
                     <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
@@ -799,10 +799,8 @@ export default function AdminRentalDetailClient() {
                     </Badge>
                   );
                 })()}
-                <p className="mt-2 text-xs text-foreground/75">
-                  총 결제금액 {won(data.amount?.total)}
-                </p>
-              </div>
+                description={`총 결제금액 ${won(data.amount?.total)}`}
+              />
 
               <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
                 <div className="mb-2 flex items-center space-x-2">
@@ -894,7 +892,7 @@ export default function AdminRentalDetailClient() {
                       <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
                     </Button>
                   ) : null}
-                  {recommendedActions.map((action) => (
+                  {recommendedActions.slice(0, 2).map((action) => (
                     <Button
                       key={action.href}
                       asChild
@@ -1730,10 +1728,10 @@ export default function AdminRentalDetailClient() {
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid gap-6 md:grid-cols-2">
-                {/* 출고 */}
+                {/* 인도 */}
                 <div className="p-4 rounded-lg border bg-muted/60 dark:bg-card/70">
                   <p className="text-sm font-medium text-muted-foreground mb-2">
-                    {isVisitPickup ? "인도(매장)" : "출고"}
+                    인도
                   </p>
                   {isVisitPickup ? (
                     <div className="space-y-1 text-sm">
@@ -1770,7 +1768,7 @@ export default function AdminRentalDetailClient() {
                         </a>
                       </div>
                       <div>
-                        출고일: <b>{fmtDateOnly(data.shipping.outbound.shippedAt)}</b>
+                        인도일: <b>{fmtDateOnly(data.shipping.outbound.shippedAt)}</b>
                       </div>
                     </div>
                   ) : (

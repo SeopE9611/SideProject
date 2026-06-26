@@ -1,6 +1,7 @@
 import type { ComponentType, ReactNode } from "react";
 import Link from "next/link";
 
+import { adminTypography } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
 
 type AdminTone = "neutral" | "success" | "warning" | "danger" | "info";
@@ -48,16 +49,16 @@ export default function AdminSummaryCard({
 }: AdminSummaryCardProps) {
   const content = (
     <>
-      <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+      <div className={cn("flex items-center gap-1.5", adminTypography.panelTitle)}>
         {Icon ? <Icon className={cn("h-4 w-4", accentClass[tone])} /> : null}
         <span>{title}</span>
       </div>
-      <div className="mt-2 text-2xl font-bold tabular-nums text-foreground">{value}</div>
+      <div className={cn("mt-2", adminTypography.kpiValue)}>{value}</div>
       {description ? (
-        <p className="mt-1 text-xs leading-relaxed text-foreground/75">{description}</p>
+        <p className={cn("mt-1 text-foreground/75", adminTypography.meta)}>{description}</p>
       ) : null}
       {actionLabel ? (
-        <span className={cn("mt-3 block text-xs font-semibold", accentClass[tone])}>
+        <span className={cn("mt-3 block", adminTypography.actionLabel, accentClass[tone])}>
           {actionLabel}
         </span>
       ) : null}
