@@ -1,4 +1,3 @@
-import ApplicationsClient from "@/app/mypage/applications/_components/ApplicationsClient";
 import { getCurrentUser } from "@/lib/hooks/get-current-user";
 import { redirect } from "next/navigation";
 
@@ -10,11 +9,11 @@ export const metadata: Metadata = {
 
 export default async function ApplicationsPage() {
   const user = await getCurrentUser();
+  const target = "/mypage?tab=orders&scope=application";
 
   if (!user) {
-    const target = "/mypage/applications";
     redirect(`/login?next=${encodeURIComponent(target)}`);
   }
 
-  return <ApplicationsClient />;
+  redirect(target);
 }

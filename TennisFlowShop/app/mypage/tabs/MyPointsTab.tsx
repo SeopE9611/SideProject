@@ -329,7 +329,7 @@ export default function MyPointsTab() {
                                 return (
                                   <Link
                                     className="inline-flex items-center gap-1.5 text-ui-label text-primary hover:underline underline-offset-4 font-medium group/link"
-                                    href={`/mypage/orders/${ref.orderId}`}
+                                    href={`/mypage?tab=orders&flowType=order&flowId=${ref.orderId}&from=orders`}
                                   >
                                     <span>
                                       주문번호:{" "}
