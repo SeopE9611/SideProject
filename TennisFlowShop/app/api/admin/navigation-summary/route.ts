@@ -12,11 +12,15 @@ export async function GET(req: Request) {
   if (!guard.ok) return guard.res;
 
   const { db } = guard;
-  const { counts, operationTaskCounts } = await perf.measure("query", () =>
-    countAdminNavigationSummary(db),
-  );
+  const { counts, operationTaskCounts, operationGroupCounts, operationSignalCounts } =
+    await perf.measure("query", () => countAdminNavigationSummary(db));
 
-  const response = NextResponse.json({ counts, operationTaskCounts });
+  const response = NextResponse.json({
+    counts,
+    operationTaskCounts,
+    operationGroupCounts,
+    operationSignalCounts,
+  });
   perf.log();
   return response;
 }

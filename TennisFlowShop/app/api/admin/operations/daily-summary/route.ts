@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import type { Db, Document, Filter } from "mongodb";
 
-import { countAdminOperationTaskCounts } from "@/app/api/admin/_lib/adminOperationCounts";
+import {
+  countAdminOperationGroupCounts,
+  countAdminOperationTaskCounts,
+  toOperationSignalCounts,
+} from "@/app/api/admin/_lib/adminOperationCounts";
 import { requireAdmin } from "@/lib/admin.guard";
 import type { AdminDailyOperationsSummaryResponse } from "@/types/admin/operations";
 
@@ -138,6 +142,7 @@ export async function GET(req: Request) {
     offline,
     academyApplications,
     operationTaskCounts,
+    operationGroupCounts,
   ] = await Promise.all([
     safeCount(db, "orders", completedStatusFilter(ORDER_COMPLETED_TODAY_STATUS_VALUES, start, end)),
     safeCount(db, "stringing_applications", {
@@ -166,6 +171,7 @@ export async function GET(req: Request) {
       ],
     }),
     countAdminOperationTaskCounts(db),
+    countAdminOperationGroupCounts(db),
   ]);
 
   const rentals = rentalIds.length;
@@ -184,6 +190,7 @@ export async function GET(req: Request) {
       operationTaskCounts.academyApplications,
   };
 
+  const operationSignalCounts = toOperationSignalCounts(operationTaskCounts);
   const urgentRemaining = remaining.cancelRequests + remaining.rentalDue;
   const watchRemaining =
     remaining.paymentCheck +
@@ -212,6 +219,8 @@ export async function GET(req: Request) {
       total: completedTotal,
     },
     remaining,
+    operationGroupCounts,
+    operationSignalCounts,
     attention: { urgentRemaining, watchRemaining, message },
   };
 

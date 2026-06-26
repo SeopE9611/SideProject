@@ -71,6 +71,8 @@ import type {
   AdminOperationsGroup,
   AdminOperationsListResponseDto,
   AdminOperationsSummary,
+  OperationGroupCounts,
+  OperationSignalCounts,
   OperationTaskCounts,
 } from "@/types/admin/operations";
 import { copyToClipboard } from "./actions/operationsActions";
@@ -89,6 +91,8 @@ type NavigationBadgeCounts = Partial<Record<"offline" | "academyApplications", n
 type NavigationSummaryResponse = {
   counts?: NavigationBadgeCounts;
   operationTaskCounts?: Partial<OperationTaskCounts>;
+  operationGroupCounts?: Partial<OperationGroupCounts>;
+  operationSignalCounts?: Partial<OperationSignalCounts>;
 };
 
 function amountMeaningText(item: OpItem) {
@@ -1035,7 +1039,21 @@ export default function OperationsClient() {
     }
   }, [activeFilterCount]);
 
-  const taskCounts = navigationSummary?.operationTaskCounts;
+  const taskCounts =
+    navigationSummary?.operationSignalCounts ??
+    data?.operationSignalCounts ??
+    navigationSummary?.operationTaskCounts;
+  const groupCounts = navigationSummary?.operationGroupCounts ?? data?.operationGroupCounts;
+  const representativeTodayCount =
+    groupCounts?.todayRepresentativeTasks ??
+    dailySummary?.operationGroupCounts?.todayRepresentativeTasks ??
+    (todayTodoCount
+      ? todayTodoCount.urgent + todayTodoCount.caution + todayTodoCount.pending
+      : undefined);
+  const representativeTotalCount =
+    groupCounts?.totalRepresentativeTasks ??
+    dailySummary?.operationGroupCounts?.totalRepresentativeTasks ??
+    dailySummary?.remaining.total;
   const practicalTaskCards = useMemo(() => {
     return [
       {
@@ -1048,7 +1066,7 @@ export default function OperationsClient() {
         tone: "danger" as const,
       },
       {
-        title: "결제 확인 필요 항목",
+        title: "결제 확인 신호",
         count: taskCounts?.paymentCheck ?? 0,
         description: "대표 업무 안에서 입금 또는 결제 확인이 필요한 항목을 먼저 확인하세요.",
         action: "바로 처리",
@@ -1066,7 +1084,7 @@ export default function OperationsClient() {
         tone: "warning" as const,
       },
       {
-        title: "배송/반송 정보 미등록 항목",
+        title: "배송/반송 정보 신호",
         count: taskCounts?.shippingMissing ?? 0,
         description: "배송지와 수령 방식을 확인하고 운송장, 반송 또는 방문 수령 정보를 등록하세요.",
         action: "바로 처리",
@@ -1074,7 +1092,7 @@ export default function OperationsClient() {
         tone: "warning" as const,
       },
       {
-        title: "교체 작업 단계 확인",
+        title: "교체 작업 단계 신호",
         count: taskCounts?.stringingWork ?? 0,
         description:
           "통합 주문의 교체 작업 단계와 단독 교체서비스 신청의 진행 상태를 확인하세요.",
@@ -1235,9 +1253,9 @@ export default function OperationsClient() {
               }}
             />
             <AdminSummaryCard
-              title="전체 처리 필요"
-              value={dailySummaryValue(dailySummary?.remaining.total)}
-              description="오늘 마감 전 확인할 남은 업무"
+              title="대표 업무 합계"
+              value={dailySummaryValue(representativeTodayCount ?? representativeTotalCount)}
+              description="주문·대여·단독 교체서비스 기준"
               icon={Inbox}
               actionLabel="오늘 업무 보기"
               active={activeQuickView === "today"}
@@ -1316,7 +1334,7 @@ export default function OperationsClient() {
             <div>
               <h2 className={adminTypography.panelTitle}>오늘 업무 마감 요약</h2>
               <p className="text-xs text-muted-foreground">
-                오늘 처리한 업무와 남은 업무를 간단히 확인합니다.
+                오늘 상태 변경 참고치와 남은 대표 업무를 구분해서 확인합니다.
               </p>
             </div>
             <Badge variant="outline">{dailySummary?.date ?? "오늘"}</Badge>
@@ -1325,7 +1343,7 @@ export default function OperationsClient() {
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
             <Card className="border-border bg-background/70 shadow-none">
               <CardHeader className="p-3 pb-2">
-                <CardTitle className="text-sm font-semibold">오늘 처리</CardTitle>
+                <CardTitle className="text-sm font-semibold">오늘 상태 변경 참고</CardTitle>
                 <CardDescription className="text-2xl font-bold text-foreground">
                   {dailySummaryValue(dailySummary?.completedToday.total)}
                 </CardDescription>
@@ -1353,19 +1371,19 @@ export default function OperationsClient() {
 
             <Card className="border-border bg-background/70 shadow-none">
               <CardHeader className="p-3 pb-2">
-                <CardTitle className="text-sm font-semibold">남은 업무</CardTitle>
+                <CardTitle className="text-sm font-semibold">남은 대표 업무</CardTitle>
                 <CardDescription className="text-2xl font-bold text-foreground">
-                  {dailySummaryValue(dailySummary?.remaining.total)}
+                  {dailySummaryValue(dailySummary?.operationGroupCounts?.totalRepresentativeTasks ?? representativeTotalCount)}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-3 pt-0 text-xs leading-relaxed text-muted-foreground">
                 {dailySummary
                   ? [
                       dailySummaryInlineValue("취소", dailySummary.remaining.cancelRequests),
-                      dailySummaryInlineValue("결제", dailySummary.remaining.paymentCheck),
+                      dailySummaryInlineValue("하위 결제", dailySummary.remaining.paymentCheck),
                       dailySummaryInlineValue("패키지", dailySummary.remaining.packagePaymentCheck),
-                      dailySummaryInlineValue("배송", dailySummary.remaining.shippingMissing),
-                      dailySummaryInlineValue("교체", dailySummary.remaining.stringingWork),
+                      dailySummaryInlineValue("하위 배송", dailySummary.remaining.shippingMissing),
+                      dailySummaryInlineValue("하위 교체", dailySummary.remaining.stringingWork),
                       dailySummaryInlineValue("반납", dailySummary.remaining.rentalDue),
                     ].join(" · ")
                   : dailySummaryError
@@ -2104,6 +2122,20 @@ export default function OperationsClient() {
                                   <span className="font-semibold text-primary/90">다음 처리:</span>{" "}
                                   {nextActionText}
                                 </p>
+                                {g.signals.length > 0 && (
+                                  <div className="flex flex-wrap gap-1">
+                                    {g.signals.slice(0, 4).map((signal) => (
+                                      <Badge
+                                        key={`${g.key}:signal:${signal.code}:${signal.sourceId}`}
+                                        variant="outline"
+                                        className={cn(badgeBase, badgeSizeSm, "border-warning/40 text-warning")}
+                                        title={toOperatorSentence(signal.description)}
+                                      >
+                                        하위 신호 · {toOperatorSentence(signal.title)}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )}
                                 {g.linkedFlowStatusIssue && (
                                   <div className="rounded-md border border-warning/40 bg-warning/5 px-2 py-1.5 text-xs text-foreground/80">
                                     <Badge
@@ -2319,6 +2351,20 @@ export default function OperationsClient() {
                                                 item.nextAction ?? groupGuide.nextAction,
                                               )}
                                             </p>
+                                            {(item.signals?.length ?? 0) > 0 && (
+                                              <div className="mt-0.5 flex flex-wrap gap-1">
+                                                {item.signals?.slice(0, 3).map((signal) => (
+                                                  <Badge
+                                                    key={`${item.id}:signal:${signal.code}:${signal.description}`}
+                                                    variant="outline"
+                                                    className={cn(badgeBase, badgeSizeSm)}
+                                                    title={toOperatorSentence(signal.description)}
+                                                  >
+                                                    {toOperatorSentence(signal.title)}
+                                                  </Badge>
+                                                ))}
+                                              </div>
+                                            )}
                                             <p className="text-xs text-foreground/75">
                                               결제 상태: {item.paymentLabel || "정보 없음"}
                                             </p>
@@ -2544,6 +2590,20 @@ export default function OperationsClient() {
                           <span className="mr-1 font-semibold text-primary">다음 처리:</span>
                           {nextActionText}
                         </p>
+                        {g.signals.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {g.signals.slice(0, 3).map((signal) => (
+                              <Badge
+                                key={`m:${g.key}:signal:${signal.code}:${signal.sourceId}`}
+                                variant="outline"
+                                className={cn(badgeBase, badgeSizeSm, "border-warning/40 text-warning")}
+                                title={toOperatorSentence(signal.description)}
+                              >
+                                하위 신호 · {toOperatorSentence(signal.title)}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
                         {g.linkedFlowStatusIssue && (
                           <div className="rounded-md border border-warning/40 bg-warning/5 px-2 py-1.5 text-xs text-foreground/80">
                             <Badge
