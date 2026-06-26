@@ -181,22 +181,13 @@ export default function ShippingFormClient({ applicationId }: { applicationId: s
             title="라켓 발송이 필요하지 않은 신청입니다"
             description="이 신청은 매장 보유 라켓 또는 대여 라켓 기준으로 처리되어 사용자가 별도로 라켓을 발송하지 않아도 됩니다."
             actions={
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => router.push(returnTo ?? defaultReturnTo)}
-                  className="w-full sm:w-auto"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  돌아가기
-                </Button>
-                <Button
-                  onClick={() => router.push(defaultReturnTo)}
-                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
-                >
-                  마이페이지로 돌아가기
-                </Button>
-              </>
+              <Button
+                onClick={() => router.push(returnTo ?? defaultReturnTo)}
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                마이페이지 진행상태로 돌아가기
+              </Button>
             }
           />
         </div>
@@ -341,7 +332,7 @@ function SelfShipForm({
       });
       if (!res.ok) throw new Error((await res.text().catch(() => "")) || "운송장 업데이트 실패");
 
-      showSuccessToast("운송장 정보가 저장되었습니다.");
+      showSuccessToast("라켓 발송 운송장이 저장되었습니다.");
       // 1) 마이페이지 목록 캐시 무효화(페이지네이션 포함)
 
       try {

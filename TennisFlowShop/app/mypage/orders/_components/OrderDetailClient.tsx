@@ -712,15 +712,11 @@ export default function OrderDetailClient({
     onCtaClick?: () => void;
     description?: string;
   } | null =
-    shouldShowInboundShippingBlock && inboundShippingHref
+    shouldShowInboundShippingBlock && inboundShippingHref && !hasSelfShipTracking
       ? {
-          label: hasSelfShipTracking
-            ? "매장 입고 확인 중입니다."
-            : "라켓 발송 운송장 등록이 필요합니다.",
-          description: hasSelfShipTracking
-            ? "등록한 운송장 기준으로 매장 도착 확인을 기다려주세요."
-            : "보유 라켓을 매장으로 보내고 운송장 번호를 등록해주세요.",
-          ctaLabel: hasSelfShipTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록",
+          label: "라켓 발송 운송장 등록이 필요합니다.",
+          description: "보유 라켓을 매장으로 보내고 운송장 번호를 등록해주세요.",
+          ctaLabel: "라켓 발송 운송장 등록",
           ctaHref: inboundShippingHref,
         }
       : canConfirmPurchase

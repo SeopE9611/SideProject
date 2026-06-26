@@ -260,6 +260,11 @@ const getStatusBadgeSpec = (group: ActivityGroup, label: string) => {
   return getApplicationStatusBadgeSpec(label);
 };
 
+const isApplicationBeforeWork = (status?: string | null) => {
+  const normalized = getMypageNormalizedStatus(status);
+  return ["접수완료", "검토 중", "승인", "대기중"].includes(normalized);
+};
+
 const isApplicationTrackingNeeded = (app?: ActivityApplicationSummary) => {
   if (!app) return false;
   if (isTerminalCanceledStatus(app.status)) return false;
@@ -449,14 +454,6 @@ const getFlowNextActionText = (
   if (viewKind === "order") {
     const normalized = getMypageNormalizedStatus(group.order?.status);
     const linkedApplication = group.application ?? group.order?.applicationSummaries?.[0];
-    if (linkedApplication?.inboundRequired === false) {
-      return linkedApplication.rentalId
-        ? "매장에서 대여 라켓에 스트링을 장착해 준비합니다. 사용자가 별도로 라켓을 발송하지 않아도 됩니다."
-        : "사용자가 별도로 라켓을 발송하지 않아도 됩니다. 매장에서 라켓에 스트링을 장착해 준비합니다.";
-    }
-    if (linkedApplication?.needsInboundTracking && linkedApplication?.hasTracking) {
-      return "등록한 운송장 기준으로 매장 도착 확인을 기다려주세요.";
-    }
     if (normalized === "취소요청" || normalized === "취소 요청")
       return "취소 요청이 접수되었습니다. 처리 결과를 기다려주세요.";
     if (normalized === "취소") return "취소가 완료되었습니다.";
@@ -464,12 +461,19 @@ const getFlowNextActionText = (
       return "환불 진행 상태를 확인해주세요.";
     if (normalized === "대기중") return "결제를 완료해주세요.";
     if (normalized === "결제완료") return "결제가 완료되었습니다. 상품 준비를 기다려주세요.";
-    if (normalized === "처리중")
+    if (normalized === "처리중") {
+      if (
+        linkedApplication &&
+        ["처리중", "작업 중"].includes(getMypageNormalizedStatus(linkedApplication.status))
+      ) {
+        return "교체서비스 작업이 진행 중입니다. 완료 안내를 기다려주세요.";
+      }
       return "상품을 준비하고 있습니다. 준비가 끝나면 배송 또는 수령 안내가 진행됩니다.";
+    }
     if (normalized === "배송중") {
       return isVisitPickupOrder({ shippingMethod: group.order?.shippingMethod })
         ? "수령 준비 상태를 확인해주세요."
-        : "배송정보 확인은 매장에서 고객에게 보내는 배송/수령 정보입니다.";
+        : "완성 라켓 배송 중입니다. 배송정보를 확인해주세요.";
     }
     if (normalized === "배송완료") return "상품을 받으셨다면 구매확정을 진행해주세요.";
     if (normalized === "구매확정") {
@@ -489,6 +493,18 @@ const getFlowNextActionText = (
       }
 
       return null;
+    }
+    if (linkedApplication?.inboundRequired === false) {
+      return linkedApplication.rentalId
+        ? "매장에서 대여 라켓에 스트링을 장착해 준비합니다. 사용자가 별도로 라켓을 발송하지 않아도 됩니다."
+        : "사용자가 별도로 라켓을 발송하지 않아도 됩니다. 매장에서 라켓에 스트링을 장착해 준비합니다.";
+    }
+    if (
+      linkedApplication?.needsInboundTracking &&
+      linkedApplication?.hasTracking &&
+      isApplicationBeforeWork(linkedApplication.status)
+    ) {
+      return "등록한 운송장 기준으로 매장 도착 확인을 기다려주세요.";
     }
     return null;
   }
@@ -524,18 +540,22 @@ const getFlowNextActionText = (
   const app = group.application;
   const normalized = getMypageNormalizedStatus(app?.status);
   if (normalized === "취소") return "신청이 취소되었습니다.";
-  if (app?.inboundRequired === false) return app?.rentalId ? "매장에서 대여 라켓에 스트링을 장착해 준비합니다. 사용자가 별도로 라켓을 발송하지 않아도 됩니다." : "사용자가 별도로 라켓을 발송하지 않아도 됩니다. 매장에서 라켓에 스트링을 장착해 준비합니다.";
-  if (app?.needsInboundTracking && app?.hasTracking) return "등록한 운송장 기준으로 매장 도착 확인을 기다려주세요.";
-  if (normalized === "접수완료") return "신청이 접수되었습니다. 검토를 기다려주세요.";
-  if (normalized === "검토 중") return "신청 내용을 확인 중입니다. 안내를 기다려주세요.";
-  if (normalized === "승인") return "신청이 확인되었습니다. 다음 안내를 기다려주세요.";
+  if (normalized === "거절") return "신청이 반려되었습니다. 자세한 내용은 고객센터로 문의해주세요.";
   if (normalized === "처리중" || normalized === "작업 중")
     return "교체서비스 작업이 진행 중입니다. 완료 안내를 기다려주세요.";
   if (normalized === "교체완료")
     return app?.serviceReviewPending
       ? "수령확인된 교체서비스 후기를 작성할 수 있어요."
       : "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.";
-  if (normalized === "거절") return "신청이 반려되었습니다. 자세한 내용은 고객센터로 문의해주세요.";
+  if (app?.inboundRequired === false)
+    return app?.rentalId
+      ? "매장에서 대여 라켓에 스트링을 장착해 준비합니다. 사용자가 별도로 라켓을 발송하지 않아도 됩니다."
+      : "사용자가 별도로 라켓을 발송하지 않아도 됩니다. 매장에서 라켓에 스트링을 장착해 준비합니다.";
+  if (app?.needsInboundTracking && app?.hasTracking && isApplicationBeforeWork(app.status))
+    return "등록한 운송장 기준으로 매장 도착 확인을 기다려주세요.";
+  if (normalized === "접수완료") return "신청이 접수되었습니다. 검토를 기다려주세요.";
+  if (normalized === "검토 중") return "신청 내용을 확인 중입니다. 안내를 기다려주세요.";
+  if (normalized === "승인") return "신청이 확인되었습니다. 다음 안내를 기다려주세요.";
   return null;
 };
 const canShowOrderShippingInfo = (status?: string | null) => {
