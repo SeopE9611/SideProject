@@ -612,9 +612,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         <section className="mx-3 pt-3 bp-sm:mx-4 bp-sm:pt-4 bp-md:mx-6 bp-md:pt-6 bp-lg:mx-0">
           <div className="overflow-hidden rounded-[2rem] border border-border/70 bg-card shadow-sm">
             <div className="grid gap-0 bp-lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] bp-lg:items-stretch">
-              <div className="flex flex-col justify-between p-5 bp-sm:p-8 bp-md:p-10">
-                <div>
-                <span className="inline-flex rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-ui-label font-semibold text-primary">
+              <div className="flex flex-col p-5 bp-sm:p-8 bp-md:p-10">
+                <span className="inline-flex w-fit rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-ui-label font-semibold text-primary">
                   Dokkaebi Tennis Stringing & Gear
                 </span>
                 <h1 className="mt-4 max-w-3xl break-keep text-ui-page-title font-semibold tracking-tight text-foreground bp-sm:mt-5 bp-md:text-ui-page-title-lg">
@@ -632,8 +631,19 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     <Link href="/products">스트링 둘러보기</Link>
                   </Button>
                 </div>
+                <div className="mt-5 grid gap-2 border-y border-border/60 py-4 bp-sm:mt-6 bp-sm:grid-cols-3 bp-sm:gap-3">
+                  {[
+                    ["선택", "브랜드와 성향을 비교"],
+                    ["접수", "방문 또는 택배로 간편하게"],
+                    ["이용", "자주 교체하면 패키지로"],
+                  ].map(([title, description]) => (
+                    <div key={title} className="break-keep">
+                      <p className="text-ui-label font-semibold text-primary">{title}</p>
+                      <p className="mt-1 text-ui-body-sm text-muted-foreground">{description}</p>
+                    </div>
+                  ))}
                 </div>
-                <div className="mt-6 grid grid-cols-3 gap-2 bp-sm:mt-8 bp-sm:gap-3">
+                <div className="mt-4 grid grid-cols-3 gap-2 bp-sm:gap-3">
                   {["방문·택배 접수", "스트링/텐션 선택", "패키지 이용 가능"].map((point) => (
                     <div
                       key={point}
