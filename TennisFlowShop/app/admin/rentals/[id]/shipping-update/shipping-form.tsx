@@ -77,7 +77,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
   }, [rentalId]);
 
   const onSave = async () => {
-    if (isVisitPickup) return showErrorToast("방문 수령 대여는 출고 운송장을 등록할 수 없습니다.");
+    if (isVisitPickup) return showErrorToast("방문 수령 대여는 인도 운송장을 등록할 수 없습니다.");
     if (!courier) return showErrorToast("택배사를 선택해주세요");
     const normalizedCourier = normalizeCourierCode(courier);
     const normalizedTracking = normalizeTrackingNumber(tracking);
@@ -96,7 +96,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
             shippedAt: date,
           }),
         }),
-      successMessage: "출고 운송장을 저장했습니다",
+      successMessage: "인도 운송장을 저장했습니다",
       fallbackErrorMessage: "등록 실패",
     });
     setBusy(false);
@@ -120,7 +120,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
             <CardTitle>방문 수령 대여 안내</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            이 대여는 방문 수령 건이라 출고 운송장 등록이 필요하지 않습니다.
+            이 대여는 방문 수령 건이라 인도 운송장 등록이 필요하지 않습니다.
           </CardContent>
           <CardFooter>
             <Button variant="outline" onClick={() => router.push(`/admin/rentals/${rentalId}`)}>
@@ -136,7 +136,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
     <div className="max-w-xl mx-auto p-6">
       <Card>
         <CardHeader>
-          <CardTitle>출고 운송장 {hasExisting ? "수정" : "등록"}</CardTitle>
+          <CardTitle>인도 운송장 {hasExisting ? "수정" : "등록"}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -168,7 +168,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>출고일(선택)</Label>
+            <Label>인도일(선택)</Label>
             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
         </CardContent>

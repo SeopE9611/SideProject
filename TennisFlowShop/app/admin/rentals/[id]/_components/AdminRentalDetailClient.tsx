@@ -725,6 +725,8 @@ export default function AdminRentalDetailClient() {
                   </h1>
                   <div className={cn("mt-1 flex flex-wrap items-center gap-2 text-foreground/75", adminTypography.body)}>
                     <span>대여 ID: {shortenId(String(data.id))}</span>
+                    <span>고객: {data.user?.name || data.user?.email || "-"}</span>
+                    <span>결제: {paymentLabel} · {won(data.amount?.total)}</span>
                     <Button
                       type="button"
                       variant="ghost"
@@ -788,6 +790,33 @@ export default function AdminRentalDetailClient() {
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 lg:gap-4">
               <AdminStatusCard
+                title="대여 상태"
+                icon={Package}
+                tone={
+                  hasStatusOrderMismatch
+                    ? "warning"
+                    : data.status === "returned"
+                      ? "success"
+                      : "neutral"
+                }
+                value={(() => {
+                  const rentalLabel =
+                    data.status === "paid" && hasOutboundTracking
+                      ? "결제완료 · 수령 확인 대기"
+                      : rentalStatusLabels[data.status] || data.status;
+                  const rentalSpec = getRentalStatusBadgeSpec(data.status);
+                  return (
+                    <Badge variant={rentalSpec.variant} className={cn(badgeBase, badgeSizeSm)}>
+                      {rentalLabel}
+                    </Badge>
+                  );
+                })()}
+                description={
+                  data.outAt ? `대여 시작 ${fmtDateOnly(data.outAt)}` : "결제 확인 후 인도 단계 진행"
+                }
+              />
+
+              <AdminStatusCard
                 title="결제 상태"
                 icon={CreditCard}
                 tone={needsPaymentCheck ? "warning" : "neutral"}
@@ -802,55 +831,55 @@ export default function AdminRentalDetailClient() {
                 description={`총 결제금액 ${won(data.amount?.total)}`}
               />
 
-              <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
-                <div className="mb-2 flex items-center space-x-2">
-                  <Package className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">대여 상태</span>
-                </div>
-                {(() => {
-                  const rentalLabel =
-                    data.status === "paid" && hasOutboundTracking
-                      ? "결제완료 · 수령 확인 대기"
-                      : rentalStatusLabels[data.status] || data.status;
-                  const rentalSpec = getRentalStatusBadgeSpec(data.status);
-                  return (
-                    <Badge variant={rentalSpec.variant} className={cn(badgeBase, badgeSizeSm)}>
-                      {rentalLabel}
-                    </Badge>
-                  );
-                })()}
-              </div>
+              <AdminStatusCard
+                title="교체 작업 상태"
+                icon={Wrench}
+                tone={
+                  hasStatusOrderMismatch
+                    ? "warning"
+                    : isStringingComplete
+                      ? "success"
+                      : hasLinkedApplication
+                        ? "primary"
+                        : "neutral"
+                }
+                value={
+                  <Badge
+                    variant={applicationStatusBadge.variant}
+                    className={cn(badgeBase, badgeSizeSm)}
+                  >
+                    {linkedApplicationStatus ||
+                      (hasStringingSummary ? "교체 작업 검토 중" : "교체 작업 없음")}
+                  </Badge>
+                }
+                description={
+                  hasLinkedApplication ? "대여 결제에 포함된 하위 작업" : "연결된 교체 작업 없음"
+                }
+              />
 
-              <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
-                <div className="mb-2 flex items-center space-x-2">
-                  <Wrench className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">교체 작업 상태</span>
-                </div>
-                <Badge
-                  variant={applicationStatusBadge.variant}
-                  className={cn(badgeBase, badgeSizeSm)}
-                >
-                  {linkedApplicationStatus ||
-                    (hasStringingSummary ? "교체 작업 검토 중" : "교체 작업 없음")}
-                </Badge>
-              </div>
-
-              <div className="min-h-28 rounded-xl border border-border/70 bg-card p-4 shadow-sm">
-                <div className="mb-2 flex items-center space-x-2">
-                  <Truck className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">인도/반납</span>
-                </div>
-                <p className="text-sm font-semibold text-foreground">
-                  {data.status === "returned"
+              <AdminStatusCard
+                title="인도 / 반납"
+                icon={Truck}
+                tone={
+                  data.status === "returned"
+                    ? "success"
+                    : data.status === "out"
+                      ? "warning"
+                      : hasOutboundTracking
+                        ? "primary"
+                        : "neutral"
+                }
+                value={
+                  data.status === "returned"
                     ? "반납 완료"
                     : data.status === "out"
                       ? "반납 필요"
                       : Outbound?.trackingNumber
                         ? "인도 완료"
-                        : "인도 전"}
-                </p>
-                <p className="mt-2 text-xs text-foreground/75">{pickupMethodLabel}</p>
-              </div>
+                        : "인도 전"
+                }
+                description={pickupMethodLabel}
+              />
             </div>
           </div>
 
@@ -881,24 +910,84 @@ export default function AdminRentalDetailClient() {
                   {nextActionGuide.description}
                 </p>
               </div>
-              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+              <div className="rounded-lg border border-primary/20 bg-background/80 p-3">
                 <p className={adminTypography.panelTitle}>주요 액션</p>
                 <p className={cn("mt-1", adminTypography.meta)}>
-                  다음 작업을 처리하기 위해 먼저 확인할 항목입니다.
+                  실제 처리로 이어지는 액션만 우선 노출합니다.
                 </p>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                  {canConfirmPayment ? (
+                    <Button
+                      size="sm"
+                      disabled={isBusy || confirming}
+                      onClick={() => {
+                        if (isBusy || confirming) return;
+                        setPendingAction("confirmPayment");
+                      }}
+                    >
+                      {confirming ? "결제 처리중…" : "결제 확인"}
+                    </Button>
+                  ) : null}
+                  {data.status === "paid" ? (
+                    <Button
+                      size="sm"
+                      disabled={isBusy || blockRentalStart}
+                      onClick={() => {
+                        if (isBusy || blockRentalStart) return;
+                        setPendingAction("out");
+                      }}
+                    >
+                      {busyAction === "out"
+                        ? isVisitPickup
+                          ? "방문 수령 처리중…"
+                          : "수령 확인 처리중…"
+                        : isVisitPickup
+                          ? "방문 수령 처리"
+                          : "수령 확인 / 대여 시작"}
+                    </Button>
+                  ) : null}
+                  {data.status === "out" ? (
+                    <Button
+                      size="sm"
+                      disabled={isBusy}
+                      onClick={() => {
+                        if (isBusy) return;
+                        setPendingAction("return");
+                      }}
+                    >
+                      {busyAction === "return" ? "반납 처리중…" : "반납 처리"}
+                    </Button>
+                  ) : null}
+                  {data.status === "returned" && !data.depositRefundedAt ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={isBusy}
+                      onClick={() => {
+                        if (isBusy) return;
+                        setPendingAction("refundMark");
+                      }}
+                    >
+                      {busyAction === "refundMark" ? "환불 처리 중…" : "보증금 환불 확인"}
+                    </Button>
+                  ) : null}
                   {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
-                    <Button asChild size="sm">
+                    <Button asChild size="sm" variant="outline">
                       <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
                     </Button>
                   ) : null}
-                  {recommendedActions.slice(0, 2).map((action) => (
+                </div>
+              </div>
+              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+                <p className={adminTypography.panelTitle}>보조 확인 링크</p>
+                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                  {recommendedActions.slice(0, 3).map((action) => (
                     <Button
                       key={action.href}
                       asChild
                       size="sm"
-                      variant="outline"
-                      className="bg-transparent"
+                      variant="ghost"
+                      className="justify-start"
                     >
                       <a href={action.href}>{action.label}</a>
                     </Button>
@@ -1145,12 +1234,17 @@ export default function AdminRentalDetailClient() {
                       운송장과 반납 운송장은 아래 대여 정보에서 분리해 관리합니다.
                     </CardDescription>
                   </div>
-                  <Badge
-                    variant={applicationStatusBadge.variant}
-                    className={cn(badgeBase, badgeSizeSm)}
-                  >
-                    {linkedApplicationStatus || "상태 확인 필요"}
-                  </Badge>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
+                      대여 결제에 포함됨
+                    </Badge>
+                    <Badge
+                      variant={applicationStatusBadge.variant}
+                      className={cn(badgeBase, badgeSizeSm)}
+                    >
+                      {linkedApplicationStatus || "상태 확인 필요"}
+                    </Badge>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4 pt-4">
@@ -1251,7 +1345,7 @@ export default function AdminRentalDetailClient() {
                       대여 결제에 포함된 하위 교체 작업만 다음 운영 단계로 변경합니다.
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                     <Button asChild size="sm" variant="outline">
                       <Link
                         href={`/admin/applications/stringing/${encodeURIComponent(String(linkedApplication.id))}`}

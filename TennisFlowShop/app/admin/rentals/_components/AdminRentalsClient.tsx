@@ -132,7 +132,7 @@ const paymentFilterLabels: Record<AdminRentalPaymentFilter, string> = {
 const shippingFilterLabels: Record<AdminRentalShippingFilter, string> = {
   all: "운송장 전체",
   none: "운송장 없음 / 방문 수령",
-  "outbound-set": "출고 운송장 등록",
+  "outbound-set": "인도 운송장 등록",
   "return-set": "반납 운송장 등록",
   "both-set": "왕복 운송장 등록",
 };
@@ -423,7 +423,7 @@ export default function AdminRentalsClient() {
     : !hasTextOrDateFilters && !status && payFilter === "unpaid" && shipFilter === "all"
       ? "결제대기"
       : !hasTextOrDateFilters && !status && payFilter === "all" && shipFilter === "none"
-        ? "출고 필요"
+        ? "인도 필요"
         : !hasTextOrDateFilters && status === "out" && payFilter === "all" && shipFilter === "all"
           ? "반납 필요"
           : !hasTextOrDateFilters &&
@@ -559,7 +559,7 @@ export default function AdminRentalsClient() {
     const s = deriveShippingStatus(item);
     const map = {
       none: ["운송장 없음", "bg-background text-foreground"],
-      "outbound-set": ["출고 운송장", "bg-muted text-foreground"],
+      "outbound-set": ["인도 운송장", "bg-muted text-foreground"],
       "return-set": ["반납 운송장", "bg-muted text-foreground"],
       "both-set": ["왕복 운송장", "bg-primary/10 text-primary dark:bg-primary/20"],
     } as const;
@@ -577,7 +577,7 @@ export default function AdminRentalsClient() {
       <div className="mx-auto max-w-7xl">
         <AdminPageHeader
           title="대여 관리"
-          description="라켓 대여의 결제 확인, 출고, 반납, 보증금 환불, 연결 신청서를 한곳에서 관리합니다."
+          description="라켓 대여의 결제 확인, 인도, 반납, 보증금 환불, 연결 신청서를 한곳에서 관리합니다."
           icon={Truck}
           scope="범위: 라켓 대여 주문"
           helperText="교체서비스가 포함된 대여는 신청서 연결 상태를 함께 확인하세요."
@@ -589,10 +589,10 @@ export default function AdminRentalsClient() {
           </summary>
           <div className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2 lg:grid-cols-3">
             <p>
-              <strong className="text-foreground">결제대기</strong> · 결제 확인 후 출고 처리
+              <strong className="text-foreground">결제대기</strong> · 결제 확인 후 인도 처리
             </p>
             <p>
-              <strong className="text-foreground">출고 운송장 없음</strong> · 택배 발송 전 운송장
+              <strong className="text-foreground">인도 운송장 없음</strong> · 택배 발송 전 운송장
               등록
             </p>
             <p>
@@ -641,10 +641,10 @@ export default function AdminRentalsClient() {
             </Button>
             <Button
               size="sm"
-              variant={currentViewLabel === "출고 필요" ? "default" : "outline"}
+              variant={currentViewLabel === "인도 필요" ? "default" : "outline"}
               onClick={() => applyQuickView("shipping")}
             >
-              출고 필요
+              인도 필요
             </Button>
             <Button
               size="sm"
@@ -740,9 +740,9 @@ export default function AdminRentalsClient() {
                 <SelectContent>
                   <SelectItem value="all">배송/운송장(전체)</SelectItem>
                   <SelectItem value="none">운송장 없음 / 방문 수령</SelectItem>
-                  <SelectItem value="outbound-set">출고 운송장</SelectItem>
+                  <SelectItem value="outbound-set">인도 운송장</SelectItem>
                   <SelectItem value="return-set">반납 운송장</SelectItem>
-                  <SelectItem value="both-set">출고+반납</SelectItem>
+                  <SelectItem value="both-set">인도+반납</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -915,7 +915,7 @@ export default function AdminRentalsClient() {
                 <TableHead className={cn(thClasses, "text-center")}>기간</TableHead>
                 <TableHead className={cn(thClasses, "text-center")}>상태</TableHead>
                 <TableHead className={cn(thClasses, "text-center")}>
-                  결제 상태 / 출고 상태
+                  결제 상태 / 인도 상태
                 </TableHead>
                 <TableHead
                   onClick={() => handleSort("total")}
