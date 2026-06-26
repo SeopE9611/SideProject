@@ -14,7 +14,6 @@ import {
   getStringingAddressReadLabels,
   orderShippingMethodLabel,
 } from "@/app/features/stringing-applications/lib/fulfillment-labels";
-import { NextTodoCallout } from "@/app/mypage/_components/OrdersScopeContextNav";
 import { useStringingStore } from "@/app/store/stringingStore";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
@@ -1022,18 +1021,6 @@ export default function StringingApplicationDetailClient({
     !isUserConfirmed &&
     confirmableStatuses.includes(data.status);
   const showConfirmExchangeButton = !isLinkedApplication && (canConfirmExchange || isUserConfirmed);
-  const shouldShowHeaderConfirmButton =
-    !isAdmin && !isLinkedApplication && showConfirmExchangeButton && !canConfirmExchange;
-  const userProgressSteps = [
-    { key: "접수완료", label: "접수 완료" },
-    { key: "검토 중", label: "검토 중" },
-    { key: "작업 중", label: "작업 중" },
-    { key: "교체완료", label: "교체 완료" },
-    { key: "반송완료", label: "반송 완료" },
-    { key: "완료", label: "확정 완료" },
-  ];
-  const currentStepIndex = userProgressSteps.findIndex((step) => step.key === data.status);
-
   // 라켓 종류 요약 문자열 (라인 기반 집계 우선)
   const racketTypeCountMap = new Map<string, number>();
   for (const line of Array.isArray(data.lines) ? data.lines : []) {
@@ -1508,30 +1495,25 @@ export default function StringingApplicationDetailClient({
             </div>
           ) : null}
           <div className={cn("mx-auto w-full", isAdmin ? "max-w-[1500px]" : "max-w-7xl")}>
-            {/* 헤더 */}
-            <div
-              className={cn(
-                "mb-6 rounded-2xl bp-sm:mb-8",
-                !isAdmin && "hidden",
-                isAdmin
-                  ? cn("p-5 lg:p-6", adminSurface.cardMuted)
-                  : "border border-border bg-card p-4 shadow-sm bp-sm:p-5 bp-lg:p-6",
-              )}
-            >
+            {/* 관리자 헤더 */}
+            {isAdmin && (
               <div
-                className={cn(
-                  "mb-4",
-                  isAdmin
-                    ? "flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between"
-                    : "flex flex-col gap-4 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between bp-sm:mb-6",
-                )}
+                className={cn("mb-6 rounded-2xl bp-sm:mb-8 p-5 lg:p-6", adminSurface.cardMuted)}
               >
                 <div
                   className={cn(
-                    "flex min-w-0 gap-3 sm:gap-4",
-                    isAdmin ? "items-center" : "items-start",
+                    "mb-4",
+                    isAdmin
+                      ? "flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between"
+                      : "flex flex-col gap-4 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between bp-sm:mb-6",
                   )}
                 >
+                  <div
+                    className={cn(
+                      "flex min-w-0 gap-3 sm:gap-4",
+                      isAdmin ? "items-center" : "items-start",
+                    )}
+                  >
                   <div className="shrink-0 rounded-xl border border-border bg-muted/40 p-3">
                     {isAdmin ? (
                       <Settings className="h-8 w-8 text-foreground" />
@@ -1682,103 +1664,9 @@ export default function StringingApplicationDetailClient({
                         <TooltipContent>현재 상태에서는 편집할 수 없습니다.</TooltipContent>
                       )}
                     </Tooltip>
-
-                    {/* 사용자: 서비스 리뷰 작성 버튼 (교체확정 이후에만 노출) */}
-                    {!isAdmin && !isRentalLinkedApplication && (
-                      <ServiceReviewCTA
-                        applicationId={data.id}
-                        status={data.status}
-                        userConfirmedAt={data.userConfirmedAt ?? null}
-                        className="h-8 w-full overflow-hidden whitespace-nowrap px-3 text-ui-body-sm bp-sm:w-auto bp-lg:h-9"
-                      />
-                    )}
-
-                    {/* 사용자: 교체확정 버튼(확정 가능 시, 또는 이미 확정된 경우에만 노출) */}
-                    {shouldShowHeaderConfirmButton && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={!canConfirmExchange || isConfirmSubmitting}
-                        onClick={handleConfirmExchange}
-                        className="h-8 w-full overflow-hidden whitespace-nowrap border-primary/30 text-primary hover:bg-primary/10 bp-sm:w-auto bp-lg:h-9"
-                      >
-                        <CheckCircle2 className="w-4 h-4 mr-2" />
-                        {isConfirmSubmitting
-                          ? "확정 중..."
-                          : isUserConfirmed
-                            ? "교체서비스 확정 완료"
-                            : "교체서비스 확정"}
-                      </Button>
-                    )}
                   </div>
                 </TooltipProvider>
               </div>
-
-              {!isAdmin && data.orderId ? (
-                <div className="mb-3 flex flex-col gap-2 rounded-xl border border-border/70 bg-muted/40 p-3 text-ui-body-sm text-foreground bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                  <span className="break-keep text-foreground/80">
-                    연결 주문의 구매확정과 함께 처리됩니다.
-                  </span>
-                  <Button
-                    asChild
-                    size="sm"
-                    variant="outline"
-                    className="h-8 w-full overflow-hidden whitespace-nowrap bg-card text-muted-foreground hover:text-foreground bp-sm:w-auto"
-                  >
-                    <Link
-                      href={`/mypage?tab=orders&flowType=order&flowId=${data.orderId}&${flowQuery.toString()}&focus=stringing`}
-                    >
-                      연결 주문 보기
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              ) : null}
-              {!isAdmin && linkedRentalId ? (
-                <div className="mb-3 flex flex-col gap-2 rounded-xl border border-border/70 bg-muted/40 p-3 text-ui-body-sm text-foreground bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                  <span className="break-keep text-foreground/80">
-                    연결 대여의 수령확인과 함께 처리됩니다.
-                  </span>
-                  <Button
-                    asChild
-                    size="sm"
-                    variant="outline"
-                    className="h-8 w-full overflow-hidden whitespace-nowrap bg-card text-muted-foreground hover:text-foreground bp-sm:w-auto"
-                  >
-                    <Link
-                      href={`/mypage?tab=orders&flowType=rental&flowId=${encodeURIComponent(String(linkedRentalId))}&${flowQuery.toString()}`}
-                    >
-                      연결 대여 보기
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              ) : null}
-              {!isAdmin && userNextTodo && (
-                <div className="mb-3 rounded-xl border border-primary/20 bg-primary/5 p-3 bp-sm:mb-4 bp-sm:p-4">
-                  <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                    <div className="min-w-0">
-                      <p className="text-ui-label font-medium text-primary">지금 해야 할 일</p>
-                      <p className="mt-1 break-keep text-ui-body-sm font-semibold text-foreground">
-                        {userNextTodo.label}
-                      </p>
-                    </div>
-                    {userNextTodo.ctaLabel ? (
-                      <NextTodoCallout
-                        className="border-0 bg-transparent p-0 shadow-none bp-sm:min-w-[220px]"
-                        label={userNextTodo.label}
-                        ctaLabel={userNextTodo.ctaLabel}
-                        ctaHref={userNextTodo.ctaHref}
-                        onCtaClick={userNextTodo.onCtaClick}
-                      />
-                    ) : userNextTodo.description ? (
-                      <p className="break-keep text-ui-body-sm text-foreground/75 bp-sm:max-w-[360px] bp-sm:text-right">
-                        {userNextTodo.description}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-              )}
 
               {/* 신청 요약 정보 */}
               <div
@@ -2015,38 +1903,6 @@ export default function StringingApplicationDetailClient({
                 )}
               </div>
 
-              {!isAdmin && isCancelRequested && (
-                <div className="mt-4 rounded-xl border border-warning/40 bg-warning/10 p-4 text-ui-body-sm text-foreground shadow-sm">
-                  <p className="font-semibold">취소 요청 처리 중</p>
-                  <p className="mt-1 text-foreground/80">
-                    관리자 확인 후 결과가 반영됩니다. 필요하면 아래 신청 상태 카드에서 취소 요청을
-                    철회할 수 있습니다.
-                  </p>
-                </div>
-              )}
-
-              {!isAdmin && (
-                <div className="mt-4 rounded-xl border border-border bg-card p-4 shadow-sm">
-                  <p className="text-ui-body-sm font-semibold text-foreground">진행 단계</p>
-                  <p className="mt-1 text-ui-label text-foreground/75">
-                    현재 단계:{" "}
-                    <span className="font-medium text-foreground">
-                      {userProgressSteps[currentStepIndex]?.label ?? "접수완료"}
-                    </span>
-                  </p>
-                  <div className="mt-2 flex flex-nowrap gap-2 overflow-x-auto">
-                    {userProgressSteps.map((step, index) => (
-                      <Badge
-                        key={step.key}
-                        variant={index <= currentStepIndex ? "info" : "neutral"}
-                        className="shrink-0 whitespace-nowrap"
-                      >
-                        {step.label}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
               {/* 취소 요청 상태 안내 (관리자용) */}
               {isAdmin && cancelInfo && (
                 <div id="admin-stringing-cancel-request" className="scroll-mt-6">
@@ -2089,7 +1945,8 @@ export default function StringingApplicationDetailClient({
                   />
                 </div>
               )}
-            </div>
+              </div>
+            )}
 
             {isAdmin && (
               <Card className={cn("mb-6", getNextActionCardClass(nextActionGuide.tone))}>
