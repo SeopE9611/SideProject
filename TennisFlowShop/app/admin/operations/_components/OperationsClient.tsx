@@ -625,6 +625,13 @@ function collectReviewReasons(g: { anchor: OpItem; items: OpItem[] }) {
   return Array.from(reasons);
 }
 
+
+function visibleSignalSummary(signals: AdminOperationsGroup["signals"], max = 3) {
+  const visible = (signals ?? []).slice(0, max);
+  const hiddenCount = Math.max(0, (signals?.length ?? 0) - visible.length);
+  return { visible, hiddenCount };
+}
+
 function stringSummaryText(item?: OpItem) {
   if (!item?.stringingSummary?.requested) return null;
   const summary = item.stringingSummary;
@@ -1962,15 +1969,11 @@ export default function OperationsClient() {
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-transparent border-b border-border">
-                      <TableHead className={cn(thClasses, "w-[24%]")}>처리 상태</TableHead>
-                      <TableHead className={cn(thClasses, "w-[42%]")}>
-                        대상 · 운영 흐름 · 처리
-                      </TableHead>
-                      <TableHead className={cn(thClasses, "w-[18%] text-right")}>금액</TableHead>
-                      {/* <TableHead className={cn(thClasses, 'sticky right-0 z-20 bg-card text-right shadow-[-8px_0_12px_-12px_hsl(var(--border))]')}>액션</TableHead> */}
-                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[16%]")}>
-                        액션
-                      </TableHead>
+                      <TableHead className={cn(thClasses, "w-[34%]")}>업무</TableHead>
+                      <TableHead className={cn(thClasses, "w-[26%]")}>상태/다음 작업</TableHead>
+                      <TableHead className={cn(thClasses, "w-[18%]")}>확인 항목</TableHead>
+                      <TableHead className={cn(thClasses, "w-[12%] text-right")}>금액/시각</TableHead>
+                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[10%]")}>액션</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -2062,7 +2065,7 @@ export default function OperationsClient() {
                             )}
                           >
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className="space-y-1.5">
+                              <div className="space-y-2">
                                 <div className="flex flex-wrap items-center gap-1.5">
                                   <Badge
                                     className={cn(
@@ -2073,15 +2076,43 @@ export default function OperationsClient() {
                                   >
                                     {priorityMeta.label}
                                   </Badge>
-                                  <span className={cn("min-w-0 break-words", adminTypography.rowMeta)}>
-                                    {priorityMeta.description}
-                                  </span>
-                                  <span className={adminTypography.rowMeta}>
-                                    {isGroup ? `${g.items.length}건 그룹` : "단일 건"}
-                                  </span>
+                                  <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
+                                    {opsKindLabel(g.anchor.kind)}
+                                  </Badge>
+                                  {isGroup && (
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 px-1.5 text-xs text-foreground/75 hover:text-foreground"
+                                      onClick={() => toggleGroup(g.key)}
+                                      title={isOpen ? "하위 정보 접기" : "하위 정보 펼치기"}
+                                    >
+                                      {isOpen ? (
+                                        <ChevronDown className="mr-1 h-3.5 w-3.5" />
+                                      ) : (
+                                        <ChevronRight className="mr-1 h-3.5 w-3.5" />
+                                      )}
+                                      {g.items.length}건 그룹
+                                    </Button>
+                                  )}
                                 </div>
-                                <div className="flex min-w-0 items-center gap-1.5 text-xs text-foreground/75">
-                                  <span className="truncate font-mono">{docLabel}</span>
+                                <div className="min-w-0 space-y-1">
+                                  <p className={cn("truncate", adminTypography.bodyStrong)}>
+                                    {customerPrimary}
+                                  </p>
+                                  <p className="line-clamp-2 text-[15px] font-semibold leading-snug text-foreground">
+                                    {headline}
+                                  </p>
+                                  <p className={cn("line-clamp-1", adminTypography.metaMuted)}>
+                                    {scenarioLabel}
+                                  </p>
+                                </div>
+                                <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                                  <span className={cn("font-mono", adminTypography.caption)}>{docLabel}</span>
+                                  {customerName && customerEmail && (
+                                    <span className={cn("truncate", adminTypography.caption)}>{customerEmail}</span>
+                                  )}
                                   <Button
                                     size="sm"
                                     variant="ghost"
@@ -2093,122 +2124,84 @@ export default function OperationsClient() {
                                     <Copy className="h-3.5 w-3.5" />
                                   </Button>
                                 </div>
-                                <p className="text-xs text-foreground/85 leading-tight">
-                                  접수 {createdAtLabel}
-                                </p>
-                                {slaMeta ? (
-                                  <Badge
-                                    title="접수 시점 기준 경과 시간입니다. 긴급/확인은 운영 우선순위 기준으로 표시됩니다."
-                                    variant="outline"
-                                    className={cn(badgeBase, badgeSizeSm, slaMeta.className)}
-                                  >
-                                    {slaMeta.label}
-                                  </Badge>
-                                ) : null}
                               </div>
                             </TableCell>
 
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className="space-y-1.5">
-                                <div className="flex items-start gap-2">
-                                  {isGroup && (
-                                    <Button
-                                      type="button"
-                                      size="sm"
-                                      variant="ghost"
-                                      className="mt-0.5 h-6 w-6 p-0"
-                                      onClick={() => toggleGroup(g.key)}
-                                      title={isOpen ? "하위 정보 접기" : "하위 정보 펼치기"}
-                                    >
-                                      {isOpen ? (
-                                        <ChevronDown className="h-3.5 w-3.5" />
-                                      ) : (
-                                        <ChevronRight className="h-3.5 w-3.5" />
-                                      )}
-                                    </Button>
-                                  )}
-                                  <div className="min-w-0 space-y-0.5">
-                                    <p className="text-xs text-foreground/75 leading-tight">
-                                      {scenarioLabel}
-                                    </p>
-                                    <p className="truncate text-[13px] font-medium leading-tight text-foreground/85">
-                                      {customerPrimary}
-                                    </p>
-                                    {customerName && customerEmail && (
-                                      <p className="truncate text-xs leading-tight text-foreground/75">
-                                        {customerEmail}
-                                      </p>
-                                    )}
-                                  </div>
-                                </div>
-                                <p className="text-[15px] font-semibold leading-tight text-foreground line-clamp-1">
-                                  {headline}
-                                </p>
-                                <p className={cn("line-clamp-1 text-foreground/95", adminTypography.bodyStrong)}>
-                                  <span className="font-semibold text-primary/90">다음 작업:</span>{" "}
-                                  {nextActionText}
-                                </p>
-                                {g.signals.length > 0 && (
-                                  <div className="flex flex-wrap gap-1">
-                                    {g.signals.slice(0, 4).map((signal) => (
-                                      <Badge
-                                        key={`${g.key}:signal:${signal.code}:${signal.sourceId}`}
-                                        variant="outline"
-                                        className={cn(badgeBase, badgeSizeSm, "border-warning/40 text-warning")}
-                                        title={toOperatorSentence(signal.description)}
-                                      >
-                                        확인 항목 · {toOperatorSentence(signal.title)}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                )}
-                                {g.linkedFlowStatusIssue && (
-                                  <div className="rounded-md border border-warning/40 bg-warning/5 px-2 py-1.5 text-xs text-foreground/80">
+                              <div className="space-y-2">
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                  <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
+                                    {g.anchor.statusDisplayLabel ?? g.anchor.statusLabel ?? "상태 확인"}
+                                  </Badge>
+                                  {slaMeta ? (
                                     <Badge
+                                      title="접수 시점 기준 경과 시간입니다. 긴급/확인은 운영 우선순위 기준으로 표시됩니다."
                                       variant="outline"
-                                      className="mb-1 border-warning/50 text-warning"
+                                      className={cn(badgeBase, badgeSizeSm, slaMeta.className)}
                                     >
-                                      {g.linkedFlowStatusIssue.title}
+                                      {slaMeta.label}
                                     </Badge>
-                                    <p>{g.linkedFlowStatusIssue.message}</p>
+                                  ) : null}
+                                </div>
+                                <div className={cn("rounded-xl px-3 py-2", adminSurface.nextAction)}>
+                                  <p className={cn("mb-1 text-primary", adminTypography.caution)}>
+                                    다음 작업:
+                                  </p>
+                                  <p className={cn("line-clamp-3", adminTypography.bodyStrong)}>
+                                    {nextActionText}
+                                  </p>
+                                </div>
+                              </div>
+                            </TableCell>
+
+                            <TableCell className={cn(tdClasses, rowDensityClass)}>
+                              <div className="space-y-2">
+                                {(() => {
+                                  const { visible, hiddenCount } = visibleSignalSummary(g.signals, 3);
+                                  return visible.length > 0 ? (
+                                    <div className="flex flex-wrap gap-1">
+                                      {visible.map((signal) => (
+                                        <Badge
+                                          key={`${g.key}:signal:${signal.code}:${signal.sourceId}`}
+                                          variant="outline"
+                                          className={cn(badgeBase, badgeSizeSm, "border-warning/40 bg-warning/5 text-warning")}
+                                          title={toOperatorSentence(signal.description)}
+                                        >
+                                          {toOperatorSentence(signal.title)}
+                                        </Badge>
+                                      ))}
+                                      {hiddenCount > 0 && (
+                                        <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
+                                          외 {hiddenCount}개
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <p className={adminTypography.metaMuted}>추가 확인 항목 없음</p>
+                                  );
+                                })()}
+                                {g.linkedFlowStatusIssue && (
+                                  <div className="rounded-lg border border-warning/40 bg-warning/5 px-2 py-1.5">
+                                    <p className={cn("font-semibold text-warning", adminTypography.caption)}>
+                                      {g.linkedFlowStatusIssue.title}
+                                    </p>
+                                    <p className={cn("mt-0.5", adminTypography.caption)}>
+                                      {g.linkedFlowStatusIssue.message}
+                                    </p>
                                   </div>
                                 )}
                                 {hasReasonCard && (
                                   <div className="space-y-1">
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-6 px-1 text-xs font-medium text-muted-foreground"
-                                      onClick={() => toggleReason(g.key)}
-                                    >
-                                      {isReasonOpen
-                                        ? "확인 이유 숨기기"
-                                        : reasonBulletCount > 0
-                                          ? `확인 이유 ${reasonBulletCount}개 보기`
-                                          : "확인 이유 보기"}
+                                    <Button type="button" variant="ghost" size="sm" className="h-6 px-1 text-xs font-medium text-muted-foreground" onClick={() => toggleReason(g.key)}>
+                                      {isReasonOpen ? "확인 이유 숨기기" : reasonBulletCount > 0 ? `확인 이유 ${reasonBulletCount}개 보기` : "확인 이유 보기"}
                                     </Button>
-                                    <div
-                                      className={cn(
-                                        "grid transition-all duration-200 ease-out",
-                                        isReasonOpen
-                                          ? "grid-rows-[1fr] opacity-100"
-                                          : "grid-rows-[0fr] opacity-0",
-                                      )}
-                                    >
-                                      <div className="overflow-hidden rounded-sm border border-border/40 bg-muted/[0.08] px-1.5 py-1">
-                                        <p className="text-xs text-foreground/75">
-                                          {reasonSummary}
-                                        </p>
+                                    <div className={cn("grid transition-all duration-200 ease-out", isReasonOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
+                                      <div className="overflow-hidden rounded-md border border-border/40 bg-muted/[0.08] px-2 py-1">
+                                        <p className={adminTypography.caption}>{reasonSummary}</p>
                                         {shouldShowReasonBullets && (
-                                          <ul className="mt-0.5 space-y-0.5">
+                                          <ul className="mt-1 space-y-0.5">
                                             {reasonBullets.slice(0, 3).map((reason) => (
-                                              <li
-                                                key={`reason:${g.key}:${reason}`}
-                                                className="list-inside list-disc text-xs text-foreground/85 line-clamp-1"
-                                              >
-                                                {reason}
-                                              </li>
+                                              <li key={`reason:${g.key}:${reason}`} className="list-inside list-disc text-xs text-foreground/85 line-clamp-1">{reason}</li>
                                             ))}
                                           </ul>
                                         )}
@@ -2278,6 +2271,9 @@ export default function OperationsClient() {
                                     </Tooltip>
                                   </TooltipProvider>
                                 )}
+                                <span className={cn("text-right", adminTypography.caption)}>
+                                  접수 {createdAtLabel}
+                                </span>
                                 {amountMeaningText(g.anchor) ? (
                                   <span className="text-xs text-foreground/85 line-clamp-1 text-right">
                                     {amountMeaningText(g.anchor)}
@@ -2315,7 +2311,7 @@ export default function OperationsClient() {
                           {isGroup && (
                             <TableRow className="bg-muted/20">
                               <TableCell
-                                colSpan={4}
+                                colSpan={5}
                                 className={cn(
                                   tdClasses,
                                   "border-l-2 border-l-primary/25 border-t border-border/40 py-0",
@@ -2448,7 +2444,7 @@ export default function OperationsClient() {
 
                     {shouldShowEmptyState && (
                       <TableRow className="hover:bg-transparent">
-                        <TableCell colSpan={4} className="py-16 text-center">
+                        <TableCell colSpan={5} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-2">
                             <Search className="h-8 w-8 text-muted-foreground/50" />
                             <p className="text-sm text-muted-foreground">
@@ -2612,24 +2608,32 @@ export default function OperationsClient() {
                         <p className="text-sm font-semibold text-foreground line-clamp-1">
                           {headline}
                         </p>
-                        <p className={cn("line-clamp-2 text-foreground", adminTypography.bodyStrong)}>
-                          <span className="mr-1 font-semibold text-primary">다음 작업:</span>
-                          {nextActionText}
-                        </p>
-                        {g.signals.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {g.signals.slice(0, 3).map((signal) => (
-                              <Badge
-                                key={`m:${g.key}:signal:${signal.code}:${signal.sourceId}`}
-                                variant="outline"
-                                className={cn(badgeBase, badgeSizeSm, "border-warning/40 text-warning")}
-                                title={toOperatorSentence(signal.description)}
-                              >
-                                확인 항목 · {toOperatorSentence(signal.title)}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
+                        <div className={cn("rounded-xl px-3 py-2", adminSurface.nextAction)}>
+                          <p className={cn("mb-1 text-primary", adminTypography.caution)}>다음 작업:</p>
+                          <p className={cn("line-clamp-3", adminTypography.bodyStrong)}>{nextActionText}</p>
+                        </div>
+                        {(() => {
+                          const { visible, hiddenCount } = visibleSignalSummary(g.signals, 3);
+                          return visible.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {visible.map((signal) => (
+                                <Badge
+                                  key={`m:${g.key}:signal:${signal.code}:${signal.sourceId}`}
+                                  variant="outline"
+                                  className={cn(badgeBase, badgeSizeSm, "border-warning/40 bg-warning/5 text-warning")}
+                                  title={toOperatorSentence(signal.description)}
+                                >
+                                  {toOperatorSentence(signal.title)}
+                                </Badge>
+                              ))}
+                              {hiddenCount > 0 && (
+                                <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
+                                  외 {hiddenCount}개
+                                </Badge>
+                              )}
+                            </div>
+                          ) : null;
+                        })()}
                         {g.linkedFlowStatusIssue && (
                           <div className="rounded-md border border-warning/40 bg-warning/5 px-2 py-1.5 text-xs text-foreground/80">
                             <Badge
