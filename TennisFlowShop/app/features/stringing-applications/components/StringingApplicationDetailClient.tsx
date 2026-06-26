@@ -1274,19 +1274,24 @@ export default function StringingApplicationDetailClient({
     !completedLikeStatuses.includes(data.status);
   const shouldShowReturnMethod = !(data.orderId && data.orderHasRacket === true);
   const userNextTodo =
-    !isAdmin && needsInboundTracking
+    !isAdmin && !isLinkedApplication && showConfirmExchangeButton && canConfirmExchange
       ? {
-          label: "라켓 발송 운송장 등록",
-          ctaLabel: hasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록",
-          ctaHref: inboundTrackingHref,
+          label: "교체서비스 확정",
+          ctaLabel: "교체서비스 확정",
+          onCtaClick: handleConfirmExchange,
         }
-      : !isAdmin && !isLinkedApplication && showConfirmExchangeButton && canConfirmExchange
+      : !isAdmin && needsInboundTracking && !hasTracking
         ? {
-            label: "교체서비스 확정",
-            ctaLabel: "교체서비스 확정",
-            onCtaClick: handleConfirmExchange,
+            label: "라켓 발송 운송장 등록",
+            ctaLabel: "라켓 발송 운송장 등록",
+            ctaHref: inboundTrackingHref,
           }
-        : null;
+        : !isAdmin && needsInboundTracking && hasTracking
+          ? {
+              label: "매장 입고 확인을 기다리고 있습니다.",
+              description: "등록한 라켓 발송 운송장 기준으로 매장 도착 확인을 기다려주세요.",
+            }
+          : null;
 
   const summaryCardClass =
     "flex min-h-[108px] flex-col items-start justify-between gap-2 rounded-xl border border-border/70 bg-background/80 p-4 shadow-sm";
@@ -1435,21 +1440,6 @@ export default function StringingApplicationDetailClient({
                       </Link>
                     </Button>
 
-                    {/* 사용자: 자가발송 운송장 등록/수정 버튼 */}
-                    {!isAdmin && needsInboundTracking && (
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="sm"
-                        className="h-8 w-full overflow-hidden whitespace-nowrap border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground bp-sm:w-auto bp-lg:h-9"
-                      >
-                        <Link href={inboundTrackingHref}>
-                          <Truck className="mr-2 h-4 w-4" />
-                          {hasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}
-                        </Link>
-                      </Button>
-                    )}
-
                     {/* 관리자: 매장 발송 운송장 등록/수정 버튼 */}
                     {isAdmin && !isLinkedApplication && (
                       <Button
@@ -1586,13 +1576,19 @@ export default function StringingApplicationDetailClient({
                         {userNextTodo.label}
                       </p>
                     </div>
-                    <NextTodoCallout
-                      className="border-0 bg-transparent p-0 shadow-none bp-sm:min-w-[220px]"
-                      label={userNextTodo.label}
-                      ctaLabel={userNextTodo.ctaLabel}
-                      ctaHref={userNextTodo.ctaHref}
-                      onCtaClick={userNextTodo.onCtaClick}
-                    />
+                    {userNextTodo.ctaLabel ? (
+                      <NextTodoCallout
+                        className="border-0 bg-transparent p-0 shadow-none bp-sm:min-w-[220px]"
+                        label={userNextTodo.label}
+                        ctaLabel={userNextTodo.ctaLabel}
+                        ctaHref={userNextTodo.ctaHref}
+                        onCtaClick={userNextTodo.onCtaClick}
+                      />
+                    ) : userNextTodo.description ? (
+                      <p className="break-keep text-ui-body-sm text-foreground/75 bp-sm:max-w-[360px] bp-sm:text-right">
+                        {userNextTodo.description}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
               )}
@@ -1813,7 +1809,9 @@ export default function StringingApplicationDetailClient({
                 {shouldShowReturnMethod && (
                   <div className="flex min-w-0 flex-wrap items-center gap-2 text-ui-body-sm text-foreground">
                     <Truck className="h-4 w-4 text-muted-foreground" />
-                    <span className="shrink-0 break-keep font-medium">반송 방식</span>
+                    <span className="shrink-0 break-keep font-medium">
+                      {isAdmin ? "반송 방식" : "완성 라켓 배송/수령 방식"}
+                    </span>
                     <Badge
                       className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${shippingMethodBadge.color}`}
                     >
@@ -1821,7 +1819,9 @@ export default function StringingApplicationDetailClient({
                     </Badge>
                     {shippingMethodBadge.label === "선택 없음" && (
                       <span className="text-ui-label text-foreground/75">
-                        반송 방식이 아직 선택되지 않았습니다.
+                        {isAdmin
+                          ? "반송 방식이 아직 선택되지 않았습니다."
+                          : "완성 라켓 배송/수령 방식이 아직 선택되지 않았습니다."}
                       </span>
                     )}
                   </div>
