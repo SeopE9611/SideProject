@@ -16,7 +16,7 @@ import {
 } from "@/app/features/stringing-applications/lib/fulfillment-labels";
 import { NextTodoCallout } from "@/app/mypage/_components/OrdersScopeContextNav";
 import { useStringingStore } from "@/app/store/stringingStore";
-import { adminSurface } from "@/components/admin/admin-typography";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
@@ -279,7 +279,7 @@ interface ApplicationDetail {
     reverted?: boolean;
   }>;
 
-  // 고객→매장 입고/운송장 필요 여부 (서버에서 내려줌)
+  // 고객 발송 라켓/운송장 필요 여부 (서버에서 내려줌)
   inboundRequired?: boolean;
   needsInboundTracking?: boolean;
   orderHasRacket?: boolean;
@@ -921,28 +921,28 @@ export default function StringingApplicationDetailClient({
     : linkedRentalId
       ? `/admin/rentals/${encodeURIComponent(String(linkedRentalId))}`
       : null;
-  const linkedAdminLabel = data.orderId ? "주문 상세" : "대여 상세";
+  const linkedStageCtaLabel = data.orderId ? "주문에서 진행 단계 변경" : "대여에서 진행 단계 확인";
   const applicationContext = isRentalLinkedApplication
     ? {
-        label: "대여 기반 교체서비스",
-        title: "대여 라켓 장착 작업",
-        description: "이 신청서는 매장 보유 대여 라켓에 스트링을 장착하는 작업입니다.",
-        payment: "결제는 연결 대여에서 처리되었습니다.",
+        label: "대여 연결 하위 작업",
+        title: "대여에 포함된 교체 작업",
+        description: "이 작업은 대여 상세와 연결되어 있습니다. 대여 흐름 안에서 입고·작업·인도 상태를 함께 확인하세요.",
+        payment: "결제는 대여 결제에 포함됨",
       }
     : isOrderLinkedApplication
       ? {
-          label: "주문 기반 교체서비스",
-          title: "주문에 포함된 교체서비스",
+          label: "주문 연결 하위 작업",
+          title: "주문에 포함된 교체 작업",
           description:
-            "이 신청서는 주문에 포함된 교체서비스입니다. 작업 정보는 연결 주문과 함께 확인하세요.",
-          payment: "결제는 연결 주문에서 처리되었습니다.",
+            "이 작업은 주문 상세와 연결되어 있습니다. 결제는 주문에서 처리되며, 진행 단계는 주문 상세의 연결 진행 단계와 함께 확인하세요.",
+          payment: "결제는 주문 결제에 포함됨",
         }
       : {
-          label: "단독 교체서비스",
-          title: "단독 교체서비스",
+          label: "단독 교체서비스 신청서",
+          title: "교체서비스 신청서",
           description:
-            "고객 보유 라켓 입고 후 작업하는 교체서비스입니다. 입고/수거/자가발송 정보를 확인하세요.",
-          payment: "결제는 교체서비스 신청서에서 처리합니다.",
+            "이 신청서 자체가 대표 업무입니다. 접수·작업·반송을 이 화면에서 처리합니다.",
+          payment: "결제는 이 신청서에서 처리합니다.",
         };
   const effectiveStockDeduction =
     data.stockDeduction ??
@@ -970,6 +970,13 @@ export default function StringingApplicationDetailClient({
     : hasOrderLinkedPayment || hasRentalLinkedPayment
       ? (linkedPayment?.status ?? data.orderPaymentStatus ?? data.paymentStatus ?? "결제대기")
       : (data.paymentStatus ?? "결제대기");
+  const linkedPaymentContextLabel = packageApplied
+    ? "패키지 차감"
+    : isOrderLinkedApplication || paymentSourceRaw.startsWith("order:")
+      ? "주문 결제에 포함됨"
+      : isRentalLinkedApplication || paymentSourceRaw.startsWith("rental:")
+        ? "대여 결제에 포함됨"
+        : paymentStatus;
   const normalizedPaymentProvider = String(linkedPayment?.provider ?? "")
     .trim()
     .toLowerCase();
@@ -1093,7 +1100,7 @@ export default function StringingApplicationDetailClient({
   // 관리자용 취소 요청 정보 (주문 상세와 동일 패턴)
   const cancelInfo = buildAdminCancelRequestView(data.cancelRequest, "application");
   // 자가발송/운송장 등록 여부 계산
-  // "고객→매장" 기준은 collectionMethod만 사용
+  // 고객 발송 라켓 기준은 collectionMethod만 사용
   const collectionMethodRaw = data.shippingInfo?.collectionMethod ?? null;
   const cm = normalizeCollection(collectionMethodRaw ?? "self_ship");
   const isSelfShip = cm === "self_ship";
@@ -1113,7 +1120,7 @@ export default function StringingApplicationDetailClient({
   const needsInboundTracking =
     !isLinkedApplication && (data.needsInboundTracking ?? (inboundRequired && isSelfShip));
 
-  // "매장→고객" 배송은 shippingMethod로 별도 유지
+  // 작업 완료 후 반송/인도 방식은 shippingMethod로 별도 유지
   const shippingMethod = data.shippingInfo?.shippingMethod;
 
   // 관리자 상세에서 “수령/배송(매장 → 고객 반환)”을 한눈에 보기 위한 배지
@@ -1175,8 +1182,12 @@ export default function StringingApplicationDetailClient({
     : hasLinkedDocs
       ? {
           tone: "info",
-          title: "연결 문서 먼저 확인",
-          description: "연결 문서의 결제/배송 흐름을 확인한 뒤 상태를 변경하세요.",
+          title: data.orderId ? "주문 상세의 연결 진행 단계 확인" : "대여 상세의 연결 진행 단계 확인",
+          description: data.orderId
+            ? "이 작업은 주문에 포함된 하위 작업입니다. 주문 상세의 연결 진행 단계에서 상태를 함께 변경하세요."
+            : "이 작업은 대여에 포함된 하위 작업입니다. 대여 상세의 연결 진행 단계에서 상태를 함께 변경하세요.",
+          actionLabel: data.orderId ? "주문에서 진행 단계 변경" : "대여에서 진행 단계 확인",
+          actionHref: linkedAdminHref ?? undefined,
         }
       : lowerStatus.includes("접수") || lowerStatus.includes("검토")
         ? {
@@ -1199,9 +1210,9 @@ export default function StringingApplicationDetailClient({
             : needsShippingCheck
               ? {
                   tone: "warning",
-                  title: "배송 정보 확인",
-                  description: "고객 반환 배송에 필요한 운송장 정보 입력 여부를 확인하세요.",
-                  actionLabel: "배송 정보 등록/수정",
+                  title: "반송 운송장 확인",
+                  description: "작업 완료 후 반송 운송장 입력 여부를 확인하세요.",
+                  actionLabel: "반송 운송장 등록/수정",
                   actionHref: `/admin/applications/stringing/${data.id}/shipping-update`,
                 }
               : {
@@ -1210,9 +1221,9 @@ export default function StringingApplicationDetailClient({
                   description: "현재 기준으로 즉시 필요한 추가 조치는 없습니다.",
                 };
   const recommendedActions = [
-    { label: "결제 정보 확인", href: "#admin-stringing-payment", show: true },
+    { label: isLinkedApplication ? linkedPaymentContextLabel : "결제 정보 확인", href: "#admin-stringing-payment", show: true },
     {
-      label: "배송/입고 정보 확인",
+      label: "고객 발송·반송 정보 확인",
       href: "#admin-stringing-shipping",
       show: true,
     },
@@ -1256,8 +1267,8 @@ export default function StringingApplicationDetailClient({
   const userNextTodo =
     !isAdmin && needsInboundTracking
       ? {
-          label: "라켓 운송장 등록",
-          ctaLabel: hasTracking ? "라켓 발송 수정" : "라켓 발송 등록",
+          label: "고객 발송 운송장 등록",
+          ctaLabel: hasTracking ? "고객 발송 운송장 수정" : "고객 발송 운송장 등록",
           ctaHref: inboundTrackingHref,
         }
       : !isAdmin && !isLinkedApplication && showConfirmExchangeButton && canConfirmExchange
@@ -1339,7 +1350,7 @@ export default function StringingApplicationDetailClient({
                           : "text-ui-section-title font-semibold sm:text-ui-page-title bp-sm:text-ui-page-title-lg",
                       )}
                     >
-                      {isAdmin ? "교체서비스 신청 상세 관리" : "교체서비스 신청 상세"}
+                      {isAdmin ? applicationContext.title : "교체서비스 신청 상세"}
                     </h1>
                     {!isAdmin && (
                       <p className="max-w-2xl text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body">
@@ -1425,7 +1436,7 @@ export default function StringingApplicationDetailClient({
                       >
                         <Link href={inboundTrackingHref}>
                           <Truck className="mr-2 h-4 w-4" />
-                          {hasTracking ? "라켓 발송 수정" : "라켓 발송 등록"}
+                          {hasTracking ? "고객 발송 운송장 수정" : "고객 발송 운송장 등록"}
                         </Link>
                       </Button>
                     )}
@@ -1637,7 +1648,7 @@ export default function StringingApplicationDetailClient({
                         isAdmin ? "text-muted-foreground" : "text-foreground",
                       )}
                     >
-                      {isAdmin ? "신청 상태" : "신청 유형"}
+                      {isAdmin ? "현재 상태" : "신청 유형"}
                     </span>
                   </div>
                   {isAdmin ? (
@@ -1664,7 +1675,7 @@ export default function StringingApplicationDetailClient({
                         isAdmin ? "text-muted-foreground" : "text-foreground",
                       )}
                     >
-                      {isAdmin ? "결제 상태" : "총 작업 수"}
+                      {isAdmin ? "결제 문맥" : "총 작업 수"}
                     </span>
                   </div>
                   {isAdmin ? (
@@ -1672,7 +1683,7 @@ export default function StringingApplicationDetailClient({
                       const pay = getPaymentStatusBadgeSpec(paymentStatus);
                       return (
                         <Badge variant={pay.variant} className={summaryBadgeClass}>
-                          {paymentStatus}
+                          {linkedPaymentContextLabel}
                         </Badge>
                       );
                     })()
@@ -1763,7 +1774,7 @@ export default function StringingApplicationDetailClient({
                 {shouldShowReturnMethod && (
                   <div className="flex min-w-0 flex-wrap items-center gap-2 text-ui-body-sm text-foreground">
                     <Truck className="h-4 w-4 text-muted-foreground" />
-                    <span className="shrink-0 break-keep font-medium">반환 방식</span>
+                    <span className="shrink-0 break-keep font-medium">반송 방식</span>
                     <Badge
                       className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${shippingMethodBadge.color}`}
                     >
@@ -1771,7 +1782,7 @@ export default function StringingApplicationDetailClient({
                     </Badge>
                     {shippingMethodBadge.label === "선택 없음" && (
                       <span className="text-ui-label text-foreground/75">
-                        반환 방식이 아직 선택되지 않았습니다.
+                        반송 방식이 아직 선택되지 않았습니다.
                       </span>
                     )}
                   </div>
@@ -1859,7 +1870,7 @@ export default function StringingApplicationDetailClient({
                 <CardHeader className="pb-3">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <CardTitle className="text-ui-body font-semibold">우선 처리 안내</CardTitle>
+                      <CardTitle className={adminTypography.panelTitle}>다음 작업</CardTitle>
                       <CardDescription className="mt-1 text-ui-body-sm text-foreground/75">
                         {nextActionGuide.title}
                       </CardDescription>
@@ -1882,7 +1893,7 @@ export default function StringingApplicationDetailClient({
                   <div className="rounded-lg border border-border/60 bg-background/70 p-3">
                     <p className="text-ui-body-sm font-semibold text-foreground">권장 작업</p>
                     <p className="mt-1 text-ui-label text-muted-foreground">
-                      현재 상태에서 관리자가 먼저 확인하면 좋은 작업입니다.
+                      현재 상태에서 먼저 확인할 처리 참고 순서입니다.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
@@ -1926,19 +1937,19 @@ export default function StringingApplicationDetailClient({
                   </div>
                   <div className="rounded-lg border border-border/60 bg-background/70 p-3">
                     <p className="text-ui-body-sm font-semibold text-foreground">
-                      교체서비스 처리 체크리스트
+                      처리 참고 순서
                     </p>
                     <ul className="mt-2 grid gap-1.5 text-ui-label leading-relaxed text-muted-foreground sm:grid-cols-2">
                       <li>□ 고객 요청사항 확인</li>
                       <li>□ 스트링/장력 정보 확인</li>
-                      <li>□ 결제 상태 또는 연결 문서 확인</li>
+                      <li>□ 결제 문맥 또는 연결 문서 확인</li>
                       <li>
                         □{" "}
                         {isLinkedApplication
-                          ? "배송/수령 정보 확인"
-                          : "배송/방문/자가발송 정보 확인"}
+                          ? "고객 발송·반송 정보 확인"
+                          : "고객 발송·방문 접수·반송 정보 확인"}
                       </li>
-                      <li>□ 작업 상태 변경</li>
+                      <li>□ 단독 신청서는 이 화면에서, 연결 작업은 부모 상세에서 상태 변경</li>
                       <li>□ 완료 후 연결 주문/대여 상태 확인</li>
                     </ul>
                   </div>
@@ -1998,13 +2009,14 @@ export default function StringingApplicationDetailClient({
             <Card id="admin-stringing-cancel" className={cn(detailCardClass, "mb-6 bp-sm:mb-8")}>
               <CardHeader className={detailCardHeaderClass}>
                 <div className="flex items-center justify-between gap-3">
-                  <CardTitle>{isAdmin ? "신청 상태 관리" : "신청 상태"}</CardTitle>
+                  <CardTitle>{isAdmin ? "다음 작업" : "신청 상태"}</CardTitle>
                   <ApplicationStatusBadge status={data.status} />
                 </div>
                 {isAdmin && (
                   <CardDescription>
-                    연결된 주문·대여의 진행 단계와 취소 요청은 해당 상세에서 처리합니다. 단독
-                    신청서만 이 화면에서 직접 조정하세요.
+                    {isLinkedApplication
+                      ? "연결된 주문·대여의 진행 단계에서 상태를 함께 변경하세요. 이 화면에서는 현재 작업 상태를 확인합니다."
+                      : "단독 신청서는 접수·작업·반송 상태를 이 화면에서 직접 관리합니다."}
                   </CardDescription>
                 )}
               </CardHeader>
@@ -2015,10 +2027,12 @@ export default function StringingApplicationDetailClient({
                       <div className="space-y-3">
                         <div>
                           <p className="text-ui-body-sm font-semibold text-foreground">
-                            신청 진행 상태
+                            교체 작업 상태
                           </p>
                           <p className="mt-1 text-ui-label text-foreground/75">
-                            현재 신청서의 진행 단계를 확인하고 필요한 경우 상태를 변경합니다.
+                            {isLinkedApplication
+                              ? "연결 작업의 현재 단계를 확인합니다. 상태 변경은 부모 상세의 연결 진행 단계에서 처리하세요."
+                              : "이 신청서의 접수·작업·반송 단계를 확인하고 필요한 경우 상태를 변경합니다."}
                           </p>
                         </div>
 
@@ -2040,11 +2054,11 @@ export default function StringingApplicationDetailClient({
                           <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-ui-label text-foreground/80">
                             <p>
                               {linkedRentalId
-                                ? "이 신청서는 대여 주문과 연결되어 있습니다. 작업 상태 변경은 대여 상세의 ‘교체서비스 작업 상태 관리’에서 처리하세요."
-                                : "이 신청서는 주문과 연결되어 있습니다. 상태 변경은 연결된 주문 상세의 통합 진행 단계에서 처리하세요."}
+                                ? "이 작업은 대여에 포함되어 있습니다. 대여 상세의 연결 진행 단계에서 상태를 함께 변경하세요."
+                                : "이 작업은 주문에 포함되어 있습니다. 주문 상세의 연결 진행 단계에서 상태를 함께 변경하세요."}
                             </p>
                             <Button asChild size="sm" variant="outline" className="mt-2">
-                              <Link href={linkedAdminHref}>{linkedAdminLabel}</Link>
+                              <Link href={linkedAdminHref}>{linkedStageCtaLabel}</Link>
                             </Button>
                           </div>
                         )}
@@ -2354,7 +2368,7 @@ export default function StringingApplicationDetailClient({
                   )}
                 >
                   <CardTitle className="text-ui-card-title-lg font-semibold flex items-center gap-2">
-                    <CreditCard className="w-5 h-5 text-primary" /> 결제/패키지 정보
+                    <CreditCard className="w-5 h-5 text-primary" /> 결제 정보
                   </CardTitle>
                   <div className="flex items-center space-x-2">
                     {(() => {
@@ -2426,10 +2440,11 @@ export default function StringingApplicationDetailClient({
                             </Button>
                           </div>
                         )}
-                        {isOrderLinkedApplication && (
-                          <p className="mt-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-ui-label leading-relaxed text-foreground/80">
-                            결제는 연결 주문에서 처리되었습니다. 주문 결제에 포함된
-                            교체서비스입니다.
+                        {isLinkedApplication && (
+                          <p className="mt-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-ui-body-sm leading-relaxed text-foreground/80">
+                            {isOrderLinkedApplication
+                              ? "주문 결제에 포함됨: 이 교체 작업의 결제는 연결 주문에서 처리합니다."
+                              : "대여 결제에 포함됨: 이 교체 작업의 결제는 연결 대여에서 처리합니다."}
                           </p>
                         )}
                       </div>
@@ -3030,20 +3045,20 @@ export default function StringingApplicationDetailClient({
                   <CardHeader className={detailCardHeaderClass}>
                     <CardTitle className="flex items-center gap-2 text-ui-card-title-lg font-semibold">
                       <Truck className="h-5 w-5 text-primary" />
-                      입고/수령/배송 정보
+                      고객 발송·반송 정보
                     </CardTitle>
-                    <CardDescription>입고와 반환 정보를 구분해 확인하세요.</CardDescription>
+                    <CardDescription>고객 발송 라켓, 라켓 입고 확인, 작업 완료 후 반송 정보를 구분해 확인하세요.</CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-3 p-3 md:grid-cols-2 bp-sm:p-5">
                     <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
                       <p className="text-ui-body-sm font-semibold text-foreground">
-                        고객→매장 입고
+                        고객 발송 라켓
                       </p>
                       <p className="mt-1 text-ui-label text-foreground/75">
                         {inboundRequired
                           ? isVisit
                             ? "방문 예약 일시에 맞춰 라켓을 가져와 주세요."
-                            : "매장으로 보내는 라켓 발송 정보를 확인합니다."
+                            : "고객 발송 운송장과 라켓 입고 여부를 확인합니다."
                           : "연결 주문/대여 기준으로 별도 입고가 필요하지 않습니다."}
                       </p>
                       <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
@@ -3084,7 +3099,7 @@ export default function StringingApplicationDetailClient({
                       {needsInboundTracking && (
                         <Button asChild size="sm" className="mt-3 w-full bp-sm:w-auto">
                           <Link href={inboundTrackingHref}>
-                            {hasTracking ? "라켓 발송 수정" : "라켓 발송 등록"}
+                            {hasTracking ? "고객 발송 운송장 수정" : "고객 발송 운송장 등록"}
                           </Link>
                         </Button>
                       )}
@@ -3092,14 +3107,14 @@ export default function StringingApplicationDetailClient({
 
                     <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
                       <p className="text-ui-body-sm font-semibold text-foreground">
-                        매장→고객 반환
+                        작업 완료 후 반송
                       </p>
                       <p className="mt-1 text-ui-label text-foreground/75">
-                        작업 완료 후 수령/배송 정보를 확인합니다.
+                        작업 완료 후 반송 운송장 또는 방문 인도 정보를 확인합니다.
                       </p>
                       <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
                         <p>
-                          반환 방식:{" "}
+                          반송 방식:{" "}
                           <span className="font-medium text-foreground">
                             {shouldShowReturnMethod
                               ? shippingMethodBadge.label
@@ -3131,7 +3146,7 @@ export default function StringingApplicationDetailClient({
                               : "-"}
                           </p>
                         ) : (
-                          <p>등록된 반환 배송 정보가 없습니다.</p>
+                          <p>등록된 반송 정보가 없습니다.</p>
                         )}
                       </div>
                     </div>
@@ -3146,7 +3161,7 @@ export default function StringingApplicationDetailClient({
                   >
                     <Truck className="h-5 w-5 text-foreground" />
                     <CardTitle className="text-ui-card-title-lg font-semibold">
-                      배송 방향별 운송 정보
+                      고객 발송·반송 정보
                     </CardTitle>
                   </CardHeader>
 
@@ -3154,10 +3169,10 @@ export default function StringingApplicationDetailClient({
                     {/* 자가 발송(사용자 → 매장) */}
                     <div className="rounded-lg border border-dashed border-border bg-background/60 p-4">
                       <p className="text-ui-body-sm font-semibold text-foreground">
-                        라켓 발송 정보
+                        고객 발송 라켓
                       </p>
                       <p className="mt-1 text-ui-label text-foreground/75">
-                        매장으로 보내는 라켓의 택배 정보를 확인합니다.
+                        고객 발송 운송장과 라켓 입고 확인에 필요한 정보를 확인합니다.
                       </p>
                       {data.shippingInfo?.selfShip?.trackingNo ? (
                         <div className="mt-2 space-y-1 text-ui-body-sm text-foreground">
@@ -3189,14 +3204,14 @@ export default function StringingApplicationDetailClient({
                         </div>
                       ) : (
                         <p className="mt-2 text-ui-body-sm text-foreground/80">
-                          등록된 라켓 발송 정보가 없습니다.
+                          등록된 고객 발송 운송장이 없습니다.
                         </p>
                       )}
                     </div>
 
                     {/* 매장 발송(매장 → 사용자) */}
                     <div className="rounded-lg border border-dashed border-border bg-background/60 p-4">
-                      <p className="text-ui-body-sm font-semibold text-foreground">반송 정보</p>
+                      <p className="text-ui-body-sm font-semibold text-foreground">작업 완료 후 반송 운송장</p>
                       {hasStoreShippingInfo ? (
                         <div className="mt-2 space-y-1 text-ui-body-sm text-foreground">
                           {isCourierShipping && invoice?.trackingNumber ? (
@@ -3247,7 +3262,7 @@ export default function StringingApplicationDetailClient({
                         </div>
                       ) : (
                         <p className="mt-2 text-ui-body-sm text-foreground/80">
-                          등록된 반송 운송장 정보가 없습니다.
+                          등록된 작업 완료 후 반송 운송장이 없습니다.
                         </p>
                       )}
                     </div>
@@ -3292,7 +3307,7 @@ export default function StringingApplicationDetailClient({
                           </div>
                           <div className="flex-1">
                             <p className="text-ui-body-sm font-medium text-foreground">
-                              라켓 발송 완료
+                              고객 발송 운송장 등록
                             </p>
                             {/* 날짜 */}
                             <p className="mt-1 text-ui-body-sm text-foreground/80">
