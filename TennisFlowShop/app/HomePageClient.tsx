@@ -617,7 +617,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 <span className="inline-flex rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-ui-label font-semibold text-primary">
                   Dokkaebi Tennis Stringing & Gear
                 </span>
-                <h1 className="mt-4 max-w-3xl break-keep text-ui-page-title font-semibold tracking-tight text-foreground bp-sm:mt-5 bp-md:text-ui-hero-title">
+                <h1 className="mt-4 max-w-3xl break-keep text-ui-page-title font-semibold tracking-tight text-foreground bp-sm:mt-5 bp-md:text-ui-page-title-lg">
                   내 라켓에 맞는 스트링 교체와 테니스 용품을 한 번에
                 </h1>
                 <p className="mt-4 max-w-2xl break-keep text-ui-body leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">
