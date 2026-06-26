@@ -312,6 +312,13 @@ export default async function StringServiceSuccessPage(props: Props) {
     typeof (application as any)?.needsInboundTracking === "boolean"
       ? Boolean((application as any).needsInboundTracking)
       : inboundRequired && cm === "self_ship";
+  const hasTracking = Boolean(
+    (application as any)?.shippingInfo?.selfShip?.trackingNo ||
+      (application as any)?.shippingInfo?.selfShip?.trackingNumber ||
+      (application as any)?.shippingInfo?.selfShip?.invoiceNumber ||
+      (application as any)?.shippingInfo?.trackingNo ||
+      (application as any)?.shippingInfo?.trackingNumber,
+  );
 
   // 합계 계산 유틸
   const sumBy = (items: any[], pred: (it: any) => boolean) =>
@@ -389,13 +396,22 @@ export default async function StringServiceSuccessPage(props: Props) {
         primaryHref: mypageFlowHref,
       };
     }
-    if (needsInboundTracking) {
+    if (needsInboundTracking && !hasTracking) {
       return {
         status: "접수 완료",
         todo: "보유 라켓을 매장으로 보내고 라켓 발송 운송장을 등록해주세요.",
         next: "매장에서 입고 확인 후 교체 작업을 진행합니다.",
         primaryLabel: "라켓 발송 운송장 등록하기",
         primaryHref: shippingRegisterHref,
+      };
+    }
+    if (needsInboundTracking && hasTracking) {
+      return {
+        status: "매장 입고 확인 중",
+        todo: "등록한 운송장 기준으로 매장 도착 확인을 기다려주세요.",
+        next: "매장에서 입고 확인 후 교체 작업을 진행합니다.",
+        primaryLabel: "마이페이지에서 진행상태 확인",
+        primaryHref: mypageFlowHref,
       };
     }
     if (isVisit) {
