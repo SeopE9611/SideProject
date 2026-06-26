@@ -755,7 +755,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             align="center"
             className="mb-8 bp-sm:mb-10"
           />
-          <div className="grid gap-3 bp-sm:grid-cols-2 bp-sm:gap-4 bp-lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)] bp-lg:grid-rows-3">
+          <div className="grid gap-3 bp-sm:grid-cols-2 bp-sm:gap-4 bp-lg:grid-cols-4">
             {SITUATIONS.map((situation) => {
               const Icon = situation.icon;
               const isPrimary = situation.key === "broken";
@@ -765,20 +765,20 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   key={situation.key}
                   href={situation.href}
                   className={cn(
-                    "group flex flex-col justify-between rounded-3xl border border-border/60 bg-card p-5 shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:border-primary/30 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20",
+                    "group flex min-h-36 flex-col justify-between rounded-3xl border border-border/60 bg-card p-5 shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:border-primary/30 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-h-40",
                     isPrimary
-                      ? "min-h-56 bp-lg:row-span-3 bp-lg:p-7"
-                      : "min-h-36 bp-lg:min-h-0",
+                      ? "border-primary/30 bg-primary/5 ring-1 ring-primary/10"
+                      : "hover:bg-muted/20",
                   )}
                 >
                   <span className={cn(
-                    "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:bg-primary group-hover:text-primary-foreground",
-                    isPrimary ? "h-14 w-14" : "h-12 w-12",
+                    "flex h-12 w-12 items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:bg-primary group-hover:text-primary-foreground",
+                    isPrimary && "border-primary/25 bg-primary/10 text-primary",
                   )}>
-                    <Icon className={cn(isPrimary ? "h-6 w-6" : "h-5 w-5")} />
+                    <Icon className="h-5 w-5" />
                   </span>
                   <span>
-                    <span className={cn("block break-keep font-semibold text-foreground", isPrimary ? "text-ui-section-title" : "text-ui-card-title")}>
+                    <span className="block break-keep text-ui-card-title font-semibold text-foreground">
                       {situation.label}
                     </span>
                     <span className="mt-2 block break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
@@ -786,7 +786,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     </span>
                   </span>
                   <span className="mt-5 inline-flex items-center gap-1 text-ui-label font-semibold text-foreground/80 transition-colors group-hover:text-primary">
-                    바로가기
+                    {isPrimary ? "교체서비스 신청하기" : "바로가기"}
                     <ChevronRight className="h-3.5 w-3.5" />
                   </span>
                 </Link>
@@ -966,7 +966,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             padding="sm"
             className="mb-8 border-border/60 bg-muted/20 bp-sm:mb-10"
           >
-            <div className="mb-4 grid gap-3 bp-md:grid-cols-3 bp-sm:mb-5">
+            <div className="-mx-3 mb-4 flex gap-3 overflow-x-auto px-3 pb-2 [scrollbar-width:none] bp-sm:mx-0 bp-sm:grid bp-sm:grid-cols-3 bp-sm:px-0 bp-sm:pb-0 bp-sm:[scrollbar-width:auto] [&::-webkit-scrollbar]:hidden bp-sm:[&::-webkit-scrollbar]:block">
               {[
                 ["입문자 추천", "부드러운 타구감과 쉬운 컨트롤", "추천 상품 보기"],
                 ["스핀 추천", "회전량을 높이고 싶은 플레이어에게", "스핀형 보기"],
@@ -975,11 +975,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 <Link
                   key={title}
                   href="/products"
-                  className="group rounded-2xl border border-border/60 bg-background/80 p-4 shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:border-primary/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-ring/20"
+                  className="group min-w-[12.5rem] rounded-2xl border border-border/60 bg-background/80 p-3 shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:border-primary/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-w-0 bp-sm:p-4"
                 >
                   <p className="text-ui-card-title font-semibold text-foreground">{title}</p>
-                  <p className="mt-1.5 break-keep text-ui-body-sm text-muted-foreground">{description}</p>
-                  <span className="mt-3 inline-flex items-center gap-1 text-ui-label font-semibold text-foreground/80 transition-colors group-hover:text-primary">
+                  <p className="mt-1 break-keep text-ui-label leading-relaxed text-muted-foreground bp-sm:mt-1.5 bp-sm:text-ui-body-sm">{description}</p>
+                  <span className="mt-2 inline-flex items-center gap-1 text-ui-label font-semibold text-foreground/80 transition-colors group-hover:text-primary bp-sm:mt-3">
                     {cta}
                     <ChevronRight className="h-3.5 w-3.5" />
                   </span>
