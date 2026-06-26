@@ -711,6 +711,16 @@ export default function OrderDetailClient({
       setIsConfirmingPurchase(false);
     }
   };
+  const shouldShowInboundShippingTodo =
+    shouldShowInboundShippingBlock &&
+    inboundShippingHref &&
+    !hasSelfShipTracking &&
+    !isShipped &&
+    !isDelivered &&
+    !isCompleted &&
+    !canConfirmPurchase &&
+    !(canShowReviewCTA && Boolean(firstUnreviewed));
+
   const nextTodo: {
     label: string;
     ctaLabel: string;
@@ -718,7 +728,7 @@ export default function OrderDetailClient({
     onCtaClick?: () => void;
     description?: string;
   } | null =
-    shouldShowInboundShippingBlock && inboundShippingHref && !hasSelfShipTracking
+    shouldShowInboundShippingTodo
       ? {
           label: "라켓 발송 운송장 등록이 필요합니다.",
           description: "보유 라켓을 매장으로 보내고 라켓 발송 운송장을 등록해주세요.",

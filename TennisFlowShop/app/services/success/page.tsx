@@ -299,7 +299,9 @@ export default async function StringServiceSuccessPage(props: Props) {
     : null;
   const orderHasRacket =
     Array.isArray((order as any)?.items) &&
-    (order as any).items.some((it: any) => it?.kind === "racket");
+    (order as any).items.some((it: any) =>
+      ["racket", "used_racket"].includes(String(it?.kind ?? "")),
+    );
   const inboundRequired =
     typeof (application as any)?.inboundRequired === "boolean"
       ? Boolean((application as any).inboundRequired)
