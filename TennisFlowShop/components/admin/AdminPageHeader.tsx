@@ -1,5 +1,6 @@
 import type { ComponentType, ReactNode } from "react";
 
+import { adminTypography } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
 
 type AdminPageHeaderProps = {
@@ -24,7 +25,7 @@ export default function AdminPageHeader({
   return (
     <div
       className={cn(
-        "mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between",
+        "mb-5 flex flex-col gap-3 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm sm:flex-row sm:items-start sm:justify-between sm:p-5",
         className,
       )}
     >
@@ -36,13 +37,13 @@ export default function AdminPageHeader({
         ) : null}
 
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-normal text-foreground lg:text-3xl">
+          <h1 className={adminTypography.pageTitle}>
             {title}
           </h1>
-          <p className="mt-1 text-sm text-foreground/75">{description}</p>
+          <p className={cn("mt-1 text-foreground/75", adminTypography.body)}>{description}</p>
 
           {(scope || helperText) && (
-            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-foreground/70">
+            <div className={cn("mt-2 flex flex-wrap items-center gap-1.5", adminTypography.caption)}>
               {scope ? (
                 <span className="rounded-md border border-border/70 bg-muted/40 px-2 py-1">
                   {scope}
