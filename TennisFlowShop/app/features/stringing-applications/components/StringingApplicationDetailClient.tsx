@@ -1276,8 +1276,8 @@ export default function StringingApplicationDetailClient({
   const userNextTodo =
     !isAdmin && needsInboundTracking
       ? {
-          label: "고객 발송 운송장 등록",
-          ctaLabel: hasTracking ? "고객 발송 운송장 수정" : "고객 발송 운송장 등록",
+          label: "라켓 발송 운송장 등록",
+          ctaLabel: hasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록",
           ctaHref: inboundTrackingHref,
         }
       : !isAdmin && !isLinkedApplication && showConfirmExchangeButton && canConfirmExchange
@@ -1363,8 +1363,8 @@ export default function StringingApplicationDetailClient({
                     </h1>
                     {!isAdmin && (
                       <p className="max-w-2xl text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:text-ui-body">
-                        신청 상태, 예약 정보, 배송/수령 단계와 다음 해야 할 일을 한눈에 확인할 수
-                        있습니다.
+                        현재 상태와 다음 행동을 먼저 확인하고, 라켓·스트링·결제·배송 상세는 필요한
+                        섹션에서 확인할 수 있습니다.
                       </p>
                     )}
                     {isAdmin ? (
@@ -1445,7 +1445,7 @@ export default function StringingApplicationDetailClient({
                       >
                         <Link href={inboundTrackingHref}>
                           <Truck className="mr-2 h-4 w-4" />
-                          {hasTracking ? "고객 발송 운송장 수정" : "고객 발송 운송장 등록"}
+                          {hasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}
                         </Link>
                       </Button>
                     )}
@@ -1578,13 +1578,23 @@ export default function StringingApplicationDetailClient({
                 </div>
               ) : null}
               {!isAdmin && userNextTodo && (
-                <NextTodoCallout
-                  className="mb-3 bp-sm:mb-4"
-                  label={userNextTodo.label}
-                  ctaLabel={userNextTodo.ctaLabel}
-                  ctaHref={userNextTodo.ctaHref}
-                  onCtaClick={userNextTodo.onCtaClick}
-                />
+                <div className="mb-3 rounded-xl border border-primary/20 bg-primary/5 p-3 bp-sm:mb-4 bp-sm:p-4">
+                  <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="text-ui-label font-medium text-primary">지금 해야 할 일</p>
+                      <p className="mt-1 break-keep text-ui-body-sm font-semibold text-foreground">
+                        {userNextTodo.label}
+                      </p>
+                    </div>
+                    <NextTodoCallout
+                      className="border-0 bg-transparent p-0 shadow-none bp-sm:min-w-[220px]"
+                      label={userNextTodo.label}
+                      ctaLabel={userNextTodo.ctaLabel}
+                      ctaHref={userNextTodo.ctaHref}
+                      onCtaClick={userNextTodo.onCtaClick}
+                    />
+                  </div>
+                </div>
               )}
 
               {/* 신청 요약 정보 */}
@@ -1593,7 +1603,7 @@ export default function StringingApplicationDetailClient({
                   "grid grid-cols-1 gap-3 bp-sm:grid-cols-2",
                   isAdmin
                     ? "md:grid-cols-3 xl:grid-cols-6"
-                    : "bp-xl:grid-cols-4 bp-sm:gap-4 bp-lg:gap-5",
+                    : "bp-xl:grid-cols-5 bp-sm:gap-4 bp-lg:gap-5",
                 )}
               >
                 <div
@@ -1702,6 +1712,26 @@ export default function StringingApplicationDetailClient({
                     </p>
                   )}
                 </div>
+
+                {!isAdmin && (
+                  <div className="rounded-xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
+                    <div className="mb-2 flex items-center space-x-2">
+                      <Truck className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-ui-body-sm font-medium text-foreground">
+                        라켓 발송 상태
+                      </span>
+                    </div>
+                    <p className="line-clamp-2 break-keep text-ui-body font-semibold leading-snug text-foreground bp-sm:text-ui-card-title-lg">
+                      {!inboundRequired
+                        ? "별도 발송 불필요"
+                        : isVisit
+                          ? "방문 접수 예정"
+                          : hasTracking
+                            ? "운송장 등록 완료"
+                            : "운송장 등록 필요"}
+                    </p>
+                  </div>
+                )}
 
                 {isAdmin && (
                   <div className={summaryCardClass}>
@@ -3054,20 +3084,22 @@ export default function StringingApplicationDetailClient({
                   <CardHeader className={detailCardHeaderClass}>
                     <CardTitle className="flex items-center gap-2 text-ui-card-title-lg font-semibold">
                       <Truck className="h-5 w-5 text-primary" />
-                      고객 발송·반송 정보
+                      라켓 발송·완성 라켓 배송 정보
                     </CardTitle>
-                    <CardDescription>고객 발송 라켓, 라켓 입고 확인, 작업 완료 후 반송 정보를 구분해 확인하세요.</CardDescription>
+                    <CardDescription>
+                      매장으로 보내는 라켓 발송과 작업 완료 후 완성 라켓 배송 정보를 구분해 확인하세요.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="grid gap-3 p-3 md:grid-cols-2 bp-sm:p-5">
                     <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
                       <p className="text-ui-body-sm font-semibold text-foreground">
-                        고객 발송 라켓
+                        라켓 발송
                       </p>
                       <p className="mt-1 text-ui-label text-foreground/75">
                         {inboundRequired
                           ? isVisit
                             ? "방문 예약 일시에 맞춰 라켓을 가져와 주세요."
-                            : "고객 발송 운송장과 라켓 입고 여부를 확인합니다."
+                            : "라켓 발송 운송장과 라켓 입고 여부를 확인합니다."
                           : "연결 주문/대여 기준으로 별도 입고가 필요하지 않습니다."}
                       </p>
                       <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
@@ -3108,7 +3140,7 @@ export default function StringingApplicationDetailClient({
                       {needsInboundTracking && (
                         <Button asChild size="sm" className="mt-3 w-full bp-sm:w-auto">
                           <Link href={inboundTrackingHref}>
-                            {hasTracking ? "고객 발송 운송장 수정" : "고객 발송 운송장 등록"}
+                            {hasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}
                           </Link>
                         </Button>
                       )}
@@ -3116,14 +3148,14 @@ export default function StringingApplicationDetailClient({
 
                     <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
                       <p className="text-ui-body-sm font-semibold text-foreground">
-                        작업 완료 후 반송
+                        완성 라켓 배송
                       </p>
                       <p className="mt-1 text-ui-label text-foreground/75">
-                        작업 완료 후 반송 운송장 또는 방문 인도 정보를 확인합니다.
+                        작업 완료 후 완성 라켓 배송 운송장 또는 방문 수령 정보를 확인합니다.
                       </p>
                       <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
                         <p>
-                          반송 방식:{" "}
+                          배송/수령 방식:{" "}
                           <span className="font-medium text-foreground">
                             {shouldShowReturnMethod
                               ? shippingMethodBadge.label
@@ -3132,7 +3164,7 @@ export default function StringingApplicationDetailClient({
                         </p>
                         {isCourierShipping && invoice?.trackingNumber ? (
                           <p>
-                            반송 운송장:{" "}
+                            완성 라켓 배송 운송장:{" "}
                             <a
                               href={
                                 buildTrackingUrl(invoice.courier, invoice.trackingNumber) ??
@@ -3155,7 +3187,7 @@ export default function StringingApplicationDetailClient({
                               : "-"}
                           </p>
                         ) : (
-                          <p>등록된 반송 정보가 없습니다.</p>
+                          <p>등록된 완성 라켓 배송 정보가 없습니다.</p>
                         )}
                       </div>
                     </div>
@@ -3181,7 +3213,7 @@ export default function StringingApplicationDetailClient({
                         고객 발송 라켓
                       </p>
                       <p className="mt-1 text-ui-label text-foreground/75">
-                        고객 발송 운송장과 라켓 입고 확인에 필요한 정보를 확인합니다.
+                        라켓 발송 운송장과 라켓 입고 확인에 필요한 정보를 확인합니다.
                       </p>
                       {data.shippingInfo?.selfShip?.trackingNo ? (
                         <div className="mt-2 space-y-1 text-ui-body-sm text-foreground">
@@ -3213,7 +3245,7 @@ export default function StringingApplicationDetailClient({
                         </div>
                       ) : (
                         <p className="mt-2 text-ui-body-sm text-foreground/80">
-                          등록된 고객 발송 운송장이 없습니다.
+                          등록된 라켓 발송 운송장이 없습니다.
                         </p>
                       )}
                     </div>
@@ -3316,7 +3348,7 @@ export default function StringingApplicationDetailClient({
                           </div>
                           <div className="flex-1">
                             <p className="text-ui-body-sm font-medium text-foreground">
-                              고객 발송 운송장 등록
+                              라켓 발송 운송장 등록
                             </p>
                             {/* 날짜 */}
                             <p className="mt-1 text-ui-body-sm text-foreground/80">
@@ -3349,12 +3381,12 @@ export default function StringingApplicationDetailClient({
                           </div>
                           <div className="flex-1">
                             <p className="text-ui-body-sm font-medium text-foreground">
-                              반송 운송장 등록
+                              완성 라켓 배송 운송장 등록
                             </p>
                             <p className="mt-1 text-ui-body-sm text-foreground/80">
                               {invoice.shippedAt
                                 ? new Date(invoice.shippedAt).toLocaleDateString("ko-KR")
-                                : "고객에게 발송을 위한 운송장 번호가 등록되었습니다."}
+                                : "완성 라켓 배송을 위한 운송장 번호가 등록되었습니다."}
                             </p>
                             <p className="mt-1 break-words text-ui-body-sm text-foreground/80">
                               {getCourierLabel(invoice.courier) + " · "}
