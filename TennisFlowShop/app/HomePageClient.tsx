@@ -18,7 +18,20 @@ import {
   SIGNUP_BONUS_START_DATE,
 } from "@/lib/points.policy";
 import { cn } from "@/lib/utils";
-import { BadgeCheck, BookOpen, Clock, HelpCircle, Package, Plus, Scissors, Search, Star, Tags, Wrench } from "lucide-react";
+import {
+  BadgeCheck,
+  BookOpen,
+  ChevronRight,
+  Clock,
+  HelpCircle,
+  Package,
+  Plus,
+  Scissors,
+  Search,
+  Star,
+  Tags,
+  Wrench,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -165,7 +178,7 @@ const promoBannerClass =
 const surfaceIconWrapClass =
   "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md";
 const processStepSurfaceClass =
-  "group flex flex-col items-center rounded-2xl border border-border/60 bg-background p-4 text-center shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-md";
+  "group flex flex-col items-start rounded-2xl border border-border/60 bg-background p-4 text-left shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:border-primary/25 hover:shadow-md bp-sm:p-5";
 const brandRailClass =
   "relative flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overscroll-x-contain pb-3 [scrollbar-color:hsl(var(--muted-foreground)/0.15)_transparent] [scrollbar-width:thin] bp-sm:gap-2.5 [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/10 hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/30";
 const getBrandTabClass = (isActive: boolean) =>
@@ -193,10 +206,30 @@ type SituationAction = {
 };
 
 const SITUATIONS = [
-  { key: "broken", icon: Scissors, label: "스트링이 끊어졌어요" },
-  { key: "newRacket", icon: Plus, label: "새 라켓에 매고 싶어요" },
-  { key: "unsure", icon: HelpCircle, label: "어떤 스트링이 맞는지 몰라요" },
-  { key: "price", icon: Tags, label: "가격이 궁금해요" },
+  {
+    key: "broken",
+    icon: Scissors,
+    label: "스트링 교체 신청",
+    description: "보유 라켓을 방문·택배로 접수하고 교체를 시작해요.",
+  },
+  {
+    key: "unsure",
+    icon: HelpCircle,
+    label: "내 라켓에 맞는 스트링 찾기",
+    description: "플레이 스타일에 맞춰 스트링을 비교해 보세요.",
+  },
+  {
+    key: "price",
+    icon: Tags,
+    label: "패키지 이용권 보기",
+    description: "자주 교체한다면 횟수형 패키지로 준비하세요.",
+  },
+  {
+    key: "newRacket",
+    icon: Plus,
+    label: "중고 라켓 둘러보기",
+    description: "검수된 라켓을 구매·대여하고 스트링까지 연결해요.",
+  },
 ] as const;
 
 const SITUATION_ACTIONS: Record<SituationKey, SituationAction> = {
@@ -245,7 +278,6 @@ type HomePageClientProps = {
 export default function Home({ initialHomeData }: HomePageClientProps) {
   const [activeBrand, setActiveBrand] = useState<BrandKey>("all");
   const [activeStringBrand, setActiveStringBrand] = useState<StringBrandKey>("all");
-  const [activeSituation, setActiveSituation] = useState<SituationKey>("broken");
   const router = useRouter();
   const stringBrandRailRef = useRef<HTMLDivElement>(null);
   const racketBrandRailRef = useRef<HTMLDivElement>(null);
@@ -622,7 +654,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
 
   const usedRacketsLoading = Boolean(racketsLoadingByBrand[activeBrand]);
   const usedRacketsError = Boolean(racketsErrorByBrand[activeBrand]);
-  const activeSituationAction = SITUATION_ACTIONS[activeSituation];
   const racketTotal = racketTotalsByBrand[activeBrand] ?? usedRacketsItems.length;
   const hasMoreRacketProducts = racketTotal > usedRacketsItems.length;
 
@@ -639,6 +670,50 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       {/* 상단 배너 + 히어로 하단 배너 */}
       <SiteContainer variant="wide" className="px-0">
         <HeroSlider slides={SLIDES} />
+        <section className="mx-3 mt-4 bp-sm:mx-4 bp-sm:mt-5 bp-md:mx-6 bp-md:mt-6 bp-lg:mx-0">
+          <div className="overflow-hidden rounded-[2rem] border border-border/70 bg-card shadow-sm">
+            <div className="grid gap-0 bp-lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+              <div className="p-6 bp-sm:p-8 bp-md:p-10">
+                <span className="inline-flex rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-ui-label font-semibold text-primary">
+                  Dokkaebi Tennis Stringing & Gear
+                </span>
+                <h1 className="mt-4 max-w-3xl break-keep text-ui-page-title font-semibold tracking-tight text-foreground bp-sm:mt-5 bp-md:text-ui-hero-title">
+                  내 라켓에 맞는 스트링 교체와 테니스 용품을 한 번에
+                </h1>
+                <p className="mt-4 max-w-2xl break-keep text-ui-body leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">
+                  스트링 선택부터 교체 접수, 패키지 이용까지 도깨비테니스에서 편하게
+                  시작하세요.
+                </p>
+                <div className="mt-6 grid gap-2 bp-sm:flex bp-sm:flex-wrap bp-sm:gap-3">
+                  <Button asChild size="tall" className="bg-neutral-900 text-white hover:bg-neutral-800">
+                    <Link href="/services/apply">교체서비스 신청</Link>
+                  </Button>
+                  <Button asChild size="tall" variant="outline">
+                    <Link href="/products">스트링 둘러보기</Link>
+                  </Button>
+                </div>
+              </div>
+              <div className="grid border-t border-border/60 bg-muted/20 p-4 bp-sm:grid-cols-3 bp-sm:p-5 bp-lg:grid-cols-1 bp-lg:border-l bp-lg:border-t-0">
+                {[
+                  ["01", "스트링 선택", "브랜드와 소재를 비교하고 장착 가능한 스트링을 고릅니다."],
+                  ["02", "교체 접수", "방문·택배 방식과 텐션 정보를 입력해 접수합니다."],
+                  ["03", "전문 장착", "작업 후 검수까지 진행하고 수령 안내를 드립니다."],
+                ].map(([number, title, description]) => (
+                  <div
+                    key={number}
+                    className="rounded-2xl border border-border/60 bg-background/80 p-4 shadow-sm bp-sm:min-h-36"
+                  >
+                    <span className="text-ui-label font-semibold text-primary">{number}</span>
+                    <p className="mt-2 text-ui-card-title font-semibold text-foreground">{title}</p>
+                    <p className="mt-1.5 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
+                      {description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
         {/* 히어로 하단: 문의/광고 배너(운영값 있을 때만 노출) */}
         {PROMO_BANNERS.length > 0 && (
           <section className="mt-4 bp-sm:mt-5 bp-md:mt-6">
@@ -707,79 +782,45 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         )}
       </SiteContainer>
 
-      {/* 상황 선택 */}
+      {/* 빠른 액션 */}
       <section className="py-10 bp-sm:py-12 bp-md:py-16">
         <SiteContainer>
           <SectionHeader
             eyebrow="처음 오셨다면 여기서 시작하세요"
             title="지금 어떤 도움이 필요하세요?"
-            description="상황을 선택하면 다음 행동을 바로 안내해 드려요."
+            description="자주 찾는 메뉴를 카드에서 바로 선택할 수 있어요."
             align="center"
             className="mb-8 bp-sm:mb-10"
           />
-          <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.78fr)] bp-lg:items-stretch">
-            <div className="grid grid-cols-2 gap-3 bp-sm:gap-4 bp-md:grid-cols-4 bp-lg:grid-cols-2">
-              {SITUATIONS.map((situation) => {
-                const Icon = situation.icon;
-                const isActive = activeSituation === situation.key;
+          <div className="grid gap-3 bp-sm:grid-cols-2 bp-lg:grid-cols-4 bp-sm:gap-4">
+            {SITUATIONS.map((situation) => {
+              const Icon = situation.icon;
+              const href = SITUATION_ACTIONS[situation.key].ctas[0]?.href ?? "/";
 
-                return (
-                  <button
-                    key={situation.key}
-                    type="button"
-                    aria-pressed={isActive}
-                    onClick={() => setActiveSituation(situation.key)}
-                    className={cn(
-                      "group flex min-h-28 flex-col gap-2.5 rounded-2xl border bg-card p-3.5 text-left shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-h-36 bp-sm:gap-3 bp-sm:p-5",
-                      isActive
-                        ? "border-primary/50 bg-primary/5 shadow-md"
-                        : "border-border/60 hover:border-primary/30",
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "flex h-11 w-11 items-center justify-center rounded-2xl border transition-[background-color,color,border-color,box-shadow,opacity] duration-300",
-                        isActive
-                          ? "border-primary/40 bg-primary text-primary-foreground"
-                          : "border-border/60 bg-secondary text-foreground group-hover:shadow-md",
-                      )}
-                    >
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <span className="break-keep text-ui-body-sm font-semibold leading-relaxed text-foreground bp-sm:text-ui-card-title">
+              return (
+                <Link
+                  key={situation.key}
+                  href={href}
+                  className="group flex min-h-40 flex-col justify-between rounded-3xl border border-border/60 bg-card p-5 shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:border-primary/30 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20"
+                >
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <span>
+                    <span className="block break-keep text-ui-card-title font-semibold text-foreground">
                       {situation.label}
                     </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <PublicSurface padding="md" className="flex h-full flex-col justify-between border-primary/20 bg-primary/5 p-4 bp-sm:p-6">
-              <div>
-                <span className="inline-flex rounded-full bg-background px-3 py-1 text-ui-label font-semibold text-primary shadow-sm">
-                  {activeSituationAction.eyebrow}
-                </span>
-                <h3 className="mt-3 break-keep text-ui-card-title-lg font-semibold text-foreground bp-sm:mt-4 bp-sm:text-ui-section-title">
-                  {activeSituationAction.title}
-                </h3>
-                <p className="mt-2.5 break-keep text-ui-body-sm leading-relaxed text-muted-foreground bp-sm:mt-3 bp-sm:text-ui-body">
-                  {activeSituationAction.description}
-                </p>
-              </div>
-              <div className="mt-5 grid gap-2 bp-sm:mt-6 bp-sm:grid-cols-2 bp-lg:grid-cols-1 bp-xl:grid-cols-2">
-                {activeSituationAction.ctas.map((cta) => (
-                  <Button
-                    key={cta.label}
-                    asChild
-                    variant={cta.primary ? "default" : "outline"}
-                    size="tall"
-                    className="w-full"
-                  >
-                    <Link href={cta.href}>{cta.label}</Link>
-                  </Button>
-                ))}
-              </div>
-            </PublicSurface>
+                    <span className="mt-2 block break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
+                      {situation.description}
+                    </span>
+                  </span>
+                  <span className="mt-5 inline-flex items-center gap-1 text-ui-label font-semibold text-foreground/80 transition-colors group-hover:text-primary">
+                    바로가기
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </SiteContainer>
       </section>
@@ -790,13 +831,13 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           <PublicSurface padding="lg" className="bp-md:p-10">
             <SectionHeader
               title="스트링 교체 프로세스"
-              description="처음 방문해도 쉽게 이해할 수 있어요"
+              description="접수부터 수령까지 필요한 단계만 간단히 안내해 드려요."
               align="center"
               className="mb-8 bp-sm:mb-10"
             />
-            <div className="mb-8 bp-sm:mb-10 grid gap-6 bp-sm:gap-8 grid-cols-2 bp-lg:grid-cols-4">
+            <div className="grid gap-3 bp-sm:gap-4 bp-md:grid-cols-2 bp-lg:grid-cols-4">
               <div className={processStepSurfaceClass}>
-                <div className="relative mb-3 bp-sm:mb-4">
+                <div className="relative mb-4">
                   <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
                     <BookOpen className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
@@ -804,15 +845,15 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     1
                   </div>
                 </div>
-                <h3 className="mb-1 text-ui-label font-medium text-foreground bp-sm:mb-1.5 bp-sm:text-ui-body-sm">
-                  신청 방식 선택
+                <h3 className="mb-1.5 text-ui-card-title font-semibold text-foreground">
+                  라켓 접수
                 </h3>
-                <p className="text-ui-label leading-relaxed text-muted-foreground bp-sm:text-ui-body-sm">
-                  구매·대여·보유 중 선택
+                <p className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
+                  보유 라켓 또는 구매·대여 라켓의 접수 방식을 선택합니다.
                 </p>
               </div>
               <div className={processStepSurfaceClass}>
-                <div className="relative mb-3 bp-sm:mb-4">
+                <div className="relative mb-4">
                   <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
                     <Package className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
@@ -820,16 +861,16 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     2
                   </div>
                 </div>
-                <h3 className="mb-1 text-ui-label font-medium text-foreground bp-sm:mb-1.5 bp-sm:text-ui-body-sm">
-                  방문/택배
+                <h3 className="mb-1.5 text-ui-card-title font-semibold text-foreground">
+                  스트링/텐션 선택
                 </h3>
-                <p className="text-ui-label leading-relaxed text-muted-foreground bp-sm:text-ui-body-sm">
-                  방문 예약 또는 택배 발송
+                <p className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
+                  플레이 스타일에 맞는 스트링과 텐션 정보를 입력합니다.
                 </p>
               </div>
 
               <div className={processStepSurfaceClass}>
-                <div className="relative mb-3 bp-sm:mb-4">
+                <div className="relative mb-4">
                   <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
                     <Wrench className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
@@ -837,16 +878,16 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     3
                   </div>
                 </div>
-                <h3 className="mb-1 text-ui-label font-medium text-foreground bp-sm:mb-1.5 bp-sm:text-ui-body-sm">
-                  작업 진행
+                <h3 className="mb-1.5 text-ui-card-title font-semibold text-foreground">
+                  전문 장착
                 </h3>
-                <p className="text-ui-label leading-relaxed text-muted-foreground bp-sm:text-ui-body-sm">
-                  장착/텐션 세팅 후 검수
+                <p className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
+                  장착 작업과 텐션 세팅 후 라켓 상태를 함께 확인합니다.
                 </p>
               </div>
 
               <div className={processStepSurfaceClass}>
-                <div className="relative mb-3 bp-sm:mb-4">
+                <div className="relative mb-4">
                   <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
                     <BadgeCheck className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
@@ -854,11 +895,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                     4
                   </div>
                 </div>
-                <h3 className="mb-1 text-ui-label font-medium text-foreground bp-sm:mb-1.5 bp-sm:text-ui-body-sm">
+                <h3 className="mb-1.5 text-ui-card-title font-semibold text-foreground">
                   수령
                 </h3>
-                <p className="text-ui-label leading-relaxed text-muted-foreground bp-sm:text-ui-body-sm">
-                  방문 수령 또는 배송
+                <p className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
+                  방문 수령 또는 배송으로 완성된 라켓을 받아보세요.
                 </p>
               </div>
             </div>
@@ -943,8 +984,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section ref={stringsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
         <SiteContainer>
           <SectionHeader
-            title="스트링"
-            description="프로가 선택하는 테니스 스트링"
+            eyebrow="Recommended Strings"
+            title="추천 스트링"
+            description="교체서비스와 함께 선택하기 좋은 인기 스트링을 브랜드별로 둘러보세요."
             align="center"
             className="mb-8 bp-sm:mb-10"
           />
@@ -981,7 +1023,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             title="스트링"
             subtitle={
               activeStringBrand === "all"
-                ? "브랜드로 골라보기"
+                ? "인기 스트링"
                 : `${stringBrandLabel(activeStringBrand)} 추천`
             }
             items={premiumItems.slice(0, 10)}
@@ -1030,8 +1072,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       <section ref={racketsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
         <SiteContainer>
           <SectionHeader
-            title="중고 라켓"
-            description="도깨비테니스에서 관리하는 라켓을 활용해보세요"
+            eyebrow="Pre-owned Rackets"
+            title="도깨비 인증 중고 라켓"
+            description="검수된 중고 라켓을 구매·대여하고 스트링 교체까지 이어서 이용해보세요."
             align="center"
             className="mb-8 bp-sm:mb-10"
           />
@@ -1078,11 +1121,13 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             onRetry={() => loadUsedRackets(activeBrand)}
             emptyTitle={
               activeBrand === "all"
-                ? "등록된 중고 라켓이 없습니다"
+                ? "검수된 중고 라켓을 준비 중입니다"
                 : "해당 브랜드 중고 라켓이 없습니다"
             }
             emptyDescription={
-              activeBrand === "all" ? "곧 상품이 업데이트됩니다." : "다른 브랜드를 선택해 보세요."
+              activeBrand === "all"
+                ? "상태 확인이 끝난 라켓부터 순차적으로 소개해 드릴게요."
+                : "다른 브랜드를 선택해 보세요."
             }
             errorTitle="중고 라켓을 불러오지 못했어요"
             errorDescription="네트워크/서버 상태를 확인 후 다시 시도해 주세요."
