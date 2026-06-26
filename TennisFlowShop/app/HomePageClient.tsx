@@ -161,7 +161,7 @@ const PROMO_BANNERS: PromoBanner[] = (() => {
 const surfaceCardInteractiveClass =
   "rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg";
 const promoBannerClass =
-  "group relative block h-24 overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:h-28 bp-md:h-32 bp-lg:h-36";
+  "group relative block h-20 overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:h-24 bp-md:h-28 bp-lg:h-32";
 const surfaceIconWrapClass =
   "flex items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:shadow-md";
 const processStepSurfaceClass =
@@ -625,6 +625,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
   const activeSituationAction = SITUATION_ACTIONS[activeSituation];
   const racketTotal = racketTotalsByBrand[activeBrand] ?? usedRacketsItems.length;
   const hasMoreRacketProducts = racketTotal > usedRacketsItems.length;
+  const shouldShowUsedRacketsSection =
+    !shouldLoadRackets || usedRacketsLoading || usedRacketsError || usedRacketsItems.length > 0;
 
   // throw new Error('[TEST] app/error.tsx 동작 확인용(홈 페이지)');
   return (
@@ -637,18 +639,18 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
         }}
       />
       {/* 랜딩 히어로 + 상황 선택 */}
-      <section className="py-8 bp-sm:py-10 bp-md:py-14">
+      <section className="py-7 bp-sm:py-9 bp-md:py-12">
         <SiteContainer>
-          <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.25fr)] bp-lg:items-stretch">
+          <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.35fr)] bp-lg:items-stretch">
             <PublicSurface
               padding="lg"
-              className="flex min-h-[360px] flex-col justify-between overflow-hidden border-primary/20 bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_42%),hsl(var(--card))] p-5 bp-sm:min-h-[380px] bp-sm:p-8 bp-lg:min-h-full"
+              className="flex min-h-[360px] flex-col justify-between overflow-hidden border-primary/20 bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_42%),hsl(var(--card))] p-6 bp-sm:min-h-[360px] bp-sm:p-8 bp-lg:min-h-full bp-lg:p-9"
             >
               <div>
                 <span className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-ui-label font-semibold text-primary">
                   스트링 교체 · 라켓 · 아카데미
                 </span>
-                <h1 className="mt-5 break-keep text-ui-hero-sm font-bold leading-tight tracking-tight text-foreground bp-sm:mt-6 bp-sm:text-ui-hero-md bp-md:text-ui-hero-lg">
+                <h1 className="mt-5 break-keep text-ui-hero-sm font-bold leading-tight tracking-tight text-foreground bp-sm:mt-6 bp-sm:text-ui-hero-md bp-md:text-ui-hero-lg bp-lg:text-[3.35rem]">
                   내 라켓에 딱 맞는 스트링, 빠르고 정확하게 매드립니다
                 </h1>
                 <p className="mt-4 max-w-xl break-keep text-ui-body leading-relaxed text-muted-foreground bp-sm:mt-5 bp-sm:text-ui-card-title">
@@ -665,7 +667,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               </div>
             </PublicSurface>
 
-            <PublicSurface padding="lg" className="p-4 bp-sm:p-6 bp-md:p-7">
+            <PublicSurface padding="lg" className="p-5 bp-sm:p-6 bp-md:p-8">
               <SectionHeader
                 eyebrow="처음 오셨다면 여기서 시작하세요"
                 title="지금 어떤 도움이 필요하세요?"
@@ -673,7 +675,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                 align="left"
                 className="mb-5 bp-sm:mb-6"
               />
-              <div className="grid gap-4 bp-xl:grid-cols-[minmax(0,1fr)_minmax(300px,0.82fr)] bp-xl:items-stretch">
+              <div className="grid gap-4 bp-xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.9fr)] bp-xl:items-stretch">
                 <div className="grid grid-cols-2 gap-3 bp-sm:gap-4">
                   {SITUATIONS.map((situation) => {
                     const Icon = situation.icon;
@@ -686,7 +688,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                         aria-pressed={isActive}
                         onClick={() => setActiveSituation(situation.key)}
                         className={cn(
-                          "group flex min-h-28 flex-col gap-2.5 rounded-2xl border bg-card p-3.5 text-left shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-h-32 bp-sm:gap-3 bp-sm:p-5",
+                          "group flex min-h-28 flex-col gap-2.5 rounded-2xl border bg-card p-4 text-left shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-h-32 bp-sm:gap-3 bp-sm:p-5 bp-lg:min-h-36 bp-lg:p-6",
                           isActive
                             ? "border-primary/50 bg-primary/5 shadow-md"
                             : "border-border/60 hover:border-primary/30",
@@ -744,17 +746,17 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
 
       {/* 프로모션/이벤트 배너 */}
       <SiteContainer variant="wide" className="px-0">
-        <section className="pb-10 bp-sm:pb-12 bp-md:pb-16">
+        <section className="pb-8 bp-sm:pb-10 bp-md:pb-12">
           <div className="mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0">
             <SectionHeader
               eyebrow="프로모션"
               title="이벤트와 추천 소식"
-              description="필요한 행동을 고른 뒤 확인해도 좋은 보조 안내입니다."
+              description="진행 중인 혜택과 추천 안내를 확인하세요."
               align="center"
               className="mb-5 bp-sm:mb-6"
             />
           </div>
-          <HeroSlider slides={SLIDES} />
+          <HeroSlider slides={SLIDES} variant="compact" />
           {PROMO_BANNERS.length > 0 && (
             <div className="mt-4 bp-sm:mt-5 bp-md:mt-6">
               <div className="mx-3 bp-sm:mx-4 bp-md:mx-6 bp-lg:mx-0">
@@ -824,7 +826,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </SiteContainer>
 
       {/* 서비스 플로우 */}
-      <section className="py-10 bp-sm:py-12 bp-md:py-16">
+      <section className="py-8 bp-sm:py-10 bp-md:py-12">
         <SiteContainer>
           <PublicSurface padding="lg" className="bp-md:p-10">
             <SectionHeader
@@ -906,7 +908,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </section>
 
       {/* 스트링 섹션 */}
-      <section ref={stringsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
+      <section ref={stringsSectionRef} className="py-9 bp-sm:py-11 bp-md:py-14">
         <SiteContainer>
           <SectionHeader
             title="스트링"
@@ -993,7 +995,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </section>
 
       {/* 이용 안내 섹션 */}
-      <section className="py-10 bp-sm:py-12 bp-md:py-16">
+      <section className="py-8 bp-sm:py-10 bp-md:py-12">
         <SiteContainer>
           <SectionHeader
             title="이용 안내"
@@ -1055,7 +1057,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </section>
 
       {/* 공지사항 섹션 */}
-      <section ref={communitySectionRef} className="py-10 bp-sm:py-12 bp-md:py-16">
+      <section ref={communitySectionRef} className="py-8 bp-sm:py-10 bp-md:py-12">
         <SiteContainer>
           <SectionHeader
             title="공지사항"
@@ -1078,7 +1080,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
       </section>
 
       {/* 중고 라켓 섹션 */}
-      <section ref={racketsSectionRef} className="py-12 bp-sm:py-14 bp-md:py-20">
+      {shouldShowUsedRacketsSection && (
+        <section ref={racketsSectionRef} className="py-9 bp-sm:py-11 bp-md:py-14">
         <SiteContainer>
           <SectionHeader
             title="중고 라켓"
@@ -1140,7 +1143,8 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             showHeader={false}
           />
         </SiteContainer>
-      </section>
+        </section>
+      )}
 
       {/* 라켓 검색 바로가기 (Hero 아래 CTA 블록) */}
       {/* <section className="py-6 bp-sm:py-8">
