@@ -6,6 +6,7 @@ export type OpsLikeItem = {
   statusLabel?: string | null;
   statusDisplayLabel?: string | null;
   paymentLabel?: string | null;
+  nextAction?: string | null;
   flow?: number | null;
   related?: {
     kind: OpsKind;
