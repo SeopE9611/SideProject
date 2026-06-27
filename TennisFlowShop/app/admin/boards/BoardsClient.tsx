@@ -506,10 +506,15 @@ export default function BoardsClient() {
                     <RefreshCcw className="h-4 w-4" />
                   </Button>
 
-                  <div className="ml-auto flex items-center gap-3">
-                    <span className={adminTypography.metaMuted}>
-                      선택 {selectedPostIds.length}개
-                    </span>
+                  <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
+                    <div className="min-w-[150px] space-y-1 text-right">
+                      <p className={adminTypography.bodyStrong}>
+                        선택 {selectedPostIds.length}개
+                      </p>
+                      <p className={adminTypography.caption}>
+                        선택 삭제는 복구할 수 없습니다.
+                      </p>
+                    </div>
                     <Button
                       variant="destructive"
                       size="sm"
@@ -968,38 +973,52 @@ export default function BoardsClient() {
                                   </div>
                                 </div>
 
-                                <div className="flex flex-wrap gap-2 pt-2 border-t border-border/40">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    disabled={!isPending}
-                                    onClick={() => processReport(r, "resolve")}
-                                    className="gap-2"
-                                  >
-                                    <CheckCircle2 className="h-4 w-4" />
-                                    완료
-                                  </Button>
+                                <div
+                                  className={cn(
+                                    adminSurface.cardMuted,
+                                    "flex flex-col gap-3 border-t border-border/60 p-3 sm:flex-row sm:items-center sm:justify-between",
+                                  )}
+                                >
+                                  <div className="space-y-1">
+                                    <p className={adminTypography.bodyStrong}>신고 처리 액션</p>
+                                    <p className={adminTypography.caption}>
+                                      완료/반려는 신고 상태만 정리하고, 대상 숨김은 게시글 노출에 영향을 줍니다.
+                                    </p>
+                                  </div>
+                                  <div className="flex flex-wrap gap-2 sm:justify-end">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      disabled={!isPending}
+                                      onClick={() => processReport(r, "resolve")}
+                                      className="gap-2"
+                                    >
+                                      <CheckCircle2 className="h-4 w-4" />
+                                      완료
+                                    </Button>
 
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    disabled={!isPending}
-                                    onClick={() => processReport(r, "reject")}
-                                    className="gap-2"
-                                  >
-                                    <XCircle className="h-4 w-4" />
-                                    반려
-                                  </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      disabled={!isPending}
+                                      onClick={() => processReport(r, "reject")}
+                                      className="gap-2"
+                                    >
+                                      <XCircle className="h-4 w-4" />
+                                      반려
+                                    </Button>
 
-                                  <Button
-                                    size="sm"
-                                    disabled={!isPending}
-                                    onClick={() => processReport(r, "resolve_hide_target")}
-                                    className="gap-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                                  >
-                                    <ShieldAlert className="h-4 w-4" />
-                                    대상 숨김 + 완료
-                                  </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      disabled={!isPending}
+                                      onClick={() => processReport(r, "resolve_hide_target")}
+                                      className="gap-2"
+                                    >
+                                      <ShieldAlert className="h-4 w-4" />
+                                      대상 숨김 + 완료
+                                    </Button>
+                                  </div>
                                 </div>
                               </div>
                             </CardContent>
@@ -1008,9 +1027,9 @@ export default function BoardsClient() {
                       })}
 
                       {shouldShowReportsEmptyState && (
-                        <Card className="border-dashed border-border/40">
+                        <Card className={cn(adminSurface.cardMuted, "border-dashed border-border/60")}>
                           <CardContent className="flex flex-col items-center justify-center py-16">
-                            <ShieldAlert className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                            <ShieldAlert className="mb-3 h-12 w-12 text-muted-foreground/50" />
                             <p className={adminTypography.metaMuted}>
                               현재 조건에 맞는 신고가 없습니다.
                             </p>
