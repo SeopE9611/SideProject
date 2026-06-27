@@ -3,6 +3,8 @@
 import type React from "react";
 import { usePathname } from "next/navigation";
 
+import Footer from "@/components/footer";
+import Header from "@/components/header";
 import SideMenu from "@/components/nav/SideMenu";
 import { cn } from "@/lib/utils";
 
@@ -49,13 +51,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     HIDE_SIDEMENU_EXACT_PATHS.has(pathname) ||
     HIDE_SIDEMENU_PATTERNS.some((pattern) => pattern.test(pathname));
 
+  const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
   const showSideMenu = !hideSideMenu;
+  const showPublicChrome = !isAdmin;
 
   return (
     <>
+      {showPublicChrome && <Header />}
       {showSideMenu && <SideMenu />}
 
-      <main id="main" className="flex-1" style={{ paddingTop: "var(--header-h, 0px)" }}>
+      <main
+        id="main"
+        className="flex-1"
+        style={{ paddingTop: showPublicChrome ? "var(--header-h, 0px)" : 0 }}
+      >
         <div
           className={cn(
             "w-full px-0 bp-lg:pr-8 xl:pr-12 2xl:pr-16",
@@ -65,6 +74,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </div>
       </main>
+
+      {showPublicChrome && <Footer />}
     </>
   );
 }

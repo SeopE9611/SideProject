@@ -790,6 +790,7 @@ export default function AdminRentalDetailClient() {
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 lg:gap-4">
               <AdminStatusCard
+                density="compact"
                 title="대여 상태"
                 icon={Package}
                 tone={
@@ -817,6 +818,7 @@ export default function AdminRentalDetailClient() {
               />
 
               <AdminStatusCard
+                density="compact"
                 title="결제 상태"
                 icon={CreditCard}
                 tone={needsPaymentCheck ? "warning" : "neutral"}
@@ -832,6 +834,7 @@ export default function AdminRentalDetailClient() {
               />
 
               <AdminStatusCard
+                density="compact"
                 title="교체 작업 상태"
                 icon={Wrench}
                 tone={
@@ -858,6 +861,7 @@ export default function AdminRentalDetailClient() {
               />
 
               <AdminStatusCard
+                density="compact"
                 title="인도 / 반납"
                 icon={Truck}
                 tone={
@@ -1224,14 +1228,12 @@ export default function AdminRentalDetailClient() {
               id="admin-rental-linked-docs"
               className={cn(adminSurface.card, "overflow-hidden")}
             >
-              <CardHeader className="border-b bg-muted/30 pb-3">
+              <CardHeader className="border-b border-border/60 bg-card pb-3">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <CardTitle className="text-base">대여에 포함된 교체 작업</CardTitle>
                     <CardDescription className="mt-1 max-w-3xl leading-relaxed">
-                      대여 라켓에 장착할 스트링, 게이지, 색상, 텐션, 요청사항과 작업 상태를 한곳에서
-                      확인합니다. 매장 보유 대여 라켓에 장착하는 대여 기반 하위 작업이며, 인도
-                      운송장과 반납 운송장은 아래 대여 정보에서 분리해 관리합니다.
+                      대여 결제에 포함된 교체 작업의 핵심 정보만 확인합니다.
                     </CardDescription>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -1247,8 +1249,8 @@ export default function AdminRentalDetailClient() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4 pt-4">
-                <div className="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3">
+              <CardContent className="space-y-3 pt-4">
+                <div className="grid gap-x-5 gap-y-2 text-ui-body-sm sm:grid-cols-2 xl:grid-cols-3">
                   <p className="text-muted-foreground">
                     교체 작업 ID:{" "}
                     <span className="font-medium text-foreground">
@@ -1298,12 +1300,14 @@ export default function AdminRentalDetailClient() {
                   </p>
                 </div>
 
-                <div className="rounded-lg border border-border/70 bg-muted/20 p-3 text-xs leading-relaxed text-muted-foreground">
-                  <p>대여 결제 상태: 대여 주문의 결제 확인 여부</p>
-                  <p>교체 작업 상태: 스트링 장착 작업 진행 여부</p>
-                  <p>대여 라켓 인도/대여 시작: 작업 완료 후 진행하는 운영 단계</p>
-                  <p>대여 라켓 반납: 대여 시작 이후 반납 관리</p>
-                </div>
+                <details className="rounded-lg border border-border/60 bg-muted/10 px-3 py-2 text-ui-label text-muted-foreground">
+                  <summary className="cursor-pointer font-semibold text-foreground">상태 안내 보기</summary>
+                  <div className="mt-2 space-y-1">
+                    <p>대여 결제 상태: 대여 주문의 결제 확인 여부</p>
+                    <p>교체 작업 상태: 스트링 장착 작업 진행 여부</p>
+                    <p>인도/반납: 작업 완료 이후 진행하는 대여 운영 단계</p>
+                  </div>
+                </details>
 
                 {data.status === "pending" ? (
                   <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">

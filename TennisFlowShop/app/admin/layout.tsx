@@ -75,8 +75,21 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-muted/30">
-      <div className="mx-auto flex w-full max-w-[1800px] flex-1 flex-col gap-4 px-3 pb-10 pt-5 bp-md:px-4 lg:px-5 xl:flex-row xl:gap-6 xl:px-6">
+    <div className="flex min-h-screen flex-col bg-muted/30">
+      <div className="border-b border-border/70 bg-card/80 px-3 py-2 backdrop-blur supports-[backdrop-filter]:bg-card/70 bp-md:px-4 xl:px-6">
+        <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-3">
+          <div>
+            <p className="text-ui-label font-semibold uppercase tracking-widest text-muted-foreground">
+              Admin Console
+            </p>
+            <h1 className="text-ui-body-sm font-semibold text-foreground">도깨비테니스 운영 관리</h1>
+          </div>
+          <p className="hidden text-ui-label text-muted-foreground sm:block">
+            쇼핑몰 헤더 없이 업무 화면에 집중합니다.
+          </p>
+        </div>
+      </div>
+      <div className="mx-auto flex w-full max-w-[1800px] flex-1 flex-col gap-4 px-3 pb-10 pt-4 bp-md:px-4 lg:px-5 xl:flex-row xl:gap-5 xl:px-6">
         <AdminNavigationShell />
 
         <main className="min-w-0 flex-1">{children}</main>

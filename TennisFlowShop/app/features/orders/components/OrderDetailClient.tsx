@@ -1015,6 +1015,7 @@ export default function OrderDetailClient({ orderId }: Props) {
             {/* 상태 요약 카드 */}
             <div className={adminSurface.statusGrid}>
               <AdminStatusCard
+                    density="compact"
                 title="주문 상태"
                 value={(() => {
                   const st = getOrderStatusBadgeSpec(localStatus);
@@ -1029,6 +1030,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 tone={isCancelRequested ? "danger" : "neutral"}
               />
               <AdminStatusCard
+                    density="compact"
                 title="결제 상태"
                 value={(() => {
                   const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
@@ -1043,6 +1045,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 tone={needsPaymentCheck ? "warning" : "neutral"}
               />
               <AdminStatusCard
+                    density="compact"
                 title="수령/배송"
                 value={
                   <Badge variant={shippingMethodBadge.variant} className={summaryBadgeClass}>
@@ -1061,6 +1064,7 @@ export default function OrderDetailClient({ orderId }: Props) {
               />
               {isLinkedStringingOrder ? (
                 <AdminStatusCard
+                    density="compact"
                   title="연결 교체 작업"
                   value="주문에 포함된 교체 작업"
                   description={
@@ -1073,6 +1077,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 />
               ) : (
                 <AdminStatusCard
+                    density="compact"
                   title="연결 교체 작업"
                   value="교체 작업 없음"
                   description="일반 주문으로 처리합니다."
@@ -1220,9 +1225,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3">
                   {latestLinkedApplication?.id && latestLinkedApplication?.status && (
-                    <div className="grid gap-2 rounded-xl border border-primary/20 bg-primary/5 p-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-center">
+                    <div className="grid gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-center">
                       <p className={adminTypography.bodyStrong}>
                         연결 진행 단계: {orderGuide.stage || latestLinkedApplication.status}
                       </p>
@@ -1234,7 +1239,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   )}
                   {latestLinkedApplication?.id && latestLinkedApplication?.status && (
                     <LinkedFlowStageCard
-                      className="border border-border bg-card shadow-sm overflow-hidden"
+                      className="border border-border/70 bg-card shadow-none overflow-hidden"
                       orderId={orderId}
                       orderStatus={localStatus}
                       applicationStatus={latestLinkedApplication.status}
@@ -1248,15 +1253,15 @@ export default function OrderDetailClient({ orderId }: Props) {
                       }}
                     />
                   )}
-                  <div className="grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-lg border border-border/60 bg-background/40 p-3">
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    <div className="rounded-lg border border-border/60 bg-card p-3 shadow-none">
                       <p className={cn("mb-2", adminTypography.panelTitle)}>교체 작업 문서</p>
                       <div className="space-y-2">
                         {linkedDocs.length > 0 ? (
                           linkedDocs.map((doc) => (
                             <div
                               key={`${doc.kind}:${doc.id}`}
-                              className="flex flex-col gap-2 rounded-md border border-border/60 bg-card/70 p-2 sm:flex-row sm:items-center sm:justify-between"
+                              className="flex flex-col gap-2 border-b border-border/50 py-2 last:border-0 sm:flex-row sm:items-center sm:justify-between"
                             >
                               <p className="text-ui-body-sm text-foreground/80">
                                 교체 작업 ID: <span className="font-mono text-foreground">{doc.id}</span>
@@ -1264,7 +1269,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                               <div className="flex items-center gap-2">
                                 <Button
                                   type="button"
-                                  variant="outline"
+                                  variant="ghost"
                                   size="sm"
                                   onClick={() => {
                                     void navigator.clipboard
@@ -1279,7 +1284,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                                 </Button>
                                 <Link href={doc.href}>
                                   <Button type="button" variant="outline" size="sm">
-                                    교체 작업 상세 보기
+                                    상세 보기
                                   </Button>
                                 </Link>
                               </div>
@@ -1294,7 +1299,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                       <p className="mt-3 text-ui-label text-foreground/75">{latestPackageSummary}</p>
                     </div>
 
-                    <div className="rounded-lg border border-border/60 bg-background/40 p-3">
+                    <div className="rounded-lg border border-border/60 bg-card p-3 shadow-none">
                       <p className="mb-2 text-ui-body-sm font-semibold text-foreground">
                         최신 작업 접수 요약
                       </p>
