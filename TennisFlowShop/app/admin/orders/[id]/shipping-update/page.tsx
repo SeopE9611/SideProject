@@ -1,3 +1,4 @@
+import { adminTypography } from "@/components/admin/admin-typography";
 import ShippingFormClient from "./ShippingFormClient";
 import { headers } from "next/headers";
 import Link from "next/link";
@@ -49,27 +50,25 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
             <div className="bg-card rounded-full p-4 w-16 h-16 mx-auto mb-4 shadow-lg">
               <Truck className="h-8 w-8 text-primary mx-auto" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground mb-2">배송 정보 관리</h1>
-            <p className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">
-              주문 데이터를 불러올 수 없습니다.
-            </p>
+            <h1 className={adminTypography.pageTitle}>배송 정보 관리</h1>
+            <p className={adminTypography.body}>주문 데이터를 불러올 수 없습니다.</p>
           </div>
 
           <div className="rounded-2xl border border-destructive bg-card p-6 shadow-lg dark:border-destructive dark:bg-card">
-            <p className="text-sm text-foreground">
+            <p className={adminTypography.body}>
               입력한 ID가 <strong>주문 ID</strong>가 아닐 수 있습니다. (예:{" "}
               <strong>교체서비스 신청서 ID</strong>를 주문 URL에 넣은 경우)
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Link
                 href="/admin/orders"
-                className="inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm hover:bg-background dark:hover:bg-card"
+                className="inline-flex items-center justify-center rounded-md border px-4 py-2 text-ui-body-sm font-semibold hover:bg-background dark:hover:bg-card"
               >
                 주문 목록으로
               </Link>
               <Link
                 href="/admin/applications/stringing"
-                className="inline-flex items-center justify-center rounded-md border px-4 py-2 text-sm hover:bg-background dark:hover:bg-card"
+                className="inline-flex items-center justify-center rounded-md border px-4 py-2 text-ui-body-sm font-semibold hover:bg-background dark:hover:bg-card"
               >
                 교체서비스 신청 목록으로
               </Link>
@@ -143,10 +142,8 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
               <Truck className="h-8 w-8 text-primary mx-auto" />
             )}
           </div>
-          <h1 className="mb-2 text-2xl font-bold text-foreground bp-md:text-3xl">{pageTitle}</h1>
-          <p className="text-sm leading-relaxed text-muted-foreground bp-md:text-base">
-            {pageDesc}
-          </p>
+          <h1 className={adminTypography.pageTitle}>{pageTitle}</h1>
+          <p className={adminTypography.body}>{pageDesc}</p>
         </div>
 
         <ShippingFormClient

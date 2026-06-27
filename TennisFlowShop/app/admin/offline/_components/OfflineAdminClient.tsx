@@ -1,5 +1,6 @@
 "use client";
 
+import { adminTypography } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -250,8 +251,8 @@ function SectionHeader({
         <Icon className="h-4 w-4" />
       </div>
       <div>
-        <h3 className="font-semibold text-foreground">{title}</h3>
-        {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
+        <h3 className={adminTypography.sectionTitle}>{title}</h3>
+        {description && <p className={adminTypography.metaMuted}>{description}</p>}
       </div>
     </div>
   );
@@ -271,11 +272,11 @@ function FormField({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={htmlFor} className="text-sm font-medium text-foreground/80">
+      <Label htmlFor={htmlFor} className={adminTypography.bodyStrong}>
         {label}
       </Label>
       {children}
-      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {hint && <p className={adminTypography.caption}>{hint}</p>}
     </div>
   );
 }
@@ -300,7 +301,8 @@ function Select({
       value={value}
       onChange={onChange}
       className={cn(
-        "h-10 w-full rounded-lg border border-input bg-background px-3 text-sm",
+        "h-10 w-full rounded-lg border border-input bg-background px-3",
+        adminTypography.body,
         "transition-colors focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring",
         "hover:border-ring/50",
         className,
@@ -335,7 +337,8 @@ function StatusBadge({ status, type }: { status: string; type: "record" | "payme
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center whitespace-nowrap rounded-md border px-2 py-0.5 text-xs font-medium",
+        "inline-flex shrink-0 items-center whitespace-nowrap rounded-md border px-2 py-0.5 font-medium",
+        adminTypography.badgeLabel,
         colorClass,
       )}
     >
@@ -366,7 +369,11 @@ function Message({
 
   return (
     <div
-      className={cn("flex items-center gap-2 rounded-lg border px-3 py-2 text-sm", styles[type])}
+      className={cn(
+        "flex items-center gap-2 rounded-lg border px-3 py-2",
+        adminTypography.body,
+        styles[type],
+      )}
     >
       <Icon className="h-4 w-4 shrink-0" />
       <span>{children}</span>
