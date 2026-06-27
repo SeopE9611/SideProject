@@ -868,11 +868,12 @@ export default function OrdersClient() {
           </div>
         </CardHeader>
         <CardContent className="relative min-h-[420px] overflow-x-auto scrollbar-hidden pr-2">
-          <Table className="min-w-[1040px] table-fixed border-separate text-ui-label [border-spacing-block:0.4rem] [border-spacing-inline:0]">
+          <Table className="min-w-[1140px] table-fixed border-separate text-ui-label [border-spacing-block:0.4rem] [border-spacing-inline:0]">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
                 <TableHead className={cn(thClasses, "w-[150px]")}>주문 ID</TableHead>
-                <TableHead className={cn(thClasses, "w-[190px] text-center")}>고객</TableHead>
+                <TableHead className={cn(thClasses, "w-[130px] text-left")}>고객명</TableHead>
+                <TableHead className={cn(thClasses, "w-[180px] text-left")}>이메일</TableHead>
                 <TableHead className={cn(thClasses, "w-36")}>
                   <div className="flex items-center justify-center gap-2">
                     <span
@@ -920,7 +921,7 @@ export default function OrdersClient() {
             <TableBody>
               {error ? (
                 <TableRow>
-                  <TableCell colSpan={10} className={tdClasses}>
+                  <TableCell colSpan={11} className={tdClasses}>
                     <AsyncState
                       kind="error"
                       tone="admin"
@@ -934,14 +935,14 @@ export default function OrdersClient() {
                 </TableRow>
               ) : !data ? (
                 <TableRow>
-                  <TableCell colSpan={10} className={tdClasses}>
+                  <TableCell colSpan={11} className={tdClasses}>
                     <div className="space-y-2 py-2">
                       {Array.from({ length: 6 }).map((_, index) => (
                         <div
                           key={`orders-table-skeleton-${index}`}
-                          className="grid grid-cols-10 gap-2"
+                          className="grid grid-cols-[repeat(11,minmax(0,1fr))] gap-2"
                         >
-                          {Array.from({ length: 10 }).map((__, cellIndex) => (
+                          {Array.from({ length: 11 }).map((__, cellIndex) => (
                             <Skeleton
                               key={`orders-table-skeleton-${index}-${cellIndex}`}
                               className="h-6 w-full"
@@ -954,7 +955,7 @@ export default function OrdersClient() {
                 </TableRow>
               ) : data.items.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10} className={tdClasses}>
+                  <TableCell colSpan={11} className={tdClasses}>
                     <AsyncState
                       kind="empty"
                       tone="admin"
@@ -1253,36 +1254,30 @@ export default function OrdersClient() {
                             </Tooltip>
                           </TooltipProvider>
                         </TableCell>
-                        {/* 고객 정보 셀 */}
+                        {/* 고객명 셀 */}
                         <TableCell className={tdClasses}>
-                          <div className="mx-auto flex max-w-[180px] min-w-0 flex-col items-center overflow-hidden">
-                            <span className="flex max-w-full min-w-0 items-center overflow-hidden">
-                              {/* "이름"만 남기기 */}
-                              <span className="line-clamp-2 min-w-0 break-words text-center">
-                                {order.customer.name
-                                  .replace(/\s*\(비회원\)\s*$/, "")
-                                  .replace(/\s*\(탈퇴한 회원\)\s*$/, "")}
+                          <div className="flex min-w-0 items-center overflow-hidden text-left">
+                            <span className="line-clamp-2 min-w-0 break-words text-left">
+                              {order.customer.name
+                                .replace(/\s*\(비회원\)\s*$/, "")
+                                .replace(/\s*\(탈퇴한 회원\)\s*$/, "")}
+                            </span>
+                            {getDisplayUserType(order) && (
+                              <span className="ml-1 shrink-0 whitespace-nowrap text-ui-label text-muted-foreground">
+                                {getDisplayUserType(order)}
                               </span>
-                              {/*  탈퇴한 회원 레이블 (기존 getDisplayUserType) */}
-                              {getDisplayUserType(order) && (
-                                <span className="ml-1 shrink-0 whitespace-nowrap text-ui-label text-muted-foreground">
-                                  {getDisplayUserType(order)}
-                                </span>
-                              )}
-                              {/*  비회원 레이블 */}
-                              {order.customer.name.endsWith("(비회원)") && (
-                                <span className="ml-1 shrink-0 whitespace-nowrap text-ui-label text-muted-foreground">
-                                  (비회원)
-                                </span>
-                              )}
-                            </span>
-                            <span
-                              className="block max-w-full truncate text-ui-body-sm text-foreground/75"
-                              title={order.customer.email}
-                            >
-                              {order.customer.email}
-                            </span>
+                            )}
+                            {order.customer.name.endsWith("(비회원)") && (
+                              <span className="ml-1 shrink-0 whitespace-nowrap text-ui-label text-muted-foreground">
+                                (비회원)
+                              </span>
+                            )}
                           </div>
+                        </TableCell>
+                        <TableCell className={tdClasses}>
+                          <span className="block max-w-full truncate text-left text-ui-body-sm text-foreground/75" title={order.customer.email}>
+                            {order.customer.email || "-"}
+                          </span>
                         </TableCell>
                         {/* 날짜 셀 */}
                         <TableCell className="w-36 whitespace-nowrap text-center tabular-nums">

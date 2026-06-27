@@ -100,6 +100,16 @@ const isOrderConfirmed = (status?: string | null) => {
   return s.includes("구매확정") || s === "confirmed";
 };
 
+const isApplicationClosed = (status?: string | null) => {
+  const st = String(status ?? "").toLowerCase();
+  return st.includes("취소") || st === "canceled" || st === "cancelled";
+};
+
+const isRentalClosed = (status?: string | null) => {
+  const st = String(status ?? "").toLowerCase();
+  return st.includes("취소") || st === "canceled" || st === "cancelled";
+};
+
 const isOrderClosed = (status?: string | null) => {
   const s = String(status ?? "").toLowerCase();
   return (
@@ -137,6 +147,27 @@ function getEffectiveRefundAccountReady(item: OpsLikeItem) {
   if (typeof item.cancel?.refundAccountReady === "boolean") return item.cancel.refundAccountReady;
   if (typeof item.refundAccountReady === "boolean") return item.refundAccountReady;
   return false;
+}
+
+function isTerminalOpsItem(item: OpsLikeItem) {
+  const cancelStatus = getEffectiveCancelStatus(item);
+  if (cancelStatus === "approved") return true;
+  if (item.kind === "order") return isOrderClosed(item.statusLabel) || isOrderConfirmed(item.statusLabel);
+  if (item.kind === "stringing_application") return isApplicationClosed(item.statusLabel) || isAppDone(item.statusLabel);
+  if (item.kind === "rental") {
+    if (isRentalClosed(item.statusLabel)) return true;
+    if (isRentalReturned(item.statusLabel)) return !item.nextAction?.includes("보증금");
+    return false;
+  }
+  if (item.kind === "package_purchase") return doneLike(item.paymentLabel) || doneLike(item.statusLabel) || String(item.statusLabel ?? "").includes("활성");
+  return false;
+}
+
+function terminalGuide(item?: OpsLikeItem | null): NextActionGuide {
+  return {
+    stage: item?.kind === "rental" ? "대여 종료 단계" : item?.kind === "stringing_application" ? "신청 종료 단계" : "운영 종료 단계",
+    nextAction: "후속 조치 없음",
+  };
 }
 
 function inferStandaloneOrderGuide(item: OpsLikeItem): NextActionGuide {
@@ -307,6 +338,21 @@ export function inferNextActionForOperationItem(item: OpsLikeItem): NextActionGu
 }
 
 export function inferNextActionForOperationGroup(items: OpsLikeItem[]): NextActionGuide {
+  if (items.length > 0 && items.every(isTerminalOpsItem)) {
+    return terminalGuide(items[0]);
+  }
+
+  const order = items.find((it) => it.kind === "order");
+  const rental = items.find((it) => it.kind === "rental");
+  const app = items.find((it) => it.kind === "stringing_application");
+
+  if (order && isTerminalOpsItem(order)) {
+    return terminalGuide(order);
+  }
+  if (rental && isTerminalOpsItem(rental)) {
+    return terminalGuide(rental);
+  }
+
   const requestedCancels = items.filter((it) => isCancelRequested(it));
   if (requestedCancels.length > 0) {
     const hasRefundAccountPending = requestedCancels.some(
@@ -323,10 +369,6 @@ export function inferNextActionForOperationGroup(items: OpsLikeItem[]): NextActi
       nextAction: "취소승인/취소거절 검토 필요",
     };
   }
-
-  const order = items.find((it) => it.kind === "order");
-  const rental = items.find((it) => it.kind === "rental");
-  const app = items.find((it) => it.kind === "stringing_application");
 
   if (order && app) {
     if (!doneLike(order.paymentLabel)) {

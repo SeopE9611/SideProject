@@ -45,9 +45,9 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
           )}
         >
           {!collapsed && (
-            <div className="text-sm font-semibold tracking-normal text-foreground">
+            <Link href="/" className="text-sm font-semibold tracking-normal text-foreground hover:text-primary">
               도깨비테니스
-            </div>
+            </Link>
           )}
           <button
             onClick={() => setCollapsed((v) => !v)}
