@@ -97,9 +97,11 @@ interface HistoryResponse {
 export default function OrderHistory({
   orderId,
   shippingMethod,
+  embedded = false,
 }: {
   orderId: string;
   shippingMethod?: any;
+  embedded?: boolean;
 }) {
   const [page, setPage] = useState(1);
 
@@ -114,7 +116,6 @@ export default function OrderHistory({
     error,
     size,
     setSize,
-    isValidating,
     mutate: mutateHistory,
   } = useSWRInfinite<HistoryResponse>(getKey(orderId), fetcher, {
     revalidateOnFocus: false, // 탭 포커스 돌아올 때 재요청 금지
@@ -188,15 +189,8 @@ export default function OrderHistory({
     }).format(d);
   };
 
-  return (
-    <Card className="md:col-span-3 rounded-xl border border-border bg-card text-card-foreground shadow-md dark:bg-card">
-      <CardHeader className="border-b border-border/60 bg-muted/30 pb-3 dark:bg-card rounded-t-xl">
-        <CardTitle className="text-ui-card-title-lg font-semibold bp-sm:text-ui-section-title">처리 이력</CardTitle>
-        <p className="text-ui-label text-muted-foreground bp-sm:shrink-0 bp-sm:text-ui-body-sm">
-          최신 변경이 맨 위에 표시됩니다.
-        </p>
-      </CardHeader>
-      <CardContent className="p-4 bp-sm:p-6">
+  const historyContent = (
+    <>
         {/* 로딩 중일 때 스켈레톤 5줄 */}
         {isInitialLoading || isPageTransitionLoading ? (
           Array.from({ length: LIMIT }).map((_, i) => (
@@ -273,7 +267,20 @@ export default function OrderHistory({
             </Button>
           </div>
         )}
-      </CardContent>
+    </>
+  );
+
+  if (embedded) return historyContent;
+
+  return (
+    <Card className="md:col-span-3 rounded-xl border border-border bg-card text-card-foreground shadow-md dark:bg-card">
+      <CardHeader className="border-b border-border/60 bg-muted/30 pb-3 dark:bg-card rounded-t-xl">
+        <CardTitle className="text-ui-card-title-lg font-semibold bp-sm:text-ui-section-title">처리 이력</CardTitle>
+        <p className="text-ui-label text-muted-foreground bp-sm:shrink-0 bp-sm:text-ui-body-sm">
+          최신 변경이 맨 위에 표시됩니다.
+        </p>
+      </CardHeader>
+      <CardContent className="p-4 bp-sm:p-6">{historyContent}</CardContent>
     </Card>
   );
 }
