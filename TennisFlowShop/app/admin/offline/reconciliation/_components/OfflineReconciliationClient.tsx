@@ -2,9 +2,10 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import AdminPageSection from "@/components/admin/AdminPageSection";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { cn } from "@/lib/utils";
@@ -95,7 +96,7 @@ function Select({
       id={id}
       value={value}
       onChange={onChange}
-      className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
+      className={`h-10 w-full rounded-lg border border-input bg-background px-3 ${adminTypography.body} focus:outline-none focus:ring-2 focus:ring-ring/20`}
     >
       {children}
     </select>
@@ -128,8 +129,8 @@ function SummaryCard({
         active && "ring-2 ring-primary/30",
       )}
     >
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="mt-2 text-2xl font-semibold tabular-nums text-foreground">
+      <p className={`${adminTypography.caption} font-medium`}>{label}</p>
+      <p className={`mt-2 ${adminTypography.kpiValue} font-semibold`}>
         {value.toLocaleString("ko-KR")}건
       </p>
     </button>
@@ -181,7 +182,7 @@ function ItemActions({
         value={note}
         onChange={(event) => setNote(event.target.value)}
         placeholder="예: 고객 확인 완료, 수동 발급 완료, 중복 항목으로 무시"
-        className="min-h-[68px] w-full rounded-lg border border-input bg-background px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-ring/20"
+        className={`min-h-[68px] w-full rounded-lg border border-input bg-background px-3 py-2 ${adminTypography.caption} focus:outline-none focus:ring-2 focus:ring-ring/20`}
       />
       <div className="flex flex-wrap gap-2">
         <Button
@@ -358,23 +359,21 @@ export default function OfflineReconciliationClient() {
 
   return (
     <div className="space-y-6">
-      <Card className="border-warning/40 bg-warning/5">
-        <CardContent className="flex flex-col gap-2 p-4 text-sm text-foreground/80 md:flex-row md:items-center">
+      <div className="flex flex-col gap-2 rounded-2xl border border-warning/40 bg-warning/5 p-4 text-foreground/80 md:flex-row md:items-center">
           <ShieldAlert className="h-5 w-5 shrink-0 text-warning" />
           <div>
             <p className="font-semibold text-foreground">
               보정 필요 항목은 자동 처리 실패 또는 운영자 확인이 필요한 항목입니다.
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className={adminTypography.caption}>
               확인 완료 처리는 실제 데이터 복구를 의미하지 않습니다. 자동 재발급/자동 환불은 이번
               화면에서 수행하지 않습니다.
             </p>
           </div>
-        </CardContent>
-      </Card>
+      </div>
 
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border/60 bg-muted/20 p-3">
-        <span className="mr-1 text-xs font-semibold text-muted-foreground">빠른 보기</span>
+      <div className={`${adminSurface.cardMuted} flex flex-wrap items-center gap-2 p-3`}>
+        <span className={`mr-1 ${adminTypography.caption} font-semibold`}>빠른 보기</span>
 
         <Button
           type="button"
@@ -421,7 +420,7 @@ export default function OfflineReconciliationClient() {
           무시
         </Button>
       </div>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-border/60 bg-background px-4 py-3 text-sm">
+      <div className={`${adminSurface.cardMuted} flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 ${adminTypography.body}`}>
         <p className="font-semibold text-foreground">현재 보기: {currentViewLabel}</p>
 
         {submitted.from || submitted.to ? (
@@ -442,11 +441,7 @@ export default function OfflineReconciliationClient() {
           </span>
         </div>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">필터</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <AdminPageSection title="필터" description="유형, 상태, 기간으로 보정 대상 목록을 조정합니다." icon={Search}>
           <div className="grid gap-3 md:grid-cols-5">
             <div className="space-y-1.5">
               <Label htmlFor="type">유형</Label>
@@ -523,8 +518,7 @@ export default function OfflineReconciliationClient() {
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+      </AdminPageSection>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <SummaryCard
@@ -569,19 +563,12 @@ export default function OfflineReconciliationClient() {
       </div>
 
       {message && (
-        <div className="rounded-xl border border-border/60 bg-muted/20 p-3 text-sm text-muted-foreground">
+        <div className={`${adminSurface.cardMuted} p-3 ${adminTypography.metaMuted}`} >
           {message}
         </div>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <AlertTriangle className="h-4 w-4" />
-            보정 필요 목록
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <AdminPageSection title="보정 필요 목록" description="확인 상태, 메모, 관련 상세 이동을 한 곳에서 관리합니다." icon={AlertTriangle}>
           {isLoading && (
             <div className="rounded-xl border border-border/60 bg-muted/20 p-6 text-center text-sm text-muted-foreground">
               보정 항목을 불러오는 중...
@@ -599,8 +586,8 @@ export default function OfflineReconciliationClient() {
           )}
           {!isLoading && !error && (data?.items.length ?? 0) > 0 && (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1180px] table-fixed text-sm">
-                <thead className="border-b text-left text-xs text-muted-foreground">
+              <table className={`w-full min-w-[1180px] table-fixed ${adminTypography.body}`}>
+                <thead className={`border-b text-left ${adminTypography.caption}`}>
                   <tr>
                     <th className="w-[130px] py-3 pr-3">유형</th>
                     <th className="w-[100px] py-3 pr-3">상태</th>
@@ -693,7 +680,7 @@ export default function OfflineReconciliationClient() {
               </table>
             </div>
           )}
-          <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
+          <div className={`mt-4 flex items-center justify-between ${adminTypography.metaMuted}`}>
             <span>
               총 {(data?.total ?? 0).toLocaleString("ko-KR")}건 · {data?.page ?? page}/
               {Math.max(data?.totalPages ?? 0, 1)}페이지
@@ -719,8 +706,7 @@ export default function OfflineReconciliationClient() {
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+      </AdminPageSection>
     </div>
   );
 }

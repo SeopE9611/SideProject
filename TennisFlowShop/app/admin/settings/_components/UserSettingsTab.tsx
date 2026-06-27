@@ -1,16 +1,10 @@
 "use client";
 import { Save } from "lucide-react";
+import AdminPageSection from "@/components/admin/AdminPageSection";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import type { UseFormReturn } from "react-hook-form";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -36,16 +30,12 @@ export function UserSettingsTab({
 }) {
   return (
     <TabsContent value="user">
-      <Card>
-        <CardHeader>
-          <CardTitle>사용자 설정</CardTitle>
-          <CardDescription>회원 가입/인증 정책을 관리합니다.</CardDescription>
-        </CardHeader>
+      <AdminPageSection title="사용자 설정" description="회원 가입/인증 정책을 관리합니다.">
         {error.message && (
-          <div className="mx-6 rounded border px-3 py-2 text-sm">{error.message}</div>
+          <div className={`${adminSurface.cardMuted} px-3 py-2 ${adminTypography.body} text-destructive`}>{error.message}</div>
         )}
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label>회원가입 허용</Label>
               <Switch
@@ -96,8 +86,8 @@ export function UserSettingsTab({
                 })}
               />
             </div>
-          </CardContent>
-          <CardFooter>
+          </div>
+          <div className="mt-5 flex">
             <Button
               disabled={isBootstrapping || form.formState.isSubmitting}
               type="submit"
@@ -106,9 +96,9 @@ export function UserSettingsTab({
               <Save className="mr-2 h-4 w-4" />
               설정 저장
             </Button>
-          </CardFooter>
+          </div>
         </form>
-      </Card>
+      </AdminPageSection>
     </TabsContent>
   );
 }

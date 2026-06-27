@@ -5,11 +5,12 @@ import useSWR from "swr";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { useAdminListQueryState } from "@/lib/admin/useAdminListQueryState";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search } from "lucide-react";
+import { Search, ListFilter, ClipboardList } from "lucide-react";
+import AdminPageSection from "@/components/admin/AdminPageSection";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 
 type AuditItem = {
   id: string;
@@ -116,8 +117,12 @@ export default function AdminAuditClient() {
 
   return (
     <div className="space-y-4">
-      <Card>
-        <CardContent className="pt-6">
+      <AdminPageSection
+        title="검색/필터"
+        description="메시지, 실행자, 액션 타입으로 감사 로그를 좁혀봅니다."
+        icon={ListFilter}
+        contentClassName="space-y-3"
+      >
           <div className="grid gap-3 md:grid-cols-[1fr_280px_auto_auto]">
             <Input
               placeholder="검색어(message/actor)"
@@ -137,50 +142,47 @@ export default function AdminAuditClient() {
               초기화
             </Button>
           </div>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
             {QUICK_TYPE_FILTERS.map((filter) => (
               <Button
                 key={filter.label}
                 type="button"
                 size="sm"
-                variant={state.type === filter.value ? "default" : "outline"}
+                variant={state.type === filter.value ? "default" : "ghost"}
                 onClick={() => applyQuickTypeFilter(filter.value)}
               >
                 {filter.label}
               </Button>
             ))}
           </div>
-        </CardContent>
-      </Card>
+      </AdminPageSection>
 
       {error && (
-        <Card>
-          <CardContent className="py-6 text-sm text-destructive">
-            감사 로그를 불러오지 못했습니다.
-          </CardContent>
-        </Card>
+        <div className={`${adminSurface.cardMuted} p-6 ${adminTypography.body} text-destructive`}>
+          감사 로그를 불러오지 못했습니다.
+        </div>
       )}
 
       {!error && !data && (
-        <Card>
-          <CardContent className="py-6 text-sm text-muted-foreground">불러오는 중...</CardContent>
-        </Card>
+        <div className={`${adminSurface.cardMuted} p-6 ${adminTypography.body} text-muted-foreground`}>불러오는 중...</div>
       )}
 
       {!!data && data.items.length === 0 && (
-        <Card>
-          <CardContent className="py-6 text-sm text-muted-foreground">
-            조회 결과가 없습니다.
-          </CardContent>
-        </Card>
+        <div className={`${adminSurface.cardMuted} p-6 ${adminTypography.body} text-muted-foreground`}>
+          조회 결과가 없습니다.
+        </div>
       )}
 
       {!!data && data.items.length > 0 && (
-        <div className="space-y-3">
+        <AdminPageSection
+          title="감사 로그 목록"
+          description={`총 ${data.total.toLocaleString("ko-KR")}건 · ${data.page}/${data.totalPages} 페이지`}
+          icon={ClipboardList}
+          contentClassName="space-y-3"
+        >
           {data.items.map((item) => (
-            <Card key={item.id}>
-              <CardContent className="space-y-2 py-4">
-                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <article key={item.id} className={`${adminSurface.tableCard} p-4`}>
+                <div className={`flex flex-wrap items-center gap-2 ${adminTypography.caption}`}>
                   <Badge variant="secondary" className="font-mono text-[11px]">
                     {item.type}
                   </Badge>
@@ -190,24 +192,23 @@ export default function AdminAuditClient() {
                   <span>{formatDateTime(item.createdAt)}</span>
                   {item.requestId ? <span className="font-mono">req: {item.requestId}</span> : null}
                 </div>
-                <p className="text-sm font-medium">{item.message || "메시지 없음"}</p>
-                <div className="text-sm text-muted-foreground">
+                <p className={`line-clamp-2 ${adminTypography.bodyStrong}`}>{item.message || "메시지 없음"}</p>
+                <div className={adminTypography.metaMuted}>
                   <span title={item.actorTitle}>{item.actor}</span>
                   <span className="mx-2">·</span>
                   <span title={item.targetId || undefined}>target: {item.targetId || "없음"}</span>
                 </div>
                 {item.diffSummary && item.diffSummary.length > 0 ? (
-                  <ul className="list-disc space-y-1 pl-5 text-xs text-muted-foreground">
+                  <ul className={`list-disc space-y-1 pl-5 ${adminTypography.caption}`}>
                     {item.diffSummary.map((summary, idx) => (
                       <li key={`${item.id}-s-${idx}`}>{summary}</li>
                     ))}
                   </ul>
                 ) : null}
-              </CardContent>
-            </Card>
+            </article>
           ))}
 
-          <div className="flex items-center justify-between pt-2 text-sm">
+          <div className={`flex items-center justify-between pt-2 ${adminTypography.meta}`}>
             <div className="text-muted-foreground">
               총 {data.total}건 · {data.page}/{data.totalPages} 페이지
             </div>
@@ -228,7 +229,7 @@ export default function AdminAuditClient() {
               </Button>
             </div>
           </div>
-        </div>
+        </AdminPageSection>
       )}
     </div>
   );
