@@ -1301,7 +1301,7 @@ export default function StringingApplicationDetailClient({
 
   const detailGridClass = isAdmin
     ? "grid gap-4 xl:grid-cols-12"
-    : "grid gap-5 bp-lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.9fr)] bp-lg:items-start";
+    : "grid gap-5 bp-lg:grid-cols-[minmax(0,1.55fr)_minmax(340px,0.85fr)] bp-lg:items-start";
   const detailCardClass = isAdmin
     ? "overflow-hidden border border-border/70 bg-card/80 shadow-sm"
     : "overflow-hidden rounded-2xl border border-border bg-card shadow-sm";
@@ -2296,357 +2296,6 @@ export default function StringingApplicationDetailClient({
             )}
 
             <div className={detailGridClass}>
-              {/* 고객 정보 */}
-              <Card
-                className={cn(
-                  detailCardClass,
-                  isAdmin ? "xl:col-span-6" : "order-4 lg:col-start-2 lg:row-start-2",
-                )}
-              >
-                <CardHeader className={detailCardHeaderClass}>
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <User className="h-5 w-5 text-primary" />
-                      <span>{isAdmin ? "고객 정보" : "신청자 정보"}</span>
-                    </div>
-                    {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className={cn("p-4 bp-lg:p-6", !isAdmin && "py-3 bp-lg:py-5")}>
-                  {editingCustomer ? (
-                    <CustomerEditForm
-                      initialData={{
-                        name: data.customer.name ?? "이름 미입력",
-                        email: data.customer.email ?? "이메일 미입력",
-                        phone: data.customer?.phone ?? "전화번호 미입력",
-                        address: data.customer?.address ?? "주소 미입력",
-                        addressDetail: data.customer?.addressDetail ?? "상세 주소 미입력",
-                        postalCode: data.customer?.postalCode ?? "우편번호 미입력",
-                      }}
-                      resourcePath={`${baseUrl}/api/applications/stringing`}
-                      entityId={data.id}
-                      onSuccess={() => {
-                        mutate(); // 상세 데이터 갱신
-                        historyMutateRef.current?.(); // 이력 갱신
-                        setEditingCustomer(false); // 폼 닫기
-                      }}
-                      onCancel={() => setEditingCustomer(false)}
-                    />
-                  ) : (
-                    <div className={cn("space-y-4", !isAdmin && "space-y-3")}>
-                      <div className="flex min-w-0 items-start gap-3 rounded-lg bg-muted p-3">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <div className="min-w-0">
-                          <p className="text-ui-body-sm text-foreground/80">이름</p>
-                          <p className="break-words font-semibold text-foreground">
-                            {data.customer.name ?? "정보 없음"}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <div className="min-w-0">
-                          <p className="text-ui-body-sm text-foreground/80">이메일</p>
-                          <p className="break-words font-semibold text-foreground">
-                            {data.customer.email ?? "정보 없음"}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        <div className="min-w-0">
-                          <p className="text-ui-body-sm text-foreground/80">전화번호</p>
-                          <p className="break-words font-semibold text-foreground">
-                            {data.customer?.phone ?? "정보 없음"}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
-                        <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
-                        <div className="min-w-0">
-                          <p className="text-ui-body-sm text-foreground/80">
-                            {customerAddressLabel}
-                          </p>
-                          <p className="break-words font-semibold text-foreground">
-                            {customerAddressValue}
-                          </p>
-                          {!isVisit && data.customer?.addressDetail && (
-                            <p className="mt-1 break-words text-ui-body-sm text-foreground/80">
-                              {data.customer.addressDetail}
-                            </p>
-                          )}
-                          {customerAddressSubValue && (
-                            <p className="text-ui-body-sm text-foreground/80">
-                              {customerAddressSubLabel}: {customerAddressSubValue}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-
-                {!editingCustomer && isEditMode && (
-                  <CardFooter className="pt-2 flex justify-center bg-muted/50">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setEditingCustomer(true)}
-                      className="hover:bg-muted border-border"
-                    >
-                      고객 정보 수정
-                    </Button>
-                  </CardFooter>
-                )}
-              </Card>
-
-              {/* 결제 정보 */}
-              <Card
-                id="admin-stringing-payment"
-                className={cn(
-                  detailCardClass,
-                  isAdmin ? "xl:col-span-6" : "order-3 lg:col-start-2 lg:row-start-1",
-                )}
-              >
-                <CardHeader
-                  className={cn(
-                    detailCardHeaderClass,
-                    "flex flex-row items-center justify-between space-y-0",
-                    !isAdmin && "pb-2",
-                  )}
-                >
-                  <CardTitle className="text-ui-card-title-lg font-semibold flex items-center gap-2">
-                    <CreditCard className="w-5 h-5 text-primary" /> 결제 정보
-                  </CardTitle>
-                  <div className="flex items-center space-x-2">
-                    {(() => {
-                      const pay = getPaymentStatusBadgeSpec(paymentHeaderBadgeLabel);
-                      return (
-                        <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
-                          {paymentHeaderBadgeLabel}
-                        </Badge>
-                      );
-                    })()}
-                    {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
-                  </div>
-                </CardHeader>
-
-                <CardContent className={cn("p-4 bp-lg:p-6", !isAdmin && "py-3 bp-lg:py-5")}>
-                  {editingPayment ? (
-                    <PaymentEditForm
-                      initialData={{
-                        depositor: data.shippingInfo?.depositor || "",
-                      }}
-                      resourcePath={`${baseUrl}/api/applications/stringing`}
-                      entityId={data.id}
-                      onSuccess={() => {
-                        mutate(); // 상세 데이터 갱신
-                        historyMutateRef.current?.(); // 처리 이력 컴포넌트 갱신
-                        setEditingPayment(false); // 폼 닫기
-                      }}
-                      onCancel={() => setEditingPayment(false)}
-                    />
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="p-3 bg-muted rounded-lg">
-                        <PaymentMethodDetail
-                          method={paymentMethodRaw}
-                          bankKey={
-                            useStandaloneBankFallback
-                              ? (linkedPayment?.bank ?? data.shippingInfo?.bank ?? undefined)
-                              : (linkedPayment?.bank ?? undefined)
-                          }
-                          depositor={
-                            useStandaloneBankFallback
-                              ? (linkedPayment?.depositor ??
-                                data.shippingInfo?.depositor ??
-                                undefined)
-                              : (linkedPayment?.depositor ?? undefined)
-                          }
-                          isPackageApplied={packageApplied}
-                          paymentProvider={linkedPayment?.provider}
-                          easyPayProvider={linkedPayment?.easyPayProvider}
-                          paymentStatus={paymentStatus}
-                          paymentTid={linkedPayment?.tid}
-                          paymentCardDisplayName={linkedPayment?.cardDisplayName}
-                          paymentCardCompany={linkedPayment?.cardCompany}
-                          paymentCardLabel={linkedPayment?.cardLabel}
-                          approvedAt={linkedPayment?.approvedAt ?? null}
-                          paymentNiceSync={linkedPayment?.niceSync ?? null}
-                          niceOrderId={linkedPayment?.rawSummary?.orderId ?? null}
-                          showAdminPgDetails={isAdmin}
-                        />
-                        {canSyncStandaloneNicePayment && (
-                          <div className="mt-3">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleNiceSync}
-                              disabled={isSyncingNice}
-                            >
-                              {isSyncingNice ? "PG 상태 동기화 중..." : "PG 상태 다시 확인"}
-                            </Button>
-                          </div>
-                        )}
-                        {isLinkedApplication && (
-                          <p className="mt-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-ui-body-sm leading-relaxed text-foreground/80">
-                            {isOrderLinkedApplication
-                              ? "주문 결제에 포함됨: 이 교체 작업의 결제는 연결 주문에서 처리합니다."
-                              : "대여 결제에 포함됨: 이 교체 작업의 결제는 연결 대여에서 처리합니다."}
-                          </p>
-                        )}
-                      </div>
-                      {/* 패키지 사용 요약 */}
-                      {data.packageInfo && (
-                        <div
-                          className={
-                            data.packageInfo.applied
-                              ? "p-3 rounded-lg border border-border bg-muted dark:border-border dark:bg-muted"
-                              : "p-3 rounded-lg border border-border bg-muted/60 dark:bg-background/40"
-                          }
-                        >
-                          <div className="flex items-start gap-2">
-                            <div className="mt-0.5 shrink-0">
-                              <Ticket className="h-4 w-4 text-foreground" />
-                            </div>
-                            <div className="min-w-0 flex-1 text-ui-label leading-relaxed">
-                              <div className="mb-1 flex min-w-0 flex-col items-start gap-1.5 bp-sm:flex-row bp-sm:items-center bp-sm:gap-2">
-                                <span className="break-keep whitespace-normal font-semibold text-foreground">
-                                  패키지 사용
-                                </span>
-                                <Badge
-                                  variant="outline"
-                                  className={cn(
-                                    "whitespace-normal break-keep text-left leading-relaxed",
-                                    data.packageInfo.applied
-                                      ? "border-border text-foreground"
-                                      : "border-border text-muted-foreground",
-                                  )}
-                                >
-                                  {data.packageInfo.applied
-                                    ? "이번 신청에 패키지 적용"
-                                    : "이번 신청에는 패키지 미사용"}
-                                </Badge>
-                              </div>
-
-                              {/* 본문 설명 */}
-                              {data.packageInfo.applied ? (
-                                <p className="break-keep text-foreground">
-                                  이번 신청에서 패키지{" "}
-                                  <span className="font-semibold">
-                                    {data.packageInfo.useCount}회
-                                  </span>
-                                  가 차감되었습니다.
-                                </p>
-                              ) : (
-                                <p className="break-words text-muted-foreground">
-                                  이 신청은 패키지 기준으로는{" "}
-                                  <span className="font-semibold">
-                                    {data.packageInfo.useCount}회
-                                  </span>
-                                  에 해당하지만, 실제로 패키지는 사용되지 않았습니다.
-                                </p>
-                              )}
-
-                              {/* 패스 정보가 있는 경우에만 상세 숫자 표시 */}
-                              {data.packageInfo.passId && (
-                                <div className="mt-2 flex flex-wrap gap-2 text-ui-body-sm text-foreground/75 [&>span]:break-keep">
-                                  {data.packageInfo.passTitle && (
-                                    <span className="font-medium">
-                                      {data.packageInfo.passTitle}
-                                    </span>
-                                  )}
-                                  {typeof data.packageInfo.packageSize === "number" && (
-                                    <span>총 {data.packageInfo.packageSize}회</span>
-                                  )}
-                                  {typeof data.packageInfo.usedCount === "number" && (
-                                    <span>사용 {data.packageInfo.usedCount}회</span>
-                                  )}
-                                  {typeof data.packageInfo.remainingCount === "number" && (
-                                    <span>잔여 {data.packageInfo.remainingCount}회</span>
-                                  )}
-                                  {data.packageInfo.expiresAt && (
-                                    <span>
-                                      만료일{" "}
-                                      {new Date(data.packageInfo.expiresAt).toLocaleDateString(
-                                        "ko-KR",
-                                      )}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* 패키지 사용 카드 아래에 차감 이력 표시 */}
-                      {data.packageConsumptions && data.packageConsumptions.length > 0 && (
-                        <div className="mt-3 rounded-lg border border-dashed border-border bg-muted px-3 py-2 text-ui-label text-foreground/60 dark:bg-muted">
-                          <div className="mb-1 flex flex-col gap-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                            <div className="flex items-center gap-1 break-keep">
-                              <Clock className="h-3.5 w-3.5 text-foreground" />
-                              <span className="font-semibold">패키지 차감 이력</span>
-                            </div>
-                            <span className="text-ui-body-sm text-foreground/75">
-                              총 {totalPackageConsumed}회
-                            </span>
-                          </div>
-                          <ul className="space-y-1.5">
-                            {data.packageConsumptions.map((c) => (
-                              <li
-                                key={c.id}
-                                className="flex flex-col gap-0.5 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between"
-                              >
-                                <span className="text-ui-body-sm text-foreground/75">
-                                  {new Date(c.usedAt).toLocaleString("ko-KR", {
-                                    dateStyle: "short",
-                                    timeStyle: "short",
-                                  })}
-                                </span>
-                                <span className="text-ui-micro font-medium text-primary">
-                                  {c.count ?? 1}회 사용
-                                  {c.reverted && (
-                                    <span className="ml-1 text-ui-label text-destructive">
-                                      (복원됨)
-                                    </span>
-                                  )}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/10 p-3 dark:bg-primary/20">
-                        <div>
-                          <p className="text-ui-body-sm text-foreground/80">결제 금액</p>
-                          <p className="whitespace-nowrap text-ui-card-title-lg font-semibold text-primary dark:text-foreground bp-sm:text-ui-section-title">
-                            {data.totalPrice.toLocaleString()}원
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-
-                {!editingPayment && isEditMode && (
-                  <CardFooter className="flex justify-center bg-muted/50">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setEditingPayment(true)}
-                      className="hover:bg-muted border-border"
-                    >
-                      결제 정보 수정
-                    </Button>
-                  </CardFooter>
-                )}
-              </Card>
-
               {/* 스트링 정보 */}
               <Card
                 id="admin-stringing-spec"
@@ -2654,7 +2303,7 @@ export default function StringingApplicationDetailClient({
                   detailCardClass,
                   isAdmin
                     ? "xl:col-span-12"
-                    : "order-1 lg:col-start-1 lg:row-span-2 lg:row-start-1",
+                    : "bp-lg:[grid-column:1]",
                 )}
               >
                 <CardHeader
@@ -3043,7 +2692,7 @@ export default function StringingApplicationDetailClient({
                 id="admin-stringing-request"
                 className={cn(
                   detailCardClass,
-                  isAdmin ? "xl:col-span-12" : "order-5 lg:col-start-1",
+                  isAdmin ? "xl:col-span-12" : "bp-lg:[grid-column:1]",
                 )}
               >
                 <CardHeader className={detailCardHeaderClass}>
@@ -3088,11 +2737,359 @@ export default function StringingApplicationDetailClient({
                   </CardFooter>
                 )}
               </Card>
-            </div>
-            {/* 관리자 전용 운송장 정보 카드 */}
-            <div className="mt-6 space-y-4 bp-sm:mt-8 bp-sm:space-y-6">
+              {/* 결제 정보 */}
+              <Card
+                id="admin-stringing-payment"
+                className={cn(
+                  detailCardClass,
+                  isAdmin ? "xl:col-span-6" : "bp-lg:[grid-column:2]",
+                )}
+              >
+                <CardHeader
+                  className={cn(
+                    detailCardHeaderClass,
+                    "flex flex-row items-center justify-between space-y-0",
+                    !isAdmin && "pb-2",
+                  )}
+                >
+                  <CardTitle className="text-ui-card-title-lg font-semibold flex items-center gap-2">
+                    <CreditCard className="w-5 h-5 text-primary" /> 결제 정보
+                  </CardTitle>
+                  <div className="flex items-center space-x-2">
+                    {(() => {
+                      const pay = getPaymentStatusBadgeSpec(paymentHeaderBadgeLabel);
+                      return (
+                        <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
+                          {paymentHeaderBadgeLabel}
+                        </Badge>
+                      );
+                    })()}
+                    {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
+                  </div>
+                </CardHeader>
+
+                <CardContent className={cn("p-4 bp-lg:p-6", !isAdmin && "py-3 bp-lg:py-5")}>
+                  {editingPayment ? (
+                    <PaymentEditForm
+                      initialData={{
+                        depositor: data.shippingInfo?.depositor || "",
+                      }}
+                      resourcePath={`${baseUrl}/api/applications/stringing`}
+                      entityId={data.id}
+                      onSuccess={() => {
+                        mutate(); // 상세 데이터 갱신
+                        historyMutateRef.current?.(); // 처리 이력 컴포넌트 갱신
+                        setEditingPayment(false); // 폼 닫기
+                      }}
+                      onCancel={() => setEditingPayment(false)}
+                    />
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="p-3 bg-muted rounded-lg">
+                        <PaymentMethodDetail
+                          method={paymentMethodRaw}
+                          bankKey={
+                            useStandaloneBankFallback
+                              ? (linkedPayment?.bank ?? data.shippingInfo?.bank ?? undefined)
+                              : (linkedPayment?.bank ?? undefined)
+                          }
+                          depositor={
+                            useStandaloneBankFallback
+                              ? (linkedPayment?.depositor ??
+                                data.shippingInfo?.depositor ??
+                                undefined)
+                              : (linkedPayment?.depositor ?? undefined)
+                          }
+                          isPackageApplied={packageApplied}
+                          paymentProvider={linkedPayment?.provider}
+                          easyPayProvider={linkedPayment?.easyPayProvider}
+                          paymentStatus={paymentStatus}
+                          paymentTid={linkedPayment?.tid}
+                          paymentCardDisplayName={linkedPayment?.cardDisplayName}
+                          paymentCardCompany={linkedPayment?.cardCompany}
+                          paymentCardLabel={linkedPayment?.cardLabel}
+                          approvedAt={linkedPayment?.approvedAt ?? null}
+                          paymentNiceSync={linkedPayment?.niceSync ?? null}
+                          niceOrderId={linkedPayment?.rawSummary?.orderId ?? null}
+                          showAdminPgDetails={isAdmin}
+                        />
+                        {canSyncStandaloneNicePayment && (
+                          <div className="mt-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleNiceSync}
+                              disabled={isSyncingNice}
+                            >
+                              {isSyncingNice ? "PG 상태 동기화 중..." : "PG 상태 다시 확인"}
+                            </Button>
+                          </div>
+                        )}
+                        {isLinkedApplication && (
+                          <p className="mt-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-ui-body-sm leading-relaxed text-foreground/80">
+                            {isOrderLinkedApplication
+                              ? "주문 결제에 포함됨: 이 교체 작업의 결제는 연결 주문에서 처리합니다."
+                              : "대여 결제에 포함됨: 이 교체 작업의 결제는 연결 대여에서 처리합니다."}
+                          </p>
+                        )}
+                      </div>
+                      {/* 패키지 사용 요약 */}
+                      {data.packageInfo && (
+                        <div
+                          className={
+                            data.packageInfo.applied
+                              ? "p-3 rounded-lg border border-border bg-muted dark:border-border dark:bg-muted"
+                              : "p-3 rounded-lg border border-border bg-muted/60 dark:bg-background/40"
+                          }
+                        >
+                          <div className="flex items-start gap-2">
+                            <div className="mt-0.5 shrink-0">
+                              <Ticket className="h-4 w-4 text-foreground" />
+                            </div>
+                            <div className="min-w-0 flex-1 text-ui-label leading-relaxed">
+                              <div className="mb-1 flex min-w-0 flex-col items-start gap-1.5 bp-sm:flex-row bp-sm:items-center bp-sm:gap-2">
+                                <span className="break-keep whitespace-normal font-semibold text-foreground">
+                                  패키지 사용
+                                </span>
+                                <Badge
+                                  variant="outline"
+                                  className={cn(
+                                    "whitespace-normal break-keep text-left leading-relaxed",
+                                    data.packageInfo.applied
+                                      ? "border-border text-foreground"
+                                      : "border-border text-muted-foreground",
+                                  )}
+                                >
+                                  {data.packageInfo.applied
+                                    ? "이번 신청에 패키지 적용"
+                                    : "이번 신청에는 패키지 미사용"}
+                                </Badge>
+                              </div>
+
+                              {/* 본문 설명 */}
+                              {data.packageInfo.applied ? (
+                                <p className="break-keep text-foreground">
+                                  이번 신청에서 패키지{" "}
+                                  <span className="font-semibold">
+                                    {data.packageInfo.useCount}회
+                                  </span>
+                                  가 차감되었습니다.
+                                </p>
+                              ) : (
+                                <p className="break-words text-muted-foreground">
+                                  이 신청은 패키지 기준으로는{" "}
+                                  <span className="font-semibold">
+                                    {data.packageInfo.useCount}회
+                                  </span>
+                                  에 해당하지만, 실제로 패키지는 사용되지 않았습니다.
+                                </p>
+                              )}
+
+                              {/* 패스 정보가 있는 경우에만 상세 숫자 표시 */}
+                              {data.packageInfo.passId && (
+                                <div className="mt-2 flex flex-wrap gap-2 text-ui-body-sm text-foreground/75 [&>span]:break-keep">
+                                  {data.packageInfo.passTitle && (
+                                    <span className="font-medium">
+                                      {data.packageInfo.passTitle}
+                                    </span>
+                                  )}
+                                  {typeof data.packageInfo.packageSize === "number" && (
+                                    <span>총 {data.packageInfo.packageSize}회</span>
+                                  )}
+                                  {typeof data.packageInfo.usedCount === "number" && (
+                                    <span>사용 {data.packageInfo.usedCount}회</span>
+                                  )}
+                                  {typeof data.packageInfo.remainingCount === "number" && (
+                                    <span>잔여 {data.packageInfo.remainingCount}회</span>
+                                  )}
+                                  {data.packageInfo.expiresAt && (
+                                    <span>
+                                      만료일{" "}
+                                      {new Date(data.packageInfo.expiresAt).toLocaleDateString(
+                                        "ko-KR",
+                                      )}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 패키지 사용 카드 아래에 차감 이력 표시 */}
+                      {data.packageConsumptions && data.packageConsumptions.length > 0 && (
+                        <div className="mt-3 rounded-lg border border-dashed border-border bg-muted px-3 py-2 text-ui-label text-foreground/60 dark:bg-muted">
+                          <div className="mb-1 flex flex-col gap-1 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                            <div className="flex items-center gap-1 break-keep">
+                              <Clock className="h-3.5 w-3.5 text-foreground" />
+                              <span className="font-semibold">패키지 차감 이력</span>
+                            </div>
+                            <span className="text-ui-body-sm text-foreground/75">
+                              총 {totalPackageConsumed}회
+                            </span>
+                          </div>
+                          <ul className="space-y-1.5">
+                            {data.packageConsumptions.map((c) => (
+                              <li
+                                key={c.id}
+                                className="flex flex-col gap-0.5 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between"
+                              >
+                                <span className="text-ui-body-sm text-foreground/75">
+                                  {new Date(c.usedAt).toLocaleString("ko-KR", {
+                                    dateStyle: "short",
+                                    timeStyle: "short",
+                                  })}
+                                </span>
+                                <span className="text-ui-micro font-medium text-primary">
+                                  {c.count ?? 1}회 사용
+                                  {c.reverted && (
+                                    <span className="ml-1 text-ui-label text-destructive">
+                                      (복원됨)
+                                    </span>
+                                  )}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/10 p-3 dark:bg-primary/20">
+                        <div>
+                          <p className="text-ui-body-sm text-foreground/80">결제 금액</p>
+                          <p className="whitespace-nowrap text-ui-card-title-lg font-semibold text-primary dark:text-foreground bp-sm:text-ui-section-title">
+                            {data.totalPrice.toLocaleString()}원
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+
+                {!editingPayment && isEditMode && (
+                  <CardFooter className="flex justify-center bg-muted/50">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setEditingPayment(true)}
+                      className="hover:bg-muted border-border"
+                    >
+                      결제 정보 수정
+                    </Button>
+                  </CardFooter>
+                )}
+              </Card>
+
+              {/* 고객 정보 */}
+              <Card
+                className={cn(
+                  detailCardClass,
+                  isAdmin ? "xl:col-span-6" : "bp-lg:[grid-column:2]",
+                )}
+              >
+                <CardHeader className={detailCardHeaderClass}>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <User className="h-5 w-5 text-primary" />
+                      <span>{isAdmin ? "고객 정보" : "신청자 정보"}</span>
+                    </div>
+                    {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className={cn("p-4 bp-lg:p-6", !isAdmin && "py-3 bp-lg:py-5")}>
+                  {editingCustomer ? (
+                    <CustomerEditForm
+                      initialData={{
+                        name: data.customer.name ?? "이름 미입력",
+                        email: data.customer.email ?? "이메일 미입력",
+                        phone: data.customer?.phone ?? "전화번호 미입력",
+                        address: data.customer?.address ?? "주소 미입력",
+                        addressDetail: data.customer?.addressDetail ?? "상세 주소 미입력",
+                        postalCode: data.customer?.postalCode ?? "우편번호 미입력",
+                      }}
+                      resourcePath={`${baseUrl}/api/applications/stringing`}
+                      entityId={data.id}
+                      onSuccess={() => {
+                        mutate(); // 상세 데이터 갱신
+                        historyMutateRef.current?.(); // 이력 갱신
+                        setEditingCustomer(false); // 폼 닫기
+                      }}
+                      onCancel={() => setEditingCustomer(false)}
+                    />
+                  ) : (
+                    <div className={cn("space-y-4", !isAdmin && "space-y-3")}>
+                      <div className="flex min-w-0 items-start gap-3 rounded-lg bg-muted p-3">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <div className="min-w-0">
+                          <p className="text-ui-body-sm text-foreground/80">이름</p>
+                          <p className="break-words font-semibold text-foreground">
+                            {data.customer.name ?? "정보 없음"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <div className="min-w-0">
+                          <p className="text-ui-body-sm text-foreground/80">이메일</p>
+                          <p className="break-words font-semibold text-foreground">
+                            {data.customer.email ?? "정보 없음"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <div className="min-w-0">
+                          <p className="text-ui-body-sm text-foreground/80">전화번호</p>
+                          <p className="break-words font-semibold text-foreground">
+                            {data.customer?.phone ?? "정보 없음"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
+                        <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
+                        <div className="min-w-0">
+                          <p className="text-ui-body-sm text-foreground/80">
+                            {customerAddressLabel}
+                          </p>
+                          <p className="break-words font-semibold text-foreground">
+                            {customerAddressValue}
+                          </p>
+                          {!isVisit && data.customer?.addressDetail && (
+                            <p className="mt-1 break-words text-ui-body-sm text-foreground/80">
+                              {data.customer.addressDetail}
+                            </p>
+                          )}
+                          {customerAddressSubValue && (
+                            <p className="text-ui-body-sm text-foreground/80">
+                              {customerAddressSubLabel}: {customerAddressSubValue}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+
+                {!editingCustomer && isEditMode && (
+                  <CardFooter className="pt-2 flex justify-center bg-muted/50">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setEditingCustomer(true)}
+                      className="hover:bg-muted border-border"
+                    >
+                      고객 정보 수정
+                    </Button>
+                  </CardFooter>
+                )}
+              </Card>
+
               {!isAdmin && (
-                <Card className={cn(detailCardClass, "mb-4")}>
+                <Card className={cn(detailCardClass, "bp-lg:[grid-column:2]")}>
                   <CardHeader className={detailCardHeaderClass}>
                     <CardTitle className="flex items-center gap-2 text-ui-card-title-lg font-semibold">
                       <Truck className="h-5 w-5 text-primary" />
@@ -3208,6 +3205,10 @@ export default function StringingApplicationDetailClient({
                   </CardContent>
                 </Card>
               )}
+            </div>
+            {/* 관리자 전용 운송장 정보 카드 */}
+            <div className="mt-6 space-y-4 bp-sm:mt-8 bp-sm:space-y-6">
+
 
               {isAdmin && !isLinkedApplication && (
                 <Card id="admin-stringing-shipping" className={cn(detailCardClass, "mb-8")}>
