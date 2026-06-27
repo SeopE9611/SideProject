@@ -1302,6 +1302,7 @@ export default function StringingApplicationDetailClient({
   const detailGridClass = isAdmin
     ? "grid gap-4 xl:grid-cols-12"
     : "grid gap-5 bp-lg:grid-cols-[minmax(0,1.55fr)_minmax(340px,0.85fr)] bp-lg:items-start";
+  const detailColumnClass = isAdmin ? "contents" : "space-y-5";
   const detailCardClass = isAdmin
     ? "overflow-hidden border border-border/70 bg-card/80 shadow-sm"
     : "overflow-hidden rounded-2xl border border-border bg-card shadow-sm";
@@ -2296,14 +2297,13 @@ export default function StringingApplicationDetailClient({
             )}
 
             <div className={detailGridClass}>
+              <div className={detailColumnClass}>
               {/* 스트링 정보 */}
               <Card
                 id="admin-stringing-spec"
                 className={cn(
                   detailCardClass,
-                  isAdmin
-                    ? "xl:col-span-12"
-                    : "bp-lg:[grid-column:1]",
+                  isAdmin && "xl:col-span-12",
                 )}
               >
                 <CardHeader
@@ -2692,7 +2692,7 @@ export default function StringingApplicationDetailClient({
                 id="admin-stringing-request"
                 className={cn(
                   detailCardClass,
-                  isAdmin ? "xl:col-span-12" : "bp-lg:[grid-column:1]",
+                  isAdmin && "xl:col-span-12",
                 )}
               >
                 <CardHeader className={detailCardHeaderClass}>
@@ -2737,12 +2737,142 @@ export default function StringingApplicationDetailClient({
                   </CardFooter>
                 )}
               </Card>
+
+              {/* 신청 타임라인: 마이페이지 전용 */}
+              {!isAdmin && (
+                <Card className="rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
+                  <CardHeader className="rounded-t-2xl border-b border-border bg-muted/30 pb-3">
+                    <CardTitle className="flex items-center space-x-2">
+                      <Clock className="h-5 w-5 text-primary" />
+                      <span>신청 타임라인</span>
+                    </CardTitle>
+                    <CardDescription>
+                      접수, 라켓 발송, 작업, 완성 라켓 배송/수령, 확정까지의 진행 흐름을 확인할 수 있습니다.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-4 bp-lg:p-6">
+                    <div className="space-y-4">
+                      {/* 신청 접수 */}
+                      <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:gap-4 bp-sm:p-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card">
+                          <Clock className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-ui-body-sm font-medium text-foreground">신청 접수</p>
+                          <p className="text-ui-body-sm text-foreground/80">
+                            {data?.requestedAt
+                              ? new Date(data.requestedAt).toLocaleString("ko-KR")
+                              : "-"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* 자가 발송(사용자 → 매장) */}
+                      {selfShip?.trackingNo && (
+                        <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:gap-4 bp-sm:p-4">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card">
+                            <Truck className="h-5 w-5 text-foreground" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-ui-body-sm font-medium text-foreground">
+                              라켓 발송 운송장 등록
+                            </p>
+                            {/* 날짜 */}
+                            <p className="mt-1 text-ui-body-sm text-foreground/80">
+                              {selfShip.shippedAt
+                                ? new Date(selfShip.shippedAt).toLocaleDateString("ko-KR")
+                                : "운송장 번호가 등록되었습니다."}
+                            </p>
+                            {/* 택배사 + 운송장번호 + 조회 링크 */}
+                            <p className="mt-1 break-words text-ui-body-sm text-foreground/80">
+                              {getCourierLabel(selfShip.courier) + " · "}
+                              <a
+                                href={
+                                  buildTrackingUrl(selfShip.courier, selfShip.trackingNo) ?? "#"
+                                }
+                                target="_blank"
+                                rel="noreferrer"
+                                className="break-all underline underline-offset-2"
+                              >
+                                {selfShip.trackingNo}
+                              </a>
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {/* 매장 발송(매장 → 사용자) */}
+                      {invoice?.trackingNumber && (
+                        <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:gap-4 bp-sm:p-4">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card">
+                            <Truck className="h-5 w-5 text-primary dark:text-foreground" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-ui-body-sm font-medium text-foreground">
+                              완성 라켓 배송 운송장 등록
+                            </p>
+                            <p className="mt-1 text-ui-body-sm text-foreground/80">
+                              {invoice.shippedAt
+                                ? new Date(invoice.shippedAt).toLocaleDateString("ko-KR")
+                                : "완성 라켓 배송을 위한 운송장 번호가 등록되었습니다."}
+                            </p>
+                            <p className="mt-1 break-words text-ui-body-sm text-foreground/80">
+                              {getCourierLabel(invoice.courier) + " · "}
+                              <a
+                                href={
+                                  buildTrackingUrl(invoice.courier, invoice.trackingNumber) ?? "#"
+                                }
+                                target="_blank"
+                                rel="noreferrer"
+                                className="break-all underline underline-offset-2"
+                              >
+                                {invoice.trackingNumber}
+                              </a>
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 전체 상태 요약 */}
+                      <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:gap-4 bp-sm:p-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card">
+                          <CheckCircle2 className="h-5 w-5 text-foreground" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-ui-body-sm font-medium text-foreground">현재 상태</p>
+                          <p className="text-ui-body-sm text-foreground/80">
+                            {data?.status ? `현재 상태: ${data.status}` : "상태 정보가 없습니다."}
+                          </p>
+                          {data?.updatedAt && (
+                            <p className="mt-1 text-ui-label text-foreground/75">
+                              마지막 변경: {new Date(data.updatedAt).toLocaleString("ko-KR")}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              {applicationId && !isAdmin && (
+                <div id="stringing-history">
+                  <StringingApplicationHistory
+                    applicationId={applicationId}
+                    isAdmin={isAdmin}
+                    onHistoryMutate={(mutateFn) => {
+                      historyMutateRef.current = mutateFn;
+                    }}
+                  />
+                </div>
+              )}
+              </div>
+
+              <aside className={detailColumnClass}>
               {/* 결제 정보 */}
               <Card
                 id="admin-stringing-payment"
                 className={cn(
                   detailCardClass,
-                  isAdmin ? "xl:col-span-6" : "bp-lg:[grid-column:2]",
+                  isAdmin && "xl:col-span-6",
                 )}
               >
                 <CardHeader
@@ -2985,7 +3115,7 @@ export default function StringingApplicationDetailClient({
               <Card
                 className={cn(
                   detailCardClass,
-                  isAdmin ? "xl:col-span-6" : "bp-lg:[grid-column:2]",
+                  isAdmin && "xl:col-span-6",
                 )}
               >
                 <CardHeader className={detailCardHeaderClass}>
@@ -3089,7 +3219,7 @@ export default function StringingApplicationDetailClient({
               </Card>
 
               {!isAdmin && (
-                <Card className={cn(detailCardClass, "bp-lg:[grid-column:2]")}>
+                <Card className={detailCardClass}>
                   <CardHeader className={detailCardHeaderClass}>
                     <CardTitle className="flex items-center gap-2 text-ui-card-title-lg font-semibold">
                       <Truck className="h-5 w-5 text-primary" />
@@ -3205,6 +3335,7 @@ export default function StringingApplicationDetailClient({
                   </CardContent>
                 </Card>
               )}
+              </aside>
             </div>
             {/* 관리자 전용 운송장 정보 카드 */}
             <div className="mt-6 space-y-4 bp-sm:mt-8 bp-sm:space-y-6">
@@ -3328,121 +3459,6 @@ export default function StringingApplicationDetailClient({
                 </Card>
               )}
 
-              {/* 신청 타임라인: 마이페이지 전용 */}
-              {!isAdmin && (
-                <Card className="rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
-                  <CardHeader className="rounded-t-2xl border-b border-border bg-muted/30 pb-3">
-                    <CardTitle className="flex items-center space-x-2">
-                      <Clock className="h-5 w-5 text-primary" />
-                      <span>신청 타임라인</span>
-                    </CardTitle>
-                    <CardDescription>
-                      접수, 라켓 발송, 작업, 완성 라켓 배송/수령, 확정까지의 진행 흐름을 확인할 수 있습니다.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-4 bp-lg:p-6">
-                    <div className="space-y-4">
-                      {/* 신청 접수 */}
-                      <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:gap-4 bp-sm:p-4">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card">
-                          <Clock className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-ui-body-sm font-medium text-foreground">신청 접수</p>
-                          <p className="text-ui-body-sm text-foreground/80">
-                            {data?.requestedAt
-                              ? new Date(data.requestedAt).toLocaleString("ko-KR")
-                              : "-"}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* 자가 발송(사용자 → 매장) */}
-                      {selfShip?.trackingNo && (
-                        <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:gap-4 bp-sm:p-4">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card">
-                            <Truck className="h-5 w-5 text-foreground" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-ui-body-sm font-medium text-foreground">
-                              라켓 발송 운송장 등록
-                            </p>
-                            {/* 날짜 */}
-                            <p className="mt-1 text-ui-body-sm text-foreground/80">
-                              {selfShip.shippedAt
-                                ? new Date(selfShip.shippedAt).toLocaleDateString("ko-KR")
-                                : "운송장 번호가 등록되었습니다."}
-                            </p>
-                            {/* 택배사 + 운송장번호 + 조회 링크 */}
-                            <p className="mt-1 break-words text-ui-body-sm text-foreground/80">
-                              {getCourierLabel(selfShip.courier) + " · "}
-                              <a
-                                href={
-                                  buildTrackingUrl(selfShip.courier, selfShip.trackingNo) ?? "#"
-                                }
-                                target="_blank"
-                                rel="noreferrer"
-                                className="break-all underline underline-offset-2"
-                              >
-                                {selfShip.trackingNo}
-                              </a>
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                      {/* 매장 발송(매장 → 사용자) */}
-                      {invoice?.trackingNumber && (
-                        <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:gap-4 bp-sm:p-4">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card">
-                            <Truck className="h-5 w-5 text-primary dark:text-foreground" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-ui-body-sm font-medium text-foreground">
-                              완성 라켓 배송 운송장 등록
-                            </p>
-                            <p className="mt-1 text-ui-body-sm text-foreground/80">
-                              {invoice.shippedAt
-                                ? new Date(invoice.shippedAt).toLocaleDateString("ko-KR")
-                                : "완성 라켓 배송을 위한 운송장 번호가 등록되었습니다."}
-                            </p>
-                            <p className="mt-1 break-words text-ui-body-sm text-foreground/80">
-                              {getCourierLabel(invoice.courier) + " · "}
-                              <a
-                                href={
-                                  buildTrackingUrl(invoice.courier, invoice.trackingNumber) ?? "#"
-                                }
-                                target="_blank"
-                                rel="noreferrer"
-                                className="break-all underline underline-offset-2"
-                              >
-                                {invoice.trackingNumber}
-                              </a>
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* 전체 상태 요약 */}
-                      <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:gap-4 bp-sm:p-4">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card">
-                          <CheckCircle2 className="h-5 w-5 text-foreground" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-ui-body-sm font-medium text-foreground">현재 상태</p>
-                          <p className="text-ui-body-sm text-foreground/80">
-                            {data?.status ? `현재 상태: ${data.status}` : "상태 정보가 없습니다."}
-                          </p>
-                          {data?.updatedAt && (
-                            <p className="mt-1 text-ui-label text-foreground/75">
-                              마지막 변경: {new Date(data.updatedAt).toLocaleString("ko-KR")}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
               {isAdmin && applicationId && (
                 <div className="mt-6">
                   <AdminInternalNotesCard
@@ -3452,7 +3468,7 @@ export default function StringingApplicationDetailClient({
                 </div>
               )}
               {/* 처리 이력 */}
-              {applicationId && (
+              {isAdmin && applicationId && (
                 <div id="admin-stringing-history" className="mt-6">
                   <StringingApplicationHistory
                     applicationId={applicationId}
