@@ -375,9 +375,20 @@ export default async function StringServiceSuccessPage(props: Props) {
     (application as any)?.paymentInfo?.provider === "nicepay" ||
     (application as any)?.paymentMethod === "nicepay";
 
+  const applicationFlowHref = `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(String(application._id))}&from=orders`;
+  const orderFlowHref = order?._id
+    ? `/mypage?tab=orders&flowType=order&flowId=${encodeURIComponent(String(order._id))}&from=orders&focus=stringing`
+    : applicationFlowHref;
+  const rentalFlowHref = rental?._id
+    ? `/mypage?tab=orders&flowType=rental&flowId=${encodeURIComponent(String(rental._id))}&from=orders&focus=stringing`
+    : applicationFlowHref;
   const isOrderBasedApplication = Boolean(order);
   const isRentalBasedApplication = Boolean(rental);
-  const mypageFlowHref = `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(String(application._id))}&from=orders`;
+  const mypageFlowHref = isRentalBasedApplication
+    ? rentalFlowHref
+    : isOrderBasedApplication
+      ? orderFlowHref
+      : applicationFlowHref;
   const shippingRegisterHref = `/services/applications/${applicationId}/shipping?return=${encodeURIComponent(mypageFlowHref)}`;
   const progressGuide = (() => {
     if (isRentalBasedApplication) {
