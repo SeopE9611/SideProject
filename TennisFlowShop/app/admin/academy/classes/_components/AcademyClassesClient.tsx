@@ -7,7 +7,7 @@ import useSWR from "swr";
 import { BookOpen, Eye, EyeOff, MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import { adminSurface } from "@/components/admin/admin-typography";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -136,7 +136,7 @@ function ApplicationStatsCell({ item }: { item: AcademyClass }) {
   return (
     <div className="shrink-0 whitespace-nowrap tabular-nums">
       <div className="font-medium text-foreground">신청 {total.toLocaleString("ko-KR")}건</div>
-      <div className="text-xs text-muted-foreground">
+      <div className={adminTypography.caption}>
         등록 확정 {confirmed.toLocaleString("ko-KR")}명 / {formatCapacityLabel(item.capacity)}
       </div>
     </div>
@@ -147,8 +147,8 @@ function SummaryCard({ label, value, active }: { label: string; value: number; a
   return (
     <Card className={cn(adminSurface.kpiCard, active ? "border-primary/50 bg-primary/5" : "")}>
       <CardContent className="p-4">
-        <div className="text-xs font-medium text-muted-foreground">{label}</div>
-        <div className="mt-2 whitespace-nowrap text-2xl font-semibold tabular-nums text-foreground">
+        <div className={adminTypography.caption}>{label}</div>
+        <div className={cn("mt-2 whitespace-nowrap", adminTypography.kpiValueCompact)}>
           {value.toLocaleString("ko-KR")}
         </div>
       </CardContent>
@@ -294,11 +294,16 @@ export default function AcademyClassesClient() {
       </div>
 
       <Card className={adminSurface.card}>
-        <CardHeader>
-          <CardTitle className="text-base">클래스 목록</CardTitle>
+        <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
+          <CardTitle className={adminTypography.sectionTitle}>클래스 목록</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <CardContent className="space-y-4 p-5 sm:p-6">
+          <div
+            className={cn(
+              adminSurface.filterCard,
+              "flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between",
+            )}
+          >
             <Select
               value={status}
               onValueChange={(value) => {
@@ -333,7 +338,12 @@ export default function AcademyClassesClient() {
           </div>
 
           {error ? (
-            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-6 text-sm text-destructive">
+            <div
+              className={cn(
+                "rounded-xl border border-destructive/30 bg-destructive/10 p-6 text-destructive",
+                adminTypography.body,
+              )}
+            >
               클래스 목록을 불러오지 못했습니다.
             </div>
           ) : null}
@@ -356,7 +366,7 @@ export default function AcademyClassesClient() {
                   <TableRow>
                     <TableCell
                       colSpan={7}
-                      className="h-28 text-center text-sm text-muted-foreground"
+                      className={cn("h-28 text-center", adminTypography.metaMuted)}
                     >
                       클래스 목록을 불러오는 중입니다.
                     </TableCell>
@@ -366,7 +376,7 @@ export default function AcademyClassesClient() {
                   <TableRow>
                     <TableCell
                       colSpan={7}
-                      className="h-28 text-center text-sm text-muted-foreground"
+                      className={cn("h-28 text-center", adminTypography.metaMuted)}
                     >
                       등록된 아카데미 클래스가 없습니다.
                     </TableCell>
@@ -398,25 +408,25 @@ export default function AcademyClassesClient() {
                       </TableCell>
                       <TableCell className="min-w-0 px-3 py-3">
                         <div
-                          className="line-clamp-2 max-w-[260px] break-words font-medium text-foreground"
+                          className={cn("line-clamp-2 max-w-[260px] break-words", adminTypography.bodyStrong)}
                           title={item.name || "-"}
                         >
                           {item.name || "-"}
                         </div>
                         <div
-                          className="line-clamp-2 max-w-[260px] break-words text-xs leading-relaxed text-muted-foreground"
+                          className={cn("line-clamp-2 max-w-[260px] break-words", adminTypography.caption)}
                           title={item.description || "설명 미입력"}
                         >
                           {item.description || "설명 미입력"}
                         </div>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap px-3 py-3 text-sm">
+                      <TableCell className="whitespace-nowrap px-3 py-3">
                         <div>{getAcademyClassLessonTypeLabel(item.lessonType)}</div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className={adminTypography.caption}>
                           {getAcademyClassLevelLabel(item.level)}
                         </div>
                       </TableCell>
-                      <TableCell className="min-w-0 px-3 py-3 text-sm">
+                      <TableCell className="min-w-0 px-3 py-3">
                         <div
                           className="max-w-[220px] truncate"
                           title={item.instructorName || "강사 미입력"}
@@ -424,14 +434,14 @@ export default function AcademyClassesClient() {
                           {item.instructorName || "강사 미입력"}
                         </div>
                         <div
-                          className="line-clamp-2 max-w-[220px] break-words text-xs leading-relaxed text-muted-foreground"
+                          className={cn("line-clamp-2 max-w-[220px] break-words", adminTypography.caption)}
                           title={item.scheduleText || "일정 미입력"}
                         >
                           {item.scheduleText || "일정 미입력"}
                         </div>
                         {item.location ? (
                           <div
-                            className="max-w-[220px] truncate text-xs text-muted-foreground"
+                            className={cn("max-w-[220px] truncate", adminTypography.caption)}
                             title={item.location}
                           >
                             {item.location}
@@ -442,7 +452,7 @@ export default function AcademyClassesClient() {
                         <ApplicationStatsCell item={item} />
                       </TableCell>
                       <TableCell className="whitespace-nowrap px-3 py-3">
-                        <div className="whitespace-nowrap text-sm font-medium tabular-nums text-foreground">
+                        <div className={cn("whitespace-nowrap tabular-nums", adminTypography.bodyStrong)}>
                           {formatPrice(item.price)}
                         </div>
                         <div className="mt-1">
@@ -534,7 +544,12 @@ export default function AcademyClassesClient() {
             </Table>
           </div>
 
-          <div className="flex flex-col gap-2 text-sm leading-relaxed text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <div
+            className={cn(
+              "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between",
+              adminTypography.metaMuted,
+            )}
+          >
             <div>
               총 {data?.pagination.total.toLocaleString("ko-KR") ?? 0}건 ·{" "}
               {data?.pagination.page ?? page} / {data?.pagination.totalPages ?? 1}페이지

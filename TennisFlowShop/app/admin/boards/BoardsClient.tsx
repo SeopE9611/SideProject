@@ -36,7 +36,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import { adminSurface } from "@/components/admin/admin-typography";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
 import { buildAdminBoardDetailUrl, buildBoardPublicUrl } from "@/lib/board-public-url-policy";
 import { adminMutator } from "@/lib/admin/adminFetcher";
@@ -378,8 +378,8 @@ export default function BoardsClient() {
                   <FileText className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">전체 게시글</p>
-                  <p className="text-2xl font-bold">
+                  <p className={adminTypography.caption}>전체 게시글</p>
+                  <p className={adminTypography.kpiValueCompact}>
                     {postsTotal === null ? "-" : postsTotal.toLocaleString()}
                   </p>
                 </div>
@@ -394,8 +394,8 @@ export default function BoardsClient() {
                   <Eye className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">공개 게시글</p>
-                  <p className="text-2xl font-bold">
+                  <p className={adminTypography.caption}>공개 게시글</p>
+                  <p className={adminTypography.kpiValueCompact}>
                     {postsPublicCount === null ? "-" : postsPublicCount.toLocaleString()}
                   </p>
                 </div>
@@ -410,8 +410,8 @@ export default function BoardsClient() {
                   <AlertTriangle className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">대기 중 신고</p>
-                  <p className="text-2xl font-bold">
+                  <p className={adminTypography.caption}>대기 중 신고</p>
+                  <p className={adminTypography.kpiValueCompact}>
                     {reportsPendingCount === null ? "-" : reportsPendingCount.toLocaleString()}
                   </p>
                 </div>
@@ -426,8 +426,8 @@ export default function BoardsClient() {
                   <EyeOff className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">숨김 게시글</p>
-                  <p className="text-2xl font-bold">
+                  <p className={adminTypography.caption}>숨김 게시글</p>
+                  <p className={adminTypography.kpiValueCompact}>
                     {postsHiddenCount === null ? "-" : postsHiddenCount.toLocaleString()}
                   </p>
                 </div>
@@ -436,11 +436,13 @@ export default function BoardsClient() {
           </Card>
         </div>
 
-        <Card className="border-border/40 bg-card/50 backdrop-blur">
+        <Card className={cn(adminSurface.card, "overflow-hidden")}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
             <div>
-              <CardTitle className="text-2xl">게시글·신고 목록</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">커뮤니티 게시글 및 신고 관리</p>
+              <CardTitle className={adminTypography.sectionTitle}>게시글·신고 목록</CardTitle>
+              <p className={cn("mt-1", adminTypography.metaMuted)}>
+                커뮤니티 게시글 및 신고 관리
+              </p>
             </div>
 
             <Tabs value={tab} onValueChange={(v) => switchTab(v as any)}>
@@ -460,7 +462,7 @@ export default function BoardsClient() {
           <CardContent>
             {tab === "posts" && (
               <div className="space-y-4">
-                <div className="flex flex-wrap items-center gap-3 p-4 rounded-lg border border-border/40 bg-muted/30">
+                <div className={cn(adminSurface.filterCard, "flex flex-wrap items-center gap-3")}>
                   <Select value={postType} onValueChange={(v) => (setPostPage(1), setPostType(v))}>
                     <SelectTrigger className="w-[140px] bg-background/50">
                       <SelectValue placeholder="게시판" />
@@ -505,7 +507,7 @@ export default function BoardsClient() {
                   </Button>
 
                   <div className="ml-auto flex items-center gap-3">
-                    <span className="text-sm text-muted-foreground">
+                    <span className={adminTypography.metaMuted}>
                       선택 {selectedPostIds.length}개
                     </span>
                     <Button
@@ -517,7 +519,7 @@ export default function BoardsClient() {
                     >
                       <Trash2 className="h-4 w-4" /> 선택 삭제
                     </Button>
-                    <div className="text-sm font-medium">
+                    <div className={adminTypography.bodyStrong}>
                       총 {postsTotal === null ? "-" : postsTotal.toLocaleString()}건
                     </div>
                   </div>
@@ -532,7 +534,12 @@ export default function BoardsClient() {
                 )}
 
                 {hasPostsDataError && (
-                  <div className="p-4 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-sm dark:bg-destructive/15">
+                  <div
+                    className={cn(
+                      "rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-destructive dark:bg-destructive/15",
+                      adminTypography.body,
+                    )}
+                  >
                     게시글 목록 로드 실패: {(postsErr as any)?.message ?? "error"}
                   </div>
                 )}
@@ -547,7 +554,7 @@ export default function BoardsClient() {
                             toggleSelectAllCurrentPage(Boolean(checked))
                           }
                         />
-                        <span className="text-sm text-muted-foreground">현재 페이지 전체 선택</span>
+                        <span className={adminTypography.metaMuted}>현재 페이지 전체 선택</span>
                       </div>
                     )}
                     <div className="space-y-3">
@@ -591,7 +598,7 @@ export default function BoardsClient() {
                                       <Badge variant="outline" className="font-medium">
                                         {resolveBoardLabel(p.type)}
                                       </Badge>
-                                      <span className="text-sm text-muted-foreground">
+                                      <span className={adminTypography.caption}>
                                         #{p.postNo ?? "-"}
                                       </span>
                                       {p.status === "public" ? (
@@ -614,7 +621,12 @@ export default function BoardsClient() {
                                             target="_blank"
                                             rel="noopener noreferrer"
                                           >
-                                            <h3 className="text-base font-semibold group-hover/link:text-primary transition-colors inline-flex items-center gap-2">
+                                            <h3
+                                              className={cn(
+                                                "inline-flex items-center gap-2 transition-colors group-hover/link:text-primary",
+                                                adminTypography.bodyStrong,
+                                              )}
+                                            >
                                               {p.title}
                                               <ExternalLink className="h-4 w-4 opacity-0 group-hover/link:opacity-100 transition-opacity" />
                                             </h3>
@@ -628,7 +640,10 @@ export default function BoardsClient() {
                                       <Tooltip>
                                         <TooltipTrigger asChild>
                                           <span
-                                            className="inline-flex cursor-not-allowed items-center gap-2 text-base font-semibold text-muted-foreground/80"
+                                            className={cn(
+                                              "inline-flex cursor-not-allowed items-center gap-2 text-muted-foreground/80",
+                                              adminTypography.bodyStrong,
+                                            )}
                                             aria-disabled="true"
                                           >
                                             {p.title}
@@ -641,12 +656,12 @@ export default function BoardsClient() {
                                       </Tooltip>
                                     )}
 
-                                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                    <div className={cn("flex items-center gap-4", adminTypography.metaMuted)}>
                                       <span className="font-medium">{p.nickname || "-"}</span>
                                       <span>{fmt(p.createdAt)}</span>
                                     </div>
 
-                                    <div className="flex items-center gap-4 text-sm">
+                                    <div className={cn("flex items-center gap-4", adminTypography.meta)}>
                                       <div className="flex items-center gap-1.5">
                                         <BarChart3 className="h-4 w-4 text-primary" />
                                         <span className="font-medium">{p.views}</span>
@@ -691,7 +706,7 @@ export default function BoardsClient() {
                         <Card className="border-dashed border-border/40">
                           <CardContent className="flex flex-col items-center justify-center py-16">
                             <FileText className="h-12 w-12 text-muted-foreground/50 mb-3" />
-                            <p className="text-sm text-muted-foreground">
+                            <p className={adminTypography.metaMuted}>
                               {isPostsActualEmptyState
                                 ? "등록된 게시글이 없습니다."
                                 : isPostsSearchEmptyState && hasPostFilterApplied
@@ -708,7 +723,7 @@ export default function BoardsClient() {
                       postsTotal !== null &&
                       postsTotalPages !== null && (
                         <div className="flex flex-col items-center justify-between gap-3 border-t border-border/40 pt-5 sm:flex-row">
-                          <div className="text-sm text-muted-foreground">
+                          <div className={adminTypography.metaMuted}>
                             총 <span className="font-semibold text-foreground">{postsTotal}</span>건
                             · 페이지{" "}
                             <span className="font-semibold text-foreground">{postPage}</span> /{" "}
@@ -724,7 +739,12 @@ export default function BoardsClient() {
                             >
                               이전
                             </Button>
-                            <div className="flex h-9 items-center rounded-md border border-border/40 bg-background/50 px-3 text-sm font-medium">
+                            <div
+                              className={cn(
+                                "flex h-9 items-center rounded-md border border-border/40 bg-background/50 px-3",
+                                adminTypography.bodyStrong,
+                              )}
+                            >
                               {postPage}
                             </div>
                             <Button
@@ -746,7 +766,7 @@ export default function BoardsClient() {
 
             {tab === "reports" && (
               <div className="space-y-4">
-                <div className="flex flex-wrap items-center gap-3 p-4 rounded-lg border border-border/40 bg-muted/30">
+                <div className={cn(adminSurface.filterCard, "flex flex-wrap items-center gap-3")}>
                   <Select
                     value={reportType}
                     onValueChange={(v) => (setReportPage(1), setReportType(v))}
@@ -794,7 +814,7 @@ export default function BoardsClient() {
                     <RefreshCcw className="h-4 w-4" />
                   </Button>
 
-                  <div className="ml-auto text-sm font-medium">
+                  <div className={cn("ml-auto", adminTypography.bodyStrong)}>
                     총 {reportsTotal === null ? "-" : reportsTotal.toLocaleString()}건
                   </div>
                 </div>
@@ -808,7 +828,12 @@ export default function BoardsClient() {
                 )}
 
                 {hasReportsDataError && (
-                  <div className="p-4 rounded-lg border border-destructive/40 bg-destructive/10 text-destructive text-sm dark:bg-destructive/15">
+                  <div
+                    className={cn(
+                      "rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-destructive dark:bg-destructive/15",
+                      adminTypography.body,
+                    )}
+                  >
                     신고 목록 로드 실패: {(reportsErr as any)?.message ?? "error"}
                   </div>
                 )}
@@ -875,14 +900,14 @@ export default function BoardsClient() {
                                     </div>
 
                                     <div>
-                                      <p className="text-sm text-muted-foreground mb-1">
+                                      <p className={cn("mb-1", adminTypography.caption)}>
                                         신고 사유
                                       </p>
-                                      <p className="text-base font-medium">{r.reason}</p>
+                                      <p className={adminTypography.bodyStrong}>{r.reason}</p>
                                     </div>
 
                                     <div>
-                                      <p className="text-sm text-muted-foreground mb-1">
+                                      <p className={cn("mb-1", adminTypography.caption)}>
                                         신고 대상
                                       </p>
                                       {postHref ? (
@@ -892,7 +917,10 @@ export default function BoardsClient() {
                                               href={postHref}
                                               target="_blank"
                                               rel="noopener noreferrer"
-                                              className="inline-flex items-center gap-2 text-base hover:text-primary transition-colors group/link"
+                                              className={cn(
+                                                "inline-flex items-center gap-2 transition-colors hover:text-primary group/link",
+                                                adminTypography.body,
+                                              )}
                                             >
                                               {r.post?.title ?? "(제목 없음)"}
                                               <ExternalLink className="h-4 w-4 opacity-0 group-hover/link:opacity-100 transition-opacity" />
@@ -911,7 +939,10 @@ export default function BoardsClient() {
                                         <Tooltip>
                                           <TooltipTrigger asChild>
                                             <span
-                                              className="inline-flex cursor-not-allowed items-center gap-2 text-base text-muted-foreground"
+                                              className={cn(
+                                                "inline-flex cursor-not-allowed items-center gap-2 text-muted-foreground",
+                                                adminTypography.body,
+                                              )}
                                               aria-disabled="true"
                                             >
                                               {r.post?.title ?? "(대상 글 정보 없음)"}
@@ -925,7 +956,7 @@ export default function BoardsClient() {
                                       )}
                                     </div>
 
-                                    <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2">
+                                    <div className={cn("flex items-center gap-4 pt-2", adminTypography.metaMuted)}>
                                       <span>
                                         신고자:{" "}
                                         <span className="font-medium">
@@ -980,7 +1011,7 @@ export default function BoardsClient() {
                         <Card className="border-dashed border-border/40">
                           <CardContent className="flex flex-col items-center justify-center py-16">
                             <ShieldAlert className="h-12 w-12 text-muted-foreground/50 mb-3" />
-                            <p className="text-sm text-muted-foreground">
+                            <p className={adminTypography.metaMuted}>
                               현재 조건에 맞는 신고가 없습니다.
                             </p>
                           </CardContent>
@@ -993,7 +1024,7 @@ export default function BoardsClient() {
                       reportsTotal !== null &&
                       reportsTotalPages !== null && (
                         <div className="flex flex-col items-center justify-between gap-3 border-t border-border/40 pt-5 sm:flex-row">
-                          <div className="text-sm text-muted-foreground">
+                          <div className={adminTypography.metaMuted}>
                             총 <span className="font-semibold text-foreground">{reportsTotal}</span>
                             건 · 페이지{" "}
                             <span className="font-semibold text-foreground">{reportPage}</span> /{" "}
@@ -1009,7 +1040,12 @@ export default function BoardsClient() {
                             >
                               이전
                             </Button>
-                            <div className="flex h-9 items-center rounded-md border border-border/40 bg-background/50 px-3 text-sm font-medium">
+                            <div
+                              className={cn(
+                                "flex h-9 items-center rounded-md border border-border/40 bg-background/50 px-3",
+                                adminTypography.bodyStrong,
+                              )}
+                            >
                               {reportPage}
                             </div>
                             <Button
