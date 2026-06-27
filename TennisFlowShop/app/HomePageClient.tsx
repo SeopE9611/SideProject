@@ -22,14 +22,21 @@ import {
   BadgeCheck,
   BookOpen,
   ChevronRight,
+  ClipboardList,
   Clock,
-  HelpCircle,
+  Headset,
+  Info,
+  MessageSquareQuote,
   Package,
+  PackageCheck,
   Plus,
-  Scissors,
+  ReceiptText,
   Search,
+  ShoppingBag,
+  SlidersHorizontal,
   Star,
   Tags,
+  Ticket,
   Wrench,
 } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -183,28 +190,28 @@ const getBrandTabClass = (isActive: boolean) =>
 const SITUATIONS = [
   {
     key: "broken",
-    icon: Scissors,
+    icon: Wrench,
     label: "스트링 교체 신청",
     description: "보유 라켓을 방문·택배로 접수하고 교체를 시작해요.",
     href: "/services/apply",
   },
   {
     key: "unsure",
-    icon: HelpCircle,
+    icon: Search,
     label: "내 라켓에 맞는 스트링 찾기",
     description: "플레이 스타일에 맞춰 스트링을 비교해 보세요.",
     href: "/products",
   },
   {
     key: "price",
-    icon: Tags,
+    icon: Ticket,
     label: "패키지 이용권 보기",
     description: "자주 교체한다면 횟수형 패키지로 준비하세요.",
     href: "/services/packages",
   },
   {
     key: "newRacket",
-    icon: Plus,
+    icon: ShoppingBag,
     label: "중고 라켓 둘러보기",
     description: "검수된 라켓을 구매·대여하고 스트링까지 연결해요.",
     href: "/rackets",
@@ -617,11 +624,11 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   Dokkaebi Tennis Stringing & Gear
                 </span>
                 <h1 className="mt-4 max-w-3xl break-keep text-ui-page-title font-semibold tracking-tight text-foreground bp-sm:mt-5 bp-md:text-ui-page-title-lg">
-                  내 라켓에 맞는 스트링 교체와 테니스 용품을 <span className="whitespace-nowrap">한 번에</span>
+                  내 라켓에 맞는 스트링 교체와 테니스 용품을{" "}
+                  <span className="whitespace-nowrap">한 번에</span>
                 </h1>
                 <p className="mt-4 max-w-2xl break-keep text-ui-body leading-relaxed text-muted-foreground bp-sm:text-ui-body-lg">
-                  스트링 선택부터 교체 접수, 패키지 이용까지 도깨비테니스에서 편하게
-                  시작하세요.
+                  스트링 선택부터 교체 접수, 패키지 이용까지 도깨비테니스에서 편하게 시작하세요.
                 </p>
                 <div className="mt-6 grid gap-2 bp-sm:flex bp-sm:flex-wrap bp-sm:gap-3">
                   <Button asChild size="tall">
@@ -651,22 +658,6 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                       imageClassName="object-cover"
                     />
                   </div>
-                </div>
-                <div className="mt-3 grid grid-cols-3 gap-1.5 bp-sm:gap-2">
-                  {[
-                    ["01", "선택", "브랜드·소재 비교"],
-                    ["02", "접수", "방문·택배 입력"],
-                    ["03", "장착", "작업 후 검수"],
-                  ].map(([number, title, description]) => (
-                    <div
-                      key={number}
-                      className="flex items-center justify-center gap-1.5 rounded-full border border-border/60 bg-background/80 px-2.5 py-2 shadow-sm bp-sm:block bp-sm:rounded-2xl bp-sm:p-3"
-                    >
-                      <span className="text-ui-caption font-semibold text-primary bp-sm:text-ui-label">{number}</span>
-                      <p className="text-ui-label font-semibold text-foreground bp-sm:mt-1 bp-sm:text-ui-body-sm">{title}</p>
-                      <p className="mt-0.5 hidden break-keep text-ui-label text-muted-foreground bp-sm:block">{description}</p>
-                    </div>
-                  ))}
                 </div>
               </div>
             </div>
@@ -766,10 +757,12 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                       : "hover:bg-muted/20",
                   )}
                 >
-                  <span className={cn(
-                    "flex h-12 w-12 items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:bg-primary group-hover:text-primary-foreground",
-                    isPrimary && "border-primary/25 bg-primary/10 text-primary",
-                  )}>
+                  <span
+                    className={cn(
+                      "flex h-12 w-12 items-center justify-center rounded-2xl border border-border/60 bg-secondary text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 group-hover:bg-primary group-hover:text-primary-foreground",
+                      isPrimary && "border-primary/25 bg-primary/10 text-primary",
+                    )}
+                  >
                     <Icon className="h-5 w-5" />
                   </span>
                   <span className="mt-5 block">
@@ -814,7 +807,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               <div className={processStepSurfaceClass}>
                 <div className="relative mb-4">
                   <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
-                    <BookOpen className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
+                    <ClipboardList className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
                   <div className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-ui-caption font-semibold text-primary-foreground">
                     1
@@ -830,7 +823,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               <div className={processStepSurfaceClass}>
                 <div className="relative mb-4">
                   <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
-                    <Package className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
+                    <SlidersHorizontal className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
                   <div className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-ui-caption font-semibold text-primary-foreground">
                     2
@@ -864,15 +857,13 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               <div className={processStepSurfaceClass}>
                 <div className="relative mb-4">
                   <div className={cn("h-14 w-14 bp-sm:h-16 bp-sm:w-16", surfaceIconWrapClass)}>
-                    <BadgeCheck className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
+                    <PackageCheck className="h-6 w-6 bp-sm:h-7 bp-sm:w-7" />
                   </div>
                   <div className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-ui-caption font-semibold text-primary-foreground">
                     4
                   </div>
                 </div>
-                <h3 className="mb-1.5 text-ui-card-title font-semibold text-foreground">
-                  수령
-                </h3>
+                <h3 className="mb-1.5 text-ui-card-title font-semibold text-foreground">수령</h3>
                 <p className="break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
                   방문 수령 또는 배송으로 완성된 라켓을 받아보세요.
                 </p>
@@ -904,39 +895,59 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             <div className="grid gap-3 bp-sm:grid-cols-2">
               <Link
                 href="/services/pricing"
-                className={cn(surfaceCardInteractiveClass, "group flex min-h-24 items-center gap-4 p-5")}
+                className={cn(
+                  surfaceCardInteractiveClass,
+                  "group flex min-h-24 items-center gap-4 p-5",
+                )}
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
-                  <Tags className="h-5 w-5" />
+                  <ReceiptText className="h-5 w-5" />
                 </div>
-                <p className="break-keep text-ui-card-title font-semibold text-foreground">비용 기준 확인</p>
+                <p className="break-keep text-ui-card-title font-semibold text-foreground">
+                  비용 기준 확인
+                </p>
               </Link>
               <Link
                 href="/services/locations"
-                className={cn(surfaceCardInteractiveClass, "group flex min-h-24 items-center gap-4 p-5")}
+                className={cn(
+                  surfaceCardInteractiveClass,
+                  "group flex min-h-24 items-center gap-4 p-5",
+                )}
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
-                  <Clock className="h-5 w-5" />
+                  <Info className="h-5 w-5" />
                 </div>
-                <p className="break-keep text-ui-card-title font-semibold text-foreground">운영 정보 확인</p>
+                <p className="break-keep text-ui-card-title font-semibold text-foreground">
+                  운영 정보 확인
+                </p>
               </Link>
               <Link
                 href="/board/qna"
-                className={cn(surfaceCardInteractiveClass, "group flex min-h-24 items-center gap-4 p-5")}
+                className={cn(
+                  surfaceCardInteractiveClass,
+                  "group flex min-h-24 items-center gap-4 p-5",
+                )}
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
-                  <Search className="h-5 w-5" />
+                  <Headset className="h-5 w-5" />
                 </div>
-                <p className="break-keep text-ui-card-title font-semibold text-foreground">문의하기</p>
+                <p className="break-keep text-ui-card-title font-semibold text-foreground">
+                  문의하기
+                </p>
               </Link>
               <Link
                 href="/reviews"
-                className={cn(surfaceCardInteractiveClass, "group flex min-h-24 items-center gap-4 p-5")}
+                className={cn(
+                  surfaceCardInteractiveClass,
+                  "group flex min-h-24 items-center gap-4 p-5",
+                )}
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-foreground">
-                  <Star className="h-5 w-5" />
+                  <MessageSquareQuote className="h-5 w-5" />
                 </div>
-                <p className="break-keep text-ui-card-title font-semibold text-foreground">이용 후기</p>
+                <p className="break-keep text-ui-card-title font-semibold text-foreground">
+                  이용 후기
+                </p>
               </Link>
             </div>
           </div>
@@ -975,8 +986,18 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   "추천 상품 보기",
                   "/products?comfort=80&control=70#product-list",
                 ],
-                ["스핀 추천", "회전량을 높이고 싶은 플레이어에게", "스핀형 보기", "/products?spin=80#product-list"],
-                ["내구성 추천", "자주 끊어지는 사용자에게", "내구성형 보기", "/products?durability=80#product-list"],
+                [
+                  "스핀 추천",
+                  "회전량을 높이고 싶은 플레이어에게",
+                  "스핀형 보기",
+                  "/products?spin=80#product-list",
+                ],
+                [
+                  "내구성 추천",
+                  "자주 끊어지는 사용자에게",
+                  "내구성형 보기",
+                  "/products?durability=80#product-list",
+                ],
               ].map(([title, description, cta, href]) => (
                 <Link
                   key={title}
@@ -984,7 +1005,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
                   className="group min-w-[12.5rem] rounded-2xl border border-border/60 bg-background/80 p-3 shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-300 hover:border-primary/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-ring/20 bp-sm:min-w-0 bp-sm:p-4"
                 >
                   <p className="text-ui-card-title font-semibold text-foreground">{title}</p>
-                  <p className="mt-1 break-keep text-ui-label leading-relaxed text-muted-foreground bp-sm:mt-1.5 bp-sm:text-ui-body-sm">{description}</p>
+                  <p className="mt-1 break-keep text-ui-label leading-relaxed text-muted-foreground bp-sm:mt-1.5 bp-sm:text-ui-body-sm">
+                    {description}
+                  </p>
                   <span className="mt-2 inline-flex items-center gap-1 text-ui-label font-semibold text-foreground/80 transition-colors group-hover:text-primary bp-sm:mt-3">
                     {cta}
                     <ChevronRight className="h-3.5 w-3.5" />
@@ -1112,10 +1135,15 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
               좌우 스와이프하거나 마우스 휠로 더 많은 브랜드를 볼 수 있어요.
             </p>
           </PublicSurface>
-          {shouldLoadRackets && !usedRacketsLoading && !usedRacketsError && usedRacketsItems.length === 0 ? (
+          {shouldLoadRackets &&
+          !usedRacketsLoading &&
+          !usedRacketsError &&
+          usedRacketsItems.length === 0 ? (
             <PublicSurface variant="muted" className="border-border/60 bg-muted/20 text-center">
               <p className="text-ui-section-title font-semibold text-foreground">
-                {activeBrand === "all" ? "검수된 중고 라켓을 준비 중입니다." : "해당 브랜드 중고 라켓이 없습니다."}
+                {activeBrand === "all"
+                  ? "검수된 중고 라켓을 준비 중입니다."
+                  : "해당 브랜드 중고 라켓이 없습니다."}
               </p>
               <p className="mx-auto mt-3 max-w-xl break-keep text-ui-body text-muted-foreground">
                 {activeBrand === "all"
@@ -1127,7 +1155,9 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             <HorizontalProducts
               title="중고 라켓"
               subtitle={
-                activeBrand === "all" ? "도깨비테니스 중고" : `${racketBrandLabel(activeBrand)} 중고`
+                activeBrand === "all"
+                  ? "도깨비테니스 중고"
+                  : `${racketBrandLabel(activeBrand)} 중고`
               }
               items={usedRacketsItems.slice(0, 10)}
               showMoreCard={hasMoreRacketProducts}

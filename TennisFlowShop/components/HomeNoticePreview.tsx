@@ -1,7 +1,7 @@
 "use client";
 import AsyncState from "@/components/system/AsyncState";
 import type { HomePreviewNotice } from "@/lib/home/home-preview";
-import { Bell, ChevronRight } from "lucide-react";
+import { Bell, ChevronRight, Megaphone } from "lucide-react";
 import Link from "next/link";
 import useSWR from "swr";
 
@@ -33,7 +33,7 @@ export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewPro
       <div className="flex items-center justify-between border-b border-border bg-muted/40 px-5 bp-sm:px-6 py-4 bp-sm:py-5">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-secondary text-foreground">
-            <Bell className="h-4 w-4" />
+            <Megaphone className="h-4 w-4" />
           </div>
           <h2 className="text-ui-card-title font-semibold text-foreground bp-sm:text-ui-card-title-lg">
             공지사항
@@ -101,7 +101,7 @@ export default function HomeNoticePreview({ initialItems }: HomeNoticePreviewPro
             variant="card"
             title="등록된 공지사항이 없습니다"
             description="새 소식이 등록되면 바로 확인할 수 있어요."
-            icon={<Bell className="h-4 w-4" />}
+            icon={<Megaphone className="h-4 w-4" />}
             className="mx-2 my-2"
           />
         )}

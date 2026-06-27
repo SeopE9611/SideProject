@@ -23,7 +23,7 @@ import {
 } from "@/lib/hooks/useUnsavedChangesGuard";
 import { supabase } from "@/lib/supabase";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { ArrowLeft, Bell, ChevronLeft, ChevronRight, Pin, Upload, X } from "lucide-react";
+import { ArrowLeft, Megaphone, ChevronLeft, ChevronRight, Pin, Upload, X } from "lucide-react";
 import NextImage from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -608,7 +608,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
             </Button>
             <div className="flex items-center space-x-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
-                <Bell className="h-6 w-6" />
+                <Megaphone className="h-6 w-6" />
               </div>
               <div>
                 <h1 className="text-ui-page-title-lg md:text-ui-page-title-lg font-semibold tracking-normal text-foreground">
@@ -649,7 +649,7 @@ export default function NoticeWriteClient({ mode = "notice" }: NoticeWriteClient
           <Card className="border-0 bg-card shadow-xl backdrop-blur-sm">
             <CardHeader className="bg-muted/30 border-b">
               <CardTitle className="flex items-center space-x-2">
-                <Bell className="h-5 w-5 text-primary" />
+                <Megaphone className="h-5 w-5 text-primary" />
                 <span>{cardTitle}</span>
               </CardTitle>
             </CardHeader>

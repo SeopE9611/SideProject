@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
-  Bell,
+  Megaphone,
   ChevronRight,
   Eye,
   Gift,
@@ -203,7 +203,7 @@ type InfoLinkProps = {
 };
 
 const infoLinks: InfoLinkProps[] = [
-  { icon: Bell, title: "공지사항", href: "/board/notice" },
+  { icon: Megaphone, title: "공지사항", href: "/board/notice" },
   { icon: Gift, title: "이벤트", href: "/board/event" },
   { icon: Headset, title: "아카데미", href: "/academy" },
   { icon: MessageSquare, title: "쪽지함", href: "/messages" },
@@ -616,7 +616,7 @@ export default function SupportPage() {
                       value="notice"
                       className="relative rounded-none border-b-2 border-transparent px-6 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none"
                     >
-                      <Bell className="mr-2 h-4 w-4" />
+                      <Megaphone className="mr-2 h-4 w-4" />
                       공지사항
                     </TabsTrigger>
                     <TabsTrigger

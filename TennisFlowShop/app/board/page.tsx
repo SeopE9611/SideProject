@@ -10,6 +10,7 @@ import {
   Plus,
   Star,
   Pin,
+  Megaphone,
 } from "lucide-react";
 import useSWR from "swr";
 
@@ -150,7 +151,7 @@ function NoticeCard({
       <CardHeader className="bg-muted/30 border-b p-4 sm:p-5 md:p-6">
         <CardTitle className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <Bell className="h-5 w-5 text-primary" />
+            <Megaphone className="h-5 w-5 text-primary" />
             <span className="text-ui-card-title-lg sm:text-ui-section-title md:text-ui-page-title font-semibold leading-tight break-keep">
               공지사항
             </span>

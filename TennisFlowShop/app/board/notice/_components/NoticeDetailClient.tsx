@@ -19,6 +19,7 @@ import {
   Eye,
   FileText,
   ImageIcon,
+  Megaphone,
   Paperclip,
   Pencil,
   Pin,
@@ -262,7 +263,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
               </Button>
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20">
-                  <Bell className="h-5 w-5 sm:h-6 sm:w-6" />
+                  <Megaphone className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <div>
                   <h1 className="text-ui-section-title font-semibold leading-tight tracking-normal text-foreground sm:text-ui-page-title md:text-ui-page-title-lg">
@@ -359,7 +360,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
 
                     <div className="flex items-start gap-3 mb-4">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary dark:bg-primary/20 flex-shrink-0 mt-1">
-                        <Bell className="h-5 w-5" />
+                        <Megaphone className="h-5 w-5" />
                       </div>
                       <h1 className="min-w-0 text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title md:text-ui-page-title-lg">
                         {notice.title}

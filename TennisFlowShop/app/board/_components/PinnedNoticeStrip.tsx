@@ -1,4 +1,4 @@
-import { Bell, Pin } from "lucide-react";
+import { Bell, Megaphone, Pin } from "lucide-react";
 import Link from "next/link";
 
 const pinnedNoticeMobileTitleClampClass =
@@ -33,7 +33,7 @@ export default function PinnedNoticeStrip({ items }: { items: PinnedNoticeItem[]
     >
       <div className="flex items-center gap-2">
         <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/15 text-primary dark:bg-primary/25">
-          <Bell className="h-3.5 w-3.5" />
+          <Megaphone className="h-3.5 w-3.5" />
         </div>
         <div className="min-w-0">
           <p className="text-ui-body-sm font-semibold text-foreground">중요 안내 · 공지사항</p>

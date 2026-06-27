@@ -21,7 +21,7 @@ import { useMessageList } from "@/lib/hooks/useMessageList";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
-  Bell,
+  Megaphone,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -192,7 +192,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                 onClick={() => setBroadcastOpen(true)}
                 className="w-full gap-2 sm:w-auto"
               >
-                <Bell className="h-4 w-4" />
+                <Megaphone className="h-4 w-4" />
                 전체 공지 보내기
               </Button>
             )}
@@ -223,7 +223,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                 <span className="sm:hidden">보낸</span>
               </TabsTrigger>
               <TabsTrigger value="admin" className="gap-2">
-                <Bell className="h-4 w-4" />
+                <Megaphone className="h-4 w-4" />
                 <span className="hidden sm:inline">관리자</span>
                 <span className="sm:hidden">관리</span>
               </TabsTrigger>

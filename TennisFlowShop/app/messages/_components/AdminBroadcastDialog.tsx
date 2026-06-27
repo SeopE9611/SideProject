@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { Loader2, Bell, Calendar } from "lucide-react";
+import { Loader2, Megaphone, Calendar } from "lucide-react";
 import { UNSAVED_CHANGES_MESSAGE } from "@/lib/hooks/useUnsavedChangesGuard";
 
 type Props = {
@@ -118,7 +118,7 @@ export default function AdminBroadcastDialog({
         <DialogHeader className="space-y-3">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20">
-              <Bell className="h-5 w-5 text-primary" />
+              <Megaphone className="h-5 w-5 text-primary" />
             </div>
             <div>
               <DialogTitle className="text-ui-card-title-lg">전체 공지 보내기</DialogTitle>
@@ -196,7 +196,7 @@ export default function AdminBroadcastDialog({
               </>
             ) : (
               <>
-                <Bell className="h-4 w-4" />
+                <Megaphone className="h-4 w-4" />
                 전송
               </>
             )}
