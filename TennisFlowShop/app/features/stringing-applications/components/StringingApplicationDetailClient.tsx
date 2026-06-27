@@ -19,6 +19,7 @@ import { adminSurface, adminTypography } from "@/components/admin/admin-typograp
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
+import AdminNextActionPanel from "@/components/admin/AdminNextActionPanel";
 import AdminStatusCard from "@/components/admin/AdminStatusCard";
 import LinkedDocsCard, { LinkedDocItem } from "@/components/admin/LinkedDocsCard";
 import SiteContainer from "@/components/layout/SiteContainer";
@@ -292,12 +293,6 @@ type AdminNextActionGuide = {
   description: string;
   actionLabel?: string;
   actionHref?: string;
-};
-const getNextActionCardClass = (tone: AdminNextActionTone) => {
-  if (tone === "urgent") return "border-warning/40 bg-warning/10";
-  if (tone === "warning") return "border-info/40 bg-info/10";
-  if (tone === "success") return "border-border/70 bg-muted/30";
-  return adminSurface.cardMuted;
 };
 
 // 스트링 교체 서비스용 운송장 조회 URL 헬퍼
@@ -1987,62 +1982,43 @@ export default function StringingApplicationDetailClient({
 />
                 </div>
 
-                <Card className={cn(getNextActionCardClass(nextActionGuide.tone), adminSurface.nextAction)}>
-                  <CardHeader className="pb-3">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <CardTitle className={adminTypography.sectionTitle}>운영 콘솔 · 다음 작업</CardTitle>
-                        <CardDescription className={cn("mt-1", adminTypography.body)}>
-                          {applicationContext.description}
-                        </CardDescription>
-                      </div>
-                      <Badge variant="outline" className={cn(badgeBase, badgeSizeSm, "w-fit bg-card")}>
-                        {applicationContext.label}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.45fr)]">
-                    <div className="rounded-xl border border-border/40 bg-transparent p-3">
-                      <p className={adminTypography.panelTitle}>현재 단계</p>
-                      <p className={cn("mt-1", adminTypography.bodyStrong)}>{appGuide.stage}</p>
-                      <p className={cn("mt-3", adminTypography.panelTitle)}>다음 작업</p>
-                      <p className={cn("mt-1", adminTypography.body)}>{nextActionGuide.title} · {nextActionGuide.description}</p>
-                      {isLinkedApplication ? (
-                        <p className={cn("mt-3 rounded-lg border border-primary/15 bg-primary/[0.03] p-3", adminTypography.meta)}>
-                          연결된 {data.orderId ? "주문" : "대여"}에서 상태 변경·취소·환불을 처리합니다.
-                        </p>
+                <AdminNextActionPanel
+                  tone={nextActionGuide.tone}
+                  badgeLabel={applicationContext.label}
+                  stage={appGuide.stage}
+                  nextActionTitle={nextActionGuide.title}
+                  nextActionDescription={nextActionGuide.description}
+                  primaryAction={
+                    nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
+                      <Button asChild size="sm" className="justify-center">
+                        <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
+                      </Button>
+                    ) : !isLinkedApplication && !isCancelled ? (
+                      <Button asChild size="sm" className="justify-center">
+                        <a href="#admin-stringing-cancel">상태 변경 확인</a>
+                      </Button>
+                    ) : null
+                  }
+                  secondaryActions={recommendedActions.slice(0, 2).map((action) => (
+                    <Button key={`${action.href}-${action.label}`} asChild size="sm" variant="outline" className="bg-transparent">
+                      <a href={action.href}>{action.label}</a>
+                    </Button>
+                  ))}
+                  note={
+                    isLinkedApplication
+                      ? `연결된 ${data.orderId ? "주문" : "대여"}에서 상태 변경·취소·환불을 처리합니다.`
+                      : applicationContext.description
+                  }
+                  footer={
+                    <div>
+                      <span className="font-medium text-foreground">최근 처리 이력:</span>{" "}
+                      {latestProcessingHistory?.status ?? "기록 없음"} · {latestProcessingDate}
+                      {latestProcessingHistory?.description ? (
+                        <span className="ml-2 text-muted-foreground">{latestProcessingHistory.description}</span>
                       ) : null}
                     </div>
-                    <div className="rounded-xl border border-border/40 bg-transparent p-3">
-                      <p className={adminTypography.panelTitle}>주요 액션</p>
-                      <div className="mt-3 grid gap-2">
-                        {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
-                          <Button asChild size="sm" className="w-full justify-center">
-                            <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
-                          </Button>
-                        ) : !isLinkedApplication && !isCancelled ? (
-                          <Button asChild size="sm" className="w-full justify-center">
-                            <a href="#admin-stringing-cancel">상태 변경 확인</a>
-                          </Button>
-                        ) : null}
-                        {recommendedActions.map((action) => (
-                          <Button key={`${action.href}-${action.label}`} asChild size="sm" variant="outline" className="w-full bg-transparent">
-                            <a href={action.href}>{action.label}</a>
-                          </Button>
-                        ))}
-                      </div>
-                      <div className="mt-3 border-t border-border/40 pt-2 text-muted-foreground">
-                        <p className={adminTypography.panelTitle}>최근 처리 이력</p>
-                        <p className={cn("mt-1", adminTypography.meta)}>
-                          {latestProcessingHistory?.status ?? "기록 없음"} · {latestProcessingDate}
-                        </p>
-                        {latestProcessingHistory?.description ? (
-                          <p className={cn("mt-1 line-clamp-2", adminTypography.caption)}>{latestProcessingHistory.description}</p>
-                        ) : null}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  }
+                />
               </section>
             )}
 

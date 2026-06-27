@@ -142,7 +142,7 @@ const ROW_ACTION_LABELS = {
 const OPERATOR_TERM_MAP: Array<[RegExp, string]> = [
   [/\bpaymentStatus\b/gi, "결제 상태 정보"],
   [/\bpaymentSource\b/gi, "결제 연결 정보"],
-  [/\bREVIEW_INFO\b/g, "확인이 필요한 이유"],
+  [/\bREVIEW_INFO\b/g, "자동 계산 정보"],
   [/\bderived\b/gi, "주문 정보를 기준으로 계산된"],
   [/\bsignal\b/gi, "확인 신호"],
   [/\bwarn\b/gi, "주의"],
@@ -224,7 +224,7 @@ function groupNextActionText(group: {
     return toOperatorSentence(group.guide.nextAction);
   }
   if (group.cancelRequested) return "취소 요청 처리 필요";
-  if (group.reviewLevel === "info") return "조치 필요 없음(정상 파생)";
+  if (group.reviewLevel === "info") return "자동 계산 정보 있음";
   return "조치 필요 없음";
 }
 
@@ -2317,7 +2317,7 @@ export default function OperationsClient() {
                             </TableCell>
                           </TableRow>
 
-                          {isGroup && (
+                          {isGroup && isOpen && (
                             <TableRow className="bg-muted/20">
                               <TableCell
                                 colSpan={5}
@@ -2326,14 +2326,7 @@ export default function OperationsClient() {
                                   "border-l-2 border-l-primary/25 border-t border-border/40 py-0",
                                 )}
                               >
-                                <div
-                                  className={cn(
-                                    "grid transition-all duration-200 ease-out",
-                                    isOpen
-                                      ? "grid-rows-[1fr] opacity-100 py-2"
-                                      : "grid-rows-[0fr] opacity-0",
-                                  )}
-                                >
+                                <div className="py-2">
                                   <div className="overflow-hidden">
                                     <div className="mb-1.5 flex items-center gap-2">
                                       <ChevronDown className="h-3.5 w-3.5 text-primary" />
