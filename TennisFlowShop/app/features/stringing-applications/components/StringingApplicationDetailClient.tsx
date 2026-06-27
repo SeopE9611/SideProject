@@ -2297,7 +2297,7 @@ export default function StringingApplicationDetailClient({
             )}
 
             <div className={detailGridClass}>
-              <div className={detailColumnClass}>
+              <div className={cn(detailColumnClass, !isAdmin && "bp-lg:order-1")}>
               {/* 스트링 정보 */}
               <Card
                 id="admin-stringing-spec"
@@ -2866,7 +2866,125 @@ export default function StringingApplicationDetailClient({
               )}
               </div>
 
-              <aside className={detailColumnClass}>
+              {!isAdmin && (
+                <Card className={cn(detailCardClass, "bp-lg:order-3 bp-lg:col-span-2")}>
+                  <CardHeader className={detailCardHeaderClass}>
+                    <CardTitle className="flex items-center gap-2 text-ui-card-title-lg font-semibold">
+                      <Truck className="h-5 w-5 text-primary" />
+                      라켓 발송·완성 라켓 배송 정보
+                    </CardTitle>
+                    <CardDescription>
+                      매장으로 보내는 라켓 발송과 작업 완료 후 완성 라켓 배송 정보를 구분해
+                      확인하세요.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="grid gap-4 p-4 md:grid-cols-2 bp-sm:p-6">
+                    <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-4">
+                      <p className="text-ui-body-sm font-semibold text-foreground">라켓 발송</p>
+                      <p className="mt-1 text-ui-label text-foreground/75">
+                        {inboundRequired
+                          ? isVisit
+                            ? "방문 예약 일시에 맞춰 라켓을 가져와 주세요."
+                            : "라켓 발송 운송장과 라켓 입고 여부를 확인합니다."
+                          : "연결 주문/대여 기준으로 별도 입고가 필요하지 않습니다."}
+                      </p>
+                      <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
+                        <p>
+                          입고 방식:{" "}
+                          <span className="font-medium text-foreground">
+                            {inboundRequired
+                              ? collectionMethodLabel(collectionMethodRaw)
+                              : "입고 불필요"}
+                          </span>
+                        </p>
+                        {isVisit && (
+                          <p>
+                            방문 예약:{" "}
+                            <span className="font-medium text-foreground">{visitTimeLabel}</span>
+                          </p>
+                        )}
+                        {isSelfShip &&
+                          inboundRequired &&
+                          (hasTracking ? (
+                            <p>
+                              운송장:{" "}
+                              <a
+                                href={
+                                  buildTrackingUrl(selfShip?.courier, selfShip?.trackingNo) ?? "#"
+                                }
+                                target="_blank"
+                                rel="noreferrer"
+                                className="break-all underline underline-offset-2"
+                              >
+                                {selfShip?.trackingNo}
+                              </a>
+                            </p>
+                          ) : (
+                            <p>등록된 운송장이 없습니다.</p>
+                          ))}
+                      </div>
+                      {needsInboundTracking && hasTracking && (
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="outline"
+                          className="mt-3 w-full bp-sm:w-auto"
+                        >
+                          <Link href={inboundTrackingHref}>라켓 발송 운송장 수정</Link>
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-4">
+                      <p className="text-ui-body-sm font-semibold text-foreground">
+                        완성 라켓 배송
+                      </p>
+                      <p className="mt-1 text-ui-label text-foreground/75">
+                        작업 완료 후 완성 라켓 배송 운송장 또는 방문 수령 정보를 확인합니다.
+                      </p>
+                      <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
+                        <p>
+                          배송/수령 방식:{" "}
+                          <span className="font-medium text-foreground">
+                            {shouldShowReturnMethod
+                              ? shippingMethodBadge.label
+                              : "연결 주문 수령 방식 기준"}
+                          </span>
+                        </p>
+                        {isCourierShipping && invoice?.trackingNumber ? (
+                          <p>
+                            완성 라켓 배송 운송장:{" "}
+                            <a
+                              href={
+                                buildTrackingUrl(invoice.courier, invoice.trackingNumber) ??
+                                undefined
+                              }
+                              target="_blank"
+                              rel="noreferrer"
+                              className="break-all underline underline-offset-2"
+                            >
+                              {invoice.trackingNumber}
+                            </a>
+                          </p>
+                        ) : hasStoreShippingInfo ? (
+                          <p>
+                            예정일:{" "}
+                            {data.shippingInfo?.estimatedDate
+                              ? new Date(data.shippingInfo.estimatedDate).toLocaleDateString(
+                                  "ko-KR",
+                                )
+                              : "-"}
+                          </p>
+                        ) : (
+                          <p>등록된 완성 라켓 배송 정보가 없습니다.</p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              <aside className={cn(detailColumnClass, !isAdmin && "bp-lg:order-2")}>
               {/* 결제 정보 */}
               <Card
                 id="admin-stringing-payment"
@@ -3218,123 +3336,6 @@ export default function StringingApplicationDetailClient({
                 )}
               </Card>
 
-              {!isAdmin && (
-                <Card className={detailCardClass}>
-                  <CardHeader className={detailCardHeaderClass}>
-                    <CardTitle className="flex items-center gap-2 text-ui-card-title-lg font-semibold">
-                      <Truck className="h-5 w-5 text-primary" />
-                      라켓 발송·완성 라켓 배송 정보
-                    </CardTitle>
-                    <CardDescription>
-                      매장으로 보내는 라켓 발송과 작업 완료 후 완성 라켓 배송 정보를 구분해
-                      확인하세요.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid gap-3 p-3 md:grid-cols-2 bp-sm:p-5">
-                    <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
-                      <p className="text-ui-body-sm font-semibold text-foreground">라켓 발송</p>
-                      <p className="mt-1 text-ui-label text-foreground/75">
-                        {inboundRequired
-                          ? isVisit
-                            ? "방문 예약 일시에 맞춰 라켓을 가져와 주세요."
-                            : "라켓 발송 운송장과 라켓 입고 여부를 확인합니다."
-                          : "연결 주문/대여 기준으로 별도 입고가 필요하지 않습니다."}
-                      </p>
-                      <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
-                        <p>
-                          입고 방식:{" "}
-                          <span className="font-medium text-foreground">
-                            {inboundRequired
-                              ? collectionMethodLabel(collectionMethodRaw)
-                              : "입고 불필요"}
-                          </span>
-                        </p>
-                        {isVisit && (
-                          <p>
-                            방문 예약:{" "}
-                            <span className="font-medium text-foreground">{visitTimeLabel}</span>
-                          </p>
-                        )}
-                        {isSelfShip &&
-                          inboundRequired &&
-                          (hasTracking ? (
-                            <p>
-                              운송장:{" "}
-                              <a
-                                href={
-                                  buildTrackingUrl(selfShip?.courier, selfShip?.trackingNo) ?? "#"
-                                }
-                                target="_blank"
-                                rel="noreferrer"
-                                className="break-all underline underline-offset-2"
-                              >
-                                {selfShip?.trackingNo}
-                              </a>
-                            </p>
-                          ) : (
-                            <p>등록된 운송장이 없습니다.</p>
-                          ))}
-                      </div>
-                      {needsInboundTracking && hasTracking && (
-                        <Button
-                          asChild
-                          size="sm"
-                          variant="outline"
-                          className="mt-3 w-full bp-sm:w-auto"
-                        >
-                          <Link href={inboundTrackingHref}>라켓 발송 운송장 수정</Link>
-                        </Button>
-                      )}
-                    </div>
-
-                    <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:p-4">
-                      <p className="text-ui-body-sm font-semibold text-foreground">
-                        완성 라켓 배송
-                      </p>
-                      <p className="mt-1 text-ui-label text-foreground/75">
-                        작업 완료 후 완성 라켓 배송 운송장 또는 방문 수령 정보를 확인합니다.
-                      </p>
-                      <div className="mt-3 space-y-2 text-ui-body-sm text-foreground/80">
-                        <p>
-                          배송/수령 방식:{" "}
-                          <span className="font-medium text-foreground">
-                            {shouldShowReturnMethod
-                              ? shippingMethodBadge.label
-                              : "연결 주문 수령 방식 기준"}
-                          </span>
-                        </p>
-                        {isCourierShipping && invoice?.trackingNumber ? (
-                          <p>
-                            완성 라켓 배송 운송장:{" "}
-                            <a
-                              href={
-                                buildTrackingUrl(invoice.courier, invoice.trackingNumber) ??
-                                undefined
-                              }
-                              target="_blank"
-                              rel="noreferrer"
-                              className="break-all underline underline-offset-2"
-                            >
-                              {invoice.trackingNumber}
-                            </a>
-                          </p>
-                        ) : hasStoreShippingInfo ? (
-                          <p>
-                            예정일:{" "}
-                            {data.shippingInfo?.estimatedDate
-                              ? new Date(data.shippingInfo.estimatedDate).toLocaleDateString(
-                                  "ko-KR",
-                                )
-                              : "-"}
-                          </p>
-                        ) : (
-                          <p>등록된 완성 라켓 배송 정보가 없습니다.</p>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
               </aside>
             </div>
             {/* 관리자 전용 운송장 정보 카드 */}
