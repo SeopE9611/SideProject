@@ -6,9 +6,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import { adminSurface } from "@/components/admin/admin-typography";
+import AdminPageSection from "@/components/admin/AdminPageSection";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
+import { cn } from "@/lib/utils";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   ACADEMY_CLASS_LESSON_TYPES,
@@ -189,18 +190,27 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
         }
       />
 
-      <Card className={adminSurface.card}>
-        <CardContent className="p-5 sm:p-6">
-          <form className="space-y-6" onSubmit={submitForm}>
-            {errorMessage ? (
-              <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-                {errorMessage}
-              </div>
-            ) : null}
+      <form className="space-y-5" onSubmit={submitForm}>
+        {errorMessage ? (
+          <div
+            className={cn(
+              adminSurface.cardMuted,
+              "border-destructive/30 bg-destructive/10 p-4 text-destructive",
+              adminTypography.caption,
+            )}
+          >
+            {errorMessage}
+          </div>
+        ) : null}
 
-            <div className="grid gap-5 lg:grid-cols-2">
+        <AdminPageSection
+          title="기본 정보"
+          description="고객에게 노출되는 클래스명과 프로그램 소개를 입력합니다."
+          contentClassName="pt-4"
+        >
+          <div className="grid gap-5 lg:grid-cols-2">
               <div className="space-y-2 lg:col-span-2">
-                <Label htmlFor="academy-class-name">
+                <Label className={adminTypography.bodyStrong} htmlFor="academy-class-name">
                   클래스명 <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -214,7 +224,7 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
               </div>
 
               <div className="space-y-2 lg:col-span-2">
-                <Label htmlFor="academy-class-description">설명</Label>
+                <Label className={adminTypography.bodyStrong} htmlFor="academy-class-description">설명</Label>
                 <Textarea
                   id="academy-class-description"
                   value={form.description}
@@ -223,11 +233,20 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
                   maxLength={1000}
                   rows={5}
                 />
-                <p className="text-xs text-muted-foreground">{form.description.length}/1000자</p>
+                <p className={adminTypography.caption}>{form.description.length}/1000자</p>
               </div>
 
+          </div>
+        </AdminPageSection>
+
+        <AdminPageSection
+          title="운영 정보"
+          description="수업 유형, 레벨, 강사와 장소 정보를 관리합니다."
+          contentClassName="pt-4"
+        >
+          <div className="grid gap-5 lg:grid-cols-2">
               <div className="space-y-2">
-                <Label>수업 유형</Label>
+                <Label className={adminTypography.bodyStrong}>수업 유형</Label>
                 <Select
                   value={form.lessonType}
                   onValueChange={(value) =>
@@ -248,7 +267,7 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
               </div>
 
               <div className="space-y-2">
-                <Label>레벨</Label>
+                <Label className={adminTypography.bodyStrong}>레벨</Label>
                 <Select
                   value={form.level}
                   onValueChange={(value) => updateField("level", value as AcademyClassLevel)}
@@ -267,7 +286,7 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="academy-class-instructor">강사명</Label>
+                <Label className={adminTypography.bodyStrong} htmlFor="academy-class-instructor">강사명</Label>
                 <Input
                   id="academy-class-instructor"
                   value={form.instructorName}
@@ -278,7 +297,7 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="academy-class-location">장소</Label>
+                <Label className={adminTypography.bodyStrong} htmlFor="academy-class-location">장소</Label>
                 <Input
                   id="academy-class-location"
                   value={form.location}
@@ -288,8 +307,17 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
                 />
               </div>
 
+          </div>
+        </AdminPageSection>
+
+        <AdminPageSection
+          title="일정·정원·가격"
+          description="운영에 중요한 일정, 모집 정원, 기준 수강료를 입력합니다."
+          contentClassName="pt-4"
+        >
+          <div className="grid gap-5 lg:grid-cols-2">
               <div className="space-y-2 lg:col-span-2">
-                <Label htmlFor="academy-class-schedule">일정 안내</Label>
+                <Label className={adminTypography.bodyStrong} htmlFor="academy-class-schedule">일정 안내</Label>
                 <Input
                   id="academy-class-schedule"
                   value={form.scheduleText}
@@ -300,7 +328,7 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="academy-class-capacity">정원</Label>
+                <Label className={adminTypography.bodyStrong} htmlFor="academy-class-capacity">정원</Label>
                 <Input
                   id="academy-class-capacity"
                   type="number"
@@ -310,11 +338,11 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
                   onChange={(event) => updateField("capacity", event.target.value)}
                   placeholder="예: 6"
                 />
-                <p className="text-xs text-muted-foreground">미입력 시 제한 없음으로 표시됩니다.</p>
+                <p className={adminTypography.caption}>미입력 시 제한 없음으로 표시됩니다.</p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="academy-class-price">가격</Label>
+                <Label className={adminTypography.bodyStrong} htmlFor="academy-class-price">가격</Label>
                 <FormattedNumberInput
                   id="academy-class-price"
                   min={0}
@@ -324,8 +352,17 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
                 />
               </div>
 
+          </div>
+        </AdminPageSection>
+
+        <AdminPageSection
+          title="노출 상태"
+          description="저장 후 관리자 클래스 목록과 사용자 노출 상태에 반영됩니다."
+          contentClassName="pt-4"
+        >
+          <div className="grid gap-5 lg:grid-cols-2">
               <div className="space-y-2">
-                <Label>상태</Label>
+                <Label className={adminTypography.bodyStrong}>상태</Label>
                 <Select
                   value={form.status}
                   onValueChange={(value) => updateField("status", value as AcademyClassStatus)}
@@ -342,7 +379,8 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
                   </SelectContent>
                 </Select>
               </div>
-            </div>
+          </div>
+        </AdminPageSection>
 
             <div className="flex flex-col-reverse gap-2 border-t border-border/70 pt-5 sm:flex-row sm:justify-end">
               <Button asChild variant="outline">
@@ -353,9 +391,7 @@ export default function AcademyClassFormClient({ mode, initialItem }: AcademyCla
                 {isSubmitting ? "저장 중" : isEdit ? "수정하기" : "등록하기"}
               </Button>
             </div>
-          </form>
-        </CardContent>
-      </Card>
+      </form>
     </div>
   );
 }

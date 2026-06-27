@@ -7,10 +7,11 @@ import useSWR from "swr";
 import { ArrowLeft, BookOpen, Eye, Pencil } from "lucide-react";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import { adminSurface } from "@/components/admin/admin-typography";
+import AdminPageSection from "@/components/admin/AdminPageSection";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
 import {
   Table,
   TableBody,
@@ -111,8 +112,8 @@ function formatCapacity(value: number | null | undefined) {
 function InfoRow({ label, value }: { label: string; value: string | number | null | undefined }) {
   return (
     <div className="grid min-w-0 gap-1 border-b border-border/60 py-3 last:border-b-0 sm:grid-cols-[120px_1fr]">
-      <div className="text-sm font-medium text-muted-foreground">{label}</div>
-      <div className="min-w-0 whitespace-pre-wrap break-words text-sm text-foreground">
+      <div className={adminTypography.metaMuted}>{label}</div>
+      <div className={cn("min-w-0 whitespace-pre-wrap break-words", adminTypography.bodyStrong)}>
         {value === null || value === undefined || value === "" ? "-" : value}
       </div>
     </div>
@@ -122,8 +123,8 @@ function InfoRow({ label, value }: { label: string; value: string | number | nul
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
     <div className={cn(adminSurface.kpiCard, "p-4")}>
-      <div className="text-xs font-medium text-muted-foreground">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-foreground">
+      <div className={adminTypography.caption}>{label}</div>
+      <div className={cn("mt-2", adminTypography.kpiValueCompact)}>
         {value.toLocaleString("ko-KR")}
       </div>
     </div>
@@ -164,7 +165,7 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
   if (isLoading) {
     return (
       <div className="px-4 py-6 sm:px-6 lg:px-8">
-        <div className="rounded-2xl border border-border/70 bg-card p-8 text-sm text-muted-foreground">
+        <div className={`${adminSurface.cardMuted} p-8 ${adminTypography.metaMuted}`}>
           클래스 상세 정보를 불러오는 중입니다.
         </div>
       </div>
@@ -180,7 +181,7 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
             목록으로
           </Link>
         </Button>
-        <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-8 text-sm text-destructive">
+        <div className={`${adminSurface.cardMuted} border-destructive/30 bg-destructive/10 p-8 ${adminTypography.body} text-destructive`}>
           클래스 상세 정보를 불러오지 못했습니다.
         </div>
       </div>
@@ -222,39 +223,34 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
         <StatCard label="취소" value={stats.cancelled} />
       </div>
 
-      <Card className={adminSurface.card}>
-        <CardHeader>
-          <CardTitle className="text-base">등록 현황</CardTitle>
-          <CardDescription>
-            신청 상태 기준으로 집계하며 클래스 저장값은 변경하지 않습니다. 취소되지 않은 신청 내역이
-            1건 이상 있으면 영구 삭제는 차단되며, 취소 내역만 남은 클래스는 영구 삭제할 수 있습니다.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <AdminPageSection
+        title="등록 현황"
+        description="신청 상태 기준으로 집계하며 클래스 저장값은 변경하지 않습니다. 취소되지 않은 신청 내역이 1건 이상 있으면 영구 삭제는 차단되며, 취소 내역만 남은 클래스는 영구 삭제할 수 있습니다."
+        contentClassName="pt-4"
+      >
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-xl border border-border/70 bg-muted/30 p-4">
-              <div className="text-sm text-muted-foreground">등록 확정</div>
-              <div className="mt-2 text-xl font-semibold text-foreground">
+              <div className={adminTypography.metaMuted}>등록 확정</div>
+              <div className={cn("mt-2", adminTypography.kpiValueCompact)}>
                 등록 확정 {stats.confirmed.toLocaleString("ko-KR")}명 /{" "}
                 {formatCapacity(item.capacity)}
               </div>
             </div>
             <div className="rounded-xl border border-border/70 bg-muted/30 p-4">
-              <div className="text-sm text-muted-foreground">전체 신청</div>
-              <div className="mt-2 text-xl font-semibold text-foreground">
+              <div className={adminTypography.metaMuted}>전체 신청</div>
+              <div className={cn("mt-2", adminTypography.kpiValueCompact)}>
                 전체 신청 {stats.total.toLocaleString("ko-KR")}건
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+      </AdminPageSection>
 
-      <Card className={cn(adminSurface.card, "min-w-0")}>
-        <CardHeader>
-          <CardTitle className="text-base">클래스 기본 정보</CardTitle>
-          <CardDescription>고객에게 노출되는 클래스 운영 정보를 확인합니다.</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <AdminPageSection
+        title="클래스 기본 정보"
+        description="고객에게 노출되는 클래스 운영 정보를 확인합니다."
+        className="min-w-0"
+        contentClassName="pt-4"
+      >
           <InfoRow label="클래스명" value={item.name} />
           <InfoRow label="설명" value={item.description} />
           <InfoRow
@@ -273,17 +269,14 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
           />
           <InfoRow label="생성일" value={formatAdminDateTime(item.createdAt)} />
           <InfoRow label="수정일" value={formatAdminDateTime(item.updatedAt)} />
-        </CardContent>
-      </Card>
+      </AdminPageSection>
 
-      <Card className={cn(adminSurface.card, "min-w-0")}>
-        <CardHeader>
-          <CardTitle className="text-base">신청자 목록</CardTitle>
-          <CardDescription>
-            이 클래스와 연결된 최근 신청 50건을 최신순으로 표시합니다.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <AdminPageSection
+        title="신청자 목록"
+        description="이 클래스와 연결된 최근 신청 50건을 최신순으로 표시합니다."
+        className="min-w-0"
+        contentClassName="pt-4"
+      >
           <div className={adminSurface.tableCard}>
             <Table>
               <TableHeader className={adminSurface.tableHeader}>
@@ -301,12 +294,12 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
                   <TableRow>
                     <TableCell
                       colSpan={6}
-                      className="h-32 text-center text-sm text-muted-foreground"
+                      className={cn("h-32 text-center", adminTypography.metaMuted)}
                     >
-                      <div className="font-medium text-foreground">
+                      <div className={adminTypography.bodyStrong}>
                         아직 이 클래스에 접수된 신청이 없습니다.
                       </div>
-                      <div className="mt-1 text-xs text-muted-foreground">
+                      <div className={cn("mt-1", adminTypography.caption)}>
                         고객이 아카데미 페이지에서 이 클래스를 선택해 신청하면 이곳에 표시됩니다.
                       </div>
                     </TableCell>
@@ -324,38 +317,38 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
                       onClick={() => goToApplicationDetail(application._id)}
                       onKeyDown={(event) => handleApplicationRowKeyDown(event, application._id)}
                     >
-                      <TableCell className="whitespace-nowrap px-3 py-3 text-xs">
-                        <div className="font-medium text-foreground">{createdAt.date}</div>
-                        <div className="text-muted-foreground">{createdAt.time}</div>
+                      <TableCell className="whitespace-nowrap px-3 py-3">
+                        <div className={adminTypography.bodyStrong}>{createdAt.date}</div>
+                        <div className={adminTypography.caption}>{createdAt.time}</div>
                       </TableCell>
                       <TableCell className="min-w-0 px-3 py-3">
-                        <div className="font-medium text-foreground">
+                        <div className={adminTypography.bodyStrong}>
                           {application.applicantName || "-"}
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className={adminTypography.caption}>
                           {application.email || "이메일 미입력"}
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className={adminTypography.caption}>
                           {application.phone || "연락처 미입력"}
                         </div>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap px-3 py-3 text-sm">
+                      <TableCell className={cn("whitespace-nowrap px-3 py-3", adminTypography.body)}>
                         <div>
                           {application.desiredLessonTypeLabel ||
                             getAcademyLessonTypeLabel(application.desiredLessonType)}
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className={adminTypography.caption}>
                           {application.currentLevelLabel ||
                             getAcademyCurrentLevelLabel(application.currentLevel)}
                         </div>
                       </TableCell>
-                      <TableCell className="px-3 py-3 text-sm">
+                      <TableCell className={cn("px-3 py-3", adminTypography.body)}>
                         <div className="max-w-[180px] truncate">
                           {application.preferredDays.length
                             ? application.preferredDays.join(", ")
                             : "-"}
                         </div>
-                        <div className="max-w-[180px] truncate text-xs text-muted-foreground">
+                        <div className={cn("max-w-[180px] truncate", adminTypography.caption)}>
                           {application.preferredTimeText || "희망 시간 미입력"}
                         </div>
                       </TableCell>
@@ -379,8 +372,7 @@ export default function AcademyClassDetailClient({ id }: { id: string }) {
               </TableBody>
             </Table>
           </div>
-        </CardContent>
-      </Card>
+      </AdminPageSection>
     </div>
   );
 }
