@@ -38,14 +38,19 @@ export function StepNavigation({
   const isLastStep = currentStepIndex === totalSteps - 1;
 
   return (
-    <div className={cn("flex items-center justify-between gap-4", className)}>
-      <div className="flex items-center gap-2">
+    <div
+      className={cn(
+        "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4",
+        className,
+      )}
+    >
+      <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
         {/* Back to list button */}
         <Button
           variant="outline"
           type="button"
           asChild
-          className="bg-muted/40 hover:bg-muted border-border"
+          className="border-border bg-muted/40 hover:bg-muted"
         >
           <Link href={backHref} data-no-unsaved-guard onClick={onBackClick}>
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -54,7 +59,7 @@ export function StepNavigation({
         </Button>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
         {/* Previous step */}
         {!isFirstStep && (
           <Button variant="outline" type="button" onClick={onPrevious} className="gap-1">

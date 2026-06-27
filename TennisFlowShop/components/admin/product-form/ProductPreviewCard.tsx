@@ -147,9 +147,9 @@ export function ProductPreviewCard({
 
       {/* Performance Chart */}
       <div className={cn(adminSurface.cardMuted, "p-3")}>
-        <div className="mb-2 flex items-center justify-between">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <span className={cn(adminTypography.caption, "font-medium")}>성능 지표</span>
-          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-ui-label font-bold text-primary">
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-ui-label font-semibold text-primary">
             평균 {average}
           </span>
         </div>
@@ -173,7 +173,7 @@ export function ProductPreviewCard({
 
       {/* Material Tag */}
       {basicInfo.material && (
-        <div className="mt-4 flex items-center gap-2">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
           <Tag className="h-3.5 w-3.5 text-muted-foreground" />
           <span className={cn("capitalize", adminTypography.metaMuted)}>{basicInfo.material}</span>
         </div>
