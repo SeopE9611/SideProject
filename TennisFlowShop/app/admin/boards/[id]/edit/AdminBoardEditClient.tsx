@@ -7,6 +7,7 @@ import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -105,12 +106,12 @@ export default function AdminBoardEditClient({ postId }: { postId: string }) {
   };
 
   return (
-    <Card className="mx-auto w-full max-w-4xl">
-      <CardHeader>
+    <Card className={`mx-auto w-full max-w-4xl ${adminSurface.card}`}>
+      <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle className="text-2xl">관리자 게시글 수정</CardTitle>
-            <p className="text-sm text-muted-foreground">상태: {statusText || "-"}</p>
+            <CardTitle className={adminTypography.sectionTitle}>관리자 게시글 수정</CardTitle>
+            <p className={adminTypography.metaMuted}>상태: {statusText || "-"}</p>
           </div>
           <Button variant="outline" asChild>
             <Link href={`/admin/boards/${postId}`}>
@@ -120,7 +121,7 @@ export default function AdminBoardEditClient({ postId }: { postId: string }) {
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-5 sm:p-6">
         {isLoading ? (
           <div className="space-y-5">
             <div className="space-y-2">

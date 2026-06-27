@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -44,25 +45,25 @@ export default function AdminBoardComments({ postId }: Props) {
   };
 
   return (
-    <Card className="shadow-xl bg-muted/30 border border-border">
-      <CardHeader>
-        <CardTitle>댓글 관리</CardTitle>
+    <Card className={adminSurface.card}>
+      <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
+        <CardTitle className={adminTypography.sectionTitle}>댓글 관리</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 p-5 sm:p-6">
         {comments.map((comment) => (
-          <div key={comment.id} className="rounded border border-border p-3">
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <div className="text-sm text-muted-foreground">
+          <div key={comment.id} className={adminSurface.cardMuted}>
+            <div className="mb-2 flex items-center justify-between gap-3 p-3 pb-0">
+              <div className={adminTypography.metaMuted}>
                 {comment.parentId ? "답글" : "댓글"} · {comment.nickname}
               </div>
               <Button size="sm" variant="destructive" onClick={() => deleteComment(comment)}>
                 <Trash2 className="mr-1 h-4 w-4" /> 삭제
               </Button>
             </div>
-            <p className="text-sm">{comment.content}</p>
+            <p className={`${adminTypography.body} px-3 pb-3`}>{comment.content}</p>
           </div>
         ))}
-        {comments.length === 0 && <p className="text-sm text-muted-foreground">댓글이 없습니다.</p>}
+        {comments.length === 0 && <p className={adminTypography.metaMuted}>댓글이 없습니다.</p>}
       </CardContent>
     </Card>
   );

@@ -28,7 +28,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 import { Switch } from "@/components/ui/switch";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import { adminSurface } from "@/components/admin/admin-typography";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -422,8 +422,8 @@ export default function AdminReviewListClient() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-muted-foreground">전체 리뷰</p>
-                <p className="text-2xl font-bold">{metrics?.total ?? 0}</p>
+                <p className={adminTypography.caption}>전체 리뷰</p>
+                <p className={adminTypography.kpiValueCompact}>{metrics?.total ?? 0}</p>
               </div>
               <div className="rounded-md p-2 bg-primary/10 border border-primary/20 dark:bg-primary/20">
                 <MessageSquare className="h-5 w-5 text-primary" />
@@ -435,8 +435,8 @@ export default function AdminReviewListClient() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-muted-foreground">평균 평점</p>
-                <p className="text-2xl font-bold">{(metrics?.avg ?? 0).toFixed(1)}</p>
+                <p className={adminTypography.caption}>평균 평점</p>
+                <p className={adminTypography.kpiValueCompact}>{(metrics?.avg ?? 0).toFixed(1)}</p>
               </div>
               <div className="rounded-md p-2 bg-warning/10 dark:bg-warning/15">
                 <Star className="h-5 w-5 text-warning" />
@@ -448,8 +448,8 @@ export default function AdminReviewListClient() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-muted-foreground">5점 리뷰</p>
-                <p className="text-2xl font-bold">{metrics?.five ?? 0}</p>
+                <p className={adminTypography.caption}>5점 리뷰</p>
+                <p className={adminTypography.kpiValueCompact}>{metrics?.five ?? 0}</p>
               </div>
               <div className="rounded-md p-2 bg-primary/10 border border-primary/20 dark:bg-primary/20">
                 <Award className="h-5 w-5 text-primary" />
@@ -461,8 +461,8 @@ export default function AdminReviewListClient() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-muted-foreground">서비스 리뷰</p>
-                <p className="text-2xl font-bold">{metrics?.byType?.service ?? 0}</p>
+                <p className={adminTypography.caption}>서비스 리뷰</p>
+                <p className={adminTypography.kpiValueCompact}>{metrics?.byType?.service ?? 0}</p>
               </div>
               <div className="rounded-md p-2 bg-muted">
                 <TrendingUp className="h-5 w-5 text-foreground" />
@@ -474,8 +474,8 @@ export default function AdminReviewListClient() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-muted-foreground">상품 리뷰</p>
-                <p className="text-2xl font-bold">{metrics?.byType?.product ?? 0}</p>
+                <p className={adminTypography.caption}>상품 리뷰</p>
+                <p className={adminTypography.kpiValueCompact}>{metrics?.byType?.product ?? 0}</p>
               </div>
               <div className="rounded-md p-2 bg-muted">
                 <TrendingUp className="h-5 w-5 text-foreground" />
@@ -486,13 +486,18 @@ export default function AdminReviewListClient() {
       </div>
 
       {/* 검색/필터 + 전체선택 */}
-      <div className="sticky top-0 z-10 -mt-2 mb-2 bg-card backdrop-blur supports-[backdrop-filter]:bg-card dark:supports-[backdrop-filter]:bg-card border border-border rounded-md px-3 py-2 flex flex-wrap items-center justify-between gap-3">
+      <div
+        className={cn(
+          adminSurface.filterCard,
+          "sticky top-0 z-10 -mt-2 mb-2 flex flex-wrap items-center justify-between gap-3 supports-[backdrop-filter]:bg-card/95",
+        )}
+      >
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
             placeholder="리뷰 검색…"
-            className="pl-10 h-9 text-sm border-border focus:border-border focus:ring-ring"
+            className="h-9 border-border pl-10 focus:border-border focus:ring-ring"
             value={qRaw}
             onChange={(e) => setQRaw(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && setSize(1)}
@@ -507,7 +512,7 @@ export default function AdminReviewListClient() {
               aria-label="전체 선택"
               className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
-            <span className="text-xs text-muted-foreground">전체 선택</span>
+            <span className={adminTypography.caption}>전체 선택</span>
           </div>
           <div className="flex items-center gap-2 rounded-md border border-border px-2 py-1.5">
             <Checkbox
@@ -516,7 +521,7 @@ export default function AdminReviewListClient() {
               onCheckedChange={(v) => setShowDeleted(!!v)}
               className="h-4 w-4 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
-            <label htmlFor="show-deleted" className="text-xs text-muted-foreground">
+            <label htmlFor="show-deleted" className={adminTypography.caption}>
               삭제 포함 보기
             </label>
           </div>
@@ -547,11 +552,11 @@ export default function AdminReviewListClient() {
       </div>
 
       {/* 리스트 카드 */}
-      <div className="bg-card shadow-sm">
+      <div className={adminSurface.tableCard}>
         <div className="max-h-[70vh] overflow-x-auto overflow-y-auto">
           {/* 헤더 라벨 */}
           <div
-            className={`sticky top-0 z-[1] hidden lg:grid ${GRID} items-center gap-x-3 bg-card border-b border-border px-3 py-3 text-[13px] text-muted-foreground`}
+            className={`sticky top-0 z-[1] hidden lg:grid ${GRID} items-center gap-x-3 bg-muted/40 border-b border-border px-3 py-3 text-ui-label text-foreground/75`}
           >
             <div className="opacity-70">선택</div>
             <div>작성자</div>
@@ -564,7 +569,15 @@ export default function AdminReviewListClient() {
           </div>
 
           {error ? (
-            <div className="p-8 text-center text-destructive">목록을 불러오지 못했습니다.</div>
+            <div
+              className={cn(
+                "m-4 p-6 text-center text-destructive",
+                adminSurface.cardMuted,
+                adminTypography.body,
+              )}
+            >
+              목록을 불러오지 못했습니다.
+            </div>
           ) : !data && isValidating ? (
             <div className="space-y-3 p-4">
               {Array.from({ length: 6 }).map((_, index) => (
@@ -587,7 +600,11 @@ export default function AdminReviewListClient() {
               ))}
             </div>
           ) : rows.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">불러올 리뷰가 없습니다.</div>
+            <div
+              className={cn("m-4 p-6 text-center", adminSurface.cardMuted, adminTypography.metaMuted)}
+            >
+              불러올 리뷰가 없습니다.
+            </div>
           ) : (
             sortedRows.map((r) => {
               const isSel = selected.includes(r._id);
