@@ -85,7 +85,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <h1 className="text-ui-body-sm font-semibold text-foreground">도깨비테니스 운영 관리</h1>
           </div>
           <p className="hidden text-ui-label text-muted-foreground sm:block">
-            쇼핑몰 헤더 없이 업무 화면에 집중합니다.
+            오늘 운영 업무를 확인하고 처리하세요.
           </p>
         </div>
       </div>

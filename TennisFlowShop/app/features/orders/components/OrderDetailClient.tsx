@@ -1126,7 +1126,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 <div>
                   <CardTitle className={adminTypography.panelTitle}>다음 작업</CardTitle>
                   <CardDescription className={cn("mt-1", adminTypography.meta)}>
-                    현재 단계와 바로 처리할 액션만 요약합니다.
+                    현재 단계와 처리 액션을 한 줄 흐름으로 확인합니다.
                   </CardDescription>
                 </div>
                 <Badge variant="outline" className="w-fit">
@@ -1141,7 +1141,7 @@ export default function OrderDetailClient({ orderId }: Props) {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="rounded-xl border border-border/60 bg-background/70 p-4">
+              <div className="rounded-xl border border-border/40 bg-transparent p-3">
                 <p className={adminTypography.panelTitle}>현재 단계</p>
                 <p className={cn("mt-1", adminTypography.bodyStrong)}>
                   {orderGuide.stage ||
@@ -1152,7 +1152,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   {nextActionGuide.title} · {nextActionGuide.description}
                 </p>
               </div>
-              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+              <div className="rounded-lg border border-border/40 bg-transparent p-3">
                 <p className={adminTypography.panelTitle}>주요 액션</p>
                 <p className={cn("mt-1", adminTypography.meta)}>
                   결제대기 되돌리기 같은 역방향 변경은 일반 다음 작업으로 노출하지 않습니다.
@@ -1177,7 +1177,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 </div>
               </div>
               {latestProcessingHistory ? (
-                <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+                <div className="rounded-lg border border-border/40 bg-transparent p-3">
                   <p className={adminTypography.panelTitle}>최근 처리 이력</p>
                   <div
                     className={cn(
@@ -1216,8 +1216,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         주문에 포함된 교체 작업
                       </CardTitle>
                       <CardDescription className={cn("mt-1", adminTypography.meta)}>
-                        이 주문에는 교체 작업이 포함되어 있습니다. 결제는 주문 결제에 포함되며,
-                        진행 단계는 아래 연결 진행 단계에서 처리합니다.
+                        주문 결제에 포함된 교체 작업의 진행 단계만 확인합니다.
                       </CardDescription>
                     </div>
                     <Badge variant="outline" className="w-fit border-primary/30 text-primary">
@@ -1227,7 +1226,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {latestLinkedApplication?.id && latestLinkedApplication?.status && (
-                    <div className="grid gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-center">
+                    <div className="grid gap-2 rounded-lg border border-primary/15 bg-primary/[0.03] px-3 py-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-center">
                       <p className={adminTypography.bodyStrong}>
                         연결 진행 단계: {orderGuide.stage || latestLinkedApplication.status}
                       </p>
@@ -1239,7 +1238,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   )}
                   {latestLinkedApplication?.id && latestLinkedApplication?.status && (
                     <LinkedFlowStageCard
-                      className="border border-border/70 bg-card shadow-none overflow-hidden"
+                      className="border border-border/50 bg-transparent shadow-none overflow-hidden"
                       orderId={orderId}
                       orderStatus={localStatus}
                       applicationStatus={latestLinkedApplication.status}
@@ -1254,7 +1253,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                     />
                   )}
                   <div className="grid gap-3 lg:grid-cols-2">
-                    <div className="rounded-lg border border-border/60 bg-card p-3 shadow-none">
+                    <div className="rounded-lg border border-border/40 bg-transparent p-3 shadow-none">
                       <p className={cn("mb-2", adminTypography.panelTitle)}>교체 작업 문서</p>
                       <div className="space-y-2">
                         {linkedDocs.length > 0 ? (
@@ -1299,7 +1298,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                       <p className="mt-3 text-ui-label text-foreground/75">{latestPackageSummary}</p>
                     </div>
 
-                    <div className="rounded-lg border border-border/60 bg-card p-3 shadow-none">
+                    <div className="rounded-lg border border-border/40 bg-transparent p-3 shadow-none">
                       <p className="mb-2 text-ui-body-sm font-semibold text-foreground">
                         최신 작업 접수 요약
                       </p>
@@ -1430,7 +1429,7 @@ export default function OrderDetailClient({ orderId }: Props) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+              <div className="rounded-lg border border-border/40 bg-transparent p-3">
                 <div className="space-y-1.5 text-ui-label leading-relaxed text-muted-foreground">
                   <p>
                     <span className="font-medium text-foreground">재고 차감 방식:</span>{" "}
@@ -1477,7 +1476,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
           {/* 주문 상태 및 요약 */}
           <Card className={cn("mb-6 overflow-hidden", adminSurface.cardMuted)}>
-            <CardHeader className="bg-muted/30 border-b pb-3">
+            <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
               <div className="flex items-center justify-between gap-3">
                 <CardTitle>
                   {isLinkedStringingOrder ? "결제·취소·환불" : "주문 처리 정보"}
@@ -1668,7 +1667,7 @@ export default function OrderDetailClient({ orderId }: Props) {
           <div className="grid gap-4 xl:grid-cols-12">
             {/* 고객 및 수령 정보 */}
             <Card className={cn("overflow-hidden xl:col-span-6", adminSurface.tableCard)}>
-              <CardHeader className="bg-muted/30 border-b pb-3">
+              <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <User className="h-5 w-5 text-foreground" />
@@ -1773,9 +1772,9 @@ export default function OrderDetailClient({ orderId }: Props) {
             {/* 배송 정보 */}
             <Card
               id="admin-order-shipping"
-              className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring xl:col-span-6"
+              className="overflow-hidden border border-border/60 bg-muted/20 shadow-none xl:col-span-6"
             >
-              <CardHeader className="bg-muted/30 border-b pb-3">
+              <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
                 <CardTitle className="flex items-center">
                   <Truck className="mr-2 h-5 w-5 text-primary" />
                   {isShippingManagedByApplication
@@ -1986,9 +1985,9 @@ export default function OrderDetailClient({ orderId }: Props) {
             {/* 결제 정보 */}
             <Card
               id="admin-order-payment"
-              className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring xl:col-span-6"
+              className="overflow-hidden border border-border/60 bg-muted/20 shadow-none xl:col-span-6"
             >
-              <CardHeader className="bg-muted/30 border-b pb-3">
+              <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <CreditCard className="h-5 w-5 text-primary" />
@@ -2086,8 +2085,8 @@ export default function OrderDetailClient({ orderId }: Props) {
             </Card>
 
             {/* 주문 항목 */}
-            <Card className="overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring xl:col-span-6">
-              <CardHeader className="bg-muted/30 border-b pb-3">
+            <Card className="overflow-hidden border border-border/60 bg-muted/20 shadow-none xl:col-span-6">
+              <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
                 <CardTitle className="flex items-center">
                   <ShoppingCart className="mr-2 h-5 w-5 text-foreground" />
                   주문 항목
@@ -2158,8 +2157,8 @@ export default function OrderDetailClient({ orderId }: Props) {
 
           {/* 방문 수령 주문은 배송 요청사항 카드를 숨김 */}
           {showDeliveryOnlyFields && (
-            <Card className="mt-6 mb-6 overflow-hidden border-0 bg-muted/30 shadow-xl ring-ring xl:col-span-6">
-              <CardHeader className="bg-muted/30 border-b pb-3">
+            <Card className="mt-6 mb-6 overflow-hidden border border-border/60 bg-muted/20 shadow-none xl:col-span-6">
+              <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
                 <CardTitle className="flex items-center justify-between">
                   <span>배송 요청사항</span>
                   {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}

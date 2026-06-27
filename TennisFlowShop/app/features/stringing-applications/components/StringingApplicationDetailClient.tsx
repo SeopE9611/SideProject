@@ -2001,18 +2001,18 @@ export default function StringingApplicationDetailClient({
                     </div>
                   </CardHeader>
                   <CardContent className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.45fr)]">
-                    <div className="rounded-xl border border-border/60 bg-background/80 p-4">
+                    <div className="rounded-xl border border-border/40 bg-transparent p-3">
                       <p className={adminTypography.panelTitle}>현재 단계</p>
                       <p className={cn("mt-1", adminTypography.bodyStrong)}>{appGuide.stage}</p>
                       <p className={cn("mt-3", adminTypography.panelTitle)}>다음 작업</p>
                       <p className={cn("mt-1", adminTypography.body)}>{nextActionGuide.title} · {nextActionGuide.description}</p>
                       {isLinkedApplication ? (
-                        <p className={cn("mt-3 rounded-lg border border-primary/20 bg-primary/5 p-3", adminTypography.meta)}>
-                          상태 변경·취소·환불의 기준 문서는 이 신청서가 아니라 연결된 {data.orderId ? "주문" : "대여"}입니다. 아래 부모 문서 이동을 먼저 사용하세요.
+                        <p className={cn("mt-3 rounded-lg border border-primary/15 bg-primary/[0.03] p-3", adminTypography.meta)}>
+                          연결된 {data.orderId ? "주문" : "대여"}에서 상태 변경·취소·환불을 처리합니다.
                         </p>
                       ) : null}
                     </div>
-                    <div className="rounded-xl border border-border/60 bg-background/80 p-4">
+                    <div className="rounded-xl border border-border/40 bg-transparent p-3">
                       <p className={adminTypography.panelTitle}>주요 액션</p>
                       <div className="mt-3 grid gap-2">
                         {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
@@ -2030,7 +2030,7 @@ export default function StringingApplicationDetailClient({
                           </Button>
                         ))}
                       </div>
-                      <div className="mt-4 border-t border-border/60 pt-3">
+                      <div className="mt-3 border-t border-border/40 pt-2 text-muted-foreground">
                         <p className={adminTypography.panelTitle}>최근 처리 이력</p>
                         <p className={cn("mt-1", adminTypography.meta)}>
                           {latestProcessingHistory?.status ?? "기록 없음"} · {latestProcessingDate}
