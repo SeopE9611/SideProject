@@ -968,7 +968,7 @@ export default function RentalsDetailClient({
                 </div>
               ) : (
                 <p className="text-ui-body-sm text-muted-foreground">
-                  교체서비스 상세 정보를 확인 중입니다.
+                  교체서비스 정보를 확인 중입니다.
                 </p>
               )}
             </CardContent>
