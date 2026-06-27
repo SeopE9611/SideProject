@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import AdminPageSection from "@/components/admin/AdminPageSection";
+import { adminTypography } from "@/components/admin/admin-typography";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Loader2, Truck } from "lucide-react";
 import { showErrorToast } from "@/lib/toast";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { adminFetcher, adminMutator } from "@/lib/admin/adminFetcher";
@@ -114,33 +115,35 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
 
   if (isVisitPickup) {
     return (
-      <div className="max-w-xl mx-auto p-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>방문 수령 대여 안내</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
+      <div className="mx-auto max-w-xl p-6">
+        <AdminPageSection
+          title="방문 수령 대여 안내"
+          description="방문 수령 대여는 인도 운송장 등록이 필요하지 않습니다."
+          icon={Truck}
+          contentClassName="space-y-5"
+        >
+          <p className={adminTypography.body}>
             이 대여는 방문 수령 건이라 인도 운송장 등록이 필요하지 않습니다.
-          </CardContent>
-          <CardFooter>
-            <Button variant="outline" onClick={() => router.push(`/admin/rentals/${rentalId}`)}>
-              상세로 돌아가기
-            </Button>
-          </CardFooter>
-        </Card>
+          </p>
+          <Button variant="outline" onClick={() => router.push(`/admin/rentals/${rentalId}`)}>
+            상세로 돌아가기
+          </Button>
+        </AdminPageSection>
       </div>
     );
   }
 
   return (
-    <div className="max-w-xl mx-auto p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>인도 운송장 {hasExisting ? "수정" : "등록"}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    <div className="mx-auto max-w-xl p-6">
+      <AdminPageSection
+        title={`인도 운송장 ${hasExisting ? "수정" : "등록"}`}
+        description="대여 상품 인도에 필요한 택배사와 운송장 번호를 관리합니다."
+        icon={Truck}
+        contentClassName="p-0"
+      >
+        <div className="space-y-4 p-5 sm:p-6">
           <div className="space-y-2">
-            <Label>택배사</Label>
+            <Label className={adminTypography.bodyStrong}>택배사</Label>
             <Select
               value={courier}
               onValueChange={(value) => setCourier(normalizeCourierCode(value))}
@@ -158,7 +161,7 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>운송장 번호</Label>
+            <Label className={adminTypography.bodyStrong}>운송장 번호</Label>
             <Input
               value={tracking}
               inputMode="numeric"
@@ -168,16 +171,16 @@ export default function ShippingForm({ rentalId }: { rentalId: string }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>인도일(선택)</Label>
+            <Label className={adminTypography.bodyStrong}>인도일(선택)</Label>
             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
-        </CardContent>
-        <CardFooter>
+        </div>
+        <div className="border-t border-border/60 p-5 pt-4 sm:p-6 sm:pt-4">
           <Button onClick={onSave} disabled={busy}>
             {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} 저장
           </Button>
-        </CardFooter>
-      </Card>
+        </div>
+      </AdminPageSection>
     </div>
   );
 }

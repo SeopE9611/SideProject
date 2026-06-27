@@ -1,5 +1,6 @@
 "use client";
 
+import { adminTypography } from "@/components/admin/admin-typography";
 import useSWR from "swr";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -100,26 +101,26 @@ export default function ShippingFormClient({ applicationId, onSuccess }: Props) 
               <Truck className="h-8 w-8 text-primary mx-auto" />
             )}
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">{pageTitle}</h1>
-          <p className="text-muted-foreground">{pageDesc}</p>
+          <h1 className={adminTypography.pageTitle}>{pageTitle}</h1>
+          <p className={adminTypography.body}>{pageDesc}</p>
         </div>
         {isInitialLoading ? (
           <Card className="w-full max-w-md mx-auto border-border/60">
             <CardContent className="space-y-5 p-6">
               <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground">배송 방법</p>
+                <p className={adminTypography.bodyStrong}>배송 방법</p>
                 <Skeleton className="h-10 w-full" />
               </div>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground">예상 수령일</p>
+                <p className={adminTypography.bodyStrong}>예상 수령일</p>
                 <Skeleton className="h-10 w-full" />
               </div>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground">택배사</p>
+                <p className={adminTypography.bodyStrong}>택배사</p>
                 <Skeleton className="h-10 w-full" />
               </div>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground">운송장 번호</p>
+                <p className={adminTypography.bodyStrong}>운송장 번호</p>
                 <Skeleton className="h-10 w-full" />
               </div>
               <div className="pt-2">

@@ -1,5 +1,6 @@
 "use client";
 
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
@@ -27,7 +28,8 @@ export function FormSection({
     <Card
       variant="ghost"
       className={cn(
-        "overflow-hidden border border-border/60 bg-gradient-to-br from-card to-card/80 shadow-sm transition-shadow hover:shadow-md",
+        adminSurface.card,
+        "overflow-hidden transition-shadow hover:shadow-md",
         className,
       )}
     >
@@ -39,11 +41,9 @@ export function FormSection({
             </div>
           )}
           <div className="space-y-1">
-            <CardTitle className="text-lg font-semibold text-foreground">{title}</CardTitle>
+            <CardTitle className={adminTypography.sectionTitle}>{title}</CardTitle>
             {description && (
-              <CardDescription className="text-sm text-muted-foreground">
-                {description}
-              </CardDescription>
+              <CardDescription className={adminTypography.metaMuted}>{description}</CardDescription>
             )}
           </div>
         </div>
@@ -82,13 +82,18 @@ interface FormFieldProps {
 export function FormField({ label, required, hint, error, children, className }: FormFieldProps) {
   return (
     <div className={cn("space-y-2", className)}>
-      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+      <label
+        className={cn(
+          adminTypography.bodyStrong,
+          "leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+        )}
+      >
         {label}
         {required && <span className="ml-1 text-destructive">*</span>}
       </label>
       {children}
-      {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {hint && !error && <p className={adminTypography.caption}>{hint}</p>}
+      {error && <p className={cn(adminTypography.caption, "text-destructive")}>{error}</p>}
     </div>
   );
 }

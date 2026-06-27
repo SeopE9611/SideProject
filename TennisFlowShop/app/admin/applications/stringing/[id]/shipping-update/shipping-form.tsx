@@ -1,7 +1,8 @@
 "use client";
 
+import AdminPageSection from "@/components/admin/AdminPageSection";
+import { adminTypography } from "@/components/admin/admin-typography";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -17,7 +18,7 @@ import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
 import { getSelectableCourierCatalog, normalizeCourierCode } from "@/lib/shipping/courier-map";
 import { normalizeTrackingNumber } from "@/lib/shipping/tracking-number";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Truck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -224,15 +225,19 @@ export default function ShippingForm({
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>{cardTitle}</CardTitle>
-      </CardHeader>
-
+    <AdminPageSection
+      title={cardTitle}
+      description="처리 상태에 맞춰 수령 예정일과 운송장 정보를 관리합니다."
+      icon={Truck}
+      className="mx-auto w-full max-w-md"
+      contentClassName="p-0"
+    >
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+        <div className="space-y-4 p-5 sm:p-6">
           <div className="space-y-2">
-            <Label htmlFor="shipping-method">{isVisitPickup ? "수령 방법" : "배송 방법"}</Label>
+            <Label htmlFor="shipping-method" className={adminTypography.bodyStrong}>
+              {isVisitPickup ? "수령 방법" : "배송 방법"}
+            </Label>
             {isVisitPickup ? (
               <Input id="shipping-method" value="방문 수령" readOnly disabled />
             ) : (
@@ -249,7 +254,9 @@ export default function ShippingForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="estimated-delivery">예상 수령일</Label>
+            <Label htmlFor="estimated-delivery" className={adminTypography.bodyStrong}>
+              예상 수령일
+            </Label>
             <Input
               id="estimated-delivery"
               type="date"
@@ -262,7 +269,9 @@ export default function ShippingForm({
           {!isVisitPickup && isCourierShippingMethod(shippingMethod) && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="courier">택배사</Label>
+                <Label htmlFor="courier" className={adminTypography.bodyStrong}>
+                  택배사
+                </Label>
                 <Select value={courier} onValueChange={setCourier}>
                   <SelectTrigger id="courier">
                     <SelectValue placeholder="택배사를 선택하세요" />
@@ -278,7 +287,9 @@ export default function ShippingForm({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="tracking-number">운송장 번호</Label>
+                <Label htmlFor="tracking-number" className={adminTypography.bodyStrong}>
+                  운송장 번호
+                </Label>
                 <Input
                   id="tracking-number"
                   value={trackingNumber}
@@ -288,9 +299,9 @@ export default function ShippingForm({
               </div>
             </>
           )}
-        </CardContent>
+        </div>
 
-        <CardFooter>
+        <div className="border-t border-border/60 p-5 pt-4 sm:p-6 sm:pt-4">
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
@@ -301,8 +312,8 @@ export default function ShippingForm({
               "저장"
             )}
           </Button>
-        </CardFooter>
+        </div>
       </form>
-    </Card>
+    </AdminPageSection>
   );
 }
