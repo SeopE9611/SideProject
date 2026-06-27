@@ -205,12 +205,6 @@ function summarizeReasonText(text?: string | null) {
   return truncateText(oneLine || normalized, 34);
 }
 
-function isLowTensionNextAction(nextAction: string) {
-  const normalized = nextAction.trim();
-  if (!normalized) return true;
-  return normalized.includes("후속 조치 없음") || normalized.includes("모니터링");
-}
-
 function flowLabelText(item: OpItem) {
   return item.flowLabel?.trim() || FLOW_LABEL_BY_ID[item.flow] || "미분류";
 }
@@ -617,21 +611,48 @@ function resolvePrimaryActionTarget(group: {
   return { href: anchor.href, label: "패키지 결제 확인" };
 }
 
-function collectReviewReasons(g: { anchor: OpItem; items: OpItem[] }) {
+function isActionableSignal(signal: AdminOperationsGroup["signals"][number]) {
+  return signal.level !== "info";
+}
+
+function collectActionableReasonBullets(g: {
+  anchor: OpItem;
+  items: OpItem[];
+  signals?: AdminOperationsGroup["signals"];
+  linkedFlowStatusIssue?: AdminOperationsGroup["linkedFlowStatusIssue"];
+}) {
   const reasons = new Set<string>();
+  const addReason = (reason?: string | null) => {
+    const value = toOperatorSentence(reason ?? "");
+    if (value) reasons.add(value);
+  };
+
+  for (const signal of g.signals ?? []) {
+    if (!isActionableSignal(signal)) continue;
+    addReason(signal.description || signal.nextAction || signal.title);
+  }
+
   for (const it of g.items ?? []) {
-    for (const reason of it.reviewReasons ?? []) {
-      const value = reason?.trim();
-      if (value) reasons.add(value);
+    const hasActionableReview = it.reviewLevel === "action" || it.needsReview === true;
+    if (hasActionableReview) {
+      for (const reason of it.reviewReasons ?? []) addReason(reason);
+    }
+    for (const reason of it.warnReasons ?? []) addReason(reason);
+    for (const reason of it.pendingReasons ?? []) addReason(reason);
+    if (it.cancel?.status === "requested") {
+      addReason(it.cancel.reason || "취소 요청 처리가 필요합니다.");
     }
   }
+
+  if (g.linkedFlowStatusIssue) addReason(g.linkedFlowStatusIssue.message);
+
   return Array.from(reasons);
 }
 
-
 function visibleSignalSummary(signals: AdminOperationsGroup["signals"], max = 3) {
-  const visible = (signals ?? []).slice(0, max);
-  const hiddenCount = Math.max(0, (signals?.length ?? 0) - visible.length);
+  const actionableSignals = (signals ?? []).filter(isActionableSignal);
+  const visible = actionableSignals.slice(0, max);
+  const hiddenCount = Math.max(0, actionableSignals.length - visible.length);
   return { visible, hiddenCount };
 }
 
@@ -1991,15 +2012,12 @@ export default function OperationsClient() {
                       const isOpen = !!openGroups[g.key];
                       const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
                       const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
-                      const reviewReasons = collectReviewReasons(g);
+                      const reasonBullets = collectActionableReasonBullets(g);
                       const groupGuide = inferNextActionForOperationGroup(g.items);
                       const warn = g.warn;
                       const reasonSummary = summarizeReasonText(
-                        g.primarySignal?.description ?? reviewReasons[0],
+                        reasonBullets[0] ?? g.primarySignal?.description,
                       );
-                      const reasonBullets = reviewReasons
-                        .map((reason) => toOperatorSentence(reason))
-                        .filter(Boolean);
                       const groupCancelRequested = g.items.some(
                         (it) => it.cancel?.status === "requested",
                       );
@@ -2013,15 +2031,8 @@ export default function OperationsClient() {
                         cancelRequested: groupCancelRequested,
                         reviewLevel: g.reviewLevel,
                       });
-                      const reasonNeedsAttention =
-                        warn || g.reviewLevel === "action" || groupCancelRequested;
-                      const hasReasonCard =
-                        reasonNeedsAttention ||
-                        (reasonBullets.length > 0 && !isLowTensionNextAction(nextActionText)) ||
-                        (Boolean(g.primarySignal?.title) &&
-                          !isLowTensionNextAction(nextActionText));
-                      const shouldShowReasonBullets =
-                        reasonBullets.length > 0 && reasonNeedsAttention;
+                      const hasReasonCard = reasonBullets.length > 0;
+                      const shouldShowReasonBullets = reasonBullets.length > 0;
                       const reasonBulletCount = reasonBullets.length;
                       const isReasonOpen = !!openReasons[g.key];
                       const customerName = g.anchor.customer?.name?.trim() || "";
@@ -2209,7 +2220,7 @@ export default function OperationsClient() {
                                         <p className={adminTypography.caption}>{reasonSummary}</p>
                                         {shouldShowReasonBullets && (
                                           <ul className="mt-1 space-y-0.5">
-                                            {reasonBullets.slice(0, 3).map((reason) => (
+                                            {reasonBullets.map((reason) => (
                                               <li key={`reason:${g.key}:${reason}`} className="list-inside list-disc text-xs text-foreground/85 line-clamp-1">{reason}</li>
                                             ))}
                                           </ul>
@@ -2471,14 +2482,11 @@ export default function OperationsClient() {
                 {quickViewFilteredGroups.map((g) => {
                   const warn = g.warn;
                   const isOpen = !!openGroups[g.key];
-                  const reviewReasons = collectReviewReasons(g);
+                  const reasonBullets = collectActionableReasonBullets(g);
                   const groupGuide = inferNextActionForOperationGroup(g.items);
                   const reasonSummary = summarizeReasonText(
-                    g.primarySignal?.description ?? reviewReasons[0],
+                    reasonBullets[0] ?? g.primarySignal?.description,
                   );
-                  const reasonBullets = reviewReasons
-                    .map((reason) => toOperatorSentence(reason))
-                    .filter(Boolean);
                   const customerName = g.anchor.customer?.name?.trim() || "";
                   const customerEmail = g.anchor.customer?.email?.trim() || "";
                   const customerPrimary = customerName || customerEmail || "-";
@@ -2513,13 +2521,8 @@ export default function OperationsClient() {
                     cancelRequested: groupCancelRequested,
                     reviewLevel: g.reviewLevel,
                   });
-                  const reasonNeedsAttention =
-                    warn || g.reviewLevel === "action" || groupCancelRequested;
-                  const hasReasonCard =
-                    reasonNeedsAttention ||
-                    (reasonBullets.length > 0 && !isLowTensionNextAction(nextActionText)) ||
-                    (Boolean(g.primarySignal?.title) && !isLowTensionNextAction(nextActionText));
-                  const shouldShowReasonBullets = reasonNeedsAttention && reasonBullets.length > 0;
+                  const hasReasonCard = reasonBullets.length > 0;
+                  const shouldShowReasonBullets = reasonBullets.length > 0;
                   const reasonBulletCount = reasonBullets.length;
                   const isReasonOpen = !!openReasons[g.key];
                   const anchorCancelQuickSignal = cancelQuickSignalSpec(g.anchor.cancel);
@@ -2665,7 +2668,7 @@ export default function OperationsClient() {
                                 </p>
                                 {shouldShowReasonBullets && (
                                   <ul className="mt-0.5 space-y-px">
-                                    {reasonBullets.slice(0, 3).map((reason) => (
+                                    {reasonBullets.map((reason) => (
                                       <li
                                         key={`m-reason:${g.key}:${reason}`}
                                         className="list-inside list-disc text-xs leading-snug text-foreground/75 line-clamp-1"

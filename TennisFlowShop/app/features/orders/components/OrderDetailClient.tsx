@@ -2164,13 +2164,13 @@ export default function OrderDetailClient({ orderId }: Props) {
           <AdminInternalNotesCard
             targetType="order"
             targetId={orderDetail._id}
-            className="xl:col-span-6"
+            className="xl:col-span-12"
           />
 
           {/* 처리 이력 */}
           <Card
             id="admin-order-history"
-            className={cn("overflow-hidden xl:col-span-6", adminSurface.tableCard)}
+            className={cn("overflow-hidden xl:col-span-12", adminSurface.tableCard)}
           >
             <CardHeader className="border-b bg-muted/30">
               <CardTitle className="flex items-center space-x-2">
@@ -2179,7 +2179,7 @@ export default function OrderDetailClient({ orderId }: Props) {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 lg:p-5">
-              <OrderHistory orderId={orderId} shippingMethod={orderDetail.shippingInfo} />
+              <OrderHistory orderId={orderId} shippingMethod={orderDetail.shippingInfo} embedded />
             </CardContent>
           </Card>
         </div>

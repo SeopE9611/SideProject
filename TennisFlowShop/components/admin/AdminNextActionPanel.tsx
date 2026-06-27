@@ -24,7 +24,7 @@ const toneClass: Record<AdminNextActionPanelTone, string> = {
   urgent: "border-destructive/30 bg-destructive/[0.025]",
   warning: "border-warning/35 bg-warning/[0.035]",
   info: "border-primary/20 bg-primary/[0.025]",
-  success: "border-emerald-500/25 bg-emerald-500/[0.025]",
+  success: "border-success/25 bg-success/[0.025]",
 };
 
 export default function AdminNextActionPanel({
