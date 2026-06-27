@@ -4,8 +4,10 @@ import { ArrowLeft, Calendar, Eye, MessageSquare, Settings, User } from "lucide-
 import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { AdminFetchError, adminFetcher } from "@/lib/admin/adminFetcher";
+import { cn } from "@/lib/utils";
 import BoardDetailActions from "./BoardDetailActions";
 import AdminBoardComments from "./AdminBoardComments";
 
@@ -174,17 +176,17 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
         </div>
 
         <div className="flex flex-col space-y-8">
-          <div className="bg-muted/30 rounded-2xl p-8 border border-border shadow-lg">
+          <div className={`${adminSurface.card} p-5 sm:p-6`}>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center space-x-4">
-                <div className="bg-card rounded-full p-3 shadow-md">
+                <div className="rounded-full bg-primary/10 p-3 text-primary">
                   <Settings className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-normal text-foreground">
+                  <h1 className={adminTypography.pageTitle}>
                     게시물 상세 보기
                   </h1>
-                  <p className="mt-1 text-muted-foreground">
+                  <p className={adminTypography.metaMuted}>
                     게시물의 상세 정보를 확인하고 관리할 수 있습니다.
                   </p>
                 </div>
@@ -194,7 +196,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
           </div>
 
           <div className="grid gap-6 md:grid-cols-3">
-            <Card className="md:col-span-2 shadow-xl bg-muted/30 border border-border">
+            <Card className={cn("md:col-span-2", adminSurface.card)}>
               <CardHeader className="space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge className={getBoardTypeColor(String(post.type ?? ""))}>
@@ -204,7 +206,7 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
                   {!!post.category && <Badge variant="outline">{post.category}</Badge>}
                   {post.isPinned && <Badge variant="secondary">상단 고정</Badge>}
                 </div>
-                <CardTitle className="text-2xl font-bold text-foreground">
+                <CardTitle className={adminTypography.sectionTitle}>
                   {post.title || "(제목 없음)"}
                 </CardTitle>
               </CardHeader>
@@ -216,9 +218,9 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
               </CardContent>
             </Card>
 
-            <Card className="shadow-xl bg-muted/30 border border-border">
-              <CardHeader className="bg-muted/30 border-b border-border">
-                <CardTitle className="text-primary">게시물 정보</CardTitle>
+            <Card className={adminSurface.card}>
+              <CardHeader className="border-b border-border/60 bg-muted/20">
+                <CardTitle className={adminTypography.sectionTitle}>게시물 정보</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 p-6">
                 <div className="flex items-center p-3 bg-card rounded-lg">

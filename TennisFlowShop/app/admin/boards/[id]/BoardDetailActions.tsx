@@ -67,7 +67,7 @@ export default function BoardDetailActions({ postId, currentStatus }: BoardDetai
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       {/* 관리자 전용 수정 플로우는 /admin/boards/[id]/edit 라우트로 고정한다. */}
       <Button
         variant="outline"

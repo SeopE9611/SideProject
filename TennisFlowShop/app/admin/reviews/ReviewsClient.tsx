@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 
 // 리뷰 데이터 타입 정의
 interface Review {
@@ -205,14 +206,14 @@ export default function ReviewsClient() {
       {/* 페이지 제목 */}
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/30 shadow-lg">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <Star className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-4xl font-bold tracking-normal text-foreground md:text-5xl">
+            <h1 className={adminTypography.pageTitle}>
               리뷰 관리
             </h1>
-            <p className="mt-2 text-lg text-muted-foreground">
+            <p className={adminTypography.metaMuted}>
               고객 리뷰를 관리하고 서비스 품질을 향상시키세요
             </p>
           </div>
@@ -220,13 +221,13 @@ export default function ReviewsClient() {
       </div>
 
       {/* 통계 카드 */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card className="border-0 bg-card shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className={adminSurface.kpiCard}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">전체 리뷰</p>
-                <p className="text-3xl font-bold text-foreground">{totalReviews}</p>
+                <p className={adminTypography.metaMuted}>전체 리뷰</p>
+                <p className={adminTypography.kpiValue}>{totalReviews}</p>
               </div>
               <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-foreground dark:bg-primary/20">
                 <MessageSquare className="h-6 w-6" />
@@ -235,12 +236,12 @@ export default function ReviewsClient() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 bg-card shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
+        <Card className={adminSurface.kpiCard}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">평균 평점</p>
-                <p className="text-3xl font-bold text-foreground">{averageRating.toFixed(1)}</p>
+                <p className={adminTypography.metaMuted}>평균 평점</p>
+                <p className={adminTypography.kpiValue}>{averageRating.toFixed(1)}</p>
               </div>
               <div className="bg-warning/10 rounded-xl p-3 dark:bg-warning/15">
                 <Star className="h-6 w-6 text-warning" />
@@ -249,12 +250,12 @@ export default function ReviewsClient() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 bg-card shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
+        <Card className={adminSurface.kpiCard}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">5점 리뷰</p>
-                <p className="text-3xl font-bold text-foreground">{fiveStarReviews}</p>
+                <p className={adminTypography.metaMuted}>5점 리뷰</p>
+                <p className={adminTypography.kpiValue}>{fiveStarReviews}</p>
               </div>
               <div className="rounded-xl border border-primary/20 bg-primary/10 p-3 text-foreground dark:bg-primary/20">
                 <Award className="h-6 w-6" />
@@ -263,12 +264,12 @@ export default function ReviewsClient() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 bg-card shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl">
+        <Card className={adminSurface.kpiCard}>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">레슨 리뷰</p>
-                <p className="text-3xl font-bold text-foreground">{lessonReviews}</p>
+                <p className={adminTypography.metaMuted}>레슨 리뷰</p>
+                <p className={adminTypography.kpiValue}>{lessonReviews}</p>
               </div>
               <div className="bg-muted rounded-xl p-3">
                 <TrendingUp className="h-6 w-6 text-foreground" />
@@ -280,7 +281,7 @@ export default function ReviewsClient() {
 
       {/* 리뷰 관리 카드 */}
 
-      <Card className="border-0 bg-card shadow-lg backdrop-blur-sm">
+      <Card className={adminSurface.tableCard}>
         <div className="fixed inset-0 bg-overlay/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center p-6 text-center gap-6">
           <p className="text-foreground text-2xl md:text-4xl font-semibold">
             이 기능은 개발 중 입니다. (리뷰 관리)
@@ -292,8 +293,8 @@ export default function ReviewsClient() {
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl font-semibold text-foreground">리뷰 목록</CardTitle>
-              <CardDescription className="text-muted-foreground">
+              <CardTitle className={adminTypography.sectionTitle}>리뷰 목록</CardTitle>
+              <CardDescription className={adminTypography.metaMuted}>
                 총 {filteredReviews.length}개의 리뷰가 있습니다.
               </CardDescription>
             </div>
@@ -314,7 +315,7 @@ export default function ReviewsClient() {
 
         <CardContent>
           {selectedReviews.length > 0 && (
-            <div className="mb-4 flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-foreground dark:bg-destructive/15">
+            <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-foreground dark:bg-destructive/15">
               <span className="text-sm font-medium text-destructive">
                 선택된 {selectedReviews.length}개 리뷰
               </span>
@@ -322,7 +323,7 @@ export default function ReviewsClient() {
                 variant="destructive"
                 size="sm"
                 onClick={handleBulkDelete}
-                className="ml-auto h-8"
+                className="h-8 sm:ml-auto"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 선택 삭제

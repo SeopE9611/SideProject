@@ -136,11 +136,11 @@ export function PerformanceSummary({ features, className }: PerformanceSummaryPr
 
   return (
     <div className={cn(adminSurface.cardMuted, "p-4", className)}>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h4 className={adminTypography.panelTitle}>성능 요약</h4>
         <div className="flex items-center gap-2">
           <span className={adminTypography.caption}>평균</span>
-          <span className="rounded-full bg-primary px-2 py-0.5 text-ui-label font-bold text-primary-foreground">
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-ui-label font-semibold text-primary">
             {average}
           </span>
         </div>
