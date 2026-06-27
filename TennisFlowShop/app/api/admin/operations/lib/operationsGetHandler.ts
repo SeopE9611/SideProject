@@ -501,6 +501,20 @@ function isTerminalOperationGroup(group: AdminOperationsGroup) {
   return group.items.length > 0 && group.items.every(isTerminalOperationItem);
 }
 
+function isOperationallyTerminalGroup(group: AdminOperationsGroup) {
+  if (group.items.length === 0) return false;
+
+  const anchor =
+    group.items.find((item) => item.id === group.anchorId && item.kind === group.anchorKind) ??
+    group.items[0];
+
+  if ((anchor.kind === "order" || anchor.kind === "rental") && isTerminalOperationItem(anchor)) {
+    return true;
+  }
+
+  return isTerminalOperationGroup(group);
+}
+
 function buildItemSignals(item: OpItem): OperationSignal[] {
   const out: OperationSignal[] = [];
   for (const reason of item.warnReasons ?? []) {
@@ -2012,7 +2026,7 @@ export async function handleAdminOperationsGet(req: Request) {
     group.items.some((item) => item.cancel?.status === "requested");
 
   const groupsWithQueue = groups.map((group) => {
-    const isTerminalGroup = isTerminalOperationGroup(group);
+    const isTerminalGroup = isOperationallyTerminalGroup(group);
     const groupReviewLevel = isTerminalGroup ? "none" : computeGroupReviewLevel(group);
     const groupNeedsReview =
       !isTerminalGroup &&
@@ -2033,7 +2047,7 @@ export async function handleAdminOperationsGet(req: Request) {
       groupQueueBucket: queueBucket,
     };
   });
-  const allGroups = q ? groupsWithQueue : groupsWithQueue.filter((group) => !isTerminalOperationGroup(group));
+  const allGroups = q ? groupsWithQueue : groupsWithQueue.filter((group) => !isOperationallyTerminalGroup(group));
 
   const isCautionQueueGroup = (group: AdminOperationsGroup) => group.groupQueueBucket === "caution";
   const isPendingQueueGroup = (group: AdminOperationsGroup) => group.groupQueueBucket === "pending";
