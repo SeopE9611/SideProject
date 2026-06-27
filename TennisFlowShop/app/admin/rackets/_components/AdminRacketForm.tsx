@@ -1,6 +1,7 @@
 "use client";
 
 import ImageUploader from "@/components/admin/ImageUploader";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import {
   FormField,
   FormFieldGroup,
@@ -404,12 +405,12 @@ export default function AdminRacketForm({
       }}
       className="space-y-4"
     >
-      <div className="rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm">
+      <div className={cn(adminSurface.stickyToolbar, "p-4")}>
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">{initial ? "라켓 수정" : "라켓 등록"}</h3>
+          <h3 className={adminTypography.sectionTitle}>{initial ? "라켓 수정" : "라켓 등록"}</h3>
           <StepIndicator current={currentStepIndex + 1} total={STEPS.length} />
         </div>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className={cn("mt-1", adminTypography.metaMuted)}>
           {initial ? "라켓 정보를 수정해주세요." : "새 라켓 정보를 입력해주세요."}
         </p>
         <div className="mt-3">
@@ -426,25 +427,23 @@ export default function AdminRacketForm({
       </div>
       <section className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
         {RACKET_FORM_WORKFLOW_GUIDES.map(({ icon: Icon, title, description }) => (
-          <div key={title} className="rounded-xl border border-border/60 bg-muted/20 p-3 shadow-sm">
+          <div key={title} className={cn(adminSurface.cardMuted, "p-3")}>
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Icon className="h-4 w-4" />
               </div>
-              <p className="text-sm font-semibold text-foreground">{title}</p>
+              <p className={adminTypography.bodyStrong}>{title}</p>
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{description}</p>
+            <p className={cn("mt-2", adminTypography.caption)}>{description}</p>
           </div>
         ))}
       </section>
       <div className="grid gap-2 lg:grid-cols-[1.2fr_1fr]">
-        <div className="rounded-xl border border-border/60 bg-muted/20 p-3 shadow-sm">
+        <div className={cn(adminSurface.cardMuted, "p-3")}>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-semibold text-foreground">
-                현재 단계: {currentStep.label}
-              </p>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              <p className={adminTypography.bodyStrong}>현재 단계: {currentStep.label}</p>
+              <p className={cn("mt-1", adminTypography.caption)}>
                 라켓 정보는 단계 이동 중에도 유지됩니다. 저장 전 기본 정보, 스펙, 판매/대여 설정,
                 이미지를 함께 확인하세요.
               </p>
@@ -455,9 +454,9 @@ export default function AdminRacketForm({
           </div>
         </div>
 
-        <div className="rounded-xl border border-border/60 bg-muted/20 p-4 shadow-sm">
-          <p className="text-sm font-semibold text-foreground">현재 입력 요약</p>
-          <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+        <div className={cn(adminSurface.cardMuted, "p-4")}>
+          <p className={adminTypography.bodyStrong}>현재 입력 요약</p>
+          <div className={cn("mt-2 grid gap-1", adminTypography.caption)}>
             <p>브랜드: {form.brand ? racketBrandLabel(form.brand) : "미선택"}</p>
             <p>모델명: {form.model.trim() || "미입력"}</p>
             <p>판매가: {Number(form.price || 0).toLocaleString("ko-KR")}원</p>
@@ -473,9 +472,11 @@ export default function AdminRacketForm({
               description="라켓의 기본 정보를 입력하세요"
               icon={<FileText className="h-4 w-4" />}
             >
-              <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
-                <p className="text-sm font-semibold text-foreground">기본 정보 입력 순서</p>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              <div
+                className={cn("mb-4 border-primary/20 bg-primary/5 p-4", adminSurface.cardMuted)}
+              >
+                <p className={adminTypography.bodyStrong}>기본 정보 입력 순서</p>
+                <p className={cn("mt-1", adminTypography.caption)}>
                   브랜드와 모델명은 고객 목록과 검색 결과에 바로 노출됩니다. 모델명은 2~80자 범위로
                   입력하세요.
                 </p>
@@ -548,9 +549,11 @@ export default function AdminRacketForm({
               description="라켓 상세 스펙"
               icon={<Settings className="h-4 w-4" />}
             >
-              <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
-                <p className="text-sm font-semibold text-foreground">스펙 입력 안내</p>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              <div
+                className={cn("mb-4 border-primary/20 bg-primary/5 p-4", adminSurface.cardMuted)}
+              >
+                <p className={adminTypography.bodyStrong}>스펙 입력 안내</p>
+                <p className={cn("mt-1", adminTypography.caption)}>
                   무게, 밸런스, 헤드 사이즈 같은 수치는 선택 필드지만, 입력 시 1 이상의 숫자만
                   허용됩니다. 스트링 패턴과 그립 사이즈는 반드시 선택해야 합니다.
                 </p>
@@ -690,9 +693,11 @@ export default function AdminRacketForm({
                 description="가격, 배송비, 판매 상태, 보유 수량"
                 icon={<DollarSign className="h-4 w-4" />}
               >
-                <div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-4">
-                  <p className="text-sm font-semibold text-foreground">판매/대여 설정 안내</p>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                <div
+                  className={cn("mb-4 border-warning/30 bg-warning/10 p-4", adminSurface.cardMuted)}
+                >
+                  <p className={adminTypography.bodyStrong}>판매/대여 설정 안내</p>
+                  <p className={cn("mt-1", adminTypography.caption)}>
                     가격, 배송비, 보유 수량은 주문과 대여 가능 여부에 직접 영향을 줍니다. 대여
                     불가인 경우 고객에게 보일 사유를 반드시 입력하세요.
                   </p>
@@ -738,8 +743,10 @@ export default function AdminRacketForm({
                   <FormField label="일반 사용자에게 상품 노출">
                     <div className="flex min-h-10 items-center justify-between rounded-md border border-border bg-background px-3 py-2">
                       <div className="space-y-1">
-                        <p className="text-sm font-medium">{form.isVisible ? "노출" : "숨김"}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className={adminTypography.bodyStrong}>
+                          {form.isVisible ? "노출" : "숨김"}
+                        </p>
+                        <p className={adminTypography.caption}>
                           숨김이어도 관리자는 사용자 화면에서 미리보기와 결제 테스트를 할 수
                           있습니다.
                         </p>
@@ -939,9 +946,11 @@ export default function AdminRacketForm({
               description="이미지 업로드/대표 설정"
               icon={<ImageIcon className="h-4 w-4" />}
             >
-              <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
-                <p className="text-sm font-semibold text-foreground">이미지 등록 안내</p>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              <div
+                className={cn("mb-4 border-primary/20 bg-primary/5 p-4", adminSurface.cardMuted)}
+              >
+                <p className={adminTypography.bodyStrong}>이미지 등록 안내</p>
+                <p className={cn("mt-1", adminTypography.caption)}>
                   대표 이미지는 목록과 상세 페이지에서 가장 먼저 보입니다. 최소 1장 이상 등록한 뒤
                   저장하세요.
                 </p>
@@ -955,11 +964,11 @@ export default function AdminRacketForm({
               />
             </FormSection>
           )}
-          <div className="mt-4 rounded-xl border border-border/60 bg-card p-4 shadow-sm">
+          <div className={cn("mt-4 p-4", adminSurface.card)}>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-base font-semibold text-foreground">저장 전 체크리스트</p>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className={adminTypography.panelTitle}>저장 전 체크리스트</p>
+                <p className={cn("mt-1", adminTypography.metaMuted)}>
                   아래 항목을 확인한 뒤 라켓 정보를 저장하세요.
                 </p>
               </div>
@@ -980,23 +989,23 @@ export default function AdminRacketForm({
                   )}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium text-foreground">{item.label}</p>
+                    <p className={adminTypography.bodyStrong}>{item.label}</p>
                     <Badge variant={item.done ? "success" : "outline"} className="shrink-0">
                       {item.done ? "완료" : "확인필요"}
                     </Badge>
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">{item.description}</p>
+                  <p className={cn("mt-1", adminTypography.caption)}>{item.description}</p>
                 </div>
               ))}
             </div>
           </div>
         </div>
         <div className="hidden lg:block">
-          <aside className="sticky top-20 rounded-2xl border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm">
+          <aside className={cn("sticky top-20 p-4 backdrop-blur-sm", adminSurface.card)}>
             <div className="mb-3 flex items-center justify-between gap-2">
               <div>
-                <p className="text-xs font-medium text-muted-foreground">라켓 미리보기</p>
-                <h4 className="mt-0.5 text-sm font-semibold text-foreground">입력 요약</h4>
+                <p className={adminTypography.caption}>라켓 미리보기</p>
+                <h4 className={cn("mt-0.5", adminTypography.panelTitle)}>입력 요약</h4>
               </div>
 
               <Badge variant={readyToSubmit ? "success" : "outline"} className="text-xs">
@@ -1005,7 +1014,7 @@ export default function AdminRacketForm({
             </div>
 
             <div className="space-y-3">
-              <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
+              <div className={cn("p-3", adminSurface.cardMuted)}>
                 <p className="line-clamp-2 text-base font-bold tracking-tight text-foreground">
                   {form.model.trim() || "모델명 미입력"}
                 </p>
@@ -1041,14 +1050,14 @@ export default function AdminRacketForm({
                 </div>
               </div>
 
-              <div className="rounded-xl border border-border/60 bg-card p-3">
+              <div className={cn("p-3", adminSurface.card)}>
                 <p className="text-xs font-medium text-muted-foreground">판매가</p>
 
                 {form.marketing.isSale &&
                 form.marketing.salePrice > 0 &&
                 form.marketing.salePrice < form.price ? (
                   <div className="mt-1">
-                    <p className="text-xl font-bold text-primary">
+                    <p className={cn(adminTypography.kpiValueCompact, "text-primary")}>
                       {Number(form.marketing.salePrice).toLocaleString("ko-KR")}원
                     </p>
                     <p className="text-xs text-muted-foreground line-through">
@@ -1056,7 +1065,7 @@ export default function AdminRacketForm({
                     </p>
                   </div>
                 ) : (
-                  <p className="mt-1 text-xl font-bold text-foreground">
+                  <p className={cn("mt-1", adminTypography.kpiValueCompact)}>
                     {Number(form.price || 0).toLocaleString("ko-KR")}원
                   </p>
                 )}
@@ -1068,31 +1077,31 @@ export default function AdminRacketForm({
 
               <div className="grid grid-cols-3 gap-2">
                 <div className="rounded-lg border border-border/60 bg-muted/20 p-2 text-center">
-                  <p className="text-[11px] text-muted-foreground">재고</p>
-                  <p className="mt-0.5 text-base font-semibold text-foreground">
+                  <p className={adminTypography.caption}>재고</p>
+                  <p className={cn("mt-0.5", adminTypography.bodyStrong)}>
                     {Number(form.quantity || 0).toLocaleString("ko-KR")}
                   </p>
                 </div>
 
                 <div className="rounded-lg border border-border/60 bg-muted/20 p-2 text-center">
-                  <p className="text-[11px] text-muted-foreground">대여</p>
-                  <p className="mt-0.5 text-xs font-semibold text-foreground">
+                  <p className={adminTypography.caption}>대여</p>
+                  <p className={cn("mt-0.5", adminTypography.bodyStrong)}>
                     {form.rental.enabled ? "가능" : "불가"}
                   </p>
                 </div>
 
                 <div className="rounded-lg border border-border/60 bg-muted/20 p-2 text-center">
-                  <p className="text-[11px] text-muted-foreground">이미지</p>
-                  <p className="mt-0.5 text-base font-semibold text-foreground">
+                  <p className={adminTypography.caption}>이미지</p>
+                  <p className={cn("mt-0.5", adminTypography.bodyStrong)}>
                     {form.images.length}
                   </p>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-border/60 bg-card p-3">
-                <p className="text-xs font-semibold text-foreground">핵심 스펙</p>
+              <div className={cn("p-3", adminSurface.card)}>
+                <p className={adminTypography.bodyStrong}>핵심 스펙</p>
 
-                <div className="mt-2 grid gap-1.5 text-xs">
+                <div className={cn("mt-2 grid gap-1.5", adminTypography.caption)}>
                   <div className="flex justify-between gap-3">
                     <span className="text-muted-foreground">무게</span>
                     <span className="font-medium text-foreground">{form.spec.weight ?? "-"}g</span>
