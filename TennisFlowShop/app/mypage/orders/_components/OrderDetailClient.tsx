@@ -212,7 +212,6 @@ interface OrderDetail {
 interface Props {
   orderId: string;
   backUrl?: string;
-  linkedApplicationHrefBuilder?: (applicationId: string) => string;
 }
 
 type OrderTrackingResponse =
@@ -335,7 +334,6 @@ const getTimelineStepTone = (state: TimelineStepState) => {
 export default function OrderDetailClient({
   orderId,
   backUrl,
-  linkedApplicationHrefBuilder,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -589,10 +587,6 @@ export default function OrderDetailClient({
   const primaryStringingApp = hasLinkedStringingApps ? linkedStringingApps[0] : undefined;
   const isOrderCanceled = orderDetail.status === "취소";
   const isPrimaryStringingAppCanceled = primaryStringingApp?.status === "취소";
-  const getApplicationHref = (applicationId: string) => {
-    if (linkedApplicationHrefBuilder) return linkedApplicationHrefBuilder(applicationId);
-    return `/mypage?tab=orders&flowType=application&flowId=${applicationId}&from=orders${flowScopeQuery}`;
-  };
   const shouldShowInboundShippingBlock = Boolean(
     primaryStringingAppId &&
     primaryStringingApp?.needsInboundTracking === true &&
@@ -1048,8 +1042,7 @@ export default function OrderDetailClient({
                   <div>
                     <CardTitle>교체서비스 정보</CardTitle>
                     <CardDescription>
-                      이 주문과 연결된 교체서비스 진행 상태입니다. 보유 라켓 발송이 필요한 경우 이곳에서
-                      라켓 발송 운송장을 등록할 수 있습니다.
+                      이 주문과 연결된 교체서비스 진행 상태와 라켓 정보를 함께 확인할 수 있습니다.
                     </CardDescription>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -1137,16 +1130,11 @@ export default function OrderDetailClient({
                               </p>
                             </div>
                           </div>
-                          {appNeedsTracking && !appHasTracking ? (
-                            <Button asChild size="sm" className="w-full shrink-0 bp-sm:w-auto">
-                              <Link href={appShippingHref}>라켓 발송 운송장 등록</Link>
-                            </Button>
-                          ) : null}
                         </div>
 
                         <div className="mt-4 space-y-3">
                           <p className="text-ui-body-sm font-semibold text-foreground">라켓 정보</p>
-                          <div className="grid gap-3 bp-md:grid-cols-2">
+                          <div className="space-y-2">
                             {displayLines.map((line, lineIndex) => {
                               const racketLabel =
                                 line.racketLabel || line.racketType || "라켓명 미입력";
@@ -1243,16 +1231,16 @@ export default function OrderDetailClient({
                                   상태: {appHasTracking ? "등록 완료" : "미등록"}
                                 </p>
                               </div>
-                              <Button
-                                asChild
-                                size="sm"
-                                variant="outline"
-                                className="h-8 w-full bg-transparent bp-sm:w-auto"
-                              >
-                                <Link href={appShippingHref}>
-                                  {appHasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}
-                                </Link>
-                              </Button>
+                              {appHasTracking ? (
+                                <Button
+                                  asChild
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-8 w-full bg-transparent bp-sm:w-auto"
+                                >
+                                  <Link href={appShippingHref}>라켓 발송 운송장 수정</Link>
+                                </Button>
+                              ) : null}
                             </div>
                             <div className="mt-3 grid gap-2 bp-sm:grid-cols-2">
                               <p>
@@ -1281,14 +1269,6 @@ export default function OrderDetailClient({
                           </div>
                         ) : null}
 
-                        <div className="mt-3 text-right">
-                          <Link
-                            href={getApplicationHref(app.id)}
-                            className="text-ui-label text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-                          >
-                            교체서비스 신청 내용 보기
-                          </Link>
-                        </div>
                       </div>
                     );
                   })
@@ -1822,16 +1802,16 @@ export default function OrderDetailClient({
                           매장으로 보내는 라켓의 택배 등록 상태를 확인할 수 있어요.
                         </p>
                       </div>
-                      <Button
-                        asChild
-                        size="sm"
-                        variant="outline"
-                        className="h-8 w-full bp-sm:w-auto"
-                      >
-                        <Link href={inboundShippingHref ?? "#"}>
-                          {hasSelfShipTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}
-                        </Link>
-                      </Button>
+                      {hasSelfShipTracking ? (
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="outline"
+                          className="h-8 w-full bp-sm:w-auto"
+                        >
+                          <Link href={inboundShippingHref ?? "#"}>라켓 발송 운송장 수정</Link>
+                        </Button>
+                      ) : null}
                     </div>
 
                     <div className="mt-3 grid gap-2 text-ui-body-sm text-foreground bp-sm:grid-cols-2">

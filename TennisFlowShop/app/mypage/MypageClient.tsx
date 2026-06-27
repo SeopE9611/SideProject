@@ -121,14 +121,7 @@ export default function MypageClient({ user }: Props) {
     return `/mypage?${params.toString()}`;
   };
 
-  const buildFlowFromQuery = (from: string | null, scope: string | null) => {
-    if (from !== "orders") return "";
-    const params = new URLSearchParams();
-    params.set("from", from);
-    const resolvedScope = resolveOrdersScope(scope);
-    if (resolvedScope) params.set("scope", resolvedScope);
-    return `&${params.toString()}`;
-  };
+
 
   useEffect(() => {
     const nextParams = new URLSearchParams(searchParams.toString());
@@ -225,8 +218,6 @@ export default function MypageClient({ user }: Props) {
   const from = searchParams.get("from");
   const scope = searchParams.get("scope");
   const flowBackUrl = resolveFlowBackUrl(from, scope);
-  const flowFromQuery = buildFlowFromQuery(from, scope);
-  const ordersFlowFromQuery = buildFlowFromQuery("orders", scope);
   const isOrdersTab = currentTab === "orders";
   const hasOrderFlowDetail = Boolean((flowType === "order" && flowId) || orderId);
   const hasApplicationFlowDetail = Boolean(
@@ -480,25 +471,13 @@ export default function MypageClient({ user }: Props) {
                       />
                     ) : null}
                     {isOrdersTab && flowType === "order" && flowId ? (
-                      <OrderDetailClient
-                        orderId={flowId}
-                        backUrl={flowBackUrl}
-                        linkedApplicationHrefBuilder={(applicationId) =>
-                          `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${flowFromQuery}`
-                        }
-                      />
+                      <OrderDetailClient orderId={flowId} backUrl={flowBackUrl} />
                     ) : isOrdersTab && flowType === "application" && flowId ? (
                       <ApplicationDetail id={flowId} backUrl={flowBackUrl} />
                     ) : isOrdersTab && flowType === "rental" && flowId ? (
                       <RentalsDetailClient id={flowId} backUrl={flowBackUrl} />
                     ) : isOrdersTab && orderId ? (
-                      <OrderDetailClient
-                        orderId={orderId}
-                        backUrl={flowBackUrl}
-                        linkedApplicationHrefBuilder={(applicationId) =>
-                          `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(applicationId)}${ordersFlowFromQuery}`
-                        }
-                      />
+                      <OrderDetailClient orderId={orderId} backUrl={flowBackUrl} />
                     ) : isOrdersTab && selectedApplicationId ? (
                       <ApplicationDetail id={selectedApplicationId} backUrl={flowBackUrl} />
                     ) : isOrdersTab && selectedRentalId ? (
