@@ -1,5 +1,6 @@
 "use client";
 
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -51,14 +52,26 @@ export function PerformanceSlider({
   const percentage = ((value - min) / (max - min)) * 100;
 
   return (
-    <div className={cn("space-y-3", className)}>
-      <div className="flex items-center justify-between">
-        <Label htmlFor={id} className="text-sm font-medium">
-          {label}
-        </Label>
-        <div className="flex items-center gap-2">
-          <span className={cn("text-xs font-medium", level.color)}>{level.label}</span>
-          <span className="min-w-[3rem] rounded-md bg-primary/10 px-2 py-1 text-center text-sm font-bold text-primary">
+    <div
+      className={cn("space-y-3 rounded-xl border border-border/50 bg-background/60 p-4", className)}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0 space-y-1">
+          <Label htmlFor={id} className={adminTypography.bodyStrong}>
+            {label}
+          </Label>
+          <p className={adminTypography.caption}>1~100 점수로 성능 특성을 조정합니다.</p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className={cn(adminTypography.caption, "font-medium", level.color)}>
+            {level.label}
+          </span>
+          <span
+            className={cn(
+              "min-w-[3rem] rounded-lg bg-primary/10 px-2.5 py-1 text-center text-primary",
+              adminTypography.bodyStrong,
+            )}
+          >
             {value}
           </span>
         </div>
@@ -88,12 +101,12 @@ export function PerformanceSlider({
         />
       </div>
 
-      <div className="flex justify-between px-1">
-        <span className="text-[10px] text-muted-foreground">최저</span>
-        <span className="text-[10px] text-muted-foreground">낮음</span>
-        <span className="text-[10px] text-muted-foreground">보통</span>
-        <span className="text-[10px] text-muted-foreground">높음</span>
-        <span className="text-[10px] text-muted-foreground">최고</span>
+      <div className={cn("flex justify-between px-1", adminTypography.caption)}>
+        <span>최저</span>
+        <span>낮음</span>
+        <span>보통</span>
+        <span>높음</span>
+        <span>최고</span>
       </div>
     </div>
   );
@@ -122,12 +135,12 @@ export function PerformanceSummary({ features, className }: PerformanceSummaryPr
   const average = Math.round(items.reduce((sum, item) => sum + item.value, 0) / items.length);
 
   return (
-    <div className={cn("rounded-lg border border-border/60 bg-muted/20 p-4", className)}>
+    <div className={cn(adminSurface.cardMuted, "p-4", className)}>
       <div className="mb-4 flex items-center justify-between">
-        <h4 className="text-sm font-semibold text-foreground">성능 요약</h4>
+        <h4 className={adminTypography.panelTitle}>성능 요약</h4>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">평균</span>
-          <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
+          <span className={adminTypography.caption}>평균</span>
+          <span className="rounded-full bg-primary px-2 py-0.5 text-ui-label font-bold text-primary-foreground">
             {average}
           </span>
         </div>
@@ -138,14 +151,18 @@ export function PerformanceSummary({ features, className }: PerformanceSummaryPr
           const level = getPerformanceLevel(item.value);
           return (
             <div key={item.key} className="flex items-center gap-3">
-              <span className="w-16 text-xs text-muted-foreground">{item.label}</span>
+              <span className={cn("w-16", adminTypography.caption)}>{item.label}</span>
               <div className="relative h-2 flex-1 overflow-hidden rounded-full bg-muted">
                 <div
                   className={cn("h-full rounded-full transition-all duration-300", level.bgColor)}
                   style={{ width: `${item.value}%`, opacity: 0.7 }}
                 />
               </div>
-              <span className="w-8 text-right text-xs font-medium">{item.value}</span>
+              <span
+                className={cn("w-8 text-right", adminTypography.caption, "font-medium text-foreground")}
+              >
+                {item.value}
+              </span>
             </div>
           );
         })}

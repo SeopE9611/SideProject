@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, FileText, Palette, Activity, Package, ImageIcon } from "lucide-react";
+import { adminTypography } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
 
 export interface Step {
@@ -34,7 +35,7 @@ export function StepProgress({
 
   return (
     <nav aria-label="Progress" className="w-full">
-      <ol className="flex items-center justify-between">
+      <ol className="flex items-start justify-between gap-2 overflow-x-auto pb-1 sm:gap-0 sm:overflow-visible">
         {steps.map((step, index) => {
           const isCompleted = completedSteps.includes(step.id);
           const isCurrent = step.id === currentStep;
@@ -42,7 +43,7 @@ export function StepProgress({
           const isClickable = isCompleted || isPast || isCurrent;
 
           return (
-            <li key={step.id} className="relative flex-1">
+            <li key={step.id} className="relative min-w-[4.75rem] flex-1">
               <div className="flex flex-col items-center gap-2">
                 {/* Connector line */}
                 {index > 0 && (
@@ -70,9 +71,9 @@ export function StepProgress({
                   onClick={() => isClickable && onStepClick?.(step.id)}
                   disabled={!isClickable}
                   className={cn(
-                    "relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300",
+                    "relative z-10 flex h-8 w-8 items-center justify-center rounded-full border transition-all duration-300",
                     isCurrent &&
-                      "border-primary bg-primary text-primary-foreground scale-110 shadow-lg shadow-primary/25",
+                      "scale-105 border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/20",
                     isCompleted &&
                       !isCurrent &&
                       "border-primary bg-primary text-primary-foreground",
@@ -92,8 +93,9 @@ export function StepProgress({
                 {/* Step label */}
                 <span
                   className={cn(
-                    "text-xs font-medium transition-colors duration-300 text-center whitespace-nowrap",
-                    isCurrent && "text-primary font-semibold",
+                    adminTypography.actionLabel,
+                    "text-center transition-colors duration-300",
+                    isCurrent && "text-primary",
                     isCompleted && !isCurrent && "text-primary",
                     !isCurrent && !isCompleted && "text-muted-foreground",
                   )}
