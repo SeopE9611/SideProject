@@ -1528,6 +1528,12 @@ export default function TransactionFlowList() {
                   }
 
                   if (isApplicationActionContext && applicationActionTarget?.id) {
+                    const applicationShippingReturnHref = applicationActionTarget.orderId
+                      ? `/mypage?tab=orders&flowType=order&flowId=${applicationActionTarget.orderId}&${flowQuery}&focus=stringing`
+                      : applicationActionTarget.rentalId
+                        ? `/mypage?tab=orders&flowType=rental&flowId=${applicationActionTarget.rentalId}&${flowQuery}&focus=stringing`
+                        : `/mypage?tab=orders&flowType=application&flowId=${applicationActionTarget.id}&${flowQuery}`;
+
                     if (
                       !isRentalLinkedApplicationAction &&
                       isApplicationTrackingNeeded(applicationActionTarget)
@@ -1545,7 +1551,7 @@ export default function TransactionFlowList() {
                             className={applicationActionTarget.hasTracking ? "bg-transparent" : undefined}
                           >
                             <Link
-                              href={`/services/applications/${applicationActionTarget.id}/shipping?return=${encodeURIComponent(`/mypage?tab=orders&${flowQuery}`)}`}
+                              href={`/services/applications/${applicationActionTarget.id}/shipping?return=${encodeURIComponent(applicationShippingReturnHref)}`}
                             >
                               {applicationActionTarget.hasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}
                             </Link>
@@ -1648,7 +1654,7 @@ export default function TransactionFlowList() {
                                 : `/mypage?tab=orders&flowType=application&flowId=${actionableApplicationId}&${flowQuery}`
                             }
                           >
-                            교체서비스 상세
+                            교체서비스 상태
                             <ArrowRight className="ml-1 h-3.5 w-3.5" />
                           </Link>
                         </Button>
