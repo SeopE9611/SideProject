@@ -1752,8 +1752,10 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                           icon={<Palette className="h-5 w-5" />}
                         >
                           <div className="space-y-6">
-                            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-                              <p className="text-sm font-semibold text-foreground">
+                            <div
+                              className={cn(adminSurface.cardMuted, "border-primary/20 bg-primary/5 p-4")}
+                            >
+                              <p className={adminTypography.bodyStrong}>
                                 구매 옵션 수정 순서
                               </p>
                               <p className={cn("mt-1", adminTypography.caption)}>
@@ -1777,8 +1779,8 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
                             {/* Color Selection */}
                             <div className="space-y-3">
-                              <Label className="text-base font-semibold">색상 옵션</Label>
-                              <p className="text-sm text-muted-foreground">
+                              <Label className={adminTypography.panelTitle}>색상 옵션</Label>
+                              <p className={adminTypography.metaMuted}>
                                 사용 가능한 색상을 선택하고 색상별 게이지 조합 재고를 설정하세요.
                               </p>
                               <div className="flex flex-wrap gap-2">
@@ -1824,11 +1826,13 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                               </div>
 
                               {/* Custom Color Input */}
-                              <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
-                                <Label className="mb-3 block font-medium">색상 직접 추가</Label>
+                              <div className={cn(adminSurface.cardMuted, "p-4")}>
+                                <Label className={cn("mb-3 block", adminTypography.bodyStrong)}>
+                                  색상 직접 추가
+                                </Label>
                                 <div className="flex flex-col gap-3 md:flex-row md:items-end">
                                   <div className="flex-1">
-                                    <Label className="mb-1.5 block text-xs text-muted-foreground">
+                                    <Label className={cn("mb-1.5 block", adminTypography.caption)}>
                                       색상명
                                     </Label>
                                     <Input
@@ -1839,7 +1843,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                     />
                                   </div>
                                   <div>
-                                    <Label className="mb-1.5 block text-xs text-muted-foreground">
+                                    <Label className={cn("mb-1.5 block", adminTypography.caption)}>
                                       색상 미리보기
                                     </Label>
                                     <Input
@@ -1864,9 +1868,11 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                               </div>
 
                               {colorInventories.length === 0 && (
-                                <div className="rounded-lg border border-dashed border-border/60 bg-muted/10 p-6 text-center">
+                                <div
+                                  className={cn(adminSurface.cardMuted, "border-dashed p-6 text-center")}
+                                >
                                   <Palette className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
-                                  <p className="text-sm text-muted-foreground">
+                                  <p className={adminTypography.metaMuted}>
                                     선택된 색상이 없습니다. 위 색상 목록에서 사용할 색상을
                                     선택하세요.
                                   </p>
@@ -1881,9 +1887,9 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                   return (
                                     <div
                                       key={row.value}
-                                      className="rounded-xl border border-border/60 bg-card p-5 shadow-sm"
+                                      className="rounded-xl border border-border/60 bg-card p-4 shadow-sm md:p-5"
                                     >
-                                      <div className="mb-4 flex items-center justify-between">
+                                      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                         <div className="flex items-center gap-3">
                                           <span
                                             className="h-5 w-5 rounded-full border border-border/60 shadow-sm"
@@ -1895,7 +1901,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                                 : undefined
                                             }
                                           />
-                                          <span className="font-semibold text-foreground">
+                                          <span className={adminTypography.panelTitle}>
                                             {colorMeta?.name ?? row.label ?? row.value}
                                           </span>
                                           <Badge variant="secondary" className="text-xs">
@@ -1923,7 +1929,12 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                       </div>
 
                                       {/* Color Image */}
-                                      <div className="mb-4 flex items-center gap-4">
+                                      <div
+                                        className={cn(
+                                          adminSurface.cardMuted,
+                                          "mb-4 flex flex-col gap-4 p-4 sm:flex-row sm:items-center",
+                                        )}
+                                      >
                                         <div className="shrink-0">
                                           {row.image ? (
                                             <img
@@ -1938,8 +1949,12 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                           )}
                                         </div>
                                         <div className="flex-1">
-                                          <Label className="mb-1 block text-sm">색상 이미지</Label>
-                                          <p className="mb-2 text-xs text-muted-foreground">
+                                          <Label
+                                              className={cn("mb-1 block", adminTypography.bodyStrong)}
+                                            >
+                                            색상 이미지
+                                          </Label>
+                                          <p className={cn("mb-2", adminTypography.caption)}>
                                             색상 이미지를 등록하면 상품 상세에서 해당 색상 선택 시
                                             이미지가 전환됩니다.
                                           </p>
@@ -2005,7 +2020,9 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                       <div className="space-y-3">
                                         <div className="flex flex-col gap-2 md:flex-row">
                                           <div className="flex-1">
-                                            <Label className="mb-1 block text-sm">
+                                            <Label
+                                              className={cn("mb-1 block", adminTypography.bodyStrong)}
+                                            >
                                               게이지 추가
                                             </Label>
                                             <Input
@@ -2025,6 +2042,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                               type="button"
                                               onClick={() => addVariantForColor(row)}
                                               className="h-10"
+                                              variant="outline"
                                             >
                                               <Plus className="mr-1 h-4 w-4" />
                                               추가
@@ -2036,9 +2054,13 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                         {variantInventories.filter(
                                           (variant) => variant.colorValue === row.value,
                                         ).length === 0 ? (
-                                          <p className="text-sm text-muted-foreground">
-                                            아직 추가된 게이지가 없습니다.
-                                          </p>
+                                          <div
+                                            className={cn(adminSurface.cardMuted, "border-dashed p-4")}
+                                          >
+                                            <p className={adminTypography.metaMuted}>
+                                              아직 추가된 게이지가 없습니다.
+                                            </p>
+                                          </div>
                                         ) : (
                                           <div className="space-y-2">
                                             {variantInventories
@@ -2046,7 +2068,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                               .map((variantRow) => (
                                                 <div
                                                   key={`${row.value}-${variantRow.gaugeValue}`}
-                                                  className="flex flex-col gap-3 rounded-lg border border-border/40 bg-muted/10 p-3 md:flex-row md:items-center"
+                                                  className="flex flex-col gap-3 rounded-lg border border-border/50 bg-muted/10 p-3 md:flex-row md:items-center"
                                                 >
                                                   <Badge
                                                     variant="outline"
@@ -2056,7 +2078,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                                   </Badge>
                                                   <div className="flex flex-1 flex-wrap items-center gap-3">
                                                     <div className="flex items-center gap-2">
-                                                      <Label className="text-xs text-muted-foreground">
+                                                      <Label className={adminTypography.caption}>
                                                         재고
                                                       </Label>
                                                       <Input
@@ -2072,11 +2094,16 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                                           )
                                                         }
                                                       />
-                                                      <span className="text-xs text-muted-foreground">
+                                                      <span className={adminTypography.caption}>
                                                         개
                                                       </span>
                                                     </div>
-                                                    <label className="flex items-center gap-1.5 text-sm">
+                                                    <label
+                                                      className={cn(
+                                                      "flex items-center gap-1.5",
+                                                      adminTypography.body,
+                                                    )}
+                                                    >
                                                       <Checkbox
                                                         checked={variantRow.isSoldOut ?? true}
                                                         onCheckedChange={(checked) =>
@@ -2089,7 +2116,12 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                                                       />
                                                       품절
                                                     </label>
-                                                    <label className="flex items-center gap-1.5 text-sm">
+                                                    <label
+                                                      className={cn(
+                                                      "flex items-center gap-1.5",
+                                                      adminTypography.body,
+                                                    )}
+                                                    >
                                                       <Checkbox
                                                         checked={
                                                           variantRow.showWhenSoldOut !== false
@@ -2133,19 +2165,22 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                             {/* Gauge Summary */}
                             {gaugeSummaryRows.length > 0 && (
                               <div className="space-y-3">
-                                <Label className="text-base font-semibold">
+                                <Label className={adminTypography.panelTitle}>
                                   전체 사용 게이지 요약
                                 </Label>
-                                <p className="text-sm text-muted-foreground">
+                                <p className={adminTypography.metaMuted}>
                                   실제 추가/삭제는 각 색상 카드 안에서 관리됩니다.
                                 </p>
                                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                   {gaugeSummaryRows.map((gaugeRow) => (
                                     <div
                                       key={gaugeRow.value}
-                                      className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 p-3"
+                                      className={cn(
+                                          adminSurface.cardMuted,
+                                          "flex items-center justify-between p-3",
+                                        )}
                                     >
-                                      <span className="font-medium">
+                                      <span className={adminTypography.bodyStrong}>
                                         {gaugeRow.label ?? gaugeRow.value}
                                       </span>
                                       <Badge variant="secondary">
