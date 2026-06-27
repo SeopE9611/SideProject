@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import AdminPageSection from "@/components/admin/AdminPageSection";
+import { AdminSectionHeader } from "@/components/admin/AdminPageSection";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 import { Input } from "@/components/ui/input";
@@ -330,7 +330,7 @@ function StatCard({
         </p>
         {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
       </div>
-      <p className="mt-2 text-xl font-bold text-foreground">{value}</p>
+      <p className={`mt-2 ${adminTypography.kpiValueCompact}`}>{value}</p>
     </div>
   );
 }
@@ -1190,7 +1190,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
             <AlertCircle className="h-8 w-8 text-destructive" />
           </div>
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 className={adminTypography.sectionTitle}>
             오프라인 고객 상세를 불러오지 못했습니다
           </h2>
           <p className={`mt-2 ${adminTypography.metaMuted}`}>
@@ -1214,45 +1214,44 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <AdminPageSection
-        title="오프라인 고객 상세"
-        description="고객 기본 정보와 오프라인 작업/매출 이력을 확인합니다."
-        icon={User}
-        contentClassName="hidden"
-        actions={
-          <>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/admin/offline">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                오프라인 관리
-              </Link>
-            </Button>
+      <section className={`${adminSurface.card} p-5 sm:p-6`}>
+        <AdminSectionHeader
+          title="오프라인 고객 상세"
+          description="고객 기본 정보와 오프라인 작업/매출 이력을 확인합니다."
+          icon={User}
+          actions={
+            <>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/admin/offline">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  오프라인 관리
+                </Link>
+              </Button>
 
-            <Button asChild variant="ghost" size="sm">
-              <a href="#offline-records">
-                <History className="mr-2 h-4 w-4" />
-                최근 기록
-              </a>
-            </Button>
+              <Button asChild variant="ghost" size="sm">
+                <a href="#offline-records">
+                  <History className="mr-2 h-4 w-4" />
+                  최근 기록
+                </a>
+              </Button>
 
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              disabled={isDeletingCustomer}
-              onClick={deleteOfflineCustomer}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              {isDeletingCustomer ? "삭제 중..." : "고객 삭제"}
-            </Button>
-          </>
-        }
-      >
-        <span />
-      </AdminPageSection>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                disabled={isDeletingCustomer}
+                onClick={deleteOfflineCustomer}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {isDeletingCustomer ? "삭제 중..." : "고객 삭제"}
+              </Button>
+            </>
+          }
+        />
+      </section>
 
       {deleteMessage && (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div className={`rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 ${adminTypography.body} text-destructive`}>
           {deleteMessage}
         </div>
       )}
@@ -1266,7 +1265,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
             </div>
             <div className="min-w-0">
               <h2
-                className="line-clamp-2 break-keep text-xl font-bold leading-tight text-foreground"
+                className={`line-clamp-2 break-keep ${adminTypography.kpiValueCompact}`}
                 title={item.name || "이름 없음"}
               >
                 {item.name || "이름 없음"}
@@ -1342,7 +1341,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                         {item.phoneMasked || "-"}
                       </span>
                       {item.phone && (
-                        <p className="mt-1 whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+                        <p className={`mt-1 whitespace-nowrap tabular-nums ${adminTypography.caption}`}>
                           원번호: {item.phone}
                         </p>
                       )}
@@ -1369,7 +1368,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
 
               {/* Memo */}
               <div className="rounded-lg border border-border/40 bg-muted/20 p-4">
-                <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <div className={`flex items-center gap-2 font-medium uppercase tracking-wider ${adminTypography.caption}`}>
                   <FileText className="h-3.5 w-3.5" />
                   메모
                 </div>
@@ -1415,22 +1414,22 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                         <User className="h-5 w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground">
+                        <p className={adminTypography.bodyStrong}>
                           {item.linkedUser?.name || "회원 정보 없음"}
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className={adminTypography.metaMuted}>
                           {item.linkedUser?.email || "-"}
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className={adminTypography.metaMuted}>
                           {item.linkedUser?.phoneMasked || item.linkedUser?.phone || "-"}
                         </p>
-                        <p className="mt-2 text-xs text-muted-foreground truncate">
+                        <p className={`mt-2 truncate ${adminTypography.caption}`}>
                           ID: {item.linkedUserId}
                         </p>
                       </div>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className={adminTypography.caption}>
                     이 연결은 향후 포인트/패키지 연동 기준으로 사용됩니다.
                   </p>
                   <Button
@@ -1447,7 +1446,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-muted-foreground">
+                  <p className={adminTypography.metaMuted}>
                     포인트/패키지 연동은 온라인 회원 연결 후 사용할 수 있습니다.
                   </p>
 
@@ -1536,13 +1535,13 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                   {/* Search Results */}
                   {candidateMessage && <Message type="error">{candidateMessage}</Message>}
                   {submittedCandidateQuery && candidatesLoading && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className={`flex items-center gap-2 ${adminTypography.metaMuted}`}>
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                       회원 검색 중...
                     </div>
                   )}
                   {submittedCandidateQuery && !candidatesLoading && candidates.length === 0 && (
-                    <p className="text-sm text-muted-foreground">검색 결과가 없습니다.</p>
+                    <p className={adminTypography.metaMuted}>검색 결과가 없습니다.</p>
                   )}
                   {submittedCandidateQuery && !candidatesLoading && candidates.length > 0 && (
                     <div className="space-y-2">
@@ -1558,28 +1557,28 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0 flex-1">
-                                <p className="font-medium text-foreground">
+                                <p className={adminTypography.bodyStrong}>
                                   {candidate.name || "이름 없음"}
                                 </p>
-                                <p className="text-sm text-muted-foreground truncate">
+                                <p className={`truncate ${adminTypography.metaMuted}`}>
                                   {candidate.email || "이메일 없음"}
                                 </p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className={adminTypography.metaMuted}>
                                   {candidate.phoneMasked || "휴대폰 없음"}
                                 </p>
                                 <div className="mt-2 flex flex-wrap gap-1.5">
                                   {candidate.match.name && (
-                                    <Badge variant="secondary" className="text-xs">
+                                    <Badge variant="secondary" className={adminTypography.caption}>
                                       이름 일치
                                     </Badge>
                                   )}
                                   {candidate.match.phone && (
-                                    <Badge variant="secondary" className="text-xs">
+                                    <Badge variant="secondary" className={adminTypography.caption}>
                                       휴대폰 일치
                                     </Badge>
                                   )}
                                   {candidate.match.email && (
-                                    <Badge variant="secondary" className="text-xs">
+                                    <Badge variant="secondary" className={adminTypography.caption}>
                                       이메일 일치
                                     </Badge>
                                   )}
@@ -1611,7 +1610,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                               </Button>
                             </div>
                             {isLinkedToOther && (
-                              <p className="mt-2 text-xs text-destructive">
+                              <p className={`mt-2 ${adminTypography.caption} text-destructive`}>
                                 이미 다른 오프라인 고객과 연결된 회원입니다.
                               </p>
                             )}
@@ -1679,8 +1678,8 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               action={
                 canUseLinkedFeatures && pointBalance !== null ? (
                   <div className="rounded-lg bg-primary/10 px-4 py-2 text-right">
-                    <p className="text-xs text-muted-foreground">현재 잔액</p>
-                    <p className="text-lg font-bold text-primary">{formatPoints(pointBalance)}</p>
+                    <p className={adminTypography.caption}>현재 잔액</p>
+                    <p className={`${adminTypography.kpiValueCompact} text-primary`}>{formatPoints(pointBalance)}</p>
                   </div>
                 ) : null
               }
@@ -1688,21 +1687,21 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
             <div className="p-6">
               {canUseLinkedFeatures ? (
                 <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground">
+                  <p className={adminTypography.metaMuted}>
                     오프라인 작업 기록에서 포인트 적립/사용을 처리할 수 있습니다.
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className={adminTypography.caption}>
                     포인트 사용 시 실제 결제금액은 별도로 수정하세요. 취소된 포인트 처리는 같은
                     기록에서 다시 처리할 수 없습니다.
                   </p>
                 </div>
               ) : (
                 <div className="rounded-lg border border-border/40 bg-muted/20 p-4">
-                  <p className="text-sm text-muted-foreground">
+                  <p className={adminTypography.metaMuted}>
                     온라인 회원과 연결된 고객만 포인트 조회/사용/적립이 가능합니다.
                   </p>
                   {item.linkedUserId && !item.linkedUser && (
-                    <p className="mt-2 text-xs text-destructive">
+                    <p className={`mt-2 ${adminTypography.caption} text-destructive`}>
                       연결된 온라인 회원 정보를 찾을 수 없어 포인트를 처리할 수 없습니다.
                     </p>
                   )}
@@ -1728,12 +1727,12 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
             <div className="p-6">
               {!canUseLinkedFeatures ? (
                 <div className="rounded-lg border border-border/40 bg-muted/20 p-4">
-                  <p className="text-sm text-muted-foreground">
+                  <p className={adminTypography.metaMuted}>
                     온라인 회원과 연결된 고객만 보유 패키지 조회 및 사용 처리가 가능합니다.
                   </p>
                 </div>
               ) : passes.length === 0 ? (
-                <p className="text-sm text-muted-foreground">보유 패키지/서비스권이 없습니다.</p>
+                <p className={adminTypography.metaMuted}>보유 패키지/서비스권이 없습니다.</p>
               ) : (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {passes.map((pass) => {
@@ -1744,7 +1743,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                         className={`rounded-lg border p-4 transition-colors ${usable ? "border-primary/30 bg-primary/5 hover:bg-primary/10" : "border-border/40 bg-muted/20 text-muted-foreground"}`}
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <p className="font-medium text-foreground">{getPassLabel(pass)}</p>
+                          <p className={adminTypography.bodyStrong}>{getPassLabel(pass)}</p>
                           <Badge
                             variant={usable ? "secondary" : "outline"}
                             className={usable ? "bg-success/10 text-success" : ""}
@@ -1752,7 +1751,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                             {usable ? "사용 가능" : pass.status || "비활성"}
                           </Badge>
                         </div>
-                        <div className="mt-3 space-y-1 text-sm">
+                        <div className={`mt-3 space-y-1 ${adminTypography.body}`}>
                           <p>
                             잔여{" "}
                             <span className="font-semibold text-foreground">
@@ -1781,7 +1780,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
             <div className="p-6">
               {!canUseLinkedFeatures ? (
                 <div className="rounded-lg border border-border/40 bg-muted/20 p-4">
-                  <p className="text-sm text-muted-foreground">
+                  <p className={adminTypography.metaMuted}>
                     온라인 회원과 연결된 고객만 패키지 판매/발급이 가능합니다.
                   </p>
                 </div>
@@ -1885,7 +1884,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                   <FormField label="메모" htmlFor="offline-package-memo">
                     <textarea
                       id="offline-package-memo"
-                      className="min-h-20 w-full rounded-lg border border-border/60 bg-background px-3 py-2.5 text-sm text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+                      className={`min-h-20 w-full rounded-lg border border-border/60 bg-background px-3 py-2.5 ${adminTypography.body} transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50`}
                       value={packageSellForm.memo}
                       onChange={(e) => updatePackageSellForm({ memo: e.target.value })}
                       disabled={isSellingPackage}
@@ -1898,7 +1897,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                       <Gift className="mr-2 h-4 w-4" />
                       {isSellingPackage ? "패키지 판매/발급 중..." : "패키지 판매/발급"}
                     </Button>
-                    <p className="text-xs text-muted-foreground">
+                    <p className={adminTypography.caption}>
                       판매는 service_pass 발급만 처리하며, 특정 오프라인 기록에 자동 사용 처리하지
                       않습니다.
                     </p>
@@ -1915,20 +1914,20 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                 icon={ShoppingBag}
                 badge={
                   packageSales.length > 0 ? (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className={adminTypography.caption}>
                       {packageSales.length}건
                     </Badge>
                   ) : null
                 }
               >
                 {packageSales.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
+                  <p className={adminTypography.metaMuted}>
                     표시할 패키지 판매/주문 내역이 없습니다.
                   </p>
                 ) : (
                   <div className="overflow-x-auto rounded-lg border border-border/40">
-                    <table className="min-w-[980px] text-left text-sm">
-                      <thead className="bg-muted/50 text-xs text-muted-foreground">
+                    <table className={`min-w-[980px] text-left ${adminTypography.body}`}>
+                      <thead className={`bg-muted/50 ${adminTypography.caption}`}>
                         <tr>
                           <th className="whitespace-nowrap px-4 py-3 font-medium">패키지</th>
                           <th className="whitespace-nowrap px-4 py-3 font-medium">횟수</th>
@@ -1969,7 +1968,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                               <td className="whitespace-nowrap px-4 py-3 tabular-nums">
                                 <div>{formatCurrency(sale.price)}</div>
                                 {sale.isRefunded && (
-                                  <div className="mt-1 text-xs text-destructive">
+                                  <div className={`mt-1 ${adminTypography.caption} text-destructive`}>
                                     환불 {formatCurrency(sale.refundAmount ?? sale.price)}
                                   </div>
                                 )}
@@ -1995,7 +1994,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                               <td className="whitespace-nowrap px-4 py-3 tabular-nums">
                                 <div>{formatDate(sale.paidAt || sale.createdAt)}</div>
                                 {sale.refundedAt && (
-                                  <div className="mt-1 text-xs text-muted-foreground">
+                                  <div className={`mt-1 ${adminTypography.caption}`}>
                                     환불일 {formatDate(sale.refundedAt)}
                                   </div>
                                 )}
@@ -2011,9 +2010,9 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                               </td>
                               <td className="px-4 py-3">
                                 {!isOfflineSale ? (
-                                  <span className="text-xs text-muted-foreground">-</span>
+                                  <span className={adminTypography.caption}>-</span>
                                 ) : sale.isRefunded ? (
-                                  <div className="space-y-1 text-xs text-muted-foreground">
+                                  <div className={`space-y-1 ${adminTypography.caption}`}>
                                     <div className="font-medium text-destructive">환불 완료</div>
                                     {sale.refundReason && <div>사유: {sale.refundReason}</div>}
                                   </div>
@@ -2037,12 +2036,12 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                     >
                                       {isRefunding ? "환불 처리 중..." : "수동 환불 처리"}
                                     </Button>
-                                    <p className="text-xs text-muted-foreground">
+                                    <p className={adminTypography.caption}>
                                       이 처리는 사이트 내부 기록용입니다. 실제 현금/카드/계좌이체
                                       환불은 매장에서 별도로 완료해야 합니다.
                                     </p>
                                     {sale.refundBlockedReason && (
-                                      <p className="text-xs text-destructive">
+                                      <p className={`${adminTypography.caption} text-destructive`}>
                                         {sale.refundBlockedReason}
                                       </p>
                                     )}
@@ -2079,7 +2078,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
           {records.length === 0 ? (
             <div className="rounded-lg border border-dashed border-border/60 bg-muted/20 p-8 text-center">
               <History className="mx-auto h-10 w-10 text-muted-foreground/50" />
-              <p className="mt-3 text-sm text-muted-foreground">
+              <p className={`mt-3 ${adminTypography.metaMuted}`}>
                 아직 등록된 오프라인 작업/매출 이력이 없습니다.
               </p>
             </div>
@@ -2147,7 +2146,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                             </Badge>
                             <StatusBadge status={record.status} labels={RECORD_STATUS_LABELS} />
                           </div>
-                          <p className="mt-1 line-clamp-2 break-keep text-sm text-muted-foreground">
+                          <p className={`mt-1 line-clamp-2 break-keep ${adminTypography.metaMuted}`}>
                             {record.lineSummary || formatLineSummary(record.lines)}
                           </p>
                         </div>
@@ -2176,8 +2175,8 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                           {/* Basic Info */}
                           <div className="space-y-3">
-                            <h4 className="text-sm font-medium text-foreground">기본 정보</h4>
-                            <div className="space-y-2 text-sm">
+                            <h4 className={adminTypography.panelTitle}>기본 정보</h4>
+                            <div className={`space-y-2 ${adminTypography.body}`}>
                               <div className="flex justify-between">
                                 <span className="shrink-0 whitespace-nowrap text-muted-foreground">
                                   결제 수단
@@ -2202,7 +2201,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                             </div>
                             {Array.isArray(record.lines) && record.lines.some(hasLineDetail) ? (
                               <div className="rounded-lg border border-border/40 bg-muted/20 p-3">
-                                <p className="mb-2 text-xs font-semibold text-muted-foreground">
+                                <p className={`mb-2 font-semibold ${adminTypography.caption}`}>
                                   라켓별 작업
                                 </p>
 
@@ -2213,7 +2212,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                       className="rounded-lg border border-border/40 bg-background/70 p-3"
                                     >
                                       <div className="mb-2 flex items-center justify-between gap-2">
-                                        <p className="text-sm font-semibold text-foreground">
+                                        <p className={adminTypography.bodyStrong}>
                                           라켓 {index + 1}
                                         </p>
 
@@ -2227,7 +2226,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                         ) : null}
                                       </div>
 
-                                      <div className="space-y-1.5 text-xs text-muted-foreground">
+                                      <div className={`space-y-1.5 ${adminTypography.caption}`}>
                                         <div className="flex justify-between gap-3">
                                           <span className="shrink-0">라켓명</span>
                                           <span className="line-clamp-2 break-keep text-right text-foreground">
@@ -2270,7 +2269,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
 
                           {/* Points Section */}
                           <div className="space-y-3">
-                            <h4 className="text-sm font-medium text-foreground">포인트</h4>
+                            <h4 className={adminTypography.panelTitle}>포인트</h4>
                             <div className="flex shrink-0 flex-wrap gap-2">
                               <Badge
                                 variant={hasGrant ? "secondary" : "outline"}
@@ -2286,17 +2285,17 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                               </Badge>
                             </div>
                             {!canProcessPoints ? (
-                              <p className="text-xs text-muted-foreground">
+                              <p className={adminTypography.caption}>
                                 {pointUnavailableMessage}
                               </p>
                             ) : (
                               <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
                                 <div className="space-y-2 rounded-lg border border-border/40 bg-muted/20 p-3">
-                                  <p className="text-xs font-medium text-muted-foreground">
+                                  <p className={`font-medium ${adminTypography.caption}`}>
                                     적립 포인트
                                   </p>
                                   {hasGrant ? (
-                                    <div className="space-y-2 text-xs text-muted-foreground">
+                                    <div className={`space-y-2 ${adminTypography.caption}`}>
                                       <Badge
                                         className={
                                           isGrantReverted
@@ -2334,7 +2333,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                               })
                                             }
                                             placeholder="적립 취소 사유 입력"
-                                            className="h-8 text-sm"
+                                            className={`h-8 ${adminTypography.body}`}
                                           />
                                           <Button
                                             type="button"
@@ -2367,7 +2366,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                         }
                                         placeholder="예: 1000"
                                         disabled={!canProcessPoints}
-                                        className="h-8 text-sm"
+                                        className={`h-8 ${adminTypography.body}`}
                                       />
                                       <Input
                                         value={form.grantReason}
@@ -2378,7 +2377,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                         }
                                         placeholder="사유(선택)"
                                         disabled={!canProcessPoints}
-                                        className="h-8 text-sm"
+                                        className={`h-8 ${adminTypography.body}`}
                                       />
                                       <Button
                                         type="button"
@@ -2398,11 +2397,11 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                   )}
                                 </div>
                                 <div className="space-y-2 rounded-lg border border-border/40 bg-muted/20 p-3">
-                                  <p className="text-xs font-medium text-muted-foreground">
+                                  <p className={`font-medium ${adminTypography.caption}`}>
                                     사용 포인트
                                   </p>
                                   {hasDeduct ? (
-                                    <div className="space-y-2 text-xs text-muted-foreground">
+                                    <div className={`space-y-2 ${adminTypography.caption}`}>
                                       <Badge
                                         className={
                                           isDeductReverted
@@ -2440,7 +2439,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                               })
                                             }
                                             placeholder="사용 취소 사유 입력"
-                                            className="h-8 text-sm"
+                                            className={`h-8 ${adminTypography.body}`}
                                           />
                                           <Button
                                             type="button"
@@ -2473,7 +2472,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                         }
                                         placeholder="예: 1000"
                                         disabled={!canProcessPoints}
-                                        className="h-8 text-sm"
+                                        className={`h-8 ${adminTypography.body}`}
                                       />
                                       <Input
                                         value={form.useReason}
@@ -2484,7 +2483,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                         }
                                         placeholder="사유(선택)"
                                         disabled={!canProcessPoints}
-                                        className="h-8 text-sm"
+                                        className={`h-8 ${adminTypography.body}`}
                                       />
                                       <Button
                                         type="button"
@@ -2513,26 +2512,26 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
 
                           {/* Package Section */}
                           <div className="space-y-3">
-                            <h4 className="text-sm font-medium text-foreground">패키지</h4>
+                            <h4 className={adminTypography.panelTitle}>패키지</h4>
                             {isPackageUsageReverted ? (
                               <div className="rounded-lg border border-warning/30 bg-warning/5 p-3 text-foreground">
                                 <Badge className="border-warning/30 bg-warning/10 text-warning">
                                   <History className="mr-1.5 h-3.5 w-3.5" />
                                   패키지 사용 취소됨
                                 </Badge>
-                                <p className="mt-2 text-xs">
+                                <p className={`mt-2 ${adminTypography.caption}`}>
                                   {getPassLabel(usedPass)} {Number(packageUsage?.usedCount ?? 1)}회
                                   사용 취소
                                 </p>
-                                <p className="mt-1 text-xs text-muted-foreground">
+                                <p className={`mt-1 ${adminTypography.caption}`}>
                                   취소일: {formatDate(packageUsage?.revertedAt)}
                                 </p>
                                 {packageUsage?.revertReason && (
-                                  <p className="mt-1 text-xs text-muted-foreground">
+                                  <p className={`mt-1 ${adminTypography.caption}`}>
                                     사유: {packageUsage.revertReason}
                                   </p>
                                 )}
-                                <p className="mt-2 text-xs text-muted-foreground">
+                                <p className={`mt-2 ${adminTypography.caption}`}>
                                   이 record는 취소 이력 보존을 위해 다시 패키지를 사용할 수
                                   없습니다. 새 record를 등록해 주세요.
                                 </p>
@@ -2544,24 +2543,24 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                     <Check className="mr-1.5 h-3.5 w-3.5" />
                                     패키지 1회 사용 완료
                                   </Badge>
-                                  <p className="mt-2 text-xs text-muted-foreground">
+                                  <p className={`mt-2 ${adminTypography.caption}`}>
                                     {getPassLabel(usedPass)} {Number(packageUsage?.usedCount ?? 1)}
                                     회 사용
                                   </p>
                                   {packageUsage?.consumptionId && (
-                                    <p className="mt-1 text-xs text-muted-foreground">
+                                    <p className={`mt-1 ${adminTypography.caption}`}>
                                       consumptionId: {packageUsage.consumptionId}
                                     </p>
                                   )}
                                   {!packageUsage?.consumptionId && (
-                                    <p className="mt-1 text-xs text-destructive">
+                                    <p className={`mt-1 ${adminTypography.caption} text-destructive`}>
                                       패키지 사용 상태를 복구해야 합니다.
                                     </p>
                                   )}
                                 </div>
                                 {packageUsage?.consumptionId && (
                                   <div className="space-y-2 rounded-lg border border-border/40 bg-background/70 p-3">
-                                    <p className="text-xs text-muted-foreground">
+                                    <p className={adminTypography.caption}>
                                       잘못 차감한 경우에만 사용 취소하세요. 패키지 잔여 횟수가
                                       복구됩니다.
                                     </p>
@@ -2574,7 +2573,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                       }
                                       placeholder="사용 취소 사유를 입력해주세요."
                                       disabled={processingPackageRecordId === record.id}
-                                      className="h-8 text-sm"
+                                      className={`h-8 ${adminTypography.body}`}
                                     />
                                     <Button
                                       type="button"
@@ -2600,14 +2599,14 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                               </Badge>
                             )}
                             {!canUseLinkedFeatures && !hasPackageUsage && (
-                              <p className="text-xs text-muted-foreground">
+                              <p className={adminTypography.caption}>
                                 온라인 회원과 연결된 고객만 패키지를 사용할 수 있습니다.
                               </p>
                             )}
                             {canUseLinkedFeatures &&
                               usablePasses.length === 0 &&
                               !hasPackageUsage && (
-                                <p className="text-xs text-muted-foreground">
+                                <p className={adminTypography.caption}>
                                   사용 가능한 패키지가 없습니다.
                                 </p>
                               )}
@@ -2615,7 +2614,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                               canUseLinkedFeatures &&
                               usablePasses.length > 0 && (
                                 <div className="space-y-2 rounded-lg border border-border/40 bg-muted/20 p-3">
-                                  <p className="text-xs font-medium text-muted-foreground">
+                                  <p className={`font-medium ${adminTypography.caption}`}>
                                     사용할 패키지
                                   </p>
                                   <Select
@@ -2634,7 +2633,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                       label: `${getPassLabel(pass)} · 잔여 ${Number(pass.remainingCount ?? 0)}회`,
                                     }))}
                                   />
-                                  <p className="text-xs text-muted-foreground">
+                                  <p className={adminTypography.caption}>
                                     이 기록에 패키지 1회를 사용 처리합니다.
                                   </p>
                                   <Button
