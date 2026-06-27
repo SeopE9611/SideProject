@@ -2324,7 +2324,7 @@ export default function StringingApplicationDetailClient({
                 </div>
 
                 <CardContent className="px-4 pb-4 bp-lg:px-6 bp-lg:pb-6">
-                  <div className={cn("space-y-6", !isAdmin && "space-y-5")}>
+                  <div className={cn("space-y-6", !isAdmin && "space-y-5 bp-lg:space-y-6")}>
                     <section className="flex flex-col gap-2 border-b border-dashed border-border pb-4 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                       <div className="flex items-center gap-2 text-foreground">
                         <Calendar className="w-5 h-5" />
@@ -2449,13 +2449,13 @@ export default function StringingApplicationDetailClient({
 
                     {/* 섹션 2: 라켓·스트링별 작업 정보 */}
                     {Array.isArray(data.lines) && data.lines.length > 0 && (
-                      <section className="space-y-2.5">
+                      <section className="space-y-3">
                         <div className="flex items-center gap-2 text-foreground">
                           <Target className="w-5 h-5" />
                           <span className="font-medium">라켓·스트링별 작업 정보</span>
                         </div>
-                        <div className="space-y-2.5 rounded-xl border border-border/70 bg-muted/40 p-3">
-                          <div className="grid grid-cols-1 gap-2 text-ui-label text-foreground/75 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+                        <div className="space-y-3 rounded-xl border border-border/70 bg-muted/40 p-4">
+                          <div className="grid grid-cols-1 gap-2.5 text-ui-label leading-relaxed text-foreground/75 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
                             <p>라켓 {lineSummary.racketCount}자루</p>
                             <p>스트링 {lineSummary.stringTypeCount}종</p>
                             <p>텐션 입력 {lineSummary.tensionFilledCount}자루</p>
@@ -2479,7 +2479,7 @@ export default function StringingApplicationDetailClient({
                             {data.lines.map((line, index) => (
                               <div
                                 key={line.id ?? index}
-                                className="min-w-0 rounded-xl bg-card/70 px-3 py-2.5 ring-1 ring-ring dark:bg-background/40 dark:ring-ring bp-sm:px-4 bp-sm:py-3"
+                                className="min-w-0 rounded-xl bg-card/70 px-3 py-3 ring-1 ring-ring dark:bg-background/40 dark:ring-ring bp-sm:px-4 bp-sm:py-3.5"
                               >
                                 {/* 라켓 이름 + 순번 */}
                                 <div className="mb-2 flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
@@ -2500,7 +2500,7 @@ export default function StringingApplicationDetailClient({
 
                                 {/* 스트링 이름 */}
                                 {line.stringName && (
-                                  <p className="min-w-0 break-words text-ui-label text-foreground">
+                                  <p className="min-w-0 break-words text-ui-label leading-relaxed text-foreground">
                                     스트링: <span className="font-medium">{line.stringName}</span>
                                   </p>
                                 )}
@@ -2675,8 +2675,8 @@ export default function StringingApplicationDetailClient({
                       확인하세요.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="grid gap-4 p-4 bp-sm:p-6 bp-xl:grid-cols-2">
-                    <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-4">
+                  <CardContent className="grid gap-5 p-4 bp-sm:p-6 bp-xl:grid-cols-2">
+                    <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-4 leading-relaxed">
                       <p className="text-ui-body-sm font-semibold text-foreground">라켓 발송</p>
                       <p className="mt-1 text-ui-label text-foreground/75">
                         {inboundRequired
@@ -2732,7 +2732,7 @@ export default function StringingApplicationDetailClient({
                       )}
                     </div>
 
-                    <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-4">
+                    <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-4 leading-relaxed">
                       <p className="text-ui-body-sm font-semibold text-foreground">
                         완성 라켓 배송
                       </p>
@@ -2960,7 +2960,7 @@ export default function StringingApplicationDetailClient({
               )}
               </div>
 
-              <aside className={cn(detailColumnClass, !isAdmin && "bp-lg:order-2")}>
+              <aside className={cn(detailColumnClass, !isAdmin && "bp-lg:order-2 bp-lg:sticky bp-lg:top-24")}>
               {/* 결제 정보 */}
               <Card
                 id="admin-stringing-payment"
