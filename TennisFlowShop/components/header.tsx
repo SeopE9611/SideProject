@@ -633,7 +633,7 @@ const Header = () => {
                               className="h-9"
                               onSelect={() => {
                                 setOpen(false);
-                                router.push("/admin/dashboard");
+                                window.open("/admin/operations", "_blank", "noopener,noreferrer");
                               }}
                             >
                               관리자 페이지

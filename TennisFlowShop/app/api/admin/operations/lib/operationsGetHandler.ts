@@ -440,6 +440,67 @@ function dedupeSignals(signals: OperationSignal[]): OperationSignal[] {
   return out;
 }
 
+
+function normalizeStatusText(value?: string | null) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
+function isCancelApproved(item: OpItem) {
+  return item.cancel?.status === "approved";
+}
+
+function isOrderTerminalStatus(status?: string | null) {
+  const s = normalizeStatusText(status);
+  return (
+    s.includes("취소") ||
+    s.includes("환불") ||
+    s.includes("결제취소") ||
+    s.includes("구매확정") ||
+    s === "canceled" ||
+    s === "cancelled" ||
+    s === "refunded" ||
+    s === "confirmed"
+  );
+}
+
+function isApplicationTerminalStatus(status?: string | null) {
+  const s = normalizeStatusText(status);
+  return (
+    s.includes("취소") ||
+    s.includes("교체완료") ||
+    s === "canceled" ||
+    s === "cancelled" ||
+    s === "done" ||
+    s === "completed"
+  );
+}
+
+function isRentalTerminalStatus(item: OpItem) {
+  const s = normalizeStatusText(item.statusLabel);
+  if (s.includes("취소") || s === "canceled" || s === "cancelled") return true;
+  if (!(s.includes("반납완료") || s === "returned")) return false;
+  return !item.nextAction?.includes("보증금") && !item.pendingReasons?.some((reason) => reason.includes("보증금"));
+}
+
+function isPackageTerminalStatus(item: OpItem) {
+  const status = normalizeStatusText(item.statusLabel);
+  const payment = normalizeStatusText(item.paymentLabel);
+  return payment.includes("결제완료") || payment === "paid" || status.includes("활성") || status.includes("완료");
+}
+
+function isTerminalOperationItem(item: OpItem) {
+  if (isCancelApproved(item)) return true;
+  if (item.kind === "order") return isOrderTerminalStatus(item.statusLabel);
+  if (item.kind === "stringing_application") return isApplicationTerminalStatus(item.statusLabel);
+  if (item.kind === "rental") return isRentalTerminalStatus(item);
+  if (item.kind === "package_purchase") return isPackageTerminalStatus(item);
+  return false;
+}
+
+function isTerminalOperationGroup(group: AdminOperationsGroup) {
+  return group.items.length > 0 && group.items.every(isTerminalOperationItem);
+}
+
 function buildItemSignals(item: OpItem): OperationSignal[] {
   const out: OperationSignal[] = [];
   for (const reason of item.warnReasons ?? []) {
@@ -1916,11 +1977,15 @@ export async function handleAdminOperationsGet(req: Request) {
 
   // structured signals 생성(기존 warn/pending/review 이유 배열은 호환 목적 유지)
   merged = merged.map((item) => {
-    const signals = buildItemSignals(item);
+    const isTerminal = isTerminalOperationItem(item);
+    const signals = isTerminal ? [] : buildItemSignals(item);
     return {
       ...item,
       signals,
       primarySignal: pickPrimarySignal(signals),
+      nextAction: isTerminal ? "후속 조치 없음" : item.nextAction,
+      reviewLevel: isTerminal ? "none" : item.reviewLevel,
+      needsReview: isTerminal ? false : item.needsReview,
     };
   });
 
@@ -1947,16 +2012,20 @@ export async function handleAdminOperationsGet(req: Request) {
     group.items.some((item) => item.cancel?.status === "requested");
 
   const groupsWithQueue = groups.map((group) => {
-    const groupReviewLevel = computeGroupReviewLevel(group);
+    const isTerminalGroup = isTerminalOperationGroup(group);
+    const groupReviewLevel = isTerminalGroup ? "none" : computeGroupReviewLevel(group);
     const groupNeedsReview =
-      groupReviewLevel === "action" || group.linkedFlowStatusIssue?.severity === "warning";
-    const queueBucket: AdminOperationsGroup["groupQueueBucket"] = isGroupWarn(group)
-      ? "urgent"
-      : groupNeedsReview || hasCancelRequested(group) || hasPaymentRisk(group)
-        ? "caution"
-        : isGroupPending(group) || hasPaymentPending(group) || hasRoutineNextAction(group)
-          ? "pending"
-          : "clean";
+      !isTerminalGroup &&
+      (groupReviewLevel === "action" || group.linkedFlowStatusIssue?.severity === "warning");
+    const queueBucket: AdminOperationsGroup["groupQueueBucket"] = isTerminalGroup
+      ? "clean"
+      : isGroupWarn(group)
+        ? "urgent"
+        : groupNeedsReview || hasCancelRequested(group) || hasPaymentRisk(group)
+          ? "caution"
+          : isGroupPending(group) || hasPaymentPending(group) || hasRoutineNextAction(group)
+            ? "pending"
+            : "clean";
     return {
       ...group,
       groupReviewLevel,
@@ -1964,7 +2033,7 @@ export async function handleAdminOperationsGet(req: Request) {
       groupQueueBucket: queueBucket,
     };
   });
-  const allGroups = groupsWithQueue;
+  const allGroups = q ? groupsWithQueue : groupsWithQueue.filter((group) => !isTerminalOperationGroup(group));
 
   const isCautionQueueGroup = (group: AdminOperationsGroup) => group.groupQueueBucket === "caution";
   const isPendingQueueGroup = (group: AdminOperationsGroup) => group.groupQueueBucket === "pending";

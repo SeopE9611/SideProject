@@ -890,11 +890,12 @@ export default function AdminRentalsClient() {
           </details>
         </CardHeader>
         <CardContent className="relative overflow-x-auto scrollbar-hidden pr-2">
-          <Table className="min-w-[1040px] table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs">
+          <Table className="min-w-[1120px] table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
                 <TableHead className={cn(thClasses, "w-[140px]")}>대여 ID</TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>고객</TableHead>
+                <TableHead className={cn(thClasses, "text-left")}>고객명</TableHead>
+                <TableHead className={cn(thClasses, "text-left")}>이메일</TableHead>
                 <TableHead className={cn(thClasses, "text-center")}>라켓</TableHead>
                 <TableHead
                   onClick={() => handleSort("date")}
@@ -940,7 +941,7 @@ export default function AdminRentalsClient() {
               {isLoading ? (
                 Array.from({ length: pageSize }).map((_, rowIdx) => (
                   <TableRow key={rowIdx}>
-                    {Array.from({ length: 9 }).map((_, cellIdx) => (
+                    {Array.from({ length: 10 }).map((_, cellIdx) => (
                       <TableCell key={cellIdx}>
                         <Skeleton className="h-4 w-full" />
                       </TableCell>
@@ -949,13 +950,13 @@ export default function AdminRentalsClient() {
                 ))
               ) : hasDataError ? (
                 <TableRow>
-                  <TableCell colSpan={9} className={tdClasses}>
+                  <TableCell colSpan={10} className={tdClasses}>
                     데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
                   </TableCell>
                 </TableRow>
               ) : shouldShowActualEmpty ? (
                 <TableRow>
-                  <TableCell colSpan={9} className={tdClasses}>
+                  <TableCell colSpan={10} className={tdClasses}>
                     <div className="flex flex-col items-center gap-2">
                       <Search className="h-8 w-8 text-muted-foreground/50" />
                       <p className="text-sm text-muted-foreground">
@@ -966,7 +967,7 @@ export default function AdminRentalsClient() {
                 </TableRow>
               ) : shouldShowSearchEmpty ? (
                 <TableRow>
-                  <TableCell colSpan={9} className={tdClasses}>
+                  <TableCell colSpan={10} className={tdClasses}>
                     적용한 검색어와 필터에 맞는 대여가 없습니다. 조건을 조정하거나 필터를 초기화해
                     주세요.
                   </TableCell>
@@ -1152,20 +1153,14 @@ export default function AdminRentalsClient() {
                       </TableCell>
 
                       <TableCell className={tdClasses}>
-                        <div className="mx-auto flex max-w-[180px] min-w-0 flex-col items-center">
-                          <span
-                            className="line-clamp-2 break-keep text-center"
-                            title={r.customer?.name || "-"}
-                          >
-                            {r.customer?.name || "-"}
-                          </span>
-                          <span
-                            className="block max-w-full truncate text-sm text-foreground/75"
-                            title={r.customer?.email || "-"}
-                          >
-                            {r.customer?.email || "-"}
-                          </span>
-                        </div>
+                        <span className="line-clamp-2 break-keep text-left" title={r.customer?.name || "-"}>
+                          {r.customer?.name || "-"}
+                        </span>
+                      </TableCell>
+                      <TableCell className={tdClasses}>
+                        <span className="block max-w-full truncate text-left text-sm text-foreground/75" title={r.customer?.email || "-"}>
+                          {r.customer?.email || "-"}
+                        </span>
                       </TableCell>
                       <TableCell className={tdClasses}>
                         {rid ? (
