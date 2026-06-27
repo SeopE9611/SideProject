@@ -28,11 +28,11 @@ export const adminTypography = {
 
 export const adminSurface = {
   card: "rounded-2xl border border-border/70 bg-card shadow-sm",
-  cardMuted: "rounded-2xl border border-border/70 bg-muted/30 shadow-sm",
+  cardMuted: "rounded-2xl border border-border/60 bg-muted/20 shadow-none",
   filterCard: "rounded-2xl border border-border/70 bg-card p-4 shadow-sm sm:p-5",
   tableCard: "overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm",
   tableHeader: "bg-muted/40",
-  nextAction: "rounded-2xl border border-primary/25 bg-primary/5 shadow-sm",
+  nextAction: "rounded-2xl border border-primary/20 bg-primary/[0.03] shadow-none",
   statusGrid: "grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4",
   stickyToolbar:
     "rounded-2xl border border-border/70 bg-card/95 shadow-sm supports-[backdrop-filter]:bg-card/95",

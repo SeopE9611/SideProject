@@ -43,8 +43,8 @@ export default function AdminStatusCard({
   return (
     <article
       className={cn(
-        "rounded-xl border shadow-sm",
-        isCompact ? "min-h-20 p-3" : "min-h-28 p-4",
+        "rounded-xl border shadow-none",
+        isCompact ? "min-h-16 p-3" : "min-h-24 p-4",
         toneClass[tone],
         className,
       )}

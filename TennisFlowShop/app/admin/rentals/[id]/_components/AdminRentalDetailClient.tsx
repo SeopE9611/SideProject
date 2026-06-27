@@ -893,7 +893,7 @@ export default function AdminRentalDetailClient() {
                 <div>
                   <CardTitle className={adminTypography.panelTitle}>다음 작업</CardTitle>
                   <CardDescription className={cn("mt-1", adminTypography.meta)}>
-                    지금 관리자가 먼저 해야 할 일만 요약합니다.
+                    먼저 처리할 액션만 확인합니다.
                   </CardDescription>
                 </div>
                 <Badge variant="outline" className="w-fit">
@@ -908,16 +908,16 @@ export default function AdminRentalDetailClient() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="rounded-xl border border-border/60 bg-background/70 p-4">
+              <div className="rounded-xl border border-border/40 bg-transparent p-3">
                 <p className={adminTypography.panelTitle}>{nextActionGuide.title}</p>
                 <p className={cn("mt-1 leading-relaxed", adminTypography.body)}>
                   {nextActionGuide.description}
                 </p>
               </div>
-              <div className="rounded-lg border border-primary/20 bg-background/80 p-3">
+              <div className="rounded-lg border border-primary/15 bg-primary/[0.03] p-3">
                 <p className={adminTypography.panelTitle}>주요 액션</p>
                 <p className={cn("mt-1", adminTypography.meta)}>
-                  실제 처리로 이어지는 액션만 우선 노출합니다.
+                  처리 액션만 우선 노출합니다.
                 </p>
                 <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                   {canConfirmPayment ? (
@@ -982,7 +982,7 @@ export default function AdminRentalDetailClient() {
                   ) : null}
                 </div>
               </div>
-              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+              <div className="rounded-lg border border-border/40 bg-transparent p-3">
                 <p className={adminTypography.panelTitle}>보조 확인 링크</p>
                 <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                   {recommendedActions.slice(0, 3).map((action) => (
@@ -998,7 +998,7 @@ export default function AdminRentalDetailClient() {
                   ))}
                 </div>
               </div>
-              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+              <div className="rounded-lg border border-border/40 bg-transparent p-3">
                 <p className={adminTypography.panelTitle}>최근 처리 이력</p>
                 {hasLatestProcessingSummary ? (
                   <div
@@ -1036,7 +1036,7 @@ export default function AdminRentalDetailClient() {
                   <p className={cn("mt-2", adminTypography.meta)}>최근 처리 이력 없음</p>
                 )}
               </div>
-              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+              <div className="rounded-lg border border-border/40 bg-transparent p-3">
                 <p className={adminTypography.panelTitle}>재고 운영 정보</p>
                 <div className={cn("mt-2 space-y-1.5 leading-relaxed", adminTypography.meta)}>
                   <p>
@@ -1066,7 +1066,7 @@ export default function AdminRentalDetailClient() {
                   ) : null}
                 </div>
               </div>
-              <div className="rounded-lg border border-border/60 bg-background/70 p-3">
+              <div className="rounded-lg border border-border/40 bg-transparent p-3">
                 <p className={adminTypography.panelTitle}>처리 참고 순서</p>
                 <ul
                   className={cn(
@@ -1129,7 +1129,7 @@ export default function AdminRentalDetailClient() {
           )}
 
           {hasStringingSummary && !linkedApplication && (
-            <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30">
+            <Card className="border border-border/60 shadow-none bg-muted/20">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">스트링/교체서비스 요약</CardTitle>
                 <CardDescription>
@@ -1228,12 +1228,12 @@ export default function AdminRentalDetailClient() {
               id="admin-rental-linked-docs"
               className={cn(adminSurface.card, "overflow-hidden")}
             >
-              <CardHeader className="border-b border-border/60 bg-card pb-3">
+              <CardHeader className="border-b border-border/50 bg-muted/10 pb-3">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <CardTitle className="text-base">대여에 포함된 교체 작업</CardTitle>
                     <CardDescription className="mt-1 max-w-3xl leading-relaxed">
-                      대여 결제에 포함된 교체 작업의 핵심 정보만 확인합니다.
+                      대여에 포함된 교체 작업 상태만 확인합니다.
                     </CardDescription>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -1310,31 +1310,31 @@ export default function AdminRentalDetailClient() {
                 </details>
 
                 {data.status === "pending" ? (
-                  <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">
+                  <p className="rounded-md border border-warning/25 bg-warning/[0.04] px-3 py-2 text-sm text-foreground">
                     결제 확인 후 대여에 포함된 교체 작업 상태를 변경하세요.
                   </p>
                 ) : data.status === "paid" && linkedApplicationStatus === "검토 중" ? (
-                  <p className="rounded-md border border-info/40 bg-info/10 px-3 py-2 text-sm text-foreground">
+                  <p className="rounded-md border border-info/25 bg-info/[0.04] px-3 py-2 text-sm text-foreground">
                     결제가 확인되었습니다. 대여에 포함된 교체 작업 접수가 필요합니다.
                   </p>
                 ) : data.status === "paid" && linkedApplicationStatus === "작업 중" ? (
-                  <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">
+                  <p className="rounded-md border border-warning/25 bg-warning/[0.04] px-3 py-2 text-sm text-foreground">
                     현재 교체 작업 중입니다. 교체완료 후 대여 라켓 인도 또는 대여 시작을 진행하세요.
                   </p>
                 ) : data.status === "paid" && linkedApplicationStatus === "교체완료" ? (
-                  <p className="rounded-md border border-info/40 bg-info/10 px-3 py-2 text-sm text-foreground">
+                  <p className="rounded-md border border-info/25 bg-info/[0.04] px-3 py-2 text-sm text-foreground">
                     장착 작업이 완료되었습니다. 인도 정보 등록 또는 대여 시작 단계를 진행할 수
                     있습니다.
                   </p>
                 ) : ["out", "returned"].includes(data.status) &&
                   linkedApplicationStatus !== "교체완료" ? (
-                  <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-foreground">
+                  <p className="rounded-md border border-warning/25 bg-warning/[0.04] px-3 py-2 text-sm text-foreground">
                     상태 순서 확인 필요: 교체 작업이 완료되지 않았는데 대여가 인도 또는 반납 단계로
                     진행되었습니다. 교체 작업 상태와 처리 이력을 확인하세요.
                   </p>
                 ) : null}
 
-                <div className="flex flex-col gap-3 rounded-lg border border-border/70 p-3 sm:flex-row sm:items-end sm:justify-between">
+                <div className="flex flex-col gap-3 rounded-lg border border-border/40 bg-transparent p-3 sm:flex-row sm:items-end sm:justify-between">
                   <div className="space-y-2">
                     <p className={adminTypography.panelTitle}>교체 작업 진행 단계</p>
                     <div className="flex flex-wrap items-center gap-2">
@@ -1399,7 +1399,7 @@ export default function AdminRentalDetailClient() {
           )}
 
           <Card id="admin-rental-return" className={cn(adminSurface.card, "overflow-hidden")}>
-            <CardHeader className="bg-muted/30 border-b pb-3">
+            <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
               <CardTitle>대여 상태 관리</CardTitle>
               <CardDescription>
                 처리 전 결제 상태, 라켓 반납 상태, 보증금 환불 정보를 확인하세요. 모든 상태 변경은
@@ -1520,8 +1520,8 @@ export default function AdminRentalDetailClient() {
               eventMeta={pendingDialogConfig.eventMeta}
             />
           )}
-          <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
-            <CardHeader className="bg-muted/30 border-b pb-3">
+          <Card className="border border-border/60 shadow-none bg-muted/20 overflow-hidden">
+            <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
               <CardTitle>고객 정보</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3 p-6 text-sm md:grid-cols-2 xl:grid-cols-3">
@@ -1540,8 +1540,8 @@ export default function AdminRentalDetailClient() {
             </CardContent>
           </Card>
           <div className="grid gap-6 md:grid-cols-2">
-            <Card className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden">
-              <CardHeader className="bg-muted/30 border-b pb-3">
+            <Card className="border border-border/60 shadow-none bg-muted/20 overflow-hidden">
+              <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
                 <CardTitle className="flex items-center space-x-2">
                   <Package className="h-5 w-5 text-destructive" />
                   <span>라켓 정보</span>
@@ -1581,9 +1581,9 @@ export default function AdminRentalDetailClient() {
 
             <Card
               id="admin-rental-payment"
-              className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden"
+              className="border border-border/60 shadow-none bg-muted/20 overflow-hidden"
             >
-              <CardHeader className="bg-muted/30 border-b pb-3">
+              <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
                 <CardTitle className="flex items-center space-x-2">
                   <CreditCard className="h-5 w-5 text-primary" />
                   <span>결제 정보</span>
@@ -1786,9 +1786,9 @@ export default function AdminRentalDetailClient() {
 
           <Card
             id="admin-rental-shipping"
-            className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden"
+            className="border border-border/60 shadow-none bg-muted/20 overflow-hidden"
           >
-            <CardHeader className="bg-muted/30 border-b pb-3">
+            <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
               <CardTitle className="flex items-center gap-2">
                 <Truck className="h-5 w-5" />
                 {isVisitPickup ? "방문 수령 정보" : "배송 정보"}
@@ -1915,9 +1915,9 @@ export default function AdminRentalDetailClient() {
 
           <Card
             id="admin-rental-deposit"
-            className="border-0 shadow-xl ring-1 ring-ring bg-muted/30 overflow-hidden"
+            className="border border-border/60 shadow-none bg-muted/20 overflow-hidden"
           >
-            <CardHeader className="bg-muted/30 border-b pb-3">
+            <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5 text-primary" />
                 <span>대여 타임라인</span>
