@@ -3,6 +3,7 @@
 /** Responsibility: 상품 수정 화면 표현 + 상호작용 오케스트레이션 뷰. */
 
 import { brands, colors, gauges, materials } from "@/app/admin/products/_lib/productFormOptions";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -1199,17 +1200,15 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                 {PRODUCT_EDIT_WORKFLOW_GUIDES.map(({ icon: Icon, title, description }) => (
                   <div
                     key={title}
-                    className="rounded-xl border border-border/60 bg-card/70 p-4 shadow-sm"
+                    className={cn(adminSurface.cardMuted, "p-4")}
                   >
                     <div className="flex items-center gap-2">
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                         <Icon className="h-4 w-4" />
                       </div>
-                      <p className="text-sm font-semibold text-foreground">{title}</p>
+                      <p className={adminTypography.bodyStrong}>{title}</p>
                     </div>
-                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                      {description}
-                    </p>
+                    <p className={cn("mt-2", adminTypography.caption)}>{description}</p>
                   </div>
                 ))}
               </div>
@@ -1220,7 +1219,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
             ) : (
               <>
                 {/* Step Progress */}
-                <div className="rounded-xl border border-border/60 bg-card/60 p-6 shadow-sm backdrop-blur-sm">
+                <div className={cn(adminSurface.cardMuted, "p-6 backdrop-blur-sm")}>
                   <StepProgress
                     steps={STEPS}
                     currentStep={currentStep.id}
@@ -1230,13 +1229,11 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                 </div>
                 {/* 현재 수정 상태 요약 */}
                 <div className="grid gap-3 lg:grid-cols-[1.2fr_1fr]">
-                  <div className="rounded-xl border border-border/60 bg-card/70 p-4 shadow-sm">
+                  <div className={cn(adminSurface.cardMuted, "p-4")}>
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          현재 단계: {currentStep.label}
-                        </p>
-                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        <p className={adminTypography.bodyStrong}>현재 단계: {currentStep.label}</p>
+                        <p className={cn("mt-1", adminTypography.caption)}>
                           수정한 내용은 단계 이동 중에도 유지됩니다. 최종 저장 전 옵션/재고/이미지를
                           함께 확인하세요.
                         </p>
@@ -1247,9 +1244,9 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-border/60 bg-muted/20 p-4 shadow-sm">
-                    <p className="text-sm font-semibold text-foreground">현재 입력 요약</p>
-                    <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                  <div className={cn(adminSurface.cardMuted, "p-4")}>
+                    <p className={adminTypography.bodyStrong}>현재 입력 요약</p>
+                    <div className={cn("mt-2 grid gap-1", adminTypography.caption)}>
                       <p>색상 옵션: {colorInventories.length}개</p>
                       <p>게이지 조합: {variantInventories.length}개</p>
                       <p>총 재고: {totalGaugeStock.toLocaleString("ko-KR")}개</p>
@@ -1759,7 +1756,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                               <p className="text-sm font-semibold text-foreground">
                                 구매 옵션 수정 순서
                               </p>
-                              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                              <p className={cn("mt-1", adminTypography.caption)}>
                                 먼저 색상 옵션을 확인하고, 각 색상 카드 안에서 판매할 게이지와
                                 재고를 수정하세요. 품절이 아닌 조합은 재고가 1개 이상이어야 저장할
                                 수 있습니다.
@@ -2343,7 +2340,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                               <p className="text-sm font-semibold text-foreground">
                                 재고 수량은 구매 옵션에서 자동 합산됩니다
                               </p>
-                              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                              <p className={cn("mt-1", adminTypography.caption)}>
                                 색상·게이지 조합별 재고가 전체 재고로 합산됩니다. 이 단계에서는 재고
                                 부족 기준, 추천/신상품/할인 노출 여부를 확인하세요.
                               </p>
@@ -2665,10 +2662,8 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                         <div className="rounded-xl border border-border/60 bg-card p-5 shadow-sm">
                           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                              <p className="text-base font-semibold text-foreground">
-                                수정 저장 전 체크리스트
-                              </p>
-                              <p className="mt-1 text-sm text-muted-foreground">
+                              <p className={adminTypography.panelTitle}>수정 저장 전 체크리스트</p>
+                              <p className={cn("mt-1", adminTypography.metaMuted)}>
                                 아래 항목이 모두 완료되어야 상품 수정이 안전하게 저장됩니다.
                               </p>
                             </div>

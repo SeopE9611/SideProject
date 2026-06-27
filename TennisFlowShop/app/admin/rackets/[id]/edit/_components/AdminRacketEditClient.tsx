@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import AdminRacketForm, { type RacketForm } from "@/app/admin/rackets/_components/AdminRacketForm";
 import { ArrowLeft, Edit, Trash2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,6 +26,7 @@ import { UNSAVED_CHANGES_MESSAGE } from "@/lib/hooks/useUnsavedChangesGuard";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { showErrorToast } from "@/lib/toast";
+import { cn } from "@/lib/utils";
 
 type AdminRacketDetail = RacketForm & {
   id: string;
@@ -136,9 +138,14 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
     <div className="min-h-screen bg-background">
       <div className="container py-8 px-6">
         <div className="space-y-6">
-          <div className="rounded-2xl p-8 border border-border bg-card shadow-lg">
+          <div className={cn(adminSurface.card, "p-6 sm:p-8")}>
             {isLoading ? (
-              <div className="mb-4 rounded-lg border border-border bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
+              <div
+                className={cn(
+                  "mb-4 rounded-lg border border-border bg-muted/30 px-4 py-2",
+                  adminTypography.caption,
+                )}
+              >
                 최신 정보를 확인하고 있습니다...
               </div>
             ) : null}
@@ -149,21 +156,16 @@ export default function AdminRacketEditClient({ id }: { id: string }) {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-3xl font-bold tracking-normal">라켓 수정</h2>
+                    <h2 className={adminTypography.pageTitle}>라켓 수정</h2>
                     <StockChip id={data.id} total={data.quantity ?? 1} />
                   </div>
-                  <p className="text-muted-foreground">
+                  <p className={adminTypography.metaMuted}>
                     {racketBrandLabel(data.brand)} {data.model}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  type="button"
-                  asChild
-                  className="bg-muted/40 hover:bg-muted border-border"
-                >
+                <Button variant="outline" type="button" asChild className="border-border">
                   <Link href="/admin/rackets" data-no-unsaved-guard onClick={confirmLeave}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     목록으로
