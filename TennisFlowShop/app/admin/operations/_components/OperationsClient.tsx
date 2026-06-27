@@ -1249,6 +1249,7 @@ export default function OperationsClient() {
                 setWarnFilter("warn");
                 setOnlyWarn(false);
                 setPage(1);
+                scrollToOperationsList();
               }}
             />
             <AdminSummaryCard
@@ -1262,6 +1263,7 @@ export default function OperationsClient() {
                 setOnlyWarn(false);
                 setWarnFilter("caution");
                 setPage(1);
+                scrollToOperationsList();
               }}
             />
             <AdminSummaryCard
@@ -1275,6 +1277,7 @@ export default function OperationsClient() {
                 setOnlyWarn(false);
                 setWarnFilter("pending");
                 setPage(1);
+                scrollToOperationsList();
               }}
             />
             <AdminSummaryCard

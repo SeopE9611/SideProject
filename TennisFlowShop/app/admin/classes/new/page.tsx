@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function AdminNewClassPage() {
-  redirect("/admin/dashboard");
+  redirect("/admin/academy/classes/new");
 }
