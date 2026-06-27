@@ -427,7 +427,9 @@ export default function StringingApplicationDetailClient({
 
   // 교체 확정 전용 로딩 상태
   const [isConfirmSubmitting, setIsConfirmSubmitting] = useState(false);
-  const [isLineDetailsExpanded, setIsLineDetailsExpanded] = useState(true);
+  const [isLineDetailsExpanded, setIsLineDetailsExpanded] = useState(isAdmin);
+  const [isTimelineExpanded, setIsTimelineExpanded] = useState(false);
+  const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [isSyncingNice, setIsSyncingNice] = useState(false);
 
   // 1) 버튼에서 모달 여는 함수
@@ -2844,8 +2846,28 @@ export default function StringingApplicationDetailClient({
                       접수, 라켓 발송, 작업, 완성 라켓 배송/수령, 확정까지의 진행 흐름을 확인할 수 있습니다.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="p-4 bp-lg:p-6">
-                    <div className="space-y-4">
+                  <CardContent className="space-y-4 p-4 bp-lg:p-6">
+                    <div className="flex flex-col gap-3 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-4">
+                      <div className="min-w-0">
+                        <p className="text-ui-body-sm font-medium text-foreground">
+                          현재 {data?.status ? data.status : "상태 확인 중"}
+                        </p>
+                        <p className="mt-1 text-ui-label text-foreground/75">
+                          자세한 접수·배송 흐름은 필요할 때 펼쳐 확인하세요.
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full bp-sm:w-auto"
+                        onClick={() => setIsTimelineExpanded((prev) => !prev)}
+                      >
+                        {isTimelineExpanded ? "진행 흐름 접기" : "진행 흐름 보기"}
+                      </Button>
+                    </div>
+                    {isTimelineExpanded && (
+                      <div className="space-y-4">
                       {/* 신청 접수 */}
                       <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:gap-4 bp-sm:p-4">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card">
@@ -2943,20 +2965,47 @@ export default function StringingApplicationDetailClient({
                           )}
                         </div>
                       </div>
-                    </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )}
               {applicationId && !isAdmin && (
-                <div id="stringing-history">
-                  <StringingApplicationHistory
-                    applicationId={applicationId}
-                    isAdmin={isAdmin}
-                    onHistoryMutate={(mutateFn) => {
-                      historyMutateRef.current = mutateFn;
-                    }}
-                  />
-                </div>
+                <Card className="rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
+                  <CardHeader className="rounded-t-2xl border-b border-border bg-muted/30 pb-3">
+                    <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2 text-ui-card-title-lg font-semibold">
+                          <Clock className="h-5 w-5 text-primary" />
+                          처리 이력
+                        </CardTitle>
+                        <CardDescription className="mt-1">
+                          상태 변경과 처리 기록은 필요할 때만 펼쳐 확인하세요.
+                        </CardDescription>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full bp-sm:w-auto"
+                        onClick={() => setIsHistoryExpanded((prev) => !prev)}
+                      >
+                        {isHistoryExpanded ? "처리 이력 접기" : "처리 이력 보기"}
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className={cn("p-4 bp-lg:p-6", !isHistoryExpanded && "hidden")}>
+                    <div id="stringing-history">
+                      <StringingApplicationHistory
+                        applicationId={applicationId}
+                        isAdmin={isAdmin}
+                        onHistoryMutate={(mutateFn) => {
+                          historyMutateRef.current = mutateFn;
+                        }}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
               )}
               </div>
 
