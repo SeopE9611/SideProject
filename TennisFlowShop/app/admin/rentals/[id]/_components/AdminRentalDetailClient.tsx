@@ -4,6 +4,7 @@ import AdminRentalHistory from "@/app/admin/rentals/_components/AdminRentalHisto
 import { derivePaymentStatus, deriveShippingStatus } from "@/app/features/rentals/utils/status";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
+import AdminNextActionPanel from "@/components/admin/AdminNextActionPanel";
 import AdminStatusCard from "@/components/admin/AdminStatusCard";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
@@ -117,12 +118,6 @@ type AdminNextActionGuide = {
   description: string;
   actionLabel?: string;
   actionHref?: string;
-};
-const getNextActionCardClass = (tone: AdminNextActionTone) => {
-  if (tone === "urgent") return "border-warning/40 bg-warning/10";
-  if (tone === "warning") return "border-info/40 bg-info/10";
-  if (tone === "success") return "border-border/70 bg-muted/30";
-  return adminSurface.cardMuted;
 };
 
 export default function AdminRentalDetailClient() {
@@ -887,203 +882,76 @@ export default function AdminRentalDetailClient() {
             </div>
           </div>
 
-          <Card className={getNextActionCardClass(nextActionGuide.tone)}>
-            <CardHeader className="pb-3">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <CardTitle className={adminTypography.panelTitle}>다음 작업</CardTitle>
-                  <CardDescription className={cn("mt-1", adminTypography.meta)}>
-                    먼저 처리할 액션만 확인합니다.
-                  </CardDescription>
-                </div>
-                <Badge variant="outline" className="w-fit">
-                  {nextActionGuide.tone === "urgent"
-                    ? "긴급"
-                    : nextActionGuide.tone === "warning"
-                      ? "확인 필요"
-                      : nextActionGuide.tone === "success"
-                        ? "정상"
-                        : "안내"}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="rounded-xl border border-border/40 bg-transparent p-3">
-                <p className={adminTypography.panelTitle}>{nextActionGuide.title}</p>
-                <p className={cn("mt-1 leading-relaxed", adminTypography.body)}>
-                  {nextActionGuide.description}
-                </p>
-              </div>
-              <div className="rounded-lg border border-primary/15 bg-primary/[0.03] p-3">
-                <p className={adminTypography.panelTitle}>주요 액션</p>
-                <p className={cn("mt-1", adminTypography.meta)}>
-                  처리 액션만 우선 노출합니다.
-                </p>
-                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                  {canConfirmPayment ? (
-                    <Button
-                      size="sm"
-                      disabled={isBusy || confirming}
-                      onClick={() => {
-                        if (isBusy || confirming) return;
-                        setPendingAction("confirmPayment");
-                      }}
-                    >
-                      {confirming ? "결제 처리중…" : "결제 확인"}
-                    </Button>
-                  ) : null}
-                  {data.status === "paid" ? (
-                    <Button
-                      size="sm"
-                      disabled={isBusy || blockRentalStart}
-                      onClick={() => {
-                        if (isBusy || blockRentalStart) return;
-                        setPendingAction("out");
-                      }}
-                    >
-                      {busyAction === "out"
-                        ? isVisitPickup
-                          ? "방문 수령 처리중…"
-                          : "수령 확인 처리중…"
-                        : isVisitPickup
-                          ? "방문 수령 처리"
-                          : "수령 확인 / 대여 시작"}
-                    </Button>
-                  ) : null}
-                  {data.status === "out" ? (
-                    <Button
-                      size="sm"
-                      disabled={isBusy}
-                      onClick={() => {
-                        if (isBusy) return;
-                        setPendingAction("return");
-                      }}
-                    >
-                      {busyAction === "return" ? "반납 처리중…" : "반납 처리"}
-                    </Button>
-                  ) : null}
-                  {data.status === "returned" && !data.depositRefundedAt ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={isBusy}
-                      onClick={() => {
-                        if (isBusy) return;
-                        setPendingAction("refundMark");
-                      }}
-                    >
-                      {busyAction === "refundMark" ? "환불 처리 중…" : "보증금 환불 확인"}
-                    </Button>
-                  ) : null}
-                  {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
-                    <Button asChild size="sm" variant="outline">
-                      <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
-                    </Button>
+          <AdminNextActionPanel
+            tone={nextActionGuide.tone}
+            badgeLabel={
+              nextActionGuide.tone === "urgent"
+                ? "긴급"
+                : nextActionGuide.tone === "warning"
+                  ? "확인 필요"
+                  : nextActionGuide.tone === "success"
+                    ? "정상"
+                    : "안내"
+            }
+            stage={pickupMethodLabel}
+            nextActionTitle={nextActionGuide.title}
+            nextActionDescription={nextActionGuide.description}
+            primaryAction={
+              <>
+                {canConfirmPayment ? (
+                  <Button size="sm" disabled={isBusy || confirming} onClick={() => { if (isBusy || confirming) return; setPendingAction("confirmPayment"); }}>
+                    {confirming ? "결제 처리중…" : "결제 확인"}
+                  </Button>
+                ) : null}
+                {data.status === "paid" ? (
+                  <Button size="sm" disabled={isBusy || blockRentalStart} onClick={() => { if (isBusy || blockRentalStart) return; setPendingAction("out"); }}>
+                    {busyAction === "out" ? (isVisitPickup ? "방문 수령 처리중…" : "수령 확인 처리중…") : (isVisitPickup ? "방문 수령 처리" : "수령 확인 / 대여 시작")}
+                  </Button>
+                ) : null}
+                {data.status === "out" ? (
+                  <Button size="sm" disabled={isBusy} onClick={() => { if (isBusy) return; setPendingAction("return"); }}>
+                    {busyAction === "return" ? "반납 처리중…" : "반납 처리"}
+                  </Button>
+                ) : null}
+              </>
+            }
+            secondaryActions={
+              <>
+                {data.status === "returned" && !data.depositRefundedAt ? (
+                  <Button size="sm" variant="outline" disabled={isBusy} onClick={() => { if (isBusy) return; setPendingAction("refundMark"); }}>
+                    {busyAction === "refundMark" ? "환불 처리 중…" : "보증금 환불 확인"}
+                  </Button>
+                ) : null}
+                {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
+                  <Button asChild size="sm" variant="outline" className="bg-transparent">
+                    <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
+                  </Button>
+                ) : null}
+                {recommendedActions.slice(0, 2).map((action) => (
+                  <Button key={action.href} asChild size="sm" variant="ghost" className="justify-start">
+                    <a href={action.href}>{action.label}</a>
+                  </Button>
+                ))}
+              </>
+            }
+            note={
+              isVariantStockMode
+                ? `조합 재고 기준: 색상 ${stringColorLabel(effectiveStockDeduction?.colorValue) || "-"} / 게이지 ${formatGaugeLabel(effectiveStockDeduction?.gaugeValue) || "-"}`
+                : "기존 색상/게이지 재고 기준으로 처리된 대여입니다."
+            }
+            footer={
+              hasLatestProcessingSummary ? (
+                <div className="grid gap-1.5 leading-relaxed sm:grid-cols-2">
+                  {latestProcessingAction ? <p><span className="font-medium text-foreground">마지막 처리:</span> {latestProcessingAction}</p> : null}
+                  {latestProcessingDate ? <p><span className="font-medium text-foreground">처리 시각:</span> {latestProcessingDate}</p> : null}
+                  {latestProcessingActor ? <p><span className="font-medium text-foreground">처리자:</span> {latestProcessingActor}</p> : null}
+                  {latestProcessingHistory?.from || latestProcessingHistory?.to ? (
+                    <p className="sm:col-span-2"><span className="font-medium text-foreground">상태 변화:</span> {latestProcessingHistory?.from ?? "-"} → {latestProcessingHistory?.to ?? "-"}</p>
                   ) : null}
                 </div>
-              </div>
-              <div className="rounded-lg border border-border/40 bg-transparent p-3">
-                <p className={adminTypography.panelTitle}>보조 확인 링크</p>
-                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                  {recommendedActions.slice(0, 3).map((action) => (
-                    <Button
-                      key={action.href}
-                      asChild
-                      size="sm"
-                      variant="ghost"
-                      className="justify-start"
-                    >
-                      <a href={action.href}>{action.label}</a>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              <div className="rounded-lg border border-border/40 bg-transparent p-3">
-                <p className={adminTypography.panelTitle}>최근 처리 이력</p>
-                {hasLatestProcessingSummary ? (
-                  <div
-                    className={cn(
-                      "mt-2 grid gap-1.5 leading-relaxed sm:grid-cols-2",
-                      adminTypography.meta,
-                    )}
-                  >
-                    {latestProcessingAction ? (
-                      <p>
-                        <span className="font-medium text-foreground">마지막 처리:</span>{" "}
-                        {latestProcessingAction}
-                      </p>
-                    ) : null}
-                    {latestProcessingDate ? (
-                      <p>
-                        <span className="font-medium text-foreground">처리 시각:</span>{" "}
-                        {latestProcessingDate}
-                      </p>
-                    ) : null}
-                    {latestProcessingActor ? (
-                      <p>
-                        <span className="font-medium text-foreground">처리자:</span>{" "}
-                        {latestProcessingActor}
-                      </p>
-                    ) : null}
-                    {latestProcessingHistory?.from || latestProcessingHistory?.to ? (
-                      <p className="sm:col-span-2">
-                        <span className="font-medium text-foreground">상태 변화:</span>{" "}
-                        {latestProcessingHistory?.from ?? "-"} → {latestProcessingHistory?.to ?? "-"}
-                      </p>
-                    ) : null}
-                  </div>
-                ) : (
-                  <p className={cn("mt-2", adminTypography.meta)}>최근 처리 이력 없음</p>
-                )}
-              </div>
-              <div className="rounded-lg border border-border/40 bg-transparent p-3">
-                <p className={adminTypography.panelTitle}>재고 운영 정보</p>
-                <div className={cn("mt-2 space-y-1.5 leading-relaxed", adminTypography.meta)}>
-                  <p>
-                    <span className="font-medium text-foreground">재고 차감 방식:</span>{" "}
-                    {isVariantStockMode ? "색상×게이지 조합 재고" : "기존 재고 방식"}
-                  </p>
-                  <p>
-                    {isVariantStockMode
-                      ? `선택한 색상과 게이지 조합 기준으로 재고가 차감되었습니다. (색상 ${stringColorLabel(effectiveStockDeduction?.colorValue) || "-"} / 게이지 ${formatGaugeLabel(effectiveStockDeduction?.gaugeValue) || "-"})`
-                      : "기존 색상/게이지 재고 기준으로 처리된 대여입니다."}
-                  </p>
-                  <p>
-                    <span className="font-medium text-foreground">조합 재고 복구:</span>{" "}
-                    {effectiveStockRestore?.variantStockRestoredAt ? "복구 완료" : "복구 정보 없음"}
-                  </p>
-                  {effectiveStockRestore?.variantStockRestoredAt ? (
-                    <p>
-                      {fmt(effectiveStockRestore.variantStockRestoredAt)}
-                      {effectiveStockRestore?.variantStockRestoreReason
-                        ? ` · ${effectiveStockRestore.variantStockRestoreReason}`
-                        : ""}
-                    </p>
-                  ) : isVariantStockMode && isCanceledState ? (
-                    <p className="text-muted-foreground/80">
-                      취소 처리 데이터에서 조합 재고 복구 시각이 확인되지 않았습니다.
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-              <div className="rounded-lg border border-border/40 bg-transparent p-3">
-                <p className={adminTypography.panelTitle}>처리 참고 순서</p>
-                <ul
-                  className={cn(
-                    "mt-2 grid list-disc gap-1.5 pl-4 leading-relaxed sm:grid-cols-2",
-                    adminTypography.meta,
-                  )}
-                >
-                  <li>결제 상태 확인</li>
-                  <li>인도 운송장 또는 방문 수령 정보 확인</li>
-                  <li>대여 시작 처리</li>
-                  <li>반납 예정일 확인</li>
-                  <li>반납 완료 처리</li>
-                  <li>보증금 환불 상태 확인</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
+              ) : "최근 처리 이력 없음"
+            }
+          />
 
           {/* 취소 요청 상태 안내 (관리자용) */}
           {cancelInfo && (

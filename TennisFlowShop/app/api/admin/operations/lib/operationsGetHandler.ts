@@ -428,6 +428,18 @@ function signalLevelPriority(level: OperationSignalLevel) {
   return 1;
 }
 
+function dedupeSignals(signals: OperationSignal[]): OperationSignal[] {
+  const seen = new Set<string>();
+  const out: OperationSignal[] = [];
+  for (const signal of signals) {
+    const key = [signal.title, signal.description, signal.code, signal.sourceKind, signal.sourceId].join("|");
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(signal);
+  }
+  return out;
+}
+
 function buildItemSignals(item: OpItem): OperationSignal[] {
   const out: OperationSignal[] = [];
   for (const reason of item.warnReasons ?? []) {
@@ -441,19 +453,18 @@ function buildItemSignals(item: OpItem): OperationSignal[] {
       nextAction: "연결 문서를 확인해 역방향 링크와 참조 ID를 정정하세요.",
     });
   }
-  for (const reason of item.reviewReasons ?? []) {
-    out.push({
-      code: item.reviewLevel === "action" ? "REVIEW_ACTION" : "REVIEW_INFO",
-      level: item.reviewLevel === "action" ? "review" : "info",
-      sourceKind: item.kind,
-      sourceId: item.id,
-      title: item.reviewTitle ?? "검토 필요 신호",
-      description: reason,
-      nextAction:
-        item.reviewLevel === "action"
-          ? "결제/상태 문맥을 확인하고 상세 문서에서 상태를 보정하세요."
-          : "참고용 신호입니다. 별도 조치가 필요 없는지 확인하세요.",
-    });
+  if (item.reviewLevel === "action") {
+    for (const reason of item.reviewReasons ?? []) {
+      out.push({
+        code: "REVIEW_ACTION",
+        level: "review",
+        sourceKind: item.kind,
+        sourceId: item.id,
+        title: item.reviewTitle ?? "검토 필요 신호",
+        description: reason,
+        nextAction: "결제/상태 문맥을 확인하고 상세 문서에서 상태를 보정하세요.",
+      });
+    }
   }
   for (const reason of item.pendingReasons ?? []) {
     out.push({
@@ -489,7 +500,7 @@ function buildItemSignals(item: OpItem): OperationSignal[] {
           : "취소 승인/거절을 검토하고 처리 상태를 갱신하세요.",
     });
   }
-  return out;
+  return dedupeSignals(out);
 }
 
 function pickPrimarySignal(signals: OperationSignal[]): OperationSignal | null {
@@ -593,7 +604,7 @@ function buildGroups(list: OpItem[]): AdminOperationsGroup[] {
     const anchor = pickAnchor(items);
     const ts = Math.max(...items.map((x) => (x.createdAt ? new Date(x.createdAt).getTime() : 0)));
     const createdAt = ts ? new Date(ts).toISOString() : null;
-    const signals = items.flatMap((it) => it.signals ?? []);
+    const signals = dedupeSignals(items.flatMap((it) => it.signals ?? []));
     const primarySignal = pickPrimarySignal(signals);
     const linkedFlowStatusIssue = getLinkedOrderStringingStatusIssue(items);
     return {
@@ -1685,7 +1696,7 @@ export async function handleAdminOperationsGet(req: Request) {
         reviewLevel === "action"
           ? "결제 상태 확인 필요"
           : reviewLevel === "info"
-            ? "정상 파생(조치 필요 없음)"
+            ? "자동 계산 정보"
             : undefined,
       reviewReasons,
       cancel,
@@ -1766,7 +1777,7 @@ export async function handleAdminOperationsGet(req: Request) {
       warn: (warnByKey.get(`rental:${id}`)?.length ?? 0) > 0,
       needsReview: false,
       reviewLevel,
-      reviewTitle: reviewLevel === "info" ? "정상 파생(조치 필요 없음)" : undefined,
+      reviewTitle: reviewLevel === "info" ? "자동 계산 정보" : undefined,
       reviewReasons:
         reviewLevel === "info"
           ? ["대여 결제상태 필드가 비어 있어 대여 상태/paidAt 기준으로 결제상태를 파생했습니다."]

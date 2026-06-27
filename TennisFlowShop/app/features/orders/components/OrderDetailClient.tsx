@@ -10,6 +10,7 @@ import RequestEditForm from "@/app/features/orders/components/RequestEditForm";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
+import AdminNextActionPanel from "@/components/admin/AdminNextActionPanel";
 import AdminStatusCard from "@/components/admin/AdminStatusCard";
 import { LinkedDocItem } from "@/components/admin/LinkedDocsCard";
 import LinkedFlowStageCard from "@/components/admin/LinkedFlowStageCard";
@@ -293,12 +294,6 @@ type AdminNextActionGuide = {
   actionHref?: string;
 };
 
-const getNextActionCardClass = (tone: AdminNextActionTone) => {
-  if (tone === "urgent") return "border-destructive/40 bg-destructive/10";
-  if (tone === "warning") return "border-warning/40 bg-warning/10";
-  if (tone === "success") return "border-success/40 bg-success/10";
-  return "border-info/40 bg-info/10";
-};
 
 type OrderTrackingResponse =
   | {
@@ -1120,90 +1115,46 @@ export default function OrderDetailClient({ orderId }: Props) {
             )}
           </div>
 
-          <Card className={cn("mb-6", getNextActionCardClass(nextActionGuide.tone))}>
-            <CardHeader className="pb-3">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <CardTitle className={adminTypography.panelTitle}>다음 작업</CardTitle>
-                  <CardDescription className={cn("mt-1", adminTypography.meta)}>
-                    현재 단계와 처리 액션을 한 줄 흐름으로 확인합니다.
-                  </CardDescription>
-                </div>
-                <Badge variant="outline" className="w-fit">
-                  {nextActionGuide.tone === "urgent"
-                    ? "긴급"
-                    : nextActionGuide.tone === "warning"
-                      ? "확인 필요"
-                      : nextActionGuide.tone === "success"
-                        ? "정상"
-                        : "안내"}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="rounded-xl border border-border/40 bg-transparent p-3">
-                <p className={adminTypography.panelTitle}>현재 단계</p>
-                <p className={cn("mt-1", adminTypography.bodyStrong)}>
-                  {orderGuide.stage ||
-                    getOrderStatusLabelForDisplay(localStatus, orderDetail.shippingInfo)}
-                </p>
-                <p className={cn("mt-2", adminTypography.panelTitle)}>다음 작업</p>
-                <p className={cn("mt-1 leading-relaxed", adminTypography.body)}>
-                  {nextActionGuide.title} · {nextActionGuide.description}
-                </p>
-              </div>
-              <div className="rounded-lg border border-border/40 bg-transparent p-3">
-                <p className={adminTypography.panelTitle}>주요 액션</p>
-                <p className={cn("mt-1", adminTypography.meta)}>
-                  결제대기 되돌리기 같은 역방향 변경은 일반 다음 작업으로 노출하지 않습니다.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
-                    <Button asChild size="sm">
-                      <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
-                    </Button>
+          <AdminNextActionPanel
+            className="mb-6"
+            tone={nextActionGuide.tone}
+            badgeLabel={
+              nextActionGuide.tone === "urgent"
+                ? "긴급"
+                : nextActionGuide.tone === "warning"
+                  ? "확인 필요"
+                  : nextActionGuide.tone === "success"
+                    ? "정상"
+                    : "안내"
+            }
+            stage={orderGuide.stage || getOrderStatusLabelForDisplay(localStatus, orderDetail.shippingInfo)}
+            nextActionTitle={nextActionGuide.title}
+            nextActionDescription={nextActionGuide.description}
+            primaryAction={
+              nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
+                <Button asChild size="sm">
+                  <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
+                </Button>
+              ) : null
+            }
+            secondaryActions={recommendedActions.slice(0, 2).map((action) => (
+              <Button key={action.href} asChild size="sm" variant="outline" className="bg-transparent">
+                <a href={action.href}>{action.label}</a>
+              </Button>
+            ))}
+            note="결제대기 되돌리기 같은 역방향 변경은 일반 다음 작업으로 노출하지 않습니다."
+            footer={
+              latestProcessingHistory ? (
+                <div className="grid gap-1.5 leading-relaxed sm:grid-cols-2">
+                  <p><span className="font-medium text-foreground">마지막 처리:</span> {latestProcessingHistory.status ?? "기록 없음"}</p>
+                  <p><span className="font-medium text-foreground">처리 시각:</span> {latestProcessingDate}</p>
+                  {latestProcessingHistory.description ? (
+                    <p className="sm:col-span-2"><span className="font-medium text-foreground">내용:</span> {latestProcessingHistory.description}</p>
                   ) : null}
-                  {recommendedActions.slice(0, 2).map((action) => (
-                    <Button
-                      key={action.href}
-                      asChild
-                      size="sm"
-                      variant="outline"
-                      className="bg-transparent"
-                    >
-                      <a href={action.href}>{action.label}</a>
-                    </Button>
-                  ))}
                 </div>
-              </div>
-              {latestProcessingHistory ? (
-                <div className="rounded-lg border border-border/40 bg-transparent p-3">
-                  <p className={adminTypography.panelTitle}>최근 처리 이력</p>
-                  <div
-                    className={cn(
-                      "mt-2 grid gap-1.5 leading-relaxed sm:grid-cols-2",
-                      adminTypography.meta,
-                    )}
-                  >
-                    <p>
-                      <span className="font-medium text-foreground">마지막 처리:</span>{" "}
-                      {latestProcessingHistory.status ?? "기록 없음"}
-                    </p>
-                    <p>
-                      <span className="font-medium text-foreground">처리 시각:</span>{" "}
-                      {latestProcessingDate}
-                    </p>
-                    {latestProcessingHistory.description ? (
-                      <p className="sm:col-span-2">
-                        <span className="font-medium text-foreground">내용:</span>{" "}
-                        {latestProcessingHistory.description}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-              ) : null}
-            </CardContent>
-          </Card>
+              ) : null
+            }
+          />
 
           {/* 연결 교체 작업 통합 패널 */}
           {isLinkedStringingOrder && (
