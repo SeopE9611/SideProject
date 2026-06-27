@@ -1,6 +1,4 @@
 import { AuthHydrator } from "@/app/providers/AuthHydrator";
-import Footer from "@/components/footer";
-import Header from "@/components/header";
 import AppShell from "@/components/layout/AppShell";
 import ClaimsAutoLinker from "@/components/system/ClaimsAutoLinker";
 import GlobalTokenGuard from "@/components/system/GlobalTokenGuard";
@@ -150,15 +148,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           disableTransitionOnChange
         >
           <div className="flex min-h-screen flex-col">
-            <Header />
-
-            {/* SideMenu + 좌측패딩은 AppShell이 경로별로 처리 */}
+            {/* Header/Footer/SideMenu는 AppShell이 경로별로 처리 */}
             <AppShell>{children}</AppShell>
 
             {/* 우측 하단 카카오 문의 위젯(관리자 페이지는 자동 숨김) */}
             <KakaoInquiryWidget />
-
-            <Footer />
           </div>
 
           <Toaster />

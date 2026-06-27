@@ -9,6 +9,7 @@ type AdminStatusCardProps = {
   description?: ReactNode;
   icon?: ComponentType<{ className?: string }>;
   tone?: "neutral" | "primary" | "warning" | "danger" | "success";
+  density?: "default" | "compact";
   className?: string;
 };
 
@@ -34,17 +35,31 @@ export default function AdminStatusCard({
   description,
   icon: Icon,
   tone = "neutral",
+  density = "default",
   className,
 }: AdminStatusCardProps) {
+  const isCompact = density === "compact";
+
   return (
-    <article className={cn("min-h-28 rounded-xl border p-4 shadow-sm", toneClass[tone], className)}>
-      <div className="mb-2 flex items-center gap-2">
+    <article
+      className={cn(
+        "rounded-xl border shadow-sm",
+        isCompact ? "min-h-20 p-3" : "min-h-28 p-4",
+        toneClass[tone],
+        className,
+      )}
+    >
+      <div className={cn("flex items-center gap-2", isCompact ? "mb-1" : "mb-2")}>
         {Icon ? <Icon className={cn("h-4 w-4", iconClass[tone])} /> : null}
-        <span className={adminTypography.panelTitle}>{title}</span>
+        <span className={adminTypography.panelTitleCompact}>{title}</span>
       </div>
-      <div className={adminTypography.bodyStrong}>{value}</div>
+      <div className={isCompact ? adminTypography.kpiValueCompact : adminTypography.bodyStrong}>
+        {value}
+      </div>
       {description ? (
-        <p className={cn("mt-2 text-foreground/75", adminTypography.meta)}>{description}</p>
+        <p className={cn("mt-1 line-clamp-1 text-foreground/75", adminTypography.caption)}>
+          {description}
+        </p>
       ) : null}
     </article>
   );

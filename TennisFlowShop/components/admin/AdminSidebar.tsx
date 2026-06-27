@@ -31,7 +31,7 @@ export default function AdminSidebar({ defaultCollapsed = false, badgeCounts = {
     <TooltipProvider delayDuration={10}>
       <aside
         className={cn(
-          "sticky top-14 h-[calc(100vh-3.5rem)] shrink-0",
+          "sticky top-4 h-[calc(100vh-2rem)] shrink-0",
           "border-r border-border/60 bg-card/70 backdrop-blur supports-[backdrop-filter]:bg-card/60",
           "dark:bg-background/70 dark:border-border",
           "transition-[width] duration-300 ease-in-out will-change-[width]",

@@ -403,6 +403,9 @@ function hasShippingMissing(group: { items: OpItem[] }) {
     "배송 필요",
     "발송 필요",
     "출고 필요",
+    "인도 필요",
+    "인도 운송장",
+    "인도 정보",
     "배송 누락",
   ];
   return group.items.some((item) => {
@@ -1281,7 +1284,12 @@ export default function OperationsClient() {
           </div>
         </Section>
 
-        <Section className="mt-5">
+        <details className="mt-4 rounded-xl border border-border/70 bg-card shadow-sm">
+          <summary className="cursor-pointer px-4 py-3 text-ui-body-sm font-semibold text-foreground">
+            대표 업무와 확인 항목 요약
+            <span className="ml-2 text-ui-label font-normal text-muted-foreground">필요할 때 펼쳐 전체 신호를 확인</span>
+          </summary>
+          <Section className="border-0 shadow-none">
           <SectionHeader
             title="대표 업무와 확인 항목"
             description="대표 업무 합계는 주문·대여·단독 교체서비스 기준입니다. 패키지 결제 확인은 확인 항목으로 별도 집계됩니다."
@@ -1322,7 +1330,8 @@ export default function OperationsClient() {
               />
             </div>
           </SectionBody>
-        </Section>
+          </Section>
+        </details>
         <details className="mt-3 rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-sm">
           <summary className="cursor-pointer font-semibold text-foreground">
             <span className="inline-flex items-center gap-2">
@@ -1347,8 +1356,9 @@ export default function OperationsClient() {
           </ol>
         </details>
 
-        <section className="mt-4 rounded-xl border border-border bg-card p-4 shadow-sm">
-          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+        <details className="mt-3 rounded-xl border border-border bg-card px-3 py-2 shadow-sm">
+          <summary className="cursor-pointer text-ui-body-sm font-semibold text-foreground">오늘 업무 마감 요약</summary>
+          <div className="mt-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className={adminTypography.panelTitle}>오늘 업무 마감 요약</h2>
               <p className="text-xs text-muted-foreground">
@@ -1466,9 +1476,9 @@ export default function OperationsClient() {
               </CardContent>
             </Card>
           </div>
-        </section>
+        </details>
 
-        <div className="mt-4 rounded-xl border border-border bg-card p-3">
+        <div className="mt-4 rounded-xl border border-border bg-card p-2.5">
           <AdminFilterBar
             className="mb-3 rounded-xl bg-background/70 p-3 shadow-none sm:p-4"
             quickFilters={QUICK_VIEWS.map((view) => (
@@ -1495,13 +1505,11 @@ export default function OperationsClient() {
               </p>
             </div>
           </AdminFilterBar>
-          <p className={cn("mb-1", adminTypography.metaMuted)}>
-            일반 업무는 대표 업무 큐에서 처리하고, 연결 오류나 결제 불일치처럼 확인이 필요한 경우만 정밀 검수를 사용하세요.
-          </p>
-          <p className={adminTypography.bodyStrong}>주의 항목 정밀 검수</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            결제 불일치, 연결 검수, 단독 신청처럼 추가 확인이 필요한 신호만 좁혀 봅니다.
-          </p>
+          <details className="mt-2 rounded-lg border border-border/60 bg-muted/10 px-3 py-2">
+            <summary className="cursor-pointer text-ui-body-sm font-semibold text-foreground">주의 항목 정밀 검수</summary>
+            <p className={cn("mt-1", adminTypography.metaMuted)}>
+              결제 불일치, 연결 검수, 단독 신청처럼 추가 확인이 필요한 신호만 좁혀 봅니다.
+            </p>
           <div className="mt-2 flex flex-wrap gap-2">
             <Button
               type="button"
@@ -1558,6 +1566,7 @@ export default function OperationsClient() {
               전체 보기
             </Button>
           </div>
+          </details>
         </div>
       </div>
 
@@ -1579,8 +1588,8 @@ export default function OperationsClient() {
         >
           <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
             <div>
-              <CardTitle>고급 필터</CardTitle>
-              <CardDescription className="mt-1 text-xs">
+              <CardTitle className="text-ui-body-sm">고급 필터</CardTitle>
+              <CardDescription className="mt-0.5 text-ui-label">
                 고급 필터는 특정 고객, 문서 ID, 운영 흐름, 문제 유형을 직접 좁힐 때만 사용합니다. 일반
                 처리는 위의 대표 업무 큐를 먼저 사용하세요.
               </CardDescription>
@@ -2157,7 +2166,7 @@ export default function OperationsClient() {
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
                               <div className="space-y-2">
                                 {(() => {
-                                  const { visible, hiddenCount } = visibleSignalSummary(g.signals, 3);
+                                  const { visible, hiddenCount } = visibleSignalSummary(g.signals, 2);
                                   return visible.length > 0 ? (
                                     <div className="flex flex-wrap gap-1">
                                       {visible.map((signal) => (
@@ -2299,7 +2308,7 @@ export default function OperationsClient() {
                                     className={cn("h-9 min-w-[132px] justify-center px-3 shadow-sm", adminTypography.actionLabel)}
                                     title={groupGuide.nextAction ?? primaryActionTarget.label}
                                   >
-                                    <Link href={primaryActionTarget.href} className="text-xs">
+                                    <Link href={primaryActionTarget.href}>
                                       {primaryActionTarget.label}
                                     </Link>
                                   </Button>
@@ -2332,17 +2341,11 @@ export default function OperationsClient() {
                                         통합 주문 하위 정보
                                       </p>
                                     </div>
-                                    <div className="grid grid-cols-4 gap-1.5 border-y border-border/50 bg-muted/10 px-2 py-1 text-xs font-medium text-foreground/75">
-                                      <span>문서 · 상태</span>
-                                      <span>처리 안내</span>
-                                      <span className="text-right">금액</span>
-                                      <span>연결 정보</span>
-                                    </div>
-                                    <div className="divide-y divide-border/40 border-b border-border/50 bg-background/10">
+                                    <div className="space-y-2 border-t border-border/40 pt-2">
                                       {g.items.map((item) => (
                                         <div
                                           key={`detail:${g.key}:${item.kind}:${item.id}`}
-                                          className="grid grid-cols-4 gap-1.5 px-2 py-1 text-xs leading-relaxed"
+                                          className="rounded-lg border border-border/50 bg-background/60 p-2 text-ui-label leading-relaxed"
                                         >
                                           <div>
                                             <div className="flex items-center gap-1">
@@ -2417,7 +2420,7 @@ export default function OperationsClient() {
                                         </div>
                                       ))}
                                     </div>
-                                    <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs leading-relaxed text-muted-foreground/90">
+                                    <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs leading-relaxed text-muted-foreground/90">
                                       <span>
                                         기준 시각 {formatKST(g.createdAt ?? g.anchor.createdAt)}
                                       </span>
@@ -2613,7 +2616,7 @@ export default function OperationsClient() {
                           <p className={cn("line-clamp-3", adminTypography.bodyStrong)}>{nextActionText}</p>
                         </div>
                         {(() => {
-                          const { visible, hiddenCount } = visibleSignalSummary(g.signals, 3);
+                          const { visible, hiddenCount } = visibleSignalSummary(g.signals, 2);
                           return visible.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {visible.map((signal) => (
