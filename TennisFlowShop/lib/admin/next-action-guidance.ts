@@ -165,8 +165,15 @@ function isTerminalOpsItem(item: OpsLikeItem) {
 }
 
 function terminalGuide(item?: OpsLikeItem | null): NextActionGuide {
+  if (item?.kind === "order" || item?.kind === "rental") {
+    return {
+      stage: "통합 운영 종료 단계",
+      nextAction: "대표 주문/대여가 종료되어 후속 조치 없음",
+    };
+  }
+
   return {
-    stage: item?.kind === "rental" ? "대여 종료 단계" : item?.kind === "stringing_application" ? "신청 종료 단계" : "운영 종료 단계",
+    stage: item?.kind === "stringing_application" ? "신청 종료 단계" : "운영 종료 단계",
     nextAction: "후속 조치 없음",
   };
 }
