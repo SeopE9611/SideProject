@@ -2,6 +2,8 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import AdminPageSection from "@/components/admin/AdminPageSection";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
 import { Input } from "@/components/ui/input";
 import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
@@ -238,7 +240,7 @@ function SectionCard({
   return (
     <div
       id={id}
-      className={`rounded-xl border border-border/60 bg-card shadow-sm transition-shadow hover:shadow-md ${className}`}
+      className={`${adminSurface.card} transition-shadow hover:shadow-md ${className}`}
     >
       {children}
     </div>
@@ -263,8 +265,8 @@ function SectionHeader({
           <Icon className="h-5 w-5" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-          {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
+          <h3 className={adminTypography.sectionTitle}>{title}</h3>
+          {description && <p className={`mt-0.5 ${adminTypography.metaMuted}`}>{description}</p>}
         </div>
       </div>
       {action}
@@ -293,10 +295,10 @@ function InfoItem({
         </div>
       )}
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <p className={`${adminTypography.caption} font-medium uppercase tracking-wider`}>
           {label}
         </p>
-        <div className="mt-1 text-sm font-medium text-foreground">{value || "-"}</div>
+        <div className={`mt-1 ${adminTypography.bodyStrong}`}>{value || "-"}</div>
       </div>
     </div>
   );
@@ -323,7 +325,7 @@ function StatCard({
       className={`rounded-lg border p-4 transition-colors hover:bg-muted/50 ${variantStyles[variant]}`}
     >
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <p className={`${adminTypography.caption} font-medium uppercase tracking-wider`}>
           {label}
         </p>
         {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
@@ -366,7 +368,7 @@ function Message({ type, children }: { type: "success" | "error" | "info"; child
   };
   const Icon = icons[type];
   return (
-    <div className={`flex items-start gap-2 rounded-lg border p-3 text-sm ${styles[type]}`}>
+    <div className={`flex items-start gap-2 rounded-lg border p-3 ${adminTypography.body} ${styles[type]}`}>
       <Icon className="mt-0.5 h-4 w-4 shrink-0" />
       <span>{children}</span>
     </div>
@@ -386,11 +388,11 @@ function FormField({
 }) {
   return (
     <div className="space-y-2">
-      <label htmlFor={htmlFor} className="text-sm font-medium text-foreground">
+      <label htmlFor={htmlFor} className={adminTypography.bodyStrong}>
         {label}
       </label>
       {children}
-      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {hint && <p className={adminTypography.caption}>{hint}</p>}
     </div>
   );
 }
@@ -416,7 +418,7 @@ function Select({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}
-      className={`w-full rounded-lg border border-border/60 bg-background px-3 py-2.5 text-sm text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      className={`w-full rounded-lg border border-border/60 bg-background px-3 py-2.5 ${adminTypography.body} transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
     >
       {options.map((opt) => (
         <option key={opt.value} value={opt.value}>
@@ -452,7 +454,7 @@ function CollapsibleSection({
       >
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium text-foreground">{title}</span>
+          <span className={adminTypography.bodyStrong}>{title}</span>
           {badge}
         </div>
         {isOpen ? (
@@ -1173,7 +1175,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="text-center">
           <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="mt-4 text-sm text-muted-foreground">
+          <p className={`mt-4 ${adminTypography.metaMuted}`}>
             오프라인 고객 상세 정보를 불러오는 중입니다...
           </p>
         </div>
@@ -1191,7 +1193,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
           <h2 className="text-lg font-semibold text-foreground">
             오프라인 고객 상세를 불러오지 못했습니다
           </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className={`mt-2 ${adminTypography.metaMuted}`}>
             고객 ID가 잘못되었거나 고객이 삭제되었을 수 있습니다.
           </p>
           <Button asChild variant="outline" className="mt-6">
@@ -1212,42 +1214,42 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="break-keep text-2xl font-bold leading-tight tracking-tight text-foreground">
-            오프라인 고객 상세
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            고객 기본 정보와 오프라인 작업/매출 이력을 확인합니다.
-          </p>
-        </div>
-        <div className="flex shrink-0 flex-wrap gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link href="/admin/offline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              오프라인 관리
-            </Link>
-          </Button>
+      <AdminPageSection
+        title="오프라인 고객 상세"
+        description="고객 기본 정보와 오프라인 작업/매출 이력을 확인합니다."
+        icon={User}
+        contentClassName="hidden"
+        actions={
+          <>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/admin/offline">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                오프라인 관리
+              </Link>
+            </Button>
 
-          <Button asChild variant="secondary" size="sm">
-            <a href="#offline-records">
-              <History className="mr-2 h-4 w-4" />
-              최근 기록
-            </a>
-          </Button>
+            <Button asChild variant="ghost" size="sm">
+              <a href="#offline-records">
+                <History className="mr-2 h-4 w-4" />
+                최근 기록
+              </a>
+            </Button>
 
-          <Button
-            type="button"
-            variant="destructive"
-            size="sm"
-            disabled={isDeletingCustomer}
-            onClick={deleteOfflineCustomer}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            {isDeletingCustomer ? "삭제 중..." : "고객 삭제"}
-          </Button>
-        </div>
-      </div>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              disabled={isDeletingCustomer}
+              onClick={deleteOfflineCustomer}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              {isDeletingCustomer ? "삭제 중..." : "고객 삭제"}
+            </Button>
+          </>
+        }
+      >
+        <span />
+      </AdminPageSection>
 
       {deleteMessage && (
         <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -1269,7 +1271,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
               >
                 {item.name || "이름 없음"}
               </h2>
-              <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+              <div className={`mt-1 flex flex-wrap items-center gap-3 ${adminTypography.metaMuted}`}>
                 <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap tabular-nums">
                   <Phone className="h-3.5 w-3.5" />
                   {item.phoneMasked || item.phone || "-"}
@@ -1371,12 +1373,12 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                   <FileText className="h-3.5 w-3.5" />
                   메모
                 </div>
-                <p className="mt-2 whitespace-pre-wrap break-keep text-sm leading-relaxed text-foreground">
+                <p className={`mt-2 whitespace-pre-wrap break-keep ${adminTypography.body}`}>
                   {item.memo || "등록된 메모가 없습니다."}
                 </p>
               </div>
 
-              <p className="text-xs text-muted-foreground">
+              <p className={adminTypography.caption}>
                 고객 정보 수정은 오프라인 관리 화면 또는 후속 단계에서 지원 예정입니다.
               </p>
             </div>

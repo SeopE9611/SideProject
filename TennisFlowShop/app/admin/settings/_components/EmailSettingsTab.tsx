@@ -1,16 +1,10 @@
 "use client";
 import { Save, Send } from "lucide-react";
+import AdminPageSection from "@/components/admin/AdminPageSection";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import type { UseFormReturn } from "react-hook-form";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -39,16 +33,12 @@ export function EmailSettingsTab({
 }) {
   return (
     <TabsContent value="email">
-      <Card>
-        <CardHeader>
-          <CardTitle>이메일 설정</CardTitle>
-          <CardDescription>SMTP 설정을 관리합니다.</CardDescription>
-        </CardHeader>
+      <AdminPageSection title="이메일 설정" description="SMTP 설정을 관리합니다.">
         {error.message && (
-          <div className="mx-6 rounded border px-3 py-2 text-sm">{error.message}</div>
+          <div className={`${adminSurface.cardMuted} px-3 py-2 ${adminTypography.body} text-destructive`}>{error.message}</div>
         )}
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-3">
+          <div className="space-y-3">
             <div>
               <Label htmlFor="smtpHost">SMTP Host</Label>
               <Input id="smtpHost" {...form.register("smtpHost")} />
@@ -90,8 +80,8 @@ export function EmailSettingsTab({
                 </SelectContent>
               </Select>
             </div>
-          </CardContent>
-          <CardFooter className="justify-between">
+          </div>
+          <div className="mt-5 flex justify-between">
             <Button type="button" variant="outline" onClick={onSendTest}>
               <Send className="mr-2 h-4 w-4" />
               테스트 이메일
@@ -100,9 +90,9 @@ export function EmailSettingsTab({
               <Save className="mr-2 h-4 w-4" />
               설정 저장
             </Button>
-          </CardFooter>
+          </div>
         </form>
-      </Card>
+      </AdminPageSection>
     </TabsContent>
   );
 }
