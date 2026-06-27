@@ -27,7 +27,7 @@ import {
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const CancelRentalDialog = dynamic(
   () => import("@/app/mypage/rentals/_components/CancelRentalDialog"),
@@ -283,13 +283,11 @@ const formatCurrency = (amount: number) => `${new Intl.NumberFormat("ko-KR").for
 type Props = {
   id: string;
   backUrl?: string;
-  applicationUrl?: string | null;
 };
 
 export default function RentalsDetailClient({
   id,
   backUrl = "/mypage?tab=orders",
-  applicationUrl,
 }: Props) {
   const searchParams = useSearchParams();
   const focusTarget = searchParams.get("focus");
@@ -415,26 +413,6 @@ export default function RentalsDetailClient({
 
     return () => window.clearTimeout(timeout);
   }, [focusTarget, withStringService, data?.stringingApplicationId]);
-
-  // 교체서비스 보기 링크: "마이페이지 탭" 방식으로 통일
-  const applicationHref = useMemo(() => {
-    if (applicationUrl) return applicationUrl;
-    const appId = data?.stringingApplicationId;
-    if (!appId) return null;
-
-    const backQuery = new URLSearchParams(backUrl.split("?")[1] ?? "");
-    const scope = backQuery.get("scope");
-    const params = new URLSearchParams();
-    params.set("tab", "orders");
-    params.set("flowType", "application");
-    params.set("flowId", appId);
-    params.set("from", "orders");
-    if (scope) {
-      params.set("scope", scope);
-    }
-
-    return `/mypage?${params.toString()}`;
-  }, [applicationUrl, backUrl, data?.stringingApplicationId]);
 
   // 교체 신청하기 링크(대여 기반 신청)
   const applyHref = `/services/apply?rentalId=${encodeURIComponent(id)}`;
@@ -964,18 +942,6 @@ export default function RentalsDetailClient({
                   </div>
 
                   <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:flex-wrap bp-sm:items-center">
-                    {applicationHref ? (
-                      <Button
-                        asChild
-                        variant="outline"
-                        className="h-9 w-full gap-2 overflow-hidden whitespace-nowrap bp-sm:w-auto"
-                      >
-                        <Link href={applicationHref}>
-                          신청서 전체 보기
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    ) : null}
                     {data.stringingApplicationId ? (
                       <ServiceReviewCTA
                         applicationId={data.stringingApplicationId}

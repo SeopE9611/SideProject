@@ -1037,7 +1037,7 @@ export default async function CheckoutSuccessPage({
                             <p className="text-ui-body-sm text-muted-foreground">
                               {isVisitPickup
                                 ? "방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요."
-                                : "택배 수령을 선택하셨으므로 수거/반송을 통해 장착 서비스가 진행됩니다."}
+                                : "택배 수령을 선택하셨으므로 라켓 발송 후 작업 완료 시 완성 라켓 배송으로 진행됩니다."}
                             </p>
                             {shouldShowApplyCta ? (
                               <Button

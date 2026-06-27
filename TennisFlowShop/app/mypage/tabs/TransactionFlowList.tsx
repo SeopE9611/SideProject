@@ -174,7 +174,7 @@ const getStringingDetailHref = (
   }
 
   if (app.rentalId) {
-    return `/mypage?tab=orders&flowType=application&flowId=${app.id}&${flowQuery}`;
+    return `/mypage?tab=orders&flowType=rental&flowId=${app.rentalId}&${flowQuery}&focus=stringing`;
   }
 
   return `/mypage?tab=orders&flowType=application&flowId=${app.id}&${flowQuery}`;

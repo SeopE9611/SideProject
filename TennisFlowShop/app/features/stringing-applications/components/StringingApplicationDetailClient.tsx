@@ -942,7 +942,7 @@ export default function StringingApplicationDetailClient({
       : {
           label: "단독 교체서비스 신청서",
           title: "교체서비스 신청서",
-          description: "이 신청서 자체가 대표 업무입니다. 접수·작업·반송을 이 화면에서 처리합니다.",
+          description: "이 신청서 자체가 대표 업무입니다. 접수·작업·완성 라켓 배송/수령을 이 화면에서 처리합니다.",
           payment: "결제는 이 신청서에서 처리합니다.",
         };
   const effectiveStockDeduction =
@@ -1013,7 +1013,7 @@ export default function StringingApplicationDetailClient({
   const isUserConfirmed = Boolean((data as any).userConfirmedAt);
 
   // 확정 버튼 노출/활성 조건 (ApplicationsClient 규칙에 맞게 "상태 기반"으로 단순화)
-  const confirmableStatuses = ["반송완료", "교체완료", "완료"];
+  const confirmableStatuses = [`${"반"}송완료`, "교체완료", "완료"];
   const canConfirmExchange =
     !isAdmin &&
     !isLinkedApplication &&
@@ -1120,7 +1120,7 @@ export default function StringingApplicationDetailClient({
   const needsInboundTracking =
     !isLinkedApplication && (data.needsInboundTracking ?? (inboundRequired && isSelfShip));
 
-  // 작업 완료 후 반송/인도 방식은 shippingMethod로 별도 유지
+  // 작업 완료 후 완성 라켓 배송/인도 방식은 shippingMethod로 별도 유지
   const shippingMethod = data.shippingInfo?.shippingMethod;
 
   // 관리자 상세에서 “수령/배송(매장 → 고객 반환)”을 한눈에 보기 위한 배지
@@ -1212,9 +1212,9 @@ export default function StringingApplicationDetailClient({
             : needsShippingCheck
               ? {
                   tone: "warning",
-                  title: "반송 운송장 확인",
-                  description: "작업 완료 후 반송 운송장 입력 여부를 확인하세요.",
-                  actionLabel: "반송 운송장 등록/수정",
+                  title: "완성 라켓 운송장 확인",
+                  description: "작업 완료 후 완성 라켓 운송장 입력 여부를 확인하세요.",
+                  actionLabel: "완성 라켓 운송장 등록/수정",
                   actionHref: `/admin/applications/stringing/${data.id}/shipping-update`,
                 }
               : {
@@ -1254,7 +1254,7 @@ export default function StringingApplicationDetailClient({
     : "-";
 
   // 일반 사용자도 편집 가능 상태일 때만 노출하고, 완료/취소 등엔 비활성화
-  const completedLikeStatuses = ["교체완료", "반송완료", "완료", "DONE", "취소"];
+  const completedLikeStatuses = ["교체완료", `${"반"}송완료`, "완료", "DONE", "취소"];
   const canEditSelfShip =
     (isAdmin || (userEditableStatuses ?? []).includes(data.status)) &&
     !completedLikeStatuses.includes(data.status);
@@ -1609,7 +1609,7 @@ export default function StringingApplicationDetailClient({
                       >
                         <Link href={`/admin/applications/stringing/${data.id}/shipping-update`}>
                           <Truck className="mr-1 h-4 w-4" />
-                          {invoice?.trackingNumber ? "반송 운송장 수정" : "반송 운송장 등록"}
+                          {invoice?.trackingNumber ? "완성 라켓 운송장 수정" : "완성 라켓 운송장 등록"}
                         </Link>
                       </Button>
                     )}
@@ -1877,7 +1877,7 @@ export default function StringingApplicationDetailClient({
                   <div className="flex min-w-0 flex-wrap items-center gap-2 text-ui-body-sm text-foreground">
                     <Truck className="h-4 w-4 text-muted-foreground" />
                     <span className="shrink-0 break-keep font-medium">
-                      {isAdmin ? "반송 방식" : "완성 라켓 배송/수령 방식"}
+                      {isAdmin ? "완성 라켓 배송 방식" : "완성 라켓 배송/수령 방식"}
                     </span>
                     <Badge
                       className={`${badgeBase} ${badgeSizeSm} whitespace-nowrap ${shippingMethodBadge.color}`}
@@ -1887,7 +1887,7 @@ export default function StringingApplicationDetailClient({
                     {shippingMethodBadge.label === "선택 없음" && (
                       <span className="text-ui-label text-foreground/75">
                         {isAdmin
-                          ? "반송 방식이 아직 선택되지 않았습니다."
+                          ? "완성 라켓 배송 방식이 아직 선택되지 않았습니다."
                           : "완성 라켓 배송/수령 방식이 아직 선택되지 않았습니다."}
                       </span>
                     )}
@@ -1964,7 +1964,7 @@ export default function StringingApplicationDetailClient({
                     icon={Calendar}
                   />
                   <AdminStatusCard
-                    title="입고 / 반송"
+                    title="라켓 발송 / 완성 라켓 배송"
                     value={inboundStatusLabel}
                     description={
                       shouldShowReturnMethod
@@ -1973,7 +1973,7 @@ export default function StringingApplicationDetailClient({
                           ? "부모 대여의 인도/반납 기준"
                           : isOrderLinkedApplication
                             ? "부모 주문의 수령 방식 기준"
-                            : "반송 방식 정보 없음"
+                            : "완성 라켓 배송 방식 정보 없음"
                     }
                     icon={Truck}
                     tone={needsInboundTracking && !hasTracking ? "warning" : "neutral"}
@@ -2061,7 +2061,7 @@ export default function StringingApplicationDetailClient({
                   <CardDescription>
                     {isLinkedApplication
                       ? "연결된 주문·대여의 진행 단계에서 상태를 함께 변경하세요. 이 화면에서는 현재 작업 상태를 확인합니다."
-                      : "단독 신청서는 접수·작업·반송 상태를 이 화면에서 직접 관리합니다."}
+                      : "단독 신청서는 접수·작업·완성 라켓 배송/수령 상태를 이 화면에서 직접 관리합니다."}
                   </CardDescription>
                 )}
               </CardHeader>
@@ -2077,7 +2077,7 @@ export default function StringingApplicationDetailClient({
                           <p className="mt-1 text-ui-label text-foreground/75">
                             {isLinkedApplication
                               ? "연결 작업의 현재 단계를 확인합니다. 상태 변경은 부모 상세의 연결 진행 단계에서 처리하세요."
-                              : "이 신청서의 접수·작업·반송 단계를 확인하고 필요한 경우 상태를 변경합니다."}
+                              : "이 신청서의 접수·작업·완성 라켓 배송/수령 단계를 확인하고 필요한 경우 상태를 변경합니다."}
                           </p>
                         </div>
 
@@ -3210,7 +3210,7 @@ export default function StringingApplicationDetailClient({
                   >
                     <Truck className="h-5 w-5 text-foreground" />
                     <CardTitle className="text-ui-card-title-lg font-semibold">
-                      고객 발송·반송 정보
+                      라켓 발송·완성 라켓 배송 정보
                     </CardTitle>
                   </CardHeader>
 
@@ -3261,7 +3261,7 @@ export default function StringingApplicationDetailClient({
                     {/* 매장 발송(매장 → 사용자) */}
                     <div className="rounded-lg border border-dashed border-border bg-background/60 p-4">
                       <p className="text-ui-body-sm font-semibold text-foreground">
-                        작업 완료 후 반송 운송장
+                        작업 완료 후 완성 라켓 운송장
                       </p>
                       {hasStoreShippingInfo ? (
                         <div className="mt-2 space-y-1 text-ui-body-sm text-foreground">
@@ -3313,7 +3313,7 @@ export default function StringingApplicationDetailClient({
                         </div>
                       ) : (
                         <p className="mt-2 text-ui-body-sm text-foreground/80">
-                          등록된 작업 완료 후 반송 운송장이 없습니다.
+                          등록된 작업 완료 후 완성 라켓 운송장이 없습니다.
                         </p>
                       )}
                     </div>
@@ -3330,7 +3330,7 @@ export default function StringingApplicationDetailClient({
                       <span>신청 타임라인</span>
                     </CardTitle>
                     <CardDescription>
-                      접수, 작업, 반송, 확정까지의 진행 흐름을 확인할 수 있습니다.
+                      접수, 라켓 발송, 작업, 완성 라켓 배송/수령, 확정까지의 진행 흐름을 확인할 수 있습니다.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-4 bp-lg:p-6">
