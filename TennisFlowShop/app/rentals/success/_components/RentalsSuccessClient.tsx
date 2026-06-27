@@ -151,8 +151,8 @@ export default function RentalsSuccessClient({ data }: Props) {
     (Boolean(hintedStringingApplicationId) &&
       hintedStringingApplicationId !== dbStringingApplicationId);
 
-  const stringingApplicationHref = dbStringingApplicationId
-    ? `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(dbStringingApplicationId)}&from=orders`
+  const rentalStringingHref = dbStringingApplicationId
+    ? `/mypage?tab=orders&flowType=rental&flowId=${encodeURIComponent(data.id)}&from=orders&focus=stringing`
     : null;
   const isPickup = data.shipping?.shippingMethod === "pickup";
 
@@ -327,9 +327,9 @@ export default function RentalsSuccessClient({ data }: Props) {
                   <Button asChild className="flex-1">
                     <Link href={rentalDetailHref}>대여 내역 확인</Link>
                   </Button>
-                  {withService && stringingApplicationHref && (
+                  {withService && rentalStringingHref && (
                     <Button asChild variant="outline" className="flex-1">
-                      <Link href={stringingApplicationHref}>교체서비스 진행상태 확인</Link>
+                      <Link href={rentalStringingHref}>교체서비스 진행상태 확인</Link>
                     </Button>
                   )}
                   <Button asChild variant="outline" className="flex-1">
@@ -610,13 +610,13 @@ export default function RentalsSuccessClient({ data }: Props) {
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
-                {stringingApplicationHref ? (
+                {rentalStringingHref ? (
                   <Button
                     variant="outline"
                     className="h-12 flex-1 shadow-sm transition-[box-shadow,background-color,color] duration-200 hover:shadow-md"
                     asChild
                   >
-                    <Link href={stringingApplicationHref} className="flex items-center gap-2">
+                    <Link href={rentalStringingHref} className="flex items-center gap-2">
                       교체서비스 신청 내역 보기
                       <ArrowRight className="h-4 w-4" />
                     </Link>

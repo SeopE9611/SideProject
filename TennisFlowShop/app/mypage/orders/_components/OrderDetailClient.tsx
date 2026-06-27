@@ -1510,8 +1510,8 @@ export default function OrderDetailClient({
                 {shouldShowStringingTimelineHint && (
                   <p>
                     {primaryStringingAppId
-                      ? "연결된 교체서비스 상세에서 진행 상태를 확인해주세요."
-                      : "교체서비스가 포함된 주문은 교체서비스 상세에서 작업 진행 상태를 함께 확인할 수 있습니다."}
+                      ? "이 주문 상세의 교체서비스 정보 영역에서 작업 진행 상태를 함께 확인할 수 있습니다."
+                      : "교체서비스가 포함된 주문은 이 주문 상세에서 작업 진행 상태를 함께 확인할 수 있습니다."}
                   </p>
                 )}
               </div>
