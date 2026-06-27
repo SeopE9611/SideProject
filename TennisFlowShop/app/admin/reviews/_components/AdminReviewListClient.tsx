@@ -873,12 +873,10 @@ export default function AdminReviewListClient() {
 
       {/* 상세 모달 */}
       <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
-        <DialogContent className="sm:max-w-2xl border-0 ring-0 outline-none shadow-2xl bg-card">
-          <DialogHeader>
-            <DialogTitle>리뷰 상세</DialogTitle>
-          </DialogHeader>
-          {detail && (
-            <div className="space-y-4">
+        <DialogContent className="border border-border/70 bg-card shadow-2xl sm:max-w-2xl">
+          <DialogHeader className="space-y-2 border-b border-border/60 pb-4">
+            <DialogTitle className={adminTypography.sectionTitle}>리뷰 상세</DialogTitle>
+            {detail && (
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
                   variant="outline"
@@ -892,91 +890,107 @@ export default function AdminReviewListClient() {
                 {(() => {
                   const dt = safeSplitDate(detail.createdAt);
                   return (
-                    <span className="text-sm text-muted-foreground inline-flex items-center gap-1">
+                    <span className={adminTypography.metaMuted + " inline-flex items-center gap-1"}>
                       <Calendar className="h-3.5 w-3.5" />
                       {dt.date} {dt.time}
                     </span>
                   );
                 })()}
-                <span className="text-sm text-muted-foreground inline-flex items-center gap-1 ml-2">
+                <span className={adminTypography.metaMuted + " inline-flex items-center gap-1"}>
                   <ThumbsUp className="h-4 w-4" />
                   도움돼요 {detail?.helpfulCount ?? 0}
                 </span>
               </div>
-
+            )}
+          </DialogHeader>
+          {detail && (
+            <div className="space-y-5 py-1">
               {/* 사진 섹션: 헤더와 분리해 항상 같은 위치/폭을 확보 */}
-              <div className="mt-2">
+              <section className={adminSurface.cardMuted + " space-y-3 p-4"}>
+                <div className="flex items-center justify-between gap-3">
+                  <h4 className={adminTypography.panelTitle}>리뷰 사진</h4>
+                  <span className={adminTypography.caption}>{photos.length}장</span>
+                </div>
                 {/* 로딩 스켈레톤: 상세를 불러오는 동안 자리 고정 */}
                 {loadingPhotos && (
-                  <div aria-hidden className="flex flex-wrap gap-2 min-h-[72px]">
+                  <div aria-hidden className="flex min-h-[72px] flex-wrap gap-2">
                     {Array.from({ length: 4 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="w-16 h-16 rounded-md bg-muted dark:bg-card animate-pulse"
-                      />
+                      <div key={i} className="h-16 w-16 animate-pulse rounded-md bg-muted" />
                     ))}
                   </div>
                 )}
                 {/* 실제 이미지: fullDetail.photos 우선, 없으면 detail.photos */}
-                {photos.length > 0 && (
-                  <>
-                    <h4 className="text-sm font-medium mb-2">사진</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {photos.map((src: string, i: number) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => {
-                            setViewerIndex(i);
-                            setViewerOpen(true);
-                          }}
-                          className="relative w-16 h-16 rounded-md overflow-hidden border dark:border-border focus:outline-none focus:ring-2 focus:ring-ring"
-                          aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
-                        >
-                          <Image
-                            src={src}
-                            alt={`review-photo-${i}`}
-                            fill
-                            className="object-cover"
-                            loading="lazy"
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </>
+                {photos.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {photos.map((src: string, i: number) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => {
+                          setViewerIndex(i);
+                          setViewerOpen(true);
+                        }}
+                        className="relative h-16 w-16 overflow-hidden rounded-lg border border-border/70 bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                        aria-label={`리뷰 사진 ${i + 1} 크게 보기`}
+                      >
+                        <Image
+                          src={src}
+                          alt={`review-photo-${i}`}
+                          fill
+                          className="object-cover"
+                          loading="lazy"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  !loadingPhotos && (
+                    <p className={adminTypography.metaMuted}>첨부된 사진이 없습니다.</p>
+                  )
                 )}
-              </div>
+              </section>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <div className="text-sm text-muted-foreground mb-1">작성자</div>
-                  <div className="font-medium">{detail.userName || detail.userEmail || "-"}</div>
+              <section className="grid grid-cols-1 gap-3 rounded-2xl border border-border/60 p-4 sm:grid-cols-3">
+                <div className="space-y-1">
+                  <div className={adminTypography.caption}>작성자</div>
+                  <div className={adminTypography.bodyStrong}>
+                    {detail.userName || detail.userEmail || "-"}
+                  </div>
                   {detail.userName && (
-                    <div className="text-xs text-muted-foreground break-all">
+                    <div className={adminTypography.metaMuted + " break-all"}>
                       {detail.userEmail}
                     </div>
                   )}
                 </div>
-                <div>
-                  <div className="text-sm text-muted-foreground mb-1">리뷰 대상</div>
-                  <div className="font-medium">{detail.subject || "-"}</div>
+                <div className="space-y-1">
+                  <div className={adminTypography.caption}>리뷰 대상</div>
+                  <div className={adminTypography.bodyStrong}>{detail.subject || "-"}</div>
                 </div>
-                <div>
-                  <div className="text-sm text-muted-foreground mb-1">평점</div>
+                <div className="space-y-1">
+                  <div className={adminTypography.caption}>평점</div>
                   <div className="flex items-center gap-2">
                     {renderStars(detail.rating)}
-                    <span className="text-sm text-foreground">{detail.rating}/5</span>
+                    <span className={adminTypography.bodyStrong}>{detail.rating}/5</span>
                   </div>
                 </div>
-              </div>
+              </section>
 
-              <div className="rounded-md dark:bg-card p-4 whitespace-pre-wrap [overflow-wrap:anywhere] leading-relaxed text-foreground">
-                {detail.content || ""}
-              </div>
+              <section className="space-y-2">
+                <h4 className={adminTypography.panelTitle}>리뷰 본문</h4>
+                <div
+                  className={
+                    adminSurface.cardMuted +
+                    " whitespace-pre-wrap p-4 [overflow-wrap:anywhere] " +
+                    adminTypography.body
+                  }
+                >
+                  {detail.content || "-"}
+                </div>
+              </section>
             </div>
           )}
-          <DialogFooter className="justify-between">
-            <div className="flex gap-2">
+          <DialogFooter className="gap-2 border-t border-border/60 pt-4 sm:justify-between">
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
                 onClick={async () => {
@@ -1012,7 +1026,9 @@ export default function AdminReviewListClient() {
                 <Trash2 className="h-4 w-4 mr-1" /> 삭제
               </Button>
             </div>
-            <Button onClick={() => setDetail(null)}>닫기</Button>
+            <Button variant="outline" onClick={() => setDetail(null)}>
+              닫기
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
