@@ -48,6 +48,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 type Row = AdminReviewListItemDto;
 type Page = AdminReviewsListResponseDto;
