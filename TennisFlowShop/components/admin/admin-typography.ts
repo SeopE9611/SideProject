@@ -5,12 +5,14 @@ export const adminTypography = {
   pageTitle: "break-keep text-ui-page-title font-semibold tracking-tight text-foreground bp-sm:text-ui-page-title-lg",
   sectionTitle: "break-keep text-ui-section-title font-semibold tracking-tight text-foreground",
   panelTitle: "text-ui-body-sm font-semibold tracking-normal text-foreground",
+  panelTitleCompact: "text-ui-label font-semibold tracking-normal text-foreground/85",
   body: "text-ui-body-sm leading-relaxed text-foreground",
   bodyStrong: "text-ui-body-sm font-semibold tracking-normal text-foreground",
   meta: "text-ui-label leading-relaxed text-foreground/80",
   metaMuted: "text-ui-label leading-relaxed text-foreground/75",
   caption: "text-ui-label leading-snug text-muted-foreground",
   kpiValue: "text-2xl font-bold tabular-nums tracking-tight text-foreground",
+  kpiValueCompact: "text-xl font-bold tabular-nums tracking-tight text-foreground",
   actionLabel: "text-ui-body-sm font-semibold",
   caution: "text-ui-label font-medium text-primary",
   warning: "text-ui-label font-medium text-warning",
@@ -31,7 +33,7 @@ export const adminSurface = {
   tableCard: "overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm",
   tableHeader: "bg-muted/40",
   nextAction: "rounded-2xl border border-primary/25 bg-primary/5 shadow-sm",
-  statusGrid: "grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4",
+  statusGrid: "grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4",
   stickyToolbar:
     "rounded-2xl border border-border/70 bg-card/95 shadow-sm supports-[backdrop-filter]:bg-card/95",
   kpiCard:

@@ -1944,6 +1944,7 @@ export default function StringingApplicationDetailClient({
               <section className="mb-6 space-y-4" aria-label="관리자 운영 콘솔">
                 <div className={adminSurface.statusGrid}>
                   <AdminStatusCard
+                    density="compact"
                     title="작업 상태"
                     value={<ApplicationStatusBadge status={data.status} />}
                     description={isLinkedApplication ? "부모 문서에 포함된 하위 교체 작업입니다." : "이 화면이 대표 처리 화면입니다."}
@@ -1951,6 +1952,7 @@ export default function StringingApplicationDetailClient({
                     tone={isCancelled ? "danger" : "primary"}
                   />
                   <AdminStatusCard
+                    density="compact"
                     title="결제 문맥"
                     value={linkedPaymentContextLabel}
                     description={packageApplied ? "결제대기가 아니라 패키지 회차 차감으로 처리됩니다." : applicationContext.payment}
@@ -1958,12 +1960,14 @@ export default function StringingApplicationDetailClient({
                     tone={packageApplied ? "success" : isLinkedApplication ? "primary" : "neutral"}
                   />
                   <AdminStatusCard
+                    density="compact"
                     title="접수 / 방문"
                     value={visitTimeLabel}
                     description={`신청일 ${new Date(data.requestedAt).toLocaleDateString()}`}
                     icon={Calendar}
                   />
                   <AdminStatusCard
+                    density="compact"
                     title="입고 / 반송"
                     value={inboundStatusLabel}
                     description={
