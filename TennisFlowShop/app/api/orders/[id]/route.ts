@@ -1,26 +1,27 @@
-import { NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
-import { ObjectId } from "mongodb";
-import { cookies } from "next/headers";
-import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
-import { issuePassesForPaidOrder } from "@/lib/passes.service";
-import jwt from "jsonwebtoken";
-import { deductPoints, grantPoints } from "@/lib/points.service";
-import { createUserNotification } from "@/lib/notifications/user-notification.service";
-import { z } from "zod";
-import {
-  getAdminCancelPolicyMessage,
-  isAdminCancelableOrderStatus,
-} from "@/lib/orders/cancel-refund-policy";
-import { canEnterShippingPhase, getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
+import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import {
   LINKED_FLOW_STAGE_EXCLUDED_APPLICATION_STATUSES,
   LINKED_FLOW_STAGE_EXCLUDED_CANCEL_REQUEST_STATUSES,
   isApplicationEligibleForLinkedStage,
 } from "@/lib/admin/linked-flow-stage";
-import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
-import { normalizeEmailForSearch } from "@/lib/search-email";
+import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
+import clientPromise from "@/lib/mongodb";
+import { createUserNotification } from "@/lib/notifications/user-notification.service";
+import { canEnterShippingPhase, getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
+import {
+  getAdminCancelPolicyMessage,
+  isAdminCancelableOrderStatus,
+} from "@/lib/orders/cancel-refund-policy";
 import { isMountableStringByFee, isMountableStringItem } from "@/lib/orders/string-mounting-policy";
+import { issuePassesForPaidOrder } from "@/lib/passes.service";
+import { deductPoints, grantPoints } from "@/lib/points.service";
+import { isStringingReviewBlockedStatus } from "@/lib/reviews/review-policy";
+import { normalizeEmailForSearch } from "@/lib/search-email";
+import jwt from "jsonwebtoken";
+import { ObjectId } from "mongodb";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 
 // 고객정보 서버 검증(관리자 PATCH)
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -421,6 +422,50 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       .toArray();
     const activeApps = displayApps.filter((app: any) => app?.status !== "취소");
 
+    const displayAppIds = displayApps
+      .map((app: any) => String(app?._id ?? ""))
+      .filter((id) => ObjectId.isValid(id));
+
+    const orderUserId =
+      order.userId && ObjectId.isValid(String(order.userId))
+        ? new ObjectId(String(order.userId))
+        : null;
+
+    const reviewedServiceApplicationIds = new Set<string>();
+
+    if (orderUserId && displayAppIds.length > 0) {
+      const serviceReviews = await db
+        .collection("reviews")
+        .find(
+          {
+            userId: orderUserId,
+            service: "stringing",
+            serviceApplicationId: {
+              $in: displayAppIds.flatMap((id) => [new ObjectId(id), id]),
+            },
+            isDeleted: { $ne: true },
+          },
+          { projection: { serviceApplicationId: 1 } },
+        )
+        .toArray();
+
+      for (const review of serviceReviews as any[]) {
+        reviewedServiceApplicationIds.add(String(review.serviceApplicationId));
+      }
+    }
+
+    const isServiceReviewPending = (app: any) => {
+      const appId = String(app?._id ?? "");
+
+      return Boolean(
+        appId &&
+        ObjectId.isValid(appId) &&
+        toNullableIsoString(app?.userConfirmedAt) &&
+        !isStringingReviewBlockedStatus(app?.status) &&
+        !reviewedServiceApplicationIds.has(appId),
+      );
+    };
+
     // 각 활성 신청서에서 사용된 슬롯(= 라켓 개수) 합산
     const usedSlots = activeApps.reduce(
       (sum, app) => sum + getApplicationLines(app?.stringDetails).length,
@@ -521,6 +566,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         cancelRequestStatus: app?.cancelRequest?.status ?? null,
         createdAt: app.createdAt ?? null,
         updatedAt: app.updatedAt ?? null,
+        userConfirmedAt: toNullableIsoString(app?.userConfirmedAt),
+        serviceReviewPending: isServiceReviewPending(app),
         collectionMethod,
         preferredDate: preferredDate || null,
         preferredTime: preferredTime || null,

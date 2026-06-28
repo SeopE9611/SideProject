@@ -4,11 +4,10 @@ import ProductFeatureRadarChart from "@/app/products/components/ProductFeatureRa
 import type { User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { type CartItem, useCartStore } from "@/app/store/cartStore";
-import { getProductPriceDisplayMeta } from "@/lib/product-pricing";
 import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
+import { PrimaryCTAGroup } from "@/components/public";
 import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
-import { PrimaryCTAGroup, SummaryCard } from "@/components/public";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,6 +40,7 @@ import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { normalizeFeatureScoresTo100 } from "@/lib/product-feature-score";
+import { getProductPriceDisplayMeta } from "@/lib/product-pricing";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -1994,7 +1994,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 <div className="min-w-0">
                                   <div className="break-words font-semibold text-foreground text-ui-body-sm sm:text-ui-body">
                                     {review.type === "service"
-                                      ? "상품+교체서비스 후기"
+                                      ? "상품 + 교체서비스 후기"
                                       : review.status === "hidden"
                                         ? review.ownedByMe
                                           ? `${review.user ?? "내 리뷰"} (비공개)`

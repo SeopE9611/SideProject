@@ -1,20 +1,20 @@
 import { normalizeCollection } from "@/app/features/stringing-applications/lib/collection";
 import { verifyAccessToken } from "@/lib/auth.utils";
+import clientPromise from "@/lib/mongodb";
 import {
   isApplicationTodoActionable,
   isOrderTodoActionable,
   isRentalTodoActionable,
   normalizeMypageTodoStatus,
 } from "@/lib/mypage/activity-todo";
-import clientPromise from "@/lib/mongodb";
 import {
   isOrderLinkedToStringing,
   isStringingReviewBlockedStatus,
 } from "@/lib/reviews/review-policy";
+import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 
 export const dynamic = "force-dynamic";
 
@@ -205,7 +205,7 @@ function getOrderFlowLabel(opts: {
   if (hasRacketItem && hasStringItem) return "라켓 구매 + 스트링 + 교체서비스";
   if (hasStringItem) return "스트링 구매 + 교체서비스";
   if (hasRacketItem) return "라켓 구매 + 교체서비스";
-  return "주문 + 교체서비스";
+  return "상품 구매 + 교체서비스";
 }
 
 function firstText(...values: unknown[]): string | null {

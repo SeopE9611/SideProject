@@ -295,7 +295,9 @@ export default function OrderList() {
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-muted/30 shadow-lg">
             <ShoppingBag className="h-10 w-10 text-primary" />
           </div>
-          <h3 className="mb-2 text-ui-section-title font-semibold text-foreground">주문 내역이 없습니다</h3>
+          <h3 className="mb-2 text-ui-section-title font-semibold text-foreground">
+            주문 내역이 없습니다
+          </h3>
           <p className="text-muted-foreground">
             아직 주문하신 상품이 없습니다. 지금 바로 쇼핑을 시작해보세요!
           </p>
@@ -461,7 +463,9 @@ export default function OrderList() {
                 <div className="mb-4 flex items-center gap-3 rounded-xl border border-border/60 bg-muted/30 p-3">
                   <User className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <div className="text-ui-label text-foreground/75 uppercase tracking-wide">주문자</div>
+                    <div className="text-ui-label text-foreground/75 uppercase tracking-wide">
+                      주문자
+                    </div>
                     <div className="font-medium text-foreground">{order.userSnapshot.name}</div>
                   </div>
                 </div>
@@ -577,6 +581,9 @@ export default function OrderList() {
                     orderStatus={order.status}
                     userConfirmedAt={order.userConfirmedAt ?? null}
                     showOnlyWhenCompleted
+                    serviceLinkedOrder={Boolean(
+                      order.shippingInfo?.withStringService || order.stringingApplicationId,
+                    )}
                   />
 
                   {showConfirm ? (

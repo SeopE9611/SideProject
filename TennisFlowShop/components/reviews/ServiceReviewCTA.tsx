@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import { Check, MessageSquarePlus } from "lucide-react";
+import Link from "next/link";
+import useSWR from "swr";
 
 type Props = {
   applicationId?: string;
@@ -62,7 +62,7 @@ export default function ServiceReviewCTA({
     <Button size="sm" variant="default" className={className} asChild>
       <Link href={href}>
         <MessageSquarePlus className="mr-1 h-4 w-4" />
-        이용 후기 작성
+        후기 작성하기
       </Link>
     </Button>
   );

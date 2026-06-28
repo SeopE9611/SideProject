@@ -426,7 +426,20 @@ export default function ReviewWritePage() {
           setState("unauthorized");
           return;
         }
+
         const data = await r.json();
+        if (
+          mode === "product" &&
+          data?.reason === "serviceLinkedOrder" &&
+          data?.suggestedApplicationId
+        ) {
+          router.replace(
+            `/reviews/write?service=stringing&applicationId=${encodeURIComponent(
+              String(data.suggestedApplicationId),
+            )}`,
+          );
+          return;
+        }
         // 서버가 추천해준 주문ID가 있으면 저장
         if (data.suggestedOrderId && !resolvedOrderId) {
           setResolvedOrderId(String(data.suggestedOrderId));
@@ -465,6 +478,7 @@ export default function ReviewWritePage() {
     allowGuestCheckout,
     authChecked,
     blockedByLoginGate,
+    router,
   ]);
 
   // 서비스 모드: 내 신청서 목록 + 추천값 세팅
@@ -649,21 +663,21 @@ export default function ReviewWritePage() {
   const locked = state !== "ok" || (mode === "service" && !selectedAppId);
 
   const badge =
-    state === "loading"
-      ? "검증 중…"
-      : state === "already"
-        ? "이미 작성한 대상입니다"
-        : state === "serviceLinkedOrder"
-          ? "상품+교체서비스 후기 대상입니다"
-          : state === "notPurchased"
-            ? "아직 후기를 작성할 수 없어요"
-            : state === "unauthorized"
-              ? "로그인이 필요합니다"
-              : state === "invalid"
-                ? "작성할 후기를 찾을 수 없어요"
-                : state === "error"
-                  ? "오류"
-                  : null;
+    state === "loading" ? (
+      "검증 중…"
+    ) : state === "already" ? (
+      "이미 작성한 대상입니다"
+    ) : state === "serviceLinkedOrder" ? (
+      <p className="font-medium">상품 + 교체서비스 후기 대상입니다.</p>
+    ) : state === "notPurchased" ? (
+      "아직 후기를 작성할 수 없어요"
+    ) : state === "unauthorized" ? (
+      "로그인이 필요합니다"
+    ) : state === "invalid" ? (
+      "작성할 후기를 찾을 수 없어요"
+    ) : state === "error" ? (
+      "오류"
+    ) : null;
 
   // 주문 아이템 + 현재 상품 메타 로드
   useEffect(() => {
@@ -867,7 +881,7 @@ export default function ReviewWritePage() {
   };
 
   const targetTitle =
-    mode === "product" ? "상품 후기" : mode === "service" ? "상품+교체서비스 후기" : "리뷰 대상";
+    mode === "product" ? "상품 후기" : mode === "service" ? "상품 + 교체서비스 후기" : "리뷰 대상";
   const selectedStringNames = (selectedApp?.stringItems || [])
     .map((s) => s.name)
     .filter(Boolean)
@@ -1031,7 +1045,9 @@ export default function ReviewWritePage() {
 
                 <section className="space-y-3">
                   <div className="flex items-end justify-between gap-3">
-                    <Label className="text-ui-body-lg font-semibold text-foreground">후기 내용</Label>
+                    <Label className="text-ui-body-lg font-semibold text-foreground">
+                      후기 내용
+                    </Label>
                     <span className="text-ui-label text-muted-foreground tabular-nums">
                       {content.length} / 1000자
                     </span>
@@ -1047,7 +1063,9 @@ export default function ReviewWritePage() {
 
                 <section className="space-y-3">
                   <div>
-                    <Label className="text-ui-body-lg font-semibold text-foreground">사진 첨부</Label>
+                    <Label className="text-ui-body-lg font-semibold text-foreground">
+                      사진 첨부
+                    </Label>
                     <p className="mt-1 text-ui-body-sm text-muted-foreground">
                       선택 사항이며 최대 5장까지 등록할 수 있습니다.
                     </p>
@@ -1066,7 +1084,9 @@ export default function ReviewWritePage() {
                       disabled={locked || isUploading}
                     />
                     {isUploading && (
-                      <div className="mt-2 text-ui-label text-muted-foreground">이미지 업로드 중...</div>
+                      <div className="mt-2 text-ui-label text-muted-foreground">
+                        이미지 업로드 중...
+                      </div>
                     )}
                   </div>
                 </section>
@@ -1109,7 +1129,7 @@ export default function ReviewWritePage() {
                     )}
                     {state === "serviceLinkedOrder" && (
                       <div className="space-y-1">
-                        <p className="font-medium">상품+교체서비스 후기 대상입니다.</p>
+                        <p className="font-medium">상품 + 교체서비스 후기 대상입니다.</p>
                         <p className="text-muted-foreground">
                           연결된 교체서비스 수령확인 후 상품과 서비스 경험을 함께 남겨주세요.
                         </p>
@@ -1225,7 +1245,9 @@ export default function ReviewWritePage() {
                 <div className="rounded-2xl border border-border bg-muted/30 p-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-ui-body-sm font-medium text-foreground">교체서비스 신청 정보</p>
+                      <p className="text-ui-body-sm font-medium text-foreground">
+                        교체서비스 신청 정보
+                      </p>
                       {selectedApp.createdAt && (
                         <p className="mt-1 text-ui-label text-muted-foreground">
                           신청일 {formatKoDateTime(selectedApp.createdAt)}
@@ -1284,7 +1306,9 @@ export default function ReviewWritePage() {
                 <div className="space-y-2 border-t border-border pt-4">
                   <div className="flex items-center justify-between gap-3 text-ui-body-sm">
                     <span className="font-medium text-foreground">이 주문의 다른 상품</span>
-                    <span className="text-ui-label text-muted-foreground">미작성 {remainingCount}개</span>
+                    <span className="text-ui-label text-muted-foreground">
+                      미작성 {remainingCount}개
+                    </span>
                   </div>
                   <div className="space-y-2">
                     {orderItems.map((it) => {

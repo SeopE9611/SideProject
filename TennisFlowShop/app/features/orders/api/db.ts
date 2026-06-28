@@ -1,10 +1,10 @@
 // 주문 관련 DB 작업 전용 유틸
+import { normalizeOrderStatus, normalizePaymentStatus } from "@/lib/admin-ops-normalize";
+import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 import clientPromise from "@/lib/mongodb";
+import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
 import { DBOrder } from "@/lib/types/order-db";
 import { ObjectId } from "mongodb";
-import { normalizeOrderStatus, normalizePaymentStatus } from "@/lib/admin-ops-normalize";
-import { normalizeOrderShippingMethod } from "@/lib/order-shipping";
-import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 
 function hasRefundAccount(account: any): boolean {
   if (!account || typeof account !== "object") return false;
@@ -344,7 +344,7 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
     )
   ).filter(Boolean); // ← null 제거
 
-  // 정책 A: /admin/orders(및 공용 목록 API)는 "주문 + 교체서비스 신청"만 다룬다.
+  // 정책 A: /admin/orders(및 공용 목록 API)는 "상품 구매 + 교체서비스 신청"만 다룬다.
   // 대여 주문(rental_orders)은 /admin/rentals 및 전용 API에서만 관리한다.
   // 따라서 이 통합 목록에는 rental_orders를 append하지 않는다.
   const orderIds = new Set(orders.map((order) => order.id));

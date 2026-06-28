@@ -140,7 +140,7 @@ export default function ReviewCard({
       ? item.productName
       : item.serviceTitle ||
         item.serviceTargetName ||
-        (item.service === "stringing" ? "상품+교체서비스 이용 후기" : "서비스");
+        (item.service === "stringing" ? "상품 + 교체서비스 이용 후기" : "서비스");
 
   // 연타/경합 제어용
   const [pending, setPending] = useState(false); // 처리 중 버튼 잠금
@@ -361,7 +361,9 @@ export default function ReviewCard({
         {/* Author info with tennis styling */}
         <div className="flex items-center gap-2 text-ui-label">
           <div className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-secondary text-foreground">
-            <span className="font-semibold text-ui-micro">{displayName.charAt(0).toUpperCase()}</span>
+            <span className="font-semibold text-ui-micro">
+              {displayName.charAt(0).toUpperCase()}
+            </span>
           </div>
           <span className="font-medium text-muted-foreground">{displayName}</span>
         </div>
@@ -376,7 +378,9 @@ export default function ReviewCard({
               />
             ))}
           </div>
-          <span className="ml-1 text-ui-body-sm font-semibold text-foreground">{item.rating}/5</span>
+          <span className="ml-1 text-ui-body-sm font-semibold text-foreground">
+            {item.rating}/5
+          </span>
         </div>
 
         {/* Content */}

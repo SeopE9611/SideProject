@@ -1,11 +1,11 @@
 import { adminTypography } from "@/components/admin/admin-typography";
-import ShippingFormClient from "./ShippingFormClient";
-import { headers } from "next/headers";
-import Link from "next/link";
+import { hasAnyRegisteredFulfillmentField, isVisitPickupOrder } from "@/lib/order-shipping";
 import { Store, Truck } from "lucide-react";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { hasAnyRegisteredFulfillmentField, isVisitPickupOrder } from "@/lib/order-shipping";
+import ShippingFormClient from "./ShippingFormClient";
 
 export const metadata: Metadata = {
   title: "배송 정보 수정",
@@ -81,7 +81,7 @@ export default async function ShippingUpdatePage({ params }: { params: Promise<{
 
   const order = await res.json();
 
-  // "상품 주문 + 교체서비스 신청서"로 연결된 케이스는
+  // "상품 상품 구매 + 교체서비스 신청서"로 연결된 케이스는
   // 배송/운송장 관리를 신청서에서만 하도록 단일화한다.
   // 주문 배송등록 URL로 들어오면 신청서 배송등록으로 강제 이동(관리자 혼란 방지)
   const apps: StringingApplicationLite[] = Array.isArray(order?.stringingApplications)

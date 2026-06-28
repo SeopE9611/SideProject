@@ -42,12 +42,12 @@ import {
   flowBadgeClass,
   getOrderStatusBadgeSpec,
   getPaymentStatusBadgeSpec,
-  getShippingBadge,
   getShippingMethodBadge,
   getTrackingBadge,
   kindBadgeClass,
   linkBadgeClass,
 } from "@/lib/badge-style";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { shortenId } from "@/lib/shorten";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -69,7 +69,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
-import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 
 export default function OrdersClient() {
   function getSelectedColorLabel(value: {
@@ -563,7 +562,7 @@ export default function OrdersClient() {
         return;
       }
 
-      // "상품 주문 + 교체서비스 신청서"가 연결된 케이스면
+      // "상품 상품 구매 + 교체서비스 신청서"가 연결된 케이스면
       // 운송장/배송정보는 "신청서"에서만 관리하도록 강제한다.
       // - 따라서 신청서 배송등록 페이지로 자동 이동
       const appIdFromList =
@@ -966,7 +965,7 @@ export default function OrdersClient() {
                 </TableRow>
               ) : (
                 groupLinkedOrders(orders).map((group, groupIdx) => {
-                  // 이 그룹이 "상품 주문 + 교체서비스 신청서" 묶음인지 체크
+                  // 이 그룹이 "상품 상품 구매 + 교체서비스 신청서" 묶음인지 체크
                   const hasStringingAppInGroup = group.some(
                     (o) => o.__type === "stringing_application",
                   );
@@ -1275,7 +1274,10 @@ export default function OrdersClient() {
                           </div>
                         </TableCell>
                         <TableCell className={tdClasses}>
-                          <span className="block max-w-full truncate text-left text-ui-body-sm text-foreground/75" title={order.customer.email}>
+                          <span
+                            className="block max-w-full truncate text-left text-ui-body-sm text-foreground/75"
+                            title={order.customer.email}
+                          >
                             {order.customer.email || "-"}
                           </span>
                         </TableCell>

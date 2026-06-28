@@ -1,12 +1,12 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import CustomerEditForm from "@/app/features/orders/components/CustomerEditForm";
 import OrderHistory from "@/app/features/orders/components/OrderHistory";
 import OrderStatusSelect from "@/app/features/orders/components/OrderStatusSelect";
 import PaymentEditForm from "@/app/features/orders/components/PaymentEditForm";
 import PaymentMethodDetail from "@/app/features/orders/components/PaymentMethodDetail";
 import RequestEditForm from "@/app/features/orders/components/RequestEditForm";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
@@ -38,11 +38,11 @@ import {
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { inferNextActionForOperationGroup } from "@/lib/admin/next-action-guidance";
 import {
   isApplicationClosedForLinkedAutomation,
   isOrderBlockedForLinkedAutomation,
 } from "@/lib/admin/linked-flow-stage";
+import { inferNextActionForOperationGroup } from "@/lib/admin/next-action-guidance";
 import {
   badgeBase,
   badgeSizeSm,
@@ -54,6 +54,13 @@ import {
   buildAdminCancelRequestView,
   normalizeAdminCancelRequestStatus,
 } from "@/lib/cancel-request/admin-cancel-request-view";
+import { stringColorLabel } from "@/lib/constants";
+import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import {
+  trackingSWRFetcher,
+  type TrackingSWRFetcherError,
+} from "@/lib/fetchers/trackingSWRFetcher";
+import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import {
   getOrderDeliveryInfoTitle,
   getOrderStatusLabelForDisplay,
@@ -66,22 +73,14 @@ import {
   getAdminCancelPolicyMessage,
   isAdminCancelableOrderStatus,
 } from "@/lib/orders/cancel-refund-policy";
-import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
-import {
-  trackingSWRFetcher,
-  type TrackingSWRFetcherError,
-} from "@/lib/fetchers/trackingSWRFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
-import { stringColorLabel } from "@/lib/constants";
-import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import {
   ArrowLeft,
   Calendar,
-  CreditCard,
   Copy,
+  CreditCard,
   Edit3,
   LinkIcon,
   Mail,
@@ -94,6 +93,7 @@ import {
   Truck,
   User,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -293,7 +293,6 @@ type AdminNextActionGuide = {
   actionLabel?: string;
   actionHref?: string;
 };
-
 
 type OrderTrackingResponse =
   | {
@@ -533,7 +532,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   const shouldShowLinkedSelfShipSummary = latestLinkedApplication?.needsInboundTracking === true;
 
   // 연결된 교체서비스 신청서 ID(있다면 최신 1개를 우선 사용)
-  // - 주문 + 교체서비스가 묶인 케이스에서는 운송장/배송정보를 '신청서'에서 단일 관리하도록 통일.
+  // - 상품 구매 + 교체서비스가 묶인 케이스에서는 운송장/배송정보를 '신청서'에서 단일 관리하도록 통일.
   const linkedStringingAppId =
     latestLinkedApplication?.id ?? orderDetail.stringingApplicationId ?? null;
   const isShippingManagedByApplication = Boolean(linkedStringingAppId);
@@ -909,7 +908,7 @@ export default function OrderDetailClient({ orderId }: Props) {
       return;
     }
 
-    // 연결 주문(주문 + 교체서비스 신청서)인 경우:
+    // 연결 주문(상품 구매 + 교체서비스 신청서)인 경우:
     // 배송정보/운송장은 신청서에서 단일 관리 → 신청서 배송등록 페이지로 이동
     if (isShippingManagedByApplication && linkedStringingAppId) {
       showSuccessToast(
@@ -934,12 +933,13 @@ export default function OrderDetailClient({ orderId }: Props) {
                   <Settings className="h-8 w-8 text-primary" />
                 </div>
                 <div className="min-w-0">
-                  <h1 className={adminTypography.pageTitle}>
-                    주문 상세 관리
-                  </h1>
+                  <h1 className={adminTypography.pageTitle}>주문 상세 관리</h1>
                   <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-ui-body-sm text-foreground/75">
                     <span className="font-medium text-foreground/90">주문 ID: #{shortOrderId}</span>
-                    <span className="max-w-full truncate font-mono text-ui-label" title={orderDetail._id}>
+                    <span
+                      className="max-w-full truncate font-mono text-ui-label"
+                      title={orderDetail._id}
+                    >
                       {orderDetail._id}
                     </span>
                     <Button
@@ -1010,7 +1010,7 @@ export default function OrderDetailClient({ orderId }: Props) {
             {/* 상태 요약 카드 */}
             <div className={adminSurface.statusGrid}>
               <AdminStatusCard
-                    density="compact"
+                density="compact"
                 title="주문 상태"
                 value={(() => {
                   const st = getOrderStatusBadgeSpec(localStatus);
@@ -1025,7 +1025,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 tone={isCancelRequested ? "danger" : "neutral"}
               />
               <AdminStatusCard
-                    density="compact"
+                density="compact"
                 title="결제 상태"
                 value={(() => {
                   const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
@@ -1040,7 +1040,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 tone={needsPaymentCheck ? "warning" : "neutral"}
               />
               <AdminStatusCard
-                    density="compact"
+                density="compact"
                 title="수령/배송"
                 value={
                   <Badge variant={shippingMethodBadge.variant} className={summaryBadgeClass}>
@@ -1059,7 +1059,7 @@ export default function OrderDetailClient({ orderId }: Props) {
               />
               {isLinkedStringingOrder ? (
                 <AdminStatusCard
-                    density="compact"
+                  density="compact"
                   title="연결 교체 작업"
                   value="주문에 포함된 교체 작업"
                   description={
@@ -1072,7 +1072,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 />
               ) : (
                 <AdminStatusCard
-                    density="compact"
+                  density="compact"
                   title="연결 교체 작업"
                   value="교체 작업 없음"
                   description="일반 주문으로 처리합니다."
@@ -1091,7 +1091,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                   tone={cancelInfo.tone}
                   rightSlot={
                     <div className="rounded-md border border-border/60 bg-background/60 px-3 py-2">
-                      <p className="text-ui-label font-medium text-muted-foreground">환불 계좌 정보</p>
+                      <p className="text-ui-label font-medium text-muted-foreground">
+                        환불 계좌 정보
+                      </p>
                       <dl className="mt-2 space-y-1 text-ui-label text-foreground/90">
                         <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
                           <dt className="text-muted-foreground">환불 은행</dt>
@@ -1127,7 +1129,10 @@ export default function OrderDetailClient({ orderId }: Props) {
                     ? "정상"
                     : "안내"
             }
-            stage={orderGuide.stage || getOrderStatusLabelForDisplay(localStatus, orderDetail.shippingInfo)}
+            stage={
+              orderGuide.stage ||
+              getOrderStatusLabelForDisplay(localStatus, orderDetail.shippingInfo)
+            }
             nextActionTitle={nextActionGuide.title}
             nextActionDescription={nextActionGuide.description}
             primaryAction={
@@ -1138,7 +1143,13 @@ export default function OrderDetailClient({ orderId }: Props) {
               ) : null
             }
             secondaryActions={recommendedActions.slice(0, 2).map((action) => (
-              <Button key={action.href} asChild size="sm" variant="outline" className="bg-transparent">
+              <Button
+                key={action.href}
+                asChild
+                size="sm"
+                variant="outline"
+                className="bg-transparent"
+              >
                 <a href={action.href}>{action.label}</a>
               </Button>
             ))}
@@ -1146,10 +1157,19 @@ export default function OrderDetailClient({ orderId }: Props) {
             footer={
               latestProcessingHistory ? (
                 <div className="grid gap-1.5 leading-relaxed sm:grid-cols-2">
-                  <p><span className="font-medium text-foreground">마지막 처리:</span> {latestProcessingHistory.status ?? "기록 없음"}</p>
-                  <p><span className="font-medium text-foreground">처리 시각:</span> {latestProcessingDate}</p>
+                  <p>
+                    <span className="font-medium text-foreground">마지막 처리:</span>{" "}
+                    {latestProcessingHistory.status ?? "기록 없음"}
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">처리 시각:</span>{" "}
+                    {latestProcessingDate}
+                  </p>
                   {latestProcessingHistory.description ? (
-                    <p className="sm:col-span-2"><span className="font-medium text-foreground">내용:</span> {latestProcessingHistory.description}</p>
+                    <p className="sm:col-span-2">
+                      <span className="font-medium text-foreground">내용:</span>{" "}
+                      {latestProcessingHistory.description}
+                    </p>
                   ) : null}
                 </div>
               ) : null
@@ -1183,7 +1203,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                       </p>
                       <p className={cn("md:text-right", adminTypography.meta)}>
                         다음 할 일:{" "}
-                        <span className="font-semibold text-foreground">{orderGuide.nextAction}</span>
+                        <span className="font-semibold text-foreground">
+                          {orderGuide.nextAction}
+                        </span>
                       </p>
                     </div>
                   )}
@@ -1214,7 +1236,8 @@ export default function OrderDetailClient({ orderId }: Props) {
                               className="flex flex-col gap-2 border-b border-border/50 py-2 last:border-0 sm:flex-row sm:items-center sm:justify-between"
                             >
                               <p className="text-ui-body-sm text-foreground/80">
-                                교체 작업 ID: <span className="font-mono text-foreground">{doc.id}</span>
+                                교체 작업 ID:{" "}
+                                <span className="font-mono text-foreground">{doc.id}</span>
                               </p>
                               <div className="flex items-center gap-2">
                                 <Button
@@ -1246,7 +1269,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                           </p>
                         )}
                       </div>
-                      <p className="mt-3 text-ui-label text-foreground/75">{latestPackageSummary}</p>
+                      <p className="mt-3 text-ui-label text-foreground/75">
+                        {latestPackageSummary}
+                      </p>
                     </div>
 
                     <div className="rounded-lg border border-border/40 bg-transparent p-3 shadow-none">
@@ -1476,7 +1501,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                           이 영역은 현재 주문의 개별 상태만 조정합니다.
                         </div>
                         <div>
-                          <p className="text-ui-body-sm font-semibold text-foreground">주문 진행 상태</p>
+                          <p className="text-ui-body-sm font-semibold text-foreground">
+                            주문 진행 상태
+                          </p>
                           <p className="mt-1 text-ui-label text-foreground/75">
                             현재 주문의 진행 단계를 확인하고 필요한 경우 상태를 변경합니다.
                           </p>
@@ -1493,7 +1520,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                     )}
 
                     {!isCanceled && (
-                      <p className="text-ui-label text-foreground/75">운영 기준: {cancelPolicyMessage}</p>
+                      <p className="text-ui-label text-foreground/75">
+                        운영 기준: {cancelPolicyMessage}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -1583,7 +1612,8 @@ export default function OrderDetailClient({ orderId }: Props) {
                     </AlertDialogHeader>
                     <div className="space-y-2">
                       <Label htmlFor="cancel-reject-memo">
-                        거절 사유 <span className="text-ui-label text-muted-foreground">(선택)</span>
+                        거절 사유{" "}
+                        <span className="text-ui-label text-muted-foreground">(선택)</span>
                       </Label>
                       <Textarea
                         id="cancel-reject-memo"
@@ -1734,7 +1764,8 @@ export default function OrderDetailClient({ orderId }: Props) {
                 </CardTitle>
                 {isShippingManagedByApplication && (
                   <CardDescription>
-                    고객 발송 라켓, 입고 확인, 작업 완료 후 반송 운송장을 교체 작업 기준으로 확인하거나 등록합니다.
+                    고객 발송 라켓, 입고 확인, 작업 완료 후 반송 운송장을 교체 작업 기준으로
+                    확인하거나 등록합니다.
                   </CardDescription>
                 )}
               </CardHeader>
@@ -1746,13 +1777,15 @@ export default function OrderDetailClient({ orderId }: Props) {
                       <div className="space-y-2">
                         <p className="font-medium">
                           이 주문은 교체서비스 신청서와 연결되어 있어{" "}
-                          {isVisitPickup ? "방문 접수·인도 정보" : "고객 발송 라켓 정보"}를 교체 작업에서
-                          관리합니다.
+                          {isVisitPickup ? "방문 접수·인도 정보" : "고객 발송 라켓 정보"}를 교체
+                          작업에서 관리합니다.
                         </p>
                         <div className="flex items-center space-x-3 p-3 bg-card/70 dark:bg-card/30 rounded-lg border border-border/60 dark:border-border">
                           <Truck className="h-4 w-4 text-primary" />
                           <div>
-                            <p className="text-ui-body-sm text-foreground/80">주문 시 선택한 수령 방식</p>
+                            <p className="text-ui-body-sm text-foreground/80">
+                              주문 시 선택한 수령 방식
+                            </p>
                             <p className="font-semibold text-primary">{shippingMethodLabel}</p>
                           </div>
                         </div>
@@ -1795,8 +1828,8 @@ export default function OrderDetailClient({ orderId }: Props) {
                         </div>
 
                         <p className="text-ui-label text-foreground/75">
-                          이 영역은 고객 발송 라켓과 작업 완료 후 반송 정보를 확인하거나 등록하는 곳입니다.
-                          주문과 신청서의 진행 상태는 연결 진행 단계에서 함께 변경하세요.
+                          이 영역은 고객 발송 라켓과 작업 완료 후 반송 정보를 확인하거나 등록하는
+                          곳입니다. 주문과 신청서의 진행 상태는 연결 진행 단계에서 함께 변경하세요.
                         </p>
                       </div>
                     </div>
@@ -2054,7 +2087,9 @@ export default function OrderDetailClient({ orderId }: Props) {
                         <h4 className="line-clamp-2 break-keep font-semibold text-foreground">
                           {item.name}
                         </h4>
-                        <p className="text-ui-body-sm text-foreground/80">수량: {item.quantity}개</p>
+                        <p className="text-ui-body-sm text-foreground/80">
+                          수량: {item.quantity}개
+                        </p>
                         {item.selectedStringName && (
                           <p className="text-ui-label text-foreground/70">
                             선택 스트링: {item.selectedStringName}

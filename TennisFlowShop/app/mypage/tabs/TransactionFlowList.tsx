@@ -8,8 +8,8 @@ import {
   getMypageUserStatusLabel,
 } from "@/app/mypage/_lib/status-label";
 import ActivityOrderReviewCTA from "@/app/mypage/tabs/_components/ActivityOrderReviewCTA";
-import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import { EmptyState } from "@/components/public/EmptyState";
+import ServiceReviewCTA from "@/components/reviews/ServiceReviewCTA";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -216,7 +216,7 @@ const formatAmount = (amount?: number | null) => {
 
 const FLOW_TYPE_META_LABEL: Record<FlowType, string> = {
   order_only: "주문",
-  order_plus_stringing: "주문 + 교체서비스",
+  order_plus_stringing: "상품 구매 + 교체서비스",
   rental_only: "대여",
   rental_plus_stringing: "대여 + 교체서비스",
   application_only: "교체서비스",
@@ -385,7 +385,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
     }
 
     if (group.application?.serviceReviewPending) {
-      return "상품+교체서비스 후기 가능";
+      return "상품 + 교체서비스 후기 작성 가능";
     }
 
     return null;
@@ -406,7 +406,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
     }
 
     if (group.application?.serviceReviewPending) {
-      return "상품+교체서비스 후기 가능";
+      return "상품 + 교체서비스 후기 작성 가능";
     }
 
     if (!group.rental?.stringingApplicationId && group.rental?.withStringService) {
@@ -421,7 +421,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
   if (isApplicationTrackingNeeded(group.application)) return "라켓 발송 운송장 등록 필요";
   if (isApplicationConfirmNeeded(group.application)) return "교체서비스 확정 필요";
   if (group.application?.serviceReviewPending) {
-    return "상품+교체서비스 후기 가능";
+    return "상품 + 교체서비스 후기 작성 가능";
   }
 
   return null;
@@ -442,7 +442,8 @@ const getFlowNextActionText = (
       "교체서비스 확정 필요": "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.",
       "후기를 남길 수 있어요": "구매확정된 상품은 후기를 작성할 수 있어요.",
       "상품 후기 작성 가능": "구매확정된 상품은 후기를 작성할 수 있어요.",
-      "상품+교체서비스 후기 가능": "수령확인된 교체서비스 후기를 작성할 수 있어요.",
+      "상품 + 교체서비스 후기 작성 가능":
+        "수령확인된 교체서비스에 대해 상품과 서비스 경험을 함께 남겨주세요.",
       "교체서비스 신청 필요": "교체서비스 신청을 이어서 진행해주세요.",
     };
     return todoMessageMap[opts.todoPrimaryReason] ?? null;
@@ -1548,12 +1549,16 @@ export default function TransactionFlowList() {
                             asChild
                             size="sm"
                             variant={applicationActionTarget.hasTracking ? "outline" : "default"}
-                            className={applicationActionTarget.hasTracking ? "bg-transparent" : undefined}
+                            className={
+                              applicationActionTarget.hasTracking ? "bg-transparent" : undefined
+                            }
                           >
                             <Link
                               href={`/services/applications/${applicationActionTarget.id}/shipping?return=${encodeURIComponent(applicationShippingReturnHref)}`}
                             >
-                              {applicationActionTarget.hasTracking ? "라켓 발송 운송장 수정" : "라켓 발송 운송장 등록"}
+                              {applicationActionTarget.hasTracking
+                                ? "라켓 발송 운송장 수정"
+                                : "라켓 발송 운송장 등록"}
                             </Link>
                           </Button>
                         ),
