@@ -126,7 +126,7 @@ function RacketAvailBadge({
         variant={badgeToneVariant("neutral")}
         className="px-2 py-1 text-ui-label font-medium whitespace-nowrap animate-pulse"
       >
-        라켓 가용수량 확인중
+        구매·대여 가능 여부 확인 중
       </Badge>
     );
   }
@@ -138,7 +138,7 @@ function RacketAvailBadge({
         variant={badgeToneVariant("neutral")}
         className="px-2 py-1 text-ui-label font-medium whitespace-nowrap"
       >
-        라켓 가용수량 (0/0)
+        현재 구매·대여 불가
       </Badge>
     );
   }
@@ -150,7 +150,7 @@ function RacketAvailBadge({
         variant={badgeToneVariant("danger")}
         className="px-2 py-1 text-ui-label font-medium whitespace-nowrap"
       >
-        라켓 가용수량 (0/{qty})
+        현재 대여 중
       </Badge>
     );
   }
@@ -160,7 +160,7 @@ function RacketAvailBadge({
       variant={badgeToneVariant("brand")}
       className="px-2 py-1 text-ui-label font-medium whitespace-nowrap"
     >
-      라켓 가용수량 ({avail}/{qty})
+      구매·대여 가능 {avail}개
     </Badge>
   );
 }
@@ -292,7 +292,7 @@ const RacketCard = React.memo(
           ) : (
             <Button size="sm" className={disabledButtonClassName} disabled title={buyDisabledTitle}>
               <ShoppingCart className={iconClassName} />
-              품절
+              구매 불가
             </Button>
           )}
 
@@ -317,7 +317,7 @@ const RacketCard = React.memo(
                 title={rentDisabledTitle}
               >
                 <Briefcase className={iconClassName} />
-                품절
+                대여 불가
               </Button>
             )
           ) : (

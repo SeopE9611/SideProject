@@ -385,7 +385,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
     }
 
     if (group.application?.serviceReviewPending) {
-      return "상품 + 교체서비스 후기 작성 가능";
+      return "상품·교체서비스 후기 작성 가능";
     }
 
     return null;
@@ -406,7 +406,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
     }
 
     if (group.application?.serviceReviewPending) {
-      return "상품 + 교체서비스 후기 작성 가능";
+      return "상품·교체서비스 후기 작성 가능";
     }
 
     if (!group.rental?.stringingApplicationId && group.rental?.withStringService) {
@@ -421,7 +421,7 @@ const getTodoPrimaryReason = (group: ActivityGroup): string | null => {
   if (isApplicationTrackingNeeded(group.application)) return "라켓 발송 운송장 등록 필요";
   if (isApplicationConfirmNeeded(group.application)) return "교체서비스 확정 필요";
   if (group.application?.serviceReviewPending) {
-    return "상품 + 교체서비스 후기 작성 가능";
+    return "상품·교체서비스 후기 작성 가능";
   }
 
   return null;
@@ -442,7 +442,7 @@ const getFlowNextActionText = (
       "교체서비스 확정 필요": "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.",
       "후기를 남길 수 있어요": "구매확정된 상품은 후기를 작성할 수 있어요.",
       "상품 후기 작성 가능": "구매확정된 상품은 후기를 작성할 수 있어요.",
-      "상품 + 교체서비스 후기 작성 가능":
+      "상품·교체서비스 후기 작성 가능":
         "수령확인된 교체서비스에 대해 상품과 서비스 경험을 함께 남겨주세요.",
       "교체서비스 신청 필요": "교체서비스 신청을 이어서 진행해주세요.",
     };
@@ -958,13 +958,13 @@ export default function TransactionFlowList() {
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 shrink-0 text-primary" />
             <p className="break-keep text-ui-label font-medium text-foreground">
-              지금 처리할 수 있는 구매확정, 운송장, 후기 작성 항목만 모았습니다.
+              지금 처리할 수 있는 구매 확정, 운송장 등록, 후기 작성 항목만 모았습니다.
             </p>
           </div>
         </div>
       ) : null}
       <p className="break-keep text-ui-label text-muted-foreground">
-        주문·대여와 연결된 교체서비스를 함께 확인할 수 있습니다.
+        주문 내역, 신청 내역, 라켓 대여와 연결된 교체서비스 상태를 함께 확인할 수 있습니다.
       </p>
       {items.length === 0 ? (
         <EmptyState

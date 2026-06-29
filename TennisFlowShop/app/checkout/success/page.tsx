@@ -638,7 +638,7 @@ export default async function CheckoutSuccessPage({
                   <div className="mb-6">
                     <h3 className="mb-4 flex items-center gap-2 text-ui-card-title-lg font-semibold text-foreground">
                       <Shield className="h-5 w-5 text-primary" />
-                      {withStringService ? "주문/신청 정보" : "문서 정보"}
+                      {withStringService ? "주문·교체서비스 정보" : "주문 번호"}
                     </h3>
                     <div className="space-y-3 rounded-lg border border-border bg-background p-4">
                       <div>
@@ -655,7 +655,7 @@ export default async function CheckoutSuccessPage({
                         representativeStringingApplicationId && (
                           <div>
                             <span className="text-ui-body-sm text-muted-foreground">
-                              교체서비스 신청 번호:
+                              교체서비스 접수 번호:
                             </span>{" "}
                             <span className="break-all font-mono font-semibold text-foreground">
                               {representativeStringingApplicationId}

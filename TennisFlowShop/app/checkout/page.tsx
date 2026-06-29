@@ -276,7 +276,7 @@ function FinalPaymentConfirmCard({
       ? [
           {
             id: "package-usage",
-            label: "패키지 적용",
+            label: "패키지권 적용",
             value: packageUsage.usingPackage ? "적용됨" : "미사용",
           },
         ]
@@ -285,7 +285,7 @@ function FinalPaymentConfirmCard({
       ? [
           {
             id: "package-discount",
-            label: "패키지 차감 서비스비",
+            label: "패키지권 차감 금액",
             value: `-${baseServiceFee.toLocaleString()}원`,
           },
         ]
@@ -326,7 +326,7 @@ function FinalPaymentConfirmCard({
   return (
     <SummaryCard
       title="최종 결제 확인"
-      description="결제 예정 금액과 입금 정보를 마지막으로 확인하세요"
+      description="결제 예정 금액, 할인, 배송비를 마지막으로 확인하세요"
       contentClassName="space-y-5"
     >
       <PriceSummary rows={priceSummaryRows} />
