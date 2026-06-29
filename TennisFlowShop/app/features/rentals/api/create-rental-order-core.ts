@@ -779,12 +779,20 @@ export async function createRentalOrderCore(params: {
 
     if (!insertedId) throw new Error("RENTAL_INSERT_FAILED");
     const rentalId = String(insertedId);
-    const alertDoc = ((await rentalOrders.findOne({ _id: insertedId })) as any) ?? {
+    let alertDoc: any = {
       ...doc,
       _id: insertedId,
       stringingApplicationId,
       isStringServiceApplied: stringingSubmitted,
     };
+    try {
+      const savedRental = await rentalOrders.findOne({ _id: insertedId });
+      if (savedRental) {
+        alertDoc = savedRental as any;
+      }
+    } catch (error) {
+      console.warn("[admin-alerts] rental lookup failed", { rentalId, error });
+    }
     await sendAdminOperationalAlert({
       kind: "rental_order_created",
       title: "🎾 신규 라켓 대여 주문",
