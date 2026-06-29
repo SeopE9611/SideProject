@@ -1384,7 +1384,7 @@ export async function createOrder(
       );
     }
 
-    void sendAdminOperationalAlert({
+    await sendAdminOperationalAlert({
       kind: "order_created",
       title: "🛒 신규 주문 접수",
       summary: `신규 주문이 접수되었습니다. 관리자 주문 상세에서 확인해 주세요.`,
