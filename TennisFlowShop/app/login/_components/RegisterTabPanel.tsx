@@ -569,6 +569,32 @@ export default function RegisterTabPanel({
           </p>
         </div>
 
+        {!isSocialOauthRegister && (
+          <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
+            <p className="text-center text-ui-body-sm font-semibold text-foreground">
+              SNS 계정으로 빠르게 가입
+            </p>
+            <SocialAuthButtons
+              onKakaoClick={onKakaoOAuth}
+              onNaverClick={onNaverOAuth}
+              isRegisterMode={true}
+            />
+          </div>
+        )}
+
+        {!isSocialOauthRegister && (
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-ui-label uppercase">
+              <span className="bg-card px-4 font-medium text-foreground dark:bg-muted">
+                또는 이메일로 가입
+              </span>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleRegister} className="space-y-5">
           {registerFormError && (
             <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-ui-label text-destructive">
@@ -588,8 +614,8 @@ export default function RegisterTabPanel({
 
               <div className="space-y-2">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                  <div className="flex w-full items-center gap-2 min-w-0">
-                    <div className="relative flex-1 min-w-0">
+                  <div className="grid w-full min-w-0 grid-cols-[1fr] gap-2 sm:flex sm:items-center">
+                    <div className="relative min-w-0 sm:flex-1">
                       <Input
                         id="register-email-id"
                         value={emailId}
@@ -609,10 +635,11 @@ export default function RegisterTabPanel({
                       <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     </div>
 
-                    <span className="text-muted-foreground">@</span>
+                    <span className="hidden text-muted-foreground sm:inline">@</span>
 
                     {isCustomDomain ? (
-                      <div className="flex flex-1 items-center gap-2 min-w-0">
+                      <div className="flex min-w-0 items-center gap-2 sm:flex-1">
+                        <span className="shrink-0 text-muted-foreground sm:hidden">@</span>
                         <Input
                           id="register-email-domain"
                           value={emailDomain}
@@ -625,7 +652,7 @@ export default function RegisterTabPanel({
                             }));
                           }}
                           placeholder="도메인 직접 입력"
-                          className={`h-12 ${registerFieldErrors.emailDomain ? "border-destructive focus:border-destructive" : ""}`}
+                          className={`h-12 min-w-0 flex-1 ${registerFieldErrors.emailDomain ? "border-destructive focus:border-destructive" : ""}`}
                           disabled={isSocialOauthRegister}
                         />
                         {!isSocialOauthRegister && (
@@ -644,7 +671,8 @@ export default function RegisterTabPanel({
                         )}
                       </div>
                     ) : (
-                      <div className="flex flex-1 min-w-0">
+                      <div className="flex min-w-0 items-center gap-2 sm:flex-1">
+                        <span className="shrink-0 text-muted-foreground sm:hidden">@</span>
                         <Select
                           value={emailDomain}
                           onValueChange={(v) => {
@@ -665,7 +693,7 @@ export default function RegisterTabPanel({
                         >
                           <SelectTrigger
                             id="register-email-domain"
-                            className={`h-12 ${registerFieldErrors.emailDomain ? "border-destructive focus:border-destructive" : ""}`}
+                            className={`h-12 min-w-0 flex-1 ${registerFieldErrors.emailDomain ? "border-destructive focus:border-destructive" : ""}`}
                           >
                             <SelectValue placeholder="도메인 선택" />
                           </SelectTrigger>
@@ -887,27 +915,26 @@ export default function RegisterTabPanel({
             </div>
 
             <div className="md:col-span-2 space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-foreground font-medium">우편번호</Label>
+              <Label className="text-foreground font-medium">우편번호</Label>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Input
+                  id="register-postal-code"
+                  value={postalCode}
+                  placeholder="우편번호를 입력하세요"
+                  readOnly
+                  className="h-12 max-w-none cursor-not-allowed border-border bg-muted sm:max-w-xs"
+                />
                 <Button
                   id="register-find-postcode"
                   type="button"
                   variant="outline"
-                  size="sm"
-                  className="border-border text-foreground hover:bg-muted dark:hover:bg-muted bg-transparent"
+                  className="h-12 w-full border-border bg-transparent text-foreground hover:bg-muted dark:hover:bg-muted sm:w-auto"
                   onClick={handleFindPostcode}
                 >
                   <MapPin className="mr-2 h-4 w-4" />
                   우편번호 찾기
                 </Button>
               </div>
-              <Input
-                id="register-postal-code"
-                value={postalCode}
-                placeholder="우편번호를 입력하세요"
-                readOnly
-                className="bg-muted cursor-not-allowed max-w-xs h-12 border-border"
-              />
               {registerFieldErrors.postalCode && (
                 <div className="mt-2 flex items-center gap-2 text-ui-label text-destructive">
                   <AlertCircle className="h-4 w-4" />
@@ -996,25 +1023,6 @@ export default function RegisterTabPanel({
               "회원가입"
             )}
           </Button>
-          {!isSocialOauthRegister && (
-            <>
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-ui-label uppercase">
-                  <span className="bg-card dark:bg-muted px-4 text-foreground font-medium">
-                    SNS 계정으로 가입
-                  </span>
-                </div>
-              </div>
-              <SocialAuthButtons
-                onKakaoClick={onKakaoOAuth}
-                onNaverClick={onNaverOAuth}
-                isRegisterMode={true}
-              />
-            </>
-          )}
         </form>
       </div>
     </TabsContent>

@@ -25,17 +25,17 @@ export function AuthShell({
     <section
       aria-labelledby={titleId}
       className={cn(
-        "flex min-h-[calc(100vh-8rem)] items-center justify-center bg-background px-4 py-8 sm:px-6",
+        "flex min-h-[calc(100vh-8rem)] items-center justify-center bg-background px-4 py-6 sm:px-6 sm:py-8",
         className,
       )}
     >
       <div
         className={cn(
-          "w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-sm sm:p-8",
+          "w-full max-w-md rounded-xl border border-border bg-card p-4 shadow-sm sm:p-8",
           panelClassName,
         )}
       >
-        <header className="mb-6 space-y-2 text-center">
+        <header className="mb-5 space-y-2 text-center sm:mb-6">
           <h1
             id={titleId}
             className="text-ui-section-title font-semibold tracking-tight text-foreground"
