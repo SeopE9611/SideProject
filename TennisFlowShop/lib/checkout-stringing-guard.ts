@@ -12,12 +12,19 @@ export const STRINGING_APPLICATION_REQUIRED_CLIENT_MESSAGE =
 
 export function hasStringingServiceInCheckout(input: {
   withStringService?: unknown;
-  shippingInfo?: { withStringService?: unknown } | null;
+  isStringServiceApplied?: unknown;
+  shippingInfo?: unknown;
   stringing?: { requested?: unknown } | null;
 }): boolean {
+  const shippingInfo =
+    input.shippingInfo && typeof input.shippingInfo === "object"
+      ? (input.shippingInfo as { withStringService?: unknown })
+      : null;
+
   return Boolean(
     input.withStringService === true ||
-      input.shippingInfo?.withStringService === true ||
+      input.isStringServiceApplied === true ||
+      shippingInfo?.withStringService === true ||
       input.stringing?.requested === true,
   );
 }

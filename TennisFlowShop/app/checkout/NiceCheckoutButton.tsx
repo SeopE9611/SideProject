@@ -98,10 +98,10 @@ export default function NiceCheckoutButton({
       setScriptReady(true);
     };
 
-    attachScript().catch((error: any) => {
+    attachScript().catch((error: unknown) => {
       if (!mounted) return;
       setScriptReady(false);
-      const code = String(error?.message || "");
+      const code = error instanceof Error ? error.message : "";
       if (code === "NICE_SCRIPT_LOAD_FAILED") {
         setScriptError("카드/간편결제 모듈을 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.");
         return;
@@ -125,7 +125,7 @@ export default function NiceCheckoutButton({
     setInlineError(null);
 
     const stringingInputValidation = validateStringingApplicationInputForOrder(
-      hasStringingServiceInCheckout({ shippingInfo: payload?.shippingInfo as any }),
+      hasStringingServiceInCheckout({ shippingInfo: payload?.shippingInfo }),
       payload?.stringingApplicationInput,
     );
     if (!stringingInputValidation.ok) {
@@ -181,17 +181,21 @@ export default function NiceCheckoutButton({
         buyerName: prepJson.nice.buyerName,
         buyerTel: prepJson.nice.buyerTel,
         buyerEmail: prepJson.nice.buyerEmail,
-        fnError: (result: any) => {
+        fnError: (result: unknown) => {
+          const errorResult =
+            result && typeof result === "object"
+              ? (result as { errorMsg?: unknown; message?: unknown })
+              : null;
           const msg = String(
-            result?.errorMsg || result?.message || "결제가 취소되었거나 실패했습니다.",
+            errorResult?.errorMsg || errorResult?.message || "결제가 취소되었거나 실패했습니다.",
           );
           setInlineError(msg);
           setLoading(false);
           onSuccessNavigationAbort?.();
         },
       });
-    } catch (error: any) {
-      setInlineError(error?.message || "카드/간편결제 요청에 실패했습니다.");
+    } catch (error: unknown) {
+      setInlineError(error instanceof Error ? error.message : "카드/간편결제 요청에 실패했습니다.");
       setLoading(false);
     }
   };

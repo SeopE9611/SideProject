@@ -351,7 +351,10 @@ export async function createOrder(
     }
 
     const stringingInputValidation = validateStringingApplicationInputForOrder(
-      hasStringingServiceInCheckout({ shippingInfo }),
+      hasStringingServiceInCheckout({
+        shippingInfo,
+        isStringServiceApplied: body?.isStringServiceApplied,
+      }),
       stringingApplicationInput,
     );
     if (!stringingInputValidation.ok) {
