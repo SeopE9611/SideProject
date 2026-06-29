@@ -278,18 +278,18 @@ export default function SelectStringLayout({
   const headerTitle = isRentalDesign
     ? "대여 라켓에 장착할 스트링을 선택하세요"
     : isRacketPurchaseDesign
-      ? "라켓에 장착할 스트링을 선택하세요"
+      ? "라켓 구매에 함께 장착할 스트링을 선택하세요"
       : "스트링 및 교체서비스 선택";
   const headerDescription = isRentalDesign
     ? "선택한 대여 라켓을 확인하고 장착할 스트링을 고른 뒤 대여 신청 단계로 이어가세요."
     : isRacketPurchaseDesign
       ? isCartEditMode
-        ? "장바구니 번들의 스트링을 변경합니다. 선택한 옵션은 다음 단계에서 다시 확인할 수 있습니다."
-        : "선택한 라켓을 확인하고 장착할 스트링을 고른 뒤 결제로 이어가세요."
+        ? "장바구니의 라켓+스트링 구성을 변경합니다. 선택한 옵션은 다음 단계에서 다시 확인할 수 있습니다."
+        : "현재 라켓 구매 과정입니다. 라켓 정보를 확인하고 장착할 스트링을 고르면 결제 단계로 이동합니다."
       : flowType === "rental"
         ? "대여 라켓에 장착할 스트링을 선택해주세요. 장착 후 출고되는 흐름입니다"
         : isCartEditMode
-          ? "장바구니 번들의 스트링을 변경합니다"
+          ? "장바구니의 라켓+스트링 구성을 변경합니다"
           : "라켓과 함께 구매할 스트링을 선택해주세요. 선택 완료 후 결제와 장착 정보 입력으로 이어집니다";
 
   const renderSelectedRacketSummary = () => (
@@ -301,7 +301,7 @@ export default function SelectStringLayout({
             <Check className="h-3.5 w-3.5 text-primary" />
           </div>
           <span className="text-ui-body-sm font-semibold text-foreground">
-            {flowType === "rental" ? "대여 라켓 요약" : "선택된 라켓"}
+            {flowType === "rental" ? "대여 라켓 요약" : "구매할 라켓"}
           </span>
         </div>
       </div>
@@ -475,7 +475,7 @@ export default function SelectStringLayout({
               </Badge>
               <Badge className="rounded-full">2 스트링 선택</Badge>
               <Badge variant="outline" className="rounded-full">
-                3 결제 진행
+                3 결제·장착 정보
               </Badge>
             </div>
             <div>
@@ -589,7 +589,7 @@ export default function SelectStringLayout({
               <span className="min-w-0 break-keep text-ui-label">
                 {flowType === "rental"
                   ? "대여 라켓에 장착할 스트링을 선택하세요"
-                  : "브랜드·가격·옵션을 확인한 뒤 원하는 스트링을 선택하세요"}
+                  : "브랜드, 가격, 굵기와 색상을 확인한 뒤 장착할 스트링을 선택하세요"}
               </span>
             </div>
 

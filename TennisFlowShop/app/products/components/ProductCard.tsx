@@ -456,7 +456,7 @@ const ProductCard = React.memo(
                     disabled={isSoldOut}
                     className="h-9 whitespace-nowrap sm:h-10 text-ui-label sm:text-ui-body-sm"
                   >
-                    레거시 단품 구매
+                    스트링만 구매
                   </Button>
                 )}
               </div>
@@ -592,7 +592,7 @@ const ProductCard = React.memo(
               onClick={handleStringSingleBuy}
               disabled={isSoldOut}
             >
-              레거시 단품 구매
+              스트링만 구매
             </Button>
           )}
 

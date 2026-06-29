@@ -238,7 +238,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
 
     // Validation
     if (!hasVariantInventories && hasGaugeRows && !selectedGauge) {
-      showErrorToast?.("게이지를 선택해주세요.");
+      showErrorToast?.("스트링 굵기를 선택해주세요.");
       return;
     }
     if (!hasVariantInventories && hasGaugeRows && !selectedGaugeRow) {
@@ -254,7 +254,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
       return;
     }
     if (!hasVariantInventories && selectedGaugeRow && selectedGaugeRow.stock < qty) {
-      showErrorToast?.("선택한 게이지의 구매 가능 수량을 초과했습니다.");
+      showErrorToast?.("선택한 굵기의 구매 가능 수량을 초과했습니다.");
       return;
     }
 
@@ -263,7 +263,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
     const selectedColorRow = colorRows.find((row) => row.value === selectedColor);
 
     if (hasColorRows && !selectedColor) {
-      showErrorToast?.("색상을 선택해주세요.");
+      showErrorToast?.("스트링 색상을 선택해주세요.");
       return;
     }
     if (!hasVariantInventories && hasColorRows && selectedColor && !selectedColorRow) {
@@ -280,14 +280,14 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
     }
 
     if (hasVariantInventories) {
-      if (!selectedColor) return showErrorToast?.("색상을 선택해주세요.");
-      if (!selectedGauge) return showErrorToast?.("게이지를 선택해주세요.");
-      if (!selectedVariant) return showErrorToast?.("선택한 색상/게이지 조합을 찾을 수 없습니다.");
+      if (!selectedColor) return showErrorToast?.("스트링 색상을 선택해주세요.");
+      if (!selectedGauge) return showErrorToast?.("스트링 굵기를 선택해주세요.");
+      if (!selectedVariant) return showErrorToast?.("선택한 색상과 굵기 조합을 찾을 수 없습니다.");
       if (!isSellableVariant(selectedVariant)) {
-        return showErrorToast?.("선택한 색상/게이지 조합은 품절되었습니다.");
+        return showErrorToast?.("선택한 색상과 굵기 조합은 품절되었습니다.");
       }
       if (selectedVariant.stock < qty) {
-        return showErrorToast?.("선택한 게이지의 구매 가능 수량을 초과했습니다.");
+        return showErrorToast?.("선택한 굵기의 구매 가능 수량을 초과했습니다.");
       }
     }
 
@@ -324,7 +324,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
     if (manageStock && typeof stock === "number" && stock < qty) {
       showErrorToast?.(
         hideGaugeStock
-          ? "선택한 게이지의 구매 가능 수량을 초과했습니다."
+          ? "선택한 굵기의 구매 가능 수량을 초과했습니다."
           : "선택한 스트링의 구매 가능 수량을 초과했습니다.",
       );
       return;
@@ -336,7 +336,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
     if (isFromCart) {
       try {
         upsertCartBundle(p, finalQty, selectedGauge, selectedColor);
-        showSuccessToast?.("장바구니 번들(라켓+스트링) 수량/스트링을 수정했어요.");
+        showSuccessToast?.("장바구니의 라켓+스트링 구성을 수정했어요.");
         router.push(returnTo);
       } catch (e) {
         showErrorToast?.("장바구니 수정 중 오류가 발생했어요. 다시 시도해주세요.");
@@ -392,7 +392,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
       initialSelectedGauge={initialSelectedGauge}
       initialSelectedColor={initialSelectedColor}
       isCartEditMode={isFromCart}
-      ctaLabel={isFromCart ? "선택하기" : "선택하기"}
+      ctaLabel={isFromCart ? "이 스트링으로 변경" : "이 스트링으로 결제 계속하기"}
       ctaSubLabel={isFromCart ? "장바구니로 돌아갑니다" : "선택한 스트링은 라켓과 함께 결제됩니다"}
       designVariant="racketPurchase"
     />
