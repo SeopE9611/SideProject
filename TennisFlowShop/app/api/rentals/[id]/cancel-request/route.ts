@@ -1,4 +1,15 @@
 import { writeRentalHistory } from "@/app/features/rentals/utils/history";
+import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
+import {
+  buildRentalRacketName,
+  compactId,
+  formatRentalPeriod,
+  formatRentalPickupLabel,
+  formatWon,
+  maskPhone,
+  previewText,
+  truthyField,
+} from "@/lib/admin-alerts/formatters";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
 import clientPromise from "@/lib/mongodb";
@@ -217,6 +228,36 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       to: currentStatus,
       actor: { role: "user" },
       snapshot: { cancelRequest },
+    });
+
+    await sendAdminOperationalAlert({
+      kind: "rental_cancel_requested",
+      title: "⚠️ 대여 취소 요청 접수",
+      summary: "라켓 대여 취소 요청이 접수되었습니다. 관리자 상세에서 확인해 주세요.",
+      href: `/admin/rentals/${id}`,
+      dedupeKey: `rental_cancel_requested:${id}:${now.toISOString()}`,
+      priority: "high",
+      fields: [
+        { name: "대상", value: "라켓 대여" },
+        { name: "대여번호", value: compactId(id) },
+        truthyField("고객명", rental.shipping?.name || rental.userSnapshot?.name),
+        truthyField("연락처", maskPhone(rental.shipping?.phone)),
+        truthyField("라켓", buildRentalRacketName(rental)),
+        truthyField("대여 기간", formatRentalPeriod(rental.days)),
+        { name: "주문 금액", value: formatWon(rental.amount?.total) },
+        { name: "결제상태", value: String(rental.paymentStatus ?? rental.status ?? "확인 필요") },
+        truthyField("결제수단", rental.payment?.method),
+        truthyField(
+          "수령/배송 방식",
+          formatRentalPickupLabel(rental.shipping?.shippingMethod || rental.servicePickupMethod),
+        ),
+        {
+          name: "교체서비스",
+          value: rental.stringing?.requested || rental.isStringServiceApplied ? "포함" : "미포함",
+        },
+        { name: "사유", value: previewText(reasonText || reasonCode, 100) || reasonCode },
+        { name: "환불계좌", value: refundAccount ? "등록됨" : "미필요/미입력" },
+      ].filter(Boolean) as Array<{ name: string; value: string }>,
     });
 
     return NextResponse.json({ ok: true });

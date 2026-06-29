@@ -48,6 +48,36 @@ export function formatOrderPickupLabel(value: unknown) {
   return text;
 }
 
+export function formatRentalPeriod(days: unknown) {
+  const n = Number(days);
+  if ([7, 15, 30].includes(n)) return `${n}일`;
+  const text = String(days ?? "").trim();
+  return text ? `${text.replace(/일$/, "")}일` : "";
+}
+
+export function formatRentalPickupLabel(value: unknown) {
+  return formatOrderPickupLabel(value);
+}
+
+export function buildRentalRacketName(doc: any) {
+  return [doc?.brand, doc?.model].filter(Boolean).join(" ").trim();
+}
+
+export function buildRentalAmountSummary(amount: any, originalTotal: unknown, pointsUsed: unknown) {
+  const lines = [
+    `보증금 ${formatWon(amount?.deposit)}`,
+    `대여료 ${formatWon(amount?.fee)}`,
+    `스트링비 ${formatWon(amount?.stringPrice)}`,
+    `장착비 ${formatWon(amount?.stringingFee)}`,
+  ];
+  const usedPoints = Number(pointsUsed ?? 0);
+  if (Number.isFinite(usedPoints) && usedPoints > 0) {
+    lines.push(`포인트 -${formatWon(usedPoints)}`);
+    lines.push(`최종금액 ${formatWon(amount?.total ?? Number(originalTotal ?? 0) - usedPoints)}`);
+  }
+  return lines.join("\n");
+}
+
 export function formatCollectionMethod(value: unknown) {
   const text = String(value ?? "").trim();
   if (!text) return "";
