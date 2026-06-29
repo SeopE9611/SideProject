@@ -3,7 +3,7 @@ import { verifyAccessToken } from "@/lib/auth.utils";
 import PackageCheckoutClient from "@/app/services/packages/checkout/PackageCheckoutClient";
 import LoginGate from "@/app/services/packages/checkout/LoginGate";
 import { findBlockingPackageOrderByUserId } from "@/lib/package-order-ownership";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -85,39 +85,51 @@ export default async function Page({
 
   const blocking = await findBlockingPackageOrderByUserId(String(payload.sub));
   if (blocking) {
+    const isPendingOrder = blocking.kind === "pending_order";
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
         <Card className="w-full max-w-xl border border-border bg-card shadow-sm">
-          <CardContent className="space-y-5 p-6 text-center sm:p-8">
-            <AlertTriangle className="h-12 w-12 mx-auto text-muted-foreground" />
-            <h2 className="text-ui-page-title font-semibold">현재 패키지 추가 구매가 제한됩니다</h2>
-            <p className="text-muted-foreground">
-              {blocking.kind === "pending_order"
-                ? "진행 중인 패키지 주문(결제대기)이 있어 추가 구매할 수 없습니다. 기존 주문 상태를 먼저 확인해주세요."
-                : "현재 사용 가능한 패키지가 있어 추가 구매할 수 없습니다. 기존 패키지 이용이 종료된 뒤 다시 구매해주세요."}
-            </p>
-            <div className="rounded-lg border border-border bg-muted/40 p-3 text-ui-body-sm text-muted-foreground">
-              {blocking.kind === "pending_order" ? (
-                <>
-                  현재 상태: {String(blocking.pendingOrder.paymentStatus ?? "-")} /{" "}
-                  {String(blocking.pendingOrder.status ?? "-")}
-                  <br />
-                  기존 주문 상태를 확인한 뒤 다시 진행해주세요.
-                </>
-              ) : (
-                <>
-                  패키지 상태: {String(blocking.activePass.status ?? "-")} / 남은 횟수{" "}
-                  {Number(blocking.activePass.remainingCount ?? 0)}
-                  <br />내 패키지 상태를 확인한 뒤 다시 진행해주세요.
-                </>
-              )}
+          <CardContent className="space-y-6 p-6 text-center sm:p-8">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <AlertTriangle className="h-8 w-8" />
             </div>
-            <div className="flex flex-col justify-center gap-3 sm:flex-row">
-              <Button asChild variant="outline">
+            <div className="space-y-2">
+              <p className="text-ui-body-sm font-semibold text-primary">패키지권 확인 필요</p>
+              <h2 className="text-ui-page-title font-semibold">현재 패키지 추가 구매가 제한됩니다</h2>
+              <p className="break-keep text-ui-body text-muted-foreground">
+                {isPendingOrder
+                  ? "입금 확인 대기 중인 패키지 주문이 있어 새 패키지를 바로 구매할 수 없습니다."
+                  : "사용 가능한 패키지권이 남아 있어 기존 패키지권을 먼저 이용해 주세요."}
+              </p>
+            </div>
+            <div className="grid gap-3 rounded-xl border border-border bg-muted/30 p-4 text-left text-ui-body-sm sm:grid-cols-2">
+              <div className="flex items-start gap-2">
+                <Clock className="mt-0.5 h-4 w-4 text-primary" />
+                <div>
+                  <p className="font-semibold text-foreground">현재 상태</p>
+                  <p className="mt-1 text-muted-foreground">
+                    {isPendingOrder ? "입금 확인 대기" : "사용 가능한 패키지권 보유"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
+                <div>
+                  <p className="font-semibold text-foreground">다음 행동</p>
+                  <p className="mt-1 text-muted-foreground">
+                    {isPendingOrder
+                      ? "기존 주문의 입금 상태 확인"
+                      : `남은 횟수 ${Number(blocking.activePass.remainingCount ?? 0)}회 확인`}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col-reverse justify-center gap-3 sm:flex-row">
+              <Button asChild variant="outline" className="h-11">
                 <Link href="/services/packages">패키지 목록으로 이동</Link>
               </Button>
-              <Button asChild>
-                <Link href="/mypage?tab=passes">내 패키지 확인</Link>
+              <Button asChild className="h-11">
+                <Link href="/mypage?tab=passes">내 패키지권 확인</Link>
               </Button>
             </div>
           </CardContent>

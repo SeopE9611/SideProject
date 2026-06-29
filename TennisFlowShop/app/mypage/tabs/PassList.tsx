@@ -113,16 +113,16 @@ export default function PassList() {
         key={p.id}
         className="rounded-xl border border-border bg-card p-4 shadow-sm transition-[box-shadow,border-color] duration-200 hover:border-primary/30 hover:shadow-md md:p-5"
       >
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="flex min-w-0 items-start gap-3">
             <div className="rounded-xl border border-primary/20 bg-primary/10 p-2 text-primary dark:bg-primary/20">
               <Ticket className="h-5 w-5" />
             </div>
             <div>
-              <div className="line-clamp-2 break-keep font-semibold">
-                {p.planTitle ?? "교체 서비스 패키지"} {p.packageSize}회권
+              <div className="line-clamp-2 break-keep text-ui-card-title font-semibold text-foreground">
+                {p.planTitle ?? "교체서비스 패키지"} {p.packageSize}회권
               </div>
-              <div className="text-ui-body-sm text-muted-foreground">
+              <div className="mt-1 text-ui-body-sm text-muted-foreground">
                 구매일 {new Date(p.purchasedAt).toLocaleDateString()}
               </div>
               {/* 대기/종료 상태에서 오해를 줄이기 위한 안내 문구 */}
@@ -162,15 +162,24 @@ export default function PassList() {
 
         {p.status === "active" && (
           <>
-            <div className="mt-4">
-              <div className="h-2 w-full rounded-full bg-muted/80 dark:bg-muted overflow-hidden">
+            <div className="mt-4 rounded-xl border border-primary/15 bg-primary/5 p-4">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <p className="text-ui-body-sm font-medium text-muted-foreground">남은 이용 횟수</p>
+                <p className="text-ui-section-title font-bold tabular-nums text-primary">
+                  {p.remainingCount}회
+                  <span className="ml-2 text-ui-body-sm font-medium text-muted-foreground">
+                    / 총 {p.packageSize}회
+                  </span>
+                </p>
+              </div>
+              <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-background shadow-inner dark:bg-muted">
                 <div
                   className="h-full bg-primary transition-all"
                   style={{ width: `${remainPct}%` }}
                 />
               </div>
               <div className="mt-2 text-ui-body-sm tabular-nums text-muted-foreground">
-                사용 {p.usedCount} / 총 {p.packageSize} · 잔여 {p.remainingCount}
+                지금까지 {p.usedCount}회 사용했습니다.
               </div>
             </div>
 
@@ -211,7 +220,7 @@ export default function PassList() {
               보유 중인 패키지권이 없습니다.
             </p>
             <p className="text-ui-body-sm text-muted-foreground text-center">
-              패키지를 구매하고 활성화 시 여기에 표시됩니다
+              패키지를 구매하면 결제/입금 확인 후 패키지권으로 표시됩니다
             </p>
           </div>
         )}

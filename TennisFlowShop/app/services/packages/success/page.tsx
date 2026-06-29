@@ -236,7 +236,7 @@ export default async function PackageSuccessPage({
                   <div className="rounded-xl border border-border bg-muted/40 p-4">
                     <p className="font-semibold text-foreground">다음 행동</p>
                     <p className="mt-1 text-muted-foreground">
-                      {isPaid ? "교체서비스 신청 가능" : "패키지권 확인"}
+                      {isPaid ? "교체서비스 신청" : "입금 후 패키지권 확인"}
                     </p>
                   </div>
                 </div>
@@ -280,8 +280,8 @@ export default async function PackageSuccessPage({
               }
               description={
                 <span className="break-all text-ui-body-sm text-muted-foreground">
-                  주문 번호:{" "}
-                  <span className="font-mono text-ui-label font-semibold text-primary sm:text-ui-body-sm">
+                  문의 시 확인 번호:{" "}
+                  <span className="font-mono text-ui-body-sm font-semibold text-primary">
                     {packageOrder._id.toString()}
                   </span>
                 </span>
