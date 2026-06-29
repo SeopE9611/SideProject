@@ -1,4 +1,5 @@
 import UserDetailClient from "@/app/admin/users/_components/UserDetailClient";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 
 import type { Metadata } from "next";
 
@@ -10,10 +11,8 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const { id } = await params;
 
   return (
-    <div className="container py-6 lg:py-8">
-      <div className="mx-auto w-full max-w-[1500px]">
-        <UserDetailClient id={id} />
-      </div>
-    </div>
+    <AdminPageShell variant="wide">
+      <UserDetailClient id={id} />
+    </AdminPageShell>
   );
 }

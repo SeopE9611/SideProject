@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import { AdminSectionHeader } from "@/components/admin/AdminPageSection";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { FormattedNumberInput } from "@/components/ui/formatted-number-input";
@@ -1307,12 +1308,22 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
         </div>
       </div>
 
+      <AdminDetailSectionNav
+        items={[
+          { href: "#offline-customer-basic", label: "고객정보" },
+          { href: "#offline-customer-stats", label: "정산/요약" },
+          { href: "#offline-customer-points", label: "포인트" },
+          { href: "#offline-customer-packages", label: "패키지권" },
+          { href: "#offline-records", label: "이력" },
+        ]}
+      />
+
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Left Column - Customer Info & Link */}
         <div className="space-y-6 lg:col-span-5">
           {/* Customer Basic Info */}
-          <SectionCard>
+          <SectionCard id="offline-customer-basic">
             <SectionHeader
               icon={User}
               title="고객 기본 정보"
@@ -1629,7 +1640,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
         {/* Right Column - Points, Packages, Stats */}
         <div className="space-y-6 lg:col-span-7">
           {/* Statistics */}
-          <SectionCard>
+          <SectionCard id="offline-customer-stats">
             <SectionHeader
               icon={TrendingUp}
               title="누적 통계"
@@ -1670,7 +1681,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
           </SectionCard>
 
           {/* Points */}
-          <SectionCard>
+          <SectionCard id="offline-customer-points">
             <SectionHeader
               icon={Wallet}
               title="포인트"
@@ -1711,7 +1722,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
           </SectionCard>
 
           {/* Packages */}
-          <SectionCard>
+          <SectionCard id="offline-customer-packages">
             <SectionHeader
               icon={Package}
               title="패키지/서비스권"

@@ -17,6 +17,7 @@ import {
 import { useStringingStore } from "@/app/store/stringingStore";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
+import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 import AdminNextActionPanel from "@/components/admin/AdminNextActionPanel";
@@ -1936,6 +1937,20 @@ export default function StringingApplicationDetailClient({
                 </div>
               )}
               </div>
+            )}
+
+            {isAdmin && (
+              <AdminDetailSectionNav
+                className="mb-4"
+                items={[
+                  { href: "#admin-stringing-cancel", label: "처리 작업" },
+                  { href: "#admin-stringing-spec", label: "작업 정보" },
+                  { href: "#admin-stringing-payment", label: "결제정보" },
+                  { href: "#admin-stringing-shipping", label: "수령/배송" },
+                  { href: "#admin-stringing-request", label: "요청사항" },
+                  { href: "#admin-stringing-history", label: "이력" },
+                ]}
+              />
             )}
 
             {isAdmin && (
