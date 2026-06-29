@@ -142,7 +142,7 @@ export async function POST(req: Request) {
       expiresAt: new Date(now.getTime() + 1000 * 60 * 30),
     });
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || getBaseUrl();
+    const appUrl = getBaseUrl();
     const orderName = buildTossOrderName([
       {
         name: `${String(racket.brand ?? "")}${racket.model ? ` ${String(racket.model)}` : ""}`.trim(),
