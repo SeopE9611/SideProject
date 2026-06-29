@@ -288,24 +288,24 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
         return;
       }
       if (!normalizedGauge) {
-        showErrorToast("게이지를 선택해주세요.");
+        showErrorToast("굵기를 선택해주세요.");
         setAddingProductId(null);
         return;
       }
       const selectedVariant = getVariantBySelection(product, normalizedColor, normalizedGauge);
       if (!selectedVariant || !isVisibleVariant(selectedVariant)) {
-        showErrorToast("선택한 색상/게이지 조합을 찾을 수 없습니다.");
+        showErrorToast("선택한 색상/굵기 조합을 찾을 수 없습니다.");
         setAddingProductId(null);
         return;
       }
       if (!isSellableVariant(selectedVariant)) {
-        showErrorToast("선택한 색상/게이지 조합은 품절되었습니다.");
+        showErrorToast("선택한 색상/굵기 조합은 품절되었습니다.");
         setAddingProductId(null);
         return;
       }
     } else {
       if (gaugeRows.length > 0 && !normalizedGauge) {
-        showErrorToast("게이지를 선택해주세요.");
+        showErrorToast("굵기를 선택해주세요.");
         setAddingProductId(null);
         return;
       }
@@ -357,7 +357,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
           <div>
             <h2 className="text-ui-body font-semibold text-foreground">장착할 스트링 선택</h2>
             <p className="break-keep text-ui-body-sm text-muted-foreground">
-              색상과 게이지를 확인한 뒤 원하는 스트링으로 다음 단계에 진행하세요.
+              색상과 굵기를 확인한 뒤 원하는 스트링으로 다음 단계에 진행하세요.
             </p>
           </div>
           <p className="text-ui-body-sm text-muted-foreground">

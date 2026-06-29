@@ -109,7 +109,7 @@ async function applyStringingVariantInventoryDeduction(params: {
   }
 
   if (!selectedColor || !selectedGauge) {
-    throw Object.assign(new Error("색상과 게이지를 모두 선택해주세요."), {
+    throw Object.assign(new Error("색상과 굵기를 모두 선택해주세요."), {
       status: 400,
       code: "VARIANT_SELECTION_REQUIRED",
     });
@@ -620,7 +620,7 @@ export async function submitStringingApplicationCore({
     const isGaugeSelectableProduct = hasGaugeInventories || hasGaugeOptions;
 
     if (isGaugeSelectableProduct && !effectiveSelectedGauge) {
-      throw Object.assign(new Error("게이지를 선택해주세요."), {
+      throw Object.assign(new Error("굵기를 선택해주세요."), {
         status: 400,
         code: "GAUGE_REQUIRED",
       });

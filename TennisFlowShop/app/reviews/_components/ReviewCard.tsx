@@ -140,7 +140,7 @@ export default function ReviewCard({
       ? item.productName
       : item.serviceTitle ||
         item.serviceTargetName ||
-        (item.service === "stringing" ? "상품 + 교체서비스 이용 후기" : "서비스");
+        (item.service === "stringing" ? "상품·교체서비스 이용 후기" : "서비스");
 
   // 연타/경합 제어용
   const [pending, setPending] = useState(false); // 처리 중 버튼 잠금

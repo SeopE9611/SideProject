@@ -668,7 +668,7 @@ export default function ReviewWritePage() {
     ) : state === "already" ? (
       "이미 작성한 대상입니다"
     ) : state === "serviceLinkedOrder" ? (
-      <p className="font-medium">상품 + 교체서비스 후기 대상입니다.</p>
+      <p className="font-medium">상품·교체서비스 후기 대상입니다.</p>
     ) : state === "notPurchased" ? (
       "아직 후기를 작성할 수 없어요"
     ) : state === "unauthorized" ? (
@@ -881,7 +881,7 @@ export default function ReviewWritePage() {
   };
 
   const targetTitle =
-    mode === "product" ? "상품 후기" : mode === "service" ? "상품 + 교체서비스 후기" : "리뷰 대상";
+    mode === "product" ? "상품 후기" : mode === "service" ? "상품·교체서비스 후기" : "리뷰 대상";
   const selectedStringNames = (selectedApp?.stringItems || [])
     .map((s) => s.name)
     .filter(Boolean)
@@ -1129,7 +1129,7 @@ export default function ReviewWritePage() {
                     )}
                     {state === "serviceLinkedOrder" && (
                       <div className="space-y-1">
-                        <p className="font-medium">상품 + 교체서비스 후기 대상입니다.</p>
+                        <p className="font-medium">상품·교체서비스 후기 대상입니다.</p>
                         <p className="text-muted-foreground">
                           연결된 교체서비스 수령확인 후 상품과 서비스 경험을 함께 남겨주세요.
                         </p>

@@ -710,13 +710,13 @@ export async function GET(req: Request) {
               serviceContextLabel: {
                 $cond: [
                   { $eq: ["$service", "stringing"] },
-                  "상품 + 교체서비스 후기",
+                  "상품·교체서비스 후기",
                   "서비스 후기",
                 ],
               },
             },
           },
-          // 4) 최종 타이틀: "상품 + 교체서비스 - (상품명…)" 구성
+          // 4) 최종 타이틀: "상품·교체서비스 - (상품명…)" 구성
           {
             $addFields: {
               serviceTitle: {
@@ -731,9 +731,9 @@ export async function GET(req: Request) {
                         ],
                       },
                       {
-                        $concat: ["상품 + 교체서비스 - ", "$serviceTargetName"],
+                        $concat: ["상품·교체서비스 - ", "$serviceTargetName"],
                       },
-                      "상품 + 교체서비스 이용 후기",
+                      "상품·교체서비스 이용 후기",
                     ],
                   },
                   null,
