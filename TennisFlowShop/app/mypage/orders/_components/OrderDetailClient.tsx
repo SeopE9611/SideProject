@@ -755,7 +755,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
         }
       : canShowServiceReviewCTA && serviceReviewHref
         ? {
-            label: "상품 + 교체서비스 후기 작성 가능",
+            label: "상품·교체서비스 후기 작성 가능",
             description: "수령확인된 교체서비스에 대해 상품과 서비스 경험을 함께 남겨주세요.",
             ctaLabel: "후기 작성하기",
             ctaHref: serviceReviewHref,

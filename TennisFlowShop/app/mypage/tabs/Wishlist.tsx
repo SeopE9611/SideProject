@@ -32,7 +32,7 @@ export default function Wishlist() {
 
   function handleAddToCart(it: (typeof resolvedItems)[number]) {
     if (it.requiresOption && !it.hasSelectedOption) {
-      showErrorToast("색상/게이지 선택이 필요합니다. 상세페이지에서 옵션을 선택해주세요.");
+      showErrorToast("색상/굵기 선택이 필요합니다. 상세페이지에서 옵션을 선택해주세요.");
       router.push(`/products/${it.id}`);
       return;
     }
@@ -147,7 +147,7 @@ export default function Wishlist() {
                     ) : it.requiresOption ? (
                       <>
                         <div className="font-medium text-warning">옵션 미선택</div>
-                        <div>상세페이지에서 색상/게이지를 선택해주세요.</div>
+                        <div>상세페이지에서 색상/굵기를 선택해주세요.</div>
                       </>
                     ) : null}
                     {it.hasSelectedOption && it.optionAvailable === false && (

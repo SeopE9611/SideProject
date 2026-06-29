@@ -210,7 +210,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     productShippingFee > 0 ? `${productShippingFee.toLocaleString()}원 배송비` : "무료배송";
 
   const displayBrandLabel = (value?: string) => stringBrandLabel(value);
-  // ====== 사양/브랜드/색상/게이지 매핑 ======
+  // ====== 사양/브랜드/색상/굵기 매핑 ======
   // ====== 태그(추천) 매핑 ======
   const PLAYER_TYPE_MAP: Record<string, string> = {
     beginner: "초보자",
@@ -918,7 +918,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const requireGaugeSelection = () => {
     if (!isStringProduct || gaugeRows.length === 0) return true;
     if (selectedGauge) return true;
-    showErrorToast("게이지를 선택해주세요.");
+    showErrorToast("굵기를 선택해주세요.");
     return false;
   };
 
@@ -1583,7 +1583,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           >
                             <X className="mr-2 h-5 w-5" />
                             {hasVariantInventories
-                              ? "선택한 색상/게이지 조합이 품절되었습니다"
+                              ? "선택한 색상/굵기 조합이 품절되었습니다"
                               : "재고가 소진되었습니다"}
                           </Button>
                           {renderWishlistButton()}
@@ -1994,7 +1994,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 <div className="min-w-0">
                                   <div className="break-words font-semibold text-foreground text-ui-body-sm sm:text-ui-body">
                                     {review.type === "service"
-                                      ? "상품 + 교체서비스 후기"
+                                      ? "상품·교체서비스 후기"
                                       : review.status === "hidden"
                                         ? review.ownedByMe
                                           ? `${review.user ?? "내 리뷰"} (비공개)`

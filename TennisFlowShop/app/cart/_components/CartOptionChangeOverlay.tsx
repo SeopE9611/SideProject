@@ -342,7 +342,7 @@ export default function CartOptionChangeOverlay({
           <div className="px-5 pb-1 pt-4">
             <h2 className="text-ui-card-title-lg font-semibold">옵션 변경</h2>
             <p className="mt-1 text-ui-body-sm text-muted-foreground">
-              변경할 색상과 게이지를 선택해주세요.
+              변경할 색상과 굵기를 선택해주세요.
             </p>
           </div>
           {content}
@@ -354,7 +354,7 @@ export default function CartOptionChangeOverlay({
       <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto rounded-2xl p-0">
         <DialogHeader className="px-6 pb-1 pt-6">
           <DialogTitle>옵션 변경</DialogTitle>
-          <DialogDescription>변경할 색상과 게이지를 선택해주세요.</DialogDescription>
+          <DialogDescription>변경할 색상과 굵기를 선택해주세요.</DialogDescription>
         </DialogHeader>
         {content}
       </DialogContent>
