@@ -907,7 +907,7 @@ export default function RentalsCheckoutClient({
                         </div>
                         {selectedGauge ? (
                           <div className="text-ui-body-sm text-foreground/80">
-                            굵기: {formatGaugeLabel(selectedGauge)}
+                            게이지(굵기): {formatGaugeLabel(selectedGauge)}
                           </div>
                         ) : null}
                         {normalizedSelectedColor ? (

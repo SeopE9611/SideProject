@@ -205,7 +205,7 @@ function CartOptionChangeContent({
           </div>
         </div>
         <div className="rounded-xl bg-muted/20 p-3 text-ui-body-sm text-muted-foreground">
-          현재 옵션: {item.selectedGauge ? `굵기 ${formatGaugeLabel(item.selectedGauge)}` : ""}
+          현재 옵션: {item.selectedGauge ? `게이지(굵기) ${formatGaugeLabel(item.selectedGauge)}` : ""}
           {item.selectedGauge && (item.selectedColorLabel || item.selectedColor) ? " · " : ""}
           {item.selectedColorLabel ||
             item.selectedColor ||
@@ -258,7 +258,7 @@ function CartOptionChangeContent({
             )}
             {hasGaugeOptions && (
               <section className="space-y-2">
-                <h3 className="text-ui-body-sm font-semibold text-foreground">굵기 선택</h3>
+                <h3 className="text-ui-body-sm font-semibold text-foreground">게이지(굵기) 선택</h3>
                 <div className="flex flex-wrap gap-2">
                   {gaugeRows.map((row) => {
                     const disabled =
@@ -342,7 +342,7 @@ export default function CartOptionChangeOverlay({
           <div className="px-5 pb-1 pt-4">
             <h2 className="text-ui-card-title-lg font-semibold">옵션 변경</h2>
             <p className="mt-1 text-ui-body-sm text-muted-foreground">
-              변경할 색상과 굵기를 선택해주세요.
+              변경할 색상과 게이지(굵기)를 선택해주세요.
             </p>
           </div>
           {content}
@@ -354,7 +354,7 @@ export default function CartOptionChangeOverlay({
       <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto rounded-2xl p-0">
         <DialogHeader className="px-6 pb-1 pt-6">
           <DialogTitle>옵션 변경</DialogTitle>
-          <DialogDescription>변경할 색상과 굵기를 선택해주세요.</DialogDescription>
+          <DialogDescription>변경할 색상과 게이지(굵기)를 선택해주세요.</DialogDescription>
         </DialogHeader>
         {content}
       </DialogContent>

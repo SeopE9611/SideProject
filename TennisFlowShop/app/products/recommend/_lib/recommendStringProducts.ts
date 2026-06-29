@@ -80,7 +80,7 @@ function getGaugeNumber(product: RecommendableProduct): number | null {
 
 function getMaterialGaugeLabel(product: RecommendableProduct): string {
   const material = stringMaterialLabel(product.material) || "소재 정보 없음";
-  const gauge = formatGaugeLabel(getPrimaryGauge(product)) || "굵기 정보 없음";
+  const gauge = formatGaugeLabel(getPrimaryGauge(product)) || "게이지(굵기) 정보 없음";
   return `${material} · ${gauge}`;
 }
 
@@ -177,11 +177,11 @@ function buildReasons(
 
   if (gauge && gauge >= 1.28) {
     reasons.push(
-      `${formatGaugeLabel(String(gauge))} 굵기라 잦은 사용 환경에서 안정적이고 내구성을 기대하기 좋습니다.`,
+      `${formatGaugeLabel(String(gauge))} 게이지(굵기)라 잦은 사용 환경에서 안정적이고 내구성을 기대하기 좋습니다.`,
     );
   } else if (gauge && gauge <= 1.23) {
     reasons.push(
-      `${formatGaugeLabel(String(gauge))} 굵기라 반발과 스핀 감각을 살리되 컨트롤 변화를 확인해 보세요.`,
+      `${formatGaugeLabel(String(gauge))} 게이지(굵기)라 반발과 스핀 감각을 살리되 컨트롤 변화를 확인해 보세요.`,
     );
   } else if (material) {
     reasons.push(`${material} 소재 특성을 고려해 현재 플레이 성향과 균형을 맞췄습니다.`);
@@ -222,7 +222,7 @@ function buildMatchSummary(
       value: `${getEffectiveProductPrice(product).toLocaleString()}원`,
     },
     {
-      label: "소재/굵기",
+      label: "소재/게이지(굵기)",
       value: getMaterialGaugeLabel(product),
     },
   ];
