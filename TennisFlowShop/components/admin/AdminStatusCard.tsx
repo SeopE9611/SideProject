@@ -57,7 +57,7 @@ export default function AdminStatusCard({
         {value}
       </div>
       {description ? (
-        <p className={cn("mt-1 line-clamp-1 text-foreground/75", adminTypography.caption)}>
+        <p className={cn("mt-1 line-clamp-2 text-foreground/75", adminTypography.caption)}>
           {description}
         </p>
       ) : null}

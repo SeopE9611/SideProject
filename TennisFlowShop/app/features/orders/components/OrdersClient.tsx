@@ -867,7 +867,7 @@ export default function OrdersClient() {
           </div>
         </CardHeader>
         <CardContent className="relative min-h-[420px] overflow-x-auto scrollbar-hidden pr-2">
-          <Table className="min-w-[1140px] table-fixed border-separate text-ui-label [border-spacing-block:0.4rem] [border-spacing-inline:0]">
+          <Table className="min-w-[1140px] table-fixed border-separate text-ui-label [border-spacing-block:0.25rem] [border-spacing-inline:0]">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
                 <TableHead className={cn(thClasses, "w-[240px] text-left")}>주문/문서</TableHead>
@@ -1014,10 +1014,10 @@ export default function OrdersClient() {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div
-                                  className="flex w-full max-w-[150px] cursor-pointer flex-col items-start gap-1.5"
+                                  className="flex w-full max-w-[180px] cursor-pointer flex-col items-start gap-1"
                                   title={order.id}
                                 >
-                                  <div className="flex w-full min-w-0 items-center justify-start gap-1 border-b border-border/50 pb-1">
+                                  <div className="flex w-full min-w-0 items-center justify-start gap-1 border-b border-border/40 pb-0.5">
                                     {/* 취소요청 상태일 때만 아이콘 노출 */}
                                     {hasCancelRequest && (
                                       <AlertTriangle
@@ -1026,7 +1026,7 @@ export default function OrdersClient() {
                                       />
                                     )}
                                     {/* 실제 표시되는 주문 ID (짧게) */}
-                                    <span className="truncate whitespace-nowrap font-mono text-ui-body-sm font-semibold text-foreground">
+                                    <span className="truncate whitespace-nowrap font-mono text-ui-label font-medium text-foreground">
                                       {shortenId(order.id)}
                                     </span>
                                   </div>
@@ -1089,11 +1089,11 @@ export default function OrdersClient() {
                                     ]}
                                   />
                                   {isLinkedProductOrder && linkedApplication && (
-                                    <div className="mt-0.5 w-full rounded-md bg-muted/30 px-2 py-1">
+                                    <div className="mt-0.5 w-full rounded-md border border-border/50 bg-background px-2 py-1">
                                       <p className="text-ui-label leading-snug text-foreground/75">
                                         신청 상태
                                       </p>
-                                      <p className="truncate text-ui-body-sm font-medium text-foreground">
+                                      <p className="line-clamp-2 text-ui-body-sm font-medium text-foreground">
                                         {linkedApplication.status}
                                       </p>
                                     </div>
@@ -1237,19 +1237,19 @@ export default function OrdersClient() {
                         </TableCell>
                         {/* 고객명 셀 */}
                         <TableCell className={tdClasses} colSpan={2}>
-                          <div className="flex min-w-0 flex-col gap-1 text-left">
-                            <span className="line-clamp-2 min-w-0 break-words text-left">
+                          <div className="flex min-w-0 flex-col gap-0.5 text-left">
+                            <span className="line-clamp-2 min-w-0 break-words text-left text-ui-body-sm font-medium text-foreground">
                               {order.customer.name
                                 .replace(/\s*\(비회원\)\s*$/, "")
                                 .replace(/\s*\(탈퇴한 회원\)\s*$/, "")}
                             </span>
                             {getDisplayUserType(order) && (
-                              <span className="ml-1 shrink-0 whitespace-nowrap text-ui-label text-muted-foreground">
+                              <span className="shrink-0 whitespace-nowrap text-ui-label text-muted-foreground">
                                 {getDisplayUserType(order)}
                               </span>
                             )}
                             {order.customer.name.endsWith("(비회원)") && (
-                              <span className="ml-1 shrink-0 whitespace-nowrap text-ui-label text-muted-foreground">
+                              <span className="shrink-0 whitespace-nowrap text-ui-label text-muted-foreground">
                                 (비회원)
                               </span>
                             )}
@@ -1264,7 +1264,7 @@ export default function OrdersClient() {
                         {/* 상태/처리 셀 */}
                         <TableCell className={tdClasses} colSpan={2}>
                           {order.__type === "stringing_application" ? (
-                            <div className="flex flex-col items-center gap-1">
+                            <div className="flex flex-col items-start gap-1">
                               <ApplicationStatusBadge status={order.status} />
                               {hasCancelRequest && (
                                 <Badge
@@ -1282,7 +1282,7 @@ export default function OrdersClient() {
                             (() => {
                               const st = getOrderStatusBadgeSpec(order.status);
                               return (
-                                <div className="flex flex-col items-center gap-1">
+                                <div className="flex flex-col items-start gap-1">
                                   <Badge
                                     variant={st.variant}
                                     className={cn(
@@ -1311,7 +1311,7 @@ export default function OrdersClient() {
                               );
                             })()
                           )}
-                          <p className="mt-2 text-ui-label text-foreground/75 tabular-nums">접수 {formatDate(order.date)}</p>
+                          <p className="mt-1.5 text-ui-label text-foreground/75 tabular-nums">접수 {formatDate(order.date)}</p>
                         </TableCell>
                         {/* 결제 상태(금액 셀로 이동) */}
                         <TableCell className="hidden">
@@ -1398,8 +1398,8 @@ export default function OrdersClient() {
                           className={cn(tdClasses, "whitespace-nowrap text-right tabular-nums")}
                           colSpan={2}
                         >
-                          <div className="flex flex-col items-end gap-1">
-                            <span className="text-ui-body-sm font-semibold text-foreground">{formatCurrency(order.total)}</span>
+                          <div className="flex flex-col items-end gap-0.5">
+                            <span className="text-ui-body-sm font-medium text-foreground">{formatCurrency(order.total)}</span>
                             <span className="text-ui-label text-foreground/75">{order.paymentStatus}</span>
                           </div>
                         </TableCell>
@@ -1410,7 +1410,7 @@ export default function OrdersClient() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-7 w-7 border border-border/60 bg-background"
+                                className="h-8 w-8 border border-border/60 bg-background hover:bg-muted/25"
                               >
                                 <MoreHorizontal className="h-3.5 w-3.5" />
                                 <span className="sr-only">주문 작업 메뉴 열기</span>
