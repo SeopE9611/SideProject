@@ -3,6 +3,7 @@ import clientPromise from "@/lib/mongodb";
 import { buildNiceOrderName, createNiceOrderId } from "@/lib/payments/nice/server";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
 
@@ -14,7 +15,7 @@ function resolveClientId() {
 }
 
 function resolveAppUrl() {
-  return String(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
+  return String(process.env.NEXT_PUBLIC_APP_URL || getBaseUrl())
     .trim()
     .replace(/\/+$/, "");
 }

@@ -6,6 +6,7 @@ import { calculateCheckoutPayableAmount } from "@/lib/payments/toss/checkout-quo
 import { isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
 import { buildTossOrderName, createTossOrderId } from "@/lib/payments/toss/server";
 import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 
 export async function POST(req: Request) {
   try {
@@ -75,7 +76,7 @@ export async function POST(req: Request) {
       expiresAt,
     });
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || getBaseUrl();
 
     return NextResponse.json({
       success: true,

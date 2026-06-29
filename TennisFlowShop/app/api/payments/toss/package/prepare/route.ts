@@ -7,6 +7,7 @@ import { isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
 import { buildTossOrderName, createTossOrderId } from "@/lib/payments/toss/server";
 import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
 import { findBlockingPackageOrderByUserId } from "@/lib/package-order-ownership";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const onlyDigits = (v: string) => String(v ?? "").replace(/\D/g, "");
@@ -105,7 +106,7 @@ export async function POST(req: Request) {
       expiresAt: new Date(now.getTime() + 1000 * 60 * 30),
     });
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || getBaseUrl();
 
     return NextResponse.json({
       success: true,
