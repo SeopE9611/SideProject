@@ -296,7 +296,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       $push: { history: historyEntry },
     } as any);
 
-    void sendAdminOperationalAlert({
+    await sendAdminOperationalAlert({
       kind: "cancel_requested",
       title: "⚠️ 취소 요청 접수",
       summary: "주문 취소 요청이 접수되었습니다. 관리자 상세에서 확인해 주세요.",

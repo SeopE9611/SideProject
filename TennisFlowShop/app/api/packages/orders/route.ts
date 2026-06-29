@@ -213,7 +213,7 @@ export async function POST(req: Request) {
     const ins = await col.insertOne(doc as any);
     const packageOrderId = ins.insertedId.toString();
 
-    void sendAdminOperationalAlert({
+    await sendAdminOperationalAlert({
       kind: "package_order_created",
       title: "🎟️ 신규 패키지 주문",
       summary: "신규 패키지 주문이 접수되었습니다. 관리자 상세에서 확인해 주세요.",

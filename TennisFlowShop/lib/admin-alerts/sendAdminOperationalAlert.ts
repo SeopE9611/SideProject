@@ -69,7 +69,13 @@ function createDiscordProvider(webhookUrl: string): AdminOperationalAlertProvide
             kind: payload.kind,
             dedupeKey: payload.dedupeKey,
           });
+          return;
         }
+
+        console.info("[admin-alerts] discord sent", {
+          kind: payload.kind,
+          status: response.status,
+        });
       } finally {
         clearTimeout(timeout);
       }
@@ -90,10 +96,30 @@ function getEnabledProviders() {
 
 export async function sendAdminOperationalAlert(payload: AdminOperationalAlertPayload) {
   try {
-    if (process.env.ADMIN_ALERTS_ENABLED === "false") return;
+    if (process.env.ADMIN_ALERTS_ENABLED === "false") {
+      console.info("[admin-alerts] skipped:disabled", {
+        kind: payload.kind,
+      });
+      return;
+    }
 
     const providers = getEnabledProviders();
-    if (providers.length === 0) return;
+    console.info("[admin-alerts] dispatch", {
+      kind: payload.kind,
+      enabled: process.env.ADMIN_ALERTS_ENABLED !== "false",
+      hasDiscordWebhook: Boolean(process.env.ADMIN_ALERT_DISCORD_WEBHOOK_URL),
+      hasBaseUrl: Boolean(process.env.ADMIN_ALERT_BASE_URL),
+      providerCount: providers.length,
+    });
+
+    if (providers.length === 0) {
+      console.warn("[admin-alerts] skipped:no-provider", {
+        kind: payload.kind,
+        enabled: process.env.ADMIN_ALERTS_ENABLED !== "false",
+        hasDiscordWebhook: Boolean(process.env.ADMIN_ALERT_DISCORD_WEBHOOK_URL),
+      });
+      return;
+    }
 
     const absoluteUrl = buildAbsoluteUrl(payload.href);
     await Promise.all(providers.map((provider) => provider.send(payload, absoluteUrl)));

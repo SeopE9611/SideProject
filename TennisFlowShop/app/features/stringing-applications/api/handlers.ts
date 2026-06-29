@@ -2008,7 +2008,7 @@ export async function handleStringingCancelRequest(
       $push: { history: historyEntry as any },
     } as any);
 
-    void sendAdminOperationalAlert({
+    await sendAdminOperationalAlert({
       kind: "cancel_requested",
       title: "⚠️ 취소 요청 접수",
       summary: "교체서비스 신청 취소 요청이 접수되었습니다. 관리자 상세에서 확인해 주세요.",
@@ -3080,7 +3080,7 @@ export async function handleApplicationCancelRequest(
       $push: { history: historyEntry },
     } as any);
 
-    void sendAdminOperationalAlert({
+    await sendAdminOperationalAlert({
       kind: "cancel_requested",
       title: "⚠️ 취소 요청 접수",
       summary: "교체서비스 신청 취소 요청이 접수되었습니다. 관리자 상세에서 확인해 주세요.",
@@ -3565,7 +3565,7 @@ export async function handleSubmitStringingApplication(req: Request) {
 
     const applicationId = String(result.applicationId);
 
-    void sendAdminOperationalAlert({
+    await sendAdminOperationalAlert({
       kind: "stringing_application_submitted",
       title: "🧵 신규 교체서비스 신청",
       summary: "신규 교체서비스 신청이 접수되었습니다. 관리자 상세에서 확인해 주세요.",

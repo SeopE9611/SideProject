@@ -306,7 +306,7 @@ export async function POST(req: Request) {
     const result = await db.collection(COLLECTION_NAME).insertOne(application);
     const applicationId = result.insertedId.toString();
 
-    void sendAdminOperationalAlert({
+    await sendAdminOperationalAlert({
       kind: "academy_application_created",
       title: "🎾 신규 아카데미 신청",
       summary: "신규 아카데미 신청이 접수되었습니다. 관리자 상세에서 확인해 주세요.",
