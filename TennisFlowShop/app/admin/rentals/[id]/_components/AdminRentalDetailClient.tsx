@@ -1479,13 +1479,13 @@ export default function AdminRentalDetailClient() {
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
-                  <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
+                  <div className="flex items-center space-x-3 rounded-md border border-border/60 bg-background/80 px-3 py-2">
                     <div>
                       <p className="text-sm text-foreground/80">대여 수수료</p>
                       <p className="font-medium text-foreground">{won(data.amount?.fee)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
+                  <div className="flex items-center space-x-3 rounded-md border border-border/60 bg-background/80 px-3 py-2">
                     <div>
                       <p className="text-sm text-foreground/80">보증금</p>
                       <p className="font-medium text-foreground">{won(data.amount?.deposit)}</p>
@@ -1493,7 +1493,7 @@ export default function AdminRentalDetailClient() {
                   </div>
                   {/* 스트링 상품 금액: 있을 때만 표시 */}
                   {(data.amount?.stringPrice ?? 0) > 0 && (
-                    <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
+                    <div className="flex items-center space-x-3 rounded-md border border-border/60 bg-background/80 px-3 py-2">
                       <Package className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-sm text-foreground/80">스트링 상품</p>
@@ -1506,7 +1506,7 @@ export default function AdminRentalDetailClient() {
 
                   {/* 교체 서비스비(장착비): 있을 때만 표시 */}
                   {(data.amount?.stringingFee ?? 0) > 0 && (
-                    <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
+                    <div className="flex items-center space-x-3 rounded-md border border-border/60 bg-background/80 px-3 py-2">
                       <Wrench className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-sm text-foreground/80">교체 서비스비</p>
@@ -1682,8 +1682,16 @@ export default function AdminRentalDetailClient() {
                 )}
               </div>
             </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid gap-6 md:grid-cols-2">
+            <CardContent className="p-5">
+              {!isVisitPickup &&
+              deriveShippingStatus(data) === "none" &&
+              !data?.shipping?.outbound?.trackingNumber &&
+              !data?.shipping?.return?.trackingNumber ? (
+                <p className="rounded-lg border border-dashed border-border/70 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+                  배송 정보 미등록 · 운송장이 생기면 배송 업데이트에서 등록하세요.
+                </p>
+              ) : (
+              <div className="grid gap-4 md:grid-cols-2">
                 {/* 인도 */}
                 <div className="rounded-lg border border-border/60 bg-background/80 p-4">
                   <p className="text-sm font-medium text-muted-foreground mb-2">
@@ -1768,6 +1776,7 @@ export default function AdminRentalDetailClient() {
                   )}
                 </div>
               </div>
+              )}
             </CardContent>
           </Card>
 
@@ -1781,9 +1790,9 @@ export default function AdminRentalDetailClient() {
                 <span>대여 타임라인</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
+            <CardContent className="p-5">
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="flex items-start space-x-3 rounded-md border border-border/60 bg-background/80 px-3 py-2">
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-foreground/80">
@@ -1794,7 +1803,7 @@ export default function AdminRentalDetailClient() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
+                <div className="flex items-start space-x-3 rounded-md border border-border/60 bg-background/80 px-3 py-2">
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-foreground/80">반납 예정</p>
@@ -1803,7 +1812,7 @@ export default function AdminRentalDetailClient() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
+                <div className="flex items-start space-x-3 rounded-md border border-border/60 bg-background/80 px-3 py-2">
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-foreground/80">반납 완료</p>
@@ -1812,7 +1821,7 @@ export default function AdminRentalDetailClient() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
+                <div className="flex items-start space-x-3 rounded-md border border-border/60 bg-background/80 px-3 py-2">
                   <CreditCard className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-foreground/80">보증금 환불</p>

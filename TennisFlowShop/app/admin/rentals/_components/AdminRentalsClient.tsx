@@ -215,6 +215,15 @@ export default function AdminRentalsClient() {
     return { label, variant };
   }
 
+  function getRentalNextAction(r: RentalRow) {
+    if (r.cancelRequest?.status === "requested") return "취소 처리";
+    if (derivePaymentStatus(r) !== "paid") return "결제 확인";
+    if (r.status === "paid") return "인도 처리";
+    if (r.status === "out") return "반납 처리";
+    if (r.status === "returned" && !r.depositRefundedAt) return "보증금 환불";
+    return "대여 상세";
+  }
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -893,19 +902,16 @@ export default function AdminRentalsClient() {
           <Table className="min-w-[1120px] table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
-                <TableHead className={cn(thClasses, "w-[140px]")}>대여 ID</TableHead>
-                <TableHead className={cn(thClasses, "text-left")}>고객명</TableHead>
-                <TableHead className={cn(thClasses, "text-left")}>이메일</TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>라켓</TableHead>
+                <TableHead className={cn(thClasses, "w-[260px] text-left")}>대여/고객</TableHead>
                 <TableHead
                   onClick={() => handleSort("date")}
                   className={cn(
                     thClasses,
-                    "w-36 cursor-pointer select-none transition-colors hover:text-primary",
+                    "w-[260px] cursor-pointer select-none text-left transition-colors hover:text-primary",
                     sortBy === "date" && "text-primary",
                   )}
                 >
-                  대여일
+                  라켓/기간
                   <ChevronDown
                     className={cn(
                       "inline ml-1 w-3 h-3 text-muted-foreground transition-transform",
@@ -913,20 +919,16 @@ export default function AdminRentalsClient() {
                     )}
                   />
                 </TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>기간</TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>상태</TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>
-                  결제 상태 / 인도 상태
-                </TableHead>
+                <TableHead className={cn(thClasses, "w-[240px] text-left")}>상태/다음 작업</TableHead>
                 <TableHead
                   onClick={() => handleSort("total")}
                   className={cn(
                     thClasses,
-                    "text-center cursor-pointer select-none",
+                    "w-[250px] cursor-pointer select-none text-left",
                     sortBy === "total" && "text-primary",
                   )}
                 >
-                  금액
+                  결제/보증금
                   <ChevronDown
                     className={cn(
                       "inline ml-1 w-3 h-3 text-muted-foreground transition-transform",
@@ -934,14 +936,14 @@ export default function AdminRentalsClient() {
                     )}
                   />
                 </TableHead>
-                <TableHead className={cn(thClasses, "text-center")}>…</TableHead>
+                <TableHead className={cn(thClasses, "w-[140px] text-center")}>액션</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 Array.from({ length: pageSize }).map((_, rowIdx) => (
                   <TableRow key={rowIdx}>
-                    {Array.from({ length: 10 }).map((_, cellIdx) => (
+                    {Array.from({ length: 5 }).map((_, cellIdx) => (
                       <TableCell key={cellIdx}>
                         <Skeleton className="h-4 w-full" />
                       </TableCell>
@@ -950,13 +952,13 @@ export default function AdminRentalsClient() {
                 ))
               ) : hasDataError ? (
                 <TableRow>
-                  <TableCell colSpan={10} className={tdClasses}>
+                  <TableCell colSpan={5} className={tdClasses}>
                     데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
                   </TableCell>
                 </TableRow>
               ) : shouldShowActualEmpty ? (
                 <TableRow>
-                  <TableCell colSpan={10} className={tdClasses}>
+                  <TableCell colSpan={5} className={tdClasses}>
                     <div className="flex flex-col items-center gap-2">
                       <Search className="h-8 w-8 text-muted-foreground/50" />
                       <p className="text-sm text-muted-foreground">
@@ -967,7 +969,7 @@ export default function AdminRentalsClient() {
                 </TableRow>
               ) : shouldShowSearchEmpty ? (
                 <TableRow>
-                  <TableCell colSpan={10} className={tdClasses}>
+                  <TableCell colSpan={5} className={tdClasses}>
                     적용한 검색어와 필터에 맞는 대여가 없습니다. 조건을 조정하거나 필터를 초기화해
                     주세요.
                   </TableCell>
@@ -982,6 +984,7 @@ export default function AdminRentalsClient() {
                   const pickup = getPickupBadge(r);
                   const warnMissingApp = !!r.withStringService && !r.stringingApplicationId;
                   const cancelQuickSignal = getCancelQuickSignal(r.cancelRequest);
+                  const nextActionLabel = getRentalNextAction(r);
                   return (
                     <TableRow
                       key={rid || `row-${idx}`}
@@ -1033,6 +1036,14 @@ export default function AdminRentalsClient() {
                                   ];
                                   return <AdminBadgeRow maxVisible={2} items={items} />;
                                 })()}
+                                <div className="mt-1 min-w-0 text-left">
+                                  <p className="line-clamp-1 text-sm font-medium text-foreground" title={r.customer?.name || "-"}>
+                                    {r.customer?.name || "고객명 없음"}
+                                  </p>
+                                  <p className="truncate text-xs text-foreground/70" title={r.customer?.email || "-"}>
+                                    {r.customer?.email || "이메일 없음"}
+                                  </p>
+                                </div>
                                 {r.stringingApplicationStatus && (
                                   <p className="text-sm text-foreground/75">
                                     교체서비스 상태: {r.stringingApplicationStatus}
@@ -1151,58 +1162,51 @@ export default function AdminRentalsClient() {
                           </Tooltip>
                         </TooltipProvider>
                       </TableCell>
-
                       <TableCell className={tdClasses}>
-                        <span className="line-clamp-2 break-keep text-left" title={r.customer?.name || "-"}>
-                          {r.customer?.name || "-"}
-                        </span>
-                      </TableCell>
-                      <TableCell className={tdClasses}>
-                        <span className="block max-w-full truncate text-left text-sm text-foreground/75" title={r.customer?.email || "-"}>
-                          {r.customer?.email || "-"}
-                        </span>
-                      </TableCell>
-                      <TableCell className={tdClasses}>
-                        {rid ? (
-                          <Link
-                            href={`/admin/rentals/${rid}`}
-                            className="line-clamp-2 max-w-[220px] break-keep font-medium underline-offset-2 hover:underline"
-                            title={`${racketBrandLabel(r.brand)} ${r.model}`}
-                          >
-                            {racketBrandLabel(r.brand)} {r.model}
-                          </Link>
-                        ) : (
-                          <span
-                            className="line-clamp-2 max-w-[220px] break-keep"
-                            title={`${racketBrandLabel(r.brand)} ${r.model}`}
-                          >
-                            {racketBrandLabel(r.brand)} {r.model}
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="w-36 truncate whitespace-nowrap tabular-nums">
-                        {r.createdAt ? formatDate(r.createdAt) : "-"}
-                      </TableCell>
-                      <TableCell className={cn(tdClasses, "whitespace-nowrap tabular-nums")}>
-                        {r.days}일
-                      </TableCell>
-                      <TableCell className={tdClasses}>
-                        {(() => {
-                          const spec = getRentalStatusBadgeSpec(r.status);
-                          return (
-                            <Badge
-                              variant={spec.variant}
-                              className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}
+                        <div className="min-w-0 text-left">
+                          {rid ? (
+                            <Link
+                              href={`/admin/rentals/${rid}`}
+                              className="line-clamp-2 break-keep font-medium underline-offset-2 hover:underline"
+                              title={`${racketBrandLabel(r.brand)} ${r.model}`}
                             >
-                              {rentalStatusLabels[r.status] || r.status}
-                            </Badge>
-                          );
-                        })()}
+                              {racketBrandLabel(r.brand)} {r.model}
+                            </Link>
+                          ) : (
+                            <span className="line-clamp-2 break-keep font-medium">
+                              {racketBrandLabel(r.brand)} {r.model}
+                            </span>
+                          )}
+                          <p className="mt-1 text-xs text-foreground/70 tabular-nums">
+                            시작 {r.createdAt ? formatDate(r.createdAt) : "미등록"} · {r.days}일
+                          </p>
+                          <p className="text-xs text-foreground/70 tabular-nums">
+                            반납 예정 {r.dueAt ? formatDate(r.dueAt) : "미등록"}
+                          </p>
+                        </div>
                       </TableCell>
                       <TableCell className={tdClasses}>
-                        <div className="flex flex-col items-center gap-1">
-                          <PaymentBadge item={r} />
-                          <ShippingBadge item={r} />
+                        <div className="flex flex-col items-start gap-1 text-left">
+                          <div className="flex flex-wrap gap-1">
+                            {(() => {
+                              const spec = getRentalStatusBadgeSpec(r.status);
+                              return (
+                                <Badge
+                                  variant={spec.variant}
+                                  className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0")}
+                                >
+                                  {rentalStatusLabels[r.status] || r.status}
+                                </Badge>
+                              );
+                            })()}
+                            <ShippingBadge item={r} />
+                          </div>
+                          <p className="text-xs font-medium text-primary">다음: {nextActionLabel}</p>
+                          {r.depositRefundedAt ? (
+                            <p className="text-xs text-foreground/70">보증금 환불 완료</p>
+                          ) : r.status === "returned" ? (
+                            <p className="text-xs text-primary">보증금 환불 확인 필요</p>
+                          ) : null}
                         </div>
                       </TableCell>
                       <TableCell className={cn(tdClasses, "whitespace-nowrap tabular-nums")}>
@@ -1229,6 +1233,10 @@ export default function AdminRentalsClient() {
                         </div>
                       </TableCell>
                       <TableCell className={tdClasses}>
+                        <div className="flex items-center justify-center gap-1">
+                          <Button asChild size="sm" variant="outline" className="h-8 whitespace-nowrap px-2.5 text-xs">
+                            <Link href={`/admin/rentals/${rid}`}>{nextActionLabel}</Link>
+                          </Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-6 w-6">
@@ -1297,6 +1305,7 @@ export default function AdminRentalsClient() {
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
