@@ -256,7 +256,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     const display: Record<string, any> = {
       브랜드: brand,
       재질: material,
-      게이지(굵기): gauge,
+      "게이지(굵기)": gauge,
       색상: color,
       길이: length,
     };
