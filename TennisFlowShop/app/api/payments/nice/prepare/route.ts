@@ -4,6 +4,7 @@ import { buildNiceOrderName, createNiceOrderId } from "@/lib/payments/nice/serve
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 import { calculateCheckoutPayableAmount } from "@/lib/payments/toss/checkout-quote";
 import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -15,7 +16,7 @@ function resolveClientId() {
 }
 
 function resolveAppUrl() {
-  return String(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
+  return String(process.env.NEXT_PUBLIC_APP_URL || getBaseUrl())
     .trim()
     .replace(/\/+$/, "");
 }

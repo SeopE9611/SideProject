@@ -7,6 +7,7 @@ import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/paym
 import { getPointsSummary } from "@/lib/points.service";
 import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -22,7 +23,7 @@ function resolveClientId() {
 }
 
 function resolveAppUrl() {
-  return String(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
+  return String(process.env.NEXT_PUBLIC_APP_URL || getBaseUrl())
     .trim()
     .replace(/\/+$/, "");
 }

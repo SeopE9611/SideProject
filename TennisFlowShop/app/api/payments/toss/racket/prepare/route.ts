@@ -13,6 +13,7 @@ import { isTossPaymentsEnabled } from "@/lib/payments/provider-flags";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { buildTossOrderName, createTossOrderId } from "@/lib/payments/toss/server";
 import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 
 const POSTAL_RE = /^\d{5}$/;
 const onlyDigits = (v: unknown) => String(v ?? "").replace(/\D/g, "");
@@ -141,7 +142,7 @@ export async function POST(req: Request) {
       expiresAt: new Date(now.getTime() + 1000 * 60 * 30),
     });
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || getBaseUrl();
     const orderName = buildTossOrderName([
       {
         name: `${String(racket.brand ?? "")}${racket.model ? ` ${String(racket.model)}` : ""}`.trim(),

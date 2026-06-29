@@ -6,6 +6,7 @@ import { buildNiceOrderName, createNiceOrderId } from "@/lib/payments/nice/serve
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
 import { ensureTossPaymentSessionIndexes, tossPaymentSessions } from "@/lib/payments/toss/session";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 import { ObjectId } from "mongodb";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -22,7 +23,7 @@ function resolveClientId() {
 }
 
 function resolveAppUrl() {
-  return String(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
+  return String(process.env.NEXT_PUBLIC_APP_URL || getBaseUrl())
     .trim()
     .replace(/\/+$/, "");
 }
