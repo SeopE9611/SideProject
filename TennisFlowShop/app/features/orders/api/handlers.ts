@@ -24,6 +24,10 @@ import {
 } from "@/lib/public-visibility-viewer";
 import { getEffectiveRacketPrice } from "@/lib/racket-pricing";
 import { normalizeEmailForSearch } from "@/lib/search-email";
+import {
+  hasStringingServiceInCheckout,
+  validateStringingApplicationInputForOrder,
+} from "@/lib/checkout-stringing-guard";
 import { calcOrderShippingFeeWithBundlePolicy, normalizeItemShippingFee } from "@/lib/shipping-fee";
 import type { DBOrder } from "@/lib/types/order-db";
 import { ObjectId, type Db } from "mongodb";
@@ -344,6 +348,14 @@ export async function createOrder(
     }
     if (!userId && !guestInfo) {
       return NextResponse.json({ error: "게스트 주문 정보 누락" }, { status: 400 });
+    }
+
+    const stringingInputValidation = validateStringingApplicationInputForOrder(
+      hasStringingServiceInCheckout({ shippingInfo }),
+      stringingApplicationInput,
+    );
+    if (!stringingInputValidation.ok) {
+      return NextResponse.json({ error: stringingInputValidation.message }, { status: 400 });
     }
 
     /**

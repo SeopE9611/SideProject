@@ -4,12 +4,15 @@ import {
   type VisibilityViewer,
 } from "@/lib/public-visibility";
 import { getVisibilityViewerFromCookies } from "@/lib/public-visibility-viewer";
-import { createStringingApplicationFromRental } from "@/app/features/stringing-applications/api/create-from-rental";
 import { ensureStringingTTLIndexes } from "@/app/features/stringing-applications/api/indexes";
 import {
   submitStringingApplicationCore,
   type StringingApplicationInput,
 } from "@/app/features/stringing-applications/api/submit-core";
+import {
+  hasEnoughStringingApplicationInputForOrder,
+  STRINGING_APPLICATION_REQUIRED_MESSAGE,
+} from "@/lib/checkout-stringing-guard";
 import { getEffectiveProductPrice } from "@/lib/product-pricing";
 import { RefundAccountSchema, type RefundAccountInfo } from "@/lib/cancel-request/refund-account";
 import { deductPoints, getPointsSummary } from "@/lib/points.service";
@@ -491,19 +494,6 @@ export async function createRentalOrderCore(params: {
     let stringingApplicationId: string | null = null;
     let stringingSubmitted = false;
 
-    const hasEnoughStringingInputForSubmitCore = (
-      input: unknown,
-    ): input is StringingApplicationInput => {
-      if (!input || typeof input !== "object") return false;
-      const candidate = input as StringingApplicationInput;
-      return (
-        Boolean(candidate.name?.trim()) &&
-        Boolean(candidate.phone?.trim()) &&
-        Array.isArray(candidate.stringTypes) &&
-        candidate.stringTypes.length > 0
-      );
-    };
-
     const isTransientTxnError = (e: any) => {
       const labels = Array.isArray(e?.errorLabels) ? e.errorLabels : [];
       return labels.includes("TransientTransactionError") || e?.code === 251;
@@ -696,35 +686,22 @@ export async function createRentalOrderCore(params: {
             | StringingApplicationInput
             | undefined;
 
-          if (hasEnoughStringingInputForSubmitCore(normalizedInput)) {
-            const submitResult = await submitStringingApplicationCore({
-              db,
-              userId: userObjectId,
-              session,
-              input: {
-                ...normalizedInput,
-                rentalId: rentalIdStr,
-                selectedGauge: stringingSnap.selectedGauge,
-              },
-            });
-            stringingApplicationId = String(submitResult.applicationId);
-            stringingSubmitted = submitResult.stringingSubmitted;
-          } else {
-            await createStringingApplicationFromRental(
-              {
-                _id: res.insertedId,
-                userId: userObjectId ?? undefined,
-                createdAt: now,
-                servicePickupMethod: pickupMethod,
-                shipping: normalizedShipping ?? undefined,
-                stringing: stringingSnap ?? undefined,
-                serviceFeeHint: (doc as any)?.amount?.stringingFee ?? 0,
-              },
-              { db, session },
-            );
-            stringingApplicationId = null;
-            stringingSubmitted = false;
+          if (!hasEnoughStringingApplicationInputForOrder(normalizedInput)) {
+            throw Object.assign(new Error(STRINGING_APPLICATION_REQUIRED_MESSAGE), { status: 400 });
           }
+
+          const submitResult = await submitStringingApplicationCore({
+            db,
+            userId: userObjectId,
+            session,
+            input: {
+              ...normalizedInput,
+              rentalId: rentalIdStr,
+              selectedGauge: stringingSnap.selectedGauge,
+            },
+          });
+          stringingApplicationId = String(submitResult.applicationId);
+          stringingSubmitted = submitResult.stringingSubmitted;
 
           if (stringingSubmitted && stringingApplicationId) {
             await db.collection("rental_orders").updateOne(

@@ -2,6 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import {
+  hasStringingServiceInCheckout,
+  STRINGING_APPLICATION_REQUIRED_CLIENT_MESSAGE,
+  validateStringingApplicationInputForOrder,
+} from "@/lib/checkout-stringing-guard";
 import { useEffect, useMemo, useState } from "react";
 
 declare global {
@@ -118,6 +123,17 @@ export default function NiceCheckoutButton({
     if (isDisabled) return;
 
     setInlineError(null);
+
+    const stringingInputValidation = validateStringingApplicationInputForOrder(
+      hasStringingServiceInCheckout({ shippingInfo: payload?.shippingInfo as any }),
+      payload?.stringingApplicationInput,
+    );
+    if (!stringingInputValidation.ok) {
+      setInlineError(STRINGING_APPLICATION_REQUIRED_CLIENT_MESSAGE);
+      onSuccessNavigationAbort?.();
+      return;
+    }
+
     setLoading(true);
 
     try {

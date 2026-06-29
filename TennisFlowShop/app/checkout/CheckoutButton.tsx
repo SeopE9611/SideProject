@@ -6,6 +6,11 @@ import { CartItem, useCartStore } from "@/app/store/cartStore";
 import { useState, useEffect, useRef } from "react";
 import type { User } from "@/app/store/authStore";
 import { getMyInfo } from "@/lib/auth.client";
+import {
+  hasStringingServiceInCheckout,
+  STRINGING_APPLICATION_REQUIRED_CLIENT_MESSAGE,
+  validateStringingApplicationInputForOrder,
+} from "@/lib/checkout-stringing-guard";
 import { showErrorToast } from "@/lib/toast";
 import { CreditCard, Loader2 } from "lucide-react";
 import type { StringingApplicationInput } from "@/app/features/stringing-applications/api/submit-core";
@@ -316,6 +321,15 @@ export default function CheckoutButton({
       // 서비스 픽업 방식 값 방어(서비스 ON일 때만)
       if (withStringService && !ALLOWED_SERVICE_PICKUP.has(servicePickupMethod)) {
         showErrorToast("교체 서비스 수거 방식 값이 올바르지 않습니다. 다시 선택해주세요.");
+        return;
+      }
+
+      const stringingInputValidation = validateStringingApplicationInputForOrder(
+        hasStringingServiceInCheckout({ withStringService }),
+        stringingApplicationInput,
+      );
+      if (!stringingInputValidation.ok) {
+        showErrorToast(STRINGING_APPLICATION_REQUIRED_CLIENT_MESSAGE);
         return;
       }
 
