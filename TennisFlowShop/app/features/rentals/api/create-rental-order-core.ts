@@ -13,6 +13,18 @@ import {
   hasEnoughStringingApplicationInputForOrder,
   STRINGING_APPLICATION_REQUIRED_MESSAGE,
 } from "@/lib/checkout-stringing-guard";
+import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
+import {
+  buildRentalAmountSummary,
+  buildRentalRacketName,
+  compactId,
+  formatRentalPeriod,
+  formatRentalPickupLabel,
+  formatWon,
+  maskPhone,
+  previewText,
+  truthyField,
+} from "@/lib/admin-alerts/formatters";
 import { getEffectiveProductPrice } from "@/lib/product-pricing";
 import { RefundAccountSchema, type RefundAccountInfo } from "@/lib/cancel-request/refund-account";
 import { deductPoints, getPointsSummary } from "@/lib/points.service";
@@ -766,8 +778,46 @@ export async function createRentalOrderCore(params: {
     }
 
     if (!insertedId) throw new Error("RENTAL_INSERT_FAILED");
+    const rentalId = String(insertedId);
+    const alertDoc = ((await rentalOrders.findOne({ _id: insertedId })) as any) ?? {
+      ...doc,
+      _id: insertedId,
+      stringingApplicationId,
+      isStringServiceApplied: stringingSubmitted,
+    };
+    await sendAdminOperationalAlert({
+      kind: "rental_order_created",
+      title: "🎾 신규 라켓 대여 주문",
+      summary: "신규 라켓 대여 주문이 접수되었습니다. 관리자 상세에서 확인해 주세요.",
+      href: `/admin/rentals/${rentalId}`,
+      dedupeKey: `rental_order_created:${rentalId}`,
+      fields: [
+        { name: "대여번호", value: compactId(rentalId) },
+        truthyField("고객명", alertDoc?.shipping?.name || alertDoc?.userSnapshot?.name),
+        truthyField("연락처", maskPhone(alertDoc?.shipping?.phone)),
+        truthyField("라켓", buildRentalRacketName(alertDoc)),
+        truthyField("대여 기간", formatRentalPeriod(alertDoc?.days)),
+        { name: "금액", value: formatWon(alertDoc?.amount?.total) },
+        truthyField(
+          "금액 상세",
+          buildRentalAmountSummary(alertDoc?.amount, alertDoc?.originalTotal, alertDoc?.pointsUsed),
+        ),
+        { name: "결제상태", value: String(alertDoc?.paymentStatus ?? alertDoc?.status ?? "확인 필요") },
+        truthyField("결제수단", alertDoc?.payment?.method),
+        truthyField(
+          "수령/배송 방식",
+          formatRentalPickupLabel(alertDoc?.shipping?.shippingMethod || alertDoc?.servicePickupMethod),
+        ),
+        truthyField("배송/방문 메모", previewText(alertDoc?.shipping?.deliveryRequest, 80)),
+        {
+          name: "교체서비스",
+          value: alertDoc?.stringing?.requested || alertDoc?.isStringServiceApplied ? "포함" : "미포함",
+        },
+        truthyField("교체서비스 신청서", compactId(alertDoc?.stringingApplicationId)),
+      ].filter(Boolean) as Array<{ name: string; value: string }>,
+    });
     return {
-      id: String(insertedId),
+      id: rentalId,
       stringingApplicationId,
       stringingSubmitted,
     };

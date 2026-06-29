@@ -3,7 +3,9 @@ export type AdminOperationalAlertKind =
   | "academy_application_created"
   | "stringing_application_submitted"
   | "package_order_created"
-  | "cancel_requested";
+  | "cancel_requested"
+  | "rental_order_created"
+  | "rental_cancel_requested";
 
 export type AdminOperationalAlertPayload = {
   kind: AdminOperationalAlertKind;
