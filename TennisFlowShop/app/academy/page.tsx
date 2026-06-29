@@ -307,16 +307,6 @@ export default async function AcademyPage() {
           </>
         }
       >
-        <div className="grid gap-4 bp-sm:grid-cols-3">
-          {["1:1 맞춤 레슨", "유연한 일정 조율", "레벨별 맞춤 커리큘럼"].map((item) => (
-            <div
-              key={item}
-              className="rounded-xl border border-border bg-card px-4 py-3 text-ui-body-sm font-medium text-foreground shadow-sm"
-            >
-              {item}
-            </div>
-          ))}
-        </div>
       </PublicPageHero>
 
       <SiteContainer variant="default" className="space-y-12 py-10 md:space-y-16 md:py-14">
