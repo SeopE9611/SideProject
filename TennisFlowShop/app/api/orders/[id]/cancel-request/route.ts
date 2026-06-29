@@ -1,4 +1,5 @@
 import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
+import { formatOrderPickupLabel, formatWon, maskPhone, previewText, truthyField } from "@/lib/admin-alerts/formatters";
 import { appendAudit } from "@/lib/audit";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
@@ -306,10 +307,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       fields: [
         { name: "대상", value: "주문" },
         { name: "주문번호", value: _id.toString() },
+        truthyField("고객명", existing.userSnapshot?.name || existing.guestInfo?.name || existing.shippingInfo?.name),
+        truthyField("연락처", maskPhone(existing.shippingInfo?.phone || existing.guestInfo?.phone)),
+        { name: "주문 금액", value: formatWon(existing.totalPrice) },
         { name: "결제상태", value: String(existing.paymentStatus ?? "확인 필요") },
-        { name: "사유", value: descBase },
+        truthyField("결제수단", existing.paymentInfo?.method),
+        truthyField("수령/배송 방식", formatOrderPickupLabel(existing.shippingInfo?.deliveryMethod || existing.shippingInfo?.shippingMethod)),
+        { name: "교체서비스", value: existing.shippingInfo?.withStringService ? "포함" : "미포함" },
+        { name: "사유", value: previewText(descDetail || descBase, 100) || descBase },
         { name: "환불계좌", value: needsRefundAccount ? "등록됨" : "미필요/미입력" },
-      ],
+      ].filter(Boolean) as Array<{ name: string; value: string }>,
     });
 
     const subject = buildCancelRefundSubject({

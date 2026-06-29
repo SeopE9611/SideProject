@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
+import { formatWon, maskPhone, previewText, truthyField } from "@/lib/admin-alerts/formatters";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
@@ -27,9 +28,6 @@ function num(v: unknown) {
   const n = Number(v);
   return Number.isFinite(n) ? n : NaN;
 }
-const formatAdminAlertWon = (amount: unknown) =>
-  `${Number(amount || 0).toLocaleString("ko-KR")}원`;
-
 function sessionsFromId(idLike: unknown): number {
   const id = str(idLike);
   const m = /^(\d+)-sessions$/i.exec(id);
@@ -221,11 +219,16 @@ export async function POST(req: Request) {
       dedupeKey: `package_order_created:${packageOrderId}`,
       fields: [
         { name: "고객명", value: serviceInfo.name || "미입력" },
+        truthyField("연락처", maskPhone(serviceInfo.phone)),
         { name: "패키지명", value: packageInfo.title },
         { name: "회수", value: `${packageInfo.sessions}회` },
-        { name: "금액", value: formatAdminAlertWon(packageInfo.price) },
+        { name: "금액", value: formatWon(packageInfo.price) },
         { name: "결제상태", value: doc.paymentStatus },
-      ],
+        truthyField("이용 방식", serviceInfo.serviceMethod),
+        truthyField("입금 정보", [paymentInfo.bank, serviceInfo.depositor || paymentInfo.depositor].filter(Boolean).join(" · ")),
+        truthyField("유효기간", packageInfo.validityPeriod),
+        truthyField("요청사항", previewText(serviceInfo.serviceRequest, 100)),
+      ].filter(Boolean) as Array<{ name: string; value: string }>,
     });
 
     return NextResponse.json(
