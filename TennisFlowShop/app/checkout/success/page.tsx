@@ -1015,19 +1015,27 @@ export default async function CheckoutSuccessPage({
                                     <span className="text-muted-foreground">패키지 사용:</span>{" "}
                                     <span className="font-semibold">적용 안 됨</span>
                                   </p>
-                                  <p className="text-muted-foreground">
-                                    사용 가능한 패키지가 없거나 이번 주문에 패키지가 적용되지 않아
-                                    교체서비스 비용이 일반 결제로 반영되었습니다.
-                                  </p>
-                                  <p>
-                                    <span className="text-muted-foreground">교체서비스 비용:</span>{" "}
-                                    <span className="font-semibold">
-                                      {formatPrice(
-                                        stringingSummary.serviceFeeAfter ?? normalizedServiceFee,
-                                      )}
-                                      원
-                                    </span>
-                                  </p>
+                                  {(() => {
+                                    const serviceFee =
+                                      stringingSummary.serviceFeeAfter ?? normalizedServiceFee;
+                                    return (
+                                      <>
+                                        <p className="text-muted-foreground">
+                                          {serviceFee > 0
+                                            ? "사용 가능한 패키지가 없거나 이번 주문에 패키지가 적용되지 않아 교체서비스 비용이 일반 결제로 반영되었습니다."
+                                            : "별도 교체서비스 비용이 발생하지 않습니다."}
+                                        </p>
+                                        <p>
+                                          <span className="text-muted-foreground">
+                                            교체서비스 비용:
+                                          </span>{" "}
+                                          <span className="font-semibold">
+                                            {formatPrice(serviceFee)}원
+                                          </span>
+                                        </p>
+                                      </>
+                                    );
+                                  })()}
                                 </>
                               )}
                             </div>

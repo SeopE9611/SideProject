@@ -61,7 +61,7 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
         key: "operations",
       },
       {
-        title: "주문 관리(교체서비스 포함)",
+        title: "주문 관리",
         href: "/admin/orders",
         icon: PackageSearch,
         key: "orders",
@@ -107,13 +107,13 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
         key: "rackets",
       },
       {
-        title: "구매 패키지권 관리",
+        title: "패키지권 관리",
         href: "/admin/packages",
         icon: Package,
         key: "packages",
       },
       {
-        title: "판매 패키지 설정",
+        title: "패키지 설정",
         href: "/admin/packages/settings",
         icon: Cog,
       },

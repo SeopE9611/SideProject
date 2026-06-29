@@ -1037,10 +1037,10 @@ export default function OrdersClient() {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div
-                                  className="flex w-full max-w-[150px] cursor-pointer flex-col items-start gap-1"
+                                  className="flex w-full max-w-[150px] cursor-pointer flex-col items-start gap-1.5"
                                   title={order.id}
                                 >
-                                  <div className="flex items-center gap-1 w-full min-w-0 justify-start">
+                                  <div className="flex w-full min-w-0 items-center justify-start gap-1 border-b border-border/50 pb-1">
                                     {/* 취소요청 상태일 때만 아이콘 노출 */}
                                     {hasCancelRequest && (
                                       <AlertTriangle
@@ -1049,7 +1049,7 @@ export default function OrdersClient() {
                                       />
                                     )}
                                     {/* 실제 표시되는 주문 ID (짧게) */}
-                                    <span className="truncate whitespace-nowrap font-mono">
+                                    <span className="truncate whitespace-nowrap font-mono text-ui-body-sm font-semibold text-foreground">
                                       {shortenId(order.id)}
                                     </span>
                                   </div>
@@ -1112,9 +1112,14 @@ export default function OrdersClient() {
                                     ]}
                                   />
                                   {isLinkedProductOrder && linkedApplication && (
-                                    <p className="text-ui-body-sm text-foreground/75">
-                                      신청 상태: {linkedApplication.status}
-                                    </p>
+                                    <div className="mt-0.5 w-full rounded-md bg-muted/30 px-2 py-1">
+                                      <p className="text-ui-label leading-snug text-foreground/75">
+                                        신청 상태
+                                      </p>
+                                      <p className="truncate text-ui-body-sm font-medium text-foreground">
+                                        {linkedApplication.status}
+                                      </p>
+                                    </div>
                                   )}
                                 </div>
                               </TooltipTrigger>
