@@ -429,7 +429,7 @@ export default function MypageClient({ user }: Props) {
                       >
                         <Ticket className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-ui-label font-medium leading-tight bp-md:text-ui-body-sm">
-                          패키지
+                          패키지권
                         </span>
                       </TabsTrigger>
 
@@ -585,7 +585,7 @@ export default function MypageClient({ user }: Props) {
                 </Card>
               </TabsContent>
 
-              {/* 패키지 탭 */}
+              {/* 패키지권 탭 */}
               <TabsContent value="passes" className="mt-0">
                 <Card className="border-border bg-card shadow-sm">
                   <CardHeader className={pageTone.sectionHeader}>
@@ -595,10 +595,10 @@ export default function MypageClient({ user }: Props) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
-                          패키지
+                          패키지권
                         </CardTitle>
                         <CardDescription className="mt-0.5 text-ui-label text-muted-foreground bp-sm:text-ui-body-sm">
-                          보유 중인 패키지를 확인하실 수 있습니다.
+                          보유 중인 패키지권을 확인하실 수 있습니다.
                         </CardDescription>
                       </div>
                     </div>
