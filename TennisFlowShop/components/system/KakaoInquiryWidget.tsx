@@ -34,6 +34,16 @@ function normalizeChannelPublicId(raw: string) {
 export default function KakaoInquiryWidget() {
   const pathname = usePathname();
   const isMypageRoute = pathname === "/mypage" || pathname.startsWith("/mypage/");
+  const authHiddenPrefixes = [
+    "/login",
+    "/forgot-password",
+    "/reset-password",
+    "/account",
+    "/order-lookup",
+  ];
+  const hideOnAuthRoute = authHiddenPrefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
   // 어떤 패널이 열려있는지(중복 오픈 방지)
   const [panel, setPanel] = useState<"guide" | "inquiry" | "bug" | null>(null);
 
@@ -58,7 +68,7 @@ export default function KakaoInquiryWidget() {
   const bugOpenChatUrl = (process.env.NEXT_PUBLIC_KAKAO_BUG_OPENCHAT_URL ?? "").trim();
 
   // 훅 개수 불일치 방지 - "숨김 여부"는 계산만 하고, return은 마지막에만 처리
-  const hideAll = pathname?.startsWith("/admin");
+  const hideAll = pathname?.startsWith("/admin") || hideOnAuthRoute;
   const canShowInquiry = !!jsKey && !!channelPublicId;
   const canShowBug = !!bugOpenChatUrl;
 
