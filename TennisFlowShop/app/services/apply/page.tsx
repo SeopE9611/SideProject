@@ -1915,7 +1915,7 @@ export default function StringServiceApplyPage() {
                       variant="muted"
                       padding="sm"
                     >
-                      게이지: {formatGaugeLabel(formData.selectedGauge)}
+                      굵기: {formatGaugeLabel(formData.selectedGauge)}
                       {selectedColorDisplayLabel ? ` · 색상: ${selectedColorDisplayLabel}` : ""}
                     </PublicSurface>
                   ) : null}

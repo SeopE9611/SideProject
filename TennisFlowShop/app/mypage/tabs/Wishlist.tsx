@@ -32,7 +32,7 @@ export default function Wishlist() {
 
   function handleAddToCart(it: (typeof resolvedItems)[number]) {
     if (it.requiresOption && !it.hasSelectedOption) {
-      showErrorToast("색상/굵기 선택이 필요합니다. 상세페이지에서 옵션을 선택해주세요.");
+      showErrorToast("색상과 굵기를 선택해주세요. 상세페이지에서 옵션을 다시 선택해주세요.");
       router.push(`/products/${it.id}`);
       return;
     }
@@ -139,7 +139,7 @@ export default function Wishlist() {
                     {it.hasSelectedOption ? (
                       <>
                         {it.selectedColorLabel && <div>색상: {it.selectedColorLabel}</div>}
-                        {it.selectedGauge && <div>게이지: {it.selectedGauge}</div>}
+                        {it.selectedGauge && <div>굵기: {it.selectedGauge}</div>}
                         {typeof it.optionStock === "number" && (
                           <div>현재 재고: {it.optionStock}개</div>
                         )}

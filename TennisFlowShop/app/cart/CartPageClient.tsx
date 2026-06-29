@@ -745,7 +745,7 @@ export default function CartPageClient() {
         if (variants.length > 0) {
           if (!item.selectedColor || !item.selectedGauge) {
             showErrorToast(
-              "옵션 정보를 확인할 수 없습니다. 선택한 색상/게이지 옵션을 다시 선택해주세요.",
+              "옵션 정보를 확인할 수 없습니다. 색상과 굵기를 다시 선택해주세요.",
             );
             return false;
           }
@@ -756,7 +756,7 @@ export default function CartPageClient() {
           );
           if (!selectedVariant) {
             showErrorToast(
-              "선택한 색상/게이지 조합의 재고 정보를 찾지 못했어요. 옵션을 다시 확인해주세요.",
+              "선택한 색상과 굵기 조합의 재고 정보를 찾지 못했어요. 옵션을 다시 확인해주세요.",
             );
             return false;
           }
@@ -765,7 +765,7 @@ export default function CartPageClient() {
             Number(selectedVariant.stock ?? 0) < item.quantity
           ) {
             showErrorToast(
-              "선택한 색상/게이지 조합의 재고가 부족합니다. 수량을 다시 확인해주세요.",
+              "선택한 색상과 굵기 조합의 재고가 부족합니다. 수량을 다시 확인해주세요.",
             );
             return false;
           }
@@ -1097,7 +1097,7 @@ export default function CartPageClient() {
                                 <span className="font-medium text-foreground">옵션:</span>
                                 {item.selectedGauge ? (
                                   <span className="whitespace-nowrap">
-                                    게이지 {formatGaugeLabel(item.selectedGauge)}
+                                    굵기 {formatGaugeLabel(item.selectedGauge)}
                                   </span>
                                 ) : null}
                                 {item.selectedColorLabel || item.selectedColor ? (

@@ -256,7 +256,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     const display: Record<string, any> = {
       브랜드: brand,
       재질: material,
-      게이지: gauge,
+      굵기: gauge,
       색상: color,
       길이: length,
     };
@@ -871,14 +871,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const validateSelectedColorForCheckout = () => {
     if (colorRows.length === 0) return true;
     if (!selectedColor || !selectedColorRow) {
-      showErrorToast("색상을 선택해주세요.");
+      showErrorToast("스트링 색상을 선택해주세요.");
       return false;
     }
     const colorSoldOut = hasVariantInventories
       ? !getVariantsByColor(selectedColorRow.value).some((v) => isSellableVariant(v))
       : isColorSoldOut(selectedColorRow);
     if (colorSoldOut) {
-      showErrorToast("선택한 색상은 현재 품절입니다.");
+      showErrorToast("선택한 스트링 색상은 현재 품절입니다.");
       return false;
     }
     return true;
@@ -931,7 +931,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     if (wouldBe > effectiveStock) {
       showErrorToast(
         hideGaugeStock
-          ? "선택한 게이지의 구매 가능 수량을 초과했습니다."
+          ? "선택한 굵기의 구매 가능 수량을 초과했습니다."
           : `재고가 부족합니다. 현재 재고: ${effectiveStock}개`,
       );
       return;
@@ -1006,7 +1006,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     if (quantity > effectiveStock) {
       showErrorToast(
         hideGaugeStock
-          ? "선택한 게이지의 구매 가능 수량을 초과했습니다."
+          ? "선택한 굵기의 구매 가능 수량을 초과했습니다."
           : `재고가 부족합니다. 현재 재고: ${effectiveStock}개`,
       );
       return;
@@ -1048,7 +1048,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
     if (quantity > effectiveStock) {
       showErrorToast(
         hideGaugeStock
-          ? "선택한 게이지의 구매 가능 수량을 초과했습니다."
+          ? "선택한 굵기의 구매 가능 수량을 초과했습니다."
           : `재고가 부족합니다. 현재 재고: ${effectiveStock}개`,
       );
       return;
@@ -1484,7 +1484,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                             if (!canInc) {
                               showErrorToast(
                                 hideGaugeStock
-                                  ? "선택한 게이지의 구매 가능 수량을 초과했습니다."
+                                  ? "선택한 굵기의 구매 가능 수량을 초과했습니다."
                                   : `더 이상 담을 수 없습니다. 재고: ${effectiveStock}개`,
                               );
                               return;
@@ -1521,7 +1521,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                       <div className={cn("space-y-3 p-3.5", detailSurfaceSubtleInnerClass)}>
                         <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:gap-3 min-w-0">
                           <span className="text-ui-body-sm font-semibold text-foreground">
-                            게이지 선택
+                            굵기 선택
                           </span>
                           {gaugeOptions.length === 1 && (
                             <span className="text-ui-label text-muted-foreground">자동 선택</span>
@@ -1529,7 +1529,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         </div>
                         <Select value={selectedGauge} onValueChange={setSelectedGauge}>
                           <SelectTrigger className="h-11 w-full min-w-0 bg-background">
-                            <SelectValue placeholder="게이지를 선택하세요" />
+                            <SelectValue placeholder="굵기를 선택하세요" />
                           </SelectTrigger>
                           <SelectContent>
                             {gaugeRows.map((row) => {
@@ -1550,7 +1550,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                         </Select>
                         {hasVariantInventories && variantHasNoSellableGauge && (
                           <p className="text-ui-label text-destructive">
-                            선택 가능한 게이지가 없습니다.
+                            선택 가능한 굵기가 없습니다.
                           </p>
                         )}
                       </div>
@@ -1562,7 +1562,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                           교체서비스 신청용 스트링입니다.
                         </p>
                         <p className="mt-1 break-keep">
-                          게이지·색상·수량을 확인한 뒤 장착 신청으로 이동하세요.
+                          굵기·색상·수량을 확인한 뒤 장착 신청으로 이동하세요.
                         </p>
                       </div>
                     )}
@@ -1909,7 +1909,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 {hMainBrand ?? ""} {hMain?.name ?? ""}
                               </div>
                               <div className="text-ui-label sm:text-ui-body-sm text-muted-foreground">
-                                {hMainGauge ? `게이지: ${hMainGauge}` : null}
+                                {hMainGauge ? `굵기: ${hMainGauge}` : null}
                                 {hMainColor ? ` · 색상: ${hMainColor}` : null}
                               </div>
                             </div>
@@ -1923,7 +1923,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 {hCrossBrand ?? ""} {hCross?.name ?? ""}
                               </div>
                               <div className="text-ui-label sm:text-ui-body-sm text-muted-foreground">
-                                {hCrossGauge ? `게이지: ${hCrossGauge}` : null}
+                                {hCrossGauge ? `굵기: ${hCrossGauge}` : null}
                                 {hCrossColor ? ` · 색상: ${hCrossColor}` : null}
                               </div>
                             </div>

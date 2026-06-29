@@ -1219,8 +1219,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                                             </dt>
                                             <dd className="min-w-0 break-words">
                                               {line.gauge
-                                                ? `게이지 ${formatGaugeLabel(line.gauge)}`
-                                                : "게이지 -"}
+                                                ? `굵기 ${formatGaugeLabel(line.gauge)}`
+                                                : "굵기 -"}
                                               {" / 색상 "}
                                               {line.colorLabel || line.color || "-"}
                                             </dd>
@@ -1372,7 +1372,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                         )}
                         {item.selectedGauge && (
                           <p className="text-ui-label text-foreground/70">
-                            게이지: {formatGaugeLabel(item.selectedGauge)}
+                            굵기: {formatGaugeLabel(item.selectedGauge)}
                           </p>
                         )}
                         {(item.selectedColorLabel || item.selectedColor) && (

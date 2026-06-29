@@ -66,7 +66,7 @@ export default function StringRecommendResultCard({
             <p className="text-ui-body-sm font-semibold">{displayPrice.toLocaleString()}원</p>
           )}
           <p className="break-keep text-ui-label leading-relaxed text-muted-foreground">
-            소재 {stringMaterialLabel(product.material) || "-"} · 게이지{" "}
+            소재 {stringMaterialLabel(product.material) || "-"} · 굵기{" "}
             {formatGaugeLabel(primaryGauge) || "-"}
           </p>
         </div>

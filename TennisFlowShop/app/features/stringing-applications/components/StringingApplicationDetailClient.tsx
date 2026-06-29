@@ -2359,7 +2359,7 @@ export default function StringingApplicationDetailClient({
                           <span className="font-medium">옵션 정보</span>
                         </div>
                         <div className="space-y-1.5 text-ui-body-sm text-foreground/80">
-                          {selectedGauge && <p>게이지: {selectedGauge}</p>}
+                          {selectedGauge && <p>굵기: {selectedGauge}</p>}
                           {selectedColorLabel && (
                             <p className="flex items-center gap-2">
                               <span>색상:</span>
@@ -2406,7 +2406,7 @@ export default function StringingApplicationDetailClient({
                                   </span>
                                 </div>
                                 <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-ui-label text-foreground/75">
-                                  {item.selectedGauge && <span>게이지: {item.selectedGauge}</span>}
+                                  {item.selectedGauge && <span>굵기: {item.selectedGauge}</span>}
                                   {colorLabel && <span>색상: {colorLabel}</span>}
                                   {typeof item.price === "number" && (
                                     <span>상품가: {item.price.toLocaleString()}원</span>
@@ -2433,12 +2433,12 @@ export default function StringingApplicationDetailClient({
                         <div className="space-y-1.5 text-ui-body-sm text-foreground/80">
                           <p>
                             <span className="font-medium text-foreground">재고 차감 방식:</span>{" "}
-                            {isVariantStockMode ? "색상×게이지 조합 재고" : "기존 재고 방식"}
+                            {isVariantStockMode ? "색상×굵기 조합 재고" : "기존 재고 방식"}
                           </p>
                           <p>
                             {isVariantStockMode
-                              ? `선택한 색상과 게이지 조합 기준으로 재고가 차감되었습니다. (색상 ${stringColorLabel(effectiveStockDeduction?.colorValue) || "-"} / 게이지 ${formatGaugeLabel(effectiveStockDeduction?.gaugeValue) || "-"})`
-                              : "기존 색상/게이지 재고 기준으로 처리된 신청서입니다."}
+                              ? `선택한 색상과 굵기 조합 기준으로 재고가 차감되었습니다. (색상 ${stringColorLabel(effectiveStockDeduction?.colorValue) || "-"} / 굵기 ${formatGaugeLabel(effectiveStockDeduction?.gaugeValue) || "-"})`
+                              : "기존 색상/굵기 재고 기준으로 처리된 신청서입니다."}
                           </p>
                           <p>
                             <span className="font-medium text-foreground">조합 재고 복구:</span>{" "}

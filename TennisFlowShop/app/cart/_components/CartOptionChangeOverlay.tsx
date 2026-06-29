@@ -205,7 +205,7 @@ function CartOptionChangeContent({
           </div>
         </div>
         <div className="rounded-xl bg-muted/20 p-3 text-ui-body-sm text-muted-foreground">
-          현재 옵션: {item.selectedGauge ? `게이지 ${formatGaugeLabel(item.selectedGauge)}` : ""}
+          현재 옵션: {item.selectedGauge ? `굵기 ${formatGaugeLabel(item.selectedGauge)}` : ""}
           {item.selectedGauge && (item.selectedColorLabel || item.selectedColor) ? " · " : ""}
           {item.selectedColorLabel ||
             item.selectedColor ||
@@ -258,7 +258,7 @@ function CartOptionChangeContent({
             )}
             {hasGaugeOptions && (
               <section className="space-y-2">
-                <h3 className="text-ui-body-sm font-semibold text-foreground">게이지 선택</h3>
+                <h3 className="text-ui-body-sm font-semibold text-foreground">굵기 선택</h3>
                 <div className="flex flex-wrap gap-2">
                   {gaugeRows.map((row) => {
                     const disabled =

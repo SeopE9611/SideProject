@@ -79,13 +79,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     if (passDoc.status === PASS_STATUS.cancelled) {
-      return NextResponse.json({ error: "취소된 패스입니다." }, { status: 409 });
+      return NextResponse.json({ error: "취소된 패키지권입니다." }, { status: 409 });
     }
 
     const now = new Date();
     if (passDoc.expiresAt && passDoc.expiresAt < now) {
       return NextResponse.json(
-        { error: "만료된 패스입니다. 연장 후 이용해주세요." },
+        { error: "만료된 패키지권입니다. 연장 후 이용해주세요." },
         { status: 409 },
       );
     }
