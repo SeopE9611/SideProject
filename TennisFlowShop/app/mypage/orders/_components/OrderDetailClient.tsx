@@ -1493,7 +1493,9 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               </Card>
             )}
 
-            <Card className="rounded-2xl border border-border bg-card shadow-sm">
+            <details className="group bp-md:block">
+              <summary className="mb-3 cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">진행 단계</summary>
+              <Card className="hidden rounded-2xl border border-border bg-card shadow-sm group-open:block bp-md:block">
               <CardHeader className="border-b border-border/60 bg-muted/30 rounded-t-xl">
                 <CardTitle>주문 진행 타임라인</CardTitle>
                 <CardDescription>
@@ -1552,12 +1554,18 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 </div>
               </CardContent>
             </Card>
+            </details>
 
             {/* 처리 이력 */}
-            <OrderHistory orderId={orderId} shippingMethod={shippingMethodValue} />
+            <details className="group bp-md:block">
+              <summary className="mb-3 cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">처리 이력</summary>
+              <div className="hidden group-open:block bp-md:block">
+                <OrderHistory orderId={orderId} shippingMethod={shippingMethodValue} />
+              </div>
+            </details>
           </div>
 
-          <aside className="space-y-5 bp-lg:sticky bp-lg:top-24">
+          <aside className="space-y-3 bp-lg:sticky bp-lg:top-24 bp-md:space-y-5">
             {/* 결제 정보 */}
             <Card className="rounded-2xl border border-border bg-card shadow-sm">
               <CardHeader className="border-b border-border/60">

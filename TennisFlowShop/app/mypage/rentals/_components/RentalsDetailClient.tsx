@@ -976,7 +976,9 @@ export default function RentalsDetailClient({
         </section>
       ) : null}
 
-      <div className="grid gap-6 md:gap-8 lg:grid-cols-2">
+      <details className="group bp-md:block">
+        <summary className="cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">대여/결제/수령 상세</summary>
+        <div className="mt-3 hidden gap-6 group-open:grid bp-md:grid md:gap-8 lg:grid-cols-2">
         <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
           <CardHeader className="border-b border-border bg-muted/30">
             <CardTitle className="flex items-center space-x-2">
@@ -1138,8 +1140,11 @@ export default function RentalsDetailClient({
           </CardContent>
         </Card>
       </div>
+      </details>
 
-      <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+      <details className="group bp-md:block">
+        <summary className="cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">진행 단계</summary>
+      <Card className="mt-3 hidden overflow-hidden rounded-2xl border border-border bg-card shadow-sm group-open:block bp-md:block">
         <CardHeader className="border-b border-border bg-muted/30">
           <CardTitle className="flex items-center space-x-2">
             <Calendar className="h-5 w-5 text-primary" />
@@ -1266,6 +1271,7 @@ export default function RentalsDetailClient({
           </div>
         </CardContent>
       </Card>
+      </details>
 
       {/* 다이얼로그는 클릭 시점에만 마운트해 초기 번들을 경량화 */}
       {cancelDialogOpen && data?.id ? (
