@@ -460,12 +460,12 @@ export default function PackageCheckoutClient({
             <div>
               <p className="mb-2 text-ui-body-sm font-semibold text-primary">주문 정보 확인</p>
               <h1 className="text-ui-page-title-lg font-semibold tracking-tight sm:text-ui-page-title-lg">패키지 주문/결제</h1>
-              <p className="mt-3 text-ui-body-sm leading-6 text-muted-foreground sm:text-ui-body-lg">
-                선택한 패키지와 신청자 정보를 확인한 뒤 결제수단을 선택하고 결제를 진행해 주세요.
+              <p className="mt-3 break-keep text-ui-body leading-7 text-muted-foreground sm:text-ui-body-lg">
+                결제 전 패키지 횟수, 유효기간, 총 결제 금액을 먼저 확인해 주세요.
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2 text-ui-label text-muted-foreground sm:text-ui-body-sm">
+            <div className="flex flex-wrap gap-2 text-ui-body-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5">
                 <Shield className="h-3.5 w-3.5 text-primary" />
                 SSL 보안 결제
@@ -674,6 +674,17 @@ export default function PackageCheckoutClient({
               </CardDescription>
             </div>
             <CardContent className="p-4 md:p-5">
+              <div className="mb-5 rounded-xl border border-primary/15 bg-primary/5 p-4">
+                <div className="flex items-end justify-between gap-4">
+                  <span className="text-ui-body-sm font-medium text-muted-foreground">총 결제 금액</span>
+                  <span className="text-ui-section-title font-bold text-primary">
+                    {selectedPackage ? `${selectedPackage.price.toLocaleString()}원` : "-"}
+                  </span>
+                </div>
+                <p className="mt-2 break-keep text-ui-body-sm text-muted-foreground">
+                  무통장입금은 입금 확인 후, 카드/간편결제는 결제 완료 후 패키지권이 활성화됩니다.
+                </p>
+              </div>
               <div className="space-y-6">
                 <div className="space-y-3">
                   <Label>결제 방법</Label>
@@ -713,8 +724,8 @@ export default function PackageCheckoutClient({
                           className="flex-1 cursor-pointer font-medium"
                         >
                           카드/간편결제{" "}
-                          <span className="block text-ui-label font-normal text-muted-foreground">
-                            NicePay로 진행
+                          <span className="block text-ui-body-sm font-normal text-muted-foreground">
+                            안전 결제창에서 진행
                           </span>
                         </Label>
                         <CreditCard className="h-5 w-5 text-primary" />
@@ -732,8 +743,8 @@ export default function PackageCheckoutClient({
                           className="flex-1 cursor-pointer font-medium"
                         >
                           카드/간편결제{" "}
-                          <span className="block text-ui-label font-normal text-muted-foreground">
-                            TossPayments로 진행
+                          <span className="block text-ui-body-sm font-normal text-muted-foreground">
+                            안전 결제창에서 진행
                           </span>
                         </Label>
                         <CreditCard className="h-5 w-5 text-primary" />
@@ -1020,8 +1031,8 @@ export default function PackageCheckoutClient({
                 </p>
               )}
               {hasInteracted && agreeTerms && agreePrivacy && agreeRefund && !isFormValid && (
-                <p className="text-ui-label text-destructive">
-                  필수 입력칸을 확인해주세요. (이름/이메일/연락처/결제수단별 필수값)
+                <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-ui-body-sm text-destructive">
+                  이름, 이메일, 연락처와 결제수단별 필수 입력값을 확인해 주세요.
                 </p>
               )}
               {selectedPackage && paymentMethod === "bank_transfer" && (
