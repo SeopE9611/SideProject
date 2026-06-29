@@ -2692,7 +2692,9 @@ export default function StringingApplicationDetailClient({
                       확인하세요.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="grid gap-5 p-4 bp-sm:p-6 bp-xl:grid-cols-2">
+                  <details className="group bp-md:block">
+                    <summary className="cursor-pointer px-4 py-3 text-ui-body-sm font-semibold text-foreground bp-md:hidden">배송/발송 정보</summary>
+                  <CardContent className="hidden gap-5 p-4 group-open:grid bp-md:grid bp-sm:p-6 bp-xl:grid-cols-2">
                     <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-4 leading-relaxed">
                       <p className="text-ui-body-sm font-semibold text-foreground">라켓 발송</p>
                       <p className="mt-1 text-ui-label text-foreground/75">
@@ -2795,6 +2797,7 @@ export default function StringingApplicationDetailClient({
                       </div>
                     </div>
                   </CardContent>
+                  </details>
                 </Card>
               )}
 
@@ -2812,7 +2815,9 @@ export default function StringingApplicationDetailClient({
                     {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-4 bp-lg:p-6">
+                <details className="group bp-md:block">
+                  <summary className="cursor-pointer px-4 py-3 text-ui-body-sm font-semibold text-foreground bp-md:hidden">요청사항</summary>
+                <CardContent className="hidden p-4 group-open:block bp-md:block bp-lg:p-6">
                   {editingRequirements ? (
                     <RequirementsEditForm
                       initial={data.stringDetails.requirements ?? ""}
@@ -2835,6 +2840,7 @@ export default function StringingApplicationDetailClient({
                     <p className="text-muted-foreground italic">요청사항이 없습니다.</p>
                   )}
                 </CardContent>
+                </details>
                 {!editingRequirements && isEditMode && (
                   <CardFooter className="flex justify-center bg-muted/50">
                     <Button

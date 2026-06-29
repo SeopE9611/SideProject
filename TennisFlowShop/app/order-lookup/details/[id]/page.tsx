@@ -585,7 +585,9 @@ export default function OrderDetailPage() {
             </PublicSurface>
           )}
 
-          <Card className="mb-6 rounded-xl border border-border bg-card shadow-sm md:mb-8">
+          <details className="group mb-6 md:mb-8 bp-md:block">
+            <summary className="cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">진행 단계</summary>
+          <Card className="mt-3 hidden rounded-xl border border-border bg-card shadow-sm group-open:block bp-md:block">
             <CardHeader className="border-b border-border/60 bg-muted/30 rounded-t-xl">
               <CardTitle className="text-ui-body">주문 진행 타임라인</CardTitle>
               <p className="text-ui-body-sm text-muted-foreground">
@@ -638,6 +640,7 @@ export default function OrderDetailPage() {
               </div>
             </CardContent>
           </Card>
+          </details>
 
           {/* String Service Alert */}
           {order.shippingInfo?.withStringService && (
@@ -746,7 +749,9 @@ export default function OrderDetailPage() {
               </Card>
             )}
 
-          <div className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-3">
+          <details className="group bp-md:block" open>
+            <summary className="cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">주문 상품</summary>
+          <div className="mt-3 grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-3">
             {/* Main Content */}
             <div className="space-y-6 md:space-y-8 lg:col-span-2">
               {/* 주문 정보 */}
@@ -770,7 +775,7 @@ export default function OrderDetailPage() {
                       </div>
                       <div>
                         <p className="text-ui-body-sm text-muted-foreground mb-1">주문번호</p>
-                        <p className="font-mono text-ui-body-sm bg-muted px-3 py-1 rounded">{order._id}</p>
+                        <p className="break-all rounded bg-muted px-3 py-1 font-mono text-ui-body-sm">{order._id}</p>
                       </div>
                     </div>
                     <div>
@@ -834,7 +839,7 @@ export default function OrderDetailPage() {
                     <div className="space-y-4">
                       <div className="p-3 bg-background rounded-lg">
                         <p className="text-ui-body-sm text-muted-foreground mb-1">{shippingAddressLabel}</p>
-                        <p className="font-semibold">{shippingAddressValue}</p>
+                        <p className="break-words font-semibold">{shippingAddressValue}</p>
                       </div>
                       {canTrack && (
                         <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/40 p-3">
@@ -910,7 +915,7 @@ export default function OrderDetailPage() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-foreground mb-1 truncate">
+                          <h4 className="mb-1 break-words font-semibold text-foreground">
                             {item.name}
                           </h4>
                           {item.option && (
@@ -1006,6 +1011,7 @@ export default function OrderDetailPage() {
               </Card>
             </div>
           </div>
+          </details>
         </div>
       </SiteContainer>
     </div>
