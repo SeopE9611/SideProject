@@ -32,7 +32,7 @@ export default function Wishlist() {
 
   function handleAddToCart(it: (typeof resolvedItems)[number]) {
     if (it.requiresOption && !it.hasSelectedOption) {
-      showErrorToast("색상과 굵기를 선택해주세요. 상세페이지에서 옵션을 다시 선택해주세요.");
+      showErrorToast("색상과 게이지(굵기)를 선택해주세요. 상세페이지에서 옵션을 다시 선택해주세요.");
       router.push(`/products/${it.id}`);
       return;
     }
@@ -139,7 +139,7 @@ export default function Wishlist() {
                     {it.hasSelectedOption ? (
                       <>
                         {it.selectedColorLabel && <div>색상: {it.selectedColorLabel}</div>}
-                        {it.selectedGauge && <div>굵기: {it.selectedGauge}</div>}
+                        {it.selectedGauge && <div>게이지(굵기): {it.selectedGauge}</div>}
                         {typeof it.optionStock === "number" && (
                           <div>현재 재고: {it.optionStock}개</div>
                         )}
@@ -147,7 +147,7 @@ export default function Wishlist() {
                     ) : it.requiresOption ? (
                       <>
                         <div className="font-medium text-warning">옵션 미선택</div>
-                        <div>상세페이지에서 색상/굵기를 선택해주세요.</div>
+                        <div>상세페이지에서 색상/게이지(굵기)를 선택해주세요.</div>
                       </>
                     ) : null}
                     {it.hasSelectedOption && it.optionAvailable === false && (

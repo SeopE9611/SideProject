@@ -1365,7 +1365,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                                   {line.racketLabel || line.racketType || `${index + 1}번째 라켓`} ·{" "}
                                   {line.stringName || "스트링 미입력"}
                                   {line.gauge || line.colorLabel || line.color
-                                    ? ` · 굵기 ${line.gauge ? formatGaugeLabel(line.gauge) : "-"} / 색상 ${line.colorLabel || line.color || "-"}`
+                                    ? ` · 게이지(굵기) ${line.gauge ? formatGaugeLabel(line.gauge) : "-"} / 색상 ${line.colorLabel || line.color || "-"}`
                                     : ""}
                                 </p>
                               ))}
@@ -1435,19 +1435,19 @@ export default function OrderDetailClient({ orderId }: Props) {
                 <div className="space-y-1.5 text-ui-label leading-relaxed text-muted-foreground">
                   <p>
                     <span className="font-medium text-foreground">재고 차감 방식:</span>{" "}
-                    {isVariantStockMode ? "색상×굵기 조합 재고" : "기존 재고 방식"}
+                    {isVariantStockMode ? "색상×게이지(굵기) 조합 재고" : "기존 재고 방식"}
                   </p>
                   <p>
                     {isVariantStockMode
-                      ? "선택한 색상과 굵기 조합 기준으로 재고가 차감되었습니다."
-                      : "기존 색상/굵기 재고 기준으로 처리된 주문입니다."}
+                      ? "선택한 색상과 게이지(굵기) 조합 기준으로 재고가 차감되었습니다."
+                      : "기존 색상/게이지(굵기) 재고 기준으로 처리된 주문입니다."}
                   </p>
                   {isVariantStockMode ? (
                     <div className="space-y-1">
                       {variantStockDeductionItems.map((item, index) => (
                         <p key={`${item.name}-${index}`}>
                           {item.name}: 색상{" "}
-                          {stringColorLabel(item.stockDeduction?.colorValue) || "-"} / 굵기{" "}
+                          {stringColorLabel(item.stockDeduction?.colorValue) || "-"} / 게이지(굵기){" "}
                           {formatGaugeLabel(item.stockDeduction?.gaugeValue) || "-"}
                         </p>
                       ))}
@@ -2129,7 +2129,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         )}
                         {item.selectedGauge && (
                           <p className="text-ui-label text-foreground/70">
-                            굵기: {formatGaugeLabel(item.selectedGauge)}
+                            게이지(굵기): {formatGaugeLabel(item.selectedGauge)}
                           </p>
                         )}
                         {(item.selectedColorLabel || item.selectedColor) && (

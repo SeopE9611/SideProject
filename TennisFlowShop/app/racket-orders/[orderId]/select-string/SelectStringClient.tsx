@@ -288,24 +288,24 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
         return;
       }
       if (!normalizedGauge) {
-        showErrorToast("굵기를 선택해주세요.");
+        showErrorToast("게이지(굵기)를 선택해주세요.");
         setAddingProductId(null);
         return;
       }
       const selectedVariant = getVariantBySelection(product, normalizedColor, normalizedGauge);
       if (!selectedVariant || !isVisibleVariant(selectedVariant)) {
-        showErrorToast("선택한 색상/굵기 조합을 찾을 수 없습니다.");
+        showErrorToast("선택한 색상/게이지(굵기) 조합을 찾을 수 없습니다.");
         setAddingProductId(null);
         return;
       }
       if (!isSellableVariant(selectedVariant)) {
-        showErrorToast("선택한 색상/굵기 조합은 품절되었습니다.");
+        showErrorToast("선택한 색상/게이지(굵기) 조합은 품절되었습니다.");
         setAddingProductId(null);
         return;
       }
     } else {
       if (gaugeRows.length > 0 && !normalizedGauge) {
-        showErrorToast("굵기를 선택해주세요.");
+        showErrorToast("게이지(굵기)를 선택해주세요.");
         setAddingProductId(null);
         return;
       }
@@ -357,7 +357,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
           <div>
             <h2 className="text-ui-body font-semibold text-foreground">장착할 스트링 선택</h2>
             <p className="break-keep text-ui-body-sm text-muted-foreground">
-              색상과 굵기를 확인한 뒤 원하는 스트링으로 다음 단계에 진행하세요.
+              색상과 게이지(굵기)를 확인한 뒤 원하는 스트링으로 다음 단계에 진행하세요.
             </p>
           </div>
           <p className="text-ui-body-sm text-muted-foreground">
@@ -552,7 +552,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
               {gaugeRows.length > 0 && (
                 <div className="mt-3 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="text-ui-label font-medium">굵기</div>
+                    <div className="text-ui-label font-medium">게이지(굵기)</div>
                     {selectedGauge ? (
                       <div className="truncate text-ui-label text-muted-foreground">
                         {selectedGaugeLabel}
@@ -569,7 +569,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                     }
                   >
                     <SelectTrigger className="h-10 w-full rounded-xl text-ui-label">
-                      <SelectValue placeholder="굵기를 선택하세요" />
+                      <SelectValue placeholder="게이지(굵기)를 선택하세요" />
                     </SelectTrigger>
                     <SelectContent>
                       {gaugeRows.map((row) => {

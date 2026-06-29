@@ -1178,7 +1178,7 @@ export default function OrdersClient() {
                                       if (!gauge && !color) return null;
                                       return (
                                         <p className="mt-1 text-ui-body-sm text-foreground/75">
-                                          {gauge && `굵기 ${gauge}`}
+                                          {gauge && `게이지(굵기) ${gauge}`}
                                           {gauge && color ? " · " : ""}
                                           {color && `색상 ${color}`}
                                         </p>
@@ -1226,7 +1226,7 @@ export default function OrdersClient() {
                                         if (!gauge && !color) return null;
                                         return (
                                           <p className="mt-1 text-ui-body-sm text-foreground/75">
-                                            {gauge && `굵기 ${gauge}`}
+                                            {gauge && `게이지(굵기) ${gauge}`}
                                             {gauge && color ? " · " : ""}
                                             {color && `색상 ${color}`}
                                           </p>

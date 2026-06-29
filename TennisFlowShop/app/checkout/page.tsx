@@ -1638,7 +1638,7 @@ export default function CheckoutPage() {
                                 </span>
                                 {item.selectedGauge && (
                                   <span className="inline-flex max-w-full items-center gap-1 rounded-full bg-muted/40 px-2 py-0.5 text-ui-label leading-relaxed text-foreground/80">
-                                    굵기 {formatGaugeLabel(item.selectedGauge)}
+                                    게이지(굵기) {formatGaugeLabel(item.selectedGauge)}
                                   </span>
                                 )}
                                 {(item.selectedColorLabel || item.selectedColor) && (

@@ -589,7 +589,7 @@ export default function SelectStringLayout({
               <span className="min-w-0 break-keep text-ui-label">
                 {flowType === "rental"
                   ? "대여 라켓에 장착할 스트링을 선택하세요"
-                  : "브랜드, 가격, 굵기와 색상을 확인한 뒤 장착할 스트링을 선택하세요"}
+                  : "브랜드, 가격, 게이지(굵기)와 색상을 확인한 뒤 장착할 스트링을 선택하세요"}
               </span>
             </div>
 

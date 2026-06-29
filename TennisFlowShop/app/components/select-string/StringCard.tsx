@@ -329,10 +329,10 @@ export function StringCard({
         {/* Gauge Selector */}
         {hasGaugeRows && (
           <div className="mb-3 space-y-2">
-            <span className="text-ui-label font-medium text-foreground">굵기</span>
+            <span className="text-ui-label font-medium text-foreground">게이지(굵기)</span>
             <Select value={selectedGauge} onValueChange={onGaugeChange}>
               <SelectTrigger className="h-10 text-ui-label">
-                <SelectValue placeholder="굵기 선택" />
+                <SelectValue placeholder="게이지(굵기) 선택" />
               </SelectTrigger>
               <SelectContent>
                 {gaugeRows.map((row) => {

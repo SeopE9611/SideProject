@@ -889,7 +889,7 @@ async function restoreStringingGaugeStockIfNeeded(
       skippedReason: "restore_failed",
       errorResponse: NextResponse.json(
         {
-          error: "스트링 굵기 재고 복구에 실패했습니다.",
+          error: "스트링 게이지(굵기) 재고 복구에 실패했습니다.",
           code: "GAUGE_STOCK_RESTORE_FAILED",
         },
         { status: 409 },

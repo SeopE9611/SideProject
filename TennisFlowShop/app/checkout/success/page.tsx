@@ -894,7 +894,7 @@ export default async function CheckoutSuccessPage({
                               </p>
                               {item.selectedGauge && (
                                 <p className="text-ui-label text-muted-foreground">
-                                  선택 옵션: 굵기 {formatGaugeLabel(item.selectedGauge)}
+                                  선택 옵션: 게이지(굵기) {formatGaugeLabel(item.selectedGauge)}
                                 </p>
                               )}
                               {(item.selectedColorLabel || item.selectedColor) && (

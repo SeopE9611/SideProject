@@ -238,11 +238,11 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
 
     // Validation
     if (!hasVariantInventories && hasGaugeRows && !selectedGauge) {
-      showErrorToast?.("스트링 굵기를 선택해주세요.");
+      showErrorToast?.("스트링 게이지(굵기)를 선택해주세요.");
       return;
     }
     if (!hasVariantInventories && hasGaugeRows && !selectedGaugeRow) {
-      showErrorToast?.("선택한 굵기 정보를 찾을 수 없습니다.");
+      showErrorToast?.("선택한 게이지(굵기) 정보를 찾을 수 없습니다.");
       return;
     }
     if (
@@ -250,11 +250,11 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
       selectedGaugeRow &&
       (selectedGaugeRow.isSoldOut || selectedGaugeRow.stock <= 0)
     ) {
-      showErrorToast?.("선택한 굵기는 품절입니다.");
+      showErrorToast?.("선택한 게이지(굵기)는 품절입니다.");
       return;
     }
     if (!hasVariantInventories && selectedGaugeRow && selectedGaugeRow.stock < qty) {
-      showErrorToast?.("선택한 굵기의 구매 가능 수량을 초과했습니다.");
+      showErrorToast?.("선택한 게이지(굵기)의 구매 가능 수량을 초과했습니다.");
       return;
     }
 
@@ -281,13 +281,13 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
 
     if (hasVariantInventories) {
       if (!selectedColor) return showErrorToast?.("스트링 색상을 선택해주세요.");
-      if (!selectedGauge) return showErrorToast?.("스트링 굵기를 선택해주세요.");
-      if (!selectedVariant) return showErrorToast?.("선택한 색상과 굵기 조합을 찾을 수 없습니다.");
+      if (!selectedGauge) return showErrorToast?.("스트링 게이지(굵기)를 선택해주세요.");
+      if (!selectedVariant) return showErrorToast?.("선택한 색상과 게이지(굵기) 조합을 찾을 수 없습니다.");
       if (!isSellableVariant(selectedVariant)) {
-        return showErrorToast?.("선택한 색상과 굵기 조합은 품절되었습니다.");
+        return showErrorToast?.("선택한 색상과 게이지(굵기) 조합은 품절되었습니다.");
       }
       if (selectedVariant.stock < qty) {
-        return showErrorToast?.("선택한 굵기의 구매 가능 수량을 초과했습니다.");
+        return showErrorToast?.("선택한 게이지(굵기)의 구매 가능 수량을 초과했습니다.");
       }
     }
 
@@ -324,7 +324,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
     if (manageStock && typeof stock === "number" && stock < qty) {
       showErrorToast?.(
         hideGaugeStock
-          ? "선택한 굵기의 구매 가능 수량을 초과했습니다."
+          ? "선택한 게이지(굵기)의 구매 가능 수량을 초과했습니다."
           : "선택한 스트링의 구매 가능 수량을 초과했습니다.",
       );
       return;

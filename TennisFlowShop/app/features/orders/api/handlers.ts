@@ -475,7 +475,7 @@ export async function createOrder(
 
         if (!colorValue || !gaugeValue) {
           throw new HttpError(400, {
-            error: "색상과 굵기를 선택해주세요.",
+            error: "색상과 게이지(굵기)를 선택해주세요.",
             code: "VARIANT_SELECTION_REQUIRED",
             productName,
             selectedColor: colorValue || undefined,
@@ -491,7 +491,7 @@ export async function createOrder(
 
         if (!variantRow) {
           throw new HttpError(400, {
-            error: "선택한 색상과 굵기 조합을 찾을 수 없습니다.",
+            error: "선택한 색상과 게이지(굵기) 조합을 찾을 수 없습니다.",
             code: "VARIANT_NOT_FOUND",
             productName,
             selectedColor: colorValue,
@@ -501,7 +501,7 @@ export async function createOrder(
 
         if (variantRow?.isSoldOut === true) {
           throw new HttpError(400, {
-            error: "선택한 색상과 굵기 조합은 현재 품절입니다.",
+            error: "선택한 색상과 게이지(굵기) 조합은 현재 품절입니다.",
             code: "VARIANT_SOLD_OUT",
             productName,
             selectedColor: colorValue,
@@ -512,7 +512,7 @@ export async function createOrder(
         const variantStock = Number(variantRow?.stock ?? 0);
         if (variantStock < quantity) {
           throw new HttpError(400, {
-            error: "선택한 색상과 굵기 조합의 구매 가능 수량을 초과했습니다.",
+            error: "선택한 색상과 게이지(굵기) 조합의 구매 가능 수량을 초과했습니다.",
             code: "VARIANT_INSUFFICIENT_STOCK",
             productName,
             selectedColor: colorValue,
@@ -573,7 +573,7 @@ export async function createOrder(
         }
 
         throw new HttpError(400, {
-          error: "선택한 색상과 굵기 조합의 구매 가능 수량을 초과했습니다.",
+          error: "선택한 색상과 게이지(굵기) 조합의 구매 가능 수량을 초과했습니다.",
           code: "VARIANT_STOCK_UPDATE_FAILED",
           productName,
           selectedColor: colorValue,
@@ -748,7 +748,7 @@ export async function createOrder(
 
               if (!gaugeRow) {
                 throw new HttpError(400, {
-                  error: "선택한 굵기 옵션을 찾을 수 없습니다.",
+                  error: "선택한 게이지(굵기) 옵션을 찾을 수 없습니다.",
                   code: "GAUGE_NOT_FOUND",
                   productName: product.name,
                   selectedGauge,
@@ -757,7 +757,7 @@ export async function createOrder(
 
               if (gaugeRow.isSoldOut === true) {
                 throw new HttpError(400, {
-                  error: "선택한 굵기는 현재 품절입니다.",
+                  error: "선택한 게이지(굵기)는 현재 품절입니다.",
                   code: "GAUGE_SOLD_OUT",
                   productName: product.name,
                   selectedGauge,
@@ -767,7 +767,7 @@ export async function createOrder(
               const gaugeStock = Number(gaugeRow.stock ?? 0);
               if (gaugeStock < quantity) {
                 throw new HttpError(400, {
-                  error: "선택한 굵기의 구매 가능 수량을 초과했습니다.",
+                  error: "선택한 게이지(굵기)의 구매 가능 수량을 초과했습니다.",
                   code: "GAUGE_INSUFFICIENT_STOCK",
                   productName: product.name,
                   selectedGauge,
@@ -799,7 +799,7 @@ export async function createOrder(
 
               if (gaugeUpdated.matchedCount === 0 || gaugeUpdated.modifiedCount === 0) {
                 throw new HttpError(400, {
-                  error: "선택한 굵기의 구매 가능 수량을 초과했습니다.",
+                  error: "선택한 게이지(굵기)의 구매 가능 수량을 초과했습니다.",
                   code: "GAUGE_STOCK_UPDATE_FAILED",
                   productName: product.name,
                   selectedGauge,
