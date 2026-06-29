@@ -34,7 +34,7 @@ export default function RentalApplyHandoffClient({
   const safeBackHref =
     typeof backHref === "string" && backHref.length > 0
       ? backHref
-      : `/mypage?tab=orders&flowType=rental&flowId=${encodeURIComponent(String(rentalId))}&from=orders`;
+      : `/mypage?tab=orders&flowType=rental&flowId=${encodeURIComponent(String(rentalId))}&from=orders&focus=stringing`;
   const safeSuccessHref = `/rentals/success?id=${encodeURIComponent(String(rentalId))}`;
   const router = useRouter();
   const [remain, setRemain] = useState(seconds);
@@ -123,7 +123,7 @@ export default function RentalApplyHandoffClient({
           )}
 
           <p className="text-ui-label text-muted-foreground text-center">
-            대여 내역은 마이페이지 > 주문/대여 내역에서 언제든지 확인할 수 있으며, 최종 결제/입금 계좌/요금 요약 등은
+            대여 내역은 마이페이지의 주문/대여 내역에서 언제든지 확인할 수 있으며, 최종 결제/입금 계좌/요금 요약 등은
             신청서 제출 후 성공 페이지에서 안내됩니다.
           </p>
         </CardFooter>

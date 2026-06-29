@@ -95,7 +95,7 @@ export default function ApplicantInfoSection({
       if (!addrTrim) next.shippingAddress = "우편번호 찾기를 통해 주소를 등록해주세요.";
     }
 
-    if (!method) next.collectionMethod = "수거 방식을 선택해주세요.";
+    if (!method) next.collectionMethod = "라켓 전달 방식을 선택해주세요.";
 
     return next;
   }, [formData]);

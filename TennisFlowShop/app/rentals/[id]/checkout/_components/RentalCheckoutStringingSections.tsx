@@ -25,7 +25,7 @@ export default function RentalCheckoutStringingSections({ withStringService, ada
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
             <Wrench className="h-5 w-5 text-primary" />
           </span>
-          교체서비스 상세 설정
+          대여 라켓 스트링 설정
         </CardTitle>
         <CardDescription className="mt-2">
           대여할 라켓에 장착할 스트링 텐션과 요청사항을 입력하세요. 라켓 정보는 대여 상품 기준으로

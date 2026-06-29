@@ -73,7 +73,7 @@ export default function PriceSummaryCard({
   const MethodIcon = collectionMethod === "visit" ? Store : Box;
   const methodText = collectionMethod === "visit" ? "매장 방문" : "자가 발송";
 
-  const pickupLabel = "수거비";
+  const pickupLabel = "라켓 전달비";
   const pickupHint =
     collectionMethod === "visit"
       ? "매장 방문: 없음"
@@ -220,7 +220,7 @@ export default function PriceSummaryCard({
         <div className="flex items-center justify-between text-ui-body-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <MethodIcon className="h-4 w-4" />
-            <span>수거 방식</span>
+            <span>라켓 전달 방식</span>
           </div>
           <span>{methodText}</span>
         </div>

@@ -15,7 +15,7 @@ export const APPLY_STEPS: ApplyStepItem[] = [
     id: 1,
     title: "신청자/수령 정보",
     icon: User,
-    description: "연락처와 수령·수거 방식을 입력해주세요",
+    description: "연락처와 라켓 전달·수령 방식을 입력해주세요",
   },
   {
     id: 2,

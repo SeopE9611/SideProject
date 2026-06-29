@@ -528,7 +528,7 @@ function SelfShipForm({
                     id="note"
                     value={form.note ?? ""}
                     onChange={onChange("note")}
-                    placeholder="포장 상태, 수거 관련 참고사항 등을 입력해 주세요"
+                    placeholder="포장 상태, 라켓 발송 관련 참고사항 등을 입력해 주세요"
                     rows={4}
                     className="text-ui-body border-border focus:border-border dark:focus:border-border focus:ring-2 focus:ring-ring dark:focus:ring-ring resize-none"
                   />

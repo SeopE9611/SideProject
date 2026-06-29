@@ -653,7 +653,7 @@ export default function OrderDetailPage() {
                       <p className="text-muted-foreground mb-4">
                         {isVisitPickup
                           ? "이 주문은 스트링 장착 서비스가 포함되어 있습니다. 방문 수령 시 현장 장착으로 진행되며, 아직 접수된 신청서가 없어 신청을 진행할 수 있습니다."
-                          : "이 주문은 스트링 장착 서비스가 포함되어 있습니다. 택배 수령 주문은 수거/반송으로 장착 서비스가 진행되며, 아직 접수된 신청서가 없어 신청을 진행할 수 있습니다."}
+                          : "이 주문은 스트링 장착 서비스가 포함되어 있습니다. 택배 수령 주문은 라켓 발송과 완성 라켓 배송으로 장착 서비스가 진행되며, 아직 접수된 신청서가 없어 신청을 진행할 수 있습니다."}
                       </p>
                       <Link
                         href={`/services/apply?orderId=${order._id}`}
@@ -676,7 +676,7 @@ export default function OrderDetailPage() {
                       <p className="text-foreground">
                         {isVisitPickup
                           ? "이미 접수된 신청서가 존재합니다. 방문 수령 시 접수된 내용에 따라 현장 장착이 진행됩니다."
-                          : "이미 접수된 신청서가 존재합니다. 택배 장착 서비스는 접수된 내용에 따라 수거/반송으로 진행됩니다."}
+                          : "이미 접수된 신청서가 존재합니다. 택배 장착 서비스는 접수된 내용에 따라 라켓 발송과 완성 라켓 배송으로 진행됩니다."}
                       </p>
                     </div>
                   </div>

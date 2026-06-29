@@ -247,7 +247,7 @@ export default function RentalsSuccessClient({ data }: Props) {
               <CardHeader className="bg-warning/10">
                 <CardTitle className="text-ui-body text-warning">접수 상태 확인 중</CardTitle>
                 <CardDescription className="text-warning/90">
-                  최신 상태 동기화 중입니다. 잠시 후 새로고침하거나 마이페이지 > 주문/대여 내역에서 최종 상태를
+                  최신 상태 동기화 중입니다. 잠시 후 새로고침하거나 마이페이지의 주문/대여 내역에서 최종 상태를
                   확인해 주세요.
                 </CardDescription>
               </CardHeader>
