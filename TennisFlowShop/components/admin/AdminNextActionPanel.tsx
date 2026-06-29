@@ -47,7 +47,7 @@ export default function AdminNextActionPanel({
           <div className="min-w-0 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <p className={adminTypography.panelTitle}>다음 작업</p>
-              <Badge variant="outline" className="bg-background/70">
+              <Badge variant="outline" className="bg-background">
                 {badgeLabel}
               </Badge>
             </div>
@@ -55,7 +55,7 @@ export default function AdminNextActionPanel({
               <p className={cn("text-muted-foreground", adminTypography.caption)}>{stageLabel}</p>
               <p className={adminTypography.bodyStrong}>{stage}</p>
               <p className={cn("pt-1", adminTypography.body)}>
-                <span className="font-semibold text-foreground">{nextActionTitle}</span>
+                <span className="font-medium text-foreground">{nextActionTitle}</span>
                 {nextActionDescription ? (
                   <span className="text-muted-foreground"> · {nextActionDescription}</span>
                 ) : null}

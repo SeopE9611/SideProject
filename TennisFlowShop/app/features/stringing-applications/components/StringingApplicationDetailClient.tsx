@@ -729,7 +729,7 @@ export default function StringingApplicationDetailClient({
   }, [applicationId, data?.lines]);
 
   const renderInitialLoading = () => (
-    <main className={cn("w-full", isAdmin && "min-h-screen bg-muted/30 dark:bg-muted/30")}>
+    <main className={cn("w-full", isAdmin && "min-h-screen bg-muted/20 dark:bg-muted/20")}>
       <div className={cn(isAdmin && "container py-6 lg:py-8")}>
         <SiteContainer
           variant={isAdmin ? "full" : "wide"}
@@ -740,7 +740,7 @@ export default function StringingApplicationDetailClient({
           )}
         >
           <div className={cn("mx-auto w-full", isAdmin ? "max-w-[1500px]" : "max-w-7xl")}>
-            <div className="mb-6 rounded-2xl border border-border bg-muted/30 p-4 shadow-lg bp-sm:mb-8 bp-sm:p-6 bp-md:p-8 lg:p-6">
+            <div className="mb-6 rounded-2xl border border-border bg-muted/20 p-4 shadow-lg bp-sm:mb-8 bp-sm:p-6 bp-md:p-8 lg:p-6">
               <div className="space-y-3">
                 <Skeleton className="h-8 w-52" />
                 <Skeleton className="h-4 w-72 max-w-full" />
@@ -756,14 +756,14 @@ export default function StringingApplicationDetailClient({
                 className={cn(
                   "overflow-hidden shadow-xl",
                   isAdmin
-                    ? "border-0 bg-muted/30 ring-ring xl:col-span-8"
+                    ? "border-0 bg-muted/20 ring-ring xl:col-span-8"
                     : "border border-border bg-card",
                 )}
               >
                 <CardHeader
                   className={cn(
                     "space-y-2 border-b pb-3",
-                    isAdmin ? "bg-muted/30" : "bg-muted/50 border-border",
+                    isAdmin ? "bg-muted/20" : "bg-muted/20 border-border",
                   )}
                 >
                   <Skeleton className="h-6 w-48" />
@@ -780,14 +780,14 @@ export default function StringingApplicationDetailClient({
                 className={cn(
                   "overflow-hidden shadow-xl",
                   isAdmin
-                    ? "border-0 bg-muted/30 ring-ring xl:col-span-4"
+                    ? "border-0 bg-muted/20 ring-ring xl:col-span-4"
                     : "border border-border bg-card",
                 )}
               >
                 <CardHeader
                   className={cn(
                     "space-y-2 border-b pb-3",
-                    isAdmin ? "bg-muted/30" : "bg-muted/50 border-border",
+                    isAdmin ? "bg-muted/20" : "bg-muted/20 border-border",
                   )}
                 >
                   <Skeleton className="h-6 w-40" />
@@ -1302,13 +1302,13 @@ export default function StringingApplicationDetailClient({
     : "grid gap-5 bp-lg:grid-cols-[minmax(0,1.55fr)_minmax(340px,0.85fr)] bp-lg:items-start";
   const detailColumnClass = isAdmin ? "contents" : "space-y-5";
   const detailCardClass = isAdmin
-    ? "overflow-hidden border border-border/70 bg-card/80 shadow-sm"
+    ? "overflow-hidden border border-border/70 bg-card shadow-sm"
     : "overflow-hidden rounded-2xl border border-border bg-card shadow-sm";
   const detailCardHeaderClass = isAdmin
-    ? "border-b border-border/70 bg-muted/30 pb-3"
-    : "border-b border-border bg-muted/30 px-4 py-3 bp-lg:px-6";
+    ? "border-b border-border/70 bg-muted/20 pb-3"
+    : "border-b border-border bg-muted/20 px-4 py-3 bp-lg:px-6";
   return (
-    <main className={cn("w-full", isAdmin && "min-h-screen bg-muted/30 dark:bg-muted/30")}>
+    <main className={cn("w-full", isAdmin && "min-h-screen bg-muted/20 dark:bg-muted/20")}>
       {!isAdmin && (
         <PublicPageHero
           eyebrow="마이페이지"
@@ -1352,7 +1352,7 @@ export default function StringingApplicationDetailClient({
           <div className="flex w-full flex-col gap-5 rounded-2xl border border-border bg-background/80 p-4 shadow-sm bp-sm:p-5">
             <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.9fr)] bp-lg:items-stretch">
               <div className="flex min-w-0 items-start gap-4">
-                <div className="shrink-0 rounded-xl border border-border bg-muted/40 p-3">
+                <div className="shrink-0 rounded-xl border border-border bg-muted/20 p-3">
                   <Target className="h-8 w-8 text-primary" />
                 </div>
                 <div className="min-w-0 space-y-1">
@@ -1367,7 +1367,7 @@ export default function StringingApplicationDetailClient({
                   </p>
                 </div>
               </div>
-              <div className="flex flex-col gap-3 rounded-xl border border-border/70 bg-card/80 p-4">
+              <div className="flex flex-col gap-3 rounded-xl border border-border/70 bg-card p-4">
                 <div className="min-w-0">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <ApplicationStatusBadge status={data.status} />
@@ -1479,7 +1479,7 @@ export default function StringingApplicationDetailClient({
           )}
         >
           {isLoading ? (
-            <div className="mx-auto w-full max-w-[1500px] rounded-lg border border-border bg-muted/30 px-4 py-2 text-ui-body-sm text-foreground/80">
+            <div className="mx-auto w-full max-w-[1500px] rounded-lg border border-border bg-muted/20 px-4 py-2 text-ui-body-sm text-foreground/80">
               최신 상태를 확인하고 있습니다...
             </div>
           ) : null}
@@ -1503,7 +1503,7 @@ export default function StringingApplicationDetailClient({
                       isAdmin ? "items-center" : "items-start",
                     )}
                   >
-                  <div className="shrink-0 rounded-xl border border-border bg-muted/40 p-3">
+                  <div className="shrink-0 rounded-xl border border-border bg-muted/20 p-3">
                     {isAdmin ? (
                       <Settings className="h-8 w-8 text-foreground" />
                     ) : (
@@ -1904,7 +1904,7 @@ export default function StringingApplicationDetailClient({
                     tone={cancelInfo.tone}
                     className="border-solid border-border/80 bg-background/90 shadow-sm"
                     rightSlot={
-                      <div className="rounded-md border border-border/60 bg-background/70 px-3 py-2">
+                      <div className="rounded-md border border-border/60 bg-background px-3 py-2">
                         <p className="text-ui-label font-medium text-muted-foreground">
                           환불 계좌 정보
                         </p>
@@ -2068,7 +2068,7 @@ export default function StringingApplicationDetailClient({
               <CardContent className={cn(isAdmin ? "p-4 lg:p-5" : "pt-4")}>
                 {isAdmin ? (
                   <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_300px]">
-                    <div className="rounded-xl border border-border/60 bg-card/70 p-4">
+                    <div className="rounded-xl border border-border/60 bg-card p-4">
                       <div className="space-y-3">
                         <div>
                           <p className="text-ui-body-sm font-semibold text-foreground">
@@ -2132,7 +2132,7 @@ export default function StringingApplicationDetailClient({
                       </div>
                     </div>
 
-                    <div className="rounded-xl border border-border/60 bg-card/70 p-4">
+                    <div className="rounded-xl border border-border/60 bg-card p-4">
                       <div className="space-y-3">
                         <div>
                           <p className="text-ui-body-sm font-semibold text-foreground">운영 액션</p>
@@ -2317,7 +2317,7 @@ export default function StringingApplicationDetailClient({
                   </CardTitle>
                 </CardHeader>
 
-                <div className="mx-4 mb-3 mt-3 rounded-xl border border-border/80 bg-muted/80 px-3 py-3 dark:bg-background/70 bp-sm:mx-6 bp-sm:mt-4 bp-sm:px-4">
+                <div className="mx-4 mb-3 mt-3 rounded-xl border border-border/80 bg-muted/80 px-3 py-3 dark:bg-background bp-sm:mx-6 bp-sm:mt-4 bp-sm:px-4">
                   <div className="flex flex-col gap-3 bp-lg:flex-row bp-lg:items-center bp-lg:justify-between">
                     <div className="flex flex-wrap gap-2">
                       <Badge
@@ -2388,7 +2388,7 @@ export default function StringingApplicationDetailClient({
                             return (
                               <div
                                 key={`${item.id}-${index}`}
-                                className="rounded-lg border border-border/70 bg-card/70 p-3 text-ui-body-sm"
+                                className="rounded-lg border border-border/70 bg-card p-3 text-ui-body-sm"
                               >
                                 <div className="flex flex-col gap-1 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                                   <div className="min-w-0">
@@ -2471,7 +2471,7 @@ export default function StringingApplicationDetailClient({
                           <Target className="w-5 h-5" />
                           <span className="font-medium">라켓·스트링별 작업 정보</span>
                         </div>
-                        <div className="space-y-3 rounded-xl border border-border/70 bg-muted/40 p-4">
+                        <div className="space-y-3 rounded-xl border border-border/70 bg-muted/20 p-4">
                           <div className="grid grid-cols-1 gap-2.5 text-ui-label leading-relaxed text-foreground/75 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
                             <p>라켓 {lineSummary.racketCount}자루</p>
                             <p>스트링 {lineSummary.stringTypeCount}종</p>
@@ -2496,7 +2496,7 @@ export default function StringingApplicationDetailClient({
                             {data.lines.map((line, index) => (
                               <div
                                 key={line.id ?? index}
-                                className="min-w-0 rounded-xl bg-card/70 px-3 py-3 ring-1 ring-ring dark:bg-background/40 dark:ring-ring bp-sm:px-4 bp-sm:py-3.5"
+                                className="min-w-0 rounded-xl bg-card px-3 py-3 ring-1 ring-ring dark:bg-background dark:ring-ring bp-sm:px-4 bp-sm:py-3.5"
                               >
                                 {/* 라켓 이름 + 순번 */}
                                 <div className="mb-2 flex flex-col gap-2 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
@@ -2543,9 +2543,9 @@ export default function StringingApplicationDetailClient({
                           <span className="break-keep font-medium">장착 상품 정보</span>
                         </div>
 
-                        <div className="hidden overflow-hidden rounded-xl ring-1 ring-ring bg-card/80 dark:ring-ring dark:bg-background/60 bp-lg:block">
+                        <div className="hidden overflow-hidden rounded-xl ring-1 ring-ring bg-card dark:ring-ring dark:bg-background bp-lg:block">
                           {/* 헤더 행 */}
-                          <div className="grid grid-cols-[minmax(0,1.6fr)_80px_100px_110px] px-4 py-2 text-ui-label font-semibold text-muted-foreground bg-muted dark:bg-card/70">
+                          <div className="grid grid-cols-[minmax(0,1.6fr)_80px_100px_110px] px-4 py-2 text-ui-label font-semibold text-muted-foreground bg-muted dark:bg-card">
                             <span>상품명</span>
                             <span className="text-center">총 수량</span>
                             <span className="text-right">단가</span>
@@ -2580,7 +2580,7 @@ export default function StringingApplicationDetailClient({
                           {itemSummary.map((item) => (
                             <div
                               key={`${item.id}-${item.name}-${item.price}-mobile`}
-                              className="min-w-0 rounded-xl border border-border/70 bg-card/80 p-3 text-ui-body-sm"
+                              className="min-w-0 rounded-xl border border-border/70 bg-card p-3 text-ui-body-sm"
                             >
                               <div className="space-y-1">
                                 <p className="break-keep text-ui-label font-medium text-muted-foreground">
@@ -2590,7 +2590,7 @@ export default function StringingApplicationDetailClient({
                                   {item.name}
                                 </p>
                               </div>
-                              <div className="mt-3 space-y-1.5 rounded-lg bg-muted/50 p-3 text-ui-body-sm text-foreground/80">
+                              <div className="mt-3 space-y-1.5 rounded-lg bg-muted/20 p-3 text-ui-body-sm text-foreground/80">
                                 <p className="break-keep">
                                   <span className="text-muted-foreground">수량:</span>{" "}
                                   <span className="font-medium text-foreground">
@@ -2631,7 +2631,7 @@ export default function StringingApplicationDetailClient({
 
                 {/* 수정 버튼 */}
                 {isEditMode && (
-                  <CardFooter className="flex justify-center pt-2 bg-muted/50">
+                  <CardFooter className="flex justify-center pt-2 bg-muted/20">
                     <Button
                       size="sm"
                       variant="outline"
@@ -2695,7 +2695,7 @@ export default function StringingApplicationDetailClient({
                   <details className="group bp-md:block">
                     <summary className="cursor-pointer px-4 py-3 text-ui-body-sm font-semibold text-foreground bp-md:hidden">배송/발송 정보</summary>
                   <CardContent className="hidden gap-5 p-4 group-open:grid bp-md:grid bp-sm:p-6 bp-xl:grid-cols-2">
-                    <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-4 leading-relaxed">
+                    <div className="min-w-0 rounded-xl border border-border/70 bg-muted/20 p-4 leading-relaxed">
                       <p className="text-ui-body-sm font-semibold text-foreground">라켓 발송</p>
                       <p className="mt-1 text-ui-label text-foreground/75">
                         {inboundRequired
@@ -2751,7 +2751,7 @@ export default function StringingApplicationDetailClient({
                       )}
                     </div>
 
-                    <div className="min-w-0 rounded-xl border border-border/70 bg-muted/30 p-4 leading-relaxed">
+                    <div className="min-w-0 rounded-xl border border-border/70 bg-muted/20 p-4 leading-relaxed">
                       <p className="text-ui-body-sm font-semibold text-foreground">
                         완성 라켓 배송
                       </p>
@@ -2831,7 +2831,7 @@ export default function StringingApplicationDetailClient({
                       onCancel={() => setEditingRequirements(false)}
                     />
                   ) : data.stringDetails.requirements?.trim() ? (
-                    <div className="rounded-xl border border-border bg-muted/30 p-4">
+                    <div className="rounded-xl border border-border bg-muted/20 p-4">
                       <p className="whitespace-pre-wrap break-words leading-relaxed text-foreground">
                         {data.stringDetails.requirements}
                       </p>
@@ -2842,7 +2842,7 @@ export default function StringingApplicationDetailClient({
                 </CardContent>
                 </details>
                 {!editingRequirements && isEditMode && (
-                  <CardFooter className="flex justify-center bg-muted/50">
+                  <CardFooter className="flex justify-center bg-muted/20">
                     <Button
                       size="sm"
                       variant="outline"
@@ -2858,7 +2858,7 @@ export default function StringingApplicationDetailClient({
               {/* 신청 타임라인: 마이페이지 전용 */}
               {!isAdmin && (
                 <Card className="rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
-                  <CardHeader className="rounded-t-2xl border-b border-border bg-muted/30 pb-3">
+                  <CardHeader className="rounded-t-2xl border-b border-border bg-muted/20 pb-3">
                     <CardTitle className="flex items-center space-x-2">
                       <Clock className="h-5 w-5 text-primary" />
                       <span>신청 타임라인</span>
@@ -2868,7 +2868,7 @@ export default function StringingApplicationDetailClient({
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4 p-4 bp-lg:p-6">
-                    <div className="flex flex-col gap-3 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-4">
+                    <div className="flex flex-col gap-3 rounded-xl border border-border/70 bg-muted/20 p-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-4">
                       <div className="min-w-0">
                         <p className="text-ui-body-sm font-medium text-foreground">
                           현재 {data?.status ? data.status : "상태 확인 중"}
@@ -2890,7 +2890,7 @@ export default function StringingApplicationDetailClient({
                     {isTimelineExpanded && (
                       <div className="space-y-4">
                       {/* 신청 접수 */}
-                      <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:gap-4 bp-sm:p-4">
+                      <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/20 p-3 bp-sm:gap-4 bp-sm:p-4">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card">
                           <Clock className="h-5 w-5 text-primary" />
                         </div>
@@ -2906,7 +2906,7 @@ export default function StringingApplicationDetailClient({
 
                       {/* 자가 발송(사용자 → 매장) */}
                       {selfShip?.trackingNo && (
-                        <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:gap-4 bp-sm:p-4">
+                        <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/20 p-3 bp-sm:gap-4 bp-sm:p-4">
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card">
                             <Truck className="h-5 w-5 text-foreground" />
                           </div>
@@ -2939,7 +2939,7 @@ export default function StringingApplicationDetailClient({
                       )}
                       {/* 매장 발송(매장 → 사용자) */}
                       {invoice?.trackingNumber && (
-                        <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:gap-4 bp-sm:p-4">
+                        <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/20 p-3 bp-sm:gap-4 bp-sm:p-4">
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card">
                             <Truck className="h-5 w-5 text-primary dark:text-foreground" />
                           </div>
@@ -2970,7 +2970,7 @@ export default function StringingApplicationDetailClient({
                       )}
 
                       {/* 전체 상태 요약 */}
-                      <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/30 p-3 bp-sm:gap-4 bp-sm:p-4">
+                      <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/20 p-3 bp-sm:gap-4 bp-sm:p-4">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card">
                           <CheckCircle2 className="h-5 w-5 text-foreground" />
                         </div>
@@ -2993,7 +2993,7 @@ export default function StringingApplicationDetailClient({
               )}
               {applicationId && !isAdmin && (
                 <Card className="rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
-                  <CardHeader className="rounded-t-2xl border-b border-border bg-muted/30 pb-3">
+                  <CardHeader className="rounded-t-2xl border-b border-border bg-muted/20 pb-3">
                     <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
                       <div>
                         <CardTitle className="flex items-center gap-2 text-ui-card-title-lg font-semibold">
@@ -3133,7 +3133,7 @@ export default function StringingApplicationDetailClient({
                           className={
                             data.packageInfo.applied
                               ? "p-3 rounded-lg border border-border bg-muted dark:border-border dark:bg-muted"
-                              : "p-3 rounded-lg border border-border bg-muted/60 dark:bg-background/40"
+                              : "p-3 rounded-lg border border-border bg-muted/20 dark:bg-background"
                           }
                         >
                           <div className="flex items-start gap-2">
@@ -3262,7 +3262,7 @@ export default function StringingApplicationDetailClient({
                 </CardContent>
 
                 {!editingPayment && isEditMode && (
-                  <CardFooter className="flex justify-center bg-muted/50">
+                  <CardFooter className="flex justify-center bg-muted/20">
                     <Button
                       size="sm"
                       variant="outline"
@@ -3369,7 +3369,7 @@ export default function StringingApplicationDetailClient({
                 </CardContent>
 
                 {!editingCustomer && isEditMode && (
-                  <CardFooter className="pt-2 flex justify-center bg-muted/50">
+                  <CardFooter className="pt-2 flex justify-center bg-muted/20">
                     <Button
                       size="sm"
                       variant="outline"
@@ -3401,7 +3401,7 @@ export default function StringingApplicationDetailClient({
 
                   <CardContent className="grid gap-4 p-4 md:grid-cols-2 bp-sm:p-6">
                     {/* 자가 발송(사용자 → 매장) */}
-                    <div className="rounded-lg border border-dashed border-border bg-background/60 p-4">
+                    <div className="rounded-lg border border-dashed border-border bg-background p-4">
                       <p className="text-ui-body-sm font-semibold text-foreground">
                         고객 발송 라켓
                       </p>
@@ -3444,7 +3444,7 @@ export default function StringingApplicationDetailClient({
                     </div>
 
                     {/* 매장 발송(매장 → 사용자) */}
-                    <div className="rounded-lg border border-dashed border-border bg-background/60 p-4">
+                    <div className="rounded-lg border border-dashed border-border bg-background p-4">
                       <p className="text-ui-body-sm font-semibold text-foreground">
                         작업 완료 후 완성 라켓 운송장
                       </p>

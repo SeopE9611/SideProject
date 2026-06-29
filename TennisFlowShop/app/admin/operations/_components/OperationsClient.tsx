@@ -2005,16 +2005,14 @@ export default function OperationsClient() {
                 <Table className="min-w-[1320px]">
                   <TableHeader>
                     <TableRow className="hover:bg-transparent border-b border-border">
-                      <TableHead className={cn(thClasses, "w-[13%]")}>우선순위/유형</TableHead>
-                      <TableHead className={cn(thClasses, "w-[22%]")}>문서</TableHead>
-                      <TableHead className={cn(thClasses, "w-[11%]")}>고객명</TableHead>
-                      <TableHead className={cn(thClasses, "w-[16%]")}>이메일</TableHead>
-                      <TableHead className={cn(thClasses, "w-[18%]")}>상태 / 다음 작업</TableHead>
-                      <TableHead className={cn(thClasses, "w-[12%]")}>확인 항목</TableHead>
+                      <TableHead className={cn(thClasses, "w-[14%]")}>우선순위/유형</TableHead>
+                      <TableHead className={cn(thClasses, "w-[28%]")}>문서/요약</TableHead>
+                      <TableHead className={cn(thClasses, "w-[18%]")}>고객</TableHead>
+                      <TableHead className={cn(thClasses, "w-[24%]")}>상태/다음 작업</TableHead>
                       <TableHead className={cn(thClasses, "w-[10%] text-right")}>
                         금액/접수
                       </TableHead>
-                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[8%]")}>
+                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[6%]")}>
                         액션
                       </TableHead>
                     </TableRow>
@@ -2143,28 +2141,27 @@ export default function OperationsClient() {
                             </TableCell>
 
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <span className={cn("truncate", adminTypography.bodyStrong)}>
-                                {customerName || "-"}
-                              </span>
-                            </TableCell>
-
-                            <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className="flex min-w-0 items-center gap-1.5">
-                                <span className={cn("truncate", adminTypography.caption)}>
-                                  {customerEmail || "-"}
+                              <div className="min-w-0 space-y-1">
+                                <span className={cn("block truncate", adminTypography.bodyStrong)}>
+                                  {customerName || "-"}
                                 </span>
-                                {customerEmail && (
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                                    onClick={() => copyToClipboard(customerEmail)}
-                                    title="이메일 복사"
-                                    aria-label="이메일 복사"
-                                  >
-                                    <Copy className="h-3.5 w-3.5" />
-                                  </Button>
-                                )}
+                                <div className="flex min-w-0 items-center gap-1.5">
+                                  <span className={cn("truncate", adminTypography.caption)}>
+                                    {customerEmail || "-"}
+                                  </span>
+                                  {customerEmail && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                      onClick={() => copyToClipboard(customerEmail)}
+                                      title="이메일 복사"
+                                      aria-label="이메일 복사"
+                                    >
+                                      <Copy className="h-3.5 w-3.5" />
+                                    </Button>
+                                  )}
+                                </div>
                               </div>
                             </TableCell>
 
@@ -2276,7 +2273,7 @@ export default function OperationsClient() {
                                             {reasonBullets.map((reason) => (
                                               <li
                                                 key={`reason:${g.key}:${reason}`}
-                                                className="list-inside list-disc text-xs text-foreground/85 line-clamp-1"
+                                                className="list-inside list-disc text-xs text-foreground/85 line-clamp-2"
                                               >
                                                 {reason}
                                               </li>
@@ -2353,7 +2350,7 @@ export default function OperationsClient() {
                                   접수 {createdAtLabel}
                                 </span>
                                 {amountMeaningText(g.anchor) ? (
-                                  <span className="text-xs text-foreground/85 line-clamp-1 text-right">
+                                  <span className="text-xs text-foreground/85 line-clamp-2 text-right">
                                     {amountMeaningText(g.anchor)}
                                   </span>
                                 ) : null}

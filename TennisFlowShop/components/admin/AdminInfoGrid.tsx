@@ -41,12 +41,12 @@ export function AdminInfoItem({
   valueClassName,
 }: AdminInfoItemProps) {
   return (
-    <div className={cn(adminSurface.cardMuted, "bg-background/80 p-3", className)}>
+    <div className={cn(adminSurface.fieldPanel, className)}>
       <dt className={cn("flex items-center gap-1.5", adminTypography.metaMuted)}>
         {icon ? <span className="text-muted-foreground">{icon}</span> : null}
         <span>{label}</span>
       </dt>
-      <dd className={cn("mt-1 break-words", adminTypography.bodyStrong, valueClassName)}>
+      <dd className={cn("mt-1 break-words", adminTypography.body, "font-medium", valueClassName)}>
         {value ?? "-"}
       </dd>
       {description ? (
