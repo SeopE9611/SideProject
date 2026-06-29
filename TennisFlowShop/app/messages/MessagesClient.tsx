@@ -176,9 +176,9 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
   return (
     <div className="min-h-full bg-background">
       <PublicPageHero
-        eyebrow="메시지"
+        eyebrow="쪽지"
         title="쪽지함"
-        description="메시지를 확인하고 관리하세요"
+        description="알림보다 자세한 1:1 안내와 답장을 확인하세요"
         actions={
           <>
             <Button asChild variant="outline" className="w-full gap-2 sm:w-auto">
@@ -301,7 +301,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                       <EmptyState
                         icon={<Mail className="h-8 w-8" />}
                         title="아직 쪽지가 없습니다"
-                        description="새 쪽지가 도착하면 이곳에 표시됩니다."
+                        description="고객센터 답변이나 회원 간 쪽지가 도착하면 이곳에 표시됩니다."
                       />
                     )}
 
@@ -317,7 +317,8 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                           <button
                             key={m.id}
                             className={cn(
-                              "w-full rounded-lg border border-border/60 bg-card p-4 text-left transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-sm",
+                              "w-full rounded-xl border border-border/60 bg-card p-4 text-left transition-[box-shadow,border-color,background-color] duration-200 hover:shadow-sm sm:p-5",
+                              isUnread && !active && "border-primary/35 bg-primary/5",
                               active && "border-border bg-secondary shadow-sm",
                               !active && "hover:bg-secondary/60 hover:text-foreground",
                             )}
@@ -357,7 +358,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                   <div className="flex items-center gap-2 mt-1 text-ui-label text-muted-foreground">
                                     <div className="flex items-center gap-1">
                                       <User className="h-3 w-3" />
-                                      <span className="truncate max-w-[100px]">{counterpart}</span>
+                                      <span className="max-w-[120px] truncate sm:max-w-[160px]">{counterpart}</span>
                                     </div>
                                     <span>·</span>
                                     <div className="flex items-center gap-1">
@@ -379,7 +380,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                   variant="brand"
                                   className="shrink-0 px-2 py-1 text-ui-label font-semibold leading-none"
                                 >
-                                  NEW
+                                  읽지 않음
                                 </Badge>
                               )}
                             </div>
@@ -412,7 +413,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
 
                     {selectedId && !detailLoading && !detail && (
                       <div className="flex items-center justify-center h-[400px] text-center p-6 md:p-8">
-                        <p className="text-ui-body-sm text-muted-foreground">쪽지를 불러오지 못했습니다.</p>
+                        <p className="break-keep text-ui-body-sm text-muted-foreground">쪽지를 불러오지 못했습니다. 목록에서 다시 선택해 주세요.</p>
                       </div>
                     )}
 
@@ -447,7 +448,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
                                           : "text-primary font-medium",
                                       )}
                                     >
-                                      {detail.readAt ? "읽음" : "미열람"}
+                                      {detail.readAt ? "읽음" : "읽지 않음"}
                                     </span>
                                   </>
                                 )}
@@ -531,6 +532,7 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>취소</AlertDialogCancel>
             <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={(e) => {
                 e.preventDefault();
                 void deleteSelectedMessage();

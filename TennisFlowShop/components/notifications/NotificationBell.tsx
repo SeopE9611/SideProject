@@ -39,7 +39,7 @@ export function NotificationBell({
       size="icon"
       className={cn(
         "relative shrink-0 rounded-full hover:bg-secondary focus-visible:ring-2 ring-ring",
-        mode === "desktop" ? "h-10 w-10 p-0" : mode === "mobileCard" ? "h-8 w-8 p-0" : "p-2",
+        mode === "desktop" ? "h-10 w-10 p-0" : mode === "mobileCard" ? "h-9 w-9 p-0" : "h-10 w-10 p-0",
         className,
       )}
       aria-label={unreadCount > 0 ? `읽지 않은 알림 ${unreadCount}개` : "알림"}
@@ -47,7 +47,7 @@ export function NotificationBell({
     >
       <Bell className={cn(mode === "desktop" ? "!h-5 !w-5" : "h-5 w-5")} aria-hidden="true" />
       {unreadCount > 0 && (
-        <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-ui-micro font-semibold text-destructive-foreground">
+        <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-ui-micro font-semibold text-destructive-foreground">
           {badge}
         </span>
       )}
@@ -60,7 +60,7 @@ export function NotificationBell({
         variant="ghost"
         size="icon"
         className={cn(
-          "relative h-8 w-8 shrink-0 rounded-full p-0 hover:bg-secondary focus-visible:ring-2 ring-ring",
+          "relative h-9 w-9 shrink-0 rounded-full p-0 hover:bg-secondary focus-visible:ring-2 ring-ring",
           className,
         )}
         aria-label={unreadCount > 0 ? `읽지 않은 알림 ${unreadCount}개` : "알림"}
@@ -72,7 +72,7 @@ export function NotificationBell({
       >
         <Bell className="h-5 w-5" aria-hidden="true" />
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-ui-micro font-semibold text-destructive-foreground">
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-ui-micro font-semibold text-destructive-foreground">
             {badge}
           </span>
         )}

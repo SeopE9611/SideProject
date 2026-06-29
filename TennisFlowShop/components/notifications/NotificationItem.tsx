@@ -44,8 +44,8 @@ export function NotificationItem({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex w-full gap-3 rounded-xl border border-border/60 bg-card px-4 py-3 text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        unread && "border-primary/30 bg-primary/5",
+        "flex w-full gap-3 rounded-xl border border-border/60 bg-card px-4 py-4 text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-5",
+        unread && "border-primary/40 bg-primary/5 shadow-sm",
       )}
     >
       <span
@@ -65,13 +65,13 @@ export function NotificationItem({
           <span className="shrink-0 text-ui-label text-muted-foreground">
             {relativeTime(item.createdAt)}
           </span>
-          {unread && <span className="text-ui-label font-medium text-primary">읽지 않음</span>}
+          {unread && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-ui-label font-semibold text-primary">읽지 않음</span>}
         </span>
-        <span className="block line-clamp-2 break-keep text-ui-body-sm font-semibold leading-5 text-foreground">
+        <span className="block line-clamp-2 break-keep text-ui-body-sm font-semibold leading-6 sm:text-ui-body text-foreground">
           {item.title}
         </span>
         {item.body && (
-          <span className="line-clamp-2 break-words text-ui-label leading-5 text-muted-foreground">
+          <span className="line-clamp-2 break-words text-ui-body-sm leading-6 text-muted-foreground">
             {item.body}
           </span>
         )}

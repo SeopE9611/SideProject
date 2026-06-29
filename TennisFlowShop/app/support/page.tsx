@@ -142,8 +142,8 @@ type QuickActionProps = {
 const quickActions: QuickActionProps[] = [
   {
     icon: MessageSquare,
-    title: "Q&A 문의하기",
-    description: "주문, 배송, 서비스 문의",
+    title: "문의하기",
+    description: "주문, 배송, 교체서비스 문의",
     href: "/board/qna/write",
     variant: "primary",
   },
@@ -575,7 +575,7 @@ export default function SupportPage() {
             <SectionHeader
               className="mb-6"
               title="빠른 문의"
-              description="자주 사용하는 메뉴에 바로 접근하세요."
+              description="문의하기와 자주 묻는 질문을 먼저 확인해 보세요."
             />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {quickActions.map((action) => (
@@ -605,7 +605,7 @@ export default function SupportPage() {
             <SectionHeader
               className="mb-6"
               title="게시판"
-              description="공지사항, 이벤트, Q&A를 확인하세요."
+              description="공지사항, 이벤트, 문의 내역을 한곳에서 확인하세요."
             />
 
             <Card className="border-border">
@@ -631,7 +631,7 @@ export default function SupportPage() {
                       className="relative rounded-none border-b-2 border-transparent px-6 py-4 text-muted-foreground data-[state=active]:border-foreground data-[state=active]:text-foreground data-[state=active]:shadow-none"
                     >
                       <MessageSquare className="mr-2 h-4 w-4" />
-                      Q&A
+                      문의
                     </TabsTrigger>
                   </TabsList>
                 </CardHeader>

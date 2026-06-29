@@ -105,10 +105,10 @@ function MobileBrandGrid({
 }
 
 const mobileMenuItemClass =
-  "group w-full min-w-0 justify-between rounded-lg px-3 py-2 text-ui-body-sm font-medium text-foreground/85 hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+  "group w-full min-h-10 min-w-0 justify-between rounded-lg px-3 py-2.5 text-ui-body-sm font-medium text-foreground/85 hover:text-foreground hover:bg-secondary transition-[background-color,color,border-color,box-shadow,opacity] relative z-0 hover:shadow-sm hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 const mobileNestedGroupClass = "mt-1 pl-1";
 const mobileNestedTriggerClass =
-  "min-w-0 px-3 py-1.5 text-ui-body-sm font-medium text-foreground/75 hover:text-foreground rounded-lg hover:bg-secondary";
+  "min-h-10 min-w-0 px-3 py-2 text-ui-body-sm font-medium text-foreground/75 hover:text-foreground rounded-lg hover:bg-secondary";
 const mobileMenuGroupClass = "mt-1.5 pt-0";
 const mobileGroupTitleClass = "min-w-0 break-keep whitespace-normal text-foreground";
 
@@ -659,10 +659,10 @@ const Header = () => {
                     </div>
                   </div>
 
-                  <div className="mt-2 flex min-w-0 items-center gap-3 text-ui-label font-medium text-muted-foreground">
+                  <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2 text-ui-label font-medium text-muted-foreground">
                     <button
                       type="button"
-                      className="inline-flex min-h-8 min-w-0 items-center gap-1 rounded-md px-2 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="inline-flex min-h-9 min-w-0 items-center gap-1.5 rounded-full bg-muted/50 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="쪽지함으로 이동"
                       onClick={() => {
                         setOpen(false);
@@ -679,7 +679,7 @@ const Header = () => {
                     </button>
                     <button
                       type="button"
-                      className="inline-flex min-h-8 min-w-0 items-center gap-1 rounded-md px-2 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="inline-flex min-h-9 min-w-0 items-center gap-1.5 rounded-full bg-muted/50 px-3 py-1.5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label="장바구니로 이동"
                       onClick={() => {
                         setOpen(false);
@@ -989,7 +989,7 @@ const Header = () => {
               willChange: "transform",
             }}
           >
-            <div className="grid w-full grid-cols-[88px_minmax(0,1fr)_88px] items-center bp-lg:hidden">
+            <div className="grid w-full grid-cols-[84px_minmax(0,1fr)_84px] items-center bp-sm:grid-cols-[96px_minmax(0,1fr)_96px] bp-lg:hidden">
               <div className="justify-self-start">
                 <SheetTrigger asChild>
                   <Button
@@ -1032,7 +1032,7 @@ const Header = () => {
                 </div>
               </Link>
 
-              <div className="flex items-center gap-0.5 justify-self-end">
+              <div className="flex items-center gap-0.5 justify-self-end overflow-visible">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -1062,7 +1062,7 @@ const Header = () => {
                   >
                     <ShoppingCart className="h-5 w-5" />
                     {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 text-ui-micro h-4 min-w-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
+                      <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-ui-micro font-semibold text-primary-foreground">
                         {cartBadge}
                       </span>
                     )}
@@ -1303,7 +1303,7 @@ const Header = () => {
 
                 {user && <NotificationBell enabled={!loading && !!user} mode="desktop" />}
 
-                <div className="max-w-[88px] xl:max-w-[110px] 2xl:max-w-[150px] overflow-hidden shrink-0">
+                <div className="max-w-[82px] xl:max-w-[108px] 2xl:max-w-[148px] overflow-hidden shrink-0">
                   <UserNav />
                 </div>
                 <div className="shrink-0">

@@ -202,7 +202,7 @@ export default function NotificationsClient() {
       <PublicPageHero
         eyebrow="알림 센터"
         title="알림"
-        description={`시간순으로 도착한 활동과 안내를 확인하세요 · 읽지 않은 알림 ${unreadCount.toLocaleString()}개`}
+        description={`주문, 쪽지, 서비스 진행 안내를 시간순으로 확인하세요 · 읽지 않은 알림 ${unreadCount.toLocaleString()}개`}
         actions={
           <>
             <Button
@@ -223,9 +223,9 @@ export default function NotificationsClient() {
             >
               <AlertDialogTrigger asChild>
                 <Button
-                  variant="destructive"
+                  variant="outline"
                   disabled={items.length <= 0 || isDeletingAll}
-                  className="w-full gap-2 sm:w-auto"
+                  className="w-full gap-2 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto"
                 >
                   {isDeletingAll && <Loader2 className="h-4 w-4 animate-spin" />}
                   전체 삭제
@@ -260,7 +260,7 @@ export default function NotificationsClient() {
       <SiteContainer className="py-6 md:py-8">
         <SummaryCard className="mx-auto max-w-5xl" contentClassName="p-0">
           {status === "loading" ? (
-            <div className="space-y-2 p-3 md:p-4">
+            <div className="space-y-3 p-3 md:p-5">
               {Array.from({ length: 6 }).map((_, index) => (
                 <div key={index} className="space-y-2 rounded-lg px-3 py-3">
                   <Skeleton className="h-4 w-24" />
@@ -280,11 +280,11 @@ export default function NotificationsClient() {
             <EmptyState
               icon={<Bell className="h-8 w-8" />}
               title="새 알림이 없습니다"
-              description="중요한 안내가 도착하면 이곳에 표시됩니다."
+              description="주문 상태, 쪽지, 고객센터 답변 등 새 소식이 도착하면 이곳에 표시됩니다."
               className="m-4"
             />
           ) : (
-            <div className="space-y-2 p-3 md:p-4">
+            <div className="space-y-3 p-3 md:p-5">
               {items.map((item) => (
                 <NotificationItem key={item.id} item={item} onClick={() => handleItemClick(item)} />
               ))}
