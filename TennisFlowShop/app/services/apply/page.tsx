@@ -559,7 +559,7 @@ export default function StringServiceApplyPage() {
       if (!isValidPhone(formData.phone))
         return (toast("올바른 연락처 형식(01012345678)으로 입력해주세요."), false);
 
-      if (!formData.collectionMethod) return (toast("수거 방식을 선택해주세요."), false);
+      if (!formData.collectionMethod) return (toast("라켓 전달 방식을 선택해주세요."), false);
 
       const normalizedCollection = normalizeCollection(formData.collectionMethod);
       if (normalizedCollection !== "visit") {
@@ -569,8 +569,8 @@ export default function StringServiceApplyPage() {
           return (toast("우편번호 찾기를 통해 주소를 등록해주세요."), false);
       }
       if (formData.collectionMethod === "courier_pickup") {
-        if (!formData.pickupDate) return (toast("수거 희망일을 입력해주세요."), false);
-        if (!formData.pickupTime) return (toast("수거 시간대를 입력해주세요."), false);
+        if (!formData.pickupDate) return (toast("방문 전달 희망일을 입력해주세요."), false);
+        if (!formData.pickupTime) return (toast("방문 전달 시간대를 입력해주세요."), false);
       }
       return true;
     }
@@ -1307,7 +1307,7 @@ export default function StringServiceApplyPage() {
     if (isSingleApplyMode) {
       return {
         title: "보유 장비 교체서비스 신청입니다.",
-        body: "보유 라켓을 보내거나 방문/수거 방식으로 교체서비스를 진행합니다.",
+        body: "보유 라켓을 발송하거나 방문 전달 방식으로 교체서비스를 진행합니다.",
       };
     }
 

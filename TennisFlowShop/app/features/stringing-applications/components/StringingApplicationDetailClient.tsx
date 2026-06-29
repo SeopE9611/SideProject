@@ -1074,7 +1074,7 @@ export default function StringingApplicationDetailClient({
       id: rid,
       href: isAdmin
         ? `/admin/rentals/${encodeURIComponent(rid)}`
-        : `/mypage?tab=orders&flowType=rental&flowId=${encodeURIComponent(rid)}&${flowQuery.toString()}`,
+        : `/mypage?tab=orders&flowType=rental&flowId=${encodeURIComponent(rid)}&${flowQuery.toString()}&focus=stringing`,
       subtitle: "연결된 대여",
     });
   }
