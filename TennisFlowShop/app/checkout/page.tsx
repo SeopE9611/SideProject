@@ -46,6 +46,7 @@ import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
+import { hasEnoughStringingApplicationInputForOrder } from "@/lib/checkout-stringing-guard";
 import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { isNicePaymentsEnabled } from "@/lib/payments/provider-flags";
@@ -1272,8 +1273,6 @@ export default function CheckoutPage() {
     const hasStringingLineErrors = !!(
       withStringService && checkoutStringingAdapter?.hasLineValidationErrors
     );
-    const resolvedCanSubmit =
-      canSubmit && !hasStringingLineErrors && !checkoutStringingAdapter?.packagePreviewLoading;
     const requestStringingValidationMessages = () => {
       if (!hasStringingLineErrors) return;
       setShowStringingValidationErrors(true);
@@ -1337,6 +1336,17 @@ export default function CheckoutPage() {
         })),
       };
     })();
+
+    const stringingApplicationMissing =
+      withStringService && !hasEnoughStringingApplicationInputForOrder(stringingApplicationInput);
+    const stringingApplicationError = stringingApplicationMissing
+      ? "교체서비스 신청 정보가 누락되었습니다. 신청 정보를 다시 확인한 뒤 결제를 진행해 주세요."
+      : null;
+    const resolvedCanSubmit =
+      canSubmit &&
+      !hasStringingLineErrors &&
+      !stringingApplicationMissing &&
+      !checkoutStringingAdapter?.packagePreviewLoading;
 
     return (
       <div className="min-h-full bg-background">
@@ -2544,7 +2554,8 @@ export default function CheckoutPage() {
                     {(fieldErrors.items ||
                       fieldErrors.bundle ||
                       (isMountingFeeReady && fieldErrors.composition) ||
-                      hasStringingLineErrors) && (
+                      hasStringingLineErrors ||
+                      stringingApplicationError) && (
                       <div className="w-full rounded-lg border border-destructive/30 bg-destructive/15 p-3 text-ui-body-sm text-destructive dark:bg-destructive/20">
                         <p className="font-semibold mb-1">확인 필요</p>
                         {fieldErrors.items && <p>• {fieldErrors.items}</p>}
@@ -2552,6 +2563,7 @@ export default function CheckoutPage() {
                         {hasStringingLineErrors && (
                           <p>• 교체서비스 라켓명과 텐션을 모두 입력해 주세요.</p>
                         )}
+                        {stringingApplicationError && <p>• {stringingApplicationError}</p>}
                         {fieldErrors.composition && (
                           <p>
                             • {fieldErrors.composition}{" "}
