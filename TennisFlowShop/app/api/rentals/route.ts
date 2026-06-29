@@ -210,7 +210,19 @@ export async function POST(req: Request) {
       errorLabels: e?.errorLabels,
       stack: e?.stack,
     });
-    const status = Number.isInteger(e?.status) ? Number(e.status) : 409;
+    if (!Number.isInteger(e?.status)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: msg,
+          code: e?.code,
+          codeName: e?.codeName,
+          errorLabels: e?.errorLabels,
+        },
+        { status: 409 },
+      );
+    }
+
     return NextResponse.json(
       {
         ok: false,
@@ -219,7 +231,7 @@ export async function POST(req: Request) {
         codeName: e?.codeName,
         errorLabels: e?.errorLabels,
       },
-      { status },
+      { status: Number(e.status) },
     );
   }
 }
