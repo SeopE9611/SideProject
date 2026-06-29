@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import { ObjectId, type Document } from "mongodb";
 
 import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
+import { formatWon, maskPhone, previewText, truthyField } from "@/lib/admin-alerts/formatters";
 import { getCurrentUserId } from "@/lib/hooks/get-current-user";
 import { getDb } from "@/lib/mongodb";
 import {
   getAcademyClassLessonTypeLabel,
   getAcademyClassLevelLabel,
   getAcademyClassStatusLabel,
+  getAcademyCurrentLevelLabel,
   getAcademyLessonTypeLabel,
   isAcademyClassLessonType,
   isAcademyClassLevel,
@@ -102,12 +104,6 @@ function optionalTrimString(value: unknown, maxLength: number) {
 
 function toErrorResponse(message: string, status = 400, extra?: Record<string, unknown>) {
   return NextResponse.json({ success: false, message, ...extra }, { status });
-}
-
-function maskPhoneForAdminAlert(value: string) {
-  const digits = value.replace(/\D/g, "");
-  if (digits.length < 7) return "마스킹됨";
-  return `${digits.slice(0, 3)}-****-${digits.slice(-4)}`;
 }
 
 function getClassName(doc: Document) {
@@ -318,10 +314,16 @@ export async function POST(req: Request) {
           name: "희망 수업/클래스",
           value: classSnapshot?.name || getAcademyLessonTypeLabel(desiredLessonType as AcademyLessonType),
         },
+        { name: "희망 레슨 유형", value: getAcademyLessonTypeLabel(desiredLessonType as AcademyLessonType) },
+        { name: "현재 실력", value: getAcademyCurrentLevelLabel(currentLevel as AcademyCurrentLevel) },
         { name: "희망 요일", value: preferredDays.join(", ") },
         { name: "희망 시간", value: preferredTimeText || "미입력" },
-        { name: "연락처", value: maskPhoneForAdminAlert(phone) },
-      ],
+        { name: "연락처", value: maskPhone(phone) },
+        truthyField("클래스 정보", classSnapshot ? [classSnapshot.instructorName, classSnapshot.location, classSnapshot.scheduleText].filter(Boolean).join(" · ") : ""),
+        truthyField("정원/가격", classSnapshot ? [`정원 ${classSnapshot.capacity ?? "미정"}`, classSnapshot.price != null ? formatWon(classSnapshot.price) : "가격 미정"].join(" · ") : ""),
+        truthyField("레슨 목표", previewText(lessonGoal, 100)),
+        truthyField("요청사항", previewText(requestMemo, 100)),
+      ].filter(Boolean) as Array<{ name: string; value: string }>,
     });
 
     return NextResponse.json(

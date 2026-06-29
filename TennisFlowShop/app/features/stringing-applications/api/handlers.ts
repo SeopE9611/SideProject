@@ -6,6 +6,15 @@ import {
   validateBookingWindow,
 } from "@/app/features/stringing-applications/lib/slotEngine";
 import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
+import {
+  buildItemSummary,
+  compactId,
+  formatCollectionMethod,
+  formatVisitReservation,
+  maskPhone,
+  previewText,
+  truthyField,
+} from "@/lib/admin-alerts/formatters";
 import { normalizeOrderStatus, normalizePaymentStatus } from "@/lib/admin-ops-normalize";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { appendAudit } from "@/lib/audit";
@@ -95,25 +104,46 @@ type LinkedPaymentPayload = {
   } | null;
 };
 
-function formatAdminAlertDate(value: unknown) {
-  if (!value) return "미입력";
-  if (value instanceof Date) return value.toISOString().slice(0, 10);
-  return String(value);
+
+function buildStringingAlertSummary(app: any) {
+  const details = app?.stringDetails ?? {};
+  const lineSummary = Array.isArray(details.lines)
+    ? details.lines
+        .slice(0, 3)
+        .map((line: any) => [line?.racketType, line?.stringName, [line?.tensionMain, line?.tensionCross].filter(Boolean).join("/")].filter(Boolean).join(" · "))
+        .filter(Boolean)
+        .join("\n")
+    : "";
+  return lineSummary || buildItemSummary(app?.stringItems) || details.racketType || "";
+}
+
+function buildStringingAlertFields(app: any, fallback: any, guestOrderId?: string | null, guestRentalId?: string | null) {
+  const details = app?.stringDetails ?? {};
+  const paymentInfo = app?.paymentInfo ?? {};
+  const orderId = app?.orderId || fallback?.orderId || guestOrderId;
+  const rentalId = app?.rentalId || fallback?.rentalId || guestRentalId;
+  const isBankTransfer = /무통장|계좌|bank|transfer/i.test(String(paymentInfo.method ?? ""));
+  return [
+    truthyField("신청자명", app?.name || app?.guestName || app?.userSnapshot?.name || fallback?.name || fallback?.customerName),
+    truthyField("연락처", maskPhone(app?.phone || app?.contactPhone || app?.shippingInfo?.phone || fallback?.phone)),
+    { name: "접수 방식", value: formatCollectionMethod(app?.collectionMethod || app?.shippingInfo?.collectionMethod || fallback?.serviceType || fallback?.pickupMethod) || "확인 필요" },
+    { name: "방문 예약", value: formatVisitReservation(details.preferredDate ?? fallback?.preferredDate ?? fallback?.date, details.preferredTime ?? fallback?.preferredTime ?? fallback?.time, app?.visitDurationMinutes, app?.visitSlotCount) },
+    truthyField("라켓/스트링", buildStringingAlertSummary(app)),
+    truthyField("패키지", app?.packageApplied ? `패키지 사용${app?.packageRedeemedAt ? ` · ${String(app.packageRedeemedAt)}` : ""}` : ""),
+    truthyField("결제상태", app?.paymentStatus),
+    truthyField("결제수단", [paymentInfo.method, isBankTransfer ? paymentInfo.bank : "", isBankTransfer ? paymentInfo.depositor : ""].filter(Boolean).join(" · ")),
+    truthyField("요청사항", previewText(details.requirements, 100)),
+    { name: "연결 여부", value: orderId ? `주문 연결 ${compactId(orderId)}` : rentalId ? `대여 연결 ${compactId(rentalId)}` : "단독 신청" },
+  ].filter(Boolean) as Array<{ name: string; value: string }>;
 }
 
 function normalizeCancelStatus(raw: any): CancelStatus {
   const v = typeof raw === "string" ? raw.trim() : "";
   if (!v) return "none";
-
-  // 한글/영문 혼재 대응
   if (v === "요청") return "requested";
   if (v === "승인") return "approved";
   if (v === "거절") return "rejected";
-
-  // 이미 표준값이면 그대로
   if (v === "requested" || v === "approved" || v === "rejected" || v === "none") return v;
-
-  // 그 외 알 수 없는 값은 안전하게 none 처리
   return "none";
 }
 
@@ -2018,7 +2048,8 @@ export async function handleStringingCancelRequest(
       fields: [
         { name: "대상", value: "교체서비스 신청" },
         { name: "신청번호", value: id },
-        { name: "사유", value: reasonLabel },
+        ...buildStringingAlertFields(appDoc, {}, null, null).slice(0, 7),
+        { name: "사유", value: previewText(reasonText || reasonLabel, 100) || reasonLabel },
         { name: "환불계좌", value: needsRefundAccount ? "등록됨" : "미필요/미입력" },
       ],
     });
@@ -3090,7 +3121,8 @@ export async function handleApplicationCancelRequest(
       fields: [
         { name: "대상", value: "교체서비스 신청" },
         { name: "신청번호", value: id },
-        { name: "사유", value: descBase },
+        ...buildStringingAlertFields(existing, {}, null, null).slice(0, 7),
+        { name: "사유", value: previewText(reasonText || descBase, 100) || descBase },
         { name: "환불계좌", value: needsRefundAccount ? "등록됨" : "미필요/미입력" },
       ],
     });
@@ -3564,6 +3596,14 @@ export async function handleSubmitStringingApplication(req: Request) {
     });
 
     const applicationId = String(result.applicationId);
+    let savedApplication: any = null;
+    try {
+      savedApplication = await db
+        .collection("stringing_applications")
+        .findOne({ _id: result.applicationId });
+    } catch (error) {
+      console.warn("[admin-alerts] stringing lookup failed", { applicationId, error });
+    }
 
     await sendAdminOperationalAlert({
       kind: "stringing_application_submitted",
@@ -3571,13 +3611,7 @@ export async function handleSubmitStringingApplication(req: Request) {
       summary: "신규 교체서비스 신청이 접수되었습니다. 관리자 상세에서 확인해 주세요.",
       href: `/admin/applications/stringing/${applicationId}`,
       dedupeKey: `stringing_application_submitted:${applicationId}`,
-      fields: [
-        { name: "신청자명", value: String(body?.name ?? body?.customerName ?? "미입력") },
-        { name: "접수 방식", value: String(body?.serviceType ?? body?.pickupMethod ?? "확인 필요") },
-        { name: "희망일", value: formatAdminAlertDate(body?.preferredDate ?? body?.date) },
-        { name: "희망 시간", value: String(body?.preferredTime ?? body?.time ?? "미입력") },
-        { name: "주문 연결 여부", value: body?.orderId || guestOrderId ? "연결됨" : "없음" },
-      ],
+      fields: buildStringingAlertFields(savedApplication, body, guestOrderId, guestRentalId),
     });
 
     const response = NextResponse.json(
