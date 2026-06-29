@@ -236,7 +236,7 @@ export default async function PackageSuccessPage({
                   <div className="rounded-xl border border-border bg-muted/40 p-4">
                     <p className="font-semibold text-foreground">다음 행동</p>
                     <p className="mt-1 text-muted-foreground">
-                      {isPaid ? "교체서비스 신청 가능" : "패키지 내역 확인"}
+                      {isPaid ? "교체서비스 신청 가능" : "패키지권 확인"}
                     </p>
                   </div>
                 </div>
@@ -258,7 +258,7 @@ export default async function PackageSuccessPage({
                   >
                     <Link href={lookupHref} className="flex items-center gap-2">
                       <Package className="h-4 w-4" />
-                      패키지 내역 확인
+                      패키지권 확인
                     </Link>
                   </Button>
                 </div>
@@ -295,7 +295,7 @@ export default async function PackageSuccessPage({
                   >
                     <Link href={lookupHref} className="flex items-center gap-2">
                       <Package className="h-5 w-5" />
-                      패키지 내역 확인
+                      패키지권 확인
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>

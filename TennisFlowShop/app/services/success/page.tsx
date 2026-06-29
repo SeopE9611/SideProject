@@ -396,7 +396,7 @@ export default async function StringServiceSuccessPage(props: Props) {
         status: "대여 라켓 준비 중",
         todo: "사용자가 별도로 라켓을 발송하지 않아도 됩니다.",
         next: "매장에서 대여 라켓에 스트링을 장착해 준비합니다.",
-        primaryLabel: "마이페이지에서 진행상태 확인",
+        primaryLabel: "마이페이지 > 주문/신청 내역 확인",
         primaryHref: mypageFlowHref,
       };
     }
@@ -405,7 +405,7 @@ export default async function StringServiceSuccessPage(props: Props) {
         status: "매장 작업 대기",
         todo: "사용자가 별도로 라켓을 발송하지 않아도 됩니다.",
         next: "매장에서 구매한 라켓에 스트링을 장착해 준비합니다.",
-        primaryLabel: "마이페이지에서 진행상태 확인",
+        primaryLabel: "마이페이지 > 주문/신청 내역 확인",
         primaryHref: mypageFlowHref,
       };
     }
@@ -423,7 +423,7 @@ export default async function StringServiceSuccessPage(props: Props) {
         status: "매장 입고 확인 중",
         todo: "등록한 운송장 기준으로 매장 도착 확인을 기다려주세요.",
         next: "매장에서 입고 확인 후 교체 작업을 진행합니다.",
-        primaryLabel: "마이페이지에서 진행상태 확인",
+        primaryLabel: "마이페이지 > 주문/신청 내역 확인",
         primaryHref: mypageFlowHref,
       };
     }
@@ -432,7 +432,7 @@ export default async function StringServiceSuccessPage(props: Props) {
         status: "방문 접수 완료",
         todo: "예약/희망 일시에 맞춰 매장 방문을 준비해주세요.",
         next: "매장에서 방문 접수 후 교체 작업을 진행합니다.",
-        primaryLabel: "마이페이지에서 진행상태 확인",
+        primaryLabel: "마이페이지 > 주문/신청 내역 확인",
         primaryHref: mypageFlowHref,
       };
     }
@@ -440,7 +440,7 @@ export default async function StringServiceSuccessPage(props: Props) {
       status: "접수 완료",
       todo: "현재 추가로 진행할 작업은 없습니다.",
       next: "매장에서 신청 내용을 확인한 뒤 다음 진행 상태를 안내합니다.",
-      primaryLabel: "마이페이지에서 진행상태 확인",
+      primaryLabel: "마이페이지 > 주문/신청 내역 확인",
       primaryHref: mypageFlowHref,
     };
   })();
@@ -497,7 +497,7 @@ export default async function StringServiceSuccessPage(props: Props) {
                         href={mypageFlowHref}
                       >
                         <FileText className="h-5 w-5 mr-2" />
-                        신청 내역 보기
+                        주문/신청 내역 보기
                       </Link>
                     </Button>
                     <Button

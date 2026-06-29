@@ -115,15 +115,15 @@ export default function RentalApplyHandoffClient({
                 <Link href={safeSuccessHref}>대여 접수 완료 페이지로</Link>
               </Button>
 
-              {/* 마이페이지(대여 탭)에서 해당 대여 상세로 이동 */}
+              {/* 마이페이지(대여 탭)에서 해당 주문/대여 내역으로 이동 */}
               <Button asChild variant="ghost" className="w-full" size="lg">
-                <Link href={safeBackHref}>대여 상세로 이동</Link>
+                <Link href={safeBackHref}>주문/대여 내역으로 이동</Link>
               </Button>
             </>
           )}
 
           <p className="text-ui-label text-muted-foreground text-center">
-            대여 내역은 마이페이지에서 언제든지 확인할 수 있으며, 최종 결제/입금 계좌/요금 요약 등은
+            대여 내역은 마이페이지 > 주문/대여 내역에서 언제든지 확인할 수 있으며, 최종 결제/입금 계좌/요금 요약 등은
             신청서 제출 후 성공 페이지에서 안내됩니다.
           </p>
         </CardFooter>

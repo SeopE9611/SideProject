@@ -14,7 +14,7 @@ export function buildCheckoutSuccessLinks({ accessSub, orderId, stringingApplica
 
   return {
     isLoggedIn,
-    orderDetailHref: isLoggedIn ? "/mypage" : `/order-lookup/details/${orderId}`,
+    orderDetailHref: isLoggedIn ? "/mypage?tab=orders" : `/order-lookup/details/${orderId}`,
     stringingApplicationHref:
       isLoggedIn && normalizedApplicationId
         ? `/mypage?tab=orders&flowType=application&flowId=${encodeURIComponent(normalizedApplicationId)}&from=orders`

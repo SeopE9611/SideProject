@@ -247,7 +247,7 @@ export default function RentalsSuccessClient({ data }: Props) {
               <CardHeader className="bg-warning/10">
                 <CardTitle className="text-ui-body text-warning">접수 상태 확인 중</CardTitle>
                 <CardDescription className="text-warning/90">
-                  최신 상태 동기화 중입니다. 잠시 후 새로고침하거나 마이페이지에서 최종 상태를
+                  최신 상태 동기화 중입니다. 잠시 후 새로고침하거나 마이페이지 > 주문/대여 내역에서 최종 상태를
                   확인해 주세요.
                 </CardDescription>
               </CardHeader>
@@ -325,7 +325,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 </div>
                 <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                   <Button asChild className="flex-1">
-                    <Link href={rentalDetailHref}>대여 내역 확인</Link>
+                    <Link href={rentalDetailHref}>주문/대여 내역 확인</Link>
                   </Button>
                   {withService && rentalStringingHref && (
                     <Button asChild variant="outline" className="flex-1">
@@ -606,7 +606,7 @@ export default function RentalsSuccessClient({ data }: Props) {
                 >
                   <Link href="/mypage?tab=orders&scope=rental" className="flex items-center gap-2">
                     <Package className="h-5 w-5" />
-                    대여 내역 확인
+                    주문/대여 내역 확인
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>

@@ -59,7 +59,7 @@ export default function PassList() {
       <AsyncState
         kind="error"
         variant="card"
-        resourceName="이용권 정보"
+        resourceName="패키지권 정보"
         onAction={() => mutate()}
       />
     );
@@ -208,7 +208,7 @@ export default function PassList() {
               <Ticket className="h-8 w-8 bp-sm:h-10 bp-sm:w-10 text-muted-foreground" />
             </div>
             <p className="text-ui-body font-medium text-center mb-1">
-              보유 중인 패키지 이용권이 없습니다.
+              보유 중인 패키지권이 없습니다.
             </p>
             <p className="text-ui-body-sm text-muted-foreground text-center">
               패키지를 구매하고 활성화 시 여기에 표시됩니다

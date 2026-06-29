@@ -363,7 +363,7 @@ export default async function CheckoutSuccessPage({
           status: "매장 입고 확인 중",
           todo: "등록한 운송장 기준으로 매장 도착 확인을 기다려주세요.",
           next: "매장에서 입고 확인 후 교체 작업을 진행합니다.",
-          primaryLabel: "마이페이지에서 진행상태 확인",
+          primaryLabel: "마이페이지 > 주문 내역 확인",
           primaryHref: orderDetailHref,
         };
       }
@@ -374,7 +374,7 @@ export default async function CheckoutSuccessPage({
           next: orderHasPurchasedRacket
             ? "매장에서 구매한 라켓에 스트링을 장착해 발송합니다."
             : "매장에서 라켓에 스트링을 장착해 준비합니다.",
-          primaryLabel: "마이페이지에서 진행상태 확인",
+          primaryLabel: "마이페이지 > 주문 내역 확인",
           primaryHref: orderDetailHref,
         };
       }
@@ -386,7 +386,7 @@ export default async function CheckoutSuccessPage({
         next: isVisitPickup
           ? "매장에서 상품 수령 준비 후 수령정보 확인이 가능하도록 안내합니다."
           : "배송이 시작되면 배송정보를 확인할 수 있습니다.",
-        primaryLabel: "마이페이지에서 진행상태 확인",
+        primaryLabel: "마이페이지 > 주문 내역 확인",
         primaryHref: orderDetailHref,
       };
     })();
@@ -1169,7 +1169,7 @@ export default async function CheckoutSuccessPage({
                       wrap="responsive"
                     >
                       <Link
-                        href={isLoggedIn ? "/mypage" : `/order-lookup/details/${order._id}`}
+                        href={isLoggedIn ? "/mypage?tab=orders" : `/order-lookup/details/${order._id}`}
                         className="flex items-center gap-2"
                       >
                         <Package className="h-5 w-5" />
@@ -1227,7 +1227,7 @@ export default async function CheckoutSuccessPage({
                         <div>
                           <h4 className="mb-1 font-semibold text-foreground">주문 확인</h4>
                           <p className="text-ui-body-sm text-muted-foreground">
-                            주문 내역은 마이페이지에서 확인하실 수 있습니다.
+                            주문 내역은 마이페이지 > 주문 내역에서 확인하실 수 있습니다.
                           </p>
                         </div>
                       </div>
@@ -1314,7 +1314,7 @@ export default async function CheckoutSuccessPage({
                     </Link>
                   </Button>
                   <Button asChild variant="outline" className="w-full sm:w-auto">
-                    <Link href="/mypage">마이페이지 이동</Link>
+                    <Link href="/mypage?tab=orders">마이페이지 > 주문 내역 이동</Link>
                   </Button>
                   <Button asChild variant="ghost" className="w-full sm:w-auto">
                     <Link href="/">홈으로</Link>
