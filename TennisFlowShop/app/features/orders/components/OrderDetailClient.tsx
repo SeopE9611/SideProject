@@ -922,7 +922,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
+    <div className="min-h-screen bg-muted/20 dark:bg-muted/20">
       <div className="container py-6 space-y-6 lg:py-8">
         <div className="mx-auto w-full max-w-[1500px]">
           {/* 개선된 관리자 헤더 */}
@@ -1090,7 +1090,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   reasonSummary={cancelInfo.reasonSummary}
                   tone={cancelInfo.tone}
                   rightSlot={
-                    <div className="rounded-md border border-border/60 bg-background/60 px-3 py-2">
+                    <div className="rounded-md border border-border/60 bg-background px-3 py-2">
                       <p className="text-ui-label font-medium text-muted-foreground">
                         환불 계좌 정보
                       </p>
@@ -1523,7 +1523,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                       </div>
                     ) : (
                       <>
-                        <div className="rounded-md border border-border bg-muted/60 px-3 py-2 text-ui-body-sm font-medium text-foreground">
+                        <div className="rounded-md border border-border bg-muted/20 px-3 py-2 text-ui-body-sm font-medium text-foreground">
                           이 영역은 현재 주문의 개별 상태만 조정합니다.
                         </div>
                         <div>
@@ -1764,7 +1764,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                     </div>
                   </CardContent>
                   {isEditMode && (
-                    <CardFooter className="flex justify-center bg-muted/50 py-3">
+                    <CardFooter className="flex justify-center border-t border-border/60 bg-muted/20 py-3">
                       <Button
                         variant="outline"
                         size="sm"
@@ -1809,7 +1809,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                           {isVisitPickup ? "방문 접수·인도 정보" : "고객 발송 라켓 정보"}를 교체
                           작업에서 관리합니다.
                         </p>
-                        <div className="flex items-center space-x-3 p-3 bg-card/70 dark:bg-card/30 rounded-lg border border-border/60 dark:border-border">
+                        <div className="flex items-center space-x-3 p-3 bg-card dark:bg-card rounded-lg border border-border/60 dark:border-border">
                           <Truck className="h-4 w-4 text-primary" />
                           <div>
                             <p className="text-ui-body-sm text-foreground/80">
@@ -1819,7 +1819,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                           </div>
                         </div>
                         {shouldShowLinkedSelfShipSummary && latestLinkedApplication && (
-                          <div className="rounded-lg border border-border/60 bg-card/70 p-3 text-ui-body-sm dark:bg-card/30">
+                          <div className="rounded-lg border border-border/60 bg-card p-3 text-ui-body-sm dark:bg-card">
                             <p className="font-medium text-foreground">
                               고객 발송 운송장:{" "}
                               {latestLinkedApplication.shippingInfo?.selfShip?.trackingNo
@@ -1912,7 +1912,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                           </div>
                         </div>
                         {shouldShowTrackingSummarySkeleton && (
-                          <div className="space-y-2 rounded-lg border border-border bg-muted/60 p-3 text-ui-body-sm dark:bg-card/60">
+                          <div className="space-y-2 rounded-lg border border-border bg-muted/20 p-3 text-ui-body-sm dark:bg-card">
                             <Skeleton className="h-4 w-40" />
                             <Skeleton className="h-4 w-32" />
                             <Skeleton className="h-4 w-36" />
@@ -1920,7 +1920,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                           </div>
                         )}
                         {!isTrackingLoading && !trackingError && trackingData && (
-                          <div className="space-y-2 rounded-lg border border-border bg-muted/60 p-3 text-ui-body-sm dark:bg-card/60">
+                          <div className="space-y-2 rounded-lg border border-border bg-muted/20 p-3 text-ui-body-sm dark:bg-card">
                             {trackingData.success && trackingData.supported ? (
                               <>
                                 <p className="text-foreground">
@@ -1940,7 +1940,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                                   </p>
                                 )}
                                 {shouldShowTrackingStatusNotice && (
-                                  <div className="space-y-0.5 rounded-md bg-background/70 px-2.5 py-1.5 text-ui-label leading-relaxed text-muted-foreground">
+                                  <div className="space-y-0.5 rounded-md bg-background px-2.5 py-1.5 text-ui-label leading-relaxed text-muted-foreground">
                                     <p>실시간 배송 상태는 택배사 기준이며,</p>
                                     <p>주문 상태와 다를 수 있습니다.</p>
                                   </div>
@@ -2041,7 +2041,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         </div>
                       </div>
 
-                      <div className="rounded-md border border-border bg-card/80 p-4 text-ui-body-sm shadow-sm dark:bg-card/60">
+                      <div className="rounded-md border border-border bg-card p-4 text-ui-body-sm shadow-sm dark:bg-card">
                         <PaymentMethodDetail
                           method={orderDetail.paymentMethod || "무통장입금"}
                           bankKey={orderDetail.paymentBank}
@@ -2071,7 +2071,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         )}
                       </div>
 
-                      <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg border border-border">
+                      <div className="flex items-center space-x-3 p-3 bg-muted/20 rounded-lg border border-border">
                         <div>
                           <p className="text-ui-body-sm text-foreground/80">결제 금액</p>
                           <p className="text-ui-section-title font-semibold text-primary">
@@ -2082,7 +2082,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                     </div>
                   </CardContent>
                   {isEditMode && (
-                    <CardFooter className="flex justify-center bg-muted/50 py-3">
+                    <CardFooter className="flex justify-center border-t border-border/60 bg-muted/20 py-3">
                       <Button
                         variant="outline"
                         size="sm"
@@ -2212,7 +2212,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                     )}
                   </CardContent>
                   {isEditMode && (
-                    <CardFooter className="flex justify-center bg-muted/50 py-3">
+                    <CardFooter className="flex justify-center border-t border-border/60 bg-muted/20 py-3">
                       <Button
                         variant="outline"
                         size="sm"
@@ -2241,7 +2241,7 @@ export default function OrderDetailClient({ orderId }: Props) {
             id="admin-order-history"
             className={cn("overflow-hidden xl:col-span-12", adminSurface.tableCard)}
           >
-            <CardHeader className="border-b bg-muted/30">
+            <CardHeader className="border-b bg-muted/20">
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5 text-primary" />
                 <span>처리 이력</span>

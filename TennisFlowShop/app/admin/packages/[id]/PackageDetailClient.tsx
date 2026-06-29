@@ -513,10 +513,10 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
   };
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-muted/20">
       <div className="container py-6">
         {isLoading ? (
-          <div className="mb-4 rounded-lg border border-border bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
+          <div className="mb-4 rounded-lg border border-border bg-muted/20 px-4 py-2 text-sm text-muted-foreground">
             최신 상태를 확인하고 있습니다...
           </div>
         ) : null}
@@ -657,7 +657,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
         <Card
           id="package-usage-history"
           className={cn(
-            "mb-6 border-border bg-card/80 dark:bg-card dark:border-border",
+            "mb-6 border-border bg-card dark:bg-card dark:border-border",
             adminSurface.tableCard,
           )}
         >
@@ -875,7 +875,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               {isExpired && isPaid && !isCancelled && (
                 <p className="text-xs text-muted-foreground">만료된 패키지권은 연장만 가능합니다.</p>
               )}
-              <div className="rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+              <div className="rounded-lg border border-border bg-muted/20 p-3 text-xs text-muted-foreground">
                 <p className="font-medium text-foreground">작업 가능 여부</p>
                 <ul className="mt-2 space-y-1">
                   <li>연장: {canExtendPackage ? "가능" : "불가"}</li>

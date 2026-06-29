@@ -53,11 +53,11 @@ export default function AdminPageSection({
   contentClassName,
 }: AdminPageSectionProps) {
   return (
-    <Card className={cn(adminSurface.card, "overflow-hidden", className)}>
-      <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
+    <Card className={cn(adminSurface.detailCard, "overflow-hidden", className)}>
+      <CardHeader className={adminSurface.detailHeader}>
         <AdminSectionHeader title={title} description={description} icon={icon} actions={actions} />
       </CardHeader>
-      <CardContent className={cn("space-y-4 p-5 sm:p-6", contentClassName)}>{children}</CardContent>
+      <CardContent className={cn(adminSurface.detailContent, contentClassName)}>{children}</CardContent>
     </Card>
   );
 }

@@ -432,7 +432,7 @@ export default function AdminRentalDetailClient() {
   if (!id) return <div className="p-4">유효하지 않은 ID</div>;
   if (error) {
     return (
-      <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
+      <div className="min-h-screen bg-muted/20 dark:bg-muted/20">
         <div className="container py-6 lg:py-8">
           <AsyncState
             kind="error"
@@ -450,7 +450,7 @@ export default function AdminRentalDetailClient() {
   if (!data) {
     if (isLoading) {
       return (
-        <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
+        <div className="min-h-screen bg-muted/20 dark:bg-muted/20">
           <div className="container py-6 lg:py-8 space-y-6">
             <div className="flex items-center justify-between gap-3">
               <Skeleton className="h-9 w-48" />
@@ -475,7 +475,7 @@ export default function AdminRentalDetailClient() {
 
     if (!isLoading) {
       return (
-        <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
+        <div className="min-h-screen bg-muted/20 dark:bg-muted/20">
           <div className="container py-6 lg:py-8">
             <AsyncState
               kind="empty"
@@ -702,10 +702,10 @@ export default function AdminRentalDetailClient() {
     String(linkedApplication?.paymentSource ?? "") === `rental:${id}`;
 
   return (
-    <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
+    <div className="min-h-screen bg-muted/20 dark:bg-muted/20">
       <div className="container py-6 lg:py-8">
         {isLoading ? (
-          <div className="mx-auto mb-4 w-full max-w-[1500px] rounded-lg border border-border bg-muted/30 px-4 py-2 text-sm text-foreground/80">
+          <div className="mx-auto mb-4 w-full max-w-[1500px] rounded-lg border border-border bg-muted/20 px-4 py-2 text-sm text-foreground/80">
             최신 상태를 확인하고 있습니다...
           </div>
         ) : null}
@@ -1516,10 +1516,10 @@ export default function AdminRentalDetailClient() {
                       </div>
                     </div>
                   )}
-                  <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg border border-border/50">
+                  <div className="flex items-center space-x-3 p-3 bg-muted/20 rounded-lg border border-border/50">
                     <div>
                       <p className="text-sm text-foreground/80">총 결제 금액</p>
-                      <p className="text-xl font-bold text-primary dark:text-foreground">
+                      <p className="text-xl font-semibold text-primary dark:text-foreground">
                         {won(data.amount?.total)}
                       </p>
                     </div>
@@ -1585,8 +1585,8 @@ export default function AdminRentalDetailClient() {
                           className={cn(
                             "rounded-lg border p-4",
                             hasCancelRefundAccount
-                              ? "border-border/60 bg-muted/40"
-                              : "border-border bg-muted/60 dark:bg-card/70",
+                              ? "border-border/60 bg-muted/20"
+                              : "border-border bg-muted/20 dark:bg-card",
                           )}
                         >
                           <p className="text-sm font-medium text-foreground">보증금 환불 계좌</p>

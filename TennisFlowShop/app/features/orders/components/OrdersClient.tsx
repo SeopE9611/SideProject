@@ -543,7 +543,7 @@ export default function OrdersClient() {
     "px-4 py-2 text-center align-middle " +
     "border-b border-border " +
     "font-semibold text-foreground";
-  const tdClasses = "px-3 py-4 align-middle text-center";
+  const tdClasses = cn(adminSurface.tableCell, "text-left");
 
   // 배송정보 업데이트 네비게이션
   const handleShippingUpdate = async (orderId: string) => {
@@ -870,43 +870,20 @@ export default function OrdersClient() {
           <Table className="min-w-[1140px] table-fixed border-separate text-ui-label [border-spacing-block:0.4rem] [border-spacing-inline:0]">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
-                <TableHead className={cn(thClasses, "w-[150px]")}>주문 ID</TableHead>
-                <TableHead className={cn(thClasses, "w-[130px] text-left")}>고객명</TableHead>
-                <TableHead className={cn(thClasses, "w-[180px] text-left")}>이메일</TableHead>
-                <TableHead className={cn(thClasses, "w-36")}>
-                  <div className="flex items-center justify-center gap-2">
-                    <span
-                      onClick={() => handleSort("date")}
-                      className={cn(
-                        "flex items-center gap-1 cursor-pointer select-none transition-colors hover:text-primary",
-                        sortBy === "date" && "text-primary",
-                      )}
-                    >
-                      날짜
-                      <ChevronDown
-                        className={cn(
-                          "w-3 h-3 transition-transform",
-                          sortBy === "date" && sortDirection === "desc" && "rotate-180",
-                        )}
-                      />
-                    </span>
-                    <DateFilter date={selectedDate} onChange={setSelectedDate} />
-                  </div>
-                </TableHead>
-                <TableHead className={cn(thClasses, "w-[112px] text-center")}>상태</TableHead>
-                <TableHead className={cn(thClasses, "w-[96px] text-center")}>결제</TableHead>
-                <TableHead className={cn(thClasses, "w-[100px] text-center")}>수령방식</TableHead>
-                <TableHead className={cn(thClasses, "w-[120px] text-center")}>운송장</TableHead>
-                <TableHead className={cn(thClasses, "w-[88px] text-center")}>유형</TableHead>
+                <TableHead className={cn(thClasses, "w-[240px] text-left")}>주문/문서</TableHead>
+                <TableHead className={cn(thClasses, "w-[220px] text-left")} colSpan={2}>고객</TableHead>
+                <TableHead className={cn(thClasses, "w-[220px] text-left")} colSpan={2}>상태/처리</TableHead>
+                <TableHead className={cn(thClasses, "w-[220px] text-left")} colSpan={2}>배송/수령</TableHead>
                 <TableHead
                   onClick={() => handleSort("total")}
                   className={cn(
                     thClasses,
-                    "w-[104px] cursor-pointer select-none text-center",
+                    "w-[200px] cursor-pointer select-none text-right",
                     sortBy === "total" && "text-primary",
                   )}
+                  colSpan={2}
                 >
-                  금액
+                  결제/금액
                   <ChevronDown
                     className={cn(
                       "inline ml-1 w-3 h-3 text-muted-foreground transition-transform",
@@ -914,7 +891,7 @@ export default function OrdersClient() {
                     )}
                   />
                 </TableHead>
-                <TableHead className={cn(thClasses, "w-[48px] text-center")}>…</TableHead>
+                <TableHead className={cn(thClasses, "w-[96px] text-center")}>액션</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -1025,7 +1002,7 @@ export default function OrdersClient() {
                     const cancelQuickSignal = getCancelQuickSignal(order);
 
                     return (
-                      <TableRow key={order.id} className="hover:bg-muted/50 transition-colors">
+                      <TableRow key={order.id} className={adminSurface.tableRow}>
                         <TableCell
                           className={cn(
                             tdClasses,
@@ -1259,8 +1236,8 @@ export default function OrdersClient() {
                           </TooltipProvider>
                         </TableCell>
                         {/* 고객명 셀 */}
-                        <TableCell className={tdClasses}>
-                          <div className="flex min-w-0 items-center overflow-hidden text-left">
+                        <TableCell className={tdClasses} colSpan={2}>
+                          <div className="flex min-w-0 flex-col gap-1 text-left">
                             <span className="line-clamp-2 min-w-0 break-words text-left">
                               {order.customer.name
                                 .replace(/\s*\(비회원\)\s*$/, "")
@@ -1276,22 +1253,16 @@ export default function OrdersClient() {
                                 (비회원)
                               </span>
                             )}
+                            <span
+                              className="block max-w-full truncate text-ui-body-sm text-foreground/75"
+                              title={order.customer.email}
+                            >
+                              {order.customer.email || "-"}
+                            </span>
                           </div>
                         </TableCell>
-                        <TableCell className={tdClasses}>
-                          <span
-                            className="block max-w-full truncate text-left text-ui-body-sm text-foreground/75"
-                            title={order.customer.email}
-                          >
-                            {order.customer.email || "-"}
-                          </span>
-                        </TableCell>
-                        {/* 날짜 셀 */}
-                        <TableCell className="w-36 whitespace-nowrap text-center tabular-nums">
-                          {formatDate(order.date)}
-                        </TableCell>
-                        {/* 상태 셀 */}
-                        <TableCell className={tdClasses}>
+                        {/* 상태/처리 셀 */}
+                        <TableCell className={tdClasses} colSpan={2}>
                           {order.__type === "stringing_application" ? (
                             <div className="flex flex-col items-center gap-1">
                               <ApplicationStatusBadge status={order.status} />
@@ -1340,9 +1311,10 @@ export default function OrdersClient() {
                               );
                             })()
                           )}
+                          <p className="mt-2 text-ui-label text-foreground/75 tabular-nums">접수 {formatDate(order.date)}</p>
                         </TableCell>
-                        {/* 결제 상태 셀 */}
-                        <TableCell className={tdClasses}>
+                        {/* 결제 상태(금액 셀로 이동) */}
+                        <TableCell className="hidden">
                           {(() => {
                             const pay = getPaymentStatusBadgeSpec(order.paymentStatus);
                             return (
@@ -1355,8 +1327,8 @@ export default function OrdersClient() {
                             );
                           })()}
                         </TableCell>
-                        {/* 수령방식 셀 */}
-                        <TableCell className={tdClasses}>
+                        {/* 배송/수령 셀 */}
+                        <TableCell className={tdClasses} colSpan={2}>
                           {(() => {
                             // 수령방식은 “사용자가 뭘 선택했는지”가 핵심이므로
                             // 통합 주문(isLinkedProductOrder)이어도 그대로 표시해준다.
@@ -1379,7 +1351,7 @@ export default function OrdersClient() {
                           })()}
                         </TableCell>
                         {/* 운송장 셀 */}
-                        <TableCell className={tdClasses}>
+                        <TableCell className="hidden">
                           {(() => {
                             // 통합 주문의 “상품 주문”은 운송장/배송정보를 신청서에서만 관리하도록 정책이 정해져 있으므로
                             // 운송장 컬럼에서는 그 사실을 명시한다.
@@ -1411,7 +1383,7 @@ export default function OrdersClient() {
                           })()}
                         </TableCell>
                         {/* 유형 셀 */}
-                        <TableCell className={tdClasses}>
+                        <TableCell className="hidden">
                           <Badge
                             variant={badgeToneVariant(
                               order.__type === "stringing_application" ? "brand" : "info",
@@ -1424,8 +1396,12 @@ export default function OrdersClient() {
                         {/* 금액 셀 */}
                         <TableCell
                           className={cn(tdClasses, "whitespace-nowrap text-right tabular-nums")}
+                          colSpan={2}
                         >
-                          {formatCurrency(order.total)}
+                          <div className="flex flex-col items-end gap-1">
+                            <span className="text-ui-body-sm font-semibold text-foreground">{formatCurrency(order.total)}</span>
+                            <span className="text-ui-label text-foreground/75">{order.paymentStatus}</span>
+                          </div>
                         </TableCell>
                         {/* 작업 메뉴 셀 */}
                         <TableCell className={tdClasses}>
