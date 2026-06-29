@@ -23,7 +23,7 @@ function resolveClientId() {
 }
 
 function resolveAppUrl() {
-  return String(process.env.NEXT_PUBLIC_APP_URL || getBaseUrl())
+  return String(getBaseUrl())
     .trim()
     .replace(/\/+$/, "");
 }

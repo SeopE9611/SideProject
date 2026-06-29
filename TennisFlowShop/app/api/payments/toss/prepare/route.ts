@@ -76,7 +76,7 @@ export async function POST(req: Request) {
       expiresAt,
     });
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || getBaseUrl();
+    const appUrl = getBaseUrl();
 
     return NextResponse.json({
       success: true,
