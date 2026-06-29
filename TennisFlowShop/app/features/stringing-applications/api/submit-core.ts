@@ -650,7 +650,7 @@ export async function submitStringingApplicationCore({
       existingSelectedGauge &&
       existingSelectedGauge !== effectiveSelectedGauge
     ) {
-      throw Object.assign(new Error("이미 재고가 차감된 신청서의 게이지는 변경할 수 없습니다."), {
+      throw Object.assign(new Error("이미 재고가 차감된 신청서의 굵기는 변경할 수 없습니다."), {
         status: 409,
         code: "GAUGE_ALREADY_DEDUCTED",
       });
@@ -778,21 +778,21 @@ export async function submitStringingApplicationCore({
       ).find((row: any) => String(row?.value ?? "").trim() === effectiveSelectedGauge);
 
       if (!gaugeRow) {
-        throw Object.assign(new Error("선택한 게이지를 찾을 수 없습니다."), {
+        throw Object.assign(new Error("선택한 굵기를 찾을 수 없습니다."), {
           status: 400,
           code: "GAUGE_NOT_FOUND",
         });
       }
 
       if (gaugeRow?.isSoldOut === true) {
-        throw Object.assign(new Error("선택한 게이지는 품절입니다."), {
+        throw Object.assign(new Error("선택한 굵기는 품절입니다."), {
           status: 409,
           code: "GAUGE_SOLD_OUT",
         });
       }
 
       if (Number(gaugeRow?.stock ?? 0) < stringQuantity) {
-        throw Object.assign(new Error("선택한 게이지의 재고가 부족합니다."), {
+        throw Object.assign(new Error("선택한 굵기의 재고가 부족합니다."), {
           status: 409,
           code: "GAUGE_INSUFFICIENT_STOCK",
         });
@@ -822,7 +822,7 @@ export async function submitStringingApplicationCore({
       );
 
       if (!gaugeDeductResult.matchedCount || !gaugeDeductResult.modifiedCount) {
-        throw Object.assign(new Error("선택한 게이지의 재고가 부족합니다."), {
+        throw Object.assign(new Error("선택한 굵기의 재고가 부족합니다."), {
           status: 409,
           code: "GAUGE_INSUFFICIENT_STOCK",
         });

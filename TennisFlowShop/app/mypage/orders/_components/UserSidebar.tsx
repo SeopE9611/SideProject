@@ -43,7 +43,7 @@ export function UserSidebar({ activeTab }: { activeTab?: string } = {}) {
       icon: MessageSquare,
     },
     {
-      label: "Q&A 내역",
+      label: "문의 내역",
       value: "qna",
       icon: MessageCircleQuestion,
     },

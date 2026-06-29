@@ -512,7 +512,7 @@ export default function OrderList() {
                           if (!gauge && !color) return null;
                           return (
                             <div className="mt-1 text-ui-label text-foreground/70">
-                              {gauge && `게이지 ${gauge}`}
+                              {gauge && `굵기 ${gauge}`}
                               {gauge && color ? " · " : ""}
                               {color && `색상 ${color}`}
                             </div>

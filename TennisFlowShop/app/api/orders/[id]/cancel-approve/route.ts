@@ -272,7 +272,7 @@ async function restoreOrderGaugeStockIfNeeded(db: any, existing: any, now: Date)
           {
             ok: false,
             code: "GAUGE_STOCK_RESTORE_FAILED",
-            message: "주문 취소 중 스트링 게이지 재고 복구에 실패했습니다.",
+            message: "주문 취소 중 스트링 굵기 재고 복구에 실패했습니다.",
           },
           { status: 409 },
         ),
@@ -795,7 +795,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                 {
                   ok: false,
                   code: "GAUGE_STOCK_RESTORE_FAILED",
-                  message: "주문 취소 중 스트링 게이지 재고 복구에 실패했습니다.",
+                  message: "주문 취소 중 스트링 굵기 재고 복구에 실패했습니다.",
                 },
                 { status: 409 },
               );

@@ -242,7 +242,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
       return;
     }
     if (!hasVariantInventories && hasGaugeRows && !selectedGaugeRow) {
-      showErrorToast?.("선택한 게이지 정보를 찾을 수 없습니다.");
+      showErrorToast?.("선택한 굵기 정보를 찾을 수 없습니다.");
       return;
     }
     if (
@@ -250,7 +250,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
       selectedGaugeRow &&
       (selectedGaugeRow.isSoldOut || selectedGaugeRow.stock <= 0)
     ) {
-      showErrorToast?.("선택한 게이지는 품절입니다.");
+      showErrorToast?.("선택한 굵기는 품절입니다.");
       return;
     }
     if (!hasVariantInventories && selectedGaugeRow && selectedGaugeRow.stock < qty) {
@@ -267,11 +267,11 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
       return;
     }
     if (!hasVariantInventories && hasColorRows && selectedColor && !selectedColorRow) {
-      showErrorToast?.("선택한 색상 정보를 찾을 수 없습니다.");
+      showErrorToast?.("선택한 스트링 색상 정보를 찾을 수 없습니다.");
       return;
     }
     if (selectedColorRow && selectedColorRow.isSoldOut) {
-      showErrorToast?.("선택한 색상은 현재 품절입니다.");
+      showErrorToast?.("선택한 스트링 색상은 현재 품절입니다.");
       return;
     }
     if (selectedColorRow && selectedColorRow.stock < qty) {

@@ -238,7 +238,7 @@ export default function TennisProfileForm() {
       isTooLong(stringMaterial, 30)
     ) {
       showErrorToast(
-        "스트링 정보가 너무 깁니다. (브랜드 40자 / 모델 60자 / 게이지 20자 / 재질 30자 이내)",
+        "스트링 정보가 너무 깁니다. (브랜드 40자 / 모델 60자 / 굵기 20자 / 재질 30자 이내)",
       );
       return;
     }
@@ -508,7 +508,7 @@ export default function TennisProfileForm() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-ui-label text-muted-foreground">게이지</Label>
+                  <Label className="text-ui-label text-muted-foreground">굵기</Label>
                   <Input
                     value={profile.mainString.gauge}
                     onChange={(e) => updateMainString("gauge", e.target.value)}

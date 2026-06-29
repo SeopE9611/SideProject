@@ -189,7 +189,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
       if (gaugeRestoreResult.matchedCount < 1 || gaugeRestoreResult.modifiedCount < 1) {
         return NextResponse.json(
-          { ok: false, message: "스트링 게이지 재고 복구에 실패했습니다." },
+          { ok: false, message: "스트링 굵기 재고 복구에 실패했습니다." },
           { status: 409 },
         );
       }

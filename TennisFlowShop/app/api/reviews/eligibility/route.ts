@@ -146,7 +146,7 @@ export async function GET(req: Request) {
             eligible: false,
             reason: "serviceLinkedOrder",
             suggestedApplicationId: app ? String(app._id) : null,
-            targetLabel: "상품 + 교체서비스 이용 후기",
+            targetLabel: "상품·교체서비스 이용 후기",
           },
           { headers: { "Cache-Control": "no-store" } },
         );
@@ -227,7 +227,7 @@ export async function GET(req: Request) {
             ? "serviceLinkedOrder"
             : "already",
           suggestedApplicationId: serviceApp ? String(serviceApp._id) : null,
-          targetLabel: serviceApp ? "상품 + 교체서비스 이용 후기" : undefined,
+          targetLabel: serviceApp ? "상품·교체서비스 이용 후기" : undefined,
         },
         { headers: { "Cache-Control": "no-store" } },
       );

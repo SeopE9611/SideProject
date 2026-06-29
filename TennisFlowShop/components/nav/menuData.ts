@@ -61,7 +61,7 @@ export const menuSections: MenuSection[] = [
         href: "/board/notice",
       },
       {
-        name: "Q&A 문의",
+        name: "문의",
         href: "/board/qna",
       },
 

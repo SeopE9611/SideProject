@@ -283,7 +283,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
 
     if (hasVariantInventories) {
       if (!normalizedColor) {
-        showErrorToast("색상을 선택해주세요.");
+        showErrorToast("스트링 색상을 선택해주세요.");
         setAddingProductId(null);
         return;
       }
@@ -310,7 +310,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
         return;
       }
       if (colorRows.length > 0 && !normalizedColor) {
-        showErrorToast("색상을 선택해주세요.");
+        showErrorToast("스트링 색상을 선택해주세요.");
         setAddingProductId(null);
         return;
       }
@@ -552,7 +552,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
               {gaugeRows.length > 0 && (
                 <div className="mt-3 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="text-ui-label font-medium">게이지</div>
+                    <div className="text-ui-label font-medium">굵기</div>
                     {selectedGauge ? (
                       <div className="truncate text-ui-label text-muted-foreground">
                         {selectedGaugeLabel}
@@ -569,7 +569,7 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
                     }
                   >
                     <SelectTrigger className="h-10 w-full rounded-xl text-ui-label">
-                      <SelectValue placeholder="게이지를 선택하세요" />
+                      <SelectValue placeholder="굵기를 선택하세요" />
                     </SelectTrigger>
                     <SelectContent>
                       {gaugeRows.map((row) => {

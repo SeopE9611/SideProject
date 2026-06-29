@@ -59,12 +59,12 @@ export default function PackagePassStatusSelect({
         });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          throw new Error(err?.error || "패스 상태 변경에 실패했습니다.");
+          throw new Error(err?.error || "패키지권 상태 변경에 실패했습니다.");
         }
-        showSuccessToast(`패스 상태가 '${nextKo}'로 변경되었습니다.`);
+        showSuccessToast(`패키지권 상태가 '${nextKo}'로 변경되었습니다.`);
         onUpdated?.();
       } catch (e: any) {
-        showErrorToast(e?.message || "패스 상태 변경 중 오류가 발생했습니다.");
+        showErrorToast(e?.message || "패키지권 상태 변경 중 오류가 발생했습니다.");
         setSelected(initial); // 롤백
       } finally {
         setSaving(false);

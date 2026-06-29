@@ -139,7 +139,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
               {
                 status: "패스상태변경",
                 date: now,
-                description: `패스 상태 ${prev} → ${next}${reason ? ` (${reason})` : ""}`,
+                description: `패키지권 상태 ${prev} → ${next}${reason ? ` (${reason})` : ""}`,
               } satisfies PackageOrder["history"][number],
             ],
           },

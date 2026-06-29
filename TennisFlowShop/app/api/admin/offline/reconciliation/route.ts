@@ -153,7 +153,7 @@ function serializePackageIssue(doc: Record<string, any>): ReconciliationItem {
     status: reconcileStatus(meta),
     title: "오프라인 패키지 발급 실패",
     description:
-      "결제/판매 기록은 있으나 서비스 패스 자동 발급 중 오류가 발생해 운영자 확인이 필요합니다.",
+      "결제/판매 기록은 있으나 패키지권 자동 발급 중 오류가 발생해 운영자 확인이 필요합니다.",
     severity: "critical",
     createdAt: serializeDate(doc.createdAt),
     updatedAt: serializeDate(doc.updatedAt),
@@ -203,7 +203,7 @@ function serializePackageUsage(doc: Record<string, any>): ReconciliationItem {
     status: reconcileStatus(usage),
     title: "패키지 사용 연결 누락",
     description:
-      "offline record에는 패스 사용 표시가 있으나 consumption 연결이 없어 운영자 확인이 필요합니다.",
+      "offline record에는 패키지권 사용 표시가 있으나 consumption 연결이 없어 운영자 확인이 필요합니다.",
     severity: "warning",
     createdAt: serializeDate(doc.createdAt),
     updatedAt: serializeDate(doc.updatedAt),

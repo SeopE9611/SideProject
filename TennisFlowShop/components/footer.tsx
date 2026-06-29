@@ -35,13 +35,13 @@ const Footer = () => {
   const customerService = [
     { name: "공지사항", href: "/board/notice" },
     { name: "이벤트", href: "/board/event" },
-    { name: "Q&A 문의", href: "/board/qna" },
+    { name: "문의", href: "/board/qna" },
     { name: "이용약관", href: "/terms" },
     { name: "개인정보처리방침", href: "/privacy" },
   ];
 
   const customerServiceLinks = customerService.filter(
-    (link) => link.name === "공지사항" || link.name === "이벤트" || link.name === "Q&A 문의",
+    (link) => link.name === "공지사항" || link.name === "이벤트" || link.name === "문의",
   );
   const policyLinks = customerService.filter(
     (link) => link.name === "이용약관" || link.name === "개인정보처리방침",

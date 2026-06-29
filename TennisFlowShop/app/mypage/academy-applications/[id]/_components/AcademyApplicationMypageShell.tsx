@@ -55,7 +55,7 @@ const mypageTabs = [
   },
   {
     value: "qna",
-    label: "Q&A 내역",
+    label: "문의 내역",
     href: "/mypage?tab=qna",
     icon: MessageCircleQuestion,
   },

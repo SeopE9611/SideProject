@@ -58,7 +58,7 @@ export const NAV_LINKS = {
     { name: "고객센터 홈", href: "/support" },
     { name: "공지사항", href: "/board/notice" },
     { name: "이벤트", href: "/board/event" },
-    { name: "Q&A 문의", href: "/board/qna" },
+    { name: "문의", href: "/board/qna" },
   ],
 
   /** 커뮤니티형 게시판: 닫힘 상태에서는 리뷰만, 열림 상태에서는 주요 게시판 링크 복구 */

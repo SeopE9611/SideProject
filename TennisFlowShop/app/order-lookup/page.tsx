@@ -422,7 +422,7 @@ export default function OrderLookupPage() {
                               href="/board/qna/write"
                               className="ml-1 font-medium text-primary hover:underline"
                             >
-                              고객센터 Q&A로 문의해주세요.
+                              고객센터 문의로 남겨주세요.
                             </Link>
                           </p>
                         </>
