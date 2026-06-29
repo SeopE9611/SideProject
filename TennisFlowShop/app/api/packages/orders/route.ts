@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
@@ -26,6 +27,9 @@ function num(v: unknown) {
   const n = Number(v);
   return Number.isFinite(n) ? n : NaN;
 }
+const formatAdminAlertWon = (amount: unknown) =>
+  `${Number(amount || 0).toLocaleString("ko-KR")}원`;
+
 function sessionsFromId(idLike: unknown): number {
   const id = str(idLike);
   const m = /^(\d+)-sessions$/i.exec(id);
@@ -207,8 +211,25 @@ export async function POST(req: Request) {
     }
 
     const ins = await col.insertOne(doc as any);
+    const packageOrderId = ins.insertedId.toString();
+
+    void sendAdminOperationalAlert({
+      kind: "package_order_created",
+      title: "🎟️ 신규 패키지 주문",
+      summary: "신규 패키지 주문이 접수되었습니다. 관리자 상세에서 확인해 주세요.",
+      href: `/admin/packages/${packageOrderId}`,
+      dedupeKey: `package_order_created:${packageOrderId}`,
+      fields: [
+        { name: "고객명", value: serviceInfo.name || "미입력" },
+        { name: "패키지명", value: packageInfo.title },
+        { name: "회수", value: `${packageInfo.sessions}회` },
+        { name: "금액", value: formatAdminAlertWon(packageInfo.price) },
+        { name: "결제상태", value: doc.paymentStatus },
+      ],
+    });
+
     return NextResponse.json(
-      { ok: true, packageOrderId: ins.insertedId.toString() },
+      { ok: true, packageOrderId },
       { status: 201 },
     );
   } catch (e) {
