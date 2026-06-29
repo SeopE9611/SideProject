@@ -1117,64 +1117,90 @@ export default function OrderDetailClient({ orderId }: Props) {
             )}
           </div>
 
-          <AdminNextActionPanel
-            className="mb-6"
-            tone={nextActionGuide.tone}
-            badgeLabel={
-              nextActionGuide.tone === "urgent"
-                ? "긴급"
-                : nextActionGuide.tone === "warning"
-                  ? "확인 필요"
-                  : nextActionGuide.tone === "success"
-                    ? "정상"
-                    : "안내"
-            }
-            stage={
-              orderGuide.stage ||
-              getOrderStatusLabelForDisplay(localStatus, orderDetail.shippingInfo)
-            }
-            nextActionTitle={nextActionGuide.title}
-            nextActionDescription={nextActionGuide.description}
-            primaryAction={
-              nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
-                <Button asChild size="sm">
-                  <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
-                </Button>
-              ) : null
-            }
-            secondaryActions={recommendedActions.slice(0, 2).map((action) => (
-              <Button
-                key={action.href}
-                asChild
-                size="sm"
-                variant="outline"
-                className="bg-transparent"
+
+          <nav
+            aria-label="주문 상세 섹션 바로가기"
+            className="mb-6 flex flex-wrap gap-2 rounded-2xl border border-border/70 bg-card px-4 py-3 shadow-sm"
+          >
+            {[
+              ["처리 작업", "#admin-order-action"],
+              ["교체서비스", "#admin-order-linked"],
+              ["고객정보", "#admin-order-customer"],
+              ["결제정보", "#admin-order-payment"],
+              ["주문품목", "#admin-order-items"],
+              ["메모", "#admin-order-notes"],
+              ["이력", "#admin-order-history"],
+            ].map(([label, href]) => (
+              <a
+                key={href}
+                href={href}
+                className="inline-flex h-8 items-center rounded-full border border-border/70 bg-background px-3 text-ui-label font-medium text-foreground/80 transition-colors hover:border-primary/40 hover:text-primary"
               >
-                <a href={action.href}>{action.label}</a>
-              </Button>
+                {label}
+              </a>
             ))}
-            note="결제대기 되돌리기 같은 역방향 변경은 일반 다음 작업으로 노출하지 않습니다."
-            footer={
-              latestProcessingHistory ? (
-                <div className="grid gap-1.5 leading-relaxed sm:grid-cols-2">
-                  <p>
-                    <span className="font-medium text-foreground">마지막 처리:</span>{" "}
-                    {latestProcessingHistory.status ?? "기록 없음"}
-                  </p>
-                  <p>
-                    <span className="font-medium text-foreground">처리 시각:</span>{" "}
-                    {latestProcessingDate}
-                  </p>
-                  {latestProcessingHistory.description ? (
-                    <p className="sm:col-span-2">
-                      <span className="font-medium text-foreground">내용:</span>{" "}
-                      {latestProcessingHistory.description}
+          </nav>
+
+          <div id="admin-order-action">
+            <AdminNextActionPanel
+              className="mb-6"
+              tone={nextActionGuide.tone}
+              badgeLabel={
+                nextActionGuide.tone === "urgent"
+                  ? "긴급"
+                  : nextActionGuide.tone === "warning"
+                    ? "확인 필요"
+                    : nextActionGuide.tone === "success"
+                      ? "정상"
+                      : "안내"
+              }
+              stage={
+                orderGuide.stage ||
+                getOrderStatusLabelForDisplay(localStatus, orderDetail.shippingInfo)
+              }
+              nextActionTitle={nextActionGuide.title}
+              nextActionDescription={nextActionGuide.description}
+              primaryAction={
+                nextActionGuide.actionHref && nextActionGuide.actionLabel ? (
+                  <Button asChild size="sm">
+                    <Link href={nextActionGuide.actionHref}>{nextActionGuide.actionLabel}</Link>
+                  </Button>
+                ) : null
+              }
+              secondaryActions={recommendedActions.slice(0, 2).map((action) => (
+                <Button
+                  key={action.href}
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="bg-transparent"
+                >
+                  <a href={action.href}>{action.label}</a>
+                </Button>
+              ))}
+              note="결제대기 되돌리기 같은 역방향 변경은 일반 다음 작업으로 노출하지 않습니다."
+              footer={
+                latestProcessingHistory ? (
+                  <div className="grid gap-1.5 leading-relaxed sm:grid-cols-2">
+                    <p>
+                      <span className="font-medium text-foreground">마지막 처리:</span>{" "}
+                      {latestProcessingHistory.status ?? "기록 없음"}
                     </p>
-                  ) : null}
-                </div>
-              ) : null
-            }
-          />
+                    <p>
+                      <span className="font-medium text-foreground">처리 시각:</span>{" "}
+                      {latestProcessingDate}
+                    </p>
+                    {latestProcessingHistory.description ? (
+                      <p className="sm:col-span-2">
+                        <span className="font-medium text-foreground">내용:</span>{" "}
+                        {latestProcessingHistory.description}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null
+              }
+            />
+          </div>
 
           {/* 연결 교체 작업 통합 패널 */}
           {isLinkedStringingOrder && (
@@ -1483,7 +1509,7 @@ export default function OrderDetailClient({ orderId }: Props) {
             <CardContent className="p-4 lg:p-5">
               <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_300px]">
                 {/* 왼쪽: 상태 변경 영역 */}
-                <div className="rounded-xl border border-border/60 bg-card/70 p-4">
+                <div className="rounded-xl border border-border/60 bg-background p-4">
                   <div className="space-y-3">
                     {isLinkedStringingOrder ? (
                       <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-3 text-ui-body-sm text-foreground/80">
@@ -1528,7 +1554,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 </div>
 
                 {/* 오른쪽: 취소/승인/거절 액션 영역 */}
-                <div className="rounded-xl border border-border/60 bg-card/70 p-4">
+                <div className="rounded-xl border border-border/60 bg-background p-4">
                   <div className="space-y-3">
                     <div>
                       <p className="text-ui-body-sm font-semibold text-foreground">운영 액션</p>
@@ -1647,7 +1673,10 @@ export default function OrderDetailClient({ orderId }: Props) {
 
           <div className="grid gap-4 xl:grid-cols-12">
             {/* 고객 및 수령 정보 */}
-            <Card className={cn("overflow-hidden xl:col-span-6", adminSurface.tableCard)}>
+            <Card
+              id="admin-order-customer"
+              className={cn("overflow-hidden xl:col-span-6", adminSurface.tableCard)}
+            >
               <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
@@ -1683,7 +1712,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 <>
                   <CardContent className="p-4 lg:p-5">
                     <div className="space-y-4">
-                      <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border">
+                      <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
                         <User className="h-4 w-4 text-muted-foreground" />
                         <div>
                           <p className="text-ui-body-sm text-foreground/80">이름</p>
@@ -1693,7 +1722,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border">
+                      <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
                         <Mail className="h-4 w-4 text-muted-foreground" />
                         <div>
                           <p className="text-ui-body-sm text-foreground/80">이메일</p>
@@ -1703,7 +1732,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border">
+                      <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
                         <Phone className="h-4 w-4 text-muted-foreground" />
                         <div>
                           <p className="text-ui-body-sm text-foreground/80">전화번호</p>
@@ -1713,7 +1742,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         </div>
                       </div>
 
-                      <div className="flex items-start space-x-3 p-3 bg-muted rounded-lg">
+                      <div className="flex items-start space-x-3 rounded-lg border border-border/60 bg-background p-3">
                         <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
                         <div>
                           <p className="text-ui-body-sm text-foreground/80">주소</p>
@@ -1753,7 +1782,7 @@ export default function OrderDetailClient({ orderId }: Props) {
             {/* 배송 정보 */}
             <Card
               id="admin-order-shipping"
-              className="overflow-hidden border border-border/60 bg-muted/20 shadow-none xl:col-span-6"
+              className="overflow-hidden border border-border/70 bg-card shadow-sm xl:col-span-6"
             >
               <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
                 <CardTitle className="flex items-center">
@@ -1836,7 +1865,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border">
+                    <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
                       <Truck className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-ui-body-sm text-foreground/80">
@@ -1846,7 +1875,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border">
+                    <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-ui-body-sm text-foreground/80">예상 수령일</p>
@@ -1866,7 +1895,7 @@ export default function OrderDetailClient({ orderId }: Props) {
 
                     {showDeliveryOnlyFields && orderDetail.shippingInfo.invoice?.trackingNumber && (
                       <>
-                        <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border">
+                        <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
                           <div>
                             <p className="text-ui-body-sm text-foreground/80">택배사</p>
                             <p className="font-semibold text-foreground">
@@ -1874,7 +1903,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border">
+                        <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
                           <div>
                             <p className="text-ui-body-sm text-foreground/80">운송장 번호</p>
                             <p className="font-semibold text-foreground">
@@ -1969,7 +1998,7 @@ export default function OrderDetailClient({ orderId }: Props) {
             {/* 결제 정보 */}
             <Card
               id="admin-order-payment"
-              className="overflow-hidden border border-border/60 bg-muted/20 shadow-none xl:col-span-6"
+              className="overflow-hidden border border-border/70 bg-card shadow-sm xl:col-span-6"
             >
               <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
                 <CardTitle className="flex items-center justify-between">
@@ -1998,7 +2027,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 <>
                   <CardContent className="p-4 lg:p-5">
                     <div className="space-y-4">
-                      <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border">
+                      <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
                         <div>
                           <p className="text-ui-body-sm text-foreground/80">결제 상태</p>
                           {(() => {
@@ -2069,7 +2098,10 @@ export default function OrderDetailClient({ orderId }: Props) {
             </Card>
 
             {/* 주문 항목 */}
-            <Card className="overflow-hidden border border-border/60 bg-muted/20 shadow-none xl:col-span-6">
+            <Card
+              id="admin-order-items"
+              className="overflow-hidden border border-border/70 bg-card shadow-sm xl:col-span-6"
+            >
               <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
                 <CardTitle className="flex items-center">
                   <ShoppingCart className="mr-2 h-5 w-5 text-foreground" />
@@ -2196,11 +2228,13 @@ export default function OrderDetailClient({ orderId }: Props) {
             </Card>
           )}
 
-          <AdminInternalNotesCard
-            targetType="order"
-            targetId={orderDetail._id}
-            className="xl:col-span-12"
-          />
+          <div id="admin-order-notes" className="xl:col-span-12">
+            <AdminInternalNotesCard
+              targetType="order"
+              targetId={orderDetail._id}
+              className="h-full"
+            />
+          </div>
 
           {/* 처리 이력 */}
           <Card

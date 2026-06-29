@@ -1942,7 +1942,7 @@ export default function OperationsClient() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="min-h-[520px] p-0 pt-2">
+        <CardContent className={cn("p-0 pt-2", isLoading || shouldShowEmptyState ? "min-h-[360px]" : "min-h-0")}>
           {isLoading ? (
             <div className="space-y-4 px-4 py-4">
               <div className="hidden bp-lg:block overflow-x-auto">
@@ -2009,7 +2009,7 @@ export default function OperationsClient() {
                       <TableHead className={cn(thClasses, "w-[22%]")}>문서</TableHead>
                       <TableHead className={cn(thClasses, "w-[11%]")}>고객명</TableHead>
                       <TableHead className={cn(thClasses, "w-[16%]")}>이메일</TableHead>
-                      <TableHead className={cn(thClasses, "w-[18%]")}>상태/다음 작업</TableHead>
+                      <TableHead className={cn(thClasses, "w-[18%]")}>상태 / 다음 작업</TableHead>
                       <TableHead className={cn(thClasses, "w-[12%]")}>확인 항목</TableHead>
                       <TableHead className={cn(thClasses, "w-[10%] text-right")}>
                         금액/접수
@@ -2169,7 +2169,7 @@ export default function OperationsClient() {
                             </TableCell>
 
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className="space-y-2">
+                              <div className="space-y-1.5">
                                 <div className="flex flex-wrap items-center gap-1.5">
                                   <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
                                     {g.anchor.statusDisplayLabel ??
@@ -2186,13 +2186,9 @@ export default function OperationsClient() {
                                     </Badge>
                                   ) : null}
                                 </div>
-                                <div
-                                  className={cn("rounded-xl px-3 py-2", adminSurface.nextAction)}
-                                >
-                                  <p className={cn("mb-1 text-primary", adminTypography.caution)}>
-                                    다음 작업:
-                                  </p>
-                                  <p className={cn("line-clamp-3", adminTypography.bodyStrong)}>
+                                <div className="border-l-2 border-primary/30 pl-2.5">
+                                  <p className={cn("mb-0.5", adminTypography.caption)}>다음 작업</p>
+                                  <p className={cn("line-clamp-2", adminTypography.bodyStrong)}>
                                     {nextActionText}
                                   </p>
                                 </div>
@@ -2553,11 +2549,9 @@ export default function OperationsClient() {
                         <p className="text-sm font-semibold text-foreground line-clamp-1">
                           {headline}
                         </p>
-                        <div className={cn("rounded-xl px-3 py-2", adminSurface.nextAction)}>
-                          <p className={cn("mb-1 text-primary", adminTypography.caution)}>
-                            다음 작업:
-                          </p>
-                          <p className={cn("line-clamp-3", adminTypography.bodyStrong)}>
+                        <div className="rounded-xl border border-primary/15 bg-primary/[0.02] px-3 py-2">
+                          <p className={cn("mb-0.5", adminTypography.caption)}>다음 작업</p>
+                          <p className={cn("line-clamp-2", adminTypography.bodyStrong)}>
                             {nextActionText}
                           </p>
                         </div>
