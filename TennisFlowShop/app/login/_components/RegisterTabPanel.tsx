@@ -614,8 +614,8 @@ export default function RegisterTabPanel({
 
               <div className="space-y-2">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                  <div className="grid w-full min-w-0 grid-cols-[1fr] gap-2 sm:flex sm:items-center">
-                    <div className="relative min-w-0 sm:flex-1">
+                  <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+                    <div className="relative w-full min-w-0 sm:flex-1">
                       <Input
                         id="register-email-id"
                         value={emailId}
@@ -638,8 +638,7 @@ export default function RegisterTabPanel({
                     <span className="hidden text-muted-foreground sm:inline">@</span>
 
                     {isCustomDomain ? (
-                      <div className="flex min-w-0 items-center gap-2 sm:flex-1">
-                        <span className="shrink-0 text-muted-foreground sm:hidden">@</span>
+                      <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:flex-1">
                         <Input
                           id="register-email-domain"
                           value={emailDomain}
@@ -652,14 +651,14 @@ export default function RegisterTabPanel({
                             }));
                           }}
                           placeholder="도메인 직접 입력"
-                          className={`h-12 min-w-0 flex-1 ${registerFieldErrors.emailDomain ? "border-destructive focus:border-destructive" : ""}`}
+                          className={`h-12 w-full min-w-0 ${registerFieldErrors.emailDomain ? "border-destructive focus:border-destructive" : ""}`}
                           disabled={isSocialOauthRegister}
                         />
                         {!isSocialOauthRegister && (
                           <Button
                             type="button"
                             variant="outline"
-                            className="h-12 shrink-0"
+                            className="h-12 w-full shrink-0 sm:w-auto"
                             onClick={() => {
                               setIsCustomDomain(false);
                               setEmailDomain("gmail.com");
@@ -671,8 +670,7 @@ export default function RegisterTabPanel({
                         )}
                       </div>
                     ) : (
-                      <div className="flex min-w-0 items-center gap-2 sm:flex-1">
-                        <span className="shrink-0 text-muted-foreground sm:hidden">@</span>
+                      <div className="flex w-full min-w-0 sm:flex-1">
                         <Select
                           value={emailDomain}
                           onValueChange={(v) => {
@@ -693,7 +691,7 @@ export default function RegisterTabPanel({
                         >
                           <SelectTrigger
                             id="register-email-domain"
-                            className={`h-12 min-w-0 flex-1 ${registerFieldErrors.emailDomain ? "border-destructive focus:border-destructive" : ""}`}
+                            className={`h-12 w-full min-w-0 ${registerFieldErrors.emailDomain ? "border-destructive focus:border-destructive" : ""}`}
                           >
                             <SelectValue placeholder="도메인 선택" />
                           </SelectTrigger>
