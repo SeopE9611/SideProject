@@ -3,6 +3,8 @@
 import AdminRentalHistory from "@/app/admin/rentals/_components/AdminRentalHistory";
 import { derivePaymentStatus, deriveShippingStatus } from "@/app/features/rentals/utils/status";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
+import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
+import { AdminInfoGrid, AdminInfoItem } from "@/components/admin/AdminInfoGrid";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 import AdminNextActionPanel from "@/components/admin/AdminNextActionPanel";
 import AdminStatusCard from "@/components/admin/AdminStatusCard";
@@ -882,6 +884,17 @@ export default function AdminRentalDetailClient() {
             </div>
           </div>
 
+          <AdminDetailSectionNav
+            items={[
+              { href: "#admin-rental-return", label: "처리 작업" },
+              { href: "#admin-rental-customer", label: "고객정보" },
+              { href: "#admin-rental-payment", label: "결제정보" },
+              { href: "#admin-rental-shipping", label: "배송/반납" },
+              { href: "#admin-rental-deposit", label: "보증금/일정" },
+              { href: "#admin-rental-history", label: "이력" },
+            ]}
+          />
+
           <AdminNextActionPanel
             tone={nextActionGuide.tone}
             badgeLabel={
@@ -1267,7 +1280,7 @@ export default function AdminRentalDetailClient() {
           )}
 
           <Card id="admin-rental-return" className={cn(adminSurface.card, "overflow-hidden")}>
-            <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
+            <CardHeader className="border-b border-border/60 bg-muted/20 pb-3">
               <CardTitle>대여 상태 관리</CardTitle>
               <CardDescription>
                 처리 전 결제 상태, 라켓 반납 상태, 보증금 환불 정보를 확인하세요. 모든 상태 변경은
@@ -1388,70 +1401,47 @@ export default function AdminRentalDetailClient() {
               eventMeta={pendingDialogConfig.eventMeta}
             />
           )}
-          <Card className="border border-border/60 shadow-none bg-muted/20 overflow-hidden">
-            <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
-              <CardTitle>고객 정보</CardTitle>
+          <Card id="admin-rental-customer" className={cn(adminSurface.card, "overflow-hidden")}>
+            <CardHeader className="border-b border-border/60 bg-muted/20 pb-3">
+              <CardTitle className={adminTypography.sectionTitle}>고객 정보</CardTitle>
+              <CardDescription>연락과 본인 확인에 필요한 정보를 먼저 확인합니다.</CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-3 p-6 text-sm md:grid-cols-2 xl:grid-cols-3">
-              <div className="rounded-lg border border-border/60 bg-card/70 p-3">
-                <span className="text-muted-foreground">이름</span>
-                <div className="font-semibold">{data.user?.name || "-"}</div>
-              </div>
-              <div className="rounded-lg border border-border/60 bg-card/70 p-3">
-                <span className="text-muted-foreground">이메일</span>
-                <div className="font-semibold">{data.user?.email || "-"}</div>
-              </div>
-              <div className="rounded-lg border border-border/60 bg-card/70 p-3">
-                <span className="text-muted-foreground">연락처</span>
-                <div className="font-semibold">{data.user?.phone || "-"}</div>
-              </div>
+            <CardContent className="p-5 sm:p-6">
+              <AdminInfoGrid>
+                <AdminInfoItem label="이름" value={data.user?.name || "-"} />
+                <AdminInfoItem label="이메일" value={data.user?.email || "-"} />
+                <AdminInfoItem label="연락처" value={data.user?.phone || "-"} />
+              </AdminInfoGrid>
             </CardContent>
           </Card>
           <div className="grid gap-6 md:grid-cols-2">
-            <Card className="border border-border/60 shadow-none bg-muted/20 overflow-hidden">
-              <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
+            <Card className="border border-border/60 shadow-none bg-card overflow-hidden">
+              <CardHeader className="border-b border-border/60 bg-muted/20 pb-3">
                 <CardTitle className="flex items-center space-x-2">
                   <Package className="h-5 w-5 text-destructive" />
                   <span>라켓 정보</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
-                <div className="space-y-4">
+                <AdminInfoGrid columns="two">
                   {/*
           금액 표시 정합성
           - 서버(/api/admin/rentals)가 amount.stringPrice / amount.stringingFee를 저장하므로
            관리자 상세에서도 해당 금액 근거를 그대로 노출시킴.
           - 대여만 한 케이스(스트링 미선택)는 UI가 지저분해지지 않도록 조건부 렌더링.
          */}
-                  <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
-                    <div>
-                      <p className="text-sm text-foreground/80">브랜드</p>
-                      <p className="font-semibold text-foreground">
-                        {racketBrandLabel(data.brand)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
-                    <div>
-                      <p className="text-sm text-foreground/80">모델</p>
-                      <p className="font-semibold text-foreground">{data.model}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
-                    <div>
-                      <p className="text-sm text-foreground/80">대여 기간</p>
-                      <p className="font-semibold text-foreground">{data.days}일</p>
-                    </div>
-                  </div>
-                </div>
+                  <AdminInfoItem label="브랜드" value={racketBrandLabel(data.brand)} />
+                  <AdminInfoItem label="모델" value={data.model} />
+                  <AdminInfoItem label="대여 기간" value={`${data.days}일`} />
+                </AdminInfoGrid>
               </CardContent>
             </Card>
 
             <Card
               id="admin-rental-payment"
-              className="border border-border/60 shadow-none bg-muted/20 overflow-hidden"
+              className="border border-border/60 shadow-none bg-card overflow-hidden"
             >
-              <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
+              <CardHeader className="border-b border-border/60 bg-muted/20 pb-3">
                 <CardTitle className="flex items-center space-x-2">
                   <CreditCard className="h-5 w-5 text-primary" />
                   <span>결제 정보</span>
@@ -1489,13 +1479,13 @@ export default function AdminRentalDetailClient() {
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
-                  <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
+                  <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
                     <div>
                       <p className="text-sm text-foreground/80">대여 수수료</p>
                       <p className="font-semibold text-foreground">{won(data.amount?.fee)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
+                  <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
                     <div>
                       <p className="text-sm text-foreground/80">보증금</p>
                       <p className="font-semibold text-foreground">{won(data.amount?.deposit)}</p>
@@ -1503,7 +1493,7 @@ export default function AdminRentalDetailClient() {
                   </div>
                   {/* 스트링 상품 금액: 있을 때만 표시 */}
                   {(data.amount?.stringPrice ?? 0) > 0 && (
-                    <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
+                    <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
                       <Package className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-sm text-foreground/80">스트링 상품</p>
@@ -1516,7 +1506,7 @@ export default function AdminRentalDetailClient() {
 
                   {/* 교체 서비스비(장착비): 있을 때만 표시 */}
                   {(data.amount?.stringingFee ?? 0) > 0 && (
-                    <div className="flex items-center space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
+                    <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
                       <Wrench className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-sm text-foreground/80">교체 서비스비</p>
@@ -1654,9 +1644,9 @@ export default function AdminRentalDetailClient() {
 
           <Card
             id="admin-rental-shipping"
-            className="border border-border/60 shadow-none bg-muted/20 overflow-hidden"
+            className="border border-border/60 shadow-none bg-card overflow-hidden"
           >
-            <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
+            <CardHeader className="border-b border-border/60 bg-muted/20 pb-3">
               <CardTitle className="flex items-center gap-2">
                 <Truck className="h-5 w-5" />
                 {isVisitPickup ? "방문 수령 정보" : "배송 정보"}
@@ -1695,7 +1685,7 @@ export default function AdminRentalDetailClient() {
             <CardContent className="p-6">
               <div className="grid gap-6 md:grid-cols-2">
                 {/* 인도 */}
-                <div className="p-4 rounded-lg border bg-muted/60 dark:bg-card/70">
+                <div className="rounded-lg border border-border/60 bg-background/80 p-4">
                   <p className="text-sm font-medium text-muted-foreground mb-2">
                     인도
                   </p>
@@ -1742,7 +1732,7 @@ export default function AdminRentalDetailClient() {
                   )}
                 </div>
                 {/* 반납 */}
-                <div className="p-4 rounded-lg border bg-muted/60 dark:bg-card/70">
+                <div className="rounded-lg border border-border/60 bg-background/80 p-4">
                   <p className="text-sm font-medium text-muted-foreground mb-2">반납</p>
                   {data?.shipping?.return?.trackingNumber ? (
                     <div className="space-y-1 text-sm">
@@ -1783,9 +1773,9 @@ export default function AdminRentalDetailClient() {
 
           <Card
             id="admin-rental-deposit"
-            className="border border-border/60 shadow-none bg-muted/20 overflow-hidden"
+            className="border border-border/60 shadow-none bg-card overflow-hidden"
           >
-            <CardHeader className="bg-muted/20 border-b border-border/60 pb-3">
+            <CardHeader className="border-b border-border/60 bg-muted/20 pb-3">
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-5 w-5 text-primary" />
                 <span>대여 타임라인</span>
@@ -1793,7 +1783,7 @@ export default function AdminRentalDetailClient() {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4">
-                <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
+                <div className="flex items-start space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-foreground/80">
@@ -1804,7 +1794,7 @@ export default function AdminRentalDetailClient() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
+                <div className="flex items-start space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-foreground/80">반납 예정</p>
@@ -1813,7 +1803,7 @@ export default function AdminRentalDetailClient() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
+                <div className="flex items-start space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-foreground/80">반납 완료</p>
@@ -1822,7 +1812,7 @@ export default function AdminRentalDetailClient() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3 p-3 bg-muted dark:bg-card/70 rounded-lg border border-border/60">
+                <div className="flex items-start space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
                   <CreditCard className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-foreground/80">보증금 환불</p>

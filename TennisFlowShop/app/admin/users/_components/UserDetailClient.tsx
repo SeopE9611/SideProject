@@ -7,6 +7,7 @@ import useSWR from "swr";
 
 import { UserActivityTabsSection } from "@/app/admin/users/_components/UserActivityTabsSection";
 import { useUserSessions } from "@/app/admin/users/_hooks/useUserSessions";
+import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 import { InfoItem } from "@/components/admin/InfoItem";
 import { Section, SectionBody, SectionHeader } from "@/components/admin/Section";
@@ -763,12 +764,25 @@ export default function UserDetailClient({ id }: { id: string }) {
           </div>
         </div>
 
+        <AdminDetailSectionNav
+          className="mb-6"
+          items={[
+            { href: "#admin-user-account", label: "기본정보" },
+            { href: "#admin-user-security", label: "보안/활동" },
+            { href: "#admin-user-activity", label: "거래 요약" },
+            { href: "#admin-user-notes", label: "메모" },
+            { href: "#admin-user-audit", label: "이력" },
+            { href: "#admin-user-danger", label: "관리 액션" },
+          ]}
+        />
+
         {/* 좌: 요약/보안/액티비티 KPI/최근 항목 탭  |  우: 프로필 수정 */}
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
           {/* 좌측 스택 */}
           <div className="space-y-6">
             {/* 계정 요약 */}
-            <Section>
+            <div id="admin-user-account">
+              <Section>
               <SectionHeader
                 title="계정 요약"
                 aside={<UserCog className="h-4 w-4 text-muted-foreground" />}
@@ -817,11 +831,15 @@ export default function UserDetailClient({ id }: { id: string }) {
                 />
               </SectionBody>
             </Section>
+            </div>
 
-            <AdminInternalNotesCard targetType="user" targetId={user.id} />
+            <div id="admin-user-notes">
+              <AdminInternalNotesCard targetType="user" targetId={user.id} />
+            </div>
 
             {/* 보안 & 최근 활동 */}
-            <Section>
+            <div id="admin-user-security">
+              <Section>
               <SectionHeader
                 title="보안 & 최근 활동"
                 aside={<ShieldAlert className="h-4 w-4 text-muted-foreground" />}
@@ -875,6 +893,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                 </div>
               </SectionBody>
             </Section>
+            </div>
 
             <AlertDialog open={cleanupOpen} onOpenChange={setCleanupOpen}>
               <AlertDialogContent>
@@ -928,7 +947,8 @@ export default function UserDetailClient({ id }: { id: string }) {
             </AlertDialog>
 
             {/* 액티비티 KPI */}
-            <Section>
+            <div id="admin-user-activity">
+              <Section>
               <SectionHeader
                 title="액티비티"
                 aside={<ActivityIcon className="h-4 w-4 text-muted-foreground" />}
@@ -959,6 +979,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                 </div>
               </SectionBody>
             </Section>
+            </div>
 
             {/* 최근 항목 탭 (주문/신청/리뷰) */}
             <Section>
@@ -985,7 +1006,8 @@ export default function UserDetailClient({ id }: { id: string }) {
             </Section>
 
             {/* 감사 로그 (Audit) */}
-            <Section>
+            <div id="admin-user-audit">
+              <Section>
               <SectionHeader
                 title={
                   <div>
@@ -1019,10 +1041,11 @@ export default function UserDetailClient({ id }: { id: string }) {
                 />
               </SectionBody>
             </Section>
+            </div>
           </div>
 
           {/* 우측: 프로필 수정 */}
-          <div className="space-y-6">
+          <div id="admin-user-danger" className="space-y-6">
             <Section>
               <SectionHeader
                 title={

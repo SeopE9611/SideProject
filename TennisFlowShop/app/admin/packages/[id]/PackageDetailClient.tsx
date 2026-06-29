@@ -1,6 +1,8 @@
 "use client";
 
-import { adminSurface } from "@/components/admin/admin-typography";
+import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
+import { AdminInfoGrid, AdminInfoItem } from "@/components/admin/AdminInfoGrid";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -386,7 +388,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
   const packageGuide = isCancelled
     ? {
         title: "취소된 패키지입니다",
-        description: "결제취소 또는 패스 취소 상태이므로 연장/횟수 조절 작업을 진행하지 않습니다.",
+        description: "결제취소 또는 패키지권 취소 상태이므로 연장/횟수 조절 작업을 진행하지 않습니다.",
         toneClass: "border-destructive/30 bg-destructive/10 text-destructive",
       }
     : !isPaid
@@ -617,6 +619,16 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
           </div>
         </div>
 
+        <AdminDetailSectionNav
+          className="mb-4"
+          items={[
+            { href: "#package-usage-history", label: "사용 이력" },
+            { href: "#package-customer", label: "고객정보" },
+            { href: "#package-status-card", label: "결제/상태" },
+            { href: "#package-operation-history", label: "운영 내역" },
+          ]}
+        />
+
         <Card className={cn("mb-6", packageGuide.toneClass)}>
           <CardContent className="p-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -724,44 +736,37 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* 고객 정보 */}
-          <Card className={adminSurface.card}>
-            <CardHeader className="border-b border-border">
-              <CardTitle className="flex items-center gap-2">
+          <Card id="package-customer" className={cn(adminSurface.card, "overflow-hidden")}>
+            <CardHeader className="border-b border-border/60 bg-muted/20">
+              <CardTitle className={cn("flex items-center gap-2", adminTypography.sectionTitle)}>
                 <User className="h-5 w-5 text-foreground" />
                 고객 정보
               </CardTitle>
+              <CardDescription>구매자 연락처와 서비스 유형을 분리해 확인합니다.</CardDescription>
             </CardHeader>
-            <CardContent className="p-6 space-y-3">
-              {[
-                {
-                  icon: <User className="h-4 w-4" />,
-                  label: "이름",
-                  value: data.customer.name ?? "이름 없음",
-                },
-                {
-                  icon: <Mail className="h-4 w-4" />,
-                  label: "이메일",
-                  value: data.customer.email ?? "-",
-                },
-                {
-                  icon: <Phone className="h-4 w-4" />,
-                  label: "전화번호",
-                  value: data.customer.phone ?? "-",
-                },
-                {
-                  icon: <MapPin className="h-4 w-4" />,
-                  label: "서비스 유형",
-                  value: data.serviceType,
-                },
-              ].map((row, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-card">
-                  <span className="text-muted-foreground">{row.icon}</span>
-                  <div>
-                    <p className="text-xs text-muted-foreground">{row.label}</p>
-                    <p className="font-medium">{row.value}</p>
-                  </div>
-                </div>
-              ))}
+            <CardContent className="p-5 sm:p-6">
+              <AdminInfoGrid columns="two">
+                <AdminInfoItem
+                  label="이름"
+                  value={data.customer.name ?? "이름 없음"}
+                  icon={<User className="h-4 w-4" />}
+                />
+                <AdminInfoItem
+                  label="이메일"
+                  value={data.customer.email ?? "-"}
+                  icon={<Mail className="h-4 w-4" />}
+                />
+                <AdminInfoItem
+                  label="전화번호"
+                  value={data.customer.phone ?? "-"}
+                  icon={<Phone className="h-4 w-4" />}
+                />
+                <AdminInfoItem
+                  label="서비스 유형"
+                  value={data.serviceType}
+                  icon={<MapPin className="h-4 w-4" />}
+                />
+              </AdminInfoGrid>
             </CardContent>
           </Card>
 
@@ -778,7 +783,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             </CardHeader>
             <CardContent className="p-6 space-y-3">
               <div className="flex items-center justify-between p-3 rounded-lg bg-card">
-                <span className="text-sm text-muted-foreground">패스 상태</span>
+                <span className="text-sm text-muted-foreground">패키지권 상태</span>
                 <Badge variant="outline">{data.passStatus}</Badge>
               </div>
 
@@ -868,7 +873,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 </p>
               )}
               {isExpired && isPaid && !isCancelled && (
-                <p className="text-xs text-muted-foreground">만료된 패스는 연장만 가능합니다.</p>
+                <p className="text-xs text-muted-foreground">만료된 패키지권은 연장만 가능합니다.</p>
               )}
               <div className="rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
                 <p className="font-medium text-foreground">작업 가능 여부</p>
