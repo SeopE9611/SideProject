@@ -1482,13 +1482,13 @@ export default function AdminRentalDetailClient() {
                   <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
                     <div>
                       <p className="text-sm text-foreground/80">대여 수수료</p>
-                      <p className="font-semibold text-foreground">{won(data.amount?.fee)}</p>
+                      <p className="font-medium text-foreground">{won(data.amount?.fee)}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background/80 p-3">
                     <div>
                       <p className="text-sm text-foreground/80">보증금</p>
-                      <p className="font-semibold text-foreground">{won(data.amount?.deposit)}</p>
+                      <p className="font-medium text-foreground">{won(data.amount?.deposit)}</p>
                     </div>
                   </div>
                   {/* 스트링 상품 금액: 있을 때만 표시 */}
@@ -1497,7 +1497,7 @@ export default function AdminRentalDetailClient() {
                       <Package className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-sm text-foreground/80">스트링 상품</p>
-                        <p className="font-semibold text-foreground">
+                        <p className="font-medium text-foreground">
                           {won(data.amount?.stringPrice ?? 0)}
                         </p>
                       </div>
@@ -1510,7 +1510,7 @@ export default function AdminRentalDetailClient() {
                       <Wrench className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-sm text-foreground/80">교체 서비스비</p>
-                        <p className="font-semibold text-foreground">
+                        <p className="font-medium text-foreground">
                           {won(data.amount?.stringingFee ?? 0)}
                         </p>
                       </div>
@@ -1789,7 +1789,7 @@ export default function AdminRentalDetailClient() {
                     <p className="text-sm text-foreground/80">
                       {isVisitPickup ? "방문 수령 처리" : "수령 확인 / 대여 시작"}
                     </p>
-                    <p className="font-semibold text-foreground">
+                    <p className="font-medium text-foreground">
                       {data.outAt ? formatDate(data.outAt) : "-"}
                     </p>
                   </div>
@@ -1798,7 +1798,7 @@ export default function AdminRentalDetailClient() {
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-foreground/80">반납 예정</p>
-                    <p className="font-semibold text-foreground">
+                    <p className="font-medium text-foreground">
                       {data.dueAt ? formatDate(data.dueAt) : "수령 확인 후 계산"}
                     </p>
                   </div>
@@ -1807,7 +1807,7 @@ export default function AdminRentalDetailClient() {
                   <Calendar className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-foreground/80">반납 완료</p>
-                    <p className="font-semibold text-foreground">
+                    <p className="font-medium text-foreground">
                       {data.returnedAt ? formatDate(data.returnedAt) : "-"}
                     </p>
                   </div>
@@ -1816,7 +1816,7 @@ export default function AdminRentalDetailClient() {
                   <CreditCard className="h-4 w-4 text-muted-foreground mt-1" />
                   <div>
                     <p className="text-sm text-foreground/80">보증금 환불</p>
-                    <p className="font-semibold text-foreground">
+                    <p className="font-medium text-foreground">
                       {data.depositRefundedAt ? formatDate(data.depositRefundedAt) : "-"}
                     </p>
                   </div>

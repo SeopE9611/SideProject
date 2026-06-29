@@ -576,7 +576,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 <PackageIcon className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">패키지 유형</span>
               </div>
-              <p className="text-lg font-semibold">{data.packageType}</p>
+              <p className="text-lg font-medium">{data.packageType}</p>
             </div>
 
             <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
@@ -592,7 +592,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">결제 금액</span>
               </div>
-              <p className="text-lg font-semibold">
+              <p className="text-lg font-medium">
                 {new Intl.NumberFormat("ko-KR", {
                   style: "currency",
                   currency: "KRW",
@@ -605,7 +605,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">만료일</span>
               </div>
-              <p className="text-lg font-semibold">{fmtKDate(expiry)}</p>
+              <p className="text-lg font-medium">{fmtKDate(expiry)}</p>
             </div>
             <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
               <div className="flex items-center gap-2 mb-1.5">

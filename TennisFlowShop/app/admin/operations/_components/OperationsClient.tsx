@@ -683,7 +683,7 @@ const td = tdClasses;
 // 헤더도 동일하게 sticky 처리해 가로 스크롤 시 컬럼 머리글이 어긋나지 않게 맞춘다.
 // 단, header 배경색은 thead의 bg-muted/50과 동일 톤을 써서 "액션"만 색이 달라 보이는 현상을 방지.
 const stickyActionHeadClass =
-  "sticky right-0 z-20 bg-muted/50 text-right shadow-[-8px_0_12px_-12px_hsl(var(--border))]";
+  "sticky right-0 z-20 border-l border-border/60 bg-muted/20 text-right";
 
 export default function OperationsClient() {
   const router = useRouter();
@@ -1978,7 +1978,7 @@ export default function OperationsClient() {
                         <TableCell
                           className={cn(
                             tdClasses,
-                            "sticky right-0 z-10 bg-inherit shadow-[-8px_0_12px_-12px_hsl(var(--border))]",
+                            "sticky right-0 z-10 border-l border-border/60 bg-background",
                             "py-5",
                           )}
                         >
@@ -2067,18 +2067,22 @@ export default function OperationsClient() {
                         items: g.items,
                       });
                       const anchorCancelQuickSignal = cancelQuickSignalSpec(g.anchor.cancel);
-                      const rowDensityClass = displayDensity === "compact" ? "py-1.5" : "py-2.5";
-                      const rowBaseToneClass = idx % 2 === 0 ? "bg-background" : "bg-muted/[0.18]";
+                      const rowDensityClass = displayDensity === "compact" ? "py-1.5" : "py-2";
+                      const rowBaseToneClass = idx % 2 === 0 ? "bg-background" : "bg-muted/[0.12]";
                       const warnEmphasisClass = warn
                         ? "border-l-2 border-l-warning/60 bg-warning/[0.08]"
                         : "border-l-2 border-l-transparent";
-                      const stickyActionCellClass = "bg-inherit";
+                      const stickyActionCellClass = cn(
+                        "sticky right-0 z-10 border-l border-border/60",
+                        rowBaseToneClass,
+                        "group-hover:bg-muted/35",
+                      );
 
                       return (
                         <Fragment key={g.key}>
                           <TableRow
                             className={cn(
-                              "transition-colors hover:bg-muted/35",
+                              "group transition-colors hover:bg-muted/35",
                               rowBaseToneClass,
                               warnEmphasisClass,
                             )}
@@ -2127,11 +2131,11 @@ export default function OperationsClient() {
                                 <p className="line-clamp-2 text-[15px] font-semibold leading-snug text-foreground">
                                   {headline}
                                 </p>
-                                <p className={cn("line-clamp-1", adminTypography.metaMuted)}>
+                                <p className={cn("line-clamp-2", adminTypography.metaMuted)}>
                                   {scenarioLabel}
                                 </p>
                                 {isGroup && children[0] && (
-                                  <p className={cn("line-clamp-1", adminTypography.caption)}>
+                                  <p className={cn("line-clamp-2", adminTypography.caption)}>
                                     연결 문서 {opsKindLabel(children[0].kind)}{" "}
                                     {shortenId(children[0].id)}
                                     {children.length > 1 ? ` 외 ${children.length - 1}건` : ""}
@@ -2270,7 +2274,7 @@ export default function OperationsClient() {
                                         <p className={adminTypography.caption}>{reasonSummary}</p>
                                         {shouldShowReasonBullets && (
                                           <ul className="mt-1 space-y-0.5">
-                                            {reasonBullets.map((reason) => (
+                                            {reasonBullets.slice(0, 2).map((reason) => (
                                               <li
                                                 key={`reason:${g.key}:${reason}`}
                                                 className="list-inside list-disc text-xs text-foreground/85 line-clamp-2"
@@ -2280,6 +2284,11 @@ export default function OperationsClient() {
                                             ))}
                                           </ul>
                                         )}
+                                        {reasonBullets.length > 2 && (
+                                          <p className={cn("mt-1", adminTypography.caption)}>
+                                            외 {reasonBullets.length - 2}건
+                                          </p>
+                                        )}
                                       </div>
                                     </div>
                                   </div>
@@ -2288,14 +2297,14 @@ export default function OperationsClient() {
                             </TableCell>
 
                             <TableCell
-                              className={cn(tdClasses, rowDensityClass, "font-semibold text-right")}
+                              className={cn(tdClasses, rowDensityClass, "text-right")}
                             >
                               <div className="flex flex-col items-end gap-1.5">
                                 <div className="text-left md:text-right">
                                   <span className="whitespace-nowrap text-xs text-foreground/75">
                                     {isGroup ? "대표 문서 금액" : opsKindLabel(g.anchor.kind)}
                                   </span>
-                                  <p className="text-lg font-extrabold whitespace-nowrap tracking-normal">
+                                  <p className="whitespace-nowrap text-ui-body-sm font-semibold tracking-normal text-foreground">
                                     {won(g.anchor.amount)}
                                   </p>
                                 </div>
@@ -2372,7 +2381,7 @@ export default function OperationsClient() {
                                     size="sm"
                                     variant="default"
                                     className={cn(
-                                      "h-9 min-w-[132px] justify-center px-3 shadow-sm",
+                                      "h-8 min-w-[128px] justify-center px-3 shadow-sm",
                                       adminTypography.actionLabel,
                                     )}
                                     title={groupGuide.nextAction ?? primaryActionTarget.label}
@@ -2618,7 +2627,7 @@ export default function OperationsClient() {
                                 </p>
                                 {shouldShowReasonBullets && (
                                   <ul className="mt-0.5 space-y-px">
-                                    {reasonBullets.map((reason) => (
+                                    {reasonBullets.slice(0, 2).map((reason) => (
                                       <li
                                         key={`m-reason:${g.key}:${reason}`}
                                         className="list-inside list-disc text-xs leading-snug text-foreground/75 line-clamp-1"
@@ -2627,6 +2636,11 @@ export default function OperationsClient() {
                                       </li>
                                     ))}
                                   </ul>
+                                )}
+                                {reasonBullets.length > 2 && (
+                                  <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                                    외 {reasonBullets.length - 2}건
+                                  </p>
                                 )}
                               </div>
                             </div>

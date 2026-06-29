@@ -1229,7 +1229,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                       </p>
                       <p className={cn("md:text-right", adminTypography.meta)}>
                         다음 할 일:{" "}
-                        <span className="font-semibold text-foreground">
+                        <span className="font-medium text-foreground">
                           {orderGuide.nextAction}
                         </span>
                       </p>
@@ -1383,7 +1383,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         {typeof latestLinkedApplication?.totalPrice === "number" && (
                           <p>
                             <span className="text-muted-foreground">교체 비용:</span>{" "}
-                            <span className="font-semibold text-foreground">
+                            <span className="font-medium text-foreground">
                               {isLinkedStringingOrder
                                 ? "주문 결제에 포함됨"
                                 : formatCurrency(latestLinkedApplication.totalPrice)}
@@ -1716,7 +1716,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         <User className="h-4 w-4 text-muted-foreground" />
                         <div>
                           <p className="text-ui-body-sm text-foreground/80">이름</p>
-                          <p className="font-semibold text-foreground">
+                          <p className="font-medium text-foreground">
                             {orderDetail.customer.name ?? "이름 없음"}
                           </p>
                         </div>
@@ -1726,7 +1726,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         <Mail className="h-4 w-4 text-muted-foreground" />
                         <div>
                           <p className="text-ui-body-sm text-foreground/80">이메일</p>
-                          <p className="font-semibold text-foreground">
+                          <p className="font-medium text-foreground">
                             {orderDetail.customer.email ?? "이메일 없음"}
                           </p>
                         </div>
@@ -1736,7 +1736,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         <Phone className="h-4 w-4 text-muted-foreground" />
                         <div>
                           <p className="text-ui-body-sm text-foreground/80">전화번호</p>
-                          <p className="font-semibold text-foreground">
+                          <p className="font-medium text-foreground">
                             {orderDetail.customer.phone ?? "전화번호 없음"}
                           </p>
                         </div>
@@ -1746,7 +1746,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
                         <div>
                           <p className="text-ui-body-sm text-foreground/80">주소</p>
-                          <p className="font-semibold text-foreground">
+                          <p className="font-medium text-foreground">
                             {orderDetail.customer.address ?? "주소 없음"}
                           </p>
                           {orderDetail.customer.addressDetail && (
@@ -1815,7 +1815,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                             <p className="text-ui-body-sm text-foreground/80">
                               주문 시 선택한 수령 방식
                             </p>
-                            <p className="font-semibold text-primary">{shippingMethodLabel}</p>
+                            <p className="font-medium text-primary">{shippingMethodLabel}</p>
                           </div>
                         </div>
                         {shouldShowLinkedSelfShipSummary && latestLinkedApplication && (
@@ -1871,7 +1871,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         <p className="text-ui-body-sm text-foreground/80">
                           {isVisitPickup ? "수령 방법" : "배송 방법"}
                         </p>
-                        <p className="font-semibold text-foreground">{shippingMethodLabel}</p>
+                        <p className="font-medium text-foreground">{shippingMethodLabel}</p>
                       </div>
                     </div>
 
@@ -1879,7 +1879,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-ui-body-sm text-foreground/80">예상 수령일</p>
-                        <p className="font-semibold text-foreground">
+                        <p className="font-medium text-foreground">
                           {orderDetail.shippingInfo.estimatedDate
                             ? formatDate(orderDetail.shippingInfo.estimatedDate)
                             : "미등록"}
@@ -1898,7 +1898,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
                           <div>
                             <p className="text-ui-body-sm text-foreground/80">택배사</p>
-                            <p className="font-semibold text-foreground">
+                            <p className="font-medium text-foreground">
                               {getCourierDisplayName(orderDetail.shippingInfo.invoice.courier)}
                             </p>
                           </div>
@@ -1906,7 +1906,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
                           <div>
                             <p className="text-ui-body-sm text-foreground/80">운송장 번호</p>
-                            <p className="font-semibold text-foreground">
+                            <p className="font-medium text-foreground">
                               {orderDetail.shippingInfo.invoice.trackingNumber}
                             </p>
                           </div>

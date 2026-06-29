@@ -1416,19 +1416,19 @@ export default function StringingApplicationDetailClient({
                 <dl className="space-y-2 text-ui-body-sm">
                   <div className="flex justify-between gap-3">
                     <dt className="text-muted-foreground">신청일</dt>
-                    <dd className="font-semibold text-foreground">
+                    <dd className="font-medium text-foreground">
                       {new Date(data.requestedAt).toLocaleDateString()}
                     </dd>
                   </div>
                   <div className="flex justify-between gap-3">
                     <dt className="text-muted-foreground">신청 유형</dt>
-                    <dd className="text-right font-semibold text-foreground">
+                    <dd className="text-right font-medium text-foreground">
                       {applicationContext.label}
                     </dd>
                   </div>
                   <div className="flex justify-between gap-3">
                     <dt className="text-muted-foreground">총 작업 수</dt>
-                    <dd className="font-semibold text-foreground">라켓 {racketCount}자루</dd>
+                    <dd className="font-medium text-foreground">라켓 {racketCount}자루</dd>
                   </div>
                 </dl>
               </SummaryCard>
@@ -2569,7 +2569,7 @@ export default function StringingApplicationDetailClient({
                               <div className="text-right text-foreground">
                                 {item.price.toLocaleString()}원
                               </div>
-                              <div className="text-right font-semibold text-foreground">
+                              <div className="text-right font-medium text-foreground">
                                 {item.subtotal.toLocaleString()}원
                               </div>
                             </div>
@@ -3317,7 +3317,7 @@ export default function StringingApplicationDetailClient({
                         <User className="h-4 w-4 text-muted-foreground" />
                         <div className="min-w-0">
                           <p className="text-ui-body-sm text-foreground/80">이름</p>
-                          <p className="break-words font-semibold text-foreground">
+                          <p className="break-words font-medium text-foreground">
                             {data.customer.name ?? "정보 없음"}
                           </p>
                         </div>
@@ -3327,7 +3327,7 @@ export default function StringingApplicationDetailClient({
                         <Mail className="h-4 w-4 text-muted-foreground" />
                         <div className="min-w-0">
                           <p className="text-ui-body-sm text-foreground/80">이메일</p>
-                          <p className="break-words font-semibold text-foreground">
+                          <p className="break-words font-medium text-foreground">
                             {data.customer.email ?? "정보 없음"}
                           </p>
                         </div>
@@ -3337,7 +3337,7 @@ export default function StringingApplicationDetailClient({
                         <Phone className="h-4 w-4 text-muted-foreground" />
                         <div className="min-w-0">
                           <p className="text-ui-body-sm text-foreground/80">전화번호</p>
-                          <p className="break-words font-semibold text-foreground">
+                          <p className="break-words font-medium text-foreground">
                             {data.customer?.phone ?? "정보 없음"}
                           </p>
                         </div>
@@ -3349,7 +3349,7 @@ export default function StringingApplicationDetailClient({
                           <p className="text-ui-body-sm text-foreground/80">
                             {customerAddressLabel}
                           </p>
-                          <p className="break-words font-semibold text-foreground">
+                          <p className="break-words font-medium text-foreground">
                             {customerAddressValue}
                           </p>
                           {!isVisit && data.customer?.addressDetail && (
