@@ -5,6 +5,7 @@ import {
   loadStringingSettings,
   validateBookingWindow,
 } from "@/app/features/stringing-applications/lib/slotEngine";
+import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
 import { normalizeOrderStatus, normalizePaymentStatus } from "@/lib/admin-ops-normalize";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { appendAudit } from "@/lib/audit";
@@ -93,6 +94,12 @@ type LinkedPaymentPayload = {
     goodsName?: string | null;
   } | null;
 };
+
+function formatAdminAlertDate(value: unknown) {
+  if (!value) return "미입력";
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  return String(value);
+}
 
 function normalizeCancelStatus(raw: any): CancelStatus {
   const v = typeof raw === "string" ? raw.trim() : "";
@@ -2001,6 +2008,21 @@ export async function handleStringingCancelRequest(
       $push: { history: historyEntry as any },
     } as any);
 
+    void sendAdminOperationalAlert({
+      kind: "cancel_requested",
+      title: "⚠️ 취소 요청 접수",
+      summary: "교체서비스 신청 취소 요청이 접수되었습니다. 관리자 상세에서 확인해 주세요.",
+      href: `/admin/applications/stringing/${id}`,
+      dedupeKey: `cancel_requested:stringing_application:${id}:${now.toISOString()}`,
+      priority: "high",
+      fields: [
+        { name: "대상", value: "교체서비스 신청" },
+        { name: "신청번호", value: id },
+        { name: "사유", value: reasonLabel },
+        { name: "환불계좌", value: needsRefundAccount ? "등록됨" : "미필요/미입력" },
+      ],
+    });
+
     const subject = buildCancelRefundSubject({
       userId: (appDoc as any).userId ? String((appDoc as any).userId) : null,
       applicationId: id,
@@ -3058,6 +3080,21 @@ export async function handleApplicationCancelRequest(
       $push: { history: historyEntry },
     } as any);
 
+    void sendAdminOperationalAlert({
+      kind: "cancel_requested",
+      title: "⚠️ 취소 요청 접수",
+      summary: "교체서비스 신청 취소 요청이 접수되었습니다. 관리자 상세에서 확인해 주세요.",
+      href: `/admin/applications/stringing/${id}`,
+      dedupeKey: `cancel_requested:stringing_application:${id}:${now.toISOString()}`,
+      priority: "high",
+      fields: [
+        { name: "대상", value: "교체서비스 신청" },
+        { name: "신청번호", value: id },
+        { name: "사유", value: descBase },
+        { name: "환불계좌", value: needsRefundAccount ? "등록됨" : "미필요/미입력" },
+      ],
+    });
+
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("POST /api/applications/stringing/[id]/cancel-request 오류:", err);
@@ -3524,6 +3561,23 @@ export async function handleSubmitStringingApplication(req: Request) {
       guestOrderId,
       guestRentalId,
       input: body,
+    });
+
+    const applicationId = String(result.applicationId);
+
+    void sendAdminOperationalAlert({
+      kind: "stringing_application_submitted",
+      title: "🧵 신규 교체서비스 신청",
+      summary: "신규 교체서비스 신청이 접수되었습니다. 관리자 상세에서 확인해 주세요.",
+      href: `/admin/applications/stringing/${applicationId}`,
+      dedupeKey: `stringing_application_submitted:${applicationId}`,
+      fields: [
+        { name: "신청자명", value: String(body?.name ?? body?.customerName ?? "미입력") },
+        { name: "접수 방식", value: String(body?.serviceType ?? body?.pickupMethod ?? "확인 필요") },
+        { name: "희망일", value: formatAdminAlertDate(body?.preferredDate ?? body?.date) },
+        { name: "희망 시간", value: String(body?.preferredTime ?? body?.time ?? "미입력") },
+        { name: "주문 연결 여부", value: body?.orderId || guestOrderId ? "연결됨" : "없음" },
+      ],
     });
 
     const response = NextResponse.json(

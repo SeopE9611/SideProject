@@ -1,3 +1,4 @@
+import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
 import { appendAudit } from "@/lib/audit";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
@@ -294,6 +295,22 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       $set: { cancelRequest },
       $push: { history: historyEntry },
     } as any);
+
+    void sendAdminOperationalAlert({
+      kind: "cancel_requested",
+      title: "⚠️ 취소 요청 접수",
+      summary: "주문 취소 요청이 접수되었습니다. 관리자 상세에서 확인해 주세요.",
+      href: `/admin/orders/${_id.toString()}`,
+      dedupeKey: `cancel_requested:order:${_id.toString()}:${now.toISOString()}`,
+      priority: "high",
+      fields: [
+        { name: "대상", value: "주문" },
+        { name: "주문번호", value: _id.toString() },
+        { name: "결제상태", value: String(existing.paymentStatus ?? "확인 필요") },
+        { name: "사유", value: descBase },
+        { name: "환불계좌", value: needsRefundAccount ? "등록됨" : "미필요/미입력" },
+      ],
+    });
 
     const subject = buildCancelRefundSubject({
       userId: existing.userId ? existing.userId.toString() : null,

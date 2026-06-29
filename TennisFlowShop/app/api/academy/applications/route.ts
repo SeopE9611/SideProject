@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { ObjectId, type Document } from "mongodb";
 
+import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
 import { getCurrentUserId } from "@/lib/hooks/get-current-user";
 import { getDb } from "@/lib/mongodb";
 import {
   getAcademyClassLessonTypeLabel,
   getAcademyClassLevelLabel,
   getAcademyClassStatusLabel,
+  getAcademyLessonTypeLabel,
   isAcademyClassLessonType,
   isAcademyClassLevel,
   type AcademyClassLessonType,
@@ -100,6 +102,12 @@ function optionalTrimString(value: unknown, maxLength: number) {
 
 function toErrorResponse(message: string, status = 400, extra?: Record<string, unknown>) {
   return NextResponse.json({ success: false, message, ...extra }, { status });
+}
+
+function maskPhoneForAdminAlert(value: string) {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length < 7) return "마스킹됨";
+  return `${digits.slice(0, 3)}-****-${digits.slice(-4)}`;
 }
 
 function getClassName(doc: Document) {
@@ -297,6 +305,24 @@ export async function POST(req: Request) {
   try {
     const result = await db.collection(COLLECTION_NAME).insertOne(application);
     const applicationId = result.insertedId.toString();
+
+    void sendAdminOperationalAlert({
+      kind: "academy_application_created",
+      title: "🎾 신규 아카데미 신청",
+      summary: "신규 아카데미 신청이 접수되었습니다. 관리자 상세에서 확인해 주세요.",
+      href: `/admin/academy/applications/${applicationId}`,
+      dedupeKey: `academy_application_created:${applicationId}`,
+      fields: [
+        { name: "신청자명", value: applicantName },
+        {
+          name: "희망 수업/클래스",
+          value: classSnapshot?.name || getAcademyLessonTypeLabel(desiredLessonType as AcademyLessonType),
+        },
+        { name: "희망 요일", value: preferredDays.join(", ") },
+        { name: "희망 시간", value: preferredTimeText || "미입력" },
+        { name: "연락처", value: maskPhoneForAdminAlert(phone) },
+      ],
+    });
 
     return NextResponse.json(
       {

@@ -9,6 +9,7 @@ import {
   resolveRequiredPassCountFromInput,
 } from "@/app/features/stringing-applications/lib/package-pricing";
 import { verifyAccessToken } from "@/lib/auth.utils";
+import { sendAdminOperationalAlert } from "@/lib/admin-alerts/sendAdminOperationalAlert";
 import { getShippingBadge } from "@/lib/badge-style";
 import clientPromise from "@/lib/mongodb";
 import { ENABLE_RACKET_STANDALONE_ORDER } from "@/lib/orders/racket-standalone-policy";
@@ -59,6 +60,9 @@ const toTrimmedString = (v: unknown) => {
 const toPhoneDigits = (v: unknown) => toTrimmedString(v).replace(/\D/g, "");
 const PAYMENT_AMOUNT_CHANGED_MESSAGE =
   "상품 가격, 배송비, 포인트 또는 패키지 사용 정보가 변경되어 결제 금액이 달라졌습니다. 주문 정보를 다시 확인한 뒤 다시 시도해주세요.";
+
+const formatAdminAlertWon = (amount: unknown) =>
+  `${Number(amount || 0).toLocaleString("ko-KR")}원`;
 
 const normalizeWonAmountOrNull = (value: unknown): number | null => {
   if (value === undefined || value === null || value === "") return null;
@@ -437,6 +441,7 @@ export async function createOrder(
     let createdOrderId: ObjectId | null = null;
     let createdStringingApplicationId: ObjectId | null = null;
     let stringingSubmitted = false;
+    let createdOrderSnapshot: any = null;
 
     try {
       type ColorInventoryDeductionResult = { status: "deducted" } | { status: "not_managed" };
@@ -1302,6 +1307,7 @@ export async function createOrder(
         // insert
         const inserted = await ordersCol.insertOne(order, { session });
         createdOrderId = inserted.insertedId as ObjectId;
+        createdOrderSnapshot = order;
 
         // 포인트 차감(회원 + pointsToUse>0 일 때만)
         if (userId && pointsToUse > 0) {
@@ -1377,6 +1383,33 @@ export async function createOrder(
         { status: 500 },
       );
     }
+
+    void sendAdminOperationalAlert({
+      kind: "order_created",
+      title: "🛒 신규 주문 접수",
+      summary: `신규 주문이 접수되었습니다. 관리자 주문 상세에서 확인해 주세요.`,
+      href: `/admin/orders/${String(createdOrderId)}`,
+      dedupeKey: `order_created:${String(createdOrderId)}`,
+      fields: [
+        { name: "주문번호", value: String(createdOrderId) },
+        { name: "총 결제금액", value: formatAdminAlertWon((createdOrderSnapshot as any)?.totalPrice) },
+        { name: "결제상태", value: String((createdOrderSnapshot as any)?.paymentStatus ?? "확인 필요") },
+        {
+          name: "주문 유형",
+          value: (createdOrderSnapshot as any)?.shippingInfo?.withStringService
+            ? "교체서비스 포함"
+            : "일반 주문",
+        },
+        ...(typeof (createdOrderSnapshot as any)?.shippingInfo?.deliveryMethod === "string"
+          ? [
+              {
+                name: "수령/배송 방식",
+                value: String((createdOrderSnapshot as any).shippingInfo.deliveryMethod),
+              },
+            ]
+          : []),
+      ],
+    });
 
     return NextResponse.json(
       {
