@@ -183,8 +183,8 @@ export default function SupportFaqSearch() {
               onChange={(event) => setSearchQuery(event.target.value)}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
-              placeholder="검색어를 입력하세요"
-              className="h-12 min-w-0 border-border bg-background pl-11 pr-10 text-ui-body-lg focus-visible:ring-0 focus-visible:ring-offset-0"
+              placeholder="주문, 배송, 패키지권처럼 궁금한 내용을 검색해보세요"
+              className="h-12 min-w-0 border-border bg-background pl-11 pr-10 text-ui-body-sm focus-visible:ring-0 focus-visible:ring-offset-0 sm:text-ui-body-lg"
               aria-label="자주 묻는 질문 검색"
             />
             {searchQuery && (
@@ -231,9 +231,9 @@ export default function SupportFaqSearch() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
               <Search className="h-6 w-6 text-muted-foreground" />
             </div>
-            <p className="break-keep text-ui-body-lg font-medium text-foreground">검색 결과가 없습니다</p>
+            <p className="break-keep text-ui-body-lg font-medium text-foreground">찾는 FAQ가 없습니다</p>
             <p className="mt-1 break-keep text-ui-body-sm leading-relaxed text-muted-foreground">
-              다른 검색어를 입력하거나 Q&A 문의로 남겨주세요.
+              다른 표현으로 다시 검색하거나 고객센터로 문의해 주세요.
             </p>
             <Button asChild className="mt-4 w-full sm:w-auto" size="sm" wrap="responsive">
               <Link href="/board/qna/write">문의하기</Link>
@@ -246,11 +246,11 @@ export default function SupportFaqSearch() {
                 <AccordionItem
                   key={faq.id}
                   value={faq.id}
-                  className="rounded-lg border border-border bg-card px-4 data-[state=open]:bg-muted/30"
+                  className="rounded-xl border border-border bg-card px-4 py-1 data-[state=open]:bg-muted/30 sm:px-5"
                 >
                   <AccordionTrigger
                     value={faq.id}
-                    className="min-w-0 gap-3 py-4 hover:no-underline"
+                    className="min-w-0 gap-3 py-4 hover:no-underline sm:py-5"
                   >
                     <span className="flex min-w-0 flex-1 flex-col items-start gap-2 text-left">
                       <Badge
@@ -266,7 +266,7 @@ export default function SupportFaqSearch() {
                   </AccordionTrigger>
                   <AccordionContent
                     value={faq.id}
-                    className="whitespace-pre-line break-keep break-words pb-4 text-ui-body-sm leading-relaxed text-muted-foreground"
+                    className="whitespace-pre-line break-keep break-words pb-5 text-ui-body-sm leading-7 text-muted-foreground sm:text-ui-body"
                   >
                     {faq.answer}
                   </AccordionContent>
@@ -292,7 +292,7 @@ export default function SupportFaqSearch() {
                 className="w-full sm:w-auto"
                 wrap="responsive"
               >
-                <Link href="/board/qna/write">Q&A 문의하기</Link>
+                <Link href="/board/qna/write">문의하기</Link>
               </Button>
             </div>
           </div>
