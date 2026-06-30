@@ -10,6 +10,7 @@ import {
   buildRentalPaidMatch,
   rentalPaidAmount,
   rentalDepositAmount,
+  buildPrivatePaymentSettlementSummary,
 } from "@/app/api/settlements/_lib/settlementPolicy";
 import { enforceAdminRateLimit } from "@/lib/admin/adminRateLimit";
 import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from "@/lib/admin/adminEndpointCostPolicy";
@@ -147,18 +148,22 @@ export async function GET(req: Request) {
       .toArray();
 
     const standaloneApps = apps.filter((a: any) => isStandaloneStringingApplication(a));
+    const privatePayments = await buildPrivatePaymentSettlementSummary(db, {
+      from: start,
+      toExclusive: endExclusive,
+    });
 
     const paidOrders = orders.reduce((s, o: any) => s + orderPaidAmount(o), 0);
     const paidApps = standaloneApps.reduce((s, a: any) => s + applicationPaidAmount(a), 0);
     const pkgPaid = packages.reduce((s: number, p: any) => s + orderPaidAmount(p), 0);
     const rentalPaid = rentals.reduce((s: number, r: any) => s + rentalPaidAmount(r), 0);
     const rentalDeposit = rentals.reduce((s: number, r: any) => s + rentalDepositAmount(r), 0);
-    const paid = paidOrders + paidApps + pkgPaid + rentalPaid;
+    const paid = paidOrders + paidApps + pkgPaid + rentalPaid + privatePayments.paidAmount;
 
     const refundOrders = orders.reduce((s: number, o: any) => s + refundsAmount(o), 0);
     const refundApps = standaloneApps.reduce((s: number, a: any) => s + refundsAmount(a), 0);
     const refundPackages = packages.reduce((s: number, p: any) => s + refundsAmount(p), 0);
-    const refund = refundOrders + refundApps + refundPackages;
+    const refund = refundOrders + refundApps + refundPackages + privatePayments.refundAmount;
     const net = paid - refund;
     const offline = await buildOfflineSettlementReference(db, {
       from: start,
@@ -174,6 +179,10 @@ export async function GET(req: Request) {
           applications: standaloneApps.length,
           packages: packages.length,
           rentals: rentals.length,
+          privatePaymentsPaidAmount: privatePayments.paidAmount,
+          privatePaymentsRefundAmount: privatePayments.refundAmount,
+          privatePaymentsPaidCount: privatePayments.paidCount,
+          privatePaymentsRefundCount: privatePayments.refundCount,
         },
         offline,
       }),
