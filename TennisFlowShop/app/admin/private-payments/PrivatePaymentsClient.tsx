@@ -153,7 +153,7 @@ export default function PrivatePaymentsClient() {
           <div className="space-y-1.5">
             <Label>결제명</Label>
             <Input
-              placeholder="예: 용현님 1회 레슨권"
+              placeholder="예: 김재민 1회 레슨권"
               value={form.title}
               disabled={editing?.paymentStatus === "결제완료"}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -181,7 +181,7 @@ export default function PrivatePaymentsClient() {
           <div className="space-y-1.5">
             <Label>고객명</Label>
             <Input
-              placeholder="예: 김용현"
+              placeholder="고객명 입력"
               value={form.customerName}
               onChange={(e) => setForm({ ...form, customerName: e.target.value })}
             />
