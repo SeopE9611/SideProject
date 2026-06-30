@@ -1831,6 +1831,7 @@ export default function AdminRentalDetailClient() {
           <div id="admin-rental-history">
             <AdminRentalHistory id={id} servicePickupMethod={servicePickupMethod} />
           </div>
+          </div>
     </AdminPageShell>
   );
 }
