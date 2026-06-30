@@ -181,11 +181,6 @@ export default function MessagesClient({ user }: { user: SafeUser }) {
         description="알림보다 자세한 1:1 안내와 답장을 확인하세요"
         actions={
           <>
-            <Button asChild variant="outline" className="w-full gap-2 sm:w-auto">
-              <Link href="/messages/write">
-                <Send className="h-4 w-4" />새 쪽지 작성
-              </Link>
-            </Button>
             {user.role === "admin" && (
               <Button
                 variant="default"
