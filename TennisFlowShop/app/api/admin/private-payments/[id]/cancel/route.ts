@@ -134,7 +134,7 @@ export async function POST(req: Request, ctx: Ctx) {
     }
 
     const canceledAt = new Date();
-    await col.updateOne(
+    const paymentCancelResult = await col.updateOne(
       { _id },
       {
         $set: {
@@ -154,6 +154,38 @@ export async function POST(req: Request, ctx: Ctx) {
         $push: { history: { status: "결제취소", date: canceledAt, description: reason } },
       },
     );
+
+    if (paymentCancelResult.matchedCount > 0 && item.offlineLink?.offlineRecordId) {
+      try {
+        await guard.db.collection("offline_service_records").updateOne(
+          {
+            _id: item.offlineLink.offlineRecordId,
+            source: "private_payment",
+            privatePaymentId: _id,
+          },
+          {
+            $set: {
+              privatePaymentSync: {
+                paymentStatus: "결제취소",
+                canceledAt,
+                syncedAt: new Date(),
+                syncedBy: guard.admin._id,
+                cancelReason: reason,
+              },
+              updatedAt: new Date(),
+              updatedBy: guard.admin._id,
+            },
+          },
+        );
+      } catch (syncError) {
+        console.error("[private-payments/cancel] offline record sync failed", {
+          paymentId: _id.toString(),
+          offlineRecordId: item.offlineLink.offlineRecordId.toString(),
+          syncError,
+        });
+      }
+    }
+
     await appendAdminAudit(guard.db, { type: "private_payment.cancel", actorId: guard.admin._id, targetId: _id, message: "개인결제 승인취소", diff: { reason, tid, orderId } }, req);
     try {
       await sendAdminOperationalAlert({
