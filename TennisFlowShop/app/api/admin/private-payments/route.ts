@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
+import { ObjectId, type Filter } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
-import { privatePayments, serializePrivatePayment, validatePrivatePaymentInput } from "@/lib/private-payments";
+import {
+  privatePayments,
+  serializePrivatePayment,
+  validatePrivatePaymentInput,
+  type PrivatePayment,
+} from "@/lib/private-payments";
 
 export const runtime = "nodejs";
 
@@ -16,10 +21,22 @@ export async function GET(req: Request) {
   const q = String(url.searchParams.get("q") || "").trim();
   const status = String(url.searchParams.get("status") || "").trim();
   const paymentStatus = String(url.searchParams.get("paymentStatus") || "").trim();
-  const filter: any = {};
-  if (q) filter.$or = ["title", "description", "customerName", "customerPhone", "customerEmail"].map((key) => ({ [key]: { $regex: q, $options: "i" } }));
-  if (["active", "inactive"].includes(status)) filter.status = status;
-  if (["결제대기", "결제완료", "결제취소"].includes(paymentStatus)) filter.paymentStatus = paymentStatus;
+  const filter: Filter<PrivatePayment> = {};
+  const searchFields: Array<
+    keyof Pick<
+      PrivatePayment,
+      "title" | "description" | "customerName" | "customerPhone" | "customerEmail"
+    >
+  > = ["title", "description", "customerName", "customerPhone", "customerEmail"];
+  if (q) {
+    filter.$or = searchFields.map((key) => ({
+      [key]: { $regex: q, $options: "i" },
+    }));
+  }
+  if (status === "active" || status === "inactive") filter.status = status;
+  if (paymentStatus === "결제대기" || paymentStatus === "결제완료" || paymentStatus === "결제취소") {
+    filter.paymentStatus = paymentStatus;
+  }
   const col = privatePayments(guard.db);
   const [items, total] = await Promise.all([
     col.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).toArray(),
