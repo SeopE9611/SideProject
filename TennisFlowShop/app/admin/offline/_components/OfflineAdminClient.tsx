@@ -1,5 +1,6 @@
 "use client";
 
+import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
 import { adminTypography } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -838,7 +839,7 @@ export default function OfflineAdminClient() {
         </CardHeader>
         <CardContent className="pt-4 space-y-4">
           {summaryLoading && (
-            <div className="rounded-xl border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
+            <div className="rounded-xl border border-border/60 bg-background/70 p-4 text-sm text-muted-foreground">
               집계 불러오는 중...
             </div>
           )}
@@ -860,7 +861,7 @@ export default function OfflineAdminClient() {
                     순매출 {formatCurrency(summary.total.netAmount)}
                   </p>
                 </div>
-                <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+                <div className="rounded-xl border border-border/60 bg-background/70 p-4">
                   <p className="text-xs font-medium text-muted-foreground">작업/매출 기록</p>
                   <p className="mt-2 text-xl font-semibold tabular-nums">
                     {formatCurrency(summary.records.paidAmount)}
@@ -869,7 +870,7 @@ export default function OfflineAdminClient() {
                     {summary.records.paidCount.toLocaleString("ko-KR")}건 결제완료
                   </p>
                 </div>
-                <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+                <div className="rounded-xl border border-border/60 bg-background/70 p-4">
                   <p className="text-xs font-medium text-muted-foreground">패키지 판매</p>
                   <p className="mt-2 text-xl font-semibold tabular-nums">
                     {formatCurrency(summary.packageSales.paidAmount)}
@@ -915,7 +916,7 @@ export default function OfflineAdminClient() {
                     )}
                   </div>
                 </div>
-                <div className="rounded-xl border border-border/60 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+                <div className="rounded-xl border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
                   <p>패키지 발급 보정 필요</p>
                   <p className="mt-1 text-lg font-semibold text-foreground">
                     {summary.packageSales.issueFailedCount.toLocaleString("ko-KR")}건
@@ -975,7 +976,7 @@ export default function OfflineAdminClient() {
                   {selected.email && (
                     <span className="flex min-w-0 items-center gap-1">
                       <Mail className="h-3 w-3 shrink-0" />
-                      <span className="block max-w-[220px] truncate" title={selected.email}>
+                      <span className="block max-w-[220px] break-all" title={selected.email}>
                         {selected.email}
                       </span>
                     </span>
@@ -1002,7 +1003,7 @@ export default function OfflineAdminClient() {
       {/* Offline Workflow Guide */}
       <div className="grid gap-3 md:grid-cols-3">
         {OFFLINE_WORKFLOW_STEPS.map(({ icon: Icon, title, description }) => (
-          <div key={title} className="rounded-xl border border-border/60 bg-muted/20 p-4">
+          <div key={title} className="rounded-xl border border-border/60 bg-background/70 p-4">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Icon className="h-4 w-4" />
@@ -1326,14 +1327,9 @@ export default function OfflineAdminClient() {
             </CardHeader>
             <CardContent className="pt-4">
               {!selected ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
-                    <User className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <p className="text-muted-foreground">
-                    좌측에서 고객을 검색하거나 신규 등록 후 작업을 등록할 수 있습니다.
-                  </p>
-                </div>
+                <AdminInlineEmpty>
+                  좌측에서 고객을 검색하거나 신규 등록 후 작업을 등록할 수 있습니다.
+                </AdminInlineEmpty>
               ) : (
                 <div className="space-y-6">
                   <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
@@ -1353,7 +1349,7 @@ export default function OfflineAdminClient() {
                     </div>
                   </div>
                   {/* Work Info Section */}
-                  <div className="rounded-xl border border-border/60 bg-muted/20 p-5 space-y-4">
+                  <div className="rounded-xl border border-border/60 bg-background/70 p-5 space-y-4">
                     <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                       <Wrench className="h-4 w-4 text-primary" />
                       작업 정보
@@ -1544,7 +1540,7 @@ export default function OfflineAdminClient() {
                   </div>
 
                   {/* Payment Info Section */}
-                  <div className="rounded-xl border border-border/60 bg-muted/20 p-5 space-y-4">
+                  <div className="rounded-xl border border-border/60 bg-background/70 p-5 space-y-4">
                     <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                       <CreditCard className="h-4 w-4 text-primary" />
                       결제 정보
@@ -1942,7 +1938,7 @@ export default function OfflineAdminClient() {
           {/* Filter Section */}
           {showFilters && (
             <form
-              className="rounded-xl border border-border/60 bg-muted/20 p-5 space-y-4"
+              className="rounded-xl border border-border/60 bg-background/70 p-5 space-y-4"
               onSubmit={(e) => {
                 e.preventDefault();
                 setSubmittedRecordFilters({ ...recordFilters });
@@ -2100,12 +2096,7 @@ export default function OfflineAdminClient() {
 
           {/* Empty State */}
           {!recordsLoading && !records?.items?.length && (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
-                <History className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <p className="text-muted-foreground">아직 등록된 기록이 없습니다.</p>
-            </div>
+            <AdminInlineEmpty>아직 등록된 기록이 없습니다.</AdminInlineEmpty>
           )}
 
           {/* Records Table */}
@@ -2288,7 +2279,7 @@ export default function OfflineAdminClient() {
           )}
 
           {/* Pagination */}
-          <div className="flex flex-col gap-3 rounded-xl border border-border/60 bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 rounded-xl border border-border/60 bg-background/70 p-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-muted-foreground">
               <span className="font-medium text-foreground">{currentRecordsPage}</span> /{" "}
               {Math.max(recordsTotalPages, 1)} 페이지
@@ -2384,7 +2375,7 @@ export default function OfflineAdminClient() {
               </div>
 
               {/* Basic Info */}
-              <div className="rounded-xl border border-border/60 bg-muted/20 p-4 space-y-3">
+              <div className="rounded-xl border border-border/60 bg-background/70 p-4 space-y-3">
                 <p className="text-sm font-semibold text-foreground">기본 정보</p>
                 <div className="grid grid-cols-2 gap-3">
                   <FormField label="작업 유형" htmlFor="edit-kind">
@@ -2413,7 +2404,7 @@ export default function OfflineAdminClient() {
               </div>
 
               {/* Work Info */}
-              <div className="rounded-xl border border-border/60 bg-muted/20 p-4 space-y-3">
+              <div className="rounded-xl border border-border/60 bg-background/70 p-4 space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-foreground">라켓별 작업 정보</p>
@@ -2550,7 +2541,7 @@ export default function OfflineAdminClient() {
               </div>
 
               {/* Status & Payment Info */}
-              <div className="rounded-xl border border-border/60 bg-muted/20 p-4 space-y-3">
+              <div className="rounded-xl border border-border/60 bg-background/70 p-4 space-y-3">
                 <p className="text-sm font-semibold text-foreground">상태/결제 정보</p>
                 <div className="grid grid-cols-2 gap-3">
                   <FormField label="작업 상태" htmlFor="edit-status">

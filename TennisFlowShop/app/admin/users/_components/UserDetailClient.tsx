@@ -8,6 +8,7 @@ import useSWR from "swr";
 import { UserActivityTabsSection } from "@/app/admin/users/_components/UserActivityTabsSection";
 import { useUserSessions } from "@/app/admin/users/_hooks/useUserSessions";
 import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
+import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 import { InfoItem } from "@/components/admin/InfoItem";
 import { Section, SectionBody, SectionHeader } from "@/components/admin/Section";
@@ -740,7 +741,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                   <div className="inline-flex items-center gap-1">
                     <Mail className="h-3.5 w-3.5" />
                     <button
-                      className="underline decoration-dotted"
+                      className="break-all underline decoration-dotted"
                       onClick={() => copy(user.email)}
                       title="이메일 복사"
                     >
@@ -751,7 +752,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                     <ShieldCheck className="h-3.5 w-3.5" />
                     <span>회원 ID: </span>
                     <button
-                      className="underline decoration-dotted"
+                      className="break-all underline decoration-dotted"
                       onClick={() => copy(user.id)}
                       title="ID 복사"
                     >
@@ -801,7 +802,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                         {formatKoreanPhone(user.phone) || user.phone}
                       </a>
                     ) : (
-                      "-"
+                      <span className="text-muted-foreground">미등록</span>
                     )
                   }
                   onCopy={user.phone ? () => copy(user.phone!) : undefined}
@@ -812,12 +813,12 @@ export default function UserDetailClient({ id }: { id: string }) {
                   label="주소"
                   value={
                     user.address ? (
-                      <span className="truncate">
+                      <span className="break-words">
                         {user.address} {user.addressDetail ? ` ${user.addressDetail}` : ""}{" "}
                         {user.postalCode ? ` [${user.postalCode}]` : ""}
                       </span>
                     ) : (
-                      "-"
+                      <span className="text-muted-foreground">미등록</span>
                     )
                   }
                   onCopy={
@@ -886,9 +887,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                       ))}
                     </div>
                   ) : (
-                    <div className="p-3 text-sm text-foreground/75">
-                      최근 로그인 기록이 없습니다.
-                    </div>
+                    <AdminInlineEmpty>최근 로그인 기록이 없습니다.</AdminInlineEmpty>
                   )}
                 </div>
               </SectionBody>
@@ -1363,7 +1362,7 @@ function MiniList<T>({
   empty: string;
 }) {
   if (!items?.length) {
-    return <div className="text-sm text-foreground/75">{empty}</div>;
+    return <AdminInlineEmpty>{empty}</AdminInlineEmpty>;
   }
   return (
     <ul className="divide-y divide-border">
@@ -1390,8 +1389,8 @@ function Row({
   const core = (
     <div className="flex items-center justify-between gap-3">
       <div className="min-w-0">
-        <div className="text-sm font-medium truncate">{title}</div>
-        {subtitle ? <div className="text-xs text-muted-foreground truncate">{subtitle}</div> : null}
+        <div className="truncate text-sm font-medium">{title}</div>
+        {subtitle ? <div className="truncate text-xs text-muted-foreground">{subtitle}</div> : null}
       </div>
       {right ? (
         <div className="text-xs text-muted-foreground whitespace-nowrap">{right}</div>
