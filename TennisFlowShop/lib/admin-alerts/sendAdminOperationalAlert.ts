@@ -5,7 +5,8 @@ export type AdminOperationalAlertKind =
   | "package_order_created"
   | "cancel_requested"
   | "rental_order_created"
-  | "rental_cancel_requested";
+  | "rental_cancel_requested"
+  | "private_payment_paid";
 
 export type AdminOperationalAlertPayload = {
   kind: AdminOperationalAlertKind;

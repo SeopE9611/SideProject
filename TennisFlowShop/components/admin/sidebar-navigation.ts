@@ -4,6 +4,7 @@ import {
   BookOpen,
   CalendarClock,
   ChartBar,
+  CreditCard,
   LayoutDashboard,
   ClipboardList,
   Cog,
@@ -146,6 +147,7 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
     label: "고객/운영",
     items: [
       { title: "회원 관리", href: "/admin/users", icon: Users, key: "users" },
+      { title: "개인결제 관리", href: "/admin/private-payments", icon: CreditCard },
       {
         title: "월별 정산 관리",
         href: "/admin/settlements",
