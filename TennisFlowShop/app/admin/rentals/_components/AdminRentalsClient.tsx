@@ -900,15 +900,15 @@ export default function AdminRentalsClient() {
           </details>
         </CardHeader>
         <CardContent className="relative overflow-x-auto scrollbar-hidden pr-2">
-          <Table className="min-w-[1120px] table-auto border-separate [border-spacing-block:0.5rem] [border-spacing-inline:0] text-xs">
+          <Table className="min-w-[1040px] max-w-[1180px] table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
-                <TableHead className={cn(thClasses, "w-[260px] text-left")}>대여/고객</TableHead>
+                <TableHead className={cn(thClasses, "w-[230px] text-left")}>대여/고객</TableHead>
                 <TableHead
                   onClick={() => handleSort("date")}
                   className={cn(
                     thClasses,
-                    "w-[260px] cursor-pointer select-none text-left transition-colors hover:text-primary",
+                    "w-[240px] cursor-pointer select-none text-left transition-colors hover:text-primary",
                     sortBy === "date" && "text-primary",
                   )}
                 >
@@ -920,12 +920,12 @@ export default function AdminRentalsClient() {
                     )}
                   />
                 </TableHead>
-                <TableHead className={cn(thClasses, "w-[240px] text-left")}>상태/다음 작업</TableHead>
+                <TableHead className={cn(thClasses, "w-[220px] text-left")}>상태/다음 작업</TableHead>
                 <TableHead
                   onClick={() => handleSort("total")}
                   className={cn(
                     thClasses,
-                    "w-[250px] cursor-pointer select-none text-left",
+                    "w-[220px] cursor-pointer select-none text-right",
                     sortBy === "total" && "text-primary",
                   )}
                 >
@@ -937,7 +937,7 @@ export default function AdminRentalsClient() {
                     )}
                   />
                 </TableHead>
-                <TableHead className={cn(thClasses, "w-[140px] text-center")}>액션</TableHead>
+                <TableHead className={cn(thClasses, "w-[130px] text-right")}>액션</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -989,9 +989,9 @@ export default function AdminRentalsClient() {
                   return (
                     <TableRow
                       key={rid || `row-${idx}`}
-                      className="hover:bg-muted/50 transition-colors"
+                      className="align-top transition-colors hover:bg-muted/40"
                     >
-                      <TableCell className={cn(tdClasses, "pl-6")}>
+                      <TableCell className={cn(tdClasses, "py-2 pl-5")}>
                         <TooltipProvider delayDuration={10}>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -1065,7 +1065,7 @@ export default function AdminRentalsClient() {
                                   <Button
                                     size="icon"
                                     variant="ghost"
-                                    className="h-6 w-6"
+                                    className="h-8 w-8 border border-border/60 bg-background hover:bg-muted/25"
                                     onClick={() => {
                                       navigator.clipboard.writeText(rid);
                                       showSuccessToast("대여 ID가 클립보드에 복사되었습니다.");
@@ -1163,7 +1163,7 @@ export default function AdminRentalsClient() {
                           </Tooltip>
                         </TooltipProvider>
                       </TableCell>
-                      <TableCell className={tdClasses}>
+                      <TableCell className={cn(tdClasses, "py-2")}>
                         <div className="min-w-0 text-left">
                           {rid ? (
                             <Link
@@ -1186,7 +1186,7 @@ export default function AdminRentalsClient() {
                           </p>
                         </div>
                       </TableCell>
-                      <TableCell className={tdClasses}>
+                      <TableCell className={cn(tdClasses, "py-2")}>
                         <div className="flex flex-col items-start gap-1 text-left">
                           <div className="flex flex-wrap gap-1">
                             {(() => {
@@ -1210,11 +1210,11 @@ export default function AdminRentalsClient() {
                           ) : null}
                         </div>
                       </TableCell>
-                      <TableCell className={cn(tdClasses, "whitespace-nowrap tabular-nums")}>
-                        <div className="flex flex-col items-center">
+                      <TableCell className={cn(tdClasses, "py-2 text-right tabular-nums")}>
+                        <div className="flex flex-col items-end">
                           <span className="font-semibold">{won(r.amount.total)}</span>
                           <span className="text-xs text-foreground/75">
-                            수수료: {won(r.amount.fee)} / 보증금: {won(r.amount.deposit)}
+                            수수료 {won(r.amount.fee)} · 보증금 {won(r.amount.deposit)}
                           </span>
                           {/* 스트링/교체비: 있을 때만 추가 노출 (대여만 한 케이스 UI 과밀 방지) */}
                           {((r.amount.stringPrice ?? 0) > 0 ||
@@ -1233,9 +1233,9 @@ export default function AdminRentalsClient() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className={tdClasses}>
-                        <div className="flex items-center justify-center gap-1">
-                          <Button asChild size="sm" variant="outline" className="h-8 whitespace-nowrap px-2.5 text-xs">
+                      <TableCell className={cn(tdClasses, "py-2")}>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button asChild size="sm" variant="ghost" className="h-8 whitespace-nowrap border border-border/60 px-2.5 text-xs font-medium">
                             <Link href={`/admin/rentals/${rid}`}>{nextActionLabel}</Link>
                           </Button>
                         <DropdownMenu>

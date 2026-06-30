@@ -2002,17 +2002,16 @@ export default function OperationsClient() {
           ) : (
             <>
               <div className="hidden bp-lg:block overflow-x-auto">
-                <Table className="min-w-[1320px]">
+                <Table className="min-w-[1180px] table-fixed border-separate [border-spacing-block:0.25rem] [border-spacing-inline:0]">
                   <TableHeader>
                     <TableRow className={adminSurface.tableRow}>
-                      <TableHead className={cn(thClasses, "w-[14%]")}>우선순위/유형</TableHead>
-                      <TableHead className={cn(thClasses, "w-[28%]")}>문서/요약</TableHead>
-                      <TableHead className={cn(thClasses, "w-[18%]")}>고객</TableHead>
-                      <TableHead className={cn(thClasses, "w-[24%]")}>상태/다음 작업</TableHead>
-                      <TableHead className={cn(thClasses, "w-[10%] text-right")}>
+                      <TableHead className={cn(thClasses, "w-[17%]")}>우선순위/업무</TableHead>
+                      <TableHead className={cn(thClasses, "w-[28%]")}>문서/고객</TableHead>
+                      <TableHead className={cn(thClasses, "w-[27%]")}>상태/다음 작업</TableHead>
+                      <TableHead className={cn(thClasses, "w-[16%] text-right")}>
                         금액/접수
                       </TableHead>
-                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[6%]")}>
+                      <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[12%]")}>
                         액션
                       </TableHead>
                     </TableRow>
@@ -2022,12 +2021,8 @@ export default function OperationsClient() {
                       const isGroup = g.items.length > 1;
                       const anchorKey = `${g.anchor.kind}:${g.anchor.id}`;
                       const children = g.items.filter((x) => `${x.kind}:${x.id}` !== anchorKey);
-                      const reasonBullets = collectActionableReasonBullets(g);
                       const groupGuide = inferNextActionForOperationGroup(g.items);
                       const warn = g.warn;
-                      const reasonSummary = summarizeReasonText(
-                        reasonBullets[0] ?? g.primarySignal?.description,
-                      );
                       const groupCancelRequested = g.items.some(
                         (it) => it.cancel?.status === "requested",
                       );
@@ -2041,10 +2036,6 @@ export default function OperationsClient() {
                         cancelRequested: groupCancelRequested,
                         reviewLevel: g.reviewLevel,
                       });
-                      const hasReasonCard = reasonBullets.length > 0;
-                      const shouldShowReasonBullets = reasonBullets.length > 0;
-                      const reasonBulletCount = reasonBullets.length;
-                      const isReasonOpen = !!openReasons[g.key];
                       const customerName = g.anchor.customer?.name?.trim() || "";
                       const customerEmail = g.anchor.customer?.email?.trim() || "";
                       const docLabel = `${opsKindLabel(g.anchor.kind)} · ${shortenId(g.anchor.id)}`;
@@ -2068,6 +2059,7 @@ export default function OperationsClient() {
                       });
                       const anchorCancelQuickSignal = cancelQuickSignalSpec(g.anchor.cancel);
                       const rowDensityClass = displayDensity === "compact" ? "py-1.5" : "py-2";
+                      const primarySignal = visibleSignalSummary(g.signals, 1).visible[0];
                       const rowBaseToneClass = idx % 2 === 0 ? "bg-background" : "bg-muted/[0.12]";
                       const warnEmphasisClass = warn
                         ? "border-l-2 border-l-warning/60 bg-warning/[0.08]"
@@ -2088,84 +2080,46 @@ export default function OperationsClient() {
                             )}
                           >
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className="space-y-1.5">
-                                <Badge
-                                  className={cn(
-                                    badgeBase,
-                                    badgeSizeSm,
-                                    badgeToneClass(priorityMeta.tone),
-                                  )}
-                                >
-                                  {priorityMeta.label}
-                                </Badge>
-                                <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
-                                  {opsKindLabel(g.anchor.kind)}
-                                </Badge>
-                                {isGroup && (
-                                  <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
-                                    연결 {g.items.length}건
+                              <div className="min-w-0 space-y-1.5">
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                  <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass(priorityMeta.tone))}>
+                                    {priorityMeta.label}
                                   </Badge>
-                                )}
-                              </div>
-                            </TableCell>
-
-                            <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className="min-w-0 space-y-1">
-                                <div className="flex min-w-0 items-center gap-1.5">
-                                  <span
-                                    className={cn("truncate font-mono", adminTypography.caption)}
-                                  >
-                                    {docLabel}
-                                  </span>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                                    onClick={() => copyToClipboard(g.anchor.id)}
-                                    title={ROW_ACTION_LABELS.copyId}
-                                    aria-label={ROW_ACTION_LABELS.copyId}
-                                  >
-                                    <Copy className="h-3.5 w-3.5" />
-                                  </Button>
+                                  <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
+                                    {opsKindLabel(g.anchor.kind)}
+                                  </Badge>
                                 </div>
                                 <p className="line-clamp-2 text-[15px] font-semibold leading-snug text-foreground">
                                   {headline}
                                 </p>
-                                <p className={cn("line-clamp-2", adminTypography.metaMuted)}>
-                                  {scenarioLabel}
+                                <p className={cn("line-clamp-1", adminTypography.metaMuted)}>
+                                  {isGroup ? `연결 ${g.items.length}건 · ${scenarioLabel}` : scenarioLabel}
                                 </p>
-                                {isGroup && children[0] && (
-                                  <p className={cn("line-clamp-2", adminTypography.caption)}>
-                                    연결 문서 {opsKindLabel(children[0].kind)}{" "}
-                                    {shortenId(children[0].id)}
-                                    {children.length > 1 ? ` 외 ${children.length - 1}건` : ""}
-                                  </p>
-                                )}
                               </div>
                             </TableCell>
 
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
                               <div className="min-w-0 space-y-1">
-                                <span className={cn("block truncate", adminTypography.bodyStrong)}>
-                                  {customerName || "-"}
-                                </span>
                                 <div className="flex min-w-0 items-center gap-1.5">
-                                  <span className={cn("truncate", adminTypography.caption)}>
-                                    {customerEmail || "-"}
-                                  </span>
+                                  <span className={cn("truncate font-mono", adminTypography.caption)}>{docLabel}</span>
+                                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" onClick={() => copyToClipboard(g.anchor.id)} title={ROW_ACTION_LABELS.copyId} aria-label={ROW_ACTION_LABELS.copyId}>
+                                    <Copy className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                                <span className={cn("block truncate", adminTypography.bodyStrong)}>{customerName || "-"}</span>
+                                <div className="flex min-w-0 items-center gap-1.5">
+                                  <span className={cn("truncate", adminTypography.caption)}>{customerEmail || "이메일 없음"}</span>
                                   {customerEmail && (
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                                      onClick={() => copyToClipboard(customerEmail)}
-                                      title="이메일 복사"
-                                      aria-label="이메일 복사"
-                                    >
+                                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" onClick={() => copyToClipboard(customerEmail)} title="이메일 복사" aria-label="이메일 복사">
                                       <Copy className="h-3.5 w-3.5" />
                                     </Button>
                                   )}
                                 </div>
+                                {isGroup && children[0] && (
+                                  <p className={cn("line-clamp-1", adminTypography.caption)}>
+                                    연결 {opsKindLabel(children[0].kind)} {shortenId(children[0].id)}{children.length > 1 ? ` 외 ${children.length - 1}건` : ""}
+                                  </p>
+                                )}
                               </div>
                             </TableCell>
 
@@ -2187,112 +2141,17 @@ export default function OperationsClient() {
                                     </Badge>
                                   ) : null}
                                 </div>
+                                {primarySignal ? (
+                                  <p className={cn("line-clamp-1 text-warning", adminTypography.caption)} title={toOperatorSentence(primarySignal.description)}>
+                                    {toOperatorSentence(primarySignal.title)}
+                                  </p>
+                                ) : null}
                                 <div className="border-l-2 border-primary/30 pl-2.5">
                                   <p className={cn("mb-0.5", adminTypography.caption)}>다음 작업</p>
                                   <p className={cn("line-clamp-2", adminTypography.bodyStrong)}>
                                     {nextActionText}
                                   </p>
                                 </div>
-                              </div>
-                            </TableCell>
-
-                            <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className="space-y-2">
-                                {(() => {
-                                  const { visible, hiddenCount } = visibleSignalSummary(
-                                    g.signals,
-                                    2,
-                                  );
-                                  return visible.length > 0 ? (
-                                    <div className="flex flex-wrap gap-1">
-                                      {visible.map((signal) => (
-                                        <Badge
-                                          key={`${g.key}:signal:${signal.code}:${signal.sourceId}`}
-                                          variant="outline"
-                                          className={cn(
-                                            badgeBase,
-                                            badgeSizeSm,
-                                            "border-warning/40 bg-warning/5 text-warning",
-                                          )}
-                                          title={toOperatorSentence(signal.description)}
-                                        >
-                                          {toOperatorSentence(signal.title)}
-                                        </Badge>
-                                      ))}
-                                      {hiddenCount > 0 && (
-                                        <Badge
-                                          variant="outline"
-                                          className={cn(badgeBase, badgeSizeSm)}
-                                        >
-                                          외 {hiddenCount}개
-                                        </Badge>
-                                      )}
-                                    </div>
-                                  ) : (
-                                    <p className={adminTypography.metaMuted}>추가 확인 항목 없음</p>
-                                  );
-                                })()}
-                                {g.linkedFlowStatusIssue && (
-                                  <div className="rounded-lg border border-warning/40 bg-warning/5 px-2 py-1.5">
-                                    <p
-                                      className={cn(
-                                        "font-semibold text-warning",
-                                        adminTypography.caption,
-                                      )}
-                                    >
-                                      {g.linkedFlowStatusIssue.title}
-                                    </p>
-                                    <p className={cn("mt-0.5", adminTypography.caption)}>
-                                      {g.linkedFlowStatusIssue.message}
-                                    </p>
-                                  </div>
-                                )}
-                                {hasReasonCard && (
-                                  <div className="space-y-1">
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-6 px-1 text-xs font-medium text-muted-foreground"
-                                      onClick={() => toggleReason(g.key)}
-                                    >
-                                      {isReasonOpen
-                                        ? "확인 이유 숨기기"
-                                        : reasonBulletCount > 0
-                                          ? `확인 이유 ${reasonBulletCount}개 보기`
-                                          : "확인 이유 보기"}
-                                    </Button>
-                                    <div
-                                      className={cn(
-                                        "grid transition-all duration-200 ease-out",
-                                        isReasonOpen
-                                          ? "grid-rows-[1fr] opacity-100"
-                                          : "grid-rows-[0fr] opacity-0",
-                                      )}
-                                    >
-                                      <div className="overflow-hidden rounded-md border border-border/40 bg-muted/[0.08] px-2 py-1">
-                                        <p className={adminTypography.caption}>{reasonSummary}</p>
-                                        {shouldShowReasonBullets && (
-                                          <ul className="mt-1 space-y-0.5">
-                                            {reasonBullets.slice(0, 2).map((reason) => (
-                                              <li
-                                                key={`reason:${g.key}:${reason}`}
-                                                className="list-inside list-disc text-xs text-foreground/85 line-clamp-2"
-                                              >
-                                                {reason}
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        )}
-                                        {reasonBullets.length > 2 && (
-                                          <p className={cn("mt-1", adminTypography.caption)}>
-                                            외 {reasonBullets.length - 2}건
-                                          </p>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
                               </div>
                             </TableCell>
 
@@ -2379,9 +2238,9 @@ export default function OperationsClient() {
                                   <Button
                                     asChild
                                     size="sm"
-                                    variant="default"
+                                    variant="outline"
                                     className={cn(
-                                      "h-8 min-w-[128px] justify-center px-3 shadow-sm",
+                                      "h-8 min-w-[108px] justify-center px-2.5",
                                       adminTypography.actionLabel,
                                     )}
                                     title={groupGuide.nextAction ?? primaryActionTarget.label}
@@ -2400,7 +2259,7 @@ export default function OperationsClient() {
 
                     {shouldShowEmptyState && (
                       <TableRow className="hover:bg-transparent">
-                        <TableCell colSpan={8} className="py-16 text-center">
+                        <TableCell colSpan={5} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-2">
                             <Search className="h-8 w-8 text-muted-foreground/50" />
                             <p className="text-sm text-muted-foreground">
