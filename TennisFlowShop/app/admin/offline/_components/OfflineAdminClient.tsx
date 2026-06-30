@@ -2193,14 +2193,16 @@ export default function OfflineAdminClient() {
                           </div>
                         </td>
                         <td className={adminDataTable.cellCenter}>
-                          <div className="flex flex-col items-center gap-1">
+                          <div className="flex min-w-0 flex-col items-center gap-1.5">
                             <span className="text-foreground/80">
                               {KIND_LABELS[r.kind as keyof typeof KIND_LABELS] ?? r.kind}
                             </span>
-                            {r.source === "private_payment" && <Badge variant="secondary">개인결제 연결</Badge>}
-                            {r.privatePaymentSync?.paymentStatus === "결제취소" && (
-                              <Badge variant="destructive">개인결제 취소됨</Badge>
-                            )}
+                            <div className="flex max-w-[130px] flex-wrap justify-center gap-1">
+                              {r.source === "private_payment" && <Badge variant="secondary" className="text-[11px]">개인결제 연결</Badge>}
+                              {r.privatePaymentSync?.paymentStatus === "결제취소" && (
+                                <Badge variant="destructive" className="text-[11px]">개인결제 취소됨</Badge>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className={adminDataTable.cellTopLeft}>
@@ -2212,9 +2214,9 @@ export default function OfflineAdminClient() {
                           </span>
                         </td>
                         <td className={adminDataTable.moneyCell}>
-                          <div className="flex flex-col items-end gap-1">
-                            <span>{formatCurrency(r.payment?.amount)}</span>
-                            {r.revenueExcluded && <Badge variant="outline">오프라인 매출 제외</Badge>}
+                          <div className="flex flex-col items-end gap-1.5">
+                            <span className="whitespace-nowrap tabular-nums">{formatCurrency(r.payment?.amount)}</span>
+                            {r.revenueExcluded && <Badge variant="outline" className="whitespace-nowrap text-[11px]">오프라인 매출 제외</Badge>}
                           </div>
                         </td>
                         <td className={adminDataTable.cellCenter}>
