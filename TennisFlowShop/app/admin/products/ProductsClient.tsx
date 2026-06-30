@@ -25,7 +25,9 @@ import useSWR from "swr";
 import BrandFilter from "@/app/admin/products/product-filters/BrandFilter";
 import MaterialFilter from "@/app/admin/products/product-filters/MaterialFilter";
 import StockStatusFilter from "@/app/admin/products/product-filters/StockStatusFilter";
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -388,8 +390,7 @@ export default function ProductsClient() {
                 : "사용자 지정 조건";
 
   return (
-    <div className={["min-h-screen", "bg-muted/30"].join(" ")}>
-      <div className="container py-8 px-6">
+    <AdminPageShell variant="wide" className="space-y-6">
         {commonErrorMessage && (
           <div className="text-center text-destructive">{commonErrorMessage}</div>
         )}
@@ -401,7 +402,7 @@ export default function ProductsClient() {
           helperText="신규 등록 전 가격·배송비·재고 정보를 확인하고, 판매 중 상품은 품절/옵션 상태를 우선 점검하세요."
         />
 
-        <Card className="mb-6 border-border bg-card">
+        <Card className={adminSurface.card}>
           <CardContent className="p-4 sm:p-5">
             <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm font-medium leading-relaxed text-foreground">
@@ -473,7 +474,7 @@ export default function ProductsClient() {
         </section>
 
         {/* 빠른 보기 */}
-        <Card className={cn("mb-4", adminSurface.cardMuted)}>
+        <Card className={adminSurface.filterCard}>
           <CardContent className="flex flex-wrap items-center gap-2 p-4">
             <span className="mr-1 text-xs font-semibold text-muted-foreground">빠른 보기</span>
 
@@ -572,8 +573,8 @@ export default function ProductsClient() {
           )}
         </div>
 
-        <Card className={cn(adminSurface.tableCard, "flex-1 min-h-0 flex flex-col")}>
-          <CardHeader className="bg-muted/50 border-b border-border pb-4 shrink-0">
+        <Card className={cn(adminSurface.tableCard, "flex min-h-0 flex-1 flex-col")}>
+          <CardHeader className="shrink-0 border-b border-border bg-muted/30 pb-4">
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
                 <CardTitle className="text-xl font-semibold text-foreground">
@@ -615,7 +616,7 @@ export default function ProductsClient() {
 
           <CardContent className="flex min-h-0 flex-1 flex-col space-y-5 p-4 bp-md:space-y-6 bp-md:p-6">
             {/* 검색/필터 */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 space-y-3 md:space-y-0">
+            <div className={cn(adminSurface.filterCard, "mb-4 flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0")}>
               <div className="w-full space-y-3">
                 {/* 검색 */}
                 <div className="w-full md:max-w-md">
@@ -689,51 +690,51 @@ export default function ProductsClient() {
             <div className="flex-1">
               <div className="overflow-auto rounded-lg border border-border">
                 <Table className="min-w-[920px] table-fixed [&_tr]:border-0">
-                  <TableHeader className="sticky top-0 z-10 backdrop-blur bg-muted supports-[backdrop-filter]:bg-muted dark:bg-card dark:supports-[backdrop-filter]:bg-card border-b border-border">
-                    <TableRow className="border-b border-border">
-                      <TableHead className="w-[32%] text-left text-foreground">
+                  <TableHeader className={cn("sticky top-0 z-10", adminSurface.tableHeader)}>
+                    <TableRow className={adminDataTable.row}>
+                      <TableHead className={cn(adminDataTable.head, "w-[32%]")}>
                         {renderSortButton({
                           field: "name",
                           children: "스트링명",
                         })}
                       </TableHead>
-                      <TableHead className="w-[12%] text-center text-foreground">
+                      <TableHead className={cn(adminDataTable.headCenter, "w-[12%]")}>
                         {renderSortButton({
                           field: "brand",
                           align: "center",
                           children: "브랜드",
                         })}
                       </TableHead>
-                      <TableHead className="w-[10%] text-center text-foreground">
+                      <TableHead className={cn(adminDataTable.headCenter, "w-[10%]")}>
                         {renderSortButton({
                           field: "gauge",
                           align: "center",
                           children: "게이지",
                         })}
                       </TableHead>
-                      <TableHead className="w-[14%] text-center text-foreground">
+                      <TableHead className={cn(adminDataTable.headCenter, "w-[14%]")}>
                         {renderSortButton({
                           field: "material",
                           align: "center",
                           children: "재질",
                         })}
                       </TableHead>
-                      <TableHead className="w-[12%] text-right text-foreground">
+                      <TableHead className={cn(adminDataTable.headRight, "w-[12%]")}>
                         {renderSortButton({
                           field: "price",
                           align: "right",
                           children: "가격",
                         })}
                       </TableHead>
-                      <TableHead className="w-[10%] text-right text-foreground">
+                      <TableHead className={cn(adminDataTable.headRight, "w-[10%]")}>
                         {renderSortButton({
                           field: "stock",
                           align: "right",
                           children: "재고",
                         })}
                       </TableHead>
-                      <TableHead className="w-[10%] text-center text-foreground">상태</TableHead>
-                      <TableHead className="w-[10%] text-right text-foreground">관리</TableHead>
+                      <TableHead className={cn(adminDataTable.headCenter, "w-[10%]")}>상태</TableHead>
+                      <TableHead className={cn(adminDataTable.headRight, "w-[10%]")}>관리</TableHead>
                     </TableRow>
                   </TableHeader>
 
@@ -777,7 +778,7 @@ export default function ProductsClient() {
                             key={s._id}
                             className="h-14 border-b border-border last:border-b-0 dark:border-border hover:bg-muted dark:hover:bg-card even:bg-muted dark:even:bg-card transition-colors"
                           >
-                            <TableCell className="text-left align-middle py-3">
+                            <TableCell className={adminDataTable.cellLeft}>
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
                                   <Link
@@ -805,7 +806,7 @@ export default function ProductsClient() {
                               </div>
                             </TableCell>
 
-                            <TableCell className="text-center align-middle">
+                            <TableCell className={adminDataTable.cellCenter}>
                               <Badge
                                 variant="secondary"
                                 className="shrink-0 whitespace-nowrap rounded-full border border-border bg-muted px-2 py-0.5 text-foreground dark:border-border dark:bg-muted dark:text-foreground"
@@ -814,18 +815,18 @@ export default function ProductsClient() {
                               </Badge>
                             </TableCell>
 
-                            <TableCell className="whitespace-nowrap text-center align-middle text-foreground">
+                            <TableCell className={cn(adminDataTable.cellCenter, "whitespace-nowrap text-foreground")}>
                               {s.gauge}
                             </TableCell>
-                            <TableCell className="whitespace-nowrap text-center align-middle text-foreground">
+                            <TableCell className={cn(adminDataTable.cellCenter, "whitespace-nowrap text-foreground")}>
                               {materialLabel(s.material)}
                             </TableCell>
 
-                            <TableCell className="whitespace-nowrap text-right align-middle font-medium tabular-nums text-foreground">
+                            <TableCell className={cn(adminDataTable.moneyCell, "whitespace-nowrap font-medium text-foreground")}>
                               {s.price?.toLocaleString?.() ?? s.price}원
                             </TableCell>
 
-                            <TableCell className="text-right align-middle">
+                            <TableCell className={adminDataTable.cellNumber}>
                               {s.inventory?.stock && s.inventory.stock > 0 ? (
                                 <span className="font-medium text-foreground">
                                   {s.inventory.stock}
@@ -835,7 +836,7 @@ export default function ProductsClient() {
                               )}
                             </TableCell>
 
-                            <TableCell className="text-center align-middle">
+                            <TableCell className={adminDataTable.cellCenter}>
                               <Badge
                                 variant="secondary"
                                 className={cn(
@@ -848,7 +849,7 @@ export default function ProductsClient() {
                               </Badge>
                             </TableCell>
 
-                            <TableCell className="text-right align-middle">
+                            <TableCell className={adminDataTable.actionCell}>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button
@@ -934,7 +935,6 @@ export default function ProductsClient() {
             </div>
           </CardContent>
         </Card>
-      </div>
       <AdminConfirmDialog
         open={pendingDeleteProductId !== null}
         onOpenChange={(open) => {
@@ -955,6 +955,6 @@ export default function ProductsClient() {
         eventKey="admin-products-delete-confirm"
         eventMeta={{ productId: pendingDeleteProductId }}
       />
-    </div>
+    </AdminPageShell>
   );
 }

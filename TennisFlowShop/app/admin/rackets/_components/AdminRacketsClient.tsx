@@ -1,6 +1,8 @@
 "use client";
 
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -284,8 +286,7 @@ export default function AdminRacketsClient() {
   }, [isLoading, data, hasDataError, hasResolvedData, filteredItems.length]);
 
   return (
-    <div className={["min-h-screen", "bg-background"].join(" ")}>
-      <div className="container py-8 px-6">
+    <AdminPageShell variant="wide" className="space-y-6">
         <AdminPageHeader
           title="라켓 관리"
           description="판매·대여 라켓의 노출 상태, 가격, 재고, 대여 가능 여부, 배송비를 한 곳에서 관리합니다."
@@ -492,8 +493,8 @@ export default function AdminRacketsClient() {
             </p>
           </div>
         </div>
-        <Card className={cn(adminSurface.tableCard, "flex-1 min-h-0 flex flex-col")}>
-          <CardHeader className="bg-muted/30 border-b border-border pb-4 shrink-0">
+        <Card className={cn(adminSurface.tableCard, "flex min-h-0 flex-1 flex-col")}>
+          <CardHeader className="shrink-0 border-b border-border bg-muted/30 pb-4">
             <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <div>
                 <CardTitle className="text-xl font-semibold text-primary">라켓 찾기</CardTitle>
@@ -521,7 +522,7 @@ export default function AdminRacketsClient() {
           </CardHeader>
 
           <CardContent className="space-y-6 flex-1 min-h-0 flex flex-col p-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 space-y-3 md:space-y-0">
+            <div className={cn(adminSurface.filterCard, "mb-4 flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0")}>
               <div className="w-full space-y-3">
                 <div className="w-full max-w-md">
                   <div className="relative">
@@ -612,15 +613,15 @@ export default function AdminRacketsClient() {
               ) : (
                 <div className="overflow-auto rounded-lg border border-border">
                   <Table className="min-w-[860px]">
-                    <TableHeader className="sticky top-0 z-10 backdrop-blur bg-muted/50 supports-[backdrop-filter]:bg-muted/50 dark:bg-muted/50 dark:supports-[backdrop-filter]:bg-muted/50 border-b border-border">
-                      <TableRow className="border-b border-border">
-                        <TableHead className="text-left text-primary">라켓 정보</TableHead>
-                        <TableHead className="text-right text-primary">가격</TableHead>
-                        <TableHead className="text-center text-primary">등급</TableHead>
-                        <TableHead className="text-center text-primary">상태</TableHead>
-                        <TableHead className="text-center text-primary">대여</TableHead>
-                        <TableHead className="text-center text-primary">재고</TableHead>
-                        <TableHead className="text-right text-primary">관리</TableHead>
+                    <TableHeader className={cn("sticky top-0 z-10", adminSurface.tableHeader)}>
+                      <TableRow className={adminDataTable.row}>
+                        <TableHead className={adminDataTable.head}>라켓 정보</TableHead>
+                        <TableHead className={adminDataTable.headRight}>가격</TableHead>
+                        <TableHead className={adminDataTable.headCenter}>등급</TableHead>
+                        <TableHead className={adminDataTable.headCenter}>상태</TableHead>
+                        <TableHead className={adminDataTable.headCenter}>대여</TableHead>
+                        <TableHead className={adminDataTable.headCenter}>재고</TableHead>
+                        <TableHead className={adminDataTable.headRight}>관리</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -629,7 +630,7 @@ export default function AdminRacketsClient() {
                           key={item.id}
                           className="border-b border-border last:border-b-0 dark:border-border hover:bg-primary/10 dark:hover:bg-primary/20 even:bg-muted/30 dark:even:bg-card transition-colors"
                         >
-                          <TableCell className="py-4">
+                          <TableCell className={adminDataTable.cellLeft}>
                             <div className="flex min-w-0 items-center gap-3">
                               {item.images?.[0] && (
                                 <img
@@ -660,15 +661,15 @@ export default function AdminRacketsClient() {
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="whitespace-nowrap text-right tabular-nums">
+                          <TableCell className={cn(adminDataTable.moneyCell, "whitespace-nowrap")}>
                             <span className="font-semibold text-foreground">
                               {item.price?.toLocaleString()}원
                             </span>
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className={adminDataTable.cellCenter}>
                             <ConditionBadge condition={item.condition} />
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className={adminDataTable.cellCenter}>
                             <div className="flex flex-col items-center gap-1">
                               <StatusBadge status={item.status} />
                               {item.isVisible === false && (
@@ -686,7 +687,7 @@ export default function AdminRacketsClient() {
                               )}
                             </div>
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className={adminDataTable.cellCenter}>
                             <Badge
                               className={cn(
                                 item.rental?.enabled
@@ -698,10 +699,10 @@ export default function AdminRacketsClient() {
                               {item.rental?.enabled ? "가능" : "불가"}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className={adminDataTable.cellCenter}>
                             <StockChip id={item.id} total={item.quantity ?? 1} />
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className={adminDataTable.actionCell}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button
@@ -745,7 +746,6 @@ export default function AdminRacketsClient() {
             </div>
           </CardContent>
         </Card>
-      </div>
-    </div>
+    </AdminPageShell>
   );
 }
