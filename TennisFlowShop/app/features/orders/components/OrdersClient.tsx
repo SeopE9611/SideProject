@@ -889,17 +889,17 @@ export default function OrdersClient() {
           </div>
         </CardHeader>
         <CardContent className="relative min-h-[420px] overflow-x-auto scrollbar-hidden pr-2">
-          <Table className="min-w-[1160px] table-fixed border-separate text-ui-label [border-spacing-block:0.25rem] [border-spacing-inline:0]">
+          <Table className="min-w-[1080px] table-fixed border-separate text-ui-label [border-spacing-block:0.25rem] [border-spacing-inline:0]">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
-                <TableHead className={cn(thClasses, "w-[250px] text-left")}>주문/고객</TableHead>
-                <TableHead className={cn(thClasses, "w-[260px] text-left")}>상품/서비스</TableHead>
-                <TableHead className={cn(thClasses, "w-[260px] text-left")}>상태/다음 작업</TableHead>
+                <TableHead className={cn(thClasses, "w-[230px] text-left")}>주문/고객</TableHead>
+                <TableHead className={cn(thClasses, "w-[230px] text-left")}>상품/서비스</TableHead>
+                <TableHead className={cn(thClasses, "w-[230px] text-left")}>상태/다음 작업</TableHead>
                 <TableHead
                   onClick={() => handleSort("total")}
                   className={cn(
                     thClasses,
-                    "w-[260px] cursor-pointer select-none text-left",
+                    "w-[260px] cursor-pointer select-none text-right",
                     sortBy === "total" && "text-primary",
                   )}
                 >
@@ -911,7 +911,7 @@ export default function OrdersClient() {
                     )}
                   />
                 </TableHead>
-                <TableHead className={cn(thClasses, "w-[130px] text-center")}>액션</TableHead>
+                <TableHead className={cn(thClasses, "w-[130px] text-right")}>액션</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -1028,11 +1028,11 @@ export default function OrdersClient() {
                         : `/admin/orders/${order.id}`;
 
                     return (
-                      <TableRow key={order.id} className={adminSurface.tableRow}>
+                      <TableRow key={order.id} className={cn(adminSurface.tableRow, "align-top")}>
                         <TableCell
                           className={cn(
                             tdClasses,
-                            "pl-6 border-l-4",
+                            "py-2 pl-5 border-l-4",
                             isGrouped ? borderColor : "border-transparent",
                           )}
                         >
@@ -1262,7 +1262,7 @@ export default function OrdersClient() {
                           </TooltipProvider>
                         </TableCell>
                         {/* 상품/서비스 셀 */}
-                        <TableCell className={tdClasses}>
+                        <TableCell className={cn(tdClasses, "py-2")}>
                           <div className="min-w-0 text-left">
                             <p className="line-clamp-2 break-keep text-ui-body-sm font-medium text-foreground">
                               {productSummary.primary}
@@ -1275,7 +1275,7 @@ export default function OrdersClient() {
                           </div>
                         </TableCell>
                         {/* 상태/다음 작업 셀 */}
-                        <TableCell className={tdClasses}>
+                        <TableCell className={cn(tdClasses, "py-2")}>
                           {order.__type === "stringing_application" ? (
                             <div className="flex flex-col items-start gap-1">
                               <ApplicationStatusBadge status={order.status} />
@@ -1328,8 +1328,8 @@ export default function OrdersClient() {
                           <p className="mt-0.5 text-ui-label text-foreground/75 tabular-nums">접수 {formatDate(order.date)}</p>
                         </TableCell>
                         {/* 배송/결제 셀 */}
-                        <TableCell className={tdClasses}>
-                          <div className="flex flex-col items-start gap-1 text-left">
+                        <TableCell className={cn(tdClasses, "py-2 text-right")}>
+                          <div className="flex flex-col items-end gap-1 text-right">
                             <div className="flex flex-wrap gap-1">
                               {(() => {
                                 const methodSource =
@@ -1376,7 +1376,7 @@ export default function OrdersClient() {
                                 );
                               })()}
                             </div>
-                            <div className="mt-1 flex w-full items-baseline justify-between gap-2 tabular-nums">
+                            <div className="mt-1 flex w-full items-baseline justify-end gap-3 tabular-nums">
                               <span className="text-ui-label text-foreground/70">{order.paymentStatus}</span>
                               <span className="whitespace-nowrap text-ui-body-sm font-medium text-foreground">
                                 {formatCurrency(order.total)}
@@ -1385,9 +1385,9 @@ export default function OrdersClient() {
                           </div>
                         </TableCell>
                         {/* 작업 메뉴 셀 */}
-                        <TableCell className={tdClasses}>
-                          <div className="flex items-center justify-center gap-1">
-                            <Button asChild size="sm" variant="outline" className="h-8 whitespace-nowrap px-2.5 text-ui-label">
+                        <TableCell className={cn(tdClasses, "py-2")}>
+                          <div className="flex items-center justify-end gap-1">
+                            <Button asChild size="sm" variant="ghost" className="h-8 whitespace-nowrap border border-border/60 px-2.5 text-ui-label font-medium">
                               <Link
                                 href={detailHref}
                                 onClick={() => {
