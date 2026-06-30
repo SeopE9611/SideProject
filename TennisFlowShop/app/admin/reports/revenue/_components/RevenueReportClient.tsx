@@ -1023,6 +1023,8 @@ export default function RevenueReportClient() {
                     <tr className="text-left text-muted-foreground">
                       <th className="py-2 pr-4 font-medium">날짜</th>
                       <th className="py-2 pr-4 font-medium">온라인 매출</th>
+                      <th className="py-2 pr-4 font-medium">온라인 환불</th>
+                      <th className="py-2 pr-4 font-medium">온라인 순매출</th>
                       <th className="py-2 pr-4 font-medium">오프라인 매출</th>
                       <th className="py-2 pr-4 font-medium">참고 합계</th>
                     </tr>
@@ -1030,7 +1032,7 @@ export default function RevenueReportClient() {
                   <tbody className="divide-y divide-border">
                     {report.series.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="py-6 text-center text-muted-foreground">
+                        <td colSpan={6} className="py-6 text-center text-muted-foreground">
                           조회 기간의 매출 데이터가 없습니다.
                         </td>
                       </tr>
@@ -1040,6 +1042,12 @@ export default function RevenueReportClient() {
                           <td className="py-2 pr-4 font-medium">{point.date}</td>
                           <td className="py-2 pr-4 tabular-nums">
                             {formatKRW(point.onlinePaidAmount)}
+                          </td>
+                          <td className="py-2 pr-4 tabular-nums text-destructive">
+                            {formatKRW(point.onlineRefundAmount)}
+                          </td>
+                          <td className="py-2 pr-4 tabular-nums">
+                            {formatKRW(point.onlineNetAmount ?? point.onlinePaidAmount)}
                           </td>
                           <td className="py-2 pr-4 tabular-nums">
                             {formatKRW(point.offlinePaidAmount)}

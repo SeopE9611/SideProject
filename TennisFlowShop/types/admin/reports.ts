@@ -46,6 +46,10 @@ export type RevenueReportCombinedPreview = {
 export type RevenueReportSeriesPoint = {
   date: string;
   onlinePaidAmount: number;
+  /** 개인결제 취소 이벤트를 canceledAt 기준 bucket에 반영한 온라인 환불액입니다. */
+  onlineRefundAmount?: number;
+  /** onlinePaidAmount - onlineRefundAmount 기준 온라인 순매출입니다. */
+  onlineNetAmount?: number;
   offlinePaidAmount: number;
   combinedPaidAmount: number;
 };
