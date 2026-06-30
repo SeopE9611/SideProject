@@ -3,6 +3,7 @@ import { formatOrderPickupLabel, formatWon, maskPhone, previewText, truthyField 
 import { appendAudit } from "@/lib/audit";
 import { verifyAccessToken } from "@/lib/auth.utils";
 import { RefundAccountSchema } from "@/lib/cancel-request/refund-account";
+import { isUserCancelableOrderStatus } from "@/lib/orders/cancel-refund-policy";
 import clientPromise from "@/lib/mongodb";
 import {
   buildCancelRefundSubject,
@@ -99,6 +100,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     // 비즈니스 룰 체크
+
+    if (!isAdmin && !isUserCancelableOrderStatus(existing.status)) {
+      return new NextResponse("취소 요청은 대기중 또는 결제완료 상태에서만 가능합니다.", {
+        status: 400,
+      });
+    }
 
     // 이미 취소된 주문이면 추가 요청 불가
     if (existing.status === "취소" || existing.status === "환불") {

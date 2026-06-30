@@ -75,6 +75,7 @@ import {
 import {
   getAdminCancelPolicyMessage,
   isAdminCancelableOrderStatus,
+  isAdminForceCancelRequired,
 } from "@/lib/orders/cancel-refund-policy";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -502,9 +503,11 @@ export default function OrderDetailClient({ orderId }: Props) {
   );
   const isCancelRequested = cancelStatus === "requested";
 
-  const isCanceled = ["취소", "결제취소", "환불"].includes(localStatus);
+  const isCanceled = ["취소", "결제취소", "환불", "취소완료", "취소승인", "환불완료"].includes(localStatus);
+  const adminCancelHasTrackingNumber = Boolean(orderDetail?.shippingInfo?.invoice?.trackingNumber);
   const isCancelableByPolicy = isAdminCancelableOrderStatus(localStatus);
-  const cancelPolicyMessage = getAdminCancelPolicyMessage(localStatus);
+  const isForceCancelRequired = isAdminForceCancelRequired(localStatus, adminCancelHasTrackingNumber);
+  const cancelPolicyMessage = getAdminCancelPolicyMessage(localStatus, adminCancelHasTrackingNumber);
 
   // 상단 운영 콘솔 배지 공통 클래스
   const summaryBadgeClass = cn(
@@ -841,6 +844,7 @@ export default function OrderDetailClient({ orderId }: Props) {
           // 고객이 요청할 때 저장된 reasonCode / reasonText 를 그대로 넘겨줌
           reasonCode: existingReq.reasonCode,
           reasonText: existingReq.reasonText,
+          force: isForceCancelRequired ? true : undefined,
         }),
       });
 
@@ -1608,6 +1612,8 @@ export default function OrderDetailClient({ orderId }: Props) {
                           onCancelSuccess={handleCancelSuccess}
                           key={"cancel-" + allHistory.length}
                           disabled={!isCancelableByPolicy}
+                          status={localStatus}
+                          hasTrackingNumber={adminCancelHasTrackingNumber}
                         />
                       )}
                     </div>
@@ -1617,7 +1623,11 @@ export default function OrderDetailClient({ orderId }: Props) {
                 <AdminConfirmDialog
                   open={confirmAction === "approveCancel"}
                   title="취소 요청을 승인할까요?"
-                  description="고객의 주문 취소 요청을 승인합니다.\n결제 수단에 따라 PG 취소 또는 환불 처리가 함께 진행될 수 있습니다.\n처리 후 주문/결제 상태가 변경되므로 환불 계좌와 결제 상태를 먼저 확인해주세요."
+                  description={
+                    isForceCancelRequired
+                      ? "이 주문은 일반 사용자 취소가 불가능한 상태입니다. 관리자는 운영상 강제 취소할 수 있지만, 결제취소, 포인트 회수/복구, 재고 복구, 연결된 교체서비스 취소가 함께 처리될 수 있습니다. 실제 상품 회수 여부와 CS 상황을 확인한 뒤 진행하세요."
+                      : "고객의 주문 취소 요청을 승인합니다.\n결제 수단에 따라 PG 취소 또는 환불 처리가 함께 진행될 수 있습니다.\n처리 후 주문/결제 상태가 변경되므로 환불 계좌와 결제 상태를 먼저 확인해주세요."
+                  }
                   severity="danger"
                   confirmText="취소 승인"
                   onOpenChange={(open) => {

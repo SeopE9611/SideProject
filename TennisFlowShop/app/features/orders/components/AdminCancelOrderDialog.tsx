@@ -24,38 +24,39 @@ import { mutate } from "swr";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { XCircle } from "lucide-react";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
+import {
+  getAdminCancelPolicyMessage,
+  isAdminForceCancelRequired,
+} from "@/lib/orders/cancel-refund-policy";
 
 const CANCEL_REASONS = ["상품 품절", "고객 요청", "배송 지연", "결제 오류", "기타"];
 
 interface Props {
   orderId: string;
   disabled?: boolean;
+  status?: string | null;
+  hasTrackingNumber?: boolean;
   /**
    * 취소가 성공했을 때 호출할 콜백
    * (OrderDetailClient로부터 내려받은 mutateOrder/ mutateHistory를 쓸 수도 있지만,
    * 여기서는 전역 mutate(...) 방식을 사용)
    */
-  onCancelSuccess?: () => Promise<void>;
+  onCancelSuccess?: (reason: string, detail?: string) => Promise<void>;
 }
 
 export default function AdminCancelOrderDialog({
   orderId,
   disabled,
+  status,
+  hasTrackingNumber = false,
   onCancelSuccess,
-}: {
-  orderId: string;
-  disabled?: boolean;
-  /**
-   * 취소했을 때 호출될 콜백:
-   *   reason: 사용자가 선택한 사유
-   *   detail?: 선택 사유이 '기타'일 때 추가 입력
-   */
-  onCancelSuccess?: (reason: string, detail?: string) => Promise<void>;
-}) {
+}: Props) {
   const [open, setOpen] = useState(false);
   const [selectedReason, setSelectedReason] = useState<string>("");
   const [detail, setDetail] = useState("");
   const [loading, setLoading] = useState(false);
+  const forceRequired = isAdminForceCancelRequired(status, hasTrackingNumber);
+  const policyMessage = getAdminCancelPolicyMessage(status, hasTrackingNumber);
 
   /**
    * 취소 다이얼로그 입력 이탈 방지
@@ -82,6 +83,7 @@ export default function AdminCancelOrderDialog({
           reasonCode: selectedReason,
           // 기타 선택 시만 상세 사유 전달
           reasonText: selectedReason === "기타" ? detail : undefined,
+          force: forceRequired ? true : undefined,
         }),
       });
 
@@ -128,15 +130,31 @@ export default function AdminCancelOrderDialog({
       <DialogTrigger asChild>
         <Button variant="destructive" disabled={disabled || loading} size="sm">
           <XCircle className="mr-2 h-4 w-4" />
-          주문 취소
+          {forceRequired ? "강제 취소" : "주문 취소"}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>주문 취소</DialogTitle>
+          <DialogTitle>{forceRequired ? "관리자 강제 취소" : "주문 취소"}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-2 py-4">
+          {forceRequired ? (
+            <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-ui-body-sm text-destructive">
+              <p className="font-semibold">관리자 강제 취소 확인</p>
+              <p className="mt-1">
+                이 주문은 일반 사용자 취소가 불가능한 상태입니다. 관리자는 운영상 강제
+                취소할 수 있지만, 결제취소, 포인트 회수/복구, 재고 복구, 연결된
+                교체서비스 취소가 함께 처리될 수 있습니다. 실제 상품 회수 여부와 CS
+                상황을 확인한 뒤 진행하세요.
+              </p>
+              <p className="mt-1">{policyMessage}</p>
+            </div>
+          ) : (
+            <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-ui-body-sm text-foreground/80">
+              {policyMessage}
+            </div>
+          )}
           <Label>취소 사유</Label>
           <Select onValueChange={setSelectedReason} value={selectedReason}>
             <SelectTrigger>

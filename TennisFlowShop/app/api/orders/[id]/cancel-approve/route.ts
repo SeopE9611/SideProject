@@ -10,6 +10,7 @@ import { deductPoints, grantPoints } from "@/lib/points.service";
 import {
   getAdminCancelPolicyMessage,
   isAdminCancelableOrderStatus,
+  isAdminForceCancelRequired,
 } from "@/lib/orders/cancel-refund-policy";
 import { cancelNicePaymentByTid } from "@/lib/payments/nice/server";
 import {
@@ -462,26 +463,25 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       });
     }
 
-    // ───────────────── 배송 전인지 재확인 (A 규칙) ─────────────────
-    if (!isAdminCancelableOrderStatus(existing.status)) {
-      return new NextResponse(getAdminCancelPolicyMessage(existing.status), {
-        status: 400,
-      });
-    }
-
     const hasTrackingNumber =
       existing.shippingInfo?.invoice?.trackingNumber &&
       typeof existing.shippingInfo.invoice.trackingNumber === "string" &&
       existing.shippingInfo.invoice.trackingNumber.trim().length > 0;
 
-    if (hasTrackingNumber) {
-      return new NextResponse("이미 배송이 진행 중이어서 취소 승인을 할 수 없습니다.", {
+    // ───────────────── 요청 바디에서 사유/강제 취소 확인 받기 ─────────────────
+    const body = await req.json().catch(() => ({}));
+
+    if (!isAdminCancelableOrderStatus(existing.status)) {
+      return new NextResponse(getAdminCancelPolicyMessage(existing.status, Boolean(hasTrackingNumber)), {
         status: 400,
       });
     }
 
-    // ───────────────── 요청 바디에서 사유 받기 ─────────────────
-    const body = await req.json().catch(() => ({}));
+    if (isAdminForceCancelRequired(existing.status, Boolean(hasTrackingNumber)) && body.force !== true) {
+      return new NextResponse("관리자 강제 취소 확인이 필요합니다.", {
+        status: 409,
+      });
+    }
     const inputReasonCode =
       typeof body.reasonCode === "string" ? body.reasonCode.trim() : undefined;
     const inputReasonText =
