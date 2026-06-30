@@ -1,9 +1,9 @@
 "use client";
 
 import AdminCompactField from "@/components/admin/AdminCompactField";
-import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
@@ -388,7 +388,8 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
   const packageGuide = isCancelled
     ? {
         title: "취소된 패키지입니다",
-        description: "결제취소 또는 패키지권 취소 상태이므로 연장/횟수 조절 작업을 진행하지 않습니다.",
+        description:
+          "결제취소 또는 패키지권 취소 상태이므로 연장/횟수 조절 작업을 진행하지 않습니다.",
         toneClass: "border-destructive/30 bg-destructive/10 text-destructive",
       }
     : !isPaid
@@ -514,674 +515,672 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
   return (
     <AdminPageShell>
-        {isLoading ? (
-          <div className="mb-4 rounded-lg border border-border bg-muted/20 px-4 py-2 text-sm text-muted-foreground">
-            최신 상태를 확인하고 있습니다...
-          </div>
-        ) : null}
-        {/* 헤더 카드 */}
-        <div className={cn("mb-8 p-6 md:p-8", adminSurface.card)}>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className="rounded-xl p-3 bg-card">
-                <PackageIcon className="h-7 w-7 text-foreground" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-semibold tracking-normal text-foreground lg:text-3xl">
-                  패키지 상세 관리
-                </h1>
-                <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-foreground/75">
-                  <span className="font-mono">
-                    패키지 ID: {data.id.slice(0, 8)}…{data.id.slice(-6)}
-                  </span>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 px-2 text-xs"
-                    onClick={() => {
-                      navigator.clipboard.writeText(data.id);
-                      showSuccessToast("패키지 ID가 복사되었습니다.");
-                    }}
-                  >
-                    <Copy className="mr-1 h-3.5 w-3.5" />
-                    복사
-                  </Button>
-                </div>
-              </div>
+      {isLoading ? (
+        <div className="mb-4 rounded-lg border border-border bg-muted/20 px-4 py-2 text-sm text-muted-foreground">
+          최신 상태를 확인하고 있습니다...
+        </div>
+      ) : null}
+      {/* 헤더 카드 */}
+      <div className={cn("mb-8 p-6 md:p-8", adminSurface.card)}>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div className="rounded-xl p-3 bg-card">
+              <PackageIcon className="h-7 w-7 text-foreground" />
             </div>
-            <div className="flex gap-2">
-              <Button asChild variant="outline" className="border-border">
-                <Link href="/admin/packages" data-no-unsaved-guard onClick={onLeaveListClick}>
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  목록으로
-                </Link>
-              </Button>
-              <Button
-                variant={isEditMode ? "destructive" : "outline"}
-                onClick={() => setIsEditMode((v) => !v)}
-                className={isEditMode ? "" : "border-border"}
-              >
-                <Edit3 className="mr-1 h-4 w-4" />
-                {isEditMode ? "편집 취소" : "편집 모드"}
-              </Button>
+            <div>
+              <h1 className="text-2xl font-semibold tracking-normal text-foreground lg:text-3xl">
+                패키지 상세 관리
+              </h1>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-foreground/75">
+                <span className="font-mono">
+                  패키지 ID: {data.id.slice(0, 8)}…{data.id.slice(-6)}
+                </span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => {
+                    navigator.clipboard.writeText(data.id);
+                    showSuccessToast("패키지 ID가 복사되었습니다.");
+                  }}
+                >
+                  <Copy className="mr-1 h-3.5 w-3.5" />
+                  복사
+                </Button>
+              </div>
             </div>
           </div>
-
-          {/* 요약 KPI */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 md:gap-6">
-            <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
-              <div className="flex items-center gap-2 mb-1.5">
-                <PackageIcon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">패키지 유형</span>
-              </div>
-              <p className="text-lg font-medium">{data.packageType}</p>
-            </div>
-
-            <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
-              <div className="flex items-center gap-2 mb-1.5">
-                <Target className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">남은 횟수</span>
-              </div>
-              <p className="text-lg font-semibold text-primary">{data.remainingSessions}회</p>
-            </div>
-
-            <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
-              <div className="flex items-center gap-2 mb-1.5">
-                <CreditCard className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">결제 금액</span>
-              </div>
-              <p className="text-lg font-medium">
-                {new Intl.NumberFormat("ko-KR", {
-                  style: "currency",
-                  currency: "KRW",
-                }).format(data.price)}
-              </p>
-            </div>
-
-            <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
-              <div className="flex items-center gap-2 mb-1.5">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">만료일</span>
-              </div>
-              <p className="text-lg font-medium">{fmtKDate(expiry)}</p>
-            </div>
-            <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
-              <div className="flex items-center gap-2 mb-1.5">
-                <CreditCard className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">결제 상태</span>
-              </div>
-              <Badge variant={getPaymentStatusBadgeSpec(data.paymentStatus ?? "결제대기").variant}>
-                {data.paymentStatus ?? "결제대기"}
-              </Badge>
-            </div>
+          <div className="flex gap-2">
+            <Button asChild variant="outline" className="border-border">
+              <Link href="/admin/packages" data-no-unsaved-guard onClick={onLeaveListClick}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                목록으로
+              </Link>
+            </Button>
+            <Button
+              variant={isEditMode ? "destructive" : "outline"}
+              onClick={() => setIsEditMode((v) => !v)}
+              className={isEditMode ? "" : "border-border"}
+            >
+              <Edit3 className="mr-1 h-4 w-4" />
+              {isEditMode ? "편집 취소" : "편집 모드"}
+            </Button>
           </div>
         </div>
 
-        <AdminDetailSectionNav
-          className="mb-4"
-          items={[
-            { href: "#admin-package-payment", label: "결제/상태" },
-            { href: "#admin-package-customer", label: "고객정보" },
-            { href: "#admin-package-usage-history", label: "사용 이력" },
-            { href: "#admin-package-operation-history", label: "운영 내역" },
-          ]}
-        />
+        {/* 요약 KPI */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 md:gap-6">
+          <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
+            <div className="flex items-center gap-2 mb-1.5">
+              <PackageIcon className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">패키지 유형</span>
+            </div>
+            <p className="text-lg font-medium">{data.packageType}</p>
+          </div>
 
-        <Card className={cn("mb-6", packageGuide.toneClass)}>
-          <CardContent className="p-4">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="text-sm font-semibold">{packageGuide.title}</p>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  {packageGuide.description}
-                </p>
-              </div>
+          <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Target className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">남은 횟수</span>
+            </div>
+            <p className="text-lg font-semibold text-primary">{data.remainingSessions}회</p>
+          </div>
 
-              <div className="flex flex-wrap gap-2">
-                <Button asChild size="sm" variant="outline">
-                  <a href="#admin-package-usage-history">사용 이력 확인</a>
-                </Button>
-                <Button asChild size="sm" variant="outline">
-                  <a href="#admin-package-payment">상태/결제 확인</a>
-                </Button>
-                <Button asChild size="sm" variant="outline">
-                  <a href="#admin-package-operation-history">운영 내역 확인</a>
-                </Button>
-              </div>
+          <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
+            <div className="flex items-center gap-2 mb-1.5">
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">결제 금액</span>
+            </div>
+            <p className="text-lg font-medium">
+              {new Intl.NumberFormat("ko-KR", {
+                style: "currency",
+                currency: "KRW",
+              }).format(data.price)}
+            </p>
+          </div>
+
+          <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">만료일</span>
+            </div>
+            <p className="text-lg font-medium">{fmtKDate(expiry)}</p>
+          </div>
+          <div className="rounded-xl p-4 border bg-card border-border dark:bg-card dark:border-border">
+            <div className="flex items-center gap-2 mb-1.5">
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">결제 상태</span>
+            </div>
+            <Badge variant={getPaymentStatusBadgeSpec(data.paymentStatus ?? "결제대기").variant}>
+              {data.paymentStatus ?? "결제대기"}
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      <AdminDetailSectionNav
+        className="mb-4"
+        items={[
+          { href: "#admin-package-customer", label: "고객정보" },
+          { href: "#admin-package-payment", label: "결제/상태" },
+          { href: "#admin-package-usage-history", label: "사용 이력" },
+          { href: "#admin-package-operation-history", label: "운영 내역" },
+        ]}
+      />
+
+      <Card className={cn("mb-6", packageGuide.toneClass)}>
+        <CardContent className="p-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-sm font-semibold">{packageGuide.title}</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                {packageGuide.description}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" variant="outline">
+                <a href="#admin-package-usage-history">사용 이력 확인</a>
+              </Button>
+              <Button asChild size="sm" variant="outline">
+                <a href="#admin-package-payment">상태/결제 확인</a>
+              </Button>
+              <Button asChild size="sm" variant="outline">
+                <a href="#admin-package-operation-history">운영 내역 확인</a>
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* 고객 정보 */}
+        <Card id="admin-package-customer" className={cn(adminSurface.card, "overflow-hidden")}>
+          <CardHeader className="border-b border-border/60 bg-background/70">
+            <CardTitle className={cn("flex items-center gap-2", adminTypography.sectionTitle)}>
+              <User className="h-5 w-5 text-foreground" />
+              고객 정보
+            </CardTitle>
+            <CardDescription>구매자 연락처와 서비스 유형을 분리해 확인합니다.</CardDescription>
+          </CardHeader>
+          <CardContent className="p-5 sm:p-6">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <AdminCompactField
+                label={
+                  <span className="inline-flex items-center gap-1.5">
+                    <User className="h-4 w-4" />
+                    이름
+                  </span>
+                }
+                value={data.customer.name}
+                emptyValue="이름 없음"
+              />
+              <AdminCompactField
+                label={
+                  <span className="inline-flex items-center gap-1.5">
+                    <Mail className="h-4 w-4" />
+                    이메일
+                  </span>
+                }
+                value={data.customer.email}
+                valueClassName="break-all"
+              />
+              <AdminCompactField
+                label={
+                  <span className="inline-flex items-center gap-1.5">
+                    <Phone className="h-4 w-4" />
+                    전화번호
+                  </span>
+                }
+                value={data.customer.phone}
+              />
+              <AdminCompactField
+                label={
+                  <span className="inline-flex items-center gap-1.5">
+                    <MapPin className="h-4 w-4" />
+                    서비스 유형
+                  </span>
+                }
+                value={data.serviceType}
+              />
             </div>
           </CardContent>
         </Card>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* 고객 정보 */}
-          <Card id="admin-package-customer" className={cn(adminSurface.card, "overflow-hidden")}>
-            <CardHeader className="border-b border-border/60 bg-background/70">
-              <CardTitle className={cn("flex items-center gap-2", adminTypography.sectionTitle)}>
-                <User className="h-5 w-5 text-foreground" />
-                고객 정보
-              </CardTitle>
-              <CardDescription>구매자 연락처와 서비스 유형을 분리해 확인합니다.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-5 sm:p-6">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <AdminCompactField
-                  label={
-                    <span className="inline-flex items-center gap-1.5">
-                      <User className="h-4 w-4" />
-                      이름
-                    </span>
-                  }
-                  value={data.customer.name}
-                  emptyValue="이름 없음"
-                />
-                <AdminCompactField
-                  label={
-                    <span className="inline-flex items-center gap-1.5">
-                      <Mail className="h-4 w-4" />
-                      이메일
-                    </span>
-                  }
-                  value={data.customer.email}
-                  valueClassName="break-all"
-                />
-                <AdminCompactField
-                  label={
-                    <span className="inline-flex items-center gap-1.5">
-                      <Phone className="h-4 w-4" />
-                      전화번호
-                    </span>
-                  }
-                  value={data.customer.phone}
-                />
-                <AdminCompactField
-                  label={
-                    <span className="inline-flex items-center gap-1.5">
-                      <MapPin className="h-4 w-4" />
-                      서비스 유형
-                    </span>
-                  }
-                  value={data.serviceType}
+        {/* 패키지 상태 */}
+        <Card id="admin-package-payment" className={adminSurface.card}>
+          <CardHeader className="border-b border-border/60 bg-background/70">
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <PackageIcon className="h-5 w-5 text-primary" />
+                패키지 상태
+              </span>
+              {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-3">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-card">
+              <span className="text-sm text-muted-foreground">패키지권 상태</span>
+              <Badge variant="outline">{data.passStatus}</Badge>
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-lg bg-card">
+              <span className="text-sm text-muted-foreground">현재 상태</span>
+              <PackageCurrentStatusSelect
+                orderId={packageId}
+                passStatus={data.passStatus}
+                paymentStatus={data.paymentStatus ?? "결제대기"}
+                onUpdated={() => mutate()}
+              />
+            </div>
+
+            <div className="p-3 rounded-lg bg-card space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">결제 상태</span>
+                <Badge
+                  variant={getPaymentStatusBadgeSpec(data.paymentStatus ?? "결제대기").variant}
+                >
+                  {data.paymentStatus ?? "결제대기"}
+                </Badge>
+              </div>
+              {isNicePayment && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNiceSync}
+                  disabled={isSyncingNice}
+                >
+                  {isSyncingNice ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      PG 상태 동기화 중...
+                    </>
+                  ) : (
+                    "PG 상태 다시 확인"
+                  )}
+                </Button>
+              )}
+            </div>
+
+            <div className="p-3 rounded-lg bg-card">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm text-muted-foreground">이용 진행률</span>
+                <span className="text-sm font-medium">{progressPercentage}%</span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-muted dark:bg-card">
+                <div
+                  className="h-2 rounded-full bg-primary transition-all"
+                  style={{ width: `${progressPercentage}%` }}
                 />
               </div>
-            </CardContent>
-          </Card>
+              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                <span>사용: {data.usedSessions}회</span>
+                <span>남은: {data.remainingSessions}회</span>
+              </div>
+            </div>
 
-          {/* 패키지 상태 */}
-          <Card id="admin-package-payment" className={adminSurface.card}>
-            <CardHeader className="border-b border-border/60 bg-background/70">
-              <CardTitle className="flex items-center justify-between">
-                <span className="flex items-center gap-2">
-                  <PackageIcon className="h-5 w-5 text-primary" />
-                  패키지 상태
+            <div className="p-3 rounded-lg bg-card">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">만료까지</span>
+                <span
+                  className={cn(
+                    "text-sm font-medium",
+                    expired
+                      ? "text-muted-foreground"
+                      : daysLeft <= 7
+                        ? "text-destructive"
+                        : daysLeft <= 30
+                          ? "text-primary"
+                          : "text-primary",
+                  )}
+                >
+                  {expired ? "만료됨" : `${daysLeft}일 남음`}
                 </span>
-                {isEditMode && <Edit3 className="h-4 w-4 text-muted-foreground" />}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-card">
-                <span className="text-sm text-muted-foreground">패키지권 상태</span>
-                <Badge variant="outline">{data.passStatus}</Badge>
               </div>
+            </div>
 
-              <div className="flex items-center justify-between p-3 rounded-lg bg-card">
-                <span className="text-sm text-muted-foreground">현재 상태</span>
-                <PackageCurrentStatusSelect
-                  orderId={packageId}
-                  passStatus={data.passStatus}
-                  paymentStatus={data.paymentStatus ?? "결제대기"}
-                  onUpdated={() => mutate()}
-                />
-              </div>
+            {!isPaid && data.paymentStatus !== "결제취소" && (
+              <p className="text-xs text-primary">
+                결제대기 상태에서는 연장/횟수 조절을 할 수 없습니다.
+              </p>
+            )}
+            {isCancelled && (
+              <p className="text-xs text-destructive">
+                결제취소 상태이므로 모든 작업이 비활성화되었습니다.
+              </p>
+            )}
+            {isExpired && isPaid && !isCancelled && (
+              <p className="text-xs text-muted-foreground">만료된 패키지권은 연장만 가능합니다.</p>
+            )}
+            <div className="rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-xs text-muted-foreground">
+              <span className="text-foreground">작업 가능 여부</span>
+              <span className="ml-2">
+                연장 {canExtendPackage ? "가능" : "불가"} · 횟수 조절{" "}
+                {canAdjustSessions ? "가능" : "불가"} · 총 {totalSessions}회
+              </span>
+            </div>
+          </CardContent>
 
-              <div className="p-3 rounded-lg bg-card space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">결제 상태</span>
-                  <Badge
-                    variant={getPaymentStatusBadgeSpec(data.paymentStatus ?? "결제대기").variant}
+          {isEditMode && (
+            <CardFooter className="flex justify-center gap-2 bg-card">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!isPaid || isCancelled}
+                onClick={() => setShowExtensionForm(true)}
+                className="border-border hover:bg-primary/10 dark:hover:bg-primary/20"
+              >
+                <RotateCcw className="mr-1 h-4 w-4" />
+                패키지 연장
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!isPaid || isCancelled || isExpired}
+                onClick={() => setEditingSessions(true)}
+                className="border-border hover:bg-muted dark:hover:bg-muted"
+              >
+                <Target className="mr-1 h-4 w-4" />
+                횟수 조절
+              </Button>
+            </CardFooter>
+          )}
+        </Card>
+
+        <Card
+          id="admin-package-usage-history"
+          className={cn(
+            "border-border bg-card dark:bg-card dark:border-border md:col-span-2",
+            adminSurface.tableCard,
+          )}
+        >
+          <CardHeader className="border-b border-border/60 bg-background/70">
+            <CardTitle className="flex items-center gap-2">
+              <History className="h-5 w-5 text-primary" />
+              잔여 횟수/만료/사용 이력
+            </CardTitle>
+            <CardDescription>
+              패키지 횟수가 차감된 신청서 목록과 현재 사용 흐름을 먼저 확인하세요.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-5">
+            {usageHistory.length === 0 && !usageLoading ? (
+              <AdminInlineEmpty>사용 내역이 없습니다.</AdminInlineEmpty>
+            ) : (
+              <div className="space-y-4">
+                {usageHistory.map((u) => (
+                  <div
+                    key={u.id}
+                    className="border rounded-lg p-4 transition-colors border-border bg-card hover:bg-background dark:border-border dark:bg-card dark:hover:bg-card"
                   >
-                    {data.paymentStatus ?? "결제대기"}
-                  </Badge>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge
+                            variant={getMerchandisingBadgeSpec("discount").variant}
+                            className="text-xs"
+                          >
+                            -{u.sessionsUsed}회 차감
+                          </Badge>
+                        </div>
+                        <p className="font-medium mb-1">{u.summary}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {u.applicationSummary || `신청서 #${u.applicationId.slice(-6)}`}
+                        </p>
+                        {u.adminNote && (
+                          <p className="text-sm text-foreground mt-1">관리자 메모: {u.adminNote}</p>
+                        )}
+                      </div>
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link
+                          href={`/admin/applications/stringing/${u.applicationId}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          상세 보기
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                <div className="pt-2 flex justify-center">
+                  {usageHasMore ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => void loadUsageHistory(true)}
+                      disabled={usageLoading}
+                    >
+                      {usageLoading ? (
+                        <>
+                          <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                          불러오는 중
+                        </>
+                      ) : (
+                        "더보기"
+                      )}
+                    </Button>
+                  ) : null}
                 </div>
-                {isNicePayment && (
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 운영 내역 */}
+        <Card
+          id="admin-package-operation-history"
+          className={cn("md:col-span-2", adminSurface.tableCard)}
+        >
+          <CardHeader className="border-b border-border/60 bg-background/70">
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-foreground" />
+              운영 내역 (연장/횟수)
+            </CardTitle>
+            <CardDescription>패키지 연장 및 횟수 조절 기록입니다.</CardDescription>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-5">
+            <span className="text-xs text-muted-foreground">
+              총 {operationsHistorySorted.length}건 (현재 {visibleOps.length}건 표시)
+            </span>
+
+            {operationsHistorySorted.length === 0 ? (
+              <AdminInlineEmpty className="mt-3">운영 내역이 없습니다.</AdminInlineEmpty>
+            ) : (
+              <>
+                <ExtensionHistoryList items={visibleOps} />
+                <div className="pt-4 flex justify-center items-center gap-2">
+                  {opsHasMore ? (
+                    <Button variant="outline" size="sm" onClick={() => setOpsLimit((n) => n + 5)}>
+                      더 보기
+                    </Button>
+                  ) : operationsHistorySorted.length > 5 ? (
+                    <>
+                      <p className="text-xs text-muted-foreground">마지막 페이지입니다.</p>
+                      <Button variant="ghost" size="sm" onClick={() => setOpsLimit(5)}>
+                        접기
+                      </Button>
+                    </>
+                  ) : null}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 연장 모달 */}
+      {showExtensionForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/50">
+          <Card className="w-full max-w-md mx-4 border-border dark:bg-card">
+            <CardHeader>
+              <CardTitle>패키지 연장</CardTitle>
+              <CardDescription>
+                고객의 이용 가능 기간이 변경됩니다. 연장 일수와 사유를 확인한 뒤 진행해주세요.
+              </CardDescription>
+            </CardHeader>
+            <CardContent
+              className={cn("space-y-4", isSavingExtend && "opacity-70 pointer-events-none")}
+            >
+              <div>
+                <Label htmlFor="days">연장 일수</Label>
+                <div className="mt-2 text-sm">
+                  <span className="text-muted-foreground">현재 만료일:</span>{" "}
+                  <span>{fmtDate(currentExpiryDate)}</span>
+                  {previewExpiryDate && (
+                    <>
+                      <ChevronRight className="inline h-4 w-4 mx-1 text-muted-foreground" />
+                      <span className="font-medium text-primary">{fmtDate(previewExpiryDate)}</span>
+                    </>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleNiceSync}
-                    disabled={isSyncingNice}
-                  >
-                    {isSyncingNice ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        PG 상태 동기화 중...
-                      </>
-                    ) : (
-                      "PG 상태 다시 확인"
-                    )}
-                  </Button>
-                )}
-              </div>
-
-              <div className="p-3 rounded-lg bg-card">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-muted-foreground">이용 진행률</span>
-                  <span className="text-sm font-medium">{progressPercentage}%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-muted dark:bg-card">
-                  <div
-                    className="h-2 rounded-full bg-primary transition-all"
-                    style={{ width: `${progressPercentage}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <span>사용: {data.usedSessions}회</span>
-                  <span>남은: {data.remainingSessions}회</span>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-lg bg-card">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">만료까지</span>
-                  <span
-                    className={cn(
-                      "text-sm font-medium",
-                      expired
-                        ? "text-muted-foreground"
-                        : daysLeft <= 7
-                          ? "text-destructive"
-                          : daysLeft <= 30
-                            ? "text-primary"
-                            : "text-primary",
-                    )}
-                  >
-                    {expired ? "만료됨" : `${daysLeft}일 남음`}
-                  </span>
-                </div>
-              </div>
-
-              {!isPaid && data.paymentStatus !== "결제취소" && (
-                <p className="text-xs text-primary">
-                  결제대기 상태에서는 연장/횟수 조절을 할 수 없습니다.
-                </p>
-              )}
-              {isCancelled && (
-                <p className="text-xs text-destructive">
-                  결제취소 상태이므로 모든 작업이 비활성화되었습니다.
-                </p>
-              )}
-              {isExpired && isPaid && !isCancelled && (
-                <p className="text-xs text-muted-foreground">만료된 패키지권은 연장만 가능합니다.</p>
-              )}
-              <div className="rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-xs text-muted-foreground">
-                <span className="text-foreground">작업 가능 여부</span>
-                <span className="ml-2">
-                  연장 {canExtendPackage ? "가능" : "불가"} · 횟수 조절 {canAdjustSessions ? "가능" : "불가"} ·
-                  총 {totalSessions}회
-                </span>
-              </div>
-            </CardContent>
-
-            {isEditMode && (
-              <CardFooter className="flex justify-center gap-2 bg-card">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={!isPaid || isCancelled}
-                  onClick={() => setShowExtensionForm(true)}
-                  className="border-border hover:bg-primary/10 dark:hover:bg-primary/20"
-                >
-                  <RotateCcw className="mr-1 h-4 w-4" />
-                  패키지 연장
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={!isPaid || isCancelled || isExpired}
-                  onClick={() => setEditingSessions(true)}
-                  className="border-border hover:bg-muted dark:hover:bg-muted"
-                >
-                  <Target className="mr-1 h-4 w-4" />
-                  횟수 조절
-                </Button>
-              </CardFooter>
-            )}
-          </Card>
-
-            <Card
-              id="admin-package-usage-history"
-              className={cn(
-                "border-border bg-card dark:bg-card dark:border-border md:col-span-2",
-                adminSurface.tableCard,
-              )}
-            >
-            <CardHeader className="border-b border-border/60 bg-background/70">
-              <CardTitle className="flex items-center gap-2">
-                <History className="h-5 w-5 text-primary" />
-                잔여 횟수/만료/사용 이력
-              </CardTitle>
-              <CardDescription>
-                패키지 횟수가 차감된 신청서 목록과 현재 사용 흐름을 먼저 확인하세요.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-5">
-              {usageHistory.length === 0 && !usageLoading ? (
-                <AdminInlineEmpty>사용 내역이 없습니다.</AdminInlineEmpty>
-              ) : (
-                <div className="space-y-4">
-                  {usageHistory.map((u) => (
-                    <div
-                      key={u.id}
-                      className="border rounded-lg p-4 transition-colors border-border bg-card hover:bg-background dark:border-border dark:bg-card dark:hover:bg-card"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge
-                              variant={getMerchandisingBadgeSpec("discount").variant}
-                              className="text-xs"
-                            >
-                              -{u.sessionsUsed}회 차감
-                            </Badge>
-                          </div>
-                          <p className="font-medium mb-1">{u.summary}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {u.applicationSummary || `신청서 #${u.applicationId.slice(-6)}`}
-                          </p>
-                          {u.adminNote && (
-                            <p className="text-sm text-foreground mt-1">관리자 메모: {u.adminNote}</p>
-                          )}
-                        </div>
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link
-                            href={`/admin/applications/stringing/${u.applicationId}`}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            상세 보기
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="pt-2 flex justify-center">
-                    {usageHasMore ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => void loadUsageHistory(true)}
-                        disabled={usageLoading}
-                      >
-                        {usageLoading ? (
-                          <>
-                            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                            불러오는 중
-                          </>
-                        ) : (
-                          "더보기"
-                        )}
-                      </Button>
-                    ) : null}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-            </Card>
-
-          {/* 운영 내역 */}
-          <Card
-            id="admin-package-operation-history"
-            className={cn("md:col-span-2", adminSurface.tableCard)}
-          >
-            <CardHeader className="border-b border-border/60 bg-background/70">
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-foreground" />
-                운영 내역 (연장/횟수)
-              </CardTitle>
-              <CardDescription>패키지 연장 및 횟수 조절 기록입니다.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-5">
-              <span className="text-xs text-muted-foreground">
-                총 {operationsHistorySorted.length}건 (현재 {visibleOps.length}건 표시)
-              </span>
-
-              {operationsHistorySorted.length === 0 ? (
-                <AdminInlineEmpty className="mt-3">운영 내역이 없습니다.</AdminInlineEmpty>
-              ) : (
-                <>
-                  <ExtensionHistoryList items={visibleOps} />
-                  <div className="pt-4 flex justify-center items-center gap-2">
-                    {opsHasMore ? (
-                      <Button variant="outline" size="sm" onClick={() => setOpsLimit((n) => n + 5)}>
-                        더 보기
-                      </Button>
-                    ) : operationsHistorySorted.length > 5 ? (
-                      <>
-                        <p className="text-xs text-muted-foreground">마지막 페이지입니다.</p>
-                        <Button variant="ghost" size="sm" onClick={() => setOpsLimit(5)}>
-                          접기
-                        </Button>
-                      </>
-                    ) : null}
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* 연장 모달 */}
-        {showExtensionForm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/50">
-            <Card className="w-full max-w-md mx-4 border-border dark:bg-card">
-              <CardHeader>
-                <CardTitle>패키지 연장</CardTitle>
-                <CardDescription>
-                  고객의 이용 가능 기간이 변경됩니다. 연장 일수와 사유를 확인한 뒤 진행해주세요.
-                </CardDescription>
-              </CardHeader>
-              <CardContent
-                className={cn("space-y-4", isSavingExtend && "opacity-70 pointer-events-none")}
-              >
-                <div>
-                  <Label htmlFor="days">연장 일수</Label>
-                  <div className="mt-2 text-sm">
-                    <span className="text-muted-foreground">현재 만료일:</span>{" "}
-                    <span>{fmtDate(currentExpiryDate)}</span>
-                    {previewExpiryDate && (
-                      <>
-                        <ChevronRight className="inline h-4 w-4 mx-1 text-muted-foreground" />
-                        <span className="font-medium text-primary">
-                          {fmtDate(previewExpiryDate)}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setExtensionData((p) => ({
-                          ...p,
-                          days: Math.max(0, p.days - 1),
-                        }))
-                      }
-                      disabled={isSavingExtend || extensionData.days <= 0}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <Input
-                      id="days"
-                      inputMode="numeric"
-                      pattern="[0-9,]*"
-                      className="text-center"
-                      disabled={isSavingExtend}
-                      value={String(extensionData.days)}
-                      onChange={(e) => {
-                        const v = e.target.value.replace(/[^\d]/g, "");
-                        setExtensionData((p) => ({
-                          ...p,
-                          days: v === "" ? 0 : Number(v),
-                        }));
-                      }}
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setExtensionData((p) => ({ ...p, days: p.days + 1 }))}
-                      disabled={isSavingExtend}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="ext-reason">연장 사유</Label>
-                  <Textarea
-                    id="ext-reason"
-                    rows={3}
-                    placeholder="연장 사유를 입력하세요"
-                    value={extensionData.reason}
-                    onChange={(e) =>
+                    onClick={() =>
                       setExtensionData((p) => ({
                         ...p,
-                        reason: e.target.value,
+                        days: Math.max(0, p.days - 1),
                       }))
                     }
+                    disabled={isSavingExtend || extensionData.days <= 0}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <Input
+                    id="days"
+                    inputMode="numeric"
+                    pattern="[0-9,]*"
+                    className="text-center"
                     disabled={isSavingExtend}
+                    value={String(extensionData.days)}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/[^\d]/g, "");
+                      setExtensionData((p) => ({
+                        ...p,
+                        days: v === "" ? 0 : Number(v),
+                      }));
+                    }}
                   />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setExtensionData((p) => ({ ...p, days: p.days + 1 }))}
+                    disabled={isSavingExtend}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
                 </div>
-              </CardContent>
-              <CardFooter className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowExtensionForm(false)}
+              </div>
+              <div>
+                <Label htmlFor="ext-reason">연장 사유</Label>
+                <Textarea
+                  id="ext-reason"
+                  rows={3}
+                  placeholder="연장 사유를 입력하세요"
+                  value={extensionData.reason}
+                  onChange={(e) =>
+                    setExtensionData((p) => ({
+                      ...p,
+                      reason: e.target.value,
+                    }))
+                  }
                   disabled={isSavingExtend}
-                >
-                  취소
-                </Button>
-                <Button onClick={handleExtension} disabled={isSavingExtend}>
-                  {isSavingExtend ? (
-                    <>
-                      <Loader2 className="mr-1 h-4 w-4 animate-spin" /> 저장 중…
-                    </>
-                  ) : (
-                    "연장"
-                  )}
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-        )}
-
-        {/* 횟수 조절 모달 */}
-        {editingSessions && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/50">
-            <Card className="w-full max-w-md mx-4 border-border dark:bg-card">
-              <CardHeader>
-                <CardTitle>횟수 조절</CardTitle>
-                <CardDescription>
-                  고객의 이용 가능 횟수가 변경됩니다. 변경 전/후 값과 사유를 확인한 뒤 진행해주세요.
-                </CardDescription>
-              </CardHeader>
-              <CardContent
-                className={cn("space-y-4", isSavingAdjust && "opacity-70 pointer-events-none")}
+                />
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowExtensionForm(false)}
+                disabled={isSavingExtend}
               >
-                <div>
-                  <Label htmlFor="adjustment">조절 수량</Label>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    현재 남은 횟수: {data.remainingSessions}회
-                    {sessionAdjustment.amount !== 0 && (
-                      <span
-                        className={cn(
-                          "ml-2 font-medium",
-                          sessionAdjustment.amount > 0 ? "text-primary" : "text-destructive",
-                        )}
-                      >
-                        → {data.remainingSessions + sessionAdjustment.amount}회
-                      </span>
-                    )}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isSavingAdjust}
-                      onClick={() =>
-                        setSessionAdjustment((p) => ({
-                          ...p,
-                          amount: p.amount - 1,
-                        }))
-                      }
+                취소
+              </Button>
+              <Button onClick={handleExtension} disabled={isSavingExtend}>
+                {isSavingExtend ? (
+                  <>
+                    <Loader2 className="mr-1 h-4 w-4 animate-spin" /> 저장 중…
+                  </>
+                ) : (
+                  "연장"
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      )}
+
+      {/* 횟수 조절 모달 */}
+      {editingSessions && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/50">
+          <Card className="w-full max-w-md mx-4 border-border dark:bg-card">
+            <CardHeader>
+              <CardTitle>횟수 조절</CardTitle>
+              <CardDescription>
+                고객의 이용 가능 횟수가 변경됩니다. 변경 전/후 값과 사유를 확인한 뒤 진행해주세요.
+              </CardDescription>
+            </CardHeader>
+            <CardContent
+              className={cn("space-y-4", isSavingAdjust && "opacity-70 pointer-events-none")}
+            >
+              <div>
+                <Label htmlFor="adjustment">조절 수량</Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  현재 남은 횟수: {data.remainingSessions}회
+                  {sessionAdjustment.amount !== 0 && (
+                    <span
+                      className={cn(
+                        "ml-2 font-medium",
+                        sessionAdjustment.amount > 0 ? "text-primary" : "text-destructive",
+                      )}
                     >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <Input
-                      id="adjustment"
-                      type="number"
-                      className="text-center"
-                      disabled={isSavingAdjust}
-                      value={sessionAdjustment.amount}
-                      onChange={(e) =>
-                        setSessionAdjustment((p) => ({
-                          ...p,
-                          amount: Number.parseInt(e.target.value) || 0,
-                        }))
-                      }
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isSavingAdjust}
-                      onClick={() =>
-                        setSessionAdjustment((p) => ({
-                          ...p,
-                          amount: p.amount + 1,
-                        }))
-                      }
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="adjust-reason">조절 사유</Label>
-                  <Textarea
-                    id="adjust-reason"
-                    rows={3}
-                    placeholder="횟수 조절 사유를 입력하세요"
-                    value={sessionAdjustment.reason}
+                      → {data.remainingSessions + sessionAdjustment.amount}회
+                    </span>
+                  )}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isSavingAdjust}
+                    onClick={() =>
+                      setSessionAdjustment((p) => ({
+                        ...p,
+                        amount: p.amount - 1,
+                      }))
+                    }
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <Input
+                    id="adjustment"
+                    type="number"
+                    className="text-center"
+                    disabled={isSavingAdjust}
+                    value={sessionAdjustment.amount}
                     onChange={(e) =>
                       setSessionAdjustment((p) => ({
                         ...p,
-                        reason: e.target.value,
+                        amount: Number.parseInt(e.target.value) || 0,
                       }))
                     }
-                    disabled={isSavingAdjust}
                   />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isSavingAdjust}
+                    onClick={() =>
+                      setSessionAdjustment((p) => ({
+                        ...p,
+                        amount: p.amount + 1,
+                      }))
+                    }
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
                 </div>
-              </CardContent>
-              <CardFooter className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setEditingSessions(false)}
+              </div>
+              <div>
+                <Label htmlFor="adjust-reason">조절 사유</Label>
+                <Textarea
+                  id="adjust-reason"
+                  rows={3}
+                  placeholder="횟수 조절 사유를 입력하세요"
+                  value={sessionAdjustment.reason}
+                  onChange={(e) =>
+                    setSessionAdjustment((p) => ({
+                      ...p,
+                      reason: e.target.value,
+                    }))
+                  }
                   disabled={isSavingAdjust}
-                >
-                  취소
-                </Button>
-                <Button onClick={handleSessionAdjustment} disabled={isSavingAdjust}>
-                  {isSavingAdjust ? (
-                    <>
-                      <Loader2 className="mr-1 h-4 w-4 animate-spin" /> 저장 중…
-                    </>
-                  ) : (
-                    "조정"
-                  )}
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-        )}
+                />
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setEditingSessions(false)}
+                disabled={isSavingAdjust}
+              >
+                취소
+              </Button>
+              <Button onClick={handleSessionAdjustment} disabled={isSavingAdjust}>
+                {isSavingAdjust ? (
+                  <>
+                    <Loader2 className="mr-1 h-4 w-4 animate-spin" /> 저장 중…
+                  </>
+                ) : (
+                  "조정"
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      )}
     </AdminPageShell>
   );
 }
