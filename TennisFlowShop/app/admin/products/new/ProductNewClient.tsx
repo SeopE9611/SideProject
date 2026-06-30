@@ -3,6 +3,8 @@
 /** Responsibility: 새 스트링 등록 화면 표현 + 상호작용 오케스트레이션 뷰. */
 
 import { brands, colors, gauges, materials } from "@/app/admin/products/_lib/productFormOptions";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1023,30 +1025,14 @@ export default function NewStringPage() {
   const readyToSubmit = formReadinessChecks.every((item) => item.done);
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-        <div className="container max-w-7xl py-6 px-4 lg:px-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Header */}
-            <div className="rounded-2xl border border-border/60 bg-card/80 p-6 shadow-lg backdrop-blur-sm">
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-inner">
-                    <Package className="h-7 w-7 text-primary" />
-                  </div>
-                  <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                      스트링 등록
-                    </h1>
-                    <p className="mt-0.5 text-sm text-muted-foreground">
-                      {basicInfo.name || "새로운 테니스 스트링 정보를 입력하고 등록하세요."}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <StepIndicator current={currentStepIndex + 1} total={STEPS.length} />
-                </div>
-              </div>
-            </div>
+      <AdminPageShell variant="wide">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <AdminPageHeader
+            title="스트링 등록"
+            description={basicInfo.name || "새로운 테니스 스트링 정보를 입력하고 등록하세요."}
+            icon={Package}
+            actions={<StepIndicator current={currentStepIndex + 1} total={STEPS.length} />}
+          />
             {/* 등록 흐름 안내 */}
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {PRODUCT_NEW_WORKFLOW_GUIDES.map(({ icon: Icon, title, description }) => (
@@ -2563,7 +2549,7 @@ export default function NewStringPage() {
               </div>
 
               {/* Step Navigation */}
-              <div className="rounded-xl border border-border/60 bg-card/60 p-4 shadow-sm backdrop-blur-sm">
+              <div className={cn(adminSurface.stickyToolbar, "p-4")}>
                 <StepNavigation
                   currentStepIndex={currentStepIndex}
                   totalSteps={STEPS.length}
@@ -2577,9 +2563,8 @@ export default function NewStringPage() {
                 />
               </div>
             </>
-          </form>
-        </div>
-      </div>
+        </form>
+      </AdminPageShell>
       <AdminConfirmDialog
         open={leaveDialogOpen}
         onOpenChange={setLeaveDialogOpen}

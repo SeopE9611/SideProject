@@ -3,6 +3,8 @@
 /** Responsibility: 상품 수정 화면 표현 + 상호작용 오케스트레이션 뷰. */
 
 import { brands, colors, gauges, materials } from "@/app/admin/products/_lib/productFormOptions";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -120,7 +122,7 @@ const PRODUCT_EDIT_WORKFLOW_GUIDES = [
 function EditLoadingSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-border/60 bg-card/60 p-6">
+      <div className={cn(adminSurface.cardMuted, "p-6")}>
         <div className="flex justify-between">
           {[1, 2, 3, 4, 5].map((i) => (
             <Skeleton key={i} className="h-8 w-8 rounded-full" />
@@ -1160,41 +1162,29 @@ export default function ProductEditClient({ productId }: { productId: string }) 
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-        <div className="container max-w-7xl py-6 px-4 lg:px-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Header */}
-            <div className="rounded-2xl border border-border/60 bg-card/80 p-6 shadow-lg backdrop-blur-sm">
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-inner">
-                    <Package className="h-7 w-7 text-primary" />
-                  </div>
-                  <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                      스트링 수정
-                    </h1>
-                    <p className="mt-0.5 text-sm text-muted-foreground">
-                      {basicInfo.name || "상품 정보를 불러오는 중..."}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <StepIndicator current={currentStepIndex + 1} total={STEPS.length} />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleDelete}
-                    disabled={uploading || submitting || deleting}
-                    className="gap-1"
-                  >
-                    <Delete className="h-4 w-4" />
-                    삭제
-                  </Button>
-                </div>
-              </div>
-            </div>
+      <AdminPageShell variant="wide">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <AdminPageHeader
+            title="스트링 수정"
+            description={basicInfo.name || "상품 정보를 불러오는 중..."}
+            icon={Package}
+            actions={(
+              <>
+                <StepIndicator current={currentStepIndex + 1} total={STEPS.length} />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleDelete}
+                  disabled={uploading || submitting || deleting}
+                  className="gap-1"
+                >
+                  <Delete className="h-4 w-4" />
+                  삭제
+                </Button>
+              </>
+            )}
+          />
             {!isInitialClientLoading && (
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                 {PRODUCT_EDIT_WORKFLOW_GUIDES.map(({ icon: Icon, title, description }) => (
@@ -2764,7 +2754,7 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                 </div>
 
                 {/* Step Navigation */}
-                <div className="rounded-xl border border-border/60 bg-card/60 p-4 shadow-sm backdrop-blur-sm">
+                <div className={cn(adminSurface.stickyToolbar, "p-4")}>
                   <StepNavigation
                     currentStepIndex={currentStepIndex}
                     totalSteps={STEPS.length}
@@ -2779,9 +2769,8 @@ export default function ProductEditClient({ productId }: { productId: string }) 
                 </div>
               </>
             )}
-          </form>
-        </div>
-      </div>
+        </form>
+      </AdminPageShell>
       <ProductEditDialogs
         open={leaveDialogOpen}
         onOpenChange={setLeaveDialogOpen}
