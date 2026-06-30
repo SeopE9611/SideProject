@@ -8,10 +8,6 @@ import { verifyAccessToken, verifyOrderAccessToken } from "@/lib/auth.utils";
 import clientPromise from "@/lib/mongodb";
 import { createUserNotification } from "@/lib/notifications/user-notification.service";
 import { canEnterShippingPhase, getOrderStatusLabelForDisplay } from "@/lib/order-shipping";
-import {
-  getAdminCancelPolicyMessage,
-  isAdminCancelableOrderStatus,
-} from "@/lib/orders/cancel-refund-policy";
 import { isMountableStringByFee, isMountableStringItem } from "@/lib/orders/string-mounting-policy";
 import { issuePassesForPaidOrder } from "@/lib/passes.service";
 import { deductPoints, grantPoints } from "@/lib/points.service";
@@ -912,7 +908,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       return new NextResponse("상태 값이 필요합니다.", { status: 400 });
     }
     const nextStatus = status.trim();
-    const ALLOWED_STATUS = new Set(["대기중", "결제완료", "배송중", "배송완료", "취소", "환불"]);
+    if (nextStatus === "취소") {
+      return new NextResponse("주문 취소는 전용 취소 처리 API를 사용해주세요.", {
+        status: 409,
+      });
+    }
+    const ALLOWED_STATUS = new Set(["대기중", "결제완료", "배송중", "배송완료", "환불"]);
     if (!ALLOWED_STATUS.has(nextStatus)) {
       return new NextResponse("허용되지 않은 상태 값입니다.", { status: 400 });
     }
@@ -932,31 +933,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     // - paymentStatus 계산/정규화를 한 곳에서 수행
     // - 이 시점에서만 패스 발급 멱등 트리거
     const updateFields: Record<string, any> = { status: nextStatus };
-
-    // 취소면 사유/상세 저장
-    if (nextStatus === "취소") {
-      if (!isAdminCancelableOrderStatus(existing.status)) {
-        return new NextResponse(getAdminCancelPolicyMessage(existing.status), {
-          status: 400,
-        });
-      }
-
-      const reason = typeof cancelReason === "string" ? cancelReason.trim() : "";
-      if (!reason) {
-        return new NextResponse("취소 사유가 필요합니다.", { status: 400 });
-      }
-      updateFields.cancelReason = reason;
-      if (reason === "기타") {
-        const detail = typeof cancelReasonDetail === "string" ? cancelReasonDetail.trim() : "";
-        if (!detail)
-          return new NextResponse("기타 사유 상세가 필요합니다.", {
-            status: 400,
-          });
-        if (detail.length > 200)
-          return new NextResponse("기타 사유 상세는 200자 이내로 입력해주세요.", { status: 400 });
-        updateFields.cancelReasonDetail = detail;
-      }
-    }
 
     // 결제상태 정규화
     let newPaymentStatus: string | undefined = undefined;
