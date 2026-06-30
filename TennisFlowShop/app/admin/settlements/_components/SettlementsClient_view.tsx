@@ -187,7 +187,7 @@ export default function SettlementsClient() {
     return (
       <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
         <p className="text-xs font-semibold text-muted-foreground">{label}</p>
-        <p className={cn("mt-2 text-xl font-bold tabular-nums", toneClass)}>{displayKRW(value)}</p>
+        <p className={cn("mt-2 whitespace-nowrap text-xl font-bold tabular-nums", toneClass)}>{displayKRW(value)}</p>
         {sub ? <p className="mt-1 text-xs text-muted-foreground">{sub}</p> : null}
       </div>
     );
@@ -270,7 +270,7 @@ export default function SettlementsClient() {
                 {methodLabels.map(([key, label]) => (
                   <div key={key} className="rounded-lg bg-card border border-border p-3">
                     <p className="text-xs text-muted-foreground">{label}</p>
-                    <p className="mt-1 font-bold tabular-nums text-foreground">
+                    <p className="mt-1 whitespace-nowrap font-bold tabular-nums text-foreground">
                       {displayKRW(offline.byMethod[key] || 0)}
                     </p>
                   </div>
@@ -286,13 +286,13 @@ export default function SettlementsClient() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-lg bg-card border border-border p-3">
                   <p className="text-xs text-muted-foreground">건수</p>
-                  <p className="mt-1 font-bold tabular-nums text-foreground">
+                  <p className="mt-1 whitespace-nowrap font-bold tabular-nums text-foreground">
                     {(offline.packageSales.issueFailedCount || 0).toLocaleString()}건
                   </p>
                 </div>
                 <div className="rounded-lg bg-card border border-border p-3">
                   <p className="text-xs text-muted-foreground">금액</p>
-                  <p className="mt-1 font-bold tabular-nums text-foreground">
+                  <p className="mt-1 whitespace-nowrap font-bold tabular-nums text-foreground">
                     {displayKRW(offline.packageSales.issueFailedAmount || 0)}
                   </p>
                 </div>
@@ -588,9 +588,9 @@ export default function SettlementsClient() {
             </CardContent>
           </Card>
 
-          {/* 총 매출 */}
+          {/* 총 결제금액 */}
           <KpiCard
-            label="온라인 정산 기준 매출"
+            label="온라인 결제금액"
             value={totalRevenue ?? 0}
             storageKey="settlements.kpi.compact.revenue"
             formatCompact={formatKRWCard}
@@ -602,7 +602,7 @@ export default function SettlementsClient() {
 
           {/* 총 환불 */}
           <KpiCard
-            label="온라인 정산 기준 환불"
+            label="온라인 환불금액"
             value={totalRefunds ?? 0}
             storageKey="settlements.kpi.compact.refund"
             formatCompact={formatKRWCard}
@@ -612,9 +612,9 @@ export default function SettlementsClient() {
             skeletonWidthClass="w-24"
           />
 
-          {/* 순익 */}
+          {/* 순매출 */}
           <KpiCard
-            label="온라인 정산 기준 순익"
+            label="온라인 순매출"
             value={totalNet ?? 0}
             storageKey="settlements.kpi.compact.net"
             formatCompact={formatKRWCard}
@@ -772,13 +772,13 @@ export default function SettlementsClient() {
             <Card className={cn(adminSurface.tableCard, "overflow-visible max-w-6xl mx-auto")}>
               {/* 데스크탑 */}
               <div className="hidden md:block overflow-x-auto">
-                <div className="min-w-[980px]">
+                <div className="min-w-[1320px]">
                   <div className="sticky top-0 z-10 bg-muted border-b border-border">
                     <div
                       className="grid gap-3 p-5 text-sm font-semibold text-foreground"
                       style={{
                         gridTemplateColumns:
-                          "40px 90px 110px 110px 110px 90px 90px 90px 110px 40px",
+                          "40px 90px 120px 120px 120px 90px 110px 100px 120px 120px 110px 40px",
                       }}
                     >
                       <div className="flex items-center justify-center">
@@ -796,46 +796,48 @@ export default function SettlementsClient() {
                       <div className="text-center">월</div>
                       <button
                         onClick={() => toggleSort("paid")}
-                        className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-primary transition-colors"
+                        className="flex items-center justify-end gap-1 text-right tabular-nums hover:text-primary transition-colors"
                       >
-                        매출
+                        결제금액
                         {renderSortIcon("paid")}
                       </button>
                       <button
                         onClick={() => toggleSort("refund")}
-                        className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-primary transition-colors"
+                        className="flex items-center justify-end gap-1 text-right tabular-nums hover:text-primary transition-colors"
                       >
-                        환불
+                        환불금액
                         {renderSortIcon("refund")}
                       </button>
                       <button
                         onClick={() => toggleSort("net")}
-                        className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-primary transition-colors"
+                        className="flex items-center justify-end gap-1 text-right tabular-nums hover:text-primary transition-colors"
                       >
-                        순익
+                        순매출
                         {renderSortIcon("net")}
                       </button>
                       <button
                         onClick={() => toggleSort("orders")}
-                        className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-primary transition-colors"
+                        className="flex items-center justify-end gap-1 text-right tabular-nums hover:text-primary transition-colors"
                       >
-                        주문수
+                        주문 건수
                         {renderSortIcon("orders")}
                       </button>
                       <button
                         onClick={() => toggleSort("applications")}
-                        className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-primary transition-colors"
+                        className="flex items-center justify-end gap-1 text-right tabular-nums hover:text-primary transition-colors"
                       >
-                        신청수
+                        스트링 신청 건수
                         {renderSortIcon("applications")}
                       </button>
                       <button
                         onClick={() => toggleSort("packages")}
-                        className="text-center tabular-nums flex items-center justify-center gap-1 hover:text-primary transition-colors"
+                        className="flex items-center justify-end gap-1 text-right tabular-nums hover:text-primary transition-colors"
                       >
-                        패키지수
+                        패키지 건수
                         {renderSortIcon("packages")}
                       </button>
+                      <div className="text-right tabular-nums">개인결제</div>
+                      <div className="text-right tabular-nums">개인결제 환불</div>
 
                       <div className="text-center">상태</div>
                       <div className="text-center">액션</div>
@@ -850,7 +852,7 @@ export default function SettlementsClient() {
                           className="grid gap-3 p-5 animate-pulse"
                           style={{
                             gridTemplateColumns:
-                              "56px 90px 110px 110px 110px 90px 90px 90px 90px 56px",
+                              "56px 90px 120px 120px 120px 90px 110px 100px 120px 120px 110px 56px",
                           }}
                         >
                           <div className="h-5 bg-muted rounded" />
@@ -886,7 +888,7 @@ export default function SettlementsClient() {
                             className="grid gap-3 p-5 text-sm font-semibold text-foreground"
                             style={{
                               gridTemplateColumns:
-                                "40px 90px 110px 110px 110px 90px 90px 90px 110px 40px",
+                                "40px 90px 120px 120px 120px 90px 110px 100px 120px 120px 110px 40px",
                             }}
                           >
                             <div className="flex items-center justify-center">
@@ -913,23 +915,29 @@ export default function SettlementsClient() {
                               </button>
                             </div>
 
-                            <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">
+                            <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
                               {(row.totals?.paid || 0).toLocaleString()}
                             </div>
-                            <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">
+                            <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
                               {(row.totals?.refund || 0).toLocaleString()}
                             </div>
-                            <div className="text-center tabular-nums text-sm font-bold text-primary flex items-center justify-center">
+                            <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm font-bold text-primary">
                               {(row.totals?.net || 0).toLocaleString()}
                             </div>
-                            <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">
+                            <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
                               {row.breakdown?.orders || 0}
                             </div>
-                            <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">
+                            <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
                               {row.breakdown?.applications || 0}
                             </div>
-                            <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">
+                            <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
                               {row.breakdown?.packages || 0}
+                            </div>
+                            <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
+                              {(row.breakdown?.privatePaymentsPaidAmount || 0).toLocaleString()}
+                            </div>
+                            <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
+                              {(row.breakdown?.privatePaymentsRefundAmount || 0).toLocaleString()}
                             </div>
 
                             <div className="flex items-center justify-center">
@@ -1142,12 +1150,12 @@ export default function SettlementsClient() {
                                   <div className="rounded-xl border-2 border-destructive/40 overflow-hidden bg-card shadow-sm">
                                     <div className="grid grid-cols-7 gap-4 p-4 bg-destructive/10 dark:bg-destructive/15 text-xs font-semibold border-b border-destructive/40 text-destructive">
                                       <div></div>
-                                      <div className="text-right">매출</div>
-                                      <div className="text-right">환불</div>
-                                      <div className="text-right">순익</div>
-                                      <div className="text-right">주문수</div>
-                                      <div className="text-right">신청수</div>
-                                      <div className="text-right">패키지수</div>
+                                      <div className="text-right">결제금액</div>
+                                      <div className="text-right">환불금액</div>
+                                      <div className="text-right">순매출</div>
+                                      <div className="text-right">주문 건수</div>
+                                      <div className="text-right">스트링 신청 건수</div>
+                                      <div className="text-right">패키지 건수</div>
                                     </div>
                                     <div className="grid grid-cols-7 gap-4 p-4 border-b border-border hover:bg-muted/50 dark:hover:bg-card/50 transition-colors">
                                       <div className="text-xs text-muted-foreground font-semibold">
@@ -1453,34 +1461,44 @@ export default function SettlementsClient() {
                       </div>
 
                       <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-                        <div className="text-muted-foreground">온라인 기준 매출</div>
-                        <div className="text-right tabular-nums text-foreground">
+                        <div className="text-muted-foreground">온라인 결제금액</div>
+                        <div className="whitespace-nowrap text-right tabular-nums text-foreground">
                           {(row.totals?.paid || 0).toLocaleString()}
                         </div>
 
-                        <div className="text-muted-foreground">환불</div>
-                        <div className="text-right tabular-nums text-foreground">
+                        <div className="text-muted-foreground">환불금액</div>
+                        <div className="whitespace-nowrap text-right tabular-nums text-foreground">
                           {(row.totals?.refund || 0).toLocaleString()}
                         </div>
 
-                        <div className="text-muted-foreground">순익</div>
-                        <div className="text-right tabular-nums font-semibold text-primary">
+                        <div className="text-muted-foreground">순매출</div>
+                        <div className="whitespace-nowrap text-right tabular-nums font-semibold text-primary">
                           {(row.totals?.net || 0).toLocaleString()}
                         </div>
 
-                        <div className="text-muted-foreground">주문수</div>
-                        <div className="text-right tabular-nums text-foreground">
+                        <div className="text-muted-foreground">주문 건수</div>
+                        <div className="whitespace-nowrap text-right tabular-nums text-foreground">
                           {row.breakdown?.orders || 0}
                         </div>
 
-                        <div className="text-muted-foreground">신청수</div>
-                        <div className="text-right tabular-nums text-foreground">
+                        <div className="text-muted-foreground">스트링 신청 건수</div>
+                        <div className="whitespace-nowrap text-right tabular-nums text-foreground">
                           {row.breakdown?.applications || 0}
                         </div>
 
-                        <div className="text-muted-foreground">패키지수</div>
-                        <div className="text-right tabular-nums text-foreground">
+                        <div className="text-muted-foreground">패키지 건수</div>
+                        <div className="whitespace-nowrap text-right tabular-nums text-foreground">
                           {row.breakdown?.packages || 0}
+                        </div>
+
+                        <div className="text-muted-foreground">개인결제</div>
+                        <div className="whitespace-nowrap text-right tabular-nums text-foreground">
+                          {(row.breakdown?.privatePaymentsPaidAmount || 0).toLocaleString()}
+                        </div>
+
+                        <div className="text-muted-foreground">개인결제 환불</div>
+                        <div className="whitespace-nowrap text-right tabular-nums text-foreground">
+                          {(row.breakdown?.privatePaymentsRefundAmount || 0).toLocaleString()}
                         </div>
                       </div>
 
@@ -1546,27 +1564,27 @@ export default function SettlementsClient() {
                                 스냅샷
                               </div>
                               <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-                                <div className="text-muted-foreground">매출</div>
+                                <div className="text-muted-foreground">결제금액</div>
                                 <div className="text-right tabular-nums">
                                   {diffMap[String(row.yyyymm)]!.snap.paid.toLocaleString()}
                                 </div>
-                                <div className="text-muted-foreground">환불</div>
+                                <div className="text-muted-foreground">환불금액</div>
                                 <div className="text-right tabular-nums">
                                   {diffMap[String(row.yyyymm)]!.snap.refund.toLocaleString()}
                                 </div>
-                                <div className="text-muted-foreground">순익</div>
+                                <div className="text-muted-foreground">순매출</div>
                                 <div className="text-right tabular-nums font-semibold">
                                   {diffMap[String(row.yyyymm)]!.snap.net.toLocaleString()}
                                 </div>
-                                <div className="text-muted-foreground">주문수</div>
+                                <div className="text-muted-foreground">주문 건수</div>
                                 <div className="text-right tabular-nums">
                                   {diffMap[String(row.yyyymm)]!.snap.orders}
                                 </div>
-                                <div className="text-muted-foreground">신청수</div>
+                                <div className="text-muted-foreground">스트링 신청 건수</div>
                                 <div className="text-right tabular-nums">
                                   {diffMap[String(row.yyyymm)]!.snap.applications}
                                 </div>
-                                <div className="text-muted-foreground">패키지수</div>
+                                <div className="text-muted-foreground">패키지 건수</div>
                                 <div className="text-right tabular-nums">
                                   {diffMap[String(row.yyyymm)]!.snap.packages}
                                 </div>
@@ -1576,27 +1594,27 @@ export default function SettlementsClient() {
                                 실시간
                               </div>
                               <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-                                <div className="text-muted-foreground">매출</div>
+                                <div className="text-muted-foreground">결제금액</div>
                                 <div className="text-right tabular-nums">
                                   {diffMap[String(row.yyyymm)]!.live.paid.toLocaleString()}
                                 </div>
-                                <div className="text-muted-foreground">환불</div>
+                                <div className="text-muted-foreground">환불금액</div>
                                 <div className="text-right tabular-nums">
                                   {diffMap[String(row.yyyymm)]!.live.refund.toLocaleString()}
                                 </div>
-                                <div className="text-muted-foreground">순익</div>
+                                <div className="text-muted-foreground">순매출</div>
                                 <div className="text-right tabular-nums font-semibold">
                                   {diffMap[String(row.yyyymm)]!.live.net.toLocaleString()}
                                 </div>
-                                <div className="text-muted-foreground">주문수</div>
+                                <div className="text-muted-foreground">주문 건수</div>
                                 <div className="text-right tabular-nums">
                                   {diffMap[String(row.yyyymm)]!.live.orders}
                                 </div>
-                                <div className="text-muted-foreground">신청수</div>
+                                <div className="text-muted-foreground">스트링 신청 건수</div>
                                 <div className="text-right tabular-nums">
                                   {diffMap[String(row.yyyymm)]!.live.applications}
                                 </div>
-                                <div className="text-muted-foreground">패키지수</div>
+                                <div className="text-muted-foreground">패키지 건수</div>
                                 <div className="text-right tabular-nums">
                                   {diffMap[String(row.yyyymm)]!.live.packages}
                                 </div>
@@ -1814,12 +1832,12 @@ export default function SettlementsClient() {
                         }}
                       >
                         <div className="text-center">기간</div>
-                        <div className="text-center tabular-nums">온라인 기준 매출</div>
-                        <div className="text-center tabular-nums">환불</div>
-                        <div className="text-center tabular-nums">순익</div>
-                        <div className="text-center tabular-nums">주문수</div>
-                        <div className="text-center tabular-nums">신청수</div>
-                        <div className="text-center tabular-nums">패키지수</div>
+                        <div className="text-center tabular-nums">온라인 결제금액</div>
+                        <div className="text-center tabular-nums">환불금액</div>
+                        <div className="text-center tabular-nums">순매출</div>
+                        <div className="text-center tabular-nums">주문 건수</div>
+                        <div className="text-center tabular-nums">스트링 신청 건수</div>
+                        <div className="text-center tabular-nums">패키지 건수</div>
                       </div>
                     </div>
                     <div
@@ -1831,22 +1849,22 @@ export default function SettlementsClient() {
                       <div className="text-sm font-medium text-foreground text-center flex items-center justify-center">
                         {live.range.from} ~ {live.range.to}
                       </div>
-                      <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">
+                      <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
                         {(live.totals?.paid || 0).toLocaleString()}
                       </div>
-                      <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">
+                      <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
                         {(live.totals?.refund || 0).toLocaleString()}
                       </div>
-                      <div className="text-center tabular-nums text-sm font-bold text-primary flex items-center justify-center">
+                      <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm font-bold text-primary">
                         {(live.totals?.net || 0).toLocaleString()}
                       </div>
-                      <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">
+                      <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
                         {live.breakdown?.orders || 0}
                       </div>
-                      <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">
+                      <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
                         {live.breakdown?.applications || 0}
                       </div>
-                      <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">
+                      <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
                         {live.breakdown?.packages || 0}
                       </div>
                     </div>
@@ -1859,22 +1877,22 @@ export default function SettlementsClient() {
                       <div className="text-sm font-bold text-foreground text-center flex items-center justify-center">
                         총계
                       </div>
-                      <div className="text-center tabular-nums text-sm font-bold text-foreground flex items-center justify-center">
+                      <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm font-bold text-foreground">
                         {(live.totals?.paid || 0).toLocaleString()}
                       </div>
-                      <div className="text-center tabular-nums text-sm font-bold text-foreground flex items-center justify-center">
+                      <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm font-bold text-foreground">
                         {(live.totals?.refund || 0).toLocaleString()}
                       </div>
-                      <div className="text-center tabular-nums text-sm font-bold text-foreground flex items-center justify-center">
+                      <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm font-bold text-foreground">
                         {(live.totals?.net || 0).toLocaleString()}
                       </div>
-                      <div className="text-center tabular-nums text-sm font-bold text-foreground flex items-center justify-center">
+                      <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm font-bold text-foreground">
                         {live.breakdown?.orders || 0}
                       </div>
-                      <div className="text-center tabular-nums text-sm font-bold text-foreground flex items-center justify-center">
+                      <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm font-bold text-foreground">
                         {live.breakdown?.applications || 0}
                       </div>
-                      <div className="text-center tabular-nums text-sm text-foreground flex items-center justify-center">
+                      <div className="flex items-center justify-end whitespace-nowrap text-right tabular-nums text-sm text-foreground">
                         {live.breakdown?.packages || 0}
                       </div>
                     </div>
@@ -1888,33 +1906,33 @@ export default function SettlementsClient() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="text-muted-foreground">온라인 기준 매출</div>
-                      <div className="text-right tabular-nums text-foreground">
+                      <div className="text-muted-foreground">온라인 결제금액</div>
+                      <div className="whitespace-nowrap text-right tabular-nums text-foreground">
                         {(live.totals?.paid || 0).toLocaleString()}
                       </div>
 
-                      <div className="text-muted-foreground">환불</div>
-                      <div className="text-right tabular-nums text-foreground">
+                      <div className="text-muted-foreground">환불금액</div>
+                      <div className="whitespace-nowrap text-right tabular-nums text-foreground">
                         {(live.totals?.refund || 0).toLocaleString()}
                       </div>
 
-                      <div className="text-muted-foreground">순익</div>
-                      <div className="text-right tabular-nums font-bold text-primary">
+                      <div className="text-muted-foreground">순매출</div>
+                      <div className="whitespace-nowrap text-right tabular-nums font-bold text-primary">
                         {(live.totals?.net || 0).toLocaleString()}
                       </div>
 
-                      <div className="text-muted-foreground">주문수</div>
-                      <div className="text-right tabular-nums text-foreground">
+                      <div className="text-muted-foreground">주문 건수</div>
+                      <div className="whitespace-nowrap text-right tabular-nums text-foreground">
                         {live.breakdown?.orders || 0}
                       </div>
 
-                      <div className="text-muted-foreground">신청수</div>
-                      <div className="text-right tabular-nums text-foreground">
+                      <div className="text-muted-foreground">스트링 신청 건수</div>
+                      <div className="whitespace-nowrap text-right tabular-nums text-foreground">
                         {live.breakdown?.applications || 0}
                       </div>
 
-                      <div className="text-muted-foreground">패키지수</div>
-                      <div className="text-right tabular-nums text-foreground">
+                      <div className="text-muted-foreground">패키지 건수</div>
+                      <div className="whitespace-nowrap text-right tabular-nums text-foreground">
                         {live.breakdown?.packages || 0}
                       </div>
                     </div>

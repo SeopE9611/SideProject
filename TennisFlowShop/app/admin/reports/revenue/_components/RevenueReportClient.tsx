@@ -104,7 +104,7 @@ function buildSnapshotDiffRows(
       snapshot: snapshot.online.paidAmount,
     },
     {
-      label: "온라인 환불",
+      label: "개인결제 환불",
       unit: "currency",
       current: current.online.refundedAmount,
       snapshot: snapshot.online.refundedAmount,
@@ -248,8 +248,10 @@ function SummaryCard({
     >
       <CardContent className="p-5">
         <p className="text-sm font-medium text-muted-foreground">{title}</p>
-        <p className="mt-2 text-2xl font-bold tabular-nums text-foreground">{value}</p>
-        {sub ? <p className="mt-1 text-xs text-muted-foreground">{sub}</p> : null}
+        <p className="mt-2 whitespace-nowrap text-2xl font-bold tabular-nums text-foreground">
+          {value}
+        </p>
+        {sub ? <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{sub}</p> : null}
       </CardContent>
     </Card>
   );
@@ -266,12 +268,12 @@ function SnapshotSummaryCard({ snapshot }: { snapshot: RevenueReportSnapshot }) 
       <CardContent className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <SummaryCard
-            title="온라인 정산 기준 매출"
+            title="온라인 매출"
             value={formatKRW(snapshot.report.online.paidAmount)}
             sub="저장 당시 값"
           />
           <SummaryCard
-            title="오프라인 운영 매출"
+            title="오프라인 매출"
             value={formatKRW(snapshot.report.offline.paidAmount)}
             sub="저장 당시 값"
           />
@@ -282,9 +284,9 @@ function SnapshotSummaryCard({ snapshot }: { snapshot: RevenueReportSnapshot }) 
             tone="warning"
           />
           <SummaryCard
-            title="온라인 환불"
+            title="개인결제 환불"
             value={formatKRW(snapshot.report.online.refundedAmount)}
-            sub="저장 당시 값"
+            sub="저장 당시 온라인 환불 기준"
             tone="danger"
           />
           <SummaryCard
@@ -378,10 +380,10 @@ function SnapshotDiffCard({
             {rows.map((row) => (
               <tr key={row.label}>
                 <td className="py-2 pr-4 font-medium text-foreground">{row.label}</td>
-                <td className="py-2 pr-4 tabular-nums text-muted-foreground">
+                <td className="whitespace-nowrap py-2 pr-4 text-right tabular-nums text-muted-foreground">
                   {formatSnapshotDiffValue(row.snapshotValue, row.unit)}
                 </td>
-                <td className="py-2 pr-4 tabular-nums text-foreground">
+                <td className="whitespace-nowrap py-2 pr-4 text-right tabular-nums text-foreground">
                   {formatSnapshotDiffValue(row.currentValue, row.unit)}
                 </td>
                 <td
@@ -893,13 +895,13 @@ export default function RevenueReportClient() {
           <>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <SummaryCard
-                title="온라인 정산 기준 매출"
+                title="온라인 매출"
                 value={formatKRW(report.online.paidAmount)}
                 sub={`${report.online.count.toLocaleString("ko-KR")}건 · 현재 DB 기준 실시간 리포트`}
                 tone="primary"
               />
               <SummaryCard
-                title="오프라인 운영 매출"
+                title="오프라인 매출"
                 value={formatKRW(report.offline.paidAmount)}
                 sub="현재 DB 기준 실시간 리포트"
                 tone="primary"
@@ -916,9 +918,9 @@ export default function RevenueReportClient() {
                 sub="오프라인 패키지 발급 확인"
               />
               <SummaryCard
-                title="온라인 환불"
+                title="개인결제 환불"
                 value={formatKRW(report.online.refundedAmount)}
-                sub="기존 정산 환불 기준"
+                sub="개인결제 취소 기준"
                 tone="danger"
               />
               <SummaryCard
@@ -959,10 +961,7 @@ export default function RevenueReportClient() {
                   <div className="rounded-xl border border-border p-4">
                     <h3 className="font-semibold">온라인 매출 세부</h3>
                     <dl className="mt-3 space-y-2 text-sm">
-                      <Row
-                        label="상품/일반 주문"
-                        value={formatKRW(report.online.bySource.orders)}
-                      />
+                      <Row label="일반 온라인 주문" value={formatKRW(report.online.bySource.orders)} />
                       <Row
                         label="독립 스트링 신청"
                         value={formatKRW(report.online.bySource.stringingApplications)}
@@ -972,6 +971,22 @@ export default function RevenueReportClient() {
                         value={formatKRW(report.online.bySource.packageOrders)}
                       />
                       <Row label="대여" value={formatKRW(report.online.bySource.rentals)} />
+                      <Row
+                        label="개인결제"
+                        value={formatKRW(
+                          report.online.bySource.privatePayments ??
+                            report.online.privatePayments?.paidAmount ??
+                            0,
+                        )}
+                      />
+                      <Row
+                        label="개인결제 환불"
+                        value={formatKRW(
+                          report.online.privatePayments?.refundAmount ??
+                            report.online.refundedAmount ??
+                            0,
+                        )}
+                      />
                     </dl>
                   </div>
                   <div className="rounded-xl border border-border p-4">
@@ -1021,12 +1036,22 @@ export default function RevenueReportClient() {
                 <table className="min-w-full divide-y divide-border text-sm">
                   <thead>
                     <tr className="text-left text-muted-foreground">
-                      <th className="py-2 pr-4 font-medium">날짜</th>
-                      <th className="py-2 pr-4 font-medium">온라인 매출</th>
-                      <th className="py-2 pr-4 font-medium">온라인 환불</th>
-                      <th className="py-2 pr-4 font-medium">온라인 순매출</th>
-                      <th className="py-2 pr-4 font-medium">오프라인 매출</th>
-                      <th className="py-2 pr-4 font-medium">참고 합계</th>
+                      <th className="whitespace-nowrap py-2 pr-4 font-medium">날짜</th>
+                      <th className="whitespace-nowrap py-2 pr-4 text-right font-medium">
+                        온라인 매출
+                      </th>
+                      <th className="whitespace-nowrap py-2 pr-4 text-right font-medium">
+                        개인결제 환불
+                      </th>
+                      <th className="whitespace-nowrap py-2 pr-4 text-right font-medium">
+                        온라인 순매출
+                      </th>
+                      <th className="whitespace-nowrap py-2 pr-4 text-right font-medium">
+                        오프라인 매출
+                      </th>
+                      <th className="whitespace-nowrap py-2 pr-4 text-right font-medium">
+                        참고 합계
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -1038,21 +1063,21 @@ export default function RevenueReportClient() {
                       </tr>
                     ) : (
                       report.series.map((point) => (
-                        <tr key={point.date}>
-                          <td className="py-2 pr-4 font-medium">{point.date}</td>
-                          <td className="py-2 pr-4 tabular-nums">
+                        <tr key={point.date} className="hover:bg-muted/50">
+                          <td className="whitespace-nowrap py-2 pr-4 font-medium">{point.date}</td>
+                          <td className="whitespace-nowrap py-2 pr-4 text-right tabular-nums">
                             {formatKRW(point.onlinePaidAmount)}
                           </td>
-                          <td className="py-2 pr-4 tabular-nums text-destructive">
+                          <td className="whitespace-nowrap py-2 pr-4 text-right tabular-nums text-destructive">
                             {formatKRW(point.onlineRefundAmount)}
                           </td>
-                          <td className="py-2 pr-4 tabular-nums">
+                          <td className="whitespace-nowrap py-2 pr-4 text-right tabular-nums">
                             {formatKRW(point.onlineNetAmount ?? point.onlinePaidAmount)}
                           </td>
-                          <td className="py-2 pr-4 tabular-nums">
+                          <td className="whitespace-nowrap py-2 pr-4 text-right tabular-nums">
                             {formatKRW(point.offlinePaidAmount)}
                           </td>
-                          <td className="py-2 pr-4 tabular-nums">
+                          <td className="whitespace-nowrap py-2 pr-4 text-right tabular-nums">
                             {formatKRW(point.combinedPaidAmount)}
                           </td>
                         </tr>
@@ -1071,9 +1096,11 @@ export default function RevenueReportClient() {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex items-start justify-between gap-4">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className="font-semibold tabular-nums text-foreground">{value}</dd>
+      <dd className="whitespace-nowrap text-right font-semibold tabular-nums text-foreground">
+        {value}
+      </dd>
     </div>
   );
 }
