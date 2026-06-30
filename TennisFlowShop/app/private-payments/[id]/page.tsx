@@ -10,5 +10,12 @@ export default async function PrivatePaymentPage({ params }: { params: Promise<{
   const db = (await clientPromise).db();
   const item = await privatePayments(db).findOne({ _id: new ObjectId(id) });
   if (!item) notFound();
-  return <PrivatePaymentClient item={serializePrivatePayment(item)} />;
+
+  const serialized = serializePrivatePayment(item);
+  const isExpired =
+    serialized.paymentStatus === "결제대기" &&
+    !!serialized.expiresAt &&
+    new Date(serialized.expiresAt).getTime() < Date.now();
+
+  return <PrivatePaymentClient item={serialized} isExpired={isExpired} />;
 }

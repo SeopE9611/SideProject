@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import type { SerializedPrivatePayment } from "@/lib/private-payments";
 import PrivatePaymentNiceButton from "./PrivatePaymentNiceButton";
@@ -22,17 +22,18 @@ type Item = Pick<
   | "paymentStatus"
   | "expiresAt"
 >;
-export default function PrivatePaymentClient({ item }: { item: Item }) {
+export default function PrivatePaymentClient({
+  item,
+  isExpired,
+}: {
+  item: Item;
+  isExpired: boolean;
+}) {
   const [buyer, setBuyer] = useState({
     name: item.customerName || "",
     phone: item.customerPhone || "",
     email: item.customerEmail || "",
   });
-  const [now, setNow] = useState<number | null>(null);
-  useEffect(() => {
-    setNow(Date.now());
-  }, []);
-  const isExpired = now !== null && !!item.expiresAt && new Date(item.expiresAt).getTime() < now;
   const emailInvalid = !!buyer.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyer.email);
   if (item.status === "inactive")
     return (
