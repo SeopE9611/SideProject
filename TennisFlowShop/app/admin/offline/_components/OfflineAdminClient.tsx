@@ -2198,6 +2198,9 @@ export default function OfflineAdminClient() {
                               {KIND_LABELS[r.kind as keyof typeof KIND_LABELS] ?? r.kind}
                             </span>
                             {r.source === "private_payment" && <Badge variant="secondary">개인결제 연결</Badge>}
+                            {r.privatePaymentSync?.paymentStatus === "결제취소" && (
+                              <Badge variant="destructive">개인결제 취소됨</Badge>
+                            )}
                           </div>
                         </td>
                         <td className={adminDataTable.cellTopLeft}>

@@ -80,6 +80,23 @@ function serializeRecord(d: Record<string, any>) {
     source: d.source || null,
     privatePaymentId: d.privatePaymentId ? String(d.privatePaymentId) : null,
     revenueExcluded: d.revenueExcluded === true,
+    privatePaymentSync: d.privatePaymentSync
+      ? {
+          paymentStatus: d.privatePaymentSync.paymentStatus,
+          canceledAt:
+            d.privatePaymentSync.canceledAt instanceof Date
+              ? d.privatePaymentSync.canceledAt.toISOString()
+              : (d.privatePaymentSync.canceledAt ?? null),
+          syncedAt:
+            d.privatePaymentSync.syncedAt instanceof Date
+              ? d.privatePaymentSync.syncedAt.toISOString()
+              : (d.privatePaymentSync.syncedAt ?? null),
+          cancelReason:
+            typeof d.privatePaymentSync.cancelReason === "string"
+              ? d.privatePaymentSync.cancelReason
+              : null,
+        }
+      : undefined,
     payment: d.payment,
     points: {
       earn: typeof d.points?.earn === "number" ? d.points.earn : null,
@@ -192,6 +209,7 @@ export async function GET(req: Request) {
     source: 1,
     privatePaymentId: 1,
     revenueExcluded: 1,
+    privatePaymentSync: 1,
   };
   const total = await guard.db.collection("offline_service_records").countDocuments(filter);
   const items = await guard.db
