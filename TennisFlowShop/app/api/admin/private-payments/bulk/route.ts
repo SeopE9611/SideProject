@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   const csrf = verifyAdminCsrf(req);
   if (!csrf.ok) return csrf.res;
 
-  const body = await req.json().catch(() => ({}));
+  const body: { action?: unknown; ids?: unknown } = await req.json().catch(() => ({}));
   const action = String(body.action || "");
   const ids = Array.isArray(body.ids) ? body.ids.map(String).filter(ObjectId.isValid) : [];
   if (!ids.length) return NextResponse.json({ ok: false, message: "선택된 항목이 없습니다." }, { status: 400 });

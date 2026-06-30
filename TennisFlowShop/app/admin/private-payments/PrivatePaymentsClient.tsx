@@ -68,7 +68,7 @@ const defaultExpiresAt = () => {
   const offset = date.getTimezoneOffset() * 60000;
   return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 };
-const isExpired = (item: Item) => !!item.expiresAt && new Date(item.expiresAt).getTime() < Date.now();
+const isExpired = (item: Item, now: number) => !!item.expiresAt && new Date(item.expiresAt).getTime() < now;
 
 export default function PrivatePaymentsClient() {
   const [items, setItems] = useState<Item[]>([]);
@@ -84,6 +84,11 @@ export default function PrivatePaymentsClient() {
   const [cancelTarget, setCancelTarget] = useState<Item | null>(null);
   const [cancelReason, setCancelReason] = useState(defaultCancelReason);
   const [cancelError, setCancelError] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<Item | null>(null);
+  const [deleteMode, setDeleteMode] = useState<"item" | "bulk" | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [now, setNow] = useState<number | null>(null);
   const query = useMemo(() => {
     const params = new URLSearchParams({ limit: "50", sort, dir });
     Object.entries(filters).forEach(([key, value]) => value && params.set(key, value));
@@ -98,6 +103,9 @@ export default function PrivatePaymentsClient() {
   useEffect(() => {
     load().catch(() => setMessage("목록을 불러오지 못했습니다."));
   }, [query]);
+  useEffect(() => {
+    setNow(Date.now());
+  }, []);
   const save = async () => {
     setMessage("");
     const url = editing ? `/api/admin/private-payments/${editing.id}` : "/api/admin/private-payments";
@@ -148,6 +156,31 @@ export default function PrivatePaymentsClient() {
     setMessage(action === "archive" ? "선택 항목을 보관했습니다." : action === "unarchive" ? "선택 항목을 보관 해제했습니다." : "선택한 결제대기 건을 삭제했습니다.");
     await load();
   };
+  const openDeleteDialog = (item?: Item) => {
+    setDeleteTarget(item || null);
+    setDeleteMode(item ? "item" : "bulk");
+    setDeleteError("");
+    setMessage("");
+  };
+  const confirmDelete = async () => {
+    if (!deleteMode) return;
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      if (deleteMode === "item") {
+        if (!deleteTarget) return;
+        await runItemAction(deleteTarget, "delete");
+      } else {
+        await runBulkAction("delete_pending");
+      }
+      setDeleteTarget(null);
+      setDeleteMode(null);
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : "삭제에 실패했습니다.");
+    } finally {
+      setDeleting(false);
+    }
+  };
   const openCancelDialog = (item: Item) => {
     setCancelTarget(item);
     setCancelReason(defaultCancelReason);
@@ -186,6 +219,7 @@ export default function PrivatePaymentsClient() {
   const hasArchivable = selectedItems.some((item) => item.paymentStatus !== "결제대기" && !item.archivedAt);
   const hasUnarchivable = selectedItems.some((item) => item.archivedAt);
   const hasPending = selectedItems.some((item) => item.paymentStatus === "결제대기");
+  const canEdit = !editing || editing.paymentStatus === "결제대기";
   const header = (label: string, key: string) => (
     <button className="inline-flex items-center gap-1 font-semibold" type="button" onClick={() => toggleSort(key)}>
       {label}<span className="text-[10px] text-muted-foreground">{sort === key ? (dir === "asc" ? "▲" : "▼") : "↕"}</span>
@@ -202,12 +236,13 @@ export default function PrivatePaymentsClient() {
         <Card className={adminSurface.card}>
           <CardHeader><CardTitle>{editing ? "개인결제 상세/수정" : "개인결제 링크 생성"}</CardTitle><p className="text-sm text-muted-foreground">만료일을 비우면 만료 없이 운영됩니다.</p></CardHeader>
           <CardContent className="space-y-3">
-            <div className="space-y-1.5"><Label>결제명</Label><Input placeholder="예: 김재민 1회 레슨권" value={form.title} disabled={editing?.paymentStatus === "결제완료"} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label>결제금액</Label><Input placeholder="예: 40000" type="number" min={1000} value={form.amount} disabled={editing?.paymentStatus === "결제완료"} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label>만료일</Label><Input type="datetime-local" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} /><p className="text-xs text-muted-foreground">신규 생성 기본값은 생성일 기준 7일 뒤입니다. 비우면 만료 없음입니다.</p></div>
-            <div className="space-y-1.5"><Label>설명</Label><Textarea placeholder="예: 레슨 1회권 결제" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
-            <div className="grid gap-3 sm:grid-cols-3"><div className="space-y-1.5"><Label>고객명</Label><Input value={form.customerName} onChange={(e) => setForm({ ...form, customerName: e.target.value })} /></div><div className="space-y-1.5"><Label>연락처</Label><Input value={form.customerPhone} onChange={(e) => setForm({ ...form, customerPhone: e.target.value })} /></div><div className="space-y-1.5"><Label>이메일</Label><Input value={form.customerEmail} onChange={(e) => setForm({ ...form, customerEmail: e.target.value })} /></div></div>
-            <div className="flex flex-wrap gap-2"><Button onClick={() => save().catch((e) => setMessage(e.message))}>{editing ? "수정 저장" : "생성"}</Button>{editing && <Button variant="outline" onClick={() => { setEditing(null); setForm({ ...empty, expiresAt: defaultExpiresAt() }); }}>취소</Button>}<Button type="button" variant="ghost" onClick={() => setForm({ ...form, expiresAt: "" })}>만료 없음</Button></div>
+            {!canEdit && <p className="rounded-md border bg-muted px-3 py-2 text-sm text-muted-foreground">결제완료/취소 건은 결제 기록 보존을 위해 수정할 수 없습니다. 보관 또는 보관 해제만 가능합니다.</p>}
+            <div className="space-y-1.5"><Label>결제명</Label><Input placeholder="예: 김재민 1회 레슨권" value={form.title} disabled={!canEdit} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>결제금액</Label><Input placeholder="예: 40000" type="number" min={1000} value={form.amount} disabled={!canEdit} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>만료일</Label><Input type="datetime-local" value={form.expiresAt} disabled={!canEdit} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} /><p className="text-xs text-muted-foreground">신규 생성 기본값은 생성일 기준 7일 뒤입니다. 비우면 만료 없음입니다.</p></div>
+            <div className="space-y-1.5"><Label>설명</Label><Textarea placeholder="예: 레슨 1회권 결제" value={form.description} disabled={!canEdit} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+            <div className="grid gap-3 sm:grid-cols-3"><div className="space-y-1.5"><Label>고객명</Label><Input value={form.customerName} disabled={!canEdit} onChange={(e) => setForm({ ...form, customerName: e.target.value })} /></div><div className="space-y-1.5"><Label>연락처</Label><Input value={form.customerPhone} disabled={!canEdit} onChange={(e) => setForm({ ...form, customerPhone: e.target.value })} /></div><div className="space-y-1.5"><Label>이메일</Label><Input value={form.customerEmail} disabled={!canEdit} onChange={(e) => setForm({ ...form, customerEmail: e.target.value })} /></div></div>
+            <div className="flex flex-wrap gap-2">{canEdit && <Button onClick={() => save().catch((e) => setMessage(e.message))}>{editing ? "수정 저장" : "생성"}</Button>}{editing && <Button variant="outline" onClick={() => { setEditing(null); setForm({ ...empty, expiresAt: defaultExpiresAt() }); }}>취소</Button>}<Button type="button" variant="ghost" disabled={!canEdit} onClick={() => setForm({ ...form, expiresAt: "" })}>만료 없음</Button></div>
             {message && <p className="text-sm text-muted-foreground">{message}</p>}
           </CardContent>
         </Card>
@@ -215,18 +250,25 @@ export default function PrivatePaymentsClient() {
           <CardHeader><CardTitle>개인결제 목록</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-2 rounded-xl border bg-muted/20 p-3 md:grid-cols-6"><Input placeholder="검색어" value={filters.q} onChange={(e) => setFilters({ ...filters, q: e.target.value })} /><select className="rounded-md border bg-background px-3 py-2 text-sm" value={filters.paymentStatus} onChange={(e) => setFilters({ ...filters, paymentStatus: e.target.value })}><option value="">결제상태 전체</option><option>결제대기</option><option>결제완료</option><option>결제취소</option></select><select className="rounded-md border bg-background px-3 py-2 text-sm" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}><option value="">활성상태 전체</option><option value="active">활성</option><option value="inactive">비활성</option></select><select className="rounded-md border bg-background px-3 py-2 text-sm" value={filters.archived} onChange={(e) => setFilters({ ...filters, archived: e.target.value })}><option value="active">보관 제외</option><option value="archived">보관함 보기</option><option value="all">전체 보기</option></select><Input type="date" value={filters.from} onChange={(e) => setFilters({ ...filters, from: e.target.value })} /><Input type="date" value={filters.to} onChange={(e) => setFilters({ ...filters, to: e.target.value })} /></div>
-            <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" disabled={!hasArchivable} onClick={() => runBulkAction("archive").catch((e) => setMessage(e.message))}>선택 보관</Button><Button size="sm" variant="outline" disabled={!hasUnarchivable} onClick={() => runBulkAction("unarchive").catch((e) => setMessage(e.message))}>선택 보관 해제</Button><Button size="sm" variant="destructive" disabled={!hasPending} onClick={() => runBulkAction("delete_pending").catch((e) => setMessage(e.message))}>선택 삭제</Button></div>
+            <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" disabled={!hasArchivable} onClick={() => runBulkAction("archive").catch((e) => setMessage(e.message))}>선택 보관</Button><Button size="sm" variant="outline" disabled={!hasUnarchivable} onClick={() => runBulkAction("unarchive").catch((e) => setMessage(e.message))}>선택 보관 해제</Button><Button size="sm" variant="destructive" disabled={!hasPending} onClick={() => openDeleteDialog()}>선택 삭제</Button></div>
             <div className="max-h-[680px] overflow-auto rounded-xl border">
               <table className="w-full min-w-[1120px] text-sm">
                 <thead className="sticky top-0 z-10 bg-muted/80 backdrop-blur"><tr className="border-b text-left"><th className="p-3"><input type="checkbox" checked={allChecked} onChange={(e) => setSelected(e.target.checked ? items.map((item) => item.id) : [])} /></th><th className="p-3">{header("결제 정보", "title")}</th><th className="p-3">고객</th><th className="p-3">{header("금액", "amount")}</th><th className="p-3">{header("상태", "paymentStatus")}</th><th className="p-3">{header("만료/일시", "expiresAt")}</th><th className="p-3 text-right">작업</th></tr></thead>
                 <tbody>{items.length === 0 ? <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">조건에 맞는 개인결제가 없습니다.</td></tr> : items.map((item) => (
-                  <tr key={item.id} className="border-b align-top transition-colors hover:bg-muted/40"><td className="p-3"><input type="checkbox" checked={selected.includes(item.id)} onChange={(e) => setSelected(e.target.checked ? [...selected, item.id] : selected.filter((id) => id !== item.id))} /></td><td className="p-3"><div className="font-medium">{item.title}</div>{item.description && <div className="mt-1 max-w-[260px] text-xs text-muted-foreground line-clamp-2">{item.description}</div>}<div className="mt-2 text-xs text-muted-foreground">ID {item.id}</div></td><td className="p-3"><div>{item.customerName || "-"}</div>{(item.customerPhone || item.customerEmail) && <div className="mt-1 text-xs text-muted-foreground">{[item.customerPhone, item.customerEmail].filter(Boolean).join(" · ")}</div>}</td><td className="p-3 font-semibold">{money(item.amount)}</td><td className="p-3"><div className="flex flex-wrap gap-1.5"><Badge variant={item.paymentStatus === "결제완료" ? "default" : item.paymentStatus === "결제취소" ? "destructive" : "outline"}>{item.paymentStatus}</Badge>{isExpired(item) && <Badge variant="destructive">만료됨</Badge>}<Badge variant={item.status === "active" ? "secondary" : "outline"}>{statusLabel(item.status)}</Badge>{item.archivedAt && <Badge variant="outline">보관됨</Badge>}</div></td><td className="p-3 text-xs text-muted-foreground"><div>만료: {item.expiresAt ? formatKoreanDateTime(item.expiresAt) : "만료 없음"}</div><div>생성: {formatKoreanDateTime(item.createdAt)}</div>{item.paidAt && <div>완료: {formatKoreanDateTime(item.paidAt)}</div>}{item.canceledAt && <div>취소: {formatKoreanDateTime(item.canceledAt)}</div>}</td><td className="p-3"><div className="flex flex-wrap justify-end gap-2"><Button size="sm" variant="outline" onClick={() => copy(item.id)}>링크 복사</Button><Button size="sm" variant="ghost" onClick={() => edit(item)}>상세/수정</Button>{item.paymentStatus === "결제완료" && <Button size="sm" variant="destructive" disabled={cancelingId === item.id} onClick={() => openCancelDialog(item)}>{cancelingId === item.id ? "취소 처리 중..." : "결제취소"}</Button>}{item.paymentStatus === "결제대기" ? <Button size="sm" variant="destructive" onClick={() => runItemAction(item, "delete").catch((e) => setMessage(e.message))}>결제대기 삭제</Button> : item.archivedAt ? <Button size="sm" variant="outline" onClick={() => runItemAction(item, "unarchive").catch((e) => setMessage(e.message))}>보관 해제</Button> : <Button size="sm" variant="outline" onClick={() => runItemAction(item, "archive").catch((e) => setMessage(e.message))}>보관</Button>}</div></td></tr>
+                  <tr key={item.id} className="border-b align-top transition-colors hover:bg-muted/40"><td className="p-3"><input type="checkbox" checked={selected.includes(item.id)} onChange={(e) => setSelected(e.target.checked ? [...selected, item.id] : selected.filter((id) => id !== item.id))} /></td><td className="p-3"><div className="font-medium">{item.title}</div>{item.description && <div className="mt-1 max-w-[260px] text-xs text-muted-foreground line-clamp-2">{item.description}</div>}<div className="mt-2 text-xs text-muted-foreground">ID {item.id}</div></td><td className="p-3"><div>{item.customerName || "-"}</div>{(item.customerPhone || item.customerEmail) && <div className="mt-1 text-xs text-muted-foreground">{[item.customerPhone, item.customerEmail].filter(Boolean).join(" · ")}</div>}</td><td className="p-3 font-semibold">{money(item.amount)}</td><td className="p-3"><div className="flex flex-wrap gap-1.5"><Badge variant={item.paymentStatus === "결제완료" ? "default" : item.paymentStatus === "결제취소" ? "destructive" : "outline"}>{item.paymentStatus}</Badge>{now !== null && isExpired(item, now) && <Badge variant="destructive">만료됨</Badge>}<Badge variant={item.status === "active" ? "secondary" : "outline"}>{statusLabel(item.status)}</Badge>{item.archivedAt && <Badge variant="outline">보관됨</Badge>}</div></td><td className="p-3 text-xs text-muted-foreground"><div>만료: {item.expiresAt ? formatKoreanDateTime(item.expiresAt) : "만료 없음"}</div><div>생성: {formatKoreanDateTime(item.createdAt)}</div>{item.paidAt && <div>완료: {formatKoreanDateTime(item.paidAt)}</div>}{item.canceledAt && <div>취소: {formatKoreanDateTime(item.canceledAt)}</div>}</td><td className="p-3"><div className="flex flex-wrap justify-end gap-2"><Button size="sm" variant="outline" onClick={() => copy(item.id)}>링크 복사</Button><Button size="sm" variant="ghost" onClick={() => edit(item)}>상세/수정</Button>{item.paymentStatus === "결제완료" && <Button size="sm" variant="destructive" disabled={cancelingId === item.id} onClick={() => openCancelDialog(item)}>{cancelingId === item.id ? "취소 처리 중..." : "결제취소"}</Button>}{item.paymentStatus === "결제대기" ? <Button size="sm" variant="destructive" onClick={() => openDeleteDialog(item)}>결제대기 삭제</Button> : item.archivedAt ? <Button size="sm" variant="outline" onClick={() => runItemAction(item, "unarchive").catch((e) => setMessage(e.message))}>보관 해제</Button> : <Button size="sm" variant="outline" onClick={() => runItemAction(item, "archive").catch((e) => setMessage(e.message))}>보관</Button>}</div></td></tr>
                 ))}</tbody>
               </table>
             </div>
           </CardContent>
         </Card>
       </div>
+      <AlertDialog open={!!deleteMode} onOpenChange={(open) => { if (!open && !deleting) { setDeleteError(""); setDeleteTarget(null); setDeleteMode(null); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader><AlertDialogTitle>결제대기 개인결제를 삭제할까요?</AlertDialogTitle><AlertDialogDescription>결제대기 상태의 개인결제만 삭제됩니다. 결제완료/결제취소 기록은 삭제되지 않습니다.</AlertDialogDescription></AlertDialogHeader>
+          {deleteError && <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{deleteError}</p>}
+          <AlertDialogFooter><AlertDialogCancel disabled={deleting}>닫기</AlertDialogCancel><Button variant="destructive" disabled={deleting} onClick={confirmDelete}>{deleting ? "삭제 중..." : "삭제"}</Button></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <AlertDialog open={!!cancelTarget} onOpenChange={(open) => { if (!open && !cancelingId) { setCancelError(""); setCancelTarget(null); } }}>
         <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>개인결제를 취소할까요?</AlertDialogTitle><AlertDialogDescription>NICEPAY 승인취소가 진행됩니다. 취소 후 이 개인결제 링크로 다시 결제할 수 없습니다.</AlertDialogDescription></AlertDialogHeader><div className="space-y-2"><Label htmlFor="cancel-reason">취소 사유</Label><Textarea id="cancel-reason" value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} disabled={!!cancelingId} /></div>{cancelError && <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{cancelError}</p>}<AlertDialogFooter><AlertDialogCancel disabled={!!cancelingId}>닫기</AlertDialogCancel><Button variant="destructive" disabled={!!cancelingId} onClick={cancelPayment}>{cancelingId ? "취소 처리 중..." : "승인취소 진행"}</Button></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
