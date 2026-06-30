@@ -733,7 +733,6 @@ export default function UsersClient() {
         title="회원 관리"
         description="회원 정보, 권한, 상태, 활동 이력을 한 곳에서 확인하고 관리합니다."
         icon={UserCheck}
-        tone="blue"
       />
       <UsersKpiCards
         status={kpiStatus}
