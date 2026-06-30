@@ -18,6 +18,9 @@ import {
   th,
   type UserStatusKey,
 } from "@/app/admin/users/_lib/usersClientUtils";
+import { adminDataTable } from "@/components/admin/AdminDataTable";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface } from "@/components/admin/admin-typography";
 import {
   AlertDialog,
@@ -725,7 +728,13 @@ export default function UsersClient() {
   };
 
   return (
-    <>
+    <AdminPageShell>
+      <AdminPageHeader
+        title="회원 관리"
+        description="회원 정보, 권한, 상태, 활동 이력을 한 곳에서 확인하고 관리합니다."
+        icon={UserCheck}
+        tone="blue"
+      />
       <UsersKpiCards
         status={kpiStatus}
         values={kpiValues}
@@ -1058,14 +1067,14 @@ export default function UsersClient() {
                         className="mx-auto"
                       />
                     </TableHead>
-                    <TableHead className={cn(th, "w-[240px]")}>회원</TableHead>
-                    <TableHead className={cn(th, "w-[72px]")}>권한</TableHead>
-                    <TableHead className={cn(th, "w-[110px]")}>전화</TableHead>
-                    <TableHead className={cn(th, "w-[280px]")}>주소</TableHead>
+                    <TableHead className={cn(adminDataTable.head, "w-[240px]")}>회원</TableHead>
+                    <TableHead className={cn(adminDataTable.headCenter, "w-[72px]")}>권한</TableHead>
+                    <TableHead className={cn(adminDataTable.head, "w-[110px]")}>전화</TableHead>
+                    <TableHead className={cn(adminDataTable.head, "w-[280px]")}>주소</TableHead>
                     {/* 가입일 + 마지막 로그인 병합 */}
-                    <TableHead className={cn(th, "w-[150px]")}>활동(가입/로그인)</TableHead>
-                    <TableHead className={cn(th, "w-[64px] px-0")}>상태</TableHead>
-                    <TableHead className={cn(th, "w-[44px] text-center")}>작업</TableHead>
+                    <TableHead className={cn(adminDataTable.headRight, "w-[150px]")}>활동(가입/로그인)</TableHead>
+                    <TableHead className={cn(adminDataTable.headCenter, "w-[64px] px-0")}>상태</TableHead>
+                    <TableHead className={cn(adminDataTable.actionHead, "w-[44px] px-0")}>작업</TableHead>
                   </TableRow>
                 </TableHeader>
 
@@ -1148,8 +1157,8 @@ export default function UsersClient() {
                           </TableCell>
 
                           {/* 회원: 이름/이메일 두 줄 + 복사 */}
-                          <TableCell className={cn(td, "w-[240px]")}>
-                            <div className="mx-auto flex max-w-[220px] min-w-0 flex-col items-center overflow-hidden text-center">
+                          <TableCell className={cn(td, "w-[240px] text-left")}>
+                            <div className="flex max-w-[220px] min-w-0 flex-col items-start overflow-hidden text-left">
                               <span
                                 className="line-clamp-2 max-w-full break-words font-medium"
                                 title={u.name || "(이름없음)"}
@@ -1207,9 +1216,9 @@ export default function UsersClient() {
                           </TableCell>
 
                           {/* 전화 */}
-                          <TableCell className={cn(td, "w-[110px] whitespace-nowrap")}>
+                          <TableCell className={cn(td, "w-[110px] whitespace-nowrap text-left")}>
                             {u.phone ? (
-                              <div className="flex items-center justify-center gap-1">
+                              <div className="flex items-center justify-start gap-1">
                                 <a href={`tel:${u.phone}`} className="underline decoration-dotted">
                                   {formatKoreanPhone(u.phone) || u.phone}
                                 </a>
@@ -1229,10 +1238,10 @@ export default function UsersClient() {
 
                           {/* 주소: 요약 + 복사, 전체는 title로 */}
                           <TableCell
-                            className={cn(td, "w-[280px]")}
+                            className={cn(td, "w-[280px] text-left")}
                             title={fullAddress(u.postalCode, u.address, u.addressDetail)}
                           >
-                            <div className="flex min-w-0 items-center justify-center gap-1 overflow-hidden">
+                            <div className="flex min-w-0 items-center justify-start gap-1 overflow-hidden">
                               <span className="line-clamp-2 block max-w-[250px] break-words">
                                 {shortAddress(u.address)}
                               </span>
@@ -1250,8 +1259,8 @@ export default function UsersClient() {
                           </TableCell>
 
                           {/* 활동(가입/로그인) 한 칼럼 */}
-                          <TableCell className={cn(td, "w-[150px] whitespace-nowrap")}>
-                            <div className="flex flex-col items-center whitespace-nowrap leading-tight">
+                          <TableCell className={cn(td, "w-[150px] whitespace-nowrap text-right")}>
+                            <div className="flex flex-col items-end whitespace-nowrap leading-tight tabular-nums">
                               <span className="text-[12px]">{joined.date}</span>
                               <span className="text-xs text-foreground/75">
                                 {last.time ? `${last.date} ${last.time}` : "-"}
@@ -1279,7 +1288,7 @@ export default function UsersClient() {
                           </TableCell>
 
                           {/* 작업 */}
-                          <TableCell className={cn(td, "w-[44px] p-0")}>
+                          <TableCell className={cn(td, "w-[44px] p-0 text-right")}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" className="h-7 w-7 p-0">
@@ -1625,6 +1634,6 @@ export default function UsersClient() {
         userId={pointsTarget?.id ?? null}
         userName={pointsTarget?.name}
       />
-    </>
+    </AdminPageShell>
   );
 }

@@ -6,7 +6,9 @@ import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
 import useSWR from "swr";
 import { BookOpen, Eye, MoreHorizontal, Search, Trash2 } from "lucide-react";
 
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -233,7 +235,7 @@ export default function AcademyApplicationsClient() {
   }
 
   return (
-    <div className="space-y-5 px-4 py-6 sm:px-6 lg:px-8">
+    <AdminPageShell>
       <AdminPageHeader
         title="아카데미 신청 관리"
         description="수강 신청 접수, 상담 상태, 등록 확정 여부를 한 곳에서 확인합니다."
@@ -344,13 +346,13 @@ export default function AcademyApplicationsClient() {
             <Table className="min-w-[940px]">
               <TableHeader className={adminSurface.tableHeader}>
                 <TableRow>
-                  <TableHead className="whitespace-nowrap px-3">접수일</TableHead>
-                  <TableHead className="whitespace-nowrap px-3">신청자</TableHead>
-                  <TableHead className="whitespace-nowrap px-3">선택 클래스</TableHead>
-                  <TableHead className="whitespace-nowrap px-3">희망 정보</TableHead>
-                  <TableHead className="whitespace-nowrap px-3">선호 일정</TableHead>
-                  <TableHead className="whitespace-nowrap px-3">상태</TableHead>
-                  <TableHead className="whitespace-nowrap px-3 text-right">관리</TableHead>
+                  <TableHead className={adminDataTable.headRight}>접수일</TableHead>
+                  <TableHead className={adminDataTable.head}>신청자</TableHead>
+                  <TableHead className={adminDataTable.head}>선택 클래스</TableHead>
+                  <TableHead className={adminDataTable.head}>희망 정보</TableHead>
+                  <TableHead className={adminDataTable.headCenter}>선호 일정</TableHead>
+                  <TableHead className={adminDataTable.headCenter}>상태</TableHead>
+                  <TableHead className={adminDataTable.actionHead}>관리</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -386,11 +388,11 @@ export default function AcademyApplicationsClient() {
                       onClick={() => goToDetail(item._id)}
                       onKeyDown={(event) => handleRowKeyDown(event, item._id)}
                     >
-                      <TableCell className="whitespace-nowrap px-3 py-3 text-xs">
+                      <TableCell className={adminDataTable.dateCell}>
                         <div className="font-medium text-foreground">{createdAt.date}</div>
                         <div className="text-muted-foreground">{createdAt.time}</div>
                       </TableCell>
-                      <TableCell className="min-w-0 px-3 py-3">
+                      <TableCell className={adminDataTable.cellTopLeft}>
                         <div
                           className="line-clamp-2 max-w-[180px] break-keep font-medium text-foreground"
                           title={item.applicantName || "-"}
@@ -407,16 +409,16 @@ export default function AcademyApplicationsClient() {
                           {item.phone || "연락처 미입력"}
                         </div>
                       </TableCell>
-                      <TableCell className="min-w-0 px-3 py-3">
+                      <TableCell className={adminDataTable.cellTopLeft}>
                         <SelectedClassCell classSnapshot={item.classSnapshot} />
                       </TableCell>
-                      <TableCell className="whitespace-nowrap px-3 py-3 text-sm">
+                      <TableCell className={adminDataTable.cellTopLeft}>
                         <div>{getAcademyLessonTypeLabel(item.desiredLessonType)}</div>
                         <div className="text-xs text-muted-foreground">
                           {getAcademyCurrentLevelLabel(item.currentLevel)}
                         </div>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap px-3 py-3 text-sm">
+                      <TableCell className={adminDataTable.cellTopLeft}>
                         <div
                           className="max-w-[160px] truncate"
                           title={item.preferredDays.length ? item.preferredDays.join(", ") : "-"}
@@ -430,11 +432,11 @@ export default function AcademyApplicationsClient() {
                           {item.preferredTimeText || "희망 시간 미입력"}
                         </div>
                       </TableCell>
-                      <TableCell className="px-3 py-3">
+                      <TableCell className={adminDataTable.cellCenter}>
                         <AcademyStatusBadge status={item.status} />
                       </TableCell>
                       <TableCell
-                        className="whitespace-nowrap px-3 py-3 text-right"
+                        className={adminDataTable.actionCell}
                         onClick={(event) => event.stopPropagation()}
                       >
                         <DropdownMenu>
@@ -539,7 +541,7 @@ export default function AcademyApplicationsClient() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </AdminPageShell>
   );
 }
 
