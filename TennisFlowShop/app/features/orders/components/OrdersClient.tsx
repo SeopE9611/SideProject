@@ -376,10 +376,10 @@ export default function OrdersClient() {
 
   function getOrderNextAction(order: OrderWithType, isLinkedProductOrder: boolean) {
     if (order.cancelStatus === "requested") return "취소 처리";
-    if (order.paymentStatus === "결제대기") return "결제 확인";
-    if (isLinkedProductOrder) return "교체 작업 확인";
+    if (order.paymentStatus === "결제대기") return "결제 확인하기";
+    if (isLinkedProductOrder) return "작업 확인하기";
     const tracking = getTrackingBadge(order);
-    if (tracking.label.includes("미등록") || tracking.label.includes("없음")) return "배송 등록";
+    if (tracking.label.includes("미등록") || tracking.label.includes("없음")) return "배송 등록하기";
     return "상세 보기";
   }
 

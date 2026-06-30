@@ -217,10 +217,10 @@ export default function AdminRentalsClient() {
 
   function getRentalNextAction(r: RentalRow) {
     if (r.cancelRequest?.status === "requested") return "취소 처리";
-    if (derivePaymentStatus(r) !== "paid") return "결제 확인";
-    if (r.status === "paid") return "인도 처리";
-    if (r.status === "out") return "반납 처리";
-    if (r.status === "returned" && !r.depositRefundedAt) return "보증금 환불";
+    if (derivePaymentStatus(r) !== "paid") return "결제 확인하기";
+    if (r.status === "paid") return "인도 처리하기";
+    if (r.status === "out") return "반납 처리하기";
+    if (r.status === "returned" && !r.depositRefundedAt) return "환불 확인하기";
     return "대여 상세";
   }
 

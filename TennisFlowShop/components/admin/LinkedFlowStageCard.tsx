@@ -228,11 +228,22 @@ export default function LinkedFlowStageCard({
           ) : null}
         </div>
 
-        <details className="rounded-xl border border-border/70 bg-muted/30 p-4">
-          <summary className={cn("cursor-pointer", adminTypography.panelTitle)}>
+        <details className="group rounded-xl border border-border/70 bg-muted/20 p-2">
+          <summary
+            className={cn(
+              "flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden",
+              adminTypography.panelTitle,
+            )}
+          >
             단계 직접 보정
+            <span className="text-ui-label font-medium text-muted-foreground group-open:hidden">
+              펼치기
+            </span>
+            <span className="hidden text-ui-label font-medium text-muted-foreground group-open:inline">
+              접기
+            </span>
           </summary>
-          <div className="mt-3 space-y-3">
+          <div className="space-y-3 px-2 pb-2 pt-3">
             <div className="rounded-lg border border-warning/40 bg-background/80 p-3">
               <p className={adminTypography.warning}>
                 상태 보정은 실제 결제/작업 기록과 맞지 않을 때만 사용하세요.
