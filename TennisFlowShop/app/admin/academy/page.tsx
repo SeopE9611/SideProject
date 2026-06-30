@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BookOpenCheck, ClipboardCheck, Compass, Users } from "lucide-react";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageSection from "@/components/admin/AdminPageSection";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -36,8 +37,8 @@ const guideItems = [
 
 export default function AcademyHubPage() {
   return (
-    <div className="p-6">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+    <AdminPageShell>
+      <div className="flex flex-col gap-6">
         <AdminPageHeader
           title="아카데미 관리"
           description="클래스 운영과 신청 관리를 한 곳에서 시작합니다."
@@ -87,6 +88,6 @@ export default function AcademyHubPage() {
           </AdminPageSection>
         </section>
       </div>
-    </div>
+    </AdminPageShell>
   );
 }

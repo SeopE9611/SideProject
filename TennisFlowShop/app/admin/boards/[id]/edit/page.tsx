@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminBoardEditClient from "./AdminBoardEditClient";
 
 import type { Metadata } from "next";
@@ -28,8 +29,8 @@ export default async function AdminBoardEditPage({ params }: { params: Promise<{
   }
 
   return (
-    <div className="container py-8 px-6">
+    <AdminPageShell>
       <AdminBoardEditClient postId={boardId} />
-    </div>
+    </AdminPageShell>
   );
 }

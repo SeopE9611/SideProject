@@ -121,54 +121,57 @@ export default function AdminAuditClient() {
         title="검색/필터"
         description="메시지, 실행자, 액션 타입으로 감사 로그를 좁혀봅니다."
         icon={ListFilter}
+        className={adminSurface.filterCard}
         contentClassName="space-y-3"
       >
-          <div className="grid gap-3 md:grid-cols-[1fr_280px_auto_auto]">
-            <Input
-              placeholder="검색어(message/actor)"
-              value={draftQ}
-              onChange={(e) => setDraftQ(e.target.value)}
-            />
-            <Input
-              placeholder="type (예: users.update)"
-              value={draftType}
-              onChange={(e) => setDraftType(e.target.value)}
-            />
-            <Button onClick={applyFilters} className="gap-2">
-              <Search className="h-4 w-4" />
-              검색
+        <div className="grid gap-3 md:grid-cols-[1fr_280px_auto_auto]">
+          <Input
+            placeholder="검색어(message/actor)"
+            value={draftQ}
+            onChange={(e) => setDraftQ(e.target.value)}
+          />
+          <Input
+            placeholder="type (예: users.update)"
+            value={draftType}
+            onChange={(e) => setDraftType(e.target.value)}
+          />
+          <Button onClick={applyFilters} className="gap-2">
+            <Search className="h-4 w-4" />
+            검색
+          </Button>
+          <Button variant="outline" onClick={resetFilters}>
+            초기화
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {QUICK_TYPE_FILTERS.map((filter) => (
+            <Button
+              key={filter.label}
+              type="button"
+              size="sm"
+              variant={state.type === filter.value ? "default" : "ghost"}
+              onClick={() => applyQuickTypeFilter(filter.value)}
+            >
+              {filter.label}
             </Button>
-            <Button variant="outline" onClick={resetFilters}>
-              초기화
-            </Button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {QUICK_TYPE_FILTERS.map((filter) => (
-              <Button
-                key={filter.label}
-                type="button"
-                size="sm"
-                variant={state.type === filter.value ? "default" : "ghost"}
-                onClick={() => applyQuickTypeFilter(filter.value)}
-              >
-                {filter.label}
-              </Button>
-            ))}
-          </div>
+          ))}
+        </div>
       </AdminPageSection>
 
       {error && (
-        <div className={`${adminSurface.cardMuted} p-6 ${adminTypography.body} text-destructive`}>
+        <div className={`${adminSurface.cardMuted} p-5 ${adminTypography.body} text-destructive`}>
           감사 로그를 불러오지 못했습니다.
         </div>
       )}
 
       {!error && !data && (
-        <div className={`${adminSurface.cardMuted} p-6 ${adminTypography.body} text-muted-foreground`}>불러오는 중...</div>
+        <div className={`${adminSurface.cardMuted} p-5 ${adminTypography.body} text-muted-foreground`}>
+          불러오는 중...
+        </div>
       )}
 
       {!!data && data.items.length === 0 && (
-        <div className={`${adminSurface.cardMuted} p-6 ${adminTypography.body} text-muted-foreground`}>
+        <div className={`${adminSurface.cardMuted} p-5 ${adminTypography.body} text-muted-foreground`}>
           조회 결과가 없습니다.
         </div>
       )}
@@ -181,30 +184,35 @@ export default function AdminAuditClient() {
           contentClassName="space-y-3"
         >
           {data.items.map((item) => (
-            <article key={item.id} className={`${adminSurface.tableCard} p-4`}>
-                <div className={`flex flex-wrap items-center gap-2 ${adminTypography.caption}`}>
-                  <Badge variant="secondary" className="font-mono text-[11px]">
-                    {item.type}
-                  </Badge>
-                  {NOTE_TYPE_LABEL[item.type] ? (
-                    <Badge variant="outline">{NOTE_TYPE_LABEL[item.type]}</Badge>
-                  ) : null}
-                  <span>{formatDateTime(item.createdAt)}</span>
-                  {item.requestId ? <span className="font-mono">req: {item.requestId}</span> : null}
-                </div>
-                <p className={`line-clamp-2 ${adminTypography.bodyStrong}`}>{item.message || "메시지 없음"}</p>
-                <div className={adminTypography.metaMuted}>
-                  <span title={item.actorTitle}>{item.actor}</span>
-                  <span className="mx-2">·</span>
-                  <span title={item.targetId || undefined}>target: {item.targetId || "없음"}</span>
-                </div>
-                {item.diffSummary && item.diffSummary.length > 0 ? (
-                  <ul className={`list-disc space-y-1 pl-5 ${adminTypography.caption}`}>
-                    {item.diffSummary.map((summary, idx) => (
-                      <li key={`${item.id}-s-${idx}`}>{summary}</li>
-                    ))}
-                  </ul>
+            <article
+              key={item.id}
+              className={`${adminSurface.tableCard} p-4 transition-colors hover:bg-muted/25`}
+            >
+              <div className={`flex flex-wrap items-center gap-2 ${adminTypography.caption}`}>
+                <Badge variant="secondary" className="font-mono text-[11px]">
+                  {item.type}
+                </Badge>
+                {NOTE_TYPE_LABEL[item.type] ? (
+                  <Badge variant="outline">{NOTE_TYPE_LABEL[item.type]}</Badge>
                 ) : null}
+                <span>{formatDateTime(item.createdAt)}</span>
+                {item.requestId ? <span className="font-mono">req: {item.requestId}</span> : null}
+              </div>
+              <p className={`line-clamp-2 ${adminTypography.bodyStrong}`}>
+                {item.message || "메시지 없음"}
+              </p>
+              <div className={adminTypography.metaMuted}>
+                <span title={item.actorTitle}>{item.actor}</span>
+                <span className="mx-2">·</span>
+                <span title={item.targetId || undefined}>target: {item.targetId || "없음"}</span>
+              </div>
+              {item.diffSummary && item.diffSummary.length > 0 ? (
+                <ul className={`list-disc space-y-1 pl-5 ${adminTypography.caption}`}>
+                  {item.diffSummary.map((summary, idx) => (
+                    <li key={`${item.id}-s-${idx}`}>{summary}</li>
+                  ))}
+                </ul>
+              ) : null}
             </article>
           ))}
 
