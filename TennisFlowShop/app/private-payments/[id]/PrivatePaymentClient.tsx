@@ -5,9 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import Link from "next/link";
+import type { SerializedPrivatePayment } from "@/lib/private-payments";
 import PrivatePaymentNiceButton from "./PrivatePaymentNiceButton";
 
-type Item = { id: string; title: string; amount: number; description?: string; customerName?: string; customerPhone?: string; customerEmail?: string; status: string; paymentStatus: string };
+type Item = Pick<
+  SerializedPrivatePayment,
+  "id" | "title" | "amount" | "description" | "customerName" | "customerPhone" | "customerEmail" | "status" | "paymentStatus"
+>;
 export default function PrivatePaymentClient({ item }: { item: Item }) {
   const [buyer, setBuyer] = useState({ name: item.customerName || "", phone: item.customerPhone || "", email: item.customerEmail || "" });
   const emailInvalid = !!buyer.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyer.email);

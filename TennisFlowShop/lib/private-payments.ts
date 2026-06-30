@@ -21,16 +21,62 @@ export type PrivatePayment = {
   history: Array<{ status: string; date: Date; description: string }>;
 };
 
+
+export type PrivatePaymentDocument = PrivatePayment & {
+  _id: ObjectId;
+};
+
+export type SerializedPrivatePayment = Omit<
+  PrivatePayment,
+  "_id" | "createdBy" | "createdAt" | "updatedAt" | "paidAt" | "history"
+> & {
+  _id: string;
+  id: string;
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
+  paidAt?: string;
+  history: Array<{ status: string; date: string; description: string }>;
+};
+
+type PrivatePaymentInputBody = Partial<
+  Record<
+    "title" | "amount" | "description" | "customerName" | "customerPhone" | "customerEmail",
+    unknown
+  >
+>;
+
+function asPrivatePaymentInputBody(value: unknown): PrivatePaymentInputBody {
+  return value && typeof value === "object" ? (value as PrivatePaymentInputBody) : {};
+}
+
+function toIsoString(value: Date | string | undefined): string | undefined {
+  if (!value) return undefined;
+  if (value instanceof Date) return value.toISOString();
+  return String(value);
+}
+
 export function privatePayments(db: Db) {
   return db.collection<PrivatePayment>("privatePayments");
 }
 
-export function serializePrivatePayment(doc: PrivatePayment) {
+export function serializePrivatePayment(
+  doc: PrivatePaymentDocument,
+): SerializedPrivatePayment {
+  const id = doc._id.toString();
+
   return {
     ...doc,
-    _id: doc._id?.toString(),
-    id: doc._id?.toString(),
+    _id: id,
+    id,
     createdBy: doc.createdBy?.toString(),
+    createdAt: toIsoString(doc.createdAt) ?? "",
+    updatedAt: toIsoString(doc.updatedAt) ?? "",
+    paidAt: toIsoString(doc.paidAt),
+    history: doc.history.map((entry) => ({
+      ...entry,
+      date: toIsoString(entry.date) ?? "",
+    })),
   };
 }
 
@@ -39,25 +85,26 @@ export function normalizeAmount(value: unknown) {
   return Number.isFinite(amount) ? amount : 0;
 }
 
-export function validatePrivatePaymentInput(body: any, options: { partial?: boolean } = {}) {
+export function validatePrivatePaymentInput(body: unknown, options: { partial?: boolean } = {}) {
   const errors: string[] = [];
   const input: Record<string, string | number> = {};
-  const has = (key: string) => Object.prototype.hasOwnProperty.call(body ?? {}, key);
+  const source = asPrivatePaymentInputBody(body);
+  const has = (key: keyof PrivatePaymentInputBody) => Object.prototype.hasOwnProperty.call(source, key);
 
   if (!options.partial || has("title")) {
-    const title = String(body?.title ?? "").trim();
+    const title = String(source.title ?? "").trim();
     if (!title || title.length > 80) errors.push("결제명은 1~80자로 입력해 주세요.");
     else input.title = title;
   }
 
   if (!options.partial || has("amount")) {
-    const amount = normalizeAmount(body?.amount);
+    const amount = normalizeAmount(source.amount);
     if (!Number.isInteger(amount) || amount < 1000) errors.push("금액은 1,000원 이상의 정수로 입력해 주세요.");
     else input.amount = amount;
   }
 
   for (const key of ["description", "customerName", "customerPhone", "customerEmail"] as const) {
-    if (!options.partial || has(key)) input[key] = String(body?.[key] ?? "").trim();
+    if (!options.partial || has(key)) input[key] = String(source[key] ?? "").trim();
   }
 
   if (has("customerEmail") && input.customerEmail) {
