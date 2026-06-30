@@ -1,7 +1,8 @@
 "use client";
 
+import AdminCompactField from "@/components/admin/AdminCompactField";
 import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
-import { AdminInfoGrid, AdminInfoItem } from "@/components/admin/AdminInfoGrid";
+import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
@@ -103,9 +104,7 @@ const fmtDateTime = (v?: string | Date | null) => {
 
 function ExtensionHistoryList({ items }: { items: OperationsHistoryItem[] }) {
   if (!items || items.length === 0)
-    return (
-      <div className="py-8 text-center text-sm text-muted-foreground">운영 내역이 없습니다.</div>
-    );
+    return <AdminInlineEmpty>운영 내역이 없습니다.</AdminInlineEmpty>;
 
   return (
     <ol className="relative ml-1">
@@ -661,7 +660,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             adminSurface.tableCard,
           )}
         >
-          <CardHeader className="border-b border-border">
+          <CardHeader className="border-b border-border/60 bg-background/70">
             <CardTitle className="flex items-center gap-2">
               <History className="h-5 w-5 text-primary" />
               잔여 횟수/만료/사용 이력
@@ -670,9 +669,9 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               패키지 횟수가 차감된 신청서 목록과 현재 사용 흐름을 먼저 확인하세요.
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-5">
             {usageHistory.length === 0 && !usageLoading ? (
-              <p className="text-center text-muted-foreground py-8">사용 내역이 없습니다.</p>
+              <AdminInlineEmpty>사용 내역이 없습니다.</AdminInlineEmpty>
             ) : (
               <div className="space-y-4">
                 {usageHistory.map((u) => (
@@ -737,7 +736,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
         <div className="grid gap-6 md:grid-cols-2">
           {/* 고객 정보 */}
           <Card id="package-customer" className={cn(adminSurface.card, "overflow-hidden")}>
-            <CardHeader className="border-b border-border/60 bg-muted/20">
+            <CardHeader className="border-b border-border/60 bg-background/70">
               <CardTitle className={cn("flex items-center gap-2", adminTypography.sectionTitle)}>
                 <User className="h-5 w-5 text-foreground" />
                 고객 정보
@@ -745,34 +744,52 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <CardDescription>구매자 연락처와 서비스 유형을 분리해 확인합니다.</CardDescription>
             </CardHeader>
             <CardContent className="p-5 sm:p-6">
-              <AdminInfoGrid columns="two">
-                <AdminInfoItem
-                  label="이름"
-                  value={data.customer.name ?? "이름 없음"}
-                  icon={<User className="h-4 w-4" />}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <AdminCompactField
+                  label={
+                    <span className="inline-flex items-center gap-1.5">
+                      <User className="h-4 w-4" />
+                      이름
+                    </span>
+                  }
+                  value={data.customer.name}
+                  emptyValue="이름 없음"
                 />
-                <AdminInfoItem
-                  label="이메일"
-                  value={data.customer.email ?? "-"}
-                  icon={<Mail className="h-4 w-4" />}
+                <AdminCompactField
+                  label={
+                    <span className="inline-flex items-center gap-1.5">
+                      <Mail className="h-4 w-4" />
+                      이메일
+                    </span>
+                  }
+                  value={data.customer.email}
+                  valueClassName="break-all"
                 />
-                <AdminInfoItem
-                  label="전화번호"
-                  value={data.customer.phone ?? "-"}
-                  icon={<Phone className="h-4 w-4" />}
+                <AdminCompactField
+                  label={
+                    <span className="inline-flex items-center gap-1.5">
+                      <Phone className="h-4 w-4" />
+                      전화번호
+                    </span>
+                  }
+                  value={data.customer.phone}
                 />
-                <AdminInfoItem
-                  label="서비스 유형"
+                <AdminCompactField
+                  label={
+                    <span className="inline-flex items-center gap-1.5">
+                      <MapPin className="h-4 w-4" />
+                      서비스 유형
+                    </span>
+                  }
                   value={data.serviceType}
-                  icon={<MapPin className="h-4 w-4" />}
                 />
-              </AdminInfoGrid>
+              </div>
             </CardContent>
           </Card>
 
           {/* 패키지 상태 */}
           <Card id="package-status-card" className={adminSurface.card}>
-            <CardHeader className="border-b border-border">
+            <CardHeader className="border-b border-border/60 bg-background/70">
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
                   <PackageIcon className="h-5 w-5 text-primary" />
@@ -875,13 +892,12 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               {isExpired && isPaid && !isCancelled && (
                 <p className="text-xs text-muted-foreground">만료된 패키지권은 연장만 가능합니다.</p>
               )}
-              <div className="rounded-lg border border-border bg-muted/20 p-3 text-xs text-muted-foreground">
-                <p className="font-medium text-foreground">작업 가능 여부</p>
-                <ul className="mt-2 space-y-1">
-                  <li>연장: {canExtendPackage ? "가능" : "불가"}</li>
-                  <li>횟수 조절: {canAdjustSessions ? "가능" : "불가"}</li>
-                  <li>총 이용 횟수: {totalSessions}회</li>
-                </ul>
+              <div className="rounded-lg border border-border/60 bg-background/70 px-3 py-2 text-xs text-muted-foreground">
+                <span className="text-foreground">작업 가능 여부</span>
+                <span className="ml-2">
+                  연장 {canExtendPackage ? "가능" : "불가"} · 횟수 조절 {canAdjustSessions ? "가능" : "불가"} ·
+                  총 {totalSessions}회
+                </span>
               </div>
             </CardContent>
 
@@ -916,20 +932,20 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             id="package-operation-history"
             className={cn("md:col-span-2", adminSurface.tableCard)}
           >
-            <CardHeader className="border-b border-border">
+            <CardHeader className="border-b border-border/60 bg-background/70">
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5 text-foreground" />
                 운영 내역 (연장/횟수)
               </CardTitle>
               <CardDescription>패키지 연장 및 횟수 조절 기록입니다.</CardDescription>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-5">
               <span className="text-xs text-muted-foreground">
                 총 {operationsHistorySorted.length}건 (현재 {visibleOps.length}건 표시)
               </span>
 
               {operationsHistorySorted.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">운영 내역이 없습니다.</p>
+                <AdminInlineEmpty className="mt-3">운영 내역이 없습니다.</AdminInlineEmpty>
               ) : (
                 <>
                   <ExtensionHistoryList items={visibleOps} />
