@@ -12,6 +12,15 @@ export type RevenueReportOnlineBucket = {
     stringingApplications: number;
     packageOrders: number;
     rentals: number;
+    privatePayments?: number;
+  };
+  privatePayments?: {
+    label: "개인결제";
+    paidAmount: number;
+    refundAmount: number;
+    netAmount: number;
+    paidCount: number;
+    refundCount: number;
   };
 };
 

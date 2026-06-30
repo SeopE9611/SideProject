@@ -12,6 +12,10 @@ export type SettlementBreakdown = {
   applications: number;
   packages: number;
   rentals?: number;
+  privatePaymentsPaidAmount?: number;
+  privatePaymentsRefundAmount?: number;
+  privatePaymentsPaidCount?: number;
+  privatePaymentsRefundCount?: number;
 };
 
 export type OfflineSettlementReferenceBucket = {
@@ -59,6 +63,10 @@ export type SettlementDiffMetrics = {
   orders: number;
   applications: number;
   packages: number;
+  privatePaymentsPaidAmount?: number;
+  privatePaymentsRefundAmount?: number;
+  privatePaymentsPaidCount?: number;
+  privatePaymentsRefundCount?: number;
 };
 
 export type SettlementDiff = {

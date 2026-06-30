@@ -81,6 +81,8 @@
 //   return Number.isFinite(n) ? n : 0;
 // }
 
+import type { Db } from "mongodb";
+
 /**
  * 정산(매출/환불) 집계 정책 공통 모듈
  *
@@ -229,4 +231,58 @@ export function rentalPaidAmount(rental: any) {
 export function rentalDepositAmount(rental: any) {
   const deposit = rental?.amount?.deposit ?? rental?.deposit ?? rental?.depositAmount ?? 0;
   return toNumber(deposit);
+}
+
+
+export type PrivatePaymentSettlementSummary = {
+  paidAmount: number;
+  refundAmount: number;
+  paidCount: number;
+  refundCount: number;
+};
+
+async function aggregatePrivatePaymentEvent(
+  db: Db,
+  dateField: "paidAt" | "canceledAt",
+  from: Date,
+  toExclusive: Date,
+): Promise<{ amount: number; count: number }> {
+  const [row] = await db
+    .collection("privatePayments")
+    .aggregate<{ amount: number; count: number }>([
+      {
+        $match: {
+          [dateField]: { $gte: from, $lt: toExclusive },
+          amount: { $gt: 0 },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          amount: { $sum: "$amount" },
+          count: { $sum: 1 },
+        },
+      },
+      { $project: { _id: 0, amount: 1, count: 1 } },
+    ])
+    .toArray();
+
+  return { amount: toNumber(row?.amount), count: toNumber(row?.count) };
+}
+
+export async function buildPrivatePaymentSettlementSummary(
+  db: Db,
+  { from, toExclusive }: { from: Date; toExclusive: Date },
+): Promise<PrivatePaymentSettlementSummary> {
+  const [paid, refund] = await Promise.all([
+    aggregatePrivatePaymentEvent(db, "paidAt", from, toExclusive),
+    aggregatePrivatePaymentEvent(db, "canceledAt", from, toExclusive),
+  ]);
+
+  return {
+    paidAmount: paid.amount,
+    refundAmount: refund.amount,
+    paidCount: paid.count,
+    refundCount: refund.count,
+  };
 }

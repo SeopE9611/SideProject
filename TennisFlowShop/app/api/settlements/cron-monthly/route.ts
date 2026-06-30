@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { EXCLUDE_OFFLINE_PACKAGE_ORDERS_FILTER } from "@/app/api/admin/offline/_lib/packageOrderOffline";
 import { getDb } from "@/lib/mongodb";
+import { buildOfflineSettlementReference } from "@/app/api/settlements/_lib/offlineReference";
 import {
   PAID_STATUS_VALUES,
   orderPaidAmount,
   applicationPaidAmount,
   refundsAmount,
   isStandaloneStringingApplication,
+  buildPrivatePaymentSettlementSummary,
 } from "@/app/api/settlements/_lib/settlementPolicy";
 
 // KST 00:00을 UTC로 보정해 월 경계 계산 (DST 없음 가정: KST=UTC+9)
@@ -117,18 +119,26 @@ export async function POST() {
 
     // 연결된 신청서는 중복 정산 방지(주문/대여 결제 앵커에 포함되므로 신청서는 제외)
     const standaloneApps = apps.filter((a: any) => isStandaloneStringingApplication(a));
+    const privatePayments = await buildPrivatePaymentSettlementSummary(db, {
+      from: start,
+      toExclusive: end,
+    });
 
     // paid/net 계산 (정책 함수 사용)
     const paidOrders = orders.reduce((s: number, o: any) => s + orderPaidAmount(o), 0);
     const paidApps = standaloneApps.reduce((s: number, a: any) => s + applicationPaidAmount(a), 0);
     const paidPackages = packages.reduce((s: number, p: any) => s + orderPaidAmount(p), 0);
-    const paid = paidOrders + paidApps + paidPackages;
+    const paid = paidOrders + paidApps + paidPackages + privatePayments.paidAmount;
 
     const refundOrders = orders.reduce((s: number, o: any) => s + refundsAmount(o), 0);
     const refundApps = standaloneApps.reduce((s: number, a: any) => s + refundsAmount(a), 0);
     const refundPackages = packages.reduce((s: number, p: any) => s + refundsAmount(p), 0);
-    const refund = refundOrders + refundApps + refundPackages;
+    const refund = refundOrders + refundApps + refundPackages + privatePayments.refundAmount;
     const net = paid - refund;
+    const offline = await buildOfflineSettlementReference(db, {
+      from: start,
+      toExclusive: end,
+    });
 
     await db.collection("settlements").updateOne(
       { yyyymm },
@@ -140,9 +150,14 @@ export async function POST() {
             orders: orders.length,
             applications: standaloneApps.length,
             packages: packages.length,
+            privatePaymentsPaidAmount: privatePayments.paidAmount,
+            privatePaymentsRefundAmount: privatePayments.refundAmount,
+            privatePaymentsPaidCount: privatePayments.paidCount,
+            privatePaymentsRefundCount: privatePayments.refundCount,
           },
           lastGeneratedAt: new Date(),
           lastGeneratedBy: "cron",
+          offline,
         },
       },
       { upsert: true },
@@ -155,6 +170,8 @@ export async function POST() {
         orders: orders.length,
         apps: standaloneApps.length,
         packages: packages.length,
+        privatePaymentsPaidCount: privatePayments.paidCount,
+        privatePaymentsRefundCount: privatePayments.refundCount,
       },
       at: new Date().toISOString(),
     });

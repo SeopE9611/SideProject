@@ -9,6 +9,7 @@ import {
   orderPaidAmount,
   refundsAmount,
   rentalPaidAmount,
+  buildPrivatePaymentSettlementSummary,
 } from "@/app/api/settlements/_lib/settlementPolicy";
 import type {
   RevenueReportGroupBy,
@@ -33,6 +34,7 @@ type OnlineSeriesAccumulator = {
   stringingApplications: number;
   packageOrders: number;
   rentals: number;
+  privatePayments: number;
 };
 
 export function parseReportDate(value: string | null, boundary: "from" | "to"): Date | null {
@@ -113,6 +115,7 @@ function addOnlineSeries(
     stringingApplications: 0,
     packageOrders: 0,
     rentals: 0,
+    privatePayments: 0,
   };
   current[source] += amount;
   map.set(key, current);
@@ -129,7 +132,7 @@ async function buildOnlineRevenueReport(
   const paidMatch = buildPaidMatch(["paymentStatus", "paymentInfo.status"]);
   const dateMatch = { createdAt: { $gte: range.from, $lt: range.toExclusive } };
 
-  const [orders, apps, packageOrders, rentals] = await Promise.all([
+  const [orders, apps, packageOrders, rentals, privatePaymentPaidEvents, privatePayments] = await Promise.all([
     db
       .collection("orders")
       .find(
@@ -195,6 +198,20 @@ async function buildOnlineRevenueReport(
         },
       )
       .toArray(),
+    db
+      .collection("privatePayments")
+      .find(
+        {
+          paidAt: { $gte: range.from, $lt: range.toExclusive },
+          amount: { $gt: 0 },
+        },
+        { projection: { paidAt: 1, amount: 1 } },
+      )
+      .toArray(),
+    buildPrivatePaymentSettlementSummary(db, {
+      from: range.from,
+      toExclusive: range.toExclusive,
+    }),
   ]);
 
   const standaloneApps = apps.filter((doc: Document) => isStandaloneStringingApplication(doc));
@@ -204,6 +221,7 @@ async function buildOnlineRevenueReport(
   let appsPaid = 0;
   let packagesPaid = 0;
   let rentalsPaid = 0;
+  let privatePaymentsPaid = 0;
   let refundedAmount = 0;
 
   for (const doc of orders) {
@@ -229,19 +247,35 @@ async function buildOnlineRevenueReport(
     rentalsPaid += amount;
     addOnlineSeries(series, groupKey(doc.createdAt, groupBy), "rentals", amount);
   }
+  for (const doc of privatePaymentPaidEvents) {
+    const amount = Number(doc.amount);
+    const safeAmount = Number.isFinite(amount) ? amount : 0;
+    privatePaymentsPaid += safeAmount;
+    addOnlineSeries(series, groupKey(doc.paidAt, groupBy), "privatePayments", safeAmount);
+  }
+  refundedAmount += privatePayments.refundAmount;
 
-  const paidAmount = ordersPaid + appsPaid + packagesPaid + rentalsPaid;
+  const paidAmount = ordersPaid + appsPaid + packagesPaid + rentalsPaid + privatePaymentsPaid;
   return {
     bucket: {
       paidAmount,
       refundedAmount,
       netAmount: paidAmount - refundedAmount,
-      count: orders.length + standaloneApps.length + packageOrders.length + rentals.length,
+      count: orders.length + standaloneApps.length + packageOrders.length + rentals.length + privatePayments.paidCount,
       bySource: {
         orders: ordersPaid,
         stringingApplications: appsPaid,
         packageOrders: packagesPaid,
         rentals: rentalsPaid,
+        privatePayments: privatePaymentsPaid,
+      },
+      privatePayments: {
+        label: "개인결제",
+        paidAmount: privatePaymentsPaid,
+        refundAmount: privatePayments.refundAmount,
+        netAmount: privatePaymentsPaid - privatePayments.refundAmount,
+        paidCount: privatePayments.paidCount,
+        refundCount: privatePayments.refundCount,
       },
     },
     series,
@@ -268,7 +302,7 @@ export async function buildRevenueReport(
   const seriesMap = new Map<string, RevenueReportSeriesPoint>();
   for (const [date, item] of onlineReport.series.entries()) {
     const onlinePaidAmount =
-      item.orders + item.stringingApplications + item.packageOrders + item.rentals;
+      item.orders + item.stringingApplications + item.packageOrders + item.rentals + item.privatePayments;
     seriesMap.set(date, {
       date,
       onlinePaidAmount,
