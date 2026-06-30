@@ -36,6 +36,13 @@ type Item = {
   createdAt: string;
   paidAt?: string;
   canceledAt?: string;
+  offlineLink?: {
+    status: "linked";
+    offlineCustomerId: string;
+    offlineRecordId?: string | null;
+    linkedAt: string;
+    linkedBy: string;
+  };
 };
 type Summary = { total: number; pending: number; paid: number; canceled: number; monthPaidAmount: number };
 type ListResponse = { ok: boolean; items: Item[]; summary?: Summary };
@@ -52,6 +59,7 @@ const empty = {
 };
 const emptyFilters: Filters = { q: "", paymentStatus: "", status: "", archived: "active", from: "", to: "" };
 const defaultCancelReason = "관리자 개인결제 승인취소";
+const emptyOfflineLinkForm = { customerName: "", customerPhone: "", customerEmail: "", memo: "", createRecord: true };
 const defaultSummary: Summary = { total: 0, pending: 0, paid: 0, canceled: 0, monthPaidAmount: 0 };
 
 const statusLabel = (status: string) => (status === "active" ? "활성" : "비활성");
@@ -88,6 +96,10 @@ export default function PrivatePaymentsClient() {
   const [deleteMode, setDeleteMode] = useState<"item" | "bulk" | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [offlineLinkTarget, setOfflineLinkTarget] = useState<Item | null>(null);
+  const [offlineLinkForm, setOfflineLinkForm] = useState(emptyOfflineLinkForm);
+  const [offlineLinking, setOfflineLinking] = useState(false);
+  const [offlineLinkError, setOfflineLinkError] = useState("");
   const [now, setNow] = useState<number | null>(null);
   const query = useMemo(() => {
     const params = new URLSearchParams({ limit: "50", sort, dir });
@@ -181,6 +193,39 @@ export default function PrivatePaymentsClient() {
       setDeleting(false);
     }
   };
+  const openOfflineLinkDialog = (item: Item) => {
+    if (item.paymentStatus !== "결제완료" || item.offlineLink?.status === "linked") return;
+    setOfflineLinkTarget(item);
+    setOfflineLinkForm({
+      customerName: item.customerName || "",
+      customerPhone: item.customerPhone || "",
+      customerEmail: item.customerEmail || "",
+      memo: "",
+      createRecord: true,
+    });
+    setOfflineLinkError("");
+    setMessage("");
+  };
+  const linkOffline = async () => {
+    if (!offlineLinkTarget) return;
+    setOfflineLinking(true);
+    setOfflineLinkError("");
+    try {
+      const json = await adminFetcher<SaveResponse>(`/api/admin/private-payments/${offlineLinkTarget.id}/link-offline`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(offlineLinkForm),
+      });
+      if (!json.ok) throw new Error(json.message || "오프라인 연결에 실패했습니다.");
+      setMessage("오프라인 고객/작업 기록과 연결했습니다.");
+      setOfflineLinkTarget(null);
+      await load();
+    } catch (e) {
+      setOfflineLinkError(e instanceof Error ? e.message : "오프라인 연결에 실패했습니다.");
+    } finally {
+      setOfflineLinking(false);
+    }
+  };
   const openCancelDialog = (item: Item) => {
     setCancelTarget(item);
     setCancelReason(defaultCancelReason);
@@ -255,13 +300,27 @@ export default function PrivatePaymentsClient() {
               <table className="w-full min-w-[1120px] text-sm">
                 <thead className="sticky top-0 z-10 bg-muted/80 backdrop-blur"><tr className="border-b text-left"><th className="p-3"><input type="checkbox" checked={allChecked} onChange={(e) => setSelected(e.target.checked ? items.map((item) => item.id) : [])} /></th><th className="p-3">{header("결제 정보", "title")}</th><th className="p-3">고객</th><th className="p-3">{header("금액", "amount")}</th><th className="p-3">{header("상태", "paymentStatus")}</th><th className="p-3">{header("만료/일시", "expiresAt")}</th><th className="p-3 text-right">작업</th></tr></thead>
                 <tbody>{items.length === 0 ? <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">조건에 맞는 개인결제가 없습니다.</td></tr> : items.map((item) => (
-                  <tr key={item.id} className="border-b align-top transition-colors hover:bg-muted/40"><td className="p-3"><input type="checkbox" checked={selected.includes(item.id)} onChange={(e) => setSelected(e.target.checked ? [...selected, item.id] : selected.filter((id) => id !== item.id))} /></td><td className="p-3"><div className="font-medium">{item.title}</div>{item.description && <div className="mt-1 max-w-[260px] text-xs text-muted-foreground line-clamp-2">{item.description}</div>}<div className="mt-2 text-xs text-muted-foreground">ID {item.id}</div></td><td className="p-3"><div>{item.customerName || "-"}</div>{(item.customerPhone || item.customerEmail) && <div className="mt-1 text-xs text-muted-foreground">{[item.customerPhone, item.customerEmail].filter(Boolean).join(" · ")}</div>}</td><td className="p-3 font-semibold">{money(item.amount)}</td><td className="p-3"><div className="flex flex-wrap gap-1.5"><Badge variant={item.paymentStatus === "결제완료" ? "default" : item.paymentStatus === "결제취소" ? "destructive" : "outline"}>{item.paymentStatus}</Badge>{now !== null && isExpired(item, now) && <Badge variant="destructive">만료됨</Badge>}<Badge variant={item.status === "active" ? "secondary" : "outline"}>{statusLabel(item.status)}</Badge>{item.archivedAt && <Badge variant="outline">보관됨</Badge>}</div></td><td className="p-3 text-xs text-muted-foreground"><div>만료: {item.expiresAt ? formatKoreanDateTime(item.expiresAt) : "만료 없음"}</div><div>생성: {formatKoreanDateTime(item.createdAt)}</div>{item.paidAt && <div>완료: {formatKoreanDateTime(item.paidAt)}</div>}{item.canceledAt && <div>취소: {formatKoreanDateTime(item.canceledAt)}</div>}</td><td className="p-3"><div className="flex flex-wrap justify-end gap-2"><Button size="sm" variant="outline" onClick={() => copy(item.id)}>링크 복사</Button><Button size="sm" variant="ghost" onClick={() => edit(item)}>상세/수정</Button>{item.paymentStatus === "결제완료" && <Button size="sm" variant="destructive" disabled={cancelingId === item.id} onClick={() => openCancelDialog(item)}>{cancelingId === item.id ? "취소 처리 중..." : "결제취소"}</Button>}{item.paymentStatus === "결제대기" ? <Button size="sm" variant="destructive" onClick={() => openDeleteDialog(item)}>결제대기 삭제</Button> : item.archivedAt ? <Button size="sm" variant="outline" onClick={() => runItemAction(item, "unarchive").catch((e) => setMessage(e.message))}>보관 해제</Button> : <Button size="sm" variant="outline" onClick={() => runItemAction(item, "archive").catch((e) => setMessage(e.message))}>보관</Button>}</div></td></tr>
+                  <tr key={item.id} className="border-b align-top transition-colors hover:bg-muted/40"><td className="p-3"><input type="checkbox" checked={selected.includes(item.id)} onChange={(e) => setSelected(e.target.checked ? [...selected, item.id] : selected.filter((id) => id !== item.id))} /></td><td className="p-3"><div className="font-medium">{item.title}</div>{item.description && <div className="mt-1 max-w-[260px] text-xs text-muted-foreground line-clamp-2">{item.description}</div>}<div className="mt-2 text-xs text-muted-foreground">ID {item.id}</div></td><td className="p-3"><div>{item.customerName || "-"}</div>{(item.customerPhone || item.customerEmail) && <div className="mt-1 text-xs text-muted-foreground">{[item.customerPhone, item.customerEmail].filter(Boolean).join(" · ")}</div>}</td><td className="p-3 font-semibold">{money(item.amount)}</td><td className="p-3"><div className="flex flex-wrap gap-1.5"><Badge variant={item.paymentStatus === "결제완료" ? "default" : item.paymentStatus === "결제취소" ? "destructive" : "outline"}>{item.paymentStatus}</Badge>{now !== null && isExpired(item, now) && <Badge variant="destructive">만료됨</Badge>}<Badge variant={item.status === "active" ? "secondary" : "outline"}>{statusLabel(item.status)}</Badge>{item.archivedAt && <Badge variant="outline">보관됨</Badge>}{item.offlineLink?.status === "linked" && <Badge variant="secondary">오프라인 연결됨</Badge>}</div></td><td className="p-3 text-xs text-muted-foreground"><div>만료: {item.expiresAt ? formatKoreanDateTime(item.expiresAt) : "만료 없음"}</div><div>생성: {formatKoreanDateTime(item.createdAt)}</div>{item.paidAt && <div>완료: {formatKoreanDateTime(item.paidAt)}</div>}{item.canceledAt && <div>취소: {formatKoreanDateTime(item.canceledAt)}</div>}</td><td className="p-3"><div className="flex flex-wrap justify-end gap-2"><Button size="sm" variant="outline" onClick={() => copy(item.id)}>링크 복사</Button><Button size="sm" variant="ghost" onClick={() => edit(item)}>상세/수정</Button>{item.paymentStatus === "결제완료" && (item.offlineLink?.status === "linked" ? <Badge variant="secondary" className="self-center">오프라인 연결됨</Badge> : <Button size="sm" variant="outline" onClick={() => openOfflineLinkDialog(item)}>오프라인 연결</Button>)}{item.paymentStatus === "결제완료" && <Button size="sm" variant="destructive" disabled={cancelingId === item.id} onClick={() => openCancelDialog(item)}>{cancelingId === item.id ? "취소 처리 중..." : "결제취소"}</Button>}{item.paymentStatus === "결제대기" ? <Button size="sm" variant="destructive" onClick={() => openDeleteDialog(item)}>결제대기 삭제</Button> : item.archivedAt ? <Button size="sm" variant="outline" onClick={() => runItemAction(item, "unarchive").catch((e) => setMessage(e.message))}>보관 해제</Button> : <Button size="sm" variant="outline" onClick={() => runItemAction(item, "archive").catch((e) => setMessage(e.message))}>보관</Button>}</div></td></tr>
                 ))}</tbody>
               </table>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={!!offlineLinkTarget} onOpenChange={(open) => { if (!open && !offlineLinking) { setOfflineLinkError(""); setOfflineLinkTarget(null); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader><AlertDialogTitle>오프라인 고객/작업 기록과 연결</AlertDialogTitle><AlertDialogDescription>개인결제는 온라인 PG 매출로 유지되고, 생성되는 오프라인 기록은 고객 관리/작업 이력용으로 매출 집계에서 제외됩니다.</AlertDialogDescription></AlertDialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5"><Label>고객명</Label><Input value={offlineLinkForm.customerName} disabled={offlineLinking} onChange={(e) => setOfflineLinkForm({ ...offlineLinkForm, customerName: e.target.value })} /></div>
+            <div className="grid gap-3 sm:grid-cols-2"><div className="space-y-1.5"><Label>연락처</Label><Input value={offlineLinkForm.customerPhone} disabled={offlineLinking} onChange={(e) => setOfflineLinkForm({ ...offlineLinkForm, customerPhone: e.target.value })} /></div><div className="space-y-1.5"><Label>이메일</Label><Input value={offlineLinkForm.customerEmail} disabled={offlineLinking} onChange={(e) => setOfflineLinkForm({ ...offlineLinkForm, customerEmail: e.target.value })} /></div></div>
+            <div className="space-y-1.5"><Label>작업 메모</Label><Textarea value={offlineLinkForm.memo} disabled={offlineLinking} onChange={(e) => setOfflineLinkForm({ ...offlineLinkForm, memo: e.target.value })} /></div>
+            <label className="flex items-center gap-2 rounded-md border p-3 text-sm"><input type="checkbox" checked={offlineLinkForm.createRecord} disabled={offlineLinking} onChange={(e) => setOfflineLinkForm({ ...offlineLinkForm, createRecord: e.target.checked })} />오프라인 작업 기록 생성</label>
+          </div>
+          {offlineLinkError && <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{offlineLinkError}</p>}
+          <AlertDialogFooter><AlertDialogCancel disabled={offlineLinking}>닫기</AlertDialogCancel><Button disabled={offlineLinking} onClick={linkOffline}>{offlineLinking ? "연결 중..." : "연결"}</Button></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <AlertDialog open={!!deleteMode} onOpenChange={(open) => { if (!open && !deleting) { setDeleteError(""); setDeleteTarget(null); setDeleteMode(null); } }}>
         <AlertDialogContent>
           <AlertDialogHeader><AlertDialogTitle>결제대기 개인결제를 삭제할까요?</AlertDialogTitle><AlertDialogDescription>결제대기 상태의 개인결제만 삭제됩니다. 결제완료/결제취소 기록은 삭제되지 않습니다.</AlertDialogDescription></AlertDialogHeader>

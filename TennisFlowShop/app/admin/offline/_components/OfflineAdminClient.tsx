@@ -2193,9 +2193,12 @@ export default function OfflineAdminClient() {
                           </div>
                         </td>
                         <td className={adminDataTable.cellCenter}>
-                          <span className="text-foreground/80">
-                            {KIND_LABELS[r.kind as keyof typeof KIND_LABELS] ?? r.kind}
-                          </span>
+                          <div className="flex flex-col items-center gap-1">
+                            <span className="text-foreground/80">
+                              {KIND_LABELS[r.kind as keyof typeof KIND_LABELS] ?? r.kind}
+                            </span>
+                            {r.source === "private_payment" && <Badge variant="secondary">개인결제 연결</Badge>}
+                          </div>
                         </td>
                         <td className={adminDataTable.cellTopLeft}>
                           <span
@@ -2206,7 +2209,10 @@ export default function OfflineAdminClient() {
                           </span>
                         </td>
                         <td className={adminDataTable.moneyCell}>
-                          {formatCurrency(r.payment?.amount)}
+                          <div className="flex flex-col items-end gap-1">
+                            <span>{formatCurrency(r.payment?.amount)}</span>
+                            {r.revenueExcluded && <Badge variant="outline">오프라인 매출 제외</Badge>}
+                          </div>
                         </td>
                         <td className={adminDataTable.cellCenter}>
                           <StatusBadge status={r.payment?.status} type="payment" />

@@ -218,11 +218,17 @@ export async function buildOfflineRevenueSummary(
           ],
         }
       : {};
+  const revenueRecordFilter = {
+    ...recordFilter,
+    source: { $ne: "private_payment" },
+    revenueExcluded: { $ne: true },
+    privatePaymentId: { $exists: false },
+  };
 
   const recordDocs = await db
     .collection("offline_service_records")
-    .find(recordFilter, {
-      projection: { occurredAt: 1, createdAt: 1, kind: 1, payment: 1 },
+    .find(revenueRecordFilter, {
+      projection: { occurredAt: 1, createdAt: 1, kind: 1, payment: 1, source: 1, revenueExcluded: 1, privatePaymentId: 1 },
     })
     .toArray();
   for (const doc of recordDocs) {

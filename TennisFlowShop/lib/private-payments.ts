@@ -19,6 +19,13 @@ export type PrivatePayment = {
   archivedBy?: ObjectId | null;
   paidAt?: Date;
   canceledAt?: Date;
+  offlineLink?: {
+    status: "linked";
+    offlineCustomerId: ObjectId;
+    offlineRecordId?: ObjectId | null;
+    linkedAt: Date;
+    linkedBy: ObjectId;
+  };
   cancellationInfo?: {
     status?: "processing" | "completed" | "failed";
     reason?: string;
@@ -42,7 +49,7 @@ export type PrivatePaymentDocument = PrivatePayment & {
 
 export type SerializedPrivatePayment = Omit<
   PrivatePayment,
-  "_id" | "createdBy" | "archivedBy" | "createdAt" | "updatedAt" | "expiresAt" | "archivedAt" | "paidAt" | "canceledAt" | "cancellationInfo" | "history"
+  "_id" | "createdBy" | "archivedBy" | "createdAt" | "updatedAt" | "expiresAt" | "archivedAt" | "paidAt" | "canceledAt" | "offlineLink" | "cancellationInfo" | "history"
 > & {
   _id: string;
   id: string;
@@ -54,6 +61,13 @@ export type SerializedPrivatePayment = Omit<
   updatedAt: string;
   paidAt?: string;
   canceledAt?: string;
+  offlineLink?: {
+    status: "linked";
+    offlineCustomerId: string;
+    offlineRecordId?: string | null;
+    linkedAt: string;
+    linkedBy: string;
+  };
   cancellationInfo?: Omit<NonNullable<PrivatePayment["cancellationInfo"]>, "requestedAt" | "canceledAt" | "failedAt" | "requestedBy"> & {
     requestedAt?: string;
     canceledAt?: string;
@@ -101,6 +115,15 @@ export function serializePrivatePayment(
     archivedAt: toIsoString(doc.archivedAt ?? undefined),
     paidAt: toIsoString(doc.paidAt),
     canceledAt: toIsoString(doc.canceledAt),
+    offlineLink: doc.offlineLink
+      ? {
+          status: doc.offlineLink.status,
+          offlineCustomerId: doc.offlineLink.offlineCustomerId.toString(),
+          offlineRecordId: doc.offlineLink.offlineRecordId?.toString() ?? null,
+          linkedAt: toIsoString(doc.offlineLink.linkedAt) ?? "",
+          linkedBy: doc.offlineLink.linkedBy.toString(),
+        }
+      : undefined,
     cancellationInfo: doc.cancellationInfo
       ? {
           ...doc.cancellationInfo,

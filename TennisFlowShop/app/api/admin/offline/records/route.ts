@@ -77,6 +77,9 @@ function serializeRecord(d: Record<string, any>) {
     lineSummary: formatLineSummary(d.lines),
     lines: d.lines || [],
     memo: d.memo || "",
+    source: d.source || null,
+    privatePaymentId: d.privatePaymentId ? String(d.privatePaymentId) : null,
+    revenueExcluded: d.revenueExcluded === true,
     payment: d.payment,
     points: {
       earn: typeof d.points?.earn === "number" ? d.points.earn : null,
@@ -186,6 +189,9 @@ export async function GET(req: Request) {
     packageUsage: 1,
     lines: 1,
     memo: 1,
+    source: 1,
+    privatePaymentId: 1,
+    revenueExcluded: 1,
   };
   const total = await guard.db.collection("offline_service_records").countDocuments(filter);
   const items = await guard.db
