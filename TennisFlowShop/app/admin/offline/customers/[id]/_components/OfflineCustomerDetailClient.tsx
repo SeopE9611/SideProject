@@ -1941,13 +1941,13 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                       <thead className={`bg-muted/50 ${adminTypography.caption}`}>
                         <tr>
                           <th className="whitespace-nowrap px-4 py-3 font-medium">패키지</th>
-                          <th className="whitespace-nowrap px-4 py-3 font-medium">횟수</th>
-                          <th className="whitespace-nowrap px-4 py-3 font-medium">금액</th>
-                          <th className="whitespace-nowrap px-4 py-3 font-medium">결제수단</th>
-                          <th className="whitespace-nowrap px-4 py-3 font-medium">결제상태</th>
-                          <th className="whitespace-nowrap px-4 py-3 font-medium">결제일</th>
-                          <th className="whitespace-nowrap px-4 py-3 font-medium">출처</th>
-                          <th className="whitespace-nowrap px-4 py-3 font-medium">환불 처리</th>
+                          <th className="whitespace-nowrap px-4 py-3 text-right font-medium">횟수</th>
+                          <th className="whitespace-nowrap px-4 py-3 text-right font-medium">금액</th>
+                          <th className="whitespace-nowrap px-4 py-3 text-center font-medium">결제수단</th>
+                          <th className="whitespace-nowrap px-4 py-3 text-center font-medium">결제상태</th>
+                          <th className="whitespace-nowrap px-4 py-3 text-right font-medium">결제일</th>
+                          <th className="whitespace-nowrap px-4 py-3 text-center font-medium">출처</th>
+                          <th className="whitespace-nowrap px-4 py-3 text-right font-medium">환불 처리</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1973,10 +1973,10 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                   {sale.packageName || "교체 서비스 패키지"}
                                 </span>
                               </td>
-                              <td className="whitespace-nowrap px-4 py-3 tabular-nums">
+                              <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
                                 {Number(sale.sessions ?? 0).toLocaleString("ko-KR")}회
                               </td>
-                              <td className="whitespace-nowrap px-4 py-3 tabular-nums">
+                              <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
                                 <div>{formatCurrency(sale.price)}</div>
                                 {sale.isRefunded && (
                                   <div className={`mt-1 ${adminTypography.caption} text-destructive`}>
@@ -1984,14 +1984,14 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                   </div>
                                 )}
                               </td>
-                              <td className="whitespace-nowrap px-4 py-3">
+                              <td className="whitespace-nowrap px-4 py-3 text-center">
                                 {PAYMENT_METHOD_LABELS[
                                   sale.paymentMethod as OfflinePaymentMethod
                                 ] ??
                                   sale.paymentMethod ??
                                   "-"}
                               </td>
-                              <td className="whitespace-nowrap px-4 py-3">
+                              <td className="whitespace-nowrap px-4 py-3 text-center">
                                 <div>{sale.paymentStatus || "-"}</div>
                                 {sale.isRefunded && (
                                   <Badge
@@ -2002,7 +2002,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                   </Badge>
                                 )}
                               </td>
-                              <td className="whitespace-nowrap px-4 py-3 tabular-nums">
+                              <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
                                 <div>{formatDate(sale.paidAt || sale.createdAt)}</div>
                                 {sale.refundedAt && (
                                   <div className={`mt-1 ${adminTypography.caption}`}>
@@ -2010,7 +2010,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                   </div>
                                 )}
                               </td>
-                              <td className="px-4 py-3">
+                              <td className="px-4 py-3 text-center">
                                 <Badge
                                   variant={isOfflineSale ? "secondary" : "outline"}
                                   className="shrink-0 whitespace-nowrap"
@@ -2019,7 +2019,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                     (isOfflineSale ? "오프라인 판매" : "온라인/기존 주문")}
                                 </Badge>
                               </td>
-                              <td className="px-4 py-3">
+                              <td className="px-4 py-3 text-right">
                                 {!isOfflineSale ? (
                                   <span className={adminTypography.caption}>-</span>
                                 ) : sale.isRefunded ? (
@@ -2028,7 +2028,7 @@ export default function OfflineCustomerDetailClient({ id }: { id: string }) {
                                     {sale.refundReason && <div>사유: {sale.refundReason}</div>}
                                   </div>
                                 ) : (
-                                  <div className="min-w-[240px] space-y-2">
+                                  <div className="ml-auto min-w-[240px] space-y-2 text-left">
                                     <Input
                                       value={refundForm.reason}
                                       onChange={(event) =>

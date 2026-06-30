@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import OfflineCustomerDetailClient from "./_components/OfflineCustomerDetailClient";
 
 export const metadata: Metadata = { title: "오프라인 고객 상세" };
@@ -11,10 +12,8 @@ export default async function OfflineCustomerDetailPage({
   const { id } = await params;
 
   return (
-    <div className="p-6">
-      <div className="mx-auto max-w-7xl">
-        <OfflineCustomerDetailClient id={id} />
-      </div>
-    </div>
+    <AdminPageShell>
+      <OfflineCustomerDetailClient id={id} />
+    </AdminPageShell>
   );
 }
