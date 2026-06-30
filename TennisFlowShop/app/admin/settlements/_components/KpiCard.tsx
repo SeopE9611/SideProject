@@ -114,9 +114,9 @@ export default function KpiCard({
   }, [recomputeScale]);
 
   return (
-    <div className="border-0 bg-card/80 shadow-xl backdrop-blur-sm overflow-hidden rounded-xl">
-      <div className="p-6">
-        <div className="grid grid-cols-[minmax(0,1fr)_40px] items-center gap-3">
+    <div className="h-full min-h-[144px] border-0 bg-card/80 shadow-xl backdrop-blur-sm overflow-hidden rounded-xl">
+      <div className="flex h-full p-6">
+        <div className="grid w-full grid-cols-[minmax(0,1fr)_40px] items-center gap-3">
           <div ref={wrapRef} className="min-w-0 overflow-hidden">
             <p className="text-sm font-medium text-muted-foreground">{label}</p>
             <button
