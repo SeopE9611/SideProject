@@ -366,7 +366,7 @@ export default function PrivatePaymentsClient() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
-          <h1 className={adminTypography.pageTitle}>개인결제 관리</h1>
+          <h1 className={adminTypography.pageTitle}>개인결제 현황</h1>
           <p className={adminTypography.body}>
             개인결제 링크 생성부터 결제 상태, 보관, 취소, 오프라인 연결을 한 화면에서 관리합니다.
           </p>
@@ -760,21 +760,21 @@ export default function PrivatePaymentsClient() {
           }
         }}
       >
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl [&>button:first-of-type]:rounded-full [&>button:first-of-type]:p-1.5 [&>button:first-of-type]:text-muted-foreground [&>button:first-of-type]:hover:bg-muted [&>button:first-of-type]:hover:text-foreground">
+        <DialogContent className="max-h-[90vh] overflow-y-auto border-border/70 shadow-2xl sm:max-w-3xl [&>button:first-of-type]:rounded-full [&>button:first-of-type]:p-1.5 [&>button:first-of-type]:text-muted-foreground [&>button:first-of-type]:hover:bg-muted [&>button:first-of-type]:hover:text-foreground">
           <DialogHeader className="gap-1.5 pr-8">
             <DialogTitle>{editing ? "개인결제 상세/수정" : "개인결제 생성"}</DialogTitle>
             <DialogDescription>
               고객 정보는 선택 입력이며, 실제 결제 화면에서 고객이 다시 입력할 수 있습니다.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-5">
+          <div className="space-y-4">
             {!canEdit && (
               <p className="rounded-xl border bg-muted px-3 py-2 text-sm text-muted-foreground">
                 결제완료/취소 건은 결제 기록 보존을 위해 수정할 수 없습니다. 보관 또는 보관 해제만
                 가능합니다.
               </p>
             )}
-            <section className="space-y-3 rounded-xl border border-border/60 bg-muted/10 p-4">
+            <section className="space-y-3 rounded-xl border border-border/50 bg-muted/10 p-3.5">
               <div>
                 <h3 className="text-sm font-semibold text-foreground">기본 정보</h3>
                 <p className="text-xs text-muted-foreground">
@@ -813,7 +813,7 @@ export default function PrivatePaymentsClient() {
                 />
               </div>
             </section>
-            <section className="space-y-3 rounded-xl border border-border/60 bg-muted/10 p-4">
+            <section className="space-y-3 rounded-xl border border-border/50 bg-muted/10 p-3.5">
               <div>
                 <h3 className="text-sm font-semibold text-foreground">고객 정보</h3>
                 <p className="text-xs text-muted-foreground">
@@ -850,7 +850,7 @@ export default function PrivatePaymentsClient() {
                 </div>
               </div>
             </section>
-            <section className="space-y-3 rounded-xl border border-border/60 bg-muted/10 p-4">
+            <section className="space-y-3 rounded-xl border border-border/50 bg-muted/10 p-3.5">
               <div>
                 <h3 className="text-sm font-semibold text-foreground">만료 설정</h3>
                 <p className="text-xs text-muted-foreground">
@@ -889,14 +889,14 @@ export default function PrivatePaymentsClient() {
             </section>
           </div>
           <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setFormDialogOpen(false)}>
+              닫기
+            </Button>
             {canEdit && (
               <Button onClick={() => save().catch((e) => setMessage(e.message))}>
                 {editing ? "수정 저장" : "생성"}
               </Button>
             )}
-            <Button type="button" variant="outline" onClick={() => setFormDialogOpen(false)}>
-              닫기
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
