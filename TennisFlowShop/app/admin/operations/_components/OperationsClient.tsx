@@ -19,6 +19,7 @@ import useSWR, { useSWRConfig } from "swr";
 import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageShell from "@/components/admin/AdminPageShell";
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminSummaryCard from "@/components/admin/AdminSummaryCard";
 import AdminTaskCard from "@/components/admin/AdminTaskCard";
 import { Section, SectionBody, SectionHeader } from "@/components/admin/Section";
@@ -673,9 +674,8 @@ function stringSummaryText(item?: OpItem) {
   return bits || "스트링 선택됨";
 }
 
-const thClasses =
-  "px-4 py-2 text-left align-middle font-semibold text-foreground text-xs whitespace-nowrap";
-const tdClasses = "px-4 py-2 align-top";
+const thClasses = adminDataTable.head;
+const tdClasses = adminDataTable.cellTop;
 const th = thClasses;
 const td = tdClasses;
 
@@ -1869,7 +1869,7 @@ export default function OperationsClient() {
       </div>
 
       {/* 업무 목록 카드 */}
-      <Card className="rounded-xl border-border bg-card px-3 py-4 bp-sm:px-4 lg:px-5">
+      <Card className={cn(adminSurface.tableCard, "px-3 py-4 bp-sm:px-4 lg:px-5")}>
         <CardHeader id="operations-list" className="scroll-mt-6 pb-2">
           <div className="flex flex-col gap-2 bp-md:flex-row bp-md:items-center bp-md:justify-between">
             <div className="flex items-center gap-2">
@@ -1948,7 +1948,7 @@ export default function OperationsClient() {
               <div className="hidden bp-lg:block overflow-x-auto">
                 <Table className="min-w-[1320px]">
                   <TableHeader>
-                    <TableRow className="hover:bg-transparent border-b border-border">
+                    <TableRow className={adminSurface.tableRow}>
                       <TableHead className={cn(thClasses, "w-[24%]")}>
                         <Skeleton className="h-4 w-24" />
                       </TableHead>
@@ -2004,7 +2004,7 @@ export default function OperationsClient() {
               <div className="hidden bp-lg:block overflow-x-auto">
                 <Table className="min-w-[1320px]">
                   <TableHeader>
-                    <TableRow className="hover:bg-transparent border-b border-border">
+                    <TableRow className={adminSurface.tableRow}>
                       <TableHead className={cn(thClasses, "w-[14%]")}>우선순위/유형</TableHead>
                       <TableHead className={cn(thClasses, "w-[28%]")}>문서/요약</TableHead>
                       <TableHead className={cn(thClasses, "w-[18%]")}>고객</TableHead>

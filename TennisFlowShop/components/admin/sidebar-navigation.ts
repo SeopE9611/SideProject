@@ -4,6 +4,7 @@ import {
   BookOpen,
   CalendarClock,
   ChartBar,
+  LayoutDashboard,
   ClipboardList,
   Cog,
   History,
@@ -54,6 +55,11 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
   {
     label: "오늘 업무",
     items: [
+      {
+        title: "대시보드",
+        href: "/admin/dashboard",
+        icon: LayoutDashboard,
+      },
       {
         title: "운영 업무",
         href: "/admin/operations",
