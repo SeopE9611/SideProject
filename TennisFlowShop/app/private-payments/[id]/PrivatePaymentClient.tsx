@@ -20,6 +20,7 @@ type Item = Pick<
   | "customerEmail"
   | "status"
   | "paymentStatus"
+  | "expiresAt"
 >;
 export default function PrivatePaymentClient({ item }: { item: Item }) {
   const [buyer, setBuyer] = useState({
@@ -27,12 +28,24 @@ export default function PrivatePaymentClient({ item }: { item: Item }) {
     phone: item.customerPhone || "",
     email: item.customerEmail || "",
   });
+  const isExpired = !!item.expiresAt && new Date(item.expiresAt).getTime() < Date.now();
   const emailInvalid = !!buyer.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyer.email);
   if (item.status === "inactive")
     return (
       <ResultState
         title="현재 사용할 수 없는 결제 링크입니다."
         description="관리자에게 문의해 주세요."
+      >
+        <Button asChild>
+          <Link href="/">홈으로 이동</Link>
+        </Button>
+      </ResultState>
+    );
+  if (isExpired)
+    return (
+      <ResultState
+        title="만료된 결제 링크입니다."
+        description="새 결제가 필요한 경우 관리자에게 문의해 주세요."
       >
         <Button asChild>
           <Link href="/">홈으로 이동</Link>

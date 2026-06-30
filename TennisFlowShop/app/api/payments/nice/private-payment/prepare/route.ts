@@ -32,6 +32,9 @@ export async function POST(req: Request) {
     if (!doc || doc.status !== "active" || doc.paymentStatus !== "결제대기" || !Number.isInteger(doc.amount) || doc.amount < 1000) {
       return NextResponse.json({ success: false, error: "결제할 수 없는 링크입니다." }, { status: 400 });
     }
+    if (doc.expiresAt && new Date(doc.expiresAt).getTime() < Date.now()) {
+      return NextResponse.json({ success: false, error: "만료된 결제 링크입니다." }, { status: 400 });
+    }
     await ensureTossPaymentSessionIndexes(db);
     const niceOrderId = createNiceOrderId();
     const returnUrl = `${appUrl()}/api/payments/nice/private-payment/return`;
