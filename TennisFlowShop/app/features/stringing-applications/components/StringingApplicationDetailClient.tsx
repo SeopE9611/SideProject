@@ -2692,7 +2692,7 @@ export default function StringingApplicationDetailClient({
                     </CardDescription>
                   </CardHeader>
                   <details className="group bp-md:block">
-                    <summary className="cursor-pointer px-4 py-3 text-ui-body-sm font-semibold text-foreground bp-md:hidden">배송/발송 정보</summary>
+                    <summary className="mx-3 my-2 min-h-11 cursor-pointer rounded-md px-3 py-2 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 bp-md:hidden">배송/발송 정보</summary>
                   <CardContent className="hidden gap-5 p-4 group-open:grid bp-md:grid bp-sm:p-6 bp-xl:grid-cols-2">
                     <div className="min-w-0 rounded-xl border border-border/70 bg-muted/20 p-4 leading-relaxed">
                       <p className="text-ui-body-sm font-semibold text-foreground">라켓 발송</p>
@@ -2815,7 +2815,7 @@ export default function StringingApplicationDetailClient({
                   </CardTitle>
                 </CardHeader>
                 <details className="group bp-md:block">
-                  <summary className="cursor-pointer px-4 py-3 text-ui-body-sm font-semibold text-foreground bp-md:hidden">요청사항</summary>
+                  <summary className="mx-3 my-2 min-h-11 cursor-pointer rounded-md px-3 py-2 text-ui-body-sm font-semibold text-foreground transition-colors hover:bg-muted/30 bp-md:hidden">요청사항</summary>
                 <CardContent className="hidden p-4 group-open:block bp-md:block bp-lg:p-6">
                   {editingRequirements ? (
                     <RequirementsEditForm
@@ -3097,11 +3097,17 @@ export default function StringingApplicationDetailClient({
                         />
                         <AdminCompactField label="결제 방식" value={paymentMethodRaw} />
                       </div>
-                      <details className="rounded-lg border border-border/60 bg-background/70">
-                        <summary className="cursor-pointer px-3 py-2 text-ui-body-sm font-medium text-foreground">
+                      <details className="group rounded-lg border border-border/60 bg-background/70 p-1">
+                        <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-3 py-2 text-ui-body-sm font-medium text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
                           입금/PG 상세 정보
+                          <span className="text-ui-label font-medium text-muted-foreground group-open:hidden">
+                            펼치기
+                          </span>
+                          <span className="hidden text-ui-label font-medium text-muted-foreground group-open:inline">
+                            접기
+                          </span>
                         </summary>
-                        <div className="border-t border-border/60 p-3 text-ui-body-sm">
+                        <div className="mt-1 border-t border-border/60 p-3 text-ui-body-sm">
                           <PaymentMethodDetail
                             method={paymentMethodRaw}
                             bankKey={

@@ -1235,11 +1235,17 @@ export default function OrderDetailClient({ orderId }: Props) {
                     </div>
                   )}
                   {latestLinkedApplication?.id && latestLinkedApplication?.status && (
-                    <details className="rounded-lg border border-border/60 bg-background/60">
-                      <summary className="cursor-pointer px-3 py-2 text-ui-body-sm font-medium text-foreground">
+                    <details className="group rounded-lg border border-border/60 bg-background/60 p-1">
+                      <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-3 py-2 text-ui-body-sm font-medium text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
                         연결 진행 단계 상세 보기
+                        <span className="text-ui-label font-medium text-muted-foreground group-open:hidden">
+                          펼치기
+                        </span>
+                        <span className="hidden text-ui-label font-medium text-muted-foreground group-open:inline">
+                          접기
+                        </span>
                       </summary>
-                      <div className="border-t border-border/60 p-3">
+                      <div className="mt-1 border-t border-border/60 p-3">
                         <LinkedFlowStageCard
                           className="overflow-hidden border border-border/50 bg-transparent shadow-none"
                           orderId={orderId}
@@ -2045,11 +2051,17 @@ export default function OrderDetailClient({ orderId }: Props) {
                         />
                       </div>
 
-                      <details className="rounded-lg border border-border/60 bg-background/70">
-                        <summary className="cursor-pointer px-3 py-2 text-ui-body-sm font-medium text-foreground">
+                      <details className="group rounded-lg border border-border/60 bg-background/70 p-1">
+                        <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-3 py-2 text-ui-body-sm font-medium text-foreground transition-colors hover:bg-muted/30 [&::-webkit-details-marker]:hidden">
                           입금/PG 상세 정보
+                          <span className="text-ui-label font-medium text-muted-foreground group-open:hidden">
+                            펼치기
+                          </span>
+                          <span className="hidden text-ui-label font-medium text-muted-foreground group-open:inline">
+                            접기
+                          </span>
                         </summary>
-                        <div className="border-t border-border/60 p-3 text-ui-body-sm">
+                        <div className="mt-1 border-t border-border/60 p-3 text-ui-body-sm">
                           <PaymentMethodDetail
                             method={orderDetail.paymentMethod || "무통장입금"}
                             bankKey={orderDetail.paymentBank}
