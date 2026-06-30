@@ -3,7 +3,7 @@ import { ObjectId } from "mongodb";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
-import { privatePayments, serializePrivatePayment, validatePrivatePaymentInput } from "@/lib/private-payments";
+import { privatePayments, serializePrivatePayment, validatePrivatePaymentInput, type PrivatePayment } from "@/lib/private-payments";
 
 export const runtime = "nodejs";
 
@@ -38,10 +38,10 @@ export async function PATCH(req: Request, ctx: Ctx) {
   }
   const { input, errors } = validatePrivatePaymentInput(body, { partial: true });
   if (errors.length) return NextResponse.json({ ok: false, message: errors[0] }, { status: 400 });
-  const set: any = { ...input, updatedAt: new Date() };
+  const set = { ...input, updatedAt: new Date() } as Partial<PrivatePayment> & { updatedAt: Date };
   if (body.status !== undefined) {
     if (!["active", "inactive"].includes(String(body.status))) return NextResponse.json({ ok: false, message: "상태 값이 올바르지 않습니다." }, { status: 400 });
-    set.status = String(body.status);
+    set.status = String(body.status) as PrivatePayment["status"];
   }
   await col.updateOne({ _id: current._id }, { $set: set, $push: { history: { status: "updated", date: new Date(), description: "관리자 정보 수정" } } });
   await appendAdminAudit(guard.db, { type: "private_payment.update", actorId: guard.admin._id, targetId: current._id, message: "개인결제 수정", diff: set }, req);

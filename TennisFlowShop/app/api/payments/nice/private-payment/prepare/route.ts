@@ -43,7 +43,8 @@ export async function POST(req: Request) {
       createdAt: now, updatedAt: now, expiresAt: new Date(now.getTime() + 1000 * 60 * 30),
     });
     return NextResponse.json({ success: true, nice: { clientId: cid, orderId: niceOrderId, amount: doc.amount, goodsName: doc.title, returnUrl, buyerName: buyerInfo.name, buyerTel: buyerInfo.phone, buyerEmail: buyerInfo.email } });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error?.message || "개인결제 준비 중 오류가 발생했습니다." }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "개인결제 준비 중 오류가 발생했습니다.";
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
