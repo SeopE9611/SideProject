@@ -15,6 +15,7 @@ import { formatKoreanDateTime } from "@/lib/korean-date";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -348,6 +349,7 @@ export default function PrivatePaymentsClient() {
   const hasUnarchivable = selectedItems.some((item) => item.archivedAt);
   const hasPending = selectedItems.some((item) => item.paymentStatus === "결제대기");
   const canEdit = !editing || editing.paymentStatus === "결제대기";
+  const hasNoExpiration = form.expiresAt === "";
   const header = (label: string, key: string) => (
     <button
       className="inline-flex items-center gap-1 font-semibold"
@@ -404,8 +406,7 @@ export default function PrivatePaymentsClient() {
             <div className="space-y-1">
               <CardTitle className={adminTypography.sectionTitle}>개인결제 목록</CardTitle>
               <p className={adminTypography.caption}>
-                오프라인 연결은 고객이 결제를 완료한 뒤, 결제완료 건의 작업 메뉴에서 진행할 수
-                있습니다.
+                오프라인 연결은 고객 결제 완료 후, 결제완료 건의 작업 메뉴에서 진행할 수 있습니다.
               </p>
             </div>
             {message && (
@@ -415,8 +416,8 @@ export default function PrivatePaymentsClient() {
             )}
           </div>
           <div className={adminSurface.filterCard}>
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-              <div className="space-y-1.5 xl:col-span-2">
+            <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[minmax(260px,1.4fr)_160px_160px_160px_160px_160px]">
+              <div className="space-y-1.5">
                 <Label>검색어</Label>
                 <Input
                   placeholder="결제명, 고객명, 연락처 검색"
@@ -479,37 +480,39 @@ export default function PrivatePaymentsClient() {
               </div>
             </div>
           </div>
-          <div className="flex flex-col gap-2 rounded-xl border border-border/60 bg-background p-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className={adminTypography.caption}>
-              선택됨 <span className="font-semibold text-foreground">{selected.length}</span>개
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!hasArchivable}
-                onClick={() => runBulkAction("archive").catch((e) => setMessage(e.message))}
-              >
-                선택 보관
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!hasUnarchivable}
-                onClick={() => runBulkAction("unarchive").catch((e) => setMessage(e.message))}
-              >
-                선택 보관 해제
-              </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                disabled={!hasPending}
-                onClick={() => openDeleteDialog()}
-              >
-                선택 삭제
-              </Button>
+          {selected.length > 0 && (
+            <div className="flex flex-col gap-2 rounded-xl border border-border/60 bg-background p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+              <p className={adminTypography.caption}>
+                선택됨 <span className="font-semibold text-foreground">{selected.length}</span>개
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={!hasArchivable}
+                  onClick={() => runBulkAction("archive").catch((e) => setMessage(e.message))}
+                >
+                  선택 보관
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={!hasUnarchivable}
+                  onClick={() => runBulkAction("unarchive").catch((e) => setMessage(e.message))}
+                >
+                  선택 보관 해제
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={!hasPending}
+                  onClick={() => openDeleteDialog()}
+                >
+                  선택 삭제
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </CardHeader>
         <CardContent className="p-0">
           <div className="max-h-[680px] overflow-auto">
@@ -567,7 +570,7 @@ export default function PrivatePaymentsClient() {
                             {item.description}
                           </div>
                         )}
-                        <div className="mt-2 text-[11px] text-muted-foreground/80">
+                        <div className="mt-2 max-w-[280px] break-all text-[11px] text-muted-foreground/70">
                           ID {item.id}
                         </div>
                       </td>
@@ -616,12 +619,32 @@ export default function PrivatePaymentsClient() {
                           "whitespace-nowrap text-xs leading-5 text-muted-foreground",
                         )}
                       >
-                        <div>
-                          만료 {item.expiresAt ? formatKoreanDateTime(item.expiresAt) : "만료 없음"}
+                        <div className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-2 gap-y-1">
+                          <span className="text-muted-foreground">만료</span>
+                          <span className="whitespace-nowrap text-foreground/80">
+                            {item.expiresAt ? formatKoreanDateTime(item.expiresAt) : "만료 없음"}
+                          </span>
+                          <span className="text-muted-foreground">생성</span>
+                          <span className="whitespace-nowrap text-foreground/80">
+                            {formatKoreanDateTime(item.createdAt)}
+                          </span>
+                          {item.paidAt && (
+                            <>
+                              <span className="text-muted-foreground">완료</span>
+                              <span className="whitespace-nowrap text-foreground/80">
+                                {formatKoreanDateTime(item.paidAt)}
+                              </span>
+                            </>
+                          )}
+                          {item.canceledAt && (
+                            <>
+                              <span className="text-muted-foreground">취소</span>
+                              <span className="whitespace-nowrap text-foreground/80">
+                                {formatKoreanDateTime(item.canceledAt)}
+                              </span>
+                            </>
+                          )}
                         </div>
-                        <div>생성 {formatKoreanDateTime(item.createdAt)}</div>
-                        {item.paidAt && <div>완료 {formatKoreanDateTime(item.paidAt)}</div>}
-                        {item.canceledAt && <div>취소 {formatKoreanDateTime(item.canceledAt)}</div>}
                       </td>
                       <td className={cn(adminSurface.tableCell, "text-right")}>
                         <DropdownMenu>
@@ -737,105 +760,133 @@ export default function PrivatePaymentsClient() {
           }
         }}
       >
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
-          <DialogHeader>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl [&>button:first-of-type]:rounded-full [&>button:first-of-type]:p-1.5 [&>button:first-of-type]:text-muted-foreground [&>button:first-of-type]:hover:bg-muted [&>button:first-of-type]:hover:text-foreground">
+          <DialogHeader className="gap-1.5 pr-8">
             <DialogTitle>{editing ? "개인결제 상세/수정" : "개인결제 생성"}</DialogTitle>
             <DialogDescription>
-              고객 정보는 사전 입력값이며 실제 결제 화면에서 고객이 다시 입력할 수 있습니다.
-              이메일은 선택 입력입니다.
+              고객 정보는 선택 입력이며, 실제 결제 화면에서 고객이 다시 입력할 수 있습니다.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-5">
             {!canEdit && (
               <p className="rounded-xl border bg-muted px-3 py-2 text-sm text-muted-foreground">
                 결제완료/취소 건은 결제 기록 보존을 위해 수정할 수 없습니다. 보관 또는 보관 해제만
                 가능합니다.
               </p>
             )}
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>결제명</Label>
-                <Input
-                  placeholder="예: 김재민 1회 레슨권"
-                  value={form.title}
-                  disabled={!canEdit}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>결제금액</Label>
-                <Input
-                  placeholder="예: 40000"
-                  type="number"
-                  min={1000}
-                  value={form.amount}
-                  disabled={!canEdit}
-                  onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label>설명</Label>
-              <Textarea
-                placeholder="예: 레슨 1회권 결제"
-                value={form.description}
-                disabled={!canEdit}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-              />
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>고객명 (선택)</Label>
-                <Input
-                  placeholder="예: 김재민 (선택)"
-                  value={form.customerName}
-                  disabled={!canEdit}
-                  onChange={(e) => setForm({ ...form, customerName: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>연락처 (선택)</Label>
-                <Input
-                  placeholder="예: 01012345678 (선택)"
-                  value={form.customerPhone}
-                  disabled={!canEdit}
-                  onChange={(e) => setForm({ ...form, customerPhone: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1.5 sm:col-span-2">
-                <Label>이메일 (선택)</Label>
-                <Input
-                  placeholder="예: customer@example.com (선택)"
-                  value={form.customerEmail}
-                  disabled={!canEdit}
-                  onChange={(e) => setForm({ ...form, customerEmail: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-              <div className="space-y-1.5">
-                <Label>만료일</Label>
-                <Input
-                  type="datetime-local"
-                  value={form.expiresAt}
-                  disabled={!canEdit}
-                  onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
-                />
+            <section className="space-y-3 rounded-xl border border-border/60 bg-muted/10 p-4">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">기본 정보</h3>
                 <p className="text-xs text-muted-foreground">
-                  신규 생성 기본값은 생성일 기준 7일 뒤입니다. 비우면 만료 없음입니다.
+                  고객에게 표시될 결제명과 금액을 입력합니다.
                 </p>
               </div>
-              <div className="flex items-end">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={!canEdit}
-                  onClick={() => setForm({ ...form, expiresAt: "" })}
-                >
-                  만료 없음
-                </Button>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label>결제명</Label>
+                  <Input
+                    placeholder="예: 김재민 1회 레슨권"
+                    value={form.title}
+                    disabled={!canEdit}
+                    onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>결제금액</Label>
+                  <Input
+                    placeholder="예: 40000"
+                    type="number"
+                    min={1000}
+                    value={form.amount}
+                    disabled={!canEdit}
+                    onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                  />
+                </div>
               </div>
-            </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label>설명</Label>
+                <Textarea
+                  placeholder="예: 레슨 1회권 결제"
+                  value={form.description}
+                  disabled={!canEdit}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                />
+              </div>
+            </section>
+            <section className="space-y-3 rounded-xl border border-border/60 bg-muted/10 p-4">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">고객 정보</h3>
+                <p className="text-xs text-muted-foreground">
+                  선택 입력이며 고객이 결제 화면에서 다시 수정할 수 있습니다.
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label>고객명 (선택)</Label>
+                  <Input
+                    placeholder="예: 김재민 (선택)"
+                    value={form.customerName}
+                    disabled={!canEdit}
+                    onChange={(e) => setForm({ ...form, customerName: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>연락처 (선택)</Label>
+                  <Input
+                    placeholder="예: 01012345678 (선택)"
+                    value={form.customerPhone}
+                    disabled={!canEdit}
+                    onChange={(e) => setForm({ ...form, customerPhone: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5 sm:col-span-2">
+                  <Label>이메일 (선택)</Label>
+                  <Input
+                    placeholder="예: customer@example.com (선택)"
+                    value={form.customerEmail}
+                    disabled={!canEdit}
+                    onChange={(e) => setForm({ ...form, customerEmail: e.target.value })}
+                  />
+                </div>
+              </div>
+            </section>
+            <section className="space-y-3 rounded-xl border border-border/60 bg-muted/10 p-4">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">만료 설정</h3>
+                <p className="text-xs text-muted-foreground">
+                  기본 생성 만료일은 7일 뒤이며, 필요하면 만료 없이 운영할 수 있습니다.
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label>만료일</Label>
+                  <Input
+                    type="datetime-local"
+                    value={form.expiresAt}
+                    disabled={!canEdit || hasNoExpiration}
+                    onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
+                  />
+                </div>
+                <label className="flex items-start gap-3 rounded-lg border border-border/60 bg-background p-3 text-sm">
+                  <Checkbox
+                    checked={hasNoExpiration}
+                    disabled={!canEdit}
+                    onCheckedChange={(checked) =>
+                      setForm({
+                        ...form,
+                        expiresAt: checked ? "" : form.expiresAt || defaultExpiresAt(),
+                      })
+                    }
+                  />
+                  <span className="space-y-1">
+                    <span className="block font-medium text-foreground">만료 없이 운영</span>
+                    <span className="block text-xs text-muted-foreground">
+                      체크하면 고객 결제 링크가 자동 만료되지 않습니다.
+                    </span>
+                  </span>
+                </label>
+              </div>
+            </section>
           </div>
           <DialogFooter>
             {canEdit && (
@@ -863,8 +914,8 @@ export default function PrivatePaymentsClient() {
           <AlertDialogHeader>
             <AlertDialogTitle>오프라인 고객/작업 기록과 연결</AlertDialogTitle>
             <AlertDialogDescription>
-              개인결제는 온라인 NICEPAY 매출로 유지됩니다. 오프라인 연결은 고객/작업 이력용이며,
-              생성되는 오프라인 기록은 오프라인 매출 집계에서 제외됩니다.
+              개인결제는 온라인 NICEPAY 매출로 유지되며, 오프라인 연결은 고객/작업 이력
+              관리용입니다. 생성되는 오프라인 기록은 오프라인 매출 집계에서 제외됩니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-3">
