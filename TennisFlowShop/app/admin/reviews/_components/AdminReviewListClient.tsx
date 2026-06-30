@@ -28,8 +28,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 import { Switch } from "@/components/ui/switch";
 import { adminDataTable } from "@/components/admin/AdminDataTable";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
-import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -410,15 +408,7 @@ export default function AdminReviewListClient() {
     "lg:grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px]";
 
   return (
-    <AdminPageShell>
-      <AdminPageHeader
-        title="리뷰 관리"
-        description="고객 리뷰의 공개 상태, 별점, 사진, 삭제 여부를 관리합니다."
-        icon={Star}
-        scope="범위: 상품·서비스 리뷰"
-        helperText="유지보수 작업은 별도 탭에서 신중하게 실행합니다."
-      />
-
+    <div className="space-y-5">
       {/* KPI */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card className={adminSurface.kpiCard}>
@@ -1110,6 +1100,6 @@ export default function AdminReviewListClient() {
         severity="danger"
         eventKey="admin-review-list-bulk-delete-confirm"
       />
-    </AdminPageShell>
+    </div>
   );
 }

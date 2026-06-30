@@ -16,9 +16,17 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { MoreHorizontal } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 type Item = {
@@ -297,29 +305,27 @@ export default function PrivatePaymentsClient() {
             <div className="grid gap-2 rounded-xl border bg-muted/20 p-3 md:grid-cols-6"><Input placeholder="검색어" value={filters.q} onChange={(e) => setFilters({ ...filters, q: e.target.value })} /><select className="rounded-md border bg-background px-3 py-2 text-sm" value={filters.paymentStatus} onChange={(e) => setFilters({ ...filters, paymentStatus: e.target.value })}><option value="">결제상태 전체</option><option>결제대기</option><option>결제완료</option><option>결제취소</option></select><select className="rounded-md border bg-background px-3 py-2 text-sm" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}><option value="">활성상태 전체</option><option value="active">활성</option><option value="inactive">비활성</option></select><select className="rounded-md border bg-background px-3 py-2 text-sm" value={filters.archived} onChange={(e) => setFilters({ ...filters, archived: e.target.value })}><option value="active">보관 제외</option><option value="archived">보관함 보기</option><option value="all">전체 보기</option></select><Input type="date" value={filters.from} onChange={(e) => setFilters({ ...filters, from: e.target.value })} /><Input type="date" value={filters.to} onChange={(e) => setFilters({ ...filters, to: e.target.value })} /></div>
             <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" disabled={!hasArchivable} onClick={() => runBulkAction("archive").catch((e) => setMessage(e.message))}>선택 보관</Button><Button size="sm" variant="outline" disabled={!hasUnarchivable} onClick={() => runBulkAction("unarchive").catch((e) => setMessage(e.message))}>선택 보관 해제</Button><Button size="sm" variant="destructive" disabled={!hasPending} onClick={() => openDeleteDialog()}>선택 삭제</Button></div>
             <div className="max-h-[680px] overflow-auto rounded-xl border">
-              <table className="w-full min-w-[1200px] text-sm">
+              <table className="w-full min-w-[1180px] text-sm">
                 <thead className="sticky top-0 z-10 bg-muted/80 backdrop-blur">
-                  <tr className="border-b text-left">
+                  <tr className="border-b border-border/30 text-left">
                     <th className="w-10 p-3">
                       <input type="checkbox" checked={allChecked} onChange={(e) => setSelected(e.target.checked ? items.map((item) => item.id) : [])} />
                     </th>
-                    <th className="w-[260px] p-3">{header("결제 정보", "title")}</th>
-                    <th className="w-[170px] p-3">고객</th>
-                    <th className="w-[140px] p-3 text-right">{header("금액", "amount")}</th>
-                    <th className="w-[210px] p-3">{header("상태", "paymentStatus")}</th>
-                    <th className="w-[190px] p-3">{header("만료/일시", "expiresAt")}</th>
-                    <th className="w-[230px] p-3 text-right">작업</th>
+                    <th className="w-[330px] border-l border-border/20 p-3">{header("결제/고객", "title")}</th>
+                    <th className="w-[150px] border-l border-border/20 p-3 text-right">{header("금액", "amount")}</th>
+                    <th className="w-[240px] border-l border-border/20 p-3">{header("상태/만료", "paymentStatus")}</th>
+                    <th className="w-[210px] border-l border-border/20 p-3">연결</th>
+                    <th className="w-[150px] border-l border-border/40 p-3 text-right">액션</th>
                   </tr>
                 </thead>
-                <tbody>{items.length === 0 ? <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">조건에 맞는 개인결제가 없습니다.</td></tr> : items.map((item) => (
-                  <tr key={item.id} className="border-b align-top leading-relaxed transition-colors hover:bg-muted/40">
+                <tbody>{items.length === 0 ? <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">조건에 맞는 개인결제가 없습니다.</td></tr> : items.map((item) => (
+                  <tr key={item.id} className="border-b border-border/30 align-top leading-relaxed transition-colors hover:bg-muted/40">
                     <td className="p-3"><input type="checkbox" checked={selected.includes(item.id)} onChange={(e) => setSelected(e.target.checked ? [...selected, item.id] : selected.filter((id) => id !== item.id))} /></td>
-                    <td className="p-3"><div className="font-semibold text-foreground">{item.title}</div>{item.description && <div className="mt-1 max-w-[260px] text-xs leading-5 text-muted-foreground line-clamp-2">{item.description}</div>}<div className="mt-2 text-[11px] text-muted-foreground/80">ID {item.id}</div></td>
-                    <td className="p-3"><div className="space-y-1 leading-tight"><div className="font-medium text-foreground">{item.customerName || "-"}</div>{(item.customerPhone || item.customerEmail) ? <div className="text-xs leading-5 text-muted-foreground">{[item.customerPhone, item.customerEmail].filter(Boolean).join(" · ")}</div> : <div className="text-xs text-muted-foreground">-</div>}</div></td>
-                    <td className="whitespace-nowrap p-3 text-right font-semibold tabular-nums">{money(item.amount)}</td>
-                    <td className="p-3"><div className="space-y-2"><div className="flex flex-wrap gap-1.5"><Badge variant={item.paymentStatus === "결제완료" ? "default" : item.paymentStatus === "결제취소" ? "destructive" : "outline"}>{item.paymentStatus}</Badge></div><div className="flex flex-wrap gap-1.5"><Badge variant={item.status === "active" ? "secondary" : "outline"}>{statusLabel(item.status)}</Badge>{now !== null && isExpired(item, now) && <Badge variant="destructive">만료됨</Badge>}{item.archivedAt && <Badge variant="outline">보관됨</Badge>}</div>{item.offlineLink?.status === "linked" && <div className="flex flex-wrap gap-1.5"><Badge variant="secondary">오프라인 연결됨</Badge></div>}</div></td>
-                    <td className="p-3 text-xs leading-5 text-muted-foreground"><div className="grid grid-cols-[34px_1fr] gap-x-2 whitespace-nowrap"><span>만료</span><span>{item.expiresAt ? formatKoreanDateTime(item.expiresAt) : "만료 없음"}</span><span>생성</span><span>{formatKoreanDateTime(item.createdAt)}</span>{item.paidAt && <><span>완료</span><span>{formatKoreanDateTime(item.paidAt)}</span></>}{item.canceledAt && <><span>취소</span><span>{formatKoreanDateTime(item.canceledAt)}</span></>}</div></td>
-                    <td className="p-3"><div className="flex flex-col items-end gap-2"><div className="flex flex-wrap justify-end gap-1.5"><Button size="sm" variant="outline" onClick={() => copy(item.id)}>링크 복사</Button><Button size="sm" variant="ghost" onClick={() => edit(item)}>상세/수정</Button></div><div className="flex flex-wrap justify-end gap-1.5">{item.paymentStatus === "결제완료" && (item.offlineLink?.status === "linked" ? <span className="self-center text-xs text-muted-foreground">오프라인 연결됨</span> : <Button size="sm" variant="outline" onClick={() => openOfflineLinkDialog(item)}>오프라인 연결</Button>)}{item.paymentStatus === "결제완료" && <Button size="sm" variant="destructive" disabled={cancelingId === item.id} onClick={() => openCancelDialog(item)}>{cancelingId === item.id ? "취소 처리 중..." : "결제취소"}</Button>}{item.paymentStatus === "결제대기" ? <Button size="sm" variant="destructive" onClick={() => openDeleteDialog(item)}>결제대기 삭제</Button> : item.archivedAt ? <Button size="sm" variant="outline" onClick={() => runItemAction(item, "unarchive").catch((e) => setMessage(e.message))}>보관 해제</Button> : <Button size="sm" variant="outline" onClick={() => runItemAction(item, "archive").catch((e) => setMessage(e.message))}>보관</Button>}</div></div></td>
+                    <td className="border-l border-border/20 p-3"><div className="font-semibold text-foreground">{item.title}</div>{item.description && <div className="mt-1 max-w-[300px] text-xs leading-5 text-muted-foreground line-clamp-2">{item.description}</div>}<div className="mt-2 text-[11px] text-muted-foreground/80">ID {item.id}</div><div className="mt-3 space-y-1 leading-tight"><div className="font-medium text-foreground">{item.customerName || "-"}</div>{(item.customerPhone || item.customerEmail) ? <div className="text-xs leading-5 text-muted-foreground">{[item.customerPhone, item.customerEmail].filter(Boolean).join(" · ")}</div> : <div className="text-xs text-muted-foreground">고객 정보 없음</div>}</div></td>
+                    <td className="border-l border-border/20 p-3 text-right"><div className="whitespace-nowrap font-medium tabular-nums text-foreground">{money(item.amount)}</div><div className="mt-1 text-xs text-muted-foreground">개인결제</div></td>
+                    <td className="border-l border-border/20 p-3"><div className="space-y-2"><div className="flex flex-wrap gap-1.5"><Badge variant={item.paymentStatus === "결제완료" ? "default" : item.paymentStatus === "결제취소" ? "destructive" : "outline"}>{item.paymentStatus}</Badge><Badge variant={item.status === "active" ? "secondary" : "outline"}>{statusLabel(item.status)}</Badge>{now !== null && isExpired(item, now) && <Badge variant="destructive">만료됨</Badge>}{item.archivedAt && <Badge variant="outline">보관됨</Badge>}</div><div className="grid grid-cols-[34px_1fr] gap-x-2 text-xs leading-5 text-muted-foreground"><span>만료</span><span>{item.expiresAt ? formatKoreanDateTime(item.expiresAt) : "만료 없음"}</span><span>생성</span><span>{formatKoreanDateTime(item.createdAt)}</span>{item.paidAt && <><span>완료</span><span>{formatKoreanDateTime(item.paidAt)}</span></>}{item.canceledAt && <><span>취소</span><span>{formatKoreanDateTime(item.canceledAt)}</span></>}</div></div></td>
+                    <td className="border-l border-border/20 p-3 text-xs leading-5 text-muted-foreground">{item.offlineLink?.status === "linked" ? <div className="space-y-1"><Badge variant="secondary">오프라인 연결됨</Badge><div>고객 {item.offlineLink.offlineCustomerId}</div>{item.offlineLink.offlineRecordId && <div>기록 {item.offlineLink.offlineRecordId}</div>}<div>{formatKoreanDateTime(item.offlineLink.linkedAt)}</div></div> : <span>-</span>}</td>
+                    <td className="border-l border-border/40 p-3"><div className="flex justify-end gap-1.5"><Button className="h-8 border-border/70 hover:bg-muted/40" size="sm" variant="outline" onClick={() => edit(item)}>상세/수정</Button><DropdownMenu><DropdownMenuTrigger asChild><Button className="h-8 w-8 border-border/70 p-0 hover:bg-muted/40" size="sm" variant="outline" aria-label="개인결제 작업 더보기"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem onClick={() => copy(item.id)}>링크 복사</DropdownMenuItem>{item.paymentStatus === "결제완료" && item.offlineLink?.status !== "linked" && <DropdownMenuItem onClick={() => openOfflineLinkDialog(item)}>오프라인 연결</DropdownMenuItem>}{item.paymentStatus !== "결제대기" && (item.archivedAt ? <DropdownMenuItem onClick={() => runItemAction(item, "unarchive").catch((e) => setMessage(e.message))}>보관 해제</DropdownMenuItem> : <DropdownMenuItem onClick={() => runItemAction(item, "archive").catch((e) => setMessage(e.message))}>보관</DropdownMenuItem>)}{(item.paymentStatus === "결제완료" || item.paymentStatus === "결제대기") && <DropdownMenuSeparator />}{item.paymentStatus === "결제완료" && <DropdownMenuItem className="text-destructive focus:text-destructive" disabled={cancelingId === item.id} onClick={() => openCancelDialog(item)}>{cancelingId === item.id ? "취소 처리 중..." : "결제취소"}</DropdownMenuItem>}{item.paymentStatus === "결제대기" && <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => openDeleteDialog(item)}>결제대기 삭제</DropdownMenuItem>}</DropdownMenuContent></DropdownMenu></div></td>
                   </tr>
                 ))}</tbody>
               </table>
