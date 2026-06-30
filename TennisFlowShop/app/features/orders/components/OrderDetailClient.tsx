@@ -8,6 +8,8 @@ import PaymentMethodDetail from "@/app/features/orders/components/PaymentMethodD
 import RequestEditForm from "@/app/features/orders/components/RequestEditForm";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
+import AdminCompactField from "@/components/admin/AdminCompactField";
+import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import AdminInternalNotesCard from "@/components/admin/AdminInternalNotesCard";
 import AdminNextActionPanel from "@/components/admin/AdminNextActionPanel";
@@ -83,11 +85,8 @@ import {
   CreditCard,
   Edit3,
   LinkIcon,
-  Mail,
-  MapPin,
   Package,
   Pencil,
-  Phone,
   Settings,
   ShoppingCart,
   Truck,
@@ -1236,20 +1235,27 @@ export default function OrderDetailClient({ orderId }: Props) {
                     </div>
                   )}
                   {latestLinkedApplication?.id && latestLinkedApplication?.status && (
-                    <LinkedFlowStageCard
-                      className="border border-border/50 bg-transparent shadow-none overflow-hidden"
-                      orderId={orderId}
-                      orderStatus={localStatus}
-                      applicationStatus={latestLinkedApplication.status}
-                      shippingInfo={orderDetail.shippingInfo}
-                      disabled={Boolean(linkedStageBlockedReason)}
-                      disabledReason={linkedStageBlockedReason}
-                      onSaved={async () => {
-                        await mutateOrder();
-                        await mutateHistory();
-                        router.refresh();
-                      }}
-                    />
+                    <details className="rounded-lg border border-border/60 bg-background/60">
+                      <summary className="cursor-pointer px-3 py-2 text-ui-body-sm font-medium text-foreground">
+                        연결 진행 단계 상세 보기
+                      </summary>
+                      <div className="border-t border-border/60 p-3">
+                        <LinkedFlowStageCard
+                          className="overflow-hidden border border-border/50 bg-transparent shadow-none"
+                          orderId={orderId}
+                          orderStatus={localStatus}
+                          applicationStatus={latestLinkedApplication.status}
+                          shippingInfo={orderDetail.shippingInfo}
+                          disabled={Boolean(linkedStageBlockedReason)}
+                          disabledReason={linkedStageBlockedReason}
+                          onSaved={async () => {
+                            await mutateOrder();
+                            await mutateHistory();
+                            router.refresh();
+                          }}
+                        />
+                      </div>
+                    </details>
                   )}
                   <div className="grid gap-3 lg:grid-cols-2">
                     <div className="rounded-lg border border-border/40 bg-transparent p-3 shadow-none">
@@ -1711,56 +1717,45 @@ export default function OrderDetailClient({ orderId }: Props) {
               ) : (
                 <>
                   <CardContent className="p-4 lg:p-5">
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-ui-body-sm text-foreground/80">이름</p>
-                          <p className="font-medium text-foreground">
-                            {orderDetail.customer.name ?? "이름 없음"}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-ui-body-sm text-foreground/80">이메일</p>
-                          <p className="font-medium text-foreground">
-                            {orderDetail.customer.email ?? "이메일 없음"}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-ui-body-sm text-foreground/80">전화번호</p>
-                          <p className="font-medium text-foreground">
-                            {orderDetail.customer.phone ?? "전화번호 없음"}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start space-x-3 rounded-lg border border-border/60 bg-background p-3">
-                        <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
-                        <div>
-                          <p className="text-ui-body-sm text-foreground/80">주소</p>
-                          <p className="font-medium text-foreground">
-                            {orderDetail.customer.address ?? "주소 없음"}
-                          </p>
-                          {orderDetail.customer.addressDetail && (
-                            <p className="text-ui-body-sm text-foreground/80 mt-1">
-                              {orderDetail.customer.addressDetail}
-                            </p>
-                          )}
-                          {orderDetail.customer.postalCode && (
-                            <p className="text-ui-body-sm text-foreground/80">
-                              우편번호: {orderDetail.customer.postalCode}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <AdminCompactField
+                        label="이름"
+                        value={orderDetail.customer.name}
+                        emptyValue="이름 미등록"
+                      />
+                      <AdminCompactField
+                        label="이메일"
+                        value={orderDetail.customer.email}
+                        emptyValue="이메일 미등록"
+                        valueClassName="break-all"
+                      />
+                      <AdminCompactField
+                        label="전화번호"
+                        value={orderDetail.customer.phone}
+                        emptyValue="전화번호 미등록"
+                      />
+                      <AdminCompactField
+                        label="주소"
+                        value={
+                          orderDetail.customer.address ? (
+                            <>
+                              <span>{orderDetail.customer.address}</span>
+                              {orderDetail.customer.addressDetail ? (
+                                <span className="mt-1 block text-foreground/80">
+                                  {orderDetail.customer.addressDetail}
+                                </span>
+                              ) : null}
+                              {orderDetail.customer.postalCode ? (
+                                <span className="mt-1 block text-foreground/70">
+                                  우편번호: {orderDetail.customer.postalCode}
+                                </span>
+                              ) : null}
+                            </>
+                          ) : null
+                        }
+                        emptyValue="주소 미등록"
+                        className="sm:col-span-2"
+                      />
                     </div>
                   </CardContent>
                   {isEditMode && (
@@ -2026,11 +2021,16 @@ export default function OrderDetailClient({ orderId }: Props) {
               ) : (
                 <>
                   <CardContent className="p-4 lg:p-5">
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-3 rounded-lg border border-border/60 bg-background p-3">
-                        <div>
-                          <p className="text-ui-body-sm text-foreground/80">결제 상태</p>
-                          {(() => {
+                    <div className="space-y-3">
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        <AdminCompactField
+                          label="총 결제 금액"
+                          value={formatCurrency(orderDetail.total)}
+                          valueClassName="font-semibold text-primary"
+                        />
+                        <AdminCompactField
+                          label="결제 상태"
+                          value={(() => {
                             const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
                             return (
                               <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
@@ -2038,47 +2038,47 @@ export default function OrderDetailClient({ orderId }: Props) {
                               </Badge>
                             );
                           })()}
-                        </div>
-                      </div>
-
-                      <div className="rounded-md border border-border bg-card p-4 text-ui-body-sm shadow-sm dark:bg-card">
-                        <PaymentMethodDetail
-                          method={orderDetail.paymentMethod || "무통장입금"}
-                          bankKey={orderDetail.paymentBank}
-                          depositor={orderDetail.shippingInfo?.depositor}
-                          paymentProvider={orderDetail.paymentProvider}
-                          easyPayProvider={orderDetail.paymentEasyPayProvider}
-                          paymentStatus={orderDetail.paymentStatus}
-                          paymentTid={orderDetail.paymentTid}
-                          paymentCardDisplayName={orderDetail.paymentCardDisplayName}
-                          paymentCardCompany={orderDetail.paymentCardCompany}
-                          paymentCardLabel={orderDetail.paymentCardLabel}
-                          paymentNiceSync={orderDetail.paymentNiceSync}
                         />
-                        {String(orderDetail.paymentProvider ?? "")
-                          .trim()
-                          .toLowerCase() === "nicepay" && (
-                          <div className="mt-3">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleNiceSync}
-                              disabled={isSyncingNice}
-                            >
-                              {isSyncingNice ? "PG 상태 동기화 중..." : "PG 상태 다시 확인"}
-                            </Button>
-                          </div>
-                        )}
+                        <AdminCompactField
+                          label="결제 방식"
+                          value={orderDetail.paymentMethod || "무통장입금"}
+                        />
                       </div>
 
-                      <div className="flex items-center space-x-3 p-3 bg-muted/20 rounded-lg border border-border">
-                        <div>
-                          <p className="text-ui-body-sm text-foreground/80">결제 금액</p>
-                          <p className="text-ui-section-title font-semibold text-primary">
-                            {formatCurrency(orderDetail.total)}
-                          </p>
+                      <details className="rounded-lg border border-border/60 bg-background/70">
+                        <summary className="cursor-pointer px-3 py-2 text-ui-body-sm font-medium text-foreground">
+                          입금/PG 상세 정보
+                        </summary>
+                        <div className="border-t border-border/60 p-3 text-ui-body-sm">
+                          <PaymentMethodDetail
+                            method={orderDetail.paymentMethod || "무통장입금"}
+                            bankKey={orderDetail.paymentBank}
+                            depositor={orderDetail.shippingInfo?.depositor}
+                            paymentProvider={orderDetail.paymentProvider}
+                            easyPayProvider={orderDetail.paymentEasyPayProvider}
+                            paymentStatus={orderDetail.paymentStatus}
+                            paymentTid={orderDetail.paymentTid}
+                            paymentCardDisplayName={orderDetail.paymentCardDisplayName}
+                            paymentCardCompany={orderDetail.paymentCardCompany}
+                            paymentCardLabel={orderDetail.paymentCardLabel}
+                            paymentNiceSync={orderDetail.paymentNiceSync}
+                          />
+                          {String(orderDetail.paymentProvider ?? "")
+                            .trim()
+                            .toLowerCase() === "nicepay" && (
+                            <div className="mt-3">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleNiceSync}
+                                disabled={isSyncingNice}
+                              >
+                                {isSyncingNice ? "PG 상태 동기화 중..." : "PG 상태 다시 확인"}
+                              </Button>
+                            </div>
+                          )}
                         </div>
-                      </div>
+                      </details>
                     </div>
                   </CardContent>
                   {isEditMode && (
@@ -2206,9 +2206,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                         </p>
                       </div>
                     ) : (
-                      <p className="text-muted-foreground italic">
-                        요청사항이 입력되지 않았습니다.
-                      </p>
+                      <AdminInlineEmpty>배송 요청사항 없음</AdminInlineEmpty>
                     )}
                   </CardContent>
                   {isEditMode && (
