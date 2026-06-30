@@ -1926,7 +1926,6 @@ export default function SettlementsClient() {
             {renderOfflineReference(live?.offline)}
           </div>
         )}
-      </div>
       <AdminConfirmDialog
         open={pendingDeleteAction !== null}
         onOpenChange={(open) => {
