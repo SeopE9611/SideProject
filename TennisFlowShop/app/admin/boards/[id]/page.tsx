@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Calendar, Eye, MessageSquare, Settings, User } from "lucide-react";
 import type { Metadata } from "next";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
@@ -136,13 +138,11 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
       notFound();
     }
     return (
-      <div className="min-h-screen bg-muted/30">
-        <div className="container py-8 px-6">
-          <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive dark:border-destructive/40 dark:bg-destructive/15">
-            게시물 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
-          </p>
-        </div>
-      </div>
+      <AdminPageShell>
+        <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive dark:border-destructive/40 dark:bg-destructive/15">
+          게시물 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
+        </p>
+      </AdminPageShell>
     );
   }
 
@@ -163,106 +163,95 @@ export default async function BoardPostDetailPage({ params }: { params: Promise<
   const safeContent = await sanitizeHtml(String(post.content ?? ""));
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="container py-8 px-6">
-        <div className="mb-6">
-          <Link
-            href="/admin/boards"
-            className="inline-flex items-center text-primary hover:text-primary dark:hover:text-primary hover:underline"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            게시판 목록으로 돌아가기
-          </Link>
-        </div>
+    <AdminPageShell variant="wide">
+      <AdminPageHeader
+        title="게시물 상세 보기"
+        description="게시물의 상세 정보를 확인하고 관리할 수 있습니다."
+        icon={Settings}
+        scope={`상태: ${getStatusName(postStatus)}`}
+        helperText={`작성일: ${formatDate(post.createdAt)}`}
+        actions={
+          <>
+            <Link
+              href="/admin/boards"
+              className="inline-flex h-9 items-center rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground shadow-sm hover:bg-muted"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              목록으로
+            </Link>
+            <BoardDetailActions postId={postId} currentStatus={postStatus} />
+          </>
+        }
+      />
 
-        <div className="flex flex-col space-y-8">
-          <div className={`${adminSurface.card} p-5 sm:p-6`}>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="rounded-full bg-primary/10 p-3 text-primary">
-                  <Settings className="h-8 w-8 text-primary" />
-                </div>
-                <div>
-                  <h1 className={adminTypography.pageTitle}>
-                    게시물 상세 보기
-                  </h1>
-                  <p className={adminTypography.metaMuted}>
-                    게시물의 상세 정보를 확인하고 관리할 수 있습니다.
+      <div className="flex flex-col space-y-6">
+        <div className="grid gap-6 md:grid-cols-3">
+          <Card className={cn("md:col-span-2", adminSurface.card)}>
+            <CardHeader className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className={getBoardTypeColor(String(post.type ?? ""))}>
+                  {getBoardTypeName(String(post.type ?? ""))}
+                </Badge>
+                <Badge variant={getStatusVariant(postStatus)}>{getStatusName(postStatus)}</Badge>
+                {!!post.category && <Badge variant="outline">{post.category}</Badge>}
+                {post.isPinned && <Badge variant="secondary">상단 고정</Badge>}
+              </div>
+              <CardTitle className={adminTypography.sectionTitle}>
+                {post.title || "(제목 없음)"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div
+                className="prose prose-blue dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: safeContent }}
+              />
+            </CardContent>
+          </Card>
+
+          <Card className={adminSurface.card}>
+            <CardHeader className="border-b border-border/60 bg-muted/20">
+              <CardTitle className={adminTypography.sectionTitle}>게시물 정보</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 p-4 sm:p-5">
+              <div className={cn("flex items-center", adminSurface.fieldPanel)}>
+                <User className="mr-3 h-4 w-4 text-primary" />
+                <div className="space-y-1">
+                  <p className="text-sm font-medium leading-none text-foreground">
+                    {post.authorDisplayName || post.authorNickname || "작성자 미상"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {post.authorNickname || post.authorId || "-"}
                   </p>
                 </div>
               </div>
-              <BoardDetailActions postId={postId} currentStatus={postStatus} />
-            </div>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-3">
-            <Card className={cn("md:col-span-2", adminSurface.card)}>
-              <CardHeader className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge className={getBoardTypeColor(String(post.type ?? ""))}>
-                    {getBoardTypeName(String(post.type ?? ""))}
-                  </Badge>
-                  <Badge variant={getStatusVariant(postStatus)}>{getStatusName(postStatus)}</Badge>
-                  {!!post.category && <Badge variant="outline">{post.category}</Badge>}
-                  {post.isPinned && <Badge variant="secondary">상단 고정</Badge>}
+              <div className={cn("flex items-center", adminSurface.fieldPanel)}>
+                <Calendar className="mr-3 h-4 w-4 text-primary" />
+                <div className="space-y-1">
+                  <p className="text-sm font-medium leading-none text-foreground">작성일</p>
+                  <p className="text-sm text-muted-foreground">{formatDate(post.createdAt)}</p>
                 </div>
-                <CardTitle className={adminTypography.sectionTitle}>
-                  {post.title || "(제목 없음)"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div
-                  className="prose prose-blue dark:prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: safeContent }}
-                />
-              </CardContent>
-            </Card>
-
-            <Card className={adminSurface.card}>
-              <CardHeader className="border-b border-border/60 bg-muted/20">
-                <CardTitle className={adminTypography.sectionTitle}>게시물 정보</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 p-6">
-                <div className="flex items-center p-3 bg-card rounded-lg">
-                  <User className="mr-3 h-4 w-4 text-primary" />
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">
-                      {post.authorDisplayName || post.authorNickname || "작성자 미상"}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {post.authorNickname || post.authorId || "-"}
-                    </p>
-                  </div>
+              </div>
+              <div className={cn("flex items-center", adminSurface.fieldPanel)}>
+                <Eye className="mr-3 h-4 w-4 text-primary" />
+                <div className="space-y-1">
+                  <p className="text-sm font-medium leading-none text-foreground">조회수</p>
+                  <p className="text-sm text-primary font-semibold">{Number(post.views ?? 0)}</p>
                 </div>
-                <div className="flex items-center p-3 bg-card rounded-lg">
-                  <Calendar className="mr-3 h-4 w-4 text-primary" />
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">작성일</p>
-                    <p className="text-sm text-muted-foreground">{formatDate(post.createdAt)}</p>
-                  </div>
+              </div>
+              <div className={cn("flex items-center", adminSurface.fieldPanel)}>
+                <MessageSquare className="mr-3 h-4 w-4 text-primary" />
+                <div className="space-y-1">
+                  <p className="text-sm font-medium leading-none text-foreground">댓글</p>
+                  <p className="text-sm text-primary font-semibold">
+                    {Number(post.commentsCount ?? 0)}개
+                  </p>
                 </div>
-                <div className="flex items-center p-3 bg-card rounded-lg">
-                  <Eye className="mr-3 h-4 w-4 text-primary" />
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">조회수</p>
-                    <p className="text-sm text-primary font-semibold">{Number(post.views ?? 0)}</p>
-                  </div>
-                </div>
-                <div className="flex items-center p-3 bg-card rounded-lg">
-                  <MessageSquare className="mr-3 h-4 w-4 text-primary" />
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">댓글</p>
-                    <p className="text-sm text-primary font-semibold">
-                      {Number(post.commentsCount ?? 0)}개
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          <AdminBoardComments postId={postId} />
+              </div>
+            </CardContent>
+          </Card>
         </div>
+        <AdminBoardComments postId={postId} />
       </div>
-    </div>
+    </AdminPageShell>
   );
 }

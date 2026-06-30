@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
+import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
@@ -18,6 +19,7 @@ import {
   ensureAdminMutationSucceeded,
   getAdminErrorMessage,
 } from "@/lib/admin/adminFetcher";
+import { cn } from "@/lib/utils";
 
 type AdminEditItem = {
   id: string;
@@ -106,88 +108,94 @@ export default function AdminBoardEditClient({ postId }: { postId: string }) {
   };
 
   return (
-    <Card className={`mx-auto w-full max-w-4xl ${adminSurface.card}`}>
-      <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className={adminTypography.sectionTitle}>관리자 게시글 수정</CardTitle>
-            <p className={adminTypography.metaMuted}>상태: {statusText || "-"}</p>
-          </div>
+    <>
+      <AdminPageHeader
+        title="관리자 게시글 수정"
+        description="게시글 제목, 카테고리, 본문 내용을 수정합니다."
+        scope={`상태: ${statusText || "-"}`}
+        helperText="저장 후 게시글 상세 화면으로 이동합니다."
+        actions={
           <Button variant="outline" asChild>
             <Link href={`/admin/boards/${postId}`}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               상세로 돌아가기
             </Link>
           </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="p-5 sm:p-6">
-        {isLoading ? (
-          <div className="space-y-5">
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-10 w-full" />
+        }
+      />
+      <Card className={adminSurface.card}>
+        <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
+          <CardTitle className={adminTypography.sectionTitle}>게시글 정보</CardTitle>
+          <p className={adminTypography.metaMuted}>필수 항목을 확인한 뒤 저장하세요.</p>
+        </CardHeader>
+        <CardContent className="p-5 sm:p-6">
+          {isLoading ? (
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-[320px] w-full" />
+              </div>
+              <div className="flex justify-end">
+                <Skeleton className="h-10 w-28" />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-[320px] w-full" />
-            </div>
-            <div className="flex justify-end">
-              <Skeleton className="h-10 w-28" />
-            </div>
-          </div>
-        ) : (
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-2">
-              <Label htmlFor="title">제목</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                maxLength={120}
-                required
-              />
-            </div>
+          ) : (
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <div className="space-y-2">
+                <Label htmlFor="title">제목</Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  maxLength={120}
+                  required
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="category">카테고리</Label>
-              <Input
-                id="category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                placeholder="예: general"
-                maxLength={40}
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="category">카테고리</Label>
+                <Input
+                  id="category"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  placeholder="예: general"
+                  maxLength={40}
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="content">내용</Label>
-              <Textarea
-                id="content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="min-h-[320px]"
-                required
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="content">내용</Label>
+                <Textarea
+                  id="content"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="min-h-[320px]"
+                  required
+                />
+              </div>
 
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="mr-2 h-4 w-4" />
-                )}
-                {isSubmitting ? "저장 중..." : "저장하기"}
-              </Button>
-            </div>
-          </form>
-        )}
-      </CardContent>
-    </Card>
+              <div className={cn("flex justify-end p-3", adminSurface.stickyToolbar)}>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  {isSubmitting ? "저장 중..." : "저장하기"}
+                </Button>
+              </div>
+            </form>
+          )}
+        </CardContent>
+      </Card>
+    </>
   );
 }
