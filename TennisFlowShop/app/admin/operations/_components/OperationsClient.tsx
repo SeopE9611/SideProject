@@ -1216,11 +1216,11 @@ export default function OperationsClient() {
         />
 
         {showActionsGuide && (
-          <div className="grid grid-cols-1 gap-1.5 rounded-lg border border-border/70 bg-muted/20 p-2 bp-sm:grid-cols-2 bp-lg:grid-cols-4">
+          <div className={cn(adminSurface.fieldPanelMuted, "grid grid-cols-1 gap-1.5 bp-sm:grid-cols-2 bp-lg:grid-cols-4")}>
             {PAGE_COPY.actions.map((action) => (
               <div
                 key={action.title}
-                className="rounded-md border border-border/50 bg-background/80 px-2 py-1.5"
+                className={cn(adminSurface.fieldPanel, "rounded-md px-2 py-1.5")}
               >
                 <p className={adminTypography.panelTitle}>{action.title}</p>
                 <p className="mt-0.5 line-clamp-1 text-xs leading-snug text-foreground/90">
@@ -1292,7 +1292,7 @@ export default function OperationsClient() {
           </div>
         </Section>
 
-        <div className="mt-4 rounded-2xl border border-border/60 bg-card/80 p-2 shadow-sm">
+        <div className={cn(adminSurface.card, "mt-4 p-2")}>
           <p className="px-2 pb-2 text-ui-label font-semibold uppercase tracking-widest text-muted-foreground">
             보조 운영 정보
           </p>

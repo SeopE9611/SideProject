@@ -104,7 +104,12 @@ function SortableTH({
         type="button"
         onClick={() => onSort(k)}
         className={cn(
-          "inline-flex w-full items-center justify-center gap-1 cursor-pointer select-none",
+          "inline-flex w-full items-center gap-1 cursor-pointer select-none",
+          className.includes("text-left")
+            ? "justify-start"
+            : className.includes("text-right")
+              ? "justify-end"
+              : "justify-center",
           "hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded",
           active && "text-primary",
         )}
@@ -649,21 +654,21 @@ export default function PackageOrdersClient() {
   // 공통 스타일 상수
   const thClasses = cn(adminDataTable.headCenter, "sticky top-0 z-10 box-border");
 
-  const tdClasses = cn(adminDataTable.cellCompact, "text-center text-xs leading-tight tabular-nums");
+  const tdClasses = cn(adminDataTable.cellCompact, "text-xs leading-tight");
 
   // 열별 정렬
   const col = {
-    id: "text-center",
-    customer: "text-center",
+    id: "text-left",
+    customer: "text-left",
     type: "text-center",
-    remain: "text-center",
-    progress: "text-center",
-    buy: "text-center",
-    expire: "text-center",
+    remain: "text-center tabular-nums",
+    progress: "text-center tabular-nums",
+    buy: "text-right tabular-nums",
+    expire: "text-right tabular-nums",
     status: "text-center",
     payment: "text-center",
-    price: "text-center",
-    actions: "text-center",
+    price: "text-right tabular-nums",
+    actions: "text-right",
   } as const;
 
   // ARIA 정렬 상태
@@ -1067,12 +1072,14 @@ export default function PackageOrdersClient() {
               >
                 <TableHeader className="sticky top-0 bg-card shadow-sm">
                   <TableRow>
-                    <TableHead className={cn(thClasses, "w-[120px]")}>패키지 ID</TableHead>
+                    <TableHead className={cn(adminDataTable.head, "sticky top-0 z-10 box-border w-[120px]")}>
+                      패키지 ID
+                    </TableHead>
 
                     <SortableTH
                       k="customer"
                       label="고객"
-                      className=""
+                      className="text-left"
                       thClasses={thClasses}
                       ariaSort={ariaSort("customer")}
                       onSort={handleSort}
@@ -1094,7 +1101,7 @@ export default function PackageOrdersClient() {
                     <SortableTH
                       k="remainingSessions"
                       label="남은 횟수"
-                      className="w-[92px] hidden lg:table-cell"
+                      className="w-[92px] hidden lg:table-cell text-center tabular-nums"
                       thClasses={thClasses}
                       ariaSort={ariaSort("remainingSessions")}
                       onSort={handleSort}
@@ -1116,7 +1123,7 @@ export default function PackageOrdersClient() {
                     <SortableTH
                       k="purchaseDate"
                       label="구매일"
-                      className="w-36"
+                      className="w-36 text-right tabular-nums"
                       thClasses={thClasses}
                       ariaSort={ariaSort("purchaseDate")}
                       onSort={handleSort}
@@ -1127,7 +1134,7 @@ export default function PackageOrdersClient() {
                     <SortableTH
                       k="expiryDate"
                       label="만료일"
-                      className="w-36"
+                      className="w-36 text-right tabular-nums"
                       thClasses={thClasses}
                       ariaSort={ariaSort("expiryDate")}
                       onSort={handleSort}
@@ -1160,7 +1167,7 @@ export default function PackageOrdersClient() {
                     <SortableTH
                       k="price"
                       label="금액"
-                      className="w-[96px]"
+                      className="w-[96px] text-right tabular-nums"
                       thClasses={thClasses}
                       ariaSort={ariaSort("price")}
                       onSort={handleSort}
@@ -1168,7 +1175,11 @@ export default function PackageOrdersClient() {
                       icon={SortIcon("price")}
                     />
 
-                    <TableHead className={cn(thClasses, "w-[44px] text-center")}>작업</TableHead>
+                    <TableHead
+                      className={cn(adminDataTable.actionHead, "sticky top-0 z-10 box-border w-[44px]")}
+                    >
+                      작업
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
 
@@ -1252,7 +1263,7 @@ export default function PackageOrdersClient() {
                             className="hover:bg-primary/5 transition-colors even:bg-muted/40 border-b last:border-0"
                           >
                             {/* 패키지 ID (복사 토스트 포함) */}
-                            <TableCell className={cn(tdClasses)}>
+                            <TableCell className={cn(tdClasses, col.id)}>
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -1286,14 +1297,14 @@ export default function PackageOrdersClient() {
                             </TableCell>
 
                             {/* 고객 (이름/이메일 두 줄) */}
-                            <TableCell className={cn(tdClasses, "text-center")}>
+                            <TableCell className={cn(tdClasses, col.customer)}>
                               {(() => {
                                 const cName = pkg.customer?.name ?? "이름없음";
                                 const cEmail = pkg.customer?.email ?? "";
                                 const baseName = cName.replace(/$$비회원$$\s*$/, "");
                                 const isGuest = cName.includes("(비회원)");
                                 return (
-                                  <div className="flex min-w-0 flex-col items-center overflow-hidden text-center">
+                                  <div className="flex min-w-0 flex-col items-start overflow-hidden text-left">
                                     <span
                                       className="line-clamp-2 max-w-[200px] break-words font-medium"
                                       title={baseName}
@@ -1371,7 +1382,7 @@ export default function PackageOrdersClient() {
                               const { date, time } = formatDateSplit(pkg.purchaseDate);
                               return (
                                 <TableCell className={cn(tdClasses, col.buy)}>
-                                  <div className="flex flex-col items-center leading-tight">
+                                  <div className="flex flex-col items-end leading-tight">
                                     <span className="whitespace-nowrap text-sm tabular-nums">
                                       {date}
                                     </span>
@@ -1388,7 +1399,7 @@ export default function PackageOrdersClient() {
                               const { date, time } = formatDateSplit(expirySource);
                               return (
                                 <TableCell className={cn(tdClasses, col.expire)}>
-                                  <div className="flex flex-col items-center leading-tight">
+                                  <div className="flex flex-col items-end leading-tight">
                                     <span className="whitespace-nowrap text-sm tabular-nums">
                                       {date}
                                     </span>
@@ -1468,7 +1479,7 @@ export default function PackageOrdersClient() {
                             </TableCell>
 
                             {/* 작업 드롭다운 */}
-                            <TableCell className={cn(tdClasses, col.actions, "p-0")}>
+                            <TableCell className={cn(tdClasses, col.actions, "p-0 pr-2")}>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button variant="ghost" size="icon" className="h-7 w-7 p-0">
