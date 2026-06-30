@@ -7,6 +7,7 @@ import { makeCsvFilename } from "@/app/admin/settlements/_lib/settlementExport";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -551,8 +552,7 @@ export default function SettlementsClient() {
   // UI
   // ──────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+    <AdminPageShell variant="wide" className="space-y-8">
         <AdminPageHeader
           title="정산 관리"
           description="월별 매출, 환불, 순매출 스냅샷을 생성하고 관리합니다."
@@ -1972,6 +1972,6 @@ export default function SettlementsClient() {
             : { yyyymm: pendingDeleteAction?.yyyymm }
         }
       />
-    </div>
+    </AdminPageShell>
   );
 }
