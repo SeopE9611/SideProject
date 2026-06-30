@@ -887,6 +887,8 @@ export default function AdminRentalDetailClient() {
         <AdminDetailSectionNav
           items={[
             { href: "#admin-rental-return", label: "처리 작업" },
+            ...(cancelInfo ? [{ href: "#admin-rental-cancel", label: "취소 요청" }] : []),
+            ...(linkedApplication ? [{ href: "#admin-rental-linked-docs", label: "교체 작업" }] : []),
             { href: "#admin-rental-customer", label: "고객정보" },
             { href: "#admin-rental-payment", label: "결제정보" },
             { href: "#admin-rental-shipping", label: "배송/반납" },

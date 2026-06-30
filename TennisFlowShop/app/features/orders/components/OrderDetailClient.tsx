@@ -1079,53 +1079,19 @@ export default function OrderDetailClient({ orderId }: Props) {
                 />
               )}
             </div>
-            {/* 취소 요청 상태 안내 (관리자용) */}
-            {cancelInfo && (
-              <div id="admin-order-cancel">
-                <AdminCancelRequestCard
-                  className="border-solid border-destructive/40 bg-destructive/10"
-                  badgeLabel={cancelInfo.badgeLabel}
-                  description={cancelInfo.description}
-                  reasonSummary={cancelInfo.reasonSummary}
-                  tone={cancelInfo.tone}
-                  rightSlot={
-                    <div className="rounded-md border border-border/60 bg-background px-3 py-2">
-                      <p className="text-ui-label font-medium text-muted-foreground">
-                        환불 계좌 정보
-                      </p>
-                      <dl className="mt-2 space-y-1 text-ui-label text-foreground/90">
-                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                          <dt className="text-muted-foreground">환불 은행</dt>
-                          <dd>{cancelInfo.refundAccount?.bankLabel || "미입력"}</dd>
-                        </div>
-                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                          <dt className="text-muted-foreground">계좌번호</dt>
-                          <dd className="font-mono">
-                            {cancelInfo.refundAccount?.account || "미입력"}
-                          </dd>
-                        </div>
-                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
-                          <dt className="text-muted-foreground">예금주</dt>
-                          <dd>{cancelInfo.refundAccount?.holder || "미입력"}</dd>
-                        </div>
-                      </dl>
-                    </div>
-                  }
-                />
-              </div>
-            )}
           </div>
-
 
           <nav
             aria-label="주문 상세 섹션 바로가기"
             className="mb-6 flex flex-wrap gap-2 rounded-2xl border border-border/70 bg-card px-4 py-3 shadow-sm"
           >
             {[
-              ["처리 작업", "#admin-order-action"],
-              ["교체서비스", "#admin-order-linked"],
+              ["다음 처리", "#admin-order-action"],
+              ...(cancelInfo ? [["취소 요청", "#admin-order-cancel"]] : []),
+              ...(isLinkedStringingOrder ? [["교체서비스", "#admin-order-linked"]] : []),
               ["고객정보", "#admin-order-customer"],
               ["결제정보", "#admin-order-payment"],
+              ["배송정보", "#admin-order-shipping"],
               ["주문품목", "#admin-order-items"],
               ["메모", "#admin-order-notes"],
               ["이력", "#admin-order-history"],
@@ -1200,6 +1166,42 @@ export default function OrderDetailClient({ orderId }: Props) {
               }
             />
           </div>
+
+          {/* 취소 요청 상태 안내 (관리자용) */}
+          {cancelInfo && (
+            <div id="admin-order-cancel" className="mb-6">
+              <AdminCancelRequestCard
+                className="border-solid border-destructive/40 bg-destructive/10"
+                badgeLabel={cancelInfo.badgeLabel}
+                description={cancelInfo.description}
+                reasonSummary={cancelInfo.reasonSummary}
+                tone={cancelInfo.tone}
+                rightSlot={
+                  <div className="rounded-md border border-border/60 bg-background px-3 py-2">
+                    <p className="text-ui-label font-medium text-muted-foreground">
+                      환불 계좌 정보
+                    </p>
+                    <dl className="mt-2 space-y-1 text-ui-label text-foreground/90">
+                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                          <dt className="text-muted-foreground">환불 은행</dt>
+                          <dd>{cancelInfo.refundAccount?.bankLabel || "미입력"}</dd>
+                        </div>
+                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                          <dt className="text-muted-foreground">계좌번호</dt>
+                          <dd className="font-mono">
+                            {cancelInfo.refundAccount?.account || "미입력"}
+                          </dd>
+                        </div>
+                        <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
+                          <dt className="text-muted-foreground">예금주</dt>
+                          <dd>{cancelInfo.refundAccount?.holder || "미입력"}</dd>
+                        </div>
+                    </dl>
+                  </div>
+                }
+              />
+            </div>
+          )}
 
           {/* 연결 교체 작업 통합 패널 */}
           {isLinkedStringingOrder && (

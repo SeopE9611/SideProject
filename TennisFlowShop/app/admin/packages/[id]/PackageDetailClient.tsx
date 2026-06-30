@@ -621,10 +621,10 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
         <AdminDetailSectionNav
           className="mb-4"
           items={[
-            { href: "#package-usage-history", label: "사용 이력" },
-            { href: "#package-customer", label: "고객정보" },
-            { href: "#package-status-card", label: "결제/상태" },
-            { href: "#package-operation-history", label: "운영 내역" },
+            { href: "#admin-package-payment", label: "결제/상태" },
+            { href: "#admin-package-customer", label: "고객정보" },
+            { href: "#admin-package-usage-history", label: "사용 이력" },
+            { href: "#admin-package-operation-history", label: "운영 내역" },
           ]}
         />
 
@@ -640,102 +640,22 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
               <div className="flex flex-wrap gap-2">
                 <Button asChild size="sm" variant="outline">
-                  <a href="#package-usage-history">사용 이력 확인</a>
+                  <a href="#admin-package-usage-history">사용 이력 확인</a>
                 </Button>
                 <Button asChild size="sm" variant="outline">
-                  <a href="#package-status-card">상태/결제 확인</a>
+                  <a href="#admin-package-payment">상태/결제 확인</a>
                 </Button>
                 <Button asChild size="sm" variant="outline">
-                  <a href="#package-operation-history">운영 내역 확인</a>
+                  <a href="#admin-package-operation-history">운영 내역 확인</a>
                 </Button>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card
-          id="package-usage-history"
-          className={cn(
-            "mb-6 border-border bg-card dark:bg-card dark:border-border",
-            adminSurface.tableCard,
-          )}
-        >
-          <CardHeader className="border-b border-border/60 bg-background/70">
-            <CardTitle className="flex items-center gap-2">
-              <History className="h-5 w-5 text-primary" />
-              잔여 횟수/만료/사용 이력
-            </CardTitle>
-            <CardDescription>
-              패키지 횟수가 차감된 신청서 목록과 현재 사용 흐름을 먼저 확인하세요.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-5">
-            {usageHistory.length === 0 && !usageLoading ? (
-              <AdminInlineEmpty>사용 내역이 없습니다.</AdminInlineEmpty>
-            ) : (
-              <div className="space-y-4">
-                {usageHistory.map((u) => (
-                  <div
-                    key={u.id}
-                    className="border rounded-lg p-4 transition-colors border-border bg-card hover:bg-background dark:border-border dark:bg-card dark:hover:bg-card"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge
-                            variant={getMerchandisingBadgeSpec("discount").variant}
-                            className="text-xs"
-                          >
-                            -{u.sessionsUsed}회 차감
-                          </Badge>
-                        </div>
-                        <p className="font-medium mb-1">{u.summary}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {u.applicationSummary || `신청서 #${u.applicationId.slice(-6)}`}
-                        </p>
-                        {u.adminNote && (
-                          <p className="text-sm text-foreground mt-1">관리자 메모: {u.adminNote}</p>
-                        )}
-                      </div>
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link
-                          href={`/admin/applications/stringing/${u.applicationId}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          상세 보기
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-                <div className="pt-2 flex justify-center">
-                  {usageHasMore ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => void loadUsageHistory(true)}
-                      disabled={usageLoading}
-                    >
-                      {usageLoading ? (
-                        <>
-                          <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                          불러오는 중
-                        </>
-                      ) : (
-                        "더보기"
-                      )}
-                    </Button>
-                  ) : null}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         <div className="grid gap-6 md:grid-cols-2">
           {/* 고객 정보 */}
-          <Card id="package-customer" className={cn(adminSurface.card, "overflow-hidden")}>
+          <Card id="admin-package-customer" className={cn(adminSurface.card, "overflow-hidden")}>
             <CardHeader className="border-b border-border/60 bg-background/70">
               <CardTitle className={cn("flex items-center gap-2", adminTypography.sectionTitle)}>
                 <User className="h-5 w-5 text-foreground" />
@@ -788,7 +708,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
           </Card>
 
           {/* 패키지 상태 */}
-          <Card id="package-status-card" className={adminSurface.card}>
+          <Card id="admin-package-payment" className={adminSurface.card}>
             <CardHeader className="border-b border-border/60 bg-background/70">
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
@@ -927,9 +847,89 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             )}
           </Card>
 
+            <Card
+              id="admin-package-usage-history"
+              className={cn(
+                "border-border bg-card dark:bg-card dark:border-border md:col-span-2",
+                adminSurface.tableCard,
+              )}
+            >
+            <CardHeader className="border-b border-border/60 bg-background/70">
+              <CardTitle className="flex items-center gap-2">
+                <History className="h-5 w-5 text-primary" />
+                잔여 횟수/만료/사용 이력
+              </CardTitle>
+              <CardDescription>
+                패키지 횟수가 차감된 신청서 목록과 현재 사용 흐름을 먼저 확인하세요.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-5">
+              {usageHistory.length === 0 && !usageLoading ? (
+                <AdminInlineEmpty>사용 내역이 없습니다.</AdminInlineEmpty>
+              ) : (
+                <div className="space-y-4">
+                  {usageHistory.map((u) => (
+                    <div
+                      key={u.id}
+                      className="border rounded-lg p-4 transition-colors border-border bg-card hover:bg-background dark:border-border dark:bg-card dark:hover:bg-card"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge
+                              variant={getMerchandisingBadgeSpec("discount").variant}
+                              className="text-xs"
+                            >
+                              -{u.sessionsUsed}회 차감
+                            </Badge>
+                          </div>
+                          <p className="font-medium mb-1">{u.summary}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {u.applicationSummary || `신청서 #${u.applicationId.slice(-6)}`}
+                          </p>
+                          {u.adminNote && (
+                            <p className="text-sm text-foreground mt-1">관리자 메모: {u.adminNote}</p>
+                          )}
+                        </div>
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link
+                            href={`/admin/applications/stringing/${u.applicationId}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            상세 보기
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="pt-2 flex justify-center">
+                    {usageHasMore ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void loadUsageHistory(true)}
+                        disabled={usageLoading}
+                      >
+                        {usageLoading ? (
+                          <>
+                            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                            불러오는 중
+                          </>
+                        ) : (
+                          "더보기"
+                        )}
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+            </Card>
+
           {/* 운영 내역 */}
           <Card
-            id="package-operation-history"
+            id="admin-package-operation-history"
             className={cn("md:col-span-2", adminSurface.tableCard)}
           >
             <CardHeader className="border-b border-border/60 bg-background/70">
