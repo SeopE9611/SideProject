@@ -35,6 +35,7 @@ type OnlineSeriesAccumulator = {
   packageOrders: number;
   rentals: number;
   privatePayments: number;
+  privatePaymentRefunds: number;
 };
 
 export function parseReportDate(value: string | null, boundary: "from" | "to"): Date | null {
@@ -106,7 +107,7 @@ function groupKey(dateValue: unknown, groupBy: RevenueReportGroupBy): string | n
 function addOnlineSeries(
   map: Map<string, OnlineSeriesAccumulator>,
   key: string | null,
-  source: keyof OnlineSeriesAccumulator,
+  source: Exclude<keyof OnlineSeriesAccumulator, "privatePaymentRefunds">,
   amount: number,
 ) {
   if (!key) return;
@@ -116,8 +117,27 @@ function addOnlineSeries(
     packageOrders: 0,
     rentals: 0,
     privatePayments: 0,
+    privatePaymentRefunds: 0,
   };
   current[source] += amount;
+  map.set(key, current);
+}
+
+function addPrivatePaymentRefundSeries(
+  map: Map<string, OnlineSeriesAccumulator>,
+  key: string | null,
+  amount: number,
+) {
+  if (!key) return;
+  const current = map.get(key) ?? {
+    orders: 0,
+    stringingApplications: 0,
+    packageOrders: 0,
+    rentals: 0,
+    privatePayments: 0,
+    privatePaymentRefunds: 0,
+  };
+  current.privatePaymentRefunds += amount;
   map.set(key, current);
 }
 
@@ -132,7 +152,15 @@ async function buildOnlineRevenueReport(
   const paidMatch = buildPaidMatch(["paymentStatus", "paymentInfo.status"]);
   const dateMatch = { createdAt: { $gte: range.from, $lt: range.toExclusive } };
 
-  const [orders, apps, packageOrders, rentals, privatePaymentPaidEvents, privatePayments] = await Promise.all([
+  const [
+    orders,
+    apps,
+    packageOrders,
+    rentals,
+    privatePaymentPaidEvents,
+    privatePaymentRefundEvents,
+    privatePayments,
+  ] = await Promise.all([
     db
       .collection("orders")
       .find(
@@ -208,6 +236,16 @@ async function buildOnlineRevenueReport(
         { projection: { paidAt: 1, amount: 1 } },
       )
       .toArray(),
+    db
+      .collection("privatePayments")
+      .find(
+        {
+          canceledAt: { $gte: range.from, $lt: range.toExclusive },
+          amount: { $gt: 0 },
+        },
+        { projection: { canceledAt: 1, amount: 1 } },
+      )
+      .toArray(),
     buildPrivatePaymentSettlementSummary(db, {
       from: range.from,
       toExclusive: range.toExclusive,
@@ -252,6 +290,11 @@ async function buildOnlineRevenueReport(
     const safeAmount = Number.isFinite(amount) ? amount : 0;
     privatePaymentsPaid += safeAmount;
     addOnlineSeries(series, groupKey(doc.paidAt, groupBy), "privatePayments", safeAmount);
+  }
+  for (const doc of privatePaymentRefundEvents) {
+    const amount = Number(doc.amount);
+    const safeAmount = Number.isFinite(amount) ? amount : 0;
+    addPrivatePaymentRefundSeries(series, groupKey(doc.canceledAt, groupBy), safeAmount);
   }
   refundedAmount += privatePayments.refundAmount;
 
@@ -306,6 +349,8 @@ export async function buildRevenueReport(
     seriesMap.set(date, {
       date,
       onlinePaidAmount,
+      onlineRefundAmount: item.privatePaymentRefunds,
+      onlineNetAmount: onlinePaidAmount - item.privatePaymentRefunds,
       offlinePaidAmount: 0,
       combinedPaidAmount: onlinePaidAmount,
     });
@@ -314,6 +359,8 @@ export async function buildRevenueReport(
     const current = seriesMap.get(item.date) ?? {
       date: item.date,
       onlinePaidAmount: 0,
+      onlineRefundAmount: 0,
+      onlineNetAmount: 0,
       offlinePaidAmount: 0,
       combinedPaidAmount: 0,
     };
