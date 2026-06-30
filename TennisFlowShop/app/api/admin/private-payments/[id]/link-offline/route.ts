@@ -76,6 +76,20 @@ export async function POST(req: Request, ctx: Ctx) {
 
   const now = new Date();
   let offlineRecordId: ObjectId | null = null;
+  const offlineLink = { status: "linked" as const, offlineCustomerId: customer._id, offlineRecordId, linkedAt: now, linkedBy: guard.admin._id };
+  let updated = await col.findOneAndUpdate(
+    {
+      _id: paymentId,
+      paymentStatus: "결제완료",
+      paidAt: { $exists: true },
+      amount: { $gt: 0 },
+      "offlineLink.status": { $ne: "linked" },
+    },
+    { $set: { offlineLink, updatedAt: now }, $push: { history: { status: "offline_linked", date: now, description: "오프라인 고객/작업 기록 연결" } } },
+    { returnDocument: "after" },
+  );
+  if (!updated) return NextResponse.json({ ok: false, message: "이미 오프라인 기록과 연결된 개인결제입니다." }, { status: 409 });
+
   if (body.createRecord !== false) {
     const adminMemo = clean(body.memo);
     const memo = [
@@ -89,7 +103,7 @@ export async function POST(req: Request, ctx: Ctx) {
     const record = {
       offlineCustomerId: customer._id,
       userId: customer.linkedUserId ?? null,
-      customerSnapshot: { name: customer.name || customerName, phone: customer.phone || customerPhone, email: customer.email ?? customerEmail || null },
+      customerSnapshot: { name: customer.name || customerName, phone: customer.phone || customerPhone, email: customer.email || customerEmail || null },
       source: "private_payment",
       privatePaymentId: paymentId,
       revenueExcluded: true,
@@ -103,19 +117,35 @@ export async function POST(req: Request, ctx: Ctx) {
       updatedAt: now,
       createdBy: guard.admin._id,
     };
-    const inserted = await guard.db.collection("offline_service_records").insertOne(record);
-    offlineRecordId = inserted.insertedId;
-    await guard.db.collection("offline_customers").updateOne({ _id: customer._id }, { $inc: { "stats.visitCount": 1, "stats.totalServiceCount": 1 }, $set: { "stats.lastVisitedAt": record.occurredAt, updatedAt: now, updatedBy: guard.admin._id } });
+    try {
+      const inserted = await guard.db.collection("offline_service_records").insertOne(record);
+      offlineRecordId = inserted.insertedId;
+      const linked = await col.findOneAndUpdate(
+        { _id: paymentId, "offlineLink.status": "linked", "offlineLink.offlineRecordId": null },
+        { $set: { "offlineLink.offlineRecordId": offlineRecordId, updatedAt: now } },
+        { returnDocument: "after" },
+      );
+      if (!linked) throw new Error("개인결제 오프라인 작업 기록 연결 갱신에 실패했습니다.");
+      updated = linked;
+      await guard.db.collection("offline_customers").updateOne({ _id: customer._id }, { $inc: { "stats.visitCount": 1, "stats.totalServiceCount": 1 }, $set: { "stats.lastVisitedAt": record.occurredAt, updatedAt: now, updatedBy: guard.admin._id } });
+    } catch (error) {
+      console.error("[private-payments/link-offline] offline record creation failed", { paymentId: paymentId.toString(), error });
+      if (offlineRecordId) {
+        await guard.db.collection("offline_service_records").deleteOne({ _id: offlineRecordId }).catch((cleanupError) => {
+          console.error("[private-payments/link-offline] offline record cleanup failed", { paymentId: paymentId.toString(), offlineRecordId: offlineRecordId?.toString(), cleanupError });
+        });
+      }
+      await col.updateOne(
+        { _id: paymentId, "offlineLink.status": "linked", "offlineLink.offlineRecordId": null },
+        { $unset: { offlineLink: "" }, $set: { updatedAt: new Date() } },
+      ).catch((rollbackError) => {
+        console.error("[private-payments/link-offline] offline link rollback failed", { paymentId: paymentId.toString(), rollbackError });
+      });
+      return NextResponse.json({ ok: false, message: "오프라인 작업 기록 생성 중 오류가 발생했습니다." }, { status: 500 });
+    }
   }
 
-  const offlineLink = { status: "linked" as const, offlineCustomerId: customer._id, offlineRecordId, linkedAt: now, linkedBy: guard.admin._id };
-  const updated = await col.findOneAndUpdate(
-    { _id: paymentId, "offlineLink.status": { $ne: "linked" } },
-    { $set: { offlineLink, updatedAt: now }, $push: { history: { status: "offline_linked", date: now, description: "오프라인 고객/작업 기록 연결" } } },
-    { returnDocument: "after" },
-  );
-  if (!updated) return NextResponse.json({ ok: false, message: "이미 오프라인 기록과 연결된 개인결제입니다." }, { status: 409 });
-
   await appendAdminAudit(guard.db, { type: "private_payment.link_offline", actorId: guard.admin._id, targetId: paymentId, message: "개인결제 오프라인 고객/작업 기록 연결", diff: { offlineCustomerId: String(customer._id), offlineRecordId: offlineRecordId ? String(offlineRecordId) : null } }, req);
-  return NextResponse.json({ ok: true, item: serializePrivatePayment(updated), offlineLink: serializePrivatePayment(updated).offlineLink });
+  const serialized = serializePrivatePayment(updated);
+  return NextResponse.json({ ok: true, item: serialized, offlineLink: serialized.offlineLink });
 }
