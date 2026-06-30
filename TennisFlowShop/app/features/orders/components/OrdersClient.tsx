@@ -11,6 +11,8 @@ import { useOrderStore } from "@/app/store/orderStore";
 import { useStringingStore } from "@/app/store/stringingStore";
 import { AdminBadgeRow } from "@/components/admin/AdminBadgeRow";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
@@ -562,11 +564,8 @@ export default function OrdersClient() {
   };
 
   // 공통 스타일 상수
-  const thClasses =
-    "px-4 py-2 text-center align-middle " +
-    "border-b border-border " +
-    "font-semibold text-foreground";
-  const tdClasses = cn(adminSurface.tableCell, "text-left");
+  const thClasses = adminDataTable.headCenter;
+  const tdClasses = cn(adminDataTable.cell, "text-left");
 
   // 배송정보 업데이트 네비게이션
   const handleShippingUpdate = async (orderId: string) => {
@@ -658,9 +657,9 @@ export default function OrdersClient() {
   }
 
   return (
-    <div className="container py-4 lg:py-5">
+    <AdminPageShell variant="wide" className="py-4 lg:py-5">
       {/* 제목 및 설명 */}
-      <div className="mx-auto max-w-[1440px]">
+      <div>
         <AdminPageHeader
           title="주문 관리"
           description="결제 확인, 배송 누락, 취소 요청, 교체서비스 연결 주문을 한곳에서 확인하고 처리합니다."
@@ -1506,6 +1505,6 @@ export default function OrdersClient() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </AdminPageShell>
   );
 }

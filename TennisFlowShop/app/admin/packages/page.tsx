@@ -17,6 +17,8 @@ import {
   type SortKey,
 } from "@/app/admin/packages/_lib/packagesPageConfig";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -403,7 +405,7 @@ export default function PackageOrdersClient() {
 
   if (error) {
     return (
-      <div className="container py-6">
+      <AdminPageShell variant="wide" className="py-6">
         <Card className="border border-destructive/30 bg-destructive/10 dark:bg-destructive/15 text-foreground">
           <CardHeader>
             <CardTitle className="text-destructive">목록을 불러오지 못했습니다.</CardTitle>
@@ -417,7 +419,7 @@ export default function PackageOrdersClient() {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </AdminPageShell>
     );
   }
 
@@ -645,13 +647,9 @@ export default function PackageOrdersClient() {
   };
 
   // 공통 스타일 상수
-  const thClasses =
-    "sticky top-0 z-10 whitespace-nowrap px-1.5 py-1.5 text-center align-middle " +
-    "bg-card backdrop-blur supports-[backdrop-filter]:bg-card dark:supports-[backdrop-filter]:bg-card " +
-    "border-b border-border text-foreground " +
-    "font-semibold text-xs leading-tight box-border";
+  const thClasses = cn(adminDataTable.headCenter, "sticky top-0 z-10 box-border");
 
-  const tdClasses = "px-3 py-2 align-middle text-center text-xs leading-tight tabular-nums";
+  const tdClasses = cn(adminDataTable.cellCompact, "text-center text-xs leading-tight tabular-nums");
 
   // 열별 정렬
   const col = {
@@ -733,8 +731,7 @@ export default function PackageOrdersClient() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30 dark:bg-muted/30">
-      <div className="container py-6">
+    <AdminPageShell variant="wide" className="py-6">
         {/* 제목 및 설명 */}
         <AdminPageHeader
           title="패키지 관리"
@@ -1562,7 +1559,6 @@ export default function PackageOrdersClient() {
             </div>
           </CardContent>
         </Card>
-      </div>
-    </div>
+    </AdminPageShell>
   );
 }

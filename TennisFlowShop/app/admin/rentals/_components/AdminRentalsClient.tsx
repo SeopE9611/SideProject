@@ -1,5 +1,7 @@
 "use client";
 
+import AdminPageShell from "@/components/admin/AdminPageShell";
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -538,9 +540,8 @@ export default function AdminRentalsClient() {
   }
 
   const totalPages = data ? Math.max(1, Math.ceil(data.total / pageSize)) : null;
-  const thClasses =
-    "px-4 py-2 text-center align-middle border-b border-border font-semibold text-foreground";
-  const tdClasses = "px-3 py-4 align-middle text-center";
+  const thClasses = adminDataTable.headCenter;
+  const tdClasses = cn(adminDataTable.cellCompact, "text-center");
 
   function PaymentBadge({ item }: { item: RentalRow }) {
     const paymentLabel =
@@ -582,8 +583,8 @@ export default function AdminRentalsClient() {
   }
 
   return (
-    <div className="container py-6">
-      <div className="mx-auto max-w-7xl">
+    <AdminPageShell variant="wide" className="py-6">
+      <div>
         <AdminPageHeader
           title="대여 관리"
           description="라켓 대여의 결제 확인, 인도, 반납, 보증금 환불, 연결 신청서를 한곳에서 관리합니다."
@@ -1400,6 +1401,6 @@ export default function AdminRentalsClient() {
         }
         eventMeta={{ rentalId: pendingAction?.rentalId }}
       />
-    </div>
+    </AdminPageShell>
   );
 }
