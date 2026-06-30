@@ -2005,8 +2005,8 @@ export default function OperationsClient() {
                 <Table className="min-w-[1180px] table-fixed border-separate [border-spacing-block:0.25rem] [border-spacing-inline:0]">
                   <TableHeader>
                     <TableRow className={adminSurface.tableRow}>
-                      <TableHead className={cn(thClasses, "w-[17%]")}>우선순위/업무</TableHead>
-                      <TableHead className={cn(thClasses, "w-[28%]")}>문서/고객</TableHead>
+                      <TableHead className={cn(thClasses, "w-[18%]")}>우선순위/업무</TableHead>
+                      <TableHead className={cn(thClasses, "w-[27%]")}>문서/고객</TableHead>
                       <TableHead className={cn(thClasses, "w-[27%]")}>상태/다음 작업</TableHead>
                       <TableHead className={cn(thClasses, "w-[16%] text-right")}>
                         금액/접수
@@ -2067,21 +2067,21 @@ export default function OperationsClient() {
                       const stickyActionCellClass = cn(
                         "sticky right-0 z-10 border-l border-border/60",
                         rowBaseToneClass,
-                        "group-hover:bg-muted/35",
+                        "group-hover:bg-muted/40",
                       );
 
                       return (
                         <Fragment key={g.key}>
                           <TableRow
                             className={cn(
-                              "group transition-colors hover:bg-muted/35",
+                              "group transition-colors hover:bg-muted/40",
                               rowBaseToneClass,
                               warnEmphasisClass,
                             )}
                           >
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className="min-w-0 space-y-1.5">
-                                <div className="flex flex-wrap items-center gap-1.5">
+                              <div className="min-w-0 space-y-1">
+                                <div className="flex flex-wrap items-center gap-1">
                                   <Badge className={cn(badgeBase, badgeSizeSm, badgeToneClass(priorityMeta.tone))}>
                                     {priorityMeta.label}
                                   </Badge>
@@ -2101,7 +2101,7 @@ export default function OperationsClient() {
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
                               <div className="min-w-0 space-y-1">
                                 <div className="flex min-w-0 items-center gap-1.5">
-                                  <span className={cn("truncate font-mono", adminTypography.caption)}>{docLabel}</span>
+                                  <span className={cn("truncate font-mono text-foreground/70", adminTypography.caption)}>{docLabel}</span>
                                   <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground" onClick={() => copyToClipboard(g.anchor.id)} title={ROW_ACTION_LABELS.copyId} aria-label={ROW_ACTION_LABELS.copyId}>
                                     <Copy className="h-3.5 w-3.5" />
                                   </Button>
@@ -2124,8 +2124,8 @@ export default function OperationsClient() {
                             </TableCell>
 
                             <TableCell className={cn(tdClasses, rowDensityClass)}>
-                              <div className="space-y-1.5">
-                                <div className="flex flex-wrap items-center gap-1.5">
+                              <div className="space-y-1">
+                                <div className="flex flex-wrap items-center gap-1">
                                   <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
                                     {g.anchor.statusDisplayLabel ??
                                       g.anchor.statusLabel ??
@@ -2142,12 +2142,12 @@ export default function OperationsClient() {
                                   ) : null}
                                 </div>
                                 {primarySignal ? (
-                                  <p className={cn("line-clamp-1 text-warning", adminTypography.caption)} title={toOperatorSentence(primarySignal.description)}>
+                                  <p className={cn("line-clamp-1 rounded-sm bg-warning/10 px-1.5 py-0.5 text-warning", adminTypography.caption)} title={toOperatorSentence(primarySignal.description)}>
                                     {toOperatorSentence(primarySignal.title)}
                                   </p>
                                 ) : null}
-                                <div className="border-l-2 border-primary/30 pl-2.5">
-                                  <p className={cn("mb-0.5", adminTypography.caption)}>다음 작업</p>
+                                <div className="border-l-2 border-primary/25 pl-2">
+                                  <p className={cn("mb-0.5 text-foreground/55", adminTypography.caption)}>다음</p>
                                   <p className={cn("line-clamp-2", adminTypography.bodyStrong)}>
                                     {nextActionText}
                                   </p>
@@ -2156,14 +2156,14 @@ export default function OperationsClient() {
                             </TableCell>
 
                             <TableCell
-                              className={cn(tdClasses, rowDensityClass, "text-right")}
+                              className={cn(tdClasses, rowDensityClass, "text-right tabular-nums")}
                             >
                               <div className="flex flex-col items-end gap-1.5">
                                 <div className="text-left md:text-right">
                                   <span className="whitespace-nowrap text-xs text-foreground/75">
                                     {isGroup ? "대표 문서 금액" : opsKindLabel(g.anchor.kind)}
                                   </span>
-                                  <p className="whitespace-nowrap text-ui-body-sm font-semibold tracking-normal text-foreground">
+                                  <p className="whitespace-nowrap text-ui-body-sm font-semibold tracking-normal text-foreground tabular-nums">
                                     {won(g.anchor.amount)}
                                   </p>
                                 </div>
@@ -2218,7 +2218,7 @@ export default function OperationsClient() {
                                   접수 {createdAtLabel}
                                 </span>
                                 {amountMeaningText(g.anchor) ? (
-                                  <span className="text-xs text-foreground/85 line-clamp-2 text-right">
+                                  <span className="line-clamp-1 text-right text-xs text-foreground/75">
                                     {amountMeaningText(g.anchor)}
                                   </span>
                                 ) : null}
@@ -2240,7 +2240,7 @@ export default function OperationsClient() {
                                     size="sm"
                                     variant="outline"
                                     className={cn(
-                                      "h-8 min-w-[108px] justify-center px-2.5",
+                                      "h-8 min-w-[104px] justify-center border-border/70 px-2.5 shadow-sm hover:border-border hover:bg-muted/40 focus-visible:ring-2",
                                       adminTypography.actionLabel,
                                     )}
                                     title={groupGuide.nextAction ?? primaryActionTarget.label}

@@ -893,13 +893,13 @@ export default function OrdersClient() {
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
                 <TableHead className={cn(thClasses, "w-[230px] text-left")}>주문/고객</TableHead>
-                <TableHead className={cn(thClasses, "w-[230px] text-left")}>상품/서비스</TableHead>
-                <TableHead className={cn(thClasses, "w-[230px] text-left")}>상태/다음 작업</TableHead>
+                <TableHead className={cn(thClasses, "w-[215px] text-left")}>상품/서비스</TableHead>
+                <TableHead className={cn(thClasses, "w-[240px] text-left")}>상태/다음 작업</TableHead>
                 <TableHead
                   onClick={() => handleSort("total")}
                   className={cn(
                     thClasses,
-                    "w-[260px] cursor-pointer select-none text-right",
+                    "w-[265px] cursor-pointer select-none text-right",
                     sortBy === "total" && "text-primary",
                   )}
                 >
@@ -1028,7 +1028,7 @@ export default function OrdersClient() {
                         : `/admin/orders/${order.id}`;
 
                     return (
-                      <TableRow key={order.id} className={cn(adminSurface.tableRow, "align-top")}>
+                      <TableRow key={order.id} className={cn(adminSurface.tableRow, "align-top transition-colors hover:bg-muted/35")}>
                         <TableCell
                           className={cn(
                             tdClasses,
@@ -1263,12 +1263,12 @@ export default function OrdersClient() {
                         </TableCell>
                         {/* 상품/서비스 셀 */}
                         <TableCell className={cn(tdClasses, "py-2")}>
-                          <div className="min-w-0 text-left">
-                            <p className="line-clamp-2 break-keep text-ui-body-sm font-medium text-foreground">
+                          <div className="min-w-0 text-left align-top">
+                            <p className="line-clamp-2 break-keep text-ui-body-sm font-medium leading-snug text-foreground">
                               {productSummary.primary}
                             </p>
                             {productSummary.details.length > 0 && (
-                              <p className="mt-1 line-clamp-2 break-keep text-ui-label text-foreground/70">
+                              <p className="mt-1 line-clamp-1 break-keep text-ui-label text-foreground/70">
                                 {productSummary.details.join(" · ")}
                               </p>
                             )}
@@ -1277,7 +1277,7 @@ export default function OrdersClient() {
                         {/* 상태/다음 작업 셀 */}
                         <TableCell className={cn(tdClasses, "py-2")}>
                           {order.__type === "stringing_application" ? (
-                            <div className="flex flex-col items-start gap-1">
+                            <div className="flex flex-col items-start gap-0.5">
                               <ApplicationStatusBadge status={order.status} />
                               {hasCancelRequest && (
                                 <Badge
@@ -1295,7 +1295,7 @@ export default function OrdersClient() {
                             (() => {
                               const st = getOrderStatusBadgeSpec(order.status);
                               return (
-                                <div className="flex flex-col items-start gap-1">
+                                <div className="flex flex-col items-start gap-0.5">
                                   <Badge
                                     variant={st.variant}
                                     className={cn(
@@ -1324,13 +1324,13 @@ export default function OrdersClient() {
                               );
                             })()
                           )}
-                          <p className="mt-1 text-ui-label font-medium text-primary">다음: {nextActionLabel}</p>
+                          <p className="mt-1 line-clamp-2 text-ui-label font-medium leading-snug text-primary">다음: {nextActionLabel}</p>
                           <p className="mt-0.5 text-ui-label text-foreground/75 tabular-nums">접수 {formatDate(order.date)}</p>
                         </TableCell>
                         {/* 배송/결제 셀 */}
                         <TableCell className={cn(tdClasses, "py-2 text-right")}>
                           <div className="flex flex-col items-end gap-1 text-right">
-                            <div className="flex flex-wrap gap-1">
+                            <div className="flex flex-wrap justify-end gap-1">
                               {(() => {
                                 const methodSource =
                                   order.__type === "stringing_application" &&
@@ -1376,7 +1376,7 @@ export default function OrdersClient() {
                                 );
                               })()}
                             </div>
-                            <div className="mt-1 flex w-full items-baseline justify-end gap-3 tabular-nums">
+                            <div className="mt-1.5 flex w-full items-baseline justify-end gap-3 tabular-nums">
                               <span className="text-ui-label text-foreground/70">{order.paymentStatus}</span>
                               <span className="whitespace-nowrap text-ui-body-sm font-medium text-foreground">
                                 {formatCurrency(order.total)}
@@ -1387,7 +1387,7 @@ export default function OrdersClient() {
                         {/* 작업 메뉴 셀 */}
                         <TableCell className={cn(tdClasses, "py-2")}>
                           <div className="flex items-center justify-end gap-1">
-                            <Button asChild size="sm" variant="ghost" className="h-8 whitespace-nowrap border border-border/60 px-2.5 text-ui-label font-medium">
+                            <Button asChild size="sm" variant="ghost" className="h-8 whitespace-nowrap border border-border/70 px-2.5 text-ui-label font-medium hover:border-border hover:bg-muted/40 focus-visible:ring-2">
                               <Link
                                 href={detailHref}
                                 onClick={() => {
@@ -1406,7 +1406,7 @@ export default function OrdersClient() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 border border-border/60 bg-background hover:bg-muted/25"
+                                className="h-8 w-8 border border-border/70 bg-background hover:border-border hover:bg-muted/40 focus-visible:ring-2"
                               >
                                 <MoreHorizontal className="h-3.5 w-3.5" />
                                 <span className="sr-only">주문 작업 메뉴 열기</span>
