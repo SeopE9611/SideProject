@@ -17,7 +17,8 @@ export type TossPaymentFlowType =
   | "package_order"
   | "racket_order"
   | "rental_order"
-  | "stringing_application";
+  | "stringing_application"
+  | "private_payment";
 
 export type TossPaymentFailureStage =
   | "session_expired_before_confirm"
@@ -37,6 +38,12 @@ export type TossPaymentSession = {
   status: TossPaymentSessionStatus;
   flowType: TossPaymentFlowType;
   checkoutPayload?: Record<string, unknown>;
+  privatePaymentId?: string | null;
+  privatePaymentPayload?: {
+    title: string;
+    amount: number;
+    buyerInfo?: { name?: string; phone?: string; email?: string } | null;
+  };
 
   packagePayload?: {
     packageId: string;
