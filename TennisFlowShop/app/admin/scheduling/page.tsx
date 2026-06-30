@@ -25,6 +25,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { cn } from "@/lib/utils";
 import AsyncState from "@/components/system/AsyncState";
@@ -250,24 +251,20 @@ export default function StringingSettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-8">
-        {/* 스타일 표준화: tint/surface */}
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-8 h-10 w-72 animate-pulse rounded-lg bg-muted" />
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="h-96 animate-pulse rounded-3xl bg-card border border-border shadow-lg" />
-            <div className="h-96 animate-pulse rounded-3xl bg-card border border-border shadow-lg" />
-          </div>
+      <AdminPageShell variant="wide" className="space-y-6">
+        <div className="h-10 w-72 animate-pulse rounded-lg bg-muted" />
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className={cn(adminSurface.card, "h-96 animate-pulse")} />
+          <div className={cn(adminSurface.card, "h-96 animate-pulse")} />
         </div>
-      </div>
+      </AdminPageShell>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background p-8">
-        <div className="mx-auto max-w-7xl">
-          <AsyncState
+      <AdminPageShell variant="wide">
+        <AsyncState
             kind="error"
             tone="admin"
             variant="page-center"
@@ -276,16 +273,13 @@ export default function StringingSettingsPage() {
               void mutate();
             }}
           />
-        </div>
-      </div>
+      </AdminPageShell>
     );
   }
 
   return (
     <TooltipProvider delayDuration={120}>
-      <div className="min-h-screen bg-background p-8">
-        {/* 스타일 표준화: tint/surface */}
-        <div className="mx-auto max-w-7xl">
+      <AdminPageShell variant="wide" className="space-y-6">
           <AdminPageHeader
             title="예약 · 영업일 설정"
             description="교체서비스 예약 가능 시간, 영업 요일, 휴무일, 예외일을 관리합니다."
@@ -294,7 +288,7 @@ export default function StringingSettingsPage() {
             helperText="운영 정책 변경은 실제 예약 가능 시간에 즉시 영향을 줄 수 있습니다."
           />
 
-          <div className="mb-8 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <div className={cn(adminSurface.fieldPanelMuted, "overflow-hidden p-0")}>
             <div className="flex items-start gap-4 p-6">
               <div className="rounded-xl bg-muted p-2.5 shadow-sm">
                 <Info className="h-5 w-5" />
@@ -344,9 +338,9 @@ export default function StringingSettingsPage() {
             </div>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2 mb-6">
+          <div className="grid gap-6 lg:grid-cols-2">
             <Card className={cn("overflow-hidden", adminSurface.card)}>
-              <CardHeader className="border-b border-border bg-card pb-4">
+              <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
                 <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
                   <div className="rounded-xl bg-primary/10 p-2 text-primary dark:bg-primary/20">
                     <Clock className="h-5 w-5" />
@@ -464,7 +458,7 @@ export default function StringingSettingsPage() {
             </Card>
 
             <Card className={cn("overflow-hidden", adminSurface.card)}>
-              <CardHeader className="border-b border-border bg-card pb-4">
+              <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
                 <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
                   <div className="rounded-xl bg-muted p-2">
                     <CalendarDays className="h-5 w-5" />
@@ -560,7 +554,7 @@ export default function StringingSettingsPage() {
           </div>
 
           <Card className={cn("overflow-hidden", adminSurface.card)}>
-            <CardHeader className="border-b border-border bg-card pb-4">
+            <CardHeader className="border-b border-border/60 bg-muted/20 pb-4">
               <CardTitle className="flex items-center gap-3 text-lg font-semibold text-foreground">
                 <div className="rounded-xl bg-muted p-2">
                   <Users className="h-5 w-5" />
@@ -570,7 +564,7 @@ export default function StringingSettingsPage() {
             </CardHeader>
 
             <CardContent className="space-y-6 p-6">
-              <div className="rounded-2xl border border-border bg-muted/50 p-5">
+              <div className={adminSurface.fieldPanelMuted}>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
                   <div className="lg:col-span-2 space-y-2">
                     <Label className="text-xs font-medium text-foreground">날짜</Label>
@@ -749,13 +743,13 @@ export default function StringingSettingsPage() {
                   ))}
                 </ul>
               ) : (
-                <div className="rounded-2xl border border-dashed border-border bg-muted/50 p-8 text-center">
+                <div className={cn(adminSurface.fieldPanelMuted, "border-dashed p-8 text-center")}>
                   <p className="text-sm text-muted-foreground">등록된 예외일이 없습니다.</p>
                 </div>
               )}
             </CardContent>
 
-            <CardFooter className="border-t border-border bg-muted/50 flex justify-end gap-3 p-6">
+            <CardFooter className="flex justify-end gap-3 border-t border-border/60 bg-muted/20 p-6">
               <Button
                 onClick={save}
                 disabled={saving}
@@ -773,8 +767,7 @@ export default function StringingSettingsPage() {
               </Button>
             </CardFooter>
           </Card>
-        </div>
-      </div>
+      </AdminPageShell>
     </TooltipProvider>
   );
 }
