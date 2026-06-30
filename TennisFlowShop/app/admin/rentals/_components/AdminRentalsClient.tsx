@@ -540,8 +540,8 @@ export default function AdminRentalsClient() {
   }
 
   const totalPages = data ? Math.max(1, Math.ceil(data.total / pageSize)) : null;
-  const thClasses = adminDataTable.headCenter;
-  const tdClasses = cn(adminDataTable.cellCompact, "text-center");
+  const thClasses = cn(adminDataTable.headCenter, "border-b border-border/30");
+  const tdClasses = cn(adminDataTable.cellCompact, "border-b border-border/30 text-center");
 
   function PaymentBadge({ item }: { item: RentalRow }) {
     const paymentLabel =
@@ -900,7 +900,7 @@ export default function AdminRentalsClient() {
           </details>
         </CardHeader>
         <CardContent className="relative overflow-x-auto scrollbar-hidden pr-2">
-          <Table className="mx-auto min-w-[1040px] max-w-[1180px] table-fixed border-separate [border-spacing-block:0.3rem] [border-spacing-inline:0] text-xs">
+          <Table className="min-w-[1040px] w-full table-fixed border-separate [border-spacing-block:0.3rem] [border-spacing-inline:0] text-xs">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
                 <TableHead className={cn(thClasses, "w-[220px] text-left")}>대여/고객</TableHead>
@@ -908,7 +908,7 @@ export default function AdminRentalsClient() {
                   onClick={() => handleSort("date")}
                   className={cn(
                     thClasses,
-                    "w-[250px] cursor-pointer select-none text-left transition-colors hover:text-primary",
+                    "w-[250px] cursor-pointer select-none border-l border-border/20 text-left transition-colors hover:text-primary",
                     sortBy === "date" && "text-primary",
                   )}
                 >
@@ -920,12 +920,12 @@ export default function AdminRentalsClient() {
                     )}
                   />
                 </TableHead>
-                <TableHead className={cn(thClasses, "w-[220px] text-left")}>상태/다음 작업</TableHead>
+                <TableHead className={cn(thClasses, "w-[220px] border-l border-border/20 text-left")}>상태/다음 작업</TableHead>
                 <TableHead
                   onClick={() => handleSort("total")}
                   className={cn(
                     thClasses,
-                    "w-[220px] cursor-pointer select-none text-right",
+                    "w-[220px] cursor-pointer select-none border-l border-border/20 text-right",
                     sortBy === "total" && "text-primary",
                   )}
                 >
@@ -937,7 +937,7 @@ export default function AdminRentalsClient() {
                     )}
                   />
                 </TableHead>
-                <TableHead className={cn(thClasses, "w-[130px] text-right")}>액션</TableHead>
+                <TableHead className={cn(thClasses, "w-[130px] border-l border-border/40 text-right")}>액션</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -945,7 +945,7 @@ export default function AdminRentalsClient() {
                 Array.from({ length: pageSize }).map((_, rowIdx) => (
                   <TableRow key={rowIdx}>
                     {Array.from({ length: 5 }).map((_, cellIdx) => (
-                      <TableCell key={cellIdx}>
+                      <TableCell key={cellIdx} className={cellIdx > 0 ? "border-l border-border/20" : undefined}>
                         <Skeleton className="h-4 w-full" />
                       </TableCell>
                     ))}
@@ -995,14 +995,9 @@ export default function AdminRentalsClient() {
                         <TooltipProvider delayDuration={10}>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <button
-                                type="button"
-                                className="inline-flex max-w-[190px] cursor-pointer flex-col items-start gap-1"
+                              <div
+                                className="inline-flex max-w-[190px] flex-col items-start gap-1"
                                 title={rid}
-                                onClick={() => {
-                                  navigator.clipboard.writeText(rid);
-                                  showSuccessToast("대여 ID가 클립보드에 복사되었습니다.");
-                                }}
                               >
                                 <div className="inline-flex w-full items-center gap-1 truncate text-foreground/70">
                                   {/* 취소요청 들어온 대여만 경고 아이콘 표시 */}
@@ -1015,6 +1010,19 @@ export default function AdminRentalsClient() {
                                   <span className="inline-block truncate font-mono whitespace-nowrap">
                                     {shortenId(rid)}
                                   </span>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 w-6 shrink-0 p-0 text-muted-foreground hover:text-foreground"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(rid);
+                                      showSuccessToast("대여 ID가 클립보드에 복사되었습니다.");
+                                    }}
+                                    title="대여 ID 복사"
+                                    aria-label="대여 ID 복사"
+                                  >
+                                    <Copy className="h-3.5 w-3.5" />
+                                  </Button>
                                 </div>
 
                                 {/* 단독/교체서비스 포함/신청서 연결 여부 */}
@@ -1041,16 +1049,33 @@ export default function AdminRentalsClient() {
                                   <p className="line-clamp-1 text-sm font-medium text-foreground" title={r.customer?.name || "-"}>
                                     {r.customer?.name || "고객명 없음"}
                                   </p>
-                                  <p className="truncate text-xs text-foreground/70" title={r.customer?.email || "-"}>
-                                    {r.customer?.email || "이메일 없음"}
-                                  </p>
+                                  <div className="flex min-w-0 items-center gap-1.5">
+                                    <span className="truncate text-xs text-foreground/70" title={r.customer?.email || "-"}>
+                                      {r.customer?.email || "이메일 없음"}
+                                    </span>
+                                    {r.customer?.email && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 w-6 shrink-0 p-0 text-muted-foreground hover:text-foreground"
+                                        onClick={() => {
+                                          navigator.clipboard.writeText(r.customer!.email!);
+                                          showSuccessToast("이메일이 클립보드에 복사되었습니다.");
+                                        }}
+                                        title="이메일 복사"
+                                        aria-label="이메일 복사"
+                                      >
+                                        <Copy className="h-3.5 w-3.5" />
+                                      </Button>
+                                    )}
+                                  </div>
                                 </div>
                                 {r.stringingApplicationStatus && (
                                   <p className="line-clamp-1 text-xs text-foreground/70">
                                     교체서비스 {r.stringingApplicationStatus}
                                   </p>
                                 )}
-                              </button>
+                              </div>
                             </TooltipTrigger>
 
                             <TooltipContent
@@ -1163,7 +1188,7 @@ export default function AdminRentalsClient() {
                           </Tooltip>
                         </TooltipProvider>
                       </TableCell>
-                      <TableCell className={cn(tdClasses, "py-2")}>
+                      <TableCell className={cn(tdClasses, "border-l border-border/20 py-2")}>
                         <div className="min-w-0 text-left">
                           {rid ? (
                             <Link
@@ -1186,7 +1211,7 @@ export default function AdminRentalsClient() {
                           </p>
                         </div>
                       </TableCell>
-                      <TableCell className={cn(tdClasses, "py-2")}>
+                      <TableCell className={cn(tdClasses, "border-l border-border/20 py-2")}>
                         <div className="flex flex-col items-start gap-1 text-left">
                           <div className="flex flex-wrap gap-1">
                             {(() => {
@@ -1210,7 +1235,7 @@ export default function AdminRentalsClient() {
                           ) : null}
                         </div>
                       </TableCell>
-                      <TableCell className={cn(tdClasses, "py-2 text-right tabular-nums")}>
+                      <TableCell className={cn(tdClasses, "border-l border-border/20 py-2 text-right tabular-nums")}>
                         <div className="flex flex-col items-end gap-0.5">
                           <span className="font-semibold tabular-nums text-foreground">{won(r.amount.total)}</span>
                           <span className="max-w-[200px] text-right text-xs text-foreground/75">
@@ -1233,7 +1258,7 @@ export default function AdminRentalsClient() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className={cn(tdClasses, "py-2")}>
+                      <TableCell className={cn(tdClasses, "border-l border-border/40 py-2")}>
                         <div className="flex items-center justify-end gap-1">
                           <Button asChild size="sm" variant="ghost" className="h-8 whitespace-nowrap border border-border/70 px-2.5 text-xs font-medium hover:border-border hover:bg-muted/40 focus-visible:ring-2">
                             <Link href={`/admin/rentals/${rid}`}>{nextActionLabel}</Link>

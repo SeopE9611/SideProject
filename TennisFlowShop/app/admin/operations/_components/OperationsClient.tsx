@@ -674,8 +674,8 @@ function stringSummaryText(item?: OpItem) {
   return bits || "스트링 선택됨";
 }
 
-const thClasses = adminDataTable.head;
-const tdClasses = adminDataTable.cellTop;
+const thClasses = cn(adminDataTable.head, "border-b border-border/30");
+const tdClasses = cn(adminDataTable.cellTop, "border-b border-border/30");
 const th = thClasses;
 const td = tdClasses;
 
@@ -2006,9 +2006,9 @@ export default function OperationsClient() {
                   <TableHeader>
                     <TableRow className={adminSurface.tableRow}>
                       <TableHead className={cn(thClasses, "w-[18%]")}>우선순위/업무</TableHead>
-                      <TableHead className={cn(thClasses, "w-[27%]")}>문서/고객</TableHead>
-                      <TableHead className={cn(thClasses, "w-[27%]")}>상태/다음 작업</TableHead>
-                      <TableHead className={cn(thClasses, "w-[16%] text-right")}>
+                      <TableHead className={cn(thClasses, "w-[27%] border-l border-border/20")}>문서/고객</TableHead>
+                      <TableHead className={cn(thClasses, "w-[27%] border-l border-border/20")}>상태/다음 작업</TableHead>
+                      <TableHead className={cn(thClasses, "w-[16%] border-l border-border/20 text-right")}>
                         금액/접수
                       </TableHead>
                       <TableHead className={cn(thClasses, stickyActionHeadClass, "w-[12%]")}>
@@ -2092,13 +2092,18 @@ export default function OperationsClient() {
                                 <p className="line-clamp-2 text-[15px] font-semibold leading-snug text-foreground">
                                   {headline}
                                 </p>
-                                <p className={cn("line-clamp-1", adminTypography.metaMuted)}>
-                                  {isGroup ? `연결 ${g.items.length}건 · ${scenarioLabel}` : scenarioLabel}
-                                </p>
+                                <div className={cn("space-y-0.5", adminTypography.metaMuted)}>
+                                  {isGroup && (
+                                    <p className="leading-snug">연결 {g.items.length}건</p>
+                                  )}
+                                  <p className="line-clamp-2 leading-snug" title={scenarioLabel}>
+                                    {scenarioLabel}
+                                  </p>
+                                </div>
                               </div>
                             </TableCell>
 
-                            <TableCell className={cn(tdClasses, rowDensityClass)}>
+                            <TableCell className={cn(tdClasses, rowDensityClass, "border-l border-border/20")}>
                               <div className="min-w-0 space-y-1">
                                 <div className="flex min-w-0 items-center gap-1.5">
                                   <span className={cn("truncate font-mono text-foreground/70", adminTypography.caption)}>{docLabel}</span>
@@ -2123,7 +2128,7 @@ export default function OperationsClient() {
                               </div>
                             </TableCell>
 
-                            <TableCell className={cn(tdClasses, rowDensityClass)}>
+                            <TableCell className={cn(tdClasses, rowDensityClass, "border-l border-border/20")}>
                               <div className="space-y-1">
                                 <div className="flex flex-wrap items-center gap-1">
                                   <Badge variant="outline" className={cn(badgeBase, badgeSizeSm)}>
@@ -2156,7 +2161,7 @@ export default function OperationsClient() {
                             </TableCell>
 
                             <TableCell
-                              className={cn(tdClasses, rowDensityClass, "text-right tabular-nums")}
+                              className={cn(tdClasses, rowDensityClass, "border-l border-border/20 text-right tabular-nums")}
                             >
                               <div className="flex flex-col items-end gap-1.5">
                                 <div className="text-left md:text-right">

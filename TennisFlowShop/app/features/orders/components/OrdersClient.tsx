@@ -564,8 +564,8 @@ export default function OrdersClient() {
   };
 
   // 공통 스타일 상수
-  const thClasses = adminDataTable.headCenter;
-  const tdClasses = cn(adminDataTable.cell, "text-left");
+  const thClasses = cn(adminDataTable.headCenter, "border-b border-border/30");
+  const tdClasses = cn(adminDataTable.cell, "border-b border-border/30 text-left");
 
   // 배송정보 업데이트 네비게이션
   const handleShippingUpdate = async (orderId: string) => {
@@ -893,13 +893,13 @@ export default function OrdersClient() {
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
                 <TableHead className={cn(thClasses, "w-[230px] text-left")}>주문/고객</TableHead>
-                <TableHead className={cn(thClasses, "w-[215px] text-left")}>상품/서비스</TableHead>
-                <TableHead className={cn(thClasses, "w-[240px] text-left")}>상태/다음 작업</TableHead>
+                <TableHead className={cn(thClasses, "w-[215px] border-l border-border/20 text-left")}>상품/서비스</TableHead>
+                <TableHead className={cn(thClasses, "w-[240px] border-l border-border/20 text-left")}>상태/다음 작업</TableHead>
                 <TableHead
                   onClick={() => handleSort("total")}
                   className={cn(
                     thClasses,
-                    "w-[265px] cursor-pointer select-none text-right",
+                    "w-[265px] cursor-pointer select-none border-l border-border/20 text-right",
                     sortBy === "total" && "text-primary",
                   )}
                 >
@@ -911,7 +911,7 @@ export default function OrdersClient() {
                     )}
                   />
                 </TableHead>
-                <TableHead className={cn(thClasses, "w-[130px] text-right")}>액션</TableHead>
+                <TableHead className={cn(thClasses, "w-[130px] border-l border-border/40 text-right")}>액션</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -1262,7 +1262,7 @@ export default function OrdersClient() {
                           </TooltipProvider>
                         </TableCell>
                         {/* 상품/서비스 셀 */}
-                        <TableCell className={cn(tdClasses, "py-2")}>
+                        <TableCell className={cn(tdClasses, "border-l border-border/20 py-2")}>
                           <div className="min-w-0 text-left align-top">
                             <p className="line-clamp-2 break-keep text-ui-body-sm font-medium leading-snug text-foreground">
                               {productSummary.primary}
@@ -1275,7 +1275,7 @@ export default function OrdersClient() {
                           </div>
                         </TableCell>
                         {/* 상태/다음 작업 셀 */}
-                        <TableCell className={cn(tdClasses, "py-2")}>
+                        <TableCell className={cn(tdClasses, "border-l border-border/20 py-2")}>
                           {order.__type === "stringing_application" ? (
                             <div className="flex flex-col items-start gap-0.5">
                               <ApplicationStatusBadge status={order.status} />
@@ -1328,7 +1328,7 @@ export default function OrdersClient() {
                           <p className="mt-0.5 text-ui-label text-foreground/75 tabular-nums">접수 {formatDate(order.date)}</p>
                         </TableCell>
                         {/* 배송/결제 셀 */}
-                        <TableCell className={cn(tdClasses, "py-2 text-right")}>
+                        <TableCell className={cn(tdClasses, "border-l border-border/20 py-2 text-right")}>
                           <div className="flex flex-col items-end gap-1 text-right">
                             <div className="flex flex-wrap justify-end gap-1">
                               {(() => {
@@ -1385,7 +1385,7 @@ export default function OrdersClient() {
                           </div>
                         </TableCell>
                         {/* 작업 메뉴 셀 */}
-                        <TableCell className={cn(tdClasses, "py-2")}>
+                        <TableCell className={cn(tdClasses, "border-l border-border/40 py-2")}>
                           <div className="flex items-center justify-end gap-1">
                             <Button asChild size="sm" variant="ghost" className="h-8 whitespace-nowrap border border-border/70 px-2.5 text-ui-label font-medium hover:border-border hover:bg-muted/40 focus-visible:ring-2">
                               <Link
