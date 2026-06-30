@@ -15,6 +15,17 @@ export type PrivatePayment = {
   paymentStatus: PrivatePaymentPaymentStatus;
   paymentInfo?: Record<string, unknown>;
   paidAt?: Date;
+  canceledAt?: Date;
+  cancellationInfo?: {
+    status?: "processing" | "completed" | "failed";
+    reason?: string;
+    requestedAt?: Date;
+    canceledAt?: Date;
+    failedAt?: Date;
+    failureMessage?: string;
+    rawSummary?: unknown;
+    requestedBy?: ObjectId;
+  };
   createdAt: Date;
   updatedAt: Date;
   createdBy?: ObjectId;
@@ -28,7 +39,7 @@ export type PrivatePaymentDocument = PrivatePayment & {
 
 export type SerializedPrivatePayment = Omit<
   PrivatePayment,
-  "_id" | "createdBy" | "createdAt" | "updatedAt" | "paidAt" | "history"
+  "_id" | "createdBy" | "createdAt" | "updatedAt" | "paidAt" | "canceledAt" | "cancellationInfo" | "history"
 > & {
   _id: string;
   id: string;
@@ -36,6 +47,13 @@ export type SerializedPrivatePayment = Omit<
   createdAt: string;
   updatedAt: string;
   paidAt?: string;
+  canceledAt?: string;
+  cancellationInfo?: Omit<NonNullable<PrivatePayment["cancellationInfo"]>, "requestedAt" | "canceledAt" | "failedAt" | "requestedBy"> & {
+    requestedAt?: string;
+    canceledAt?: string;
+    failedAt?: string;
+    requestedBy?: string;
+  };
   history: Array<{ status: string; date: string; description: string }>;
 };
 
@@ -73,6 +91,16 @@ export function serializePrivatePayment(
     createdAt: toIsoString(doc.createdAt) ?? "",
     updatedAt: toIsoString(doc.updatedAt) ?? "",
     paidAt: toIsoString(doc.paidAt),
+    canceledAt: toIsoString(doc.canceledAt),
+    cancellationInfo: doc.cancellationInfo
+      ? {
+          ...doc.cancellationInfo,
+          requestedAt: toIsoString(doc.cancellationInfo.requestedAt),
+          canceledAt: toIsoString(doc.cancellationInfo.canceledAt),
+          failedAt: toIsoString(doc.cancellationInfo.failedAt),
+          requestedBy: doc.cancellationInfo.requestedBy?.toString(),
+        }
+      : undefined,
     history: doc.history.map((entry) => ({
       ...entry,
       date: toIsoString(entry.date) ?? "",
