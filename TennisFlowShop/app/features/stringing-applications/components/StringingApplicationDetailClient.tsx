@@ -1943,6 +1943,12 @@ export default function StringingApplicationDetailClient({
                 className="mb-4"
                 items={[
                   { href: "#admin-stringing-cancel", label: "처리 작업" },
+                  ...(cancelInfo
+                    ? [{ href: "#admin-stringing-cancel-request", label: "취소 요청" }]
+                    : []),
+                  ...(linkedDocs.length > 0
+                    ? [{ href: "#admin-stringing-linked-docs", label: "연결 문서" }]
+                    : []),
                   { href: "#admin-stringing-spec", label: "작업 정보" },
                   { href: "#admin-stringing-payment", label: "결제정보" },
                   { href: "#admin-stringing-shipping", label: "수령/배송" },
