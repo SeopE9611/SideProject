@@ -2,6 +2,7 @@
 
 import { getPackagePricingMeta } from "@/app/services/packages/_lib/packageCard";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface } from "@/components/admin/admin-typography";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
@@ -444,8 +445,7 @@ export default function PackageSettingsClient() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-muted/30">
-        <div className="container py-6">
+      <AdminPageShell variant="wide" className="space-y-6">
           <div className={cn("mb-8 p-8", adminSurface.cardMuted)}>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
@@ -489,15 +489,13 @@ export default function PackageSettingsClient() {
               </div>
             </div>
           </div>
-        </div>
-      </div>
+      </AdminPageShell>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-muted/30">
-        <div className="container py-6">
+      <AdminPageShell variant="wide" className="space-y-6">
           <AsyncState
             kind="error"
             tone="admin"
@@ -507,15 +505,13 @@ export default function PackageSettingsClient() {
               void mutate();
             }}
           />
-        </div>
-      </div>
+      </AdminPageShell>
     );
   }
 
   return (
     <>
-      <div className="min-h-screen bg-muted/30">
-        <div className="container py-6">
+      <AdminPageShell variant="wide" className="space-y-6">
           <AdminPageHeader
             title="패키지 설정"
             description="판매할 스트링 패키지 상품의 횟수, 가격, 혜택, 활성 상태를 설정합니다."
@@ -536,9 +532,9 @@ export default function PackageSettingsClient() {
               </Button>
             }
           />
-          <section className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {PACKAGE_SETTINGS_GUIDES.map(({ icon: Icon, title, description }) => (
-              <Card key={title} className="border-border/70 bg-muted/30">
+              <Card key={title} className={adminSurface.fieldPanelMuted}>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -553,7 +549,7 @@ export default function PackageSettingsClient() {
               </Card>
             ))}
           </section>
-          <section className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 label: "전체 패키지",
@@ -597,7 +593,7 @@ export default function PackageSettingsClient() {
               </Card>
             ))}
           </section>
-          <div className="mb-6 rounded-2xl border border-border/70 bg-card p-4 shadow-sm">
+          <div className={adminSurface.filterCard}>
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="text-sm font-semibold text-foreground">현재 설정 상태</p>
@@ -621,7 +617,7 @@ export default function PackageSettingsClient() {
             </div>
           </div>
           {validation.hasErrors && (
-            <div className="mb-6 rounded-2xl border border-destructive/30 bg-destructive/10 p-4">
+            <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-4">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
                 <div>
@@ -645,7 +641,7 @@ export default function PackageSettingsClient() {
             </div>
           )}
           {isDirty && (
-            <div className="sticky top-20 z-20 mb-6 rounded-2xl border border-primary/20 bg-card/95 p-4 shadow-sm backdrop-blur">
+            <div className={cn(adminSurface.stickyToolbar, "sticky top-20 z-20 border-primary/20 p-4 backdrop-blur")}>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-semibold text-foreground">
@@ -723,7 +719,7 @@ export default function PackageSettingsClient() {
                 <div className="grid gap-6 md:grid-cols-2">
                   {sortedPackageConfigs.map((pkg) => (
                     <Card key={pkg.id} className={adminSurface.card}>
-                      <CardHeader className="bg-muted/30 border-b">
+                      <CardHeader className="border-b border-border/60 bg-muted/20">
                         <div className="flex items-center justify-between">
                           <div className="min-w-0">
                             <div className="flex items-center space-x-2">
@@ -941,7 +937,7 @@ export default function PackageSettingsClient() {
                               </p>
 
                               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                                <div className="flex items-center justify-between rounded-lg border border-border/60 bg-background p-3">
+                                <div className={cn(adminSurface.fieldPanel, "flex items-center justify-between")}>
                                   <Label
                                     htmlFor={`active-${pkg.id}`}
                                     className="text-sm font-medium"
@@ -959,7 +955,7 @@ export default function PackageSettingsClient() {
                                   />
                                 </div>
 
-                                <div className="flex items-center justify-between rounded-lg border border-border/60 bg-background p-3">
+                                <div className={cn(adminSurface.fieldPanel, "flex items-center justify-between")}>
                                   <Label
                                     htmlFor={`popular-${pkg.id}`}
                                     className="text-sm font-medium"
@@ -1108,7 +1104,7 @@ export default function PackageSettingsClient() {
             {/* 일반 설정 */}
             <TabsContent value="general">
               <Card className={adminSurface.card}>
-                <CardHeader className="bg-muted/30 border-b">
+                <CardHeader className="border-b border-border/60 bg-muted/20">
                   <CardTitle className="flex items-center space-x-2">
                     <Settings className="h-5 w-5 text-success" />
                     <span>일반 설정</span>
@@ -1256,7 +1252,7 @@ export default function PackageSettingsClient() {
                       </p>
 
                       <div className="mt-4 space-y-3">
-                        <div className="flex items-center justify-between rounded-lg border border-border/60 bg-background p-3">
+                        <div className={cn(adminSurface.fieldPanel, "flex items-center justify-between")}>
                           <div>
                             <Label htmlFor="enablePackages" className="font-medium text-foreground">
                               패키지 시스템 활성화
@@ -1278,7 +1274,7 @@ export default function PackageSettingsClient() {
                           />
                         </div>
 
-                        <div className="flex items-center justify-between rounded-lg border border-border/60 bg-background p-3">
+                        <div className={cn(adminSurface.fieldPanel, "flex items-center justify-between")}>
                           <div>
                             <Label htmlFor="allowExtension" className="font-medium text-foreground">
                               패키지 연장 허용
@@ -1321,8 +1317,7 @@ export default function PackageSettingsClient() {
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
-      </div>
+      </AdminPageShell>
       <AdminConfirmDialog
         open={pendingDeletePackageId !== null}
         onOpenChange={(open) => {
