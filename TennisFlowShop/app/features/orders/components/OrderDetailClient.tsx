@@ -7,6 +7,7 @@ import PaymentEditForm from "@/app/features/orders/components/PaymentEditForm";
 import PaymentMethodDetail from "@/app/features/orders/components/PaymentMethodDetail";
 import RequestEditForm from "@/app/features/orders/components/RequestEditForm";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminCompactField from "@/components/admin/AdminCompactField";
 import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
@@ -460,7 +461,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   if (!orderDetail) {
     if (isOrderLoading) {
       return (
-        <div className="container py-6 lg:py-8 space-y-6">
+        <AdminPageShell className="space-y-6 lg:py-8">
           <div className="flex items-center justify-between">
             <Skeleton className="h-9 w-48" />
             <div className="flex gap-2">
@@ -477,7 +478,7 @@ export default function OrderDetailClient({ orderId }: Props) {
             <Skeleton className="h-[460px] rounded-xl" />
             <Skeleton className="h-[460px] rounded-xl" />
           </div>
-        </div>
+        </AdminPageShell>
       );
     }
     return (
@@ -921,8 +922,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-muted/20 dark:bg-muted/20">
-      <div className="container py-6 space-y-6 lg:py-8">
+    <AdminPageShell className="space-y-6 lg:py-8">
         <div className="mx-auto w-full max-w-[1500px]">
           {/* 개선된 관리자 헤더 */}
           <div className={cn("mb-6 p-5 lg:p-6", adminSurface.cardMuted)}>
@@ -1247,7 +1247,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                       </summary>
                       <div className="mt-1 border-t border-border/60 p-3">
                         <LinkedFlowStageCard
-                          className="overflow-hidden border border-border/50 bg-transparent shadow-none"
+                          className={cn("overflow-hidden", adminSurface.fieldPanel)}
                           orderId={orderId}
                           orderStatus={localStatus}
                           applicationStatus={latestLinkedApplication.status}
@@ -1264,7 +1264,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                     </details>
                   )}
                   <div className="grid gap-3 lg:grid-cols-2">
-                    <div className="rounded-lg border border-border/40 bg-transparent p-3 shadow-none">
+                    <div className={adminSurface.fieldPanel}>
                       <p className={cn("mb-2", adminTypography.panelTitle)}>교체 작업 문서</p>
                       <div className="space-y-2">
                         {linkedDocs.length > 0 ? (
@@ -1312,7 +1312,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                       </p>
                     </div>
 
-                    <div className="rounded-lg border border-border/40 bg-transparent p-3 shadow-none">
+                    <div className={adminSurface.fieldPanel}>
                       <p className="mb-2 text-ui-body-sm font-semibold text-foreground">
                         최신 작업 접수 요약
                       </p>
@@ -1443,7 +1443,7 @@ export default function OrderDetailClient({ orderId }: Props) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="rounded-lg border border-border/40 bg-transparent p-3">
+              <div className={adminSurface.fieldPanel}>
                 <div className="space-y-1.5 text-ui-label leading-relaxed text-muted-foreground">
                   <p>
                     <span className="font-medium text-foreground">재고 차감 방식:</span>{" "}
@@ -2262,7 +2262,6 @@ export default function OrderDetailClient({ orderId }: Props) {
             </CardContent>
           </Card>
         </div>
-      </div>
-    </div>
+    </AdminPageShell>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import AdminCompactField from "@/components/admin/AdminCompactField";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
 import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
@@ -308,7 +309,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
 
   if (error) {
     return (
-      <div className="container py-6">
+      <AdminPageShell>
         <AsyncState
           kind="error"
           tone="admin"
@@ -318,7 +319,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             void mutate();
           }}
         />
-      </div>
+      </AdminPageShell>
     );
   }
 
@@ -326,7 +327,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
   if (!data) {
     if (isInitialLoading) {
       return (
-        <div className="container py-6">
+        <AdminPageShell>
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <Skeleton className="h-9 w-56" />
@@ -345,11 +346,11 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
               <Skeleton className="h-[360px] rounded-xl" />
             </div>
           </div>
-        </div>
+        </AdminPageShell>
       );
     }
     return (
-      <div className="container py-6">
+      <AdminPageShell>
         <AsyncState
           kind="empty"
           tone="admin"
@@ -358,7 +359,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
           title="패키지 정보를 찾을 수 없습니다"
           description="패키지 ID를 확인한 뒤 다시 시도해 주세요."
         />
-      </div>
+      </AdminPageShell>
     );
   }
 
@@ -512,8 +513,7 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
   };
 
   return (
-    <div className="min-h-screen bg-muted/20">
-      <div className="container py-6">
+    <AdminPageShell>
         {isLoading ? (
           <div className="mb-4 rounded-lg border border-border bg-muted/20 px-4 py-2 text-sm text-muted-foreground">
             최신 상태를 확인하고 있습니다...
@@ -1182,7 +1182,6 @@ export default function PackageDetailClient({ packageId }: { packageId: string }
             </Card>
           </div>
         )}
-      </div>
-    </div>
+    </AdminPageShell>
   );
 }

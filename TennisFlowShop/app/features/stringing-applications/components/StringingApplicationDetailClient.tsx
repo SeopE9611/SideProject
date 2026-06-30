@@ -728,8 +728,8 @@ export default function StringingApplicationDetailClient({
   }, [applicationId, data?.lines]);
 
   const renderInitialLoading = () => (
-    <main className={cn("w-full", isAdmin && "min-h-screen bg-muted/20 dark:bg-muted/20")}>
-      <div className={cn(isAdmin && "container py-6 lg:py-8")}>
+    <main className="w-full">
+      <div className={cn(isAdmin && "mx-auto w-full max-w-[1280px] px-3 py-4 bp-sm:px-4 bp-md:px-3 lg:px-5 lg:py-5")}>
         <SiteContainer
           variant={isAdmin ? "full" : "wide"}
           className={cn(
@@ -1307,7 +1307,7 @@ export default function StringingApplicationDetailClient({
     ? "border-b border-border/70 bg-muted/20 pb-3"
     : "border-b border-border bg-muted/20 px-4 py-3 bp-lg:px-6";
   return (
-    <main className={cn("w-full", isAdmin && "min-h-screen bg-muted/20 dark:bg-muted/20")}>
+    <main className="w-full">
       {!isAdmin && (
         <PublicPageHero
           eyebrow="마이페이지"
@@ -1468,7 +1468,7 @@ export default function StringingApplicationDetailClient({
           </div>
         </PublicPageHero>
       )}
-      <div className={cn(isAdmin && "container py-6 lg:py-8")}>
+      <div className={cn(isAdmin && "mx-auto w-full max-w-[1280px] px-3 py-4 bp-sm:px-4 bp-md:px-3 lg:px-5 lg:py-5")}>
         <SiteContainer
           variant={isAdmin ? "full" : "wide"}
           className={cn(

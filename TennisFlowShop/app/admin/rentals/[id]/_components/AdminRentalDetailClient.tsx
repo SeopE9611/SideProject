@@ -1,6 +1,7 @@
 "use client";
 
 import AdminRentalHistory from "@/app/admin/rentals/_components/AdminRentalHistory";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { derivePaymentStatus, deriveShippingStatus } from "@/app/features/rentals/utils/status";
 import AdminCancelRequestCard from "@/components/admin/AdminCancelRequestCard";
 import AdminDetailSectionNav from "@/components/admin/AdminDetailSectionNav";
@@ -432,8 +433,7 @@ export default function AdminRentalDetailClient() {
   if (!id) return <div className="p-4">유효하지 않은 ID</div>;
   if (error) {
     return (
-      <div className="min-h-screen bg-muted/20 dark:bg-muted/20">
-        <div className="container py-6 lg:py-8">
+      <AdminPageShell className="lg:py-8">
           <AsyncState
             kind="error"
             tone="admin"
@@ -443,15 +443,13 @@ export default function AdminRentalDetailClient() {
               void mutate();
             }}
           />
-        </div>
-      </div>
+      </AdminPageShell>
     );
   }
   if (!data) {
     if (isLoading) {
       return (
-        <div className="min-h-screen bg-muted/20 dark:bg-muted/20">
-          <div className="container py-6 lg:py-8 space-y-6">
+        <AdminPageShell className="space-y-6 lg:py-8">
             <div className="flex items-center justify-between gap-3">
               <Skeleton className="h-9 w-48" />
               <div className="flex gap-2">
@@ -468,15 +466,13 @@ export default function AdminRentalDetailClient() {
               <Skeleton className="h-[420px] rounded-xl" />
               <Skeleton className="h-[420px] rounded-xl" />
             </div>
-          </div>
-        </div>
+        </AdminPageShell>
       );
     }
 
     if (!isLoading) {
       return (
-        <div className="min-h-screen bg-muted/20 dark:bg-muted/20">
-          <div className="container py-6 lg:py-8">
+        <AdminPageShell className="lg:py-8">
             <AsyncState
               kind="empty"
               tone="admin"
@@ -485,8 +481,7 @@ export default function AdminRentalDetailClient() {
               title="대여 정보를 찾을 수 없습니다"
               description="대여 ID를 확인한 뒤 다시 시도해 주세요."
             />
-          </div>
-        </div>
+        </AdminPageShell>
       );
     }
   }
@@ -702,8 +697,7 @@ export default function AdminRentalDetailClient() {
     String(linkedApplication?.paymentSource ?? "") === `rental:${id}`;
 
   return (
-    <div className="min-h-screen bg-muted/20 dark:bg-muted/20">
-      <div className="container py-6 lg:py-8">
+    <AdminPageShell className="lg:py-8">
         {isLoading ? (
           <div className="mx-auto mb-4 w-full max-w-[1500px] rounded-lg border border-border bg-muted/20 px-4 py-2 text-sm text-foreground/80">
             최신 상태를 확인하고 있습니다...
@@ -1215,7 +1209,7 @@ export default function AdminRentalDetailClient() {
                   </p>
                 ) : null}
 
-                <div className="flex flex-col gap-3 rounded-lg border border-border/40 bg-transparent p-3 sm:flex-row sm:items-end sm:justify-between">
+                <div className={cn(adminSurface.fieldPanel, "flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between")}>
                   <div className="space-y-2">
                     <p className={adminTypography.panelTitle}>교체 작업 진행 단계</p>
                     <div className="flex flex-wrap items-center gap-2">
@@ -1837,8 +1831,6 @@ export default function AdminRentalDetailClient() {
           <div id="admin-rental-history">
             <AdminRentalHistory id={id} servicePickupMethod={servicePickupMethod} />
           </div>
-        </div>
-      </div>
-    </div>
+    </AdminPageShell>
   );
 }
