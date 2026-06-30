@@ -6,7 +6,9 @@ import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
 import useSWR from "swr";
 import { BookOpen, Eye, EyeOff, MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
 
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import {
   AlertDialog,
@@ -266,7 +268,7 @@ export default function AcademyClassesClient() {
   };
 
   return (
-    <div className="space-y-5 px-4 py-6 sm:px-6 lg:px-8">
+    <AdminPageShell>
       <AdminPageHeader
         title="아카데미 클래스 관리"
         description="레슨 프로그램을 등록하고 노출 상태를 관리합니다."
@@ -352,13 +354,13 @@ export default function AcademyClassesClient() {
             <Table className="min-w-[1040px] table-fixed">
               <TableHeader className={adminSurface.tableHeader}>
                 <TableRow>
-                  <TableHead className="whitespace-nowrap px-3">등록일</TableHead>
-                  <TableHead className="w-[280px] whitespace-nowrap px-3">클래스</TableHead>
-                  <TableHead className="whitespace-nowrap px-3">수업 정보</TableHead>
-                  <TableHead className="w-[240px] whitespace-nowrap px-3">운영 정보</TableHead>
-                  <TableHead className="whitespace-nowrap px-3">신청 현황</TableHead>
-                  <TableHead className="whitespace-nowrap px-3">가격/상태</TableHead>
-                  <TableHead className="whitespace-nowrap px-3 text-right">관리</TableHead>
+                  <TableHead className={adminDataTable.headRight}>등록일</TableHead>
+                  <TableHead className={cn(adminDataTable.head, "w-[280px]")}>클래스</TableHead>
+                  <TableHead className={adminDataTable.headCenter}>수업 정보</TableHead>
+                  <TableHead className={cn(adminDataTable.head, "w-[240px]")}>운영 정보</TableHead>
+                  <TableHead className={adminDataTable.headRight}>신청 현황</TableHead>
+                  <TableHead className={adminDataTable.headRight}>가격/상태</TableHead>
+                  <TableHead className={adminDataTable.actionHead}>관리</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -402,11 +404,11 @@ export default function AcademyClassesClient() {
                       onClick={() => goToDetail(classId)}
                       onKeyDown={(event) => handleRowKeyDown(event, classId)}
                     >
-                      <TableCell className="whitespace-nowrap px-3 py-3 text-xs">
+                      <TableCell className={adminDataTable.dateCell}>
                         <div className="font-medium text-foreground">{createdAt.date}</div>
                         <div className="text-muted-foreground">{createdAt.time}</div>
                       </TableCell>
-                      <TableCell className="min-w-0 px-3 py-3">
+                      <TableCell className={adminDataTable.cellTopLeft}>
                         <div
                           className={cn("line-clamp-2 max-w-[260px] break-words", adminTypography.bodyStrong)}
                           title={item.name || "-"}
@@ -420,13 +422,13 @@ export default function AcademyClassesClient() {
                           {item.description || "설명 미입력"}
                         </div>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap px-3 py-3">
+                      <TableCell className={adminDataTable.cellCenter}>
                         <div>{getAcademyClassLessonTypeLabel(item.lessonType)}</div>
                         <div className={adminTypography.caption}>
                           {getAcademyClassLevelLabel(item.level)}
                         </div>
                       </TableCell>
-                      <TableCell className="min-w-0 px-3 py-3">
+                      <TableCell className={adminDataTable.cellTopLeft}>
                         <div
                           className="max-w-[220px] truncate"
                           title={item.instructorName || "강사 미입력"}
@@ -448,10 +450,10 @@ export default function AcademyClassesClient() {
                           </div>
                         ) : null}
                       </TableCell>
-                      <TableCell className="px-3 py-3">
+                      <TableCell className={adminDataTable.cellNumber}>
                         <ApplicationStatsCell item={item} />
                       </TableCell>
-                      <TableCell className="whitespace-nowrap px-3 py-3">
+                      <TableCell className={adminDataTable.cellCenter}>
                         <div className={cn("whitespace-nowrap tabular-nums", adminTypography.bodyStrong)}>
                           {formatPrice(item.price)}
                         </div>
@@ -460,7 +462,7 @@ export default function AcademyClassesClient() {
                         </div>
                       </TableCell>
                       <TableCell
-                        className="whitespace-nowrap px-3 py-3 text-right"
+                        className={adminDataTable.actionCell}
                         onClick={(event) => event.stopPropagation()}
                       >
                         <DropdownMenu>
@@ -611,6 +613,6 @@ export default function AcademyClassesClient() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </AdminPageShell>
   );
 }

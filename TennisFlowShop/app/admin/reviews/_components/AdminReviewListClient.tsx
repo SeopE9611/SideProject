@@ -27,7 +27,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { Switch } from "@/components/ui/switch";
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { adminMutator } from "@/lib/admin/adminFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -408,7 +410,7 @@ export default function AdminReviewListClient() {
     "lg:grid-cols-[44px_minmax(90px,1fr)_minmax(240px,2.4fr)_minmax(96px,0.9fr)_minmax(110px,1fr)_minmax(84px,0.8fr)_minmax(72px,0.8fr)_56px]";
 
   return (
-    <div className="space-y-6">
+    <AdminPageShell>
       <AdminPageHeader
         title="리뷰 관리"
         description="고객 리뷰의 공개 상태, 별점, 사진, 삭제 여부를 관리합니다."
@@ -557,16 +559,16 @@ export default function AdminReviewListClient() {
         <div className="max-h-[70vh] overflow-x-auto overflow-y-auto">
           {/* 헤더 라벨 */}
           <div
-            className={`sticky top-0 z-[1] hidden lg:grid ${GRID} items-center gap-x-3 bg-muted/40 border-b border-border px-3 py-3 text-ui-label text-foreground/75`}
+            className={cn("sticky top-0 z-[1] hidden items-center gap-x-3 border-b border-border bg-muted/40 lg:grid", GRID)}
           >
-            <div className="opacity-70">선택</div>
-            <div>작성자</div>
-            <div className="whitespace-nowrap">리뷰 내용</div>
-            <div>평점 / 도움돼요</div>
-            <div>작성일</div>
-            <div>타입</div>
-            <div className="text-center">공개 / 비공개</div>
-            <div className="text-right">관리</div>
+            <div className={cn(adminDataTable.headCenter, "px-0 opacity-70")}>선택</div>
+            <div className={adminDataTable.head}>작성자</div>
+            <div className={adminDataTable.head}>리뷰 내용</div>
+            <div className={adminDataTable.headCenter}>평점 / 도움돼요</div>
+            <div className={adminDataTable.headRight}>작성일</div>
+            <div className={adminDataTable.headCenter}>타입</div>
+            <div className={adminDataTable.headCenter}>공개 / 비공개</div>
+            <div className={adminDataTable.actionHead}>관리</div>
           </div>
 
           {error ? (
@@ -703,8 +705,8 @@ export default function AdminReviewListClient() {
                   </div>
 
                   {/* 평점 / 도움돼요 */}
-                  <div className={`min-w-0 ${dim}`}>
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <div className={`min-w-0 ${dim} text-center`}>
+                    <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
                       {renderStars(r.rating)}
                       <span className="text-[13px] text-foreground">{r.rating}/5</span>
                       <span className="inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-[11px] leading-none bg-card text-foreground border-border">
@@ -715,13 +717,13 @@ export default function AdminReviewListClient() {
                   </div>
 
                   {/* 작성일 */}
-                  <div className={`min-w-0 ${dim}`}>
+                  <div className={`min-w-0 ${dim} text-right tabular-nums`}>
                     <div className="text-foreground text-[13px]">{date}</div>
                     <div className="text-[12px] text-muted-foreground">{time}</div>
                   </div>
 
                   {/* 타입 */}
-                  <div className={`min-w-0 ${dim} flex items-center gap-3 whitespace-nowrap`}>
+                  <div className={`min-w-0 ${dim} flex items-center justify-center gap-3 whitespace-nowrap`}>
                     <Badge
                       variant="outline"
                       className={typeBadgeClass(r.type) + " ring-1 ring-inset ring-ring shrink-0"}
@@ -1108,6 +1110,6 @@ export default function AdminReviewListClient() {
         severity="danger"
         eventKey="admin-review-list-bulk-delete-confirm"
       />
-    </div>
+    </AdminPageShell>
   );
 }
