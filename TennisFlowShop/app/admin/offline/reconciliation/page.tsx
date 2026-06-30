@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { Button } from "@/components/ui/button";
 import OfflineReconciliationClient from "./_components/OfflineReconciliationClient";
 
@@ -9,8 +10,7 @@ export const metadata: Metadata = { title: "오프라인 보정 필요 항목" }
 
 export default function OfflineReconciliationPage() {
   return (
-    <div className="p-6">
-      <div className="mx-auto max-w-7xl">
+    <AdminPageShell>
         <AdminPageHeader
           title="오프라인 보정 필요 항목"
           description="오프라인 패키지 발급 실패, 패키지 사용 연결 누락 등 운영 확인이 필요한 항목을 관리합니다."
@@ -27,7 +27,6 @@ export default function OfflineReconciliationPage() {
           }
         />
         <OfflineReconciliationClient />
-      </div>
-    </div>
+    </AdminPageShell>
   );
 }

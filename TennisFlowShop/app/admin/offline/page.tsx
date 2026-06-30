@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Store } from "lucide-react";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
+import { adminSurface } from "@/components/admin/admin-typography";
 import { Button } from "@/components/ui/button";
 import OfflineAdminClient from "./_components/OfflineAdminClient";
 
@@ -28,8 +30,7 @@ const QUICK_GUIDES = [
 
 export default function OfflinePage() {
   return (
-    <div className="p-6">
-      <div className="mx-auto max-w-7xl">
+    <AdminPageShell>
         <AdminPageHeader
           title="오프라인 관리"
           description="매장 방문 고객의 작업, 결제, 보정 내역을 한 곳에서 관리합니다."
@@ -45,7 +46,7 @@ export default function OfflinePage() {
 
         <section
           aria-label="오늘 확인할 일"
-          className="mb-6 rounded-xl border border-border/70 bg-muted/20 p-4"
+          className={`mb-6 ${adminSurface.cardMuted} p-4`}
         >
           <div className="mb-3 flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold text-foreground">오늘 확인할 일</h2>
@@ -60,7 +61,7 @@ export default function OfflinePage() {
             {QUICK_GUIDES.map((item) => (
               <div
                 key={item.title}
-                className="rounded-lg border border-border/70 bg-background px-3 py-3"
+                className={adminSurface.fieldPanel}
               >
                 <p className="text-sm font-medium text-foreground">{item.title}</p>
                 <p className="mt-1 text-sm leading-relaxed break-keep text-muted-foreground">
@@ -72,7 +73,6 @@ export default function OfflinePage() {
         </section>
 
         <OfflineAdminClient />
-      </div>
-    </div>
+    </AdminPageShell>
   );
 }

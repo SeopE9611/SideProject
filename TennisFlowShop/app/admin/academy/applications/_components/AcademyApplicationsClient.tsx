@@ -350,7 +350,7 @@ export default function AcademyApplicationsClient() {
                   <TableHead className={adminDataTable.head}>신청자</TableHead>
                   <TableHead className={adminDataTable.head}>선택 클래스</TableHead>
                   <TableHead className={adminDataTable.head}>희망 정보</TableHead>
-                  <TableHead className={adminDataTable.headCenter}>선호 일정</TableHead>
+                  <TableHead className={adminDataTable.head}>선호 일정</TableHead>
                   <TableHead className={adminDataTable.headCenter}>상태</TableHead>
                   <TableHead className={adminDataTable.actionHead}>관리</TableHead>
                 </TableRow>

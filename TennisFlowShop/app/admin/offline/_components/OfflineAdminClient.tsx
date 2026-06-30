@@ -1,7 +1,8 @@
 "use client";
 
 import AdminInlineEmpty from "@/components/admin/AdminInlineEmpty";
-import { adminTypography } from "@/components/admin/admin-typography";
+import { adminDataTable } from "@/components/admin/AdminDataTable";
+import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1798,7 +1799,7 @@ export default function OfflineAdminClient() {
         </CardHeader>
         <CardContent className="pt-4 space-y-4">
           {/* 빠른 보기: 기존 API가 허용하는 필터 값만 사용합니다. */}
-          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border/60 bg-muted/20 p-3">
+          <div className={`${adminSurface.filterCard} flex flex-wrap items-center gap-2`}>
             <span className="mr-1 text-xs font-semibold text-muted-foreground">빠른 보기</span>
 
             <Button
@@ -1891,7 +1892,7 @@ export default function OfflineAdminClient() {
             </Button>
           </div>
           {/* 현재 보기 요약: 실제 조회에 적용된 submittedRecordFilters 기준입니다. */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-border/60 bg-background px-4 py-3 text-sm">
+          <div className={`${adminSurface.cardMuted} flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 text-sm`}>
             {/* 좌측: 현재 뷰 및 필터 상태 */}
             <p className="font-semibold text-foreground">현재 보기: {currentRecordViewLabel}</p>
             {submittedRecordFilterLabels.length > 0 && (
@@ -2101,12 +2102,12 @@ export default function OfflineAdminClient() {
 
           {/* Records Table */}
           {!!records?.items?.length && (
-            <div className="overflow-hidden rounded-xl border border-border/60">
+            <div className={adminSurface.tableCard}>
               <div className="overflow-x-auto">
                 <table className="min-w-[1040px] w-full table-fixed text-sm">
                   <thead>
-                    <tr className="bg-muted/50">
-                      <th className="w-[48px] px-4 py-3 text-left">
+                    <tr className={adminSurface.tableHeader}>
+                      <th className={adminDataTable.head}>
                         <Checkbox
                           checked={
                             isCurrentPageAllRecordsSelected ||
@@ -2119,42 +2120,42 @@ export default function OfflineAdminClient() {
                         />
                       </th>
 
-                      <th className="w-[130px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">
+                      <th className={adminDataTable.headRight}>
                         날짜
                       </th>
-                      <th className="w-[190px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">
+                      <th className={adminDataTable.head}>
                         고객
                       </th>
 
-                      <th className="w-[120px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">
+                      <th className={adminDataTable.headCenter}>
                         유형
                       </th>
 
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                      <th className={adminDataTable.head}>
                         작업 내용
                       </th>
 
-                      <th className="w-[110px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">
+                      <th className={adminDataTable.headRight}>
                         금액
                       </th>
 
-                      <th className="w-[100px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">
+                      <th className={adminDataTable.headCenter}>
                         결제
                       </th>
 
-                      <th className="w-[100px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">
+                      <th className={adminDataTable.headCenter}>
                         상태
                       </th>
 
-                      <th className="w-[96px] whitespace-nowrap px-4 py-3 text-left font-medium text-muted-foreground">
+                      <th className={adminDataTable.actionHead}>
                         관리
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
                     {(records?.items || []).map((r: any) => (
-                      <tr key={r.id} className="transition-colors hover:bg-muted/30">
-                        <td className="px-4 py-3">
+                      <tr key={r.id} className={adminDataTable.row}>
+                        <td className={adminDataTable.cellLeft}>
                           <Checkbox
                             checked={selectedRecordIds.includes(String(r.id))}
                             onCheckedChange={(checked) =>
@@ -2164,12 +2165,12 @@ export default function OfflineAdminClient() {
                           />
                         </td>
 
-                        <td className="px-4 py-3 whitespace-nowrap">
+                        <td className={adminDataTable.dateCell}>
                           <div className="flex shrink-0 items-center gap-2">
                             <span className="tabular-nums">{formatDate(r.occurredAt)}</span>
                           </div>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className={adminDataTable.cellLeft}>
                           <div className="min-w-0 max-w-[180px]">
                             <p
                               className="line-clamp-2 break-words font-medium"
@@ -2191,12 +2192,12 @@ export default function OfflineAdminClient() {
                             </p>
                           </div>
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
+                        <td className={adminDataTable.cellCenter}>
                           <span className="text-foreground/80">
                             {KIND_LABELS[r.kind as keyof typeof KIND_LABELS] ?? r.kind}
                           </span>
                         </td>
-                        <td className="max-w-[240px] px-4 py-3">
+                        <td className={adminDataTable.cellTopLeft}>
                           <span
                             className="line-clamp-2 break-words text-muted-foreground"
                             title={formatLineSummary(r.lines)}
@@ -2204,17 +2205,17 @@ export default function OfflineAdminClient() {
                             {formatLineSummary(r.lines)}
                           </span>
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap font-medium tabular-nums">
+                        <td className={adminDataTable.moneyCell}>
                           {formatCurrency(r.payment?.amount)}
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
+                        <td className={adminDataTable.cellCenter}>
                           <StatusBadge status={r.payment?.status} type="payment" />
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
+                        <td className={adminDataTable.cellCenter}>
                           <StatusBadge status={r.status} type="record" />
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <div className="flex shrink-0 items-center gap-1">
+                        <td className={adminDataTable.actionCell}>
+                          <div className="flex shrink-0 items-center justify-end gap-1">
                             {r.offlineCustomerId && (
                               <Button
                                 asChild

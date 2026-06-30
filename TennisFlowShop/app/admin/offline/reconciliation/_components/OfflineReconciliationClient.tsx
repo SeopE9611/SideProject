@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import AdminPageSection from "@/components/admin/AdminPageSection";
+import { adminDataTable } from "@/components/admin/AdminDataTable";
 import { adminSurface, adminTypography } from "@/components/admin/admin-typography";
 import { adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
@@ -585,19 +586,19 @@ export default function OfflineReconciliationClient() {
             </div>
           )}
           {!isLoading && !error && (data?.items.length ?? 0) > 0 && (
-            <div className="overflow-x-auto">
+            <div className={`${adminSurface.tableCard} overflow-x-auto`}>
               <table className={`w-full min-w-[1180px] table-fixed ${adminTypography.body}`}>
-                <thead className={`border-b text-left ${adminTypography.caption}`}>
+                <thead className={adminSurface.tableHeader}>
                   <tr>
-                    <th className="w-[130px] py-3 pr-3">유형</th>
-                    <th className="w-[100px] py-3 pr-3">상태</th>
-                    <th className="w-[90px] py-3 pr-3">심각도</th>
-                    <th className="w-[150px] py-3 pr-3">발생일</th>
-                    <th className="w-[170px] py-3 pr-3">고객</th>
-                    <th className="py-3 pr-3">내용</th>
-                    <th className="w-[180px] py-3 pr-3">금액/패키지명</th>
-                    <th className="w-[220px] py-3 pr-3">에러/사유</th>
-                    <th className="w-[280px] py-3">관리</th>
+                    <th className={adminDataTable.headCenter}>유형</th>
+                    <th className={adminDataTable.headCenter}>상태</th>
+                    <th className={adminDataTable.headCenter}>심각도</th>
+                    <th className={adminDataTable.headRight}>발생일</th>
+                    <th className={adminDataTable.head}>고객</th>
+                    <th className={adminDataTable.head}>내용</th>
+                    <th className={adminDataTable.headRight}>금액/패키지명</th>
+                    <th className={adminDataTable.head}>에러/사유</th>
+                    <th className={adminDataTable.actionHead}>관리</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -606,22 +607,22 @@ export default function OfflineReconciliationClient() {
                     return (
                       <tr
                         key={`${item.type}-${item.id}`}
-                        className={cn(updatingId === item.id && "opacity-60")}
+                        className={cn(adminDataTable.row, updatingId === item.id && "opacity-60")}
                       >
-                        <td className="py-4 pr-3">
+                        <td className={adminDataTable.cellCenter}>
                           <Badge variant="info">{TYPE_LABELS[item.type]}</Badge>
                         </td>
-                        <td className="py-4 pr-3">
+                        <td className={adminDataTable.cellCenter}>
                           <Badge variant={statusVariant(item.status)}>
                             {STATUS_LABELS[item.status]}
                           </Badge>
                         </td>
-                        <td className="py-4 pr-3">
+                        <td className={adminDataTable.cellCenter}>
                           <Badge variant={severityVariant(item.severity)}>
                             {SEVERITY_LABELS[item.severity]}
                           </Badge>
                         </td>
-                        <td className="py-4 pr-3 text-muted-foreground">
+                        <td className={adminDataTable.dateCell}>
                           {formatDate(
                             stringValue(
                               item.metadata.failedAt ?? item.metadata.occurredAt ?? item.updatedAt,
@@ -629,13 +630,13 @@ export default function OfflineReconciliationClient() {
                             ),
                           )}
                         </td>
-                        <td className="py-4 pr-3">
+                        <td className={adminDataTable.cellTopLeft}>
                           <p className="font-medium">{item.customer.name}</p>
                           <p className="text-xs text-muted-foreground">
                             {item.customer.phoneMasked ?? "연락처 없음"}
                           </p>
                         </td>
-                        <td className="max-w-[260px] py-4 pr-3">
+                        <td className={adminDataTable.cellTopLeft}>
                           <p className="font-medium">{item.title}</p>
                           <p className="mt-1 text-xs text-muted-foreground">
                             {item.type === "package_usage"
@@ -643,7 +644,7 @@ export default function OfflineReconciliationClient() {
                               : item.description}
                           </p>
                         </td>
-                        <td className="py-4 pr-3">
+                        <td className={adminDataTable.cellRight}>
                           <p>
                             {item.type === "package_issue"
                               ? stringValue(item.metadata.packageName)
@@ -655,12 +656,12 @@ export default function OfflineReconciliationClient() {
                               : `${stringValue(item.metadata.usedCount, "1")}회 사용 표시`}
                           </p>
                         </td>
-                        <td className="max-w-[240px] py-4 pr-3 text-xs text-muted-foreground">
+                        <td className={adminDataTable.cellTopLeft}>
                           {stringValue(
                             item.metadata.error ?? item.metadata.memo ?? "consumptionId 연결 없음",
                           )}
                         </td>
-                        <td className="py-4">
+                        <td className={adminDataTable.actionCell}>
                           <ItemActions
                             item={item}
                             note={note}
