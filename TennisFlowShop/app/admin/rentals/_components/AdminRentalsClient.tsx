@@ -900,15 +900,15 @@ export default function AdminRentalsClient() {
           </details>
         </CardHeader>
         <CardContent className="relative overflow-x-auto scrollbar-hidden pr-2">
-          <Table className="min-w-[1040px] max-w-[1180px] table-fixed border-separate [border-spacing-block:0.35rem] [border-spacing-inline:0] text-xs">
+          <Table className="mx-auto min-w-[1040px] max-w-[1180px] table-fixed border-separate [border-spacing-block:0.3rem] [border-spacing-inline:0] text-xs">
             <TableHeader className={cn("sticky top-0", adminSurface.tableHeader)}>
               <TableRow>
-                <TableHead className={cn(thClasses, "w-[230px] text-left")}>대여/고객</TableHead>
+                <TableHead className={cn(thClasses, "w-[220px] text-left")}>대여/고객</TableHead>
                 <TableHead
                   onClick={() => handleSort("date")}
                   className={cn(
                     thClasses,
-                    "w-[240px] cursor-pointer select-none text-left transition-colors hover:text-primary",
+                    "w-[250px] cursor-pointer select-none text-left transition-colors hover:text-primary",
                     sortBy === "date" && "text-primary",
                   )}
                 >
@@ -997,14 +997,14 @@ export default function AdminRentalsClient() {
                             <TooltipTrigger asChild>
                               <button
                                 type="button"
-                                className="inline-flex max-w-[140px] cursor-pointer flex-col items-start gap-1"
+                                className="inline-flex max-w-[190px] cursor-pointer flex-col items-start gap-1"
                                 title={rid}
                                 onClick={() => {
                                   navigator.clipboard.writeText(rid);
                                   showSuccessToast("대여 ID가 클립보드에 복사되었습니다.");
                                 }}
                               >
-                                <div className="inline-flex items-center gap-1 w-full truncate">
+                                <div className="inline-flex w-full items-center gap-1 truncate text-foreground/70">
                                   {/* 취소요청 들어온 대여만 경고 아이콘 표시 */}
                                   {r.cancelRequest?.status === "requested" && (
                                     <AlertTriangle
@@ -1037,7 +1037,7 @@ export default function AdminRentalsClient() {
                                   ];
                                   return <AdminBadgeRow maxVisible={2} items={items} />;
                                 })()}
-                                <div className="mt-1 min-w-0 text-left">
+                                <div className="mt-0.5 min-w-0 text-left">
                                   <p className="line-clamp-1 text-sm font-medium text-foreground" title={r.customer?.name || "-"}>
                                     {r.customer?.name || "고객명 없음"}
                                   </p>
@@ -1046,8 +1046,8 @@ export default function AdminRentalsClient() {
                                   </p>
                                 </div>
                                 {r.stringingApplicationStatus && (
-                                  <p className="text-sm text-foreground/75">
-                                    교체서비스 상태: {r.stringingApplicationStatus}
+                                  <p className="line-clamp-1 text-xs text-foreground/70">
+                                    교체서비스 {r.stringingApplicationStatus}
                                   </p>
                                 )}
                               </button>
@@ -1168,7 +1168,7 @@ export default function AdminRentalsClient() {
                           {rid ? (
                             <Link
                               href={`/admin/rentals/${rid}`}
-                              className="line-clamp-2 break-keep font-medium underline-offset-2 hover:underline"
+                              className="line-clamp-2 break-keep font-semibold leading-snug underline-offset-2 hover:underline"
                               title={`${racketBrandLabel(r.brand)} ${r.model}`}
                             >
                               {racketBrandLabel(r.brand)} {r.model}
@@ -1202,7 +1202,7 @@ export default function AdminRentalsClient() {
                             })()}
                             <ShippingBadge item={r} />
                           </div>
-                          <p className="text-xs font-medium text-primary">다음: {nextActionLabel}</p>
+                          <p className="line-clamp-2 text-xs font-medium leading-snug text-primary">다음: {nextActionLabel}</p>
                           {r.depositRefundedAt ? (
                             <p className="text-xs text-foreground/70">보증금 환불 완료</p>
                           ) : r.status === "returned" ? (
@@ -1211,15 +1211,15 @@ export default function AdminRentalsClient() {
                         </div>
                       </TableCell>
                       <TableCell className={cn(tdClasses, "py-2 text-right tabular-nums")}>
-                        <div className="flex flex-col items-end">
-                          <span className="font-semibold">{won(r.amount.total)}</span>
-                          <span className="text-xs text-foreground/75">
+                        <div className="flex flex-col items-end gap-0.5">
+                          <span className="font-semibold tabular-nums text-foreground">{won(r.amount.total)}</span>
+                          <span className="max-w-[200px] text-right text-xs text-foreground/75">
                             수수료 {won(r.amount.fee)} · 보증금 {won(r.amount.deposit)}
                           </span>
                           {/* 스트링/교체비: 있을 때만 추가 노출 (대여만 한 케이스 UI 과밀 방지) */}
                           {((r.amount.stringPrice ?? 0) > 0 ||
                             (r.amount.stringingFee ?? 0) > 0) && (
-                            <span className="text-xs text-foreground/75">
+                            <span className="max-w-[200px] text-right text-xs text-foreground/75">
                               {(r.amount.stringPrice ?? 0) > 0
                                 ? `스트링: ${won(r.amount.stringPrice ?? 0)}`
                                 : ""}
@@ -1235,12 +1235,12 @@ export default function AdminRentalsClient() {
                       </TableCell>
                       <TableCell className={cn(tdClasses, "py-2")}>
                         <div className="flex items-center justify-end gap-1">
-                          <Button asChild size="sm" variant="ghost" className="h-8 whitespace-nowrap border border-border/60 px-2.5 text-xs font-medium">
+                          <Button asChild size="sm" variant="ghost" className="h-8 whitespace-nowrap border border-border/70 px-2.5 text-xs font-medium hover:border-border hover:bg-muted/40 focus-visible:ring-2">
                             <Link href={`/admin/rentals/${rid}`}>{nextActionLabel}</Link>
                           </Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 border border-border/70 bg-background hover:border-border hover:bg-muted/40 focus-visible:ring-2">
                               <MoreHorizontal className="h-3.5 w-3.5" />
                             </Button>
                           </DropdownMenuTrigger>
