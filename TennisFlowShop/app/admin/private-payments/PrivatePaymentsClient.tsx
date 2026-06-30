@@ -55,6 +55,7 @@ export default function PrivatePaymentsClient() {
   const [cancelingId, setCancelingId] = useState<string | null>(null);
   const [cancelTarget, setCancelTarget] = useState<Item | null>(null);
   const [cancelReason, setCancelReason] = useState(defaultCancelReason);
+  const [cancelError, setCancelError] = useState("");
   const load = async () => {
     const json = await adminFetcher<ListResponse>("/api/admin/private-payments?limit=50");
     setItems(json.items || []);
@@ -105,12 +106,14 @@ export default function PrivatePaymentsClient() {
   const openCancelDialog = (item: Item) => {
     setCancelTarget(item);
     setCancelReason(defaultCancelReason);
+    setCancelError("");
     setMessage("");
   };
   const cancelPayment = async () => {
     if (!cancelTarget) return;
     const normalizedReason = cancelReason.trim() || defaultCancelReason;
     setCancelingId(cancelTarget.id);
+    setCancelError("");
     setMessage("");
     try {
       const json = await adminFetcher<SaveResponse>(
@@ -122,11 +125,12 @@ export default function PrivatePaymentsClient() {
         },
       );
       if (!json.ok) throw new Error(json.message || "결제취소에 실패했습니다.");
+      setCancelError("");
       setMessage("개인결제를 취소했습니다.");
       setCancelTarget(null);
       await load();
     } catch (e) {
-      setMessage(e instanceof Error ? e.message : "결제취소에 실패했습니다.");
+      setCancelError(e instanceof Error ? e.message : "결제취소에 실패했습니다.");
     } finally {
       setCancelingId(null);
     }
@@ -313,7 +317,12 @@ export default function PrivatePaymentsClient() {
       </Card>
       <AlertDialog
         open={!!cancelTarget}
-        onOpenChange={(open) => !open && !cancelingId && setCancelTarget(null)}
+        onOpenChange={(open) => {
+          if (!open && !cancelingId) {
+            setCancelError("");
+            setCancelTarget(null);
+          }
+        }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -331,6 +340,11 @@ export default function PrivatePaymentsClient() {
               disabled={!!cancelingId}
             />
           </div>
+          {cancelError && (
+            <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {cancelError}
+            </p>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel disabled={!!cancelingId}>닫기</AlertDialogCancel>
             <Button variant="destructive" disabled={!!cancelingId} onClick={cancelPayment}>
