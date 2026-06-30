@@ -14,6 +14,9 @@ export type PrivatePayment = {
   status: PrivatePaymentStatus;
   paymentStatus: PrivatePaymentPaymentStatus;
   paymentInfo?: Record<string, unknown>;
+  expiresAt?: Date | null;
+  archivedAt?: Date | null;
+  archivedBy?: ObjectId | null;
   paidAt?: Date;
   canceledAt?: Date;
   cancellationInfo?: {
@@ -39,12 +42,15 @@ export type PrivatePaymentDocument = PrivatePayment & {
 
 export type SerializedPrivatePayment = Omit<
   PrivatePayment,
-  "_id" | "createdBy" | "createdAt" | "updatedAt" | "paidAt" | "canceledAt" | "cancellationInfo" | "history"
+  "_id" | "createdBy" | "archivedBy" | "createdAt" | "updatedAt" | "expiresAt" | "archivedAt" | "paidAt" | "canceledAt" | "cancellationInfo" | "history"
 > & {
   _id: string;
   id: string;
   createdBy?: string;
+  archivedBy?: string;
   createdAt: string;
+  expiresAt?: string;
+  archivedAt?: string;
   updatedAt: string;
   paidAt?: string;
   canceledAt?: string;
@@ -59,7 +65,7 @@ export type SerializedPrivatePayment = Omit<
 
 type PrivatePaymentInputBody = Partial<
   Record<
-    "title" | "amount" | "description" | "customerName" | "customerPhone" | "customerEmail",
+    "title" | "amount" | "description" | "customerName" | "customerPhone" | "customerEmail" | "expiresAt",
     unknown
   >
 >;
@@ -88,8 +94,11 @@ export function serializePrivatePayment(
     _id: id,
     id,
     createdBy: doc.createdBy?.toString(),
+    archivedBy: doc.archivedBy?.toString(),
     createdAt: toIsoString(doc.createdAt) ?? "",
     updatedAt: toIsoString(doc.updatedAt) ?? "",
+    expiresAt: toIsoString(doc.expiresAt ?? undefined),
+    archivedAt: toIsoString(doc.archivedAt ?? undefined),
     paidAt: toIsoString(doc.paidAt),
     canceledAt: toIsoString(doc.canceledAt),
     cancellationInfo: doc.cancellationInfo
@@ -133,6 +142,17 @@ export function validatePrivatePaymentInput(body: unknown, options: { partial?: 
 
   for (const key of ["description", "customerName", "customerPhone", "customerEmail"] as const) {
     if (!options.partial || has(key)) input[key] = String(source[key] ?? "").trim();
+  }
+
+  if (!options.partial || has("expiresAt")) {
+    const raw = source.expiresAt;
+    if (raw === "" || raw === null || raw === undefined) {
+      input.expiresAt = "";
+    } else {
+      const date = new Date(String(raw));
+      if (Number.isNaN(date.getTime())) errors.push("만료일 형식을 확인해 주세요.");
+      else input.expiresAt = date.toISOString();
+    }
   }
 
   if (has("customerEmail") && input.customerEmail) {
