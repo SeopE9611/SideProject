@@ -28,6 +28,14 @@ function stringField(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function pick(raw: Record<string, string>, ...keys: string[]) {
+  for (const key of keys) {
+    const value = raw[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return "";
+}
+
 function failureMessage(error: unknown) {
   return error instanceof Error ? error.message : "NICEPAY 승인취소에 실패했습니다.";
 }
@@ -85,6 +93,46 @@ export async function POST(req: Request, ctx: Ctx) {
 
   try {
     const canceled = await cancelNicePaymentByTid({ tid, orderId, reason, clientKey, secretKey, apiBaseUrl: apiBase() });
+    const resultCode = pick(canceled, "resultCode", "ResultCode");
+
+    if (resultCode !== "0000") {
+      const message = pick(canceled, "resultMsg", "ResultMsg", "message") || "NICEPAY 승인취소에 실패했습니다.";
+      const failedAt = new Date();
+
+      await col.updateOne(
+        { _id },
+        {
+          $set: {
+            paymentStatus: "결제완료",
+            updatedAt: failedAt,
+            cancellationInfo: {
+              status: "failed",
+              reason,
+              requestedAt: now,
+              requestedBy: guard.admin._id,
+              failedAt,
+              failureMessage: message,
+              rawSummary: canceled,
+            },
+          },
+        },
+      );
+
+      await appendAdminAudit(
+        guard.db,
+        {
+          type: "private_payment.cancel",
+          actorId: guard.admin._id,
+          targetId: _id,
+          message: "개인결제 승인취소 실패",
+          diff: { reason, tid, orderId, resultCode, failureMessage: message },
+        },
+        req,
+      );
+
+      return NextResponse.json({ ok: false, message }, { status: 502 });
+    }
+
     const canceledAt = new Date();
     await col.updateOne(
       { _id },
