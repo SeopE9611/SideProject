@@ -359,7 +359,7 @@ export default function AcademyClassesClient() {
                   <TableHead className={adminDataTable.headCenter}>수업 정보</TableHead>
                   <TableHead className={cn(adminDataTable.head, "w-[240px]")}>운영 정보</TableHead>
                   <TableHead className={adminDataTable.headRight}>신청 현황</TableHead>
-                  <TableHead className={adminDataTable.headRight}>가격/상태</TableHead>
+                  <TableHead className={adminDataTable.headCenter}>가격/상태</TableHead>
                   <TableHead className={adminDataTable.actionHead}>관리</TableHead>
                 </TableRow>
               </TableHeader>

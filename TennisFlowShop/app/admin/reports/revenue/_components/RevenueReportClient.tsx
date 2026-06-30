@@ -17,6 +17,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
 import { adminSurface } from "@/components/admin/admin-typography";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -571,8 +572,7 @@ export default function RevenueReportClient() {
   }, [activeSnapshotMonth, snapshot?.id, snapshot?.updatedAt, snapshot?.status, snapshot?.memo]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+    <AdminPageShell className="space-y-6">
         <AdminPageHeader
           title="온라인/오프라인 매출 리포트"
           description="온라인 정산 기준 매출과 오프라인 운영 매출을 분리해 비교합니다. 참고 합계는 정산 지급액 계산에 사용되지 않습니다."
@@ -591,8 +591,8 @@ export default function RevenueReportClient() {
           }
         />
 
-        <Card className={adminSurface.card}>
-          <CardHeader>
+        <Card className={adminSurface.filterCard}>
+          <CardHeader className="px-0 pt-0">
             <CardTitle className="flex items-center gap-2 text-base">
               <Calendar className="h-4 w-4" /> 기간 필터
             </CardTitle>
@@ -1057,8 +1057,7 @@ export default function RevenueReportClient() {
             </Card>
           </>
         ) : null}
-      </div>
-    </div>
+    </AdminPageShell>
   );
 }
 

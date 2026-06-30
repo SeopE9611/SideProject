@@ -5,6 +5,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import AdminConfirmDialog from "@/components/admin/AdminConfirmDialog";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import AdminPageShell from "@/components/admin/AdminPageShell";
+import { adminSurface } from "@/components/admin/admin-typography";
 import { useUnsavedChangesGuard } from "@/lib/hooks/useUnsavedChangesGuard";
 import { useAdminSettings } from "./_hooks/useAdminSettings";
 import { SiteSettingsTab } from "./_components/SiteSettingsTab";
@@ -17,9 +19,8 @@ export default function SettingsPage() {
   useUnsavedChangesGuard(vm.isDirtyAny && !vm.isSubmittingAny);
 
   return (
-    <div>
-      <div className="container py-0">
-        <div className="mx-auto max-w-6xl space-y-6">
+    <>
+      <AdminPageShell variant="narrow" className="space-y-6">
           <AdminPageHeader
             title="시스템 설정"
             description="사이트, 사용자, 이메일, 결제 설정을 관리합니다."
@@ -31,7 +32,7 @@ export default function SettingsPage() {
           <Tabs value={vm.activeTab} onValueChange={vm.requestTabChange} className="space-y-4">
             {vm.isBootstrapping && (
               <div
-                className="rounded-lg border border-border bg-primary/10 px-4 py-3 dark:bg-primary/20"
+                className={`${adminSurface.cardMuted} px-4 py-3 bg-primary/10 dark:bg-primary/20`}
                 aria-label="설정값 로딩 중"
               >
                 <Skeleton className="h-4 w-52 bg-primary/20" />
@@ -84,8 +85,7 @@ export default function SettingsPage() {
               paymentMeta={vm.paymentMeta}
             />
           </Tabs>
-        </div>
-      </div>
+      </AdminPageShell>
       <AdminConfirmDialog
         open={vm.pendingTab !== null}
         onOpenChange={(open) => {
@@ -99,6 +99,6 @@ export default function SettingsPage() {
         eventKey="admin-settings-tab-change"
         eventMeta={{ from: vm.activeTab, to: vm.pendingTab }}
       />
-    </div>
+    </>
   );
 }
