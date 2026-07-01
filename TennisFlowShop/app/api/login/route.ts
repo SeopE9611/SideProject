@@ -11,6 +11,7 @@ import { getDb } from "@/lib/mongodb";
 import { autoLinkStringingByEmail } from "@/lib/claims";
 import { baseCookie } from "@/lib/cookieOptions";
 import { ADMIN_CSRF_COOKIE_KEY } from "@/lib/admin/adminCsrf";
+import { isAdminRole } from "@/lib/admin/roles";
 import { z } from "zod";
 import {
   AUTH_RATE_LIMIT_POLICIES,
@@ -139,11 +140,11 @@ export async function POST(req: Request) {
   });
 
   /**
-   * 관리자 세션에서만 CSRF 더블서브밋 쿠키를 발급한다.
-   * - admin: 클라이언트 JS가 읽어 헤더로 보낼 수 있어야 하므로 httpOnly=false
+   * admin/superadmin 관리자 세션에서만 CSRF 더블서브밋 쿠키를 발급한다.
+   * - admin/superadmin: 클라이언트 JS가 읽어 헤더로 보낼 수 있어야 하므로 httpOnly=false
    * - non-admin: 이전 관리자 토큰이 남아있지 않도록 즉시 삭제
    */
-  if (user.role === "admin") {
+  if (isAdminRole(user.role)) {
     const adminCsrfToken = `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, "");
     response.cookies.set(ADMIN_CSRF_COOKIE_KEY, adminCsrfToken, {
       ...baseCookie,

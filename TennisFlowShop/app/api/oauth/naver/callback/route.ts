@@ -11,6 +11,7 @@ import {
 } from "@/lib/constants";
 import { autoLinkStringingByEmail } from "@/lib/claims";
 import { ADMIN_CSRF_COOKIE_KEY } from "@/lib/admin/adminCsrf";
+import { isAdminRole } from "@/lib/admin/roles";
 import { Collection } from "mongodb";
 import crypto from "crypto";
 
@@ -202,8 +203,8 @@ export async function GET(req: NextRequest) {
     maxAge: REFRESH_TOKEN_EXPIRES_IN,
   });
 
-  // 관리자 계정으로 OAuth 로그인한 경우 admin CSRF 쿠키를 함께 발급
-  if (user.role === "admin") {
+  // admin/superadmin 관리자 세션으로 OAuth 로그인한 경우 admin CSRF 쿠키를 함께 발급
+  if (isAdminRole(user.role)) {
     const adminCsrfToken = `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, "");
     res.cookies.set(ADMIN_CSRF_COOKIE_KEY, adminCsrfToken, {
       ...baseCookie,
