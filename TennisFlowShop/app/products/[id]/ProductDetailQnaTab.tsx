@@ -18,6 +18,7 @@ type ProductDetailQnaTabProps = {
   qnas: any[];
   qnaLoading: boolean;
   qnaError: unknown;
+  targetType?: "product" | "racket";
 };
 
 export default function ProductDetailQnaTab({
@@ -26,8 +27,12 @@ export default function ProductDetailQnaTab({
   qnas,
   qnaLoading,
   qnaError,
+  targetType = "product",
 }: ProductDetailQnaTabProps) {
-  const qnaWriteHref = `/board/qna/write?productId=${productId}&productName=${encodeURIComponent(productName)}`;
+  const qnaWriteHref = `/board/qna/write?productId=${productId}&productName=${encodeURIComponent(productName)}${
+    targetType === "racket" ? "&targetType=racket" : ""
+  }`;
+  const title = targetType === "racket" ? "라켓 문의" : "상품 문의";
 
   return (
     <>
@@ -37,7 +42,7 @@ export default function ProductDetailQnaTab({
             <MessageSquare className="h-4 w-4 sm:h-6 sm:w-6" />
           </div>
           <h3 className="break-keep text-ui-section-title font-semibold leading-tight text-foreground sm:text-ui-page-title">
-            상품 문의
+            {title}
           </h3>
         </div>
         <Button asChild variant="secondary" className="text-ui-label sm:text-ui-body-sm h-9 sm:h-10">

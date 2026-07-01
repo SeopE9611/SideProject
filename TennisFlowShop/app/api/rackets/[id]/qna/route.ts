@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 
 function toInt(v: string | null, fallback: number, min: number, max: number) {
@@ -16,14 +15,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const limit = toInt(url.searchParams.get("limit"), 10, 1, 50);
 
   const { id } = await params;
-
-  const productId = id; // 문자열 ObjectId 그대로 저장했으므로 문자열 비교
+  const productId = id;
 
   const filter: any = {
     type: "qna",
     status: "published",
     "productRef.productId": productId,
-    $or: [{ "productRef.targetType": { $exists: false } }, { "productRef.targetType": "product" }],
+    "productRef.targetType": "racket",
   };
   const total = await db.collection("board_posts").countDocuments(filter);
   const items = await db

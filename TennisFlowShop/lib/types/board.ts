@@ -20,6 +20,7 @@ export type BoardStatus = "published" | "hidden" | "deleted";
 
 export interface ProductRef {
   productId: string; // ObjectId 문자열(문자열 유지)
+  targetType?: "product" | "racket"; // 없으면 기존 상품 문의로 취급
   name?: string; // 상품명 스냅샷(리스트 빠른 렌더용)
   image?: string | null; // 대표 이미지 URL 스냅샷
 }

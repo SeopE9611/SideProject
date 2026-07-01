@@ -87,7 +87,12 @@ export interface BoardCreateMongoDoc {
   title: string;
   content: string;
   category?: QnaCategory | "일반" | undefined;
-  productRef?: { productId: string; name?: string; image?: string | null };
+  productRef?: {
+    productId: string;
+    targetType?: "product" | "racket";
+    name?: string;
+    image?: string | null;
+  };
   isSecret: boolean;
   isPinned: boolean;
   attachments: Array<{

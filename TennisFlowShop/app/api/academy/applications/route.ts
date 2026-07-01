@@ -189,36 +189,57 @@ export async function POST(req: Request) {
     return toErrorResponse("회원정보의 이름과 연락처를 먼저 등록해 주세요.");
   }
 
-  if (requestedClassId) {
-    if (!ObjectId.isValid(requestedClassId)) {
-      return toErrorResponse("신청할 수 없는 클래스입니다.");
-    }
+  if (!requestedClassId) {
+    return toErrorResponse("신청할 클래스를 선택해 주세요.", 400, {
+      code: "ACADEMY_CLASS_REQUIRED",
+    });
+  }
 
-    const selectedClass = await db.collection(CLASS_COLLECTION_NAME).findOne(
-      { _id: new ObjectId(requestedClassId), status: "visible" },
-      {
-        projection: {
-          _id: 1,
-          name: 1,
-          description: 1,
-          level: 1,
-          lessonType: 1,
-          instructorName: 1,
-          location: 1,
-          scheduleText: 1,
-          capacity: 1,
-          price: 1,
-          status: 1,
-        },
+  if (!ObjectId.isValid(requestedClassId)) {
+    return toErrorResponse("신청할 수 없는 클래스입니다. 모집 중인 클래스를 다시 선택해 주세요.", 400, {
+      code: "ACADEMY_CLASS_INVALID",
+    });
+  }
+
+  const selectedClass = await db.collection(CLASS_COLLECTION_NAME).findOne(
+    { _id: new ObjectId(requestedClassId), status: "visible" },
+    {
+      projection: {
+        _id: 1,
+        name: 1,
+        description: 1,
+        level: 1,
+        lessonType: 1,
+        instructorName: 1,
+        location: 1,
+        scheduleText: 1,
+        capacity: 1,
+        price: 1,
+        status: 1,
       },
-    );
+    },
+  );
 
-    if (!selectedClass) {
-      return toErrorResponse("신청할 수 없는 클래스입니다.");
+  if (!selectedClass) {
+    return toErrorResponse("신청할 수 없는 클래스입니다. 모집 중인 클래스를 다시 선택해 주세요.", 409, {
+      code: "ACADEMY_CLASS_UNAVAILABLE",
+    });
+  }
+
+  classId = requestedClassId;
+  classSnapshot = createClassSnapshot(selectedClass);
+
+  if (typeof selectedClass.capacity === "number" && selectedClass.capacity > 0) {
+    const confirmedCount = await db.collection(COLLECTION_NAME).countDocuments({
+      classId,
+      status: "confirmed",
+    });
+
+    if (confirmedCount >= selectedClass.capacity) {
+      return toErrorResponse("정원이 마감된 클래스입니다. 문의하기를 이용해 주세요.", 409, {
+        code: "ACADEMY_CLASS_FULL",
+      });
     }
-
-    classId = requestedClassId;
-    classSnapshot = createClassSnapshot(selectedClass);
   }
 
   const activeApplications = await db

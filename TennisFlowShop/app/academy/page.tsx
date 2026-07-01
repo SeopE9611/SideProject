@@ -262,6 +262,7 @@ export default async function AcademyPage() {
       .filter((application) => application.classId)
       .map((application) => [application.classId, application]),
   );
+  const hasVisibleClasses = academyClasses.some((academyClass) => academyClass.status === "visible");
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -278,19 +279,23 @@ export default async function AcademyPage() {
         actions={
           <>
             <Button
-              asChild
+              asChild={hasVisibleClasses}
               size="lg"
               wrap="responsive"
               className="h-12 w-full px-8 text-ui-body-lg bp-sm:w-auto"
+              disabled={!hasVisibleClasses}
             >
-              <Link
-                href={
-                  userId ? "/academy/apply" : `/login?next=${encodeURIComponent("/academy/apply")}`
-                }
-              >
-                <GraduationCap className="mr-2 h-5 w-5" />
-                {userId ? "아카데미 신청하기" : "로그인 후 신청"}
-              </Link>
+              {hasVisibleClasses ? (
+                <Link href="#academy-classes">
+                  <GraduationCap className="mr-2 h-5 w-5" />
+                  모집 클래스 보기
+                </Link>
+              ) : (
+                <>
+                  <GraduationCap className="mr-2 h-5 w-5" />
+                  모집 중인 레슨 없음
+                </>
+              )}
             </Button>
             <Button
               asChild
@@ -429,7 +434,7 @@ export default async function AcademyPage() {
         </section>
 
         {/* Classes Section */}
-        <section className="space-y-6">
+        <section id="academy-classes" className="space-y-6">
           <SectionHeader
             eyebrow="Classes"
             title="현재 모집 중인 클래스"
@@ -642,16 +647,18 @@ export default async function AcademyPage() {
               후 현장에서 결제를 안내해드립니다.
             </p>
             <div className="flex flex-col justify-center gap-3 pt-2 sm:flex-row">
-              <Button asChild size="lg" wrap="responsive" className="h-12 w-full px-8 sm:w-auto">
-                <Link
-                  href={
-                    userId
-                      ? "/academy/apply"
-                      : `/login?next=${encodeURIComponent("/academy/apply")}`
-                  }
-                >
-                  레슨 신청하기
-                </Link>
+              <Button
+                asChild={hasVisibleClasses}
+                size="lg"
+                wrap="responsive"
+                className="h-12 w-full px-8 sm:w-auto"
+                disabled={!hasVisibleClasses}
+              >
+                {hasVisibleClasses ? (
+                  <Link href="#academy-classes">모집 클래스 보기</Link>
+                ) : (
+                  "모집 중인 레슨 없음"
+                )}
               </Button>
               <Button
                 asChild

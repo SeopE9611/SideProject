@@ -178,6 +178,7 @@ function normalizeCategory(input: string | null | undefined): QnaCategory | null
 const productRefSchema = z
   .object({
     productId: z.string().transform((s) => s.trim().replace(/^<|>$/g, "")),
+    targetType: z.enum(["product", "racket"]).optional(),
     name: z.string().optional(),
     image: z.string().url().nullable().optional(),
   })
