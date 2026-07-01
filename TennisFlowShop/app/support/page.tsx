@@ -47,6 +47,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
+import { USER_ME_KEY, USER_ME_SWR_OPTIONS } from "@/lib/hooks/useCurrentUser";
 
 // ---------------------- 공통 유틸 ----------------------
 
@@ -532,11 +533,7 @@ export default function SupportPage() {
   const events = data?.events ?? [];
   const qnas = data?.qna ?? [];
 
-  const { data: me } = useSWR<MeRes | null>("/api/users/me", fetcherAllow401, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    shouldRetryOnError: false,
-  });
+  const { data: me } = useSWR<MeRes | null>(USER_ME_KEY, fetcherAllow401, USER_ME_SWR_OPTIONS);
   const isAdmin = me?.role === "admin";
   const viewerId = me?.id ?? null;
 

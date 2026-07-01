@@ -29,6 +29,7 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
+import { USER_ME_KEY, USER_ME_SWR_OPTIONS } from "@/lib/hooks/useCurrentUser";
 
 type NoticeDetailClientProps = { mode?: "notice" | "event" };
 
@@ -154,7 +155,7 @@ export default function NoticeDetailClient({ mode = "notice" }: NoticeDetailClie
   const navListKey = `/api/boards?${navQueryParams.toString()}`;
 
   // 관리자 정보 로드
-  const { data: me } = useSWR("/api/users/me", fetcher);
+  const { data: me } = useSWR(USER_ME_KEY, fetcher, USER_ME_SWR_OPTIONS);
   const isAdmin = !!(
     me &&
     (me.isAdmin === true ||
