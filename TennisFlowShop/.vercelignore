@@ -1,0 +1,48 @@
+# 민감한 환경변수 파일
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 저장소/로컬 설정
+.git
+.github
+.vscode
+
+# 의존성 및 패키지 매니저 캐시
+node_modules
+.pnp
+.pnp.*
+.yarn/cache
+
+# 빌드 산출물
+.next
+out
+dist
+build
+
+# 캐시 및 타입스크립트 증분 산출물
+.turbo
+.eslintcache
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# 테스트 산출물
+coverage
+cypress/downloads
+cypress/screenshots
+cypress/videos
+
+# 로컬 디버그 로그
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+*.log
+
+# OS/에디터 산출물
+.DS_Store
+Thumbs.db
