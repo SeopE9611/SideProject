@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -27,10 +28,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { badgeToneVariant, type BadgeSemanticTone } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import type {
-  AcademyCustomerApplicationDetail,
-  AcademyCustomerApplicationDetailResponse,
-  AcademyLessonApplicationStatus,
+import {
+  ACADEMY_CURRENT_LEVELS,
+  ACADEMY_LESSON_TYPES,
+  ACADEMY_PREFERRED_DAY_OPTIONS,
+  getAcademyCurrentLevelLabel,
+  getAcademyLessonTypeLabel,
+  type AcademyCustomerApplicationDetail,
+  type AcademyCustomerApplicationDetailResponse,
+  type AcademyLessonApplicationStatus,
 } from "@/lib/types/academy";
 import {
   ArrowLeft,
@@ -119,6 +125,7 @@ const CANCEL_REASON_OPTIONS = [
 ] as const;
 
 const CANCEL_REASON_DETAIL_MAX_LENGTH = 300;
+const CUSTOMER_EDITABLE_STATUSES = new Set(["submitted", "reviewing"]);
 
 function DetailSkeleton() {
   return (
@@ -320,6 +327,16 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [editForm, setEditForm] = useState({
+    desiredLessonType: "",
+    currentLevel: "",
+    preferredDays: [] as string[],
+    preferredTimeText: "",
+    lessonGoal: "",
+    requestMemo: "",
+  });
   const [cancelReason, setCancelReason] = useState("");
   const [cancelReasonDetail, setCancelReasonDetail] = useState("");
   const { data, error, isLoading, mutate } = useSWR<AcademyCustomerApplicationDetailResponse>(
@@ -357,6 +374,55 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
 
   const statusTone = getStatusTone(item.status);
   const isCancelled = item.status === "cancelled";
+  const canEditApplication = CUSTOMER_EDITABLE_STATUSES.has(item.status);
+
+  const openEditForm = () => {
+    setEditForm({
+      desiredLessonType: item.desiredLessonType ?? "",
+      currentLevel: item.currentLevel ?? "",
+      preferredDays: item.preferredDays,
+      preferredTimeText: item.preferredTimeText ?? "",
+      lessonGoal: item.lessonGoal ?? "",
+      requestMemo: item.requestMemo ?? "",
+    });
+    setIsEditing(true);
+  };
+
+  const toggleEditDay = (day: string) => {
+    setEditForm((current) => ({
+      ...current,
+      preferredDays: current.preferredDays.includes(day)
+        ? current.preferredDays.filter((item) => item !== day)
+        : [...current.preferredDays, day],
+    }));
+  };
+
+  const handleSaveEdit = async () => {
+    setIsSavingEdit(true);
+    try {
+      const response = await fetch(`/api/applications/academy/${id}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editForm),
+      });
+      const payload = (await response.json().catch(() => null)) as {
+        success?: boolean;
+        item?: AcademyCustomerApplicationDetail;
+        message?: string;
+      } | null;
+      if (!response.ok || !payload?.success || !payload.item) {
+        throw new Error(payload?.message || "신청 정보 수정 중 문제가 발생했습니다.");
+      }
+      await mutate({ success: true, item: payload.item }, false);
+      setIsEditing(false);
+      showSuccessToast("신청 정보가 수정되었습니다.");
+    } catch (error) {
+      showErrorToast(error instanceof Error ? error.message : "신청 정보 수정 중 문제가 발생했습니다.");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
 
   const handleDeleteApplication = async () => {
     setIsDeleting(true);
@@ -533,10 +599,57 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
         <CardHeader>
           <CardTitle className="text-ui-card-title-lg">신청 관리</CardTitle>
           <CardDescription>
-            신청 내용을 확인한 뒤 필요한 경우 신청 취소를 진행해 주세요.
+            {isCancelled
+              ? "취소된 신청입니다."
+              : canEditApplication
+                ? "신청 내용을 수정하거나, 필요한 경우 신청 취소를 진행할 수 있습니다."
+                : "상담이 진행된 신청은 직접 수정할 수 없습니다. 변경이 필요하면 문의해 주세요."}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {!isCancelled && canEditApplication ? (
+            <div className="space-y-4 rounded-xl border border-border bg-muted/20 p-4">
+              {!isEditing ? (
+                <Button type="button" variant="outline" onClick={openEditForm}>
+                  신청 정보 수정
+                </Button>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid gap-3 bp-sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <label className="text-ui-body-sm font-medium">희망 레슨 유형</label>
+                      <Select value={editForm.desiredLessonType} onValueChange={(value) => setEditForm((current) => ({ ...current, desiredLessonType: value }))} disabled={isSavingEdit}>
+                        <SelectTrigger><SelectValue placeholder="선택" /></SelectTrigger>
+                        <SelectContent>{ACADEMY_LESSON_TYPES.map((value) => <SelectItem key={value} value={value}>{getAcademyLessonTypeLabel(value)}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-ui-body-sm font-medium">현재 실력</label>
+                      <Select value={editForm.currentLevel} onValueChange={(value) => setEditForm((current) => ({ ...current, currentLevel: value }))} disabled={isSavingEdit}>
+                        <SelectTrigger><SelectValue placeholder="선택" /></SelectTrigger>
+                        <SelectContent>{ACADEMY_CURRENT_LEVELS.map((value) => <SelectItem key={value} value={value}>{getAcademyCurrentLevelLabel(value)}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-ui-body-sm font-medium">희망 요일</label>
+                    <div className="flex flex-wrap gap-2">{ACADEMY_PREFERRED_DAY_OPTIONS.map((day) => <label key={day} className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-ui-body-sm"><input type="checkbox" checked={editForm.preferredDays.includes(day)} onChange={() => toggleEditDay(day)} disabled={isSavingEdit} />{day}</label>)}</div>
+                  </div>
+                  <Input value={editForm.preferredTimeText} maxLength={100} onChange={(event) => setEditForm((current) => ({ ...current, preferredTimeText: event.target.value }))} placeholder="희망 시간대" disabled={isSavingEdit} />
+                  <Textarea value={editForm.lessonGoal} maxLength={500} onChange={(event) => setEditForm((current) => ({ ...current, lessonGoal: event.target.value }))} placeholder="레슨 목표" disabled={isSavingEdit} />
+                  <Textarea value={editForm.requestMemo} maxLength={1000} onChange={(event) => setEditForm((current) => ({ ...current, requestMemo: event.target.value }))} placeholder="요청사항" disabled={isSavingEdit} />
+                  <div className="flex flex-col gap-2 bp-sm:flex-row">
+                    <Button type="button" onClick={handleSaveEdit} disabled={isSavingEdit || editForm.preferredDays.length === 0}>{isSavingEdit ? "저장 중..." : "저장"}</Button>
+                    <Button type="button" variant="outline" onClick={() => setIsEditing(false)} disabled={isSavingEdit}>취소</Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : !isCancelled ? (
+            <p className="rounded-xl border border-border bg-muted/20 p-4 text-ui-body-sm text-muted-foreground">
+              상담이 진행된 신청은 마이페이지에서 직접 수정할 수 없습니다. 변경이 필요하면 문의해 주세요.
+            </p>
+          ) : null}
           {isCancelled ? (
             <div className="space-y-3">
               <div className="space-y-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-ui-body-sm text-destructive">

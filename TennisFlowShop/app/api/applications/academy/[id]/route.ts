@@ -4,15 +4,40 @@ import { ObjectId, type Document } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { getCurrentUserId } from "@/lib/hooks/get-current-user";
 import {
+  ACADEMY_CURRENT_LEVELS,
+  ACADEMY_LESSON_TYPES,
+  ACADEMY_PREFERRED_DAY_OPTIONS,
   getAcademyApplicationStatusLabel,
   getAcademyCurrentLevelLabel,
   getAcademyLessonTypeLabel,
   isAcademyApplicationStatus,
   type AcademyClassSnapshot,
+  type AcademyCurrentLevel,
   type AcademyLessonApplicationStatus,
+  type AcademyLessonType,
 } from "@/lib/types/academy";
 
 const COLLECTION_NAME = "academy_lesson_applications";
+
+const CUSTOMER_EDITABLE_STATUSES = new Set(["submitted", "reviewing"]);
+const LESSON_TYPES = new Set<AcademyLessonType>(ACADEMY_LESSON_TYPES);
+const CURRENT_LEVELS = new Set<AcademyCurrentLevel>(ACADEMY_CURRENT_LEVELS);
+const VALID_DAYS = new Set<string>(ACADEMY_PREFERRED_DAY_OPTIONS);
+
+function optionalTrimString(value: unknown, maxLength: number) {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim().slice(0, maxLength);
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function arraysEqual(a: string[], b: string[]) {
+  return a.length === b.length && a.every((value, index) => value === b[index]);
+}
+
+function errorResponse(message: string, status = 400, extra?: Record<string, unknown>) {
+  return NextResponse.json({ success: false, message, ...extra }, { status });
+}
+
 
 function serializeObjectId(value: unknown): string | null {
   if (!value) return null;
@@ -171,6 +196,113 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   }
 
   return NextResponse.json({ success: true, item: serializeApplication(item) });
+}
+
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const userId = await getCurrentUserId();
+  if (!userId || !ObjectId.isValid(userId)) {
+    return errorResponse("로그인이 필요합니다.", 401);
+  }
+
+  const { id } = await params;
+  if (!ObjectId.isValid(id)) {
+    return errorResponse("신청 내역을 찾을 수 없습니다.", 404);
+  }
+
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return errorResponse("요청 본문을 확인해 주세요.");
+  }
+  const payload = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
+
+  const desiredLessonType = payload.desiredLessonType;
+  const currentLevel = payload.currentLevel;
+  if (typeof desiredLessonType !== "string" || !LESSON_TYPES.has(desiredLessonType as AcademyLessonType)) {
+    return errorResponse("희망 레슨 유형을 선택해 주세요.");
+  }
+  if (typeof currentLevel !== "string" || !CURRENT_LEVELS.has(currentLevel as AcademyCurrentLevel)) {
+    return errorResponse("현재 실력을 선택해 주세요.");
+  }
+  if (!Array.isArray(payload.preferredDays)) {
+    return errorResponse("희망 요일을 선택해 주세요.");
+  }
+  const preferredDays = Array.from(
+    new Set(
+      payload.preferredDays
+        .filter((day): day is string => typeof day === "string")
+        .map((day) => day.trim())
+        .filter((day) => VALID_DAYS.has(day)),
+    ),
+  );
+  if (preferredDays.length === 0) {
+    return errorResponse("희망 요일을 1개 이상 선택해 주세요.");
+  }
+
+  const updateFields = {
+    desiredLessonType,
+    currentLevel,
+    preferredDays,
+    preferredTimeText: optionalTrimString(payload.preferredTimeText, 100),
+    lessonGoal: optionalTrimString(payload.lessonGoal, 500),
+    requestMemo: optionalTrimString(payload.requestMemo, 1000),
+  };
+
+  const userObjectId = new ObjectId(userId);
+  const client = await clientPromise;
+  const db = client.db();
+  const collection = db.collection(COLLECTION_NAME);
+  const filter = {
+    _id: new ObjectId(id),
+    userId: { $in: [userObjectId, userId] },
+    adminDeletedAt: { $exists: false },
+    customerDeletedAt: { $exists: false },
+  };
+  const item = await collection.findOne(filter);
+  if (!item) {
+    return errorResponse("신청 내역을 찾을 수 없습니다.", 404);
+  }
+  if (!CUSTOMER_EDITABLE_STATUSES.has(item.status)) {
+    return errorResponse("현재 상태에서는 신청 정보를 수정할 수 없습니다.", 409, {
+      code: "ACADEMY_APPLICATION_EDIT_FORBIDDEN",
+    });
+  }
+
+  const changedFields = Object.entries(updateFields)
+    .filter(([key, value]) =>
+      Array.isArray(value) ? !arraysEqual(toStringArray(item[key]), value) : (item[key] ?? null) !== value,
+    )
+    .map(([key]) => key);
+
+  if (changedFields.length === 0) {
+    return NextResponse.json({ success: true, item: serializeApplication(item) });
+  }
+
+  const now = new Date().toISOString();
+  const result = await collection.findOneAndUpdate(
+    filter,
+    {
+      $set: { ...updateFields, updatedAt: now },
+      $push: {
+        history: {
+          status: item.status,
+          date: now,
+          description: "고객이 아카데미 신청 정보를 수정했습니다.",
+          actorId: userId,
+          actorName: "고객",
+          changedFields,
+        },
+      },
+    },
+    { returnDocument: "after" },
+  );
+
+  if (!result) {
+    return errorResponse("신청 내역을 찾을 수 없습니다.", 404);
+  }
+
+  return NextResponse.json({ success: true, item: serializeApplication(result) });
 }
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {

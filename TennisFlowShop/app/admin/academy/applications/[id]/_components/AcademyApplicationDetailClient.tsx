@@ -26,6 +26,9 @@ import { cn } from "@/lib/utils";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   ACADEMY_APPLICATION_STATUSES,
+  ACADEMY_CURRENT_LEVELS,
+  ACADEMY_LESSON_TYPES,
+  ACADEMY_PREFERRED_DAY_OPTIONS,
   getAcademyApplicationStatusLabel,
   getAcademyClassStatusLabel,
   getAcademyCurrentLevelLabel,
@@ -153,6 +156,18 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
   const [selectedClassId, setSelectedClassId] = useState("");
   const [classReason, setClassReason] = useState("");
   const [savingClass, setSavingClass] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editForm, setEditForm] = useState({
+    applicantName: "",
+    phone: "",
+    email: "",
+    desiredLessonType: "",
+    currentLevel: "",
+    preferredDays: [] as string[],
+    preferredTimeText: "",
+    lessonGoal: "",
+    requestMemo: "",
+  });
 
   useEffect(() => {
     if (!item) return;
@@ -160,6 +175,17 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
     setAdminMemo(item.adminMemo ?? "");
     setCustomerMessage(item.customerMessage ?? "");
     setSelectedClassId(item.classId ?? item.classSnapshot?.classId ?? "");
+    setEditForm({
+      applicantName: item.applicantName,
+      phone: item.phone,
+      email: item.email ?? "",
+      desiredLessonType: item.desiredLessonType,
+      currentLevel: item.currentLevel,
+      preferredDays: item.preferredDays,
+      preferredTimeText: item.preferredTimeText ?? "",
+      lessonGoal: item.lessonGoal ?? "",
+      requestMemo: item.requestMemo ?? "",
+    });
   }, [item]);
 
   const classOptions = useMemo(() => {
@@ -234,6 +260,38 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
       showErrorToast(getAdminErrorMessage(mutationError));
     } finally {
       setSavingClass(false);
+    }
+  }
+
+  const canAdminEditApplication = item?.status !== "cancelled";
+
+  const toggleEditDay = (day: string) => {
+    setEditForm((current) => ({
+      ...current,
+      preferredDays: current.preferredDays.includes(day)
+        ? current.preferredDays.filter((item) => item !== day)
+        : [...current.preferredDays, day],
+    }));
+  };
+
+  async function saveApplicationEdit() {
+    if (!item) return;
+    setSavingEdit(true);
+    try {
+      const result = await adminMutator<DetailResponse>(
+        `/api/admin/academy/applications/${id}/edit`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editForm),
+        },
+      );
+      await mutate(result, { revalidate: false });
+      showSuccessToast("신청 정보가 수정되었습니다.");
+    } catch (mutationError) {
+      showErrorToast(getAdminErrorMessage(mutationError));
+    } finally {
+      setSavingEdit(false);
     }
   }
 
@@ -460,6 +518,47 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               </Button>
           </AdminPageSection>
 
+
+
+          <AdminPageSection
+            title="신청 정보 수정"
+            description="신청자 정보와 희망 레슨 정보를 수정합니다. 상태, 메모, 클래스 연결 정보는 각 전용 섹션에서만 변경합니다."
+            contentClassName="space-y-4 pt-4"
+          >
+              {item.status === "cancelled" ? (
+                <p className={adminTypography.caption}>취소된 신청은 수정할 수 없습니다.</p>
+              ) : null}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Input value={editForm.applicantName} onChange={(event) => setEditForm((current) => ({ ...current, applicantName: event.target.value }))} placeholder="신청자명" disabled={!canAdminEditApplication || savingEdit} maxLength={50} />
+                <Input value={editForm.phone} onChange={(event) => setEditForm((current) => ({ ...current, phone: event.target.value }))} placeholder="연락처" disabled={!canAdminEditApplication || savingEdit} maxLength={30} />
+              </div>
+              <Input value={editForm.email} onChange={(event) => setEditForm((current) => ({ ...current, email: event.target.value }))} placeholder="이메일" disabled={!canAdminEditApplication || savingEdit} maxLength={100} />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Select value={editForm.desiredLessonType} onValueChange={(value) => setEditForm((current) => ({ ...current, desiredLessonType: value }))} disabled={!canAdminEditApplication || savingEdit}>
+                  <SelectTrigger><SelectValue placeholder="희망 레슨 유형" /></SelectTrigger>
+                  <SelectContent>{ACADEMY_LESSON_TYPES.map((value) => <SelectItem key={value} value={value}>{getAcademyLessonTypeLabel(value)}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={editForm.currentLevel} onValueChange={(value) => setEditForm((current) => ({ ...current, currentLevel: value }))} disabled={!canAdminEditApplication || savingEdit}>
+                  <SelectTrigger><SelectValue placeholder="현재 실력" /></SelectTrigger>
+                  <SelectContent>{ACADEMY_CURRENT_LEVELS.map((value) => <SelectItem key={value} value={value}>{getAcademyCurrentLevelLabel(value)}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {ACADEMY_PREFERRED_DAY_OPTIONS.map((day) => (
+                  <label key={day} className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm">
+                    <input type="checkbox" checked={editForm.preferredDays.includes(day)} onChange={() => toggleEditDay(day)} disabled={!canAdminEditApplication || savingEdit} />
+                    {day}
+                  </label>
+                ))}
+              </div>
+              <Input value={editForm.preferredTimeText} onChange={(event) => setEditForm((current) => ({ ...current, preferredTimeText: event.target.value }))} placeholder="희망 시간대" disabled={!canAdminEditApplication || savingEdit} maxLength={100} />
+              <Textarea value={editForm.lessonGoal} onChange={(event) => setEditForm((current) => ({ ...current, lessonGoal: event.target.value }))} placeholder="레슨 목표" disabled={!canAdminEditApplication || savingEdit} maxLength={500} />
+              <Textarea value={editForm.requestMemo} onChange={(event) => setEditForm((current) => ({ ...current, requestMemo: event.target.value }))} placeholder="요청사항" disabled={!canAdminEditApplication || savingEdit} maxLength={1000} />
+              <Button className="w-full" onClick={saveApplicationEdit} disabled={!canAdminEditApplication || savingEdit || editForm.preferredDays.length === 0}>
+                <Save className="mr-2 h-4 w-4" />
+                {savingEdit ? "저장 중..." : "신청 정보 저장"}
+              </Button>
+          </AdminPageSection>
 
           <AdminPageSection
             title={hasLinkedClass ? "클래스 변경" : "클래스 연결"}

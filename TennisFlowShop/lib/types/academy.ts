@@ -13,7 +13,27 @@ export type AcademyLessonType =
   | "onePoint"
   | "consultation";
 
+export const ACADEMY_LESSON_TYPES = [
+  "group",
+  "private",
+  "junior",
+  "adult",
+  "onePoint",
+  "consultation",
+] as const satisfies readonly AcademyLessonType[];
+
 export type AcademyCurrentLevel = "new" | "beginner" | "intermediate" | "advanced" | "unknown";
+
+export const ACADEMY_CURRENT_LEVELS = [
+  "new",
+  "beginner",
+  "intermediate",
+  "advanced",
+  "unknown",
+] as const satisfies readonly AcademyCurrentLevel[];
+
+export const ACADEMY_PREFERRED_DAY_OPTIONS = ["월", "화", "수", "목", "금", "토", "일"] as const;
+
 
 export type AcademyApplicantProfile = {
   name: string;
@@ -50,6 +70,7 @@ export type AcademyLessonApplicationHistoryItem = {
   description: string;
   actorId?: string;
   actorName?: string;
+  changedFields?: string[];
 };
 
 export type AcademyLessonApplication = {
@@ -221,6 +242,23 @@ export type AcademyCustomerApplicationDetail = {
   cancelReasonDetail?: string | null;
   createdAt: string | null;
   updatedAt: string | null;
+};
+
+export type AcademyApplicationEditableFields = {
+  desiredLessonType: AcademyLessonType;
+  currentLevel: AcademyCurrentLevel;
+  preferredDays: string[];
+  preferredTimeText?: string | null;
+  lessonGoal?: string | null;
+  requestMemo?: string | null;
+};
+
+export type AcademyCustomerApplicationUpdatePayload = AcademyApplicationEditableFields;
+
+export type AcademyAdminApplicationUpdatePayload = AcademyApplicationEditableFields & {
+  applicantName: string;
+  phone: string;
+  email?: string | null;
 };
 
 export type AcademyCustomerApplicationDetailResponse = {
