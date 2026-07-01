@@ -21,7 +21,6 @@ import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { normalizeFeatureScoresTo100 } from "@/lib/product-feature-score";
-import { getProductPriceDisplayMeta } from "@/lib/product-pricing";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
 import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -55,6 +54,7 @@ import {
   buildWishlistOptionPayload,
   getWishlistOptionState,
 } from "./ProductDetailOptionPayload.utils";
+import { buildProductDetailCartItem } from "./ProductDetailCartItem.utils";
 import ProductDetailQnaTab from "./ProductDetailQnaTab";
 import ProductDetailRelatedProductsSection from "./ProductDetailRelatedProductsSection";
 import ProductDetailReviewsTab from "./ProductDetailReviewsTab";
@@ -604,17 +604,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
       );
       return;
     }
-    const result = addItem({
-      id: product._id.toString(),
-      name: product.name,
-      price: displayPrice,
-      ...getProductPriceDisplayMeta(product),
-      quantity,
-      image: selectedColorRow?.image?.trim() || product.images?.[0] || "/placeholder.svg",
-      stock: effectiveStock,
-      selectedGauge: selectedGauge || undefined,
-      ...selectedColorPayload,
-    });
+    const result = addItem(
+      buildProductDetailCartItem({
+        product,
+        displayPrice,
+        quantity,
+        effectiveStock,
+        selectedGauge,
+        selectedColorRow,
+        selectedColorPayload,
+      }),
+    );
 
     if (!result.success) {
       showErrorToast(result.message ?? "오류");
@@ -681,17 +681,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
     }
 
     // Buy-Now 전용 상태에 현재 상품 1건만 저장
-    const buyNowItem: CartItem = {
-      id: product._id.toString(),
-      name: product.name,
-      price: displayPrice,
-      ...getProductPriceDisplayMeta(product),
+    const buyNowItem: CartItem = buildProductDetailCartItem({
+      product,
+      displayPrice,
       quantity,
-      image: selectedColorRow?.image?.trim() || product.images?.[0] || "/placeholder.svg",
-      stock: effectiveStock,
-      selectedGauge: selectedGauge || undefined,
-      ...selectedColorPayload,
-    };
+      effectiveStock,
+      selectedGauge,
+      selectedColorRow,
+      selectedColorPayload,
+    });
 
     setBuyNowItem(buyNowItem);
 
@@ -723,17 +721,15 @@ export default function ProductDetailClient({ product }: { product: any }) {
     }
 
     // Buy-Now 전용 상태에 현재 상품 1건만 저장
-    const buyNowItem: CartItem = {
-      id: product._id.toString(),
-      name: product.name,
-      price: displayPrice, // 여기서는 "자재 가격"만
-      ...getProductPriceDisplayMeta(product),
+    const buyNowItem: CartItem = buildProductDetailCartItem({
+      product,
+      displayPrice, // 여기서는 "자재 가격"만
       quantity,
-      image: selectedColorRow?.image?.trim() || product.images?.[0] || "/placeholder.svg",
-      stock: effectiveStock,
-      selectedGauge: selectedGauge || undefined,
-      ...selectedColorPayload,
-    };
+      effectiveStock,
+      selectedGauge,
+      selectedColorRow,
+      selectedColorPayload,
+    });
 
     setBuyNowItem(buyNowItem);
 
