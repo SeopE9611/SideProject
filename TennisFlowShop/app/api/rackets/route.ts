@@ -176,12 +176,20 @@ export async function GET(req: Request) {
   // 기본(기존 호환): 배열 그대로 반환
   if (!withTotal) {
     const response = NextResponse.json(items);
+    response.headers.set(
+      "Cache-Control",
+      viewer.isAdmin ? "no-store" : "public, s-maxage=30, stale-while-revalidate=60",
+    );
     perf.log({ resultCount: items.length });
     return response;
   }
 
   // 확장 응답: total 포함
   const response = NextResponse.json({ items, total });
+  response.headers.set(
+    "Cache-Control",
+    viewer.isAdmin ? "no-store" : "public, s-maxage=30, stale-while-revalidate=60",
+  );
   perf.log({ resultCount: items.length, total });
   return response;
 }

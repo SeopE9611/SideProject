@@ -86,6 +86,7 @@ export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const params = url.searchParams;
+    const viewer = await getVisibilityViewerFromCookies();
 
     // preview=1일 경우: 실시간 미리보기용 검색 (초성 포함)
     if (params.get("preview") === "1") {
@@ -100,7 +101,7 @@ export async function GET(req: NextRequest) {
         // isDeleted 플래그가 true인 문서는 제외
         if (!query) {
           return collection
-            .find(productVisibilityFilterFor(await getVisibilityViewerFromCookies()))
+            .find(productVisibilityFilterFor(viewer))
             .project(previewProjection)
             .sort({ _id: -1 })
             .limit(10)
@@ -110,7 +111,7 @@ export async function GET(req: NextRequest) {
         if (!isChosungOnly) {
           return collection
             .find({
-              ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+              ...productVisibilityFilterFor(viewer),
               name: { $regex: escapeRegExp(query), $options: "i" },
             })
             .project(previewProjection)
@@ -120,7 +121,7 @@ export async function GET(req: NextRequest) {
 
         const initialsQuery = getHangulInitials(query);
         const candidates = await collection
-          .find(productVisibilityFilterFor(await getVisibilityViewerFromCookies()))
+          .find(productVisibilityFilterFor(viewer))
           .project(previewProjection)
           .sort({ _id: -1 })
           .limit(500)
@@ -138,6 +139,10 @@ export async function GET(req: NextRequest) {
           price: product.price,
           image: product.images?.[0] ?? null,
         })),
+      );
+      response.headers.set(
+        "Cache-Control",
+        viewer.isAdmin ? "no-store" : "public, s-maxage=30, stale-while-revalidate=60",
       );
       perf.log({ preview: true, resultCount: products.length });
       return response;
@@ -168,7 +173,7 @@ export async function GET(req: NextRequest) {
     const skip = (page - 1) * limit;
 
     const filter: Filter<ProductDoc> = {
-      ...productVisibilityFilterFor(await getVisibilityViewerFromCookies()),
+      ...productVisibilityFilterFor(viewer),
     }; // Soft-Delete된 상품은 기본적으로 제외
     if (brand) filter.brand = brand;
 
@@ -316,6 +321,10 @@ export async function GET(req: NextRequest) {
       products: items,
       pagination: { page, limit, total, hasMore },
     });
+    response.headers.set(
+      "Cache-Control",
+      viewer.isAdmin ? "no-store" : "public, s-maxage=30, stale-while-revalidate=60",
+    );
     perf.log({ page, limit, total, resultCount: items.length });
     return response;
   } catch (err) {
