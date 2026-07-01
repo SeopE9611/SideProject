@@ -55,6 +55,7 @@ import {
   getWishlistOptionState,
 } from "./ProductDetailOptionPayload.utils";
 import { buildProductDetailCartItem } from "./ProductDetailCartItem.utils";
+import { getProductDetailStockLimitErrorMessage } from "./ProductDetailCheckoutValidation.utils";
 import ProductDetailQnaTab from "./ProductDetailQnaTab";
 import ProductDetailRelatedProductsSection from "./ProductDetailRelatedProductsSection";
 import ProductDetailReviewsTab from "./ProductDetailReviewsTab";
@@ -595,13 +596,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
     if (!requireGaugeSelection()) return;
     if (!validateSelectedColorForCheckout()) return;
     // 재고 검증 (기존 장바구니에 담긴 수량 + 지금 선택 수량이 stock 초과인지)
-    const wouldBe = quantity;
-    if (wouldBe > effectiveStock) {
-      showErrorToast(
-        hideGaugeStock
-          ? "선택한 게이지(굵기)의 구매 가능 수량을 초과했습니다."
-          : `재고가 부족합니다. 현재 재고: ${effectiveStock}개`,
-      );
+    const stockLimitMessage = getProductDetailStockLimitErrorMessage({
+      quantity,
+      effectiveStock,
+      hideGaugeStock,
+    });
+
+    if (stockLimitMessage) {
+      showErrorToast(stockLimitMessage);
       return;
     }
     const result = addItem(
@@ -671,12 +673,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
     if (!validateSelectedColorForCheckout()) return;
 
     // 재고 검증 (지금 선택 수량이 stock 초과인지)
-    if (quantity > effectiveStock) {
-      showErrorToast(
-        hideGaugeStock
-          ? "선택한 게이지(굵기)의 구매 가능 수량을 초과했습니다."
-          : `재고가 부족합니다. 현재 재고: ${effectiveStock}개`,
-      );
+    const stockLimitMessage = getProductDetailStockLimitErrorMessage({
+      quantity,
+      effectiveStock,
+      hideGaugeStock,
+    });
+
+    if (stockLimitMessage) {
+      showErrorToast(stockLimitMessage);
       return;
     }
 
@@ -711,12 +715,14 @@ export default function ProductDetailClient({ product }: { product: any }) {
     if (!validateSelectedColorForCheckout()) return;
 
     // 재고 검증
-    if (quantity > effectiveStock) {
-      showErrorToast(
-        hideGaugeStock
-          ? "선택한 게이지(굵기)의 구매 가능 수량을 초과했습니다."
-          : `재고가 부족합니다. 현재 재고: ${effectiveStock}개`,
-      );
+    const stockLimitMessage = getProductDetailStockLimitErrorMessage({
+      quantity,
+      effectiveStock,
+      hideGaugeStock,
+    });
+
+    if (stockLimitMessage) {
+      showErrorToast(stockLimitMessage);
       return;
     }
 
