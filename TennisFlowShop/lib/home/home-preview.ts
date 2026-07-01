@@ -1,6 +1,7 @@
 import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
 import "server-only";
 
+import { unstable_cache } from "next/cache";
 import { ObjectId, type Filter, type Sort } from "mongodb";
 
 import { getBoardList } from "@/lib/boards.queries";
@@ -78,6 +79,9 @@ type ProductDoc = {
   inventory?: HomePreviewProduct["inventory"];
   isDeleted?: boolean;
 };
+
+const HOME_PREVIEW_CACHE_TAG = "home-preview";
+const HOME_PREVIEW_REVALIDATE_SECONDS = 60;
 
 type RacketDoc = {
   _id: ObjectId;
@@ -271,4 +275,7 @@ async function loadHomePreviewData(): Promise<HomePreviewData | null> {
   return { products, rackets, notices };
 }
 
-export const getHomePreviewData = loadHomePreviewData;
+export const getHomePreviewData = unstable_cache(loadHomePreviewData, ["home-preview-public-v1"], {
+  revalidate: HOME_PREVIEW_REVALIDATE_SECONDS,
+  tags: [HOME_PREVIEW_CACHE_TAG],
+});
