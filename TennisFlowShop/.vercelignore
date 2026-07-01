@@ -1,10 +1,6 @@
 # 민감한 환경변수 파일
-.env
-.env.local
-.env.*.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env*
+!.env.example
 
 # 저장소/로컬 설정
 .git
