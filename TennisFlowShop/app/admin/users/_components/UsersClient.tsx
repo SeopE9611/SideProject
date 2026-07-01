@@ -62,6 +62,7 @@ import {
 } from "@/components/ui/table";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { adminFetcher, adminMutator, getAdminErrorMessage } from "@/lib/admin/adminFetcher";
+import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
 import { useAdminListQueryState } from "@/lib/admin/useAdminListQueryState";
 import { showErrorToast, showInfoToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -159,7 +160,7 @@ const AdminConfirmDialog = dynamic(() => import("@/components/admin/AdminConfirm
 type UserListQueryState = {
   page: number;
   searchQuery: string;
-  roleFilter: "all" | "user" | "admin";
+  roleFilter: "all" | "user" | "admin" | "superadmin";
   statusFilter: "all" | "active" | "deleted" | "suspended";
   loginFilter: "all" | "nologin" | "recent30" | "recent90";
   signupFilter: "all" | "local" | "kakao" | "naver";
@@ -201,7 +202,10 @@ function parseUserListQueryState(
       Number.parseInt(params.get("page") || String(defaults.page), 10) || defaults.page,
     ),
     searchQuery: params.get("q") || defaults.searchQuery,
-    roleFilter: role === "all" || role === "user" || role === "admin" ? role : defaults.roleFilter,
+    roleFilter:
+      role === "all" || role === "user" || role === "admin" || role === "superadmin"
+        ? role
+        : defaults.roleFilter,
     statusFilter:
       status === "all" || status === "active" || status === "deleted" || status === "suspended"
         ? status
@@ -318,7 +322,7 @@ export default function UsersClient() {
     return {
       active: counters?.active ?? safeRows.filter((u) => !u.isDeleted && !u.isSuspended).length,
       deleted: counters?.deleted ?? safeRows.filter((u) => u.isDeleted).length,
-      admins: counters?.admins ?? safeRows.filter((u) => u.role === "admin").length,
+      admins: counters?.admins ?? safeRows.filter((u) => isAdminRole(u.role)).length,
       suspended:
         counters?.suspended ?? safeRows.filter((u) => u.isSuspended && !u.isDeleted).length,
       total: counters?.total ?? (typeof total === "number" ? total : 0),
@@ -401,7 +405,7 @@ export default function UsersClient() {
   const applyUserQuickFilter = (
     next: Partial<{
       searchQuery: string;
-      roleFilter: "all" | "user" | "admin";
+      roleFilter: "all" | "user" | "admin" | "superadmin";
       statusFilter: "all" | "active" | "deleted" | "suspended";
       loginFilter: "all" | "nologin" | "recent30" | "recent90";
       signupFilter: "all" | "local" | "kakao" | "naver";
@@ -806,7 +810,8 @@ export default function UsersClient() {
               <Select
                 value={roleFilter}
                 onValueChange={(v) => {
-                  if (v === "all" || v === "user" || v === "admin") patchState({ roleFilter: v });
+                  if (v === "all" || v === "user" || v === "admin" || v === "superadmin")
+                    patchState({ roleFilter: v });
                 }}
               >
                 <SelectTrigger className="w-[110px]">
@@ -816,6 +821,7 @@ export default function UsersClient() {
                   <SelectItem value="all">전체</SelectItem>
                   <SelectItem value="user">일반</SelectItem>
                   <SelectItem value="admin">관리자</SelectItem>
+                  <SelectItem value="superadmin">최고 관리자</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -1210,7 +1216,7 @@ export default function UsersClient() {
                                 "shrink-0 whitespace-nowrap",
                               )}
                             >
-                              {u.role === "admin" ? "관리자" : "일반"}
+                              {getUserRoleLabel(u.role)}
                             </Badge>
                           </TableCell>
 

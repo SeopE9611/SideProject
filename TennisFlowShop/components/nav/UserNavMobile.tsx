@@ -6,6 +6,7 @@ import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { useAuthStore } from "@/app/store/authStore";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
 import { Badge } from "@/components/ui/badge";
+import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
 
 interface UserNavMobileProps {
   setOpen: (open: boolean) => void;
@@ -70,7 +71,9 @@ export function UserNavMobile({ setOpen, unreadCount }: UserNavMobileProps) {
     <>
       <p className="text-ui-body-sm text-center">
         {displayName}{" "}
-        {user.role === "admin" && <span className="text-muted-foreground">(관리자)</span>} 님
+        {isAdminRole(user.role) && (
+          <span className="text-muted-foreground">({getUserRoleLabel(user.role)})</span>
+        )} 님
       </p>
       {(hasKakao || hasNaver) && (
         <div className="flex flex-col items-center gap-1">

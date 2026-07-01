@@ -1,4 +1,4 @@
-export type UserRoleFilter = "all" | "user" | "admin";
+export type UserRoleFilter = "all" | "user" | "admin" | "superadmin";
 export type UserStatusFilter = "all" | "active" | "deleted" | "suspended";
 export type UserSortFilter = "created_desc" | "created_asc" | "name_asc" | "name_desc";
 export type UserSignupFilter = "all" | "local" | "kakao" | "naver";
@@ -24,7 +24,7 @@ export interface AdminUserListItemDto {
   addressDetail: string;
   postalCode: string;
   pointsBalance: number;
-  role: "user" | "admin";
+  role: "user" | "admin" | "superadmin";
   isDeleted: boolean;
   isSuspended: boolean;
   createdAt: string | null;
@@ -55,7 +55,7 @@ export interface AdminUserDetailDto {
   address?: string;
   addressDetail?: string;
   postalCode?: string;
-  role: "user" | "admin";
+  role: "user" | "admin" | "superadmin";
   isDeleted: boolean;
   isSuspended?: boolean;
   createdAt?: string;

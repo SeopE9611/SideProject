@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
+import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { LayoutDashboard, LogOut, MessageSquare, Settings, UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -51,7 +52,7 @@ export function UserNav() {
   }
 
   const normalizedRole = String(user.role ?? "").toLowerCase();
-  const isAdmin = normalizedRole === "admin";
+  const isAdmin = isAdminRole(normalizedRole);
   const displayName = user.name?.trim() || "회원";
   const socialProviders = user.socialProviders ?? [];
   const hasKakao = socialProviders.includes("kakao");
@@ -74,7 +75,7 @@ export function UserNav() {
                 variant="info"
                 className="shrink-0 whitespace-nowrap text-ui-micro font-medium px-1.5 py-[2px]"
               >
-                관리자
+                {getUserRoleLabel(normalizedRole)}
               </Badge>
             )}
           </div>

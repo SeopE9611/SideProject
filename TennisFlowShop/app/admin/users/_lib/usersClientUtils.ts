@@ -25,8 +25,9 @@ export const th =
   "sticky top-0 z-10 whitespace-nowrap px-3.5 py-2 bg-card shadow-sm border-b border-border text-[12px] font-semibold text-foreground text-center";
 export const td = "px-3.5 py-2 align-middle text-center text-[13px] leading-tight tabular-nums";
 
-export const roleColors: Record<"admin" | "user", string> = {
+export const roleColors: Record<"admin" | "superadmin" | "user", string> = {
   admin: "bg-muted text-foreground border-border",
+  superadmin: "bg-warning/10 text-warning border-warning/30",
   user: "bg-background text-foreground border-border",
 };
 

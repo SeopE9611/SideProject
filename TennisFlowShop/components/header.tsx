@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
+import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { COMMUNITY_BOARDS_ENABLED } from "@/lib/community/community-board-flags";
 import { useUnreadMessageCount } from "@/lib/hooks/useUnreadMessageCount";
@@ -247,7 +248,7 @@ const Header = () => {
 
   const { user, loading } = useCurrentUser();
   const displayName = user?.name?.trim() || "회원";
-  const isAdmin = user?.role === "admin";
+  const isAdmin = isAdminRole(user?.role);
   const { count: unreadCount, status: unreadStatus } = useUnreadMessageCount(!loading && !!user);
   const resolvedUnreadCount = unreadStatus === "ready" ? (unreadCount ?? 0) : null;
 
@@ -563,7 +564,7 @@ const Header = () => {
                             variant="success"
                             className="h-4 shrink-0 whitespace-nowrap border border-border/60 px-1.5 py-0 text-ui-micro leading-none"
                           >
-                            관리자
+                            {getUserRoleLabel(user?.role)}
                           </Badge>
                         )}
                       </div>

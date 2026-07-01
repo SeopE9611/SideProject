@@ -46,7 +46,7 @@ export async function GET(req: Request) {
     max: 50,
   });
   const q = (url.searchParams.get("q") || "").trim();
-  const role = url.searchParams.get("role"); // 'user' | 'admin'
+  const role = url.searchParams.get("role"); // 'user' | 'admin' | 'superadmin'
   const status = url.searchParams.get("status") || "all"; // 'all' | 'active' | 'deleted' | 'suspended'
   const sortKey = url.searchParams.get("sort") || "created_desc"; // 'created_desc' | 'created_asc' | 'name_asc' | 'name_desc'
   const signup = (url.searchParams.get("signup") || "all") as UserSignupFilter;
@@ -58,7 +58,7 @@ export async function GET(req: Request) {
     page,
     limit,
     q,
-    role: role === "user" || role === "admin" ? role : "all",
+    role: role === "user" || role === "admin" || role === "superadmin" ? role : "all",
     status: status === "active" || status === "deleted" || status === "suspended" ? status : "all",
     sort:
       sortKey === "created_asc" || sortKey === "name_asc" || sortKey === "name_desc"
@@ -86,7 +86,7 @@ export async function GET(req: Request) {
   }
 
   // 역할 필터
-  if (roleFilter === "user" || roleFilter === "admin") {
+  if (roleFilter === "user" || roleFilter === "admin" || roleFilter === "superadmin") {
     and.push({ role: roleFilter });
   }
 
@@ -193,7 +193,7 @@ export async function GET(req: Request) {
       isSuspended: { $ne: true },
     }),
     col.countDocuments({ isDeleted: true }),
-    col.countDocuments({ role: "admin" }),
+    col.countDocuments({ role: { $in: ["admin", "superadmin"] } }),
     col.countDocuments({ isDeleted: { $ne: true }, isSuspended: true }),
   ]);
 
@@ -219,7 +219,7 @@ export async function GET(req: Request) {
           typeof doc.pointsBalance === "number" && Number.isFinite(doc.pointsBalance)
             ? doc.pointsBalance
             : 0,
-        role: doc.role === "admin" ? "admin" : "user",
+        role: doc.role === "admin" || doc.role === "superadmin" ? doc.role : "user",
         isDeleted: Boolean(doc.isDeleted),
         isSuspended: Boolean(doc.isSuspended),
         createdAt: toIso(doc.createdAt),

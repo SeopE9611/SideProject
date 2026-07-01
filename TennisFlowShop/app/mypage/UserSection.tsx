@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { getSocialProviderBadgeSpec } from "@/lib/badge-style";
+import { getUserRoleLabel, isAdminRole } from "@/lib/admin/roles";
 import { Mail, ShieldCheck, User } from "lucide-react";
 
 type Props = {
@@ -18,7 +19,7 @@ export default function UserSection({ user }: Props) {
   if (!user) return null;
 
   const normalizedRole = String(user.role ?? "").toLowerCase();
-  const isAdmin = normalizedRole === "admin";
+  const isAdmin = isAdminRole(normalizedRole);
   const socialProviders = user.oauthProviders ?? [];
   const hasKakao = socialProviders.includes("kakao");
   const hasNaver = socialProviders.includes("naver");
@@ -41,7 +42,7 @@ export default function UserSection({ user }: Props) {
               className="h-6 gap-1 whitespace-nowrap px-2 text-ui-label font-medium"
             >
               <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-              {isAdmin ? "관리자 계정" : "사용자 회원"}
+              {isAdmin ? `${getUserRoleLabel(normalizedRole)} 계정` : "사용자 회원"}
             </Badge>
 
             {hasKakao && (
