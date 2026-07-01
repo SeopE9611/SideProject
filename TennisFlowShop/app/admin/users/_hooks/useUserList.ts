@@ -1,13 +1,13 @@
 "use client";
-import useSWR from "swr";
 import { buildQueryString } from "@/lib/admin/urlQuerySync";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import useSWR from "swr";
 
 export type UserListFilters = {
   page: number;
   limit: number;
   searchQuery: string;
-  roleFilter: "all" | "user" | "admin";
+  roleFilter: "all" | "user" | "admin" | "superadmin";
   statusFilter: "all" | "active" | "deleted" | "suspended";
   loginFilter: "all" | "nologin" | "recent30" | "recent90";
   signupFilter: "all" | "local" | "kakao" | "naver";
@@ -22,7 +22,7 @@ export type UserListItem = {
   address?: string;
   addressDetail?: string;
   postalCode?: string;
-  role: "user" | "admin";
+  role: "user" | "admin" | "superadmin";
   isDeleted: boolean;
   createdAt?: string;
   lastLoginAt?: string;
