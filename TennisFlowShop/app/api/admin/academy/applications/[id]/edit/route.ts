@@ -1,17 +1,38 @@
+import { ObjectId, type Document, type Filter } from "mongodb";
 import { NextResponse } from "next/server";
-import { ObjectId, type Document } from "mongodb";
 
+import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
 import {
   ACADEMY_CURRENT_LEVELS,
   ACADEMY_LESSON_TYPES,
   ACADEMY_PREFERRED_DAY_OPTIONS,
+  type AcademyAdminApplicationUpdatePayload,
   type AcademyCurrentLevel,
+  type AcademyLessonApplication,
+  type AcademyLessonApplicationHistoryItem,
   type AcademyLessonType,
 } from "@/lib/types/academy";
-import { requireAdmin } from "@/lib/admin.guard";
 
 const COLLECTION_NAME = "academy_lesson_applications";
+
+type AcademyLessonApplicationDoc = Omit<
+  AcademyLessonApplication,
+  "_id" | "userId" | "classId" | "createdAt" | "updatedAt" | "history"
+> & {
+  _id?: ObjectId;
+  userId: string | ObjectId;
+  classId?: string | ObjectId | null;
+  history?: AcademyLessonApplicationHistoryItem[];
+  adminDeletedAt?: string | Date;
+  adminDeletedBy?: string;
+  customerDeletedAt?: string | Date;
+  customerDeletedBy?: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
+
+type AdminEditableFieldKey = keyof AcademyAdminApplicationUpdatePayload;
 
 const LESSON_TYPES = new Set<AcademyLessonType>(ACADEMY_LESSON_TYPES);
 const CURRENT_LEVELS = new Set<AcademyCurrentLevel>(ACADEMY_CURRENT_LEVELS);
@@ -91,6 +112,9 @@ function serializeHistory(history: unknown) {
       description: typeof record.description === "string" ? record.description : "",
       actorId: record.actorId ? String(serializeValue(record.actorId)) : undefined,
       actorName: typeof record.actorName === "string" ? record.actorName : undefined,
+      changedFields: Array.isArray(record.changedFields)
+        ? record.changedFields.filter((field): field is string => typeof field === "string")
+        : undefined,
     };
   });
 }
@@ -153,10 +177,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (!applicantName) return errorResponse("신청자명을 입력해 주세요.");
   if (!phone) return errorResponse("연락처를 입력해 주세요.");
   if (email === undefined) return errorResponse("이메일 형식을 확인해 주세요.");
-  if (typeof desiredLessonType !== "string" || !LESSON_TYPES.has(desiredLessonType as AcademyLessonType)) {
+  if (
+    typeof desiredLessonType !== "string" ||
+    !LESSON_TYPES.has(desiredLessonType as AcademyLessonType)
+  ) {
     return errorResponse("희망 레슨 유형을 선택해 주세요.");
   }
-  if (typeof currentLevel !== "string" || !CURRENT_LEVELS.has(currentLevel as AcademyCurrentLevel)) {
+  if (
+    typeof currentLevel !== "string" ||
+    !CURRENT_LEVELS.has(currentLevel as AcademyCurrentLevel)
+  ) {
     return errorResponse("현재 실력을 선택해 주세요.");
   }
   if (!Array.isArray(payload.preferredDays)) return errorResponse("희망 요일을 선택해 주세요.");
@@ -170,20 +200,23 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   );
   if (preferredDays.length === 0) return errorResponse("희망 요일을 1개 이상 선택해 주세요.");
 
-  const updateFields = {
+  const updateFields: AcademyAdminApplicationUpdatePayload = {
     applicantName,
     phone,
     email,
-    desiredLessonType,
-    currentLevel,
+    desiredLessonType: desiredLessonType as AcademyLessonType,
+    currentLevel: currentLevel as AcademyCurrentLevel,
     preferredDays,
     preferredTimeText: optionalTrimString(payload.preferredTimeText, 100),
     lessonGoal: optionalTrimString(payload.lessonGoal, 500),
     requestMemo: optionalTrimString(payload.requestMemo, 1000),
   };
 
-  const collection = guard.db.collection(COLLECTION_NAME);
-  const filter = { _id: new ObjectId(id), adminDeletedAt: { $exists: false } };
+  const collection = guard.db.collection<AcademyLessonApplicationDoc>(COLLECTION_NAME);
+  const filter: Filter<AcademyLessonApplicationDoc> = {
+    _id: new ObjectId(id),
+    adminDeletedAt: { $exists: false },
+  };
   const item = await collection.findOne(filter);
   if (!item) return errorResponse("신청 내역을 찾을 수 없습니다.", 404);
   if (item.status === "cancelled") {
@@ -192,30 +225,34 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     });
   }
 
-  const changedFields = Object.entries(updateFields)
-    .filter(([key, value]) =>
-      Array.isArray(value) ? !arraysEqual(toStringArray(item[key]), value) : (item[key] ?? null) !== value,
-    )
-    .map(([key]) => key);
+  const changedFields = (Object.keys(updateFields) as AdminEditableFieldKey[]).filter((key) => {
+    const value = updateFields[key];
+    const currentValue = item[key];
+
+    return Array.isArray(value)
+      ? !arraysEqual(toStringArray(currentValue), value)
+      : (currentValue ?? null) !== value;
+  });
 
   if (changedFields.length === 0) {
     return NextResponse.json({ success: true, item: serializeApplication(item) });
   }
 
   const now = new Date().toISOString();
+  const historyEntry: AcademyLessonApplicationHistoryItem = {
+    status: item.status,
+    date: now,
+    description: "관리자가 아카데미 신청 정보를 수정했습니다.",
+    actorId: guard.admin._id.toHexString(),
+    actorName: guard.admin.name ?? guard.admin.email ?? "관리자",
+    changedFields,
+  };
   const result = await collection.findOneAndUpdate(
     filter,
     {
       $set: { ...updateFields, updatedAt: now },
       $push: {
-        history: {
-          status: item.status,
-          date: now,
-          description: "관리자가 아카데미 신청 정보를 수정했습니다.",
-          actorId: guard.admin._id.toHexString(),
-          actorName: guard.admin.name ?? guard.admin.email ?? "관리자",
-          changedFields,
-        },
+        history: historyEntry,
       },
     },
     { returnDocument: "after" },

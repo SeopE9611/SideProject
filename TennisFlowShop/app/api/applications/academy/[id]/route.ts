@@ -1,8 +1,8 @@
+import { ObjectId, type Document, type Filter } from "mongodb";
 import { NextResponse } from "next/server";
-import { ObjectId, type Document } from "mongodb";
 
-import clientPromise from "@/lib/mongodb";
 import { getCurrentUserId } from "@/lib/hooks/get-current-user";
+import clientPromise from "@/lib/mongodb";
 import {
   ACADEMY_CURRENT_LEVELS,
   ACADEMY_LESSON_TYPES,
@@ -11,15 +11,39 @@ import {
   getAcademyCurrentLevelLabel,
   getAcademyLessonTypeLabel,
   isAcademyApplicationStatus,
+  type AcademyApplicationEditableFields,
   type AcademyClassSnapshot,
   type AcademyCurrentLevel,
+  type AcademyLessonApplication,
+  type AcademyLessonApplicationHistoryItem,
   type AcademyLessonApplicationStatus,
   type AcademyLessonType,
 } from "@/lib/types/academy";
 
 const COLLECTION_NAME = "academy_lesson_applications";
 
-const CUSTOMER_EDITABLE_STATUSES = new Set(["submitted", "reviewing"]);
+type AcademyLessonApplicationDoc = Omit<
+  AcademyLessonApplication,
+  "_id" | "userId" | "classId" | "createdAt" | "updatedAt" | "history"
+> & {
+  _id?: ObjectId;
+  userId: string | ObjectId;
+  classId?: string | ObjectId | null;
+  history?: AcademyLessonApplicationHistoryItem[];
+  adminDeletedAt?: string | Date;
+  adminDeletedBy?: string;
+  customerDeletedAt?: string | Date;
+  customerDeletedBy?: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
+
+type CustomerEditableFieldKey = keyof AcademyApplicationEditableFields;
+
+const CUSTOMER_EDITABLE_STATUSES = new Set<AcademyLessonApplicationStatus>([
+  "submitted",
+  "reviewing",
+]);
 const LESSON_TYPES = new Set<AcademyLessonType>(ACADEMY_LESSON_TYPES);
 const CURRENT_LEVELS = new Set<AcademyCurrentLevel>(ACADEMY_CURRENT_LEVELS);
 const VALID_DAYS = new Set<string>(ACADEMY_PREFERRED_DAY_OPTIONS);
@@ -37,7 +61,6 @@ function arraysEqual(a: string[], b: string[]) {
 function errorResponse(message: string, status = 400, extra?: Record<string, unknown>) {
   return NextResponse.json({ success: false, message, ...extra }, { status });
 }
-
 
 function serializeObjectId(value: unknown): string | null {
   if (!value) return null;
@@ -219,10 +242,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const desiredLessonType = payload.desiredLessonType;
   const currentLevel = payload.currentLevel;
-  if (typeof desiredLessonType !== "string" || !LESSON_TYPES.has(desiredLessonType as AcademyLessonType)) {
+  if (
+    typeof desiredLessonType !== "string" ||
+    !LESSON_TYPES.has(desiredLessonType as AcademyLessonType)
+  ) {
     return errorResponse("희망 레슨 유형을 선택해 주세요.");
   }
-  if (typeof currentLevel !== "string" || !CURRENT_LEVELS.has(currentLevel as AcademyCurrentLevel)) {
+  if (
+    typeof currentLevel !== "string" ||
+    !CURRENT_LEVELS.has(currentLevel as AcademyCurrentLevel)
+  ) {
     return errorResponse("현재 실력을 선택해 주세요.");
   }
   if (!Array.isArray(payload.preferredDays)) {
@@ -240,9 +269,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return errorResponse("희망 요일을 1개 이상 선택해 주세요.");
   }
 
-  const updateFields = {
-    desiredLessonType,
-    currentLevel,
+  const updateFields: AcademyApplicationEditableFields = {
+    desiredLessonType: desiredLessonType as AcademyLessonType,
+    currentLevel: currentLevel as AcademyCurrentLevel,
     preferredDays,
     preferredTimeText: optionalTrimString(payload.preferredTimeText, 100),
     lessonGoal: optionalTrimString(payload.lessonGoal, 500),
@@ -252,8 +281,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const userObjectId = new ObjectId(userId);
   const client = await clientPromise;
   const db = client.db();
-  const collection = db.collection(COLLECTION_NAME);
-  const filter = {
+  const collection = db.collection<AcademyLessonApplicationDoc>(COLLECTION_NAME);
+  const filter: Filter<AcademyLessonApplicationDoc> = {
     _id: new ObjectId(id),
     userId: { $in: [userObjectId, userId] },
     adminDeletedAt: { $exists: false },
@@ -269,30 +298,34 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     });
   }
 
-  const changedFields = Object.entries(updateFields)
-    .filter(([key, value]) =>
-      Array.isArray(value) ? !arraysEqual(toStringArray(item[key]), value) : (item[key] ?? null) !== value,
-    )
-    .map(([key]) => key);
+  const changedFields = (Object.keys(updateFields) as CustomerEditableFieldKey[]).filter((key) => {
+    const value = updateFields[key];
+    const currentValue = item[key];
+
+    return Array.isArray(value)
+      ? !arraysEqual(toStringArray(currentValue), value)
+      : (currentValue ?? null) !== value;
+  });
 
   if (changedFields.length === 0) {
     return NextResponse.json({ success: true, item: serializeApplication(item) });
   }
 
   const now = new Date().toISOString();
+  const historyEntry: AcademyLessonApplicationHistoryItem = {
+    status: item.status,
+    date: now,
+    description: "고객이 아카데미 신청 정보를 수정했습니다.",
+    actorId: userId,
+    actorName: "고객",
+    changedFields,
+  };
   const result = await collection.findOneAndUpdate(
     filter,
     {
       $set: { ...updateFields, updatedAt: now },
       $push: {
-        history: {
-          status: item.status,
-          date: now,
-          description: "고객이 아카데미 신청 정보를 수정했습니다.",
-          actorId: userId,
-          actorName: "고객",
-          changedFields,
-        },
+        history: historyEntry,
       },
     },
     { returnDocument: "after" },
@@ -322,8 +355,8 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   const userObjectId = new ObjectId(userId);
   const client = await clientPromise;
   const db = client.db();
-  const collection = db.collection(COLLECTION_NAME);
-  const filter = {
+  const collection = db.collection<AcademyLessonApplicationDoc>(COLLECTION_NAME);
+  const filter: Filter<AcademyLessonApplicationDoc> = {
     _id: new ObjectId(id),
     userId: { $in: [userObjectId, userId] },
     adminDeletedAt: { $exists: false },
