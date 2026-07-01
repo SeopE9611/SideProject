@@ -68,12 +68,8 @@ import ProductDetailQnaTab from "./ProductDetailQnaTab";
 import ProductDetailRelatedProductsSection from "./ProductDetailRelatedProductsSection";
 import ProductDetailReviewsTab from "./ProductDetailReviewsTab";
 import ProductDetailSpecificationsTab from "./ProductDetailSpecificationsTab";
-import {
-  buildProductReviewCta,
-  isAdminUser,
-  isMineReview,
-  mergeProductDetailReviews,
-} from "./ProductDetailReviewData.utils";
+import { isAdminUser } from "./ProductDetailReviewData.utils";
+import { useProductDetailReviews } from "./useProductDetailReviews";
 import {
   getColorLabel,
   getGuestOrderModeClient,
@@ -503,16 +499,24 @@ export default function ProductDetailClient({ product }: { product: any }) {
   // 로그인 정보 로드가 끝난 후 계산
   const isAdmin = isAdminUser(user);
 
-  // 화면에 보이는 개수만큼만 가져와 병합(과한 트래픽 방지)
-  const reviewsCount = reviewsLen || 10;
-
-  const { data: adminReviews, mutate: mutateAdminReviews } = useSWR(
-    activeTab === "reviews" && isAdmin
-      ? `/api/reviews/admin?productId=${product._id}&limit=${reviewsCount}`
-      : null,
+  const {
+    mergedReviews,
+    productReviewHref,
+    productReviewCtaLabel,
+    productReviewHelper,
+    canWriteFromProductReviewTab,
+    mutateMyReview,
+    mutateAdminReviews,
+    isMine,
+  } = useProductDetailReviews({
+    activeTab,
+    productId: String(product._id),
+    baseReviews: product.reviews,
+    reviewsLen,
+    user,
+    isAdmin,
     fetcher,
-    { revalidateOnFocus: false },
-  );
+  });
 
   const { has, findItem, updateOptions, toggle } = useWishlist();
 
@@ -550,53 +554,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
         // console.log('로딩 완료');
       });
   }, [activeTab, hasResolvedReviewUser]);
-
-  // 로그인한 경우에만 내 리뷰 원문을 추가 조회 (비공개라도 원문 반환)
-  const { data: myReview, mutate: mutateMyReview } = useSWR(
-    activeTab === "reviews" && user ? `/api/reviews/self?productId=${product._id}` : null,
-    fetcher,
-    { revalidateOnFocus: false },
-  );
-
-  const { data: reviewEligibility } = useSWR(
-    activeTab === "reviews" && user ? `/api/reviews/eligibility?productId=${product._id}` : null,
-    fetcher,
-    { revalidateOnFocus: false },
-  );
-
-  const { data: linkedReviewData } = useSWR(
-    activeTab === "reviews" ? `/api/reviews?type=all&productId=${product._id}&limit=20` : null,
-    fetcher,
-    { revalidateOnFocus: false },
-  );
-
-  const {
-    productReviewHref,
-    productReviewCtaLabel,
-    productReviewHelper,
-    canWriteFromProductReviewTab,
-  } = buildProductReviewCta({
-    productId: String(product._id),
-    reviewEligibility,
-  });
-
-  // 내 리뷰 여부 판별(merged에서 ownedByMe 세팅 + id 비교)
-  const isMine = (rv: any) => isMineReview(rv, myReview);
-
-  // 서버가 내려준 product.reviews는 숨김 리뷰를 마스킹
-  // myReview가 있으면 동일 _id 항목을 원문으로 덮어쓰기 + 마스킹 해제
-  // isAdmin이면 adminReviews로 표시 범위 내 항목을 원문으로 덮어쓰기 + 마스킹 해제
-  const mergedReviews = useMemo(
-    () =>
-      mergeProductDetailReviews({
-        baseReviews: product.reviews,
-        myReview,
-        isAdmin,
-        adminReviews,
-        linkedReviewData,
-      }),
-    [product.reviews, myReview, isAdmin, adminReviews, linkedReviewData],
-  );
 
   // 인라인 수정 다이얼로그 상태/핸들러
   const [editOpen, setEditOpen] = useState(false);
