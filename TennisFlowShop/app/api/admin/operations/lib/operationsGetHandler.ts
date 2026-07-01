@@ -1574,11 +1574,17 @@ export async function handleAdminOperationsGet(req: Request) {
       getString(o.paymentStatus) ?? getString(o?.paymentInfo?.status),
     );
     const cancel = normalizeCancelRequest(o);
+    const paymentInfo = asDoc(o.paymentInfo);
+    const paymentProvider = getString(paymentInfo?.provider) ?? null;
+    const paymentTid = getString(paymentInfo?.tid) ?? null;
+    const niceSync = asDoc(paymentInfo?.niceSync);
     const needsCancelFinalization = needsOrderCancelFinalization({
       status: statusLabel,
       paymentStatus: paymentLabel,
-      paymentInfo: asDoc(o.paymentInfo) as any,
+      paymentInfo: paymentInfo as any,
     });
+    const canSyncNicePayment =
+      paymentProvider === "nicepay" && Boolean(paymentTid) && !isOrderTerminalStatus(statusLabel);
     return {
       id,
       kind: "order",
@@ -1588,6 +1594,20 @@ export async function handleAdminOperationsGet(req: Request) {
       statusLabel,
       statusDisplayLabel,
       paymentLabel,
+      paymentProvider,
+      paymentTid,
+      paymentInfo: {
+        provider: paymentProvider,
+        tid: paymentTid,
+        status: getString(paymentInfo?.status) ?? null,
+        niceSync: niceSync
+          ? {
+              pgStatus: getString(niceSync.pgStatus) ?? null,
+              lastSyncedAt: toISO(niceSync.lastSyncedAt),
+            }
+          : null,
+      },
+      canSyncNicePayment,
       amount: Number(o.totalPrice ?? 0),
       shippingMethod,
       flow: orderFlowByHasRacket(orderHasRacket.get(id) ?? false, isIntegrated),

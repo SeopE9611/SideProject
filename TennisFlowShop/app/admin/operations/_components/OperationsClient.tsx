@@ -6,8 +6,10 @@ import {
   ChevronRight,
   ClipboardCheck,
   Copy,
+  CreditCard,
   Inbox,
   Link2,
+  RefreshCw,
   Search,
   Siren,
 } from "lucide-react";
@@ -64,6 +66,7 @@ import {
 } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { shortenId } from "@/lib/shorten";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { adminRichTooltipClass } from "@/lib/tooltip-style";
 import { cn } from "@/lib/utils";
 import type {
@@ -731,6 +734,8 @@ export default function OperationsClient() {
   const [displayDensity, setDisplayDensity] = useState<"default" | "compact">("default");
   const [activeQuickView, setActiveQuickView] = useState<OperationsQuickView>("all");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [isRefreshingList, setIsRefreshingList] = useState(false);
+  const [syncingNiceOrderId, setSyncingNiceOrderId] = useState<string | null>(null);
 
   const replaceSyncedOperationsUrl = useCallback(
     (url: string) => {
@@ -832,7 +837,7 @@ export default function OperationsClient() {
   });
   const key = `/api/admin/operations?${queryString}`;
   const navigationSummaryKey = "/api/admin/navigation-summary";
-  const { cache } = useSWRConfig();
+  const { cache, mutate: mutateGlobal } = useSWRConfig();
   const cachedNavigationSummary = cache.get(navigationSummaryKey)?.data as
     | NavigationSummaryResponse
     | undefined;
@@ -934,6 +939,38 @@ export default function OperationsClient() {
     });
   }, [activeQuickView, groupsToRender]);
   const shouldShowEmptyState = hasResolvedGroups && quickViewFilteredGroups.length === 0;
+
+  async function handleRefreshList() {
+    setIsRefreshingList(true);
+    try {
+      await mutate();
+      showSuccessToast("운영업무 목록을 새로고침했습니다.");
+    } catch (error: any) {
+      showErrorToast(error?.message || "운영업무 목록 새로고침에 실패했습니다.");
+    } finally {
+      setIsRefreshingList(false);
+    }
+  }
+
+  async function handleNicePaymentSync(orderId: string) {
+    if (syncingNiceOrderId) return;
+    setSyncingNiceOrderId(orderId);
+    try {
+      const res = await fetch(`/api/payments/nice/sync/${orderId}`, { method: "POST" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json?.success === false) {
+        throw new Error(json?.error || "PG 상태 확인에 실패했습니다.");
+      }
+      await mutate();
+      await mutateGlobal((cacheKey) => typeof cacheKey === "string" && cacheKey.startsWith("/api/orders"));
+      showSuccessToast("PG 결제 상태를 확인했습니다.");
+    } catch (error: any) {
+      showErrorToast(`PG 상태 확인 실패: ${error?.message || "알 수 없는 오류"}`);
+    } finally {
+      setSyncingNiceOrderId(null);
+    }
+  }
+
   const shouldShowGlobalError = Boolean(error) && !Array.isArray(data?.groups);
 
   const todayTodoCount: AdminOperationsSummary | null =
@@ -1207,15 +1244,30 @@ export default function OperationsClient() {
           scope="운영 통합 센터"
           helperText="긴급 업무부터 확인하고 바로 처리할 수 있습니다."
           actions={
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs"
-              onClick={() => setShowActionsGuide((prev) => !prev)}
-            >
-              {showActionsGuide ? "도움말 닫기" : "도움말 보기"}
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 px-2.5 text-xs"
+                disabled={isRefreshingList}
+                onClick={() => {
+                  void handleRefreshList();
+                }}
+              >
+                <RefreshCw className={cn("mr-1.5 h-3.5 w-3.5", isRefreshingList && "animate-spin")} />
+                {isRefreshingList ? "새로고침 중..." : "목록 새로고침"}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={() => setShowActionsGuide((prev) => !prev)}
+              >
+                {showActionsGuide ? "도움말 닫기" : "도움말 보기"}
+              </Button>
+            </div>
           }
         />
 
@@ -2103,6 +2155,25 @@ export default function OperationsClient() {
                                   <p className="line-clamp-2 leading-snug" title={scenarioLabel}>
                                     {scenarioLabel}
                                   </p>
+                                  {g.anchor.canSyncNicePayment && (
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="ghost"
+                                      className={cn(
+                                        "h-8 min-w-[96px] justify-center px-2.5 text-muted-foreground hover:text-foreground",
+                                        adminTypography.actionLabel,
+                                      )}
+                                      title="NICEPAY의 현재 결제 상태를 다시 조회합니다."
+                                      disabled={syncingNiceOrderId === g.anchor.id}
+                                      onClick={() => {
+                                        void handleNicePaymentSync(g.anchor.id);
+                                      }}
+                                    >
+                                      <CreditCard className="mr-1.5 h-3.5 w-3.5" />
+                                      {syncingNiceOrderId === g.anchor.id ? "확인 중..." : "PG 상태 확인"}
+                                    </Button>
+                                  )}
                                 </div>
                               </div>
                             </TableCell>
@@ -2516,6 +2587,22 @@ export default function OperationsClient() {
                         )}
 
                         <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                          {g.anchor.canSyncNicePayment && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 min-w-[92px] px-2.5 text-xs font-semibold text-muted-foreground"
+                              title="NICEPAY의 현재 결제 상태를 다시 조회합니다."
+                              disabled={syncingNiceOrderId === g.anchor.id}
+                              onClick={() => {
+                                void handleNicePaymentSync(g.anchor.id);
+                              }}
+                            >
+                              <CreditCard className="mr-1.5 h-3.5 w-3.5" />
+                              {syncingNiceOrderId === g.anchor.id ? "확인 중..." : "PG 상태 확인"}
+                            </Button>
+                          )}
                           <Button
                             asChild
                             size="sm"

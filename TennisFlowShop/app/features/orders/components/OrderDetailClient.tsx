@@ -99,7 +99,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import useSWRInfinite from "swr/infinite";
 
 const AdminCancelOrderDialog = dynamic(
@@ -372,6 +372,7 @@ type CancelRequestConfirmAction = "approveCancel" | "rejectCancel";
 
 export default function OrderDetailClient({ orderId }: Props) {
   const router = useRouter();
+  const { mutate: mutateGlobal } = useSWRConfig();
 
   // 편집 모드
   const [isEditMode, setIsEditMode] = useState(false);
@@ -444,7 +445,11 @@ export default function OrderDetailClient({ orderId }: Props) {
         throw new Error(json?.error || "PG 상태 재동기화에 실패했습니다.");
       }
       await mutateOrder();
-      showSuccessToast("결제 상태 재동기화를 완료했습니다.");
+      await mutateGlobal((key) =>
+        typeof key === "string" &&
+        (key.startsWith("/api/orders") || key.startsWith("/api/admin/operations")),
+      );
+      showSuccessToast("PG 결제 상태를 확인했습니다.");
     } catch (error: any) {
       showErrorToast(error?.message || "PG 상태 재동기화 중 오류가 발생했습니다.");
     } finally {
@@ -2144,7 +2149,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                                 onClick={handleNiceSync}
                                 disabled={isSyncingNice}
                               >
-                                {isSyncingNice ? "PG 상태 동기화 중..." : "PG 상태 다시 확인"}
+                                {isSyncingNice ? "확인 중..." : "PG 상태 다시 확인"}
                               </Button>
                             </div>
                           )}

@@ -158,13 +158,25 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
         date: order.createdAt,
         status: normalizeOrderStatus((order as any)?.status),
         paymentStatus: normalizePaymentStatus(paymentStatusRaw),
+        paymentProvider:
+          typeof (order as any)?.paymentInfo?.provider === "string" ? (order as any).paymentInfo.provider : null,
+        paymentTid: typeof (order as any)?.paymentInfo?.tid === "string" ? (order as any).paymentInfo.tid : null,
         paymentInfo: {
+          provider:
+            typeof (order as any)?.paymentInfo?.provider === "string" ? (order as any).paymentInfo.provider : null,
+          tid: typeof (order as any)?.paymentInfo?.tid === "string" ? (order as any).paymentInfo.tid : null,
           status: typeof (order as any)?.paymentInfo?.status === "string" ? (order as any).paymentInfo.status : null,
           niceSync: {
             pgStatus:
               typeof (order as any)?.paymentInfo?.niceSync?.pgStatus === "string"
                 ? (order as any).paymentInfo.niceSync.pgStatus
                 : null,
+            lastSyncedAt:
+              (order as any)?.paymentInfo?.niceSync?.lastSyncedAt instanceof Date
+                ? (order as any).paymentInfo.niceSync.lastSyncedAt.toISOString()
+                : typeof (order as any)?.paymentInfo?.niceSync?.lastSyncedAt === "string"
+                  ? (order as any).paymentInfo.niceSync.lastSyncedAt
+                  : null,
           },
         },
         type: "상품",
