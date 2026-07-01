@@ -42,8 +42,8 @@ const userPatchSchema = z
 const userProjection = { projection: { hashedPassword: 0 } };
 
 function roleConfirmText(before: string, after: string) {
+  if (after === "superadmin" && before !== "superadmin") return "최고 관리자로 변경";
   if (before === "user" && after === "admin") return "관리자로 변경";
-  if (before === "admin" && after === "superadmin") return "최고 관리자로 변경";
   if (isAdminRole(before) && after === "user") return "권한 변경";
   if (before === "superadmin" && after !== "superadmin") return "권한 변경";
   return "권한 변경";

@@ -11,6 +11,7 @@ import { ObjectId } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { baseCookie } from "@/lib/cookieOptions";
 import { ADMIN_CSRF_COOKIE_KEY } from "@/lib/admin/adminCsrf";
+import { isAdminRole } from "@/lib/admin/roles";
 
 export async function POST() {
   const cookieStore = await cookies();
@@ -86,8 +87,8 @@ export async function POST() {
     maxAge: REFRESH_TOKEN_EXPIRES_IN,
   });
 
-  // 관리자 refresh에는 CSRF 쿠키를 함께 재발급하고, 일반 유저는 기존 값을 제거한다.
-  if (user.role === "admin") {
+  // admin/superadmin 관리자 세션 refresh에는 CSRF 쿠키를 함께 재발급하고, 일반 유저는 기존 값을 제거한다.
+  if (isAdminRole(user.role)) {
     const adminCsrfToken = `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, "");
     res.cookies.set(ADMIN_CSRF_COOKIE_KEY, adminCsrfToken, {
       ...baseCookie,
