@@ -490,6 +490,7 @@ function isPackageTerminalStatus(item: OpItem) {
 }
 
 function isTerminalOperationItem(item: OpItem) {
+  if (item.needsCancelFinalization) return false;
   if (isCancelApproved(item)) return true;
   if (item.kind === "order") return isOrderTerminalStatus(item.statusLabel);
   if (item.kind === "stringing_application") return isApplicationTerminalStatus(item.statusLabel);
