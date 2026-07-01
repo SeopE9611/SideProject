@@ -60,6 +60,7 @@ import {
   getProductDetailBuyNowWithServiceCheckoutTarget,
 } from "./ProductDetailCheckoutTarget.utils";
 import { getProductDetailStockLimitErrorMessage } from "./ProductDetailCheckoutValidation.utils";
+import { getProductDetailLoginRedirectTarget } from "./ProductDetailLoginTarget.utils";
 import ProductDetailQnaTab from "./ProductDetailQnaTab";
 import ProductDetailRelatedProductsSection from "./ProductDetailRelatedProductsSection";
 import ProductDetailReviewsTab from "./ProductDetailReviewsTab";
@@ -635,7 +636,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
               action: {
                 label: "로그인하기",
                 onClick: () =>
-                  router.push(`/login?next=${encodeURIComponent(`/products/${product._id}`)}`),
+                  router.push(
+                    getProductDetailLoginRedirectTarget({
+                      nextPath: `/products/${product._id}`,
+                    }),
+                  ),
               },
             }
           : {}),
@@ -663,7 +668,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
           label: "로그인하기",
           // onClick: () => router.push('/login?from=cart'),
           onClick: () =>
-            router.push(`/login?next=${encodeURIComponent(`/products/${product._id}`)}`),
+            router.push(
+              getProductDetailLoginRedirectTarget({
+                nextPath: `/products/${product._id}`,
+              }),
+            ),
         },
       });
     } else {
@@ -705,7 +714,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
     // router.push('/checkout?mode=buynow');
     const target = getProductDetailBuyNowCheckoutTarget();
     if (!user && !allowGuestCheckout) {
-      router.push(`/login?next=${encodeURIComponent(target)}`);
+      router.push(
+        getProductDetailLoginRedirectTarget({
+          nextPath: target,
+        }),
+      );
       return;
     }
     router.push(target);
@@ -753,7 +766,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
     // Checkout으로 직접 진입 (장바구니는 건드리지 않음)
     // router.push(`/checkout?${search.toString()}`);
     if (!user && !allowGuestCheckout) {
-      router.push(`/login?next=${encodeURIComponent(target)}`);
+      router.push(
+        getProductDetailLoginRedirectTarget({
+          nextPath: target,
+        }),
+      );
       return;
     }
     router.push(target);
@@ -780,7 +797,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
           typeof window !== "undefined"
             ? window.location.pathname + window.location.search
             : `/products/${product._id}`;
-        router.push(`/login?next=${encodeURIComponent(nextPath)}`);
+        router.push(
+          getProductDetailLoginRedirectTarget({
+            nextPath,
+          }),
+        );
       } else {
         showErrorToast("처리 중 오류가 발생했습니다.");
       }
