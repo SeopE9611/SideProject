@@ -50,6 +50,7 @@ import {
 } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
+import { needsOrderCancelFinalization } from "@/lib/orders/cancel-finalization";
 import { shortenId } from "@/lib/shorten";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { adminRichTooltipClass } from "@/lib/tooltip-style";
@@ -378,6 +379,7 @@ export default function OrdersClient() {
 
   function getOrderNextAction(order: OrderWithType, isLinkedProductOrder: boolean) {
     if (order.cancelStatus === "requested") return "취소 처리";
+    if (needsOrderCancelFinalization(order)) return "취소 후처리하기";
     if (order.paymentStatus === "결제대기") return "결제 확인하기";
     if (isLinkedProductOrder) return "작업 확인하기";
     const tracking = getTrackingBadge(order);
@@ -1294,21 +1296,41 @@ export default function OrdersClient() {
                           ) : (
                             (() => {
                               const st = getOrderStatusBadgeSpec(order.status);
+                              const needsCancelFinalization = needsOrderCancelFinalization(order);
                               return (
                                 <div className="flex flex-col items-start gap-0.5">
-                                  <Badge
-                                    variant={st.variant}
-                                    className={cn(
-                                      badgeBase,
-                                      badgeSizeSm,
-                                      "whitespace-nowrap shrink-0",
-                                    )}
-                                  >
-                                    {getOrderStatusLabelForDisplay(
-                                      order.status,
-                                      (order as any).shippingInfo,
-                                    )}
-                                  </Badge>
+                                  {needsCancelFinalization ? (
+                                    <>
+                                      <Badge className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0 bg-destructive/10 text-destructive border border-destructive/30")}>
+                                        PG 결제취소 감지
+                                      </Badge>
+                                      <Badge className={cn(badgeBase, badgeSizeSm, "whitespace-nowrap shrink-0 bg-warning/10 text-warning border border-warning/30")}>
+                                        주문 취소 후처리 필요
+                                      </Badge>
+                                      <span className="text-ui-label text-foreground/70">
+                                        주문 상태: {getOrderStatusLabelForDisplay(order.status, (order as any).shippingInfo)}
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <Badge
+                                      variant={st.variant}
+                                      className={cn(
+                                        badgeBase,
+                                        badgeSizeSm,
+                                        "whitespace-nowrap shrink-0",
+                                      )}
+                                    >
+                                      {getOrderStatusLabelForDisplay(
+                                        order.status,
+                                        (order as any).shippingInfo,
+                                      )}
+                                    </Badge>
+                                  )}
+                                  {needsCancelFinalization && (
+                                    <span className="text-ui-label text-destructive">
+                                      결제는 취소되었지만 주문 후처리가 완료되지 않았습니다.
+                                    </span>
+                                  )}
                                   {hasCancelRequest && (
                                     <Badge
                                       className={cn(

@@ -27,6 +27,7 @@ export type OpsLikeItem = {
     status?: "none" | "requested" | "approved" | "rejected" | null;
     refundAccountReady?: boolean;
   } | null;
+  needsCancelFinalization?: boolean;
 };
 
 export type NextActionGuide = {
@@ -151,6 +152,7 @@ function getEffectiveRefundAccountReady(item: OpsLikeItem) {
 }
 
 function isTerminalOpsItem(item: OpsLikeItem) {
+  if (item.needsCancelFinalization) return false;
   const cancelStatus = getEffectiveCancelStatus(item);
   if (cancelStatus === "approved") return true;
   if (item.kind === "order") return isOrderClosed(item.statusLabel) || isOrderConfirmed(item.statusLabel);
@@ -180,6 +182,10 @@ function terminalGuide(item?: OpsLikeItem | null): NextActionGuide {
 
 function inferStandaloneOrderGuide(item: OpsLikeItem): NextActionGuide {
   const isVisitPickup = isVisitPickupItem(item);
+
+  if (item.needsCancelFinalization) {
+    return { stage: "PG 결제취소 감지 주문", nextAction: "주문 취소 후처리 필요" };
+  }
 
   if (isOrderClosed(item.statusLabel)) {
     return { stage: "주문 종료 단계", nextAction: "후속 조치 없음" };

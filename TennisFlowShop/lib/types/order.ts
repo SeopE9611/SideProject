@@ -43,7 +43,12 @@ export type Order = {
 
   status: "대기중" | "처리중" | "완료" | "취소" | "환불";
 
-  paymentStatus: "결제완료" | "결제대기" | "결제실패";
+  paymentStatus: "결제완료" | "결제대기" | "결제실패" | "결제취소" | string;
+
+  paymentInfo?: {
+    status?: string | null;
+    niceSync?: { pgStatus?: string | null } | null;
+  } | null;
 
   type: "상품" | "서비스" | "클래스";
 

@@ -158,6 +158,15 @@ export async function fetchCombinedOrders(opts?: { userId?: ObjectId; isAdmin?: 
         date: order.createdAt,
         status: normalizeOrderStatus((order as any)?.status),
         paymentStatus: normalizePaymentStatus(paymentStatusRaw),
+        paymentInfo: {
+          status: typeof (order as any)?.paymentInfo?.status === "string" ? (order as any).paymentInfo.status : null,
+          niceSync: {
+            pgStatus:
+              typeof (order as any)?.paymentInfo?.niceSync?.pgStatus === "string"
+                ? (order as any).paymentInfo.niceSync.pgStatus
+                : null,
+          },
+        },
         type: "상품",
         total: order.totalPrice,
         items: order.items || [],
