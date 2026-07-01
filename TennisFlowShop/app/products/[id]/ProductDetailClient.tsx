@@ -2115,7 +2115,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
                   productId={String(product._id)}
                   productName={product.name}
                   qnas={qnas}
-                  qnaTotal={qnaTotal}
                   qnaLoading={qnaLoading}
                   qnaError={qnaError}
                 />
