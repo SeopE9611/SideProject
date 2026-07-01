@@ -1,5 +1,4 @@
 import {
-  AlertCircle,
   ArrowLeft,
   Calendar,
   CheckCircle2,
@@ -250,6 +249,7 @@ export default async function AcademyApplyPage({
   const selectedClassSchedule = selectedClass
     ? getAcademyScheduleDisplay(selectedClass.scheduleText)
     : null;
+  const classSelectionBlocked = !classId || !selectedClass || selectedClass.status === "closed";
 
   return (
     <main className="min-h-screen bg-background">
@@ -290,7 +290,35 @@ export default async function AcademyApplyPage({
           </SummaryCard>
 
           {/* Duplicate Application Warning */}
-          {duplicateApplication ? (
+          {classSelectionBlocked ? (
+            <ResultState
+              status="warning"
+              title={
+                !classId
+                  ? "클래스를 먼저 선택해 주세요"
+                  : selectedClass?.status === "closed"
+                    ? "모집이 마감된 클래스입니다"
+                    : "신청할 수 없는 클래스입니다"
+              }
+              description={
+                !classId
+                  ? "아카데미 신청은 모집 중인 클래스를 선택한 뒤에만 진행할 수 있습니다."
+                  : selectedClass?.status === "closed"
+                    ? "이 클래스는 현재 모집이 마감되었습니다. 문의하기를 통해 다음 모집 일정을 확인해 주세요."
+                    : "신청할 수 없는 클래스입니다. 모집 중인 클래스를 다시 선택해 주세요."
+              }
+              actions={
+                <>
+                  <Button asChild>
+                    <Link href="/academy">아카데미로 돌아가기</Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link href="/board/qna/write?category=academy">문의하기</Link>
+                  </Button>
+                </>
+              }
+            />
+          ) : duplicateApplication ? (
             <ResultState
               status="warning"
               title="이미 신청한 클래스입니다"
@@ -418,32 +446,6 @@ export default async function AcademyApplyPage({
                         </Button>
                       </div>
                     )}
-                  </div>
-                </div>
-              )}
-
-              {/* Invalid Class Warning */}
-              {classId && !selectedClass && (
-                <div className="rounded-2xl border border-border bg-card p-5 shadow-sm md:p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="shrink-0 rounded-xl bg-warning/10 p-2.5">
-                      <AlertCircle className="h-5 w-5 text-warning" />
-                    </div>
-                    <div className="space-y-3">
-                      <div>
-                        <h3 className="font-semibold text-foreground">
-                          클래스 정보를 찾을 수 없습니다
-                        </h3>
-                        <p className="mt-1 text-ui-body-sm leading-relaxed text-muted-foreground">
-                          선택한 클래스 정보를 찾을 수 없어 일반 레슨 신청으로 접수됩니다. 특정
-                          클래스를 신청하려면 아카데미 페이지에서 모집 중인 클래스를 다시 선택해
-                          주세요.
-                        </p>
-                      </div>
-                      <Button asChild variant="outline" size="sm">
-                        <Link href="/academy">클래스 다시 선택하기</Link>
-                      </Button>
-                    </div>
                   </div>
                 </div>
               )}

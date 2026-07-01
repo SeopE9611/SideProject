@@ -123,6 +123,7 @@ const updateSchema = z.object({
   productRef: z
     .object({
       productId: z.string(),
+      targetType: z.enum(["product", "racket"]).optional(),
       name: z.string().optional(),
       image: z.string().url().nullable().optional(),
     })

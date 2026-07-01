@@ -282,12 +282,19 @@ export default function QnaDetailPage() {
                         </Badge>
                       )}
                       {qna.productRef?.productId && (
-                        <Link href={`/products/${qna.productRef.productId}`}>
+                        <Link
+                          href={
+                            qna.productRef.targetType === "racket"
+                              ? `/rackets/${qna.productRef.productId}`
+                              : `/products/${qna.productRef.productId}`
+                          }
+                        >
                           <Badge
                             variant="secondary"
                             className={`${badgeSizeSm} max-w-[12rem] shrink-0 truncate whitespace-nowrap`}
                           >
-                            상품: {qna.productRef.name ?? "상품"}
+                            {qna.productRef.targetType === "racket" ? "라켓" : "상품"}:{" "}
+                            {qna.productRef.name ?? "상품"}
                           </Badge>
                         </Link>
                       )}

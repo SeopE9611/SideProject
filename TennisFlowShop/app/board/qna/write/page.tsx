@@ -84,6 +84,7 @@ export default function QnaWritePage() {
   } | null>(null);
   const preProductId = sp.get("productId");
   const preProductName = sp.get("productName") ?? "";
+  const preTargetType = sp.get("targetType") === "racket" ? "racket" : "product";
   const queryCategory = sp.get("category")?.trim();
   const initialCategory =
     queryCategory?.toLowerCase() === "academy" || queryCategory === "아카데미"
@@ -459,6 +460,7 @@ export default function QnaWritePage() {
           ? {
               productRef: {
                 productId: preProductId,
+                targetType: preTargetType,
                 name: preProductName,
                 image: null,
               },
@@ -467,6 +469,7 @@ export default function QnaWritePage() {
             ? {
                 productRef: {
                   productId: product.id,
+                  targetType: "product",
                   name: product.name,
                   image: product.image ?? null,
                 },

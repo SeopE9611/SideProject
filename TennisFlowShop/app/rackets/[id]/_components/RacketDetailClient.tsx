@@ -1,6 +1,7 @@
 "use client";
 
 import { CompareRacketItem, useRacketCompareStore } from "@/app/store/racketCompareStore";
+import ProductDetailQnaTab from "@/app/products/[id]/ProductDetailQnaTab";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { SummaryCard } from "@/components/public/SummaryCard";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
@@ -36,6 +37,7 @@ import {
   EyeOff,
   FileText,
   Loader2,
+  MessageSquare,
   MoreHorizontal,
   Pencil,
   Scale,
@@ -77,7 +79,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   const rentSectionRef = useRef<HTMLDivElement>(null);
   const [autoOpen, setAutoOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  type DetailTab = "description" | "specifications" | "reviews";
+  type DetailTab = "description" | "specifications" | "reviews" | "qna";
 
   const initialTab = (searchParams.get("tab") as DetailTab) || "description";
   const [activeTab, setActiveTab] = useState<DetailTab>(initialTab);
@@ -134,6 +136,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   const [user, setUser] = useState<any | null>(null);
   const [hasRequestedReviewUser, setHasRequestedReviewUser] = useState(false);
   const isReviewsTabActive = activeTab === "reviews";
+  const isQnaTabActive = activeTab === "qna";
 
   useEffect(() => {
     if (hasRequestedReviewUser) return;
@@ -168,6 +171,13 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
     fetcher,
     { revalidateOnFocus: false },
   );
+  const {
+    data: qnaData,
+    error: qnaError,
+    isLoading: qnaLoading,
+  } = useSWR(isQnaTabActive ? `/api/rackets/${racketId}/qna?page=1&limit=10` : null, fetcher, {
+    revalidateOnFocus: false,
+  });
 
   const isMine = (rv: any) =>
     !!rv?.ownedByMe ||
@@ -220,6 +230,8 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
   }, [baseReviews, myReview, isAdmin, adminReviews]);
 
   const reviewCount = mergedReviews.length;
+  const qnas = qnaData?.items ?? [];
+  const qnaTotal = qnaData?.total ?? 0;
   const averageRating =
     reviewCount > 0
       ? mergedReviews.reduce((sum: number, review: any) => sum + (Number(review?.rating) || 0), 0) /
@@ -774,7 +786,7 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
               onValueChange={(v) => updateTabInUrl(v as any)}
               className="w-full"
             >
-              <TabsList className="grid h-auto w-full grid-cols-3 gap-1 border-b border-border bg-muted/30 p-1 sm:gap-1.5 sm:p-1.5">
+              <TabsList className="grid h-auto w-full grid-cols-2 gap-1 border-b border-border bg-muted/30 p-1 sm:gap-1.5 sm:p-1.5 md:grid-cols-4">
                 <TabsTrigger
                   value="description"
                   className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16"
@@ -796,6 +808,14 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                   <Star className="mr-1.5 h-4 w-4 shrink-0 sm:mr-2 sm:h-5 sm:w-5" />
                   리뷰
                   <span className="ml-1 text-muted-foreground sm:ml-1.5">({reviewCount})</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="qna"
+                  className="h-12 min-w-0 rounded-xl px-2 text-ui-body-sm font-medium leading-tight break-keep whitespace-normal transition-[background-color,color,border-color,box-shadow,opacity] duration-200 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm sm:h-14 sm:px-3 sm:text-ui-body md:h-16"
+                >
+                  <MessageSquare className="mr-1.5 h-4 w-4 shrink-0 sm:mr-2 sm:h-5 sm:w-5" />
+                  문의
+                  <span className="ml-1 text-muted-foreground sm:ml-1.5">({qnaTotal})</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -1195,6 +1215,16 @@ export default function RacketDetailClient({ racket, stock }: RacketDetailClient
                     </div>
                   )}
                 </div>
+              </TabsContent>
+              <TabsContent value="qna" className="p-4 sm:p-6 md:p-8">
+                <ProductDetailQnaTab
+                  productId={racketId}
+                  productName={`${brandLabel} ${racket.model}`.trim()}
+                  qnas={qnas}
+                  qnaLoading={qnaLoading}
+                  qnaError={qnaError}
+                  targetType="racket"
+                />
               </TabsContent>
             </Tabs>
           </CardContent>
