@@ -129,8 +129,7 @@ export async function GET(req: Request) {
   }
 
   const page = Number.isFinite(pageParam) && pageParam >= 1 ? Math.floor(pageParam) : undefined;
-  const limit =
-    Number.isFinite(limitParam) && limitParam > 0 ? Math.min(limitParam, 50) : undefined;
+  const limit = Number.isFinite(limitParam) && limitParam > 0 ? Math.min(limitParam, 50) : 24;
 
   const col = db.collection("used_rackets");
 
@@ -151,9 +150,9 @@ export async function GET(req: Request) {
   });
 
   cursor = cursor.sort(sort);
-  // 기존 limit-only 요청은 그대로 유지하고, page/limit이 모두 명시된 경우에만 skip 적용
-  if (page && limit) cursor = cursor.skip((page - 1) * limit);
-  if (limit) cursor = cursor.limit(limit);
+  // 기존 limit-only 요청은 그대로 유지하고, page가 명시된 경우에만 skip 적용
+  if (page) cursor = cursor.skip((page - 1) * limit);
+  cursor = cursor.limit(limit);
 
   // withTotal=1이면 total까지 같이 내려주기 위해 countDocuments를 병렬로 수행
   // - cursor에는 limit이 걸릴 수 있지만, total은 "필터 조건(q)" 기준 전체 개수여야 하므로 countDocuments(q)를 별도로 사용

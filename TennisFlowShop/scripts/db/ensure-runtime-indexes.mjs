@@ -417,8 +417,43 @@ const INDEX_SPECS = {
       options: {},
     },
     {
+      name: "idx_products_public_latest",
+      keys: { isDeleted: 1, isVisible: 1, _id: -1 },
+      options: {},
+    },
+    {
+      name: "idx_products_public_brand_latest",
+      keys: { isDeleted: 1, isVisible: 1, brand: 1, _id: -1 },
+      options: {},
+    },
+    {
+      name: "idx_products_public_material_latest",
+      keys: { isDeleted: 1, isVisible: 1, material: 1, _id: -1 },
+      options: {},
+    },
+    {
       name: "idx_products_public_price",
       keys: { price: 1 },
+      options: {},
+    },
+    {
+      name: "idx_products_public_price_latest",
+      keys: { isDeleted: 1, isVisible: 1, price: 1, _id: -1 },
+      options: {},
+    },
+    {
+      name: "idx_products_public_featured_latest",
+      keys: { isDeleted: 1, isVisible: 1, "inventory.isFeatured": 1, _id: -1 },
+      options: {},
+    },
+    {
+      name: "idx_products_public_new_latest",
+      keys: { isDeleted: 1, isVisible: 1, "inventory.isNew": 1, _id: -1 },
+      options: {},
+    },
+    {
+      name: "idx_products_public_sale_latest",
+      keys: { isDeleted: 1, isVisible: 1, "inventory.isSale": 1, _id: -1 },
       options: {},
     },
     {
@@ -439,8 +474,43 @@ const INDEX_SPECS = {
       options: {},
     },
     {
+      name: "idx_used_rackets_public_visible_status_latest",
+      keys: { isVisible: 1, status: 1, createdAt: -1, _id: -1 },
+      options: {},
+    },
+    {
+      name: "idx_used_rackets_public_brand_latest",
+      keys: { isVisible: 1, status: 1, brand: 1, createdAt: -1, _id: -1 },
+      options: {},
+    },
+    {
+      name: "idx_used_rackets_public_condition_latest",
+      keys: { isVisible: 1, status: 1, condition: 1, createdAt: -1, _id: -1 },
+      options: {},
+    },
+    {
       name: "idx_used_rackets_public_price",
       keys: { price: 1, _id: -1 },
+      options: {},
+    },
+    {
+      name: "idx_used_rackets_public_visible_status_price",
+      keys: { isVisible: 1, status: 1, price: 1, _id: -1 },
+      options: {},
+    },
+    {
+      name: "idx_used_rackets_public_featured_latest",
+      keys: { isVisible: 1, status: 1, "marketing.isFeatured": 1, createdAt: -1, _id: -1 },
+      options: {},
+    },
+    {
+      name: "idx_used_rackets_public_new_latest",
+      keys: { isVisible: 1, status: 1, "marketing.isNew": 1, createdAt: -1, _id: -1 },
+      options: {},
+    },
+    {
+      name: "idx_used_rackets_public_sale_latest",
+      keys: { isVisible: 1, status: 1, "marketing.isSale": 1, createdAt: -1, _id: -1 },
       options: {},
     },
     {
