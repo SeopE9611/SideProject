@@ -47,7 +47,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import useSWR from "swr";
 import ProductDetailImageGallery from "./ProductDetailImageGallery";
 import ProductDetailRecommendationSection from "./ProductDetailRecommendationSection";
 import type {
@@ -61,6 +60,7 @@ import ProductDetailRelatedProductsSection from "./ProductDetailRelatedProductsS
 import ProductDetailReviewsTab from "./ProductDetailReviewsTab";
 import ProductDetailSpecificationsTab from "./ProductDetailSpecificationsTab";
 import { isAdminUser } from "./ProductDetailReviewData.utils";
+import { useProductDetailQna } from "./useProductDetailQna";
 import { useProductDetailRelatedProducts } from "./useProductDetailRelatedProducts";
 import { useProductDetailReviews } from "./useProductDetailReviews";
 import {
@@ -381,21 +381,11 @@ export default function ProductDetailClient({ product }: { product: any }) {
     fetcher,
   });
 
-  // 상품별 QnA 목록
-  const {
-    data: qnaData,
-    error: qnaError,
-    isLoading: qnaLoading,
-  } = useSWR(
-    activeTab === "qna" ? `/api/products/${product._id}/qna?page=1&limit=10` : null,
+  const { qnas, qnaTotal, qnaLoading, qnaError } = useProductDetailQna({
+    activeTab,
+    productId: String(product._id),
     fetcher,
-    {
-      revalidateOnFocus: false,
-    },
-  );
-
-  const qnas = qnaData?.items ?? [];
-  const qnaTotal = qnaData?.total ?? 0;
+  });
 
   // 합계 계산
   const unitPrice = displayPrice;
