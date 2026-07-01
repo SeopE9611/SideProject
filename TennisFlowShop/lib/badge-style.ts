@@ -494,7 +494,7 @@ export function getNoticeCategoryBadgeSpec(label?: string | null) {
 }
 
 export function getUserRoleBadgeSpec(role?: string | null) {
-  return badgeStyleSpec(role === "admin" ? "info" : "neutral");
+  return badgeStyleSpec(role === "superadmin" ? "warning" : role === "admin" ? "info" : "neutral");
 }
 
 export function getCurrentSessionBadgeSpec(isCurrent: boolean) {

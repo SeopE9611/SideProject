@@ -4,7 +4,8 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
-import { appendAudit } from "@/lib/audit";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
+import { isAdminRole, isSuperAdminRole } from "@/lib/admin/roles";
 
 // 임시 비밀번호 생성 (영문대/소 + 숫자 조합, 반드시 각 그룹 1자 이상 포함)
 function generateTempPassword(length = 12) {
@@ -38,8 +39,20 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
     const user = await db
       .collection("users")
-      .findOne({ _id }, { projection: { _id: 1, email: 1 } });
+      .findOne({ _id }, { projection: { _id: 1, email: 1, role: 1 } });
     if (!user) return NextResponse.json({ message: "not found" }, { status: 404 });
+    if (String(admin._id) === String(_id)) {
+      return NextResponse.json(
+        { ok: false, code: "SELF_PASSWORD_RESET_FORBIDDEN", message: "자기 자신의 비밀번호는 초기화할 수 없습니다." },
+        { status: 409 },
+      );
+    }
+    if (isAdminRole((user as any).role) && !isSuperAdminRole(admin.role)) {
+      return NextResponse.json(
+        { ok: false, code: "SUPERADMIN_REQUIRED", message: "관리자 계정 비밀번호 초기화는 최고 관리자만 가능합니다." },
+        { status: 403 },
+      );
+    }
 
     // 1) 임시 비밀번호 생성 & 해시
     const tempPassword = generateTempPassword(12);
@@ -60,10 +73,10 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     );
 
     // 3) 감사 로그 기록(공용 유틸)
-    await appendAudit(
+    await appendAdminAudit(
       db,
       {
-        type: "user_password_reset",
+        type: "USER_PASSWORD_RESET_REQUESTED",
         actorId: admin._id,
         targetId: _id,
         message: "관리자 비밀번호 초기화",

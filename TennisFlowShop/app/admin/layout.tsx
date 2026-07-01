@@ -1,6 +1,7 @@
 import AdminNavigationShell from "@/components/admin/AdminNavigationShell";
 import AccessDenied from "@/components/system/AccessDenied";
 import { getCurrentUser } from "@/lib/hooks/get-current-user";
+import { isAdminRole } from "@/lib/admin/roles";
 import { logInfo } from "@/lib/logger";
 import { headers } from "next/headers";
 import Link from "next/link";
@@ -70,7 +71,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   if (!e2eBypass) {
     const user = await getCurrentUser();
-    if (!user || user.role !== "admin") {
+    if (!user || !isAdminRole(user.role)) {
       return <AccessDenied />;
     }
   }

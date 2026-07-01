@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { ObjectId, type Db } from "mongodb";
 
 import { verifyAccessToken } from "@/lib/auth.utils";
+import { isAdminRole } from "@/lib/admin/roles";
 import type { VisibilityViewer } from "@/lib/public-visibility";
 
 export async function getVisibilityViewerFromCookies(): Promise<VisibilityViewer> {
@@ -16,7 +17,7 @@ export async function getVisibilityViewerFromCookies(): Promise<VisibilityViewer
       isAdmin:
         typeof payload === "object" &&
         payload !== null &&
-        (payload as { role?: unknown }).role === "admin",
+        isAdminRole(String((payload as { role?: unknown }).role ?? "")),
     };
   } catch {
     return { isAdmin: false };
@@ -37,6 +38,6 @@ export async function getVisibilityViewerFromUserId(
   );
 
   return {
-    isAdmin: user?.role === "admin",
+    isAdmin: isAdminRole(String(user?.role ?? "")),
   };
 }

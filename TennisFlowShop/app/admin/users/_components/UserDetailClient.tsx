@@ -36,6 +36,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { runAdminActionWithToast } from "@/lib/admin/adminActionHelpers";
 import { adminMutator } from "@/lib/admin/adminFetcher";
+import { getUserRoleLabel, isAdminRole, isSuperAdminRole } from "@/lib/admin/roles";
 import { asRecord, safeArray, safeNumber } from "@/lib/admin/parsers";
 import {
   getCurrentSessionBadgeSpec,
@@ -47,6 +48,7 @@ import {
   UNSAVED_CHANGES_MESSAGE,
   useUnsavedChangesGuard,
 } from "@/lib/hooks/useUnsavedChangesGuard";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import { loadDaumPostcode } from "@/lib/loadDaumPostcode";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -106,7 +108,7 @@ function humanizeAuditDetail(action: string, raw?: string) {
     const label = AUDIT_LABELS[k] ?? k;
     if (k === "isSuspended") return `${label}: ${v ? "비활성화" : "비활성 해제"}`;
     if (k === "isDeleted") return `${label}: ${v ? "삭제됨" : "—"}`;
-    if (k === "role") return `${label}: ${v === "admin" ? "관리자" : "일반"}`;
+    if (k === "role") return `${label}: ${getUserRoleLabel(String(v))}`;
     const val = v === "" || v === null || v === undefined ? "—" : String(v);
     return `${label}: ${val}`;
   });
@@ -125,7 +127,7 @@ function asTotal(val: unknown): number | undefined {
   return undefined;
 }
 
-type Role = "user" | "admin";
+type Role = "user" | "admin" | "superadmin";
 interface UserDetail {
   id: string;
   email: string;
@@ -166,6 +168,16 @@ type AuditLog = {
     } | null;
   } | null;
 };
+
+type UserPatchPayload = Partial<UserDetail> & { confirmText?: string };
+
+function getRoleConfirmPhrase(before: Role, after: Role) {
+  if (before === "user" && after === "admin") return "관리자로 변경";
+  if (before === "admin" && after === "superadmin") return "최고 관리자로 변경";
+  if (isAdminRole(before) && after === "user") return "권한 변경";
+  if (before === "superadmin" && after !== "superadmin") return "권한 변경";
+  return "권한 변경";
+}
 
 function normalizeActorId(value: unknown): string | null {
   if (typeof value === "string") return value;
@@ -211,6 +223,7 @@ function getAuditActorDisplay(log: AuditLog): {
 
 export default function UserDetailClient({ id }: { id: string }) {
   const router = useRouter();
+  const { user: currentAdmin } = useCurrentUser();
   const { data, error, isLoading, mutate } = useSWR<UserDetail>(
     `/api/admin/users/${id}`,
     authenticatedSWRFetcher,
@@ -264,6 +277,10 @@ export default function UserDetailClient({ id }: { id: string }) {
   // 비번 초기화 실행 전 입력 확인용
   const [pwConfirmOpen, setPwConfirmOpen] = useState(false);
   const [pwConfirmText, setPwConfirmText] = useState("");
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [roleConfirmOpen, setRoleConfirmOpen] = useState(false);
+  const [roleConfirmText, setRoleConfirmText] = useState("");
+  const [pendingRolePatch, setPendingRolePatch] = useState<UserPatchPayload | null>(null);
 
   // KPI
   const { data: kpi } = useSWR<{
@@ -342,6 +359,9 @@ export default function UserDetailClient({ id }: { id: string }) {
   useUnsavedChangesGuard(hasDirty);
 
   const user = data;
+  const currentAdminRole = String(currentAdmin?.role ?? "");
+  const isCurrentSuperAdmin = isSuperAdminRole(currentAdminRole);
+  const isSelf = currentAdmin?.id ? String(currentAdmin.id) === id : false;
   const onChange = (k: keyof UserDetail, v: UserDetail[keyof UserDetail]) =>
     setForm((prev) => ({ ...prev, [k]: v }));
 
@@ -354,7 +374,7 @@ export default function UserDetailClient({ id }: { id: string }) {
   }
 
   // 서버 PATCH
-  async function patchUser(patch: Partial<UserDetail>, auditLabel?: string) {
+  async function patchUser(patch: UserPatchPayload, auditLabel?: string) {
     try {
       setPending(true);
       const result = await runAdminActionWithToast({
@@ -378,10 +398,22 @@ export default function UserDetailClient({ id }: { id: string }) {
   const save = async () => {
     if (!hasDirty || pending) return;
 
+    const patch = { ...form };
+    const nextRole = patch.role;
+    if (nextRole && user && nextRole !== user.role) {
+      if (!isCurrentSuperAdmin || isSelf) return;
+      setPendingRolePatch(patch);
+      setRoleConfirmText("");
+      setRoleConfirmOpen(true);
+      return;
+    }
+
+    await submitPatch(patch);
+  };
+
+  const submitPatch = async (patch: UserPatchPayload) => {
     try {
       setPending(true);
-
-      const patch = { ...form };
 
       const result = await runAdminActionWithToast({
         action: () =>
@@ -511,6 +543,16 @@ export default function UserDetailClient({ id }: { id: string }) {
     user.email?.[0] ||
     "?"
   ).toUpperCase();
+  const roleValue = form.role ?? user.role;
+  const roleChanged = roleValue !== user.role;
+  const roleConfirmPhrase = roleChanged ? getRoleConfirmPhrase(user.role, roleValue) : "";
+  const deleteConfirmPhrase = user.email?.trim() || "회원 삭제";
+  const canUseDangerousUserActions = isCurrentSuperAdmin && !isSelf;
+  const dangerousActionDisabledReason = isSelf
+    ? "자기 자신의 권한 변경과 삭제는 할 수 없습니다."
+    : !isCurrentSuperAdmin
+      ? "권한 변경과 삭제는 최고 관리자만 가능합니다."
+      : "";
 
   // 비밀번호 초기화
   async function resetPassword() {
@@ -613,7 +655,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                   <Button
                     variant="secondary"
                     className="whitespace-nowrap shrink-0"
-                    disabled={pending}
+                    disabled={pending || (isAdminRole(user.role) && !isCurrentSuperAdmin) || isSelf}
                   >
                     비밀번호 초기화
                   </Button>
@@ -668,7 +710,11 @@ export default function UserDetailClient({ id }: { id: string }) {
               ) : (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="whitespace-nowrap shrink-0">
+                    <Button
+                      variant="destructive"
+                      className="whitespace-nowrap shrink-0"
+                      disabled={pending || !canUseDangerousUserActions}
+                    >
                       탈퇴(삭제)
                     </Button>
                   </AlertDialogTrigger>
@@ -677,13 +723,26 @@ export default function UserDetailClient({ id }: { id: string }) {
                       <AlertDialogTitle>탈퇴(삭제) 처리</AlertDialogTitle>
                       <AlertDialogDescription>
                         이 회원을 삭제(탈퇴) 처리합니다. 진행 후에는 복구할 수 없습니다.
+                        <br />
+                        아래 입력창에 <code>{deleteConfirmPhrase}</code> 를 정확히 입력해 주세요.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
+                    <div className="space-y-2">
+                      <Label htmlFor="deleteConfirmText">확인 문구</Label>
+                      <Input
+                        id="deleteConfirmText"
+                        value={deleteConfirmText}
+                        onChange={(e) => setDeleteConfirmText(e.target.value)}
+                        placeholder={deleteConfirmPhrase}
+                      />
+                    </div>
                     <AlertDialogFooter>
                       <AlertDialogCancel>취소</AlertDialogCancel>
                       <AlertDialogAction
+                        disabled={deleteConfirmText !== deleteConfirmPhrase || pending}
                         onClick={async () => {
-                          await patchUser({ isDeleted: true }, "탈퇴(삭제)");
+                          await patchUser({ isDeleted: true, confirmText: deleteConfirmText }, "탈퇴(삭제)");
+                          setDeleteConfirmText("");
                           await mutate();
                         }}
                       >
@@ -702,6 +761,53 @@ export default function UserDetailClient({ id }: { id: string }) {
             </div>
           </div>
         </div>
+
+        <AlertDialog
+          open={roleConfirmOpen}
+          onOpenChange={(open) => {
+            setRoleConfirmOpen(open);
+            if (!open) {
+              setRoleConfirmText("");
+              setPendingRolePatch(null);
+            }
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>회원 권한 변경 확인</AlertDialogTitle>
+              <AlertDialogDescription>
+                회원 권한을 <b>{getUserRoleLabel(user.role)}</b>에서{" "}
+                <b>{getUserRoleLabel(roleValue)}</b>로 변경합니다.
+                <br />
+                아래 입력창에 <code>{roleConfirmPhrase}</code> 를 정확히 입력해 주세요.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="space-y-2">
+              <Label htmlFor="roleConfirmText">확인 문구</Label>
+              <Input
+                id="roleConfirmText"
+                value={roleConfirmText}
+                onChange={(e) => setRoleConfirmText(e.target.value)}
+                placeholder={roleConfirmPhrase}
+              />
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel>취소</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={roleConfirmText !== roleConfirmPhrase || pending || !pendingRolePatch}
+                onClick={async () => {
+                  if (!pendingRolePatch) return;
+                  await submitPatch({ ...pendingRolePatch, confirmText: roleConfirmText });
+                  setRoleConfirmOpen(false);
+                  setRoleConfirmText("");
+                  setPendingRolePatch(null);
+                }}
+              >
+                권한 변경 실행
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* 히어로 헤더 */}
         <div className={cn("mb-6 overflow-hidden", adminSurface.card)}>
@@ -730,7 +836,7 @@ export default function UserDetailClient({ id }: { id: string }) {
                     const roleSpec = getUserRoleBadgeSpec(user.role);
                     return (
                       <Badge variant={roleSpec.variant}>
-                        {user.role === "admin" ? "관리자" : "일반"}
+                        {getUserRoleLabel(user.role)}
                       </Badge>
                     );
                   })()}
@@ -1069,12 +1175,22 @@ export default function UserDetailClient({ id }: { id: string }) {
                     <select
                       id="role"
                       className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                      value={form.role ?? user.role}
+                      value={roleValue}
+                      disabled={!canUseDangerousUserActions}
                       onChange={(e) => onChange("role", e.target.value as Role)}
                     >
                       <option value="user">일반</option>
                       <option value="admin">관리자</option>
+                      <option value="superadmin">최고 관리자</option>
                     </select>
+                    {dangerousActionDisabledReason ? (
+                      <p className="mt-1 text-xs text-muted-foreground">{dangerousActionDisabledReason}</p>
+                    ) : null}
+                    {roleChanged ? (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        저장 시 확인 문구 <code>{roleConfirmPhrase}</code> 입력이 필요합니다.
+                      </p>
+                    ) : null}
                   </FormRow>
 
                   <FormRow label="전화번호" htmlFor="phone">

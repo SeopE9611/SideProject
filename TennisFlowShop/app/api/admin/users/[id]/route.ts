@@ -3,8 +3,9 @@ import { ObjectId } from "mongodb";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
-import { appendAudit } from "@/lib/audit";
+import { appendAdminAudit } from "@/lib/admin/appendAdminAudit";
 import { adminValidationError, zodIssuesToDetails } from "@/lib/admin/adminApiError";
+import { isAdminRole, isSuperAdminRole, normalizeUserRole } from "@/lib/admin/roles";
 import { getReservedDisplayNameErrorMessage } from "@/lib/reserved-display-name";
 
 const userIdParamsSchema = z.object({
@@ -31,13 +32,30 @@ const userPatchSchema = z
     address: z.string().trim().max(200, "주소는 200자 이내여야 합니다.").optional(),
     addressDetail: z.string().trim().max(100, "상세주소는 100자 이내여야 합니다.").optional(),
     postalCode: z.string().trim().max(12, "우편번호는 12자 이내여야 합니다.").optional(),
-    role: z.enum(["user", "admin"]).optional(),
+    role: z.enum(["user", "admin", "superadmin"]).optional(),
     isSuspended: z.boolean().optional(),
     isDeleted: z.boolean().optional(),
+    confirmText: z.string().trim().optional(),
   })
   .strict();
 
 const userProjection = { projection: { hashedPassword: 0 } };
+
+function roleConfirmText(before: string, after: string) {
+  if (before === "user" && after === "admin") return "관리자로 변경";
+  if (before === "admin" && after === "superadmin") return "최고 관리자로 변경";
+  if (isAdminRole(before) && after === "user") return "권한 변경";
+  if (before === "superadmin" && after !== "superadmin") return "권한 변경";
+  return "권한 변경";
+}
+
+function deleteConfirmText(user: { email?: unknown }) {
+  return typeof user.email === "string" && user.email.trim() ? user.email.trim() : "회원 삭제";
+}
+
+function errorJson(status: number, code: string, message: string) {
+  return NextResponse.json({ ok: false, code, message }, { status });
+}
 
 function parseUserIdParams(params: { id: string }) {
   const parsed = userIdParamsSchema.safeParse(params);
@@ -133,38 +151,66 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   const current = await db
     .collection("users")
-    .findOne({ _id }, { projection: { _id: 1, role: 1 } });
+    .findOne({ _id }, { projection: { _id: 1, role: 1, email: 1, name: 1, isDeleted: 1, isSuspended: 1 } });
   if (!current) return NextResponse.json({ message: "not found" }, { status: 404 });
 
-  const currentRole = (current as any).role === "admin" ? "admin" : "user";
+  const currentRole = normalizeUserRole((current as any).role);
   const nextRole = payload.role;
-  if (nextRole && nextRole !== currentRole && currentRole === "admin" && nextRole !== "admin") {
-    if (String(admin._id) === String(_id)) {
-      return NextResponse.json(
-        {
-          message: "SELF_DEMOTION_FORBIDDEN",
-          error: "자기 자신의 관리자 권한은 강등할 수 없습니다.",
-        },
-        { status: 409 },
-      );
+  const roleChanged = !!nextRole && nextRole !== currentRole;
+  const deleteRequested = payload.isDeleted === true && !(current as any).isDeleted;
+  const targetIsAdminRole = isAdminRole(currentRole);
+
+  if (roleChanged) {
+    if (!isSuperAdminRole(admin.role)) {
+      return errorJson(403, "SUPERADMIN_REQUIRED", "관리자 권한 변경은 최고 관리자만 가능합니다.");
     }
-
-    const remainingAdminCount = await db.collection("users").countDocuments({
-      role: "admin",
-      isDeleted: { $ne: true },
-      _id: { $ne: _id },
-    });
-
-    if (remainingAdminCount === 0) {
-      return NextResponse.json(
-        {
-          message: "LAST_ADMIN_PROTECTED",
-          error: "마지막 관리자 계정은 강등할 수 없습니다.",
-        },
-        { status: 409 },
-      );
+    if (String(admin._id) === String(_id)) {
+      return errorJson(409, "SELF_ROLE_CHANGE_FORBIDDEN", "자기 자신의 권한은 변경할 수 없습니다.");
+    }
+    const expectedConfirmText = roleConfirmText(currentRole, nextRole);
+    if (payload.confirmText !== expectedConfirmText) {
+      return errorJson(400, "CONFIRM_TEXT_INVALID", "확인 문구가 일치하지 않습니다.");
+    }
+    if (currentRole === "superadmin" && nextRole !== "superadmin") {
+      const superAdminCount = await db.collection("users").countDocuments({
+        role: "superadmin",
+        isDeleted: { $ne: true },
+      });
+      if (superAdminCount <= 1) {
+        return errorJson(409, "LAST_SUPERADMIN_REQUIRED", "마지막 최고 관리자는 강등하거나 삭제할 수 없습니다.");
+      }
     }
   }
+
+  if (deleteRequested) {
+    if (!isSuperAdminRole(admin.role)) {
+      return errorJson(403, "SUPERADMIN_REQUIRED", "회원 삭제는 최고 관리자만 가능합니다.");
+    }
+    if (String(admin._id) === String(_id)) {
+      return errorJson(409, "SELF_DELETE_FORBIDDEN", "자기 자신은 삭제할 수 없습니다.");
+    }
+    if (payload.confirmText !== deleteConfirmText(current)) {
+      return errorJson(400, "CONFIRM_TEXT_INVALID", "확인 문구가 일치하지 않습니다.");
+    }
+    if (currentRole === "superadmin") {
+      const superAdminCount = await db.collection("users").countDocuments({
+        role: "superadmin",
+        isDeleted: { $ne: true },
+      });
+      if (superAdminCount <= 1) {
+        return errorJson(409, "LAST_SUPERADMIN_REQUIRED", "마지막 최고 관리자는 강등하거나 삭제할 수 없습니다.");
+      }
+    }
+  }
+
+  if ((payload.isSuspended === true && !(current as any).isSuspended && targetIsAdminRole) && !isSuperAdminRole(admin.role)) {
+    return errorJson(403, "SUPERADMIN_REQUIRED", "관리자 계정 비활성화는 최고 관리자만 가능합니다.");
+  }
+  if (payload.isSuspended === true && !(current as any).isSuspended && String(admin._id) === String(_id)) {
+    return errorJson(409, "SELF_SUSPEND_FORBIDDEN", "자기 자신은 비활성화할 수 없습니다.");
+  }
+
+  delete $set.confirmText;
 
   const r = await db
     .collection("users")
@@ -181,7 +227,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     if (k in payload) acc[k] = payload[k];
     return acc;
   }, {});
-  await appendAudit(
+  await appendAdminAudit(
     db,
     {
       type: "user_update",
@@ -192,6 +238,70 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     },
     req,
   );
+
+  if (roleChanged) {
+    await appendAdminAudit(
+      db,
+      {
+        type: "USER_ROLE_CHANGED",
+        actorId: admin._id,
+        targetId: _id,
+        message: "회원 권한 변경",
+        diff: {
+          actorName: admin.name ?? null,
+          actorEmail: admin.email ?? null,
+          actorRole: admin.role,
+          targetUserEmail: (current as any).email ?? null,
+          targetUserName: (current as any).name ?? null,
+          before: { role: currentRole },
+          after: { role: nextRole },
+        },
+      },
+      req,
+    );
+  }
+
+  if (deleteRequested) {
+    await appendAdminAudit(
+      db,
+      {
+        type: "USER_SOFT_DELETED",
+        actorId: admin._id,
+        targetId: _id,
+        message: "회원 탈퇴(삭제)",
+        diff: {
+          actorName: admin.name ?? null,
+          actorEmail: admin.email ?? null,
+          actorRole: admin.role,
+          targetUserEmail: (current as any).email ?? null,
+          targetUserName: (current as any).name ?? null,
+        },
+      },
+      req,
+    );
+  }
+
+  if (typeof payload.isSuspended === "boolean" && payload.isSuspended !== Boolean((current as any).isSuspended)) {
+    await appendAdminAudit(
+      db,
+      {
+        type: payload.isSuspended ? "USER_DEACTIVATED" : "USER_ACTIVATED",
+        actorId: admin._id,
+        targetId: _id,
+        message: payload.isSuspended ? "회원 비활성화" : "회원 비활성 해제",
+        diff: {
+          actorName: admin.name ?? null,
+          actorEmail: admin.email ?? null,
+          actorRole: admin.role,
+          targetUserEmail: (current as any).email ?? null,
+          targetUserName: (current as any).name ?? null,
+          before: { isSuspended: Boolean((current as any).isSuspended) },
+          after: { isSuspended: payload.isSuspended },
+        },
+      },
+      req,
+    );
+  }
 
   return NextResponse.json({
     ...v,
@@ -210,6 +320,32 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   if (!parsedParams.ok) return parsedParams.res;
 
   const { _id } = parsedParams;
+  const body = await req.json().catch(() => ({}));
+  const confirmText = typeof (body as any)?.confirmText === "string" ? (body as any).confirmText.trim() : "";
+  const current = await db
+    .collection("users")
+    .findOne({ _id }, { projection: { _id: 1, role: 1, email: 1, name: 1 } });
+  if (!current) return NextResponse.json({ message: "not found" }, { status: 404 });
+  const currentRole = normalizeUserRole((current as any).role);
+
+  if (!isSuperAdminRole(admin.role)) {
+    return errorJson(403, "SUPERADMIN_REQUIRED", "회원 삭제는 최고 관리자만 가능합니다.");
+  }
+  if (String(admin._id) === String(_id)) {
+    return errorJson(409, "SELF_DELETE_FORBIDDEN", "자기 자신은 삭제할 수 없습니다.");
+  }
+  if (confirmText !== deleteConfirmText(current)) {
+    return errorJson(400, "CONFIRM_TEXT_INVALID", "확인 문구가 일치하지 않습니다.");
+  }
+  if (currentRole === "superadmin") {
+    const superAdminCount = await db.collection("users").countDocuments({
+      role: "superadmin",
+      isDeleted: { $ne: true },
+    });
+    if (superAdminCount <= 1) {
+      return errorJson(409, "LAST_SUPERADMIN_REQUIRED", "마지막 최고 관리자는 강등하거나 삭제할 수 없습니다.");
+    }
+  }
 
   // update pipeline
   const r = await db.collection("users").updateOne({ _id }, [
@@ -225,13 +361,20 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   if (!r.matchedCount) return NextResponse.json({ message: "not found" }, { status: 404 });
 
   // DELETE 성공: 감사 로그 추가 (핸들러 내부)
-  await appendAudit(
+  await appendAdminAudit(
     db,
     {
-      type: "user_delete",
+      type: "USER_SOFT_DELETED",
       actorId: admin._id,
       targetId: _id,
       message: "탈퇴(삭제)",
+      diff: {
+        actorName: admin.name ?? null,
+        actorEmail: admin.email ?? null,
+        actorRole: admin.role,
+        targetUserEmail: (current as any).email ?? null,
+        targetUserName: (current as any).name ?? null,
+      },
     },
     req,
   );

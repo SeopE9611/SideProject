@@ -43,7 +43,7 @@ export async function resolveBoardViewerContext({ accessToken, verifyToken, fetc
 
   return {
     viewerId,
-    isAdmin: role === "admin",
+    isAdmin: role === "admin" || role === "superadmin",
     payload,
   };
 }

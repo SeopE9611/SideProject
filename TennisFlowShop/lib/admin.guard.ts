@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { verifyAccessToken } from "@/lib/auth.utils";
+import { isAdminRole, isSuperAdminRole } from "@/lib/admin/roles";
 import { ObjectId, Db } from "mongodb";
 
 type GuardOk = {
@@ -49,7 +50,7 @@ function parseAccessTokenPayload(raw: unknown): AccessTokenPayload | null {
 
 function parseAdminUser(raw: unknown): AdminUserRecord | null {
   const admin = asRecord(raw);
-  if (!admin || !(admin._id instanceof ObjectId) || admin.role !== "admin") return null;
+  if (!admin || !(admin._id instanceof ObjectId) || !isAdminRole(String(admin.role))) return null;
 
   return {
     _id: admin._id,
@@ -57,6 +58,17 @@ function parseAdminUser(raw: unknown): AdminUserRecord | null {
     name: typeof admin.name === "string" ? admin.name : undefined,
     role: admin.role,
   };
+}
+
+function superAdminError() {
+  return NextResponse.json(
+    {
+      ok: false,
+      code: "SUPERADMIN_REQUIRED",
+      message: "관리자 권한 변경은 최고 관리자만 가능합니다.",
+    },
+    { status: 403 },
+  );
 }
 
 /**
@@ -97,4 +109,11 @@ export async function requireAdmin(_req: Request): Promise<GuardOk | GuardFail> 
   }
 
   return { ok: true, db, admin };
+}
+
+export async function requireSuperAdmin(req: Request): Promise<GuardOk | GuardFail> {
+  const guard = await requireAdmin(req);
+  if (!guard.ok) return guard;
+  if (!isSuperAdminRole(guard.admin.role)) return { ok: false, res: superAdminError() };
+  return guard;
 }
