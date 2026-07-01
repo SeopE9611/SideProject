@@ -55,6 +55,10 @@ import {
   getWishlistOptionState,
 } from "./ProductDetailOptionPayload.utils";
 import { buildProductDetailCartItem } from "./ProductDetailCartItem.utils";
+import {
+  getProductDetailBuyNowCheckoutTarget,
+  getProductDetailBuyNowWithServiceCheckoutTarget,
+} from "./ProductDetailCheckoutTarget.utils";
 import { getProductDetailStockLimitErrorMessage } from "./ProductDetailCheckoutValidation.utils";
 import ProductDetailQnaTab from "./ProductDetailQnaTab";
 import ProductDetailRelatedProductsSection from "./ProductDetailRelatedProductsSection";
@@ -699,7 +703,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
     // 장바구니는 건드리지 않고, buy-now 모드로 checkout 진입
     // router.push('/checkout?mode=buynow');
-    const target = "/checkout?mode=buynow";
+    const target = getProductDetailBuyNowCheckoutTarget();
     if (!user && !allowGuestCheckout) {
       router.push(`/login?next=${encodeURIComponent(target)}`);
       return;
@@ -742,15 +746,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
     // 장착비(서비스비) – 없으면 0
     const mountingFee = typeof product.mountingFee === "number" ? product.mountingFee : 0;
 
-    const search = new URLSearchParams({
-      mode: "buynow",
-      withService: "1", // 서비스 ON
-      mountingFee: String(mountingFee), // 1자루 기준 공임
+    const target = getProductDetailBuyNowWithServiceCheckoutTarget({
+      mountingFee,
     });
 
     // Checkout으로 직접 진입 (장바구니는 건드리지 않음)
     // router.push(`/checkout?${search.toString()}`);
-    const target = `/checkout?${search.toString()}`;
     if (!user && !allowGuestCheckout) {
       router.push(`/login?next=${encodeURIComponent(target)}`);
       return;
