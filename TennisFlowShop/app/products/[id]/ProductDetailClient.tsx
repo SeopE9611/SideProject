@@ -779,6 +779,109 @@ export default function ProductDetailClient({ product }: { product: any }) {
     }
   };
 
+  const handleToggleReviewVisibility = async (review: any) => {
+    setBusyReviewId(String(review._id));
+    const next = review.status === "visible" ? "hidden" : "visible";
+
+    // 낙관적 업데이트
+    if (isMine(review)) {
+      mutateMyReview((prev: any) => {
+        if (!prev?._id || String(prev._id) !== String(review._id)) return prev;
+        return {
+          ...prev,
+          status: next,
+          ownedByMe: true,
+          masked: false,
+        };
+      }, false);
+    } else if (isAdmin) {
+      mutateAdminReviews((prev: any[] | undefined) => {
+        if (!Array.isArray(prev)) return prev;
+        return prev.map((r) =>
+          String(r._id) === String(review._id)
+            ? {
+                ...r,
+                status: next,
+                masked: false,
+              }
+            : r,
+        );
+      }, false);
+    }
+
+    // 서버 반영
+    try {
+      const res = await fetch(`/api/reviews/${review._id}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          status: next,
+        }),
+      });
+      if (!res.ok) throw new Error("상태 변경 실패");
+
+      // 재검증
+      if (isMine(review)) await mutateMyReview();
+      else if (isAdmin) await mutateAdminReviews();
+
+      // 탭 유지 + 서버컴포넌트 리프레시
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", "reviews");
+      router.replace(`?${params.toString()}`, {
+        scroll: false,
+      });
+      router.refresh();
+
+      showSuccessToast(
+        next === "hidden" ? "비공개로 전환했습니다." : "공개로 전환했습니다.",
+      );
+    } catch (err: any) {
+      // 실패 시 되돌리기(재검증)
+      if (isMine(review)) await mutateMyReview();
+      else if (isAdmin) await mutateAdminReviews();
+      showErrorToast(err?.message || "상태 변경 중 오류");
+    } finally {
+      setBusyReviewId(null);
+    }
+  };
+
+  const handleDeleteReview = async (review: any) => {
+    if (!confirm("이 리뷰를 삭제하시겠습니까?")) return;
+
+    setBusyReviewId(String(review._id));
+    try {
+      const res = await fetch(`/api/reviews/${review._id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("삭제 실패");
+
+      // 재검증
+      if (isMine(review)) await mutateMyReview();
+      else if (isAdmin) await mutateAdminReviews();
+
+      // 탭 유지 + 서버컴포넌트 리프레시
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", "reviews");
+      router.replace(`?${params.toString()}`, {
+        scroll: false,
+      });
+      router.refresh();
+
+      showSuccessToast("삭제했습니다.");
+    } catch (err: any) {
+      // 실패 시 복구(재검증으로 복원)
+      if (isMine(review)) await mutateMyReview();
+      else if (isAdmin) await mutateAdminReviews();
+      showErrorToast(err?.message || "삭제 중 오류");
+    } finally {
+      setBusyReviewId(null);
+    }
+  };
+
   const validateSelectedColorForCheckout = () => {
     if (colorRows.length === 0) return true;
     if (!selectedColor || !selectedColorRow) {
@@ -1844,83 +1947,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                     {/* 공개/비공개 토글 */}
                                     <DropdownMenuItem
                                       disabled={busyReviewId === String(review._id)}
-                                      onClick={async (e) => {
+                                      onClick={(e) => {
                                         e.stopPropagation();
-                                        setBusyReviewId(String(review._id));
-                                        const next =
-                                          review.status === "visible" ? "hidden" : "visible";
-
-                                        // 낙관적 업데이트
-                                        if (isMine(review)) {
-                                          mutateMyReview((prev: any) => {
-                                            if (
-                                              !prev?._id ||
-                                              String(prev._id) !== String(review._id)
-                                            )
-                                              return prev;
-                                            return {
-                                              ...prev,
-                                              status: next,
-                                              ownedByMe: true,
-                                              masked: false,
-                                            };
-                                          }, false);
-                                        } else if (isAdmin) {
-                                          mutateAdminReviews((prev: any[] | undefined) => {
-                                            if (!Array.isArray(prev)) return prev;
-                                            return prev.map((r) =>
-                                              String(r._id) === String(review._id)
-                                                ? {
-                                                    ...r,
-                                                    status: next,
-                                                    masked: false,
-                                                  }
-                                                : r,
-                                            );
-                                          }, false);
-                                        }
-
-                                        // 서버 반영
-                                        try {
-                                          const res = await fetch(`/api/reviews/${review._id}`, {
-                                            method: "PATCH",
-                                            credentials: "include",
-                                            headers: {
-                                              "Content-Type": "application/json",
-                                            },
-                                            body: JSON.stringify({
-                                              status: next,
-                                            }),
-                                          });
-                                          if (!res.ok) throw new Error("상태 변경 실패");
-
-                                          // 재검증
-                                          if (isMine(review)) await mutateMyReview();
-                                          else if (isAdmin) await mutateAdminReviews();
-
-                                          // 탭 유지 + 서버컴포넌트 리프레시
-                                          const params = new URLSearchParams(
-                                            searchParams.toString(),
-                                          );
-                                          params.set("tab", "reviews");
-                                          router.replace(`?${params.toString()}`, {
-                                            scroll: false,
-                                          });
-                                          router.refresh();
-
-                                          showSuccessToast(
-                                            next === "hidden"
-                                              ? "비공개로 전환했습니다."
-                                              : "공개로 전환했습니다.",
-                                          );
-                                        } catch (err: any) {
-                                          // 실패 시 되돌리기(재검증)
-                                          if (isMine(review)) await mutateMyReview();
-                                          else if (isAdmin) await mutateAdminReviews();
-                                          showErrorToast(err?.message || "상태 변경 중 오류");
-                                        } finally {
-                                          setBusyReviewId(null);
-                                        }
+                                        void handleToggleReviewVisibility(review);
                                       }}
                                       className="cursor-pointer"
                                     >
@@ -1953,41 +1982,9 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                     {/* 삭제 */}
                                     <DropdownMenuItem
                                       disabled={busyReviewId === String(review._id)}
-                                      onClick={async (e) => {
+                                      onClick={(e) => {
                                         e.stopPropagation();
-                                        if (!confirm("이 리뷰를 삭제하시겠습니까?")) return;
-
-                                        setBusyReviewId(String(review._id));
-                                        try {
-                                          const res = await fetch(`/api/reviews/${review._id}`, {
-                                            method: "DELETE",
-                                            credentials: "include",
-                                          });
-                                          if (!res.ok) throw new Error("삭제 실패");
-
-                                          // 재검증
-                                          if (isMine(review)) await mutateMyReview();
-                                          else if (isAdmin) await mutateAdminReviews();
-
-                                          // 탭 유지 + 서버컴포넌트 리프레시
-                                          const params = new URLSearchParams(
-                                            searchParams.toString(),
-                                          );
-                                          params.set("tab", "reviews");
-                                          router.replace(`?${params.toString()}`, {
-                                            scroll: false,
-                                          });
-                                          router.refresh();
-
-                                          showSuccessToast("삭제했습니다.");
-                                        } catch (err: any) {
-                                          // 실패 시 복구(재검증으로 복원)
-                                          if (isMine(review)) await mutateMyReview();
-                                          else if (isAdmin) await mutateAdminReviews();
-                                          showErrorToast(err?.message || "삭제 중 오류");
-                                        } finally {
-                                          setBusyReviewId(null);
-                                        }
+                                        void handleDeleteReview(review);
                                       }}
                                       className="cursor-pointer text-destructive focus:text-destructive"
                                     >
