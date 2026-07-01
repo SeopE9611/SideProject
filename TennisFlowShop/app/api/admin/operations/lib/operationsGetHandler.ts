@@ -464,6 +464,18 @@ function isOrderTerminalStatus(status?: string | null) {
   );
 }
 
+function isClosedForNicePaymentSync(status?: string | null) {
+  const s = normalizeStatusText(status);
+  return (
+    s.includes("취소") ||
+    s.includes("환불") ||
+    s.includes("결제취소") ||
+    s === "canceled" ||
+    s === "cancelled" ||
+    s === "refunded"
+  );
+}
+
 function isApplicationTerminalStatus(status?: string | null) {
   const s = normalizeStatusText(status);
   return (
@@ -1584,7 +1596,9 @@ export async function handleAdminOperationsGet(req: Request) {
       paymentInfo: paymentInfo as any,
     });
     const canSyncNicePayment =
-      paymentProvider === "nicepay" && Boolean(paymentTid) && !isOrderTerminalStatus(statusLabel);
+      paymentProvider === "nicepay" &&
+      Boolean(paymentTid) &&
+      !isClosedForNicePaymentSync(statusLabel);
     return {
       id,
       kind: "order",
