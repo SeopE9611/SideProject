@@ -33,6 +33,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
+import { USER_ME_KEY, USER_ME_SWR_OPTIONS } from "@/lib/hooks/useCurrentUser";
 
 const CAT_LABELS: Record<string, string> = {
   product: "상품문의",
@@ -217,11 +218,7 @@ export default function QnaPageClient({
   const listHref = detailQuery ? `/board/qna?${detailQuery}` : "/board/qna";
 
   // 현재 사용자(비로그인= null) — 비밀글 클릭 차단 판단에 사용
-  const { data: me } = useSWR<MeRes | null>("/api/users/me", meFetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    shouldRetryOnError: false,
-  });
+  const { data: me } = useSWR<MeRes | null>(USER_ME_KEY, meFetcher, USER_ME_SWR_OPTIONS);
   const viewerId = me?.id ?? null;
   const isAdmin = me?.role === "admin";
 

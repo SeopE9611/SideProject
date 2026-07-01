@@ -18,9 +18,9 @@ export function useUnreadMessageCount(enabled: boolean) {
     enabled ? "/api/messages/unread-count" : null,
     fetcher,
     {
-      dedupingInterval: 10_000,
+      dedupingInterval: 30_000,
       refreshInterval: 60_000,
-      revalidateOnFocus: false,
+      revalidateOnFocus: true,
     },
   );
 

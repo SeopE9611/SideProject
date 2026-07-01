@@ -4,6 +4,14 @@ import { useAuthStore } from "@/app/store/authStore";
 import { refreshOnce } from "@/lib/auth/refresh-mutex";
 import { useCallback, useRef, useState } from "react";
 
+export const USER_ME_KEY = "/api/users/me";
+export const USER_ME_SWR_OPTIONS = {
+  dedupingInterval: 60_000,
+  revalidateOnFocus: false,
+  revalidateOnReconnect: false,
+  shouldRetryOnError: false,
+} as const;
+
 export function useCurrentUser(): {
   user: ReturnType<typeof useAuthStore>["user"];
   loading: boolean;
@@ -21,7 +29,7 @@ export function useCurrentUser(): {
     inFlight.current = (async () => {
       try {
         // 1) /api/users/me
-        let res = await fetch("/api/users/me", {
+        let res = await fetch(USER_ME_KEY, {
           credentials: "include",
           cache: "no-store",
         });
@@ -35,7 +43,7 @@ export function useCurrentUser(): {
         if (res.status === 401 || res.status === 403) {
           const rr = await refreshOnce();
           if (rr.ok) {
-            res = await fetch("/api/users/me", {
+            res = await fetch(USER_ME_KEY, {
               credentials: "include",
               cache: "no-store",
               headers: { "x-suppress-auth-expired": "1" },

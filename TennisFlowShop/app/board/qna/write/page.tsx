@@ -37,6 +37,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
+import { USER_ME_KEY, USER_ME_SWR_OPTIONS } from "@/lib/hooks/useCurrentUser";
 
 const CATEGORY_LABELS: Record<string, string> = {
   product: "상품문의",
@@ -213,11 +214,7 @@ export default function QnaWritePage() {
   }
 
   // 로그인 여부 확인 (비로그인 401은 정상 흐름으로 처리)
-  const { data: me } = useSWR<MeRes | null>("/api/users/me", fetcherAllow401, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    shouldRetryOnError: false,
-  });
+  const { data: me } = useSWR<MeRes | null>(USER_ME_KEY, fetcherAllow401, USER_ME_SWR_OPTIONS);
 
   const ordersKey = me ? "/api/orders?limit=100" : null;
 

@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import useSWR from "swr";
+import { USER_ME_KEY, USER_ME_SWR_OPTIONS } from "@/lib/hooks/useCurrentUser";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -144,13 +145,9 @@ export default function QnaDetailPage() {
 
   // 로그인 사용자 정보
   const meRes = useSWR(
-    `/api/users/me`,
+    USER_ME_KEY,
     (url: string) => fetch(url, { credentials: "include" }).then((r) => (r.ok ? r.json() : null)),
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-      dedupingInterval: 30_000,
-    },
+    USER_ME_SWR_OPTIONS,
   );
   const me = meRes.data;
   const isAdmin = me?.role === "admin";
