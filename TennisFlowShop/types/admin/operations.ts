@@ -40,6 +40,15 @@ export type AdminOperationItem = {
   statusLabel: string;
   statusDisplayLabel?: string;
   paymentLabel?: string;
+  paymentProvider?: string | null;
+  paymentTid?: string | null;
+  paymentInfo?: {
+    provider?: string | null;
+    tid?: string | null;
+    status?: string | null;
+    niceSync?: { pgStatus?: string | null; lastSyncedAt?: string | null } | null;
+  } | null;
+  canSyncNicePayment?: boolean;
   amount: number;
   amountNote?: string;
   amountReference?: number;

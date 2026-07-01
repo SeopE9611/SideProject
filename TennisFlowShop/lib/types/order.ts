@@ -45,9 +45,13 @@ export type Order = {
 
   paymentStatus: "결제완료" | "결제대기" | "결제실패" | "결제취소" | string;
 
+  paymentProvider?: string | null;
+  paymentTid?: string | null;
   paymentInfo?: {
+    provider?: string | null;
+    tid?: string | null;
     status?: string | null;
-    niceSync?: { pgStatus?: string | null } | null;
+    niceSync?: { pgStatus?: string | null; lastSyncedAt?: string | null } | null;
   } | null;
 
   type: "상품" | "서비스" | "클래스";

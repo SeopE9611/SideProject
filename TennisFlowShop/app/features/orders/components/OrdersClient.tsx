@@ -60,6 +60,7 @@ import {
   AlertTriangle,
   ChevronDown,
   Copy,
+  CreditCard,
   Eye,
   MoreHorizontal,
   PackageSearch,
@@ -70,7 +71,7 @@ import {
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 
 export default function OrdersClient() {
   function getSelectedColorLabel(value: {
@@ -107,6 +108,7 @@ export default function OrdersClient() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { mutate: mutateGlobal } = useSWRConfig();
 
   // 현재 페이지 번호 상태
   const [page, setPage] = useState(1);
@@ -126,6 +128,7 @@ export default function OrdersClient() {
 
   // 고급 검색 토글 상태
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [syncingNiceOrderId, setSyncingNiceOrderId] = useState<string | null>(null);
 
   // 정렬 상태 (서버 정렬 기준)
   const [sortBy, setSortBy] = useState<"date" | "total">("date");
@@ -613,6 +616,42 @@ export default function OrdersClient() {
       showErrorToast("오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
+
+
+  function canSyncNicePayment(order: OrderWithType) {
+    if (order.__type !== "order") return false;
+    const provider = String(order.paymentInfo?.provider ?? order.paymentProvider ?? "").toLowerCase();
+    const tid = String(order.paymentInfo?.tid ?? order.paymentTid ?? "").trim();
+    const status = String(order.status ?? "").toLowerCase();
+    return (
+      provider === "nicepay" &&
+      Boolean(tid) &&
+      !status.includes("취소") &&
+      !status.includes("환불") &&
+      status !== "canceled" &&
+      status !== "cancelled" &&
+      status !== "refunded"
+    );
+  }
+
+  async function handleNicePaymentSync(orderId: string) {
+    if (syncingNiceOrderId) return;
+    setSyncingNiceOrderId(orderId);
+    try {
+      const res = await fetch(`/api/payments/nice/sync/${orderId}`, { method: "POST" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json?.success === false) {
+        throw new Error(json?.error || "PG 상태 확인에 실패했습니다.");
+      }
+      await mutate();
+      await mutateGlobal((key) => typeof key === "string" && key.startsWith("/api/admin/operations"));
+      showSuccessToast("PG 결제 상태를 확인했습니다.");
+    } catch (error: any) {
+      showErrorToast(`PG 상태 확인 실패: ${error?.message || "알 수 없는 오류"}`);
+    } finally {
+      setSyncingNiceOrderId(null);
+    }
+  }
 
   // 스트링 상품 주문과 그에 연결된 교체 서비스 신청을 "묶음"으로 그룹화하는 함수
   function groupLinkedOrders(orders: OrderWithType[]) {
@@ -1456,6 +1495,23 @@ export default function OrdersClient() {
                                   <Eye className="mr-2 h-4 w-4" /> 상세 보기
                                 </Link>
                               </DropdownMenuItem>
+
+                              {canSyncNicePayment(order) && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    className="whitespace-nowrap"
+                                    title="NICEPAY의 현재 결제 상태를 다시 조회합니다."
+                                    disabled={syncingNiceOrderId === order.id}
+                                    onClick={() => {
+                                      void handleNicePaymentSync(order.id);
+                                    }}
+                                  >
+                                    <CreditCard className="mr-2 h-4 w-4" />
+                                    {syncingNiceOrderId === order.id ? "확인 중..." : "PG 상태 확인"}
+                                  </DropdownMenuItem>
+                                </>
+                              )}
 
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
