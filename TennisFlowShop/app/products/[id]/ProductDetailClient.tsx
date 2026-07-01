@@ -69,6 +69,12 @@ import ProductDetailRelatedProductsSection from "./ProductDetailRelatedProductsS
 import ProductDetailReviewsTab from "./ProductDetailReviewsTab";
 import ProductDetailSpecificationsTab from "./ProductDetailSpecificationsTab";
 import {
+  buildProductReviewCta,
+  isAdminUser,
+  isMineReview,
+  mergeProductDetailReviews,
+} from "./ProductDetailReviewData.utils";
+import {
   getColorLabel,
   getGuestOrderModeClient,
   getProductDetailBadges,
@@ -495,12 +501,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   };
 
   // 로그인 정보 로드가 끝난 후 계산
-  const isAdmin =
-    !!user &&
-    ((user as any).role === "admin" ||
-      (user as any).role === "ADMIN" ||
-      (user as any).isAdmin === true ||
-      (Array.isArray((user as any).roles) && (user as any).roles.includes("admin")));
+  const isAdmin = isAdminUser(user);
 
   // 화면에 보이는 개수만큼만 가져와 병합(과한 트래픽 방지)
   const reviewsCount = reviewsLen || 10;
@@ -569,83 +570,33 @@ export default function ProductDetailClient({ product }: { product: any }) {
     { revalidateOnFocus: false },
   );
 
-  const productReviewHref = reviewEligibility?.suggestedApplicationId
-    ? `/reviews/write?service=stringing&applicationId=${reviewEligibility.suggestedApplicationId}`
-    : `/reviews/write?productId=${product._id}${reviewEligibility?.suggestedOrderId ? `&orderId=${reviewEligibility.suggestedOrderId}` : ""}`;
-  const productReviewCtaLabel = reviewEligibility?.suggestedApplicationId
-    ? "교체서비스 후기 작성"
-    : "리뷰 작성하기";
-  const productReviewHelper = reviewEligibility?.suggestedApplicationId
-    ? "이 상품으로 이용한 교체서비스 후기를 작성할 수 있습니다."
-    : reviewEligibility?.eligible
-      ? "구매확정된 단품 구매 후기를 작성할 수 있습니다."
-      : "작성 가능한 이용 내역이 없습니다.";
-  const canWriteFromProductReviewTab = Boolean(
-    reviewEligibility?.eligible || reviewEligibility?.suggestedApplicationId,
-  );
+  const {
+    productReviewHref,
+    productReviewCtaLabel,
+    productReviewHelper,
+    canWriteFromProductReviewTab,
+  } = buildProductReviewCta({
+    productId: String(product._id),
+    reviewEligibility,
+  });
 
   // 내 리뷰 여부 판별(merged에서 ownedByMe 세팅 + id 비교)
-  const isMine = (rv: any) =>
-    !!rv?.ownedByMe || (myReview && rv && String(myReview._id) === String(rv._id));
+  const isMine = (rv: any) => isMineReview(rv, myReview);
 
   // 서버가 내려준 product.reviews는 숨김 리뷰를 마스킹
   // myReview가 있으면 동일 _id 항목을 원문으로 덮어쓰기 + 마스킹 해제
   // isAdmin이면 adminReviews로 표시 범위 내 항목을 원문으로 덮어쓰기 + 마스킹 해제
-  const mergedReviews = useMemo(() => {
-    const base = Array.isArray(product.reviews) ? product.reviews : [];
-    let next = base;
-
-    // 내 리뷰 덮어쓰기 (있을 때만)
-    if (myReview && myReview._id) {
-      const i = next.findIndex((r: any) => String(r._id) === String(myReview._id));
-      if (i !== -1) {
-        next = [...next];
-        next[i] = {
-          ...next[i],
-          user: myReview.userName ?? next[i].user, // UI에서 쓰는 user 필드 보강
-          content: myReview.content,
-          photos: myReview.photos ?? [],
-          masked: false, // 본인 뷰는 언마스크
-          ownedByMe: true,
-          status: myReview.status, // hidden/visible 그대로 유지
-        };
-      }
-    }
-
-    // 관리자면 표시 중인 항목 범위에서 원문으로 덮어쓰기
-    if (isAdmin && Array.isArray(adminReviews) && adminReviews.length > 0) {
-      const map = new Map(adminReviews.map((r: any) => [String(r._id), r]));
-      next = next.map((r: any) => {
-        const raw = map.get(String(r._id));
-        if (!raw) return r;
-        return {
-          ...r,
-          // admin API의 필드를 화면 필드로 매핑
-          user: raw.userName ?? r.user,
-          content: raw.content,
-          photos: raw.photos ?? [],
-          status: raw.status,
-          masked: false, // 관리자 뷰는 언마스크
-          adminView: true,
-        };
-      });
-    }
-
-    if (Array.isArray(linkedReviewData?.items)) {
-      const existingIds = new Set(next.map((r: any) => String(r._id)));
-      const linked = linkedReviewData.items
-        .filter((r: any) => !existingIds.has(String(r._id)))
-        .map((r: any) => ({
-          ...r,
-          user: r.userName ?? "익명",
-          date: typeof r.createdAt === "string" ? r.createdAt.slice(0, 10) : "",
-          serviceContextLabel: r.serviceContextLabel,
-        }));
-      next = [...next, ...linked];
-    }
-
-    return next;
-  }, [product.reviews, myReview, isAdmin, adminReviews, linkedReviewData]);
+  const mergedReviews = useMemo(
+    () =>
+      mergeProductDetailReviews({
+        baseReviews: product.reviews,
+        myReview,
+        isAdmin,
+        adminReviews,
+        linkedReviewData,
+      }),
+    [product.reviews, myReview, isAdmin, adminReviews, linkedReviewData],
+  );
 
   // 인라인 수정 다이얼로그 상태/핸들러
   const [editOpen, setEditOpen] = useState(false);
