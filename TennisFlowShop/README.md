@@ -11,11 +11,11 @@
 
 **도깨비테니스**는 테니스 용품 구매, 스트링 교체, 아카데미 신청, 중고 라켓 탐색, 리뷰/커뮤니티, 관리자 운영을 하나로 연결한 **Next.js 기반 테니스 이커머스·예약·관리자 운영 플랫폼**입니다.
 
-- 운영 사이트: [https://dokkaebitennis.com](https://dokkaebitennis.com)
+- 운영 사이트: [https://www.dokkaebitennis.com](https://www.dokkaebitennis.com)
 - 저장소 폴더명: `TennisFlowShop`
 - 개발자: 윤형섭
 
-> 운영 URL은 프로젝트 운영 문서의 canonical 도메인 기준으로 정리했습니다. 배포 환경이 변경되면 `NEXT_PUBLIC_SITE_URL`과 함께 이 README의 링크도 갱신해야 합니다.
+> 운영 URL은 현재 정상 접근이 확인된 `www` 도메인 기준으로 정리했습니다. 배포 환경이 변경되면 `NEXT_PUBLIC_SITE_URL`과 함께 이 README의 링크도 갱신해야 합니다.
 
 ## Overview
 
@@ -158,19 +158,19 @@ flowchart TB
 > 이 섹션은 프로젝트 실행 안내입니다. 실제 secret 값은 저장소에 커밋하지 않습니다.
 
 ```bash
-npm install
+pnpm install
 cp .env.example .env.local
-npm run dev
+pnpm dev
 ```
 
 주요 스크립트는 다음과 같습니다.
 
 ```bash
-npm run lint       # ESLint
-npm run typecheck  # tsc --noEmit
-npm run build      # next build
-npm run smoke      # 공개 경로 smoke 체크
-npm run cy:run     # Cypress E2E
+pnpm lint       # ESLint
+pnpm typecheck  # tsc --noEmit
+pnpm build      # next build
+pnpm smoke      # 공개 경로 smoke 체크
+pnpm cy:run     # Cypress E2E
 ```
 
 <details>

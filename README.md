@@ -15,7 +15,7 @@
 | 구분 | 링크 | 설명 |
 | --- | --- | --- |
 | 핵심 프로젝트 상세 | [TennisFlowShop/README.md](./TennisFlowShop/README.md) | 도깨비테니스 기능, 아키텍처, 운영 관점 정리 |
-| 운영 사이트 | [https://dokkaebitennis.com](https://dokkaebitennis.com) | 현재 코드/문서에서 사용하는 도깨비테니스 canonical 운영 도메인 |
+| 운영 사이트 | [https://www.dokkaebitennis.com](https://www.dokkaebitennis.com) | 현재 정상 접근이 확인된 도깨비테니스 운영 도메인 |
 | 보조 프로젝트 | [my-portfolio](./my-portfolio) | 개인 포트폴리오 웹 프로젝트 |
 
 ## 프로젝트 목록
