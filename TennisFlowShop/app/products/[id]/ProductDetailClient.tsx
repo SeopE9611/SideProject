@@ -83,6 +83,7 @@ import type {
   GaugeInventoryRow,
   VariantInventoryRow,
 } from "./ProductDetailClient.types";
+import ProductDetailRelatedProductsSection from "./ProductDetailRelatedProductsSection";
 import ProductDetailSpecificationsTab from "./ProductDetailSpecificationsTab";
 import {
   fmtDate,
@@ -2242,38 +2243,23 @@ export default function ProductDetailClient({ product }: { product: any }) {
           />
         )}
 
-        <div ref={relatedSectionRef} className="mt-8 space-y-6 sm:mt-12 sm:space-y-8">
-          <Card className="rounded-2xl border border-border bg-card shadow-sm sm:rounded-3xl">
-            <CardHeader className="p-5 pb-3 sm:p-6 sm:pb-4">
-              <CardTitle className="break-keep text-ui-card-title-lg font-semibold leading-snug sm:text-ui-section-title">
-                관련 상품
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-              <HorizontalProducts
-                title="관련 상품"
-                items={relatedFiltered.map(
-                  (rp: any): HItem => ({
-                    _id: String(rp._id),
-                    name: rp.name,
-                    price: Number(rp.price ?? 0),
-                    images: rp.images ?? [],
-                    brand: displayBrandLabel(rp.brand) || rp.brand,
-                    href: `/products/${rp._id}`,
-                    merchandisingBadges: getProductDetailBadges(rp),
-                    inventory: rp.inventory,
-                  }),
-                )}
-                moreHref="/products"
-                showHeader={false}
-                showMoreCard={false}
-                loading={loadingRelated}
-                emptyTitle="관련 상품이 없습니다"
-                emptyDescription="다른 스트링도 둘러보세요."
-              />
-            </CardContent>
-          </Card>
-
+        <ProductDetailRelatedProductsSection
+          HorizontalProducts={HorizontalProducts}
+          relatedSectionRef={relatedSectionRef}
+          relatedProducts={relatedFiltered.map(
+            (rp: any): HItem => ({
+              _id: String(rp._id),
+              name: rp.name,
+              price: Number(rp.price ?? 0),
+              images: rp.images ?? [],
+              brand: displayBrandLabel(rp.brand) || rp.brand,
+              href: `/products/${rp._id}`,
+              merchandisingBadges: getProductDetailBadges(rp),
+              inventory: rp.inventory,
+            }),
+          )}
+          loadingRelated={loadingRelated}
+        >
           <RecentViewedItems currentType="product" currentId={productId} />
 
           {/* 리뷰 수정 다이얼로그도 열릴 때만 로드 */}
@@ -2288,7 +2274,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
               onChangeHoverRating={setHoverRating}
             />
           )}
-        </div>
+        </ProductDetailRelatedProductsSection>
       </SiteContainer>
     </div>
   );
