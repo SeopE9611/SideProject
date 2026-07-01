@@ -11,12 +11,19 @@ import {
   isAcademyClassLevel,
   isAcademyClassStatus,
   type AcademyClassSnapshot,
+  type AcademyLessonApplication,
 } from "@/lib/types/academy";
 
 const COLLECTION_NAME = "academy_lesson_applications";
 const CLASS_COLLECTION_NAME = "academy_classes";
 const CLASS_AUTO_CLOSED_MESSAGE =
   "등록 확정 인원이 정원에 도달하여 클래스가 모집 마감 처리되었습니다.";
+
+type AcademyLessonApplicationDoc = Omit<AcademyLessonApplication, "_id" | "classId"> & {
+  _id?: ObjectId;
+  classId?: string | ObjectId | null;
+  adminDeletedAt?: string | Date;
+};
 
 function serializeValue(value: unknown): unknown {
   if (value instanceof Date) return value.toISOString();
@@ -102,8 +109,8 @@ function trimString(value: unknown, maxLength: number) {
   return value.trim().slice(0, maxLength);
 }
 
-function buildClassApplicationFilter(classId: string): Filter<Document> {
-  const matchers: unknown[] = [classId];
+function buildClassApplicationFilter(classId: string): Filter<AcademyLessonApplicationDoc> {
+  const matchers: Array<string | ObjectId> = [classId];
   if (ObjectId.isValid(classId)) matchers.push(new ObjectId(classId));
   return { $or: [{ classId: { $in: matchers } }, { "classSnapshot.classId": classId }] };
 }
@@ -143,7 +150,7 @@ async function autoCloseClassWhenConfirmedCapacityReached(db: Db, academyClass: 
     typeof academyClass.capacity === "number" ? Math.trunc(academyClass.capacity) : null;
   if (!capacity || capacity <= 0) return { classAutoClosed: false, confirmedCount: null, capacity };
 
-  const confirmedCount = await db.collection(COLLECTION_NAME).countDocuments({
+  const confirmedCount = await db.collection<AcademyLessonApplicationDoc>(COLLECTION_NAME).countDocuments({
     ...buildClassApplicationFilter(classId),
     status: "confirmed",
     adminDeletedAt: { $exists: false },
@@ -181,7 +188,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 
   const _id = new ObjectId(id);
-  const collection = guard.db.collection(COLLECTION_NAME);
+  const collection = guard.db.collection<AcademyLessonApplicationDoc>(COLLECTION_NAME);
   const current = await collection.findOne({ _id, adminDeletedAt: { $exists: false } });
   if (!current) {
     return NextResponse.json({ success: false, message: "신청 내역을 찾을 수 없습니다." }, { status: 404 });
