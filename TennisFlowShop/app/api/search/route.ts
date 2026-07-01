@@ -46,7 +46,9 @@ export async function GET(req: NextRequest) {
 
     // 검색어가 없으면 바로 빈 배열 반환
     if (!query) {
-      return NextResponse.json<SearchResult[]>([]);
+      const response = NextResponse.json<SearchResult[]>([]);
+      response.headers.set("Cache-Control", "public, s-maxage=15, stale-while-revalidate=30");
+      return response;
     }
 
     const client = await clientPromise;
@@ -147,7 +149,12 @@ export async function GET(req: NextRequest) {
     // 너무 길어지는 것을 방지하기 위해 상위 10개만 반환
     const limited = results.slice(0, SEARCH_RESULT_LIMIT);
 
-    return NextResponse.json(limited);
+    const response = NextResponse.json(limited);
+    response.headers.set(
+      "Cache-Control",
+      viewer.isAdmin ? "no-store" : "public, s-maxage=15, stale-while-revalidate=30",
+    );
+    return response;
   } catch (err) {
     console.error("[통합 검색 오류]", err);
     return NextResponse.json({ message: "서버 오류" }, { status: 500 });
