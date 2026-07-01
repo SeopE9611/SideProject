@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
+import type { Db } from "mongodb";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin.guard";
 import { verifyAdminCsrf } from "@/lib/admin/verifyAdminCsrf";
@@ -40,6 +41,18 @@ const userPatchSchema = z
   .strict();
 
 const userProjection = { projection: { hashedPassword: 0 } };
+
+type AdminUserDoc = {
+  email?: unknown;
+  role?: unknown;
+  name?: unknown;
+  isDeleted?: unknown;
+  isSuspended?: unknown;
+};
+
+function usersCollection(db: Db) {
+  return db.collection<AdminUserDoc>("users");
+}
 
 function roleConfirmText(before: string, after: string) {
   if (after === "superadmin" && before !== "superadmin") return "최고 관리자로 변경";
@@ -84,7 +97,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
   const parsedParams = parseUserIdParams(await ctx.params);
   if (!parsedParams.ok) return parsedParams.res;
 
-  const doc = await db.collection("users").findOne({ _id: parsedParams._id }, userProjection);
+  const doc = await usersCollection(db).findOne({ _id: parsedParams._id }, userProjection);
 
   if (!doc) return NextResponse.json({ message: "not found" }, { status: 404 });
 
@@ -149,8 +162,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   const { _id } = parsedParams;
 
-  const current = await db
-    .collection("users")
+  const current = await usersCollection(db)
     .findOne({ _id }, { projection: { _id: 1, role: 1, email: 1, name: 1, isDeleted: 1, isSuspended: 1 } });
   if (!current) return NextResponse.json({ message: "not found" }, { status: 404 });
 
@@ -172,7 +184,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       return errorJson(400, "CONFIRM_TEXT_INVALID", "확인 문구가 일치하지 않습니다.");
     }
     if (currentRole === "superadmin" && nextRole !== "superadmin") {
-      const superAdminCount = await db.collection("users").countDocuments({
+      const superAdminCount = await usersCollection(db).countDocuments({
         role: "superadmin",
         isDeleted: { $ne: true },
       });
@@ -193,7 +205,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       return errorJson(400, "CONFIRM_TEXT_INVALID", "확인 문구가 일치하지 않습니다.");
     }
     if (currentRole === "superadmin") {
-      const superAdminCount = await db.collection("users").countDocuments({
+      const superAdminCount = await usersCollection(db).countDocuments({
         role: "superadmin",
         isDeleted: { $ne: true },
       });
@@ -212,13 +224,12 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   delete $set.confirmText;
 
-  const r = await db
-    .collection("users")
+  const r = await usersCollection(db)
     .updateOne({ _id }, { $set, $currentDate: { updatedAt: true } });
 
   if (!r.matchedCount) return NextResponse.json({ message: "not found" }, { status: 404 });
 
-  const v = await db.collection("users").findOne({ _id }, userProjection);
+  const v = await usersCollection(db).findOne({ _id }, userProjection);
 
   if (!v) return NextResponse.json({ message: "not found" }, { status: 404 });
 
@@ -322,8 +333,7 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   const { _id } = parsedParams;
   const body = await req.json().catch(() => ({}));
   const confirmText = typeof (body as any)?.confirmText === "string" ? (body as any).confirmText.trim() : "";
-  const current = await db
-    .collection("users")
+  const current = await usersCollection(db)
     .findOne({ _id }, { projection: { _id: 1, role: 1, email: 1, name: 1 } });
   if (!current) return NextResponse.json({ message: "not found" }, { status: 404 });
   const currentRole = normalizeUserRole((current as any).role);
@@ -338,7 +348,7 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
     return errorJson(400, "CONFIRM_TEXT_INVALID", "확인 문구가 일치하지 않습니다.");
   }
   if (currentRole === "superadmin") {
-    const superAdminCount = await db.collection("users").countDocuments({
+    const superAdminCount = await usersCollection(db).countDocuments({
       role: "superadmin",
       isDeleted: { $ne: true },
     });
@@ -348,7 +358,7 @@ export async function DELETE(req: Request, ctx: { params: Promise<{ id: string }
   }
 
   // update pipeline
-  const r = await db.collection("users").updateOne({ _id }, [
+  const r = await usersCollection(db).updateOne({ _id }, [
     {
       $set: {
         isDeleted: true,

@@ -50,13 +50,14 @@ function parseAccessTokenPayload(raw: unknown): AccessTokenPayload | null {
 
 function parseAdminUser(raw: unknown): AdminUserRecord | null {
   const admin = asRecord(raw);
-  if (!admin || !(admin._id instanceof ObjectId) || !isAdminRole(String(admin.role))) return null;
+  const role = String(admin?.role ?? "");
+  if (!admin || !(admin._id instanceof ObjectId) || !isAdminRole(role)) return null;
 
   return {
     _id: admin._id,
     email: typeof admin.email === "string" ? admin.email : undefined,
     name: typeof admin.name === "string" ? admin.name : undefined,
-    role: admin.role,
+    role,
   };
 }
 
