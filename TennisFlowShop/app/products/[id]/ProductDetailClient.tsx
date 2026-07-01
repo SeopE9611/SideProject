@@ -7,7 +7,6 @@ import { type CartItem, useCartStore } from "@/app/store/cartStore";
 import type { HItem } from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PrimaryCTAGroup } from "@/components/public";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -18,10 +17,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  merchandisingImageBadgeClass,
-  merchandisingImageBadgeVariant,
-} from "@/lib/badge-style";
 import { stringBrandLabel, stringColorLabel, stringMaterialLabel } from "@/lib/constants";
 import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
 import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
@@ -35,8 +30,6 @@ import { cn } from "@/lib/utils";
 import {
   Activity,
   ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
   Clock,
   CreditCard,
   FileText,
@@ -58,6 +51,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
+import ProductDetailImageGallery from "./ProductDetailImageGallery";
 import type {
   ColorInventoryRow,
   DetailTab,
@@ -193,7 +187,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const additionalFeaturesText = (product?.additionalFeatures || "").trim();
 
   const [quantity, setQuantity] = useState(1);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const variantRows = useMemo<VariantInventoryRow[]>(() => {
     if (!Array.isArray(product?.variantInventories) || product.variantInventories.length === 0)
       return [];
@@ -1046,16 +1039,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
     </Button>
   );
 
-  const nextImage = () => {
-    if (images.length === 0) return;
-    setSelectedImageIndex((prev) => (prev + 1) % images.length);
-  };
-
-  const prevImage = () => {
-    if (images.length === 0) return;
-    setSelectedImageIndex((prev) => (prev - 1 + images.length) % images.length);
-  };
-
   const productId = String(product?._id ?? product?.id ?? "");
   const productBrandLabel = displayBrandLabel(product?.brand) || "스트링";
 
@@ -1135,76 +1118,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
       <SiteContainer variant="wide" className="py-6 bp-sm:py-8 bp-md:py-10">
         <div className="grid grid-cols-1 gap-6 sm:gap-8 bp-lg:grid-cols-5">
-          <div className="space-y-4 self-start sm:space-y-5 bp-lg:sticky bp-lg:top-[calc(var(--header-h)+24px)] bp-lg:col-span-3">
-            <Card className="overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm">
-              <div className="relative aspect-square bg-muted/20">
-                <Image
-                  src={colorImage || images[selectedImageIndex] || "/placeholder.svg"}
-                  alt={product.name}
-                  fill
-                  className="object-contain p-4 transition-transform duration-300 hover:scale-[1.02]"
-                />
-                {images.length > 1 && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute left-3 top-1/2 h-10 w-10 -translate-y-1/2 rounded-xl border border-border/60 bg-card/90 text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-card sm:h-11 sm:w-11"
-                      onClick={prevImage}
-                    >
-                      <ChevronLeft className="h-5 w-5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-3 top-1/2 h-10 w-10 -translate-y-1/2 rounded-xl border border-border/60 bg-card/90 text-foreground shadow-sm transition-[background-color,color,border-color,box-shadow,opacity] duration-200 hover:bg-card sm:h-11 sm:w-11"
-                      onClick={nextImage}
-                    >
-                      <ChevronRight className="h-5 w-5" />
-                    </Button>
-                  </>
-                )}
-                {merchandisingBadges.length > 0 && (
-                  <div className="absolute top-4 sm:top-5 left-4 sm:left-5 flex flex-wrap gap-2 sm:gap-2.5">
-                    {merchandisingBadges.map((badge) => (
-                      <Badge
-                        key={`${product?._id ?? product?.name}-${badge}`}
-                        variant={merchandisingImageBadgeVariant(badge)}
-                        shape="pill"
-                        className={cn(merchandisingImageBadgeClass)}
-                      >
-                        {badge}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </Card>
-
-            {images.length > 1 && (
-              <div className="grid grid-cols-4 gap-2 sm:gap-3">
-                {images.map((image: string, index: number) => (
-                  <Card
-                    key={index}
-                    className={`cursor-pointer overflow-hidden rounded-xl border transition-[border-color,box-shadow] duration-200 ${selectedImageIndex === index ? "border-foreground ring-2 ring-ring/30" : "border-border/60 hover:border-border"}`}
-                    onClick={() => setSelectedImageIndex(index)}
-                  >
-                    <div className="aspect-square relative bg-muted/20">
-                      <Image
-                        src={
-                          image ||
-                          "/placeholder.svg?height=100&width=100&query=tennis string thumbnail"
-                        }
-                        alt={`${product.name} ${index + 1}`}
-                        fill
-                        className="object-contain p-2"
-                      />
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
+          <ProductDetailImageGallery
+            images={images}
+            productName={product.name}
+            currentImage={colorImage}
+            merchandisingBadges={merchandisingBadges}
+          />
 
           <div className="bp-lg:col-span-2 space-y-4 sm:space-y-5">
             <Card className="rounded-3xl border border-border bg-card shadow-sm">
