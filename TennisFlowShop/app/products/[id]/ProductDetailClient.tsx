@@ -65,12 +65,8 @@ import type {
   VariantInventoryRow,
 } from "./ProductDetailClient.types";
 import ProductDetailQnaTab from "./ProductDetailQnaTab";
-import ProductReviewCard from "./ProductReviewCard";
-import {
-  ProductDetailReviewsEmptyState,
-  ProductDetailReviewsHeader,
-} from "./ProductDetailReviewParts";
 import ProductDetailRelatedProductsSection from "./ProductDetailRelatedProductsSection";
+import ProductDetailReviewsTab from "./ProductDetailReviewsTab";
 import ProductDetailSpecificationsTab from "./ProductDetailSpecificationsTab";
 import {
   getColorLabel,
@@ -1870,47 +1866,19 @@ export default function ProductDetailClient({ product }: { product: any }) {
               </TabsContent>
 
               <TabsContent value="reviews" className="p-4 sm:p-6 bp-md:p-8">
-                <div className="space-y-4 sm:space-y-6">
-                  <ProductDetailReviewsHeader
-                    canWriteFromProductReviewTab={canWriteFromProductReviewTab}
-                    productReviewHref={productReviewHref}
-                    productReviewCtaLabel={productReviewCtaLabel}
-                    productReviewHelper={productReviewHelper}
-                  />
-
-                  <div className="space-y-4 sm:space-y-6">
-                    {mergedReviews.length > 0 ? (
-                      mergedReviews.map((review: any, index: number) => {
-                        const isMasked =
-                          review.masked ??
-                          (review.status === "hidden" &&
-                            !review.ownedByMe &&
-                            !review.adminView);
-
-                        return (
-                          <ProductReviewCard
-                            key={index}
-                            review={review}
-                            isBusy={busyReviewId === String(review._id)}
-                            isMasked={isMasked}
-                            canManage={review.ownedByMe || isAdmin}
-                            onToggleVisibility={() => handleToggleReviewVisibility(review)}
-                            onEdit={() => openEdit(review)}
-                            onDelete={() => handleDeleteReview(review)}
-                            onOpenPhoto={(photoIndex) => openViewer(review.photos, photoIndex)}
-                          />
-                        );
-                      })
-                    ) : (
-                      <ProductDetailReviewsEmptyState
-                        canWriteFromProductReviewTab={canWriteFromProductReviewTab}
-                        productReviewHref={productReviewHref}
-                        productReviewCtaLabel={productReviewCtaLabel}
-                        productReviewHelper={productReviewHelper}
-                      />
-                    )}
-                  </div>
-                </div>
+                <ProductDetailReviewsTab
+                  mergedReviews={mergedReviews}
+                  busyReviewId={busyReviewId}
+                  isAdmin={isAdmin}
+                  canWriteFromProductReviewTab={canWriteFromProductReviewTab}
+                  productReviewHref={productReviewHref}
+                  productReviewCtaLabel={productReviewCtaLabel}
+                  productReviewHelper={productReviewHelper}
+                  onToggleReviewVisibility={handleToggleReviewVisibility}
+                  onDeleteReview={handleDeleteReview}
+                  onEditReview={openEdit}
+                  onOpenReviewPhoto={openViewer}
+                />
               </TabsContent>
 
               <TabsContent value="qna" className="p-4 sm:p-6 bp-md:p-8">
