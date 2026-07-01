@@ -156,6 +156,12 @@ interface OrderDetail {
     pgStatus?: string | null;
     source?: string | null;
   } | null;
+  paymentInfo?: {
+    status?: string | null;
+    niceSync?: {
+      pgStatus?: string | null;
+    } | null;
+  } | null;
   total: number;
   items: Array<{
     name: string;
@@ -733,6 +739,7 @@ export default function OrderDetailClient({ orderId }: Props) {
   const needsCancelFinalization = needsOrderCancelFinalization({
     status: localStatus,
     paymentStatus: orderDetail.paymentStatus,
+    paymentInfo: orderDetail.paymentInfo,
     paymentNiceSync: orderDetail.paymentNiceSync,
   });
   const isDoneLikeStatus = ["완료", "구매확정", "취소", "cancel", "confirmed"].some((token) =>
