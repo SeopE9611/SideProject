@@ -45,7 +45,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import ProductDetailImageGallery from "./ProductDetailImageGallery";
@@ -61,6 +61,7 @@ import ProductDetailRelatedProductsSection from "./ProductDetailRelatedProductsS
 import ProductDetailReviewsTab from "./ProductDetailReviewsTab";
 import ProductDetailSpecificationsTab from "./ProductDetailSpecificationsTab";
 import { isAdminUser } from "./ProductDetailReviewData.utils";
+import { useProductDetailRelatedProducts } from "./useProductDetailRelatedProducts";
 import { useProductDetailReviews } from "./useProductDetailReviews";
 import {
   getColorLabel,
@@ -373,75 +374,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const [hasResolvedReviewUser, setHasResolvedReviewUser] = useState(false);
   const fetcher = (url: string) =>
     fetch(url, { credentials: "include" }).then(async (r) => (r.status === 200 ? r.json() : null));
-  const relatedSectionRef = useRef<HTMLDivElement | null>(null);
-  const [shouldLoadRelated, setShouldLoadRelated] = useState(false);
-
-  useEffect(() => {
-    const el = relatedSectionRef.current;
-    if (!el || shouldLoadRelated) return;
-
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        setShouldLoadRelated(true);
-        io.disconnect();
-      },
-      {
-        rootMargin: "600px 0px",
-      },
-    );
-
-    io.observe(el);
-    return () => io.disconnect();
-  }, [shouldLoadRelated]);
-
-  // 1) 브랜드 기준 1차
-  const { data: byBrand } = useSWR(
-    shouldLoadRelated
-      ? `/api/products?brand=${encodeURIComponent(product.brand ?? "")}&limit=16&exclude=${product._id}`
-      : null,
+  const { relatedSectionRef, relatedFiltered, loadingRelated } = useProductDetailRelatedProducts({
+    productId: String(product._id),
+    brand: product.brand,
+    material: product.material,
     fetcher,
-    { revalidateOnFocus: false },
-  );
-
-  // 2) 재질 기준 2차 (1차가 빈 경우에만)
-  const { data: byMaterial } = useSWR(
-    shouldLoadRelated && !byBrand?.products?.length && product.material
-      ? `/api/products?material=${encodeURIComponent(product.material)}&limit=16&exclude=${product._id}`
-      : null,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-    },
-  );
-
-  // 3) 전체 백업 3차 (1·2차 둘 다 빈 경우에만)
-  const { data: anyPool } = useSWR(
-    shouldLoadRelated && !byBrand?.products?.length && !byMaterial?.products?.length
-      ? `/api/products?limit=16&exclude=${product._id}`
-      : null,
-    fetcher,
-    { revalidateOnFocus: false },
-  );
-
-  // 최종 풀 구성
-  const pool =
-    (byBrand?.products?.length
-      ? byBrand.products
-      : byMaterial?.products?.length
-        ? byMaterial.products
-        : anyPool?.products) ?? [];
-
-  const relatedFiltered = useMemo(() => {
-    const base = pool.filter((p: any) => String(p._id) !== String(product._id));
-    const same = base.filter(
-      (p: any) => p.brand === product.brand || p.material === product.material,
-    );
-    return (same.length ? same : base).slice(0, 4);
-  }, [pool, product]);
-
-  // 로딩 상태(세 요청 모두 아직 없음)
-  const loadingRelated = !shouldLoadRelated || (!byBrand && !byMaterial && !anyPool);
+  });
 
   // 상품별 QnA 목록
   const {
