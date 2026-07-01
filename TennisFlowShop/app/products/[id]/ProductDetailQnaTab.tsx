@@ -16,7 +16,6 @@ type ProductDetailQnaTabProps = {
   productId: string;
   productName: string;
   qnas: any[];
-  qnaTotal: number;
   qnaLoading: boolean;
   qnaError: unknown;
 };
@@ -25,7 +24,6 @@ export default function ProductDetailQnaTab({
   productId,
   productName,
   qnas,
-  qnaTotal: _qnaTotal,
   qnaLoading,
   qnaError,
 }: ProductDetailQnaTabProps) {
