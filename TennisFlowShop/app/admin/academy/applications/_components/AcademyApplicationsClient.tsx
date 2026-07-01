@@ -120,7 +120,7 @@ function SelectedClassCell({
     return (
       <div className="min-w-0 max-w-[220px]">
         <div className="font-medium text-muted-foreground">클래스 미선택</div>
-        <div className="truncate text-xs text-muted-foreground">일반 레슨 신청</div>
+        <div className="truncate text-xs text-muted-foreground">일반 레슨 신청 · 연결 필요</div>
       </div>
     );
   }

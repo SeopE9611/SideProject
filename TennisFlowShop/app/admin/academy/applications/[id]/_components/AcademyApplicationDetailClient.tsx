@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
-import { ArrowLeft, BookOpen, Save } from "lucide-react";
+import { ArrowLeft, BookOpen, LinkIcon, Save } from "lucide-react";
 
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminPageSection from "@/components/admin/AdminPageSection";
@@ -27,6 +27,7 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   ACADEMY_APPLICATION_STATUSES,
   getAcademyApplicationStatusLabel,
+  getAcademyClassStatusLabel,
   getAcademyCurrentLevelLabel,
   getAcademyLessonTypeLabel,
   type AcademyClassSnapshot,
@@ -59,6 +60,21 @@ type AcademyApplicationDetail = {
   classSnapshot: AcademyClassSnapshot | null;
   createdAt: string | null;
   updatedAt: string | null;
+};
+
+type AcademyClassOption = {
+  _id: string;
+  name: string;
+  status: string;
+  capacity: number | null;
+  confirmedCount?: number;
+  applicationStats?: { confirmed: number };
+  scheduleText: string | null;
+};
+
+type ClassesResponse = {
+  success: true;
+  items: AcademyClassOption[];
 };
 
 type DetailResponse = {
@@ -123,6 +139,10 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
     adminFetcher,
   );
   const item = data?.item;
+  const { data: classesData } = useSWR<ClassesResponse>(
+    "/api/admin/academy/classes?limit=50",
+    adminFetcher,
+  );
 
   const [status, setStatus] = useState<AcademyLessonApplicationStatus>("submitted");
   const [reason, setReason] = useState("");
@@ -130,13 +150,25 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
   const [customerMessage, setCustomerMessage] = useState("");
   const [savingStatus, setSavingStatus] = useState(false);
   const [savingMemo, setSavingMemo] = useState(false);
+  const [selectedClassId, setSelectedClassId] = useState("");
+  const [classReason, setClassReason] = useState("");
+  const [savingClass, setSavingClass] = useState(false);
 
   useEffect(() => {
     if (!item) return;
     setStatus(item.status);
     setAdminMemo(item.adminMemo ?? "");
     setCustomerMessage(item.customerMessage ?? "");
+    setSelectedClassId(item.classId ?? item.classSnapshot?.classId ?? "");
   }, [item]);
+
+  const classOptions = useMemo(() => {
+    return (classesData?.items ?? []).filter(
+      (classItem) => classItem.status === "visible" || classItem.status === "closed",
+    );
+  }, [classesData?.items]);
+
+  const hasLinkedClass = Boolean(item?.classId || item?.classSnapshot?.classId);
 
   const sortedHistory = useMemo(() => {
     return [...(item?.history ?? [])].sort((a, b) => {
@@ -169,6 +201,39 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
       showErrorToast(getAdminErrorMessage(mutationError));
     } finally {
       setSavingStatus(false);
+    }
+  }
+
+  async function saveClassLink() {
+    if (!item || !selectedClassId) return;
+    if (hasLinkedClass) {
+      const ok = window.confirm(
+        "신청 클래스를 변경하면 고객 마이페이지와 클래스 집계에 반영됩니다. 계속하시겠습니까?",
+      );
+      if (!ok) return;
+    }
+
+    setSavingClass(true);
+    try {
+      const result = await adminMutator<DetailResponse>(
+        `/api/admin/academy/applications/${id}/class`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ classId: selectedClassId, reason: classReason }),
+        },
+      );
+      await mutate(result, { revalidate: false });
+      setClassReason("");
+      showSuccessToast(
+        result.classAutoClosed && result.classAutoClosedMessage
+          ? `신청이 클래스에 연결되었습니다. ${result.classAutoClosedMessage}`
+          : "신청이 클래스에 연결되었습니다.",
+      );
+    } catch (mutationError) {
+      showErrorToast(getAdminErrorMessage(mutationError));
+    } finally {
+      setSavingClass(false);
     }
   }
 
@@ -290,7 +355,17 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
                   신청 당시 클래스 스냅샷이 없어 ID만 표시합니다.
                 </p>
             </AdminPageSection>
-          ) : null}
+          ) : (
+            <AdminPageSection title="선택 클래스 정보" contentClassName="pt-4">
+                <div className={`${adminSurface.cardMuted} p-4 ${adminTypography.body}`}>
+                  <div className="font-medium text-foreground">클래스 미연결</div>
+                  <p className={`mt-2 ${adminTypography.metaMuted}`}>
+                    이 신청은 기존 단독 신청으로 생성되어 클래스에 연결되어 있지 않습니다. 등록
+                    확정 인원에 집계하려면 클래스를 연결해 주세요.
+                  </p>
+                </div>
+            </AdminPageSection>
+          )}
 
           <AdminPageSection title="레슨 희망 정보" contentClassName="pt-4">
               <InfoRow
@@ -382,6 +457,72 @@ export default function AcademyApplicationDetailClient({ id }: { id: string }) {
               <Button className="w-full" onClick={saveStatus} disabled={savingStatus}>
                 <Save className="mr-2 h-4 w-4" />
                 {savingStatus ? "저장 중..." : "상태 변경 저장"}
+              </Button>
+          </AdminPageSection>
+
+
+          <AdminPageSection
+            title={hasLinkedClass ? "클래스 변경" : "클래스 연결"}
+            description="모집 클래스에 신청을 연결하면 고객 마이페이지와 클래스 집계에 반영됩니다."
+            contentClassName="space-y-4 pt-4"
+          >
+              {!hasLinkedClass ? (
+                <div className={`${adminSurface.cardMuted} p-4 ${adminTypography.metaMuted}`}>
+                  클래스 미연결 신청입니다. 등록 확정 인원에 집계하려면 클래스를 연결해 주세요.
+                </div>
+              ) : null}
+              <div className="space-y-2">
+                <label className={adminTypography.bodyStrong} htmlFor="academy-class-link">
+                  연결할 클래스
+                </label>
+                <Select
+                  value={selectedClassId}
+                  onValueChange={setSelectedClassId}
+                  disabled={item.status === "cancelled" || savingClass}
+                >
+                  <SelectTrigger id="academy-class-link">
+                    <SelectValue placeholder="클래스 선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {classOptions.map((classItem) => {
+                      const confirmed =
+                        classItem.confirmedCount ?? classItem.applicationStats?.confirmed ?? 0;
+                      const capacity =
+                        typeof classItem.capacity === "number" && classItem.capacity > 0
+                          ? `${confirmed.toLocaleString("ko-KR")}/${classItem.capacity.toLocaleString("ko-KR")}명`
+                          : `${confirmed.toLocaleString("ko-KR")}명/정원 없음`;
+                      return (
+                        <SelectItem key={classItem._id} value={classItem._id}>
+                          {classItem.name} · {getAcademyClassStatusLabel(classItem.status)} · {capacity}
+                          {classItem.scheduleText ? ` · ${classItem.scheduleText}` : ""}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className={adminTypography.bodyStrong} htmlFor="class-link-reason">
+                  연결/변경 사유 <span className="text-muted-foreground">(선택)</span>
+                </label>
+                <Input
+                  id="class-link-reason"
+                  value={classReason}
+                  onChange={(event) => setClassReason(event.target.value)}
+                  placeholder="예: 기존 단독 신청을 모집 클래스로 연결"
+                  disabled={item.status === "cancelled" || savingClass}
+                />
+              </div>
+              {item.status === "cancelled" ? (
+                <p className={adminTypography.caption}>취소된 신청은 클래스에 연결할 수 없습니다.</p>
+              ) : null}
+              <Button
+                className="w-full"
+                onClick={saveClassLink}
+                disabled={item.status === "cancelled" || savingClass || !selectedClassId}
+              >
+                <LinkIcon className="mr-2 h-4 w-4" />
+                {savingClass ? "저장 중..." : hasLinkedClass ? "클래스 변경" : "클래스 연결"}
               </Button>
           </AdminPageSection>
 
