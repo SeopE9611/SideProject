@@ -1,6 +1,5 @@
 "use client";
 import { useWishlist } from "@/app/features/wishlist/useWishlist";
-import ProductFeatureRadarChart from "@/app/products/components/ProductFeatureRadarChart";
 import type { User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { type CartItem, useCartStore } from "@/app/store/cartStore";
@@ -28,7 +27,6 @@ import { normalizeItemShippingFee } from "@/lib/shipping-fee";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import {
-  Activity,
   ArrowLeft,
   Clock,
   CreditCard,
@@ -40,7 +38,6 @@ import {
   Settings,
   ShoppingCart,
   Star,
-  Target,
   Wrench,
   X,
 } from "lucide-react";
@@ -52,6 +49,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import ProductDetailImageGallery from "./ProductDetailImageGallery";
+import ProductDetailRecommendationSection from "./ProductDetailRecommendationSection";
 import type {
   ColorInventoryRow,
   DetailTab,
@@ -1519,98 +1517,12 @@ export default function ProductDetailClient({ product }: { product: any }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 bp-md:grid-cols-2 gap-5 sm:gap-6 mt-8 sm:mt-10">
-          <Card className="min-w-0 rounded-3xl border border-border bg-card shadow-sm">
-            <CardHeader className="pb-4 sm:pb-5 p-5 sm:p-6">
-              <CardTitle className="flex items-center gap-2.5 break-keep text-ui-card-title-lg font-semibold leading-snug text-foreground sm:text-ui-section-title">
-                <Target className="h-5 w-5 sm:h-6 sm:w-6" />
-                추천 정보 & 특성
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-5 sm:space-y-6 p-5 sm:p-6 pt-0">
-              <div>
-                <h4 className="mb-3 break-keep text-ui-body-sm font-semibold text-foreground sm:mb-4 sm:text-ui-body">
-                  추천 대상
-                </h4>
-                <div className="space-y-2 sm:space-y-2.5">
-                  {selectedPlayerTypes.length > 0 && (
-                    <div
-                      className={cn(
-                        "flex flex-col items-start gap-2 p-3 text-ui-body-sm sm:flex-row sm:items-start sm:gap-3 sm:text-ui-body",
-                        detailSurfaceInfoItemClass,
-                      )}
-                    >
-                      <div className="flex shrink-0 items-center gap-3">
-                        <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-muted-foreground/70"></div>
-                        <span className="shrink-0 whitespace-nowrap break-keep text-muted-foreground">
-                          플레이어:
-                        </span>
-                      </div>
-                      <span className="min-w-0 whitespace-normal break-keep break-words font-medium leading-relaxed text-foreground">
-                        {selectedPlayerTypes.join(", ")}
-                      </span>
-                    </div>
-                  )}
-                  {selectedPlayStyles.length > 0 && (
-                    <div
-                      className={cn(
-                        "flex flex-col items-start gap-2 p-3 text-ui-body-sm sm:flex-row sm:items-start sm:gap-3 sm:text-ui-body",
-                        detailSurfaceInfoItemClass,
-                      )}
-                    >
-                      <div className="flex shrink-0 items-center gap-3">
-                        <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-muted-foreground/70"></div>
-                        <span className="shrink-0 whitespace-nowrap break-keep text-muted-foreground">
-                          스타일:
-                        </span>
-                      </div>
-                      <span className="min-w-0 whitespace-normal break-keep break-words font-medium leading-relaxed text-foreground">
-                        {selectedPlayStyles.join(", ")}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="mb-3 break-keep text-ui-body-sm font-semibold text-foreground sm:mb-4 sm:text-ui-body">
-                  추가 특성
-                </h4>
-                {additionalFeaturesText ? (
-                  <p
-                    className={cn(
-                      "whitespace-pre-line break-keep break-words p-3 text-ui-body-sm leading-relaxed text-muted-foreground sm:text-ui-body",
-                      detailSurfaceSubtleInnerClass,
-                    )}
-                  >
-                    {additionalFeaturesText}
-                  </p>
-                ) : (
-                  <p
-                    className={cn(
-                      "p-3 text-ui-body-sm italic text-muted-foreground sm:text-ui-body",
-                      detailSurfaceSubtleInnerClass,
-                    )}
-                  >
-                    추가 특성 정보가 없습니다.
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="min-w-0 rounded-3xl border border-border bg-card shadow-sm">
-            <CardHeader className="pb-4 sm:pb-5 p-5 sm:p-6">
-              <CardTitle className="flex items-center gap-2.5 break-keep text-ui-card-title-lg font-semibold leading-snug text-foreground sm:text-ui-section-title">
-                <Activity className="h-5 w-5 sm:h-6 sm:w-6" />
-                성능 특성
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-5 sm:p-6 pt-0">
-              <ProductFeatureRadarChart scores={normalizedFeatureScores} />
-            </CardContent>
-          </Card>
-        </div>
+        <ProductDetailRecommendationSection
+          selectedPlayerTypes={selectedPlayerTypes}
+          selectedPlayStyles={selectedPlayStyles}
+          additionalFeaturesText={additionalFeaturesText}
+          normalizedFeatureScores={normalizedFeatureScores}
+        />
 
         <Card className="mt-10 min-w-0 overflow-hidden rounded-2xl border border-border bg-card shadow-sm sm:mt-12 sm:rounded-3xl">
           <CardContent className="p-0">
