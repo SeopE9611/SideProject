@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { Document, Filter } from "mongodb";
 import clientPromise from "@/lib/mongodb";
 import { getHangulInitials } from "@/lib/hangul-utils";
 import { productVisibilityFilterFor, racketVisibilityFilterFor } from "@/lib/public-visibility";
@@ -12,6 +13,31 @@ type SearchResult = {
   price?: number;
   image?: string | null;
 };
+
+const SEARCH_RESULT_LIMIT = 10;
+const CHOSUNG_CANDIDATE_LIMIT = 50;
+
+const searchProjection = {
+  name: 1,
+  model: 1,
+  brand: 1,
+  price: 1,
+  thumbnailUrl: 1,
+  images: { $slice: 1 },
+  searchKeywords: 1,
+};
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function withSearchFilter(baseFilter: Filter<Document>, searchFields: string[], escapedQuery: string) {
+  const searchFilter: Filter<Document> = {
+    $or: searchFields.map((field) => ({ [field]: { $regex: escapedQuery, $options: "i" } })),
+  };
+
+  return { $and: [baseFilter, searchFilter] } satisfies Filter<Document>;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -30,6 +56,7 @@ export async function GET(req: NextRequest) {
     const initialsQuery = getHangulInitials(query);
     const isChosungOnly = /^[ㄱ-ㅎ]+$/.test(query); // 초성만 입력된 경우
     const lowerQuery = query.toLowerCase();
+    const escapedQuery = escapeRegExp(query);
 
     // 간단한 매칭 함수: name / brand / searchKeywords 를 모두 대상으로
     const matchText = (targets: (string | undefined | null)[]) => {
@@ -47,10 +74,32 @@ export async function GET(req: NextRequest) {
       return joined.toLowerCase().includes(lowerQuery);
     };
 
-    // 스트링 상품 조회 (기존 preview 로직과 동일하게 isDeleted 제외)
+    const productBaseFilter = productVisibilityFilterFor(viewer) as Filter<Document>;
+    const racketBaseFilter = racketVisibilityFilterFor(viewer) as Filter<Document>;
+    const productSearchFields = ["name", "brand", "searchKeywords"];
+    const racketSearchFields = ["model", "brand", "searchKeywords"];
+    const productSearchFilter = isChosungOnly
+      ? productBaseFilter
+      : withSearchFilter(productBaseFilter, productSearchFields, escapedQuery);
+    const racketSearchFilter = isChosungOnly
+      ? racketBaseFilter
+      : withSearchFilter(racketBaseFilter, racketSearchFields, escapedQuery);
+    const candidateLimit = isChosungOnly ? CHOSUNG_CANDIDATE_LIMIT : SEARCH_RESULT_LIMIT;
+
+    // 스트링 상품/중고 라켓 조회: DB 쿼리에서 검색 후보를 줄이고 필요한 필드만 가져옴
     const [products, rackets] = await Promise.all([
-      db.collection("products").find(productVisibilityFilterFor(viewer)).toArray(),
-      db.collection("used_rackets").find(racketVisibilityFilterFor(viewer)).toArray(),
+      db
+        .collection("products")
+        .find(productSearchFilter)
+        .project(searchProjection)
+        .limit(candidateLimit)
+        .toArray(),
+      db
+        .collection("used_rackets")
+        .find(racketSearchFilter)
+        .project(searchProjection)
+        .limit(candidateLimit)
+        .toArray(),
     ]);
 
     const results: SearchResult[] = [];
@@ -59,7 +108,7 @@ export async function GET(req: NextRequest) {
     for (const p of products as any[]) {
       const searchKeywords: string[] = Array.isArray(p.searchKeywords) ? p.searchKeywords : [];
 
-      const ok = matchText([p.name, p.brand, ...searchKeywords]);
+      const ok = isChosungOnly ? matchText([p.name, p.brand, ...searchKeywords]) : true;
       if (!ok) continue;
 
       results.push({
@@ -79,7 +128,7 @@ export async function GET(req: NextRequest) {
     for (const r of rackets as any[]) {
       const searchKeywords: string[] = Array.isArray(r.searchKeywords) ? r.searchKeywords : [];
 
-      const ok = matchText([r.model, r.brand, ...searchKeywords]);
+      const ok = isChosungOnly ? matchText([r.model, r.brand, ...searchKeywords]) : true;
       if (!ok) continue;
 
       results.push({
@@ -96,7 +145,7 @@ export async function GET(req: NextRequest) {
     }
 
     // 너무 길어지는 것을 방지하기 위해 상위 10개만 반환
-    const limited = results.slice(0, 10);
+    const limited = results.slice(0, SEARCH_RESULT_LIMIT);
 
     return NextResponse.json(limited);
   } catch (err) {
