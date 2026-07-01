@@ -19,23 +19,16 @@ import {
 } from "@/lib/points.policy";
 import { cn } from "@/lib/utils";
 import {
-  BadgeCheck,
-  BookOpen,
   ChevronRight,
   ClipboardList,
-  Clock,
   Headset,
   Info,
   MessageSquareQuote,
-  Package,
   PackageCheck,
-  Plus,
   ReceiptText,
   Search,
   ShoppingBag,
   SlidersHorizontal,
-  Star,
-  Tags,
   Ticket,
   Wrench,
 } from "lucide-react";
@@ -150,19 +143,19 @@ const PROMO_BANNERS: PromoBanner[] = (() => {
 
 const HOME_HERO_SLIDES = [
   {
-    img: "/images/home/home-hero-stringing-workbench.png",
+    img: "/images/home/home-hero-stringing-workbench.webp",
     alt: "도깨비테니스 스트링 교체 작업대",
     href: "/services/apply",
     caption: "스트링 교체 신청",
   },
   {
-    img: "/images/home/home-stringing-setup-clean.png",
+    img: "/images/home/home-stringing-setup-clean.webp",
     alt: "테니스 라켓과 스트링 교체 도구",
     href: "/services",
     caption: "스트링 교체 프로세스",
   },
   {
-    img: "/images/home/home-string-product-showcase.png",
+    img: "/images/home/home-string-product-showcase.webp",
     alt: "테니스 스트링 상품 쇼케이스",
     href: "/products",
     caption: "추천 스트링",
@@ -796,7 +789,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
             />
             <div className="mb-5 overflow-hidden rounded-[1.5rem] border border-border/60 bg-background shadow-sm bp-sm:mb-6 bp-md:mb-8">
               <img
-                src="/images/home/home-stringing-setup-clean.png"
+                src="/images/home/home-stringing-setup-clean.webp"
                 alt="테니스 라켓과 스트링 교체 도구"
                 className="h-36 w-full object-cover bp-sm:h-44 bp-md:h-56"
                 loading="lazy"
@@ -971,7 +964,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           >
             <div className="mb-4 overflow-hidden rounded-2xl border border-border/60 bg-background shadow-sm bp-sm:mb-5">
               <img
-                src="/images/home/home-string-product-showcase.png"
+                src="/images/home/home-string-product-showcase.webp"
                 alt="테니스 스트링 상품 쇼케이스"
                 className="h-32 w-full object-cover bp-sm:h-44 bp-md:h-52"
                 loading="lazy"
@@ -1105,7 +1098,7 @@ export default function Home({ initialHomeData }: HomePageClientProps) {
           >
             <div className="mb-4 overflow-hidden rounded-2xl border border-border/60 bg-background shadow-sm bp-sm:mb-5">
               <img
-                src="/images/home/home-racket-section-showcase.png"
+                src="/images/home/home-racket-section-showcase.webp"
                 alt="도깨비 인증 중고 라켓 쇼케이스"
                 className="h-32 w-full object-cover bp-sm:h-40 bp-md:h-48"
                 loading="lazy"
