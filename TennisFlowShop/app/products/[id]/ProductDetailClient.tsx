@@ -50,6 +50,11 @@ import { toast } from "sonner";
 import ProductDetailImageGallery from "./ProductDetailImageGallery";
 import ProductDetailRecommendationSection from "./ProductDetailRecommendationSection";
 import type { DetailTab } from "./ProductDetailClient.types";
+import {
+  buildSelectedColorPayload,
+  buildWishlistOptionPayload,
+  getWishlistOptionState,
+} from "./ProductDetailOptionPayload.utils";
 import ProductDetailQnaTab from "./ProductDetailQnaTab";
 import ProductDetailRelatedProductsSection from "./ProductDetailRelatedProductsSection";
 import ProductDetailReviewsTab from "./ProductDetailReviewsTab";
@@ -556,36 +561,27 @@ export default function ProductDetailClient({ product }: { product: any }) {
     return true;
   };
 
-  const selectedColorPayload =
-    selectedColorRow && selectedColor
-      ? {
-          selectedColor,
-          selectedColorLabel: getColorLabel(selectedColorRow),
-          selectedColorHex: selectedColorRow.colorHex,
-          selectedColorImage:
-            selectedVariant?.colorImage?.trim() ||
-            selectedColorRow.image ||
-            colorImage ||
-            product.images?.[0] ||
-            "/placeholder.svg",
-        }
-      : {};
-  const wishlistOptionPayload = {
-    selectedGauge: selectedGauge || undefined,
-    ...selectedColorPayload,
-  };
+  const selectedColorPayload = buildSelectedColorPayload({
+    selectedColor,
+    selectedColorRow,
+    selectedVariant,
+    colorImage,
+    productImages: product.images,
+    getColorLabel,
+  });
+
+  const wishlistOptionPayload = buildWishlistOptionPayload({
+    selectedGauge,
+    selectedColorPayload,
+  });
+
   const currentWishlistItem = findItem(wishlistProductId);
-  const hasCurrentWishlistOption = Boolean(
-    wishlistOptionPayload.selectedGauge || wishlistOptionPayload.selectedColor,
-  );
-  const isDifferentWishlistOption =
-    currentWishlistItem?.selectedGauge !== wishlistOptionPayload.selectedGauge ||
-    currentWishlistItem?.selectedColor !== wishlistOptionPayload.selectedColor;
-  const shouldUpdateWishlistOption =
-    isWishlisted &&
-    hasCurrentWishlistOption &&
-    (!currentWishlistItem?.hasSelectedOption || isDifferentWishlistOption);
-  const wishlistButtonLabel = shouldUpdateWishlistOption ? "선택 옵션으로 업데이트" : "위시리스트";
+
+  const { shouldUpdateWishlistOption, wishlistButtonLabel } = getWishlistOptionState({
+    isWishlisted,
+    currentWishlistItem,
+    wishlistOptionPayload,
+  });
 
   const requireGaugeSelection = () => {
     if (!isStringProduct || gaugeRows.length === 0) return true;
