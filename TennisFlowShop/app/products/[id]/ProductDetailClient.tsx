@@ -77,15 +77,22 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
-
-type GuestOrderMode = "off" | "legacy" | "on";
-
-function getGuestOrderModeClient(): GuestOrderMode {
-  // 클라이언트에서는 NEXT_PUBLIC_만 접근 가능
-  // 기본값은 legacy(= 비회원 주문 흐름 숨김)로 두어 실수 노출을 방지
-  const raw = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? "legacy").trim();
-  return raw === "off" || raw === "legacy" || raw === "on" ? raw : "legacy";
-}
+import type {
+  ColorInventoryRow,
+  DetailTab,
+  GaugeInventoryRow,
+  VariantInventoryRow,
+} from "./ProductDetailClient.types";
+import {
+  fmtDate,
+  getColorLabel,
+  getGuestOrderModeClient,
+  getProductDetailBadges,
+  isColorSoldOut,
+  isTruthyBadgeField,
+  normalizeColorRows,
+  normalizeGaugeDisplayLabel,
+} from "./ProductDetailClient.utils";
 
 const HorizontalProducts = dynamic(() => import("@/components/HorizontalProducts"), {
   loading: () => null,
@@ -106,108 +113,6 @@ const ReviewEditDialog = dynamic(() => import("./ReviewEditDialog"), {
 const detailSurfaceSubtleInnerClass = "rounded-xl border border-border bg-muted/20";
 const detailSurfaceInfoItemClass =
   "flex min-w-0 items-center gap-3 rounded-xl border border-border bg-muted/20 p-3";
-type ProductBadge = "NEW" | "추천";
-
-const isTruthyBadgeField = (value: unknown) => value === true || value === "true" || value === 1;
-
-function getProductDetailBadges(product: any): ProductBadge[] {
-  const inventory = product?.inventory;
-  const isNew = isTruthyBadgeField(inventory?.isNew);
-  const isFeatured = isTruthyBadgeField(inventory?.isFeatured);
-
-  const badges: ProductBadge[] = [];
-  if (isNew) badges.push("NEW");
-  if (isFeatured) badges.push("추천");
-
-  return badges.slice(0, 2);
-}
-
-type GaugeInventoryRow = {
-  value: string;
-  label?: string;
-  stock: number;
-  isSoldOut: boolean;
-  showWhenSoldOut?: boolean | null;
-};
-
-type ColorInventoryRow = {
-  value: string;
-  label?: string;
-  colorHex?: string;
-  image?: string;
-  stock: number;
-  isSoldOut: boolean;
-  showWhenSoldOut?: boolean | null;
-};
-type VariantInventoryRow = {
-  colorValue: string;
-  gaugeValue: string;
-  gaugeLabel?: string;
-  colorImage?: string;
-  stock: number;
-  isSoldOut: boolean;
-  showWhenSoldOut?: boolean | null;
-};
-
-function normalizeColorRows(product: any): ColorInventoryRow[] {
-  if (Array.isArray(product?.colorInventories) && product.colorInventories.length > 0) {
-    return product.colorInventories
-      .map((row: any) => {
-        const stockNumber = Number(row?.stock ?? 0);
-
-        return {
-          value: String(row?.value ?? "").trim(),
-          label: typeof row?.label === "string" ? row.label.trim() : undefined,
-          colorHex: typeof row?.colorHex === "string" ? row.colorHex.trim() : undefined,
-          image: typeof row?.image === "string" ? row.image.trim() : undefined,
-          stock: Number.isFinite(stockNumber) && stockNumber > 0 ? stockNumber : 0,
-          isSoldOut: row?.isSoldOut === true,
-          showWhenSoldOut: row?.showWhenSoldOut === false ? false : true,
-        };
-      })
-      .filter((row: ColorInventoryRow) => row.value.length > 0);
-  }
-
-  if (Array.isArray(product?.colorOptions) && product.colorOptions.length > 0) {
-    return product.colorOptions
-      .map((value: unknown) => String(value ?? "").trim())
-      .filter(Boolean)
-      .map((value: string) => ({
-        value,
-        label: value,
-        stock: Number(product?.inventory?.stock ?? 0),
-        isSoldOut: false,
-      }));
-  }
-
-  if (typeof product?.color === "string" && product.color.trim()) {
-    return [
-      {
-        value: product.color.trim(),
-        label: product.color.trim(),
-        stock: Number(product?.inventory?.stock ?? 0),
-        isSoldOut: false,
-      },
-    ];
-  }
-
-  return [];
-}
-
-function getColorLabel(row: ColorInventoryRow): string {
-  return stringColorLabel(String(row.label || row.value || "").trim());
-}
-
-function isColorSoldOut(row: ColorInventoryRow): boolean {
-  return row.isSoldOut === true || Number(row.stock ?? 0) <= 0;
-}
-
-function normalizeGaugeDisplayLabel(row: GaugeInventoryRow): string {
-  const rawLabel = String(row.label ?? "").trim();
-  if (rawLabel) return rawLabel;
-  return formatGaugeLabel(row.value);
-}
-
 export default function ProductDetailClient({ product }: { product: any }) {
   // 방어: 간헐적으로 images/reviews가 undefined인 데이터가 섞이면 상세페이지가 바로 크래시 나는 현상 대비
   const images: string[] = Array.isArray(product?.images) ? product.images : [];
@@ -482,7 +387,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   // URL의 ?tab 값 -> 로컬 상태로 보존 (새로고침/앞뒤 이동에도 유지)
-  type DetailTab = "description" | "specifications" | "reviews" | "qna";
   const initialTab = (searchParams.get("tab") as DetailTab) ?? "description";
   const [activeTab, setActiveTab] = useState<DetailTab>(initialTab);
   const [user, setUser] = useState<User | null>(null);
@@ -577,8 +481,6 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
   const qnas = qnaData?.items ?? [];
   const qnaTotal = qnaData?.total ?? 0;
-
-  const fmtDate = (v?: string | Date) => (v ? new Date(v).toLocaleDateString() : "");
 
   // 합계 계산
   const unitPrice = displayPrice;
