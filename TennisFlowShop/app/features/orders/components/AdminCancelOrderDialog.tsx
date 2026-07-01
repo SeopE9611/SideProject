@@ -36,6 +36,7 @@ interface Props {
   disabled?: boolean;
   status?: string | null;
   hasTrackingNumber?: boolean;
+  needsCancelFinalization?: boolean;
   /**
    * 취소가 성공했을 때 호출할 콜백
    * (OrderDetailClient로부터 내려받은 mutateOrder/ mutateHistory를 쓸 수도 있지만,
@@ -49,6 +50,7 @@ export default function AdminCancelOrderDialog({
   disabled,
   status,
   hasTrackingNumber = false,
+  needsCancelFinalization = false,
   onCancelSuccess,
 }: Props) {
   const [open, setOpen] = useState(false);
@@ -130,16 +132,24 @@ export default function AdminCancelOrderDialog({
       <DialogTrigger asChild>
         <Button variant="destructive" disabled={disabled || loading} size="sm">
           <XCircle className="mr-2 h-4 w-4" />
-          {forceRequired ? "강제 취소" : "주문 취소"}
+          {needsCancelFinalization ? "주문 취소 후처리" : forceRequired ? "강제 취소" : "주문 취소"}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{forceRequired ? "관리자 강제 취소" : "주문 취소"}</DialogTitle>
+          <DialogTitle>{needsCancelFinalization ? "주문 취소 후처리" : forceRequired ? "관리자 강제 취소" : "주문 취소"}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-2 py-4">
-          {forceRequired ? (
+          {needsCancelFinalization ? (
+            <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-ui-body-sm text-destructive">
+              <p className="font-semibold">PG 결제취소 후처리 확인</p>
+              <p className="mt-1">
+                PG 결제는 이미 취소된 상태입니다. 이 작업은 주문 상태를 취소로 정리하고, 재고 복구, 포인트 복원/회수, 연결 교체서비스 취소 등 내부 후처리를 진행합니다.
+              </p>
+              <p className="mt-1">{policyMessage}</p>
+            </div>
+          ) : forceRequired ? (
             <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-ui-body-sm text-destructive">
               <p className="font-semibold">관리자 강제 취소 확인</p>
               <p className="mt-1">

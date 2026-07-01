@@ -33,6 +33,7 @@ import type {
 import { enforceAdminRateLimit } from "@/lib/admin/adminRateLimit";
 import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from "@/lib/admin/adminEndpointCostPolicy";
 import { inferNextActionForOperationItem } from "@/lib/admin/next-action-guidance";
+import { needsOrderCancelFinalization } from "@/lib/orders/cancel-finalization";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { getRefundBankLabel } from "@/lib/cancel-request/refund-account";
 import { isLikelyEmailQuery, normalizeEmailForSearch } from "@/lib/search-email";
@@ -1572,6 +1573,11 @@ export async function handleAdminOperationsGet(req: Request) {
       getString(o.paymentStatus) ?? getString(o?.paymentInfo?.status),
     );
     const cancel = normalizeCancelRequest(o);
+    const needsCancelFinalization = needsOrderCancelFinalization({
+      status: statusLabel,
+      paymentStatus: paymentLabel,
+      paymentInfo: asDoc(o.paymentInfo) as any,
+    });
     return {
       id,
       kind: "order",
@@ -1603,8 +1609,9 @@ export async function handleAdminOperationsGet(req: Request) {
         ...(pendingByKey.get(`order:${id}`) ?? []),
         ...(cancel.status === "requested" ? ["취소 요청 처리 필요"] : []),
       ],
-      warn: (warnByKey.get(`order:${id}`)?.length ?? 0) > 0,
+      warn: needsCancelFinalization || (warnByKey.get(`order:${id}`)?.length ?? 0) > 0,
       cancel,
+      needsCancelFinalization,
       ...inferNextActionForOperationItem({
         kind: "order",
         statusLabel,
@@ -1621,6 +1628,7 @@ export async function handleAdminOperationsGet(req: Request) {
         hasOutboundTracking,
         shippingMethod,
         cancelStatus: cancel.status,
+        needsCancelFinalization,
         refundAccountReady: cancel.refundAccountReady,
       }),
     };
@@ -1992,7 +2000,19 @@ export async function handleAdminOperationsGet(req: Request) {
   // structured signals 생성(기존 warn/pending/review 이유 배열은 호환 목적 유지)
   merged = merged.map((item) => {
     const isTerminal = isTerminalOperationItem(item);
-    const signals = isTerminal ? [] : buildItemSignals(item);
+    const cancelFinalizationSignal = item.needsCancelFinalization
+      ? [{
+          code: "PG_CANCEL_FINALIZATION_REQUIRED",
+          level: "warn" as const,
+          sourceKind: item.kind,
+          sourceId: item.id,
+          title: "PG 결제취소 감지 주문",
+          description:
+            "결제는 취소되었지만 주문 상태가 아직 완료/진행 상태입니다. 재고/포인트/연결 교체서비스 후처리를 진행하세요.",
+          nextAction: "취소 후처리하기",
+        }]
+      : [];
+    const signals = isTerminal ? cancelFinalizationSignal : [...cancelFinalizationSignal, ...buildItemSignals(item)];
     return {
       ...item,
       signals,

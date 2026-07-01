@@ -585,6 +585,10 @@ function resolvePrimaryActionTarget(group: {
   const isIntegratedOrder =
     anchor.kind === "order" && items.some((item) => item.kind === "stringing_application");
 
+  if (anchor.needsCancelFinalization) {
+    return { href: anchor.href, label: "취소 후처리하기" };
+  }
+
   if (isIntegratedOrder) {
     return { href: anchor.href, label: "통합 주문 다음 단계" };
   }

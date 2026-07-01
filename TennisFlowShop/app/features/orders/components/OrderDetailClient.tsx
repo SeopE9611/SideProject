@@ -77,6 +77,7 @@ import {
   isAdminCancelableOrderStatus,
   isAdminForceCancelRequired,
 } from "@/lib/orders/cancel-refund-policy";
+import { needsOrderCancelFinalization } from "@/lib/orders/cancel-finalization";
 import { getCourierDisplayName } from "@/lib/shipping/courier-map";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
@@ -729,6 +730,11 @@ export default function OrderDetailClient({ orderId }: Props) {
     !isShippingManagedByApplication &&
     !isVisitPickup &&
     !hasAnyRegisteredFulfillmentField(orderDetail.shippingInfo);
+  const needsCancelFinalization = needsOrderCancelFinalization({
+    status: localStatus,
+    paymentStatus: orderDetail.paymentStatus,
+    paymentNiceSync: orderDetail.paymentNiceSync,
+  });
   const isDoneLikeStatus = ["완료", "구매확정", "취소", "cancel", "confirmed"].some((token) =>
     String(localStatus ?? "")
       .toLowerCase()
@@ -740,13 +746,22 @@ export default function OrderDetailClient({ orderId }: Props) {
         title: "취소 요청 검토 필요",
         description: "취소 요청 카드에서 승인/거절 여부를 먼저 판단하세요.",
       }
-    : needsPaymentCheck
+    : needsCancelFinalization
       ? {
-          tone: "warning",
-          title: "결제 상태 확인 필요",
-          description: "입금/결제 반영 여부를 확인한 뒤 다음 처리 단계를 진행하세요.",
+          tone: "urgent",
+          title: "PG 결제취소 감지",
+          description:
+            "결제는 취소되었지만 주문 상태가 아직 완료/진행 상태입니다. 재고/포인트/연결 교체서비스 후처리를 진행하세요.",
+          actionLabel: "주문 취소 후처리",
+          actionHref: "#admin-order-cancel-controls",
         }
-      : needsShippingInfo
+      : needsPaymentCheck
+        ? {
+            tone: "warning",
+            title: "결제 상태 확인 필요",
+            description: "입금/결제 반영 여부를 확인한 뒤 다음 처리 단계를 진행하세요.",
+          }
+        : needsShippingInfo
         ? {
             tone: "warning",
             title: "배송 정보 등록 필요",
@@ -1016,6 +1031,18 @@ export default function OrderDetailClient({ orderId }: Props) {
                 density="compact"
                 title="주문 상태"
                 value={(() => {
+                  if (needsCancelFinalization) {
+                    return (
+                      <div className="flex flex-col items-start gap-1">
+                        <Badge className={cn(summaryBadgeClass, "border-destructive/30 bg-destructive/10 text-destructive")}>
+                          PG 결제취소 감지
+                        </Badge>
+                        <span className="text-ui-label text-foreground/70">
+                          주문 상태: {getOrderStatusLabelForDisplay(localStatus, orderDetail.shippingInfo)}
+                        </span>
+                      </div>
+                    );
+                  }
                   const st = getOrderStatusBadgeSpec(localStatus);
                   return (
                     <Badge variant={st.variant} className={summaryBadgeClass}>
@@ -1025,7 +1052,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                 })()}
                 description={`주문일 ${formatDate(orderDetail.date)}`}
                 icon={Package}
-                tone={isCancelRequested ? "danger" : "neutral"}
+                tone={isCancelRequested || needsCancelFinalization ? "danger" : "neutral"}
               />
               <AdminStatusCard
                 density="compact"
@@ -1169,6 +1196,18 @@ export default function OrderDetailClient({ orderId }: Props) {
                 ) : null
               }
             />
+            {needsCancelFinalization && (
+              <div className="mb-6 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-ui-body-sm text-destructive">
+                <p className="font-semibold">PG 결제취소 감지</p>
+                <p className="mt-1">
+                  나이스페이에서 결제는 취소되었지만, 주문 상태는 아직 취소 처리되지 않았습니다.
+                </p>
+                <p className="mt-1">
+                  이 상태에서는 재고 복구, 포인트 복원/회수, 연결 교체서비스 취소가 완료되지 않았을 수 있습니다.
+                </p>
+                <p className="mt-1">주문 취소 후처리를 완료하려면 관리자 강제 취소를 진행하세요.</p>
+              </div>
+            )}
           </div>
 
           {/* 취소 요청 상태 안내 (관리자용) */}
@@ -1582,7 +1621,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                       </p>
                     </div>
 
-                    <div className="flex min-h-[40px] flex-wrap items-center gap-2">
+                    <div id="admin-order-cancel-controls" className="flex min-h-[40px] flex-wrap items-center gap-2">
                       {localStatus === "취소" ? (
                         <div className="rounded-md border border-border bg-muted px-3 py-2 text-ui-body-sm text-foreground/80">
                           취소된 주문입니다. 추가 액션이 불가능합니다.
@@ -1614,6 +1653,7 @@ export default function OrderDetailClient({ orderId }: Props) {
                           disabled={!isCancelableByPolicy}
                           status={localStatus}
                           hasTrackingNumber={adminCancelHasTrackingNumber}
+                          needsCancelFinalization={needsCancelFinalization}
                         />
                       )}
                     </div>

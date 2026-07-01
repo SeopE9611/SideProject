@@ -12,6 +12,7 @@ import {
   isAdminCancelableOrderStatus,
   isAdminForceCancelRequired,
 } from "@/lib/orders/cancel-refund-policy";
+import { isExternallyCanceledPayment } from "@/lib/orders/cancel-finalization";
 import { cancelNicePaymentByTid } from "@/lib/payments/nice/server";
 import {
   buildCancelRefundSubject,
@@ -494,8 +495,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       .trim()
       .toLowerCase();
     const tid = String(existing?.paymentInfo?.tid ?? "").trim();
+    const isPaymentAlreadyCanceled = isExternallyCanceledPayment({
+      paymentStatus: existing.paymentStatus,
+      paymentInfo: existing.paymentInfo,
+    });
     const shouldCancelViaNice =
-      normalizedProvider === "nicepay" && Boolean(tid) && existing.paymentStatus === "결제완료";
+      !isPaymentAlreadyCanceled &&
+      normalizedProvider === "nicepay" &&
+      Boolean(tid) &&
+      existing.paymentStatus === "결제완료";
 
     let nextPaymentInfo: Record<string, any> | null = null;
 
