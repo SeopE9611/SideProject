@@ -4,10 +4,9 @@ import ProductFeatureRadarChart from "@/app/products/components/ProductFeatureRa
 import type { User } from "@/app/store/authStore";
 import { useBuyNowStore } from "@/app/store/buyNowStore";
 import { type CartItem, useCartStore } from "@/app/store/cartStore";
-import HorizontalProducts, { type HItem } from "@/components/HorizontalProducts";
+import type { HItem } from "@/components/HorizontalProducts";
 import SiteContainer from "@/components/layout/SiteContainer";
 import { PrimaryCTAGroup } from "@/components/public";
-import RecentViewedItems from "@/components/recent-viewed/RecentViewedItems";
 import MaskedBlock from "@/components/reviews/MaskedBlock";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -87,6 +86,15 @@ function getGuestOrderModeClient(): GuestOrderMode {
   const raw = (process.env.NEXT_PUBLIC_GUEST_ORDER_MODE ?? "legacy").trim();
   return raw === "off" || raw === "legacy" || raw === "on" ? raw : "legacy";
 }
+
+const HorizontalProducts = dynamic(() => import("@/components/HorizontalProducts"), {
+  loading: () => null,
+});
+
+const RecentViewedItems = dynamic(() => import("@/components/recent-viewed/RecentViewedItems"), {
+  ssr: false,
+  loading: () => null,
+});
 
 const ReviewPhotoViewerDialog = dynamic(() => import("./ReviewPhotoViewerDialog"), {
   loading: () => null,
