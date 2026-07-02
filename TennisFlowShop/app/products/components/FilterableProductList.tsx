@@ -69,6 +69,13 @@ const QUICK_BENEFIT_FILTERS = BENEFIT_FILTER_VALUES.map((value) => ({
         ? "신상품 보기"
         : "할인 상품 보기",
 }));
+const quickToggleButtonClass = (isActive: boolean) =>
+  cn(
+    "h-10 shrink-0 whitespace-nowrap rounded-full border px-3 text-ui-body-sm transition-colors bp-sm:h-9",
+    isActive
+      ? "border-border bg-muted text-foreground shadow-sm hover:bg-muted/80"
+      : "border-border bg-background text-muted-foreground hover:bg-muted/30",
+  );
 
 /**
  * 필터 가능한 상품 리스트 (infinite scroll 포함)
@@ -887,9 +894,9 @@ export default function FilterableProductList({
               </div>
             )}
 
-            <div className="space-y-2 rounded-2xl border border-border bg-card p-3 shadow-sm">
-              <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center">
-                <div className="flex w-full flex-wrap items-center gap-2 bp-sm:w-auto bp-sm:flex-nowrap">
+            <div className="rounded-2xl border border-border bg-card p-3 shadow-sm">
+              <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
+                <div className="flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap pb-1 bp-sm:w-auto bp-sm:overflow-visible bp-sm:pb-0">
                   <Button
                     type="button"
                     variant="outline"
@@ -905,91 +912,81 @@ export default function FilterableProductList({
                     <Filter className="mr-2 h-4 w-4" />
                     필터{panelFiltersCount > 0 && `(${panelFiltersCount})`}
                   </Button>
+                  {QUICK_BENEFIT_FILTERS.map((option) => {
+                    const isActive = exposureFilter.includes(option.value);
+                    return (
+                      <Button
+                        key={option.value}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleToggleExposure(option.value)}
+                        className={quickToggleButtonClass(isActive)}
+                        aria-pressed={isActive}
+                        aria-label={option.ariaLabel}
+                      >
+                        {isActive && <Check className="mr-1.5 h-3.5 w-3.5" />}
+                        {option.label}
+                      </Button>
+                    );
+                  })}
+                </div>
+                <div className="flex w-full min-w-0 flex-col gap-3 bp-sm:ml-auto bp-sm:w-auto bp-sm:flex-row bp-sm:items-center bp-sm:justify-end">
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={handleToggleIncludeSoldOut}
-                    className={cn(
-                      "h-10 shrink-0 whitespace-nowrap rounded-full px-3 text-ui-body-sm transition-colors bp-sm:h-9",
-                      !includeSoldOut
-                        ? "border-border bg-muted text-foreground shadow-sm hover:bg-muted/80"
-                        : "border-border bg-background text-muted-foreground hover:bg-muted/30",
-                    )}
+                    className={quickToggleButtonClass(!includeSoldOut)}
                     aria-pressed={!includeSoldOut}
                     aria-label={includeSoldOut ? "품절 상품 포함 중" : "품절 상품 제외 중"}
                   >
                     {!includeSoldOut && <Check className="mr-1.5 h-3.5 w-3.5" />}
                     품절 제외
                   </Button>
-                </div>
-                <div className="flex w-full min-w-0 flex-1 items-center justify-end gap-3 bp-sm:ml-auto bp-sm:w-auto bp-sm:flex-initial">
-                  {/* 뷰 모드 토글 */}
-                  {!isMobileViewport && (
-                    <div className="flex shrink-0 items-center rounded-lg border border-border bg-card p-1">
-                      <Button
-                        type="button"
-                        variant={viewMode === "grid" ? "default" : "ghost"}
-                        size="sm"
-                        onClick={() => setViewMode("grid")}
-                        className="h-8 w-9 p-0"
-                        aria-label="그리드 보기"
-                        aria-pressed={viewMode === "grid"}
-                      >
-                        <Grid3X3 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={viewMode === "list" ? "default" : "ghost"}
-                        size="sm"
-                        onClick={() => setViewMode("list")}
-                        className="h-8 w-9 p-0"
-                        aria-label="리스트 보기"
-                        aria-pressed={viewMode === "list"}
-                      >
-                        <List className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  )}
+                  <div className="flex min-w-0 items-center justify-end gap-3">
+                    {/* 뷰 모드 토글 */}
+                    {!isMobileViewport && (
+                      <div className="flex shrink-0 items-center rounded-lg border border-border bg-card p-1">
+                        <Button
+                          type="button"
+                          variant={viewMode === "grid" ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => setViewMode("grid")}
+                          className="h-8 w-9 p-0"
+                          aria-label="그리드 보기"
+                          aria-pressed={viewMode === "grid"}
+                        >
+                          <Grid3X3 className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={viewMode === "list" ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => setViewMode("list")}
+                          className="h-8 w-9 p-0"
+                          aria-label="리스트 보기"
+                          aria-pressed={viewMode === "list"}
+                        >
+                          <List className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    )}
 
-                  {/* 정렬 */}
-                  <Select value={sortOption} onValueChange={setSortOption}>
-                    <SelectTrigger className="h-10 min-w-0 flex-1 rounded-xl border-border bg-background text-ui-body-sm focus:border-border bp-sm:h-9 bp-sm:w-[180px] bp-sm:flex-none dark:focus:border-border">
-                      <SelectValue placeholder="정렬" />
-                    </SelectTrigger>
-                    <SelectContent className="border-border dark:bg-card">
-                      <SelectItem value="latest">최신순</SelectItem>
-                      <SelectItem value="reviews-desc">리뷰 많은순</SelectItem>
-                      <SelectItem value="price-low">가격 낮은순</SelectItem>
-                      <SelectItem value="price-high">가격 높은순</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    {/* 정렬 */}
+                    <Select value={sortOption} onValueChange={setSortOption}>
+                      <SelectTrigger className="h-10 min-w-0 flex-1 rounded-xl border-border bg-background text-ui-body-sm focus:border-border bp-sm:h-9 bp-sm:w-[180px] bp-sm:flex-none dark:focus:border-border">
+                        <SelectValue placeholder="정렬" />
+                      </SelectTrigger>
+                      <SelectContent className="border-border dark:bg-card">
+                        <SelectItem value="latest">최신순</SelectItem>
+                        <SelectItem value="reviews-desc">리뷰 많은순</SelectItem>
+                        <SelectItem value="price-low">가격 낮은순</SelectItem>
+                        <SelectItem value="price-high">가격 높은순</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
-              <div className="flex min-w-0 items-center gap-1.5 overflow-x-auto whitespace-nowrap pb-1">
-                {QUICK_BENEFIT_FILTERS.map((option) => {
-                  const isActive = exposureFilter.includes(option.value);
-                  return (
-                    <Button
-                      key={option.value}
-                      type="button"
-                      variant={isActive ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handleToggleExposure(option.value)}
-                      className={cn(
-                        "h-8 shrink-0 whitespace-nowrap rounded-full px-3 text-ui-label transition-colors",
-                        isActive
-                          ? "border-primary/40 bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
-                          : "border-border bg-background text-muted-foreground hover:bg-muted/30",
-                      )}
-                      aria-pressed={isActive}
-                      aria-label={option.ariaLabel}
-                    >
-                      {isActive && <Check className="mr-1.5 h-3.5 w-3.5" />}
-                      {option.label}
-                    </Button>
-                  );
-                })}
               </div>
             </div>
           </div>
