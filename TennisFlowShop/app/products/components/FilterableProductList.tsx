@@ -895,8 +895,8 @@ export default function FilterableProductList({
             )}
 
             <div className="rounded-2xl border border-border bg-card p-3 shadow-sm">
-              <div className="flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                <div className="flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap pb-1 bp-sm:w-auto bp-sm:overflow-visible bp-sm:pb-0">
+              <div className="flex flex-col gap-3 bp-xl:flex-row bp-xl:items-center bp-xl:justify-between">
+                <div className="flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap pb-1 bp-xl:w-auto bp-xl:overflow-visible bp-xl:pb-0">
                   <Button
                     type="button"
                     variant="outline"
@@ -931,20 +931,20 @@ export default function FilterableProductList({
                     );
                   })}
                 </div>
-                <div className="flex w-full min-w-0 flex-col gap-3 bp-sm:ml-auto bp-sm:w-auto bp-sm:flex-row bp-sm:items-center bp-sm:justify-end">
+                <div className="flex w-full min-w-0 flex-wrap items-center gap-2 bp-xl:ml-auto bp-xl:w-auto bp-xl:flex-nowrap bp-xl:justify-end">
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={handleToggleIncludeSoldOut}
-                    className={quickToggleButtonClass(!includeSoldOut)}
+                    className={cn(quickToggleButtonClass(!includeSoldOut), "shrink-0")}
                     aria-pressed={!includeSoldOut}
                     aria-label={includeSoldOut ? "품절 상품 포함 중" : "품절 상품 제외 중"}
                   >
                     {!includeSoldOut && <Check className="mr-1.5 h-3.5 w-3.5" />}
                     품절 제외
                   </Button>
-                  <div className="flex min-w-0 items-center justify-end gap-3">
+                  <div className="flex min-w-0 flex-1 items-center justify-end gap-2 bp-xl:flex-none">
                     {/* 뷰 모드 토글 */}
                     {!isMobileViewport && (
                       <div className="flex shrink-0 items-center rounded-lg border border-border bg-card p-1">
@@ -975,7 +975,7 @@ export default function FilterableProductList({
 
                     {/* 정렬 */}
                     <Select value={sortOption} onValueChange={setSortOption}>
-                      <SelectTrigger className="h-10 min-w-0 flex-1 rounded-xl border-border bg-background text-ui-body-sm focus:border-border bp-sm:h-9 bp-sm:w-[180px] bp-sm:flex-none dark:focus:border-border">
+                      <SelectTrigger className="h-10 min-w-[140px] flex-1 rounded-xl border-border bg-background text-ui-body-sm focus:border-border bp-sm:h-9 bp-sm:w-[180px] bp-sm:flex-none dark:focus:border-border">
                         <SelectValue placeholder="정렬" />
                       </SelectTrigger>
                       <SelectContent className="border-border dark:bg-card">
