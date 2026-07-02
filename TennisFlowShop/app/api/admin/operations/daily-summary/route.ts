@@ -7,6 +7,7 @@ import {
   toOperationSignalCounts,
 } from "@/app/api/admin/_lib/adminOperationCounts";
 import { requireAdmin } from "@/lib/admin.guard";
+import { createApiPerfLogger } from "@/lib/api/perf";
 import type { AdminDailyOperationsSummaryResponse } from "@/types/admin/operations";
 
 export const dynamic = "force-dynamic";
@@ -130,7 +131,8 @@ async function safeCount(db: Db, collectionName: string, filter: Filter<Document
 }
 
 export async function GET(req: Request) {
-  const guard = await requireAdmin(req);
+  const perf = createApiPerfLogger("GET /api/admin/operations/daily-summary");
+  const guard = await perf.measure("requireAdmin", () => requireAdmin(req));
   if (!guard.ok) return guard.res;
 
   const { db } = guard;
@@ -144,14 +146,16 @@ export async function GET(req: Request) {
     operationTaskCounts,
     operationGroupCounts,
   ] = await Promise.all([
-    safeCount(db, "orders", completedStatusFilter(ORDER_COMPLETED_TODAY_STATUS_VALUES, start, end)),
-    safeCount(db, "stringing_applications", {
+    perf.measure("count.orders.completedToday", () =>
+      safeCount(db, "orders", completedStatusFilter(ORDER_COMPLETED_TODAY_STATUS_VALUES, start, end)),
+    ),
+    perf.measure("count.stringingApplications.completedToday", () => safeCount(db, "stringing_applications", {
       $and: [
         dateRangeFilter("updatedAt", start, end),
         { status: { $in: STRINGING_COMPLETED_TODAY_STATUS_VALUES } },
       ],
-    }),
-    db
+    })),
+    perf.measure("distinct.rentalHistory.completedToday", () => db
       .collection("rental_history")
       .distinct("rentalId", {
         $and: [
@@ -162,16 +166,18 @@ export async function GET(req: Request) {
       .catch((error) => {
         console.error("[admin/operations/daily-summary] failed to count rental_history", error);
         return [];
-      }),
-    safeCount(db, "offline_service_records", offlineCompletedTodayFilter(start, end)),
-    safeCount(db, "academy_lesson_applications", {
+      })),
+    perf.measure("count.offline.completedToday", () =>
+      safeCount(db, "offline_service_records", offlineCompletedTodayFilter(start, end)),
+    ),
+    perf.measure("count.academyApplications.completedToday", () => safeCount(db, "academy_lesson_applications", {
       $and: [
         dateRangeFilter("updatedAt", start, end),
         { status: { $in: ACADEMY_COMPLETED_TODAY_STATUS_VALUES } },
       ],
-    }),
-    countAdminOperationTaskCounts(db),
-    countAdminOperationGroupCounts(db),
+    })),
+    perf.measure("count.operationTaskCounts", () => countAdminOperationTaskCounts(db)),
+    perf.measure("count.operationGroupCounts", () => countAdminOperationGroupCounts(db)),
   ]);
 
   const rentals = rentalIds.length;
@@ -224,5 +230,7 @@ export async function GET(req: Request) {
     attention: { urgentRemaining, watchRemaining, message },
   };
 
-  return NextResponse.json(response);
+  const jsonResponse = NextResponse.json(response);
+  perf.log({ completedTotal, urgentRemaining, watchRemaining });
+  return jsonResponse;
 }

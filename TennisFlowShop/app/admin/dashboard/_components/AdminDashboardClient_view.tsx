@@ -24,6 +24,7 @@ const DASHBOARD_SWR_OPTIONS = {
   revalidateOnFocus: false,
   revalidateOnReconnect: false,
   dedupingInterval: 60_000,
+  shouldRetryOnError: false,
 };
 
 function SummaryCard({ title, value, description, tone = "default" }: { title: string; value: string; description: string; tone?: "default" | "warning" | "danger" | "success" | "info" }) {
