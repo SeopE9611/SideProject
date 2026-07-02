@@ -3,7 +3,7 @@ import type { ReadonlyURLSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import type { Kind } from "../filters/operationsFilters";
 
-type FlowValue = "all" | "1" | "2" | "3" | "4" | "5" | "6" | "7";
+export type FlowValue = "all" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8";
 type IntegratedValue = "all" | "1" | "0";
 
 type Params = {
@@ -17,8 +17,14 @@ type Params = {
   page: number;
 };
 
-const VALID_KINDS: Array<"all" | Kind> = ["all", "order", "stringing_application", "rental"];
-const VALID_FLOWS: FlowValue[] = ["all", "1", "2", "3", "4", "5", "6", "7"];
+const VALID_KINDS: Array<"all" | Kind> = [
+  "all",
+  "order",
+  "stringing_application",
+  "rental",
+  "package_purchase",
+];
+const VALID_FLOWS: FlowValue[] = ["all", "1", "2", "3", "4", "5", "6", "7", "8"];
 const VALID_INTEGRATED: IntegratedValue[] = ["all", "1", "0"];
 const VALID_WARN_FILTERS: Params["warnFilter"][] = [
   "all",

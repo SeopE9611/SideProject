@@ -83,6 +83,7 @@ import { prevMonthYyyymmKST, type Kind } from "./filters/operationsFilters";
 import {
   buildOperationsViewQueryString,
   initOperationsStateFromQuery,
+  type FlowValue,
   useSyncOperationsQuery,
 } from "./hooks/useOperationsQueryState";
 import { formatKST, type OpItem, type ReviewLevel } from "./table/operationsTableUtils";
@@ -446,13 +447,13 @@ const PRESET_CONFIG: Record<
     params: Partial<{
       q: string;
       kind: "all" | Kind;
-      flow: "all" | "1" | "2" | "3" | "4" | "5" | "6" | "7";
+      flow: FlowValue;
       integrated: "all" | "1" | "0";
       warn: boolean;
     }>;
     isActive: (state: {
       integrated: "all" | "1" | "0";
-      flow: "all" | "1" | "2" | "3" | "4" | "5" | "6" | "7";
+      flow: FlowValue;
       kind: "all" | Kind;
       onlyWarn: boolean;
     }) => boolean;
@@ -720,7 +721,7 @@ export default function OperationsClient() {
   const [q, setQ] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [kind, setKind] = useState<"all" | Kind>("all");
-  const [flow, setFlow] = useState<"all" | "1" | "2" | "3" | "4" | "5" | "6" | "7">("all");
+  const [flow, setFlow] = useState<FlowValue>("all");
   const [integrated, setIntegrated] = useState<"all" | "1" | "0">("all"); // 1=통합만, 0=단독만
   const [onlyWarn, setOnlyWarn] = useState(false);
   const [warnFilter, setWarnFilter] = useState<
