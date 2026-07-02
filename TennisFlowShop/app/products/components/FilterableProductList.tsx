@@ -499,9 +499,9 @@ export default function FilterableProductList({
     [openFiltersSheet, cancelFiltersSheet],
   );
 
-  // active filter 개수 계산
+  // FilterPanel에서 제어 가능한 조건만 필터 버튼/패널 카운트에 반영한다.
   const priceChanged = priceRange[0] > DEFAULT_MIN_PRICE || priceRange[1] < DEFAULT_MAX_PRICE;
-  const activeFiltersCount = [
+  const panelFiltersCount = [
     selectedBrand,
     selectedMaterial,
     selectedBounce,
@@ -510,9 +510,10 @@ export default function FilterableProductList({
     selectedControl,
     selectedComfort,
     submittedQuery,
-    exposureFilter.length > 0,
     priceChanged,
   ].filter(Boolean).length;
+  const hasAppliedPanelFilters = panelFiltersCount > 0;
+  const hasAnyAppliedFilters = hasAppliedPanelFilters || exposureFilter.length > 0;
 
   const draftPriceChanged =
     draftPriceRange[0] > DEFAULT_MIN_PRICE || draftPriceRange[1] < DEFAULT_MAX_PRICE;
@@ -732,7 +733,7 @@ export default function FilterableProductList({
                 ) : null}
               </div>
             </SummaryCard>
-            {activeFiltersCount > 0 && (
+            {hasAppliedPanelFilters && (
               <div className="rounded-2xl border border-border bg-card p-3 shadow-sm bp-sm:p-4">
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <p className="text-ui-body-sm font-medium text-foreground">적용 중인 조건</p>
@@ -902,7 +903,7 @@ export default function FilterableProductList({
                     aria-label={showFilters ? "필터 닫기" : "필터 열기"}
                   >
                     <Filter className="mr-2 h-4 w-4" />
-                    필터{activeFiltersCount > 0 && `(${activeFiltersCount})`}
+                    필터{panelFiltersCount > 0 && `(${panelFiltersCount})`}
                   </Button>
                   <Button
                     type="button"
@@ -965,10 +966,7 @@ export default function FilterableProductList({
                   </Select>
                 </div>
               </div>
-              <div className="flex min-w-0 items-center gap-2 overflow-x-auto whitespace-nowrap pb-1">
-                <span className="shrink-0 text-ui-label font-medium text-muted-foreground">
-                  빠른 보기
-                </span>
+              <div className="flex min-w-0 items-center gap-1.5 overflow-x-auto whitespace-nowrap pb-1">
                 {QUICK_BENEFIT_FILTERS.map((option) => {
                   const isActive = exposureFilter.includes(option.value);
                   return (
@@ -981,12 +979,13 @@ export default function FilterableProductList({
                       className={cn(
                         "h-8 shrink-0 whitespace-nowrap rounded-full px-3 text-ui-label transition-colors",
                         isActive
-                          ? "bg-muted text-foreground shadow-sm hover:bg-muted/80"
+                          ? "border-primary/40 bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
                           : "border-border bg-background text-muted-foreground hover:bg-muted/30",
                       )}
                       aria-pressed={isActive}
                       aria-label={option.ariaLabel}
                     >
+                      {isActive && <Check className="mr-1.5 h-3.5 w-3.5" />}
                       {option.label}
                     </Button>
                   );
@@ -1030,7 +1029,7 @@ export default function FilterableProductList({
             <EmptyState
               title="검색 결과가 없습니다"
               description={
-                activeFiltersCount > 0
+                hasAnyAppliedFilters
                   ? "조건에 맞는 상품이 없습니다. 필터를 줄이거나 전체 초기화를 눌러 다시 확인해보세요."
                   : "다른 검색어나 필터를 시도해보세요"
               }
