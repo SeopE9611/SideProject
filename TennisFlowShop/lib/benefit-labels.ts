@@ -4,7 +4,7 @@ export type BenefitFilterValue = (typeof BENEFIT_FILTER_VALUES)[number];
 export const BENEFIT_LABELS: Record<BenefitFilterValue, string> = {
   featured: "추천",
   new: "신상품",
-  sale: "할인",
+  sale: "할인상품",
 };
 
 export function parseBenefitFilters(value?: string | null): BenefitFilterValue[] {
