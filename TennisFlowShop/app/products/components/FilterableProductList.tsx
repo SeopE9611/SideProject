@@ -60,14 +60,10 @@ const activeFilterChipClass =
 const activeFilterRemoveButtonClass =
   "shrink-0 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const QUICK_BENEFIT_FILTERS = BENEFIT_FILTER_VALUES.map((value) => ({
-  label: BENEFIT_LABELS[value],
+  label: value === "sale" ? "할인상품" : BENEFIT_LABELS[value],
   value,
   ariaLabel:
-    value === "featured"
-      ? "추천 상품 보기"
-      : value === "new"
-        ? "신상품 보기"
-        : "할인 상품 보기",
+    value === "featured" ? "추천 상품 보기" : value === "new" ? "신상품 보기" : "할인 상품 보기",
 }));
 const quickToggleButtonClass = (isActive: boolean) =>
   cn(
