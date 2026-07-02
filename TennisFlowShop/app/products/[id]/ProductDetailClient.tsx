@@ -16,9 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { stringBrandLabel, stringColorLabel, stringMaterialLabel } from "@/lib/constants";
-import { formatGaugeLabel } from "@/lib/formatGaugeLabel";
-import { hasPaidMountingFee, isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
+import { stringBrandLabel } from "@/lib/constants";
+import { isMountableStringByFee } from "@/lib/orders/string-mounting-policy";
 import { ENABLE_STRING_STANDALONE_ORDER } from "@/lib/orders/string-standalone-policy";
 import { normalizeFeatureScoresTo100 } from "@/lib/product-feature-score";
 import { addRecentViewedItem } from "@/lib/recent-viewed";
@@ -65,6 +64,10 @@ import ProductDetailQnaTab from "./ProductDetailQnaTab";
 import ProductDetailRelatedProductsSection from "./ProductDetailRelatedProductsSection";
 import ProductDetailReviewsTab from "./ProductDetailReviewsTab";
 import ProductDetailSpecificationsTab from "./ProductDetailSpecificationsTab";
+import {
+  buildProductDetailDisplaySpec,
+  buildProductDetailHybridDisplay,
+} from "./ProductDetailDisplaySpec.utils";
 import { isAdminUser } from "./ProductDetailReviewData.utils";
 import { useProductDetailQna } from "./useProductDetailQna";
 import { useProductDetailRelatedProducts } from "./useProductDetailRelatedProducts";
@@ -132,53 +135,17 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const saleRate =
     isSale && regularPrice > 0 ? Math.round(((regularPrice - salePrice) / regularPrice) * 100) : 0;
 
-  // ====== 스펙 표 렌더링용 변환 ======
-  const toDisplaySpec = () => {
-    const spec = product?.specifications || {};
-    const origin = spec.origin ?? spec.madeIn ?? spec.제조국 ?? product?.origin ?? product?.madeIn;
-    const brand = displayBrandLabel(product?.brand || spec.brand);
-    const material =
-      stringMaterialLabel(product?.material) || stringMaterialLabel(spec.material) || spec.소재;
-    const gaugeRaw = product?.gauge ?? spec.gauge ?? spec.게이지;
-    const gauge =
-      gaugeOptions.length > 1
-        ? gaugeOptions.map((v: string) => formatGaugeLabel(v)).join(" / ")
-        : formatGaugeLabel(gaugeRaw);
-    const color = stringColorLabel(product?.color) || stringColorLabel(spec.color) || spec.색상;
-    const lengthRaw = product?.length ?? spec.length ?? spec.길이;
-    const length =
-      typeof lengthRaw === "string" && /^\d+(\.\d+)?$/.test(lengthRaw)
-        ? `${lengthRaw}m`
-        : lengthRaw;
-
-    const display: Record<string, any> = {
-      브랜드: brand,
-      재질: material,
-      "게이지(굵기)": gauge,
-      색상: color,
-      길이: length,
-    };
-    if (origin) display["제조국"] = origin;
-
-    if (hasPaidMountingFee(product?.mountingFee)) {
-      display["장착 서비스 비용"] = `${Number(product.mountingFee).toLocaleString()}원`;
-    }
-
-    return display;
-  };
-
-  // 하이브리드 스펙 참조 변수
-  const hybridSpec = (product as any)?.specifications?.hybrid;
-
-  // 하이브리드 표시용 로컬 변수
-  const hMain = hybridSpec?.main ?? {};
-  const hCross = hybridSpec?.cross ?? {};
-  const hMainBrand = displayBrandLabel(hMain.brand);
-  const hCrossBrand = displayBrandLabel(hCross.brand);
-  const hMainGauge = formatGaugeLabel(hMain.gauge);
-  const hCrossGauge = formatGaugeLabel(hCross.gauge);
-  const hMainColor = stringColorLabel(hMain.color);
-  const hCrossColor = stringColorLabel(hCross.color);
+  const {
+    hybridSpec,
+    hMain,
+    hCross,
+    hMainBrand,
+    hCrossBrand,
+    hMainGauge,
+    hCrossGauge,
+    hMainColor,
+    hCrossColor,
+  } = buildProductDetailHybridDisplay(product);
 
   // ====== 추천 태그 추출 ======
   const selectedPlayerTypes = Object.entries(PLAYER_TYPE_MAP)
@@ -218,6 +185,10 @@ export default function ProductDetailClient({ product }: { product: any }) {
     canDec,
     canInc,
   } = useProductDetailOptions({ product });
+  const displaySpec = buildProductDetailDisplaySpec({
+    product,
+    gaugeOptions,
+  });
   // const [isWishlisted, setIsWishlisted] = useState(false);
   const { addItem } = useCartStore();
   const { setItem: setBuyNowItem } = useBuyNowStore();
@@ -1381,7 +1352,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
 
               <TabsContent value="specifications" className="p-4 sm:p-6 bp-md:p-8">
                 <ProductDetailSpecificationsTab
-                  displaySpec={toDisplaySpec()}
+                  displaySpec={displaySpec}
                   selectedColorLabel={selectedColorLabel}
                   isHybridMaterial={product?.material === "hybrid"}
                   hybridSpec={hybridSpec}
