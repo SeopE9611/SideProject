@@ -22,11 +22,6 @@ type PerformanceFilterConfig = {
   setter: (v: number | null) => void;
   featureKey: string;
 };
-const EXPOSURE_OPTIONS = [
-  { label: "추천", value: "featured" },
-  { label: "신상품", value: "new" },
-  { label: "할인", value: "sale" },
-];
 
 const PRICE_PRESETS: { label: string; range: [number, number] }[] = [
   { label: "전체", range: [0, 200000] },
@@ -55,8 +50,6 @@ type Props = {
   setSearchQuery: (v: string) => void;
   priceRange: [number, number];
   setPriceRange: (v: [number, number]) => void;
-  exposureFilter: string[];
-  onExposureChange: (value: string[]) => void;
   resetKey: number;
   activeFiltersCount: number;
   onReset: () => void;
@@ -89,8 +82,6 @@ export const FilterPanel = React.memo(function FilterPanel({
   setSearchQuery,
   priceRange,
   setPriceRange,
-  exposureFilter,
-  onExposureChange,
   resetKey,
   activeFiltersCount,
   onReset,
@@ -279,43 +270,6 @@ export const FilterPanel = React.memo(function FilterPanel({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="mb-4 space-y-2 rounded-xl border border-border bg-muted/20 p-3">
-              <Label className="text-ui-body-sm font-medium text-foreground">혜택</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  type="button"
-                  variant={exposureFilter.length === 0 ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => onExposureChange([])}
-                  className="h-9 whitespace-nowrap px-2 text-ui-label bp-sm:text-ui-body-sm"
-                >
-                  전체
-                </Button>
-                {EXPOSURE_OPTIONS.map((option) => {
-                  const isActive = exposureFilter.includes(option.value);
-                  return (
-                    <Button
-                      key={option.value}
-                      type="button"
-                      variant={isActive ? "default" : "outline"}
-                      size="sm"
-                      onClick={() =>
-                        onExposureChange(
-                          isActive
-                            ? exposureFilter.filter((value) => value !== option.value)
-                            : [...exposureFilter, option.value],
-                        )
-                      }
-                      className="h-9 whitespace-nowrap px-2 text-ui-label bp-sm:text-ui-body-sm"
-                      aria-pressed={isActive}
-                    >
-                      {option.label}
-                    </Button>
-                  );
-                })}
-              </div>
             </div>
 
             <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-3">
