@@ -20,6 +20,11 @@ import { cn } from "@/lib/utils";
 import type { DashboardMetrics } from "@/types/admin/dashboard";
 
 const DASHBOARD_ENDPOINT = "/api/admin/dashboard/metrics?days=30";
+const DASHBOARD_SWR_OPTIONS = {
+  revalidateOnFocus: false,
+  revalidateOnReconnect: false,
+  dedupingInterval: 60_000,
+};
 
 function SummaryCard({ title, value, description, tone = "default" }: { title: string; value: string; description: string; tone?: "default" | "warning" | "danger" | "success" | "info" }) {
   const toneClass = {
@@ -51,7 +56,11 @@ function LinkCard({ href, title, description }: { href: string; title: string; d
 }
 
 export default function AdminDashboardClientView() {
-  const { data, error, isLoading, mutate } = useSWR<DashboardMetrics>(DASHBOARD_ENDPOINT, authenticatedSWRFetcher);
+  const { data, error, isLoading, mutate } = useSWR<DashboardMetrics>(
+    DASHBOARD_ENDPOINT,
+    authenticatedSWRFetcher,
+    DASHBOARD_SWR_OPTIONS,
+  );
 
   if (isLoading) {
     return (
