@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function AdminHomePage() {
-  redirect("/admin/operations");
+  redirect("/admin/dashboard");
 }
