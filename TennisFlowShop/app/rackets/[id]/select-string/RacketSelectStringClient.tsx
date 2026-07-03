@@ -392,7 +392,7 @@ export default function RacketSelectStringClient({ racket }: { racket: RacketMin
       initialSelectedGauge={initialSelectedGauge}
       initialSelectedColor={initialSelectedColor}
       isCartEditMode={isFromCart}
-      ctaLabel={isFromCart ? "이 스트링으로 변경" : "이 스트링으로 결제 계속하기"}
+      ctaLabel={isFromCart ? "선택 변경하기" : "선택 후 결제"}
       ctaSubLabel={isFromCart ? "장바구니로 돌아갑니다" : "선택한 스트링은 라켓과 함께 결제됩니다"}
       designVariant="racketPurchase"
     />

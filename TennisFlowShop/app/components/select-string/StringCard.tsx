@@ -370,17 +370,17 @@ export function StringCard({
 
         {/* CTA Button */}
         <Button
-          className="mt-3 h-10 w-full justify-center gap-2 whitespace-normal break-keep rounded-xl"
+          className="mt-3 h-10 w-full justify-center gap-2 overflow-hidden whitespace-nowrap rounded-xl"
           disabled={isDisabled}
           onClick={onSelect}
         >
-          <span>{ctaLabel}</span>
+          <span className="min-w-0 truncate">{ctaLabel}</span>
           <ChevronRight className="h-4 w-4 shrink-0" />
         </Button>
         <Button
           asChild
           variant="outline"
-          className="mt-2 h-10 w-full justify-center gap-2 whitespace-normal break-keep rounded-xl"
+          className="mt-2 h-10 w-full justify-center gap-2 overflow-hidden whitespace-nowrap rounded-xl"
         >
           <Link
             href={`/products/${product._id}`}
@@ -388,8 +388,8 @@ export function StringCard({
             rel="noopener noreferrer"
             onClick={(event) => event.stopPropagation()}
           >
-            <Eye className="h-4 w-4" />
-            상세 보기
+            <Eye className="h-4 w-4 shrink-0" />
+            <span className="min-w-0 truncate">상세 보기</span>
           </Link>
         </Button>
         {ctaSubLabel && (
