@@ -151,37 +151,55 @@ export async function GET(req: Request) {
     operationGroupCounts,
   ] = await Promise.all([
     perf.measure("count.orders.completedToday", () =>
-      safeCount(db, "orders", completedStatusFilter(ORDER_COMPLETED_TODAY_STATUS_VALUES, start, end)),
+      safeCount(
+        db,
+        "orders",
+        completedStatusFilter(ORDER_COMPLETED_TODAY_STATUS_VALUES, start, end),
+      ),
     ),
-    perf.measure("count.stringingApplications.completedToday", () => safeCount(db, "stringing_applications", {
-      $and: [
-        dateRangeFilter("updatedAt", start, end),
-        { status: { $in: STRINGING_COMPLETED_TODAY_STATUS_VALUES } },
-      ],
-    })),
-    perf.measure("distinct.rentalHistory.completedToday", () => db
-      .collection("rental_history")
-      .distinct("rentalId", {
+    perf.measure("count.stringingApplications.completedToday", () =>
+      safeCount(db, "stringing_applications", {
         $and: [
-          dateRangeFilter("at", start, end),
-          { action: { $in: RENTAL_HISTORY_COMPLETED_ACTION_VALUES } },
+          dateRangeFilter("updatedAt", start, end),
+          { status: { $in: STRINGING_COMPLETED_TODAY_STATUS_VALUES } },
         ],
-      })
-      .catch((error) => {
-        console.error("[admin/operations/daily-summary] failed to count rental_history", error);
-        return [];
-      })),
+      }),
+    ),
+    perf.measure("distinct.rentalHistory.completedToday", () =>
+      db
+        .collection("rental_history")
+        .distinct("rentalId", {
+          $and: [
+            dateRangeFilter("at", start, end),
+            { action: { $in: RENTAL_HISTORY_COMPLETED_ACTION_VALUES } },
+          ],
+        })
+        .catch((error: unknown) => {
+          console.error("[admin/operations/daily-summary] failed to count rental_history", error);
+          return [];
+        }),
+    ),
     perf.measure("count.offline.completedToday", () =>
       safeCount(db, "offline_service_records", offlineCompletedTodayFilter(start, end)),
     ),
-    perf.measure("count.academyApplications.completedToday", () => safeCount(db, "academy_lesson_applications", {
-      $and: [
-        dateRangeFilter("updatedAt", start, end),
-        { status: { $in: ACADEMY_COMPLETED_TODAY_STATUS_VALUES } },
-      ],
-    })),
-    perf.measure("count.operationTaskCounts", () => countAdminOperationTaskCounts(db)),
-    perf.measure("count.operationGroupCounts", () => countAdminOperationGroupCounts(db)),
+    perf.measure("count.academyApplications.completedToday", () =>
+      safeCount(db, "academy_lesson_applications", {
+        $and: [
+          dateRangeFilter("updatedAt", start, end),
+          { status: { $in: ACADEMY_COMPLETED_TODAY_STATUS_VALUES } },
+        ],
+      }),
+    ),
+    perf.measure("count.operationTaskCounts", () =>
+      countAdminOperationTaskCounts(db, {
+        measure: (name, work) => perf.measure(name, work),
+      }),
+    ),
+    perf.measure("count.operationGroupCounts", () =>
+      countAdminOperationGroupCounts(db, {
+        measure: (name, work) => perf.measure(name, work),
+      }),
+    ),
   ]);
 
   const rentals = rentalIds.length;

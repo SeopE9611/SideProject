@@ -18,7 +18,7 @@ export function createApiPerfLogger(route: string) {
   const marks: ApiPerfMark[] = [];
 
   return {
-    async measure<T>(name: string, work: Promise<T> | (() => Promise<T>)) {
+    async measure<T>(name: string, work: Promise<T> | (() => Promise<T> | T)) {
       const markStart = performance.now();
       try {
         return await (typeof work === "function" ? work() : work);
