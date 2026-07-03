@@ -132,7 +132,11 @@ async function safeCount(db: Db, collectionName: string, filter: Filter<Document
 
 export async function GET(req: Request) {
   const perf = createApiPerfLogger("GET /api/admin/operations/daily-summary");
-  const guard = await perf.measure("requireAdmin", () => requireAdmin(req));
+  const guard = await perf.measure("requireAdmin", () =>
+    requireAdmin(req, {
+      measure: (name, work) => perf.measure(name, work),
+    }),
+  );
   if (!guard.ok) return guard.res;
 
   const { db } = guard;
