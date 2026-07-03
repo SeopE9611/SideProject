@@ -27,7 +27,7 @@ import { stringMaterialLabel } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Check, Filter, Grid3X3, List, Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 // 브랜드 리스트
 const brands = [
   { label: "럭실론", value: "luxilon" },
@@ -279,92 +279,18 @@ export default function FilterableProductList({
     includeSoldOut,
   });
 
-  /**
-   * 전환(Transition) 플래그
-   * - 필터/검색 변경 직후 products가 먼저 비워지면서 "0개"가 1프레임 찍히는 문제를 막는다.
-   * - useLayoutEffect로 "페인트 전에" 플래그를 켜서 사용자가 깜빡임을 보지 않게 한다.
-   */
-  const [isUiTransitioning, setIsUiTransitioning] = useState(false);
-  const sawLoadingRef = useRef(false);
-
-  // "서버 조회에 영향을 주는 값"들만 묶어서 키로 만든다. (viewMode 같은 UI-only 값은 제외)
-  const filterKey = useMemo(() => {
-    return [
-      selectedBrand ?? "",
-      selectedMaterial ?? "",
-      selectedBounce ?? "",
-      selectedDurability ?? "",
-      selectedSpin ?? "",
-      selectedControl ?? "",
-      selectedComfort ?? "",
-      submittedQuery ?? "",
-      sortOption ?? "",
-      priceRange[0],
-      priceRange[1],
-      exposureFilter.join(","),
-      includeSoldOut ? "includeSoldOut" : "excludeSoldOut",
-    ].join("|");
-  }, [
-    selectedBrand,
-    selectedMaterial,
-    selectedBounce,
-    selectedDurability,
-    selectedSpin,
-    selectedControl,
-    selectedComfort,
-    submittedQuery,
-    exposureFilter,
-    sortOption,
-    priceRange,
-    includeSoldOut,
-  ]);
-
-  // 필터 키가 바뀌는 "그 순간"에 전환 플래그 ON (페인트 전에 실행)
-  useLayoutEffect(() => {
-    // 초기 URL → 상태 동기화 중에는 기존 로딩 흐름을 우선한다
-    if (isInitializingRef.current) return;
-
-    setIsUiTransitioning(true);
-    sawLoadingRef.current = false;
-  }, [filterKey]);
-
-  // 전환 플래그 OFF 조건:
-  // - 전환 중(isUiTransitioning)이고,
-  // - 로딩을 한 번이라도 봤고(isLoadingInitial을 true로 봤고),
-  // - 다시 isLoadingInitial이 false가 되면(= 1페이지 응답 완료) 전환 종료
-  useEffect(() => {
-    if (!isUiTransitioning) return;
-
-    if (isLoadingInitial) {
-      sawLoadingRef.current = true;
-      return;
-    }
-
-    if (sawLoadingRef.current && !isLoadingInitial) {
-      setIsUiTransitioning(false);
-      sawLoadingRef.current = false;
-    }
-
-    // 에러 시에도 스켈레톤이 붙잡고 있지 않도록 해제
-    if (error) {
-      setIsUiTransitioning(false);
-      sawLoadingRef.current = false;
-    }
-  }, [isUiTransitioning, isLoadingInitial, error]);
-
   const loadedCount = (productsList ?? []).length;
   const showInlineLoadingSkeleton = isLoadingInitial && loadedCount === 0;
   const hasInitialFetchSettled = total !== null || error !== null;
   const canShowEmptyState = hasInitialFetchSettled && loadedCount === 0 && !isLoadingInitial;
   const isCountLoading = total === null && loadedCount === 0;
-  const isBackgroundRefreshing = isUiTransitioning && loadedCount > 0;
+  const isBackgroundRefreshing = isLoadingInitial && loadedCount > 0;
 
   // 검색 제출 handler
   const handleSearchSubmit = useCallback(() => {
     // 새 검색이면 submittedQuery 바꾸고 페이징 리셋
     setSubmittedQuery(searchQuery);
     // resetInfinite를 직접 호출해서 새로 고침 보장 (훅 내부에서 감지 안할 경우 대비)
-    setIsUiTransitioning(true);
     resetInfinite();
   }, [searchQuery, resetInfinite]);
 
@@ -372,7 +298,6 @@ export default function FilterableProductList({
   const handleClearSearch = useCallback(() => {
     setSearchQuery("");
     setSubmittedQuery("");
-    setIsUiTransitioning(true);
     resetInfinite();
   }, [resetInfinite]);
 
@@ -392,7 +317,6 @@ export default function FilterableProductList({
     setViewMode("grid");
     setSearchQuery("");
     setSubmittedQuery("");
-    setIsUiTransitioning(true);
     resetInfinite();
   }, [resetInfinite]);
 
@@ -410,7 +334,6 @@ export default function FilterableProductList({
 
     const newSearch = params.toString();
     lastSerializedRef.current = newSearch;
-    setIsUiTransitioning(true);
     router.replace(`${pathname}${newSearch ? `?${newSearch}` : ""}`, { scroll: false });
   }, [includeSoldOut, pathname, router, searchParams]);
 
@@ -463,7 +386,6 @@ export default function FilterableProductList({
     // 검색은 "제출된 값"만 서버 조회에 쓰이므로, 적용 시점에 submittedQuery를 갱신
     setSearchQuery(draftSearchQuery);
     setSubmittedQuery(draftSearchQuery);
-    setIsUiTransitioning(true);
     resetInfinite(); // 여기서만 서버 재조회 발생
     setShowFilters(false); // 적용 후 닫기
   }, [
@@ -758,7 +680,6 @@ export default function FilterableProductList({
                         type="button"
                         aria-label="검색어 필터 해제"
                         onClick={() => {
-                          setIsUiTransitioning(true);
                           setSearchQuery("");
                           setSubmittedQuery("");
                           resetInfinite();
