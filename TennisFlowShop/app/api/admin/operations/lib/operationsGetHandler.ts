@@ -61,6 +61,10 @@ const KIND_PRIORITY: Record<Kind, number> = {
 
 type UnknownDoc = Record<string, unknown>;
 type UnknownArray = UnknownDoc[];
+type Measure = <T>(name: string, work: Promise<T> | (() => Promise<T> | T)) => Promise<T>;
+type AdminOperationsGetOptions = {
+  measure?: Measure;
+};
 
 function asDoc(value: unknown): UnknownDoc | null {
   return typeof value === "object" && value !== null ? (value as UnknownDoc) : null;
@@ -433,7 +437,13 @@ function dedupeSignals(signals: OperationSignal[]): OperationSignal[] {
   const seen = new Set<string>();
   const out: OperationSignal[] = [];
   for (const signal of signals) {
-    const key = [signal.title, signal.description, signal.code, signal.sourceKind, signal.sourceId].join("|");
+    const key = [
+      signal.title,
+      signal.description,
+      signal.code,
+      signal.sourceKind,
+      signal.sourceId,
+    ].join("|");
     if (seen.has(key)) continue;
     seen.add(key);
     out.push(signal);
@@ -441,9 +451,10 @@ function dedupeSignals(signals: OperationSignal[]): OperationSignal[] {
   return out;
 }
 
-
 function normalizeStatusText(value?: string | null) {
-  return String(value ?? "").trim().toLowerCase();
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
 }
 
 function isCancelApproved(item: OpItem) {
@@ -492,13 +503,21 @@ function isRentalTerminalStatus(item: OpItem) {
   const s = normalizeStatusText(item.statusLabel);
   if (s.includes("취소") || s === "canceled" || s === "cancelled") return true;
   if (!(s.includes("반납완료") || s === "returned")) return false;
-  return !item.nextAction?.includes("보증금") && !item.pendingReasons?.some((reason) => reason.includes("보증금"));
+  return (
+    !item.nextAction?.includes("보증금") &&
+    !item.pendingReasons?.some((reason) => reason.includes("보증금"))
+  );
 }
 
 function isPackageTerminalStatus(item: OpItem) {
   const status = normalizeStatusText(item.statusLabel);
   const payment = normalizeStatusText(item.paymentLabel);
-  return payment.includes("결제완료") || payment === "paid" || status.includes("활성") || status.includes("완료");
+  return (
+    payment.includes("결제완료") ||
+    payment === "paid" ||
+    status.includes("활성") ||
+    status.includes("완료")
+  );
 }
 
 function isTerminalOperationItem(item: OpItem) {
@@ -817,22 +836,31 @@ function matchesResidualMemoryFallback(item: OpItem, q: string) {
   return idContains || titleContains;
 }
 
-export async function handleAdminOperationsGet(req: Request) {
-  const guard = await requireAdmin(req);
+export async function handleAdminOperationsGet(
+  req: Request,
+  options: AdminOperationsGetOptions = {},
+) {
+  const measure: Measure =
+    options.measure ?? ((_, work) => Promise.resolve(typeof work === "function" ? work() : work));
+  const guard = await measure("operations.requireAdmin", () => requireAdmin(req));
   if (!guard.ok) return guard.res;
   const { db } = guard;
 
   // 운영 흐름 목록은 대량 merge/sort 조회를 수행하므로 고비용 API로 레이트리밋을 건다.
-  const limited = await enforceAdminRateLimit(
-    req,
-    db,
-    String(guard.admin._id),
-    ADMIN_EXPENSIVE_ENDPOINT_POLICIES.adminOperationsList,
+  const limited = await measure("operations.rateLimit", () =>
+    enforceAdminRateLimit(
+      req,
+      db,
+      String(guard.admin._id),
+      ADMIN_EXPENSIVE_ENDPOINT_POLICIES.adminOperationsList,
+    ),
   );
   if (limited) return limited;
 
-  const url = new URL(req.url);
-  const requestDto = parseOperationsListRequest(url);
+  const requestDto = await measure("operations.parseQuery", () => {
+    const url = new URL(req.url);
+    return parseOperationsListRequest(url);
+  });
   const { page, pageSize, kind, q, warn, flow, integrated, warnFilter, warnSort } = requestDto;
   const fetchLimit = q ? SEARCH_FETCH_EACH : MAX_FETCH_EACH;
   const qRegex = q ? buildSearchRegex(q) : null;
@@ -844,50 +872,52 @@ export async function handleAdminOperationsGet(req: Request) {
   const idCandidates = q ? buildIdCandidates(q) : [];
   const rentalUserIdCandidates: Array<string | ObjectId> = [];
 
-  if (qRegex) {
-    if (isEmailSearch && qEmailNormalized) {
-      const userCollection = db.collection("users");
-      const matchedUsersExact = await userCollection
-        .find({ email: qEmailNormalized })
-        .project({ _id: 1 })
-        .limit(fetchLimit)
-        .toArray();
-      let matchedUsers = matchedUsersExact;
-      if (matchedUsers.length === 0 && qEmailPrefixRegex) {
-        matchedUsers = await userCollection
-          .find({ email: qEmailPrefixRegex })
+  await measure("operations.resolveSearchUsers", async () => {
+    if (qRegex) {
+      if (isEmailSearch && qEmailNormalized) {
+        const userCollection = db.collection("users");
+        const matchedUsersExact = await userCollection
+          .find({ email: qEmailNormalized })
           .project({ _id: 1 })
           .limit(fetchLimit)
           .toArray();
-      }
-      if (matchedUsers.length === 0) {
-        matchedUsers = await userCollection
-          .find({ email: qRegex })
+        let matchedUsers = matchedUsersExact;
+        if (matchedUsers.length === 0 && qEmailPrefixRegex) {
+          matchedUsers = await userCollection
+            .find({ email: qEmailPrefixRegex })
+            .project({ _id: 1 })
+            .limit(fetchLimit)
+            .toArray();
+        }
+        if (matchedUsers.length === 0) {
+          matchedUsers = await userCollection
+            .find({ email: qRegex })
+            .project({ _id: 1 })
+            .limit(fetchLimit)
+            .toArray();
+        }
+        for (const user of matchedUsers) {
+          const uid = getIdString(user?._id);
+          if (!uid) continue;
+          rentalUserIdCandidates.push(ObjectId.isValid(uid) ? new ObjectId(uid) : uid);
+        }
+      } else {
+        const matchedUsers = await db
+          .collection("users")
+          .find({
+            $or: [{ name: qRegex }, { email: qRegex }],
+          })
           .project({ _id: 1 })
           .limit(fetchLimit)
           .toArray();
-      }
-      for (const user of matchedUsers) {
-        const uid = getIdString(user?._id);
-        if (!uid) continue;
-        rentalUserIdCandidates.push(ObjectId.isValid(uid) ? new ObjectId(uid) : uid);
-      }
-    } else {
-      const matchedUsers = await db
-        .collection("users")
-        .find({
-          $or: [{ name: qRegex }, { email: qRegex }],
-        })
-        .project({ _id: 1 })
-        .limit(fetchLimit)
-        .toArray();
-      for (const user of matchedUsers) {
-        const uid = getIdString(user?._id);
-        if (!uid) continue;
-        rentalUserIdCandidates.push(ObjectId.isValid(uid) ? new ObjectId(uid) : uid);
+        for (const user of matchedUsers) {
+          const uid = getIdString(user?._id);
+          if (!uid) continue;
+          rentalUserIdCandidates.push(ObjectId.isValid(uid) ? new ObjectId(uid) : uid);
+        }
       }
     }
-  }
+  });
 
   const appQuery: Record<string, unknown> = { status: { $ne: "draft" } };
   let appEmailFallbackQuery: Record<string, unknown> | null = null;
@@ -1040,21 +1070,25 @@ export async function handleAdminOperationsGet(req: Request) {
     guestEmail: 1,
     cancelRequest: 1,
   };
-  let rawApps = await db
-    .collection("stringing_applications")
-    .find(appQuery)
-    .project(appProjection)
-    .sort({ createdAt: -1 })
-    .limit(fetchLimit)
-    .toArray();
-  if (isEmailSearch && rawApps.length === 0 && appEmailFallbackQuery) {
-    rawApps = await db
+  let rawApps = await measure("operations.fetchStringingApplications", () =>
+    db
       .collection("stringing_applications")
-      .find(appEmailFallbackQuery)
+      .find(appQuery)
       .project(appProjection)
       .sort({ createdAt: -1 })
       .limit(fetchLimit)
-      .toArray();
+      .toArray(),
+  );
+  if (isEmailSearch && rawApps.length === 0 && appEmailFallbackQuery) {
+    rawApps = await measure("operations.fetchStringingApplications.emailFallback", () =>
+      db
+        .collection("stringing_applications")
+        .find(appEmailFallbackQuery)
+        .project(appProjection)
+        .sort({ createdAt: -1 })
+        .limit(fetchLimit)
+        .toArray(),
+    );
   }
   const dbMatchedAppIds = new Set(rawApps.map((a) => String(a?._id)));
 
@@ -1106,21 +1140,25 @@ export async function handleAdminOperationsGet(req: Request) {
     shippingInfo: 1,
     cancelRequest: 1,
   };
-  let rawOrders = await db
-    .collection("orders")
-    .find(orderQuery)
-    .project(orderProjection)
-    .sort({ createdAt: -1 })
-    .limit(fetchLimit)
-    .toArray();
-  if (isEmailSearch && rawOrders.length === 0 && orderEmailFallbackQuery) {
-    rawOrders = await db
+  let rawOrders = await measure("operations.fetchOrders", () =>
+    db
       .collection("orders")
-      .find(orderEmailFallbackQuery)
+      .find(orderQuery)
       .project(orderProjection)
       .sort({ createdAt: -1 })
       .limit(fetchLimit)
-      .toArray();
+      .toArray(),
+  );
+  if (isEmailSearch && rawOrders.length === 0 && orderEmailFallbackQuery) {
+    rawOrders = await measure("operations.fetchOrders.emailFallback", () =>
+      db
+        .collection("orders")
+        .find(orderEmailFallbackQuery)
+        .project(orderProjection)
+        .sort({ createdAt: -1 })
+        .limit(fetchLimit)
+        .toArray(),
+    );
   }
   const dbMatchedOrderIds = new Set(rawOrders.map((o) => String(o?._id)));
 
@@ -1151,21 +1189,25 @@ export async function handleAdminOperationsGet(req: Request) {
     dueAt: 1,
     depositRefundedAt: 1,
   };
-  let rawRentals = await db
-    .collection("rental_orders")
-    .find(rentalQuery)
-    .project(rentalProjection)
-    .sort({ createdAt: -1 })
-    .limit(fetchLimit)
-    .toArray();
-  if (isEmailSearch && rawRentals.length === 0 && rentalEmailFallbackQuery) {
-    rawRentals = await db
+  let rawRentals = await measure("operations.fetchRentals", () =>
+    db
       .collection("rental_orders")
-      .find(rentalEmailFallbackQuery)
+      .find(rentalQuery)
       .project(rentalProjection)
       .sort({ createdAt: -1 })
       .limit(fetchLimit)
-      .toArray();
+      .toArray(),
+  );
+  if (isEmailSearch && rawRentals.length === 0 && rentalEmailFallbackQuery) {
+    rawRentals = await measure("operations.fetchRentals.emailFallback", () =>
+      db
+        .collection("rental_orders")
+        .find(rentalEmailFallbackQuery)
+        .project(rentalProjection)
+        .sort({ createdAt: -1 })
+        .limit(fetchLimit)
+        .toArray(),
+    );
   }
   const dbMatchedRentalIds = new Set(rawRentals.map((r) => String(r?._id)));
 
@@ -1190,23 +1232,25 @@ export async function handleAdminOperationsGet(req: Request) {
         $and: [packagePurchaseFilter, { $or: packageSearchOr }],
       }
     : packagePurchaseFilter;
-  const rawPackagePurchases = await db
-    .collection("packageOrders")
-    .find(packagePurchaseQuery)
-    .project({
-      _id: 1,
-      createdAt: 1,
-      status: 1,
-      paymentStatus: 1,
-      totalPrice: 1,
-      userSnapshot: 1,
-      serviceInfo: 1,
-      shippingInfo: 1,
-      packageInfo: 1,
-    })
-    .sort({ createdAt: -1 })
-    .limit(fetchLimit)
-    .toArray();
+  const rawPackagePurchases = await measure("operations.fetchPackagePurchases", () =>
+    db
+      .collection("packageOrders")
+      .find(packagePurchaseQuery)
+      .project({
+        _id: 1,
+        createdAt: 1,
+        status: 1,
+        paymentStatus: 1,
+        totalPrice: 1,
+        userSnapshot: 1,
+        serviceInfo: 1,
+        shippingInfo: 1,
+        packageInfo: 1,
+      })
+      .sort({ createdAt: -1 })
+      .limit(fetchLimit)
+      .toArray(),
+  );
   const dbMatchedPackagePurchaseIds = new Set(
     rawPackagePurchases.map((purchase) => String(purchase?._id)),
   );
@@ -2036,18 +2080,22 @@ export async function handleAdminOperationsGet(req: Request) {
   merged = merged.map((item) => {
     const isTerminal = isTerminalOperationItem(item);
     const cancelFinalizationSignal = item.needsCancelFinalization
-      ? [{
-          code: "PG_CANCEL_FINALIZATION_REQUIRED",
-          level: "warn" as const,
-          sourceKind: item.kind,
-          sourceId: item.id,
-          title: "PG 결제취소 감지 주문",
-          description:
-            "결제는 취소되었지만 주문 상태가 아직 완료/진행 상태입니다. 재고/포인트/연결 교체서비스 후처리를 진행하세요.",
-          nextAction: "취소 후처리하기",
-        }]
+      ? [
+          {
+            code: "PG_CANCEL_FINALIZATION_REQUIRED",
+            level: "warn" as const,
+            sourceKind: item.kind,
+            sourceId: item.id,
+            title: "PG 결제취소 감지 주문",
+            description:
+              "결제는 취소되었지만 주문 상태가 아직 완료/진행 상태입니다. 재고/포인트/연결 교체서비스 후처리를 진행하세요.",
+            nextAction: "취소 후처리하기",
+          },
+        ]
       : [];
-    const signals = isTerminal ? cancelFinalizationSignal : [...cancelFinalizationSignal, ...buildItemSignals(item)];
+    const signals = isTerminal
+      ? cancelFinalizationSignal
+      : [...cancelFinalizationSignal, ...buildItemSignals(item)];
     return {
       ...item,
       signals,
@@ -2059,7 +2107,7 @@ export async function handleAdminOperationsGet(req: Request) {
   });
 
   // 그룹 기준으로 재구성 (페이지 경계에서 그룹 분리 방지)
-  let groups = buildGroups(merged);
+  let groups = await measure("operations.mergeGroups", () => buildGroups(merged));
 
   const isGroupWarn = (group: AdminOperationsGroup) =>
     group.signals.some((signal) => signal.level === "warn");
@@ -2102,7 +2150,9 @@ export async function handleAdminOperationsGet(req: Request) {
       groupQueueBucket: queueBucket,
     };
   });
-  const allGroups = q ? groupsWithQueue : groupsWithQueue.filter((group) => !isOperationallyTerminalGroup(group));
+  const allGroups = q
+    ? groupsWithQueue
+    : groupsWithQueue.filter((group) => !isOperationallyTerminalGroup(group));
 
   const isCautionQueueGroup = (group: AdminOperationsGroup) => group.groupQueueBucket === "caution";
   const isPendingQueueGroup = (group: AdminOperationsGroup) => group.groupQueueBucket === "pending";
@@ -2173,39 +2223,49 @@ export async function handleAdminOperationsGet(req: Request) {
   if (warnFilter === "clean") groups = groups.filter((group) => isCleanGroup(group));
 
   if (warnSort !== "default") {
-    groups = [...groups].sort((a, b) => {
-      const aWarn = isGroupWarn(a);
-      const bWarn = isGroupWarn(b);
-      if (aWarn === bWarn) {
-        const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return tb - ta;
-      }
-      if (warnSort === "warn_first") return aWarn ? -1 : 1;
-      return aWarn ? 1 : -1;
-    });
+    groups = await measure("operations.sortGroups", () =>
+      [...groups].sort((a, b) => {
+        const aWarn = isGroupWarn(a);
+        const bWarn = isGroupWarn(b);
+        if (aWarn === bWarn) {
+          const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return tb - ta;
+        }
+        if (warnSort === "warn_first") return aWarn ? -1 : 1;
+        return aWarn ? 1 : -1;
+      }),
+    );
   }
 
   const filteredGroupsCount = groups.length;
   const start = (page - 1) * pageSize;
-  const pagedGroups = groups.slice(start, start + pageSize);
-  const items = pagedGroups.flatMap((group) => group.items);
+  const { pagedGroups, items } = await measure("operations.paginate", () => {
+    const nextPagedGroups = groups.slice(start, start + pageSize);
+    return {
+      pagedGroups: nextPagedGroups,
+      items: nextPagedGroups.flatMap((group) => group.items),
+    };
+  });
 
-  const responseDto: AdminOperationsListResponseDto = {
-    summaryAll,
-    groups: pagedGroups,
-    operationGroupCounts,
-    operationSignalCounts,
-    pagination: {
-      page,
-      pageSize,
-      totalGroupsAll: allGroups.length,
-      filteredGroupsCount,
-      totalGroups: filteredGroupsCount,
-    },
-    // transitional shape
-    items,
-    total: filteredGroupsCount,
-  };
+  const responseDto: AdminOperationsListResponseDto = await measure(
+    "operations.responseDto",
+    () => ({
+      summaryAll,
+      groups: pagedGroups,
+      operationGroupCounts,
+      operationSignalCounts,
+      pagination: {
+        page,
+        pageSize,
+        totalGroupsAll: allGroups.length,
+        filteredGroupsCount,
+        totalGroups: filteredGroupsCount,
+      },
+      // transitional shape
+      items,
+      total: filteredGroupsCount,
+    }),
+  );
   return NextResponse.json(responseDto);
 }

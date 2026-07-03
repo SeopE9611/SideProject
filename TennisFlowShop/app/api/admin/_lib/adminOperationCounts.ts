@@ -13,6 +13,10 @@ import type {
 } from "@/types/admin/operations";
 
 type NavigationCounts = Partial<Record<SidebarBadgeKey, number>>;
+type Measure = <T>(name: string, work: Promise<T> | (() => Promise<T> | T)) => Promise<T>;
+type OperationCountsOptions = {
+  measure?: Measure;
+};
 
 const TERMINAL_STATUS_VALUES = [
   "취소",
@@ -431,18 +435,10 @@ const standaloneStringingNeedsActionFilter: Filter<Document> = {
   $and: [
     stringingNeedsActionFilter,
     {
-      $or: [
-        { orderId: { $exists: false } },
-        { orderId: null },
-        { orderId: "" },
-      ],
+      $or: [{ orderId: { $exists: false } }, { orderId: null }, { orderId: "" }],
     },
     {
-      $or: [
-        { rentalId: { $exists: false } },
-        { rentalId: null },
-        { rentalId: "" },
-      ],
+      $or: [{ rentalId: { $exists: false } }, { rentalId: null }, { rentalId: "" }],
     },
   ],
 };
@@ -453,15 +449,26 @@ export function toOperationSignalCounts(taskCounts: OperationTaskCounts): Operat
   return { ...taskCounts };
 }
 
-export async function countAdminOperationGroupCounts(db: Db): Promise<OperationGroupCounts> {
+export async function countAdminOperationGroupCounts(
+  db: Db,
+  options: OperationCountsOptions = {},
+): Promise<OperationGroupCounts> {
+  const measure: Measure =
+    options.measure ?? ((_, work) => Promise.resolve(typeof work === "function" ? work() : work));
   const [orders, rentals, standaloneStringing] = await Promise.all([
-    safeCount(db, "orders", orderNeedsActionFilter, "representative order tasks"),
-    safeCount(db, "rental_orders", rentalNeedsActionFilter, "representative rental tasks"),
-    safeCount(
-      db,
-      "stringing_applications",
-      standaloneStringingNeedsActionFilter,
-      "representative standalone stringing tasks",
+    measure("operationCounts.group.orders", () =>
+      safeCount(db, "orders", orderNeedsActionFilter, "representative order tasks"),
+    ),
+    measure("operationCounts.group.rentals", () =>
+      safeCount(db, "rental_orders", rentalNeedsActionFilter, "representative rental tasks"),
+    ),
+    measure("operationCounts.group.stringingApplications", () =>
+      safeCount(
+        db,
+        "stringing_applications",
+        standaloneStringingNeedsActionFilter,
+        "representative standalone stringing tasks",
+      ),
     ),
   ]);
 
@@ -493,7 +500,12 @@ export async function countAdminOfflineNeedsAction(db: Db): Promise<number> {
   return offlineUnpaidRecords + offlinePackageIssueReconcile + offlinePackageUsageReconcile;
 }
 
-export async function countAdminOperationTaskCounts(db: Db): Promise<OperationTaskCounts> {
+export async function countAdminOperationTaskCounts(
+  db: Db,
+  options: OperationCountsOptions = {},
+): Promise<OperationTaskCounts> {
+  const measure: Measure =
+    options.measure ?? ((_, work) => Promise.resolve(typeof work === "function" ? work() : work));
   const nowPlus48Hours = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
   const [
@@ -513,26 +525,59 @@ export async function countAdminOperationTaskCounts(db: Db): Promise<OperationTa
     offline,
     academyApplications,
   ] = await Promise.all([
-    safeCount(db, "orders", cancelRequestFilter, "order cancel requests"),
-    safeCount(db, "stringing_applications", cancelRequestFilter, "stringing cancel requests"),
-    safeCount(db, "rental_orders", cancelRequestFilter, "rental cancel requests"),
-    safeCount(db, "orders", paymentCheckFilter, "order payment check"),
-    safeCount(db, "stringing_applications", paymentCheckFilter, "stringing payment check"),
-    safeCount(db, "rental_orders", paymentCheckFilter, "rental payment check"),
-    safeCount(db, "packageOrders", packagePaymentCheckFilter, "package payment check"),
-    safeCount(db, "orders", orderShippingMissingFilter, "order shipping missing"),
-    safeCount(
-      db,
-      "stringing_applications",
-      stringingShippingMissingFilter,
-      "stringing shipping missing",
+    measure("operationCounts.orders.cancelRequests", () =>
+      safeCount(db, "orders", cancelRequestFilter, "order cancel requests"),
     ),
-    safeCount(db, "rental_orders", rentalShippingMissingFilter, "rental shipping missing"),
-    safeCount(db, "stringing_applications", stringingNeedsActionFilter, "stringing work"),
-    safeCount(db, "rental_orders", rentalDueFilter(nowPlus48Hours), "rental due"),
-    safeCount(db, "stringing_applications", linkedReviewFilter, "linked review"),
-    countAdminOfflineNeedsAction(db),
-    safeCount(db, "academy_lesson_applications", academyNeedsActionFilter, "academy applications"),
+    measure("operationCounts.stringingApplications.cancelRequests", () =>
+      safeCount(db, "stringing_applications", cancelRequestFilter, "stringing cancel requests"),
+    ),
+    measure("operationCounts.rentals.cancelRequests", () =>
+      safeCount(db, "rental_orders", cancelRequestFilter, "rental cancel requests"),
+    ),
+    measure("operationCounts.orders.paymentCheck", () =>
+      safeCount(db, "orders", paymentCheckFilter, "order payment check"),
+    ),
+    measure("operationCounts.stringingApplications.paymentCheck", () =>
+      safeCount(db, "stringing_applications", paymentCheckFilter, "stringing payment check"),
+    ),
+    measure("operationCounts.rentals.paymentCheck", () =>
+      safeCount(db, "rental_orders", paymentCheckFilter, "rental payment check"),
+    ),
+    measure("operationCounts.packages.paymentCheck", () =>
+      safeCount(db, "packageOrders", packagePaymentCheckFilter, "package payment check"),
+    ),
+    measure("operationCounts.orders.shippingMissing", () =>
+      safeCount(db, "orders", orderShippingMissingFilter, "order shipping missing"),
+    ),
+    measure("operationCounts.stringingApplications.shippingMissing", () =>
+      safeCount(
+        db,
+        "stringing_applications",
+        stringingShippingMissingFilter,
+        "stringing shipping missing",
+      ),
+    ),
+    measure("operationCounts.rentals.shippingMissing", () =>
+      safeCount(db, "rental_orders", rentalShippingMissingFilter, "rental shipping missing"),
+    ),
+    measure("operationCounts.stringingApplications.work", () =>
+      safeCount(db, "stringing_applications", stringingNeedsActionFilter, "stringing work"),
+    ),
+    measure("operationCounts.rentals.due", () =>
+      safeCount(db, "rental_orders", rentalDueFilter(nowPlus48Hours), "rental due"),
+    ),
+    measure("operationCounts.stringingApplications.linkedReview", () =>
+      safeCount(db, "stringing_applications", linkedReviewFilter, "linked review"),
+    ),
+    measure("operationCounts.offline", () => countAdminOfflineNeedsAction(db)),
+    measure("operationCounts.academyApplications", () =>
+      safeCount(
+        db,
+        "academy_lesson_applications",
+        academyNeedsActionFilter,
+        "academy applications",
+      ),
+    ),
   ]);
 
   return {
@@ -564,20 +609,15 @@ export async function countAdminNavigationSummary(db: Db): Promise<{
     operationTaskCounts,
     operationGroupCounts,
   ] = await Promise.all([
-      safeCount(db, "orders", orderNeedsActionFilter, "orders needs action"),
-      safeCount(db, "stringing_applications", stringingNeedsActionFilter, "stringing needs action"),
-      safeCount(db, "rental_orders", rentalNeedsActionFilter, "rentals needs action"),
-      safeCount(
-        db,
-        "academy_lesson_applications",
-        academyNeedsActionFilter,
-        "academy applications",
-      ),
-      safeCount(db, "reviews", reviewNeedsActionFilter, "reviews"),
-      safeCount(db, "community_posts", boardNeedsActionFilter, "boards"),
-      countAdminOperationTaskCounts(db),
-      countAdminOperationGroupCounts(db),
-    ]);
+    safeCount(db, "orders", orderNeedsActionFilter, "orders needs action"),
+    safeCount(db, "stringing_applications", stringingNeedsActionFilter, "stringing needs action"),
+    safeCount(db, "rental_orders", rentalNeedsActionFilter, "rentals needs action"),
+    safeCount(db, "academy_lesson_applications", academyNeedsActionFilter, "academy applications"),
+    safeCount(db, "reviews", reviewNeedsActionFilter, "reviews"),
+    safeCount(db, "community_posts", boardNeedsActionFilter, "boards"),
+    countAdminOperationTaskCounts(db),
+    countAdminOperationGroupCounts(db),
+  ]);
 
   const orderAndStringing = orders + stringing;
   const offline = operationTaskCounts.offline;
