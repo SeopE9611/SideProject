@@ -11,7 +11,11 @@ import { ADMIN_EXPENSIVE_ENDPOINT_POLICIES } from "@/lib/admin/adminEndpointCost
 export async function GET(req: Request) {
   const perf = createApiPerfLogger("GET /api/admin/dashboard/metrics");
   const days = new URL(req.url).searchParams.get("days") ?? undefined;
-  const guard = await perf.measure("authAndDb", () => requireAdmin(req));
+  const guard = await perf.measure("authAndDb", () =>
+    requireAdmin(req, {
+      measure: (name, work) => perf.measure(name, work),
+    }),
+  );
   if (!guard.ok) return guard.res;
 
   // 대시보드 메트릭은 다중 집계를 수행하므로 관리자 단위로 호출 빈도를 제한한다.
