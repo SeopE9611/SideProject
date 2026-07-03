@@ -114,11 +114,15 @@ export default function StringRecommendResultCard({
       </CardContent>
       <CardFooter className="flex-col items-start gap-3 p-4 pt-0 sm:p-5 sm:pt-0">
         <div className="mt-1 w-full space-y-2">
-          <Button asChild wrap="normal" className="min-h-10 w-full">
-            <Link href={productHref}>이 스트링으로 교체서비스 신청</Link>
+          <Button asChild className="min-h-10 w-full overflow-hidden whitespace-nowrap">
+            <Link href={productHref}>
+              <span className="min-w-0 truncate">교체서비스 신청하기</span>
+            </Link>
           </Button>
-          <Button asChild variant="outline" wrap="normal" className="min-h-10 w-full">
-            <Link href={productHref}>상세 보기</Link>
+          <Button asChild variant="outline" className="min-h-10 w-full overflow-hidden whitespace-nowrap">
+            <Link href={productHref}>
+              <span className="min-w-0 truncate">상세 보기</span>
+            </Link>
           </Button>
         </div>
         <p className="break-keep text-ui-label leading-relaxed text-muted-foreground">

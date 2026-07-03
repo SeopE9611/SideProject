@@ -603,11 +603,11 @@ export default function SelectStringClient({ orderId }: { orderId: string }) {
               </div>
               <Button
                 type="button"
-                className="mt-4 h-10 w-full rounded-xl break-keep"
+                className="mt-4 h-10 w-full overflow-hidden whitespace-nowrap rounded-xl"
                 disabled={disableSelectButton}
                 onClick={() => handleSelectString(p, selectedGauge, selectedColor)}
               >
-                {addingProductId === p._id ? "이동 중…" : "이 스트링 선택하고 신청 계속하기"}
+                <span className="min-w-0 truncate">{addingProductId === p._id ? "이동 중…" : "선택 후 신청"}</span>
               </Button>
             </div>
           );

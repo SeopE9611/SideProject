@@ -224,7 +224,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
   const serviceTotal = qtyTotal + mountingFee;
   const canCheckoutWithService = isMountableStringByFee(product?.mountingFee);
   const isApplyFlow = searchParams.get("from") === "apply";
-  const serviceCtaLabel = isApplyFlow ? "이 스트링 선택" : "교체서비스 신청하기";
+  const serviceCtaLabel = "교체서비스 신청하기";
   const shouldEmphasizeServiceCta = isApplyFlow || !ENABLE_STRING_STANDALONE_ORDER;
   const isStandalonePausedMountableString =
     canCheckoutWithService && !ENABLE_STRING_STANDALONE_ORDER;
@@ -1181,7 +1181,7 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                 <Button
                                   variant={shouldEmphasizeServiceCta ? "default" : "secondary"}
                                   size="tall"
-                                  className="min-h-12 w-full gap-2 whitespace-normal break-keep sm:min-h-14"
+                                  className="min-h-12 w-full gap-2 overflow-hidden whitespace-nowrap sm:min-h-14"
                                   disabled={
                                     loading ||
                                     quantity > effectiveStock ||
@@ -1190,8 +1190,8 @@ export default function ProductDetailClient({ product }: { product: any }) {
                                   }
                                   onClick={handleBuyNowWithService}
                                 >
-                                  <Wrench className="mr-2 h-5 w-5" />
-                                  {serviceCtaLabel}
+                                  <Wrench className="mr-2 h-5 w-5 shrink-0" />
+                                  <span className="min-w-0 truncate">{serviceCtaLabel}</span>
                                 </Button>
                               ) : ENABLE_STRING_STANDALONE_ORDER ? (
                                 <Button
