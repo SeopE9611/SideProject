@@ -1265,14 +1265,14 @@ export default function TransactionFlowList() {
                         : detailHref;
 
                   const resolvedDetailLabel = hasOrderLinkedApplication
-                    ? "주문 상세"
+                    ? "주문 상세 보기"
                     : hasRentalLinkedApplication
-                      ? "대여 상세"
+                      ? "대여 상세 보기"
                       : detailTargetType === "order"
-                        ? "주문 상세"
+                        ? "주문 상세 보기"
                         : detailTargetType === "rental"
-                          ? "대여 상세"
-                          : "교체서비스 상세";
+                          ? "대여 상세 보기"
+                          : "교체서비스 상세 보기";
 
                   const detailPriority = scope === "todo" || prefersApplicationView ? 10 : 3;
                   actions.push({
@@ -1313,7 +1313,7 @@ export default function TransactionFlowList() {
                             <Link
                               href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&${flowQuery}&focus=stringing`}
                             >
-                              주문 상세
+                              주문 상세 보기
                               <ArrowRight className="ml-1 h-3.5 w-3.5" />
                             </Link>
                           </Button>
@@ -1337,7 +1337,7 @@ export default function TransactionFlowList() {
                             <Link
                               href={`/mypage?tab=orders&flowType=rental&flowId=${rentalId}&${flowQuery}&focus=stringing`}
                             >
-                              대여 상세
+                              대여 상세 보기
                               <ArrowRight className="ml-1 h-3.5 w-3.5" />
                             </Link>
                           </Button>
@@ -1427,7 +1427,7 @@ export default function TransactionFlowList() {
                             onClick={() => handleConfirmPurchase(orderId)}
                           >
                             <CheckCircle className="mr-1 h-3.5 w-3.5" />
-                            {confirmingOrderId === orderId ? "처리 중..." : "구매확정"}
+                            {confirmingOrderId === orderId ? "처리 중..." : "구매 확정"}
                           </Button>
                         ),
                       });
@@ -1489,7 +1489,7 @@ export default function TransactionFlowList() {
                             onClick={() => setCancelRentalDialogId(rentalId)}
                           >
                             <XCircle className="mr-1 h-3.5 w-3.5" />
-                            대여 취소 요청
+                            취소 요청
                           </Button>
                         ),
                       });

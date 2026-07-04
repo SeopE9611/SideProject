@@ -23,7 +23,7 @@ import { useMemo, useState } from "react";
 import { racketBrandLabel } from "@/lib/constants";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import { getMypageUserStatusLabel } from "@/app/mypage/_lib/status-label";
+import { getCustomerRentalStatusLabel } from "@/app/mypage/_lib/flow-display";
 
 type RentalsResponse = {
   items: unknown[];
@@ -74,11 +74,8 @@ const getStatusBadgeVariant = (status: string) => {
 };
 
 const getStatusLabel = (status: string, hasOutboundShipping = false) => {
-  if (status === "pending") return "입금 확인 대기";
-  if (status === "paid") return hasOutboundShipping ? "출고됨 · 수령 확인 대기" : "출고 준비 중";
-  const baseLabel = getMypageUserStatusLabel(status);
-  if (baseLabel === "취소") return "취소됨";
-  return baseLabel;
+  if (status === "paid" && hasOutboundShipping) return "수령 확인 필요";
+  return getCustomerRentalStatusLabel(status);
 };
 
 const formatDate = (dateString: string) => {
@@ -108,7 +105,7 @@ export default function RentalsList() {
 
       if (!res.ok) {
         const body = await res.json().catch(() => null);
-        const msg = body?.message || "대여 취소 요청 철회 중 오류가 발생했습니다.";
+        const msg = body?.message || "취소 요청 철회 중 오류가 발생했습니다.";
         showErrorToast(msg);
         return;
       }
@@ -119,7 +116,7 @@ export default function RentalsList() {
       await mutate();
     } catch (e) {
       console.error(e);
-      showErrorToast("대여 취소 요청 철회 중 오류가 발생했습니다.");
+      showErrorToast("취소 요청 철회 중 오류가 발생했습니다.");
     }
   };
 
@@ -345,7 +342,7 @@ export default function RentalsList() {
                     className="gap-2"
                   >
                     <Undo2 className="h-4 w-4" />
-                    대여 취소 요청 철회
+                    취소 요청 철회
                   </Button>
                 ) : ["pending", "paid"].includes(r.status) &&
                   !r.hasOutboundShipping &&
@@ -357,7 +354,7 @@ export default function RentalsList() {
                     onClick={() => setCancelRentalDialogId(r.id)}
                   >
                     <XCircle className="h-4 w-4" />
-                    대여 취소 요청
+                    취소 요청
                   </Button>
                 ) : null}
               </div>

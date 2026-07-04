@@ -5,6 +5,11 @@ import {
   getMypagePaymentStatusLabel,
   getMypageUserStatusLabel,
 } from "@/app/mypage/_lib/status-label";
+import {
+  getCustomerApplicationStatusLabel,
+  getCustomerOrderStatusLabel,
+  getCustomerRentalStatusLabel,
+} from "@/app/mypage/_lib/flow-display";
 import AsyncState from "@/components/system/AsyncState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -176,16 +181,18 @@ function statusBadgeSpec(g: ActivityGroup) {
 function primaryStatusLabel(g: ActivityGroup) {
   if (g.kind === "order") {
     const rawStatusLabel = getMypageUserStatusLabel(g.order?.status);
-    return getOrderStatusLabelForDisplay(rawStatusLabel, {
-      shippingMethod: g.order?.shippingMethod,
-    });
+    return getCustomerOrderStatusLabel(
+      getOrderStatusLabelForDisplay(rawStatusLabel, {
+        shippingMethod: g.order?.shippingMethod,
+      }),
+    );
   }
-  if (g.kind === "rental") return getMypageUserStatusLabel(g.rental?.status);
-  return getMypageUserStatusLabel(g.application?.status);
+  if (g.kind === "rental") return getCustomerRentalStatusLabel(g.rental?.status);
+  return getCustomerApplicationStatusLabel(g.application?.status);
 }
 
 function applicationStatusLabel(app?: ActivityApplicationSummary | null) {
-  return getMypageUserStatusLabel(app?.status);
+  return getCustomerApplicationStatusLabel(app?.status);
 }
 
 function paymentBadgeSpec(g: ActivityGroup) {
@@ -673,12 +680,12 @@ export default function ActivityFeed() {
           : `/mypage?tab=orders&flowType=application&flowId=${g.application?.id}&from=orders`;
 
     const detailLabel = hasOrderLinkedApplication
-      ? "주문 상세"
+      ? "주문 상세 보기"
       : g.kind === "order"
-        ? "주문 상세"
+        ? "주문 상세 보기"
         : g.kind === "rental"
-          ? "대여 상세"
-          : "교체서비스 상세";
+          ? "대여 상세 보기"
+          : "교체서비스 상세 보기";
 
     // 주문/대여 카드에 붙는 “연결 신청서”
 
@@ -1021,7 +1028,7 @@ export default function ActivityFeed() {
                                   <Link
                                     href={`/reviews/write?service=stringing&applicationId=${appId}`}
                                   >
-                                    리뷰 작성
+                                    후기 작성
                                   </Link>
                                 </DropdownMenuItem>
                               )}
@@ -1514,7 +1521,7 @@ export default function ActivityFeed() {
                                         >
                                           {confirmingOrderId === g.order.id
                                             ? "처리 중..."
-                                            : "구매확정"}
+                                            : "구매 확정"}
                                         </DropdownMenuItem>
                                       ) : null}
 
@@ -1524,7 +1531,7 @@ export default function ActivityFeed() {
                                           <Link
                                             href={`/reviews/write?service=stringing&applicationId=${appId}`}
                                           >
-                                            교체 리뷰 작성
+                                            교체서비스 후기 작성
                                           </Link>
                                         </DropdownMenuItem>
                                       ) : null}

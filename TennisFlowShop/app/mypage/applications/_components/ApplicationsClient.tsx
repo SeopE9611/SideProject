@@ -811,7 +811,7 @@ export default function ApplicationsClient() {
                       onClick={() => router.push(detailHref)}
                       className="bg-transparent"
                     >
-                      상세보기
+                      상세 보기
                       <ArrowRight className="ml-1 h-3 w-3" />
                     </Button>
                   ) : null}
@@ -821,7 +821,7 @@ export default function ApplicationsClient() {
                       <Link
                         href={`/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders`}
                       >
-                        주문 상세
+                        주문 상세 보기
                       </Link>
                     </Button>
                   ) : null}
@@ -830,7 +830,7 @@ export default function ApplicationsClient() {
                       <Link
                         href={`/mypage?tab=orders&flowType=rental&flowId=${rentalId}&from=orders`}
                       >
-                        대여 상세
+                        대여 상세 보기
                       </Link>
                     </Button>
                   ) : null}

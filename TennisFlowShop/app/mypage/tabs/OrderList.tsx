@@ -17,6 +17,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getOrderStatusBadgeSpec, getWorkflowMetaBadgeSpec } from "@/lib/badge-style";
 import { authenticatedSWRFetcher } from "@/lib/fetchers/authenticatedSWRFetcher";
+import { getCustomerOrderStatusLabel } from "@/app/mypage/_lib/flow-display";
 import { getOrderStatusLabelForDisplay, isVisitPickupOrder } from "@/lib/order-shipping";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
@@ -433,7 +434,9 @@ export default function OrderList() {
                     variant={getOrderStatusBadgeSpec(order.status).variant}
                     className="shrink-0 whitespace-nowrap rounded-md px-3 py-1 text-ui-label font-medium"
                   >
-                    {getOrderStatusLabelForDisplay(order.status, order.shippingInfo)}
+                    {getCustomerOrderStatusLabel(
+                      getOrderStatusLabelForDisplay(order.status, order.shippingInfo),
+                    )}
                   </Badge>
 
                   {/* 신청서가 연결된 주문임을 한눈에 표시(탭 분리로 인한 혼란 완화) */}
@@ -536,7 +539,9 @@ export default function OrderList() {
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
                   <p className="text-ui-micro font-medium text-muted-foreground">주문 상태</p>
                   <p className="mt-1 truncate text-ui-body-sm font-semibold text-foreground">
-                    {getOrderStatusLabelForDisplay(order.status, order.shippingInfo)}
+                    {getCustomerOrderStatusLabel(
+                      getOrderStatusLabelForDisplay(order.status, order.shippingInfo),
+                    )}
                   </p>
                 </div>
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
@@ -604,8 +609,8 @@ export default function OrderList() {
                               {confirmingOrderId === order.id
                                 ? "확정 중…"
                                 : isConfirmed
-                                  ? "구매확정 완료"
-                                  : "구매확정"}
+                                  ? "구매 확정 완료"
+                                  : "구매 확정"}
                             </Button>
                           </span>
                         </TooltipTrigger>
@@ -679,7 +684,7 @@ export default function OrderList() {
                         size="sm"
                         onClick={() => setCancelDialogOrderId(order.id)}
                       >
-                        주문 취소 요청
+                        취소 요청
                       </Button>
                     )
                   )}
@@ -736,7 +741,7 @@ export default function OrderList() {
                         <DropdownMenuItem asChild>
                           <Link href={detailHref} className="flex items-center gap-2">
                             <MessageSquarePlus className="h-4 w-4" />
-                            리뷰 작성하기
+                            후기 작성
                           </Link>
                         </DropdownMenuItem>
                       )}
@@ -750,7 +755,7 @@ export default function OrderList() {
                           className="flex items-center gap-2"
                         >
                           <CheckCircle className="h-4 w-4" />
-                          {isConfirmed ? "구매확정 완료" : "구매확정"}
+                          {isConfirmed ? "구매 확정 완료" : "구매 확정"}
                         </DropdownMenuItem>
                       ) : null}
 
@@ -808,7 +813,7 @@ export default function OrderList() {
                           className="flex items-center gap-2"
                         >
                           <Ban className="h-4 w-4" />
-                          주문 취소 요청
+                          취소 요청
                         </DropdownMenuItem>
                       ) : null}
                     </DropdownMenuContent>
