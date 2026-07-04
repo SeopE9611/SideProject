@@ -235,9 +235,10 @@ export default function MypageClient({ user }: Props) {
 
   // 페이지 톤 클래스 분류(대시보드 카드, 탭 헤더, 아이콘 배경)
   const pageTone = {
-    dashboardPanel: "border-b border-border bg-background",
-    sectionHeader: "border-b border-border bg-card px-4 py-3 bp-sm:px-5 bp-sm:py-4",
-    iconSurface: "rounded-lg border border-border bg-muted/50 p-2",
+    dashboardPanel: "border-b border-border/60 bg-background",
+    shellCard: "overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50",
+    sectionHeader: "border-b border-border/60 bg-secondary/30 px-4 py-3 bp-sm:px-5 bp-sm:py-4 bp-lg:px-6",
+    iconSurface: "rounded-xl bg-primary/10 p-2 ring-1 ring-primary/10",
   };
   const todoCount = summary?.todoCount ?? 0;
   const hasTodoItems = !summaryLoading && todoCount > 0;
@@ -274,7 +275,7 @@ export default function MypageClient({ user }: Props) {
           <UserSection user={user} />
 
           <div className="grid gap-3 bp-lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
-            <SummaryCard className="transition-colors hover:bg-muted/30" contentClassName="p-0">
+            <SummaryCard className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 transition-colors hover:bg-muted/20" contentClassName="p-0">
               <button
                 type="button"
                 onClick={() =>
@@ -282,7 +283,7 @@ export default function MypageClient({ user }: Props) {
                     scroll: false,
                   })
                 }
-                className="group w-full rounded-2xl px-4 py-3 text-left transition-colors bp-sm:px-5 bp-sm:py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="group w-full rounded-2xl border-l-2 border-primary/30 bg-primary/5 px-4 py-3 text-left transition-colors hover:bg-primary/10 bp-sm:px-5 bp-sm:py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <div className="flex min-w-0 items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -317,7 +318,7 @@ export default function MypageClient({ user }: Props) {
               </button>
             </SummaryCard>
 
-            <SummaryCard contentClassName="px-4 py-3 bp-sm:px-5 bp-sm:py-4">
+            <SummaryCard className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50" contentClassName="px-4 py-3 bp-sm:px-5 bp-sm:py-4">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-ui-body-sm font-semibold text-foreground">내 활동</p>
                 {hasSummaryError ? (
@@ -325,13 +326,13 @@ export default function MypageClient({ user }: Props) {
                 ) : null}
               </div>
 
-              <div className="grid grid-cols-2 gap-2 bp-sm:grid-cols-4">
+              <div className="grid grid-cols-2 divide-x divide-y divide-border/60 overflow-hidden rounded-xl bg-muted/10 ring-1 ring-border/40 bp-sm:grid-cols-4 bp-sm:divide-y-0">
                 {activitySummaryItems.map((item) => (
                   <button
                     key={item.label}
                     type="button"
                     onClick={() => router.push(item.href, { scroll: false })}
-                    className="min-w-0 rounded-xl border border-border bg-muted/30 px-2 py-2 text-center transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className="min-w-0 px-2 py-3 text-center transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bp-sm:py-2.5"
                   >
                     <span className="block text-ui-body font-semibold tabular-nums text-foreground">
                       {summaryLoading ? "-" : (item.value ?? 0)}
@@ -351,7 +352,7 @@ export default function MypageClient({ user }: Props) {
         <div className="grid grid-cols-1 gap-6 bp-lg:grid-cols-4 bp-lg:gap-8">
           <div className="hidden bp-lg:block bp-lg:col-span-1">
             <div className="sticky top-8">
-              <Card className="border-border bg-card shadow-sm">
+              <Card className={pageTone.shellCard}>
                 <CardContent className="p-3">
                   <UserSidebar />
                 </CardContent>
@@ -361,16 +362,16 @@ export default function MypageClient({ user }: Props) {
           {/* 메인 콘텐츠 */}
           <div className="bp-lg:col-span-3 min-w-0">
             <Tabs value={currentTab} onValueChange={handleTabChange}>
-              <Card className="mb-3 border-border bg-card shadow-sm bp-sm:mb-4 bp-lg:hidden">
+              <Card className="mb-3 overflow-hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 bp-sm:mb-4 bp-lg:hidden">
                 <CardContent className="p-2.5 bp-sm:p-3">
                   <p className="mb-2 px-1 text-ui-label font-medium text-muted-foreground">
                     내 상세 내역
                   </p>
                   <div>
-                    <TabsList className="grid h-auto w-full grid-cols-4 gap-1 bg-muted p-1 bp-md:grid-cols-7 bp-md:gap-1.5 bp-lg:w-full">
+                    <TabsList className="grid h-auto w-full grid-cols-4 gap-1 bg-muted/40 p-1 bp-md:grid-cols-7 bp-md:gap-1.5 bp-lg:w-full">
                       <TabsTrigger
                         value="orders"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/50 dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
                         <ClipboardList className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
@@ -381,7 +382,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="academy"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/50 dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
                         <GraduationCap className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
@@ -392,7 +393,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="wishlist"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/50 dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
                         <Heart className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
@@ -403,7 +404,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="reviews"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/50 dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
                         <MessageSquare className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
@@ -414,7 +415,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="qna"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/50 dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
                         <MessageCircleQuestion className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
@@ -425,7 +426,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="passes"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/50 dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
                         <Ticket className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-ui-label font-medium leading-tight bp-md:text-ui-body-sm">
@@ -435,7 +436,7 @@ export default function MypageClient({ user }: Props) {
 
                       <TabsTrigger
                         value="points"
-                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
+                        className="flex min-w-0 flex-col items-center gap-1 rounded-lg px-2 py-2 text-center leading-tight text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/50 dark:data-[state=active]:bg-card bp-md:gap-1.5 bp-md:px-2.5 bp-md:py-2.5"
                       >
                         <ReceiptCent className="h-4 w-4 bp-md:h-5 bp-md:w-5" />
                         <span className="text-center text-ui-label font-medium leading-tight break-keep bp-md:text-ui-body-sm">
@@ -450,8 +451,8 @@ export default function MypageClient({ user }: Props) {
 
               {/* 거래 내역 탭 */}
               <TabsContent value="orders" className="mt-0">
-                <Card className="border-border bg-card shadow-sm">
-                  <CardHeader className="border-b border-border bg-card px-4 py-3 bp-sm:px-5 bp-sm:py-4">
+                <Card className={pageTone.shellCard}>
+                  <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex min-w-0 items-center justify-between gap-3">
                       <div className="min-w-0">
                         <CardTitle className="text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
@@ -463,11 +464,11 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-5">
+                  <CardContent className="p-0">
                     {isOrdersDetailView ? (
                       <OrdersScopeTabs
                         activeScope={activeOrdersScope}
-                        className="mb-4 bp-sm:mb-5"
+                        className="mx-3 mb-4 mt-3 bp-sm:mx-5 bp-sm:mb-5 bp-sm:mt-5"
                       />
                     ) : null}
                     {isOrdersTab && flowType === "order" && flowId ? (
@@ -491,7 +492,7 @@ export default function MypageClient({ user }: Props) {
 
               {/* 클래스 신청 탭 */}
               <TabsContent value="academy" className="mt-0">
-                <Card className="border-border bg-card shadow-sm">
+                <Card className={pageTone.shellCard}>
                   <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
@@ -507,7 +508,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
+                  <CardContent className="p-3 bp-sm:p-5 bp-lg:p-6">
                     {currentTab === "academy" ? <AcademyApplicationsTab /> : null}
                   </CardContent>
                 </Card>
@@ -515,7 +516,7 @@ export default function MypageClient({ user }: Props) {
 
               {/* 위시리스트 탭 */}
               <TabsContent value="wishlist" className="mt-0">
-                <Card className="border-border bg-card shadow-sm">
+                <Card className={pageTone.shellCard}>
                   <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
@@ -531,7 +532,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
+                  <CardContent className="p-3 bp-sm:p-5 bp-lg:p-6">
                     {currentTab === "wishlist" ? <Wishlist /> : null}
                   </CardContent>
                 </Card>
@@ -539,7 +540,7 @@ export default function MypageClient({ user }: Props) {
 
               {/* 리뷰 관리 탭 */}
               <TabsContent value="reviews" className="mt-0">
-                <Card className="border-border bg-card shadow-sm">
+                <Card className={pageTone.shellCard}>
                   <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
@@ -555,7 +556,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
+                  <CardContent className="p-3 bp-sm:p-5 bp-lg:p-6">
                     {currentTab === "reviews" ? <ReviewList /> : null}
                   </CardContent>
                 </Card>
@@ -563,7 +564,7 @@ export default function MypageClient({ user }: Props) {
 
               {/* 문의 내역 탭 */}
               <TabsContent value="qna" className="mt-0">
-                <Card className="border-border bg-card shadow-sm">
+                <Card className={pageTone.shellCard}>
                   <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
@@ -579,7 +580,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
+                  <CardContent className="p-3 bp-sm:p-5 bp-lg:p-6">
                     {currentTab === "qna" ? <QnAList /> : null}
                   </CardContent>
                 </Card>
@@ -587,7 +588,7 @@ export default function MypageClient({ user }: Props) {
 
               {/* 패키지권 탭 */}
               <TabsContent value="passes" className="mt-0">
-                <Card className="border-border bg-card shadow-sm">
+                <Card className={pageTone.shellCard}>
                   <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
@@ -603,7 +604,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
+                  <CardContent className="p-3 bp-sm:p-5 bp-lg:p-6">
                     {currentTab === "passes" ? <PassList /> : null}
                   </CardContent>
                 </Card>
@@ -611,7 +612,7 @@ export default function MypageClient({ user }: Props) {
 
               {/* 적립 포인트 탭 */}
               <TabsContent value="points" className="mt-0">
-                <Card className="border-border bg-card shadow-sm">
+                <Card className={pageTone.shellCard}>
                   <CardHeader className={pageTone.sectionHeader}>
                     <div className="flex items-center gap-3">
                       <div className={pageTone.iconSurface}>
@@ -627,7 +628,7 @@ export default function MypageClient({ user }: Props) {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-3 bp-sm:p-6">
+                  <CardContent className="p-3 bp-sm:p-5 bp-lg:p-6">
                     {currentTab === "points" ? <MyPointsTab /> : null}
                   </CardContent>
                 </Card>
