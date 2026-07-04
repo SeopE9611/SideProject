@@ -860,8 +860,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
       <PublicPageHero
         eyebrow="마이페이지"
         title={serviceLinkedOrder ? "교체서비스 신청 상세" : "주문 상세"}
-        description="현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 살펴보세요."
-        className="rounded-2xl border-0 bg-card py-6 shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 bp-sm:py-8"
+        description="주문번호, 신청일, 진행 상태와 지금 필요한 액션을 한눈에 확인하세요."
+        className="rounded-3xl border border-gray-100 bg-white py-6 shadow-sm bp-sm:py-8"
         actions={
           <>
             <Button
@@ -903,24 +903,24 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
           </>
         }
       >
-        <div className="flex w-full flex-col gap-5 rounded-2xl bg-background/60 p-4 ring-1 ring-border/40 bp-sm:p-5">
-          <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_auto] bp-lg:items-center">
+        <div className="flex w-full flex-col gap-5 rounded-3xl border border-gray-100 bg-gray-50/70 p-5 shadow-sm bp-sm:p-6">
+          <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)] bp-lg:items-center">
             <div className="flex min-w-0 items-start gap-4">
               <div className="shrink-0 rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/10">
                 <ShoppingCart className="h-8 w-8 text-primary" />
               </div>
               <div className="min-w-0 space-y-1">
-                <p className="break-keep text-ui-body-sm font-medium text-foreground">
+                <p className="break-keep text-ui-label font-medium text-gray-500">
                   {hasLinkedStringingApps || orderDetail.shippingInfo?.withStringService
                     ? "스트링 구매 + 교체서비스"
                     : "상품 주문"}
                 </p>
-                <p className="break-all text-ui-body-sm text-muted-foreground" title={orderId}>
-                  주문번호: #{orderId.slice(-6).toUpperCase()}
+                <p className="break-all text-ui-page-title-sm font-bold tracking-tight text-gray-900" title={orderId}>
+                  #{orderId.slice(-6).toUpperCase()}
                 </p>
               </div>
             </div>
-            <div className="flex flex-col gap-2 border-l-2 border-primary/40 bg-primary/5 px-3 py-2 bp-sm:flex-row bp-sm:items-center bp-lg:min-w-[360px] bp-lg:flex-col bp-lg:items-stretch">
+            <div className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm bp-sm:flex-row bp-sm:items-center bp-lg:flex-col bp-lg:items-stretch">
               <div className="min-w-0 flex-1">
                 <div className="mb-1 flex flex-wrap items-center gap-2">
                   <OrderStatusBadge
@@ -928,7 +928,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     initialStatus={orderDetail.status}
                     shippingMethod={orderDetail.shippingInfo}
                   />
-                  <span className="text-ui-label text-muted-foreground">현재 상태</span>
+                  <span className="text-ui-label text-gray-500">현재 진행 상태</span>
                 </div>
                 <p className="break-keep text-ui-body-sm font-medium text-foreground">
                   {nextTodo?.label ??
@@ -947,7 +947,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   asChild={Boolean(nextTodo.ctaHref)}
                   onClick={nextTodo.onCtaClick}
                   disabled={isConfirmingPurchase}
-                  className="w-full shrink-0 bp-sm:w-auto bp-lg:w-full"
+                  className="w-full shrink-0 bg-gray-900 text-white hover:bg-gray-800 bp-sm:w-auto bp-lg:w-full"
                 >
                   {nextTodo.ctaHref ? (
                     <Link href={nextTodo.ctaHref}>{nextTodo.ctaLabel}</Link>
@@ -961,7 +961,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
           <Separator />
 
-          <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-xl:grid-cols-5">
+          <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-3">
             <SummaryCard
               className="rounded-xl border-0 bg-muted/15 shadow-none"
               contentClassName="p-3 bp-sm:p-4"
@@ -1054,15 +1054,15 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             )}
           </div>
         )}
-        <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)] bp-lg:items-start">
+        <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,7fr)_minmax(320px,3fr)] bp-lg:items-start">
           <div className="space-y-5">
             {(orderDetail.shippingInfo?.withStringService || hasLinkedStringingApps) && (
               <section id="stringing-service" className="scroll-mt-24 space-y-4">
-                <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-                  <CardHeader className="rounded-t-2xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
+                <Card className="rounded-2xl border border-gray-100 bg-white shadow-sm">
+                  <CardHeader className="rounded-t-2xl border-b border-gray-100 bg-gray-50/70 p-4 bp-sm:p-5 bp-lg:p-6">
                     <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                       <div>
-                        <CardTitle>교체서비스 정보</CardTitle>
+                        <CardTitle>라켓/스트링 작업 정보</CardTitle>
                         <CardDescription>
                           이 주문과 연결된 교체서비스 진행 상태와 라켓 정보를 함께 확인할 수
                           있습니다.
@@ -1334,11 +1334,11 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             )}
 
             {/* 주문 항목 */}
-            <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
+            <Card className="rounded-2xl border border-gray-100 bg-white shadow-sm">
+              <CardHeader className="border-b border-gray-100 bg-gray-50/70 p-4 bp-sm:p-5 bp-lg:p-6">
                 <CardTitle className="flex items-center space-x-2">
                   <ShoppingCart className="h-5 w-5 text-warning" />
-                  <span>주문 항목</span>
+                  <span>주문 상품 및 교체/대여 정보</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 bp-lg:p-6">
@@ -1445,8 +1445,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             </Card>
             {/* 요청사항 */}
             {showDeliveryOnlyFields && (
-              <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-                <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
+              <Card className="rounded-2xl border border-gray-100 bg-white shadow-sm">
+                <CardHeader className="border-b border-gray-100 bg-gray-50/70 p-4 bp-sm:p-5 bp-lg:p-6">
                   <CardTitle>배송 요청사항</CardTitle>
                   <CardDescription>결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>
                 </CardHeader>
@@ -1493,137 +1493,12 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               </Card>
             )}
 
-            <details className="group bp-md:block">
-              <summary className="mb-3 cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">진행 단계</summary>
-              <Card className="hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 group-open:block bp-md:block">
-              <CardHeader className="rounded-t-2xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
-                <CardTitle>주문 진행 타임라인</CardTitle>
-                <CardDescription>
-                  주문 접수부터 결제, 준비, 완성 라켓 배송/방문 수령, 완료까지의 흐름을 확인할 수
-                  있습니다.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-4 bp-lg:p-6">
-                {timelineSteps.map((step, index) => {
-                  const tone = getTimelineStepTone(step.state);
-                  const Icon =
-                    step.state === "active" && !isVisitPickup && step.title.includes("배송")
-                      ? Truck
-                      : tone.Icon;
-                  return (
-                    <div
-                      key={step.title}
-                      className="border-t border-border/60 py-3 first:border-t-0"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div
-                          className={cn(
-                            "mt-0.5 flex h-8 w-8 items-center justify-center rounded-full",
-                            tone.wrapper,
-                          )}
-                        >
-                          <Icon className="h-4 w-4" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-medium text-foreground">
-                              {index + 1}. {step.title}
-                            </p>
-                            <Badge className={cn("px-2 py-0.5 text-ui-label", tone.badge)}>
-                              {getTimelineStateLabel(step.state)}
-                            </Badge>
-                          </div>
-                          <p className="mt-1 text-ui-body-sm text-muted-foreground">
-                            {step.description}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-                <div className="mt-3 border-l-2 border-border bg-muted/20 px-3 py-2 text-ui-label text-muted-foreground">
-                  <p>이 타임라인은 현재 상태 기준 안내입니다.</p>
-                  <p>자세한 변경 기록은 아래 처리 이력에서 확인할 수 있습니다.</p>
-                  {shouldShowStringingTimelineHint && (
-                    <p>
-                      {primaryStringingAppId
-                        ? "이 주문 상세의 교체서비스 정보 영역에서 작업 진행 상태를 함께 확인할 수 있습니다."
-                        : "교체서비스가 포함된 주문은 이 주문 상세에서 작업 진행 상태를 함께 확인할 수 있습니다."}
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-            </details>
-
-            {/* 처리 이력 */}
-            <details className="group bp-md:block">
-              <summary className="mb-3 cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">처리 이력</summary>
-              <div className="hidden group-open:block bp-md:block">
-                <OrderHistory orderId={orderId} shippingMethod={shippingMethodValue} />
-              </div>
-            </details>
-          </div>
-
-          <aside className="space-y-3 bp-lg:sticky bp-lg:top-24 bp-md:space-y-5">
-            {/* 결제 정보 */}
-            <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
-                <CardTitle className="flex items-center space-x-2">
-                  <CreditCard className="h-5 w-5 text-foreground" />
-                  <span>결제 정보</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 bp-lg:p-6">
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-ui-label font-medium text-muted-foreground">결제 상태</p>
-                      {(() => {
-                        const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
-                        return (
-                          <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
-                            {orderDetail.paymentStatus}
-                          </Badge>
-                        );
-                      })()}
-                    </div>
-                  </div>
-
-                  <div className="min-w-0 border-b border-border/60 py-3 last:border-b-0 last:pb-0">
-                    <PaymentMethodDetail
-                      method={orderDetail.paymentMethod || "무통장입금"}
-                      bankKey={orderDetail.paymentBank ?? undefined}
-                      depositor={orderDetail.shippingInfo?.depositor}
-                      paymentProvider={orderDetail.paymentProvider}
-                      easyPayProvider={orderDetail.paymentEasyPayProvider}
-                      paymentStatus={orderDetail.paymentStatus}
-                      paymentTid={orderDetail.paymentTid}
-                      paymentCardDisplayName={orderDetail.paymentCardDisplayName}
-                      paymentCardCompany={orderDetail.paymentCardCompany}
-                      paymentCardLabel={orderDetail.paymentCardLabel}
-                      paymentNiceSync={orderDetail.paymentNiceSync}
-                    />
-                  </div>
-
-                  <div className="flex items-start gap-3 rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-ui-label font-medium text-muted-foreground">결제 금액</p>
-                      <p className="text-ui-section-title font-semibold text-primary">
-                        {formatCurrency(orderDetail.total)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* 고객 정보 */}
-            <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
+            <Card className="rounded-2xl border border-gray-100 bg-white shadow-sm">
+              <CardHeader className="border-b border-gray-100 bg-gray-50/70 p-4 bp-sm:p-5 bp-lg:p-6">
                 <CardTitle className="flex items-center space-x-2">
                   <User className="h-5 w-5 text-primary" />
-                  <span>주문자 정보</span>
+                  <span>받는 사람 정보</span>
                 </CardTitle>
               </CardHeader>
               {editingCustomer ? (
@@ -1717,8 +1592,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             </Card>
 
             {/* 완성 라켓 배송/수령 정보 */}
-            <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-              <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
+            <Card className="rounded-2xl border border-gray-100 bg-white shadow-sm">
+              <CardHeader className="border-b border-gray-100 bg-gray-50/70 p-4 bp-sm:p-5 bp-lg:p-6">
                 <CardTitle className="flex items-center space-x-2">
                   <Truck className="h-5 w-5 text-success" />
                   <span>{getOrderDeliveryInfoTitle(orderDetail.shippingInfo)}</span>
@@ -1881,9 +1756,134 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               </CardContent>
             </Card>
 
+            <details className="group bp-md:block">
+              <summary className="mb-3 cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">진행 단계</summary>
+              <Card className="hidden rounded-2xl border border-gray-100 bg-white shadow-sm group-open:block bp-md:block">
+              <CardHeader className="rounded-t-2xl border-b border-gray-100 bg-gray-50/70 p-4 bp-sm:p-5 bp-lg:p-6">
+                <CardTitle>주문 진행 타임라인</CardTitle>
+                <CardDescription>
+                  주문 접수부터 결제, 준비, 완성 라켓 배송/방문 수령, 완료까지의 흐름을 확인할 수
+                  있습니다.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 bp-lg:p-6">
+                {timelineSteps.map((step, index) => {
+                  const tone = getTimelineStepTone(step.state);
+                  const Icon =
+                    step.state === "active" && !isVisitPickup && step.title.includes("배송")
+                      ? Truck
+                      : tone.Icon;
+                  return (
+                    <div
+                      key={step.title}
+                      className="border-t border-border/60 py-3 first:border-t-0"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={cn(
+                            "mt-0.5 flex h-8 w-8 items-center justify-center rounded-full",
+                            tone.wrapper,
+                          )}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-medium text-foreground">
+                              {index + 1}. {step.title}
+                            </p>
+                            <Badge className={cn("px-2 py-0.5 text-ui-label", tone.badge)}>
+                              {getTimelineStateLabel(step.state)}
+                            </Badge>
+                          </div>
+                          <p className="mt-1 text-ui-body-sm text-muted-foreground">
+                            {step.description}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div className="mt-3 border-l-2 border-border bg-muted/20 px-3 py-2 text-ui-label text-muted-foreground">
+                  <p>이 타임라인은 현재 상태 기준 안내입니다.</p>
+                  <p>자세한 변경 기록은 아래 처리 이력에서 확인할 수 있습니다.</p>
+                  {shouldShowStringingTimelineHint && (
+                    <p>
+                      {primaryStringingAppId
+                        ? "이 주문 상세의 교체서비스 정보 영역에서 작업 진행 상태를 함께 확인할 수 있습니다."
+                        : "교체서비스가 포함된 주문은 이 주문 상세에서 작업 진행 상태를 함께 확인할 수 있습니다."}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            </details>
+
+            {/* 처리 이력 */}
+            <details className="group bp-md:block">
+              <summary className="mb-3 cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">처리 이력</summary>
+              <div className="hidden group-open:block bp-md:block">
+                <OrderHistory orderId={orderId} shippingMethod={shippingMethodValue} />
+              </div>
+            </details>
+          </div>
+
+          <aside className="space-y-3 bp-lg:sticky bp-lg:top-24 bp-md:space-y-5">
+            {/* 결제 정보 */}
+            <Card className="rounded-2xl border border-gray-100 bg-white shadow-sm">
+              <CardHeader className="border-b border-gray-100 bg-gray-50/70 p-4 bp-sm:p-5 bp-lg:p-6">
+                <CardTitle className="flex items-center space-x-2">
+                  <CreditCard className="h-5 w-5 text-foreground" />
+                  <span>결제 정보</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 bp-lg:p-6">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-ui-label font-medium text-muted-foreground">결제 상태</p>
+                      {(() => {
+                        const pay = getPaymentStatusBadgeSpec(orderDetail.paymentStatus);
+                        return (
+                          <Badge variant={pay.variant} className={cn(badgeBase, badgeSizeSm)}>
+                            {orderDetail.paymentStatus}
+                          </Badge>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  <div className="min-w-0 border-b border-border/60 py-3 last:border-b-0 last:pb-0">
+                    <PaymentMethodDetail
+                      method={orderDetail.paymentMethod || "무통장입금"}
+                      bankKey={orderDetail.paymentBank ?? undefined}
+                      depositor={orderDetail.shippingInfo?.depositor}
+                      paymentProvider={orderDetail.paymentProvider}
+                      easyPayProvider={orderDetail.paymentEasyPayProvider}
+                      paymentStatus={orderDetail.paymentStatus}
+                      paymentTid={orderDetail.paymentTid}
+                      paymentCardDisplayName={orderDetail.paymentCardDisplayName}
+                      paymentCardCompany={orderDetail.paymentCardCompany}
+                      paymentCardLabel={orderDetail.paymentCardLabel}
+                      paymentNiceSync={orderDetail.paymentNiceSync}
+                    />
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-xl bg-gray-900 p-4 text-white">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-ui-label font-medium text-muted-foreground">결제 금액</p>
+                      <p className="text-ui-section-title font-bold text-white">
+                        {formatCurrency(orderDetail.total)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {orderDetail.stringService ? (
-              <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-                <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
+              <Card className="rounded-2xl border border-gray-100 bg-white shadow-sm">
+                <CardHeader className="border-b border-gray-100 bg-gray-50/70 p-4 bp-sm:p-5 bp-lg:p-6">
                   <CardTitle>패키지 안내</CardTitle>
                   <CardDescription>교체서비스 패키지 이용 현황입니다.</CardDescription>
                 </CardHeader>
@@ -1899,6 +1899,15 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   <div className="flex justify-between gap-3 py-3 first:pt-0 last:pb-0">
                     <span className="text-muted-foreground">남은 횟수</span>
                     <span className="font-medium text-foreground">{remainingSlots}회</span>
+                  </div>
+                  <div className="pt-3">
+                    <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+                      <div
+                        className="h-full rounded-full bg-gray-900 transition-all"
+                        style={{ width: `${totalSlots > 0 ? Math.min(100, Math.round((usedSlots / totalSlots) * 100)) : 0}%` }}
+                      />
+                    </div>
+                    <p className="mt-2 text-ui-label text-muted-foreground">사용률 {totalSlots > 0 ? Math.round((usedSlots / totalSlots) * 100) : 0}%</p>
                   </div>
                 </CardContent>
               </Card>
