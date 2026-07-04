@@ -25,8 +25,9 @@ export default function AdminNavigationShell() {
     authenticatedSWRFetcher,
     {
       revalidateOnFocus: false,
+      revalidateOnReconnect: false,
       shouldRetryOnError: false,
-      dedupingInterval: 30_000,
+      dedupingInterval: 60_000,
     },
   );
   const badgeCounts = normalizeCounts(data);
