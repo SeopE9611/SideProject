@@ -51,6 +51,21 @@ const CUSTOMER_APPLICATION_STATUS_LABELS: Record<string, string> = {
   취소: "취소 완료",
 };
 
+
+const CUSTOMER_RENTAL_STATUS_LABELS: Record<string, string> = {
+  pending: "대여 신청 확인 중",
+  대기중: "대여 신청 확인 중",
+  paid: "대여 준비 중",
+  결제완료: "대여 준비 중",
+  out: "대여 중",
+  대여중: "대여 중",
+  returned: "이용 완료",
+  반납완료: "이용 완료",
+  canceled: "취소 완료",
+  cancelled: "취소 완료",
+  취소: "취소 완료",
+};
+
 const CUSTOMER_PAYMENT_STATUS_LABELS: Record<string, string> = {
   pending: "결제 또는 입금 확인 대기",
   결제대기: "결제 또는 입금 확인 대기",
@@ -77,6 +92,13 @@ export function getCustomerApplicationStatusLabel(status?: string | null) {
   if (!raw) return "상태 확인 중";
   const base = getMypageUserStatusLabel(raw);
   return CUSTOMER_APPLICATION_STATUS_LABELS[lower(raw)] ?? CUSTOMER_APPLICATION_STATUS_LABELS[base] ?? base;
+}
+
+export function getCustomerRentalStatusLabel(status?: string | null) {
+  const raw = normalize(status);
+  if (!raw) return "상태 확인 중";
+  const base = getMypageUserStatusLabel(raw);
+  return CUSTOMER_RENTAL_STATUS_LABELS[lower(raw)] ?? CUSTOMER_RENTAL_STATUS_LABELS[base] ?? base;
 }
 
 export function getCustomerPaymentStatusLabel(status?: string | null) {
