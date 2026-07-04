@@ -613,9 +613,9 @@ export default async function CheckoutSuccessPage({
               {/* 주문 정보 카드 */}
               <Card
                 data-cy="checkout-success-order-card"
-                className="overflow-hidden border border-border bg-card shadow-xl backdrop-blur-sm"
+                className="overflow-hidden border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50"
               >
-                <div className="border-b border-border bg-background p-6">
+                <div className="border-b border-border/70 bg-secondary/30 p-5 md:p-6">
                   <CardTitle className="flex flex-wrap items-center gap-3 break-keep text-ui-section-title leading-relaxed bp-sm:text-ui-section-title-lg">
                     <Package className="h-6 w-6 text-primary" />
                     주문 정보
@@ -640,7 +640,7 @@ export default async function CheckoutSuccessPage({
                       <Shield className="h-5 w-5 text-primary" />
                       {withStringService ? "주문·교체서비스 정보" : "주문 번호"}
                     </h3>
-                    <div className="space-y-3 rounded-lg border border-border bg-background p-4">
+                    <div className="space-y-3 border-l-2 border-primary/30 bg-muted/20 px-3 py-3">
                       <div>
                         <span className="text-ui-body-sm text-muted-foreground">주문 번호:</span>{" "}
                         <span
@@ -684,18 +684,18 @@ export default async function CheckoutSuccessPage({
                     </div>
                   </div>
 
-                  <div className="mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4 md:p-5">
+                  <div className="mb-6 border-l-2 border-primary/30 bg-primary/5 px-3 py-3 md:px-4">
                     <h3 className="text-ui-card-title font-semibold text-foreground">현재 상태와 다음 단계</h3>
-                    <div className="mt-3 grid gap-3 text-ui-body-sm leading-relaxed md:grid-cols-3">
-                      <div>
+                    <div className="mt-3 grid gap-3 divide-y divide-border/60 text-ui-body-sm leading-relaxed md:grid-cols-3 md:divide-x md:divide-y-0">
+                      <div className="pt-3 first:pt-0 md:pt-0 md:pl-3 md:first:pl-0">
                         <p className="font-semibold text-foreground">현재 상태</p>
                         <p className="mt-1 text-muted-foreground">{progressGuide.status}</p>
                       </div>
-                      <div>
+                      <div className="pt-3 md:pt-0 md:pl-3">
                         <p className="font-semibold text-foreground">지금 할 일</p>
                         <p className="mt-1 text-muted-foreground">{progressGuide.todo}</p>
                       </div>
-                      <div>
+                      <div className="pt-3 md:pt-0 md:pl-3">
                         <p className="font-semibold text-foreground">다음 단계</p>
                         <p className="mt-1 text-muted-foreground">{progressGuide.next}</p>
                       </div>
@@ -712,9 +712,9 @@ export default async function CheckoutSuccessPage({
 
                   <Separator className="my-6" />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 mb-6">
+                    <div className="divide-y divide-border/70 border-y border-border/70">
+                      <div className="flex items-center gap-3 py-4">
                         <Clock className="h-5 w-5 text-primary" />
                         <div>
                           <p className="text-ui-body-sm text-muted-foreground">주문일자</p>
@@ -728,7 +728,7 @@ export default async function CheckoutSuccessPage({
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-4">
+                      <div className="flex items-center gap-3 py-4">
                         <CreditCard className="h-5 w-5 text-primary" />
                         <div>
                           <p className="text-ui-body-sm text-muted-foreground">결제 방법</p>
@@ -765,7 +765,7 @@ export default async function CheckoutSuccessPage({
                       </div>
                     </div>
 
-                    <div className="rounded-xl border border-border bg-background p-6">
+                    <div className="border-l-2 border-primary/30 bg-muted/20 px-3 py-4">
                       <div className="flex items-center gap-2 mb-4">
                         <CreditCard className="h-5 w-5 text-primary" />
                         <h3 className="font-semibold text-foreground">
@@ -773,14 +773,14 @@ export default async function CheckoutSuccessPage({
                         </h3>
                       </div>
                       {isZeroPayment ? (
-                        <div className="space-y-2 rounded-lg border border-border bg-card p-4">
+                        <div className="space-y-2 text-ui-body-sm">
                           <p className="font-semibold text-foreground">추가 입금 불필요</p>
                           <p className="text-ui-body-sm text-muted-foreground">
                             결제 금액이 0원으로 확인되어 입금 안내가 생략되었습니다.
                           </p>
                         </div>
                       ) : isTossPayment ? (
-                        <div className="space-y-2 rounded-lg border border-border bg-card p-4 text-ui-body-sm">
+                        <div className="space-y-2 text-ui-body-sm">
                           <p>
                             <span className="text-muted-foreground">결제 상태:</span>{" "}
                             <span className="font-semibold text-foreground">
@@ -810,7 +810,7 @@ export default async function CheckoutSuccessPage({
                           </p>
                         </div>
                       ) : isNicePayment ? (
-                        <div className="space-y-2 rounded-lg border border-border bg-card p-4 text-ui-body-sm">
+                        <div className="space-y-2 text-ui-body-sm">
                           <p>
                             <span className="text-muted-foreground">결제 상태:</span>{" "}
                             <span className="font-semibold text-foreground">
@@ -843,7 +843,7 @@ export default async function CheckoutSuccessPage({
                         </div>
                       ) : order.paymentInfo?.bank && bankLabelMap[order.paymentInfo.bank] ? (
                         <>
-                          <div className="space-y-2 rounded-lg border border-border bg-card p-4">
+                          <div className="space-y-2">
                             <div className="font-semibold text-foreground">
                               {bankLabelMap[order.paymentInfo.bank].label}
                             </div>
@@ -854,7 +854,7 @@ export default async function CheckoutSuccessPage({
                               예금주: {bankLabelMap[order.paymentInfo.bank].holder}
                             </div>
                           </div>
-                          <div className="mt-4 rounded-lg border border-border bg-card p-3">
+                          <div className="mt-4 border-l-2 border-primary/30 bg-primary/5 px-3 py-2">
                             <p className="text-ui-body-sm font-semibold text-primary">
                               ⏰ 입금 기한: {new Date(order.createdAt).toLocaleDateString("ko-KR")}{" "}
                               23:59까지
@@ -874,7 +874,7 @@ export default async function CheckoutSuccessPage({
                     <h3 className="font-semibold text-ui-card-title-lg mb-4 flex items-center gap-2">
                       <Package className="h-5 w-5 text-primary" /> 주문 상품
                     </h3>
-                    <div className="space-y-3">
+                    <div className="divide-y divide-border/70 border-y border-border/70">
                       {populatedItems.map((item: PopulatedItem, index: number) => {
                         const itemPrice = formatPrice(item.price);
                         const itemQuantity = formatQuantity(item.quantity);
@@ -883,7 +883,7 @@ export default async function CheckoutSuccessPage({
                         return (
                           <div
                             key={index}
-                            className="flex flex-col gap-3 rounded-lg border border-border bg-background p-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between"
+                            className="flex flex-col gap-3 py-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between"
                           >
                             <div className="min-w-0 flex-1">
                               <p className="break-keep break-words font-semibold leading-relaxed text-foreground">
@@ -936,21 +936,21 @@ export default async function CheckoutSuccessPage({
                           교체서비스 정보
                         </h3>
                         {hasSubmittedApplication && stringingSummary ? (
-                          <div className="space-y-2 rounded-lg border border-border bg-background p-4 text-ui-body-sm text-foreground">
-                            <p>
+                          <div className="divide-y divide-border/70 border-y border-border/70 text-ui-body-sm text-foreground">
+                            <p className="py-2">
                               <span className="text-muted-foreground">접수 방식:</span>{" "}
                               <span className="font-semibold">
                                 {stringingSummary.receptionLabel}
                               </span>
                             </p>
-                            <p>
+                            <p className="py-2">
                               <span className="text-muted-foreground">작업 수량:</span>{" "}
                               <span className="font-semibold">
                                 {stringingSummary.lineCount}자루
                               </span>
                             </p>
                             {stringingSummary.stringNames.length > 0 && (
-                              <p>
+                              <p className="py-2">
                                 <span className="text-muted-foreground">선택 스트링:</span>{" "}
                                 <span className="font-semibold">
                                   {stringingSummary.stringNames.join(", ")}
@@ -958,7 +958,7 @@ export default async function CheckoutSuccessPage({
                               </p>
                             )}
                             {stringingSummary.tensionSummary && (
-                              <p>
+                              <p className="py-2">
                                 <span className="text-muted-foreground">텐션:</span>{" "}
                                 <span className="font-semibold">
                                   {stringingSummary.tensionSummary}
@@ -966,15 +966,15 @@ export default async function CheckoutSuccessPage({
                               </p>
                             )}
                             {stringingSummary.reservationLabel && (
-                              <p>
+                              <p className="py-2">
                                 <span className="text-muted-foreground">예약 정보:</span>{" "}
                                 <span className="font-semibold">
                                   {stringingSummary.reservationLabel}
                                 </span>
                               </p>
                             )}
-                            <Separator className="my-3" />
-                            <div className="space-y-1.5 rounded-md border border-border bg-card p-3">
+                            <Separator className="hidden" />
+                            <div className="space-y-1.5 border-l-2 border-primary/30 bg-muted/20 px-3 py-3">
                               <p className="font-semibold text-foreground">패키지 적용 정보</p>
                               {stringingSummary.packageInfo.applied ? (
                                 <>
@@ -1041,7 +1041,7 @@ export default async function CheckoutSuccessPage({
                             </div>
                           </div>
                         ) : (
-                          <div className="space-y-3 rounded-lg border border-border bg-background p-4">
+                          <div className="space-y-3 border-l-2 border-primary/30 bg-muted/20 px-3 py-3">
                             <p className="text-ui-body-sm text-muted-foreground">
                               {isVisitPickup
                                 ? "방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요."
@@ -1072,15 +1072,15 @@ export default async function CheckoutSuccessPage({
                       <MapPin className="h-5 w-5 text-primary" />
                       {getOrderDeliveryInfoTitle(order.shippingInfo)}
                     </h3>
-                    <div className="space-y-2 rounded-lg border border-border bg-background p-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
+                    <div className="divide-y divide-border/70 border-y border-border/70">
+                      <div className="grid grid-cols-1 gap-0 md:grid-cols-2 md:divide-x md:divide-border/70">
+                        <div className="py-3 md:pr-4">
                           <span className="text-ui-body-sm text-muted-foreground">수령인:</span>
                           <span className="ml-2 font-semibold text-foreground">
                             {order.shippingInfo?.name || "정보 없음"}
                           </span>
                         </div>
-                        <div>
+                        <div className="py-3 md:pl-4">
                           <span className="text-ui-body-sm text-muted-foreground">연락처:</span>
                           <span className="ml-2 font-semibold text-foreground">
                             {formatKoreanPhone(order.shippingInfo?.phone) || "정보 없음"}
@@ -1088,7 +1088,7 @@ export default async function CheckoutSuccessPage({
                         </div>
                       </div>
                       {showDeliveryOnlyFields && (
-                        <div>
+                        <div className="py-3">
                           <span className="text-ui-body-sm text-muted-foreground">주소:</span>
                           <span className="ml-2 font-semibold text-foreground">
                             {order.shippingInfo?.address || "정보 없음"}
@@ -1096,12 +1096,12 @@ export default async function CheckoutSuccessPage({
                         </div>
                       )}
                       {!showDeliveryOnlyFields && (
-                        <p className="text-ui-body-sm text-muted-foreground">
+                        <p className="py-3 text-ui-body-sm text-muted-foreground">
                           매장 방문 시 주문번호를 제시해주세요.
                         </p>
                       )}
                       {showDeliveryOnlyFields && order.shippingInfo?.deliveryRequest && (
-                        <div>
+                        <div className="py-3">
                           <span className="text-ui-body-sm text-muted-foreground">배송 요청사항:</span>
                           <span className="ml-2 font-semibold text-foreground">
                             {order.shippingInfo.deliveryRequest}
@@ -1114,7 +1114,7 @@ export default async function CheckoutSuccessPage({
                   <Separator className="my-6" />
 
                   {/* 결제 금액 - 안전한 데이터 처리 */}
-                  <div className="rounded-xl border border-border bg-background p-6">
+                  <div className="border-t border-border/70 pt-4">
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-3">
                         <span className="min-w-0 break-words text-muted-foreground">상품 금액</span>
@@ -1196,17 +1196,17 @@ export default async function CheckoutSuccessPage({
               </Card>
 
               {/* 안내사항 */}
-              <Card className="border border-border bg-card shadow-xl backdrop-blur-sm">
-                <CardHeader className="border-b border-border bg-background">
+              <Card className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                <CardHeader className="border-b border-border/70 bg-secondary/30">
                   <CardTitle className="flex items-center gap-3">
                     <Shield className="h-5 w-5 text-primary" />
                     주문 안내사항
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 md:p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3 rounded-lg border border-border bg-background p-4">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3 border-l-2 border-primary/30 bg-muted/20 px-3 py-3">
                         <CreditCard className="mt-0.5 h-5 w-5 text-primary" />
                         <div>
                           <h4 className="mb-1 font-semibold text-foreground">입금 안내</h4>
@@ -1215,7 +1215,7 @@ export default async function CheckoutSuccessPage({
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-3 rounded-lg border border-border bg-background p-4">
+                      <div className="flex items-start gap-3 border-l-2 border-primary/30 bg-muted/20 px-3 py-3">
                         <Package className="mt-0.5 h-5 w-5 text-primary" />
                         <div>
                           <h4 className="mb-1 font-semibold text-foreground">
@@ -1229,8 +1229,8 @@ export default async function CheckoutSuccessPage({
                         </div>
                       </div>
                     </div>
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3 rounded-lg border border-border bg-background p-4">
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3 border-l-2 border-primary/30 bg-muted/20 px-3 py-3">
                         <Star className="mt-0.5 h-5 w-5 text-primary" />
                         <div>
                           <h4 className="mb-1 font-semibold text-foreground">주문 확인</h4>
@@ -1239,7 +1239,7 @@ export default async function CheckoutSuccessPage({
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-3 rounded-lg border border-border bg-background p-4">
+                      <div className="flex items-start gap-3 border-l-2 border-primary/30 bg-muted/20 px-3 py-3">
                         <Phone className="mt-0.5 h-5 w-5 text-primary" />
                         <div>
                           <h4 className="mb-1 font-semibold text-foreground">고객 지원</h4>
@@ -1284,8 +1284,8 @@ export default async function CheckoutSuccessPage({
         <BackButtonGuard />
         <ClearCartOnMount />
         <div className="min-h-full bg-background text-foreground">
-          <div className="relative overflow-hidden border-b border-border bg-muted/30 text-foreground dark:bg-card/40">
-            <div className="absolute inset-0 bg-muted/50 dark:bg-card/60"></div>
+          <div className="relative overflow-hidden border-b border-border/70 bg-muted/20 text-foreground dark:bg-card/40">
+            <div className="absolute inset-0 bg-muted/30 dark:bg-card/60"></div>
             <SiteContainer variant="wide" className="relative py-10 md:py-16">
               <div className="text-center">
                 <div className="mb-4 md:mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm dark:bg-primary/20">
@@ -1301,8 +1301,8 @@ export default async function CheckoutSuccessPage({
 
           <SiteContainer variant="wide" className="py-8">
             <div className="mx-auto max-w-2xl space-y-4">
-              <Card className="border border-border bg-card shadow-xl">
-                <CardHeader className="border-b border-border bg-background">
+              <Card className="border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                <CardHeader className="border-b border-border/70 bg-secondary/30">
                   <CardTitle className="text-ui-section-title">주문 완료</CardTitle>
                   <CardDescription>
                     주문 상세 정보를 불러오는 중 일시적인 문제가 발생했습니다. 잠시 후 다시
@@ -1315,7 +1315,7 @@ export default async function CheckoutSuccessPage({
                     <span className="font-mono font-semibold text-foreground">{orderId}</span>
                   </p>
                 </CardContent>
-                <CardFooter className="flex flex-col gap-2 border-t border-border bg-background p-6 sm:flex-row">
+                <CardFooter className="flex flex-col gap-2 border-t border-border/70 bg-background p-6 sm:flex-row">
                   <Button asChild className="w-full sm:w-auto">
                     <Link href={`/checkout/success?orderId=${encodeURIComponent(orderId)}`}>
                       다시 시도
