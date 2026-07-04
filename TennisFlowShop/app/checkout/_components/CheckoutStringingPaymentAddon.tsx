@@ -32,7 +32,7 @@ export default function CheckoutStringingPaymentAddon({
   onPackageOptOutChange,
 }: Props) {
   return (
-    <div className="space-y-4 rounded-xl border border-border/70 bg-secondary/20 p-4 bp-sm:p-5">
+    <div className="space-y-4 border-l-2 border-border bg-muted/20 px-3 py-3 bp-sm:px-4">
       <div className="space-y-2">
         <p className="text-ui-label font-medium text-foreground flex items-center gap-2">
           <Info className="h-4 w-4 text-primary" />
@@ -52,8 +52,8 @@ export default function CheckoutStringingPaymentAddon({
       <div
         className={
           packageInsufficient
-            ? "rounded-md border border-destructive/40 bg-destructive/10 p-3"
-            : "rounded-md border border-border bg-background p-3"
+            ? "border-l-2 border-destructive/50 bg-destructive/10 px-3 py-2.5"
+            : "border-t border-border/60 pt-3"
         }
       >
         <div className="flex items-center gap-2 mb-2">

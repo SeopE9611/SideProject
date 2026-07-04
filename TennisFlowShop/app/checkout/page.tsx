@@ -331,12 +331,12 @@ function FinalPaymentConfirmCard({
     >
       <PriceSummary rows={priceSummaryRows} />
       {withStringService && (
-        <p className="rounded-xl border border-border bg-muted/20 px-3 py-2 text-ui-label text-muted-foreground">
+        <p className="border-l-2 border-border bg-muted/20 px-3 py-2 text-ui-label text-muted-foreground">
           결제 완료 후 교체서비스 신청 정보가 함께 접수됩니다.
         </p>
       )}
       {paymentMethod === "bank-transfer" && (
-        <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-3 text-ui-label text-foreground">
+        <div className="space-y-2 border-l-2 border-border bg-muted/20 px-3 py-2 text-ui-label text-foreground">
           <p className="text-muted-foreground">
             입금 계좌:{" "}
             {bankLabelMap[selectedBank as keyof typeof bankLabelMap]?.account ?? selectedBank}
@@ -1573,7 +1573,7 @@ export default function CheckoutPage() {
                   </div>
                   <CardContent className="p-4 bp-sm:p-6">
                     {isBundleCheckout && bundleQty !== null && (
-                      <div className="mb-4 rounded-xl border border-border bg-background px-4 py-3 text-ui-body-sm text-foreground dark:border-border dark:bg-card/60 dark:text-foreground">
+                      <div className="mb-4 border-l-2 border-primary/25 bg-muted/20 px-3 py-2.5 text-ui-body-sm text-foreground dark:bg-card/30 dark:text-foreground">
                         <p className="font-medium">번들 수량: {bundleQty}개</p>
                         <p className="mt-1 text-muted-foreground">
                           라켓/스트링 수량은 함께 적용됩니다. 변경은{" "}
@@ -1605,7 +1605,7 @@ export default function CheckoutPage() {
                       {orderItems.map((item, idx) => (
                         <div
                           key={item.id}
-                          className="flex flex-col gap-3 rounded-xl border border-border/40 bg-secondary/25 p-3.5 bp-sm:flex-row bp-sm:items-center bp-sm:gap-5 bp-sm:p-5"
+                          className="flex flex-col gap-3 border-b border-border/50 py-4 last:border-b-0 bp-sm:flex-row bp-sm:items-center bp-sm:gap-5"
                           style={{ animationDelay: `${idx * 50}ms` }}
                         >
                           <div className="flex min-w-0 flex-1 items-start gap-4">
@@ -1670,7 +1670,7 @@ export default function CheckoutPage() {
                             </div>
                           </div>
 
-                          <div className="w-full rounded-lg border border-border/50 bg-card/70 px-3 py-2 bp-sm:w-auto bp-sm:min-w-[160px] bp-sm:text-right">
+                          <div className="w-full bp-sm:w-auto bp-sm:min-w-[160px] bp-sm:text-right">
                             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 bp-sm:justify-end">
                               <span className="text-ui-label font-medium text-muted-foreground">
                                 {typeof item.regularPrice === "number" &&
@@ -1757,10 +1757,10 @@ export default function CheckoutPage() {
                       <label
                         htmlFor="택배수령"
                         className={cn(
-                          "flex items-center gap-4 p-4 bp-sm:p-5 rounded-xl border-2 cursor-pointer transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
+                          "flex items-center gap-3 rounded-xl border p-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:gap-4 bp-sm:p-4",
                           deliveryMethod === "택배수령"
-                            ? "border-primary bg-primary/5 shadow-sm"
-                            : "border-border/50 hover:border-border hover:bg-secondary/30",
+                            ? "border-primary/80 bg-primary/5 shadow-sm"
+                            : "border-border/60 bg-transparent hover:border-border hover:bg-muted/20",
                         )}
                       >
                         <RadioGroupItem value="택배수령" id="택배수령" className="sr-only" />
@@ -1803,10 +1803,10 @@ export default function CheckoutPage() {
                       <label
                         htmlFor="방문수령"
                         className={cn(
-                          "flex items-center gap-4 p-4 bp-sm:p-5 rounded-xl border-2 cursor-pointer transition-[background-color,border-color,box-shadow,color,opacity] duration-200",
+                          "flex items-center gap-3 rounded-xl border p-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:gap-4 bp-sm:p-4",
                           deliveryMethod === "방문수령"
-                            ? "border-primary bg-primary/5 shadow-sm"
-                            : "border-border/50 hover:border-border hover:bg-secondary/30",
+                            ? "border-primary/80 bg-primary/5 shadow-sm"
+                            : "border-border/60 bg-transparent hover:border-border hover:bg-muted/20",
                         )}
                       >
                         <RadioGroupItem value="방문수령" id="방문수령" className="sr-only" />
@@ -1848,7 +1848,7 @@ export default function CheckoutPage() {
                       </label>
                     </RadioGroup>
                     {withStringService && (
-                      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-ui-body-sm text-muted-foreground bp-md:text-ui-body">
+                      <div className="border-l-2 border-primary/30 bg-primary/5 px-3 py-2.5 text-ui-body-sm text-muted-foreground bp-md:text-ui-body">
                         <p className="font-medium text-foreground">교체서비스 진행 안내</p>
                         <p className="mt-1 break-keep">
                           {deliveryMethod === "택배수령"
@@ -2071,7 +2071,7 @@ export default function CheckoutPage() {
                             />
                           </div>
 
-                          <div className="rounded-xl border border-border bg-muted/70 p-3">
+                          <div className="border-l-2 border-border bg-muted/20 px-3 py-2.5">
                             <div className="flex items-center space-x-2">
                               <Checkbox
                                 id="save-address"
@@ -2131,7 +2131,7 @@ export default function CheckoutPage() {
                           <CreditCard className="h-4 w-4 text-primary" />
                           할인 및 혜택
                         </Label>
-                        <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-3.5 bp-sm:p-4">
+                        <div className="space-y-3 border-l-2 border-border bg-muted/20 px-3 py-2.5 bp-sm:px-4">
                           <div className="flex justify-between items-center text-ui-body-sm">
                             <span className="text-muted-foreground">사용 가능 포인트</span>
                             <span className="font-semibold">
@@ -2276,7 +2276,7 @@ export default function CheckoutPage() {
                           }}
                           className="space-y-3"
                         >
-                          <div className="flex min-w-0 items-center gap-3 rounded-xl border-2 border-border bg-background p-3.5 bp-sm:p-4">
+                          <div className="flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5">
                             <RadioGroupItem value="bank-transfer" id="bank-transfer" />
                             <Label
                               htmlFor="bank-transfer"
@@ -2289,7 +2289,7 @@ export default function CheckoutPage() {
                           {nicePaymentsEnabled && (
                             <div
                               className={cn(
-                                "flex min-w-0 items-center gap-3 rounded-lg border-2 border-border bg-background p-4",
+                                "flex min-w-0 items-center gap-3 rounded-lg border border-border/70 bg-transparent p-3 transition-colors hover:bg-muted/20 bp-sm:p-3.5",
                                 isZeroPayableAmount && "opacity-60",
                               )}
                             >
@@ -2359,7 +2359,7 @@ export default function CheckoutPage() {
                             </div>
                           </div>
 
-                          <div className="rounded-xl border border-border bg-muted/70 p-3">
+                          <div className="border-l-2 border-border bg-muted/20 px-3 py-2.5">
                             <div className="flex items-center gap-2 mb-3">
                               <Shield className="h-5 w-5 text-primary" />
                               <p className="font-semibold text-foreground">무통장입금 안내</p>
@@ -2412,10 +2412,10 @@ export default function CheckoutPage() {
                       <label
                         htmlFor="agree-all"
                         className={cn(
-                          "flex cursor-pointer items-center gap-3 rounded-xl border-2 p-3.5 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:p-4",
+                          "flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:p-3.5",
                           agreeAll
-                            ? "border-primary bg-primary/5"
-                            : "border-border/50 hover:border-border hover:bg-secondary/30",
+                            ? "border-primary/80 bg-primary/5"
+                            : "border-border/60 hover:border-border hover:bg-muted/20",
                         )}
                       >
                         <Checkbox
@@ -2435,7 +2435,7 @@ export default function CheckoutPage() {
                         </span>
                       </label>
                       <Separator />
-                      <div className="space-y-2">
+                      <div className="divide-y divide-border/60 border-y border-border/60">
                         {[
                           {
                             id: "agree-terms",
@@ -2462,10 +2462,10 @@ export default function CheckoutPage() {
                           <div
                             key={item.id}
                             className={cn(
-                              "flex min-w-0 items-center justify-between gap-2 rounded-xl border p-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:p-4",
+                              "flex min-w-0 items-center justify-between gap-2 py-3 transition-[background-color,border-color,box-shadow,color,opacity] duration-200 bp-sm:py-3.5",
                               item.state
-                                ? "border-primary/30 bg-primary/5"
-                                : "border-border/40 bg-secondary/20 hover:bg-secondary/40",
+                                ? "bg-primary/5"
+                                : "hover:bg-muted/20",
                             )}
                           >
                             <label
