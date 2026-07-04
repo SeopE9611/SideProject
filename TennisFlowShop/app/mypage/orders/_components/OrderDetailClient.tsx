@@ -62,6 +62,7 @@ import {
   Truck,
   Undo2,
   User,
+  Wrench,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -1056,30 +1057,42 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
         )}
         <div className="grid gap-5 bp-lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)] bp-lg:items-start">
           <div className="space-y-5">
-            {(orderDetail.shippingInfo?.withStringService || hasLinkedStringingApps) && (
-              <section id="stringing-service" className="scroll-mt-24 space-y-4">
-                <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
-                  <CardHeader className="rounded-t-2xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
-                    <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
-                      <div>
-                        <CardTitle>교체서비스 정보</CardTitle>
-                        <CardDescription>
-                          이 주문과 연결된 교체서비스 진행 상태와 라켓 정보를 함께 확인할 수
-                          있습니다.
-                        </CardDescription>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant="secondary">주문</Badge>
-                        {hasLinkedStringingApps ? (
-                          <Badge variant="secondary">교체서비스 연결</Badge>
-                        ) : null}
-                        {shouldShowInboundShippingBlock && !hasSelfShipTracking ? (
-                          <Badge variant="destructive">라켓 발송 운송장 등록 필요</Badge>
-                        ) : null}
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4 p-4 bp-sm:p-6">
+            {/* 주문 상품 · 작업 정보 (통합 카드: 상품 + 라켓 작업 + 발송/배송) */}
+            <Card
+              id="stringing-service"
+              className="scroll-mt-24 rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50"
+            >
+              <CardHeader className="rounded-t-2xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
+                <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <ShoppingCart className="h-5 w-5 text-warning" />
+                      <span>주문 상품 · 작업 정보</span>
+                    </CardTitle>
+                    <CardDescription>
+                      주문 상품과 라켓 작업 정보, 발송/배송 상태를 한 곳에서 확인하세요.
+                    </CardDescription>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="secondary">주문</Badge>
+                    {hasLinkedStringingApps ? (
+                      <Badge variant="secondary">교체서비스 연결</Badge>
+                    ) : null}
+                    {shouldShowInboundShippingBlock && !hasSelfShipTracking ? (
+                      <Badge variant="destructive">라켓 발송 운송장 등록 필요</Badge>
+                    ) : null}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-5 p-4 bp-sm:p-6 bp-lg:p-6">
+                {/* 라켓 · 작업 정보 (교체서비스 연결 시) */}
+                {(orderDetail.shippingInfo?.withStringService || hasLinkedStringingApps) && (
+                  <div>
+                    <p className="mb-3 flex items-center gap-1.5 text-ui-body-sm font-semibold text-foreground">
+                      <Wrench className="h-4 w-4 text-muted-foreground" />
+                      라켓 · 작업 정보
+                    </p>
+                    <div className="space-y-4">
                     {hasLinkedStringingApps ? (
                       linkedStringingApps.map((app, appIndex) => {
                         const appSelfShipInfo = app.shippingInfo?.selfShip ?? null;
