@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ObjectId, type Document } from "mongodb";
+import { ObjectId, type Db, type Document } from "mongodb";
 
 import { getDb } from "@/lib/mongodb";
 import {
@@ -41,7 +41,7 @@ function normalizeLessonType(value: unknown): AcademyClassLessonType {
   return isAcademyClassLessonType(value) ? value : "group";
 }
 
-function serializePublicClass(doc: Document): PublicAcademyClass {
+function serializePublicClass(doc: Document, enrolledCount?: number): PublicAcademyClass {
   const status = normalizeStatus(doc.status);
   const level = normalizeLevel(doc.level);
   const lessonType = normalizeLessonType(doc.lessonType);
@@ -58,13 +58,67 @@ function serializePublicClass(doc: Document): PublicAcademyClass {
     location: typeof doc.location === "string" ? doc.location : null,
     scheduleText: typeof doc.scheduleText === "string" ? doc.scheduleText : null,
     capacity: typeof doc.capacity === "number" ? doc.capacity : null,
-    enrolledCount: typeof doc.enrolledCount === "number" ? doc.enrolledCount : 0,
+    enrolledCount: typeof enrolledCount === "number" ? enrolledCount : 0,
     price: typeof doc.price === "number" ? doc.price : null,
     status,
     statusLabel: getAcademyClassStatusLabel(status),
     createdAt: serializeValue(doc.createdAt),
     updatedAt: serializeValue(doc.updatedAt),
   };
+}
+
+function serializeClassId(value: unknown): string {
+  const serialized = serializeValue(value);
+  return typeof serialized === "string" ? serialized : "";
+}
+
+async function getConfirmedCountsByClassId(db: Db, classes: Document[]) {
+  const classIdStrings = classes.map((item) => serializeClassId(item._id)).filter(Boolean);
+  const countsByClassId = new Map<string, number>();
+  for (const classId of classIdStrings) {
+    countsByClassId.set(classId, 0);
+  }
+
+  if (classIdStrings.length === 0) return countsByClassId;
+
+  const objectIds = classIdStrings
+    .filter((classId) => ObjectId.isValid(classId))
+    .map((classId) => new ObjectId(classId));
+  const classIdMatchers: unknown[] = [...classIdStrings, ...objectIds];
+
+  const applications = await db
+    .collection("academy_lesson_applications")
+    .find(
+      {
+        adminDeletedAt: { $exists: false },
+        status: "confirmed",
+        $or: [
+          { classId: { $in: classIdMatchers } },
+          { "classSnapshot.classId": { $in: classIdStrings } },
+        ],
+      },
+      { projection: { classId: 1, "classSnapshot.classId": 1 } },
+    )
+    .toArray();
+
+  for (const application of applications) {
+    const matchedClassIds = new Set<string>();
+    if (application.classId) matchedClassIds.add(serializeClassId(application.classId));
+    const snapshotClassId =
+      application.classSnapshot &&
+      typeof application.classSnapshot === "object" &&
+      "classId" in application.classSnapshot
+        ? serializeClassId((application.classSnapshot as { classId?: unknown }).classId)
+        : "";
+    if (snapshotClassId) matchedClassIds.add(snapshotClassId);
+
+    for (const classId of matchedClassIds) {
+      if (!countsByClassId.has(classId)) continue;
+      countsByClassId.set(classId, (countsByClassId.get(classId) ?? 0) + 1);
+    }
+  }
+
+  return countsByClassId;
 }
 
 export async function GET(req: Request) {
@@ -110,9 +164,11 @@ export async function GET(req: Request) {
         );
       }
 
+      const confirmedCountsByClassId = await getConfirmedCountsByClassId(db, [item]);
+
       return NextResponse.json({
         success: true,
-        item: serializePublicClass(item),
+        item: serializePublicClass(item, confirmedCountsByClassId.get(serializeClassId(item._id))),
       });
     }
 
@@ -138,9 +194,13 @@ export async function GET(req: Request) {
       })
       .toArray();
 
+    const confirmedCountsByClassId = await getConfirmedCountsByClassId(db, items);
+
     return NextResponse.json({
       success: true,
-      items: items.map(serializePublicClass),
+      items: items.map((item) =>
+        serializePublicClass(item, confirmedCountsByClassId.get(serializeClassId(item._id))),
+      ),
     });
   } catch (error) {
     console.error("[academy/classes] failed to load public classes", error);

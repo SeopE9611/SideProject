@@ -32,7 +32,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import type { Document } from "mongodb";
+import { ObjectId, type Db, type Document } from "mongodb";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -70,7 +70,7 @@ function serializeObjectId(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
-function serializeAcademyClass(doc: Document): PublicAcademyClass {
+function serializeAcademyClass(doc: Document, enrolledCount?: number): PublicAcademyClass {
   const status = normalizeClassStatus(doc.status);
   const level = normalizeClassLevel(doc.level);
   const lessonType = normalizeClassLessonType(doc.lessonType);
@@ -87,7 +87,7 @@ function serializeAcademyClass(doc: Document): PublicAcademyClass {
     location: typeof doc.location === "string" ? doc.location : null,
     scheduleText: typeof doc.scheduleText === "string" ? doc.scheduleText : null,
     capacity: typeof doc.capacity === "number" ? doc.capacity : null,
-    enrolledCount: typeof doc.enrolledCount === "number" ? doc.enrolledCount : 0,
+    enrolledCount: typeof enrolledCount === "number" ? enrolledCount : 0,
     price: typeof doc.price === "number" ? doc.price : null,
     status,
     statusLabel: getAcademyClassStatusLabel(status),
@@ -148,6 +148,55 @@ async function getMyActiveAcademyApplications(
   }
 }
 
+async function getConfirmedCountsByClassId(db: Db, classes: Document[]) {
+  const classIdStrings = classes.map((item) => serializeObjectId(item._id)).filter(Boolean);
+  const countsByClassId = new Map<string, number>();
+  for (const classId of classIdStrings) {
+    countsByClassId.set(classId, 0);
+  }
+
+  if (classIdStrings.length === 0) return countsByClassId;
+
+  const objectIds = classIdStrings
+    .filter((classId) => ObjectId.isValid(classId))
+    .map((classId) => new ObjectId(classId));
+  const classIdMatchers: unknown[] = [...classIdStrings, ...objectIds];
+
+  const applications = await db
+    .collection("academy_lesson_applications")
+    .find(
+      {
+        adminDeletedAt: { $exists: false },
+        status: "confirmed",
+        $or: [
+          { classId: { $in: classIdMatchers } },
+          { "classSnapshot.classId": { $in: classIdStrings } },
+        ],
+      },
+      { projection: { classId: 1, "classSnapshot.classId": 1 } },
+    )
+    .toArray();
+
+  for (const application of applications) {
+    const matchedClassIds = new Set<string>();
+    if (application.classId) matchedClassIds.add(serializeObjectId(application.classId));
+    const snapshotClassId =
+      application.classSnapshot &&
+      typeof application.classSnapshot === "object" &&
+      "classId" in application.classSnapshot
+        ? serializeObjectId((application.classSnapshot as { classId?: unknown }).classId)
+        : "";
+    if (snapshotClassId) matchedClassIds.add(snapshotClassId);
+
+    for (const classId of matchedClassIds) {
+      if (!countsByClassId.has(classId)) continue;
+      countsByClassId.set(classId, (countsByClassId.get(classId) ?? 0) + 1);
+    }
+  }
+
+  return countsByClassId;
+}
+
 async function getPublicAcademyClasses(): Promise<PublicAcademyClass[]> {
   try {
     const db = await getDb();
@@ -173,11 +222,23 @@ async function getPublicAcademyClasses(): Promise<PublicAcademyClass[]> {
       })
       .toArray();
 
-    return docs.map(serializeAcademyClass);
+    const confirmedCountsByClassId = await getConfirmedCountsByClassId(db, docs);
+
+    return docs.map((doc) =>
+      serializeAcademyClass(doc, confirmedCountsByClassId.get(serializeObjectId(doc._id))),
+    );
   } catch (error) {
     console.error("[academy/page] failed to load public classes", error);
     return [];
   }
+}
+
+function formatClassCapacity(enrolledCount: number, capacity: number | null) {
+  const enrolledLabel = enrolledCount.toLocaleString("ko-KR");
+  if (typeof capacity === "number" && capacity > 0) {
+    return `등록 확정 ${enrolledLabel}/${capacity.toLocaleString("ko-KR")}명`;
+  }
+  return `등록 확정 ${enrolledLabel}명 · 정원 미정`;
 }
 
 function formatClassPrice(price: number | null) {
@@ -526,9 +587,7 @@ export default async function AcademyPage() {
                             정원
                           </span>
                           <span className="min-w-0 whitespace-normal break-keep break-words text-muted-foreground tabular-nums">
-                            {typeof academyClass.capacity === "number" && academyClass.capacity > 0
-                              ? `${academyClass.capacity}명`
-                              : "상담 후 안내"}
+                            {formatClassCapacity(academyClass.enrolledCount, academyClass.capacity)}
                           </span>
                         </div>
                         <div className="grid min-w-0 grid-cols-[1rem_3rem_minmax(0,1fr)] gap-3 text-ui-body-sm">
