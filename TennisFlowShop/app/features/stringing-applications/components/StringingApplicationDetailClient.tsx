@@ -412,7 +412,7 @@ export default function StringingApplicationDetailClient({
 
   const [isPending, startTransition] = useTransition();
 
-  // 신청 취소 요청 모달 상태
+  // 취소 요청 모달 상태
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 
   // 관리자: 취소 요청 거절 모달 상태
@@ -472,7 +472,7 @@ export default function StringingApplicationDetailClient({
         }
 
         showSuccessToast(
-          "취소 요청이 정상적으로 접수되었습니다. 관리자 확인 후 결과가 반영됩니다.",
+          "취소 요청을 접수했습니다.",
         );
         await mutate();
         if (historyMutateRef.current) {
@@ -481,7 +481,7 @@ export default function StringingApplicationDetailClient({
         setIsCancelDialogOpen(false);
       } catch (err) {
         console.error(err);
-        showErrorToast(err instanceof Error ? err.message : "취소 요청 중 오류가 발생했습니다.");
+        showErrorToast(err instanceof Error ? err.message : "취소 요청 처리 중 오류가 발생했습니다.");
       }
     });
   };
@@ -517,7 +517,7 @@ export default function StringingApplicationDetailClient({
       }
     } catch (err) {
       console.error(err);
-      showErrorToast("취소 요청 철회 중 오류가 발생했습니다.");
+      showErrorToast("취소 요청 처리 중 오류가 발생했습니다.");
     } finally {
       setIsWithdrawingCancel(false);
     }
@@ -2126,9 +2126,9 @@ export default function StringingApplicationDetailClient({
                               </p>
                               <p>
                                 {isOrderLinkedApplication
-                                  ? "이 교체서비스는 연결된 주문의 구매확정과 함께 처리됩니다."
+                                  ? "이 교체서비스는 연결된 주문의 구매 확정과 함께 처리됩니다."
                                   : isRentalLinkedApplication
-                                    ? "이 교체서비스는 연결된 대여의 수령확인과 함께 처리됩니다."
+                                    ? "이 교체서비스는 연결된 대여의 수령 확인과 함께 처리됩니다."
                                     : "단독 교체서비스는 이 화면에서 확정할 수 있습니다."}
                               </p>
                             </>
@@ -2238,18 +2238,18 @@ export default function StringingApplicationDetailClient({
 
                     {!isAdmin && isOrderLinkedApplication && (
                       <p className="max-w-xl text-ui-body-sm text-muted-foreground">
-                        이 교체서비스는 연결된 주문의 구매확정과 함께 처리됩니다.
+                        이 교체서비스는 연결된 주문의 구매 확정과 함께 처리됩니다.
                       </p>
                     )}
 
                     {!isAdmin && isRentalLinkedApplication && (
                       <p className="max-w-xl text-ui-body-sm text-muted-foreground">
-                        이 교체서비스는 연결된 대여의 수령확인과 함께 처리됩니다.
+                        이 교체서비스는 연결된 대여의 수령 확인과 함께 처리됩니다.
                       </p>
                     )}
 
                     <div className="grid w-full grid-cols-1 gap-2 bp-sm:w-auto bp-sm:grid-cols-2 bp-lg:flex bp-lg:justify-end">
-                      {/* 사용자: 아직 취소 요청 전 → "신청 취소 요청" 버튼 */}
+                      {/* 사용자: 아직 취소 요청 전 → "취소 요청" 버튼 */}
                       {!isAdmin &&
                         !isRentalLinkedApplication &&
                         !isCancelled &&
@@ -2261,7 +2261,7 @@ export default function StringingApplicationDetailClient({
                             className="w-full"
                           >
                             <XCircle className="mr-2 h-4 w-4" />
-                            신청 취소 요청
+                            취소 요청
                           </Button>
                         )}
 

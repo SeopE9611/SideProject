@@ -345,7 +345,7 @@ export default function RentalsDetailClient({
 
       if (!res.ok) {
         const body = await res.json().catch(() => null);
-        const msg = body?.message ?? "대여 취소 요청 철회 중 오류가 발생했습니다.";
+        const msg = body?.message ?? "취소 요청 처리 중 오류가 발생했습니다.";
         showErrorToast(msg);
         return;
       }
@@ -353,10 +353,10 @@ export default function RentalsDetailClient({
       // 성공 시 상세 상태에서만 cancelRequest 제거
       setData((prev) => (prev ? { ...prev, cancelRequest: null } : prev));
 
-      showSuccessToast("대여 취소 요청을 철회했습니다.");
+      showSuccessToast("취소 요청을 철회했습니다.");
     } catch (e) {
       console.error(e);
-      showErrorToast("대여 취소 요청 철회 중 오류가 발생했습니다.");
+      showErrorToast("취소 요청 처리 중 오류가 발생했습니다.");
     } finally {
       setWithdrawing(false);
     }
@@ -506,8 +506,8 @@ export default function RentalsDetailClient({
         status: data.cancelRequest.status as "requested" | "approved" | "rejected",
         title:
           data.cancelRequest.status === "requested"
-            ? "대여 취소 요청 처리 중입니다. 관리자 확인 후 결과가 반영됩니다."
-            : "대여 취소 요청이 거절되었습니다.",
+            ? "이 대여는 취소 요청 처리 중입니다. 관리자 확인 후 결과가 반영됩니다."
+            : "이 대여의 취소 요청이 거절되었습니다.",
         reason: data.cancelRequest.reasonCode
           ? `${data.cancelRequest.reasonCode}${data.cancelRequest.reasonText ? ` (${data.cancelRequest.reasonText})` : ""}`
           : data.cancelRequest.reasonText || "",
