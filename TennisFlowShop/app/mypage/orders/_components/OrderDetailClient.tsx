@@ -861,7 +861,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
         eyebrow="마이페이지"
         title={serviceLinkedOrder ? "교체서비스 신청 상세" : "주문 상세"}
         description="현재 상태와 다음 행동을 먼저 확인하고, 상세 정보는 필요한 섹션에서 살펴보세요."
-        className="rounded-2xl border border-border bg-card py-6 shadow-sm bp-sm:py-8"
+        className="rounded-2xl border-0 bg-card py-6 shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 bp-sm:py-8"
         actions={
           <>
             <Button
@@ -903,10 +903,10 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
           </>
         }
       >
-        <div className="flex w-full flex-col gap-5 rounded-2xl border border-border bg-background/80 p-4 shadow-sm bp-sm:p-5">
+        <div className="flex w-full flex-col gap-5 rounded-2xl bg-background/60 p-4 ring-1 ring-border/40 bp-sm:p-5">
           <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_auto] bp-lg:items-center">
             <div className="flex min-w-0 items-start gap-4">
-              <div className="shrink-0 rounded-xl border border-border bg-muted/40 p-3">
+              <div className="shrink-0 rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/10">
                 <ShoppingCart className="h-8 w-8 text-primary" />
               </div>
               <div className="min-w-0 space-y-1">
@@ -920,7 +920,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 </p>
               </div>
             </div>
-            <div className="flex flex-col gap-2 rounded-xl border border-border/70 bg-card/80 p-3 bp-sm:flex-row bp-sm:items-center bp-lg:min-w-[360px] bp-lg:flex-col bp-lg:items-stretch">
+            <div className="flex flex-col gap-2 border-l-2 border-primary/40 bg-primary/5 px-3 py-2 bp-sm:flex-row bp-sm:items-center bp-lg:min-w-[360px] bp-lg:flex-col bp-lg:items-stretch">
               <div className="min-w-0 flex-1">
                 <div className="mb-1 flex flex-wrap items-center gap-2">
                   <OrderStatusBadge
@@ -963,7 +963,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
           <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 bp-xl:grid-cols-5">
             <SummaryCard
-              className="rounded-xl bg-muted/20 shadow-none"
+              className="rounded-none border-y border-border/50 bg-muted/10 shadow-none"
               contentClassName="p-3 bp-sm:p-4"
             >
               <div className="mb-2 flex items-center space-x-2">
@@ -976,7 +976,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             </SummaryCard>
 
             <SummaryCard
-              className="rounded-xl bg-muted/20 shadow-none"
+              className="rounded-none border-y border-border/50 bg-muted/10 shadow-none"
               contentClassName="p-3 bp-sm:p-4"
             >
               <div className="mb-2 flex items-center space-x-2">
@@ -989,7 +989,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             </SummaryCard>
 
             <SummaryCard
-              className="rounded-xl bg-muted/20 shadow-none"
+              className="rounded-none border-y border-border/50 bg-muted/10 shadow-none"
               contentClassName="p-3 bp-sm:p-4"
             >
               <div className="mb-2 flex items-center space-x-2">
@@ -1002,7 +1002,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             </SummaryCard>
 
             <SummaryCard
-              className="rounded-xl bg-muted/20 shadow-none"
+              className="rounded-none border-y border-border/50 bg-muted/10 shadow-none"
               contentClassName="p-3 bp-sm:p-4"
             >
               <div className="mb-2 flex items-center space-x-2">
@@ -1016,7 +1016,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             </SummaryCard>
 
             <SummaryCard
-              className="rounded-xl bg-muted/20 shadow-none"
+              className="rounded-none border-y border-border/50 bg-muted/10 shadow-none"
               contentClassName="p-3 bp-sm:p-4"
             >
               <div className="mb-2 flex items-center space-x-2">
@@ -1037,7 +1037,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
       >
         {/* 취소 요청 상태 안내 배너 */}
         {cancelLabel && (
-          <div className="mb-4 flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between rounded-lg border border-border bg-muted px-4 py-3 text-ui-body-sm text-foreground">
+          <div className="mb-4 flex flex-col gap-3 border-l-2 border-destructive/50 bg-muted/20 px-3 py-3 text-ui-body-sm text-foreground bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
             <span className="min-w-0 break-words">{cancelLabel}</span>
 
             {canWithdrawCancelRequest && (
@@ -1058,8 +1058,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
           <div className="space-y-5">
             {(orderDetail.shippingInfo?.withStringService || hasLinkedStringingApps) && (
               <section id="stringing-service" className="scroll-mt-24 space-y-4">
-                <Card className="rounded-2xl border border-border bg-card shadow-sm">
-                  <CardHeader className="border-b border-border/60 bg-muted/30 rounded-t-xl">
+                <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                  <CardHeader className="rounded-t-2xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
                     <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:items-start bp-sm:justify-between">
                       <div>
                         <CardTitle>교체서비스 정보</CardTitle>
@@ -1179,7 +1179,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                                   return (
                                     <div
                                       key={line.id ?? `${app.id}-${lineIndex}`}
-                                      className="rounded-lg border border-border/60 bg-muted/25 p-3 text-ui-body-sm"
+                                      className="border-t border-border/60 py-3 text-ui-body-sm first:border-t-0"
                                     >
                                       <div className="flex items-center justify-between gap-2">
                                         <div className="min-w-0">
@@ -1253,7 +1253,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                             </div>
 
                             {appNeedsTracking ? (
-                              <div className="mt-4 rounded-lg border border-border/60 bg-muted/25 p-3 text-ui-body-sm">
+                              <div className="mt-4 border-l-2 border-primary/40 bg-primary/5 px-3 py-3 text-ui-body-sm">
                                 <div className="flex flex-wrap items-start justify-between gap-3">
                                   <div>
                                     <p className="font-semibold text-foreground">라켓 발송 정보</p>
@@ -1302,7 +1302,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                         );
                       })
                     ) : !isOrderCanceled && totalSlots > 0 && remainingSlots > 0 ? (
-                      <div className="rounded-xl border border-warning/30 bg-warning/10 p-4 text-warning dark:bg-warning/15">
+                      <div className="border-l-2 border-warning/60 bg-warning/10 px-3 py-3 text-warning dark:bg-warning/15">
                         <p className="font-semibold">이 주문은 교체서비스 신청 대상입니다.</p>
                         <p className="mt-1 text-ui-body-sm">
                           총 {totalSlots}개 중 <strong>{usedSlots}</strong>개를 사용했으며, 남은
@@ -1317,7 +1317,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                         </Button>
                       </div>
                     ) : (
-                      <div className="rounded-xl border border-border bg-muted/20 p-4 text-ui-body-sm text-muted-foreground">
+                      <div className="border-l-2 border-border bg-muted/20 px-3 py-3 text-ui-body-sm text-muted-foreground">
                         연결된 교체서비스 신청 정보를 확인 중입니다.
                       </div>
                     )}
@@ -1334,19 +1334,19 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             )}
 
             {/* 주문 항목 */}
-            <Card className="rounded-2xl border border-border bg-card shadow-sm">
-              <CardHeader className="border-b border-border/60">
+            <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+              <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
                 <CardTitle className="flex items-center space-x-2">
                   <ShoppingCart className="h-5 w-5 text-warning" />
                   <span>주문 항목</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 bp-lg:p-6">
-                <div className="space-y-4">
+                <div className="divide-y divide-border/60 border-y border-border/60">
                   {orderDetail.items.map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex flex-col gap-4 rounded-xl bg-muted p-4 transition-colors hover:bg-muted dark:hover:bg-card bp-sm:flex-row bp-sm:items-start"
+                      className="flex flex-col gap-4 py-4 transition-colors first:pt-0 last:pb-0 bp-sm:flex-row bp-sm:items-start"
                     >
                       {/* 상품 썸네일 */}
                       {item.imageUrl && (
@@ -1391,7 +1391,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                       </div>
 
                       {/* 가격 및 소계 */}
-                      <div className="w-full shrink-0 rounded-lg border border-border/60 bg-background/60 p-3 text-left bp-sm:w-auto bp-sm:border-0 bp-sm:bg-transparent bp-sm:p-0 bp-sm:text-right">
+                      <div className="w-full shrink-0 border-t border-border/50 pt-3 text-left bp-sm:w-auto bp-sm:border-t-0 bp-sm:pt-0 bp-sm:text-right">
                         <p className="whitespace-nowrap font-semibold tabular-nums text-foreground">
                           가격: {formatCurrency(item.price)}
                         </p>
@@ -1445,8 +1445,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             </Card>
             {/* 요청사항 */}
             {showDeliveryOnlyFields && (
-              <Card className="rounded-2xl border border-border bg-card shadow-sm">
-                <CardHeader className="border-b border-border/60">
+              <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
                   <CardTitle>배송 요청사항</CardTitle>
                   <CardDescription>결제 시 입력한 배송 관련 요청사항입니다.</CardDescription>
                 </CardHeader>
@@ -1466,7 +1466,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 ) : (
                   <CardContent className="p-4 bp-lg:p-6">
                     {orderDetail.shippingInfo.deliveryRequest ? (
-                      <div className="bg-muted border border-border rounded-lg p-4">
+                      <div className="border-l-2 border-primary/40 bg-muted/20 px-3 py-3">
                         <p className="text-foreground whitespace-pre-line">
                           {orderDetail.shippingInfo.deliveryRequest}
                         </p>
@@ -1495,15 +1495,15 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
             <details className="group bp-md:block">
               <summary className="mb-3 cursor-pointer rounded-xl border border-border bg-card p-4 font-semibold text-foreground bp-md:hidden">진행 단계</summary>
-              <Card className="hidden rounded-2xl border border-border bg-card shadow-sm group-open:block bp-md:block">
-              <CardHeader className="border-b border-border/60 bg-muted/30 rounded-t-xl">
+              <Card className="hidden rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50 group-open:block bp-md:block">
+              <CardHeader className="rounded-t-2xl border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
                 <CardTitle>주문 진행 타임라인</CardTitle>
                 <CardDescription>
                   주문 접수부터 결제, 준비, 완성 라켓 배송/방문 수령, 완료까지의 흐름을 확인할 수
                   있습니다.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3 pt-5">
+              <CardContent className="p-4 bp-lg:p-6">
                 {timelineSteps.map((step, index) => {
                   const tone = getTimelineStepTone(step.state);
                   const Icon =
@@ -1513,7 +1513,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   return (
                     <div
                       key={step.title}
-                      className="rounded-xl border border-border/70 bg-muted/30 p-3"
+                      className="border-t border-border/60 py-3 first:border-t-0"
                     >
                       <div className="flex items-start gap-3">
                         <div
@@ -1541,7 +1541,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     </div>
                   );
                 })}
-                <div className="space-y-1 text-ui-label text-muted-foreground">
+                <div className="mt-3 border-l-2 border-border bg-muted/20 px-3 py-2 text-ui-label text-muted-foreground">
                   <p>이 타임라인은 현재 상태 기준 안내입니다.</p>
                   <p>자세한 변경 기록은 아래 처리 이력에서 확인할 수 있습니다.</p>
                   {shouldShowStringingTimelineHint && (
@@ -1567,16 +1567,16 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
           <aside className="space-y-3 bp-lg:sticky bp-lg:top-24 bp-md:space-y-5">
             {/* 결제 정보 */}
-            <Card className="rounded-2xl border border-border bg-card shadow-sm">
-              <CardHeader className="border-b border-border/60">
+            <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+              <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
                 <CardTitle className="flex items-center space-x-2">
                   <CreditCard className="h-5 w-5 text-foreground" />
                   <span>결제 정보</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 bp-lg:p-6">
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
+                <div className="divide-y divide-border/60 border-y border-border/60">
+                  <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                     <div>
                       <p className="text-ui-body-sm text-foreground/80">결제 상태</p>
                       {(() => {
@@ -1590,7 +1590,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     </div>
                   </div>
 
-                  <div className="p-3 bg-muted rounded-lg">
+                  <div className="py-3 first:pt-0 last:pb-0">
                     <PaymentMethodDetail
                       method={orderDetail.paymentMethod || "무통장입금"}
                       bankKey={orderDetail.paymentBank ?? undefined}
@@ -1606,7 +1606,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     />
                   </div>
 
-                  <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg border border-border">
+                  <div className="mt-3 flex items-center space-x-3 bg-primary/5 px-3 py-3 ring-1 ring-primary/10">
                     <div>
                       <p className="text-ui-body-sm text-foreground/80">결제 금액</p>
                       <p className="text-ui-section-title font-semibold text-primary">
@@ -1619,8 +1619,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             </Card>
 
             {/* 고객 정보 */}
-            <Card className="rounded-2xl border border-border bg-card shadow-sm">
-              <CardHeader className="border-b border-border/60">
+            <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+              <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
                 <CardTitle className="flex items-center space-x-2">
                   <User className="h-5 w-5 text-primary" />
                   <span>주문자 정보</span>
@@ -1649,8 +1649,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 </CardContent>
               ) : (
                 <CardContent className="p-4 bp-lg:p-6">
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
+                  <div className="divide-y divide-border/60 border-y border-border/60">
+                    <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                       <User className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-ui-body-sm text-foreground/80">이름</p>
@@ -1660,7 +1660,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
+                    <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                       <Mail className="h-4 w-4 text-muted-foreground" />
                       <div className="min-w-0">
                         <p className="text-ui-body-sm text-foreground/80">이메일</p>
@@ -1670,7 +1670,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
+                    <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                       <Phone className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-ui-body-sm text-foreground/80">전화번호</p>
@@ -1680,7 +1680,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
+                    <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                       <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
                       <div className="min-w-0">
                         <p className="text-ui-body-sm text-foreground/80">주소</p>
@@ -1717,16 +1717,16 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             </Card>
 
             {/* 완성 라켓 배송/수령 정보 */}
-            <Card className="rounded-2xl border border-border bg-card shadow-sm">
-              <CardHeader className="border-b border-border/60">
+            <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+              <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
                 <CardTitle className="flex items-center space-x-2">
                   <Truck className="h-5 w-5 text-success" />
                   <span>{getOrderDeliveryInfoTitle(orderDetail.shippingInfo)}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 bp-lg:p-6">
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
+                <div className="divide-y divide-border/60 border-y border-border/60">
+                  <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                     <Truck className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-ui-body-sm text-foreground/80">
@@ -1736,7 +1736,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
+                  <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-ui-body-sm text-foreground/80">예상 수령일</p>
@@ -1756,7 +1756,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
                   {showDeliveryOnlyFields && orderDetail.shippingInfo.invoice?.trackingNumber && (
                     <>
-                      <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
+                      <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                         <div>
                           <p className="text-ui-body-sm text-foreground/80">택배사</p>
                           <p className="font-semibold text-foreground">
@@ -1764,7 +1764,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                           </p>
                         </div>
                       </div>
-                      <div className="flex min-w-0 items-start gap-3 rounded-lg bg-muted p-3">
+                      <div className="flex min-w-0 items-start gap-3 py-3 first:pt-0 last:pb-0">
                         <div className="min-w-0">
                           <p className="text-ui-body-sm text-foreground/80">
                             완성 라켓 운송장 번호
@@ -1775,7 +1775,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                         </div>
                       </div>
                       {shouldShowTrackingSummarySkeleton && (
-                        <div className="space-y-2 p-3 bg-muted rounded-lg">
+                        <div className="space-y-2 border-l-2 border-border bg-muted/20 px-3 py-3">
                           <Skeleton className="h-4 w-40" />
                           <Skeleton className="h-4 w-32" />
                           <Skeleton className="h-4 w-36" />
@@ -1783,7 +1783,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                         </div>
                       )}
                       {!isTrackingLoading && !trackingError && trackingData && (
-                        <div className="space-y-2 p-3 bg-muted rounded-lg text-ui-body-sm">
+                        <div className="space-y-2 border-l-2 border-primary/40 bg-primary/5 px-3 py-3 text-ui-body-sm">
                           {trackingData.success && trackingData.supported ? (
                             <>
                               <p className="text-foreground">
@@ -1803,7 +1803,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                                 </p>
                               )}
                               {shouldShowTrackingStatusNotice && (
-                                <div className="space-y-0.5 rounded-md bg-background/70 px-2.5 py-1.5 text-ui-label leading-relaxed text-muted-foreground">
+                                <div className="space-y-0.5 border-l-2 border-border bg-background/60 px-2.5 py-1.5 text-ui-label leading-relaxed text-muted-foreground">
                                   <p>실시간 배송 상태는 택배사 기준이며,</p>
                                   <p>주문 상태와 다를 수 있습니다.</p>
                                 </div>
@@ -1836,7 +1836,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   )}
 
                   {shouldShowInboundShippingBlock && !hasLinkedStringingApps && (
-                    <div className="rounded-lg border border-border bg-primary/5 p-3 dark:bg-primary/10">
+                    <div className="border-l-2 border-primary/50 bg-primary/5 px-3 py-3 dark:bg-primary/10">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="space-y-1">
                           <p className="text-ui-body-sm font-semibold text-foreground">
@@ -1882,21 +1882,21 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             </Card>
 
             {orderDetail.stringService ? (
-              <Card className="rounded-2xl border border-border bg-card shadow-sm">
-                <CardHeader className="border-b border-border/60">
+              <Card className="rounded-2xl border-0 bg-card shadow-lg shadow-foreground/[0.03] ring-1 ring-border/50">
+                <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
                   <CardTitle>패키지 안내</CardTitle>
                   <CardDescription>교체서비스 패키지 이용 현황입니다.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-2 p-4 text-ui-body-sm bp-lg:p-5">
-                  <div className="flex justify-between gap-3">
+                <CardContent className="divide-y divide-border/60 border-y border-border/60 p-4 text-ui-body-sm bp-lg:p-5">
+                  <div className="flex justify-between gap-3 py-2 first:pt-0 last:pb-0">
                     <span className="text-muted-foreground">전체 횟수</span>
                     <span className="font-medium text-foreground">{totalSlots}회</span>
                   </div>
-                  <div className="flex justify-between gap-3">
+                  <div className="flex justify-between gap-3 py-2 first:pt-0 last:pb-0">
                     <span className="text-muted-foreground">사용 횟수</span>
                     <span className="font-medium text-foreground">{usedSlots}회</span>
                   </div>
-                  <div className="flex justify-between gap-3">
+                  <div className="flex justify-between gap-3 py-2 first:pt-0 last:pb-0">
                     <span className="text-muted-foreground">남은 횟수</span>
                     <span className="font-medium text-foreground">{remainingSlots}회</span>
                   </div>
@@ -1906,11 +1906,11 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
             <div id="reviews-cta" className="mt-4">
               {serviceLinkedOrder ? (
-                <div className="rounded-xl border border-border bg-muted/20 p-4 text-ui-body-sm text-muted-foreground">
+                <div className="border-l-2 border-border bg-muted/20 px-3 py-3 text-ui-body-sm text-muted-foreground">
                   이 이용 건은 교체서비스 이용 경험에 대한 서비스 리뷰를 작성할 수 있습니다.
                 </div>
               ) : allReviewed ? (
-                <div className="flex flex-col gap-3 rounded-xl border border-primary/20 bg-primary/10 p-4 shadow-sm dark:bg-primary/20 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-6">
+                <div className="flex flex-col gap-3 border-l-2 border-primary/50 bg-primary/10 px-3 py-3 dark:bg-primary/20 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:px-4 bp-sm:py-4">
                   <div className="flex items-center gap-3 text-primary">
                     <CheckCircle className="h-6 w-6" />
                     <div>
@@ -1931,7 +1931,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   </Button>
                 </div>
               ) : (
-                <div className="bg-warning/10 dark:bg-warning/15 border border-border rounded-xl p-4 shadow-sm flex flex-col gap-3 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:p-6">
+                <div className="flex flex-col gap-3 border-l-2 border-warning/60 bg-warning/10 px-3 py-3 dark:bg-warning/15 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between bp-sm:px-4 bp-sm:py-4">
                   <div className="flex items-center gap-3">
                     <Clock className="h-6 w-6 text-warning" />
                     <div>
