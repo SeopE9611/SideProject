@@ -20,7 +20,6 @@ import {
   CheckCircle,
   Clock,
   FileText,
-  Package,
   Phone,
   Undo2,
   User,
@@ -552,18 +551,28 @@ export default function ApplicationsClient() {
                 : hasRentalLink
                   ? "대여 기반 장착 정보"
                   : "단독 교체서비스";
-            const metaLinkId = hasOrderLink ? orderId : hasRentalLink ? rentalId : null;
             const detailHref = isAcademyLesson
               ? `/mypage/academy-applications/${app.id}`
               : hasOrderLink && orderId
                 ? `/mypage?tab=orders&flowType=order&flowId=${orderId}&from=orders&focus=stringing`
                 : `/mypage?tab=orders&flowType=application&flowId=${app.id}&from=orders`;
+            const nextActionLabel = isCancelRequested
+              ? "취소 요청 확인을 기다려주세요."
+              : canShowInboundTracking
+                ? hasTracking
+                  ? "라켓 발송 운송장을 수정할 수 있어요."
+                  : "라켓 발송 운송장을 등록해주세요."
+                : isLinkedApplication
+                  ? "연결된 주문/대여 상세에서 진행 상황을 확인해보세요."
+                  : isStringService && app.status === "교체완료" && !(app as any).userConfirmedAt
+                    ? "교체서비스 확정을 진행해주세요."
+                    : "상세에서 신청 진행 상황을 확인해보세요.";
 
             return (
               <PublicSurface
                 key={app.id}
                 data-cy="mypage-application-summary-card"
-                padding="md"
+                padding="sm"
                 className="space-y-4 transition-[box-shadow,border-color] duration-200 hover:border-primary/30 hover:shadow-md"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -571,7 +580,7 @@ export default function ApplicationsClient() {
                     <h3 className="line-clamp-2 break-keep text-ui-body font-semibold text-foreground">
                       {title}
                     </h3>
-                    <p className="mt-1 whitespace-nowrap text-ui-label tabular-nums text-foreground/75">
+                    <p className="mt-1 text-ui-label tabular-nums text-muted-foreground">
                       {app.type} · 신청일 {formatDateTime(app.appliedAt)}
                     </p>
                   </div>
@@ -607,62 +616,26 @@ export default function ApplicationsClient() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 text-ui-label">
-                  {metaLinkLabel ? (
-                    <Badge variant="outline" className="shrink-0 whitespace-nowrap">
-                      {metaLinkLabel}
-                      {metaLinkId ? ` · ${String(metaLinkId).slice(-6)}` : ""}
-                    </Badge>
-                  ) : null}
-                  {isAcademyLesson ? (
-                    <Badge variant="outline" className="shrink-0 whitespace-nowrap">
-                      도깨비테니스 아카데미
-                    </Badge>
-                  ) : null}
-                  {collectionLabel ? (
-                    <Badge variant="outline" className="shrink-0 whitespace-nowrap">
-                      {collectionLabel}
-                    </Badge>
-                  ) : null}
-                </div>
-
-                <div className="grid grid-cols-1 gap-3 rounded-xl border border-border/50 bg-muted/30 p-3 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2 rounded-xl border border-border/50 bg-muted/20 p-2 md:grid-cols-3">
                   {isStringService ? (
                     <>
-                      {isVisit && app.preferredDate && app.preferredTime ? (
-                        <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-ui-label font-medium text-muted-foreground">방문 예약</p>
-                            <p className="whitespace-nowrap font-medium tabular-nums text-foreground">
-                              {visitTimeLabel}
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                          <MdSportsTennis className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-ui-label uppercase tracking-wide text-muted-foreground">
-                              신청 대상
-                            </p>
-                            <p className="line-clamp-2 break-keep font-medium text-foreground">
-                              {app.racketType?.trim() || "라켓 미입력"}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                        <Package className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-ui-label uppercase tracking-wide text-muted-foreground">
-                            스트링
-                          </p>
-                          <p className="line-clamp-2 break-keep font-medium text-foreground">
-                            {app.stringType?.trim() || "미입력"}
-                          </p>
-                        </div>
+                      <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
+                        <p className="text-ui-label text-muted-foreground">라켓 수</p>
+                        <p className="mt-1 text-ui-body-sm font-semibold text-foreground">
+                          {(app as any).rackets?.length ? `${(app as any).rackets.length}개` : app.racketType?.trim() ? "1개" : "미입력"}
+                        </p>
+                      </div>
+                      <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
+                        <p className="text-ui-label text-muted-foreground">방문/발송 상태</p>
+                        <p className="mt-1 line-clamp-1 break-keep text-ui-body-sm font-semibold text-foreground">
+                          {isVisit && app.preferredDate && app.preferredTime ? visitTimeLabel : collectionLabel || (hasTracking ? "운송장 등록됨" : "운송장 미등록")}
+                        </p>
+                      </div>
+                      <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
+                        <p className="text-ui-label text-muted-foreground">연결 서비스</p>
+                        <p className="mt-1 line-clamp-1 break-keep text-ui-body-sm font-semibold text-foreground">
+                          {metaLinkLabel ?? "단독 교체서비스"}
+                        </p>
                       </div>
                     </>
                   ) : (
@@ -794,15 +767,10 @@ export default function ApplicationsClient() {
                   </div>
                 ) : null}
 
-                {isStringService && isLinkedApplication ? (
-                  <p className="text-ui-body-sm text-muted-foreground">
-                    {hasOrderLink
-                      ? "이 교체서비스는 연결된 주문의 구매 확정과 함께 처리됩니다."
-                      : "이 교체서비스는 연결된 대여의 수령 확인과 함께 처리됩니다."}
-                  </p>
-                ) : null}
-
                 <div className="grid grid-cols-1 gap-2 border-t border-border/60 pt-3 bp-sm:flex bp-sm:flex-wrap bp-sm:items-center md:pt-4 [&_button]:w-full bp-sm:[&_button]:w-auto">
+                  <p className="break-keep text-ui-label leading-relaxed text-muted-foreground bp-sm:mr-auto">
+                    <span className="font-semibold text-foreground">다음 할 일</span> · {nextActionLabel}
+                  </p>
                   {isStringService || isAcademyLesson ? (
                     <Button
                       data-cy="mypage-application-detail-cta"
@@ -945,7 +913,7 @@ export default function ApplicationsClient() {
 
                   {isCancelRequested ? (
                     <Button
-                      variant="destructive"
+                      variant="outline"
                       size="sm"
                       onClick={() => handleWithdrawCancelRequest(app.id)}
                       className="gap-2"

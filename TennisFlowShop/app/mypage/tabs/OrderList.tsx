@@ -23,18 +23,14 @@ import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import {
   ArrowRight,
   Ban,
-  Calendar,
   CheckCircle,
   Clock,
-  CreditCard,
   MessageSquarePlus,
   MoreVertical,
-  Package,
   ShoppingBag,
   Store,
   Truck,
   Undo2,
-  User,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -390,6 +386,15 @@ export default function OrderList() {
 
         // 모바일 보조 CTA: "교체 신청" 또는 "교체서비스 보기" 중 하나라도 있으면 2버튼 레이아웃
         const showMobileSecondCTA = Boolean(stringServiceCTAHref);
+        const nextActionLabel = isDelivered && !isConfirmed
+          ? "상품을 받으셨다면 구매 확정을 진행해주세요."
+          : order.cancelStatus === "requested"
+            ? "취소 요청 확인을 기다려주세요."
+            : stringServiceCTAHref
+              ? "교체서비스 신청을 이어갈 수 있어요."
+              : (Boolean(order.userConfirmedAt) || order.status === "구매확정")
+                ? "후기 작성 가능 여부를 확인해보세요."
+                : "상세에서 주문 진행 상황을 확인해보세요.";
 
         return (
           <Card
@@ -403,28 +408,20 @@ export default function OrderList() {
               <div className="h-full w-full bg-card rounded-lg" />
             </div>
 
-            <CardContent className="relative p-4 bp-sm:p-6">
+            <CardContent className="relative p-4">
               {/* Header */}
               <div className="mb-4 flex flex-col gap-3 border-b border-border/60 pb-4 md:flex-row md:items-start md:justify-between">
-                <div className="flex min-w-0 items-start gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-muted/40">
-                    <ShoppingBag className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                     <div className="mb-1 flex flex-wrap items-center gap-2 text-ui-label text-muted-foreground">
-                      <span className="rounded-md bg-muted/60 px-2 py-1 font-medium text-foreground">
-                        주문
-                      </span>
-                      <span className="break-all tabular-nums">주문번호 {order.id}</span>
+                      <span className="font-semibold text-foreground">주문</span>
+                      <span className="tabular-nums">주문번호 끝 {String(order.id).slice(-6)}</span>
                     </div>
                     <h3 className="line-clamp-2 break-keep text-ui-body font-semibold leading-snug text-foreground bp-sm:text-ui-card-title-lg">
                       {getOrderCompositionTitle(order)}
                     </h3>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-ui-body-sm tabular-nums text-muted-foreground">
-                      <Calendar className="h-3 w-3 shrink-0" />
-                      {formatDate(order.date)}
-                    </div>
-                  </div>
+                    <p className="mt-1 text-ui-label tabular-nums text-muted-foreground">
+                      주문일 {formatDate(order.date)}
+                    </p>
                 </div>
 
                 {/* 상태/취소 관련 영역 */}
@@ -461,87 +458,13 @@ export default function OrderList() {
                 </div>
               </div>
 
-              {/* Customer Info */}
-              {order.userSnapshot?.name && (
-                <div className="mb-4 flex items-center gap-3 rounded-xl border border-border/60 bg-muted/30 p-3">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <div className="text-ui-label text-foreground/75 uppercase tracking-wide">
-                      주문자
-                    </div>
-                    <div className="font-medium text-foreground">{order.userSnapshot.name}</div>
-                  </div>
-                </div>
-              )}
-
-              {/* Order Items */}
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <Package className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-ui-body-sm font-medium text-foreground">주문 상품</span>
-                </div>
-                <div className="space-y-2">
-                  {order.items.map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start gap-3 rounded-xl border border-border/60 bg-muted/30 p-3"
-                    >
-                      {/* 상품 썸네일 */}
-                      {item.imageUrl ? (
-                        <img
-                          src={item.imageUrl || "/placeholder.svg"}
-                          alt={item.name}
-                          className="h-10 w-10 shrink-0 rounded object-cover"
-                        />
-                      ) : (
-                        <div className="h-10 w-10 shrink-0 rounded bg-muted/80 dark:bg-muted" />
-                      )}
-
-                      {/* 상품명 + 가격/수량 (모바일에서 자연스럽게 줄바꿈) */}
-                      <div className="min-w-0 flex-1">
-                        <div className="line-clamp-2 break-keep text-ui-body-sm font-medium text-foreground">
-                          {item.name}
-                        </div>
-                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-ui-label text-foreground/75">
-                          <span className="whitespace-nowrap tabular-nums">
-                            {(item.price ?? 0).toLocaleString()}원
-                          </span>
-                          <span className="text-muted-foreground">×</span>
-                          <span className="whitespace-nowrap">{item.quantity}개</span>
-                        </div>
-                        {(() => {
-                          const gauge = String(item.selectedGauge ?? "").trim();
-                          const color = getSelectedColorLabel(item);
-                          if (!gauge && !color) return null;
-                          return (
-                            <div className="mt-1 text-ui-label text-foreground/70">
-                              {gauge && `게이지(굵기) ${gauge}`}
-                              {gauge && color ? " · " : ""}
-                              {color && `색상 ${color}`}
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mb-4 grid grid-cols-2 gap-2 rounded-xl border border-border/60 bg-muted/20 p-2 bp-md:grid-cols-4">
+              <div className="mb-4 grid grid-cols-1 gap-2 rounded-xl border border-border/60 bg-muted/20 p-2 bp-sm:grid-cols-3">
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
                   <p className="text-ui-micro font-medium text-muted-foreground">결제 금액</p>
                   <p className="mt-1 truncate text-ui-body-sm font-semibold tabular-nums text-foreground">
                     {typeof order.totalPrice === "number"
                       ? `${order.totalPrice.toLocaleString()}원`
                       : "정보 없음"}
-                  </p>
-                </div>
-                <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
-                  <p className="text-ui-micro font-medium text-muted-foreground">주문 상태</p>
-                  <p className="mt-1 truncate text-ui-body-sm font-semibold text-foreground">
-                    {getCustomerOrderStatusLabel(
-                      getOrderStatusLabelForDisplay(order.status, order.shippingInfo),
-                    )}
                   </p>
                 </div>
                 <div className="min-w-0 rounded-lg bg-card/80 px-3 py-2">
@@ -560,10 +483,9 @@ export default function OrderList() {
 
               {/* Footer */}
               <div className="flex flex-col gap-4 border-t border-border/60 pt-4 bp-sm:flex-row bp-sm:items-center bp-sm:justify-between">
-                <div className="flex items-center gap-2 text-ui-body-sm text-muted-foreground">
-                  <CreditCard className="h-4 w-4" />
-                  <span className="font-medium">결제 요약</span>
-                </div>
+                <p className="break-keep text-ui-label leading-relaxed text-muted-foreground">
+                  <span className="font-semibold text-foreground">다음 할 일</span> · {nextActionLabel}
+                </p>
 
                 <div className="hidden bp-sm:flex flex-wrap items-center justify-end gap-2">
                   <Button
@@ -696,7 +618,7 @@ export default function OrderList() {
                     size="sm"
                     variant="outline"
                     asChild
-                    className={`${showMobileSecondCTA ? "col-span-5" : "col-span-10"} w-full whitespace-nowrap border-border hover:border-border hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent`}
+                    className={`${showMobileSecondCTA ? "col-span-5" : "col-span-10"} w-full whitespace-normal break-keep border-border hover:border-border hover:bg-primary/10 dark:hover:bg-primary/20 bg-transparent`}
                   >
                     <Link href={primaryDetailHref} className="inline-flex items-center gap-1">
                       {primaryDetailLabel}
@@ -706,7 +628,7 @@ export default function OrderList() {
                   {stringServiceCTAHref ? (
                     <Button
                       size="sm"
-                      className="col-span-5 w-full whitespace-nowrap bg-primary text-primary-foreground hover:bg-primary/90"
+                      className="col-span-5 w-full whitespace-normal break-keep bg-primary text-primary-foreground hover:bg-primary/90"
                       asChild
                     >
                       <Link
