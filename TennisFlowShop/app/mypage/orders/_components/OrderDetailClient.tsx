@@ -60,6 +60,7 @@ import {
   ArrowRight,
   Calendar,
   CheckCircle,
+  ChevronDown,
   Clock,
   CreditCard,
   Mail,
@@ -1009,8 +1010,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
           <div className="space-y-5 bp-lg:col-start-1 bp-lg:row-start-1">
             {/* 주문 항목 */}
             <MypageDetailCard
-              title="주문/서비스 상품 정보"
-              description="주문 상품과 연결된 서비스 정보를 구분해 확인할 수 있습니다."
+              title="주문/서비스 요약"
+              description="주문 상품과 연결 서비스를 한 흐름으로 확인합니다."
               icon={<ShoppingCart className="h-5 w-5 text-warning" />}
             >
                 <div className="divide-y divide-border/60">
@@ -1116,8 +1117,8 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             {(orderDetail.shippingInfo?.withStringService || hasLinkedStringingApps) && (
               <section id="stringing-service" className="scroll-mt-24 space-y-4">
                 <MypageDetailCard
-                  title="연결된 교체서비스"
-                  description="이 주문과 연결된 교체서비스 진행 상태와 라켓 정보를 함께 확인할 수 있습니다."
+                  title="주문에 연결된 교체서비스 요약"
+                  description="진행 상태와 핵심 일정만 먼저 보여주고 세부 라켓 정보는 접어둡니다."
                   action={
                     <div className="flex flex-wrap gap-2">
                       <Badge variant="secondary">주문</Badge>
@@ -1206,11 +1207,12 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                               </div>
                             </div>
 
-                            <div className="mt-4 space-y-3">
-                              <p className="text-ui-body-sm font-semibold text-foreground">
-                                라켓 정보
-                              </p>
-                              <div className="space-y-2">
+                            <details className="group mt-4 rounded-xl bg-muted/15 p-3">
+                              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-ui-body-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+                                <span>라켓·스트링 상세</span>
+                                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                              </summary>
+                              <div className="mt-3 space-y-2">
                                 {displayLines.map((line, lineIndex) => {
                                   const racketLabel =
                                     line.racketLabel || line.racketType || "라켓명 미입력";
@@ -1301,7 +1303,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                                   );
                                 })}
                               </div>
-                            </div>
+                            </details>
 
                             {appNeedsTracking ? (
                               <div className="mt-4 border-l-2 border-primary/40 bg-primary/5 px-3 py-3 text-ui-body-sm">
@@ -1392,7 +1394,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               <CardHeader className="border-b border-border/60 bg-secondary/30 p-4 bp-sm:p-5 bp-lg:p-6">
                 <CardTitle className="flex items-center space-x-2">
                   <CreditCard className="h-5 w-5 text-foreground" />
-                  <span>결제 정보</span>
+                  <span>결제 요약</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 bp-lg:p-6">

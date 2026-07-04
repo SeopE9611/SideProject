@@ -1374,15 +1374,11 @@ export default function StringingApplicationDetailClient({
                 <div className="min-w-0">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <ApplicationStatusBadge status={data.status} />
-                    <span className="text-ui-label text-muted-foreground">현재 상태</span>
+                    <p className="break-keep text-ui-body font-semibold text-foreground">
+                      {customerStatusLabel}
+                    </p>
                   </div>
                   <div className="space-y-2">
-                    <div>
-                      <p className="text-ui-label font-medium text-muted-foreground">현재 상태</p>
-                      <p className="break-keep text-ui-body font-semibold text-foreground">
-                        {customerStatusLabel}
-                      </p>
-                    </div>
                     <div>
                       <p className="text-ui-label font-medium text-muted-foreground">다음 할 일</p>
                       <p className="break-keep text-ui-body font-semibold text-foreground">
@@ -1422,11 +1418,9 @@ export default function StringingApplicationDetailClient({
               <SummaryCard className="border-0 bg-muted/20 shadow-none ring-1 ring-border/40" contentClassName="p-4">
                 <div className="mb-3 flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-ui-body-sm font-medium text-foreground">신청 요약</span>
+                  <span className="text-ui-body-sm font-medium text-foreground">작업 요약</span>
                 </div>
                 <div className="grid gap-3 text-ui-body-sm bp-sm:grid-cols-2 bp-md:grid-cols-1">
-                  <MypageInfoField label="신청번호" value={`#${toShortApplicationId(data.id)}`} />
-                  <MypageInfoField label="신청일" value={new Date(data.requestedAt).toLocaleDateString()} />
                   <MypageInfoField label="신청 유형" value={applicationContext.label} />
                   <MypageInfoField label="라켓 수" value={`라켓 ${racketCount}자루`} />
                 </div>
