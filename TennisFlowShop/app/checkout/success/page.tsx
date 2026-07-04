@@ -687,15 +687,15 @@ export default async function CheckoutSuccessPage({
                   <div className="mb-6 rounded-xl bg-primary/5 p-4 md:p-5">
                     <h3 className="text-ui-card-title font-semibold text-foreground">현재 상태와 다음 단계</h3>
                     <div className="mt-3 grid gap-3 text-ui-body-sm leading-relaxed md:grid-cols-3">
-                      <div className="rounded-xl bg-background/50 p-3">
+                      <div className="rounded-xl bg-card/60 p-3">
                         <p className="font-semibold text-foreground">현재 상태</p>
                         <p className="mt-1 text-muted-foreground">{progressGuide.status}</p>
                       </div>
-                      <div className="rounded-xl bg-background/50 p-3">
+                      <div className="rounded-xl bg-card/60 p-3">
                         <p className="font-semibold text-foreground">지금 할 일</p>
                         <p className="mt-1 text-muted-foreground">{progressGuide.todo}</p>
                       </div>
-                      <div className="rounded-xl bg-background/50 p-3">
+                      <div className="rounded-xl bg-card/60 p-3">
                         <p className="font-semibold text-foreground">다음 단계</p>
                         <p className="mt-1 text-muted-foreground">{progressGuide.next}</p>
                       </div>
@@ -712,9 +712,9 @@ export default async function CheckoutSuccessPage({
 
                   <Separator className="my-6" />
 
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 mb-6">
-                    <div className="grid gap-3">
-                      <div className="flex items-center gap-3 rounded-xl bg-muted/15 p-4">
+                  <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+                    <div className="grid gap-4 rounded-xl bg-muted/10 p-4 md:grid-cols-2 md:gap-5">
+                      <div className="flex items-start gap-3">
                         <Clock className="h-5 w-5 text-primary" />
                         <div>
                           <p className="text-ui-body-sm text-muted-foreground">주문일자</p>
@@ -728,7 +728,7 @@ export default async function CheckoutSuccessPage({
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 rounded-xl bg-muted/15 p-4">
+                      <div className="flex items-start gap-3">
                         <CreditCard className="h-5 w-5 text-primary" />
                         <div>
                           <p className="text-ui-body-sm text-muted-foreground">결제 방법</p>
@@ -765,7 +765,7 @@ export default async function CheckoutSuccessPage({
                       </div>
                     </div>
 
-                    <div className="rounded-xl bg-muted/15 p-4">
+                    <div className="rounded-xl bg-muted/10 p-4">
                       <div className="flex items-center gap-2 mb-4">
                         <CreditCard className="h-5 w-5 text-primary" />
                         <h3 className="font-semibold text-foreground">
@@ -936,21 +936,21 @@ export default async function CheckoutSuccessPage({
                           교체서비스 정보
                         </h3>
                         {hasSubmittedApplication && stringingSummary ? (
-                          <div className="grid gap-3 text-ui-body-sm text-foreground">
-                            <p className="rounded-xl bg-muted/15 p-3">
+                          <div className="grid gap-2 rounded-xl bg-muted/10 p-4 text-ui-body-sm text-foreground md:grid-cols-2">
+                            <p>
                               <span className="text-muted-foreground">접수 방식:</span>{" "}
                               <span className="font-semibold">
                                 {stringingSummary.receptionLabel}
                               </span>
                             </p>
-                            <p className="rounded-xl bg-muted/15 p-3">
+                            <p>
                               <span className="text-muted-foreground">작업 수량:</span>{" "}
                               <span className="font-semibold">
                                 {stringingSummary.lineCount}자루
                               </span>
                             </p>
                             {stringingSummary.stringNames.length > 0 && (
-                              <p className="rounded-xl bg-muted/15 p-3">
+                              <p>
                                 <span className="text-muted-foreground">선택 스트링:</span>{" "}
                                 <span className="font-semibold">
                                   {stringingSummary.stringNames.join(", ")}
@@ -958,7 +958,7 @@ export default async function CheckoutSuccessPage({
                               </p>
                             )}
                             {stringingSummary.tensionSummary && (
-                              <p className="rounded-xl bg-muted/15 p-3">
+                              <p>
                                 <span className="text-muted-foreground">텐션:</span>{" "}
                                 <span className="font-semibold">
                                   {stringingSummary.tensionSummary}
@@ -966,7 +966,7 @@ export default async function CheckoutSuccessPage({
                               </p>
                             )}
                             {stringingSummary.reservationLabel && (
-                              <p className="rounded-xl bg-muted/15 p-3">
+                              <p>
                                 <span className="text-muted-foreground">예약 정보:</span>{" "}
                                 <span className="font-semibold">
                                   {stringingSummary.reservationLabel}
@@ -974,7 +974,7 @@ export default async function CheckoutSuccessPage({
                               </p>
                             )}
                             <Separator className="hidden" />
-                            <div className="space-y-1.5 rounded-xl bg-muted/15 p-3">
+                            <div className="space-y-1.5 rounded-xl bg-card/60 p-3 md:col-span-2">
                               <p className="font-semibold text-foreground">패키지 적용 정보</p>
                               {stringingSummary.packageInfo.applied ? (
                                 <>
@@ -1041,7 +1041,7 @@ export default async function CheckoutSuccessPage({
                             </div>
                           </div>
                         ) : (
-                          <div className="space-y-3 rounded-xl bg-muted/15 p-4">
+                          <div className="space-y-3 rounded-xl bg-muted/10 p-4">
                             <p className="text-ui-body-sm text-muted-foreground">
                               {isVisitPickup
                                 ? "방문 수령 시 현장 장착으로 진행됩니다. 평균 15~20분 소요."
