@@ -930,12 +930,11 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
       >
         <div className="flex w-full flex-col gap-5 rounded-2xl bg-background/60 p-4 ring-1 ring-border/40 bp-sm:p-5">
           <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.8fr)] bp-lg:items-stretch">
-            <div className="flex min-w-0 items-start gap-4">
-              <div className="shrink-0 rounded-xl bg-primary/10 p-3 text-primary ring-1 ring-primary/10">
-                <ShoppingCart className="h-8 w-8 text-primary" />
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 text-primary ring-1 ring-primary/10">
+                <ShoppingCart className="h-6 w-6 text-primary" />
               </div>
-              <div className="min-w-0 space-y-1">
-                <p className="text-ui-label font-medium text-muted-foreground">현재 상태</p>
+              <div className="min-w-0 space-y-1.5">
                 <div className="flex flex-wrap items-center gap-2">
                   <OrderStatusBadge
                     orderId={orderId}
@@ -951,7 +950,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                 </p>
               </div>
             </div>
-            <div className="flex flex-col gap-3 rounded-xl border border-primary/15 bg-primary/5 p-3 bp-sm:flex-row bp-sm:items-center bp-lg:flex-col bp-lg:items-stretch">
+            <div className="flex flex-col gap-3 rounded-xl border border-primary/15 bg-primary/5 p-3 bp-sm:p-4 bp-lg:items-stretch">
               <div className="min-w-0 flex-1">
                 <p className="text-ui-label font-medium text-primary">다음 할 일</p>
                 <p className="mt-1 break-keep text-ui-body-sm font-semibold text-foreground">
@@ -966,7 +965,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   asChild={Boolean(nextTodo.ctaHref)}
                   onClick={nextTodo.onCtaClick}
                   disabled={isConfirmingPurchase}
-                  className="w-full shrink-0 bp-sm:w-auto bp-lg:w-full"
+                  className="w-full shrink-0 whitespace-normal break-keep bp-sm:w-auto bp-lg:w-full"
                 >
                   {nextTodo.ctaHref ? (
                     <Link href={nextTodo.ctaHref}>{nextTodo.ctaLabel}</Link>
@@ -980,13 +979,13 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
 
           <Separator />
 
-          <div className="grid grid-cols-1 gap-3 rounded-xl bg-muted/15 p-3 bp-sm:grid-cols-3">
-            <MypageInfoField label="신청일" value={formatDate(orderDetail.date)} />
-            <MypageInfoField label="총 결제금액" value={formatCurrency(orderDetail.total)} />
+          <div className="grid grid-cols-1 gap-3 rounded-xl bg-muted/15 p-3 bp-sm:grid-cols-3 bp-sm:p-4">
             <MypageInfoField
               label="주문 유형"
               value={serviceLinkedOrder ? "스트링 교체서비스 포함" : "상품 주문"}
             />
+            <MypageInfoField label="총 결제금액" value={formatCurrency(orderDetail.total)} />
+            <MypageInfoField label="주문일" value={formatDate(orderDetail.date)} />
           </div>
         </div>
       </PublicPageHero>
@@ -1019,7 +1018,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
             {/* 주문 항목 */}
             <MypageDetailCard
               title="주문/서비스 요약"
-              description="주문 상품과 연결 서비스를 한 흐름으로 확인합니다."
+              description="상품과 연결 서비스를 요약했습니다."
               icon={<ShoppingCart className="h-5 w-5 text-warning" />}
             >
                 <div className="divide-y divide-border/60">
@@ -1126,7 +1125,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
               <section id="stringing-service" className="scroll-mt-24 space-y-4">
                 <MypageDetailCard
                   title="주문에 연결된 교체서비스 요약"
-                  description="진행 상태와 핵심 일정만 먼저 보여주고 세부 라켓 정보는 접어둡니다."
+                  description="진행 상태와 핵심 일정을 요약했습니다."
                   action={
                     <div className="flex flex-wrap gap-2">
                       <Badge variant="secondary">주문</Badge>
@@ -1454,7 +1453,7 @@ export default function OrderDetailClient({ orderId, backUrl }: Props) {
                   <Truck className="h-5 w-5 text-primary" />
                   <span>배송/수령 요약</span>
                 </CardTitle>
-                <CardDescription>수령 상태와 필요한 배송 정보를 요약했습니다.</CardDescription>
+                <CardDescription>수령·배송 핵심 정보입니다.</CardDescription>
               </CardHeader>
               {editingCustomer ? (
                 <CardContent className="p-4 bp-lg:p-6">

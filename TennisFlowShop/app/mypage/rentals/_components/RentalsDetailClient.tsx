@@ -3,7 +3,6 @@
 import { getDepositBanner } from "@/app/features/rentals/utils/ui";
 import MypageDetailCard from "@/app/mypage/_components/MypageDetailCard";
 import MypageInfoField from "@/app/mypage/_components/MypageInfoField";
-import { NextTodoCallout } from "@/app/mypage/_components/OrdersScopeContextNav";
 import {
   getCustomerApplicationStatusLabel,
   getCustomerRentalStatusLabel,
@@ -664,86 +663,81 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
             </Button>
           </div>
         </div>
-        {canReceiveRental && (
-          <div className="mb-4 border-l-2 border-primary bg-primary/5 px-3 py-3">
-            <p className="font-semibold text-foreground">라켓을 수령하셨나요?</p>
-            <p className="mt-1 text-ui-body-sm text-muted-foreground">
-              수령 확인을 누르면 오늘부터 대여 기간이 시작되고 반납 예정일이 계산됩니다.
-            </p>
-            <Button size="sm" className="mt-3" disabled={isReceiving} onClick={handleReceiveRental}>
-              {isReceiving ? "수령 확인 처리 중..." : "수령 확인하고 대여 시작"}
-            </Button>
-          </div>
-        )}
-        {nextTodo && (
-          <NextTodoCallout
-            className="mb-4"
-            label={nextTodo.label}
-            ctaLabel={nextTodo.ctaLabel}
-            ctaHref={nextTodo.ctaHref}
-          />
-        )}
-
-        <div className="mb-4 grid gap-3 bp-md:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-          <div className="rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
-            <p className="text-ui-label font-medium text-muted-foreground">현재 상태</p>
-            <div className="mt-2 flex items-center gap-2">
-              {getStatusIcon(data.status)}
-              <Badge
-                variant={getStatusBadgeVariant(data.status)}
-                className="px-3 py-1 text-ui-body-sm font-medium"
-              >
-                {displayStatusLabel}
-              </Badge>
+        <div className="mb-4 flex w-full flex-col gap-5 rounded-2xl bg-background/60 p-4 ring-1 ring-border/40 bp-sm:p-5">
+          <div className="grid gap-4 bp-lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.9fr)] bp-lg:items-stretch">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 ring-1 ring-primary/10">
+                <Briefcase className="h-6 w-6 text-primary" />
+              </div>
+              <div className="min-w-0 space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  {getStatusIcon(data.status)}
+                  <Badge
+                    variant={getStatusBadgeVariant(data.status)}
+                    className="px-3 py-1 text-ui-body-sm font-medium"
+                  >
+                    {displayStatusLabel}
+                  </Badge>
+                </div>
+                <p className="break-all text-ui-body-sm text-muted-foreground" title={data.id}>
+                  대여번호: {data.id}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-3 rounded-xl border border-primary/15 bg-primary/5 p-3 bp-sm:p-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-ui-label font-medium text-primary">다음 할 일</p>
+                <p className="mt-1 break-keep text-ui-body-sm font-semibold text-foreground">
+                  {rentalNextActionMessage}
+                </p>
+                {canReceiveRental ? (
+                  <p className="mt-1 break-keep text-ui-label text-muted-foreground">
+                    수령 확인 후 대여 기간과 반납 예정일이 계산됩니다.
+                  </p>
+                ) : null}
+              </div>
+              <div className="flex flex-col gap-2 bp-sm:flex-row bp-sm:flex-wrap">
+                {canReceiveRental && (
+                  <Button
+                    size="sm"
+                    className="h-9 w-full whitespace-normal break-keep bp-sm:w-auto"
+                    disabled={isReceiving}
+                    onClick={handleReceiveRental}
+                  >
+                    {isReceiving ? "수령 확인 처리 중..." : "수령 확인하고 대여 시작"}
+                  </Button>
+                )}
+                {nextTodo?.ctaLabel && nextTodo.ctaHref ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="h-9 w-full whitespace-normal break-keep border-border bg-background hover:border-primary/30 bp-sm:w-auto"
+                  >
+                    <Link href={nextTodo.ctaHref}>{nextTodo.ctaLabel}</Link>
+                  </Button>
+                ) : null}
+              </div>
             </div>
           </div>
-          <div className="rounded-xl bg-muted/20 p-4 ring-1 ring-border/60">
-            <p className="text-ui-label font-medium text-muted-foreground">다음 할 일</p>
-            <p className="mt-2 break-keep text-ui-body-sm font-semibold text-foreground">
-              {rentalNextActionMessage}
-            </p>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 gap-3 bp-sm:grid-cols-2 xl:grid-cols-4">
-          <div className="p-3 bp-sm:p-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <span className="text-ui-body-sm font-medium text-muted-foreground">대여 상품명</span>
-            </div>
-            <p className="line-clamp-2 min-w-0 break-keep text-ui-body font-semibold text-foreground bp-sm:text-ui-card-title-lg">
-              {racketBrandLabel(data.brand)} {data.model}
-            </p>
-          </div>
-
-          <div className="p-3 bp-sm:p-4">
-            <div className="flex items-center space-x-2 mb-2">
-              <span className="text-ui-body-sm font-medium text-muted-foreground">대여 기간</span>
-            </div>
-            <p className="break-words text-ui-card-title-lg font-semibold text-foreground">
-              {data.days}일
-            </p>
-          </div>
-
-          <div className="p-3 bp-sm:p-4">
-            <div className="mb-2 flex items-center space-x-2">
-              <span className="text-ui-body-sm font-medium text-muted-foreground">결제 금액</span>
-            </div>
-            <p className="break-keep text-ui-card-title-lg font-semibold tabular-nums text-foreground">
-              {(data.amount?.total ?? 0).toLocaleString()}원
-            </p>
-          </div>
-
-          <div className="p-3 bp-sm:p-4">
-            <div className="flex items-center space-x-2 mb-2">
-              {getStatusIcon(data.status)}
-              <span className="text-ui-body-sm font-medium text-muted-foreground">반납 예정일</span>
-            </div>
-            <Badge
-              variant={getStatusBadgeVariant(data.status)}
-              className="px-3 py-1 text-ui-body-sm font-medium"
-            >
-              {data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
-            </Badge>
+          <div className="grid grid-cols-1 gap-3 rounded-xl bg-muted/15 p-3 bp-sm:grid-cols-2 bp-sm:p-4 xl:grid-cols-4">
+            <MypageInfoField
+              label="대여 상품"
+              value={`${racketBrandLabel(data.brand)} ${data.model}`}
+              valueClassName="line-clamp-2 break-keep"
+            />
+            <MypageInfoField label="대여 기간" value={`${data.days}일`} />
+            <MypageInfoField
+              label="반납 예정일"
+              value={data.dueAt ? formatDate(data.dueAt) : "대여 시작 후 계산"}
+              className="rounded-xl bg-primary/5 p-3 ring-1 ring-primary/10 bp-sm:p-4"
+              valueClassName="text-primary"
+            />
+            <MypageInfoField
+              label="총 결제 금액"
+              value={`${(data.amount?.total ?? 0).toLocaleString()}원`}
+            />
           </div>
         </div>
       </div>
@@ -999,9 +993,7 @@ export default function RentalsDetailClient({ id, backUrl = "/mypage?tab=orders"
                     <Wrench className="h-5 w-5 text-primary" />
                     <span>연결된 교체서비스</span>
                   </CardTitle>
-                  <CardDescription className="mt-1">
-                    대여 라켓에 장착될 스트링과 작업 정보를 확인할 수 있어요.
-                  </CardDescription>
+                  <CardDescription className="mt-1">스트링과 작업 정보입니다.</CardDescription>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {data.stringingApplicationId ? (
