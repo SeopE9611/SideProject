@@ -785,31 +785,6 @@ export default function RentalsDetailClient({
       <>
         <MypageDetailCard title="대여 상품 정보" icon={<Package className="h-5 w-5 text-primary" />}>
             <div className="divide-y divide-border/60">
-              {/* 스트링 상품 금액: 있을 때만 표시(대여만 한 경우 UI가 지저분해지지 않도록) */}
-              {stringPrice > 0 && (
-                <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                  <Package className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-ui-label font-medium text-muted-foreground">스트링 상품</p>
-                    <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
-                      {stringPrice.toLocaleString()}원
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* 교체 서비스비(장착비): 있을 때만 표시 */}
-              {stringingFee > 0 && (
-                <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-                  <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-ui-label font-medium text-muted-foreground">교체서비스 비용</p>
-                    <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
-                      {stringingFee.toLocaleString()}원
-                    </p>
-                  </div>
-                </div>
-              )}
               <div className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                 <Briefcase className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="min-w-0 flex-1">
@@ -862,6 +837,22 @@ export default function RentalsDetailClient({
         <MypageDetailCard title="결제 정보" icon={<CreditCard className="h-5 w-5 text-primary" />}>
             <div className="space-y-3">
               <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+                <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-ui-label font-medium text-muted-foreground">결제 상태</p>
+                  <p className="mt-1 break-words font-semibold text-foreground">{displayStatusLabel}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+                <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-ui-label font-medium text-muted-foreground">결제 방식</p>
+                  <p className="mt-1 break-words font-semibold text-foreground">결제 정보 확인 중</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
                 <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="min-w-0 flex-1">
                   <p className="text-ui-label font-medium text-muted-foreground">대여 수수료</p>
@@ -881,6 +872,30 @@ export default function RentalsDetailClient({
                 </div>
               </div>
 
+              {stringPrice > 0 && (
+                <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+                  <Package className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-ui-label font-medium text-muted-foreground">스트링 상품 금액</p>
+                    <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
+                      {stringPrice.toLocaleString()}원
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {stringingFee > 0 && (
+                <div className="flex items-start gap-3 border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
+                  <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-ui-label font-medium text-muted-foreground">교체서비스 비용</p>
+                    <p className="mt-1 break-words font-semibold text-foreground tabular-nums">
+                      {stringingFee.toLocaleString()}원
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-start gap-3 rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
                 <TrendingUp className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                 <div className="flex-1">
@@ -897,7 +912,7 @@ export default function RentalsDetailClient({
           <div className="grid gap-4 bp-sm:grid-cols-2">
             <MypageInfoField label="수령 방식" value={shippingMethodLabel} />
             <div className="border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-              <p className="text-ui-label font-medium text-muted-foreground">수령 정보</p>
+              <p className="text-ui-label font-medium text-muted-foreground">수령/출고 정보</p>
               <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">
                 {isVisitPickup
                   ? outboundTrackingNo
@@ -908,18 +923,9 @@ export default function RentalsDetailClient({
                     : "출고 운송장 등록 전입니다."}
               </p>
             </div>
-            <div className="border-b border-border/60 py-3 first:pt-0 last:border-b-0 last:pb-0">
-              <p className="text-ui-label font-medium text-muted-foreground">반납 정보</p>
-              <p className="mt-1 break-words text-ui-body-sm font-semibold text-foreground">
-                {isVisitPickup
-                  ? returnTrackingNo
-                    ? `매장 반환 접수 완료 · ${returnTrackingNo}`
-                    : "매장 반환 접수 전입니다."
-                  : returnTrackingNo
-                    ? `${getCourierLabel(getCourierValue(data.shipping?.return) ?? undefined)} · ${returnTrackingNo}`
-                    : "반납 운송장이 아직 등록되지 않았습니다."}
-              </p>
-            </div>
+            <MypageInfoField label="출고 택배사" value={outboundCourier ? getCourierLabel(outboundCourier) : null} fallback={isVisitPickup ? "방문 수령" : "출고 택배사 확인 중"} />
+            <MypageInfoField label="출고 운송장" value={outboundTrackingNo} fallback={isVisitPickup ? "방문 수령 준비 상태로 안내됩니다." : "출고 운송장 등록 전입니다."} valueClassName="break-all" />
+            <MypageInfoField label="출고일" value={outboundShippedAt ? formatDateTime(outboundShippedAt) : null} fallback="출고일 확인 중" />
           </div>
           </MypageDetailCard>
 
@@ -932,11 +938,11 @@ export default function RentalsDetailClient({
           </div>
         </MypageDetailCard>
 
-        <MypageDetailCard title="신청자/연락처 정보" icon={<Briefcase className="h-5 w-5 text-primary" />}>
+        <MypageDetailCard title="신청 정보" icon={<Briefcase className="h-5 w-5 text-primary" />}>
           <div className="grid gap-4">
             <MypageInfoField label="신청번호" value={data.id} valueClassName="break-all" />
             <MypageInfoField label="신청일" value={data.createdAt ? formatDateTime(data.createdAt) : null} fallback="신청일 확인 중" />
-            <p className="text-ui-body-sm text-muted-foreground">이름과 연락처는 로그인한 계정 정보 기준으로 관리됩니다.</p>
+            <p className="text-ui-body-sm text-muted-foreground">신청자 연락처는 계정 정보 기준으로 관리됩니다. 연락처 변경이 필요하면 고객센터로 문의해주세요.</p>
           </div>
         </MypageDetailCard>
       </>
