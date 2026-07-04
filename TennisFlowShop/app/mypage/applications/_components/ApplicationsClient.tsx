@@ -565,8 +565,10 @@ export default function ApplicationsClient() {
                 : isLinkedApplication
                   ? "연결된 주문/대여 상세에서 진행 상황을 확인해보세요."
                   : isStringService && app.status === "교체완료" && !(app as any).userConfirmedAt
-                    ? "교체서비스 확정을 진행해주세요."
-                    : "상세에서 신청 진행 상황을 확인해보세요.";
+                    ? "작업 내용을 확인하고 교체서비스 확정을 진행해주세요."
+                    : app.status === "교체완료" || app.status === "취소"
+                      ? "추가로 진행할 일은 없습니다."
+                      : "상세에서 신청 진행 상황을 확인해주세요.";
 
             return (
               <PublicSurface

@@ -183,9 +183,11 @@ export default function RentalsList() {
             ? "반납 내용을 확인하고 수령 확인을 진행해주세요."
             : r.withStringService && !r.stringingApplicationId
               ? "교체서비스 신청을 이어갈 수 있어요."
-              : r.hasReturnShipping
-                ? "상세에서 대여 진행 상황을 확인해보세요."
-                : "필요 시 반납 운송장을 등록해주세요.";
+              : r.status === "returned" || r.status === "canceled"
+                ? "추가로 진행할 일은 없습니다."
+                : r.hasReturnShipping
+                  ? "상세에서 반납 진행 상황을 확인해주세요."
+                  : "상세에서 대여 진행 상황을 확인해주세요.";
 
         return (
           <Card

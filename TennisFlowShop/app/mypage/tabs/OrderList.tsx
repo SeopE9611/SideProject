@@ -393,8 +393,10 @@ export default function OrderList() {
             : stringServiceCTAHref
               ? "교체서비스 신청을 이어갈 수 있어요."
               : (Boolean(order.userConfirmedAt) || order.status === "구매확정")
-                ? "후기 작성 가능 여부를 확인해보세요."
-                : "상세에서 주문 진행 상황을 확인해보세요.";
+                ? "후기를 남길 수 있어요."
+                : ["결제완료", "처리중", "배송중"].includes(order.status)
+                  ? "주문 진행 상황이 변경되면 이곳에서 안내됩니다."
+                  : "상세에서 주문 진행 내용을 확인할 수 있어요.";
 
         return (
           <Card

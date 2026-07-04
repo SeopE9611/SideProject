@@ -436,13 +436,12 @@ const getFlowNextActionText = (
     const todoMessageMap: Record<string, string> = {
       "구매 확정 필요": "상품을 받으셨다면 구매 확정을 진행해주세요.",
       "수령 확인 필요": "반납 내용을 확인하고 수령 확인을 진행해주세요.",
-      "라켓 발송 운송장 등록 필요": "보유 라켓을 매장으로 보내고 라켓 발송 운송장을 등록해주세요.",
+      "라켓 발송 운송장 등록 필요": "라켓 발송 운송장을 등록해주세요.",
       "교체서비스 확정 필요": "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.",
-      "후기를 남길 수 있어요": "구매 확정된 상품은 후기를 작성할 수 있어요.",
-      "상품 후기 작성 가능": "구매 확정된 상품은 후기를 작성할 수 있어요.",
-      "상품·교체서비스 후기 작성 가능":
-        "수령 확인된 교체서비스에 대해 상품과 서비스 경험을 함께 남겨주세요.",
-      "교체서비스 신청 필요": "교체서비스 신청을 이어서 진행해주세요.",
+      "후기를 남길 수 있어요": "후기를 남길 수 있어요.",
+      "상품 후기 작성 가능": "후기를 남길 수 있어요.",
+      "상품·교체서비스 후기 작성 가능": "후기를 남길 수 있어요.",
+      "교체서비스 신청 필요": "교체서비스 신청을 이어갈 수 있어요.",
     };
     return todoMessageMap[opts.todoPrimaryReason] ?? null;
   }
@@ -454,7 +453,7 @@ const getFlowNextActionText = (
     const normalized = getMypageNormalizedStatus(group.order?.status);
     const linkedApplication = group.application ?? group.order?.applicationSummaries?.[0];
     if (normalized === "취소요청" || normalized === "취소 요청")
-      return "취소 요청이 접수되었습니다. 처리 결과를 기다려주세요.";
+      return "취소 요청 확인을 기다려주세요.";
     if (normalized === "취소") return "취소가 완료되었습니다.";
     if (normalized === "환불" || normalized === "환불 처리중")
       return "환불 진행 상태를 확인해주세요.";
@@ -484,11 +483,11 @@ const getFlowNextActionText = (
         (group.order?.applicationSummaries ?? []).some((app) => app.serviceReviewPending);
 
       if (hasPendingServiceReview) {
-        return "수령 확인된 교체서비스 후기를 작성할 수 있어요.";
+        return "후기를 남길 수 있어요.";
       }
 
       if (hasPendingOrderReview) {
-        return "구매 확정된 상품은 후기를 작성할 수 있어요.";
+        return "후기를 남길 수 있어요.";
       }
 
       return null;
@@ -499,7 +498,7 @@ const getFlowNextActionText = (
         : "사용자가 별도로 라켓을 발송하지 않아도 됩니다. 매장에서 라켓에 스트링을 장착해 준비합니다.";
     }
     if (linkedApplication?.needsInboundTracking && !linkedApplication?.hasTracking) {
-      return "보유 라켓을 매장으로 보내고 라켓 발송 운송장을 등록해주세요.";
+      return "라켓 발송 운송장을 등록해주세요.";
     }
     if (
       linkedApplication?.needsInboundTracking &&
@@ -527,7 +526,7 @@ const getFlowNextActionText = (
       }
 
       if (hasPendingServiceReview) {
-        return "수령 확인된 교체서비스 후기를 작성할 수 있어요.";
+        return "후기를 남길 수 있어요.";
       }
 
       return null;
@@ -547,14 +546,14 @@ const getFlowNextActionText = (
     return "교체서비스 작업이 진행 중입니다. 완료 안내를 기다려주세요.";
   if (normalized === "교체완료")
     return app?.serviceReviewPending
-      ? "수령 확인된 교체서비스 후기를 작성할 수 있어요."
+      ? "후기를 남길 수 있어요."
       : "작업 내용을 확인하고 교체서비스 확정을 진행해주세요.";
   if (app?.inboundRequired === false)
     return app?.rentalId
       ? "매장에서 대여 라켓에 스트링을 장착해 준비합니다. 사용자가 별도로 라켓을 발송하지 않아도 됩니다."
       : "사용자가 별도로 라켓을 발송하지 않아도 됩니다. 매장에서 라켓에 스트링을 장착해 준비합니다.";
   if (app?.needsInboundTracking && !app?.hasTracking)
-    return "보유 라켓을 매장으로 보내고 라켓 발송 운송장을 등록해주세요.";
+    return "라켓 발송 운송장을 등록해주세요.";
   if (app?.needsInboundTracking && app?.hasTracking && isApplicationBeforeWork(app.status))
     return "등록한 운송장 기준으로 매장 도착 확인을 기다려주세요.";
   if (normalized === "접수완료") return "신청이 접수되었습니다. 검토를 기다려주세요.";
